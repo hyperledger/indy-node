@@ -1,0 +1,15 @@
+[Unit]
+Description=sovrin_node
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+
+ExecStart=/home/me/work/evernym/sovrin-priv/scripts/node_control_tool.py
+TimeoutSec=300
+
+[Install]
+WantedBy=multi-user.target 
+
+
