@@ -1,5 +1,4 @@
 #!/bin/bash -x
-systemctl restart sovrin_node
 
 vers="$1"
 if [ -z "$vers" ] ; then
