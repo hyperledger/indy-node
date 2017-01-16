@@ -2,13 +2,16 @@
 
 import select
 import socket
-#import sys
+import argparse
 
 def call_upgrade_script(version):
     import subprocess
+    print('Upgrading sovrin node to version %s, test_mode %d ' % (version, int(test_mode)))
     try:
-        print('Upgrading sovrin node to version ', version)
-        retcode = subprocess.call(['upgrade_sovrin_node', version])
+        if test_mode:
+            retcode = subprocess.call(['upgrade_sovrin_node_test', version])
+        else:
+            retcode = subprocess.call(['upgrade_sovrin_node', version])
         if retcode != 0:
             print('Upgrade failed')
     except:
@@ -19,12 +22,23 @@ def process_data(data):
     import json
     try:
         command = json.loads(data.decode("utf-8"))
-        print(command)
+        print("Decoded ", command)
         version = command['version']
         call_upgrade_script(version)
-    except:
+    except json.decoder.JSONDecodeError:
         print("JSON decoding failed. Skip this command")
+    except:
+        print("Unexpected error in function below. Pass it")
+        pass
 
+# Parse command line arguments
+test_mode = False
+parser = argparse.ArgumentParser()
+parser.add_argument("-t", "--test", help="runs in special Test mode",
+                    action="store_true")
+args = parser.parse_args()
+if args.test:
+    test_mode = True
 
 # Create a TCP/IP socket
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
