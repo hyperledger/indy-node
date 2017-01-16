@@ -1,0 +1,44 @@
+#! /usr/bin/env python3
+
+import os
+import sys
+
+from ioflo.aid.consoling import Console
+from plenum.common.log import setupLogging, TRACE_LOG_LEVEL, \
+    getRAETLogLevelFromConfig
+from plenum.common.types import HA
+
+from sovrin_common.config_util import getConfig
+
+config = getConfig()
+keepDir = config.baseDir
+
+if __name__ == "__main__":
+    if len(sys.argv) < 4:
+        print("Provide name and 2 port numbers for running the node "
+              "and client stacks")
+        exit()
+    else:
+
+        RAETVerbosity = getRAETLogLevelFromConfig("RAETLogLevel",
+                                                  Console.Wordage.mute,
+                                                  config)
+
+        selfName = sys.argv[1]
+        ha = HA("0.0.0.0", int(sys.argv[2]))
+        cliha = HA("0.0.0.0", int(sys.argv[3]))
+
+        logFileName = os.path.join(config.baseDir, selfName + ".log")
+
+        setupLogging(TRACE_LOG_LEVEL,
+                     RAETVerbosity,
+                     filename=logFileName)
+        print("You can find logs in {}".format(logFileName))
+
+        from plenum.common.looper import Looper
+        from sovrin_node.server.node import Node
+        with Looper(debug=True) as looper:
+            node = Node(selfName, nodeRegistry=None, basedirpath=keepDir, ha=ha,
+                        cliha=cliha)
+            looper.add(node)
+            looper.run()

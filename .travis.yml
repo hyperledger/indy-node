@@ -1,0 +1,39 @@
+language: python
+python:
+    - 3.5
+
+sudo: required
+
+before_install:
+    - sudo add-apt-repository -y ppa:chris-lea/libsodium 
+    - sudo apt-get update
+    - sudo apt-get -y install
+      flex bison
+      libssl-dev
+      libgmp-dev
+      libsodium13
+    - ./ci/install-orientdb.sh
+    - sudo /opt/orientdb/bin/server.sh &
+    - sleep 10s
+
+install:
+    - pip install -U -e .
+    - pip install -U sovrin-client
+
+script:
+    - python -m sovrin_node.test
+
+before_cache:
+    - rm -f /opt/orientdb/log/*
+    - rm -f /opt/orientdb/bin/orient.pid
+cache:
+    timeout: 60
+    pip: true
+    directories:
+        - $HOME/pbc
+        - /opt/orientdb
+
+notifications:
+    email:
+        on_success: change # default: change
+        on_failure: always # default: always
