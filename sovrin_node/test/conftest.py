@@ -15,6 +15,8 @@ from plenum.common.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.txn import VERKEY
 from plenum.test.plugin.helper import getPluginPath
+from plenum.test.conftest import patchPluginManager
+
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.txn import STEWARD, NYM, SPONSOR
 from sovrin_common.txn import TXN_TYPE, TARGET_NYM, TXN_ID, ROLE, \
