@@ -79,7 +79,7 @@ setup(
         '': ['*.txt', '*.md', '*.rst', '*.json', '*.conf', '*.html',
              '*.css', '*.ico', '*.png', 'LICENSE', 'LEGAL', '*.sovrin']},
     include_package_data=True,
-    install_requires=['sovrin-common'],
+    install_requires=['sovrin-common', 'python-dateutil'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'sovrin-client'],
     scripts=['scripts/start_sovrin_node'],
