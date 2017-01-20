@@ -86,7 +86,8 @@ setup(
              'scripts/node_control_tool.py', 
              'scripts/upgrade_sovrin_node.bat',
              'scripts/upgrade_sovrin_node_test.bat', 
-             'scripts/install_sovrin_node.bat'],
+             'scripts/install_sovrin_node.bat',
+             'scripts/delete_sovrin_node.bat'],
     cmdclass={
         'install': PostInstall,
         'develop': PostInstallDev
