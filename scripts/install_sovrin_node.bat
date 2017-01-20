@@ -25,6 +25,6 @@ IF NOT DEFINED PYTHONPATH (
 
 SET CURR_DIR=%~dp0
 echo "Creating service for agent"
-sc create "SovrinNodeUpgradeAgent" binPath= "%PYTHONPATH%" start=auto
+python windows_service_installer "SovrinNodeUpgradeAgent" "%CURR_DIR%node_control_tool.py"
 echo "Creating service for node"
-sc create "SovrinNode" binPath= "%PYTHONPATH% %CURR_DIR%start_sovrin_node %NODE_NAME% %NODE_PORT% %CLI_PORT%" start=auto
+python windows_service_installer "SovrinNode" "%CURR_DIR%start_sovrin_node %NODE_NAME% %NODE_PORT% %CLI_PORT%"
