@@ -82,7 +82,9 @@ setup(
     install_requires=['sovrin-common', 'python-dateutil'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'sovrin-client'],
-    scripts=['scripts/start_sovrin_node'],
+    scripts=['scripts/start_sovrin_node',
+             'scripts/node_control_tool.py', 'scripts/upgrade_sovrin_node.bat',
+             'scripts/upgrade_sovrin_node_test.bat'],
     cmdclass={
         'install': PostInstall,
         'develop': PostInstallDev
