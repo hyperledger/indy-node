@@ -5,6 +5,7 @@ from operator import itemgetter
 from typing import Iterable, Any
 
 import pyorient
+
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
@@ -20,20 +21,20 @@ from plenum.common.types import Reply, RequestAck, RequestNack, f, \
 from plenum.common.util import error
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
-from sovrin_common.auth import Authoriser
 from sovrin_common.config_util import getConfig
-from sovrin_common.persistence import identity_graph
 from sovrin_common.txn import TXN_TYPE, \
-    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, NYM,\
-    ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
+    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, SPONSOR, NYM,\
+    ROLE, STEWARD, GET_ATTR, DISCLO, DATA, GET_NYM, \
     TXN_ID, TXN_TIME, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
     getTxnOrderedFields, CLAIM_DEF, GET_CLAIM_DEF, openTxns, \
-    ISSUER_KEY, GET_ISSUER_KEY, REF, IDENTITY_TXN_TYPES, \
+    ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
     NODE_UPGRADE, COMPLETE, FAIL
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
+from sovrin_common.persistence import identity_graph
 from sovrin_node.persistence.secondary_storage import SecondaryStorage
+from sovrin_common.auth import Authoriser
 from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
@@ -107,8 +108,8 @@ class Node(PlenumNode, HasPoolManager):
                                config=self.config)
 
     def getUpgrader(self):
-        return Upgrader(self.id, self.config,
-                        self.dataLocation, self.configLedger)
+        return Upgrader(self.id, self.dataLocation, self.config,
+                        self.configLedger)
 
     def getConfigLedger(self):
         return Ledger(CompactMerkleTree(hashStore=FileHashStore(
@@ -144,27 +145,28 @@ class Node(PlenumNode, HasPoolManager):
         else:
             return super().getLedgerStatus(ledgerType)
 
+    def postPoolLedgerCaughtUp(self):
+        # The only reason to override this is to set the correct node id in
+        # the upgrader since when the upgrader is initialized, node might not
+        # have its id since it maybe missing the complete pool ledger.
+        # TODO: Maybe a cleaner way is to initialize upgrader only when pool
+        # ledger has caught up.
+        super().postPoolLedgerCaughtUp()
+        self.upgrader.nodeId = self.id
+
     def postConfigLedgerCaughtUp(self):
         self.upgrader.processLedger()
-        op = None
-        if self.upgrader.hasCodeBeenUpgraded:
+        if self.upgrader.isItFirstRunAfterUpgrade:
+            lastUpgradeVersion = self.upgrader.lastExecutedUpgradeInfo[1]
             op = {
                 TXN_TYPE: NODE_UPGRADE,
                 DATA: {
-                    ACTION: COMPLETE,
-                    VERSION: self.upgrader.hasCodeBeenUpgraded
-                }
-            }
-        if self.upgrader.didLastUpgradeFail:
-            op = {
-                TXN_TYPE: NODE_UPGRADE,
-                DATA: {
-                    ACTION: FAIL,
-                    VERSION: self.upgrader.didLastUpgradeFail
+                    ACTION: None,
+                    VERSION: lastUpgradeVersion
                 }
             }
 
-        if op:
+            op[DATA][ACTION] = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
             op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
             request = self.wallet.signOp(op)
             self.startedProcessingReq(*request.key, self.nodestack.name)
@@ -299,13 +301,14 @@ class Node(PlenumNode, HasPoolManager):
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} not a valid action".
                                            format(action))
-            schedule = operation.get(SCHEDULE, {})
-            isValid, msg = self.upgrader.isScheduleValid(schedule,
-                                                         self.poolManager.nodeIds)
-            if not isValid:
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} not a valid schedule since {}".
-                                           format(schedule, msg))
+            if action == START:
+                schedule = operation.get(SCHEDULE, {})
+                isValid, msg = self.upgrader.isScheduleValid(schedule,
+                                                             self.poolManager.nodeIds)
+                if not isValid:
+                    raise InvalidClientRequest(identifier, reqId,
+                                               "{} not a valid schedule since {}".
+                                               format(schedule, msg))
 
             # TODO: Check if cancel is submitted before start
 
@@ -545,6 +548,11 @@ class Node(PlenumNode, HasPoolManager):
         """
         result = reply.result
         txnWithMerkleInfo = self.storeTxnInLedger(result)
+        if result[TXN_TYPE] == NODE_UPGRADE:
+            logger.info('{} processed {}'.format(self, NODE_UPGRADE))
+            # Returning since NODE_UPGRADE is not sent to client and neither
+            # goes in graph
+            return
         self.sendReplyToClient(Reply(txnWithMerkleInfo),
                                (result[f.IDENTIFIER.nm], result[f.REQ_ID.nm]))
         reply.result[F.seqNo.name] = txnWithMerkleInfo.get(F.seqNo.name)

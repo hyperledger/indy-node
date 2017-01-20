@@ -33,6 +33,7 @@ from sovrin_common.identity import Identity
 from sovrin_common.txn import ATTRIB, TARGET_NYM, TXN_TYPE, TXN_ID, GET_NYM
 from sovrin_common.config_util import getConfig
 from sovrin_node.server.node import Node
+from sovrin_node.server.upgrader import Upgrader
 
 logger = getlogger()
 
@@ -243,6 +244,11 @@ class TempStorage:
                                                                  ex))
 
 
+@Spyable(methods=[Upgrader.processLedger])
+class TestUpgrader(Upgrader):
+    pass
+
+
 # noinspection PyShadowingNames,PyShadowingNames
 @Spyable(
     methods=[Node.handleOneNodeMsg, Node.processRequest, Node.processOrdered,
@@ -256,6 +262,11 @@ class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
+        self.cleanupOnStopping = True
+
+    def getUpgrader(self):
+        return TestUpgrader(self.id, self.dataLocation, self.config,
+                            self.configLedger)
 
     def _getOrientDbStore(self, name, dbType):
         if not hasattr(self, '_orientDbStore'):
@@ -264,13 +275,14 @@ class TestNode(TempStorage, TestNodeCore, Node):
         return self._orientDbStore
 
     def onStopping(self, *args, **kwargs):
-        self.cleanupDataLocation()
-        try:
-            self.graphStore.client.db_drop(self.name)
-            logger.debug("Dropped db {}".format(self.name))
-        except Exception as ex:
-            logger.debug("Error while dropping db {}: {}".format(self.name,
-                                                                 ex))
+        if self.cleanupOnStopping:
+            self.cleanupDataLocation()
+            try:
+                self.graphStore.client.db_drop(self.name)
+                logger.debug("Dropped db {}".format(self.name))
+            except Exception as ex:
+                logger.debug("Error while dropping db {}: {}".format(self.name,
+                                                                     ex))
         super().onStopping(*args, **kwargs)
 
 
@@ -401,7 +413,7 @@ def createNym(looper, nym, creatorClient, creatorWallet: Wallet, role=None,
     def check():
         assert creatorWallet._sponsored[nym].seqNo
 
-    looper.run(eventually(check, timeout=10))
+    looper.run(eventually(check, retryWait=1, timeout=10))
 
 
 def addUser(looper, creatorClient, creatorWallet, name, useDid=True,

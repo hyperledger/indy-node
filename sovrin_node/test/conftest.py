@@ -70,7 +70,7 @@ def primes2():
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, counter, nodeReg, up, ready, \
     whitelist, concerningLogLevels, logcapture, keySharedNodes, \
-    startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData as ptd, dirName, \
+    startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, nodeAndClientInfoFilePath, conf
@@ -84,9 +84,9 @@ def tconf(conf, tdir):
 
 
 @pytest.fixture(scope="module")
-def poolTxnData(nodeAndClientInfoFilePath):
-    data = ptd(nodeAndClientInfoFilePath)
-    trusteeSeed = 'this is trustee seed not steward'
+def updatedPoolTxnData(poolTxnData):
+    data = poolTxnData
+    trusteeSeed = 'thisistrusteeseednotsteward12345'
     signer = SimpleSigner(seed=trusteeSeed.encode())
     t = {"dest": signer.verkey,
          "role": "TRUSTEE",
@@ -104,15 +104,15 @@ def poolTxnTrusteeNames():
 
 
 @pytest.fixture(scope="module")
-def poolTxnTrusteeData(poolTxnTrusteeNames, poolTxnData):
+def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
     name = poolTxnTrusteeNames[0]
-    seed = poolTxnData["seeds"][name]
+    seed = updatedPoolTxnData["seeds"][name]
     return name, seed.encode()
 
 
 @pytest.fixture(scope="module")
-def trusteeWallet(poolTxnTrusteeData):
-    name, sigseed = poolTxnTrusteeData
+def trusteeWallet(trusteeData):
+    name, sigseed = trusteeData
     wallet = Wallet('trustee')
     signer = SimpleSigner(seed=sigseed)
     wallet.addIdentifier(signer=signer)
@@ -139,9 +139,8 @@ def stewardWallet(poolTxnStewardData):
 
 
 @pytest.fixture(scope="module")
-def looper():
-    with Looper() as l:
-        yield l
+def looper(txnPoolNodesLooper):
+    return txnPoolNodesLooper
 
 
 @pytest.fixture(scope="module")
@@ -195,7 +194,7 @@ def updatedDomainTxnFile(tdir, tdirWithDomainTxns, genesisTxns,
 
 
 @pytest.fixture(scope="module")
-def nodeSet(tconf, updatedDomainTxnFile, txnPoolNodeSet):
+def nodeSet(tconf, updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet):
     return txnPoolNodeSet
 
 
