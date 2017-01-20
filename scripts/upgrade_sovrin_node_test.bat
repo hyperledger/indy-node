@@ -7,7 +7,7 @@ IF NOT DEFINED VERS (
 )
 
 echo "Run sovrin upgrade to version %VERS%"
-pip install --upgrade sovrin-node=="%VERS%"
+pip install --upgrade sovrin-node-dev=="%VERS%"
 set RET=%ERRORLEVEL%
 IF NOT "%RET%"=="0" (
   echo "Upgrade to version %VERS% failed"
