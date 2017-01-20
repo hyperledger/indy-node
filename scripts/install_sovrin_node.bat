@@ -17,12 +17,6 @@ IF NOT DEFINED CLI_PORT (
   exit /B 1
 )
 
-FOR /f %%p in ('where python') do SET PYTHONPATH=%%p
-IF NOT DEFINED PYTHONPATH (
-	echo "Python must be in your path"
-  exit /B 1
-)
-
 SET CURR_DIR=%~dp0
 echo "Creating service for agent"
 python windows_service_installer "SovrinNodeUpgradeAgent" "%CURR_DIR%node_control_tool.py"
