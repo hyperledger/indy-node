@@ -24,6 +24,9 @@ IF NOT DEFINED PYTHONPATH (
 )
 
 SET CURR_DIR=%~dp0
+echo "Deleting old services"
+sc delete "SovrinNodeUpgradeAgent"
+sc delete "SovrinNode"
 echo "Creating service for agent"
 sc create "SovrinNodeUpgradeAgent" binPath= "%PYTHONPATH% %CURR_DIR%node_control_tool.py" start=auto
 echo "Creating service for node"
