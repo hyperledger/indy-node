@@ -83,8 +83,10 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'sovrin-client'],
     scripts=['scripts/start_sovrin_node',
-             'scripts/node_control_tool.py', 'scripts/upgrade_sovrin_node.bat',
-             'scripts/upgrade_sovrin_node_test.bat'],
+             'scripts/node_control_tool.py', 
+             'scripts/upgrade_sovrin_node.bat',
+             'scripts/upgrade_sovrin_node_test.bat', 
+             'scripts/install_sovrin_node.bat'],
     cmdclass={
         'install': PostInstall,
         'develop': PostInstallDev
