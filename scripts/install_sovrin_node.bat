@@ -17,8 +17,14 @@ IF NOT DEFINED CLI_PORT (
   exit /B 1
 )
 
+FOR /f %%p in ('where python') do SET PYTHONPATH=%%p
+
 SET CURR_DIR=%~dp0
 echo "Creating service for agent"
-python windows_service_installer "SovrinNodeUpgradeAgent" "%CURR_DIR%node_control_tool.py"
+nssm install SovrinNodeUpgradeAgent "%PYTHONPATH%"
+nssm set SovrinNodeUpgradeAgent AppDirectory %CURR_DIR%
+nssm set SovrinNodeUpgradeAgent AppParameters "%CURR_DIR%node_control_tool.py"
 echo "Creating service for node"
-python windows_service_installer "SovrinNode" "%CURR_DIR%start_sovrin_node %NODE_NAME% %NODE_PORT% %CLI_PORT%"
+nssm install SovrinNode "%PYTHONPATH%"
+nssm set SovrinNode AppDirectory %CURR_DIR%
+nssm set SovrinNode AppParameters "%CURR_DIR%start_sovrin_node %NODE_NAME% %NODE_PORT% %CLI_PORT%"
