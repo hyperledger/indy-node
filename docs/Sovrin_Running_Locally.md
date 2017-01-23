@@ -13,7 +13,7 @@ Note - I'm still trying to get my head around the details of Sovrin so there may
 
 ## Requirements
 
- I’m assuming that you have Sovrin installed (I recommend installing this in an Ubuntu Virtual Machine if possible) – If not follow the instructions at: https://github.com/sovrin-foundation/sovrin/blob/master/setup.md
+I’m assuming that you have Sovrin-node installed (I recommend installing this in an Ubuntu Virtual Machine if possible) – If not follow the instructions at: https://github.com/sovrin-foundation/sovrin-node/blob/master/setup.md
 
 You will also need OrientDB installed again and again instructions for that can be found at https://github.com/sovrin-foundation/sovrin/blob/master/orientdb_installation.md
 
