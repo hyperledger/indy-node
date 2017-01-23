@@ -79,6 +79,9 @@ setup(
         '': ['*.txt', '*.md', '*.rst', '*.json', '*.conf', '*.html',
              '*.css', '*.ico', '*.png', 'LICENSE', 'LEGAL', '*.sovrin']},
     include_package_data=True,
+    data_files=[(
+        (BASE_DIR, ['data/nssm.exe'])
+    )],
     install_requires=['sovrin-common', 'python-dateutil'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'sovrin-client'],
@@ -87,7 +90,8 @@ setup(
              'scripts/upgrade_sovrin_node.bat',
              'scripts/upgrade_sovrin_node_test.bat', 
              'scripts/install_sovrin_node.bat',
-             'scripts/delete_sovrin_node.bat'],
+             'scripts/delete_sovrin_node.bat',
+             'scripts/install_nssm.bat'],
     cmdclass={
         'install': PostInstall,
         'develop': PostInstallDev
