@@ -28,7 +28,7 @@ class Upgrader(HasActionQueue):
 
     @staticmethod
     def getNumericValueOfVersion(version):
-        version = list(map(int, version.split('.')))
+        version = reversed(list(map(int, version.split('.'))))
         return sum([v * (10 ** i) for i, v in enumerate(version)])
 
     @staticmethod
@@ -39,6 +39,7 @@ class Upgrader(HasActionQueue):
         oldVerVal = Upgrader.getNumericValueOfVersion(oldVer)
         newVerVal = Upgrader.getNumericValueOfVersion(newVer)
         return newVerVal > oldVerVal
+        # return Upgrader.compareVersions(oldVer, newVer)
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
