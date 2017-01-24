@@ -1,6 +1,7 @@
 import os
 from collections import deque
 from datetime import datetime
+from functools import cmp_to_key
 from functools import partial
 from typing import Tuple, Union, Optional
 
@@ -27,18 +28,9 @@ class Upgrader(HasActionQueue):
         return __version__
 
     @staticmethod
-    def getNumericValueOfVersion(version):
-        version = list(map(int, version.split('.')))
-        return sum([v * (10 ** i) for i, v in enumerate(version)])
-
-    @staticmethod
     def isVersionHigher(oldVer, newVer):
-        assert oldVer.count('.') == newVer.count('.'), 'Cannot compare {} ' \
-                                                       'and {}' \
-            .format(oldVer, newVer)
-        oldVerVal = Upgrader.getNumericValueOfVersion(oldVer)
-        newVerVal = Upgrader.getNumericValueOfVersion(newVer)
-        return newVerVal > oldVerVal
+        r = Upgrader.compareVersions(oldVer, newVer)
+        return True if r == 1 else False
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -62,6 +54,12 @@ class Upgrader(HasActionQueue):
         if lenB > lenA:
             return 1
         return 0
+
+    @staticmethod
+    def versionsDescOrder(versions):
+        "Returns versions ordered in descending order"
+        return sorted(versions,
+                      key=cmp_to_key(Upgrader.compareVersions))
 
     def __defaultLog(self, dataDir, config):
         log = os.path.join(dataDir, config.upgradeLogFile)
@@ -147,11 +145,9 @@ class Upgrader(HasActionQueue):
                         upgrades.pop(version)
                 else:
                     logger.error('{} cannot be {}'.format(ACTION, action))
-        upgrades = sorted(upgrades.items(),
-                          key=lambda x: self.getNumericValueOfVersion(x[0]),
-                          reverse=True)
-        if upgrades:
-            latestVer, upgradeAt = upgrades[0]
+        upgradeKeys = self.versionsDescOrder(upgrades.keys())
+        if upgradeKeys:
+            latestVer, upgradeAt = upgradeKeys[0], upgrades[upgradeKeys[0]]
             logger.info('{} found upgrade for version {} to be run at {}'.
                         format(self, latestVer, upgradeAt))
             self._scheduleUpgrade(latestVer, upgradeAt)
@@ -290,7 +286,7 @@ class Upgrader(HasActionQueue):
         else:
             self._callUpgradeAgent(when, version)
 
-    def _cancelScheduledUpgrade(self, justification) -> None:
+    def _cancelScheduledUpgrade(self, justification=None) -> None:
         """
         Cancels scheduled upgrade
 
