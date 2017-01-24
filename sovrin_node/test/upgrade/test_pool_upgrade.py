@@ -117,8 +117,8 @@ def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
                           retryWait=1, timeout=10))
 
 
-def testPrimaryNodeTriggersElectionBeforeUpgrading():
-    # TODO
+def testPrimaryNodeTriggersElectionBeforeUpgrading(upgradeScheduled, looper,
+                                                   nodeSet, validUpgrade):
     pass
 
 
