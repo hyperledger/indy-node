@@ -6,26 +6,30 @@ Sovrin Identity Network public/permissioned distributed ledger
 
 #### Run common setup instructions
 Follow instructions mentioned here [Common Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
-
-
-#### Installing Sovrin node
-Sovrin node can be installed using pip by
-```
-pip install sovrin-node        # This would be required by sovrin_client.test and also to run the nodes locally
-```
-
-A Sovrin node requires OrientDB running. 
-Refer this [guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-orientdb-on-ubuntu-14-04) for installing Orient DB.
-
+Follow instructions mentioned here [OrientDB Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
 
 ### Run tests [Optional]
-Run the tests (if you have downloaded the source). 
+
+As sovrin-node tests needs sovrin-client which depends on Charm-Crypto, we need to install it.
+Follow instructions mentioned here [Charm-Crypto Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
+
+To run the tests, download the source by cloning this repo. 
+Navigate to the root directory of the source and install required packages by
 
 ```
-python -m sovrin_node.test
+pip install -e .
 ```
-Note. The tests create Sovrin nodes (dont worry, all nodes are created in the same process) which require OrientDB to be running. You can install OrientDB from [here](https://github.com/evernym/sovrin-common/blob/master/orientdb_installation.md).
 
+Run test by 
+```
+python setup.py pytest
+```
+
+### Installing Sovrin node
+Sovrin node can be installed using pip by
+```
+pip install -U --no-cache-dir sovrin-node
+```
 
 ### Start Nodes
 
