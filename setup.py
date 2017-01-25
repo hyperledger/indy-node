@@ -87,6 +87,8 @@ setup(
     tests_require=['pytest', 'sovrin-client'],
     scripts=['scripts/start_sovrin_node',
              'scripts/node_control_tool.py', 
+             'scripts/upgrade_sovrin_node_ubuntu1604.sh',
+             'scripts/upgrade_sovrin_node_ubuntu1604_test.sh',
              'scripts/upgrade_sovrin_node.bat',
              'scripts/upgrade_sovrin_node_test.bat', 
              'scripts/install_sovrin_node.bat',
