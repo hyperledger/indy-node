@@ -8,7 +8,7 @@ from plenum.common.eventually import eventually
 from plenum.common.txn import NAME, VERSION
 from plenum.test.helper import checkSufficientRepliesForRequests
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
-from sovrin_common.txn import START, CANCEL, ACTION, SCHEDULE
+from sovrin_common.txn import START, CANCEL, ACTION, SCHEDULE, JUSTIFICATION
 from sovrin_common.txn import STEWARD
 from sovrin_client.test.helper import getClientAddedWithRole, checkNacks
 from sovrin_node.test.upgrade.helper import sendUpgrade, checkUpgradeScheduled, \
@@ -139,6 +139,8 @@ def testTrustyCancelsUpgrade(validUpgradeSent, looper, nodeSet, trustee,
                              trusteeWallet, validUpgrade):
     validUpgrade = deepcopy(validUpgrade)
     validUpgrade[ACTION] = CANCEL
+    validUpgrade[JUSTIFICATION] = '"not gonna give you one"'
+
     validUpgrade.pop(SCHEDULE, None)
     upgrade, req = sendUpgrade(trustee, trusteeWallet, validUpgrade)
     checkSufficientRepliesForRequests(looper, trustee, [req, ],
