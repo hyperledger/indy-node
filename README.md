@@ -6,8 +6,10 @@ This codebase contains the code to run Sovrin validator or observer nodes.
 
 Developers should explore the [Getting Started Guide](https://github.com/sovrin-foundation/sovrin-client/blob/master/getting-started.md) to learn how Sovrin works.
 
-Have a look at [Setup Instructions](https://github.com/sovrin-foundation/sovrin-node/blob/master/setup.md)
-to understand how to work with the code. Note that setup instructions are still changing hour-by-hour as we identify install preconditions.
+Have a look at [Setup Instructions](https://github.com/sovrin-foundation/sovrin-client/blob/master/setup.md)
+to understand how to work with the code. Note that setup instructions are
+still changing hour-by-hour as we identify
+install preconditions.
 
 To learn more about the Sovrin Identity Network and the Sovrin Foundation, see [sovrin.org](https://www.sovrin.org).
 
