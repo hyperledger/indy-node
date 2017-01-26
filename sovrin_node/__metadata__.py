@@ -2,7 +2,7 @@
 sovrin-node package metadata
 """
 __version_info__ = (0, 1)
-__version__ = '{}.{}.{}'.format(*(__version_info__ if len(__version_info__)==3 else __version_info__+(0,)))
+__version__ = '.'.join(map(str, __version_info__))
 __author__ = "Sovrin Foundation."
 __license__ = "Apache 2.0"
 
