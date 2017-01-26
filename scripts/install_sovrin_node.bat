@@ -3,6 +3,7 @@
 SET NODE_NAME=%1
 SET NODE_PORT=%2
 SET CLI_PORT=%3
+SET RUN_MODE=%4
 
 IF NOT DEFINED NODE_NAME (
 	echo "NODE_NAME argument is required"
@@ -15,6 +16,10 @@ IF NOT DEFINED NODE_PORT (
 IF NOT DEFINED CLI_PORT (
 	echo "CLI_PORT argument is required"
   exit /B 1
+)
+IF DEFINED RUN_MODE (
+	echo "RUN_MODE argument is %RUN_MODE%. Setting environment variable SOVRIN_NODE_PACKAGE_POSTFIX to %RUN_MODE%"
+	SETX SOVRIN_NODE_PACKAGE_POSTFIX %RUN_MODE%
 )
 
 FOR /f %%p in ('where python') do SET PYTHONPATH=%%p
