@@ -18,4 +18,4 @@ fi
 systemctl start sovrin-node
 
 echo "Restarting an agent"
-systemctl restart sovrin_node_control
+systemctl restart sovrin-node-control
