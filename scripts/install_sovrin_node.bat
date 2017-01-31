@@ -33,3 +33,4 @@ echo "Creating service for node"
 nssm install SovrinNode "%PYTHONPATH%"
 nssm set SovrinNode AppDirectory %CURR_DIR%
 nssm set SovrinNode AppParameters "%CURR_DIR%start_sovrin_node %NODE_NAME% %NODE_PORT% %CLI_PORT%"
+nssm set SovrinNode DependOnService OrientDBGraph
