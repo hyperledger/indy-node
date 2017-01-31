@@ -3,7 +3,9 @@
 SET NODE_NAME=%1
 SET NODE_PORT=%2
 SET CLI_PORT=%3
-SET RUN_MODE=%4
+SET USER=%4
+SET PASSWORD=%5
+SET RUN_MODE=%6
 
 IF NOT DEFINED NODE_NAME (
 	echo "NODE_NAME argument is required"
@@ -15,6 +17,16 @@ IF NOT DEFINED NODE_PORT (
 )
 IF NOT DEFINED CLI_PORT (
 	echo "CLI_PORT argument is required"
+  exit /B 1
+)
+)
+IF NOT DEFINED USER (
+	echo "USER argument is required"
+  exit /B 1
+)
+)
+IF NOT DEFINED PASSWORD (
+	echo "PASSWORD argument is required"
   exit /B 1
 )
 IF DEFINED RUN_MODE (
@@ -33,3 +45,5 @@ echo "Creating service for node"
 nssm install SovrinNode "%PYTHONPATH%"
 nssm set SovrinNode AppDirectory %CURR_DIR%
 nssm set SovrinNode AppParameters "%CURR_DIR%start_sovrin_node %NODE_NAME% %NODE_PORT% %CLI_PORT%"
+nssm set SovrinNode DependOnService OrientDBGraph
+nssm set ObjectName %USER% %PASSWORD%
