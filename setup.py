@@ -73,7 +73,7 @@ setup(
     author_email='dev@evernym.us',
     license=__license__,
     keywords='Sovrin Node',
-    packages=find_packages(exclude=['test', 'test.*', 'docs', 'docs*']) + [
+    packages=find_packages(exclude=['docs', 'docs*']) + [
         'data'],
     package_data={
         '': ['*.txt', '*.md', '*.rst', '*.json', '*.conf', '*.html',
