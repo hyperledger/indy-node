@@ -4,7 +4,7 @@ import os
 import sys
 
 from ioflo.aid.consoling import Console
-from plenum.common.log import setupLogging, TRACE_LOG_LEVEL, \
+from plenum.common.log import setupLogging, getlogger, TRACE_LOG_LEVEL, \
     getRAETLogLevelFromConfig
 from plenum.common.types import HA
 
@@ -33,7 +33,11 @@ if __name__ == "__main__":
         setupLogging(TRACE_LOG_LEVEL,
                      RAETVerbosity,
                      filename=logFileName)
-        print("You can find logs in {}".format(logFileName))
+        logger = getlogger()
+        logger.debug("You can find logs in {}".format(logFileName))
+
+        vars = [var for var in os.environ.keys() if var.startswith("SOVRIN")]
+        logger.debug("Sovrin related env vars: {}".format(vars))
 
         from plenum.common.looper import Looper
         from sovrin_node.server.node import Node
