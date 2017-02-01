@@ -108,7 +108,7 @@ class Node(PlenumNode, HasPoolManager):
                                config=self.config)
 
     def getUpgrader(self):
-        return Upgrader(self.id, self.dataLocation, self.config,
+        return Upgrader(self.id, self.name, self.dataLocation, self.config,
                         self.configLedger)
 
     def getConfigLedger(self):

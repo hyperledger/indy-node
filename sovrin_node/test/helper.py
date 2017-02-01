@@ -265,7 +265,7 @@ class TestNode(TempStorage, TestNodeCore, Node):
         self.cleanupOnStopping = True
 
     def getUpgrader(self):
-        return TestUpgrader(self.id, self.dataLocation, self.config,
+        return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
                             self.configLedger)
 
     def _getOrientDbStore(self, name, dbType):
