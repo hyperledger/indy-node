@@ -1,0 +1,17 @@
+[Unit]
+Description=Service for upgrade existing Sovrin and another operations
+#Requires=sovrin.service
+#After=sovrin.service
+After=network.target
+
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/sovrin/node_control.conf
+ExecStart=/usr/bin/node_control_tool.py $TEST_MODE
+Restart=on-failure
+TimeoutSec=300
+
+[Install]
+WantedBy=multi-user.target 
+

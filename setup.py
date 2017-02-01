@@ -49,6 +49,7 @@ if not os.path.exists(CONFIG_FILE):
               "example\n"
         f.write(msg)
 
+
 def post_install():
     subprocess.run(['python post-setup.py'], shell=True)
 
@@ -73,16 +74,27 @@ setup(
     author_email='dev@evernym.us',
     license=__license__,
     keywords='Sovrin Node',
-    packages=find_packages(exclude=['test', 'test.*', 'docs', 'docs*']) + [
+    packages=find_packages(exclude=['docs', 'docs*']) + [
         'data'],
     package_data={
         '': ['*.txt', '*.md', '*.rst', '*.json', '*.conf', '*.html',
              '*.css', '*.ico', '*.png', 'LICENSE', 'LEGAL', '*.sovrin']},
     include_package_data=True,
+    data_files=[(
+        (BASE_DIR, ['data/nssm.exe'])
+    )],
     install_requires=['sovrin-common', 'python-dateutil'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'sovrin-client'],
-    scripts=['scripts/start_sovrin_node'],
+    scripts=['scripts/start_sovrin_node',
+             'scripts/node_control_tool.py', 
+             'scripts/upgrade_sovrin_node_ubuntu1604.sh',
+             'scripts/upgrade_sovrin_node_ubuntu1604_test.sh',
+             'scripts/upgrade_sovrin_node.bat',
+             'scripts/upgrade_sovrin_node_test.bat', 
+             'scripts/install_sovrin_node.bat',
+             'scripts/delete_sovrin_node.bat',
+             'scripts/install_nssm.bat'],
     cmdclass={
         'install': PostInstall,
         'develop': PostInstallDev

@@ -12,6 +12,7 @@ class UpgradeLog:
     UPGRADE_SCHEDULED = "scheduled"
     UPGRADE_SUCCEEDED = "succeeded"
     UPGRADE_FAILED = "failed"
+    UPGRADE_CANCELLED = "cancelled"
 
     def __init__(self, filePath, delimiter="\t"):
         self.__delimiter = delimiter
@@ -44,6 +45,9 @@ class UpgradeLog:
 
     def appendFailed(self, when, version) -> None:
         self.__append(UpgradeLog.UPGRADE_FAILED, when, version)
+
+    def appendCancelled(self, when, version) -> None:
+        self.__append(UpgradeLog.UPGRADE_CANCELLED, when, version)
 
     def __append(self, type, when, version) -> None:
         """
