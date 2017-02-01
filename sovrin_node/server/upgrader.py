@@ -94,7 +94,7 @@ class Upgrader(HasActionQueue):
                 logger.error("Failed to upgrade node '{}' to version {}"
                              .format(nodeName, version))
                 self._notifier.sendMessageUponNodeUpgradeFail(
-                    "Upgrade of node '{}' to version {} has been "
+                    "Upgrade of node '{}' to version {} "
                     "scheduled on {} failed"
                     .format(nodeName, version, when))
         HasActionQueue.__init__(self)
