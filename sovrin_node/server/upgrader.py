@@ -65,9 +65,10 @@ class Upgrader(HasActionQueue):
         log = os.path.join(dataDir, config.upgradeLogFile)
         return UpgradeLog(filePath=log)
 
-    def __init__(self, nodeId, dataDir, config, ledger,
+    def __init__(self, nodeId, nodeName, dataDir, config, ledger,
                  upgradeLog: UpgradeLog = None):
         self.nodeId = nodeId
+        self.nodeName = nodeName
         self.config = config
         self.dataDir = dataDir
         self.ledger = ledger
@@ -82,18 +83,20 @@ class Upgrader(HasActionQueue):
             (when, version) = self.lastExecutedUpgradeInfo
             if self.didLastExecutedUpgradeSucceeded:
                 self._upgradeLog.appendSucceeded(when, version)
-                logger.debug("Node successfully upgraded to version {}"
-                             .format(version))
+                logger.debug("Node '{}' successfully upgraded to version {}"
+                             .format(nodeName, version))
                 self._notifier.sendMessageUponNodeUpgradeComplete(
-                    "Node upgrade to version {} at {} "
-                    "completed successfully".format(version, when))
+                    "Upgrade of node '{}' to version {} scheduled on {} "
+                    "completed successfully"
+                    .format(nodeName, version, when))
             else:
                 self._upgradeLog.appendFailed(when, version)
-                logger.error("Failed to upgrade node to version {}"
-                             .format(version))
+                logger.error("Failed to upgrade node '{}' to version {}"
+                             .format(nodeName, version))
                 self._notifier.sendMessageUponNodeUpgradeFail(
-                    "Node upgrade to version {} at {} has failed"
-                        .format(version, when))
+                    "Upgrade of node '{}' to version {} has been "
+                    "scheduled on {} failed"
+                    .format(nodeName, version, when))
         HasActionQueue.__init__(self)
 
     def __repr__(self):
@@ -274,8 +277,8 @@ class Upgrader(HasActionQueue):
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
 
         self._notifier.sendMessageUponNodeUpgradeScheduled(
-            "Node upgrade to version {} has been scheduled on {}"
-                .format(version, when))
+            "Upgrade of node '{}' to version {} has been scheduled on {}"
+            .format(self.nodeName, version, when))
         self._upgradeLog.appendScheduled(when, version)
 
         if when > now:
@@ -297,14 +300,16 @@ class Upgrader(HasActionQueue):
         if self.scheduledUpgrade:
             why = justification if justification else "some reason"
             (version, when) = self.scheduledUpgrade
-            logger.debug("Cancelling upgrade to version {} due to {}"
-                         .format(version, why))
+            logger.debug("Cancelling upgrade of node '{}' "
+                         "to version {} due to {}"
+                         .format(self.nodeName, version, why))
             self.aqStash = deque()
             self.scheduledUpgrade = None
             self._upgradeLog.appendCancelled(when, version)
             self._notifier.sendMessageUponPoolUpgradeCancel(
-                "Node upgrade to version {} has been cancelled due to {}"
-                    .format(version, why))
+                "Upgrade of node '{}' to version {} "
+                "has been cancelled due to {}"
+                .format(self.nodeName, version, why))
 
     def _callUpgradeAgent(self, when, version) -> None:
         """
@@ -347,8 +352,10 @@ class Upgrader(HasActionQueue):
         if not retryLimit:
             logger.error("Failed to send update request!")
             self._notifier.sendMessageUponNodeUpgradeFail(
-                "Node upgrade has failed because of problems in "
-                "communication with node control service")
+                "Upgrade of node '{}' to version {} failed "
+                "because of problems in communication with "
+                "node control service"
+                .format(self.nodeName, version))
 
 
 class UpgradeMessage:
