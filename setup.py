@@ -49,6 +49,7 @@ if not os.path.exists(CONFIG_FILE):
               "example\n"
         f.write(msg)
 
+
 def post_install():
     subprocess.run(['python post-setup.py'], shell=True)
 
