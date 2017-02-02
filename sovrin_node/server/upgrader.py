@@ -22,6 +22,9 @@ logger = getlogger()
 
 
 class Upgrader(HasActionQueue):
+
+    defaultUpgradeTimeout = 10 # minutesf
+
     @staticmethod
     def getVersion():
         from sovrin_node.__metadata__ import __version__
@@ -162,7 +165,9 @@ class Upgrader(HasActionQueue):
             latestVer, upgradeAt = upgradeKeys[0], upgrades[upgradeKeys[0]]
             logger.info('{} found upgrade for version {} to be run at {}'.
                         format(self, latestVer, upgradeAt))
-            self._scheduleUpgrade(latestVer, upgradeAt)
+            self._scheduleUpgrade(latestVer,
+                                  upgradeAt,
+                                  self.defaultUpgradeTimeout)
 
     @property
     def didLastExecutedUpgradeSucceeded(self) -> bool:
@@ -251,7 +256,7 @@ class Upgrader(HasActionQueue):
 
             if action == START:
                 when = txn[SCHEDULE][self.nodeId]
-                failTimeout = txn.get(TIMEOUT)
+                failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
                 if not self.scheduledUpgrade:
                     if self.isVersionHigher(currentVersion, version):
