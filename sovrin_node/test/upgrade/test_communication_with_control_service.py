@@ -67,10 +67,12 @@ def testScheduleNodeUpgrade(nodeSet):
     # we do not call methods that use them, so we can pass None
     # We do it because node from nodeSet is some testable object, not real
     # node, so it has no nodeId and ledger that we can use
-    upgrader = Upgrader(nodeId=None, nodeName=None,
-                        dataDir=node.dataLocation, config=config,
+    upgrader = Upgrader(nodeId=None,
+                        nodeName=None,
+                        dataDir=node.dataLocation,
+                        config=config,
                         ledger=None)
-    upgrader._callUpgradeAgent(time.time(), "1.2")
+    upgrader._callUpgradeAgent(time.time(), "1.2", failTimeout=1000)
 
     result = loop.run_until_complete(eventuallySoon(_checkFuture(indicator)))
     expectedResult = UpgradeMessage(version)

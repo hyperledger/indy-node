@@ -108,8 +108,12 @@ class Node(PlenumNode, HasPoolManager):
                                config=self.config)
 
     def getUpgrader(self):
-        return Upgrader(self.id, self.name, self.dataLocation, self.config,
-                        self.configLedger)
+        return Upgrader(self.id,
+                        self.name,
+                        self.dataLocation,
+                        self.config,
+                        self.configLedger,
+                        upgradeFailedCallback=self.postConfigLedgerCaughtUp)
 
     def getConfigLedger(self):
         return Ledger(CompactMerkleTree(hashStore=FileHashStore(
