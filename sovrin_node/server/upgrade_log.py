@@ -58,7 +58,7 @@ class UpgradeLog:
         now = datetime.utcnow()
         event = (now, type, when, version)
 
-        with open(self.__filePath, mode="a+") as file:
+        with open(self.__filePath, mode="a+", newline="") as file:
             writer = csv.writer(file, delimiter=self.__delimiter)
             writer.writerow(event)
         self.__items.append(event)
