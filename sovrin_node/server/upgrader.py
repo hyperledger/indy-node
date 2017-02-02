@@ -13,7 +13,7 @@ from plenum.common.txn import NAME, TXN_TYPE
 from plenum.common.txn import VERSION
 from plenum.server.has_action_queue import HasActionQueue
 from sovrin_common.txn import ACTION, POOL_UPGRADE, START, SCHEDULE, CANCEL, \
-    JUSTIFICATION
+    JUSTIFICATION, TIMEOUT
 from sovrin_node.server.upgrade_log import UpgradeLog
 from plenum.server import notifier_plugin_manager
 import asyncio
@@ -242,16 +242,19 @@ class Upgrader(HasActionQueue):
 
             if action == START:
                 when = txn[SCHEDULE][self.nodeId]
-                if not self.scheduledUpgrade and \
-                        self.isVersionHigher(currentVersion, version):
-                    # If no upgrade has been scheduled
-                    self._scheduleUpgrade(version, when)
-                elif self.scheduledUpgrade and \
-                        self.isVersionHigher(self.scheduledUpgrade[0], version):
-                    # If upgrade has been scheduled but for version lower than
-                    # current transaction
-                    self._cancelScheduledUpgrade(justification)
-                    self._scheduleUpgrade(version, when)
+                failTimeout = txn.get(TIMEOUT)
+
+                if not self.scheduledUpgrade:
+                    if self.isVersionHigher(currentVersion, version):
+                        # If no upgrade has been scheduled
+                        self._scheduleUpgrade(version, when, failTimeout)
+                else:
+                    if self.isVersionHigher(self.scheduledUpgrade[0], version):
+                        # If upgrade has been scheduled but for version
+                        # lower than this transaction propose
+                        self._cancelScheduledUpgrade(justification)
+                        self._scheduleUpgrade(version, when, failTimeout)
+
             elif action == CANCEL:
                 if self.scheduledUpgrade and \
                                 self.scheduledUpgrade[0] == version:
@@ -262,7 +265,10 @@ class Upgrader(HasActionQueue):
                     "Got {} transaction with unsupported action {}".format(
                         POOL_UPGRADE, action))
 
-    def _scheduleUpgrade(self, version, when: Union[datetime, str]) -> None:
+    def _scheduleUpgrade(self,
+                         version,
+                         when: Union[datetime, str],
+                         failTimeout) -> None:
         """
         Schedules node upgrade to a newer version
 
