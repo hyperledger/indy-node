@@ -375,6 +375,7 @@ class Upgrader(HasActionQueue):
                 "node control service"
                 .format(self.nodeName, version))
             self._upgradeLog.appendFailed(when, version)
+            self._upgradeFailCallback()
         else:
             timesUp = partial(self._declareTimeoutExceeded, when, version)
             self._schedule(timesUp, timedelta(minutes=failTimeout).seconds)
