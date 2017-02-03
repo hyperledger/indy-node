@@ -6,6 +6,11 @@ IF NOT DEFINED VERS (
   exit /B 1
 )
 
+
+echo "Stopping node and agent"
+sc stop SovrinNodeUpgradeAgent
+sc stop SovrinNode
+
 echo "Run sovrin upgrade to version %VERS%"
 pip install --upgrade plenum%SOVRIN_NODE_PACKAGE_POSTFIX% ledger%SOVRIN_NODE_PACKAGE_POSTFIX% sovrin-common%SOVRIN_NODE_PACKAGE_POSTFIX%
 pip install --upgrade sovrin-node%SOVRIN_NODE_PACKAGE_POSTFIX%=="%VERS%"
@@ -16,5 +21,5 @@ IF NOT "%RET%"=="0" (
 )
 
 echo "Restarting node and agent"
-sc stop SovrinNodeUpgradeAgent && sc start SovrinNodeUpgradeAgent
-sc stop SovrinNode && sc start SovrinNode
+sc start SovrinNodeUpgradeAgent
+sc start SovrinNode
