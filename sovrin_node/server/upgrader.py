@@ -23,7 +23,7 @@ logger = getlogger()
 
 class Upgrader(HasActionQueue):
 
-    defaultUpgradeTimeout = 10 # minutesf
+    defaultUpgradeTimeout = 10  # minutes
 
     @staticmethod
     def getVersion():
@@ -86,7 +86,7 @@ class Upgrader(HasActionQueue):
         self._notifier = notifier_plugin_manager.PluginManager()
         self._upgradeLog = upgradeLog if upgradeLog else \
             self.__defaultLog(dataDir, config)
-        self._upgradeFailCallback = \
+        self._upgradeFailedCallback = \
             upgradeFailedCallback if upgradeFailedCallback else lambda: None
 
         self.__isItFirstRunAfterUpgrade = None
@@ -323,13 +323,24 @@ class Upgrader(HasActionQueue):
             logger.debug("Cancelling upgrade of node '{}' "
                          "to version {} due to {}"
                          .format(self.nodeName, version, why))
-            self.aqStash = deque()
-            self.scheduledUpgrade = None
+            self._unscheduleUpgrade()
             self._upgradeLog.appendCancelled(when, version)
             self._notifier.sendMessageUponPoolUpgradeCancel(
                 "Upgrade of node '{}' to version {} "
                 "has been cancelled due to {}"
                 .format(self.nodeName, version, why))
+
+    def _unscheduleUpgrade(self):
+        """
+        Unschedule current upgrade
+
+        Note that it does not add record to upgrade log and does not do
+        required steps to resume previous upgrade. If you need this - use
+        _cancelScheduledUpgrade
+
+        """
+        self.aqStash = deque()
+        self.scheduledUpgrade = None
 
     def _callUpgradeAgent(self, when, version, failTimeout) -> None:
         """
@@ -374,8 +385,8 @@ class Upgrader(HasActionQueue):
                 "because of problems in communication with "
                 "node control service"
                 .format(self.nodeName, version))
-            self._upgradeLog.appendFailed(when, version)
-            self._upgradeFailCallback()
+            self._unscheduleUpgrade()
+            self._upgradeFailedCallback()
         else:
             timesUp = partial(self._declareTimeoutExceeded, when, version)
             self._schedule(timesUp, timedelta(minutes=failTimeout).seconds)
@@ -395,8 +406,8 @@ class Upgrader(HasActionQueue):
             "Upgrade of node '{}' to version {} failed "
             "because if exceeded timeout"
             .format(self.nodeName, version))
-        self._upgradeLog.appendFailed(when, version)
-        self._upgradeFailCallback()
+        self._unscheduleUpgrade()
+        self._upgradeFailedCallback()
 
 
 class UpgradeMessage:
