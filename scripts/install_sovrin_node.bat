@@ -6,6 +6,7 @@ SET CLI_PORT=%3
 SET USER=%4
 SET PASSWORD=%5
 SET RUN_MODE=%6
+SET TEST_MODE=%7
 
 IF NOT DEFINED NODE_NAME (
 	echo "NODE_NAME argument is required"
@@ -33,6 +34,10 @@ IF DEFINED RUN_MODE (
 	echo "RUN_MODE argument is %RUN_MODE%. Setting environment variable SOVRIN_NODE_PACKAGE_POSTFIX to %RUN_MODE%"
 	SETX SOVRIN_NODE_PACKAGE_POSTFIX %RUN_MODE%
 )
+IF DEFINED TEST_MODE (
+	echo "TEST_MODE argument is %TEST_MODE%. Setting environment variable TEST_MODE to %TEST_MODE%"
+	SETX TEST_MODE %TEST_MODE%
+)
 
 FOR /f %%p in ('where python') do SET PYTHONPATH=%%p
 
@@ -40,7 +45,7 @@ SET CURR_DIR=%~dp0
 echo "Creating service for agent"
 nssm install SovrinNodeUpgradeAgent "%PYTHONPATH%"
 nssm set SovrinNodeUpgradeAgent AppDirectory %CURR_DIR%
-nssm set SovrinNodeUpgradeAgent AppParameters "%CURR_DIR%node_control_tool.py"
+nssm set SovrinNodeUpgradeAgent AppParameters "%CURR_DIR%node_control_tool.py %TEST_MODE%"
 echo "Creating service for node"
 nssm install SovrinNode "%PYTHONPATH%"
 nssm set SovrinNode AppDirectory %CURR_DIR%
