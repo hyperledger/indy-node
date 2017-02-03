@@ -3,15 +3,23 @@
 import select
 import socket
 import argparse
+import os
+
+
+def compose_cmd(cmd):
+    if os.name != 'nt':
+        cmd = ' '.join(cmd)
+    return cmd
+
 
 def call_upgrade_script(version):
     import subprocess
     print('Upgrading sovrin node to version %s, test_mode %d ' % (version, int(test_mode)))
     try:
         if test_mode:
-            retcode = subprocess.call(['upgrade_sovrin_node_test', version])
+            retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node_test', version]), shell=True)
         else:
-            retcode = subprocess.call(['upgrade_sovrin_node', version])
+            retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node', version]), shell=True)
         if retcode != 0:
             print('Upgrade failed')
     except:
