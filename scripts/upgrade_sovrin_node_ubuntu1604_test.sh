@@ -5,6 +5,9 @@ if [ -z "$vers" ] ; then
   exit 1
 fi
 
+echo "Backup pool_transactions_sandbox"
+cp -f /home/sovrin/.sovrin/pool_transactions_sandbox /home/sovrin/.sovrin/pool_transactions_sandbox_backup
+
 echo "Try to donwload sovrin dependencies"
 apt-get -y update && apt-get --download-only -y install python3-sovrin-common python3-plenum python3-ledger
 ret=$?
@@ -22,9 +25,6 @@ fi
 
 echo "Stop sovrin-node"
 systemctl stop sovrin-node
-
-echo "Backup pool_transactions_sandbox"
-cp -f /home/sovrin/.sovrin/pool_transactions_sandbox /home/sovrin/.sovrin/pool_transactions_sandbox_backup
 
 echo "Run sovrin dependecies upgrade to latest version"
 apt-get -y install python3-plenum python3-sovrin-common python3-ledger
