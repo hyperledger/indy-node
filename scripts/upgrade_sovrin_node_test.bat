@@ -7,7 +7,7 @@ IF NOT DEFINED VERS (
 )
 
 echo "Stopping node"
-sc stop SovrinNode
+nssm stop SovrinNode
 
 echo "Backup pool_transactions_sandbox"
 copy /y C:\Users\sovrin\.sovrin\pool_transactions_sandbox C:\Users\sovrin\.sovrin\pool_transactions_sandbox_backup
@@ -25,6 +25,5 @@ echo "Resotring pool_transactions_sandbox from backup"
 copy /y C:\Users\sovrin\.sovrin\pool_transactions_sandbox_backup C:\Users\sovrin\.sovrin\pool_transactions_sandbox
 
 echo "Restarting node and agent"
-sc stop SovrinNodeUpgradeAgent
-sc start SovrinNodeUpgradeAgent
-sc start SovrinNode
+nssm restart SovrinNodeUpgradeAgent
+nssm start SovrinNode
