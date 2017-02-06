@@ -6,8 +6,7 @@ IF NOT DEFINED VERS (
   exit /B 1
 )
 
-echo "Stopping node and agent"
-sc stop SovrinNodeUpgradeAgent
+echo "Stopping node"
 sc stop SovrinNode
 
 echo "Backup pool_transactions_sandbox"
@@ -26,5 +25,6 @@ echo "Resotring pool_transactions_sandbox from backup"
 copy /y C:\Users\sovrin\.sovrin\pool_transactions_sandbox_backup C:\Users\sovrin\.sovrin\pool_transactions_sandbox
 
 echo "Restarting node and agent"
+sc stop SovrinNodeUpgradeAgent 
 sc start SovrinNodeUpgradeAgent
 sc start SovrinNode
