@@ -24,6 +24,9 @@ fi
 echo "Stop sovrin-node"
 systemctl stop sovrin-node
 
+echo "Backup pool_transactions_sandbox"
+cp -f /home/sovrin/.sovrin/pool_transactions_sandbox /home/sovrin/.sovrin/pool_transactions_sandbox_backup
+
 echo "Run sovrin dependencies upgrade to latest version"
 apt-get -y install python3-plenum python3-sovrin-common python3-ledger
 ret=$?
@@ -41,6 +44,9 @@ fi
 
 # Upgrade may change service files
 systemctl daemon-reload
+
+echo "Resotring pool_transactions_sandbox from backup"
+cp -f /home/sovrin/.sovrin/pool_transactions_sandbox_backup /home/sovrin/.sovrin/pool_transactions_sandbox
 
 echo "Starting sovrin-node"
 systemctl start sovrin-node
