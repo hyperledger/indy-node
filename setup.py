@@ -100,6 +100,7 @@ setup(
              'scripts/upgrade_sovrin_node_test.bat', 
              'scripts/install_sovrin_node.bat',
              'scripts/delete_sovrin_node.bat',
+             'scripts/restart_upgrade_agent.bat',
              'scripts/install_nssm.bat'],
     cmdclass={
         'install': PostInstall,

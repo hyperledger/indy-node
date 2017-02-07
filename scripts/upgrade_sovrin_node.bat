@@ -32,4 +32,4 @@ copy /y C:\Users\sovrin\.sovrin\pool_transactions_sandbox_backup C:\Users\sovrin
 
 echo "Restarting node and agent"
 nssm start SovrinNode
-nssm restart SovrinNodeUpgradeAgent
+schtasks /run /TN "RestartSovrinNodeUpgradeAgent"
