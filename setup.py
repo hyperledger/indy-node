@@ -50,8 +50,14 @@ if not os.path.exists(CONFIG_FILE):
         f.write(msg)
 
 
+def compose_cmd(cmd):
+    if os.name != 'nt':
+        cmd = ' '.join(cmd)
+    return cmd
+
+
 def post_install():
-    subprocess.run(['python post-setup.py'], shell=True)
+    subprocess.run(compose_cmd(['python', 'post-setup.py']), shell=True)
 
 
 class PostInstall(install):
