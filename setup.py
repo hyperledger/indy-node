@@ -87,7 +87,7 @@ setup(
              '*.css', '*.ico', '*.png', 'LICENSE', 'LEGAL', '*.sovrin']},
     include_package_data=True,
     data_files=[(
-        (BASE_DIR, ['data/nssm.exe'])
+        (BASE_DIR, ['data/nssm_original.exe'])
     )],
     install_requires=['sovrin-common', 'python-dateutil'],
     setup_requires=['pytest-runner'],
