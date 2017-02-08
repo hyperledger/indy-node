@@ -13,14 +13,12 @@ apt-get -y update && apt-get --download-only -y install python3-sovrin-common py
 ret=$?
 if [ $ret -ne 0 ] ; then
   echo "Failed to obtain sovrin dependencies"
-  exit 1
 fi
 echo "Try to donwload sovrin version $vers"
 apt-get -y update && apt-get --download-only -y install sovrin-node="$vers"
 ret=$?
 if [ $ret -ne 0 ] ; then
   echo "Failed to obtain sovrin-node=$vers packages"
-  exit 1
 fi
 
 echo "Stop sovrin-node"

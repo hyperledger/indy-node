@@ -14,17 +14,15 @@ copy /y C:\Users\sovrin\.sovrin\pool_transactions_sandbox C:\Users\sovrin\.sovri
 
 echo "Run sovrin dependecies upgrade"
 pip install --upgrade --no-cache-dir plenum%SOVRIN_NODE_PACKAGE_POSTFIX% ledger%SOVRIN_NODE_PACKAGE_POSTFIX% sovrin-common%SOVRIN_NODE_PACKAGE_POSTFIX%
-set RET=%ERRORLEVEL%
+SET RET=%ERRORLEVEL%
 IF NOT "%RET%"=="0" (
   echo "Upgrade of dependecies failed %RET%"
-  exit /B 1
 )
 echo "Run sovrin upgrade to version %VERS%"
 pip install --upgrade --no-cache-dir sovrin-node%SOVRIN_NODE_PACKAGE_POSTFIX%=="%VERS%"
-set RET=%ERRORLEVEL%
+SET RET=%ERRORLEVEL%
 IF NOT "%RET%"=="0" (
   echo "Upgrade to version %VERS% failed %RET%"
-  exit /B 1
 )
 
 echo "Resotring pool_transactions_sandbox from backup"
