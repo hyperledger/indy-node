@@ -31,14 +31,12 @@ apt-get -y install python3-plenum python3-sovrin-common python3-ledger
 ret=$?
 if [ $ret -ne 0 ] ; then
   echo "Upgrade of dependencies to lastest version failed"
-  exit 1
 fi
 echo "Run sovrin upgrade to version $vers"
 apt-get -y install sovrin-node="$vers"
 ret=$?
 if [ $ret -ne 0 ] ; then
   echo "Upgrade to version $vers failed"
-  exit 1
 fi
 
 # Upgrade may change service files
