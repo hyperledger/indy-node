@@ -12,6 +12,7 @@ class UpgradeLog:
     UPGRADE_SCHEDULED = "scheduled"
     UPGRADE_SUCCEEDED = "succeeded"
     UPGRADE_FAILED = "failed"
+    UPGRADE_CANCELLED = "cancelled"
 
     def __init__(self, filePath, delimiter="\t"):
         self.__delimiter = delimiter
@@ -45,6 +46,9 @@ class UpgradeLog:
     def appendFailed(self, when, version) -> None:
         self.__append(UpgradeLog.UPGRADE_FAILED, when, version)
 
+    def appendCancelled(self, when, version) -> None:
+        self.__append(UpgradeLog.UPGRADE_CANCELLED, when, version)
+
     def __append(self, type, when, version) -> None:
         """
         Appends event to log
@@ -54,7 +58,7 @@ class UpgradeLog:
         now = datetime.utcnow()
         event = (now, type, when, version)
 
-        with open(self.__filePath, mode="a+") as file:
+        with open(self.__filePath, mode="a+", newline="") as file:
             writer = csv.writer(file, delimiter=self.__delimiter)
             writer.writerow(event)
         self.__items.append(event)

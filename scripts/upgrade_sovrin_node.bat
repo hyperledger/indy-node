@@ -1,0 +1,33 @@
+@echo off
+
+SET VERS=%1
+IF NOT DEFINED VERS (
+	echo "Version argument is required"
+  exit /B 1
+)
+
+echo "Stopping node"
+nssm stop SovrinNode
+
+echo "Backup pool_transactions_sandbox"
+copy /y C:\Users\sovrin\.sovrin\pool_transactions_sandbox C:\Users\sovrin\.sovrin\pool_transactions_sandbox_backup
+
+echo "Run sovrin dependecies upgrade"
+pip install --upgrade --no-cache-dir plenum%SOVRIN_NODE_PACKAGE_POSTFIX% ledger%SOVRIN_NODE_PACKAGE_POSTFIX% sovrin-common%SOVRIN_NODE_PACKAGE_POSTFIX%
+SET RET=%ERRORLEVEL%
+IF NOT "%RET%"=="0" (
+  echo "Upgrade of dependecies failed %RET%"
+)
+echo "Run sovrin upgrade to version %VERS%"
+pip install --upgrade --no-cache-dir sovrin-node%SOVRIN_NODE_PACKAGE_POSTFIX%=="%VERS%"
+SET RET=%ERRORLEVEL%
+IF NOT "%RET%"=="0" (
+  echo "Upgrade to version %VERS% failed %RET%"
+)
+
+echo "Resotring pool_transactions_sandbox from backup"
+copy /y C:\Users\sovrin\.sovrin\pool_transactions_sandbox_backup C:\Users\sovrin\.sovrin\pool_transactions_sandbox
+
+echo "Restarting node and agent"
+nssm start SovrinNode
+schtasks /run /TN "RestartSovrinNodeUpgradeAgent"
