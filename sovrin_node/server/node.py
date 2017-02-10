@@ -604,32 +604,7 @@ class Node(PlenumNode, HasPoolManager):
         return result
 
     def storeTxnInStateTree(self, txn):
-        state = self.states[POOL_LEDGER_ID]
-
-        if txn[TXN_TYPE] == ATTRIB:
-
-            def parse(txn):
-                raw = txn.get(RAW)
-                if raw:
-                    data = json.loads(raw)
-                    key, value = data.items()[0]  # only one attr per txn, yes
-                    return key, value
-                enc = txn.get(ENC)
-                if enc:
-                    return (enc, enc)
-                hash = txn.get(HASH)
-                if hash:
-                    return hash, None
-                raise ValueError("One of 'raw', 'enc', 'hash' "
-                                 "fields of ATTR must present")
-
-            rawKey, value = parse(txn)
-            key = sha256(rawKey.encode()).hexdigest()
-            state.set(key, value)
-        else:
-            # TODO: implementation for other transactions
-            # goes here
-            pass
+        pass
 
 
     def storeTxnInGraph(self, result):
