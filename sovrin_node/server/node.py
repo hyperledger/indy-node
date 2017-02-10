@@ -618,18 +618,7 @@ class Node(PlenumNode, HasPoolManager):
                 key = txn.get(HASH) or txn.get(ENC)
                 return key, None
 
-            def H(rawKey, nonce):
-                hash = sha256(rawKey.encode())
-                if nonce:
-                    hash.update(nonce.encode())
-                return sha256(key)
-
-            (rawKey, value) = parse(txn)
-            # TODO: nonce assumed to be string,
-            # update this if it should be a number
-            nonce = str(txn.get(NONCE)) or None
-            key = H(rawKey, nonce)
-
+            (key, value) = parse(txn)
             state.set(key, value)
         else:
             # TODO: implementation for other transactions
