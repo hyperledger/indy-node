@@ -346,8 +346,9 @@ class Node(PlenumNode, HasPoolManager):
                         "{} cannot add {}".format(originRole, role))
             else:
                 nymData = nymV.oRecordData
-                # updateKeys = [ROLE, VERKEY]
-                updateKeys = [ROLE]
+                owner = self.graphStore.getOwnerFor(nymData.get(NYM))
+                isOwner = origin == owner
+                updateKeys = [ROLE, VERKEY]
                 for key in updateKeys:
                     if key in op:
                         newVal = op[key]
@@ -355,7 +356,8 @@ class Node(PlenumNode, HasPoolManager):
                         if oldVal != newVal:
                             r, msg = Authoriser.authorised(NYM, key, originRole,
                                                            oldVal=oldVal,
-                                                           newVal=newVal)
+                                                           newVal=newVal,
+                                                           isActorOwnerOfSubject=isOwner)
                             if not r:
                                 raise UnauthorizedClientRequest(
                                     request.identifier,
