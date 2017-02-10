@@ -49,12 +49,9 @@ class StateTreeStore:
                 data = json.loads(raw)
                 key, value = data.items()[0]  # only one attr per txn, yes
                 return key, value
-            enc = txn.get(ENC)
-            if enc:
-                return (enc, enc)
-            hash = txn.get(HASH)
-            if hash:
-                return hash, None
+            encOrHash = txn.get(ENC) or txn.get(HASH)
+            if encOrHash:
+                return encOrHash, encOrHash
             raise ValueError("One of 'raw', 'enc', 'hash' "
                              "fields of ATTR must present")
 
@@ -71,7 +68,6 @@ class StateTreeStore:
         raise NotImplementedError
 
     def getAttr(self, key: str, did):
-        # TODO: handle none or empty or not exists
         assert key is not None
         assert did is not None
         path = self._makeAttrPath(did, key)
