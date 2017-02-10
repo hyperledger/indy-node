@@ -8,7 +8,6 @@ from sovrin_common.txn import TXN_TYPE, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
     NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE
 import json
-from hashlib import sha256
 
 # TODO: think about encapsulating State in it,
 # instead of direct accessing to it in node
@@ -59,7 +58,7 @@ class StateTreeStore:
                              "fields of ATTR must present")
 
         rawKey, value = parse(txn)
-        key = sha256(rawKey.encode()).hexdigest()
+        key = self._hashOf(rawKey)
         self.state.set(key, value)
 
     def _addSchema(self, txn):
@@ -69,3 +68,7 @@ class StateTreeStore:
     def _addIssuerKey(self, txn):
         assert txn[TXN_TYPE] == ISSUER_KEY
         raise NotImplementedError
+
+    def _hashOf(self, text):
+        from hashlib import sha256
+        return sha256(text.encode()).hexdigest()
