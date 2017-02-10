@@ -594,6 +594,7 @@ class Node(PlenumNode, HasPoolManager):
         result = deepcopy(result)
         if RAW in result:
             result[RAW] = sha256(result[RAW].encode()).hexdigest()
+            # TODO: add checking for a number of keys in json
         elif ENC in result:
             result[ENC] = sha256(result[ENC].encode()).hexdigest()
         elif HASH in result:
@@ -610,15 +611,20 @@ class Node(PlenumNode, HasPoolManager):
             def parse(txn):
                 raw = txn.get(RAW)
                 if raw:
-                    data = json.loads(txn[RAW])
-                    # there could be problems if json is empty
-                    # check required in request checking method
-                    key, value = data.items()[0]  # only one attr per txn
+                    data = json.loads(raw)
+                    key, value = data.items()[0]  # only one attr per txn, yes
                     return key, value
-                key = txn.get(HASH) or txn.get(ENC)
-                return key, None
+                enc = txn.get(ENC)
+                if enc:
+                    return (enc, enc)
+                hash = txn.get(HASH)
+                if hash:
+                    return hash, None
+                raise ValueError("One of 'raw', 'enc', 'hash' "
+                                 "fields of ATTR must present")
 
-            (key, value) = parse(txn)
+            rawKey, value = parse(txn)
+            key = sha256(rawKey.encode()).hexdigest()
             state.set(key, value)
         else:
             # TODO: implementation for other transactions
