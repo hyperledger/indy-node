@@ -93,3 +93,7 @@ def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
     for n in nodeSet[:-1]:
         looper.run(eventually(checkNodeNotInNodeReg, n, node.name))
     looper.run(eventually(checkNodeNotInNodeReg, trustee, node.name))
+
+
+def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet):
+    pass

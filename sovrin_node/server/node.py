@@ -15,7 +15,7 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.log import getlogger
 from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES
+    POOL_TXN_TYPES, VERKEY
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
     NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
 from plenum.common.util import error
@@ -333,11 +333,10 @@ class Node(PlenumNode, HasPoolManager):
                     request.reqId,
                     "Nym {} not added to the ledger yet".format(origin))
 
-            role = op.get(ROLE)
-
-            nym = self.graphStore.getNym(op[TARGET_NYM])
-            if not nym:
+            nymV = self.graphStore.getNym(op[TARGET_NYM])
+            if not nymV:
                 # If nym does not exist
+                role = op.get(ROLE)
                 r, msg = Authoriser.authorised(NYM, ROLE, originRole,
                                                oldVal=None, newVal=role)
                 if not r:
@@ -346,27 +345,33 @@ class Node(PlenumNode, HasPoolManager):
                         request.reqId,
                         "{} cannot add {}".format(originRole, role))
             else:
-                nym = nym.oRecordData
-                subjectRole = nym.get(ROLE)
-                if subjectRole != role:
-                    r, msg = Authoriser.authorised(NYM, ROLE, originRole,
-                                                   oldVal=subjectRole,
-                                                   newVal=role)
-                    if not r:
-                        raise UnauthorizedClientRequest(
-                            request.identifier,
-                            request.reqId,
-                            "{} cannot update {}".format(originRole, role))
+                nymData = nymV.oRecordData
+                # updateKeys = [ROLE, VERKEY]
+                updateKeys = [ROLE]
+                for key in updateKeys:
+                    if key in op:
+                        newVal = op[key]
+                        oldVal = nymData.get(key)
+                        if oldVal != newVal:
+                            r, msg = Authoriser.authorised(NYM, key, originRole,
+                                                           oldVal=oldVal,
+                                                           newVal=newVal)
+                            if not r:
+                                raise UnauthorizedClientRequest(
+                                    request.identifier,
+                                    request.reqId,
+                                    "{} cannot update {}".format(originRole, key))
 
         elif typ == ATTRIB:
             if op.get(TARGET_NYM) and \
                 op[TARGET_NYM] != request.identifier and \
-                    not s.getSponsorFor(op[TARGET_NYM]) == origin:
+                    not s.getOwnerFor(op[TARGET_NYM]) == origin:
 
                 raise UnauthorizedClientRequest(
                         request.identifier,
                         request.reqId,
-                        "Only user's sponsor can add attribute for that user")
+                        "Only identity owner/guardian can add attribute "
+                        "for that identity")
 
         # TODO: Just for now. Later do something meaningful here
         elif typ in [DISCLO, GET_ATTR, SCHEMA, GET_SCHEMA, ISSUER_KEY,
@@ -403,7 +408,7 @@ class Node(PlenumNode, HasPoolManager):
         nym = msg.get(TARGET_NYM)
         if self.graphStore.hasNym(nym):
             if not self.graphStore.hasTrustee(identifier) and \
-                            self.graphStore.getSponsorFor(nym) != identifier:
+                            self.graphStore.getOwnerFor(nym) != identifier:
                     return False
         return True
 

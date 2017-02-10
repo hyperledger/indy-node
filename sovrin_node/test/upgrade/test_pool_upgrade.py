@@ -64,7 +64,8 @@ def testNodeRejectsPoolUpgrade(looper, nodeSet, tdir, trustee,
         checkSufficientRepliesForRequests(looper, trustee, [req, ],
                                           timeoutPerReq=10)
     looper.run(eventually(checkNacks, trustee, req.reqId,
-                          'since time span between upgrades'))
+                          'since time span between upgrades', retryWait=1,
+                          timeout=10))
 
 
 def testOnlyTrusteeCanSendPoolUpgrade(validUpgradeSent, looper, steward,
@@ -79,7 +80,7 @@ def testOnlyTrusteeCanSendPoolUpgrade(validUpgradeSent, looper, steward,
         checkSufficientRepliesForRequests(looper, stClient, [req, ],
                                           timeoutPerReq=10)
     looper.run(eventually(checkNacks, stClient, req.reqId,
-                          'cannot do'))
+                          'cannot do', retryWait=1, timeout=5))
 
 
 @pytest.fixture(scope="module")
