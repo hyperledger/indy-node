@@ -22,7 +22,7 @@ class StateTreeStore:
         assert state is not None
         self.state = state
 
-    def addTxn(self, txn) -> None:
+    def addTxn(self, txn, did) -> None:
         """
         Add transaction to state store
         """
@@ -32,15 +32,16 @@ class StateTreeStore:
             ATTRIB:     self._addAttrib,
             SCHEMA:     self._addSchema,
             ISSUER_KEY: self._addIssuerKey
-        }[txn[TXN_TYPE]](txn)
+        }[txn[TXN_TYPE]](txn, did)
 
 
-    def _addNym(self, txn):
+    def _addNym(self, txn, did):
         assert txn[TXN_TYPE] == NYM
         raise NotImplementedError
 
-    def _addAttrib(self, txn):
+    def _addAttrib(self, txn, did):
         assert txn[TXN_TYPE] == ATTRIB
+        assert did is not None
 
         def parse(txn):
             raw = txn.get(RAW)
@@ -57,18 +58,33 @@ class StateTreeStore:
             raise ValueError("One of 'raw', 'enc', 'hash' "
                              "fields of ATTR must present")
 
-        rawKey, value = parse(txn)
-        key = self._hashOf(rawKey)
-        self.state.set(key, value)
+        attrName, value = parse(txn)
+        path = self._makeAttrPath(did, attrName)
+        self.state.set(path, value)
 
-    def _addSchema(self, txn):
+    def _addSchema(self, txn, did):
         assert txn[TXN_TYPE] == SCHEMA
         raise NotImplementedError
 
-    def _addIssuerKey(self, txn):
+    def _addIssuerKey(self, txn, did):
         assert txn[TXN_TYPE] == ISSUER_KEY
         raise NotImplementedError
 
-    def _hashOf(self, text):
+    def getAttr(self, key: str, did):
+        # TODO: handle none or empty or not exists
+        assert key is not None
+        assert did is not None
+        path = self._makeAttrPath(did, key)
+        return self.state.get(path)
+
+    @classmethod
+    def _hashOf(cls, text) -> str:
         from hashlib import sha256
         return sha256(text.encode()).hexdigest()
+
+    @classmethod
+    def _makeAttrPath(cls, did, attrName):
+        nameHash = cls._hashOf(attrName)
+        return "{DID}:ATTR:{ATTR_NAME}"\
+               .format(DID=did, ATTR_NAME=nameHash)\
+               .encode()
