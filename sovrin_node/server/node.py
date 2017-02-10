@@ -29,7 +29,7 @@ from sovrin_common.txn import TXN_TYPE, \
     getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
     ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL
+    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph
@@ -39,6 +39,7 @@ from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
+from plenum.common.types import POOL_LEDGER_ID
 
 logger = getlogger()
 
@@ -600,6 +601,41 @@ class Node(PlenumNode, HasPoolManager):
         else:
             error("Transaction missing required field")
         return result
+
+    def storeTxnInStateTree(self, txn):
+        state = self.states[POOL_LEDGER_ID]
+
+        if txn[TXN_TYPE] == ATTRIB:
+
+            def parse(txn):
+                raw = txn.get(RAW)
+                if raw:
+                    data = json.loads(txn[RAW])
+                    # there could be problems if json is empty
+                    # check required in request checking method
+                    key, value = data.items()[0]  # only one attr per txn
+                    return key, value
+                key = txn.get(HASH) or txn.get(ENC)
+                return key, None
+
+            def H(rawKey, nonce):
+                hash = sha256(rawKey.encode())
+                if nonce:
+                    hash.update(nonce.encode())
+                return sha256(key)
+
+            (rawKey, value) = parse(txn)
+            # TODO: nonce assumed to be string,
+            # update this if it should be a number
+            nonce = str(txn.get(NONCE)) or None
+            key = H(rawKey, nonce)
+
+            state.set(key, value)
+        else:
+            # TODO: implementation for other transactions
+            # goes here
+            pass
+
 
     def storeTxnInGraph(self, result):
         result = deepcopy(result)
