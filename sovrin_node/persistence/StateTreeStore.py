@@ -12,6 +12,7 @@ import json
 # TODO: think about encapsulating State in it,
 # instead of direct accessing to it in node
 
+
 class StateTreeStore:
     """
     Class for putting transactions into state tree
