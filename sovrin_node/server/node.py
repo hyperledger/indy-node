@@ -15,7 +15,7 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.log import getlogger
 from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, VERKEY
+    POOL_TXN_TYPES, VERKEY, TARGET_NYM
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
     NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
 from plenum.common.util import error
@@ -40,6 +40,7 @@ from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from plenum.common.types import POOL_LEDGER_ID
+from sovrin_node.persistence import StateTreeStore
 
 logger = getlogger()
 
@@ -61,6 +62,7 @@ class Node(PlenumNode, HasPoolManager):
                  config=None):
         self.config = config or getConfig()
         self.graphStore = self.getGraphStorage(name)
+        self.stateTreeStore = StateTreeStore(self.states[POOL_LEDGER_ID])
         super().__init__(name=name,
                          nodeRegistry=nodeRegistry,
                          clientAuthNr=clientAuthNr,
@@ -604,8 +606,9 @@ class Node(PlenumNode, HasPoolManager):
         return result
 
     def storeTxnInStateTree(self, txn):
+        did = txn[TARGET_NYM]
+        self.stateTreeStore.addTxn(txn, did)
         pass
-
 
     def storeTxnInGraph(self, result):
         result = deepcopy(result)
