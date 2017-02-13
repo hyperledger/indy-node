@@ -85,6 +85,11 @@ class StateTreeStore:
         path = self._makeAttrPath(did, key)
         return self.state.get(path)
 
+    def getDdo(self, did) -> None:
+        assert did is not None
+        path = self._makeDdoPath(did)
+        return self.state.get(path)
+
     @classmethod
     def _hashOf(cls, text) -> str:
         from hashlib import sha256
