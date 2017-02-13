@@ -77,7 +77,7 @@ class StateTreeStore:
         assert txn[TXN_TYPE] == ISSUER_KEY
         logger.warn("Not implemented")
 
-    def getAttr(self, key: str, did) -> None:
+    def getAttr(self, key: str, did):
         assert key is not None
         assert did is not None
         path = self._makeAttrPath(did, key)
