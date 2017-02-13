@@ -608,7 +608,6 @@ class Node(PlenumNode, HasPoolManager):
     def storeTxnInStateTree(self, txn):
         did = txn[TARGET_NYM]
         self.stateTreeStore.addTxn(txn, did)
-        pass
 
     def storeTxnInGraph(self, result):
         result = deepcopy(result)

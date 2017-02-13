@@ -36,11 +36,20 @@ class StateTreeStore:
         }[txn[TXN_TYPE]](txn, did)
 
 
-    def _addNym(self, txn, did):
+    def _addNym(self, txn, did) -> None:
+        """
+        Processes nym transaction
+        This implementation only stores ddo
+        """
         assert txn[TXN_TYPE] == NYM
-        raise NotImplementedError
 
-    def _addAttrib(self, txn, did):
+        ddo = txn.get("ddo")
+        if ddo is not None:
+            path = self._makeDdoPath(did)
+            self.state.set(path, ddo)
+
+
+    def _addAttrib(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ATTRIB
         assert did is not None
 
@@ -60,15 +69,15 @@ class StateTreeStore:
         path = self._makeAttrPath(did, attrName)
         self.state.set(path, value)
 
-    def _addSchema(self, txn, did):
+    def _addSchema(self, txn, did) -> None:
         assert txn[TXN_TYPE] == SCHEMA
         raise NotImplementedError
 
-    def _addIssuerKey(self, txn, did):
+    def _addIssuerKey(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ISSUER_KEY
         raise NotImplementedError
 
-    def getAttr(self, key: str, did):
+    def getAttr(self, key: str, did) -> None:
         assert key is not None
         assert did is not None
         path = self._makeAttrPath(did, key)
@@ -80,8 +89,14 @@ class StateTreeStore:
         return sha256(text.encode()).hexdigest()
 
     @classmethod
-    def _makeAttrPath(cls, did, attrName):
+    def _makeAttrPath(cls, did, attrName) -> bytes:
         nameHash = cls._hashOf(attrName)
         return "{DID}:ATTR:{ATTR_NAME}"\
                .format(DID=did, ATTR_NAME=nameHash)\
+               .encode()
+
+    @classmethod
+    def _makeDdoPath(cls, did) -> bytes:
+        return "{DID}:DDO"\
+               .format(DID=did)\
                .encode()
