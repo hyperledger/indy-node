@@ -32,7 +32,7 @@ class StateTreeStore:
 
         {
             NYM:        self._addNym,
-            ATTRIB:     self._addAttrib,
+            ATTRIB:     self._addAttr,
             SCHEMA:     self._addSchema,
             ISSUER_KEY: self._addIssuerKey
         }[txn[TXN_TYPE]](txn, did)
@@ -51,7 +51,7 @@ class StateTreeStore:
             self.state.set(path, ddo)
 
 
-    def _addAttrib(self, txn, did) -> None:
+    def _addAttr(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ATTRIB
         assert did is not None
 
@@ -59,7 +59,7 @@ class StateTreeStore:
             raw = txn.get(RAW)
             if raw:
                 data = json.loads(raw)
-                key, value = data.items()[0]  # only one attr per txn, yes
+                key, value = data.popitem()  # only one attr per txn, yes
                 return key, value
             encOrHash = txn.get(ENC) or txn.get(HASH)
             if encOrHash:
