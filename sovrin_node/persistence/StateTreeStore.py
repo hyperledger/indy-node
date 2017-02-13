@@ -37,7 +37,6 @@ class StateTreeStore:
             ISSUER_KEY: self._addIssuerKey
         }[txn[TXN_TYPE]](txn, did)
 
-
     def _addNym(self, txn, did) -> None:
         """
         Processes nym transaction
@@ -49,7 +48,6 @@ class StateTreeStore:
         if ddo is not None:
             path = self._makeDdoPath(did)
             self.state.set(path, ddo)
-
 
     def _addAttr(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ATTRIB
@@ -83,12 +81,12 @@ class StateTreeStore:
         assert key is not None
         assert did is not None
         path = self._makeAttrPath(did, key)
-        return self.state.get(path)
+        return self.state.get(path, isCommitted=False)
 
     def getDdo(self, did) -> None:
         assert did is not None
         path = self._makeDdoPath(did)
-        return self.state.get(path)
+        return self.state.get(path, isCommitted=False)
 
     @classmethod
     def _hashOf(cls, text) -> str:
