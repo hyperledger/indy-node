@@ -72,6 +72,18 @@ class StateTreeStore:
     def _addSchema(self, txn, did) -> None:
         assert txn[TXN_TYPE] == SCHEMA
         logger.warn("Not implemented")
+        raw = txn.get(RAW)
+        if raw is None:
+            raise ValueError("Field 'raw' is absent")
+
+        jsonData = json.loads(raw)
+        # TODO: move them to constancts?
+
+        schemaName = jsonData["name"]
+        schemaVersion = jsonData["version"]
+
+        path = self._makeSchemaPath(did, schemaName, schemaVersion)
+        
 
     def _addIssuerKey(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ISSUER_KEY
@@ -102,12 +114,20 @@ class StateTreeStore:
     @classmethod
     def _makeAttrPath(cls, did, attrName) -> bytes:
         nameHash = cls._hashOf(attrName)
-        return "{DID}:ATTR:{ATTR_NAME}"\
-               .format(DID=did, ATTR_NAME=nameHash)\
-               .encode()
+        return "{DID}:ATTR:{ATTR_NAME}" \
+            .format(DID=did, ATTR_NAME=nameHash) \
+            .encode()
 
     @classmethod
     def _makeDdoPath(cls, did) -> bytes:
-        return "{DID}:DDO"\
-               .format(DID=did)\
-               .encode()
+        return "{DID}:DDO" \
+            .format(DID=did) \
+            .encode()
+
+    @classmethod
+    def _makeSchemaPath(cls, did, schemaName, schemaVersion) -> bytes:
+        return "{DID}:SCHEMA:{SCHEMA_NAME}{SCHEMA_VERSION}" \
+            .format(DID=did,
+                    SCHEMA_NAME=schemaName,
+                    SCHEMA_VERSION=schemaVersion) \
+            .encode()
