@@ -62,7 +62,6 @@ class Node(PlenumNode, HasPoolManager):
                  config=None):
         self.config = config or getConfig()
         self.graphStore = self.getGraphStorage(name)
-        self.stateTreeStore = StateTreeStore(self.states[POOL_LEDGER_ID])
         super().__init__(name=name,
                          nodeRegistry=nodeRegistry,
                          clientAuthNr=clientAuthNr,
@@ -74,6 +73,7 @@ class Node(PlenumNode, HasPoolManager):
                          pluginPaths=pluginPaths,
                          storage=storage,
                          config=self.config)
+        self.stateTreeStore = StateTreeStore(self.states[POOL_LEDGER_ID])
         self._addTxnsToGraphIfNeeded()
         self.configLedger = self.getConfigLedger()
         self.ledgerManager.addLedger(2, self.configLedger,
