@@ -1,4 +1,5 @@
 from plenum.common.state import State
+from plenum.common.log import getlogger
 from sovrin_common.txn import TXN_TYPE, \
     TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, SPONSOR, NYM,\
     ROLE, STEWARD, GET_ATTR, DISCLO, DATA, GET_NYM, \
@@ -12,6 +13,7 @@ import json
 # TODO: think about encapsulating State in it,
 # instead of direct accessing to it in node
 
+logger = getlogger()
 
 class StateTreeStore:
     """
@@ -71,11 +73,11 @@ class StateTreeStore:
 
     def _addSchema(self, txn, did) -> None:
         assert txn[TXN_TYPE] == SCHEMA
-        raise NotImplementedError
+        logger.warn("Not implemented")
 
     def _addIssuerKey(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ISSUER_KEY
-        raise NotImplementedError
+        logger.warn("Not implemented")
 
     def getAttr(self, key: str, did) -> None:
         assert key is not None
