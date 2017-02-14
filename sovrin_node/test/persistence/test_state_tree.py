@@ -43,17 +43,6 @@ def stateTreeStore(state):
     return StateTreeStore(state)
 
 
-def test_storing_of_attr_in_state_tree(stateTreeStore):
-    txn = {
-        TXN_TYPE: ATTRIB,
-        TARGET_NYM: mockDid,
-        RAW: json.dumps({attrName: attrValue})
-    }
-    stateTreeStore.addTxn(txn, mockDid)
-    gotValue = stateTreeStore.getAttr(attrName, mockDid).decode()
-    assert attrValue == gotValue
-
-
 def test_attr_key_path():
     path = StateTreeStore._makeAttrPath(mockDid, attrName).decode()
     nameHash = sha256(attrName.encode()).hexdigest()
@@ -72,21 +61,15 @@ def test_schema_key_path():
     assert path.split(":") == [mockDid, "SCHEMA", schemaName + schemaVersion]
 
 
-def test_storing_of_schema_in_state_tree(stateTreeStore: StateTreeStore):
-    schema = json.dumps({
-        "name": schemaName,
-        "version": schemaVersion,
-    })
+def test_storing_of_attr_in_state_tree(stateTreeStore):
     txn = {
-        TXN_TYPE: SCHEMA,
+        TXN_TYPE: ATTRIB,
         TARGET_NYM: mockDid,
-        DATA: schema
+        RAW: json.dumps({attrName: attrValue})
     }
     stateTreeStore.addTxn(txn, mockDid)
-    gotSchema = stateTreeStore\
-        .getSchema(mockDid, schemaName, schemaVersion)\
-        .decode()
-    assert schema == gotSchema
+    gotValue = stateTreeStore.getAttr(attrName, mockDid).decode()
+    assert attrValue == gotValue
 
 
 def test_storing_of_ddo_in_state_tree(stateTreeStore):
@@ -103,3 +86,21 @@ def test_storing_of_ddo_in_state_tree(stateTreeStore):
     stateTreeStore.addTxn(txn, mockDid)
     gotDdo = stateTreeStore.getDdo(mockDid).decode()
     assert mockDdo == gotDdo
+
+
+def test_storing_of_schema_in_state_tree(stateTreeStore: StateTreeStore):
+    schema = json.dumps({
+        "name": schemaName,
+        "version": schemaVersion,
+    })
+    txn = {
+        TXN_TYPE: SCHEMA,
+        TARGET_NYM: mockDid,
+        DATA: schema
+    }
+    stateTreeStore.addTxn(txn, mockDid)
+    gotSchema = stateTreeStore\
+        .getSchema(mockDid, schemaName, schemaVersion)\
+        .decode()
+    assert schema == gotSchema
+    

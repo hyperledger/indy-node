@@ -7,7 +7,7 @@ from sovrin_common.txn import TXN_TYPE, \
     getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
     ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE
+    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE, DDO
 import json
 
 # TODO: think about encapsulating State in it,
@@ -44,7 +44,7 @@ class StateTreeStore:
         """
         assert txn[TXN_TYPE] == NYM
 
-        ddo = txn.get("ddo")
+        ddo = txn.get(DDO)
         if ddo is not None:
             path = self._makeDdoPath(did)
             self.state.set(path, ddo)
@@ -71,26 +71,25 @@ class StateTreeStore:
 
     def _addSchema(self, txn, did) -> None:
         assert txn[TXN_TYPE] == SCHEMA
-        logger.warn("Not implemented")
-        raw = txn.get(RAW)
-        if raw is None:
-            raise ValueError("Field 'raw' is absent")
+        rawData = txn.get(DATA)
+        if rawData is None:
+            raise ValueError("Field 'data' is absent")
+        jsonData = json.loads(rawData)
 
-        jsonData = json.loads(raw)
-        # TODO: move them to constancts?
-
+        # TODO: move them to constants?
         schemaName = jsonData["name"]
         schemaVersion = jsonData["version"]
-
         path = self._makeSchemaPath(did, schemaName, schemaVersion)
-        
+        self.state.set(path, rawData.encode())
 
     def _addIssuerKey(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ISSUER_KEY
         logger.warn("Not implemented")
 
-    def getSchema(self, did):
-        pass
+    def getSchema(self, did, schemaName: str, schemaVersion: str):
+        path = self._makeSchemaPath(did, schemaName, schemaVersion)
+        schema = self.state.get(path, isCommitted=False)
+        return schema
 
     def getIssuerKey(self, did):
         pass
