@@ -122,3 +122,23 @@ def test_storing_of_schema_in_state_tree(stateTreeStore):
         .getSchema(mockDid, schemaName, schemaVersion)\
         .decode()
     assert schema == gotSchema
+
+
+def test_storing_of_issuerkey_in_state_tree(stateTreeStore):
+    key = json.dumps({
+        "N": "some n",
+        "R": "some r",
+        "S": "some s",
+        "Z": "some z"
+    })
+    txn = {
+        TXN_TYPE: ISSUER_KEY,
+        TARGET_NYM: mockDid,
+        DATA: key,
+        REF: schemaSeqNo
+    }
+    stateTreeStore.addTxn(txn, mockDid)
+    gotKey = stateTreeStore\
+        .getIssuerKey(mockDid, schemaSeqNo)\
+        .decode()
+    assert key == gotKey
