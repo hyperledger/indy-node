@@ -84,19 +84,34 @@ class StateTreeStore:
 
     def _addIssuerKey(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ISSUER_KEY
-        logger.warn("Not implemented")
+
+        schemaSeqNo = txn[REF]
+        if schemaSeqNo is None:
+            raise ValueError("'ref' field is absent, "
+                             "but it must contain schema seq no")
+
+        key = txn[DATA]
+        if key is None:
+            raise ValueError("'data' field is absent, "
+                             "but it must contain key components")
+
+        path = self._makeIssuerKeyPath(did, schemaSeqNo)
+        self.state.set(path, key)
 
     def getSchema(self, did, schemaName: str, schemaVersion: str):
         path = self._makeSchemaPath(did, schemaName, schemaVersion)
         schema = self.state.get(path, isCommitted=False)
         return schema
 
-    def getIssuerKey(self, did):
-        pass
+    def getIssuerKey(self, did, schemaSeqNo):
+        assert did is not None
+        assert schemaSeqNo is not None
+        path = self._makeIssuerKeyPath(did, schemaSeqNo)
+        return self.state.get(path, isCommitted=False)
 
     def getAttr(self, key: str, did):
-        assert key is not None
         assert did is not None
+        assert key is not None
         path = self._makeAttrPath(did, key)
         return self.state.get(path, isCommitted=False)
 
