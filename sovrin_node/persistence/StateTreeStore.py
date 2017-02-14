@@ -130,3 +130,18 @@ class StateTreeStore:
                     SCHEMA_NAME=schemaName,
                     SCHEMA_VERSION=schemaVersion) \
             .encode()
+
+    @classmethod
+    def _makeIssuerKeyPath(cls, did, schemaSeqNo) -> bytes:
+        return "{DID}:IPK:{SCHEMA_SEQ_NO}" \
+                   .format(DID=did, SCHEMA_SEQ_NO=schemaSeqNo)\
+                   .encode()
+
+    @classmethod
+    def _makeRevocKeyPath(cls, did, schemaSeqNo, revRegSeqNo, time) -> bytes:
+        return "{DID}:IPK:{SCHEMA_SEQ_NO}:REV_REG:{REV_REG_SEQ_NO}:{TIME}" \
+            .format(DID=did,
+                    SCHEMA_SEQ_NO=schemaSeqNo,
+                    REV_REG_SEQ_NO=revRegSeqNo,
+                    TIME=time) \
+            .encode()
