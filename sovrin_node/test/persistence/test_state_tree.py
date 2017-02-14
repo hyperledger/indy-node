@@ -18,6 +18,8 @@ from hashlib import sha256
 attrName = "last_name"
 attrValue = "Anderson"
 mockDid = "mock-did"
+schemaName = "name"
+schemaVersion = "1.2.3"
 
 
 @pytest.fixture(scope="function")
@@ -27,7 +29,6 @@ def dataLocation():
     print("OK = ", path)
     if os.path.exists(path):
         shutil.rmtree(path)
-    import time
     os.makedirs(path)
     return path
 
@@ -62,6 +63,30 @@ def test_attr_key_path():
 def test_ddo_key_path():
     path = StateTreeStore._makeDdoPath(mockDid).decode()
     assert path.split(":") == [mockDid, "DDO"]
+
+
+def test_schema_key_path():
+    path = StateTreeStore\
+        ._makeSchemaPath(mockDid, schemaName, schemaVersion)\
+        .decode()
+    assert path.split(":") == [mockDid, "SCHEMA", schemaName + schemaVersion]
+
+
+def test_storing_of_schema_in_state_tree(stateTreeStore: StateTreeStore):
+    schema = json.dumps({
+        "name": schemaName,
+        "version": schemaVersion,
+    })
+    txn = {
+        TXN_TYPE: SCHEMA,
+        TARGET_NYM: mockDid,
+        DATA: schema
+    }
+    stateTreeStore.addTxn(txn, mockDid)
+    gotSchema = stateTreeStore\
+        .getSchema(mockDid, schemaName, schemaVersion)\
+        .decode()
+    assert schema == gotSchema
 
 
 def test_storing_of_ddo_in_state_tree(stateTreeStore):
