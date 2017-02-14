@@ -25,6 +25,17 @@ class StateTreeStore:
         assert state is not None
         self.state = state
 
+    def lookup(self, path) -> bytes:
+        """
+        Queries state for data on specified path
+
+        :param path: path to data
+        :return: data
+        """
+
+        assert path is not None
+        return self.state.get(path, isCommitted=False)
+
     def addTxn(self, txn, did) -> None:
         """
         Add transaction to state store
@@ -103,25 +114,24 @@ class StateTreeStore:
         assert schemaName is not None
         assert schemaVersion is not None
         path = self._makeSchemaPath(did, schemaName, schemaVersion)
-        schema = self.state.get(path, isCommitted=False)
-        return schema
+        return self.lookup(path)
 
     def getIssuerKey(self, did, schemaSeqNo):
         assert did is not None
         assert schemaSeqNo is not None
         path = self._makeIssuerKeyPath(did, schemaSeqNo)
-        return self.state.get(path, isCommitted=False)
+        return self.lookup(path)
 
     def getAttr(self, key: str, did):
         assert did is not None
         assert key is not None
         path = self._makeAttrPath(did, key)
-        return self.state.get(path, isCommitted=False)
+        return self.lookup(path)
 
     def getDdo(self, did) -> None:
         assert did is not None
         path = self._makeDdoPath(did)
-        return self.state.get(path, isCommitted=False)
+        return self.lookup(path)
 
     @classmethod
     def _hashOf(cls, text) -> str:
