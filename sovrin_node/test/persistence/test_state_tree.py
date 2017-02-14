@@ -12,6 +12,7 @@ from sovrin_common.txn import TXN_TYPE, \
 import json
 import shutil
 import pytest
+import datetime
 from hashlib import sha256
 
 
@@ -20,6 +21,7 @@ attrValue = "Anderson"
 mockDid = "mock-did"
 schemaName = "name"
 schemaVersion = "1.2.3"
+schemaSeqNo = 123
 
 
 @pytest.fixture(scope="function")
@@ -59,6 +61,23 @@ def test_schema_key_path():
         ._makeSchemaPath(mockDid, schemaName, schemaVersion)\
         .decode()
     assert path.split(":") == [mockDid, "SCHEMA", schemaName + schemaVersion]
+
+
+def test_issuerkey_key_path():
+    path = StateTreeStore\
+        ._makeIssuerKeyPath(mockDid, schemaSeqNo)\
+        .decode()
+    assert path.split(":") == [mockDid, "IPK", schemaSeqNo]
+
+
+def test_revockey_key_path():
+    revRegSeqNo = 456
+    time = datetime.datetime.utcnow().isoformat()
+    path = StateTreeStore \
+        ._makeRevocKeyPath(mockDid, schemaSeqNo, revRegSeqNo, time) \
+        .decode()
+    expectedPath = [mockDid, "IPK", schemaSeqNo, "REV_REG", revRegSeqNo, time]
+    assert path.split(":") == expectedPath
 
 
 def test_storing_of_attr_in_state_tree(stateTreeStore):
@@ -103,4 +122,3 @@ def test_storing_of_schema_in_state_tree(stateTreeStore: StateTreeStore):
         .getSchema(mockDid, schemaName, schemaVersion)\
         .decode()
     assert schema == gotSchema
-    
