@@ -7,7 +7,7 @@ from sovrin_common.txn import TXN_TYPE, \
     getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
     ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE, DDO
+    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE, DDO, REVOC_REG
 import json
 
 # TODO: think about encapsulating State in it,
@@ -45,7 +45,8 @@ class StateTreeStore:
             NYM:        self._addNym,
             ATTRIB:     self._addAttr,
             SCHEMA:     self._addSchema,
-            ISSUER_KEY: self._addIssuerKey
+            ISSUER_KEY: self._addIssuerKey,
+            REVOC_REG:  self._addRevocReg
         }[txn[TXN_TYPE]](txn, did)
 
     def _addNym(self, txn, did) -> None:
@@ -101,6 +102,26 @@ class StateTreeStore:
 
         path = self._makeIssuerKeyPath(did, schemaSeqNo)
         self.state.set(path, key)
+
+    def _addRevocReg(self, txn, did) -> None:
+        assert txn[TXN_TYPE] == REVOC_REG
+        revRegSeqNo = txn[REVOC_REG]
+
+        schemaSeqNo = txn[WHERE_IS_IT_???]
+        revRegSeqNo = txn[REF]
+
+        # time
+
+        rawData = txn[DATA]
+        jsonData = json.loads(rawData)
+        accumulator = jsonData["value"]
+        issues = jsonData["value"]
+        revokes = jsonData["value"]
+        ts = jsonData["ts"]  # timestamp of last update
+
+
+        # [mockDid, "IPK", schemaSeqNo, "REV_REG", revRegSeqNo, time]
+        self._makeRevocKeyPath(did, )
 
     def getSchema(self, did, schemaName: str, schemaVersion: str):
         assert did is not None
