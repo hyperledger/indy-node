@@ -99,6 +99,9 @@ class StateTreeStore:
         self.state.set(path, key)
 
     def getSchema(self, did, schemaName: str, schemaVersion: str):
+        assert did is not None
+        assert schemaName is not None
+        assert schemaVersion is not None
         path = self._makeSchemaPath(did, schemaName, schemaVersion)
         schema = self.state.get(path, isCommitted=False)
         return schema
