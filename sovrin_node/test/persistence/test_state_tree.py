@@ -21,7 +21,7 @@ attrValue = "Anderson"
 mockDid = "mock-did"
 schemaName = "name"
 schemaVersion = "1.2.3"
-schemaSeqNo = 123
+schemaSeqNo = "123"
 
 
 @pytest.fixture(scope="function")
@@ -71,13 +71,13 @@ def test_issuerkey_key_path():
 
 
 def test_revockey_key_path():
-    revRegSeqNo = 456
+    revRegSeqNo = "456"
     time = datetime.datetime.utcnow().isoformat()
     path = StateTreeStore \
         ._makeRevocKeyPath(mockDid, schemaSeqNo, revRegSeqNo, time) \
         .decode()
     expectedPath = [mockDid, "IPK", schemaSeqNo, "REV_REG", revRegSeqNo, time]
-    assert path.split(":") == expectedPath
+    assert path.split(":", maxsplit=5) == expectedPath
 
 
 def test_storing_of_attr_in_state_tree(stateTreeStore):
@@ -107,7 +107,7 @@ def test_storing_of_ddo_in_state_tree(stateTreeStore):
     assert mockDdo == gotDdo
 
 
-def test_storing_of_schema_in_state_tree(stateTreeStore: StateTreeStore):
+def test_storing_of_schema_in_state_tree(stateTreeStore):
     schema = json.dumps({
         "name": schemaName,
         "version": schemaVersion,
