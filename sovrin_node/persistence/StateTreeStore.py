@@ -49,12 +49,7 @@ class StateTreeStore:
         }[txn[TXN_TYPE]](txn, did)
 
     def _addNym(self, txn, did) -> None:
-        """
-        Processes nym transaction
-        This implementation only stores ddo
-        """
         assert txn[TXN_TYPE] == NYM
-
         ddo = txn.get(DDO)
         if ddo is not None:
             path = self._makeDdoPath(did)
@@ -86,8 +81,6 @@ class StateTreeStore:
         if rawData is None:
             raise ValueError("Field 'data' is absent")
         jsonData = json.loads(rawData)
-
-        # TODO: move them to constants?
         schemaName = jsonData["name"]
         schemaVersion = jsonData["version"]
         path = self._makeSchemaPath(did, schemaName, schemaVersion)
