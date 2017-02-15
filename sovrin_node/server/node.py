@@ -531,7 +531,7 @@ class Node(PlenumNode, HasPoolManager):
             TXN_ID: self.genTxnId(request.identifier, request.reqId)
         }
         result.update(request.operation)
-        result[DATA] = json.dumps(keys, sort_keys=True)
+        result[DATA] = keys
         result.update({
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
