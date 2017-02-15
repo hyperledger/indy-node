@@ -20,7 +20,7 @@ class StateTreeStore:
         assert state is not None
         self.state = state
 
-    def lookup(self, path) -> str:
+    def lookup(self, path, isCommitted=True) -> str:
         """
         Queries state for data on specified path
 
@@ -29,7 +29,7 @@ class StateTreeStore:
         """
 
         assert path is not None
-        raw = self.state.get(path, isCommitted=False)
+        raw = self.state.get(path, isCommitted)
         return raw.decode()
 
     def addTxn(self, txn) -> None:
@@ -86,24 +86,24 @@ class StateTreeStore:
         path = self._makeIssuerKeyPath(did, schemaSeqNo)
         self.state.set(path, key)
 
-    def getAttr(self, did, key: str) -> str:
+    def getAttr(self, did, key: str, isCommitted=True) -> str:
         assert did is not None
         assert key is not None
         path = self._makeAttrPath(did, key)
-        return self.lookup(path)
+        return self.lookup(path, isCommitted)
 
-    def getSchema(self, did, schemaName: str, schemaVersion: str) -> str:
+    def getSchema(self, did, schemaName: str, schemaVersion: str, isCommitted=True) -> str:
         assert did is not None
         assert schemaName is not None
         assert schemaVersion is not None
         path = self._makeSchemaPath(did, schemaName, schemaVersion)
-        return self.lookup(path)
+        return self.lookup(path, isCommitted)
 
-    def getIssuerKey(self, did, schemaSeqNo: str) -> str:
+    def getIssuerKey(self, did, schemaSeqNo: str, isCommitted=True) -> str:
         assert did is not None
         assert schemaSeqNo is not None
         path = self._makeIssuerKeyPath(did, schemaSeqNo)
-        return self.lookup(path)
+        return self.lookup(path, isCommitted)
 
     @classmethod
     def _hashOf(cls, text) -> str:
