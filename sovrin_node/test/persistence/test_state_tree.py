@@ -1,20 +1,14 @@
-import os
-from sovrin_node.persistence.StateTreeStore import StateTreeStore
-from plenum.common.state import PruningState
-from sovrin_common.txn import TXN_TYPE, \
-    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, SPONSOR, NYM,\
-    ROLE, STEWARD, GET_ATTR, DISCLO, DATA, GET_NYM, \
-    TXN_ID, TXN_TIME, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
-    getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
-    ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
-    CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE, DDO
 import json
+import os
 import shutil
-import pytest
-import datetime
 from hashlib import sha256
 
+import pytest
+from plenum.common.state import PruningState
+from sovrin_common.txn import TXN_TYPE, \
+    TARGET_NYM, ATTRIB, DATA, SCHEMA, ISSUER_KEY, REF, RAW
+
+from sovrin_node.persistence.StateTreeStore import StateTreeStore
 
 attrName = "last_name"
 attrValue = "Anderson"
@@ -51,11 +45,6 @@ def test_attr_key_path():
     assert path.split(":") == [mockDid, "ATTR", nameHash]
 
 
-def test_ddo_key_path():
-    path = StateTreeStore._makeDdoPath(mockDid).decode()
-    assert path.split(":") == [mockDid, "DDO"]
-
-
 def test_schema_key_path():
     path = StateTreeStore\
         ._makeSchemaPath(mockDid, schemaName, schemaVersion)\
@@ -70,16 +59,6 @@ def test_issuerkey_key_path():
     assert path.split(":") == [mockDid, "IPK", schemaSeqNo]
 
 
-def test_revockey_key_path():
-    revRegSeqNo = "456"
-    time = datetime.datetime.utcnow().isoformat()
-    path = StateTreeStore \
-        ._makeRevocKeyPath(mockDid, schemaSeqNo, revRegSeqNo, time) \
-        .decode()
-    expectedPath = [mockDid, "IPK", schemaSeqNo, "REV_REG", revRegSeqNo, time]
-    assert path.split(":", maxsplit=5) == expectedPath
-
-
 def test_storing_of_attr_in_state_tree(stateTreeStore):
     txn = {
         TXN_TYPE: ATTRIB,
@@ -89,22 +68,6 @@ def test_storing_of_attr_in_state_tree(stateTreeStore):
     stateTreeStore.addTxn(txn, mockDid)
     gotValue = stateTreeStore.getAttr(attrName, mockDid).decode()
     assert attrValue == gotValue
-
-
-def test_storing_of_ddo_in_state_tree(stateTreeStore):
-    mockDdo = json.dumps({
-        "@contextrefid": "did-v1",
-        "id": mockDid,
-        "control": "21tDAKCERh95uGgKbJNHYp"
-    })
-    txn = {
-        TXN_TYPE: NYM,
-        TARGET_NYM: mockDid,
-        DDO: mockDdo
-    }
-    stateTreeStore.addTxn(txn, mockDid)
-    gotDdo = stateTreeStore.getDdo(mockDid).decode()
-    assert mockDdo == gotDdo
 
 
 def test_storing_of_schema_in_state_tree(stateTreeStore):

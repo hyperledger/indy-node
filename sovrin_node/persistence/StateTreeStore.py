@@ -42,19 +42,10 @@ class StateTreeStore:
         """
 
         {
-            NYM:        self._addNym,
             ATTRIB:     self._addAttr,
             SCHEMA:     self._addSchema,
             ISSUER_KEY: self._addIssuerKey,
-            REVOC_REG:  self._addRevocReg
         }[txn[TXN_TYPE]](txn, did)
-
-    def _addNym(self, txn, did) -> None:
-        assert txn[TXN_TYPE] == NYM
-        ddo = txn.get(DDO)
-        if ddo is not None:
-            path = self._makeDdoPath(did)
-            self.state.set(path, ddo)
 
     def _addAttr(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ATTRIB
@@ -64,7 +55,7 @@ class StateTreeStore:
             raw = txn.get(RAW)
             if raw:
                 data = json.loads(raw)
-                key, value = data.popitem()  # only one attr per txn, yes
+                key, value = data.popitem()
                 return key, value
             encOrHash = txn.get(ENC) or txn.get(HASH)
             if encOrHash:
@@ -89,39 +80,22 @@ class StateTreeStore:
 
     def _addIssuerKey(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ISSUER_KEY
-
         schemaSeqNo = txn[REF]
         if schemaSeqNo is None:
             raise ValueError("'ref' field is absent, "
                              "but it must contain schema seq no")
-
         key = txn[DATA]
         if key is None:
             raise ValueError("'data' field is absent, "
                              "but it must contain key components")
-
         path = self._makeIssuerKeyPath(did, schemaSeqNo)
         self.state.set(path, key)
 
-    def _addRevocReg(self, txn, did) -> None:
-        assert txn[TXN_TYPE] == REVOC_REG
-        revRegSeqNo = txn[REVOC_REG]
-
-        schemaSeqNo = txn[WHERE_IS_IT_???]
-        revRegSeqNo = txn[REF]
-
-        # time
-
-        rawData = txn[DATA]
-        jsonData = json.loads(rawData)
-        accumulator = jsonData["value"]
-        issues = jsonData["value"]
-        revokes = jsonData["value"]
-        ts = jsonData["ts"]  # timestamp of last update
-
-
-        # [mockDid, "IPK", schemaSeqNo, "REV_REG", revRegSeqNo, time]
-        self._makeRevocKeyPath(did, )
+    def getAttr(self, key: str, did):
+        assert did is not None
+        assert key is not None
+        path = self._makeAttrPath(did, key)
+        return self.lookup(path)
 
     def getSchema(self, did, schemaName: str, schemaVersion: str):
         assert did is not None
@@ -134,17 +108,6 @@ class StateTreeStore:
         assert did is not None
         assert schemaSeqNo is not None
         path = self._makeIssuerKeyPath(did, schemaSeqNo)
-        return self.lookup(path)
-
-    def getAttr(self, key: str, did):
-        assert did is not None
-        assert key is not None
-        path = self._makeAttrPath(did, key)
-        return self.lookup(path)
-
-    def getDdo(self, did) -> None:
-        assert did is not None
-        path = self._makeDdoPath(did)
         return self.lookup(path)
 
     @classmethod
@@ -160,12 +123,6 @@ class StateTreeStore:
             .encode()
 
     @classmethod
-    def _makeDdoPath(cls, did) -> bytes:
-        return "{DID}:DDO" \
-            .format(DID=did) \
-            .encode()
-
-    @classmethod
     def _makeSchemaPath(cls, did, schemaName, schemaVersion) -> bytes:
         return "{DID}:SCHEMA:{SCHEMA_NAME}{SCHEMA_VERSION}" \
             .format(DID=did,
@@ -178,12 +135,3 @@ class StateTreeStore:
         return "{DID}:IPK:{SCHEMA_SEQ_NO}" \
                    .format(DID=did, SCHEMA_SEQ_NO=schemaSeqNo)\
                    .encode()
-
-    @classmethod
-    def _makeRevocKeyPath(cls, did, schemaSeqNo, revRegSeqNo, time) -> bytes:
-        return "{DID}:IPK:{SCHEMA_SEQ_NO}:REV_REG:{REV_REG_SEQ_NO}:{TIME}" \
-            .format(DID=did,
-                    SCHEMA_SEQ_NO=schemaSeqNo,
-                    REV_REG_SEQ_NO=revRegSeqNo,
-                    TIME=time) \
-            .encode()
