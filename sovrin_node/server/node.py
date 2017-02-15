@@ -15,7 +15,7 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.log import getlogger
 from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, VERKEY
+    POOL_TXN_TYPES, VERKEY, TARGET_NYM
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
     NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
 from plenum.common.util import error
@@ -29,7 +29,7 @@ from sovrin_common.txn import TXN_TYPE, \
     getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
     ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL
+    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph
@@ -39,6 +39,8 @@ from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
+from plenum.common.types import POOL_LEDGER_ID
+from sovrin_node.persistence.StateTreeStore import StateTreeStore
 
 logger = getlogger()
 
@@ -71,6 +73,7 @@ class Node(PlenumNode, HasPoolManager):
                          pluginPaths=pluginPaths,
                          storage=storage,
                          config=self.config)
+        self.stateTreeStore = StateTreeStore(self.states[POOL_LEDGER_ID])
         self._addTxnsToGraphIfNeeded()
         self.configLedger = self.getConfigLedger()
         self.ledgerManager.addLedger(2, self.configLedger,
@@ -520,14 +523,15 @@ class Node(PlenumNode, HasPoolManager):
 
     def processGetIssuerKeyReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys = self.graphStore.getIssuerKeys(request.operation[ORIGIN],
-                                             request.operation[REF])
+        keys = self.stateTreeStore.getIssuerKey(
+            did=request.operation[ORIGIN],
+            schemaSeqNo=request.operation[REF]
+        )
         result = {
-            TXN_ID: self.genTxnId(
-                request.identifier, request.reqId)
+            TXN_ID: self.genTxnId(request.identifier, request.reqId)
         }
         result.update(request.operation)
-        result[DATA] = json.dumps(keys, sort_keys=True)
+        result[DATA] = keys
         result.update({
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
@@ -593,6 +597,7 @@ class Node(PlenumNode, HasPoolManager):
         result = deepcopy(result)
         if RAW in result:
             result[RAW] = sha256(result[RAW].encode()).hexdigest()
+            # TODO: add checking for a number of keys in json
         elif ENC in result:
             result[ENC] = sha256(result[ENC].encode()).hexdigest()
         elif HASH in result:
@@ -600,6 +605,10 @@ class Node(PlenumNode, HasPoolManager):
         else:
             error("Transaction missing required field")
         return result
+
+    def storeTxnInStateTree(self, txn):
+        did = txn[TARGET_NYM]
+        self.stateTreeStore.addTxn(txn, did)
 
     def storeTxnInGraph(self, result):
         result = deepcopy(result)
