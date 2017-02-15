@@ -1,14 +1,9 @@
-from plenum.common.state import State
-from plenum.common.log import getlogger
-from sovrin_common.txn import TXN_TYPE, \
-    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, SPONSOR, NYM,\
-    ROLE, STEWARD, GET_ATTR, DISCLO, DATA, GET_NYM, \
-    TXN_ID, TXN_TIME, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
-    getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
-    ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
-    CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE, DDO, REVOC_REG
 import json
+
+from plenum.common.log import getlogger
+from plenum.common.state import State
+from sovrin_common.txn import TXN_TYPE, \
+    ATTRIB, DATA, SCHEMA, ISSUER_KEY, REF, HASH, ENC, RAW
 
 # TODO: think about encapsulating State in it,
 # instead of direct accessing to it in node
@@ -45,7 +40,7 @@ class StateTreeStore:
             ATTRIB:     self._addAttr,
             SCHEMA:     self._addSchema,
             ISSUER_KEY: self._addIssuerKey,
-        }[txn[TXN_TYPE]](txn, did)
+        }.get(txn[TXN_TYPE], lambda *_: None)(txn, did)
 
     def _addAttr(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ATTRIB

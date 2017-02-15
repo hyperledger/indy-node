@@ -10,6 +10,7 @@ from sovrin_common.txn import TXN_TYPE, \
 
 from sovrin_node.persistence.StateTreeStore import StateTreeStore
 
+
 attrName = "last_name"
 attrValue = "Anderson"
 mockDid = "mock-did"
