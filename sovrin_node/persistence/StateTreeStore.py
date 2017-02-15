@@ -3,7 +3,7 @@ import json
 from plenum.common.log import getlogger
 from plenum.common.state import State
 from sovrin_common.txn import TXN_TYPE, \
-    ATTRIB, DATA, SCHEMA, ISSUER_KEY, REF, HASH, ENC, RAW
+    ATTRIB, DATA, SCHEMA, ISSUER_KEY, REF, HASH, ENC, RAW, TARGET_NYM
 
 # TODO: think about encapsulating State in it,
 # instead of direct accessing to it in node
@@ -31,16 +31,15 @@ class StateTreeStore:
         assert path is not None
         return self.state.get(path, isCommitted=False)
 
-    def addTxn(self, txn, did) -> None:
+    def addTxn(self, txn) -> None:
         """
         Add transaction to state store
         """
-
         {
-            ATTRIB:     self._addAttr,
-            SCHEMA:     self._addSchema,
+            ATTRIB: self._addAttr,
+            SCHEMA: self._addSchema,
             ISSUER_KEY: self._addIssuerKey,
-        }.get(txn[TXN_TYPE], lambda *_: None)(txn, did)
+        }.get(txn[TXN_TYPE], lambda *_: None)(txn, txn[TARGET_NYM])
 
     def _addAttr(self, txn, did) -> None:
         assert txn[TXN_TYPE] == ATTRIB
