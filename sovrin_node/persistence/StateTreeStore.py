@@ -86,7 +86,7 @@ class StateTreeStore:
         path = self._makeIssuerKeyPath(did, schemaSeqNo)
         self.state.set(path, key)
 
-    def getAttr(self, key: str, did) -> str:
+    def getAttr(self, did, key: str) -> str:
         assert did is not None
         assert key is not None
         path = self._makeAttrPath(did, key)
@@ -99,7 +99,7 @@ class StateTreeStore:
         path = self._makeSchemaPath(did, schemaName, schemaVersion)
         return self.lookup(path)
 
-    def getIssuerKey(self, did, schemaSeqNo) -> str:
+    def getIssuerKey(self, did, schemaSeqNo: str) -> str:
         assert did is not None
         assert schemaSeqNo is not None
         path = self._makeIssuerKeyPath(did, schemaSeqNo)

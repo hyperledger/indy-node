@@ -67,7 +67,7 @@ def test_storing_of_attr_in_state_tree(stateTreeStore):
         RAW: json.dumps({attrName: attrValue})
     }
     stateTreeStore.addTxn(txn)
-    gotValue = stateTreeStore.getAttr(attrName, mockDid)
+    gotValue = stateTreeStore.getAttr(mockDid, attrName)
     assert attrValue == gotValue
 
 
