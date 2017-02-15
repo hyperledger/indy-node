@@ -67,7 +67,7 @@ def test_storing_of_attr_in_state_tree(stateTreeStore):
         RAW: json.dumps({attrName: attrValue})
     }
     stateTreeStore.addTxn(txn)
-    gotValue = stateTreeStore.getAttr(mockDid, attrName)
+    gotValue = stateTreeStore.getAttr(mockDid, attrName, isCommitted=False)
     assert attrValue == gotValue
 
 
@@ -82,7 +82,7 @@ def test_storing_of_schema_in_state_tree(stateTreeStore):
         DATA: schema
     }
     stateTreeStore.addTxn(txn)
-    gotSchema = stateTreeStore.getSchema(mockDid, schemaName, schemaVersion)
+    gotSchema = stateTreeStore.getSchema(mockDid, schemaName, schemaVersion, isCommitted=False)
     assert schema == gotSchema
 
 
@@ -100,5 +100,5 @@ def test_storing_of_issuerkey_in_state_tree(stateTreeStore):
         REF: schemaSeqNo
     }
     stateTreeStore.addTxn(txn)
-    gotKey = stateTreeStore.getIssuerKey(mockDid, schemaSeqNo)
+    gotKey = stateTreeStore.getIssuerKey(mockDid, schemaSeqNo, isCommitted=False)
     assert key == gotKey
