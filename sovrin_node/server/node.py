@@ -40,7 +40,7 @@ from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from plenum.common.types import POOL_LEDGER_ID
-from sovrin_node.persistence import StateTreeStore
+from sovrin_node.persistence.StateTreeStore import StateTreeStore
 
 logger = getlogger()
 
@@ -523,11 +523,12 @@ class Node(PlenumNode, HasPoolManager):
 
     def processGetIssuerKeyReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys = self.graphStore.getIssuerKeys(request.operation[ORIGIN],
-                                             request.operation[REF])
+        keys = self.stateTreeStore.getIssuerKey(
+            did=request.operation[ORIGIN],
+            schemaSeqNo=request.operation[REF]
+        )
         result = {
-            TXN_ID: self.genTxnId(
-                request.identifier, request.reqId)
+            TXN_ID: self.genTxnId(request.identifier, request.reqId)
         }
         result.update(request.operation)
         result[DATA] = json.dumps(keys, sort_keys=True)
