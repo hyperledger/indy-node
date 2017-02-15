@@ -485,16 +485,17 @@ class Node(PlenumNode, HasPoolManager):
             self.transmitToClient(Reply(result), frm)
 
     def processGetSchemaReq(self, request: Request, frm: str):
-        issuerNym = request.operation[TARGET_NYM]
-        name = request.operation[DATA][NAME]
-        version = request.operation[DATA][VERSION]
-        schema = self.graphStore.getSchema(issuerNym, name, version)
+        issuerDid = request.operation[TARGET_NYM]
+        schema = self.stateTreeStore.getSchema(
+            did=issuerDid,
+            schemaName=(request.operation[DATA][NAME]),
+            schemaVersion=(request.operation[DATA][VERSION])
+        )
         result = {
-            TXN_ID: self.genTxnId(
-                request.identifier, request.reqId)
+            TXN_ID: self.genTxnId(request.identifier, request.reqId)
         }
         result.update(request.operation)
-        result[DATA] = json.dumps(schema, sort_keys=True)
+        result[DATA] = schema
         result.update({
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
