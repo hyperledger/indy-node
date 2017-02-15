@@ -506,15 +506,25 @@ class Node(PlenumNode, HasPoolManager):
         self.transmitToClient(RequestAck(*request.key), frm)
         attrName = request.operation[RAW]
         nym = request.operation[TARGET_NYM]
-        attrWithSeqNo = self.graphStore.getRawAttrs(nym, attrName)
+
+        attrValue = self.stateTreeStore.getAttr(
+            did=nym,
+            key=attrName
+        )
+
+        # TODO: Implement selecting of seqNo
+        # When graphStore was used it was a part of getRawAttr result, but
+        # StateTreeStore does not store seqNo
+        seqNo = "not implemented!"
+
         result = {
             TXN_ID: self.genTxnId(
                 request.identifier, request.reqId)
         }
-        if attrWithSeqNo:
-            attr = {attrName: attrWithSeqNo[attrName][0]}
+        if attrValue:
+            attr = {attrName: attrValue}
             result[DATA] = json.dumps(attr, sort_keys=True)
-            result[F.seqNo.name] = attrWithSeqNo[attrName][1]
+            result[F.seqNo.name] = seqNo
         result.update(request.operation)
         result.update({
             f.IDENTIFIER.nm: request.identifier,
