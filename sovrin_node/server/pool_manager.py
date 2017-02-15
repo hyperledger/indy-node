@@ -1,7 +1,8 @@
 from copy import deepcopy
 
-from plenum.common.txn import POOL_TXN_TYPES, TXN_TYPE, DATA, ALIAS, \
+from plenum.common.txn import TXN_TYPE, DATA, ALIAS, \
     TARGET_NYM
+from plenum.common.types import POOL_LEDGER_ID
 from plenum.server.pool_manager import HasPoolManager as PHasPoolManager, \
     TxnPoolManager as PTxnPoolManager
 from sovrin_common.auth import Authoriser
@@ -13,9 +14,8 @@ class HasPoolManager(PHasPoolManager):
         if not nodeRegistry:
             self.poolManager = TxnPoolManager(self, ha=ha, cliname=cliname,
                                               cliha=cliha)
-            for types in POOL_TXN_TYPES:
-                self.requestExecuter[types] = \
-                    self.poolManager.executePoolTxnRequest
+            self.requestExecuter[POOL_LEDGER_ID] = \
+                self.poolManager.executePoolTxnBatch
         else:
             super().__init__(nodeRegistry=nodeRegistry, ha=ha, cliname=cliname,
                              cliha=cliha)
