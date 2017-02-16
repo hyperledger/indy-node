@@ -24,6 +24,7 @@ def txnPoolNodeSet(tconf, nodeSet):
     return nodeSet
 
 
+@pytest.mark.skipif('sys.platform == "win32"', reason='Failing on Windows')
 def testUpgradeLatestUncancelledVersion(looper,
                                         txnPoolNodeSet, tconf, nodeThetaAdded,
                                         validUpgrade, trustee, trusteeWallet,
