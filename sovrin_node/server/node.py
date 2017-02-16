@@ -224,6 +224,7 @@ class Node(PlenumNode, HasPoolManager):
             return super().authNr(req)
 
     def _addTxnsToGraphIfNeeded(self):
+        # TODO: should it be replaced by state tree store somehow?
         i = 0
         txnCountInGraph = self.graphStore.countTxns()
         for seqNo, txn in self.domainLedger.getAllTxn().items():
@@ -617,7 +618,10 @@ class Node(PlenumNode, HasPoolManager):
             error("Transaction missing required field")
         return result
 
-    def storeTxn(self, txn):
+    def storeTxn(self, txn) -> None:
+        """
+        Adds transaction to external non-ledger store
+        """
         if txn[TXN_TYPE] == NYM:
             # TODO: this one should be stored in verkey store
             self.storeTxnInGraph(txn)
@@ -627,11 +631,11 @@ class Node(PlenumNode, HasPoolManager):
             logger.debug("Got an unknown type {} to process".
                          format(txn[TXN_TYPE]))
 
-    def storeTxnInStateTree(self, txn):
+    def storeTxnInStateTree(self, txn) -> None:
         did = txn[TARGET_NYM]
         self.stateTreeStore.addTxn(txn)
 
-    def storeTxnInGraph(self, txn):
+    def storeTxnInGraph(self, txn) -> None:
         txn = deepcopy(txn)
         # Remove root hash and audit path from result if present since they can
         # be generated on the fly from the ledger so no need to store it
