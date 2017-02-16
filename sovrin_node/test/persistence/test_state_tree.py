@@ -45,19 +45,26 @@ def test_attr_key_path():
         ._makeAttrPath(mockDid, attrName)\
         .decode()
     nameHash = sha256(attrName.encode()).hexdigest()
-    assert path.split(":") == [mockDid, "ATTR", nameHash]
+
+    assert path.split(":") == [mockDid,
+                               StateTreeStore.MARKER_ATTR,
+                               nameHash]
 
 
 def test_schema_key_path():
     path = StateTreeStore\
         ._makeSchemaPath(mockDid, schemaName, schemaVersion)\
         .decode()
-    assert path.split(":") == [mockDid, "SCHEMA", schemaName + schemaVersion]
+    assert path.split(":") == [mockDid,
+                               StateTreeStore.MARKER_SCHEMA,
+                               schemaName + schemaVersion]
 
 
 def test_issuerkey_key_path():
     path = StateTreeStore._makeIssuerKeyPath(mockDid, schemaSeqNo).decode()
-    assert path.split(":") == [mockDid, "IPK", schemaSeqNo]
+    assert path.split(":") == [mockDid,
+                               StateTreeStore.MARKER_IPK,
+                               schemaSeqNo]
 
 
 def test_storing_of_attr_in_state_tree(stateTreeStore):

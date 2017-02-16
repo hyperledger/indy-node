@@ -16,6 +16,10 @@ class StateTreeStore:
     Akin to IdentityGraph
     """
 
+    MARKER_ATTR = "\01"
+    MARKER_SCHEMA = "\02"
+    MARKER_IPK = "\03"
+
     def __init__(self, state: State):
         assert state is not None
         self.state = state
@@ -113,20 +117,25 @@ class StateTreeStore:
     @classmethod
     def _makeAttrPath(cls, did, attrName) -> bytes:
         nameHash = cls._hashOf(attrName)
-        return "{DID}:ATTR:{ATTR_NAME}" \
-            .format(DID=did, ATTR_NAME=nameHash) \
+        return "{DID}:{MARKER}:{ATTR_NAME}" \
+            .format(DID=did,
+                    MARKER=StateTreeStore.MARKER_ATTR,
+                    ATTR_NAME=nameHash) \
             .encode()
 
     @classmethod
     def _makeSchemaPath(cls, did, schemaName, schemaVersion) -> bytes:
-        return "{DID}:SCHEMA:{SCHEMA_NAME}{SCHEMA_VERSION}" \
+        return "{DID}:{MARKER}:{SCHEMA_NAME}{SCHEMA_VERSION}" \
             .format(DID=did,
+                    MARKER=StateTreeStore.MARKER_SCHEMA,
                     SCHEMA_NAME=schemaName,
                     SCHEMA_VERSION=schemaVersion) \
             .encode()
 
     @classmethod
     def _makeIssuerKeyPath(cls, did, schemaSeqNo) -> bytes:
-        return "{DID}:IPK:{SCHEMA_SEQ_NO}" \
-                   .format(DID=did, SCHEMA_SEQ_NO=schemaSeqNo)\
+        return "{DID}:{MARKER}:{SCHEMA_SEQ_NO}" \
+                   .format(DID=did,
+                           MARKER=StateTreeStore.MARKER_IPK,
+                           SCHEMA_SEQ_NO=schemaSeqNo)\
                    .encode()
