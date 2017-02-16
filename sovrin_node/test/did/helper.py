@@ -32,6 +32,12 @@ def updateWalletIdrWithFullKeySigner(wallet, idr):
     return newSigner.verkey
 
 
+def updateWalletIdrWithFullVerkeySigner(wallet, idr, signer):
+    wallet.updateSigner(idr, signer)
+    assertEquality(signer.verkey, wallet.getVerkey(idr))
+    checkFullVerkeySize(wallet.getVerkey(idr))
+
+
 def updateSovrinIdrWithFullKey(looper, senderWallet, senderClient, ownerWallet,
                                idr, fullKey):
     idy = Identity(identifier=idr, verkey=fullKey)

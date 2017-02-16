@@ -19,7 +19,8 @@ from sovrin_common.identity import Identity
 from sovrin_node.test.did.conftest import pf
 from sovrin_node.test.did.helper import chkVerifyForRetrievedIdentity, \
     updateWalletIdrWithFullKeySigner, updateSovrinIdrWithFullKey, \
-    fetchFullVerkeyFromSovrin, checkAbbrVerkeySize, checkDidSize
+    fetchFullVerkeyFromSovrin, checkAbbrVerkeySize, checkDidSize, \
+    updateWalletIdrWithFullVerkeySigner
 from sovrin_node.test.helper import createNym
 
 
@@ -41,16 +42,25 @@ def newAbbrvKey(wallet, abbrevIdr):
 
 
 @pf
-def newFullKey(wallet, abbrevIdr):
-    return updateWalletIdrWithFullKeySigner(wallet, abbrevIdr)
+def newFullKeySigner(wallet, abbrevIdr):
+    return DidSigner(identifier=abbrevIdr)
+
+
+@pf
+def newFullKey(newFullKeySigner):
+    return newFullKeySigner.verkey
 
 
 @pf
 def didUpdatedWithFullVerkey(didAddedWithAbbrvVerkey, looper, sponsor,
-                            sponsorWallet, abbrevIdr, newFullKey, wallet):
+                            sponsorWallet, abbrevIdr, newFullKey,
+                             newFullKeySigner, wallet, client):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
-    updateSovrinIdrWithFullKey(looper, sponsorWallet, sponsor, wallet,
+    # updateSovrinIdrWithFullKey(looper, sponsorWallet, sponsor, wallet,
+    #                            abbrevIdr, newFullKey)
+    updateSovrinIdrWithFullKey(looper, wallet, client, wallet,
                                abbrevIdr, newFullKey)
+    updateWalletIdrWithFullVerkeySigner(wallet, abbrevIdr, newFullKeySigner)
 
 
 @pf

@@ -50,8 +50,14 @@ if not os.path.exists(CONFIG_FILE):
         f.write(msg)
 
 
+def compose_cmd(cmd):
+    if os.name != 'nt':
+        cmd = ' '.join(cmd)
+    return cmd
+
+
 def post_install():
-    subprocess.run(['python post-setup.py'], shell=True)
+    subprocess.run(compose_cmd(['python', 'post-setup.py']), shell=True)
 
 
 class PostInstall(install):
@@ -81,7 +87,7 @@ setup(
              '*.css', '*.ico', '*.png', 'LICENSE', 'LEGAL', '*.sovrin']},
     include_package_data=True,
     data_files=[(
-        (BASE_DIR, ['data/nssm.exe'])
+        (BASE_DIR, ['data/nssm_original.exe'])
     )],
     install_requires=['sovrin-common', 'python-dateutil'],
     setup_requires=['pytest-runner'],
@@ -94,6 +100,7 @@ setup(
              'scripts/upgrade_sovrin_node_test.bat', 
              'scripts/install_sovrin_node.bat',
              'scripts/delete_sovrin_node.bat',
+             'scripts/restart_upgrade_agent.bat',
              'scripts/install_nssm.bat'],
     cmdclass={
         'install': PostInstall,

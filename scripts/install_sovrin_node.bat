@@ -32,11 +32,11 @@ IF NOT DEFINED PASSWORD (
 )
 IF DEFINED RUN_MODE (
 	echo "RUN_MODE argument is %RUN_MODE%. Setting environment variable SOVRIN_NODE_PACKAGE_POSTFIX to %RUN_MODE%"
-	SETX SOVRIN_NODE_PACKAGE_POSTFIX %RUN_MODE%
+	SETX /m SOVRIN_NODE_PACKAGE_POSTFIX %RUN_MODE%
 )
 IF DEFINED TEST_MODE (
 	echo "TEST_MODE argument is %TEST_MODE%. Setting environment variable TEST_MODE to %TEST_MODE%"
-	SETX TEST_MODE %TEST_MODE%
+	SETX /m TEST_MODE %TEST_MODE%
 )
 
 FOR /f %%p in ('where python') do SET PYTHONPATH=%%p
@@ -52,3 +52,5 @@ nssm set SovrinNode AppDirectory %CURR_DIR%
 nssm set SovrinNode AppParameters "%CURR_DIR%start_sovrin_node %NODE_NAME% %NODE_PORT% %CLI_PORT%"
 nssm set SovrinNode DependOnService OrientDBGraph
 nssm set SovrinNode ObjectName ".\%USER%" "%PASSWORD%"
+echo "Creating agent restart task"
+SchTasks /Create /TN RestartSovrinNodeUpgradeAgent /TR "%CURR_DIR%restart_upgrade_agent.bat" /SC ONSTART /F

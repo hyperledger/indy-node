@@ -8,7 +8,7 @@ from plenum.test.pool_transactions.test_suspend_node import \
 from sovrin_common.txn import STEWARD, TGB
 from sovrin_common.txn import TRUSTEE, SPONSOR
 from sovrin_client.test.helper import addRole, suspendRole, \
-    getClientAddedWithRole
+    getClientAddedWithRole, changeVerkey
 
 whitelist = ['Observer threw an exception']
 
@@ -93,3 +93,15 @@ def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
     for n in nodeSet[:-1]:
         looper.run(eventually(checkNodeNotInNodeReg, n, node.name))
     looper.run(eventually(checkNodeNotInNodeReg, trustee, node.name))
+
+
+def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
+                                  anotherTrustee, anotherTGB, anotherSteward,
+                                  anotherSponsor):
+    for identity in (anotherTrustee, anotherTGB, anotherSteward, anotherSponsor):
+        # Trustee cannot change verkey
+        with pytest.raises(AssertionError):
+            _, wallet = identity
+            changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '')
+        # Identity owner can change verkey
+        changeVerkey(looper, *identity, wallet.defaultId, '')
