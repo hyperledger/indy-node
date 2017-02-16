@@ -582,7 +582,7 @@ class Node(PlenumNode, HasPoolManager):
         self.sendReplyToClient(Reply(txnWithMerkleInfo),
                                (result[f.IDENTIFIER.nm], result[f.REQ_ID.nm]))
         reply.result[F.seqNo.name] = txnWithMerkleInfo.get(F.seqNo.name)
-        self.storeTxnInGraph(reply.result)
+        self.storeTxn(reply.result)
 
     @staticmethod
     def ledgerTypeForTxn(txnType: str):
@@ -617,28 +617,38 @@ class Node(PlenumNode, HasPoolManager):
             error("Transaction missing required field")
         return result
 
-    def storeTxnInStateTree(self, txn):
-        did = txn[TARGET_NYM]
-        self.stateTreeStore.addTxn(txn, did)
-
-    def storeTxnInGraph(self, result):
-        result = deepcopy(result)
-        # Remove root hash and audit path from result if present since they can
-        # be generated on the fly from the ledger so no need to store it
-        result.pop(F.rootHash.name, None)
-        result.pop(F.auditPath.name, None)
-
-        if result[TXN_TYPE] == NYM:
-            self.graphStore.addNymTxnToGraph(result)
-        elif result[TXN_TYPE] == ATTRIB:
-            self.graphStore.addAttribTxnToGraph(result)
-        elif result[TXN_TYPE] == SCHEMA:
-            self.graphStore.addSchemaTxnToGraph(result)
-        elif result[TXN_TYPE] == ISSUER_KEY:
-            self.graphStore.addIssuerKeyTxnToGraph(result)
+    def storeTxn(self, txn):
+        if txn[TXN_TYPE] == NYM:
+            # TODO: this one should be stored in verkey store
+            self.storeTxnInGraph(txn)
+        elif txn[TXN_TYPE] in {ATTRIB, SCHEMA, ISSUER_KEY}:
+            self.storeTxnInStateTree(txn)
         else:
             logger.debug("Got an unknown type {} to process".
-                         format(result[TXN_TYPE]))
+                         format(txn[TXN_TYPE]))
+
+    def storeTxnInStateTree(self, txn):
+        did = txn[TARGET_NYM]
+        self.stateTreeStore.addTxn(txn)
+
+    def storeTxnInGraph(self, txn):
+        txn = deepcopy(txn)
+        # Remove root hash and audit path from result if present since they can
+        # be generated on the fly from the ledger so no need to store it
+        txn.pop(F.rootHash.name, None)
+        txn.pop(F.auditPath.name, None)
+
+        if txn[TXN_TYPE] == NYM:
+            self.graphStore.addNymTxnToGraph(txn)
+        elif txn[TXN_TYPE] == ATTRIB:
+            self.graphStore.addAttribTxnToGraph(txn)
+        elif txn[TXN_TYPE] == SCHEMA:
+            self.graphStore.addSchemaTxnToGraph(txn)
+        elif txn[TXN_TYPE] == ISSUER_KEY:
+            self.graphStore.addIssuerKeyTxnToGraph(txn)
+        else:
+            logger.debug("Got an unknown type {} to process".
+                         format(txn[TXN_TYPE]))
 
     def getReplyFor(self, request):
         typ = request.operation.get(TXN_TYPE)
