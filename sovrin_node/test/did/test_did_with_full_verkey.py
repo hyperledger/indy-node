@@ -12,12 +12,14 @@ Full verkey tests
     Verify a signature from this identifier with the new verkey
 """
 from plenum.common.eventually import eventually
+from plenum.common.signer_did import DidSigner
 
 from sovrin_common.identity import Identity
 from sovrin_node.test.did.conftest import pf
 from sovrin_node.test.did.helper import chkVerifyForRetrievedIdentity, \
-    updateWalletIdrWithFullKeySigner, updateSovrinIdrWithFullKey, \
-    fetchFullVerkeyFromSovrin, checkFullVerkeySize
+    updateSovrinIdrWithFullKey, \
+    fetchFullVerkeyFromSovrin, checkFullVerkeySize, \
+    updateWalletIdrWithFullVerkeySigner
 from sovrin_node.test.helper import createNym
 
 
@@ -31,16 +33,24 @@ def didAddedWithFullVerkey(addedSponsor, looper, sponsor, sponsorWallet,
 
 
 @pf
-def newFullKey(wallet, fullKeyIdr):
-    return updateWalletIdrWithFullKeySigner(wallet, fullKeyIdr)
+def newFullKeySigner(wallet, fullKeyIdr):
+    return DidSigner(identifier=fullKeyIdr)
 
 
 @pf
+def newFullKey(newFullKeySigner):
+    return newFullKeySigner.verkey
+
+@pf
 def didUpdatedWithFullVerkey(didAddedWithFullVerkey, looper, sponsor,
-                            sponsorWallet, fullKeyIdr, newFullKey, wallet):
+                            sponsorWallet, fullKeyIdr, newFullKey,
+                             newFullKeySigner, wallet, client):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
-    updateSovrinIdrWithFullKey(looper, sponsorWallet, sponsor, wallet,
+    # updateSovrinIdrWithFullKey(looper, sponsorWallet, sponsor, wallet,
+    #                            fullKeyIdr, newFullKey)
+    updateSovrinIdrWithFullKey(looper, wallet, client, wallet,
                                fullKeyIdr, newFullKey)
+    updateWalletIdrWithFullVerkeySigner(wallet, fullKeyIdr, newFullKeySigner)
 
 
 @pf

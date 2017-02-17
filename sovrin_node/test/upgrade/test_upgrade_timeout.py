@@ -5,6 +5,7 @@ from sovrin_node.test.upgrade.test_pool_upgrade \
 
 whitelist = ['Failed to upgrade node', 'Failed to send update request!']
 
+
 def testTimeoutWorks(nodeSet, looper, validUpgradeSent, upgradeScheduled):
     """
     Checks that after some timeout upgrade is marked as failed if
