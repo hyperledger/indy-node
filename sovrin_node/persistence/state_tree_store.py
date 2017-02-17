@@ -10,15 +10,17 @@ from sovrin_common.txn import TXN_TYPE, \
 
 logger = getlogger()
 
+
 class StateTreeStore:
     """
     Class for putting transactions into state tree
     Akin to IdentityGraph
     """
 
-    MARKER_ATTR = "\01"
-    MARKER_SCHEMA = "\02"
-    MARKER_IPK = "\03"
+    MARKER_NYM = '\01'
+    MARKER_ATTR = '\02'
+    MARKER_SCHEMA = '\03'
+    MARKER_IPK = '\04'
 
     def __init__(self, state: State):
         assert state is not None

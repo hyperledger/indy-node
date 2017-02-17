@@ -2,45 +2,49 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 from operator import itemgetter
-from typing import Iterable, Any
+from typing import Iterable, Any, List
 
 import pyorient
 
 from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.log import getlogger
-from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, VERKEY, TARGET_NYM
+from plenum.common.txn import NAME, VERSION, ORIGIN, \
+    POOL_TXN_TYPES, VERKEY
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
-    NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
+    NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus, DOMAIN_LEDGER_ID
 from plenum.common.util import error
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
+from plenum.common.ledger import Ledger
+
 from sovrin_common.config_util import getConfig
 from sovrin_common.txn import TXN_TYPE, \
-    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, SPONSOR, NYM,\
-    ROLE, STEWARD, GET_ATTR, DISCLO, DATA, GET_NYM, \
-    TXN_ID, TXN_TIME, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
-    getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
-    ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
-    CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW, NONCE
+    TARGET_NYM, allOpKeys, ATTRIB, NYM,\
+    ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
+    TXN_ID, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
+    getTxnOrderedFields, SCHEMA, GET_SCHEMA,\
+    ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, POOL_UPGRADE, ACTION, \
+    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph
 from sovrin_node.persistence.secondary_storage import SecondaryStorage
 from sovrin_common.auth import Authoriser
 from sovrin_node.server.client_authn import TxnBasedAuthNr
+from sovrin_node.server.config_req_handler import ConfigReqHandler
+from sovrin_node.server.constants import CONFIG_LEDGER_ID, openTxns, \
+    validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
+from sovrin_node.server.domain_req_handler import DomainReqHandler
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from plenum.common.types import POOL_LEDGER_ID
-from sovrin_node.persistence.StateTreeStore import StateTreeStore
+from sovrin_node.persistence.state_tree_store import StateTreeStore
 
 logger = getlogger()
 
@@ -61,7 +65,7 @@ class Node(PlenumNode, HasPoolManager):
                  storage=None,
                  config=None):
         self.config = config or getConfig()
-        self.graphStore = self.getGraphStorage(name)
+        # self.graphStore = self.getGraphStorage(name)
         super().__init__(name=name,
                          nodeRegistry=nodeRegistry,
                          clientAuthNr=clientAuthNr,
@@ -73,10 +77,11 @@ class Node(PlenumNode, HasPoolManager):
                          pluginPaths=pluginPaths,
                          storage=storage,
                          config=self.config)
-        self.stateTreeStore = StateTreeStore(self.states[POOL_LEDGER_ID])
-        self._addTxnsToGraphIfNeeded()
+        domainState = self.getState(DOMAIN_LEDGER_ID)
+        self.stateTreeStore = StateTreeStore(domainState)
+        # self._addTxnsToGraphIfNeeded()
         self.configLedger = self.getConfigLedger()
-        self.ledgerManager.addLedger(2, self.configLedger,
+        self.ledgerManager.addLedger(CONFIG_LEDGER_ID, self.configLedger,
                                      postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
                                      postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
         self.upgrader = self.getUpgrader()
@@ -86,12 +91,12 @@ class Node(PlenumNode, HasPoolManager):
     def initPoolManager(self, nodeRegistry, ha, cliname, cliha):
         HasPoolManager.__init__(self, nodeRegistry, ha, cliname, cliha)
 
-    def getSecondaryStorage(self):
-        return SecondaryStorage(self.graphStore, self.primaryStorage)
+    # def getSecondaryStorage(self):
+    #     return SecondaryStorage(self.graphStore, self.primaryStorage)
 
-    def getGraphStorage(self, name):
-        return identity_graph.IdentityGraph(self._getOrientDbStore(name,
-                                                    pyorient.DB_TYPE_GRAPH))
+    # def getGraphStorage(self, name):
+    #     return identity_graph.IdentityGraph(self._getOrientDbStore(name,
+    #                                                 pyorient.DB_TYPE_GRAPH))
 
     def getPrimaryStorage(self):
         """
@@ -132,25 +137,25 @@ class Node(PlenumNode, HasPoolManager):
         # A counter argument is since domain ledger contains identities and thus
         # trustees, its needs to sync first
         super().postDomainLedgerCaughtUp()
-        self.ledgerManager.setLedgerCanSync(2, True)
+        self.ledgerManager.setLedgerCanSync(CONFIG_LEDGER_ID, True)
         # Node has discovered other nodes now sync up domain ledger
         for nm in self.nodestack.connecteds:
             self.sendConfigLedgerStatus(nm)
-        self.ledgerManager.processStashedLedgerStatuses(2)
+        self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
 
     def sendConfigLedgerStatus(self, nodeName):
-        self.sendLedgerStatus(nodeName, 2)
+        self.sendLedgerStatus(nodeName, CONFIG_LEDGER_ID)
 
     @property
     def configLedgerStatus(self):
-        return LedgerStatus(2, self.configLedger.size,
+        return LedgerStatus(CONFIG_LEDGER_ID, self.configLedger.size,
                             self.configLedger.root_hash)
 
-    def getLedgerStatus(self, ledgerType: int):
-        if ledgerType == 2:
+    def getLedgerStatus(self, ledgerId: int):
+        if ledgerId == CONFIG_LEDGER_ID:
             return self.configLedgerStatus
         else:
-            return super().getLedgerStatus(ledgerType)
+            return super().getLedgerStatus(ledgerId)
 
     def postPoolLedgerCaughtUp(self):
         # The only reason to override this is to set the correct node id in
@@ -199,11 +204,11 @@ class Node(PlenumNode, HasPoolManager):
         # corresponding client request(REQUEST)
         self.recordAndPropagate(request, frm)
 
-    def postTxnFromCatchupAddedToLedger(self, ledgerType: int, txn: Any):
-        if ledgerType == 2:
+    def postTxnFromCatchupAddedToLedger(self, ledgerId: int, txn: Any):
+        if ledgerId == CONFIG_LEDGER_ID:
             pass
         else:
-            super().postTxnFromCatchupAddedToLedger(ledgerType, txn)
+            super().postTxnFromCatchupAddedToLedger(ledgerId, txn)
 
     def validateNodeMsg(self, wrappedMsg):
         msg, frm = wrappedMsg
@@ -243,11 +248,17 @@ class Node(PlenumNode, HasPoolManager):
                 return False
         return True
 
-    def checkValidOperation(self, identifier, reqId, operation):
-        self.checkValidSovrinOperation(identifier, reqId, operation)
-        super().checkValidOperation(identifier, reqId, operation)
+    def getDomainReqHandler(self):
+        return DomainReqHandler(self.domainLedger,
+                                self.states[DOMAIN_LEDGER_ID],
+                                self.reqProcessors)
 
-    def checkValidSovrinOperation(self, identifier, reqId, operation):
+    def getConfigReqHandler(self):
+        return ConfigReqHandler(self.configLedger,
+                                self.states[CONFIG_LEDGER_ID])
+
+    def doStaticValidation(self, identifier, reqId, operation):
+        super().doStaticValidation(identifier, reqId, operation)
         unknownKeys = set(operation.keys()).difference(set(allOpKeys))
         if unknownKeys:
             raise InvalidClientRequest(identifier, reqId,
@@ -264,61 +275,89 @@ class Node(PlenumNode, HasPoolManager):
             raise InvalidClientRequest(identifier, reqId, 'invalid {}: {}'.
                                        format(TXN_TYPE, operation[TXN_TYPE]))
 
-        if operation[TXN_TYPE] == ATTRIB:
-            dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
-            if len(dataKeys) != 1:
-                raise InvalidClientRequest(identifier, reqId,
-                                           '{} should have one and only one of '
-                                           '{}, {}, {}'
-                                           .format(ATTRIB, RAW, ENC, HASH))
-            if RAW in dataKeys:
-                try:
-                    json.loads(operation[RAW])
-                except:
-                    raise InvalidClientRequest(identifier, reqId,
-                                               'raw attribute {} should be '
-                                               'JSON'.format(operation[RAW]))
+        typ = operation.get(TXN_TYPE)
+        ledgerId = self.ledgerId(typ)
+        if ledgerId == DOMAIN_LEDGER_ID:
+            self.reqHandler.doStaticValidation(identifier, reqId, operation)
+        if ledgerId == CONFIG_LEDGER_ID:
+            self.reqHandler.doStaticValidation(identifier, reqId, operation)
 
-            if not (not operation.get(TARGET_NYM) or
-                    self.graphStore.hasNym(operation[TARGET_NYM])):
-                raise InvalidClientRequest(identifier, reqId,
-                                           '{} should be added before adding '
-                                           'attribute for it'.
-                                           format(TARGET_NYM))
-
-        if operation[TXN_TYPE] == NYM:
-            role = operation.get(ROLE)
-            nym = operation.get(TARGET_NYM)
-            if not nym:
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} needs to be present".
-                                           format(TARGET_NYM))
-            if not Authoriser.isValidRole(role):
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} not a valid role".
-                                           format(role))
-            # Only
-            if not self.canNymRequestBeProcessed(identifier, operation):
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} is already present".
-                                           format(nym))
-
-        if operation[TXN_TYPE] == POOL_UPGRADE:
-            action = operation.get(ACTION)
-            if action not in (START, CANCEL):
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} not a valid action".
-                                           format(action))
-            if action == START:
-                schedule = operation.get(SCHEDULE, {})
-                isValid, msg = self.upgrader.isScheduleValid(schedule,
-                                                             self.poolManager.nodeIds)
-                if not isValid:
-                    raise InvalidClientRequest(identifier, reqId,
-                                               "{} not a valid schedule since {}".
-                                               format(schedule, msg))
-
-            # TODO: Check if cancel is submitted before start
+    # def checkValidOperation(self, identifier, reqId, operation):
+    #     self.checkValidSovrinOperation(identifier, reqId, operation)
+    #     super().checkValidOperation(identifier, reqId, operation)
+    #
+    # def checkValidSovrinOperation(self, identifier, reqId, operation):
+    #     unknownKeys = set(operation.keys()).difference(set(allOpKeys))
+    #     if unknownKeys:
+    #         raise InvalidClientRequest(identifier, reqId,
+    #                                    'invalid keys "{}"'.
+    #                                    format(",".join(unknownKeys)))
+    #
+    #     missingKeys = set(reqOpKeys).difference(set(operation.keys()))
+    #     if missingKeys:
+    #         raise InvalidClientRequest(identifier, reqId,
+    #                                    'missing required keys "{}"'.
+    #                                    format(",".join(missingKeys)))
+    #
+    #     if operation[TXN_TYPE] not in validTxnTypes:
+    #         raise InvalidClientRequest(identifier, reqId, 'invalid {}: {}'.
+    #                                    format(TXN_TYPE, operation[TXN_TYPE]))
+    #
+    #     if operation[TXN_TYPE] == ATTRIB:
+    #         dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
+    #         if len(dataKeys) != 1:
+    #             raise InvalidClientRequest(identifier, reqId,
+    #                                        '{} should have one and only one of '
+    #                                        '{}, {}, {}'
+    #                                        .format(ATTRIB, RAW, ENC, HASH))
+    #         if RAW in dataKeys:
+    #             try:
+    #                 json.loads(operation[RAW])
+    #             except:
+    #                 raise InvalidClientRequest(identifier, reqId,
+    #                                            'raw attribute {} should be '
+    #                                            'JSON'.format(operation[RAW]))
+    #
+    #         if not (not operation.get(TARGET_NYM) or
+    #                 self.graphStore.hasNym(operation[TARGET_NYM])):
+    #             raise InvalidClientRequest(identifier, reqId,
+    #                                        '{} should be added before adding '
+    #                                        'attribute for it'.
+    #                                        format(TARGET_NYM))
+    #
+    #     if operation[TXN_TYPE] == NYM:
+    #         role = operation.get(ROLE)
+    #         nym = operation.get(TARGET_NYM)
+    #         if not nym:
+    #             raise InvalidClientRequest(identifier, reqId,
+    #                                        "{} needs to be present".
+    #                                        format(TARGET_NYM))
+    #         if not Authoriser.isValidRole(role):
+    #             raise InvalidClientRequest(identifier, reqId,
+    #                                        "{} not a valid role".
+    #                                        format(role))
+    #         # Only
+    #         if not self.canNymRequestBeProcessed(identifier, operation):
+    #             raise InvalidClientRequest(identifier, reqId,
+    #                                        "{} is already present".
+    #                                        format(nym))
+    #
+    #     if operation[TXN_TYPE] == POOL_UPGRADE:
+    #         action = operation.get(ACTION)
+    #         if action not in (START, CANCEL):
+    #             raise InvalidClientRequest(identifier, reqId,
+    #                                        "{} not a valid action".
+    #                                        format(action))
+    #         if action == START:
+    #             schedule = operation.get(SCHEDULE, {})
+    #             isValid, msg = self.upgrader.isScheduleValid(schedule,
+    #                                                          self.poolManager.nodeIds)
+    #             if not isValid:
+    #                 raise InvalidClientRequest(identifier, reqId,
+    #                                            "{} not a valid schedule since {}".
+    #                                            format(schedule, msg))
+    #
+    #         # TODO: Check if cancel is submitted before start
 
     def checkRequestAuthorized(self, request: Request):
         op = request.operation
@@ -444,46 +483,48 @@ class Node(PlenumNode, HasPoolManager):
         result.update(request.operation)
         self.transmitToClient(Reply(result), frm)
 
-    def processGetTxnReq(self, request: Request, frm: str):
-        nym = request.operation[TARGET_NYM]
-        origin = request.identifier
-        if nym != origin:
-            # TODO not sure this is correct; why does it matter?
-            msg = "You can only receive transactions for yourself"
-            self.transmitToClient(RequestNack(*request.key, msg), frm)
-        else:
-            self.transmitToClient(RequestAck(*request.key), frm)
-            data = request.operation.get(DATA)
-            addNymTxn = self.graphStore.getAddNymTxn(origin)
-            txnIds = [addNymTxn[TXN_ID], ] + self.graphStore. \
-                getAddAttributeTxnIds(origin)
-            # If sending transactions to a user then should send user's
-            # sponsor creation transaction also
-            if addNymTxn.get(ROLE) is None:
-                sponsorNymTxn = self.graphStore.getAddNymTxn(
-                    addNymTxn.get(f.IDENTIFIER.nm))
-                txnIds = [sponsorNymTxn[TXN_ID], ] + txnIds
-            # TODO: Remove this log statement
-            logger.debug("{} getting replies for {}".format(self, txnIds))
-            result = self.secondaryStorage.getReplies(*txnIds, seqNo=data)
-            txns = sorted(list(result.values()), key=itemgetter(F.seqNo.name))
-            lastTxn = str(txns[-1][F.seqNo.name]) if len(txns) > 0 else data
-            result = {
-                TXN_ID: self.genTxnId(
-                    request.identifier, request.reqId)
-            }
-            result.update(request.operation)
-            # TODO: We should have a single JSON encoder which does the
-            # encoding for us, like sorting by keys, handling datetime objects.
-            result[DATA] = json.dumps({
-                LAST_TXN: lastTxn,
-                TXNS: txns
-            }, default=dateTimeEncoding, sort_keys=True)
-            result.update({
-                f.IDENTIFIER.nm: request.identifier,
-                f.REQ_ID.nm: request.reqId,
-            })
-            self.transmitToClient(Reply(result), frm)
+    # TODO: Fix it later to retrive any txns with given seqNos,
+    # chunked ledger will be used.
+    # def processGetTxnReq(self, request: Request, frm: str):
+    #     nym = request.operation[TARGET_NYM]
+    #     origin = request.identifier
+    #     if nym != origin:
+    #         # TODO not sure this is correct; why does it matter?
+    #         msg = "You can only receive transactions for yourself"
+    #         self.transmitToClient(RequestNack(*request.key, msg), frm)
+    #     else:
+    #         self.transmitToClient(RequestAck(*request.key), frm)
+    #         data = request.operation.get(DATA)
+    #         addNymTxn = self.graphStore.getAddNymTxn(origin)
+    #         txnIds = [addNymTxn[TXN_ID], ] + self.graphStore. \
+    #             getAddAttributeTxnIds(origin)
+    #         # If sending transactions to a user then should send user's
+    #         # sponsor creation transaction also
+    #         if addNymTxn.get(ROLE) is None:
+    #             sponsorNymTxn = self.graphStore.getAddNymTxn(
+    #                 addNymTxn.get(f.IDENTIFIER.nm))
+    #             txnIds = [sponsorNymTxn[TXN_ID], ] + txnIds
+    #         # TODO: Remove this log statement
+    #         logger.debug("{} getting replies for {}".format(self, txnIds))
+    #         result = self.secondaryStorage.getReplies(*txnIds, seqNo=data)
+    #         txns = sorted(list(result.values()), key=itemgetter(F.seqNo.name))
+    #         lastTxn = str(txns[-1][F.seqNo.name]) if len(txns) > 0 else data
+    #         result = {
+    #             TXN_ID: self.genTxnId(
+    #                 request.identifier, request.reqId)
+    #         }
+    #         result.update(request.operation)
+    #         # TODO: We should have a single JSON encoder which does the
+    #         # encoding for us, like sorting by keys, handling datetime objects.
+    #         result[DATA] = json.dumps({
+    #             LAST_TXN: lastTxn,
+    #             TXNS: txns
+    #         }, default=dateTimeEncoding, sort_keys=True)
+    #         result.update({
+    #             f.IDENTIFIER.nm: request.identifier,
+    #             f.REQ_ID.nm: request.reqId,
+    #         })
+    #         self.transmitToClient(Reply(result), frm)
 
     def processGetSchemaReq(self, request: Request, frm: str):
         issuerDid = request.operation[TARGET_NYM]
@@ -525,7 +566,7 @@ class Node(PlenumNode, HasPoolManager):
         if attrValue:
             attr = {attrName: attrValue}
             result[DATA] = json.dumps(attr, sort_keys=True)
-            result[F.seqNo.name] = seqNo
+            result[f.SEQ_NO.nm] = seqNo
         result.update(request.operation)
         result.update({
             f.IDENTIFIER.nm: request.identifier,
@@ -553,8 +594,9 @@ class Node(PlenumNode, HasPoolManager):
     def processRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == GET_NYM:
             self.processGetNymReq(request, frm)
-        elif request.operation[TXN_TYPE] == GET_TXNS:
-            self.processGetTxnReq(request, frm)
+        # TODO: Come back to it
+        # elif request.operation[TXN_TYPE] == GET_TXNS:
+        #     self.processGetTxnReq(request, frm)
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
             self.processGetSchemaReq(request, frm)
         elif request.operation[TXN_TYPE] == GET_ATTR:
@@ -586,13 +628,13 @@ class Node(PlenumNode, HasPoolManager):
         self.storeTxn(reply.result)
 
     @staticmethod
-    def ledgerTypeForTxn(txnType: str):
+    def ledgerId(txnType: str):
         if txnType in POOL_TXN_TYPES:
-            return 0
+            return POOL_LEDGER_ID
         if txnType in IDENTITY_TXN_TYPES:
-            return 1
+            return DOMAIN_LEDGER_ID
         if txnType in CONFIG_TXN_TYPES:
-            return 2
+            return CONFIG_LEDGER_ID
 
     def storeTxnInLedger(self, result):
         if result[TXN_TYPE] == ATTRIB:
@@ -657,19 +699,23 @@ class Node(PlenumNode, HasPoolManager):
     def getReplyFor(self, request):
         typ = request.operation.get(TXN_TYPE)
         if typ in IDENTITY_TXN_TYPES:
-            result = self.secondaryStorage.getReply(request.identifier,
-                                                    request.reqId,
-                                                    type=request.operation[TXN_TYPE])
-            if result:
+            # result = self.secondaryStorage.getReply(request.identifier,
+            #                                         request.reqId,
+            #                                         type=request.operation[TXN_TYPE])
+            reply = self.getReplyFromLedger(self.domainLedger, request)
+            if reply:
                 if request.operation[TXN_TYPE] == ATTRIB:
-                    result = self.hashAttribTxn(result)
-                return Reply(result)
+                    result = self.hashAttribTxn(reply.result)
+                    reply = Reply(result)
+                return reply
             else:
                 return None
         if typ in CONFIG_TXN_TYPES:
             return self.getReplyFromLedger(self.configLedger, request)
 
-    def doCustomAction(self, ppTime: float, req: Request) -> None:
+    # def doCustomAction(self, ppTime: float, req: Request) -> None:
+    def doCustomAction(self, ppTime, reqs: List[Request],
+                       stateRoot, txnRoot) -> None:
         """
         Execute the REQUEST sent to this Node
 
@@ -690,14 +736,14 @@ class Node(PlenumNode, HasPoolManager):
                 # so transaction goes to Upgrader
                 self.upgrader.handleUpgradeTxn(reply.result)
 
-    def generateReply(self, ppTime: float, req: Request):
-        operation = req.operation
-        txnId = self.genTxnId(req.identifier, req.reqId)
-        result = {TXN_ID: txnId, TXN_TIME: int(ppTime)}
-        result.update(operation)
-        result.update({
-            f.IDENTIFIER.nm: req.identifier,
-            f.REQ_ID.nm: req.reqId,
-        })
-
-        return Reply(result)
+    # def generateReply(self, ppTime: float, req: Request):
+    #     operation = req.operation
+    #     txnId = self.genTxnId(req.identifier, req.reqId)
+    #     result = {TXN_ID: txnId, TXN_TIME: int(ppTime)}
+    #     result.update(operation)
+    #     result.update({
+    #         f.IDENTIFIER.nm: req.identifier,
+    #         f.REQ_ID.nm: req.reqId,
+    #     })
+    #
+    #     return Reply(result)
