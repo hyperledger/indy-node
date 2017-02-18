@@ -24,7 +24,7 @@ def txnPoolNodeSet(tconf, nodeSet):
     return nodeSet
 
 
-@pytest.mark.skipif(True, reason='Failing on Windows')
+@pytest.mark.skip(reason='SOV-559. Failing on Windows')
 def testUpgradeLatestUncancelledVersion(looper,
                                         txnPoolNodeSet, tconf, nodeThetaAdded,
                                         validUpgrade, trustee, trusteeWallet,
