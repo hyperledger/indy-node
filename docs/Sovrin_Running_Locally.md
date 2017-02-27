@@ -17,7 +17,7 @@ I’m assuming that you have Sovrin-node installed (I recommend installing this 
 
 You will also need OrientDB installed again and again instructions for that can be found at https://github.com/sovrin-foundation/sovrin/blob/master/orientdb_installation.md
 
-Finally make sure that `pytest` module is installed (it is required to run test-related functionality):
+Finally make sure that `pytest` module is installed if you want to run the test agents like Faber, Acme, etc. They are used in the [Getting Started Tutorial](https://github.com/sovrin-foundation/sovrin-client/blob/stable/getting-started.md):
 
 ```
 pip install pytest
