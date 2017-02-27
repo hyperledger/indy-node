@@ -1,4 +1,5 @@
 import json
+import os
 from copy import deepcopy
 from hashlib import sha256
 from operator import itemgetter
@@ -13,6 +14,7 @@ from ledger.util import F
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.log import getlogger
+from plenum.common.state import PruningState
 from plenum.common.txn import NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
@@ -33,6 +35,7 @@ from sovrin_common.txn import TXN_TYPE, \
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph
+from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.persistence.secondary_storage import SecondaryStorage
 from sovrin_common.auth import Authoriser
 from sovrin_node.server.client_authn import TxnBasedAuthNr
@@ -66,6 +69,10 @@ class Node(PlenumNode, HasPoolManager):
                  config=None):
         self.config = config or getConfig()
         # self.graphStore = self.getGraphStorage(name)
+        # TODO: 2 ugly lines ahead, don't know how to avoid
+        self.stateTreeStore = None
+        self.idrCache = None
+
         super().__init__(name=name,
                          nodeRegistry=nodeRegistry,
                          clientAuthNr=clientAuthNr,
@@ -79,11 +86,21 @@ class Node(PlenumNode, HasPoolManager):
                          config=self.config)
         domainState = self.getState(DOMAIN_LEDGER_ID)
         self.stateTreeStore = StateTreeStore(domainState)
+
+        self.idrCache = IdrCache(self.dataLocation, name=self.name)
+
+        # TODO: ugly line ahead, don't know how to avoid
+        self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
+
         # self._addTxnsToGraphIfNeeded()
         self.configLedger = self.getConfigLedger()
         self.ledgerManager.addLedger(CONFIG_LEDGER_ID, self.configLedger,
                                      postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
                                      postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
+        self.states[CONFIG_LEDGER_ID] = self.loadConfigState()
+        self.configReqHandler = self.getConfigReqHandler()
+        self.initConfigState()
+
         self.upgrader = self.getUpgrader()
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
@@ -123,12 +140,29 @@ class Node(PlenumNode, HasPoolManager):
                         self.configLedger,
                         upgradeFailedCallback=self.postConfigLedgerCaughtUp)
 
+    def getDomainReqHandler(self):
+        return DomainReqHandler(self.domainLedger,
+                                self.states[DOMAIN_LEDGER_ID],
+                                self.reqProcessors)
+
     def getConfigLedger(self):
         return Ledger(CompactMerkleTree(hashStore=FileHashStore(
             fileNamePrefix='config', dataDir=self.dataLocation)),
             dataDir=self.dataLocation,
             fileName=self.config.configTransactionsFile,
             ensureDurability=self.config.EnsureLedgerDurability)
+
+    def loadConfigState(self):
+        return PruningState(os.path.join(self.dataLocation,
+                                         self.config.configStateDbName))
+
+    def getConfigReqHandler(self):
+        return ConfigReqHandler(self.configLedger,
+                                self.states[CONFIG_LEDGER_ID])
+
+    def initConfigState(self):
+        self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
+                                 self.configLedger, self.configReqHandler)
 
     def postDomainLedgerCaughtUp(self):
         # TODO: Reconsider, shouldn't config ledger be synced before domain
@@ -178,7 +212,8 @@ class Node(PlenumNode, HasPoolManager):
                 }
             }
 
-            op[DATA][ACTION] = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
+            op[DATA][ACTION] = COMPLETE if \
+                self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
             op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
             request = self.wallet.signOp(op)
             self.startedProcessingReq(*request.key, self.nodestack.name)
@@ -228,18 +263,18 @@ class Node(PlenumNode, HasPoolManager):
         else:
             return super().authNr(req)
 
-    def _addTxnsToGraphIfNeeded(self):
-        # TODO: should it be replaced by state tree store somehow?
-        i = 0
-        txnCountInGraph = self.graphStore.countTxns()
-        for seqNo, txn in self.domainLedger.getAllTxn().items():
-            if seqNo > txnCountInGraph:
-                txn[F.seqNo.name] = seqNo
-                self.storeTxnInGraph(txn)
-                i += 1
-        logger.debug("{} adding {} transactions to graph from ledger".
-                     format(self, i))
-        return i
+    # def _addTxnsToGraphIfNeeded(self):
+    #     # TODO: should it be replaced by state tree store somehow?
+    #     i = 0
+    #     txnCountInGraph = self.graphStore.countTxns()
+    #     for seqNo, txn in self.domainLedger.getAllTxn().items():
+    #         if seqNo > txnCountInGraph:
+    #             txn[F.seqNo.name] = seqNo
+    #             self.storeTxnInGraph(txn)
+    #             i += 1
+    #     logger.debug("{} adding {} transactions to graph from ledger".
+    #                  format(self, i))
+    #     return i
 
     def isSignatureVerificationNeeded(self, msg: Any):
         op = msg.get(OPERATION)
@@ -247,15 +282,6 @@ class Node(PlenumNode, HasPoolManager):
             if op.get(TXN_TYPE) in openTxns:
                 return False
         return True
-
-    def getDomainReqHandler(self):
-        return DomainReqHandler(self.domainLedger,
-                                self.states[DOMAIN_LEDGER_ID],
-                                self.reqProcessors)
-
-    def getConfigReqHandler(self):
-        return ConfigReqHandler(self.configLedger,
-                                self.states[CONFIG_LEDGER_ID])
 
     def doStaticValidation(self, identifier, reqId, operation):
         super().doStaticValidation(identifier, reqId, operation)
@@ -362,9 +388,7 @@ class Node(PlenumNode, HasPoolManager):
     def checkRequestAuthorized(self, request: Request):
         op = request.operation
         typ = op[TXN_TYPE]
-
         s = self.graphStore  # type: identity_graph.IdentityGraph
-
         origin = request.identifier
 
         if typ == NYM:
@@ -458,7 +482,7 @@ class Node(PlenumNode, HasPoolManager):
         return True
 
     def defaultAuthNr(self):
-        return TxnBasedAuthNr(self.graphStore)
+        return TxnBasedAuthNr(self.idrCache, self.stateTreeStore)
 
     def defaultNodeAuthNr(self):
         return NodeAuthNr(self.poolLedger)
