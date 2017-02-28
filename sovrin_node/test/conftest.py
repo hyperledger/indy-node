@@ -78,7 +78,7 @@ def trusteeWallet(trusteeData):
 
 
 @pytest.fixture(scope="module")
-def trustee(nodeSet, looper, tdir, up, trusteeWallet):
+def trustee(nodeSet, looper, tdir, trusteeWallet):
     return buildStewardClient(looper, tdir, trusteeWallet)
 
 
@@ -102,7 +102,7 @@ def looper(txnPoolNodesLooper):
 
 
 @pytest.fixture(scope="module")
-def steward(nodeSet, looper, tdir, up, stewardWallet):
+def steward(nodeSet, looper, tdir, stewardWallet):
     return buildStewardClient(looper, tdir, stewardWallet)
 
 

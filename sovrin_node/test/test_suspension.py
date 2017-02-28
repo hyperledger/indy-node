@@ -10,7 +10,7 @@ from sovrin_common.txn import TRUSTEE, SPONSOR
 from sovrin_client.test.helper import addRole, suspendRole, \
     getClientAddedWithRole, changeVerkey
 
-whitelist = ['Observer threw an exception']
+whitelist = ['Observer threw an exception', 'while verifying message']
 
 
 @pytest.fixture(scope="module")
@@ -88,7 +88,7 @@ def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
 
 def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
     node = nodeSet[-1]
-    nodeNym = hexToFriendly(node.nodestack.local.signer.verhex)
+    nodeNym = hexToFriendly(node.nodestack.verhex)
     suspendNode(looper, trustee, trusteeWallet, nodeNym, node.name)
     for n in nodeSet[:-1]:
         looper.run(eventually(checkNodeNotInNodeReg, n, node.name))
