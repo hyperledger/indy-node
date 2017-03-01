@@ -43,3 +43,6 @@ class SecondaryStorage(PlenumSS):
 
     def isSteward(self, nym):
         return self._txnStore.hasSteward(nym)
+
+    def isTrustee(self, nym):
+        return self._txnStore.hasTrustee(nym)
