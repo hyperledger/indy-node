@@ -94,7 +94,7 @@ This is fairly simple, and you start it using the command:
 ```
 python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin/test/agent/faber.py --port 5555
 ```
-Note - the above assumes you set up a Python virtual environmetn called sovrin as per the installation guide). If not, this should be the path the the faber.py script.
+Note - the above assumes you set up a Python virtual environment called sovrin as per the installation guide). If not, this should be the path the the faber.py script.
 
 The Faber agent should then start up, connect to our test Sovrin cluster, handshake and be accepted as a Sponsor.
 
