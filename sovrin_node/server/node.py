@@ -12,13 +12,13 @@ from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest
+    UnauthorizedClientRequest, InvalidEndpoint
 from plenum.common.log import getlogger
 from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
     NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
-from plenum.common.util import error
+from plenum.common.util import error, isValidEndpoint
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
@@ -29,7 +29,7 @@ from sovrin_common.txn import TXN_TYPE, \
     getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
     ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL
+    NODE_UPGRADE, COMPLETE, FAIL, ENDPOINT
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph
@@ -269,7 +269,15 @@ class Node(PlenumNode, HasPoolManager):
                                            .format(ATTRIB, RAW, ENC, HASH))
             if RAW in dataKeys:
                 try:
-                    json.loads(operation[RAW])
+                    data = json.loads(operation[RAW])
+                    endpoint = data.get(ENDPOINT)
+                    if endpoint:
+                        if not isValidEndpoint(endpoint):
+                            raise InvalidEndpoint("invalid endpoint: '{}'".
+                                                  format(endpoint))
+
+                except InvalidEndpoint as ie:
+                    raise InvalidClientRequest(identifier, reqId, str(ie))
                 except:
                     raise InvalidClientRequest(identifier, reqId,
                                                'raw attribute {} should be '

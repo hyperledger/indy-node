@@ -1,37 +1,26 @@
 import inspect
 import json
-import os
 import shutil
 from contextlib import ExitStack
-from typing import Iterable, Union, Tuple
+from typing import Iterable
 
-import pyorient
-from plenum.common.signer_did import DidSigner
-from plenum.test.test_node import checkNodesAreReady, TestNodeCore
-from plenum.test.test_node import checkNodesConnected
-from plenum.test.test_stack import StackedTester, TestStack
-
+from plenum.common.eventually import eventually
 from plenum.common.log import getlogger
 from plenum.common.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.txn import REQACK
-from plenum.common.types import HA, Identifier
 from plenum.common.util import getMaxFailures, runall
 from plenum.persistence import orientdb_store
-from plenum.persistence.orientdb_store import OrientDbStore
-from plenum.common.eventually import eventually
 from plenum.test.helper import TestNodeSet as PlenumTestNodeSet
 from plenum.test.helper import checkSufficientRepliesRecvd, \
     checkLastClientReqForNode, buildCompletedTxnFromReply
-from plenum.test.test_client import genTestClient as genPlenumTestClient, \
-    genTestClientProvider as genPlenumTestClientProvider
+from plenum.test.test_node import checkNodesAreReady, TestNodeCore
+from plenum.test.test_node import checkNodesConnected
 from plenum.test.testable import Spyable
-from sovrin_client.client.client import Client
 from sovrin_client.client.wallet.attribute import LedgerStore, Attribute
 from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.identity import Identity
+from sovrin_client.test.helper import genTestClient, genTestClientProvider
 from sovrin_common.txn import ATTRIB, TARGET_NYM, TXN_TYPE, TXN_ID, GET_NYM
-from sovrin_common.config_util import getConfig
 from sovrin_node.server.node import Node
 from sovrin_node.server.upgrader import Upgrader
 
@@ -300,130 +289,6 @@ class TestNodeSet(PlenumTestNodeSet):
                          primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          testNodeClass=testNodeClass)
-
-
-# class TestClientStorage(TempStorage, ClientStorage):
-class TestClientStorage:
-    def __init__(self, name, baseDir):
-        self.name = name
-        self.baseDir = baseDir
-
-    def cleanupDataLocation(self):
-        loc = os.path.join(self.baseDir, "data/clients", self.name)
-        logger.debug('Cleaning up location {} of test client {}'.
-                     format(loc, self.name))
-        try:
-            shutil.rmtree(loc)
-        except Exception as ex:
-            logger.debug("Error while removing temporary directory {}".format(
-                ex))
-        config = getConfig()
-        if config.ReqReplyStore == "orientdb" or config.ClientIdentityGraph:
-            try:
-                self._getOrientDbStore().client.db_drop(self.name)
-                logger.debug("Dropped db {}".format(self.name))
-            except Exception as ex:
-                logger.debug("Error while dropping db {}: {}".format(self.name,
-                                                                     ex))
-
-
-@Spyable(methods=[Client.handleOneNodeMsg])
-class TestClient(Client, StackedTester, TestClientStorage):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        TestClientStorage.__init__(self, self.name, self.basedirpath)
-
-    @staticmethod
-    def stackType():
-        return TestStack
-
-    def _getOrientDbStore(self):
-        config = getConfig()
-        return OrientDbStore(user=config.OrientDB["user"],
-                             password=config.OrientDB["password"],
-                             dbName=self.name,
-                             storageType=pyorient.STORAGE_TYPE_MEMORY)
-
-    def onStopping(self, *args, **kwargs):
-        self.cleanupDataLocation()
-        super().onStopping(*args, **kwargs)
-
-
-def genTestClient(nodes: TestNodeSet = None,
-                  nodeReg=None,
-                  tmpdir=None,
-                  identifier: Identifier = None,
-                  verkey: str = None,
-                  peerHA: Union[HA, Tuple[str, int]] = None,
-                  testClientClass=TestClient,
-                  usePoolLedger=False,
-                  name: str=None) -> (TestClient, Wallet):
-    testClient, wallet = genPlenumTestClient(nodes,
-                                             nodeReg,
-                                             tmpdir,
-                                             testClientClass,
-                                             verkey=verkey,
-                                             identifier=identifier,
-                                             bootstrapKeys=False,
-                                             usePoolLedger=usePoolLedger,
-                                             name=name)
-    testClient.peerHA = peerHA
-    return testClient, wallet
-
-
-def genConnectedTestClient(looper,
-                           nodes: TestNodeSet = None,
-                           nodeReg=None,
-                           tmpdir=None,
-                           identifier: Identifier = None,
-                           verkey: str = None
-                           ) -> TestClient:
-    c, w = genTestClient(nodes, nodeReg=nodeReg, tmpdir=tmpdir,
-                      identifier=identifier, verkey=verkey)
-    looper.add(c)
-    looper.run(c.ensureConnectedToNodes())
-    return c, w
-
-
-def genTestClientProvider(nodes: TestNodeSet = None,
-                          nodeReg=None,
-                          tmpdir=None,
-                          clientGnr=genTestClient):
-    return genPlenumTestClientProvider(nodes, nodeReg, tmpdir, clientGnr)
-
-
-def clientFromSigner(signer, looper, nodeSet, tdir):
-    wallet = Wallet(signer.identifier)
-    wallet.addIdentifier(signer)
-    s = genTestClient(nodeSet, tmpdir=tdir, identifier=signer.identifier)
-    looper.add(s)
-    looper.run(s.ensureConnectedToNodes())
-    return s
-
-
-def createNym(looper, nym, creatorClient, creatorWallet: Wallet, role=None,
-              verkey=None):
-    idy = Identity(identifier=nym,
-                   verkey=verkey,
-                   role=role)
-    creatorWallet.addSponsoredIdentity(idy)
-    reqs = creatorWallet.preparePending()
-    creatorClient.submitReqs(*reqs)
-
-    def check():
-        assert creatorWallet._sponsored[nym].seqNo
-
-    looper.run(eventually(check, retryWait=1, timeout=10))
-
-
-def addUser(looper, creatorClient, creatorWallet, name, useDid=True,
-            addVerkey=True):
-    wallet = Wallet(name)
-    signer = DidSigner() if useDid else SimpleSigner()
-    idr, _ = wallet.addIdentifier(signer=signer)
-    verkey = wallet.getVerkey(idr) if addVerkey else None
-    createNym(looper, idr, creatorClient, creatorWallet, verkey=verkey)
-    return wallet
 
 
 def checkSubmitted(looper, client, optype, txnsBefore):

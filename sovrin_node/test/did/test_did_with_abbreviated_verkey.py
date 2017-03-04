@@ -21,7 +21,7 @@ from sovrin_node.test.did.helper import chkVerifyForRetrievedIdentity, \
     updateWalletIdrWithFullKeySigner, updateSovrinIdrWithFullKey, \
     fetchFullVerkeyFromSovrin, checkAbbrVerkeySize, checkDidSize, \
     updateWalletIdrWithFullVerkeySigner
-from sovrin_node.test.helper import createNym
+from sovrin_client.test.helper import createNym
 
 
 @pf

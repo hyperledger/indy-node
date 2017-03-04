@@ -33,7 +33,7 @@ from sovrin_common.identity import Identity
 from sovrin_node.test.did.conftest import pf
 from sovrin_node.test.did.helper import chkVerifyForRetrievedIdentity, \
     updateSovrinIdrWithFullKey
-from sovrin_node.test.helper import createNym
+from sovrin_client.test.helper import createNym
 
 
 @pf
