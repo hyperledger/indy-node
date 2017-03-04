@@ -32,10 +32,11 @@ from sovrin_common.txn import TXN_TYPE, TARGET_NYM, TXN_ID, ROLE, \
     getTxnOrderedFields
 from sovrin_common.config_util import getConfig
 
-from sovrin_node.test.helper import genTestClient, createNym, TestNode, \
-    makePendingTxnsRequest, buildStewardClient, TestClient
+from sovrin_node.test.helper import TestNode, \
+    makePendingTxnsRequest, buildStewardClient
 
-from sovrin_client.test.helper import addRole, getClientAddedWithRole
+from sovrin_client.test.helper import addRole, getClientAddedWithRole, \
+    genTestClient, TestClient, createNym
 from sovrin_client.test.cli.helper import newCLI
 from sovrin_client.test.conftest import updatedPoolTxnData, sponsorWallet, \
     sponsor
