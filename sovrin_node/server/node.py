@@ -271,10 +271,11 @@ class Node(PlenumNode, HasPoolManager):
                 try:
                     data = json.loads(operation[RAW])
                     endpoint = data.get(ENDPOINT)
-                    if endpoint:
-                        if not isValidEndpoint(endpoint):
+                    # TODO: Add validations for Verkey/Pubkey
+                    if endpoint and 'ha' in endpoint:
+                        if not isValidEndpoint(endpoint['ha']):
                             raise InvalidEndpoint("invalid endpoint: '{}'".
-                                                  format(endpoint))
+                                                  format(endpoint['ha']))
 
                 except InvalidEndpoint as ie:
                     raise InvalidClientRequest(identifier, reqId, str(ie))
