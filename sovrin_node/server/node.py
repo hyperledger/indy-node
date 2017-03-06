@@ -273,12 +273,15 @@ class Node(PlenumNode, HasPoolManager):
                     endpoint = data.get(ENDPOINT)
                     check_endpoint_valid(endpoint, required=False)
 
-                except InvalidEndpoint as ie:
-                    raise InvalidClientRequest(identifier, reqId, str(ie))
-                except:
-                    raise InvalidClientRequest(identifier, reqId,
-                                               'raw attribute {} should be '
-                                               'JSON'.format(operation[RAW]))
+                except InvalidEndpoint as exc:
+                    raise InvalidClientRequest(identifier, reqId, str(exc))
+                except BaseException as exc:
+                    raise InvalidClientRequest(identifier, reqId, str(exc))
+                # PREVIOUS CODE, ASSUMED ANY EXCEPTION WAS A JSON ISSUE
+                # except:
+                #     raise InvalidClientRequest(identifier, reqId,
+                #                                'raw attribute {} should be '
+                #                                'JSON'.format(operation[RAW]))
 
             if not (not operation.get(TARGET_NYM) or
                     self.graphStore.hasNym(operation[TARGET_NYM])):
