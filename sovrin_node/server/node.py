@@ -12,7 +12,7 @@ from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, InvalidEndpoint
+    UnauthorizedClientRequest, EndpointException
 from plenum.common.log import getlogger
 from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY
@@ -276,7 +276,7 @@ class Node(PlenumNode, HasPoolManager):
                     endpoint = data.get(ENDPOINT)
                     check_endpoint_valid(endpoint, required=False)
 
-                except InvalidEndpoint as exc:
+                except EndpointException as exc:
                     raise InvalidClientRequest(identifier, reqId, str(exc))
                 except BaseException as exc:
                     raise InvalidClientRequest(identifier, reqId, str(exc))
