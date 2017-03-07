@@ -111,7 +111,7 @@ I've included the full steps for the getting started console commands in the Get
 send NYM dest=7YD5NKn3P4wVJLesAmA1rr7sLPqW9mR1nhFdKD518k21 role=TRUST_ANCHOR
 send ATTRIB dest=7YD5NKn3P4wVJLesAmA1rr7sLPqW9mR1nhFdKD518k21 raw={"endpoint": "127.0.0.1:6666"}
 
-python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin/test/agent/acme.py --port 6666
+python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin-client/test/agent/acme.py --port 6666
 ```
 
 ### ThriftBank Client
@@ -119,7 +119,7 @@ python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin/test/agent/acme.
 send NYM dest=9jegUr9vAMqoqQQUEAiCBYNQDnUbTktQY9nNspxfasZW role=TRUST_ANCHOR
 send ATTRIB dest=9jegUr9vAMqoqQQUEAiCBYNQDnUbTktQY9nNspxfasZW raw={"endpoint": "127.0.0.1:7777"}
 
-python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin/test/agent/thrift.py --port 7777
+python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin-client/test/agent/thrift.py --port 7777
 ```
 
 
