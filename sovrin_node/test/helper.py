@@ -58,8 +58,8 @@ class Scenario(ExitStack):
         self.ran = []  # history of what has been run
         self.userId = None
         self.userNym = None
-        self.sponsor = None
-        self.sponsorNym = None
+        self.trustAnchor = None
+        self.trustAnchorNym = None
         self.agent = None
         self.agentNym = None
 
@@ -182,9 +182,9 @@ class Scenario(ExitStack):
         self.agent = self.genOrg()
         return self.agent
 
-    def addSponsor(self):
-        self.sponsor = self.genOrg()
-        return self.sponsor
+    def addTrustAnchor(self):
+        self.trustAnchor = self.genOrg()
+        return self.trustAnchor
 
 
 class Organization:
