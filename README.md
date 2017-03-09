@@ -28,3 +28,4 @@ To learn more about the Sovrin Identity Network and the Sovrin Foundation, see [
    See the License for the specific language governing permissions and
    limitations under the License.
 .
+.
