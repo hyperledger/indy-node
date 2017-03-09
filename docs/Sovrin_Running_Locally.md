@@ -17,6 +17,11 @@ I’m assuming that you have Sovrin-node installed (I recommend installing this 
 
 You will also need OrientDB installed again and again instructions for that can be found at https://github.com/sovrin-foundation/sovrin/blob/master/orientdb_installation.md
 
+Finally make sure that `pytest` module is installed (it is required to run test-related functionality like Faber, Acme and ThriftBank test agents): 
+
+```
+pip install pytest
+```
 
 ## Initial setup
 In your home folder, create a Sovrin folder. In here we are going to put the scripts we will use to setup the environment. Then change into this folder.
