@@ -1,3 +1,5 @@
+import warnings
+
 from plenum.common.eventually import eventually
 from plenum.common.port_dispenser import genHa
 from plenum.common.raet import initLocalKeep
@@ -35,11 +37,16 @@ from sovrin_common.config_util import getConfig
 from sovrin_node.test.helper import TestNode, \
     makePendingTxnsRequest, buildStewardClient
 
+# noinspection PyUnresolvedReferences
 from sovrin_client.test.helper import addRole, getClientAddedWithRole, \
     genTestClient, TestClient, createNym
+
+# noinspection PyUnresolvedReferences
 from sovrin_client.test.cli.helper import newCLI
+
+# noinspection PyUnresolvedReferences
 from sovrin_client.test.conftest import updatedPoolTxnData, sponsorWallet, \
-    sponsor
+    sponsor, warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, counter, nodeReg, up, ready, \
@@ -47,7 +54,16 @@ from plenum.test.conftest import tdir, counter, nodeReg, up, ready, \
     startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
-    txnPoolNodesLooper, nodeAndClientInfoFilePath, conf, patchPluginManager
+    txnPoolNodesLooper, nodeAndClientInfoFilePath, conf, patchPluginManager, \
+    warncheck
+
+
+@pytest.fixture(scope="module")
+def warnfilters(client_warnfilters):
+    def _():
+        client_warnfilters()
+        warnings.filterwarnings('ignore', category=ResourceWarning, module='sovrin_node\.test\.helper', message='unclosed.*socket\.socket')
+    return _
 
 
 @pytest.fixture(scope="module")
