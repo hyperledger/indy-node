@@ -39,29 +39,49 @@ RETRY_WAIT = 0.25
 
 
 def parseArgs():
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--num_clients", action="store", type=int, default=1,
+
+    parser.add_argument("-c", "--num_clients",
+                        action="store",
+                        type=int,
+                        default=1,
                         dest="numberOfClients",
                         help="number of clients to use (set to -1 for all)")
-    parser.add_argument("-r", "--num_requests", action="store", type=int, default=1,
+
+    parser.add_argument("-r", "--num_requests",
+                        action="store",
+                        type=int,
+                        default=1,
                         dest="numberOfRequests",
                         help="number of clients to use")
-    # parser.add_argument("--ttl", action="store", type=int, default=10,
-    #                     dest="requestTTL",
-    #                     help="number of seconds to wait for successfull reply")
-    parser.add_argument("--timeout", action="store", type=int, default=1,
+
+    parser.add_argument("--timeout",
+                        action="store",
+                        type=int,
+                        default=1,
                         dest="timeoutBetweenRequests",
                         help="number of seconds to sleep after each request")
-    parser.add_argument("--clients-list", action="store",
-                        default="{}/load_generating_clients.list".format(os.getcwd()),
+
+    parser.add_argument("--clients-list",
+                        action="store",
+                        default="{}/load_test_clients.list".format(os.getcwd()),
                         dest="clientsListFilePath",
                         help="path to file with list of client names and keys")
-    parser.add_argument("--results-path", action="store", default=os.getcwd(),
+
+    parser.add_argument("--results-path",
+                        action="store",
+                        default=os.getcwd(),
                         dest="resultsPath",
-                        help="")
-    parser.add_argument("--skip-clients", action="store", type=int, default=0,
+                        help="output directory")
+
+    parser.add_argument("--skip-clients",
+                        action="store",
+                        type=int,
+                        default=0,
                         dest="numberOfClientsToSkip",
                         help="number of clients to skip from clients list")
+
     return parser.parse_args()
 
 
