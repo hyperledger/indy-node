@@ -1,12 +1,11 @@
 import pytest
 
 from plenum.common.eventually import eventually
+from plenum.common.txn import TRUSTEE, TGB, STEWARD, TRUST_ANCHOR
 from plenum.common.util import randomString, hexToFriendly
 from plenum.test.pool_transactions.helper import suspendNode
 from plenum.test.pool_transactions.test_suspend_node import \
     checkNodeNotInNodeReg
-from sovrin_common.txn import STEWARD, TGB
-from sovrin_common.txn import TRUSTEE, TRUST_ANCHOR
 from sovrin_client.test.helper import addRole, suspendRole, \
     getClientAddedWithRole, changeVerkey
 
