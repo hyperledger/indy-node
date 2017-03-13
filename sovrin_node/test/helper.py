@@ -219,8 +219,18 @@ class Organization:
 
 class TempStorage:
     def cleanupDataLocation(self):
-        self.wipe_storage()
-        self.graphStore.wipe_db(self.name)
+        loc = self.dataLocation
+        try:
+            shutil.rmtree(loc)
+        except Exception as ex:
+            logger.debug("Error while removing temporary directory {}".format(
+                ex))
+        try:
+            self.graphStore.client.db_drop(self.name)
+            logger.debug("Dropped db {}".format(self.name))
+        except Exception as ex:
+            logger.debug("Error while dropping db {}: {}".format(self.name,
+                                                                 ex))
 
 
 @Spyable(methods=[Upgrader.processLedger])
