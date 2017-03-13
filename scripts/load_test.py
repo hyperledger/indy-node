@@ -181,7 +181,7 @@ async def eventuallyAny(coroFunc, *args, retryWait: float = 0.01,
     return data
 
 
-async def checkReply(client, requestId):
+async def checkReply(client, requestId, identifier):
     hasConsensus = False
     acks, nacks, replies, queryTime = [], [], [], 0
     try:
@@ -192,7 +192,7 @@ async def checkReply(client, requestId):
         acks = getAcksFromInbox(client, requestId, maxm=nodeCount)
         nacks = getNacksFromInbox(client, requestId, maxm=nodeCount)
         replies = getRepliesFromInbox(client, requestId, maxm=nodeCount)
-        hasConsensus = client.hasConsensus(requestId)
+        hasConsensus = client.hasConsensus(identifier, requestId)
         queryTime = sum(map(lambda f:  f.__wrapped__.elapsed,
                                [getAcksFromInbox, getNacksFromInbox,
                                 getRepliesFromInbox, client.hasConsensus]))
@@ -204,7 +204,8 @@ async def checkReply(client, requestId):
 
 async def checkReplyAndLogStat(client, wallet, request, sentAt, writeResultsRow, stats):
     hasConsensus, ackNodes, nackNodes, replyNodes, queryTime = \
-        await eventuallyAny(checkReply, client, request.reqId,
+        await eventuallyAny(checkReply, client,
+                            request.reqId, wallet.defaultId,
                             retryWait=RETRY_WAIT, timeout=TTL)
     endTime = time.time()
     quorumAt = endTime if hasConsensus else ""  # TODO: only first hasConsensus=True make sense
