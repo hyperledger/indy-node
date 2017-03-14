@@ -29,7 +29,7 @@ from sovrin_common.config_util import getConfig
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.client.client import Client
-
+from sovrin_common.identity import Identity
 
 logger = getlogger()
 config = getConfig()
@@ -55,6 +55,14 @@ def parseArgs():
                         default=1,
                         dest="numberOfRequests",
                         help="number of clients to use")
+
+    parser.add_argument("-t", "--request_type",
+                        action="store",
+                        type=str,
+                        default="ATTRIB",
+                        dest="requestType",
+                        help="type of requests to send, supported = NYM, ATTRIB")
+
 
     parser.add_argument("--timeout",
                         action="store",
@@ -113,31 +121,37 @@ class ClientPoll:
         for cli, _ in self._clientsWallets:
             yield cli
 
-    def submitNyms(self):
-        return self._submit(lambda x: {TXN_TYPE: NYM})
-
     @staticmethod
     def randomRawAttr():
         d = {"{}_{}".format(randomString(20), randint(100, 1000000)): "{}_{}".
             format(randint(1000000, 1000000000000), randomString(50))}
         return json.dumps(d)
 
-    def submitSetAttr(self):
-        return self._submit(lambda x: {TXN_TYPE: ATTRIB, RAW: self.randomRawAttr()})
+    def submitNym(self):
+        corosArgs = []
+        for cli, wallet in self._clientsWallets:
+            idy = Identity(identifier=wallet.defaultId,
+                           verkey=wallet.getVerkey())
+            wallet.addSponsoredIdentity(idy)
+            reqs = wallet.preparePending()
+            logger.debug("Client {} sending request {}".format(cli, reqs[0]))
+            sentAt = time.time()
+            cli.submitReqs(reqs[0])
+            corosArgs.append([cli, wallet, reqs[0], sentAt])
+        return corosArgs
 
-    def _submit(self, opFunc):
+    def submitSetAttr(self):
         corosArgs = []
         for cli, wallet in self._clientsWallets:
             attrib = Attribute(name=cli.name,
                                origin=wallet.defaultId,
                                value=self.randomRawAttr(),
-                               dest=None,  # TODO why none?
                                ledgerStore=LedgerStore.RAW)
             wallet.addAttribute(attrib)
             reqs = wallet.preparePending()
+            logger.debug("Client {} sending request {}".format(cli, reqs[0]))
             sentAt = time.time()
             cli.submitReqs(reqs[0])
-            logger.debug("Client {} sending request {}".format(cli, reqs[0]))
             corosArgs.append([cli, wallet, reqs[0], sentAt])
         return corosArgs
 
@@ -328,20 +342,33 @@ def main(args):
         for cli in clientPoll.clients:
             looper.add(cli)
             connectionCoros.append(functools.partial(checkIfConnectedToAll, cli))
-        looper.run(eventuallyAll(*connectionCoros, totalTimeout=TTL,
-                                  retryWait=RETRY_WAIT))
+        looper.run(eventuallyAll(*connectionCoros,
+                                 totalTimeout=TTL,
+                                 retryWait=RETRY_WAIT))
 
         testStartedAt = time.time()
         stats.clear()
 
+
+        requestType = args.requestType
+        sendRequests = {
+            "NYM": clientPoll.submitNym,
+            "ATTRIB": clientPoll.submitSetAttr
+        }.get(requestType)
+
+        if sendRequests is None:
+            raise ValueError("Unsupported request type, "
+                             "only NYM and ATTRIB are supported")
+
         # send requests
         for i in range(args.numberOfRequests):
-            corosArgs = clientPoll.submitSetAttr()
+            corosArgs = sendRequests()
             coros = buildCoros(checkReplyAndLogStat, corosArgs)
-            looper.run(eventuallyAll(*coros, totalTimeout=len(coros)*TTL,
+            looper.run(eventuallyAll(*coros,
+                                     totalTimeout=len(coros)*TTL,
                                      retryWait=RETRY_WAIT))
             printCurrentTestResults(stats, testStartedAt)
-        logger.debug("Sent {} ATTRIB requests".format(len(coros)))
+        logger.debug("Sent {} {} requests".format(len(coros), requestType))
 
 
 if __name__ == '__main__':
