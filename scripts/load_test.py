@@ -130,8 +130,9 @@ class ClientPoll:
     def submitNym(self):
         corosArgs = []
         for cli, wallet in self._clientsWallets:
-            idy = Identity(identifier=wallet.defaultId,
-                           verkey=wallet.getVerkey())
+            signer = SimpleSigner()
+            idy = Identity(identifier=signer.identifier,
+                           verkey=signer.verkey)
             wallet.addSponsoredIdentity(idy)
             reqs = wallet.preparePending()
             logger.debug("Client {} sending request {}".format(cli, reqs[0]))
