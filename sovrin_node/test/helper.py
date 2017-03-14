@@ -219,18 +219,20 @@ class Organization:
 
 class TempStorage:
     def cleanupDataLocation(self):
-        loc = self.dataLocation
-        try:
-            shutil.rmtree(loc)
-        except Exception as ex:
-            logger.debug("Error while removing temporary directory {}".format(
-                ex))
-        try:
-            self.graphStore.client.db_drop(self.name)
-            logger.debug("Dropped db {}".format(self.name))
-        except Exception as ex:
-            logger.debug("Error while dropping db {}: {}".format(self.name,
-                                                                 ex))
+        self.wipe()
+        self.graphStore.store.wipe()
+        # loc = self.dataLocation
+        # try:
+        #     shutil.rmtree(loc)
+        # except Exception as ex:
+        #     logger.debug("Error while removing temporary directory {}".format(
+        #         ex))
+        # try:
+        #     self.graphStore.client.db_drop(self.name)
+        #     logger.debug("Dropped db {}".format(self.name))
+        # except Exception as ex:
+        #     logger.debug("Error while dropping db {}: {}".format(self.name,
+        #                                                          ex))
 
 
 @Spyable(methods=[Upgrader.processLedger])
@@ -266,12 +268,6 @@ class TestNode(TempStorage, TestNodeCore, Node):
     def onStopping(self, *args, **kwargs):
         if self.cleanupOnStopping:
             self.cleanupDataLocation()
-            try:
-                self.graphStore.client.db_drop(self.name)
-                logger.debug("Dropped db {}".format(self.name))
-            except Exception as ex:
-                logger.debug("Error while dropping db {}: {}".format(self.name,
-                                                                     ex))
         super().onStopping(*args, **kwargs)
 
 
