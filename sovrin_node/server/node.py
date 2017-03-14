@@ -12,13 +12,13 @@ from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, InvalidEndpoint
+    UnauthorizedClientRequest, EndpointException
 from plenum.common.log import getlogger
 from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
     NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
-from plenum.common.util import error, isValidEndpoint
+from plenum.common.util import error, check_endpoint_valid
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
@@ -270,19 +270,18 @@ class Node(PlenumNode, HasPoolManager):
             if RAW in dataKeys:
                 try:
                     data = json.loads(operation[RAW])
-                    endpoint = data.get(ENDPOINT)
-                    # TODO: Add validations for Verkey/Pubkey
-                    if endpoint and 'ha' in endpoint:
-                        if not isValidEndpoint(endpoint['ha']):
-                            raise InvalidEndpoint("invalid endpoint: '{}'".
-                                                  format(endpoint['ha']))
+                    endpoint = data.get(ENDPOINT, {}).get('ha')
+                    check_endpoint_valid(endpoint, required=False)
 
-                except InvalidEndpoint as ie:
-                    raise InvalidClientRequest(identifier, reqId, str(ie))
-                except:
-                    raise InvalidClientRequest(identifier, reqId,
-                                               'raw attribute {} should be '
-                                               'JSON'.format(operation[RAW]))
+                except EndpointException as exc:
+                    raise InvalidClientRequest(identifier, reqId, str(exc))
+                except BaseException as exc:
+                    raise InvalidClientRequest(identifier, reqId, str(exc))
+                # PREVIOUS CODE, ASSUMED ANY EXCEPTION WAS A JSON ISSUE
+                # except:
+                #     raise InvalidClientRequest(identifier, reqId,
+                #                                'raw attribute {} should be '
+                #                                'JSON'.format(operation[RAW]))
 
             if not (not operation.get(TARGET_NYM) or
                     self.graphStore.hasNym(operation[TARGET_NYM])):
