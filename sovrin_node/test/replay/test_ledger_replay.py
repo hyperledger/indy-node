@@ -18,9 +18,12 @@ from plenum.test.node_catchup.helper import checkNodeLedgersForEquality
 from sovrin_client.test.conftest import primes1
 from sovrin_client.anon_creds.sovrin_public_repo import SovrinPublicRepo
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
-from sovrin_common.txn import TGB
+from sovrin_client.client.wallet.wallet import Wallet
+from sovrin_client.client.client import Client
+
+from plenum.common.txn import TGB
 from sovrin_client.test.helper import addRole, getClientAddedWithRole
-from sovrin_client.test.conftest import sponsorWallet, userWalletA, sponsor
+from sovrin_client.test.conftest import userWalletA
 
 from sovrin_node.test.helper import addAttributeAndCheck
 from sovrin_node.test.upgrade.conftest import validUpgrade
@@ -45,14 +48,14 @@ def addNymTxn(looper, anotherTGB):
 
 
 @pytest.fixture(scope="module")
-def addedRawAttribute(userWalletA, sponsor,
-                      sponsorWallet, looper):
+def addedRawAttribute(userWalletA: Wallet, trustAnchor: Client,
+                      trustAnchorWallet: Wallet, looper):
     attrib = Attribute(name='test attribute',
-                       origin=sponsorWallet.defaultId,
+                       origin=trustAnchorWallet.defaultId,
                        value=json.dumps({'name': 'Mario'}),
                        dest=userWalletA.defaultId,
                        ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, sponsor, sponsorWallet, attrib)
+    addAttributeAndCheck(looper, trustAnchor, trustAnchorWallet, attrib)
     return attrib
 
 
@@ -120,11 +123,15 @@ def compareGraph(table, nodeSet):
 
     tableRecodesStoppedNode = stoppedNodeClient.query("SELECT * FROM {}".format(table))
     for nodeRecord in tableRecodesStoppedNode:
+
+        if table == "IssuerKey" and isinstance(nodeRecord.oRecordData["data"], str):
+            nodeRecord.oRecordData["data"] = json.loads(nodeRecord.oRecordData["data"])
+
         stoppedNodeRecords.append({k: v for k, v in nodeRecord.oRecordData.items()
                                    if not isinstance(v, OrientBinaryObject)
                                    })
 
-    for node in nodeSet[0:4]:
+    for node in nodeSet[1:4]:
         client = node.graphStore.client
         recordCount = client.db_count_records()
         assert recordCount == stoppedNodeRecordCount
@@ -132,18 +139,22 @@ def compareGraph(table, nodeSet):
         records = []
         tableRecodes = client.query("SELECT * FROM {}".format(table))
         for record in tableRecodes:
+
+            if table == "IssuerKey" and isinstance(record.oRecordData["data"], str):
+                record.oRecordData["data"] = json.loads(record.oRecordData["data"])
+
             records.append({k: v for k, v in record.oRecordData.items()
                             if not isinstance(v, OrientBinaryObject)
                             })
-        # assert records == stoppedNodeRecords
+        assert records == stoppedNodeRecords
 
 
-def testStopFirstNodeAndCleanGraph(addNymTxn, addedRawAttribute, submittedPublicKeys,
+def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                                    nodeSet, looper, tconf, tdirWithPoolTxns,
                                    allPluginsPath, txnPoolNodeSet):
     """
     stop first node (which will clean graph db too)
-    restart node
+    then restart node
     """
     nodeToStop = nodeSet[0]
     nodeToStop.cleanupOnStopping = False
@@ -160,8 +171,6 @@ def testStopFirstNodeAndCleanGraph(addNymTxn, addedRawAttribute, submittedPublic
     looper.run(eventually(checkNodeLedgersForEquality, newNode,
                           *txnPoolNodeSet[1:4], retryWait=1, timeout=15))
 
-    # compareGraph("NYM", nodeSet)
-    compareGraph("Attribute", nodeSet)
-    # compareGraph("IssuerKey", nodeSet)
-    # compareGraph("Schema", nodeSet)
-
+    compareGraph("NYM", nodeSet)
+    compareGraph("IssuerKey", nodeSet)
+    compareGraph("Schema", nodeSet)
