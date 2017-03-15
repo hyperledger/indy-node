@@ -9,6 +9,8 @@ from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
+from ledger.serializers.json_serializer import JsonSerializer
+
 from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, EndpointException
@@ -20,7 +22,6 @@ from plenum.common.types import Reply, RequestAck, RequestNack, f, \
 from plenum.common.util import error, check_endpoint_valid
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
-from ledger.serializers.json_serializer import JsonSerializer
 
 from sovrin_common.auth import Authoriser
 from sovrin_common.config_util import getConfig
