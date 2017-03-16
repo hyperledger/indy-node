@@ -2,7 +2,8 @@
 FROM ubuntu:16.04
 
 # Install environment
-RUN add-apt-repository "deb https://repo.evernym.com/deb xenial stable"
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys D82D8E35
+RUN echo "deb https://repo.evernym.com/deb xenial stable" >> /etc/apt/sources.list
 RUN apt-get update -y
 RUN apt-get install -y \ 
 	git \
