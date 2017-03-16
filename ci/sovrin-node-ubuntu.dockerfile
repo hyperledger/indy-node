@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 
 # Install environment
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys D82D8E35
-RUN echo /etc/apt/sources.list >> "deb https://repo.evernym.com/deb xenial master"
+RUN echo "deb https://repo.evernym.com/deb xenial master" >> /etc/apt/sources.list
 RUN apt-get update -y
 RUN apt-get install -y \ 
 	git \
@@ -12,7 +12,7 @@ RUN apt-get install -y \
 	python3-pip \
 	python-setuptools \
 	python3-nacl \
-	software-properties-common
+	python3-charm-crypto
 RUN pip3 install -U \ 
 	pip \ 
 	setuptools \
