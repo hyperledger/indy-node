@@ -169,8 +169,8 @@ def testUbuntu() {
             plenum = extractVersion('plenum')
             sh 'popd'
 
-            sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
             sh "/home/sovrin/test/bin/python setup.py install ${plenum}"
+            sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
             sh '/home/sovrin/test/bin/python setup.py install'
             sh '/home/sovrin/test/bin/pip install pytest'
 
