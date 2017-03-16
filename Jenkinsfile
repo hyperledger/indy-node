@@ -137,7 +137,7 @@ def extractVersionFromText(match, text) {
 def dropVersion(text) {
     def pattern = /([-a-z]*)[=\\.0-9]*'/
     def matcher = (text =~ pattern)
-    return matcher[0][1]
+    return matcher[0][0]
 }
 
 def extractVersion(match, file='setup.py') {
