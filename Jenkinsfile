@@ -165,9 +165,9 @@ def testUbuntu() {
 
             sh 'pip3 download -b ./tmp ${sovrinCommon}'
 
-            sh 'pushd sovrin-common'
+            sh 'cd sovrin-common'
             plenum = extractVersion('plenum')
-            sh 'popd'
+            sh 'cd ..'
 
             sh "/home/sovrin/test/bin/python setup.py install ${plenum}"
             sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
