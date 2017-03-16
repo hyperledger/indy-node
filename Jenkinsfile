@@ -135,7 +135,7 @@ def extractVersionFromText(match, text) {
 
 @NonCPS
 def dropVersion(text) {
-    def pattern = /([-a-z]*)[=\\.0-9]*'/
+    def pattern = /([-a-z]*)[=\\.0-9]*/
     def matcher = (text =~ pattern)
     return matcher[0][1]
 }
