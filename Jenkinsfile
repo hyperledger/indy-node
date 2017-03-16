@@ -163,8 +163,7 @@ def testUbuntu() {
             sovrinCommon = extractVersion('sovrin-common')
             sovrinClient = extractVersion('sovrin-client')
 
-            sh 'mkdir -p /usr/local/tmp'
-            sh 'pip3 download -b /usr/local/tmp ${sovrinCommon}'
+            sh 'pip3 download -b ./tmp ${sovrinCommon}'
 
             sh 'pushd sovrin-common'
             plenum = extractVersion('plenum')
