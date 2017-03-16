@@ -166,8 +166,7 @@ def testUbuntu() {
             sh 'mkdir -p /usr/local/tmp'
             sh 'pip3 download -b /usr/local/tmp ${sovrinCommon}'
 
-            sh 'pushd /usr/local/tmp'
-            sh 'ls -a'
+            sh 'pushd sovrin-common'
             plenum = extractVersion('plenum')
             sh 'popd'
 
