@@ -133,8 +133,8 @@ def extractVersionFromText(match, text) {
     return matcher[0][1]
 }
 
-def extractVersion(match) {
-    def text = sh(returnStdout: true, script: "grep \"${match}[-a-z=\\.0-9]*'\" setup.py").trim()
+def extractVersion(match, file='setup.py') {
+    def text = sh(returnStdout: true, script: "grep \"${match}[-a-z=\\.0-9]*'\" ${file}").trim()
     echo "${match}Version -> matching against ${text}"
     return extractVersionFromText(match, text)
 }
@@ -163,11 +163,9 @@ def testUbuntu() {
             sovrinCommon = extractVersion('sovrin-common')
             sovrinClient = extractVersion('sovrin-client')
 
-            sh 'pip3 download -b ./tmp ${sovrinCommon}'
+            sh 'pip3 download -d /home/sovrin -b ./tmp ${sovrinCommon}'
 
-            sh 'cd sovrin-common'
-            plenum = extractVersion('plenum')
-            sh 'cd ..'
+            plenum = extractVersion('plenum', '/home/sovrin/sovrin-common')
 
             sh "/home/sovrin/test/bin/python setup.py install ${plenum}"
             sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
