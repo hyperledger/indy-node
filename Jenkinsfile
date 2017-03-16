@@ -174,7 +174,7 @@ def testUbuntu() {
             sh "pip3 download -b /home/sovrin/tmp --no-clean ${sovrinCommon}"
 
             def sovrinCommonPackageOnly = dropVersion(sovrinCommon)
-            plenum = extractVersion('plenum', '/home/sovrin/tmp/${sovrinCommonPackageOnly}/setup.py')
+            plenum = extractVersion('plenum', "/home/sovrin/tmp/${sovrinCommonPackageOnly}/setup.py")
 
             sh "/home/sovrin/test/bin/python setup.py install ${plenum}"
             sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
