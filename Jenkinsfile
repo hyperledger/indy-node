@@ -176,8 +176,8 @@ def testUbuntu() {
             def sovrinCommonPackageOnly = dropVersion("${sovrinCommon}")
             plenum = extractVersion('plenum', "/home/sovrin/tmp/${sovrinCommonPackageOnly}/setup.py")
 
-            sh "/home/sovrin/test/bin/python setup.py install ${plenum}"
-            sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
+            sh "/home/sovrin/test/bin/pip install ${plenum}"
+            sh "/home/sovrin/test/bin/pip install ${sovrinClient}"
             sh '/home/sovrin/test/bin/python setup.py install'
             sh '/home/sovrin/test/bin/pip install pytest'
 
