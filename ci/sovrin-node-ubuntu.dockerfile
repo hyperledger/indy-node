@@ -17,9 +17,6 @@ RUN pip3 install -U \
 	pip \ 
 	setuptools \
 	virtualenv
-RUN apt-get update -y
-RUN apt-get install -y \ 
-	python3-charm-crypto
 RUN useradd -ms /bin/bash sovrin
 USER sovrin
 WORKDIR /home/sovrin
