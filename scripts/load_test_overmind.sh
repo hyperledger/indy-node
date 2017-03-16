@@ -4,6 +4,8 @@ set -e
 
 PARALLELISM_FACTOR=${1:-1}
 REQ_NUM=${2:-1}
+REQ_TYPE=${3:ATTR}
+CLIENT_LIST=${4:-load_test_clients\.list}
 
 TIMEOUT=0
 time_stamp=$(date +%Y_%m_%d_%H_%M_%S)
@@ -14,5 +16,5 @@ echo "starting $PARALLELISM_FACTOR clients, making them send $REQ_NUM requests"
 for I in $(seq 0 $(($PARALLELISM_FACTOR - 1)));
   do
   echo "starting client #$I"
-    python -u gen_load_ratcheting -r $REQ_NUM --skip-clients $I --timeout $TIMEOUT &> "$OUT_DIR/$I.log" &
+    python -u scripts/load_test.py -t $REQ_TYPE -r $REQ_NUM --clients-list="$CLIENT_LIST" --skip-clients $I --timeout $TIMEOUT &> "$OUT_DIR/$I.log" &
   done
