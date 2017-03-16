@@ -15,7 +15,6 @@ RUN pip3 install -U \
 	pip \ 
 	setuptools \
 	virtualenv
-RUN 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys D82D8E35
 RUN add-apt-repository "deb https://repo.evernym.com/deb xenial stable"
 RUN apt-get update -y
