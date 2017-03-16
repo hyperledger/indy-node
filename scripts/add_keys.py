@@ -15,6 +15,7 @@ from plenum.common.log import getlogger
 from plenum.test.helper import eventually, eventuallyAll
 
 from sovrin_common.config_util import getConfig
+from  sovrin_common.txn import SPONSOR
 from sovrin_client.client.client import Client
 from sovrin_client.client.wallet.wallet import Wallet
 
@@ -132,7 +133,7 @@ def addNyms():
             # Sending requests
             print("Creating nym {} for seed".format(nym , sponsorSeed))
             createNym(looper=looper, nym=nym, creatorClient=client,
-                      creatorWallet=wallet, verkey=verkey)
+                      creatorWallet=wallet, verkey=verkey, role=SPONSOR)
 
 
 if __name__ == '__main__':
