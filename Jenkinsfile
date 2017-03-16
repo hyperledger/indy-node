@@ -166,7 +166,7 @@ def testUbuntu() {
             sh "mkdir -p /home/sovrin/tmp"
             sh "pip3 download -b /home/sovrin/tmp --no-clean ${sovrinCommon}"
 
-            plenum = extractVersion('plenum', '/home/sovrin/tmp/sovrin-common')
+            plenum = extractVersion('plenum', '/home/sovrin/tmp/sovrin-common/setup.py')
 
             sh "/home/sovrin/test/bin/python setup.py install ${plenum}"
             sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
