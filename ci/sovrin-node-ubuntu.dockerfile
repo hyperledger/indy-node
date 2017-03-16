@@ -3,7 +3,7 @@ FROM ubuntu:16.04
 
 # Install environment
 RUN apt-get update -y
-RUN apt-get install -y \ 
+RUN apt-get install -y --fix-missing \ 
 	git \
 	wget \
 	python3.5 \
