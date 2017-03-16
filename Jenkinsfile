@@ -133,6 +133,13 @@ def extractVersionFromText(match, text) {
     return matcher[0][1]
 }
 
+@NonCPS
+def dropVersion(text) {
+    def pattern = /([-a-z])[=\\.0-9]*'/
+    def matcher = (text =~ pattern)
+    return matcher[0][1]
+}
+
 def extractVersion(match, file='setup.py') {
     def text = sh(returnStdout: true, script: "grep \"${match}[-a-z=\\.0-9]*'\" ${file}").trim()
     echo "${match}Version -> matching against ${text}"
@@ -161,13 +168,14 @@ def testUbuntu() {
             sh 'cd /home/sovrin && virtualenv -p python3.5 test'
 
             sovrinCommon = extractVersion('sovrin-common')
+            sovrinCommonPackageOnly = dropVersion("${sovrinCommon}")
             sovrinClient = extractVersion('sovrin-client')
 
             sh "mkdir -p /home/sovrin/tmp"
             sh "pip3 download -b /home/sovrin/tmp --no-clean ${sovrinCommon}"
             sh "cd /home/sovrin/tmp && ls -a"
 
-            plenum = extractVersion('plenum', '/home/sovrin/tmp/sovrin-common/setup.py')
+            plenum = extractVersion('plenum', '/home/sovrin/tmp/${sovrinCommonPackageOnly}/setup.py')
 
             sh "/home/sovrin/test/bin/python setup.py install ${plenum}"
             sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
