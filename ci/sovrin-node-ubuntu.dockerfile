@@ -2,6 +2,7 @@
 FROM ubuntu:16.04
 
 # Install environment
+RUN add-apt-repository "deb https://repo.evernym.com/deb xenial stable"
 RUN apt-get update -y
 RUN apt-get install -y \ 
 	git \
@@ -9,7 +10,8 @@ RUN apt-get install -y \
 	python3.5 \
 	python3-pip \
 	python-setuptools \
-	python3-nacl
+	python3-nacl \
+	python3-charm-crypto
 RUN pip3 install -U \ 
 	pip \ 
 	setuptools \
