@@ -32,17 +32,23 @@ def updateWalletIdrWithFullKeySigner(wallet, idr):
     return newSigner.verkey
 
 
+def updateWalletIdrWithFullVerkeySigner(wallet, idr, signer):
+    wallet.updateSigner(idr, signer)
+    assertEquality(signer.verkey, wallet.getVerkey(idr))
+    checkFullVerkeySize(wallet.getVerkey(idr))
+
+
 def updateSovrinIdrWithFullKey(looper, senderWallet, senderClient, ownerWallet,
                                idr, fullKey):
     idy = Identity(identifier=idr, verkey=fullKey)
-    senderWallet.updateSponsoredIdentity(idy)
+    senderWallet.updateTrustAnchoredIdentity(idy)
     # TODO: What if the request fails, there must be some rollback mechanism
-    assert senderWallet.getSponsoredIdentity(idr).seqNo is None
+    assert senderWallet.getTrustAnchoredIdentity(idr).seqNo is None
     reqs = senderWallet.preparePending()
     senderClient.submitReqs(*reqs)
 
     def chk():
-        assert senderWallet.getSponsoredIdentity(idr).seqNo is not None
+        assert senderWallet.getTrustAnchoredIdentity(idr).seqNo is not None
 
     looper.run(eventually(chk, retryWait=1, timeout=5))
     return ownerWallet

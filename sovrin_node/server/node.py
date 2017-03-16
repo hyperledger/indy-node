@@ -1,40 +1,39 @@
 import json
-from copy import deepcopy
-from hashlib import sha256
-from operator import itemgetter
 from typing import Iterable, Any
 
 import pyorient
-
+from copy import deepcopy
+from hashlib import sha256
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
+from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest
+    UnauthorizedClientRequest, EndpointException
 from plenum.common.log import getlogger
 from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES
+    POOL_TXN_TYPES, VERKEY
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
     NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
-from plenum.common.util import error
+from plenum.common.util import error, check_endpoint_valid
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
+from sovrin_common.auth import Authoriser
 from sovrin_common.config_util import getConfig
+from sovrin_common.persistence import identity_graph
 from sovrin_common.txn import TXN_TYPE, \
-    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, SPONSOR, NYM,\
-    ROLE, STEWARD, GET_ATTR, DISCLO, DATA, GET_NYM, \
+    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, NYM,\
+    ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
     TXN_ID, TXN_TIME, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
-    getTxnOrderedFields, CLAIM_DEF, GET_CLAIM_DEF, openTxns, \
-    ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
+    getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
+    ISSUER_KEY, GET_ISSUER_KEY, REF, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL
+    NODE_UPGRADE, COMPLETE, FAIL, ENDPOINT
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
-from sovrin_common.persistence import identity_graph
 from sovrin_node.persistence.secondary_storage import SecondaryStorage
-from sovrin_common.auth import Authoriser
 from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
@@ -269,11 +268,19 @@ class Node(PlenumNode, HasPoolManager):
                                            .format(ATTRIB, RAW, ENC, HASH))
             if RAW in dataKeys:
                 try:
-                    json.loads(operation[RAW])
-                except:
-                    raise InvalidClientRequest(identifier, reqId,
-                                               'raw attribute {} should be '
-                                               'JSON'.format(operation[RAW]))
+                    data = json.loads(operation[RAW])
+                    endpoint = data.get(ENDPOINT)
+                    check_endpoint_valid(endpoint, required=False)
+
+                except EndpointException as exc:
+                    raise InvalidClientRequest(identifier, reqId, str(exc))
+                except BaseException as exc:
+                    raise InvalidClientRequest(identifier, reqId, str(exc))
+                # PREVIOUS CODE, ASSUMED ANY EXCEPTION WAS A JSON ISSUE
+                # except:
+                #     raise InvalidClientRequest(identifier, reqId,
+                #                                'raw attribute {} should be '
+                #                                'JSON'.format(operation[RAW]))
 
             if not (not operation.get(TARGET_NYM) or
                     self.graphStore.hasNym(operation[TARGET_NYM])):
@@ -333,11 +340,10 @@ class Node(PlenumNode, HasPoolManager):
                     request.reqId,
                     "Nym {} not added to the ledger yet".format(origin))
 
-            role = op.get(ROLE)
-
-            nym = self.graphStore.getNym(op[TARGET_NYM])
-            if not nym:
+            nymV = self.graphStore.getNym(op[TARGET_NYM])
+            if not nymV:
                 # If nym does not exist
+                role = op.get(ROLE)
                 r, msg = Authoriser.authorised(NYM, ROLE, originRole,
                                                oldVal=None, newVal=role)
                 if not r:
@@ -346,30 +352,38 @@ class Node(PlenumNode, HasPoolManager):
                         request.reqId,
                         "{} cannot add {}".format(originRole, role))
             else:
-                nym = nym.oRecordData
-                subjectRole = nym.get(ROLE)
-                if subjectRole != role:
-                    r, msg = Authoriser.authorised(NYM, ROLE, originRole,
-                                                   oldVal=subjectRole,
-                                                   newVal=role)
-                    if not r:
-                        raise UnauthorizedClientRequest(
-                            request.identifier,
-                            request.reqId,
-                            "{} cannot update {}".format(originRole, role))
+                nymData = nymV.oRecordData
+                owner = self.graphStore.getOwnerFor(nymData.get(NYM))
+                isOwner = origin == owner
+                updateKeys = [ROLE, VERKEY]
+                for key in updateKeys:
+                    if key in op:
+                        newVal = op[key]
+                        oldVal = nymData.get(key)
+                        if oldVal != newVal:
+                            r, msg = Authoriser.authorised(NYM, key, originRole,
+                                                           oldVal=oldVal,
+                                                           newVal=newVal,
+                                                           isActorOwnerOfSubject=isOwner)
+                            if not r:
+                                raise UnauthorizedClientRequest(
+                                    request.identifier,
+                                    request.reqId,
+                                    "{} cannot update {}".format(originRole, key))
 
         elif typ == ATTRIB:
             if op.get(TARGET_NYM) and \
                 op[TARGET_NYM] != request.identifier and \
-                    not s.getSponsorFor(op[TARGET_NYM]) == origin:
+                    not s.getOwnerFor(op[TARGET_NYM]) == origin:
 
                 raise UnauthorizedClientRequest(
                         request.identifier,
                         request.reqId,
-                        "Only user's sponsor can add attribute for that user")
+                        "Only identity owner/guardian can add attribute "
+                        "for that identity")
 
         # TODO: Just for now. Later do something meaningful here
-        elif typ in [DISCLO, GET_ATTR, CLAIM_DEF, GET_CLAIM_DEF, ISSUER_KEY,
+        elif typ in [DISCLO, GET_ATTR, SCHEMA, GET_SCHEMA, ISSUER_KEY,
                      GET_ISSUER_KEY]:
             pass
         elif request.operation.get(TXN_TYPE) in POOL_TXN_TYPES:
@@ -403,7 +417,7 @@ class Node(PlenumNode, HasPoolManager):
         nym = msg.get(TARGET_NYM)
         if self.graphStore.hasNym(nym):
             if not self.graphStore.hasTrustee(identifier) and \
-                            self.graphStore.getSponsorFor(nym) != identifier:
+                            self.graphStore.getOwnerFor(nym) != identifier:
                     return False
         return True
 
@@ -447,11 +461,11 @@ class Node(PlenumNode, HasPoolManager):
             txnIds = [addNymTxn[TXN_ID], ] + self.graphStore. \
                 getAddAttributeTxnIds(origin)
             # If sending transactions to a user then should send user's
-            # sponsor creation transaction also
+            # trust anchor creation transaction also
             if addNymTxn.get(ROLE) is None:
-                sponsorNymTxn = self.graphStore.getAddNymTxn(
+                trustAnchorNymTxn = self.graphStore.getAddNymTxn(
                     addNymTxn.get(f.IDENTIFIER.nm))
-                txnIds = [sponsorNymTxn[TXN_ID], ] + txnIds
+                txnIds = [trustAnchorNymTxn[TXN_ID], ] + txnIds
             # TODO: Remove this log statement
             logger.debug("{} getting replies for {}".format(self, txnIds))
             result = self.secondaryStorage.getReplies(*txnIds, seqNo=data)
@@ -474,17 +488,17 @@ class Node(PlenumNode, HasPoolManager):
             })
             self.transmitToClient(Reply(result), frm)
 
-    def processGetClaimDefReq(self, request: Request, frm: str):
+    def processGetSchemaReq(self, request: Request, frm: str):
         issuerNym = request.operation[TARGET_NYM]
         name = request.operation[DATA][NAME]
         version = request.operation[DATA][VERSION]
-        claimDef = self.graphStore.getClaimDef(issuerNym, name, version)
+        schema = self.graphStore.getSchema(issuerNym, name, version)
         result = {
             TXN_ID: self.genTxnId(
                 request.identifier, request.reqId)
         }
         result.update(request.operation)
-        result[DATA] = json.dumps(claimDef, sort_keys=True)
+        result[DATA] = json.dumps(schema, sort_keys=True)
         result.update({
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
@@ -532,8 +546,8 @@ class Node(PlenumNode, HasPoolManager):
             self.processGetNymReq(request, frm)
         elif request.operation[TXN_TYPE] == GET_TXNS:
             self.processGetTxnReq(request, frm)
-        elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
-            self.processGetClaimDefReq(request, frm)
+        elif request.operation[TXN_TYPE] == GET_SCHEMA:
+            self.processGetSchemaReq(request, frm)
         elif request.operation[TXN_TYPE] == GET_ATTR:
             self.processGetAttrsReq(request, frm)
         elif request.operation[TXN_TYPE] == GET_ISSUER_KEY:
@@ -605,8 +619,8 @@ class Node(PlenumNode, HasPoolManager):
             self.graphStore.addNymTxnToGraph(result)
         elif result[TXN_TYPE] == ATTRIB:
             self.graphStore.addAttribTxnToGraph(result)
-        elif result[TXN_TYPE] == CLAIM_DEF:
-            self.graphStore.addClaimDefTxnToGraph(result)
+        elif result[TXN_TYPE] == SCHEMA:
+            self.graphStore.addSchemaTxnToGraph(result)
         elif result[TXN_TYPE] == ISSUER_KEY:
             self.graphStore.addIssuerKeyTxnToGraph(result)
         else:

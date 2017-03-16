@@ -137,7 +137,8 @@ class Upgrader(HasActionQueue):
         checking is done
         :return:
         """
-        logger.info('{} processing config ledger for any upgrades'.format(self))
+        logger.info('{} processing config ledger for any upgrades'.format(self),
+                    extra={"tags": ["node-config"]})
         currentVer = self.getVersion()
         upgrades = {}  # Map of version to scheduled time
         for txn in self.ledger.getAllTxn().values():

@@ -19,15 +19,16 @@ from sovrin_common.identity import Identity
 from sovrin_node.test.did.conftest import pf
 from sovrin_node.test.did.helper import chkVerifyForRetrievedIdentity, \
     updateWalletIdrWithFullKeySigner, updateSovrinIdrWithFullKey, \
-    fetchFullVerkeyFromSovrin, checkAbbrVerkeySize, checkDidSize
-from sovrin_node.test.helper import createNym
+    fetchFullVerkeyFromSovrin, checkAbbrVerkeySize, checkDidSize, \
+    updateWalletIdrWithFullVerkeySigner
+from sovrin_client.test.helper import createNym
 
 
 @pf
-def didAddedWithAbbrvVerkey(addedSponsor, looper, sponsor, sponsorWallet,
+def didAddedWithAbbrvVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWallet,
                           wallet, abbrevIdr):
     """{ type: NYM, dest: <id1> }"""
-    createNym(looper, abbrevIdr, sponsor, sponsorWallet,
+    createNym(looper, abbrevIdr, trustAnchor, trustAnchorWallet,
               verkey=wallet.getVerkey(abbrevIdr))
     return wallet
 
@@ -41,23 +42,32 @@ def newAbbrvKey(wallet, abbrevIdr):
 
 
 @pf
-def newFullKey(wallet, abbrevIdr):
-    return updateWalletIdrWithFullKeySigner(wallet, abbrevIdr)
+def newFullKeySigner(wallet, abbrevIdr):
+    return DidSigner(identifier=abbrevIdr)
 
 
 @pf
-def didUpdatedWithFullVerkey(didAddedWithAbbrvVerkey, looper, sponsor,
-                            sponsorWallet, abbrevIdr, newFullKey, wallet):
+def newFullKey(newFullKeySigner):
+    return newFullKeySigner.verkey
+
+
+@pf
+def didUpdatedWithFullVerkey(didAddedWithAbbrvVerkey, looper, trustAnchor,
+                            trustAnchorWallet, abbrevIdr, newFullKey,
+                             newFullKeySigner, wallet, client):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
-    updateSovrinIdrWithFullKey(looper, sponsorWallet, sponsor, wallet,
+    # updateSovrinIdrWithFullKey(looper, trustAnchorWallet, trustAnchor, wallet,
+    #                            abbrevIdr, newFullKey)
+    updateSovrinIdrWithFullKey(looper, wallet, client, wallet,
                                abbrevIdr, newFullKey)
+    updateWalletIdrWithFullVerkeySigner(wallet, abbrevIdr, newFullKeySigner)
 
 
 @pf
-def newVerkeyFetched(didAddedWithAbbrvVerkey, looper, sponsor, sponsorWallet,
+def newVerkeyFetched(didAddedWithAbbrvVerkey, looper, trustAnchor, trustAnchorWallet,
                      abbrevIdr, wallet):
     """{ type: GET_NYM, dest: <id1> }"""
-    fetchFullVerkeyFromSovrin(looper, sponsorWallet, sponsor, wallet,
+    fetchFullVerkeyFromSovrin(looper, trustAnchorWallet, trustAnchor, wallet,
                               abbrevIdr)
 
 
@@ -77,20 +87,20 @@ def testAddDidWithVerkey(didAddedWithAbbrvVerkey):
     pass
 
 
-def testRetrieveAbbrvVerkey(didAddedWithAbbrvVerkey, looper, sponsor,
-                            sponsorWallet, wallet, abbrevIdr):
+def testRetrieveAbbrvVerkey(didAddedWithAbbrvVerkey, looper, trustAnchor,
+                            trustAnchorWallet, wallet, abbrevIdr):
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=abbrevIdr)
-    req = sponsorWallet.requestIdentity(identity,
-                                        sender=sponsorWallet.defaultId)
-    sponsor.submitReqs(req)
+    req = trustAnchorWallet.requestIdentity(identity,
+                                        sender=trustAnchorWallet.defaultId)
+    trustAnchor.submitReqs(req)
 
     def chk():
-        retrievedVerkey = sponsorWallet.getIdentity(abbrevIdr).verkey
+        retrievedVerkey = trustAnchorWallet.getIdentity(abbrevIdr).verkey
         assertEquality(retrievedVerkey, wallet.getVerkey(abbrevIdr))
         checkAbbrVerkeySize(retrievedVerkey)
     looper.run(eventually(chk, retryWait=1, timeout=5))
-    chkVerifyForRetrievedIdentity(wallet, sponsorWallet, abbrevIdr)
+    chkVerifyForRetrievedIdentity(wallet, trustAnchorWallet, abbrevIdr)
 
 
 def testChangeVerkeyToNewVerkey(didUpdatedWithFullVerkey):
@@ -102,5 +112,5 @@ def testRetrieveChangedVerkey(didUpdatedWithFullVerkey, newVerkeyFetched):
 
 
 def testVerifySigWithChangedVerkey(didUpdatedWithFullVerkey, newVerkeyFetched,
-                                   sponsorWallet, abbrevIdr, wallet):
-    chkVerifyForRetrievedIdentity(wallet, sponsorWallet, abbrevIdr)
+                                   trustAnchorWallet, abbrevIdr, wallet):
+    chkVerifyForRetrievedIdentity(wallet, trustAnchorWallet, abbrevIdr)

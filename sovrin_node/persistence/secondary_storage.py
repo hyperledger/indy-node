@@ -28,8 +28,8 @@ class SecondaryStorage(PlenumSS):
     def getRole(self, nym):
         return self._txnStore.getRole(nym)
 
-    def getSponsorFor(self, nym):
-        return self._txnStore.getSponsorFor(nym)
+    def getTrustAnchorFor(self, nym):
+        return self._txnStore.getTrustAnchorFor(nym)
 
     @staticmethod
     def isAddNymTxn(result):
@@ -43,3 +43,6 @@ class SecondaryStorage(PlenumSS):
 
     def isSteward(self, nym):
         return self._txnStore.hasSteward(nym)
+
+    def isTrustee(self, nym):
+        return self._txnStore.hasTrustee(nym)

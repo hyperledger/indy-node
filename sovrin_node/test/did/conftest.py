@@ -2,6 +2,8 @@ import base58
 import pytest
 
 from sovrin_client.client.wallet.wallet import Wallet
+from sovrin_node.test.helper import makePendingTxnsRequest
+from sovrin_client.test.helper import genTestClient
 
 pf = pytest.fixture(scope='module')
 
@@ -9,6 +11,16 @@ pf = pytest.fixture(scope='module')
 @pf
 def wallet():
     return Wallet('my wallet')
+
+
+@pf
+def client(wallet, looper, tdir):
+    s, _ = genTestClient(tmpdir=tdir, usePoolLedger=True)
+    s.registerObserver(wallet.handleIncomingReply)
+    looper.add(s)
+    looper.run(s.ensureConnectedToNodes())
+    makePendingTxnsRequest(s, wallet)
+    return s
 
 
 @pf

@@ -24,6 +24,12 @@ class HasPoolManager(PHasPoolManager):
 class TxnPoolManager(PTxnPoolManager):
     def authErrorWhileUpdatingNode(self, request):
         origin = request.identifier
+        isTrustee = self.node.secondaryStorage.isTrustee(origin)
+        if not isTrustee:
+            error = super().authErrorWhileUpdatingNode(request)
+            if error:
+                return error
+        origin = request.identifier
         operation = request.operation
         nodeNym = operation.get(TARGET_NYM)
         isSteward = self.node.secondaryStorage.isSteward(origin)
@@ -35,11 +41,14 @@ class TxnPoolManager(PTxnPoolManager):
         vals = []
         msgs = []
         for k in data:
-            r, msg = Authoriser.authorised(typ, k, actorRole,
-                                           oldVal=nodeInfo[DATA][k],
-                                           newVal=data[k],
+            oldVal = nodeInfo[DATA][k]
+            newVal = data[k]
+            if oldVal != newVal:
+                r, msg = Authoriser.authorised(typ, k, actorRole,
+                                           oldVal=oldVal,
+                                           newVal=newVal,
                                            isActorOwnerOfSubject=isSteward)
-            vals.append(r)
-            msgs.append(msg)
+                vals.append(r)
+                msgs.append(msg)
         msg = None if all(vals) else '\n'.join(msgs)
         return msg
