@@ -10,9 +10,7 @@ RUN apt-get install -y --fix-missing \
 	python3-pip \
 	python-setuptools \
 	python3-nacl \
-	python-software-properties \
-	apt-transport-https \
-  ca-certificates
+	python-software-properties
 RUN pip3 install -U \ 
 	pip \ 
 	setuptools \
