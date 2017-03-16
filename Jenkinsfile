@@ -126,6 +126,19 @@ try {
     }
 }
 
+@NonCPS
+def extractVersionFromText(match, text) {
+    def pattern = /.*(${match}[-a-z=\\.0-9]*)'/
+    def matcher = (text =~ pattern)
+    return matcher[0][1]
+}
+
+def extractVersion(match) {
+    def text = sh(returnStdout: true, script: "grep \"${match}[-a-z=\\.0-9]*'\" setup.py").trim()
+    echo "${match}Version -> matching against ${text}"
+    return extractVersionFromText(match, text)
+}
+
 def testUbuntu() {
     try {
         echo 'Ubuntu Test: Checkout csm'
@@ -146,6 +159,20 @@ def testUbuntu() {
         testEnv.inside('--network host') {
             echo 'Ubuntu Test: Install dependencies'
             sh 'cd /home/sovrin && virtualenv -p python3.5 test'
+
+            sovrinCommon = extractVersion('sovrin-common')
+            sovrinClient = extractVersion('sovrin-client')
+
+            sh 'mkdir -p /usr/local/tmp'
+            sh 'pip3 download -b /usr/local/tmp ${sovrinCommon}'
+
+            sh 'pushd /usr/local/tmp'
+            sh 'ls -a'
+            plenum = extractVersion('plenum')
+            sh 'popd'
+
+            sh "/home/sovrin/test/bin/python setup.py install ${sovrinClient}"
+            sh "/home/sovrin/test/bin/python setup.py install ${plenum}"
             sh '/home/sovrin/test/bin/python setup.py install'
             sh '/home/sovrin/test/bin/pip install pytest'
 
