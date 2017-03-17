@@ -163,7 +163,7 @@ def testUbuntu() {
 
         def testEnv = docker.build 'sovrin-node-test'
 
-        testEnv.inside('--network host') {
+        testEnv.inside('--network host -u sovrin') {
             echo 'Ubuntu Test: Install dependencies'
 
             def sovrinCommon = extractVersion('sovrin-common')
