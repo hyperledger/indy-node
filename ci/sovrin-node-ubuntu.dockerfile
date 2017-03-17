@@ -22,6 +22,7 @@ RUN apt-get update -y
 RUN apt-get install -y \ 
 	python3-charm-crypto
 RUN useradd -ms /bin/bash sovrin
-RUN usermod -aG root sovrin
 USER sovrin
+RUN cd /home/sovrin && virtualenv -p python3.5 test
+RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
 WORKDIR /home/sovrin
