@@ -152,7 +152,7 @@ def testUbuntu() {
         checkout scm
 
         echo 'Ubuntu Test: Build docker image'
-        sh 'ln -sf ci/sovrin-node-ubuntu.dockerfile Dockerfile'
+        sh 'ln -sf ci/ubuntu.dockerfile Dockerfile'
         def dockerContainers = sh(returnStdout: true, script: 'docker ps -a').trim()
         echo "Existing docker containers: ${dockerContainers}"
         if (dockerContainers.toLowerCase().contains('orientdb')) {
