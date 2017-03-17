@@ -177,7 +177,7 @@ def testUbuntu() {
 
             sh "/home/sovrin/test/bin/pip install ${plenum}"
             sh "/home/sovrin/test/bin/pip install ${sovrinClient}"
-            sh '/home/sovrin/test/bin/python setup.py install'
+            sh '/home/sovrin/test/bin/pip install .'
             sh '/home/sovrin/test/bin/pip install pytest'
 
             echo 'Ubuntu Test: Test'
