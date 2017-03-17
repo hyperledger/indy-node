@@ -24,5 +24,7 @@ RUN apt-get install -y \
 RUN useradd -ms /bin/bash sovrin
 USER sovrin
 RUN cd /home/sovrin && virtualenv -p python3.5 test
+USER root
 RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
+USER sovrin
 WORKDIR /home/sovrin
