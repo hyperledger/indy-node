@@ -22,5 +22,6 @@ RUN apt-get update -y
 RUN apt-get install -y \ 
 	python3-charm-crypto
 RUN useradd -ms /bin/bash sovrin
+RUN usermod -aG root sovrin
 USER sovrin
 WORKDIR /home/sovrin
