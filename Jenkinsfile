@@ -175,9 +175,6 @@ def testUbuntu() {
             def sovrinCommonPackageOnly = dropVersion("${sovrinCommon}")
             plenum = extractVersion('plenum', "/home/sovrin/tmp/${sovrinCommonPackageOnly}/setup.py")
 
-            sh 'cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/sovrin/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info'
-            sh 'cp -r /usr/local/lib/python3.5/dist-packages/charm /home/sovrin/test/lib/python3.5/site-packages/charm'
-
             sh "/home/sovrin/test/bin/pip install ${plenum}"
             sh "/home/sovrin/test/bin/pip install ${sovrinClient}"
             sh '/home/sovrin/test/bin/python setup.py install'

@@ -24,6 +24,8 @@ RUN apt-get install -y \
 RUN useradd -ms /bin/bash sovrin
 USER sovrin
 RUN virtualenv -p python3.5 /home/sovrin/test
+RUN cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/sovrin/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
+RUN cp -r /usr/local/lib/python3.5/dist-packages/charm /home/sovrin/test/lib/python3.5/site-packages/charm
 USER root
 RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
 USER sovrin
