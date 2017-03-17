@@ -126,13 +126,33 @@ try {
     }
 }
 
+@NonCPS
+def extractVersionFromText(match, text) {
+    def pattern = /.*(${match}[-a-z=\\.0-9]*)'/
+    def matcher = (text =~ pattern)
+    return matcher[0][1]
+}
+
+@NonCPS
+def dropVersion(text) {
+    def pattern = /([-a-z]+)[=\\.0-9]*/
+    def matcher = (text =~ pattern)
+    return matcher[0][1]
+}
+
+def extractVersion(match, file='setup.py') {
+    def text = sh(returnStdout: true, script: "grep \"${match}[-a-z=\\.0-9]*'\" ${file}").trim()
+    echo "${match}Version -> matching against ${text}"
+    return extractVersionFromText(match, text)
+}
+
 def testUbuntu() {
     try {
         echo 'Ubuntu Test: Checkout csm'
         checkout scm
 
         echo 'Ubuntu Test: Build docker image'
-        sh 'ln -sf ci/sovrin-node-ubuntu.dockerfile Dockerfile'
+        sh 'ln -sf ci/ubuntu.dockerfile Dockerfile'
         def dockerContainers = sh(returnStdout: true, script: 'docker ps -a').trim()
         echo "Existing docker containers: ${dockerContainers}"
         if (dockerContainers.toLowerCase().contains('orientdb')) {
@@ -143,10 +163,21 @@ def testUbuntu() {
 
         def testEnv = docker.build 'sovrin-node-test'
 
-        testEnv.inside('--network host') {
+        testEnv.inside('--network host -u sovrin') {
             echo 'Ubuntu Test: Install dependencies'
-            sh 'cd /home/sovrin && virtualenv -p python3.5 test'
-            sh '/home/sovrin/test/bin/python setup.py install'
+
+            def sovrinCommon = extractVersion('sovrin-common')
+            def sovrinClient = extractVersion('sovrin-client')
+
+            sh "mkdir -p /home/sovrin/tmp"
+            sh "pip3 download -b /home/sovrin/tmp --no-clean ${sovrinCommon}"
+
+            def sovrinCommonPackageOnly = dropVersion("${sovrinCommon}")
+            plenum = extractVersion('plenum', "/home/sovrin/tmp/${sovrinCommonPackageOnly}/setup.py")
+
+            sh "/home/sovrin/test/bin/pip install ${plenum}"
+            sh "/home/sovrin/test/bin/pip install ${sovrinClient}"
+            sh '/home/sovrin/test/bin/pip install .'
             sh '/home/sovrin/test/bin/pip install pytest'
 
             echo 'Ubuntu Test: Test'
