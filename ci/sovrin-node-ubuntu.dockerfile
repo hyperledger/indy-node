@@ -11,7 +11,8 @@ RUN apt-get install -y \
 	python-setuptools \
 	python3-nacl \
 	apt-transport-https \
-	ca-certificates
+	ca-certificates \ 
+	sudo
 RUN pip3 install -U \ 
 	pip \ 
 	setuptools \
