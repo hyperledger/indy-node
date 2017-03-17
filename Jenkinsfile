@@ -242,7 +242,7 @@ def buildDeb() {
 
             echo 'Build deb packages: Build debs'
             def sourcePath = sh(returnStdout: true, script: 'readlink -f ..').trim()
-            sh "./pack-debs $BUILD_NUMBER $sourcePath"
+            sh "./pack-debs $BUILD_NUMBER sovrin-node $sourcePath"
 
             echo 'Build deb packages: Publish debs'
             def repo = env.BRANCH_NAME == 'stable' ? 'rc' : 'master'
