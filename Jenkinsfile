@@ -179,7 +179,8 @@ def testUbuntu() {
             sh 'cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/sovrin/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info'
             sh 'cp -r /usr/local/lib/python3.5/dist-packages/charm /home/sovrin/test/lib/python3.5/site-packages/charm'
 
-            sh 'sudo ln -sf /home/sovrin/test/bin/python /usr/local/bin/python'
+            sh 'ls -al /usr'
+            sh 'ln -sf /home/sovrin/test/bin/python /usr/local/bin/python'
 
             sh "/home/sovrin/test/bin/pip install ${plenum}"
             sh "/home/sovrin/test/bin/pip install ${sovrinClient}"

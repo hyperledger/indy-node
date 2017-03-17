@@ -11,8 +11,7 @@ RUN apt-get install -y \
 	python-setuptools \
 	python3-nacl \
 	apt-transport-https \
-	ca-certificates \
-	sudo
+	ca-certificates
 RUN pip3 install -U \ 
 	pip \ 
 	setuptools \
@@ -23,6 +22,5 @@ RUN apt-get update -y
 RUN apt-get install -y \ 
 	python3-charm-crypto
 RUN useradd -ms /bin/bash sovrin
-RUN usermod -aG sudo sovrin
 USER sovrin
 WORKDIR /home/sovrin
