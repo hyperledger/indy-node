@@ -146,6 +146,10 @@ def extractVersion(match, file='setup.py') {
     return extractVersionFromText(match, text)
 }
 
+def getUserUid() {
+    return sh(returnStdout: true, script: 'id -u').trim()
+}
+
 def testUbuntu() {
     try {
         echo 'Ubuntu Test: Checkout csm'
@@ -161,7 +165,7 @@ def testUbuntu() {
             sh("docker run -d --name orientdb -p 2424:2424 -p 2480:2480 -e ORIENTDB_ROOT_PASSWORD=password -e ORIENTDB_OPTS_MEMORY=\"${env.ORIENTDB_OPTS_MEMORY}\" orientdb")
         }
 
-        def testEnv = docker.build 'sovrin-node-test'
+        def testEnv = docker.build('sovrin-node-test', "--build-arg uid=${getUserUid()} -f ci/ubuntu.dockerfile ci")
 
         testEnv.inside('--network host -u sovrin') {
             echo 'Ubuntu Test: Install dependencies'
