@@ -19,7 +19,7 @@ def testUbuntu = {
 
             def sovrinCommon = helpers.extractVersion('sovrin-common')
             def sovrinClient = helpers.extractVersion('sovrin-client')
-            def plenum = helpers.helpers.extractVersionOfSubdependency(sovrinCommon, 'plenum')
+            def plenum = helpers.extractVersionOfSubdependency(sovrinCommon, 'plenum')
 
             deps = [plenum, sovrinCommon, sovrinClient]
             testHelpers.installDeps(deps)
