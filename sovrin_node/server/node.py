@@ -9,6 +9,8 @@ from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
+from ledger.serializers.json_serializer import JsonSerializer
+
 from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, EndpointException
@@ -20,6 +22,7 @@ from plenum.common.types import Reply, RequestAck, RequestNack, f, \
 from plenum.common.util import error, check_endpoint_valid
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
+
 from sovrin_common.auth import Authoriser
 from sovrin_common.config_util import getConfig
 from sovrin_common.persistence import identity_graph
@@ -40,6 +43,7 @@ from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 
 logger = getlogger()
+jsonSerz = JsonSerializer()
 
 
 class Node(PlenumNode, HasPoolManager):
@@ -565,7 +569,11 @@ class Node(PlenumNode, HasPoolManager):
          client requests it.
         """
         result = reply.result
+        if result[TXN_TYPE] in (SCHEMA, ISSUER_KEY):
+            result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
+
         txnWithMerkleInfo = self.storeTxnInLedger(result)
+
         if result[TXN_TYPE] == NODE_UPGRADE:
             logger.info('{} processed {}'.format(self, NODE_UPGRADE))
             # Returning since NODE_UPGRADE is not sent to client and neither
