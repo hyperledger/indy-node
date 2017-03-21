@@ -14,7 +14,8 @@ from collections import OrderedDict
 from tempfile import TemporaryDirectory
 
 from plenum.common.looper import Looper
-from plenum.common.constants import TRUST_ANCHOR, NYM
+from plenum.common.constants import NYM
+from sovrin_common.constants import TRUST_ANCHOR
 
 from sovrin_node.server.node import Node
 

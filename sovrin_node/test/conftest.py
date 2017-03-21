@@ -21,11 +21,11 @@ from ledger.serializers.compact_serializer import CompactSerializer
 
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import VERKEY, NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
-    ALIAS, SERVICES, VALIDATOR, STEWARD, TRUST_ANCHOR, TXN_ID
+    ALIAS, SERVICES, VALIDATOR, STEWARD, TXN_ID
 from plenum.test.plugin.helper import getPluginPath
 
 from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.constants import NYM
+from sovrin_common.constants import NYM, TRUST_ANCHOR
 from sovrin_common.constants import TXN_TYPE, TARGET_NYM, ROLE
 from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.config_util import getConfig

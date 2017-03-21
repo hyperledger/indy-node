@@ -1,7 +1,6 @@
 import pytest
 import json
 
-from plenum.common.constants import TGB
 from pyorient import OrientBinaryObject
 
 from anoncreds.protocol.issuer import Issuer
@@ -23,6 +22,7 @@ from sovrin_client.client.client import Client
 
 from sovrin_client.test.helper import addRole, getClientAddedWithRole
 from sovrin_client.test.conftest import userWalletA
+from sovrin_common.constants import TGB
 
 from sovrin_node.test.helper import addAttributeAndCheck
 from sovrin_node.test.upgrade.conftest import validUpgrade
