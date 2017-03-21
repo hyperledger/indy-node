@@ -5,7 +5,6 @@ from plenum.common.util import randomString
 from plenum.test.helper import checkSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import \
     ensureClientConnectedToNodesAndPoolLedgerSame
-from plenum.test.pool_transactions.helper import addNewStewardAndNode
 from plenum.test.test_node import checkNodesConnected
 from sovrin_client.client.wallet.node import Node
 
@@ -20,10 +19,9 @@ from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 
-from plenum.common.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.txn import VERKEY, NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
-    ALIAS, SERVICES, VALIDATOR, TYPE, STEWARD, TRUST_ANCHOR
+    ALIAS, SERVICES, VALIDATOR, STEWARD, TRUST_ANCHOR
 from plenum.test.plugin.helper import getPluginPath
 
 from sovrin_client.client.wallet.wallet import Wallet
@@ -37,12 +35,13 @@ from sovrin_node.test.helper import TestNode, \
 
 from sovrin_client.test.helper import addRole, getClientAddedWithRole, \
     genTestClient, TestClient, createNym
-from sovrin_client.test.cli.helper import newCLI
+
+# noinspection PyUnresolvedReferences
 from sovrin_client.test.conftest import updatedPoolTxnData, trustAnchorWallet, \
     trustAnchor
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, counter, nodeReg, up, ready, \
+from plenum.test.conftest import tdir, nodeReg, up, ready, \
     whitelist, concerningLogLevels, logcapture, keySharedNodes, \
     startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \

@@ -30,6 +30,7 @@ if __name__ == "__main__":
 
         RAETLogFile = getRAETLogFilePath("RAETLogFilePathCli", config)
 
+        Logger(config)
         Logger().enableFileLogging(logFileName)
         Logger().setupRaet(RAETVerbosity, RAETLogFile)
 
