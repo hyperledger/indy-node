@@ -42,7 +42,7 @@ from sovrin_client.test.conftest import updatedPoolTxnData, trustAnchorWallet, \
     trustAnchor
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, counter, nodeReg, up, ready, \
+from plenum.test.conftest import tdir, nodeReg, up, ready, \
     whitelist, concerningLogLevels, logcapture, keySharedNodes, \
     startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
