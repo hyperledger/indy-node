@@ -6,7 +6,7 @@ import sys
 from ioflo.aid.consoling import Console
 from plenum.common.log import getlogger, \
     getRAETLogLevelFromConfig, getRAETLogFilePath, Logger
-from plenum.common.types import HA
+from stp_core.types import HA
 
 from sovrin_common.config_util import getConfig
 
