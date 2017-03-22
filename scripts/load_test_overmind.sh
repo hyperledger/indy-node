@@ -13,8 +13,8 @@ printf -v OUT_DIR 'test_result_%s_%s__%s' "$PARALLELISM_FACTOR" "$REQ_NUM" "$tim
 
 mkdir -p $OUT_DIR
 echo "starting $PARALLELISM_FACTOR clients, making them send $REQ_NUM requests"
-for I in $(seq 0 $(($PARALLELISM_FACTOR - 1)));
+for I in $(seq 1 $(($PARALLELISM_FACTOR)));
   do
   echo "starting client #$I"
-    python -u scripts/load_test.py -t $REQ_TYPE -r $REQ_NUM --clients-list="$CLIENT_LIST" --skip-clients $I --timeout $TIMEOUT &> "$OUT_DIR/$I.log" &
+    python -u scripts/load_test.py -t $REQ_TYPE -r $REQ_NUM --clients-list="$CLIENT_LIST" --skip-clients $I --timeout $TIMEOUT &> "$OUT_DIR/$I.log"  &
   done
