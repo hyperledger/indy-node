@@ -34,7 +34,8 @@ from sovrin_common.identity import Identity
 logger = getlogger()
 config = getConfig()
 
-TTL = 5.0
+TTL = 60.0
+CONNECTION_TTL = 30.0
 RETRY_WAIT = 0.25
 
 
@@ -135,7 +136,7 @@ class ClientPoll:
                            verkey=signer.verkey)
             wallet.addSponsoredIdentity(idy)
             reqs = wallet.preparePending()
-            logger.debug("Client {} sending request {}".format(cli, reqs[0]))
+            logger.info("Client {} sending request {}".format(cli, reqs[0]))
             sentAt = time.time()
             cli.submitReqs(reqs[0])
             corosArgs.append([cli, wallet, reqs[0], sentAt])
@@ -150,7 +151,7 @@ class ClientPoll:
                                ledgerStore=LedgerStore.RAW)
             wallet.addAttribute(attrib)
             reqs = wallet.preparePending()
-            logger.debug("Client {} sending request {}".format(cli, reqs[0]))
+            logger.info("Client {} sending request {}".format(cli, reqs[0]))
             sentAt = time.time()
             cli.submitReqs(reqs[0])
             corosArgs.append([cli, wallet, reqs[0], sentAt])
@@ -236,7 +237,7 @@ async def checkReplyAndLogStat(client, wallet, request, sentAt, writeResultsRow,
                     ackNodes=",".join(ackNodes),
                     nackNodes=",".join(nackNodes.keys()),
                     replyNodes=",".join(replyNodes.keys()))
-    logger.debug("COUNTER {}".format(row))
+    logger.info("COUNTER {}".format(row))
     stats.append((latency, hasConsensus, queryTime))
     writeResultsRow(row._asdict())
 
@@ -245,7 +246,7 @@ def checkIfConnectedToAll(client):
     connectedNodes = client.nodestack.connecteds
     connectedNodesNum = len(connectedNodes)
     totalNodes = len(client.nodeReg)
-    logger.debug("Connected {} / {} nodes".
+    logger.info("Connected {} / {} nodes".
                  format(connectedNodesNum, totalNodes))
 
     if connectedNodesNum == 0:
@@ -287,7 +288,7 @@ def printCurrentTestResults(stats, testStartedAt):
     failNum = totalNum - successNum
     throughput = successNum / secSinceTestStart
     errRate = failNum / secSinceTestStart
-    logger.debug(
+    logger.info(
         """
         ================================
         Test time: {}
@@ -310,7 +311,7 @@ def main(args):
         "perf_results_{x.numberOfClients}_" \
         "{x.numberOfRequests}_{0}.csv".format(int(time.time()), x=args)
     resultFilePath = os.path.join(args.resultsPath, resultsFileName)
-    logger.debug("Results file: {}".format(resultFilePath))
+    logger.info("Results file: {}".format(resultFilePath))
 
     def writeResultsRow(row):
         if not os.path.exists(resultFilePath):
@@ -344,7 +345,7 @@ def main(args):
             looper.add(cli)
             connectionCoros.append(functools.partial(checkIfConnectedToAll, cli))
         looper.run(eventuallyAll(*connectionCoros,
-                                 totalTimeout=TTL,
+                                 totalTimeout=CONNECTION_TTL,
                                  retryWait=RETRY_WAIT))
 
         testStartedAt = time.time()
@@ -369,7 +370,7 @@ def main(args):
                                      totalTimeout=len(coros)*TTL,
                                      retryWait=RETRY_WAIT))
             printCurrentTestResults(stats, testStartedAt)
-        logger.debug("Sent {} {} requests".format(len(coros), requestType))
+        logger.info("Sent {} {} requests".format(len(coros), requestType))
 
 
 if __name__ == '__main__':

@@ -50,19 +50,19 @@ def spawnClient(clientName, port, signerSeed, host='0.0.0.0'):
 
 async def checkReply(client, requestId):
     _, status = client.getReply(requestId)
-    logger.debug("Number of received messages {}".format(len(client.inBox)))
+    logger.info("Number of received messages {}".format(len(client.inBox)))
     groups = groupby(client.inBox, key=lambda x: x[0])
     for key, group in groups:
-        logger.debug("Group {}".format(key['op']))
+        logger.info("Group {}".format(key['op']))
         for msg in list(group):
-            logger.debug("  {}".format(msg))
+            logger.info("  {}".format(msg))
     succeeded = status == "CONFIRMED"
     return succeeded
 
 
 async def doRequesting(client, wallet, op):
     signedOp = wallet.signOp(op)
-    logger.debug("Client {} sending request {}".format(client, op))
+    logger.info("Client {} sending request {}".format(client, op))
     request = client.submitReqs(signedOp)[0]
     requestId = request.reqId
     args = [client, requestId]
@@ -73,9 +73,9 @@ def checkIfConnectedToAll(client):
     connectedNodes = client.nodestack.connecteds
     connectedNodesNum = len(connectedNodes)
     totalNodes = len(client.nodeReg)
-    logger.debug("Connected {} / {} nodes".format(connectedNodesNum, totalNodes))
+    logger.info("Connected {} / {} nodes".format(connectedNodesNum, totalNodes))
     for node in connectedNodes:
-        logger.debug("  {}".format(node))
+        logger.info("  {}".format(node))
 
     if connectedNodesNum == 0:
         raise Exception("Not connected to any")
@@ -87,7 +87,7 @@ def checkIfConnectedToAll(client):
 
 async def ensureConnectedToNodes(client):
     wait = 5
-    logger.debug("waiting for {} seconds to check client connections to nodes...".format(wait))
+    logger.info("waiting for {} seconds to check client connections to nodes...".format(wait))
     await eventuallyAll(lambda : checkIfConnectedToAll(client), retryWait=.5, totalTimeout=wait)
 
 
