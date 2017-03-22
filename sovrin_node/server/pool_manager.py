@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from plenum.common.txn import POOL_TXN_TYPES, TXN_TYPE, DATA, ALIAS, \
+from plenum.common.constants import POOL_TXN_TYPES, TXN_TYPE, DATA, ALIAS, \
     TARGET_NYM
 from plenum.server.pool_manager import HasPoolManager as PHasPoolManager, \
     TxnPoolManager as PTxnPoolManager

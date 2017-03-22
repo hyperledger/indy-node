@@ -3,7 +3,7 @@
 from plenum.common.test_network_setup import TestNetworkSetup
 
 from sovrin_common.config_util import getConfig
-from sovrin_common.txn import getTxnOrderedFields
+from sovrin_common.txn_util import getTxnOrderedFields
 
 config = getConfig()
 portsStart = 9700
