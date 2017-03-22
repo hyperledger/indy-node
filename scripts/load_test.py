@@ -64,6 +64,11 @@ def parseArgs():
                         dest="requestType",
                         help="type of requests to send, supported = NYM, ATTRIB")
 
+    parser.add_argument("--at-once",
+                        action='store_true',
+                        dest="atOnce",
+                        help="if set client send all request at once")
+
 
     parser.add_argument("--timeout",
                         action="store",
@@ -128,18 +133,20 @@ class ClientPoll:
             format(randint(1000000, 1000000000000), randomString(50))}
         return json.dumps(d)
 
-    def submitNym(self):
+    def submitNym(self, nymsPerSponsor=1):
         corosArgs = []
         for cli, wallet in self._clientsWallets:
-            signer = SimpleSigner()
-            idy = Identity(identifier=signer.identifier,
+            for _ in range(nymsPerSponsor):
+                signer = SimpleSigner()
+                idy = Identity(identifier=signer.identifier,
                            verkey=signer.verkey)
-            wallet.addSponsoredIdentity(idy)
+                wallet.addSponsoredIdentity(idy)
+
             reqs = wallet.preparePending()
-            logger.info("Client {} sending request {}".format(cli, reqs[0]))
             sentAt = time.time()
-            cli.submitReqs(reqs[0])
-            corosArgs.append([cli, wallet, reqs[0], sentAt])
+            cli.submitReqs(*reqs)
+            for req in reqs:
+                corosArgs.append([cli, wallet, req, sentAt])
         return corosArgs
 
     def submitSetAttr(self):
@@ -362,15 +369,21 @@ def main(args):
             raise ValueError("Unsupported request type, "
                              "only NYM and ATTRIB are supported")
 
-        # send requests
-        for i in range(args.numberOfRequests):
-            corosArgs = sendRequests()
+        def sendAndWaitReplies(numRequests):
+            corosArgs = sendRequests(numRequests)
             coros = buildCoros(checkReplyAndLogStat, corosArgs)
             looper.run(eventuallyAll(*coros,
-                                     totalTimeout=len(coros)*TTL,
+                                     totalTimeout=numRequests * TTL,
                                      retryWait=RETRY_WAIT))
             printCurrentTestResults(stats, testStartedAt)
-        logger.info("Sent {} {} requests".format(len(coros), requestType))
+            logger.info("Sent and waited for {} {} requests"
+                        .format(len(coros), requestType))
+
+        if args.atOnce:
+            sendAndWaitReplies(numRequests=args.numberOfRequests)
+        else:
+            for i in range(args.numberOfRequests):
+                sendAndWaitReplies(numRequests=1)
 
 
 if __name__ == '__main__':
