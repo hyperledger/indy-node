@@ -126,14 +126,30 @@ def addNyms():
 
         # Creating request
         print("Creating request")
+        bad = []
         for sponsorSeed in sponsorsSeeds:
             signer = SimpleSigner(seed=sponsorSeed.encode())
             nym = signer.identifier
             verkey = signer.verkey
             # Sending requests
-            print("Creating nym {} for seed".format(nym , sponsorSeed))
-            createNym(looper=looper, nym=nym, creatorClient=client,
-                      creatorWallet=wallet, verkey=verkey, role=SPONSOR)
+            print("Creating nym for seed {}".format(sponsorSeed))
+            try:
+                createNym(looper=looper, nym=nym, creatorClient=client,
+                          creatorWallet=wallet, verkey=verkey, role=SPONSOR)
+                print("Successfully created nym for {}".format(sponsorSeed))
+            except Exception as ex:
+                bad.append(sponsorSeed)
+                print("Failed to create nym for {}".format(sponsorSeed))
+
+
+        print("=======================")
+        if not bad:
+            print("All nyms created successfully")
+        else:
+            print("Failed to created nyms for:")
+            for nym in bad:
+                print("-", nym)
+        print("=======================")
 
 
 if __name__ == '__main__':
