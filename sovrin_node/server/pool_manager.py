@@ -41,7 +41,7 @@ class TxnPoolManager(PTxnPoolManager):
         vals = []
         msgs = []
         for k in data:
-            oldVal = nodeInfo[DATA][k]
+            oldVal = (nodeInfo.get(DATA, {})).get(k, None) if nodeInfo else None
             newVal = data[k]
             if oldVal != newVal:
                 r, msg = Authoriser.authorised(typ, k, actorRole,
