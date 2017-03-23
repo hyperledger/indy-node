@@ -134,35 +134,36 @@ class ClientPoll:
         return json.dumps(d)
 
     def submitNym(self, reqsPerClient=1):
+
+        def makeRequest(cli, wallet):
+            signer = SimpleSigner()
+            idy = Identity(identifier=signer.identifier,
+                           verkey=signer.verkey)
+            wallet.addSponsoredIdentity(idy)
+
+        return self.submitGeneric(makeRequest, reqsPerClient)
+
+    def submitSetAttr(self, reqsPerClient=1):
+
+        def makeRequest(cli, wallet):
+            attrib = Attribute(name=cli.name,
+                               origin=wallet.defaultId,
+                               value=self.randomRawAttr(),
+                               ledgerStore=LedgerStore.RAW)
+            wallet.addAttribute(attrib)
+
+        return self.submitGeneric(makeRequest, reqsPerClient)
+
+    def submitGeneric(self, makeRequest, reqsPerClient):
         corosArgs = []
         for cli, wallet in self._clientsWallets:
             for _ in range(reqsPerClient):
-                signer = SimpleSigner()
-                idy = Identity(identifier=signer.identifier,
-                           verkey=signer.verkey)
-                wallet.addSponsoredIdentity(idy)
-
+                makeRequest(cli, wallet)
             reqs = wallet.preparePending()
             sentAt = time.time()
             cli.submitReqs(*reqs)
             for req in reqs:
                 corosArgs.append([cli, wallet, req, sentAt])
-        return corosArgs
-
-    def submitSetAttr(self, reqsPerClient=1):
-        corosArgs = []
-        for cli, wallet in self._clientsWallets:
-            for _ in range(reqsPerClient):
-                attrib = Attribute(name=cli.name,
-                                   origin=wallet.defaultId,
-                                   value=self.randomRawAttr(),
-                                   ledgerStore=LedgerStore.RAW)
-                wallet.addAttribute(attrib)
-                reqs = wallet.preparePending()
-                sentAt = time.time()
-                cli.submitReqs(*reqs)
-                for req in reqs:
-                    corosArgs.append([cli, wallet, req, sentAt])
         return corosArgs
 
     def _readCredentials(self):
@@ -363,12 +364,13 @@ def main(args):
         requestType = args.requestType
         sendRequests = {
             "NYM": clientPoll.submitNym,
-            "ATTRIB": clientPoll.submitSetAttr
+            "ATTRIB": clientPoll.submitSetAttr,
+            "ATTR": clientPoll.submitSetAttr
         }.get(requestType)
 
         if sendRequests is None:
             raise ValueError("Unsupported request type, "
-                             "only NYM and ATTRIB are supported")
+                             "only NYM and ATTRIB/ATTR are supported")
 
         def sendAndWaitReplies(numRequests):
             corosArgs = sendRequests(numRequests)
