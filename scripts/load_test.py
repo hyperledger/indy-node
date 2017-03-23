@@ -133,10 +133,10 @@ class ClientPoll:
             format(randint(1000000, 1000000000000), randomString(50))}
         return json.dumps(d)
 
-    def submitNym(self, nymsPerSponsor=1):
+    def submitNym(self, reqsPerClient=1):
         corosArgs = []
         for cli, wallet in self._clientsWallets:
-            for _ in range(nymsPerSponsor):
+            for _ in range(reqsPerClient):
                 signer = SimpleSigner()
                 idy = Identity(identifier=signer.identifier,
                            verkey=signer.verkey)
@@ -149,19 +149,20 @@ class ClientPoll:
                 corosArgs.append([cli, wallet, req, sentAt])
         return corosArgs
 
-    def submitSetAttr(self):
+    def submitSetAttr(self, reqsPerClient=1):
         corosArgs = []
         for cli, wallet in self._clientsWallets:
-            attrib = Attribute(name=cli.name,
-                               origin=wallet.defaultId,
-                               value=self.randomRawAttr(),
-                               ledgerStore=LedgerStore.RAW)
-            wallet.addAttribute(attrib)
-            reqs = wallet.preparePending()
-            logger.info("Client {} sending request {}".format(cli, reqs[0]))
-            sentAt = time.time()
-            cli.submitReqs(reqs[0])
-            corosArgs.append([cli, wallet, reqs[0], sentAt])
+            for _ in range(reqsPerClient):
+                attrib = Attribute(name=cli.name,
+                                   origin=wallet.defaultId,
+                                   value=self.randomRawAttr(),
+                                   ledgerStore=LedgerStore.RAW)
+                wallet.addAttribute(attrib)
+                reqs = wallet.preparePending()
+                sentAt = time.time()
+                cli.submitReqs(*reqs)
+                for req in reqs:
+                    corosArgs.append([cli, wallet, req, sentAt])
         return corosArgs
 
     def _readCredentials(self):
