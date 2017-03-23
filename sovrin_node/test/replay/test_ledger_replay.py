@@ -148,7 +148,6 @@ def compareGraph(table, nodeSet):
         assert records == stoppedNodeRecords
 
 
-@pytest.mark.skipif('sys.platform == "win32"', reason='SOV-781')
 def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                                    nodeSet, looper, tconf, tdirWithPoolTxns,
                                    allPluginsPath, txnPoolNodeSet):
