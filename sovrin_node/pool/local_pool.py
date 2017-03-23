@@ -2,13 +2,13 @@ from collections import deque
 
 from plenum.common.raet import initLocalKeep
 from plenum.common.test_network_setup import TestNetworkSetup
-from plenum.common.txn import TYPE, NODE, NYM
+from plenum.common.constants import TYPE, NODE, NYM
 from plenum.common.looper import Looper
 from plenum.common.util import adict
 
 from sovrin_common.config_util import getConfig
 from sovrin_common.pool.pool import Pool
-from sovrin_common.txn import getTxnOrderedFields
+from sovrin_common.txn_util import getTxnOrderedFields
 
 
 class LocalPool(Pool, Looper):
