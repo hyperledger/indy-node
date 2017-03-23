@@ -14,7 +14,8 @@ from collections import OrderedDict
 from tempfile import TemporaryDirectory
 
 from plenum.common.looper import Looper
-from plenum.common.txn import TRUST_ANCHOR
+from plenum.common.constants import NYM
+from sovrin_common.constants import TRUST_ANCHOR
 
 from sovrin_node.server.node import Node
 
@@ -29,7 +30,7 @@ def run_node():
 
     genesisTxns = [{'txnId': '6b86b273ff34fce19d6b804eff5a3f57'
                              '47ada4eaa22f1d49c01e52ddb7875b4b',
-                    'type': 'NYM',
+                    'type': NYM,
                     'dest': 'o7z4QmFkNB+mVkFI2BwX0Hdm1BGhnz8psWnKYIXWTaQ=',
                     'role': TRUST_ANCHOR}]
 

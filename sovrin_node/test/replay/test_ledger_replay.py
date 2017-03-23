@@ -10,7 +10,6 @@ from anoncreds.protocol.wallet.issuer_wallet import IssuerWalletInMemory
 from anoncreds.test.conftest import GVT
 
 from plenum.common.eventually import eventually
-from plenum.common.txn import VERSION
 from plenum.common.util import randomString
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.node_catchup.helper import checkNodeLedgersForEquality
@@ -21,9 +20,9 @@ from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.client.client import Client
 
-from plenum.common.txn import TGB
 from sovrin_client.test.helper import addRole, getClientAddedWithRole
 from sovrin_client.test.conftest import userWalletA
+from sovrin_common.constants import TGB
 
 from sovrin_node.test.helper import addAttributeAndCheck
 from sovrin_node.test.upgrade.conftest import validUpgrade
@@ -160,8 +159,8 @@ def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
     nodeToStop.cleanupOnStopping = False
     nodeToStop.stop()
     looper.removeProdable(nodeToStop)
-    client = nodeToStop.graphStore.client
-    client.db_drop(client._connection.db_opened)
+    #client = nodeToStop.graphStore.client
+    #client.db_drop(client._connection.db_opened)
     newNode = TestNode(nodeToStop.name, basedirpath=tdirWithPoolTxns,
                        config=tconf, pluginPaths=allPluginsPath,
                        ha=nodeToStop.nodestack.ha, cliha=nodeToStop.clientstack.ha)

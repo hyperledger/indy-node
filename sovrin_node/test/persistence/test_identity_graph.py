@@ -2,7 +2,7 @@ import time
 from datetime import datetime, timedelta
 
 from ledger.util import F
-from plenum.common.txn import TXN_TIME
+from plenum.common.constants import TXN_TIME
 
 from sovrin_common.persistence.identity_graph import IdentityGraph
 

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import dateutil.tz
 import pytest
 
-from sovrin_common.txn import START
+from sovrin_common.constants import START
 from sovrin_node.test.upgrade.helper import bumpedVersion
 
 
