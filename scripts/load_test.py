@@ -34,7 +34,7 @@ from sovrin_common.identity import Identity
 logger = getlogger()
 config = getConfig()
 
-TTL = 60.0
+TTL = 120.0#60.0
 CONNECTION_TTL = 30.0
 RETRY_WAIT = 0.25
 
@@ -135,10 +135,21 @@ class ClientPoll:
 
     def submitNym(self, reqsPerClient=1):
 
+        usedIdentifiers = set()
+
+        def newSigner():
+            while True:
+                signer = SimpleSigner()
+                idr = signer.identifier
+                if idr not in usedIdentifiers:
+                    usedIdentifiers.add(idr)
+                    return signer
+
         def makeRequest(cli, wallet):
-            signer = SimpleSigner()
+            signer = newSigner()
             idy = Identity(identifier=signer.identifier,
                            verkey=signer.verkey)
+
             wallet.addSponsoredIdentity(idy)
 
         return self.submitGeneric(makeRequest, reqsPerClient)
@@ -179,7 +190,7 @@ class ClientPoll:
         return createClientAndWalletWithSeed(name, seed, address)
 
 
-resultsRowFieldNames = ['signerName', 'signerId', 'reqId', 'transactionType',
+resultsRowFieldNames = ['signerName', 'signerId', 'dest', 'reqId', 'transactionType',
                         'sentAt', 'quorumAt', 'latency', 'ackNodes',
                         'nackNodes', 'replyNodes']
 ResultRow = namedtuple('ResultRow', resultsRowFieldNames)
@@ -232,12 +243,14 @@ async def checkReplyAndLogStat(client, wallet, request, sentAt, writeResultsRow,
         await eventuallyAny(checkReply, client,
                             request.reqId, wallet.defaultId,
                             retryWait=RETRY_WAIT, timeout=TTL)
+
     endTime = time.time()
     quorumAt = endTime if hasConsensus else ""  # TODO: only first hasConsensus=True make sense
     latency = endTime - sentAt
 
     row = ResultRow(signerName=wallet.name,
                     signerId=wallet.defaultId,
+                    dest=request.operation.get('dest'),
                     reqId=request.reqId,
                     transactionType=request.operation['type'],
                     sentAt=sentAt,
