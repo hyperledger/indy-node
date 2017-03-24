@@ -259,7 +259,6 @@ async def checkReplyAndLogStat(client, wallet, request, sentAt, writeResultsRow,
                     ackNodes=",".join(ackNodes),
                     nackNodes=",".join(nackNodes.keys()),
                     replyNodes=",".join(replyNodes.keys()))
-    logger.info("COUNTER {}".format(row))
     stats.append((latency, hasConsensus, queryTime))
     writeResultsRow(row._asdict())
 
