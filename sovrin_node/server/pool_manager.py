@@ -45,9 +45,9 @@ class TxnPoolManager(PTxnPoolManager):
             newVal = data[k]
             if oldVal != newVal:
                 r, msg = Authoriser.authorised(typ, k, actorRole,
-                                           oldVal=oldVal,
-                                           newVal=newVal,
-                                           isActorOwnerOfSubject=isSteward)
+                                               oldVal=oldVal,
+                                               newVal=newVal,
+                                               isActorOwnerOfSubject=isSteward)
                 vals.append(r)
                 msgs.append(msg)
         msg = None if all(vals) else '\n'.join(msgs)
