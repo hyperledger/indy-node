@@ -303,6 +303,13 @@ class Node(PlenumNode, HasPoolManager):
                                            format(role))
             # Only
             if not self.canNymRequestBeProcessed(identifier, operation):
+                try:
+                    raise ValueError()
+                except Exception as error:
+                    logger.debug("XXX")
+                    logger.exception(error)
+                    logger.debug("===============================================")
+                    logger.debug(error.__traceback__)
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} is already present".
                                            format(nym))
