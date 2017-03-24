@@ -26,6 +26,7 @@ async def _createServer(host, port):
 
 def _stopServer(server):
     def _stop(x):
+        print('Closing server')
         server.close()
     return _stop
 
@@ -50,7 +51,6 @@ def testScheduleNodeUpgrade(nodeSet):
     service received notification.
     """
     from sovrin_common.config_util import getConfig
-
     config = getConfig()
     loop = asyncio.get_event_loop()
     server, indicator = loop.run_until_complete(

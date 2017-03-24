@@ -20,7 +20,6 @@ from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 
-from plenum.common.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.txn import VERKEY, NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
     ALIAS, SERVICES, VALIDATOR, TYPE
@@ -37,7 +36,6 @@ from sovrin_node.test.helper import TestNode, \
 
 from sovrin_client.test.helper import addRole, getClientAddedWithRole, \
     genTestClient, TestClient, createNym
-from sovrin_client.test.cli.helper import newCLI
 from sovrin_client.test.conftest import updatedPoolTxnData, sponsorWallet, \
     sponsor
 
