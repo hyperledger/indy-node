@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import dateutil.tz
 import pytest
 
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.common.txn import NAME, VERSION
 from plenum.test.helper import checkSufficientRepliesForRequests
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone

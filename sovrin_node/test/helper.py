@@ -4,7 +4,7 @@ import shutil
 from contextlib import ExitStack
 from typing import Iterable
 
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.common.log import getlogger
 from plenum.common.looper import Looper
 from plenum.common.signer_simple import SimpleSigner

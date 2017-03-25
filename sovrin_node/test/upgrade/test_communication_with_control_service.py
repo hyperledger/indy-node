@@ -1,7 +1,7 @@
 import asyncio
 import time
 from sovrin_node.server.upgrader import Upgrader, UpgradeMessage
-from plenum.common.eventually import eventuallySoon
+from stp_core.loop.eventually import eventuallySoon
 
 
 when = "2017-01-27T12:00:00Z"
