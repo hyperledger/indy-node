@@ -9,28 +9,32 @@ from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
+from ledger.serializers.json_serializer import JsonSerializer
+
 from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, EndpointException
 from plenum.common.log import getlogger
-from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, VERKEY
+from plenum.common.constants import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
+    POOL_TXN_TYPES, VERKEY, TXN_ID, TXN_TIME, NYM_KEY, NODE_PRIMARY_STORAGE_SUFFIX
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
-    NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
+    OPERATION, LedgerStatus
 from plenum.common.util import error, check_endpoint_valid
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
+
 from sovrin_common.auth import Authoriser
 from sovrin_common.config_util import getConfig
 from sovrin_common.persistence import identity_graph
-from sovrin_common.txn import TXN_TYPE, \
+from sovrin_common.constants import TXN_TYPE, \
     TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, NYM,\
     ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
-    TXN_ID, TXN_TIME, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
-    getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
+    reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
+    SCHEMA, GET_SCHEMA, openTxns, \
     ISSUER_KEY, GET_ISSUER_KEY, REF, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
     NODE_UPGRADE, COMPLETE, FAIL, ENDPOINT
+from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
 from sovrin_node.persistence.secondary_storage import SecondaryStorage
@@ -40,6 +44,7 @@ from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 
 logger = getlogger()
+jsonSerz = JsonSerializer()
 
 
 class Node(PlenumNode, HasPoolManager):
@@ -87,7 +92,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def getGraphStorage(self, name):
         return identity_graph.IdentityGraph(self._getOrientDbStore(name,
-                                                    pyorient.DB_TYPE_GRAPH))
+                                            pyorient.DB_TYPE_GRAPH))
 
     def getPrimaryStorage(self):
         """
@@ -353,7 +358,7 @@ class Node(PlenumNode, HasPoolManager):
                         "{} cannot add {}".format(originRole, role))
             else:
                 nymData = nymV.oRecordData
-                owner = self.graphStore.getOwnerFor(nymData.get(NYM))
+                owner = self.graphStore.getOwnerFor(nymData.get(NYM_KEY))
                 isOwner = origin == owner
                 updateKeys = [ROLE, VERKEY]
                 for key in updateKeys:
@@ -565,7 +570,11 @@ class Node(PlenumNode, HasPoolManager):
          client requests it.
         """
         result = reply.result
+        if result[TXN_TYPE] in (SCHEMA, ISSUER_KEY):
+            result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
+
         txnWithMerkleInfo = self.storeTxnInLedger(result)
+
         if result[TXN_TYPE] == NODE_UPGRADE:
             logger.info('{} processed {}'.format(self, NODE_UPGRADE))
             # Returning since NODE_UPGRADE is not sent to client and neither
