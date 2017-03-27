@@ -1,4 +1,4 @@
-#!groovy​
+#!groovy
 
 @Library('SovrinHelpers') _
 
@@ -40,9 +40,29 @@ def testWindows = {
 }
 
 def testWindowsNoDocker = {
-    echo 'TODO: Implement me'
+    try {
+        echo 'Windows No Docker Test: Checkout csm'
+        checkout scm
+
+        echo 'Windows No Docker Test: drop orientdb databases'
+        orientdb.cleanupWindows()
+
+
+        testHelpers.createVirtualEnvAndExecute({ python, pip ->
+            echo 'Windows No Docker Test: Install dependencies'
+
+            def sovrinClient = helpers.extractVersion('sovrin-client')
+
+            testHelpers.installDepsBat(python, pip, [sovrinClient])
+
+            echo 'Windows No Docker Test: Test'
+            testHelpers.testJunitBat(python, pip)
+        })
+    }
+    finally {
+        echo 'Windows No Docker Test: Cleanup'
+        step([$class: 'WsCleanup'])
+    }
 }
 
-
-
-testAndPublish(name, [ubuntu: testUbuntu, windows: testWindows, windowsNoDocker: testWindowsNoDocker])
+testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
