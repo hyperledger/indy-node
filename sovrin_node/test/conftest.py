@@ -38,7 +38,8 @@ from sovrin_client.test.helper import addRole, getClientAddedWithRole, \
 
 # noinspection PyUnresolvedReferences
 from sovrin_client.test.conftest import updatedPoolTxnData, trustAnchorWallet, \
-    trustAnchor
+    trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, trusteeData,\
+    trusteeWallet, poolTxnTrusteeNames
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, nodeReg, up, ready, \
@@ -54,27 +55,6 @@ def tconf(conf, tdir):
     conf.baseDir = tdir
     conf.MinSepBetweenNodeUpgrades = 5
     return conf
-
-
-@pytest.fixture(scope="module")
-def poolTxnTrusteeNames():
-    return "Trustee1",
-
-
-@pytest.fixture(scope="module")
-def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
-    name = poolTxnTrusteeNames[0]
-    seed = updatedPoolTxnData["seeds"][name]
-    return name, seed.encode()
-
-
-@pytest.fixture(scope="module")
-def trusteeWallet(trusteeData):
-    name, sigseed = trusteeData
-    wallet = Wallet('trustee')
-    signer = SimpleSigner(seed=sigseed)
-    wallet.addIdentifier(signer=signer)
-    return wallet
 
 
 @pytest.fixture(scope="module")
@@ -138,17 +118,6 @@ def testNodeClass():
 @pytest.fixture(scope="module")
 def testClientClass():
     return TestClient
-
-
-@pytest.fixture(scope="module")
-def updatedDomainTxnFile(tdir, tdirWithDomainTxns, genesisTxns,
-                         domainTxnOrderedFields, tconf):
-    ledger = Ledger(CompactMerkleTree(),
-                    dataDir=tdir,
-                    serializer=CompactSerializer(fields=domainTxnOrderedFields),
-                    fileName=tconf.domainTransactionsFile)
-    for txn in genesisTxns:
-        ledger.add(txn)
 
 
 @pytest.fixture(scope="module")
