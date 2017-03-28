@@ -1,5 +1,5 @@
+from plenum.common.keygen_utils import initLocalKeys
 from stp_core.loop.eventually import eventually
-from stp_raet.util import initLocalKeep
 from plenum.common.util import randomString
 from plenum.test.helper import checkSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import \
@@ -264,7 +264,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     looper.run(eventually(chk, retryWait=1, timeout=10))
 
-    initLocalKeep(newNodeName, tdirWithPoolTxns, sigseed, override=True)
+    initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
 
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),
