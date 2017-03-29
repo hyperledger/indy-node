@@ -1,8 +1,8 @@
 from ledger.util import F
-from plenum.common.txn import TXN_TYPE
+from plenum.common.constants import TXN_TYPE
 from plenum.persistence.secondary_storage import SecondaryStorage as PlenumSS
 
-from sovrin_common.txn import NYM
+from sovrin_common.constants import NYM
 
 
 class SecondaryStorage(PlenumSS):
@@ -28,8 +28,8 @@ class SecondaryStorage(PlenumSS):
     def getRole(self, nym):
         return self._txnStore.getRole(nym)
 
-    def getSponsorFor(self, nym):
-        return self._txnStore.getSponsorFor(nym)
+    def getTrustAnchorFor(self, nym):
+        return self._txnStore.getTrustAnchorFor(nym)
 
     @staticmethod
     def isAddNymTxn(result):

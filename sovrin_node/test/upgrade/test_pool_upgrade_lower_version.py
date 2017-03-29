@@ -2,10 +2,10 @@ from copy import deepcopy
 
 import pytest
 from stp_core.loop.eventually import eventually
-from plenum.common.txn import VERSION, NAME
+from plenum.common.constants import VERSION, NAME
 from plenum.common.util import randomString
 
-from sovrin_common.txn import SHA256, ACTION, CANCEL
+from sovrin_common.constants import SHA256, ACTION, CANCEL
 from sovrin_node.test.upgrade.helper import bumpVersion, checkUpgradeScheduled, \
     ensureUpgradeSent
 
