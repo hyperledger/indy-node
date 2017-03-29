@@ -88,7 +88,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def getGraphStorage(self, name):
         return identity_graph.IdentityGraph(self._getOrientDbStore(name,
-                                                    pyorient.DB_TYPE_GRAPH))
+                                            pyorient.DB_TYPE_GRAPH))
 
     def getPrimaryStorage(self):
         """

@@ -34,6 +34,8 @@ from sovrin_node.test.helper import TestNode, \
 
 from sovrin_client.test.helper import addRole, getClientAddedWithRole, \
     genTestClient, TestClient, createNym
+from sovrin_client.test.conftest import updatedPoolTxnData, sponsorWallet, \
+    sponsor
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, counter, nodeReg, up, ready, \
@@ -42,10 +44,6 @@ from plenum.test.conftest import tdir, counter, nodeReg, up, ready, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, nodeAndClientInfoFilePath, conf, patchPluginManager
-
-
-from sovrin_client.test.conftest import updatedPoolTxnData, sponsorWallet, \
-    sponsor
 
 
 @pytest.fixture(scope="module")
