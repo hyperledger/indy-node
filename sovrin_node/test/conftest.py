@@ -5,7 +5,6 @@ from plenum.common.util import randomString
 from plenum.test.helper import checkSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import \
     ensureClientConnectedToNodesAndPoolLedgerSame
-from plenum.test.pool_transactions.helper import addNewStewardAndNode
 from plenum.test.test_node import checkNodesConnected
 from sovrin_client.client.wallet.node import Node
 
@@ -20,28 +19,29 @@ from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 
-from plenum.common.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.txn import VERKEY, NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
-    ALIAS, SERVICES, VALIDATOR, TYPE
+from plenum.common.constants import VERKEY, NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
+    ALIAS, SERVICES, VALIDATOR, STEWARD, TXN_ID
 from plenum.test.plugin.helper import getPluginPath
 
 from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.txn import STEWARD, NYM, SPONSOR
-from sovrin_common.txn import TXN_TYPE, TARGET_NYM, TXN_ID, ROLE, \
-    getTxnOrderedFields
+from sovrin_common.constants import NYM, TRUST_ANCHOR
+from sovrin_common.constants import TXN_TYPE, TARGET_NYM, ROLE
+from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.config_util import getConfig
 
-from sovrin_node.test.helper import genTestClient, createNym, TestNode, \
-    makePendingTxnsRequest, buildStewardClient, TestClient
+from sovrin_node.test.helper import TestNode, \
+    makePendingTxnsRequest, buildStewardClient
 
-from sovrin_client.test.helper import addRole, getClientAddedWithRole
-from sovrin_client.test.cli.helper import newCLI
-from sovrin_client.test.conftest import updatedPoolTxnData, sponsorWallet, \
-    sponsor
+from sovrin_client.test.helper import addRole, getClientAddedWithRole, \
+    genTestClient, TestClient, createNym
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, counter, nodeReg, up, ready, \
+from sovrin_client.test.conftest import updatedPoolTxnData, trustAnchorWallet, \
+    trustAnchor
+
+# noinspection PyUnresolvedReferences
+from plenum.test.conftest import tdir, nodeReg, up, ready, \
     whitelist, concerningLogLevels, logcapture, keySharedNodes, \
     startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
@@ -157,20 +157,20 @@ def nodeSet(tconf, updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet):
 
 
 @pytest.fixture(scope="module")
-def addedSponsor(nodeSet, steward, stewardWallet, looper,
-                 sponsorWallet):
+def addedTrustAnchor(nodeSet, steward, stewardWallet, looper,
+                 trustAnchorWallet):
     createNym(looper,
-              sponsorWallet.defaultId,
+              trustAnchorWallet.defaultId,
               steward,
               stewardWallet,
-              role=SPONSOR,
-              verkey=sponsorWallet.getVerkey())
-    return sponsorWallet
+              role=TRUST_ANCHOR,
+              verkey=trustAnchorWallet.getVerkey())
+    return trustAnchorWallet
 
 
 @pytest.fixture(scope="module")
-def userWalletB(nodeSet, addedSponsor, sponsorWallet, looper, sponsor):
-    return addRole(looper, sponsor, sponsorWallet, 'userB', useDid=False)
+def userWalletB(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, trustAnchor):
+    return addRole(looper, trustAnchor, trustAnchorWallet, 'userB', useDid=False)
 
 
 @pytest.fixture(scope="module")

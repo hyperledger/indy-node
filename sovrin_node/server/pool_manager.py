@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from plenum.common.txn import POOL_TXN_TYPES, TXN_TYPE, DATA, ALIAS, \
+from plenum.common.constants import POOL_TXN_TYPES, TXN_TYPE, DATA, ALIAS, \
     TARGET_NYM
 from plenum.server.pool_manager import HasPoolManager as PHasPoolManager, \
     TxnPoolManager as PTxnPoolManager
@@ -24,6 +24,12 @@ class HasPoolManager(PHasPoolManager):
 class TxnPoolManager(PTxnPoolManager):
     def authErrorWhileUpdatingNode(self, request):
         origin = request.identifier
+        isTrustee = self.node.secondaryStorage.isTrustee(origin)
+        if not isTrustee:
+            error = super().authErrorWhileUpdatingNode(request)
+            if error:
+                return error
+        origin = request.identifier
         operation = request.operation
         nodeNym = operation.get(TARGET_NYM)
         isSteward = self.node.secondaryStorage.isSteward(origin)
@@ -35,11 +41,14 @@ class TxnPoolManager(PTxnPoolManager):
         vals = []
         msgs = []
         for k in data:
-            r, msg = Authoriser.authorised(typ, k, actorRole,
-                                           oldVal=nodeInfo[DATA][k],
-                                           newVal=data[k],
-                                           isActorOwnerOfSubject=isSteward)
-            vals.append(r)
-            msgs.append(msg)
+            oldVal = (nodeInfo.get(DATA, {})).get(k, None) if nodeInfo else None
+            newVal = data[k]
+            if oldVal != newVal:
+                r, msg = Authoriser.authorised(typ, k, actorRole,
+                                               oldVal=oldVal,
+                                               newVal=newVal,
+                                               isActorOwnerOfSubject=isSteward)
+                vals.append(r)
+                msgs.append(msg)
         msg = None if all(vals) else '\n'.join(msgs)
         return msg
