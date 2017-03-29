@@ -54,14 +54,15 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, nodeAndClientInfoFilePath, conf, patchPluginManager, \
-    warncheck
+    warncheck, warnfilters as plenum_warnfilters
 
 
 @pytest.fixture(scope="session")
 def warnfilters(client_warnfilters):
     def _():
         client_warnfilters()
-        warnings.filterwarnings('ignore', category=ResourceWarning, module='sovrin_node\.test\.helper', message='unclosed.*socket\.socket')
+        warnings.filterwarnings('ignore', category=DeprecationWarning, module='sovrin_common\.persistence\.identity_graph', lineno=734)
+        warnings.filterwarnings('ignore', category=ResourceWarning, message='unclosed transport')
     return _
 
 
