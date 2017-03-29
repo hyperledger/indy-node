@@ -2,7 +2,8 @@ import base58
 import pytest
 
 from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_node.test.helper import genTestClient, makePendingTxnsRequest
+from sovrin_node.test.helper import makePendingTxnsRequest
+from sovrin_client.test.helper import genTestClient
 
 pf = pytest.fixture(scope='module')
 
