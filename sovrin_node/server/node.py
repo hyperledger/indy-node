@@ -17,8 +17,9 @@ from plenum.common.exceptions import InvalidClientRequest, \
 from plenum.common.log import getlogger
 from plenum.common.constants import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY, TXN_ID, TXN_TIME, NYM_KEY, NODE_PRIMARY_STORAGE_SUFFIX
-from plenum.common.types import Reply, RequestAck, RequestNack, f, \
-    NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
+from plenum.common.types import Reply, RequestAck, RequestNack, \
+    f, OPERATION, LedgerStatus
+from plenum.common.constants import NODE_PRIMARY_STORAGE_SUFFIX
 
 from plenum.common.util import error, check_endpoint_valid
 from plenum.persistence.storage import initStorage

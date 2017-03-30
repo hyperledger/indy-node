@@ -9,7 +9,7 @@ from anoncreds.protocol.types import Schema, ID
 from anoncreds.protocol.wallet.issuer_wallet import IssuerWalletInMemory
 from anoncreds.test.conftest import GVT
 
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.node_catchup.helper import checkNodeLedgersForEquality

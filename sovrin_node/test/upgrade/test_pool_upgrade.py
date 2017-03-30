@@ -5,7 +5,8 @@ import dateutil.tz
 import pytest
 
 from stp_core.loop.eventually import eventually
-from plenum.common.constants import NAME, VERSION, STEWARD, START, CANCEL, \
+from plenum.common.constants import NAME, VERSION, STEWARD
+from sovrin_common.constants import START, CANCEL, \
     ACTION, SCHEDULE, JUSTIFICATION
 from plenum.test.helper import checkSufficientRepliesForRequests
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone

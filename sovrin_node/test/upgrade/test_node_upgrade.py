@@ -6,7 +6,9 @@ import pytest
 
 import sovrin_node
 from stp_core.loop.eventually import eventually
-from plenum.common.constants import TXN_TYPE, NODE_UPGRADE
+from plenum.common.constants import TXN_TYPE
+from sovrin_common.constants import NODE_UPGRADE
+
 from plenum.common.types import OPERATION, f
 from sovrin_node.server.upgrade_log import UpgradeLog
 from sovrin_node.test.upgrade.helper import bumpedVersion
