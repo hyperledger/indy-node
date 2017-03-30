@@ -1,14 +1,14 @@
 import pytest
 
 from plenum.common.eventually import eventually
+from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.util import randomString, hexToFriendly
 from plenum.test.pool_transactions.helper import suspendNode
 from plenum.test.pool_transactions.test_suspend_node import \
     checkNodeNotInNodeReg
-from sovrin_common.txn import STEWARD, TGB
-from sovrin_common.txn import TRUSTEE, SPONSOR
 from sovrin_client.test.helper import addRole, suspendRole, \
     getClientAddedWithRole, changeVerkey
+from sovrin_common.constants import TGB, TRUST_ANCHOR
 
 whitelist = ['Observer threw an exception']
 
@@ -32,9 +32,9 @@ def anotherSteward(nodeSet, tdir, looper, trustee, trusteeWallet):
 
 
 @pytest.fixture(scope="module")
-def anotherSponsor(nodeSet, tdir, looper, trustee, trusteeWallet):
+def anotherTrustAnchor(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newSponsor', SPONSOR)
+                                  trustee, trusteeWallet, 'newTrustAnchor', TRUST_ANCHOR)
 
 
 def testTrusteeAddingAnotherTrustee(anotherTrustee):
@@ -47,13 +47,13 @@ def testTrusteeAddingTGB(looper, anotherTGB):
 
 
 def testTrusteeAddingSteward(looper, anotherSteward):
-    # The new Steward adds a SPONSOR
-    addRole(looper, *anotherSteward, name=randomString(), role=SPONSOR)
+    # The new Steward adds a TRUST_ANCHOR
+    addRole(looper, *anotherSteward, name=randomString(), role=TRUST_ANCHOR)
 
 
-def testTrusteeAddingSponsor(looper, anotherSponsor):
-    # The new TSponsor adds a NYM
-    addRole(looper, *anotherSponsor, name=randomString())
+def testTrusteeAddingTrustAnchor(looper, anotherTrustAnchor):
+    # The new TTrustAnchor adds a NYM
+    addRole(looper, *anotherTrustAnchor, name=randomString())
 
 
 def testTGBSuspensionByTrustee(looper, anotherTrustee, anotherTGB):
@@ -69,15 +69,15 @@ def testStewardSuspensionByTrustee(looper, anotherTrustee, anotherSteward):
     _, stWallet = anotherSteward
     suspendRole(looper, trClient, trWallet, stWallet.defaultId)
     with pytest.raises(AssertionError):
-        addRole(looper, *anotherSteward, name=randomString(), role=SPONSOR)
+        addRole(looper, *anotherSteward, name=randomString(), role=TRUST_ANCHOR)
 
 
-def testSponsorSuspensionByTrustee(looper, anotherTrustee, anotherSponsor):
+def testTrustAnchorSuspensionByTrustee(looper, anotherTrustee, anotherTrustAnchor):
     trClient, trWallet = anotherTrustee
-    _, spWallet = anotherSponsor
+    _, spWallet = anotherTrustAnchor
     suspendRole(looper, trClient, trWallet, spWallet.defaultId)
     with pytest.raises(AssertionError):
-        addRole(looper, *anotherSponsor, name=randomString())
+        addRole(looper, *anotherTrustAnchor, name=randomString())
 
 
 def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
@@ -97,8 +97,8 @@ def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
 
 def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
                                   anotherTrustee, anotherTGB, anotherSteward,
-                                  anotherSponsor):
-    for identity in (anotherTrustee, anotherTGB, anotherSteward, anotherSponsor):
+                                  anotherTrustAnchor):
+    for identity in (anotherTrustee, anotherTGB, anotherSteward, anotherTrustAnchor):
         # Trustee cannot change verkey
         with pytest.raises(AssertionError):
             _, wallet = identity
