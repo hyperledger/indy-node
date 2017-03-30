@@ -13,7 +13,7 @@ from ledger.serializers.json_serializer import JsonSerializer
 
 from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, EndpointException
+    UnauthorizedClientRequest
 from plenum.common.log import getlogger
 from plenum.common.constants import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY, TXN_ID, TXN_TIME, NYM_KEY, NODE_PRIMARY_STORAGE_SUFFIX
@@ -44,6 +44,7 @@ from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
+from stp_core.network.exceptions import EndpointException
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
