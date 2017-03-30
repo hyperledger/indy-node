@@ -37,31 +37,31 @@ from sovrin_client.test.helper import createNym
 
 
 @pf
-def didAddedWithoutVerkey(addedSponsor, looper, sponsor, sponsorWallet,
+def didAddedWithoutVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWallet,
                           wallet, noKeyIdr):
     """{ type: NYM, dest: <id1> }"""
-    createNym(looper, noKeyIdr, sponsor, sponsorWallet)
+    createNym(looper, noKeyIdr, trustAnchor, trustAnchorWallet)
     return wallet
 
 @pf
-def didUpdatedWithVerkey(didAddedWithoutVerkey, looper, sponsor,
-                            sponsorWallet, noKeyIdr, wallet):
+def didUpdatedWithVerkey(didAddedWithoutVerkey, looper, trustAnchor,
+                            trustAnchorWallet, noKeyIdr, wallet):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
-    updateSovrinIdrWithFullKey(looper, sponsorWallet, sponsor, wallet,
+    updateSovrinIdrWithFullKey(looper, trustAnchorWallet, trustAnchor, wallet,
                                noKeyIdr, wallet.getVerkey(noKeyIdr))
 
 
 @pf
-def verkeyFetched(didUpdatedWithVerkey, looper, sponsor, sponsorWallet,
+def verkeyFetched(didUpdatedWithVerkey, looper, trustAnchor, trustAnchorWallet,
                   noKeyIdr, wallet):
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=noKeyIdr)
-    req = sponsorWallet.requestIdentity(identity,
-                                        sender=sponsorWallet.defaultId)
-    sponsor.submitReqs(req)
+    req = trustAnchorWallet.requestIdentity(identity,
+                                        sender=trustAnchorWallet.defaultId)
+    trustAnchor.submitReqs(req)
 
     def chk():
-        assert sponsorWallet.getIdentity(noKeyIdr).verkey == wallet.getVerkey(
+        assert trustAnchorWallet.getIdentity(noKeyIdr).verkey == wallet.getVerkey(
             noKeyIdr)
 
     looper.run(eventually(chk, retryWait=1, timeout=5))
@@ -76,15 +76,15 @@ def testAddDidWithoutAVerkey(didAddedWithoutVerkey):
     pass
 
 
-def testRetrieveEmptyVerkey(didAddedWithoutVerkey, looper, sponsor,
-                            sponsorWallet, noKeyIdr):
+def testRetrieveEmptyVerkey(didAddedWithoutVerkey, looper, trustAnchor,
+                            trustAnchorWallet, noKeyIdr):
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=noKeyIdr)
-    req = sponsorWallet.requestIdentity(identity, sender=sponsorWallet.defaultId)
-    sponsor.submitReqs(req)
+    req = trustAnchorWallet.requestIdentity(identity, sender=trustAnchorWallet.defaultId)
+    trustAnchor.submitReqs(req)
 
     def chk():
-        assert sponsorWallet.getIdentity(noKeyIdr).verkey is None
+        assert trustAnchorWallet.getIdentity(noKeyIdr).verkey is None
 
     looper.run(eventually(chk, retryWait=1, timeout=5))
 
@@ -98,5 +98,5 @@ def testRetrieveChangedVerkey(didUpdatedWithVerkey, verkeyFetched):
 
 
 def testVerifySigWithChangedVerkey(didUpdatedWithVerkey, verkeyFetched,
-                                   sponsorWallet, noKeyIdr, wallet):
-    chkVerifyForRetrievedIdentity(wallet, sponsorWallet, noKeyIdr)
+                                   trustAnchorWallet, noKeyIdr, wallet):
+    chkVerifyForRetrievedIdentity(wallet, trustAnchorWallet, noKeyIdr)

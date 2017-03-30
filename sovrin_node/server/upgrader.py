@@ -9,10 +9,10 @@ import dateutil.parser
 import dateutil.tz
 
 from plenum.common.log import getlogger
-from plenum.common.txn import NAME, TXN_TYPE
-from plenum.common.txn import VERSION
+from plenum.common.constants import NAME, TXN_TYPE
+from plenum.common.constants import VERSION
 from plenum.server.has_action_queue import HasActionQueue
-from sovrin_common.txn import ACTION, POOL_UPGRADE, START, SCHEDULE, CANCEL, \
+from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, CANCEL, \
     JUSTIFICATION, TIMEOUT
 from sovrin_node.server.upgrade_log import UpgradeLog
 from plenum.server import notifier_plugin_manager
