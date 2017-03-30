@@ -17,6 +17,11 @@ I’m assuming that you have Sovrin-node installed (I recommend installing this 
 
 You will also need OrientDB installed again and again instructions for that can be found at https://github.com/sovrin-foundation/sovrin/blob/master/orientdb_installation.md
 
+Finally make sure that `pytest` module is installed (it is required to run test-related functionality like Faber, Acme and ThriftBank test agents): 
+
+```
+pip install pytest
+```
 
 ## Initial setup
 In your home folder, create a Sovrin folder. In here we are going to put the scripts we will use to setup the environment. Then change into this folder.
@@ -74,24 +79,24 @@ Then run the following commands:
 ```
 new key with seed 000000000000000000000000Steward1
 connect test
-send NYM dest=FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB role=SPONSOR
+send NYM dest=FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB role=TRUST_ANCHOR
 send ATTRIB dest=FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB raw={"endpoint": "127.0.0.1:5555"}
 ```
 
 We first add the Stewards key into the Keyring (this enables us to assume the Steward role) - Note this key is hardcoded into the test scripts at the moment so is pre-generated
 We then connect to the test Sovrin cluster (which is the one we are running locally)
-Then we registers Fabers identifier and set its role as a Sponsor (A Sponsor is a privilege which if possessed by an identifier allows that identifier to on-board other identifiers)
+Then we registers Fabers identifier and set its role as a Trust Anchor (A Trust Anchor is a privilege which if possessed by an identifier allows that identifier to on-board other identifiers)
 Finally we then register an attribute containing the endpoint for the Faber identifier.
 
 At this point we can start the Faber agent.
 
 This is fairly simple, and you start it using the command:
 ```
-python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin/test/agent/faber.py --port 5555
+python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin_client/test/agent/faber.py --port 5555
 ```
-Note - the above assumes you set up a Python virtual environmetn called sovrin as per the installation guide). If not, this should be the path the the faber.py script.
+Note - the above assumes you set up a Python virtual environment called sovrin as per the installation guide). If not, this should be the path the the faber.py script.
 
-The Faber agent should then start up, connect to our test Sovrin cluster, handshake and be accepted as a Sponsor.
+The Faber agent should then start up, connect to our test Sovrin cluster, handshake and be accepted as a Trust Anchor.
 
 ## Run Getting Started guide
 
@@ -103,18 +108,18 @@ If you wish to add the Acme and ThriftBank agents, follow the steps for attachin
 I've included the full steps for the getting started console commands in the Getting Started Steps section
 ### ACME Client
 ```
-send NYM dest=7YD5NKn3P4wVJLesAmA1rr7sLPqW9mR1nhFdKD518k21 role=SPONSOR
+send NYM dest=7YD5NKn3P4wVJLesAmA1rr7sLPqW9mR1nhFdKD518k21 role=TRUST_ANCHOR
 send ATTRIB dest=7YD5NKn3P4wVJLesAmA1rr7sLPqW9mR1nhFdKD518k21 raw={"endpoint": "127.0.0.1:6666"}
 
-python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin/test/agent/acme.py --port 6666
+python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin_client/test/agent/acme.py --port 6666
 ```
 
 ### ThriftBank Client
 ```
-send NYM dest=9jegUr9vAMqoqQQUEAiCBYNQDnUbTktQY9nNspxfasZW role=SPONSOR
+send NYM dest=9jegUr9vAMqoqQQUEAiCBYNQDnUbTktQY9nNspxfasZW role=TRUST_ANCHOR
 send ATTRIB dest=9jegUr9vAMqoqQQUEAiCBYNQDnUbTktQY9nNspxfasZW raw={"endpoint": "127.0.0.1:7777"}
 
-python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin/test/agent/thrift.py --port 7777
+python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin_client/test/agent/thrift.py --port 7777
 ```
 
 
