@@ -1,9 +1,6 @@
 import warnings
 
-from plenum.common.eventually import eventually
-from plenum.common.port_dispenser import genHa
-from plenum.common.raet import initLocalKeep
-
+from plenum.common.keygen_utils import initLocalKeys
 from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
 from plenum.test.helper import checkSufficientRepliesForRequests
@@ -271,7 +268,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     looper.run(eventually(chk, retryWait=1, timeout=10))
 
-    # initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
+    initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),
                             pluginPaths=allPluginsPath)
