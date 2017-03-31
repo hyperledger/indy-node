@@ -226,7 +226,8 @@ class TempStorage:
             logger.debug("Error while removing temporary directory {}".format(
                 ex))
         try:
-            self.graphStore.client.db_drop(self.name)
+            odbClient = self.graphStore.client
+            odbClient.db_drop(self.name)
             logger.debug("Dropped db {}".format(self.name))
         except Exception as ex:
             logger.debug("Error while dropping db {}: {}".format(self.name,

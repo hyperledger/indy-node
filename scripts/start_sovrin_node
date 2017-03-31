@@ -40,7 +40,7 @@ if __name__ == "__main__":
         vars = [var for var in os.environ.keys() if var.startswith("SOVRIN")]
         logger.debug("Sovrin related env vars: {}".format(vars))
 
-        from plenum.common.looper import Looper
+        from stp_core.loop.looper import Looper
         from sovrin_node.server.node import Node
         with Looper(debug=True) as looper:
             node = Node(selfName, nodeRegistry=None, basedirpath=keepDir, ha=ha,
