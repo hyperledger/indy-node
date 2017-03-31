@@ -26,7 +26,6 @@ from sovrin_common.constants import TGB
 
 from sovrin_node.test.helper import addAttributeAndCheck
 from sovrin_node.test.upgrade.conftest import validUpgrade
-from sovrin_node.test.upgrade.helper import checkUpgradeScheduled
 from sovrin_node.test.helper import TestNode
 
 
@@ -149,21 +148,26 @@ def compareGraph(table, nodeSet):
 
 
 def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
-                                   nodeSet, looper, tconf, tdirWithPoolTxns,
-                                   allPluginsPath, txnPoolNodeSet):
+                     nodeSet, looper, tconf, tdirWithPoolTxns,
+                     allPluginsPath, txnPoolNodeSet):
     """
     stop first node (which will clean graph db too)
     then restart node
     """
     nodeToStop = nodeSet[0]
     nodeToStop.cleanupOnStopping = False
-    nodeToStop.stop()
     looper.removeProdable(nodeToStop)
+    nodeToStop.stop()
+    name = nodeToStop.name
+    nha = nodeToStop.nodestack.ha
+    cha = nodeToStop.clientstack.ha
+    del nodeToStop
+
     #client = nodeToStop.graphStore.client
     #client.db_drop(client._connection.db_opened)
-    newNode = TestNode(nodeToStop.name, basedirpath=tdirWithPoolTxns,
+    newNode = TestNode(name, basedirpath=tdirWithPoolTxns,
                        config=tconf, pluginPaths=allPluginsPath,
-                       ha=nodeToStop.nodestack.ha, cliha=nodeToStop.clientstack.ha)
+                       ha=nha, cliha=cha)
     looper.add(newNode)
     nodeSet[0] = newNode
     looper.run(checkNodesConnected(nodeSet, overrideTimeout=30))

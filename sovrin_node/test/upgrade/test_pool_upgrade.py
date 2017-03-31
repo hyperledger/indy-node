@@ -103,8 +103,9 @@ def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
         node = nodeSet.pop()
         names.append(node.name)
         node.cleanupOnStopping = False
-        node.stop()
         looper.removeProdable(node)
+        node.stop()
+        del node
 
     for nm in names:
         node = testNodeClass(nm, basedirpath=tdirWithPoolTxns,
