@@ -149,7 +149,7 @@ class Upgrader(HasActionQueue):
                         self.isVersionHigher(currentVer, version):
                     schedule = txn[SCHEDULE]
                     if self.nodeId not in schedule:
-                        logger.warn('{} not present in schedule {}'.
+                        logger.warning('{} not present in schedule {}'.
                                     format(self, schedule))
                     else:
                         upgrades[version] = schedule[self.nodeId]
