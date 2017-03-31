@@ -6,7 +6,7 @@ from typing import Iterable
 
 from stp_core.loop.eventually import eventually
 from plenum.common.log import getlogger
-from plenum.common.looper import Looper
+from stp_core.loop.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import REQACK, TXN_ID
 from plenum.common.util import getMaxFailures, runall
