@@ -6,7 +6,7 @@ from typing import Iterable
 
 from stp_core.loop.eventually import eventually
 from plenum.common.log import getlogger
-from plenum.common.looper import Looper
+from stp_core.loop.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import REQACK, TXN_ID
 from plenum.common.util import getMaxFailures, runall
@@ -226,7 +226,8 @@ class TempStorage:
             logger.debug("Error while removing temporary directory {}".format(
                 ex))
         try:
-            self.graphStore.client.db_drop(self.name)
+            odbClient = self.graphStore.client
+            odbClient.db_drop(self.name)
             logger.debug("Dropped db {}".format(self.name))
         except Exception as ex:
             logger.debug("Error while dropping db {}: {}".format(self.name,
