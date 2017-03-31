@@ -32,6 +32,12 @@ def anotherSteward(nodeSet, tdir, looper, trustee, trusteeWallet):
 
 
 @pytest.fixture(scope="module")
+def anotherSteward1(nodeSet, tdir, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdir, looper,
+                                  trustee, trusteeWallet, 'newSteward1', STEWARD)
+
+
+@pytest.fixture(scope="module")
 def anotherTrustAnchor(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
                                   trustee, trusteeWallet, 'newTrustAnchor', TRUST_ANCHOR)
@@ -81,9 +87,12 @@ def testTrustAnchorSuspensionByTrustee(looper, anotherTrustee, anotherTrustAncho
 
 
 def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
-                                   anotherTrustee):
-    _, trWallet = anotherTrustee
+                                   anotherTrustee, anotherSteward1):
+    trClient, trWallet = anotherTrustee
     suspendRole(looper, trustee, trusteeWallet, trWallet.defaultId)
+    _, sWallet = anotherSteward1
+    with pytest.raises(AssertionError):
+        suspendRole(looper, trClient, trWallet, sWallet.defaultId)
 
 
 def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
