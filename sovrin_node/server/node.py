@@ -51,7 +51,7 @@ jsonSerz = JsonSerializer()
 
 
 class Node(PlenumNode, HasPoolManager):
-    keygenScript = "init_sovrin_raet_keep"
+    keygenScript = "init_sovrin_keys"
 
     def __init__(self,
                  name,
