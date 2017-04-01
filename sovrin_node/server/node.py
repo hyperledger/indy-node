@@ -277,7 +277,7 @@ class Node(PlenumNode, HasPoolManager):
             if RAW in dataKeys:
                 try:
                     data = json.loads(operation[RAW])
-                    endpoint = data.get(ENDPOINT, {})
+                    endpoint = data.get(ENDPOINT, {}).get('ha')
                     check_endpoint_valid(endpoint, required=False)
 
                 except EndpointException as exc:
