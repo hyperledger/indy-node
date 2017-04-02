@@ -12,7 +12,7 @@ Abbreviated verkey tests
     Verify a signature from this identifier with the new verkey
 """
 from plenum.common.signer_did import DidSigner
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.test.helper import assertLength, assertEquality
 
 from sovrin_common.identity import Identity

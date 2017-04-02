@@ -25,7 +25,8 @@ def testUbuntu = {
             testHelpers.installDeps(deps)
 
             echo 'Ubuntu Test: Test'
-            testHelpers.testJunit()
+            sh 'python runner.py --pytest \"python -m pytest\" --output "test-result.txt"'
+            //testHelpers.testJunit()
         }
     }
     finally {
@@ -65,4 +66,5 @@ def testWindowsNoDocker = {
     }
 }
 
-testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
+//testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
+testAndPublish(name, [ubuntu: testUbuntu])

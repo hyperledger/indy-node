@@ -76,16 +76,19 @@ while readers:
         if s is server:
             # A "readable" server socket is ready to accept a connection
             connection, client_address = s.accept()
-            print('new connection from %s on fd %d' % (client_address, connection.fileno()) )
+            print('new connection from %s on fd %d' % (client_address,
+                                                       connection.fileno()))
             connection.setblocking(0)
             readers.append(connection)
         else:
             data = s.recv(8192)
             if data:
-                print('received "%s" from %s on fd %d' % (data, s.getpeername(), s.fileno()))
+                print('received "%s" from %s on fd %d' % (data,
+                                                          s.getpeername(),
+                                                          s.fileno()))
                 process_data(data)
             else:
-                print('closing socket with fd %d' % (s.fileno()) )
+                print('closing socket with fd %d' % (s.fileno()))
                 readers.remove(s)
                 s.close()
 

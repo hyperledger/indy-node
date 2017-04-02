@@ -1,7 +1,7 @@
 import base58
 from plenum.common.signer_did import DidSigner
 from plenum.common.verifier import DidVerifier
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.test.helper import assertEquality
 
 from sovrin_common.identity import Identity

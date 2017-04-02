@@ -1,25 +1,20 @@
 import warnings
 
-from plenum.common.eventually import eventually
-from plenum.common.port_dispenser import genHa
-from plenum.common.raet import initLocalKeep
+from plenum.common.keygen_utils import initLocalKeys
+from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
 from plenum.test.helper import checkSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import \
     ensureClientConnectedToNodesAndPoolLedgerSame
 from plenum.test.test_node import checkNodesConnected
 from sovrin_client.client.wallet.node import Node
-
 from sovrin_common import strict_types
+from stp_core.network.port_dispenser import genHa
 
 # typecheck during tests
 strict_types.defaultShouldCheck = True
 
 import pytest
-
-from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.ledger import Ledger
-from ledger.serializers.compact_serializer import CompactSerializer
 
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import VERKEY, NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
@@ -27,9 +22,10 @@ from plenum.common.constants import VERKEY, NODE_IP, NODE_PORT, CLIENT_IP, CLIEN
 from plenum.test.plugin.helper import getPluginPath
 
 from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.constants import NYM, TRUST_ANCHOR
-from sovrin_common.constants import TXN_TYPE, TARGET_NYM, ROLE
-from sovrin_common.txn_util import getTxnOrderedFields
+from sovrin_common.constants import NYM, TRUST_ANCHOR, TXN_TYPE, \
+    TARGET_NYM, ROLE, TYPE
+from sovrin_common.txn_util import getTxnOrderedFields, TRUSTEE
+
 from sovrin_common.config_util import getConfig
 
 from sovrin_node.test.helper import TestNode, \
@@ -74,6 +70,44 @@ def tconf(conf, tdir):
 
 
 @pytest.fixture(scope="module")
+def poolTxnTrusteeNames():
+    return "Trustee1",
+
+
+@pytest.fixture(scope="module")
+def updatedPoolTxnData(poolTxnData):
+    data = poolTxnData
+    trusteeSeed = 'thisistrusteeseednotsteward12345'
+    signer = SimpleSigner(seed=trusteeSeed.encode())
+    t = {
+        TARGET_NYM: signer.verkey,
+        ROLE: TRUSTEE,
+        TYPE: NYM,
+        ALIAS: "Trustee1",
+        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"
+    }
+    data["seeds"]["Trustee1"] = trusteeSeed
+    data["txns"].insert(0, t)
+    return data
+
+
+@pytest.fixture(scope="module")
+def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
+    name = poolTxnTrusteeNames[0]
+    seed = updatedPoolTxnData["seeds"][name]
+    return name, seed.encode()
+
+
+@pytest.fixture(scope="module")
+def trusteeWallet(trusteeData):
+    name, sigseed = trusteeData
+    wallet = Wallet('trustee')
+    signer = SimpleSigner(seed=sigseed)
+    wallet.addIdentifier(signer=signer)
+    return wallet
+
+
+@pytest.fixture(scope="module")
 def trustee(nodeSet, looper, tdir, up, trusteeWallet):
     return buildStewardClient(looper, tdir, trusteeWallet)
 
@@ -98,7 +132,7 @@ def looper(txnPoolNodesLooper):
 
 
 @pytest.fixture(scope="module")
-def steward(nodeSet, looper, tdir, up, stewardWallet):
+def steward(nodeSet, looper, tdir, stewardWallet):
     return buildStewardClient(looper, tdir, stewardWallet)
 
 
@@ -222,6 +256,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     }
 
     node = Node(nodeSigner.identifier, data, newStewardWallet.defaultId)
+
     newStewardWallet.addNode(node)
     reqs = newStewardWallet.preparePending()
     req, = newSteward.submitReqs(*reqs)
@@ -233,11 +268,11 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     looper.run(eventually(chk, retryWait=1, timeout=10))
 
-    initLocalKeep(newNodeName, tdirWithPoolTxns, sigseed, override=True)
-
+    initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),
                             pluginPaths=allPluginsPath)
+
 
     nodeSet.append(newNode)
     looper.add(newNode)
