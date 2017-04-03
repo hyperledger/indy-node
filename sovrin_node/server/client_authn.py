@@ -2,9 +2,12 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.exceptions import UnknownIdentifier
-from plenum.common.txn import TXN_TYPE, RAW, ENC, HASH, VERKEY
+from plenum.common.types import OPERATION
+from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH
+from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH, VERKEY
 from plenum.server.client_authn import NaclAuthNr
-from sovrin_common.txn import ATTRIB
+
+from sovrin_common.constants import ATTRIB
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.persistence.state_tree_store import StateTreeStore
 
@@ -18,14 +21,13 @@ class TxnBasedAuthNr(NaclAuthNr):
         self.stateStore = stateStore
 
     def serializeForSig(self, msg, topLevelKeysToIgnore=None):
-        if msg["operation"].get(TXN_TYPE) == ATTRIB:
+        if msg[OPERATION].get(TXN_TYPE) == ATTRIB:
             msgCopy = deepcopy(msg)
             keyName = {RAW, ENC, HASH}.intersection(
-                set(msgCopy["operation"].keys())).pop()
-            msgCopy["operation"][keyName] = sha256(msgCopy["operation"][keyName]
-                                                   .encode()).hexdigest()
-            return super().serializeForSig(msgCopy,
-                                           topLevelKeysToIgnore=topLevelKeysToIgnore)
+                set(msgCopy[OPERATION].keys())).pop()
+            msgCopy[OPERATION][keyName] = sha256(msgCopy[OPERATION][keyName]
+                                                .encode()).hexdigest()
+            return super().serializeForSig(msgCopy)
         else:
             return super().serializeForSig(msg,
                                            topLevelKeysToIgnore=topLevelKeysToIgnore)
@@ -37,7 +39,7 @@ class TxnBasedAuthNr(NaclAuthNr):
         try:
             verkey = self.cache.getVerkey(identifier)
         except KeyError:
-
+            return None
         return verkey
         # nym = self.storage.getNym(identifier)
         # if not nym:

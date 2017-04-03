@@ -6,37 +6,40 @@ from operator import itemgetter
 from typing import Iterable, Any, List
 
 import pyorient
-
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
+from ledger.serializers.json_serializer import JsonSerializer
+
+from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.log import getlogger
 from plenum.common.state import PruningState
 from plenum.common.constants import NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
-    DATA, TXN_ID, HASH, ENC, RAW
+    DATA, TXN_ID, HASH, ENC, RAW, NYM_KEY
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
     OPERATION, LedgerStatus, DOMAIN_LEDGER_ID
 from plenum.common.util import error
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from plenum.common.ledger import Ledger
+from sovrin_common.auth import Authoriser
 
 from sovrin_common.config_util import getConfig
-from sovrin_common.txn import allOpKeys, ATTRIB, NYM,\
+from sovrin_common.constants import allOpKeys, ATTRIB, NYM,\
     ROLE, GET_ATTR, DISCLO, GET_NYM, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
-    getTxnOrderedFields, SCHEMA, GET_SCHEMA,\
-    ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, POOL_UPGRADE, ACTION, \
+    SCHEMA, GET_SCHEMA,\
+    ISSUER_KEY, GET_ISSUER_KEY, REF, TGB, POOL_UPGRADE, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL
+from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.persistence.secondary_storage import SecondaryStorage
-from sovrin_common.auth import Authoriser
 from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.config_req_handler import ConfigReqHandler
 from sovrin_node.server.constants import CONFIG_LEDGER_ID, openTxns, \
@@ -47,12 +50,14 @@ from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from plenum.common.types import POOL_LEDGER_ID
 from sovrin_node.persistence.state_tree_store import StateTreeStore
+from stp_core.network.exceptions import EndpointException
 
 logger = getlogger()
+jsonSerz = JsonSerializer()
 
 
 class Node(PlenumNode, HasPoolManager):
-    keygenScript = "init_sovrin_raet_keep"
+    keygenScript = "init_sovrin_keys"
 
     def __init__(self,
                  name,
@@ -307,82 +312,44 @@ class Node(PlenumNode, HasPoolManager):
         if ledgerId == CONFIG_LEDGER_ID:
             self.reqHandler.doStaticValidation(identifier, reqId, operation)
 
-    # def checkValidOperation(self, identifier, reqId, operation):
-    #     self.checkValidSovrinOperation(identifier, reqId, operation)
-    #     super().checkValidOperation(identifier, reqId, operation)
-    #
-    # def checkValidSovrinOperation(self, identifier, reqId, operation):
-    #     unknownKeys = set(operation.keys()).difference(set(allOpKeys))
-    #     if unknownKeys:
-    #         raise InvalidClientRequest(identifier, reqId,
-    #                                    'invalid keys "{}"'.
-    #                                    format(",".join(unknownKeys)))
-    #
-    #     missingKeys = set(reqOpKeys).difference(set(operation.keys()))
-    #     if missingKeys:
-    #         raise InvalidClientRequest(identifier, reqId,
-    #                                    'missing required keys "{}"'.
-    #                                    format(",".join(missingKeys)))
-    #
-    #     if operation[TXN_TYPE] not in validTxnTypes:
-    #         raise InvalidClientRequest(identifier, reqId, 'invalid {}: {}'.
-    #                                    format(TXN_TYPE, operation[TXN_TYPE]))
-    #
-    #     if operation[TXN_TYPE] == ATTRIB:
-    #         dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
-    #         if len(dataKeys) != 1:
-    #             raise InvalidClientRequest(identifier, reqId,
-    #                                        '{} should have one and only one of '
-    #                                        '{}, {}, {}'
-    #                                        .format(ATTRIB, RAW, ENC, HASH))
-    #         if RAW in dataKeys:
-    #             try:
-    #                 json.loads(operation[RAW])
-    #             except:
-    #                 raise InvalidClientRequest(identifier, reqId,
-    #                                            'raw attribute {} should be '
-    #                                            'JSON'.format(operation[RAW]))
-    #
-    #         if not (not operation.get(TARGET_NYM) or
-    #                 self.graphStore.hasNym(operation[TARGET_NYM])):
-    #             raise InvalidClientRequest(identifier, reqId,
-    #                                        '{} should be added before adding '
-    #                                        'attribute for it'.
-    #                                        format(TARGET_NYM))
-    #
-    #     if operation[TXN_TYPE] == NYM:
-    #         role = operation.get(ROLE)
-    #         nym = operation.get(TARGET_NYM)
-    #         if not nym:
-    #             raise InvalidClientRequest(identifier, reqId,
-    #                                        "{} needs to be present".
-    #                                        format(TARGET_NYM))
-    #         if not Authoriser.isValidRole(role):
-    #             raise InvalidClientRequest(identifier, reqId,
-    #                                        "{} not a valid role".
-    #                                        format(role))
-    #         # Only
-    #         if not self.canNymRequestBeProcessed(identifier, operation):
-    #             raise InvalidClientRequest(identifier, reqId,
-    #                                        "{} is already present".
-    #                                        format(nym))
-    #
-    #     if operation[TXN_TYPE] == POOL_UPGRADE:
-    #         action = operation.get(ACTION)
-    #         if action not in (START, CANCEL):
-    #             raise InvalidClientRequest(identifier, reqId,
-    #                                        "{} not a valid action".
-    #                                        format(action))
-    #         if action == START:
-    #             schedule = operation.get(SCHEDULE, {})
-    #             isValid, msg = self.upgrader.isScheduleValid(schedule,
-    #                                                          self.poolManager.nodeIds)
-    #             if not isValid:
-    #                 raise InvalidClientRequest(identifier, reqId,
-    #                                            "{} not a valid schedule since {}".
-    #                                            format(schedule, msg))
-    #
-    #         # TODO: Check if cancel is submitted before start
+        #     if not (not operation.get(TARGET_NYM) or
+        #             self.graphStore.hasNym(operation[TARGET_NYM])):
+        #         raise InvalidClientRequest(identifier, reqId,
+        #                                    '{} should be added before adding '
+        #                                    'attribute for it'.
+        #                                    format(TARGET_NYM))
+        #
+        # if operation[TXN_TYPE] == NYM:
+        #     role = operation.get(ROLE)
+        #     nym = operation.get(TARGET_NYM)
+        #     if not nym:
+        #         raise InvalidClientRequest(identifier, reqId,
+        #                                    "{} needs to be present".
+        #                                    format(TARGET_NYM))
+        #     if not Authoriser.isValidRole(role):
+        #         raise InvalidClientRequest(identifier, reqId,
+        #                                    "{} not a valid role".
+        #                                    format(role))
+        #     s, reason = self.canNymRequestBeProcessed(identifier, operation)
+        #     if not s:
+        #         raise InvalidClientRequest(identifier, reqId, reason)
+        #
+        # if operation[TXN_TYPE] == POOL_UPGRADE:
+        #     action = operation.get(ACTION)
+        #     if action not in (START, CANCEL):
+        #         raise InvalidClientRequest(identifier, reqId,
+        #                                    "{} not a valid action".
+        #                                    format(action))
+        #     if action == START:
+        #         schedule = operation.get(SCHEDULE, {})
+        #         isValid, msg = self.upgrader.isScheduleValid(schedule,
+        #                                                      self.poolManager.nodeIds)
+        #         if not isValid:
+        #             raise InvalidClientRequest(identifier, reqId,
+        #                                        "{} not a valid schedule since {}".
+        #                                        format(schedule, msg))
+
+            # TODO: Check if cancel is submitted before start
 
     def checkRequestAuthorized(self, request: Request):
         op = request.operation
@@ -412,7 +379,7 @@ class Node(PlenumNode, HasPoolManager):
                         "{} cannot add {}".format(originRole, role))
             else:
                 nymData = nymV.oRecordData
-                owner = self.graphStore.getOwnerFor(nymData.get(NYM))
+                owner = self.graphStore.getOwnerFor(nymData.get(NYM_KEY))
                 isOwner = origin == owner
                 updateKeys = [ROLE, VERKEY]
                 for key in updateKeys:
@@ -472,13 +439,14 @@ class Node(PlenumNode, HasPoolManager):
                     request.reqId,
                     "{} cannot do {}".format(originRole, POOL_UPGRADE))
 
-    def canNymRequestBeProcessed(self, identifier, msg):
+    def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
         nym = msg.get(TARGET_NYM)
         if self.graphStore.hasNym(nym):
             if not self.graphStore.hasTrustee(identifier) and \
                             self.graphStore.getOwnerFor(nym) != identifier:
-                    return False
-        return True
+                    reason = '{} is neither Trustee nor owner of {}'.format(identifier, nym)
+                    return False, reason
+        return True, ''
 
     def defaultAuthNr(self):
         return TxnBasedAuthNr(self.idrCache, self.stateTreeStore)
@@ -522,11 +490,11 @@ class Node(PlenumNode, HasPoolManager):
     #         txnIds = [addNymTxn[TXN_ID], ] + self.graphStore. \
     #             getAddAttributeTxnIds(origin)
     #         # If sending transactions to a user then should send user's
-    #         # sponsor creation transaction also
+    #         # trust anchor creation transaction also
     #         if addNymTxn.get(ROLE) is None:
-    #             sponsorNymTxn = self.graphStore.getAddNymTxn(
+    #             trustAnchorNymTxn = self.graphStore.getAddNymTxn(
     #                 addNymTxn.get(f.IDENTIFIER.nm))
-    #             txnIds = [sponsorNymTxn[TXN_ID], ] + txnIds
+    #             txnIds = [trustAnchorNymTxn[TXN_ID], ] + txnIds
     #         # TODO: Remove this log statement
     #         logger.debug("{} getting replies for {}".format(self, txnIds))
     #         result = self.secondaryStorage.getReplies(*txnIds, seqNo=data)
@@ -639,7 +607,11 @@ class Node(PlenumNode, HasPoolManager):
          client requests it.
         """
         result = reply.result
+        if result[TXN_TYPE] in (SCHEMA, ISSUER_KEY):
+            result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
+
         txnWithMerkleInfo = self.storeTxnInLedger(result)
+
         if result[TXN_TYPE] == NODE_UPGRADE:
             logger.info('{} processed {}'.format(self, NODE_UPGRADE))
             # Returning since NODE_UPGRADE is not sent to client and neither
@@ -745,19 +717,19 @@ class Node(PlenumNode, HasPoolManager):
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        if req.operation[TXN_TYPE] == NYM and not \
-                self.canNymRequestBeProcessed(req.identifier, req.operation):
-            reason = "nym {} is already added".format(req.operation[TARGET_NYM])
-            if req.key in self.requestSender:
-                self.transmitToClient(RequestNack(*req.key, reason),
-                                      self.requestSender.pop(req.key))
-        else:
-            reply = self.generateReply(int(ppTime), req)
-            self.storeTxnAndSendToClient(reply)
-            if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
-                # Currently config ledger has only code update related changes
-                # so transaction goes to Upgrader
-                self.upgrader.handleUpgradeTxn(reply.result)
+        if req.operation[TXN_TYPE] == NYM:
+            s, reason = self.canNymRequestBeProcessed(req.identifier, req.operation)
+            if not s:
+                if req.key in self.requestSender:
+                    self.transmitToClient(RequestNack(*req.key, reason),
+                                          self.requestSender.pop(req.key))
+                return
+        reply = self.generateReply(int(ppTime), req)
+        self.storeTxnAndSendToClient(reply)
+        if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
+            # Currently config ledger has only code update related changes
+            # so transaction goes to Upgrader
+            self.upgrader.handleUpgradeTxn(reply.result)
 
     # def generateReply(self, ppTime: float, req: Request):
     #     operation = req.operation

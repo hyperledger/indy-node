@@ -1,4 +1,4 @@
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.test.helper import checkSufficientRepliesForRequests
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_node.server.upgrader import Upgrader

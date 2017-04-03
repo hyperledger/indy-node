@@ -4,9 +4,9 @@ import os
 import sys
 
 from ioflo.aid.consoling import Console
-from plenum.common.log import setupLogging, getlogger, TRACE_LOG_LEVEL, \
-    getRAETLogLevelFromConfig
-from plenum.common.types import HA
+from plenum.common.log import getlogger, \
+    getRAETLogLevelFromConfig, getRAETLogFilePath, Logger
+from stp_core.types import HA
 
 from sovrin_common.config_util import getConfig
 
@@ -19,27 +19,28 @@ if __name__ == "__main__":
               "and client stacks")
         exit()
     else:
-
-        RAETVerbosity = getRAETLogLevelFromConfig("RAETLogLevel",
-                                                  Console.Wordage.mute,
-                                                  config)
-
         selfName = sys.argv[1]
         ha = HA("0.0.0.0", int(sys.argv[2]))
         cliha = HA("0.0.0.0", int(sys.argv[3]))
 
         logFileName = os.path.join(config.baseDir, selfName + ".log")
+        RAETVerbosity = getRAETLogLevelFromConfig("RAETLogLevel",
+                                                  Console.Wordage.mute,
+                                                  config)
 
-        setupLogging(TRACE_LOG_LEVEL,
-                     RAETVerbosity,
-                     filename=logFileName)
+        RAETLogFile = getRAETLogFilePath("RAETLogFilePathCli", config)
+
+        Logger(config)
+        Logger().enableFileLogging(logFileName)
+        Logger().setupRaet(RAETVerbosity, RAETLogFile)
+
         logger = getlogger()
         logger.debug("You can find logs in {}".format(logFileName))
 
         vars = [var for var in os.environ.keys() if var.startswith("SOVRIN")]
         logger.debug("Sovrin related env vars: {}".format(vars))
 
-        from plenum.common.looper import Looper
+        from stp_core.loop.looper import Looper
         from sovrin_node.server.node import Node
         with Looper(debug=True) as looper:
             node = Node(selfName, nodeRegistry=None, basedirpath=keepDir, ha=ha,
