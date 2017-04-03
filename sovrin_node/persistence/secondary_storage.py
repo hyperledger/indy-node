@@ -1,5 +1,5 @@
 from ledger.util import F
-from plenum.common.txn import TXN_TYPE
+from plenum.common.constants import TXN_TYPE
 from plenum.persistence.secondary_storage import SecondaryStorage as PlenumSS
 
 from sovrin_common.txn import NYM

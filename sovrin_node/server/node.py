@@ -15,23 +15,22 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.log import getlogger
 from plenum.common.state import PruningState
-from plenum.common.txn import NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, VERKEY
+from plenum.common.constants import NAME, VERSION, ORIGIN, \
+    POOL_TXN_TYPES, VERKEY, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
+    DATA, TXN_ID, HASH, ENC, RAW
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
-    NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus, DOMAIN_LEDGER_ID
+    OPERATION, LedgerStatus, DOMAIN_LEDGER_ID
 from plenum.common.util import error
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from plenum.common.ledger import Ledger
 
 from sovrin_common.config_util import getConfig
-from sovrin_common.txn import TXN_TYPE, \
-    TARGET_NYM, allOpKeys, ATTRIB, NYM,\
-    ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
-    TXN_ID, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
+from sovrin_common.txn import allOpKeys, ATTRIB, NYM,\
+    ROLE, GET_ATTR, DISCLO, GET_NYM, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
     getTxnOrderedFields, SCHEMA, GET_SCHEMA,\
     ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, POOL_UPGRADE, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, HASH, ENC, RAW
+    NODE_UPGRADE, COMPLETE, FAIL
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph

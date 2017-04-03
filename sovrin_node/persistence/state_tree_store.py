@@ -2,8 +2,8 @@ import json
 
 from plenum.common.log import getlogger
 from plenum.common.state import State
-from sovrin_common.txn import TXN_TYPE, \
-    ATTRIB, DATA, SCHEMA, ISSUER_KEY, REF, HASH, ENC, RAW, TARGET_NYM
+from plenum.common.constants import TXN_TYPE, DATA, HASH, ENC, RAW, TARGET_NYM
+from sovrin_common.txn import ATTRIB, SCHEMA, ISSUER_KEY, REF
 
 # TODO: think about encapsulating State in it,
 # instead of direct accessing to it in node
