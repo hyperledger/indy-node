@@ -8,7 +8,7 @@ from typing import Tuple, Union, Optional
 import dateutil.parser
 import dateutil.tz
 
-from plenum.common.log import getlogger
+from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, TXN_TYPE
 from plenum.common.constants import VERSION
 from plenum.server.has_action_queue import HasActionQueue
