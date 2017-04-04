@@ -1,24 +1,24 @@
 #! /usr/bin/env python3
 
 """
-This script registers new sponsor (client key)
-To add new key you need to use existing Steward and its seed
+This script registers new trust anchors (client keys)
+To add new key you need to use existing Steward and it's seed
 """
 
+import os
 import sys
 from itertools import groupby
 
-from plenum.common.looper import Looper
+from stp_core.loop.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.types import HA
-from plenum.common.log import getlogger
+from stp_core.common.log import getlogger
 from plenum.test.helper import eventually, eventuallyAll
 
 from sovrin_common.config_util import getConfig
-from  sovrin_common.txn import SPONSOR
+from sovrin_common.constants import TRUST_ANCHOR
 from sovrin_client.client.client import Client
 from sovrin_client.client.wallet.wallet import Wallet
-
 
 
 logger = getlogger()
@@ -33,7 +33,14 @@ assert len(sys.argv) >= 3
 
 stewardName = sys.argv[1]
 stewardSeed = str.encode(sys.argv[2])
-sponsorsSeeds = sys.argv[3:]
+trustAnchorSeeds = sys.argv[3:]
+
+if not trustAnchorSeeds:
+    seed_file_path = "{}/load_test_clients.list".format(os.getcwd())
+    trustAnchorSeeds = []
+    with open(seed_file_path, "r") as file:
+        trustAnchorSeeds = [line.strip().split(":")[1] for line in file]
+
 
 def spawnClient(clientName, port, signerSeed, host='0.0.0.0'):
     clientAddress = HA(host, port)
@@ -91,26 +98,7 @@ async def ensureConnectedToNodes(client):
     await eventuallyAll(lambda : checkIfConnectedToAll(client), retryWait=.5, totalTimeout=wait)
 
 
-def clearRaetData():
-    import glob
-    import os.path
-    import shutil
-
-    sovrin_path = os.path.join(os.path.expanduser("~"), '.sovrin')
-    sovrin_steward_path = os.path.join(sovrin_path, 'Steward*')
-    sovrin_sponsor_path = os.path.join(sovrin_path, 'Sponsor*')
-    for path in glob.glob(sovrin_steward_path) + glob.glob(sovrin_sponsor_path):
-        try:
-            shutil.rmtree(path)
-            logger.warn("'%s' was deleted because the "
-                        "'PacketError: Failed verification.' issue", path)
-        except FileNotFoundError:
-            pass
-
-
 def addNyms():
-    # clearRaetData()
-
     with Looper(debug=True) as looper:
 
         from sovrin_client.test.helper import createNym
@@ -127,19 +115,19 @@ def addNyms():
         # Creating request
         print("Creating request")
         bad = []
-        for sponsorSeed in sponsorsSeeds:
-            signer = SimpleSigner(seed=sponsorSeed.encode())
+        for seed in trustAnchorSeeds:
+            signer = SimpleSigner(seed=seed.encode())
             nym = signer.identifier
             verkey = signer.verkey
             # Sending requests
-            print("Creating nym for seed {}".format(sponsorSeed))
+            print("Creating nym for seed {}".format(seed))
             try:
                 createNym(looper=looper, nym=nym, creatorClient=client,
-                          creatorWallet=wallet, verkey=verkey, role=SPONSOR)
-                print("Successfully created nym for {}".format(sponsorSeed))
+                          creatorWallet=wallet, verkey=verkey, role=TRUST_ANCHOR)
+                print("Successfully created nym for {}".format(seed))
             except Exception as ex:
-                bad.append(sponsorSeed)
-                print("Failed to create nym for {}".format(sponsorSeed))
+                bad.append(seed)
+                print("Failed to create nym for {}".format(seed))
 
 
         print("=======================")
