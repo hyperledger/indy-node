@@ -23,14 +23,13 @@ from plenum.common.constants import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
 from plenum.common.types import Reply, RequestAck, RequestNack, \
     f, OPERATION, LedgerStatus
 from plenum.common.util import error, check_endpoint_valid
-
-
+from plenum.common.types import POOL_LEDGER_ID, DOMAIN_LEDGER_ID
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from ledger.ledger import Ledger
 from sovrin_common.auth import Authoriser
 # DOMAIN_LEDGER_ID
-# from plenum.common.types import POOL_LEDGER_ID
+
 from plenum.common.state import PruningState
 
 

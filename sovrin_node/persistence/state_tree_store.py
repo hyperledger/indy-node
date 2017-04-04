@@ -1,9 +1,9 @@
 import json
 
-from plenum.common.log import getlogger
+from stp_core.common.log import getlogger
 from plenum.common.state import State
 from plenum.common.constants import TXN_TYPE, DATA, HASH, ENC, RAW, TARGET_NYM
-from sovrin_common.txn import ATTRIB, SCHEMA, ISSUER_KEY, REF
+from sovrin_common.constants import ATTRIB, SCHEMA, ISSUER_KEY, REF
 
 # TODO: think about encapsulating State in it,
 # instead of direct accessing to it in node
