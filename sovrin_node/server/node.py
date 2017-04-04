@@ -13,12 +13,14 @@ from ledger.serializers.json_serializer import JsonSerializer
 
 from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, EndpointException
+    UnauthorizedClientRequest
 from plenum.common.log import getlogger
 from plenum.common.constants import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY, TXN_ID, TXN_TIME, NYM_KEY, NODE_PRIMARY_STORAGE_SUFFIX
-from plenum.common.types import Reply, RequestAck, RequestNack, f, \
-    OPERATION, LedgerStatus
+from plenum.common.types import Reply, RequestAck, RequestNack, \
+    f, OPERATION, LedgerStatus
+from plenum.common.constants import NODE_PRIMARY_STORAGE_SUFFIX
+
 from plenum.common.util import error, check_endpoint_valid
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
@@ -42,13 +44,14 @@ from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
+from stp_core.network.exceptions import EndpointException
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
 
 
 class Node(PlenumNode, HasPoolManager):
-    keygenScript = "init_sovrin_raet_keep"
+    keygenScript = "init_sovrin_keys"
 
     def __init__(self,
                  name,
@@ -274,7 +277,7 @@ class Node(PlenumNode, HasPoolManager):
             if RAW in dataKeys:
                 try:
                     data = json.loads(operation[RAW])
-                    endpoint = data.get(ENDPOINT)
+                    endpoint = data.get(ENDPOINT, {}).get('ha')
                     check_endpoint_valid(endpoint, required=False)
 
                 except EndpointException as exc:
@@ -305,11 +308,9 @@ class Node(PlenumNode, HasPoolManager):
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} not a valid role".
                                            format(role))
-            # Only
-            if not self.canNymRequestBeProcessed(identifier, operation):
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} is already present".
-                                           format(nym))
+            s, reason = self.canNymRequestBeProcessed(identifier, operation)
+            if not s:
+                raise InvalidClientRequest(identifier, reqId, reason)
 
         if operation[TXN_TYPE] == POOL_UPGRADE:
             action = operation.get(ACTION)
@@ -418,13 +419,14 @@ class Node(PlenumNode, HasPoolManager):
                     request.reqId,
                     "{} cannot do {}".format(originRole, POOL_UPGRADE))
 
-    def canNymRequestBeProcessed(self, identifier, msg):
+    def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
         nym = msg.get(TARGET_NYM)
         if self.graphStore.hasNym(nym):
             if not self.graphStore.hasTrustee(identifier) and \
                             self.graphStore.getOwnerFor(nym) != identifier:
-                    return False
-        return True
+                    reason = '{} is neither Trustee nor owner of {}'.format(identifier, nym)
+                    return False, reason
+        return True, ''
 
     def defaultAuthNr(self):
         return TxnBasedAuthNr(self.graphStore)
@@ -658,19 +660,19 @@ class Node(PlenumNode, HasPoolManager):
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        if req.operation[TXN_TYPE] == NYM and not \
-                self.canNymRequestBeProcessed(req.identifier, req.operation):
-            reason = "nym {} is already added".format(req.operation[TARGET_NYM])
-            if req.key in self.requestSender:
-                self.transmitToClient(RequestNack(*req.key, reason),
-                                      self.requestSender.pop(req.key))
-        else:
-            reply = self.generateReply(int(ppTime), req)
-            self.storeTxnAndSendToClient(reply)
-            if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
-                # Currently config ledger has only code update related changes
-                # so transaction goes to Upgrader
-                self.upgrader.handleUpgradeTxn(reply.result)
+        if req.operation[TXN_TYPE] == NYM:
+            s, reason = self.canNymRequestBeProcessed(req.identifier, req.operation)
+            if not s:
+                if req.key in self.requestSender:
+                    self.transmitToClient(RequestNack(*req.key, reason),
+                                          self.requestSender.pop(req.key))
+                return
+        reply = self.generateReply(int(ppTime), req)
+        self.storeTxnAndSendToClient(reply)
+        if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
+            # Currently config ledger has only code update related changes
+            # so transaction goes to Upgrader
+            self.upgrader.handleUpgradeTxn(reply.result)
 
     def generateReply(self, ppTime: float, req: Request):
         operation = req.operation
