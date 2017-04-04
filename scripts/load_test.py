@@ -10,21 +10,25 @@ from collections import namedtuple
 from random import randint
 from jsonpickle import json
 
-from plenum.common.looper import Looper
-from plenum.common.log import getlogger
+from stp_core.loop.looper import Looper
+
+from stp_core.common.log import getlogger
 from plenum.common.types import HA
 from plenum.common.util import randomString
-from plenum.common.port_dispenser import genHa
+from stp_core.network.port_dispenser import genHa
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.txn import \
-    TARGET_NYM, TXN_TYPE, NYM, ROLE, RAW, NODE, DATA, \
-    ALIAS, CLIENT_IP, CLIENT_PORT
+
+from plenum.common.constants import \
+    TARGET_NYM, TXN_TYPE, NYM, \
+    ROLE, RAW, NODE,\
+    DATA, ALIAS, CLIENT_IP, \
+    CLIENT_PORT
 
 from plenum.test.helper import eventually, eventuallyAll
 from plenum.test.test_client import \
     getAcksFromInbox, getNacksFromInbox, getRepliesFromInbox
 
-from sovrin_common.txn import ATTRIB, GET_ATTR
+from sovrin_common.constants import ATTRIB, GET_ATTR
 from sovrin_common.config_util import getConfig
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.client.wallet.wallet import Wallet
@@ -278,23 +282,6 @@ def checkIfConnectedToAll(client):
         return True
 
 
-def clearRaetData():
-    """
-    Workaround for problems when sponsor's configuration
-    needs to be recreated before each test script run
-    """
-    import glob
-    import os.path
-    import shutil
-
-    sovrin_path = os.path.join(os.path.expanduser("~"), '.sovrin')
-    sovrin_sponsor_path = os.path.join(sovrin_path, 'Sponsor*')
-    for path in glob.glob(sovrin_sponsor_path):
-        shutil.rmtree(path)
-        logger.warn("'%s' was deleted because the "
-                    "'PacketError: Failed verification.' issue", path)
-
-
 def printCurrentTestResults(stats, testStartedAt):
     totalNum = len(stats)
     totalLatency = 0
@@ -326,7 +313,6 @@ def printCurrentTestResults(stats, testStartedAt):
 
 
 def main(args):
-    # clearRaetData()  # !WARN workaround PacketError
 
     resultsFileName = \
         "perf_results_{x.numberOfClients}_" \
