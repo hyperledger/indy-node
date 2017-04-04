@@ -1,5 +1,5 @@
 import pytest
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from sovrin_node.test.upgrade.test_pool_upgrade \
     import validUpgradeSent, upgradeScheduled
 

@@ -11,7 +11,7 @@ Full verkey tests
         { type: GET_NYM, dest: <id2> }
     Verify a signature from this identifier with the new verkey
 """
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.common.signer_did import DidSigner
 
 from sovrin_common.identity import Identity
@@ -24,10 +24,10 @@ from sovrin_client.test.helper import createNym
 
 
 @pf
-def didAddedWithFullVerkey(addedSponsor, looper, sponsor, sponsorWallet,
+def didAddedWithFullVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWallet,
                           wallet, fullKeyIdr):
     """{ type: NYM, dest: <id1> }"""
-    createNym(looper, fullKeyIdr, sponsor, sponsorWallet,
+    createNym(looper, fullKeyIdr, trustAnchor, trustAnchorWallet,
               verkey=wallet.getVerkey(fullKeyIdr))
     return wallet
 
@@ -42,11 +42,11 @@ def newFullKey(newFullKeySigner):
     return newFullKeySigner.verkey
 
 @pf
-def didUpdatedWithFullVerkey(didAddedWithFullVerkey, looper, sponsor,
-                            sponsorWallet, fullKeyIdr, newFullKey,
+def didUpdatedWithFullVerkey(didAddedWithFullVerkey, looper, trustAnchor,
+                            trustAnchorWallet, fullKeyIdr, newFullKey,
                              newFullKeySigner, wallet, client):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
-    # updateSovrinIdrWithFullKey(looper, sponsorWallet, sponsor, wallet,
+    # updateSovrinIdrWithFullKey(looper, trustAnchorWallet, trustAnchor, wallet,
     #                            fullKeyIdr, newFullKey)
     updateSovrinIdrWithFullKey(looper, wallet, client, wallet,
                                fullKeyIdr, newFullKey)
@@ -54,10 +54,10 @@ def didUpdatedWithFullVerkey(didAddedWithFullVerkey, looper, sponsor,
 
 
 @pf
-def newVerkeyFetched(didAddedWithFullVerkey, looper, sponsor, sponsorWallet,
+def newVerkeyFetched(didAddedWithFullVerkey, looper, trustAnchor, trustAnchorWallet,
                      fullKeyIdr, wallet):
     """{ type: GET_NYM, dest: <id1> }"""
-    fetchFullVerkeyFromSovrin(looper, sponsorWallet, sponsor, wallet,
+    fetchFullVerkeyFromSovrin(looper, trustAnchorWallet, trustAnchor, wallet,
                               fullKeyIdr)
 
 
@@ -65,21 +65,21 @@ def testAddDidWithVerkey(didAddedWithFullVerkey):
     pass
 
 
-def testRetrieveFullVerkey(didAddedWithFullVerkey, looper, sponsor,
-                            sponsorWallet, wallet, fullKeyIdr):
+def testRetrieveFullVerkey(didAddedWithFullVerkey, looper, trustAnchor,
+                            trustAnchorWallet, wallet, fullKeyIdr):
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=fullKeyIdr)
-    req = sponsorWallet.requestIdentity(identity,
-                                        sender=sponsorWallet.defaultId)
-    sponsor.submitReqs(req)
+    req = trustAnchorWallet.requestIdentity(identity,
+                                        sender=trustAnchorWallet.defaultId)
+    trustAnchor.submitReqs(req)
 
     def chk():
-        retrievedVerkey = sponsorWallet.getIdentity(fullKeyIdr).verkey
+        retrievedVerkey = trustAnchorWallet.getIdentity(fullKeyIdr).verkey
         assert retrievedVerkey == wallet.getVerkey(fullKeyIdr)
         checkFullVerkeySize(retrievedVerkey)
 
     looper.run(eventually(chk, retryWait=1, timeout=5))
-    chkVerifyForRetrievedIdentity(wallet, sponsorWallet, fullKeyIdr)
+    chkVerifyForRetrievedIdentity(wallet, trustAnchorWallet, fullKeyIdr)
 
 
 def testChangeVerkeyToNewVerkey(didUpdatedWithFullVerkey):
@@ -91,5 +91,5 @@ def testRetrieveChangedVerkey(didUpdatedWithFullVerkey, newVerkeyFetched):
 
 
 def testVerifySigWithChangedVerkey(didUpdatedWithFullVerkey, newVerkeyFetched,
-                                   sponsorWallet, fullKeyIdr, wallet):
-    chkVerifyForRetrievedIdentity(wallet, sponsorWallet, fullKeyIdr)
+                                   trustAnchorWallet, fullKeyIdr, wallet):
+    chkVerifyForRetrievedIdentity(wallet, trustAnchorWallet, fullKeyIdr)

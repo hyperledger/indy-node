@@ -1,13 +1,10 @@
 import os
 import re
-import sys
-import argparse
 
-
-def run(pytest, output_file):
-    log("Preparing test suite with {}".format(pytest))
+def run():
+    log("Preparing test suite")
     testListFile = "test_list.txt"
-    os.system('{} --collect-only > {}'.format(pytest, testListFile))
+    os.system('pytest --collect-only > {}'.format(testListFile))
     log("Reading collected modules file")
     collectedData = open(testListFile).read()
     os.remove(testListFile)
@@ -38,7 +35,7 @@ def run(pytest, output_file):
     for test in testList:
         # testRep = '{}.rep'.format(test.split("/")[-1])
         log("Going to run {}".format(test))
-        r = os.system('{} -k "{}" > {}'.format(pytest, test, testRep))
+        r = os.system('pytest -k "{}" > {}'.format(test, testRep))
         reportLines = open(testRep).readlines()
         output = ''.join(reportLines)
         pas = passPat.search(output)
@@ -97,9 +94,8 @@ def run(pytest, output_file):
         totalErros += errors
         totalSkipped += skipped
 
-    summaryMsg = 'Total {} passed, {} failed, {} errors, {} skipped'.\
-        format(totalPassed, totalFailed, totalErros, totalSkipped)
-    log(summaryMsg)
+    log('Total {} passed, {} failed, {} errors, {} skipped'.
+        format(totalPassed, totalFailed, totalErros, totalSkipped))
 
     if totalFailed:
         log("Failed tests:")
@@ -111,10 +107,9 @@ def run(pytest, output_file):
         for fm, fn in allErrorTests:
             log('{}:{}'.format(fm, fn))
 
-    if failureData and output_file:
+    if failureData:
         log("Writing failure data in Test-Report.txt")
-        with open(output_file, 'w') as f:
-            f.write(summaryMsg)
+        with open('../Test-Report.txt', 'w') as f:
             f.write(''.join(failureData))
 
     if os.path.exists(testRep):
@@ -126,13 +121,3 @@ def run(pytest, output_file):
 
 def log(msg):
     return print(msg, flush=True)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--pytest', type=str, help='pytest instance', default='python -m pytest')
-    parser.add_argument('--output', type=str, help='result file', default='../Test-Report.txt')
-    parser.add_argument('--nooutput', help='no result file', action="store_true")
-    args = parser.parse_args()
-    r = run(pytest=args.pytest, output_file=args.output if not args.nooutput else None)
-    sys.exit(0 if r == 0 else 1)

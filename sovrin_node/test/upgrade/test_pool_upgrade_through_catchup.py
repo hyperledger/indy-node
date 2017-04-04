@@ -1,11 +1,11 @@
 import pytest
 from copy import deepcopy
 
-from plenum.common.eventually import eventually
-from plenum.common.txn import VERSION, NAME
+from stp_core.loop.eventually import eventually
+from plenum.common.constants import VERSION, NAME
 from plenum.common.util import randomString
 from plenum.test.test_node import checkNodesConnected
-from sovrin_common.txn import SHA256, CANCEL, ACTION
+from sovrin_common.constants import SHA256, CANCEL, ACTION
 from sovrin_node.test.conftest import tconf, testNodeClass, testClientClass
 from plenum.test.conftest import allPluginsPath
 from sovrin_node.test.helper import TestNode

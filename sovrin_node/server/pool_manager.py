@@ -1,7 +1,7 @@
 from copy import deepcopy
 
-from plenum.common.txn import POOL_TXN_TYPES, TXN_TYPE, DATA, ALIAS, \
-    TARGET_NYM
+from plenum.common.constants import POOL_TXN_TYPES, TXN_TYPE, DATA, ALIAS, \
+    TARGET_NYM, SERVICES
 from plenum.server.pool_manager import HasPoolManager as PHasPoolManager, \
     TxnPoolManager as PTxnPoolManager
 from sovrin_common.auth import Authoriser
@@ -41,13 +41,18 @@ class TxnPoolManager(PTxnPoolManager):
         vals = []
         msgs = []
         for k in data:
-            oldVal = nodeInfo[DATA][k]
+            oldVal = (nodeInfo.get(DATA, {})).get(k, None) if nodeInfo else None
             newVal = data[k]
+            if k == SERVICES:
+                if not oldVal:
+                    oldVal = []
+                if not newVal:
+                    newVal = []
             if oldVal != newVal:
                 r, msg = Authoriser.authorised(typ, k, actorRole,
-                                           oldVal=oldVal,
-                                           newVal=newVal,
-                                           isActorOwnerOfSubject=isSteward)
+                                               oldVal=oldVal,
+                                               newVal=newVal,
+                                               isActorOwnerOfSubject=isSteward)
                 vals.append(r)
                 msgs.append(msg)
         msg = None if all(vals) else '\n'.join(msgs)

@@ -1,50 +1,57 @@
 import json
-from copy import deepcopy
-from hashlib import sha256
-from operator import itemgetter
 from typing import Iterable, Any
 
 import pyorient
-
+from copy import deepcopy
+from hashlib import sha256
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
+from ledger.serializers.json_serializer import JsonSerializer
+
+from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, EndpointException
-from plenum.common.log import getlogger
-from plenum.common.txn import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, VERKEY
-from plenum.common.types import Reply, RequestAck, RequestNack, f, \
-    NODE_PRIMARY_STORAGE_SUFFIX, OPERATION, LedgerStatus
+    UnauthorizedClientRequest
+from stp_core.common.log import getlogger
+from plenum.common.constants import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
+    POOL_TXN_TYPES, VERKEY, TXN_ID, TXN_TIME, NYM_KEY, NODE_PRIMARY_STORAGE_SUFFIX
+from plenum.common.types import Reply, RequestAck, RequestNack, \
+    f, OPERATION, LedgerStatus
+from plenum.common.constants import NODE_PRIMARY_STORAGE_SUFFIX
+
 from plenum.common.util import error, check_endpoint_valid
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
+
+from sovrin_common.auth import Authoriser
 from sovrin_common.config_util import getConfig
-from sovrin_common.txn import TXN_TYPE, \
-    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, SPONSOR, NYM,\
-    ROLE, STEWARD, GET_ATTR, DISCLO, DATA, GET_NYM, \
-    TXN_ID, TXN_TIME, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
-    getTxnOrderedFields, SCHEMA, GET_SCHEMA, openTxns, \
-    ISSUER_KEY, GET_ISSUER_KEY, REF, TRUSTEE, TGB, IDENTITY_TXN_TYPES, \
+from sovrin_common.persistence import identity_graph
+from sovrin_common.constants import TXN_TYPE, \
+    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, NYM,\
+    ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
+    reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
+    SCHEMA, GET_SCHEMA, openTxns, \
+    ISSUER_KEY, GET_ISSUER_KEY, REF, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
     NODE_UPGRADE, COMPLETE, FAIL, ENDPOINT
+from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
 from sovrin_common.util import dateTimeEncoding
-from sovrin_common.persistence import identity_graph
 from sovrin_node.persistence.secondary_storage import SecondaryStorage
-from sovrin_common.auth import Authoriser
 from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
+from stp_core.network.exceptions import EndpointException
 
 logger = getlogger()
+jsonSerz = JsonSerializer()
 
 
 class Node(PlenumNode, HasPoolManager):
-    keygenScript = "init_sovrin_raet_keep"
+    keygenScript = "init_sovrin_keys"
 
     def __init__(self,
                  name,
@@ -88,7 +95,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def getGraphStorage(self, name):
         return identity_graph.IdentityGraph(self._getOrientDbStore(name,
-                                                    pyorient.DB_TYPE_GRAPH))
+                                            pyorient.DB_TYPE_GRAPH))
 
     def getPrimaryStorage(self):
         """
@@ -301,18 +308,9 @@ class Node(PlenumNode, HasPoolManager):
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} not a valid role".
                                            format(role))
-            # Only
-            if not self.canNymRequestBeProcessed(identifier, operation):
-                try:
-                    raise ValueError()
-                except Exception as error:
-                    logger.debug("XXX")
-                    logger.exception(error)
-                    logger.debug("===============================================")
-                    logger.debug(error.__traceback__)
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} is already present".
-                                           format(nym))
+            s, reason = self.canNymRequestBeProcessed(identifier, operation)
+            if not s:
+                raise InvalidClientRequest(identifier, reqId, reason)
 
         if operation[TXN_TYPE] == POOL_UPGRADE:
             action = operation.get(ACTION)
@@ -361,7 +359,7 @@ class Node(PlenumNode, HasPoolManager):
                         "{} cannot add {}".format(originRole, role))
             else:
                 nymData = nymV.oRecordData
-                owner = self.graphStore.getOwnerFor(nymData.get(NYM))
+                owner = self.graphStore.getOwnerFor(nymData.get(NYM_KEY))
                 isOwner = origin == owner
                 updateKeys = [ROLE, VERKEY]
                 for key in updateKeys:
@@ -421,13 +419,14 @@ class Node(PlenumNode, HasPoolManager):
                     request.reqId,
                     "{} cannot do {}".format(originRole, POOL_UPGRADE))
 
-    def canNymRequestBeProcessed(self, identifier, msg):
+    def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
         nym = msg.get(TARGET_NYM)
         if self.graphStore.hasNym(nym):
             if not self.graphStore.hasTrustee(identifier) and \
                             self.graphStore.getOwnerFor(nym) != identifier:
-                    return False
-        return True
+                    reason = '{} is neither Trustee nor owner of {}'.format(identifier, nym)
+                    return False, reason
+        return True, ''
 
     def defaultAuthNr(self):
         return TxnBasedAuthNr(self.graphStore)
@@ -469,11 +468,11 @@ class Node(PlenumNode, HasPoolManager):
             txnIds = [addNymTxn[TXN_ID], ] + self.graphStore. \
                 getAddAttributeTxnIds(origin)
             # If sending transactions to a user then should send user's
-            # sponsor creation transaction also
+            # trust anchor creation transaction also
             if addNymTxn.get(ROLE) is None:
-                sponsorNymTxn = self.graphStore.getAddNymTxn(
+                trustAnchorNymTxn = self.graphStore.getAddNymTxn(
                     addNymTxn.get(f.IDENTIFIER.nm))
-                txnIds = [sponsorNymTxn[TXN_ID], ] + txnIds
+                txnIds = [trustAnchorNymTxn[TXN_ID], ] + txnIds
             # TODO: Remove this log statement
             logger.debug("{} getting replies for {}".format(self, txnIds))
             result = self.secondaryStorage.getReplies(*txnIds, seqNo=data)
@@ -573,7 +572,11 @@ class Node(PlenumNode, HasPoolManager):
          client requests it.
         """
         result = reply.result
+        if result[TXN_TYPE] in (SCHEMA, ISSUER_KEY):
+            result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
+
         txnWithMerkleInfo = self.storeTxnInLedger(result)
+
         if result[TXN_TYPE] == NODE_UPGRADE:
             logger.info('{} processed {}'.format(self, NODE_UPGRADE))
             # Returning since NODE_UPGRADE is not sent to client and neither
@@ -657,19 +660,19 @@ class Node(PlenumNode, HasPoolManager):
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        if req.operation[TXN_TYPE] == NYM and not \
-                self.canNymRequestBeProcessed(req.identifier, req.operation):
-            reason = "nym {} is already added".format(req.operation[TARGET_NYM])
-            if req.key in self.requestSender:
-                self.transmitToClient(RequestNack(*req.key, reason),
-                                      self.requestSender.pop(req.key))
-        else:
-            reply = self.generateReply(int(ppTime), req)
-            self.storeTxnAndSendToClient(reply)
-            if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
-                # Currently config ledger has only code update related changes
-                # so transaction goes to Upgrader
-                self.upgrader.handleUpgradeTxn(reply.result)
+        if req.operation[TXN_TYPE] == NYM:
+            s, reason = self.canNymRequestBeProcessed(req.identifier, req.operation)
+            if not s:
+                if req.key in self.requestSender:
+                    self.transmitToClient(RequestNack(*req.key, reason),
+                                          self.requestSender.pop(req.key))
+                return
+        reply = self.generateReply(int(ppTime), req)
+        self.storeTxnAndSendToClient(reply)
+        if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
+            # Currently config ledger has only code update related changes
+            # so transaction goes to Upgrader
+            self.upgrader.handleUpgradeTxn(reply.result)
 
     def generateReply(self, ppTime: float, req: Request):
         operation = req.operation
