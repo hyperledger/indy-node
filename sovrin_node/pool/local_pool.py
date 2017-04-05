@@ -1,5 +1,7 @@
+import os
 from collections import deque
 
+from plenum.common.keygen_utils import initNodeKeysForBothStacks
 from plenum.common.member.steward import Steward
 from plenum.common.test_network_setup import TestNetworkSetup
 from plenum.common.constants import TYPE, NODE, NYM
@@ -19,6 +21,7 @@ from stp_core.loop.looper import Looper
 
 def create_local_pool(base_dir, node_size=4, looper=None):
     conf = getConfig(base_dir)
+    pool_dir = os.path.join(base_dir, "pool")
     stewards = []
     node_conf = []
     nodes = []
@@ -31,7 +34,7 @@ def create_local_pool(base_dir, node_size=4, looper=None):
         stewards.append(s)
 
         n_config = adict(name='Node'+str(i+1),
-                         basedirpath=base_dir,
+                         basedirpath=pool_dir,
                          ha=('127.0.0.1', 9700+(i * 2)),
                          cliha=('127.0.0.1', 9700+(i * 2)+1))
 
