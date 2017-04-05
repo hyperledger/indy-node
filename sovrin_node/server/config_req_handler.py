@@ -1,13 +1,13 @@
 from plenum.common.exceptions import InvalidClientRequest
-from plenum.server.req_handler import ReqHandler as PHandler
+from plenum.server.req_handler import RequestHandler
 from sovrin_common.constants import \
     POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, TXN_TYPE
 
 
-class ConfigReqHandler(PHandler):
+class ConfigReqHandler(RequestHandler):
+
     def __init__(self, ledger, state):
-        self.ledger = ledger
-        self.state = state
+        super().__init__(ledger, state)
 
     def doStaticValidation(self, identifier, reqId, operation):
         if operation[TXN_TYPE] == POOL_UPGRADE:
