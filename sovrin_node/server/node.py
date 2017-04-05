@@ -15,7 +15,7 @@ from ledger.serializers.json_serializer import JsonSerializer
 from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
-from plenum.common.log import getlogger
+from stp_core.common.log import getlogger
 from plenum.common.state import PruningState
 from plenum.common.constants import NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \

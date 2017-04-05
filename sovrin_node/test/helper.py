@@ -4,7 +4,7 @@ from contextlib import ExitStack
 from typing import Iterable
 
 from plenum.common.constants import REQACK, TXN_ID
-from plenum.common.log import getlogger
+from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import getMaxFailures, runall
 from plenum.persistence import orientdb_store

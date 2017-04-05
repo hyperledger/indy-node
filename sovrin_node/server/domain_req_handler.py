@@ -2,9 +2,9 @@ import json
 
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH
-from plenum.server.domain_req_handler import DomainReqHandler as PHandler
+from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
-from sovrin_common.txn import NYM, ROLE, ATTRIB
+from sovrin_common.constants import NYM, ROLE, ATTRIB
 
 
 class DomainReqHandler(PHandler):

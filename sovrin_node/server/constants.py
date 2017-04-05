@@ -1,8 +1,8 @@
-from plenum.common.txn import RAW, ENC, HASH, TYPE, VERSION, NAME, DATA, ORIGIN, \
+from plenum.common.constants import RAW, ENC, HASH, TYPE, VERSION, NAME, DATA, ORIGIN, \
     POOL_TXN_TYPES
-from sovrin_common.txn import GET_NYM, GET_ATTR, GET_SCHEMA, GET_ISSUER_KEY, \
+from sovrin_common.constants import GET_NYM, GET_ATTR, GET_SCHEMA, GET_ISSUER_KEY, \
     ROLE, NYM, TARGET_NYM, ATTRIB, ATTR_NAMES, SCHEMA, ISSUER_KEY, REF, \
-    NODE_UPGRADE, POOL_UPGRADE, IDPROOF, DISCLO, GET_TXNS
+    NODE_UPGRADE, POOL_UPGRADE, DISCLO, GET_TXNS
 
 openTxns = (GET_NYM, GET_ATTR, GET_SCHEMA, GET_ISSUER_KEY)
 
@@ -19,7 +19,6 @@ fields = {NYM: ([TARGET_NYM], [ROLE]),
 CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE}
 IDENTITY_TXN_TYPES = {NYM,
                       ATTRIB,
-                      IDPROOF,
                       DISCLO,
                       GET_ATTR,
                       GET_NYM,
