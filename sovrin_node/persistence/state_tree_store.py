@@ -17,10 +17,9 @@ class StateTreeStore:
     Akin to IdentityGraph
     """
 
-    MARKER_NYM = '\01'
-    MARKER_ATTR = '\02'
-    MARKER_SCHEMA = '\03'
-    MARKER_IPK = '\04'
+    MARKER_ATTR = "\01"
+    MARKER_SCHEMA = "\02"
+    MARKER_IPK = "\03"
 
     def __init__(self, state: State):
         assert state is not None

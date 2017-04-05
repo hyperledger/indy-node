@@ -34,4 +34,3 @@ validTxnTypes = set()
 validTxnTypes.update(POOL_TXN_TYPES)
 validTxnTypes.update(IDENTITY_TXN_TYPES)
 validTxnTypes.update(CONFIG_TXN_TYPES)
-

@@ -5,7 +5,7 @@ from hashlib import sha256
 
 import pytest
 from plenum.common.state import PruningState
-from sovrin_common.txn import TXN_TYPE, \
+from sovrin_common.constants import TXN_TYPE, \
     TARGET_NYM, ATTRIB, DATA, SCHEMA, ISSUER_KEY, REF, RAW
 
 from sovrin_node.persistence.state_tree_store import StateTreeStore

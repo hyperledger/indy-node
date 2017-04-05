@@ -2,14 +2,14 @@ import json
 
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH
-from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
+from plenum.server.domain_req_handler import RequestHandler
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NYM, ROLE, ATTRIB
 
 
-class DomainReqHandler(PHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class DomainReqHandler(RequestHandler):
+    def __init__(self, ledger, state, requestProcessor):
+        super().__init__(ledger, state)
 
     def doStaticValidation(self, identifier, reqId, operation):
         if operation[TXN_TYPE] == NYM:

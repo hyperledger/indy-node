@@ -16,17 +16,21 @@ from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from stp_core.common.log import getlogger
-from plenum.common.state import PruningState
 from plenum.common.constants import NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
     DATA, TXN_ID, HASH, ENC, RAW, NYM_KEY
 from plenum.common.types import Reply, RequestAck, RequestNack, f, \
-    OPERATION, LedgerStatus, DOMAIN_LEDGER_ID
+    OPERATION, LedgerStatus, DOMAIN_LEDGER_ID, POOL_LEDGER_ID
 from plenum.common.util import error
+
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
-from plenum.common.ledger import Ledger
+from ledger.ledger import Ledger
 from sovrin_common.auth import Authoriser
+# DOMAIN_LEDGER_ID
+
+from plenum.common.state import PruningState
+
 
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import allOpKeys, ATTRIB, NYM,\
@@ -48,9 +52,7 @@ from sovrin_node.server.domain_req_handler import DomainReqHandler
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
-from plenum.common.types import POOL_LEDGER_ID
 from sovrin_node.persistence.state_tree_store import StateTreeStore
-from stp_core.network.exceptions import EndpointException
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
@@ -267,18 +269,18 @@ class Node(PlenumNode, HasPoolManager):
         else:
             return super().authNr(req)
 
-    # def _addTxnsToGraphIfNeeded(self):
-    #     # TODO: should it be replaced by state tree store somehow?
-    #     i = 0
-    #     txnCountInGraph = self.graphStore.countTxns()
-    #     for seqNo, txn in self.domainLedger.getAllTxn().items():
-    #         if seqNo > txnCountInGraph:
-    #             txn[F.seqNo.name] = seqNo
-    #             self.storeTxnInGraph(txn)
-    #             i += 1
-    #     logger.debug("{} adding {} transactions to graph from ledger".
-    #                  format(self, i))
-    #     return i
+    def _addTxnsToGraphIfNeeded(self):
+        # TODO: should it be replaced by state tree store somehow?
+        i = 0
+        txnCountInGraph = self.graphStore.countTxns()
+        for seqNo, txn in self.domainLedger.getAllTxn().items():
+            if seqNo > txnCountInGraph:
+                txn[F.seqNo.name] = seqNo
+                self.storeTxnInGraph(txn)
+                i += 1
+        logger.debug("{} adding {} transactions to graph from ledger".
+                     format(self, i))
+        return i
 
     def isSignatureVerificationNeeded(self, msg: Any):
         op = msg.get(OPERATION)
