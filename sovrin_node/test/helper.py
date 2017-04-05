@@ -4,9 +4,7 @@ import shutil
 from contextlib import ExitStack
 from typing import Iterable
 
-from stp_core.loop.eventually import eventually
-from plenum.common.log import getlogger
-from stp_core.loop.looper import Looper
+from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import REQACK, TXN_ID
 from plenum.common.util import getMaxFailures, runall
@@ -21,8 +19,11 @@ from sovrin_client.client.wallet.attribute import LedgerStore, Attribute
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.test.helper import genTestClient, genTestClientProvider
 from sovrin_common.constants import ATTRIB, TARGET_NYM, TXN_TYPE, GET_NYM
+from sovrin_common.test.helper import TempStorage
 from sovrin_node.server.node import Node
 from sovrin_node.server.upgrader import Upgrader
+from stp_core.loop.eventually import eventually
+from stp_core.loop.looper import Looper
 
 logger = getlogger()
 
@@ -215,24 +216,6 @@ class Organization:
                         key = wallet.attributeEncKeys.pop(attr)
                         txn['secretKey'] = key
                 wallet.addCompletedTxn(txn)
-
-
-class TempStorage:
-    def cleanupDataLocation(self):
-        self.wipe()
-        self.graphStore.store.wipe()
-        # loc = self.dataLocation
-        # try:
-        #     shutil.rmtree(loc)
-        # except Exception as ex:
-        #     logger.debug("Error while removing temporary directory {}".format(
-        #         ex))
-        # try:
-        #     self.graphStore.client.db_drop(self.name)
-        #     logger.debug("Dropped db {}".format(self.name))
-        # except Exception as ex:
-        #     logger.debug("Error while dropping db {}: {}".format(self.name,
-        #                                                          ex))
 
 
 @spyable(methods=[Upgrader.processLedger])
