@@ -15,15 +15,14 @@ from ledger.serializers.json_serializer import JsonSerializer
 from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
-
-
 from stp_core.common.log import getlogger
-from plenum.common.constants import RAW, ENC, HASH, NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, VERKEY, TXN_ID, TXN_TIME, NYM_KEY, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, DATA
-from plenum.common.types import Reply, RequestAck, RequestNack, \
-    f, OPERATION, LedgerStatus
-from plenum.common.util import error, check_endpoint_valid
-from plenum.common.types import POOL_LEDGER_ID, DOMAIN_LEDGER_ID
+from plenum.common.constants import NAME, VERSION, ORIGIN, \
+    POOL_TXN_TYPES, VERKEY, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
+    DATA, TXN_ID, HASH, ENC, RAW, NYM_KEY
+from plenum.common.types import Reply, RequestAck, RequestNack, f, \
+    OPERATION, LedgerStatus, DOMAIN_LEDGER_ID, POOL_LEDGER_ID
+from plenum.common.util import error
+
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from ledger.ledger import Ledger

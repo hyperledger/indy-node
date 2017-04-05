@@ -1,7 +1,7 @@
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.server.req_handler import RequestHandler
-from sovrin_common.constants import \
-    POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, TXN_TYPE
+from plenum.common.constants import TXN_TYPE
+from sovrin_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION
 
 
 class ConfigReqHandler(RequestHandler):

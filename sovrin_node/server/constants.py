@@ -4,7 +4,6 @@ from sovrin_common.constants import GET_NYM, GET_ATTR, GET_SCHEMA, GET_ISSUER_KE
     ROLE, NYM, TARGET_NYM, ATTRIB, ATTR_NAMES, SCHEMA, ISSUER_KEY, REF, \
     NODE_UPGRADE, POOL_UPGRADE, DISCLO, GET_TXNS
 
-
 openTxns = (GET_NYM, GET_ATTR, GET_SCHEMA, GET_ISSUER_KEY)
 
 
@@ -35,4 +34,3 @@ validTxnTypes = set()
 validTxnTypes.update(POOL_TXN_TYPES)
 validTxnTypes.update(IDENTITY_TXN_TYPES)
 validTxnTypes.update(CONFIG_TXN_TYPES)
-
