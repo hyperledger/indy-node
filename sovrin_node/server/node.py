@@ -2,7 +2,6 @@ import json
 import os
 from copy import deepcopy
 from hashlib import sha256
-from operator import itemgetter
 from typing import Iterable, Any, List
 
 import pyorient
@@ -12,7 +11,6 @@ from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
 from ledger.serializers.json_serializer import JsonSerializer
 
-from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from stp_core.common.log import getlogger
@@ -27,23 +25,20 @@ from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from plenum.common.ledger import Ledger
 from sovrin_common.auth import Authoriser
-# DOMAIN_LEDGER_ID
 
 from plenum.common.state import PruningState
 
 
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import allOpKeys, ATTRIB, NYM,\
-    ROLE, GET_ATTR, DISCLO, GET_NYM, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
+    ROLE, GET_ATTR, DISCLO, GET_NYM, reqOpKeys, GET_TXNS, \
     SCHEMA, GET_SCHEMA,\
-    ISSUER_KEY, GET_ISSUER_KEY, REF, TGB, POOL_UPGRADE, ACTION, \
+    ISSUER_KEY, GET_ISSUER_KEY, REF, POOL_UPGRADE, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL
 from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
-from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph
 from sovrin_node.persistence.idr_cache import IdrCache
-from sovrin_node.persistence.secondary_storage import SecondaryStorage
 from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.config_req_handler import ConfigReqHandler
 from sovrin_node.server.constants import CONFIG_LEDGER_ID, openTxns, \
@@ -469,15 +464,14 @@ class Node(PlenumNode, HasPoolManager):
         self.transmitToClient(RequestAck(*request.key), frm)
         nym = request.operation[TARGET_NYM]
         txn = self.graphStore.getAddNymTxn(nym)
-        txnId = self.genTxnId(request.identifier, request.reqId)
         # TODO: We should have a single JSON encoder which does the
         # encoding for us, like sorting by keys, handling datetime objects.
-        result = {f.IDENTIFIER.nm: request.identifier,
-                  f.REQ_ID.nm: request.reqId,
-                  DATA: json.dumps(txn, sort_keys=True) if txn else None,
-                  TXN_ID: txnId
-                  }
-        result.update(request.operation)
+        nym = json.dumps(txn, sort_keys=True) if txn else None
+        result = {**request.operation, **{
+            f.IDENTIFIER.nm: request.identifier,
+            f.REQ_ID.nm: request.reqId,
+            DATA: nym
+        }}
         self.transmitToClient(Reply(result), frm)
 
     # TODO: Fix it later to retrive any txns with given seqNos,
@@ -531,14 +525,16 @@ class Node(PlenumNode, HasPoolManager):
             schemaVersion=(request.operation[DATA][VERSION])
         )
         result = {
-            TXN_ID: self.genTxnId(request.identifier, request.reqId)
+            TXN_ID: self.genTxnId(request.identifier, request.reqId),
         }
         result.update(request.operation)
-        result[DATA] = schema
-        result.update({
+
+        rs = {
+            TXN_ID: self.genTxnId(request.identifier, request.reqId),
+            DATA: schema,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
-        })
+        }
         self.transmitToClient(Reply(result), frm)
 
     def processGetAttrsReq(self, request: Request, frm: str):
