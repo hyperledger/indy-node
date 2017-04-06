@@ -16,9 +16,8 @@ class TxnBasedAuthNr(NaclAuthNr):
     """
     Transaction-based client authenticator.
     """
-    def __init__(self, cache: IdrCache, stateStore: StateTreeStore):
+    def __init__(self, cache: IdrCache):
         self.cache = cache
-        self.stateStore = stateStore
 
     def serializeForSig(self, msg, topLevelKeysToIgnore=None):
         if msg[OPERATION].get(TXN_TYPE) == ATTRIB:

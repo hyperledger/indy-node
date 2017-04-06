@@ -250,7 +250,7 @@ class TestNode(TempStorage, TestNodeCore, Node):
     def onStopping(self, *args, **kwargs):
         if self.cleanupOnStopping:
             self.cleanupDataLocation()
-        self.graphStore.store.close()
+        # self.graphStore.store.close()
         super().onStopping(*args, **kwargs)
 
 

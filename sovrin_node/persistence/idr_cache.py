@@ -1,7 +1,10 @@
 import os
 
 import leveldb
+from collections import OrderedDict
 
+from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, GUARDIAN
+from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
 from stp_core.common.log import getlogger
 
 logger = getlogger()
@@ -25,13 +28,18 @@ class IdrCache:
     ownerPrefix = b'\1'
     guardianPrefix = b'\2'
 
-    def __init__(self, basedir: str, name='identity_cache'):
+    def __init__(self, basedir: str, name):
         logger.debug('Initializing identity cache {} at {}'
                      .format(name, basedir))
         self._basedir = basedir
         self._name = name
         self._db = None
         self.open()
+        # OrderedDict where key is the state root hash and value is a
+        # dictionary similar to cache which can be queried like the
+        # database, i.e `self._db`. Keys (state roots are purged) when they
+        # get committed or reverted.
+        self.unCommitted = OrderedDict()
 
     @staticmethod
     def getPrefixAndIv(guardian=None, verkey=None):
@@ -63,15 +71,25 @@ class IdrCache:
                 assert 'No acceptable prefix found while parsing {}'.format(part)
         return hasGuardian, (guardian if hasGuardian else verkey), role
 
-    def get(self, idr):
-        idr = str.encode(idr)
-        value = self._db.Get(idr)
+    def get(self, idr, isCommitted=True):
+        idr = idr.encode()
+        if isCommitted:
+            value = self._db.Get(idr)
+        else:
+            # Looking for uncommitted values, iterating over `self.unCommitted`
+            # in reverse to get the latest value
+            for i, cache in self.unCommitted.items()[::-1]:
+                if idr in cache:
+                    value = cache[idr]
+                    break
+            else:
+                value = self._db.Get(idr)
         if not value:
             raise KeyError
         hasGuardian, iv, r = self.unpackIdrValue(value)
         return hasGuardian, iv.decode(), r.decode()
 
-    def set(self, idr, guardian=None, verkey=None, role=None):
+    def set(self, idr, guardian=None, verkey=None, role=None, isCommitted=True):
         idr = idr.encode()
         if isinstance(guardian, str):
             guardian = guardian.encode()
@@ -106,10 +124,67 @@ class IdrCache:
             v = iv
         self.set(idr, guardian=g, verkey=v, role=role)
 
-    def getVerkey(self, idr):
-        hasGuardian, iv, role = self.get(idr)
+    def getVerkey(self, idr, isCommitted=True):
+        hasGuardian, iv, role = self.get(idr, isCommitted=isCommitted)
         return '' if hasGuardian else iv
 
-    def getRole(self, idr):
-        _, _, role = self.get(idr)
+    def getRole(self, idr, isCommitted=True):
+        _, _, role = self.get(idr, isCommitted=isCommitted)
         return role
+
+    def getNym(self, nym, role=None, isCommitted=True):
+        """
+        Get a nym, if role is provided then get nym with that role
+        :param nym:
+        :param role:
+        :param isCommitted:
+        :return:
+        """
+        try:
+            hasGuardian, iv, r = self.get(nym, isCommitted)
+        except KeyError:
+            return None
+        if role and role != r:
+            return None
+        rv = {ROLE: r}
+        if hasGuardian:
+            rv[GUARDIAN] = iv
+        else:
+            rv[VERKEY] = iv
+        return rv
+
+    def getTrustee(self, nym, isCommitted=True):
+        return self.getNym(nym, TRUSTEE, isCommitted=isCommitted)
+
+    def getTGB(self, nym, isCommitted=True):
+        return self.getNym(nym, TGB, isCommitted=isCommitted)
+
+    def getSteward(self, nym, isCommitted=True):
+        return self.getNym(nym, STEWARD, isCommitted=isCommitted)
+
+    def getTrustAnchor(self, nym, isCommitted=True):
+        return self.getNym(nym, TRUST_ANCHOR, isCommitted=isCommitted)
+
+    def hasTrustee(self, nym, isCommitted=True):
+        return bool(self.getTrustee(nym, isCommitted=isCommitted))
+
+    def hasTGB(self, nym, isCommitted=True):
+        return bool(self.getTGB(nym))
+
+    def hasSteward(self, nym, isCommitted=True):
+        return bool(self.getSteward(nym, isCommitted=isCommitted))
+
+    def hasTrustAnchor(self, nym, isCommitted=True):
+        return bool(self.getTrustAnchor(nym, isCommitted=isCommitted))
+
+    def hasNym(self, nym, isCommitted=True):
+        return bool(self.getNym(nym, isCommitted=isCommitted))
+
+    def getOwnerFor(self, nym, isCommitted=True):
+        nymData = self.getNym(nym, isCommitted=isCommitted)
+        if nymData:
+            if VERKEY not in nymData:
+                return nymData[GUARDIAN]
+            else:
+                return nym
+        logger.error('Nym {} not found'.format(nym))
