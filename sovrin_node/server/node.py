@@ -559,15 +559,11 @@ class Node(PlenumNode, HasPoolManager):
             did=request.operation[ORIGIN],
             schemaSeqNo=request.operation[REF]
         )
-        result = {
-            TXN_ID: self.genTxnId(request.identifier, request.reqId)
-        }
-        result.update(request.operation)
-        result[DATA] = keys
-        result.update({
+        result = {**request.operation, **{
+            DATA: keys,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
-        })
+        }}
         self.transmitToClient(Reply(result), frm)
 
     def processRequest(self, request: Request, frm: str):
