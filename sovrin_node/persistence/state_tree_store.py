@@ -14,7 +14,7 @@ logger = getlogger()
 
 class StateTreeStore:
     """
-    Class for putting transactions into state tree
+    Class for adding or getting transactions from state tree
     Akin to IdentityGraph
     """
 
@@ -23,6 +23,12 @@ class StateTreeStore:
     MARKER_IPK = "\03"
     LAST_SEQ_NO = "last_seq_no"
     VALUE = "value"
+
+    REQUIRED_TXN_FIELDS = {
+        TXN_TYPE,
+        TARGET_NYM,
+        f.SEQ_NO.nm
+    }
 
     def __init__(self, state: State):
         assert state is not None
@@ -35,7 +41,6 @@ class StateTreeStore:
         :param path: path to data
         :return: data
         """
-
         assert path is not None
         raw = self.state.get(path, isCommitted).decode()
         value = raw[StateTreeStore.VALUE]
@@ -46,6 +51,7 @@ class StateTreeStore:
         """
         Add transaction to state store
         """
+        assert self.REQUIRED_TXN_FIELDS.issubset(txn)
         {
             ATTRIB: self._addAttr,
             SCHEMA: self._addSchema,
@@ -55,7 +61,6 @@ class StateTreeStore:
     def _addAttr(self, txn) -> None:
         assert txn[TXN_TYPE] == ATTRIB
         did = txn.get(TARGET_NYM)
-        assert did is not None
 
         def parse(txn):
             raw = txn.get(RAW)
@@ -78,7 +83,6 @@ class StateTreeStore:
     def _addSchema(self, txn) -> None:
         assert txn[TXN_TYPE] == SCHEMA
         did = txn.get(TARGET_NYM)
-        assert did is not None
 
         rawData = txn.get(DATA)
         if rawData is None:
@@ -95,7 +99,6 @@ class StateTreeStore:
     def _addIssuerKey(self, txn) -> None:
         assert txn[TXN_TYPE] == ISSUER_KEY
         did = txn.get(TARGET_NYM)
-        assert did is not None
 
         schemaSeqNo = txn[REF]
         if schemaSeqNo is None:
