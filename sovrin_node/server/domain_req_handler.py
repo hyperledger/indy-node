@@ -1,8 +1,10 @@
 import json
 
 from plenum.common.exceptions import InvalidClientRequest
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, VERKEY
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, VERKEY, \
+    GUARDIAN
 from plenum.common.txn_util import reqToTxn
+from plenum.common.types import f
 from plenum.common.util import check_endpoint_valid
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
@@ -66,32 +68,22 @@ class DomainReqHandler(PHandler):
                     #                                'JSON'.format(operation[RAW]))
 
             if not (not operation.get(TARGET_NYM) or
-                        self.hasNym(operation[TARGET_NYM], isCommitted=False)):
+                    self.hasNym(operation[TARGET_NYM], isCommitted=False)):
                 raise InvalidClientRequest(identifier, reqId,
                                            '{} should be added before adding '
                                            'attribute for it'.
                                            format(TARGET_NYM))
 
-    def updateState(self, txns, isCommitted=False):
-        for txn in txns:
-            typ = txn.get(TXN_TYPE)
-            nym = txn.get(TARGET_NYM)
-            if typ == NYM:
-                self.updateNym(nym, {
-                    ROLE: txn.get(ROLE),
-                    VERKEY: txn.get(VERKEY)
-                }, isCommitted=isCommitted)
-
     def updateNym(self, nym, data, isCommitted=True):
-        existingData = self.getNymDetails(self.state, nym,
-                                          isCommitted=isCommitted)
-        existingData.update(data)
-        key = nym.encode()
-        val = self.stateSerializer.serialize(data)
-        self.state.set(key, val)
+        updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
+        guardian = updatedData.get(f.IDENTIFIER.nm) if updatedData.get(VERKEY) is None else None
+        self.idrCache.set(nym, guardian=guardian,
+                          verkey=data.get(VERKEY),
+                          role=data.get(ROLE),
+                          isCommitted=isCommitted)
 
     def hasNym(self, nym, isCommitted: bool = True):
         return self.idrCache.hasNym(nym, isCommitted=isCommitted)
 
     def onBatchCreated(self, seqNo):
-        pass
+        self.idrCache.currentBatchCreated(seqNo)

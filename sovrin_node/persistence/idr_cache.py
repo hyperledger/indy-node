@@ -2,6 +2,7 @@ import os
 
 import leveldb
 from collections import OrderedDict
+import rlp
 
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, GUARDIAN
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
@@ -35,16 +36,20 @@ class IdrCache:
         self._name = name
         self._db = None
         self.open()
-        # OrderedDict where key is the state root hash and value is a
+        # OrderedDict where key is the batch seqNo and value is a
         # dictionary similar to cache which can be queried like the
         # database, i.e `self._db`. Keys (state roots are purged) when they
         # get committed or reverted.
-        self.unCommitted = OrderedDict()
+        self.unCommitted = OrderedDict() # type: Dict[int, OrderedDict]
+
+        # Relevant NYMs operation done in current batch, in order
+        self.currentBatchOps = []   # type: List[Tuple]
 
     @staticmethod
     def getPrefixAndIv(guardian=None, verkey=None):
-        prefix = IdrCache.guardianPrefix if guardian else IdrCache.ownerPrefix
+        # prefix = IdrCache.guardianPrefix if guardian else IdrCache.ownerPrefix
         iv = guardian if guardian else verkey
+        prefix = b'1' if guardian else b'0'
         return prefix, iv
 
     @staticmethod
@@ -54,22 +59,25 @@ class IdrCache:
             role = b''
         if iv is None:
             iv = b''
-        return b'{}{}{}{}'.__format__(prefix, iv, IdrCache.roleSep, role)
+        # return '{}{}{}{}'.format(prefix, iv, IdrCache.roleSep, role).encode()
+        return rlp.encode([prefix, iv, role])
 
     @staticmethod
     def unpackIdrValue(value):
         hasGuardian = None
-        part, role = value.rsplit(IdrCache.roleSep, 1)
-        if part:
-            if part[0] == IdrCache.ownerPrefix:
-                hasGuardian = False
-                verkey = part[1:]
-            elif part[0] == IdrCache.guardianPrefix:
-                hasGuardian = True
-                guardian = part[1:]
-            else:
-                assert 'No acceptable prefix found while parsing {}'.format(part)
-        return hasGuardian, (guardian if hasGuardian else verkey), role
+        # part, role = value.rsplit(IdrCache.roleSep, 1)
+        # if part:
+        #     if part[0] == IdrCache.ownerPrefix:
+        #         hasGuardian = False
+        #         verkey = part[1:]
+        #     elif part[0] == IdrCache.guardianPrefix:
+        #         hasGuardian = True
+        #         guardian = part[1:]
+        #     else:
+        #         assert 'No acceptable prefix found while parsing {}'.format(part)
+        prf, iv, role = rlp.decode(value)
+        hasGuardian = True if prf == b'1' else False
+        return hasGuardian, iv, role
 
     def get(self, idr, isCommitted=True):
         idr = idr.encode()
@@ -78,14 +86,12 @@ class IdrCache:
         else:
             # Looking for uncommitted values, iterating over `self.unCommitted`
             # in reverse to get the latest value
-            for i, cache in self.unCommitted.items()[::-1]:
+            for i, cache in reversed(self.unCommitted.items()):
                 if idr in cache:
                     value = cache[idr]
                     break
             else:
                 value = self._db.Get(idr)
-        if not value:
-            raise KeyError
         hasGuardian, iv, r = self.unpackIdrValue(value)
         return hasGuardian, iv.decode(), r.decode()
 
@@ -97,7 +103,12 @@ class IdrCache:
             verkey = verkey.encode()
         if isinstance(role, str):
             role = role.encode()
-        self._db.Put(idr, self.packIdrValue(role, verkey, guardian))
+
+        val = self.packIdrValue(role, verkey, guardian)
+        if isCommitted:
+            self._db.Put(idr, val)
+        else:
+            self.currentBatchOps.append((idr, val))
 
     def close(self):
         self._db = None
@@ -108,6 +119,10 @@ class IdrCache:
     @property
     def dbName(self):
         return os.path.join(self._basedir, self._name)
+
+    def currentBatchCreated(self, seqNo):
+        self.unCommitted[seqNo] = OrderedDict(self.currentBatchOps)
+        self.currentBatchOps = []
 
     def setVerkey(self, idr, verkey):
         # This method acts as if guardianship is being terminated.

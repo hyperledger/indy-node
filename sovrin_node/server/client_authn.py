@@ -24,8 +24,8 @@ class TxnBasedAuthNr(NaclAuthNr):
             msgCopy = deepcopy(msg)
             keyName = {RAW, ENC, HASH}.intersection(
                 set(msgCopy[OPERATION].keys())).pop()
-            msgCopy[OPERATION][keyName] = sha256(msgCopy[OPERATION][keyName]
-                                                .encode()).hexdigest()
+            msgCopy[OPERATION][keyName] = sha256(
+                msgCopy[OPERATION][keyName].encode()).hexdigest()
             return super().serializeForSig(msgCopy)
         else:
             return super().serializeForSig(msg,
@@ -36,7 +36,7 @@ class TxnBasedAuthNr(NaclAuthNr):
 
     def getVerkey(self, identifier):
         try:
-            verkey = self.cache.getVerkey(identifier)
+            verkey = self.cache.getVerkey(identifier, isCommitted=False)
         except KeyError:
             return None
         return verkey
