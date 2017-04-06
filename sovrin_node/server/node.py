@@ -715,7 +715,6 @@ class Node(PlenumNode, HasPoolManager):
         if typ in CONFIG_TXN_TYPES:
             return self.getReplyFromLedger(self.configLedger, request)
 
-    # def doCustomAction(self, ppTime: float, req: Request) -> None:
     def doCustomAction(self, ppTime, reqs: List[Request],
                        stateRoot, txnRoot) -> None:
         """
@@ -750,15 +749,3 @@ class Node(PlenumNode, HasPoolManager):
             self.configReqHandler.onBatchCreated(seqNo)
         else:
             super().onBatchCreated(ledgerId, seqNo)
-
-    # def generateReply(self, ppTime: float, req: Request):
-    #     operation = req.operation
-    #     txnId = self.genTxnId(req.identifier, req.reqId)
-    #     result = {TXN_ID: txnId, TXN_TIME: int(ppTime)}
-    #     result.update(operation)
-    #     result.update({
-    #         f.IDENTIFIER.nm: req.identifier,
-    #         f.REQ_ID.nm: req.reqId,
-    #     })
-    #
-    #     return Reply(result)
