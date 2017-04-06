@@ -25,7 +25,7 @@ from plenum.common.util import error
 
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
-from ledger.ledger import Ledger
+from plenum.common.ledger import Ledger
 from sovrin_common.auth import Authoriser
 # DOMAIN_LEDGER_ID
 
@@ -74,7 +74,6 @@ class Node(PlenumNode, HasPoolManager):
                  storage=None,
                  config=None):
         self.config = config or getConfig()
-        # self.graphStore = self.getGraphStorage(name)
         # TODO: 2 ugly lines ahead, don't know how to avoid
         self.stateTreeStore = None
         self.idrCache = None
@@ -93,12 +92,9 @@ class Node(PlenumNode, HasPoolManager):
         domainState = self.getState(DOMAIN_LEDGER_ID)
         self.stateTreeStore = StateTreeStore(domainState)
 
-        self.idrCache = IdrCache(self.dataLocation, name=self.name)
-
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
 
-        # self._addTxnsToGraphIfNeeded()
         self.configLedger = self.getConfigLedger()
         self.ledgerManager.addLedger(CONFIG_LEDGER_ID, self.configLedger,
                                      postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
@@ -147,8 +143,11 @@ class Node(PlenumNode, HasPoolManager):
                         upgradeFailedCallback=self.postConfigLedgerCaughtUp)
 
     def getDomainReqHandler(self):
+        if self.idrCache is None:
+            self.idrCache = IdrCache(self.dataLocation, name=self.name)
         return DomainReqHandler(self.domainLedger,
                                 self.states[DOMAIN_LEDGER_ID],
+                                self.idrCache,
                                 self.reqProcessors)
 
     def getConfigLedger(self):
@@ -310,9 +309,11 @@ class Node(PlenumNode, HasPoolManager):
         typ = operation.get(TXN_TYPE)
         ledgerId = self.ledgerId(typ)
         if ledgerId == DOMAIN_LEDGER_ID:
-            self.reqHandler.doStaticValidation(identifier, reqId, operation)
+            self.reqHandler.doStaticValidation(identifier, reqId,
+                                               operation)
         if ledgerId == CONFIG_LEDGER_ID:
-            self.reqHandler.doStaticValidation(identifier, reqId, operation)
+            self.configReqHandler.doStaticValidation(identifier, reqId,
+                                                     operation)
 
         #     if not (not operation.get(TARGET_NYM) or
         #             self.graphStore.hasNym(operation[TARGET_NYM])):
@@ -356,7 +357,9 @@ class Node(PlenumNode, HasPoolManager):
     def checkRequestAuthorized(self, request: Request):
         op = request.operation
         typ = op[TXN_TYPE]
+
         s = self.graphStore  # type: identity_graph.IdentityGraph
+
         origin = request.identifier
 
         if typ == NYM:
@@ -397,18 +400,18 @@ class Node(PlenumNode, HasPoolManager):
                                 raise UnauthorizedClientRequest(
                                     request.identifier,
                                     request.reqId,
-                                    "{} cannot update {}".format(originRole, key))
+                                    "{} cannot update {}".format(originRole,
+                                                                 key))
 
         elif typ == ATTRIB:
             if op.get(TARGET_NYM) and \
-                op[TARGET_NYM] != request.identifier and \
+                            op[TARGET_NYM] != request.identifier and \
                     not s.getOwnerFor(op[TARGET_NYM]) == origin:
-
                 raise UnauthorizedClientRequest(
-                        request.identifier,
-                        request.reqId,
-                        "Only identity owner/guardian can add attribute "
-                        "for that identity")
+                    request.identifier,
+                    request.reqId,
+                    "Only identity owner/guardian can add attribute "
+                    "for that identity")
 
         # TODO: Just for now. Later do something meaningful here
         elif typ in [DISCLO, GET_ATTR, SCHEMA, GET_SCHEMA, ISSUER_KEY,
@@ -431,7 +434,8 @@ class Node(PlenumNode, HasPoolManager):
             # TODO: Some validation needed for making sure name and version
             # present
             status = self.upgrader.statusInLedger(request.operation.get(NAME),
-                                                  request.operation.get(VERSION))
+                                                  request.operation.get(
+                                                      VERSION))
 
             r, msg = Authoriser.authorised(POOL_UPGRADE, ACTION, originRole,
                                            oldVal=status, newVal=action)
@@ -441,17 +445,17 @@ class Node(PlenumNode, HasPoolManager):
                     request.reqId,
                     "{} cannot do {}".format(originRole, POOL_UPGRADE))
 
-    def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
-        nym = msg.get(TARGET_NYM)
-        if self.graphStore.hasNym(nym):
-            if not self.graphStore.hasTrustee(identifier) and \
-                            self.graphStore.getOwnerFor(nym) != identifier:
-                    reason = '{} is neither Trustee nor owner of {}'.format(identifier, nym)
-                    return False, reason
-        return True, ''
+    # def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
+    #     nym = msg.get(TARGET_NYM)
+    #     if self.graphStore.hasNym(nym):
+    #         if not self.graphStore.hasTrustee(identifier) and \
+    #                         self.graphStore.getOwnerFor(nym) != identifier:
+    #                 reason = '{} is neither Trustee nor owner of {}'.format(identifier, nym)
+    #                 return False, reason
+    #     return True, ''
 
     def defaultAuthNr(self):
-        return TxnBasedAuthNr(self.idrCache, self.stateTreeStore)
+        return TxnBasedAuthNr(self.idrCache)
 
     def defaultNodeAuthNr(self):
         return NodeAuthNr(self.poolLedger)
@@ -588,8 +592,9 @@ class Node(PlenumNode, HasPoolManager):
         if request.operation[TXN_TYPE] == GET_NYM:
             self.processGetNymReq(request, frm)
         # TODO: Come back to it
-        # elif request.operation[TXN_TYPE] == GET_TXNS:
-        #     self.processGetTxnReq(request, frm)
+        elif request.operation[TXN_TYPE] == GET_TXNS:
+            # self.processGetTxnReq(request, frm)
+            return
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
             self.processGetSchemaReq(request, frm)
         elif request.operation[TXN_TYPE] == GET_ATTR:
@@ -719,19 +724,32 @@ class Node(PlenumNode, HasPoolManager):
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        if req.operation[TXN_TYPE] == NYM:
-            s, reason = self.canNymRequestBeProcessed(req.identifier, req.operation)
-            if not s:
-                if req.key in self.requestSender:
-                    self.transmitToClient(RequestNack(*req.key, reason),
-                                          self.requestSender.pop(req.key))
-                return
-        reply = self.generateReply(int(ppTime), req)
-        self.storeTxnAndSendToClient(reply)
-        if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
-            # Currently config ledger has only code update related changes
-            # so transaction goes to Upgrader
-            self.upgrader.handleUpgradeTxn(reply.result)
+        # if req.operation[TXN_TYPE] == NYM:
+        #     s, reason = self.canNymRequestBeProcessed(req.identifier,
+        #                                               req.operation)
+        #     if not s:
+        #         if req.key in self.requestSender:
+        #             self.transmitToClient(RequestNack(*req.key, reason),
+        #                                   self.requestSender.pop(req.key))
+        #         return
+        # reply = self.generateReply(int(ppTime), req)
+        # self.storeTxnAndSendToClient(reply)
+        # if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
+        #     # Currently config ledger has only code update related changes
+        #     # so transaction goes to Upgrader
+        #     self.upgrader.handleUpgradeTxn(reply.result)
+        committedTxns = self.reqHandler.commit(len(reqs), stateRoot, txnRoot)
+        for txn in committedTxns:
+            if txn[TXN_TYPE] == NYM:
+                self.addNewRole(txn)
+                # self.cacheVerkey(txn)
+        self.sendRepliesToClients(committedTxns, ppTime)
+
+    def onBatchCreated(self, ledgerId, seqNo):
+        if ledgerId == CONFIG_LEDGER_ID:
+            self.configReqHandler.onBatchCreated(seqNo)
+        else:
+            super().onBatchCreated(ledgerId, seqNo)
 
     # def generateReply(self, ppTime: float, req: Request):
     #     operation = req.operation
