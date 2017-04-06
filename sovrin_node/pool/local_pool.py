@@ -1,7 +1,6 @@
 import os
 from collections import deque
 
-from plenum.common.keygen_utils import initNodeKeysForBothStacks
 from plenum.common.member.steward import Steward
 from plenum.common.test_network_setup import TestNetworkSetup
 from plenum.common.constants import TYPE, NODE, NYM
@@ -49,7 +48,7 @@ def create_local_pool(base_dir, node_size=4, looper=None):
 
         genesis_txns += s.generate_genesis_txns()
 
-    pool = LocalPool(genesis_txns, base_dir, steward=stewards[0])
+    pool = LocalPool(genesis_txns, pool_dir, steward=stewards[0])
 
     for c in node_conf:
         n = Node(**c)
@@ -89,10 +88,8 @@ class LocalPool(Pool, Looper):
     def steward_agent(self):
         return self._steward_agent
 
-
-
-    def setup_local_node(self, name, sigseed, override=True):
-        _, verkey = initLocalKeep(name, self.base_dir, sigseed, override)
+    # def setup_local_node(self, name, sigseed, override=True):
+    #     _, verkey = initNodeKeysForBothStacks(name, self.base_dir, sigseed, override)
 
     def _generate_genesis_files(self):
 
