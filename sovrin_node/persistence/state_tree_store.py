@@ -21,8 +21,8 @@ class StateTreeStore:
     MARKER_ATTR = "\01"
     MARKER_SCHEMA = "\02"
     MARKER_IPK = "\03"
-    LAST_SEQ_NO = "last_seq_no"
-    VALUE = "value"
+    LAST_SEQ_NO = "lsn"
+    VALUE = "val"
 
     REQUIRED_TXN_FIELDS = {
         TXN_TYPE,
@@ -42,9 +42,12 @@ class StateTreeStore:
         :return: data
         """
         assert path is not None
-        raw = self.state.get(path, isCommitted).decode()
-        value = raw[self.VALUE]
-        lastSeqNo = raw[self.LAST_SEQ_NO]
+        raw = self.state.get(path, isCommitted)
+        if raw is None:
+            return None, None
+        raw = raw.decode()
+        value = raw.get(self.VALUE)
+        lastSeqNo = raw.get(self.LAST_SEQ_NO)
         return value, lastSeqNo
 
     def addTxn(self, txn) -> None:
