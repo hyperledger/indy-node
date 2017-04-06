@@ -25,7 +25,7 @@ from plenum.common.util import error
 
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
-from ledger.ledger import Ledger
+from plenum.common.ledger import Ledger
 from sovrin_common.auth import Authoriser
 # DOMAIN_LEDGER_ID
 
