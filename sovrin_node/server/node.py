@@ -263,19 +263,6 @@ class Node(PlenumNode, HasPoolManager):
         else:
             return super().authNr(req)
 
-    def _addTxnsToGraphIfNeeded(self):
-        # TODO: should it be replaced by state tree store somehow?
-        i = 0
-        txnCountInGraph = self.graphStore.countTxns()
-        for seqNo, txn in self.domainLedger.getAllTxn().items():
-            if seqNo > txnCountInGraph:
-                txn[F.seqNo.name] = seqNo
-                self.storeTxnInGraph(txn)
-                i += 1
-        logger.debug("{} adding {} transactions to graph from ledger".
-                     format(self, i))
-        return i
-
     def isSignatureVerificationNeeded(self, msg: Any):
         op = msg.get(OPERATION)
         if op:
