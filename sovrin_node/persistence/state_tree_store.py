@@ -43,8 +43,8 @@ class StateTreeStore:
         """
         assert path is not None
         raw = self.state.get(path, isCommitted).decode()
-        value = raw[StateTreeStore.VALUE]
-        lastSeqNo = raw[StateTreeStore.LAST_SEQ_NO]
+        value = raw[self.VALUE]
+        lastSeqNo = raw[self.LAST_SEQ_NO]
         return value, lastSeqNo
 
     def addTxn(self, txn) -> None:
@@ -153,7 +153,7 @@ class StateTreeStore:
         nameHash = cls._hashOf(attrName)
         return "{DID}:{MARKER}:{ATTR_NAME}" \
             .format(DID=did,
-                    MARKER=StateTreeStore.MARKER_ATTR,
+                    MARKER=cls.MARKER_ATTR,
                     ATTR_NAME=nameHash) \
             .encode()
 
@@ -161,7 +161,7 @@ class StateTreeStore:
     def _makeSchemaPath(cls, did, schemaName, schemaVersion) -> bytes:
         return "{DID}:{MARKER}:{SCHEMA_NAME}{SCHEMA_VERSION}" \
             .format(DID=did,
-                    MARKER=StateTreeStore.MARKER_SCHEMA,
+                    MARKER=cls.MARKER_SCHEMA,
                     SCHEMA_NAME=schemaName,
                     SCHEMA_VERSION=schemaVersion) \
             .encode()
@@ -170,13 +170,13 @@ class StateTreeStore:
     def _makeIssuerKeyPath(cls, did, schemaSeqNo) -> bytes:
         return "{DID}:{MARKER}:{SCHEMA_SEQ_NO}" \
                    .format(DID=did,
-                           MARKER=StateTreeStore.MARKER_IPK,
+                           MARKER=cls.MARKER_IPK,
                            SCHEMA_SEQ_NO=schemaSeqNo)\
                    .encode()
 
     @classmethod
     def _encodeValue(cls, value, seqNo):
         return json.dumps({
-            StateTreeStore.LAST_SEQ_NO: seqNo,
-            StateTreeStore.VALUE: value
+            cls.LAST_SEQ_NO: seqNo,
+            cls.VALUE: value
         }).encode()
