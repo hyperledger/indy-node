@@ -520,7 +520,7 @@ class Node(PlenumNode, HasPoolManager):
     def processGetSchemaReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
         issuerDid = request.operation[TARGET_NYM]
-        schema = self.stateTreeStore.getSchema(
+        schema, lastSeqNo = self.stateTreeStore.getSchema(
             did=issuerDid,
             schemaName=(request.operation[DATA][NAME]),
             schemaVersion=(request.operation[DATA][VERSION])
@@ -529,6 +529,7 @@ class Node(PlenumNode, HasPoolManager):
             DATA: schema,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
+            f.SEQ_NO: lastSeqNo
         }}
         self.transmitToClient(Reply(result), frm)
 
@@ -536,26 +537,21 @@ class Node(PlenumNode, HasPoolManager):
         self.transmitToClient(RequestAck(*request.key), frm)
         attrName = request.operation[RAW]
         nym = request.operation[TARGET_NYM]
-        attrValue = self.stateTreeStore.getAttr(did=nym, key=attrName)
-
-        # TODO: Implement selecting of seqNo
-        # When graphStore was used it was a part of getRawAttr result, but
-        # StateTreeStore does not store seqNo
-        seqNo = "not implemented!"
-
+        attrValue, lastSeqNo = \
+            self.stateTreeStore.getAttr(did=nym, key=attrName)
         result = {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId
+            f.REQ_ID.nm: request.reqId,
         }}
         if attrValue is not None:
             attr = json.dumps({attrName: attrValue}, sort_keys=True)
             result[DATA] = attr
-            result[f.SEQ_NO.nm] = seqNo
+            result[f.SEQ_NO.nm] = lastSeqNo
         self.transmitToClient(Reply(result), frm)
 
     def processGetIssuerKeyReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys = self.stateTreeStore.getIssuerKey(
+        keys, lastSeqNo = self.stateTreeStore.getIssuerKey(
             did=request.operation[ORIGIN],
             schemaSeqNo=request.operation[REF]
         )
@@ -563,6 +559,7 @@ class Node(PlenumNode, HasPoolManager):
             DATA: keys,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
+            f.SEQ_NO.nm: lastSeqNo
         }}
         self.transmitToClient(Reply(result), frm)
 
@@ -654,7 +651,6 @@ class Node(PlenumNode, HasPoolManager):
                          format(txn[TXN_TYPE]))
 
     def storeTxnInStateTree(self, txn) -> None:
-        did = txn[TARGET_NYM]
         self.stateTreeStore.addTxn(txn)
 
     def storeTxnInGraph(self, txn) -> None:
