@@ -518,23 +518,18 @@ class Node(PlenumNode, HasPoolManager):
     #         self.transmitToClient(Reply(result), frm)
 
     def processGetSchemaReq(self, request: Request, frm: str):
+        self.transmitToClient(RequestAck(*request.key), frm)
         issuerDid = request.operation[TARGET_NYM]
         schema = self.stateTreeStore.getSchema(
             did=issuerDid,
             schemaName=(request.operation[DATA][NAME]),
             schemaVersion=(request.operation[DATA][VERSION])
         )
-        result = {
-            TXN_ID: self.genTxnId(request.identifier, request.reqId),
-        }
-        result.update(request.operation)
-
-        rs = {
-            TXN_ID: self.genTxnId(request.identifier, request.reqId),
+        result = {**request.operation, **{
             DATA: schema,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
-        }
+        }}
         self.transmitToClient(Reply(result), frm)
 
     def processGetAttrsReq(self, request: Request, frm: str):
