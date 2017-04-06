@@ -654,23 +654,16 @@ class Node(PlenumNode, HasPoolManager):
         self.stateTreeStore.addTxn(txn)
 
     def storeTxnInGraph(self, txn) -> None:
-        txn = deepcopy(txn)
-        # Remove root hash and audit path from result if present since they can
-        # be generated on the fly from the ledger so no need to store it
-        txn.pop(F.rootHash.name, None)
-        txn.pop(F.auditPath.name, None)
-
         if txn[TXN_TYPE] == NYM:
+            txn = deepcopy(txn)
+            # Remove root hash and audit path from result if present since they can
+            # be generated on the fly from the ledger so no need to store it
+            txn.pop(F.rootHash.name, None)
+            txn.pop(F.auditPath.name, None)
             self.graphStore.addNymTxnToGraph(txn)
-        elif txn[TXN_TYPE] == ATTRIB:
-            self.graphStore.addAttribTxnToGraph(txn)
-        elif txn[TXN_TYPE] == SCHEMA:
-            self.graphStore.addSchemaTxnToGraph(txn)
-        elif txn[TXN_TYPE] == ISSUER_KEY:
-            self.graphStore.addIssuerKeyTxnToGraph(txn)
         else:
-            logger.debug("Got an unknown type {} to process".
-                         format(txn[TXN_TYPE]))
+            logger.debug("Only NYM can be stored in graphStore for now, "
+                         "but {} was passed".format(txn[TXN_TYPE]))
 
     def getReplyFor(self, request):
         typ = request.operation.get(TXN_TYPE)
