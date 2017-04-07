@@ -1,10 +1,13 @@
 import json
+from binascii import unhexlify
+from typing import List
 
-from plenum.common.exceptions import InvalidClientRequest
+from plenum.common.exceptions import InvalidClientRequest, \
+    UnauthorizedClientRequest
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, VERKEY, \
-    GUARDIAN
+    GUARDIAN, DATA, STEWARD
 from plenum.common.txn_util import reqToTxn
-from plenum.common.types import f
+from plenum.common.types import f, RequestAck, Reply
 from plenum.common.util import check_endpoint_valid
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
@@ -17,6 +20,14 @@ class DomainReqHandler(PHandler):
     def __init__(self, ledger, state, idrCache, requestProcessor):
         super().__init__(ledger, state, requestProcessor)
         self.idrCache = idrCache
+
+    def onBatchCreated(self, stateRoot):
+        self.idrCache.currentBatchCreated(stateRoot)
+
+    def commit(self, txnCount, stateRoot, txnRoot) -> List:
+        r = super().commit(txnCount, stateRoot, txnRoot)
+        self.idrCache.onBatchCommitted(unhexlify(stateRoot.encode()))
+        return r
 
     def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
         nym = msg.get(TARGET_NYM)
@@ -74,10 +85,67 @@ class DomainReqHandler(PHandler):
                                            'attribute for it'.
                                            format(TARGET_NYM))
 
+    def validate(self, req: Request, config=None):
+        op = req.operation
+        typ = op[TXN_TYPE]
+
+        s = self.idrCache
+
+        origin = req.identifier
+
+        if typ == NYM:
+            try:
+                originRole = s.getRole(origin, isCommitted=False) or None
+            except:
+                raise UnauthorizedClientRequest(
+                    req.identifier,
+                    req.reqId,
+                    "Nym {} not added to the ledger yet".format(origin))
+
+            nymData = s.getNym(op[TARGET_NYM], isCommitted=False)
+            if not nymData:
+                # If nym does not exist
+                role = op.get(ROLE)
+                r, msg = Authoriser.authorised(NYM, ROLE, originRole,
+                                               oldVal=None, newVal=role)
+                if not r:
+                    raise UnauthorizedClientRequest(
+                        req.identifier,
+                        req.reqId,
+                        "{} cannot add {}".format(originRole, role))
+            else:
+                owner = s.getOwnerFor(op[TARGET_NYM])
+                isOwner = origin == owner
+                updateKeys = [ROLE, VERKEY]
+                for key in updateKeys:
+                    if key in op:
+                        newVal = op[key]
+                        oldVal = nymData.get(key)
+                        if oldVal != newVal:
+                            r, msg = Authoriser.authorised(NYM, key, originRole,
+                                                           oldVal=oldVal,
+                                                           newVal=newVal,
+                                                           isActorOwnerOfSubject=isOwner)
+                            if not r:
+                                raise UnauthorizedClientRequest(
+                                    req.identifier,
+                                    req.reqId,
+                                    "{} cannot update {}".format(originRole,
+                                                                 key))
+
+        elif typ == ATTRIB:
+            if op.get(TARGET_NYM) and \
+                            op[TARGET_NYM] != req.identifier and \
+                    not s.getOwnerFor(op[TARGET_NYM]) == origin:
+                raise UnauthorizedClientRequest(
+                    req.identifier,
+                    req.reqId,
+                    "Only identity owner/guardian can add attribute "
+                    "for that identity")
+
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
-        guardian = updatedData.get(f.IDENTIFIER.nm) if updatedData.get(VERKEY) is None else None
-        self.idrCache.set(nym, guardian=guardian,
+        self.idrCache.set(nym, ta=updatedData.get(f.IDENTIFIER.nm),
                           verkey=data.get(VERKEY),
                           role=data.get(ROLE),
                           isCommitted=isCommitted)
@@ -85,5 +153,17 @@ class DomainReqHandler(PHandler):
     def hasNym(self, nym, isCommitted: bool = True):
         return self.idrCache.hasNym(nym, isCommitted=isCommitted)
 
-    def onBatchCreated(self, seqNo):
-        self.idrCache.currentBatchCreated(seqNo)
+    def handleGetNymReq(self, request: Request, frm: str):
+        nym = request.operation[TARGET_NYM]
+        nymData = self.idrCache.getNym(nym, isCommitted=True)
+        # TODO: We should have a single JSON encoder which does the
+        # encoding for us, like sorting by keys, handling datetime objects.
+        if nymData:
+            nymData[TARGET_NYM] = nym
+            data = json.dumps(nymData, sort_keys=True)
+        else:
+            data = None
+        result = {f.IDENTIFIER.nm: request.identifier,
+                  f.REQ_ID.nm: request.reqId, DATA: data}
+        result.update(request.operation)
+        return result

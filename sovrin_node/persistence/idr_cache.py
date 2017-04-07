@@ -5,6 +5,7 @@ from collections import OrderedDict
 import rlp
 
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, GUARDIAN
+from plenum.common.types import f
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
 from stp_core.common.log import getlogger
 
@@ -13,9 +14,8 @@ logger = getlogger()
 
 class IdrCache:
     """
-    A cache to store a role and verkey of an identifier, this is only used to
-    store committed data, if a lookup results in a miss,
-    state trie must be checked.
+    A cache to store a role and verkey of an identifier, the db is only used to
+    store committed data, uncommitted data goes to memory
     The key is the identifier and value is a pack of fields
     The first byte indicates whether the identifier has a guardian or not,
     if it has then the next few bytes will be the guardian's identifier
@@ -25,9 +25,7 @@ class IdrCache:
     Value in case of no guardian: '\1<verkey of the DID>\0<role of the DID>'
     """
 
-    roleSep = b'\0' # This byte should not be present in any of the role values
-    ownerPrefix = b'\1'
-    guardianPrefix = b'\2'
+    unsetVerkey = b'-'
 
     def __init__(self, basedir: str, name):
         logger.debug('Initializing identity cache {} at {}'
@@ -36,14 +34,30 @@ class IdrCache:
         self._name = name
         self._db = None
         self.open()
-        # OrderedDict where key is the batch seqNo and value is a
+        # OrderedDict where key is the state root after batch and value is a
         # dictionary similar to cache which can be queried like the
         # database, i.e `self._db`. Keys (state roots are purged) when they
         # get committed or reverted.
-        self.unCommitted = OrderedDict() # type: Dict[int, OrderedDict]
+        self.unCommitted = OrderedDict() # type: Dict[bytes, OrderedDict]
 
         # Relevant NYMs operation done in current batch, in order
         self.currentBatchOps = []   # type: List[Tuple]
+
+    @staticmethod
+    def encodeVerkey(verkey):
+        if verkey is None:
+            return IdrCache.unsetVerkey
+        else:
+            if isinstance(verkey, str):
+                return verkey.encode()
+            return verkey
+
+    @staticmethod
+    def decodeVerkey(verkey):
+        if verkey == IdrCache.unsetVerkey:
+            return None
+        else:
+            return verkey.decode()
 
     @staticmethod
     def getPrefixAndIv(guardian=None, verkey=None):
@@ -53,18 +67,19 @@ class IdrCache:
         return prefix, iv
 
     @staticmethod
-    def packIdrValue(role=None, verkey=None, guardian=None):
-        prefix, iv = IdrCache.getPrefixAndIv(guardian, verkey)
+    def packIdrValue(ta=None, role=None, verkey=None):
+        # prefix, iv = IdrCache.getPrefixAndIv(guardian, verkey)
+        if ta is None:
+            ta = b''
         if role is None:
             role = b''
-        if iv is None:
-            iv = b''
+        verkey = IdrCache.encodeVerkey(verkey)
         # return '{}{}{}{}'.format(prefix, iv, IdrCache.roleSep, role).encode()
-        return rlp.encode([prefix, iv, role])
+        return rlp.encode([ta, verkey, role])
 
     @staticmethod
     def unpackIdrValue(value):
-        hasGuardian = None
+        # hasGuardian = None
         # part, role = value.rsplit(IdrCache.roleSep, 1)
         # if part:
         #     if part[0] == IdrCache.ownerPrefix:
@@ -75,9 +90,8 @@ class IdrCache:
         #         guardian = part[1:]
         #     else:
         #         assert 'No acceptable prefix found while parsing {}'.format(part)
-        prf, iv, role = rlp.decode(value)
-        hasGuardian = True if prf == b'1' else False
-        return hasGuardian, iv, role
+        ta, verkey, role = rlp.decode(value)
+        return ta.decode(), IdrCache.decodeVerkey(verkey), role.decode()
 
     def get(self, idr, isCommitted=True):
         idr = idr.encode()
@@ -92,19 +106,12 @@ class IdrCache:
                     break
             else:
                 value = self._db.Get(idr)
-        hasGuardian, iv, r = self.unpackIdrValue(value)
-        return hasGuardian, iv.decode(), r.decode()
+        ta, iv, r = self.unpackIdrValue(value)
+        return ta, iv, r
 
-    def set(self, idr, guardian=None, verkey=None, role=None, isCommitted=True):
+    def set(self, idr, ta=None, verkey=None, role=None, isCommitted=True):
         idr = idr.encode()
-        if isinstance(guardian, str):
-            guardian = guardian.encode()
-        if isinstance(verkey, str):
-            verkey = verkey.encode()
-        if isinstance(role, str):
-            role = role.encode()
-
-        val = self.packIdrValue(role, verkey, guardian)
+        val = self.packIdrValue(ta, role, verkey)
         if isCommitted:
             self._db.Put(idr, val)
         else:
@@ -120,28 +127,27 @@ class IdrCache:
     def dbName(self):
         return os.path.join(self._basedir, self._name)
 
-    def currentBatchCreated(self, seqNo):
-        self.unCommitted[seqNo] = OrderedDict(self.currentBatchOps)
+    def currentBatchCreated(self, stateRoot):
+        self.unCommitted[stateRoot] = OrderedDict(self.currentBatchOps)
         self.currentBatchOps = []
+
+    def onBatchCommitted(self, stateRoot):
+        for idr, val in self.unCommitted[stateRoot].items():
+            self._db.Put(idr, val)
+        self.unCommitted.pop(stateRoot)
 
     def setVerkey(self, idr, verkey):
         # This method acts as if guardianship is being terminated.
         _, _, role = self.get(idr)
-        self.set(idr, guardian=None, verkey=verkey, role=role)
+        self.set(idr, ta=None, verkey=verkey, role=role)
 
     def setRole(self, idr, role):
-        hasGuardian, iv, _ = self.get(idr)
-        if hasGuardian:
-            g = iv
-            v = None
-        else:
-            g = None
-            v = iv
-        self.set(idr, guardian=g, verkey=v, role=role)
+        ta, v, _ = self.get(idr)
+        self.set(idr, ta=ta, verkey=v, role=role)
 
     def getVerkey(self, idr, isCommitted=True):
-        hasGuardian, iv, role = self.get(idr, isCommitted=isCommitted)
-        return '' if hasGuardian else iv
+        _, v, _ = self.get(idr, isCommitted=isCommitted)
+        return v
 
     def getRole(self, idr, isCommitted=True):
         _, _, role = self.get(idr, isCommitted=isCommitted)
@@ -156,17 +162,16 @@ class IdrCache:
         :return:
         """
         try:
-            hasGuardian, iv, r = self.get(nym, isCommitted)
+            ta, verkey, r = self.get(nym, isCommitted)
         except KeyError:
             return None
         if role and role != r:
             return None
-        rv = {ROLE: r}
-        if hasGuardian:
-            rv[GUARDIAN] = iv
-        else:
-            rv[VERKEY] = iv
-        return rv
+        return {
+            ROLE: r,
+            VERKEY: verkey,
+            f.IDENTIFIER.nm: ta if ta else None
+        }
 
     def getTrustee(self, nym, isCommitted=True):
         return self.getNym(nym, TRUSTEE, isCommitted=isCommitted)
@@ -184,7 +189,7 @@ class IdrCache:
         return bool(self.getTrustee(nym, isCommitted=isCommitted))
 
     def hasTGB(self, nym, isCommitted=True):
-        return bool(self.getTGB(nym))
+        return bool(self.getTGB(nym, isCommitted=isCommitted))
 
     def hasSteward(self, nym, isCommitted=True):
         return bool(self.getSteward(nym, isCommitted=isCommitted))
@@ -198,8 +203,8 @@ class IdrCache:
     def getOwnerFor(self, nym, isCommitted=True):
         nymData = self.getNym(nym, isCommitted=isCommitted)
         if nymData:
-            if VERKEY not in nymData:
-                return nymData[GUARDIAN]
+            if nymData.get(VERKEY) is None:
+                return nymData[f.IDENTIFIER.nm]
             else:
                 return nym
         logger.error('Nym {} not found'.format(nym))

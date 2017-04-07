@@ -163,7 +163,8 @@ class Node(PlenumNode, HasPoolManager):
 
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,
-                                self.states[CONFIG_LEDGER_ID])
+                                self.states[CONFIG_LEDGER_ID],
+                                self.idrCache, self.poolManager)
 
     def initConfigState(self):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
@@ -216,7 +217,6 @@ class Node(PlenumNode, HasPoolManager):
                     VERSION: lastUpgradeVersion
                 }
             }
-
             op[DATA][ACTION] = COMPLETE if \
                 self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
             op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -233,8 +233,8 @@ class Node(PlenumNode, HasPoolManager):
         if request.operation[TXN_TYPE] == NODE_UPGRADE:
             try:
                 self.nodeAuthNr.authenticate(request.operation[DATA],
-                                         request.identifier,
-                                         request.operation[f.SIG.nm])
+                                             request.identifier,
+                                             request.operation[f.SIG.nm])
             except:
                 # TODO: Do something here
                 return
@@ -268,18 +268,18 @@ class Node(PlenumNode, HasPoolManager):
         else:
             return super().authNr(req)
 
-    def _addTxnsToGraphIfNeeded(self):
-        # TODO: should it be replaced by state tree store somehow?
-        i = 0
-        txnCountInGraph = self.graphStore.countTxns()
-        for seqNo, txn in self.domainLedger.getAllTxn().items():
-            if seqNo > txnCountInGraph:
-                txn[F.seqNo.name] = seqNo
-                self.storeTxnInGraph(txn)
-                i += 1
-        logger.debug("{} adding {} transactions to graph from ledger".
-                     format(self, i))
-        return i
+    # def _addTxnsToGraphIfNeeded(self):
+    #     # TODO: should it be replaced by state tree store somehow?
+    #     i = 0
+    #     txnCountInGraph = self.graphStore.countTxns()
+    #     for seqNo, txn in self.domainLedger.getAllTxn().items():
+    #         if seqNo > txnCountInGraph:
+    #             txn[F.seqNo.name] = seqNo
+    #             self.storeTxnInGraph(txn)
+    #             i += 1
+    #     logger.debug("{} adding {} transactions to graph from ledger".
+    #                  format(self, i))
+    #     return i
 
     def isSignatureVerificationNeeded(self, msg: Any):
         op = msg.get(OPERATION)
@@ -357,67 +357,67 @@ class Node(PlenumNode, HasPoolManager):
     def checkRequestAuthorized(self, request: Request):
         op = request.operation
         typ = op[TXN_TYPE]
-
-        s = self.graphStore  # type: identity_graph.IdentityGraph
-
         origin = request.identifier
 
-        if typ == NYM:
-            try:
-                originRole = s.getRole(origin)
-            except:
-                raise UnauthorizedClientRequest(
-                    request.identifier,
-                    request.reqId,
-                    "Nym {} not added to the ledger yet".format(origin))
-
-            nymV = self.graphStore.getNym(op[TARGET_NYM])
-            if not nymV:
-                # If nym does not exist
-                role = op.get(ROLE)
-                r, msg = Authoriser.authorised(NYM, ROLE, originRole,
-                                               oldVal=None, newVal=role)
-                if not r:
-                    raise UnauthorizedClientRequest(
-                        request.identifier,
-                        request.reqId,
-                        "{} cannot add {}".format(originRole, role))
-            else:
-                nymData = nymV.oRecordData
-                owner = self.graphStore.getOwnerFor(nymData.get(NYM_KEY))
-                isOwner = origin == owner
-                updateKeys = [ROLE, VERKEY]
-                for key in updateKeys:
-                    if key in op:
-                        newVal = op[key]
-                        oldVal = nymData.get(key)
-                        if oldVal != newVal:
-                            r, msg = Authoriser.authorised(NYM, key, originRole,
-                                                           oldVal=oldVal,
-                                                           newVal=newVal,
-                                                           isActorOwnerOfSubject=isOwner)
-                            if not r:
-                                raise UnauthorizedClientRequest(
-                                    request.identifier,
-                                    request.reqId,
-                                    "{} cannot update {}".format(originRole,
-                                                                 key))
-
-        elif typ == ATTRIB:
-            if op.get(TARGET_NYM) and \
-                            op[TARGET_NYM] != request.identifier and \
-                    not s.getOwnerFor(op[TARGET_NYM]) == origin:
-                raise UnauthorizedClientRequest(
-                    request.identifier,
-                    request.reqId,
-                    "Only identity owner/guardian can add attribute "
-                    "for that identity")
-
-        # TODO: Just for now. Later do something meaningful here
-        elif typ in [DISCLO, GET_ATTR, SCHEMA, GET_SCHEMA, ISSUER_KEY,
-                     GET_ISSUER_KEY]:
-            pass
-        elif request.operation.get(TXN_TYPE) in POOL_TXN_TYPES:
+        # s = self.graphStore  # type: identity_graph.IdentityGraph
+        #
+        #
+        # if typ == NYM:
+        #     try:
+        #         originRole = s.getRole(origin)
+        #     except:
+        #         raise UnauthorizedClientRequest(
+        #             request.identifier,
+        #             request.reqId,
+        #             "Nym {} not added to the ledger yet".format(origin))
+        #
+        #     nymV = self.graphStore.getNym(op[TARGET_NYM])
+        #     if not nymV:
+        #         # If nym does not exist
+        #         role = op.get(ROLE)
+        #         r, msg = Authoriser.authorised(NYM, ROLE, originRole,
+        #                                        oldVal=None, newVal=role)
+        #         if not r:
+        #             raise UnauthorizedClientRequest(
+        #                 request.identifier,
+        #                 request.reqId,
+        #                 "{} cannot add {}".format(originRole, role))
+        #     else:
+        #         nymData = nymV.oRecordData
+        #         owner = self.graphStore.getOwnerFor(nymData.get(NYM_KEY))
+        #         isOwner = origin == owner
+        #         updateKeys = [ROLE, VERKEY]
+        #         for key in updateKeys:
+        #             if key in op:
+        #                 newVal = op[key]
+        #                 oldVal = nymData.get(key)
+        #                 if oldVal != newVal:
+        #                     r, msg = Authoriser.authorised(NYM, key, originRole,
+        #                                                    oldVal=oldVal,
+        #                                                    newVal=newVal,
+        #                                                    isActorOwnerOfSubject=isOwner)
+        #                     if not r:
+        #                         raise UnauthorizedClientRequest(
+        #                             request.identifier,
+        #                             request.reqId,
+        #                             "{} cannot update {}".format(originRole,
+        #                                                          key))
+        #
+        # elif typ == ATTRIB:
+        #     if op.get(TARGET_NYM) and \
+        #                     op[TARGET_NYM] != request.identifier and \
+        #             not s.getOwnerFor(op[TARGET_NYM]) == origin:
+        #         raise UnauthorizedClientRequest(
+        #             request.identifier,
+        #             request.reqId,
+        #             "Only identity owner/guardian can add attribute "
+        #             "for that identity")
+        #
+        # # TODO: Just for now. Later do something meaningful here
+        # elif typ in [DISCLO, GET_ATTR, SCHEMA, GET_SCHEMA, ISSUER_KEY,
+        #              GET_ISSUER_KEY]:
+        #     pass
+        if request.operation.get(TXN_TYPE) in POOL_TXN_TYPES:
             return self.poolManager.checkRequestAuthorized(request)
 
         elif typ == POOL_UPGRADE:
@@ -464,21 +464,6 @@ class Node(PlenumNode, HasPoolManager):
         c = await super().prod(limit)
         c += self.upgrader.service()
         return c
-
-    def processGetNymReq(self, request: Request, frm: str):
-        self.transmitToClient(RequestAck(*request.key), frm)
-        nym = request.operation[TARGET_NYM]
-        txn = self.graphStore.getAddNymTxn(nym)
-        txnId = self.genTxnId(request.identifier, request.reqId)
-        # TODO: We should have a single JSON encoder which does the
-        # encoding for us, like sorting by keys, handling datetime objects.
-        result = {f.IDENTIFIER.nm: request.identifier,
-                  f.REQ_ID.nm: request.reqId,
-                  DATA: json.dumps(txn, sort_keys=True) if txn else None,
-                  TXN_ID: txnId
-                  }
-        result.update(request.operation)
-        self.transmitToClient(Reply(result), frm)
 
     # TODO: Fix it later to retrive any txns with given seqNos,
     # chunked ledger will be used.
@@ -590,7 +575,9 @@ class Node(PlenumNode, HasPoolManager):
 
     def processRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == GET_NYM:
-            self.processGetNymReq(request, frm)
+            self.transmitToClient(RequestAck(*request.key), frm)
+            result = self.reqHandler.handleGetNymReq(request, frm)
+            self.transmitToClient(Reply(result), frm)
         # TODO: Come back to it
         elif request.operation[TXN_TYPE] == GET_TXNS:
             # self.processGetTxnReq(request, frm)
@@ -745,11 +732,11 @@ class Node(PlenumNode, HasPoolManager):
                 # self.cacheVerkey(txn)
         self.sendRepliesToClients(committedTxns, ppTime)
 
-    def onBatchCreated(self, ledgerId, seqNo):
+    def onBatchCreated(self, ledgerId, stateRoot):
         if ledgerId == CONFIG_LEDGER_ID:
-            self.configReqHandler.onBatchCreated(seqNo)
+            self.configReqHandler.onBatchCreated(stateRoot)
         else:
-            super().onBatchCreated(ledgerId, seqNo)
+            super().onBatchCreated(ledgerId, stateRoot)
 
     # def generateReply(self, ppTime: float, req: Request):
     #     operation = req.operation
