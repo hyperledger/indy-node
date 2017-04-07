@@ -1,6 +1,6 @@
 import functools
 
-from ledger.ledger import Ledger
+from plenum.common.ledger import Ledger
 from plenum.common.exceptions import UnknownIdentifier
 from plenum.common.constants import TARGET_NYM, VERKEY
 from plenum.server.client_authn import NaclAuthNr

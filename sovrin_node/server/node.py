@@ -2,7 +2,6 @@ import json
 import os
 from copy import deepcopy
 from hashlib import sha256
-from operator import itemgetter
 from typing import Iterable, Any, List
 
 import pyorient
@@ -12,7 +11,6 @@ from ledger.stores.file_hash_store import FileHashStore
 from ledger.util import F
 from ledger.serializers.json_serializer import JsonSerializer
 
-from operator import itemgetter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from stp_core.common.log import getlogger
@@ -27,23 +25,20 @@ from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from plenum.common.ledger import Ledger
 from sovrin_common.auth import Authoriser
-# DOMAIN_LEDGER_ID
 
 from plenum.common.state import PruningState
 
 
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import allOpKeys, ATTRIB, NYM,\
-    ROLE, GET_ATTR, DISCLO, GET_NYM, reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
+    ROLE, GET_ATTR, DISCLO, GET_NYM, reqOpKeys, GET_TXNS, \
     SCHEMA, GET_SCHEMA,\
-    ISSUER_KEY, GET_ISSUER_KEY, REF, TGB, POOL_UPGRADE, ACTION, \
+    ISSUER_KEY, GET_ISSUER_KEY, REF, POOL_UPGRADE, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL
 from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
-from sovrin_common.util import dateTimeEncoding
 from sovrin_common.persistence import identity_graph
 from sovrin_node.persistence.idr_cache import IdrCache
-from sovrin_node.persistence.secondary_storage import SecondaryStorage
 from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.config_req_handler import ConfigReqHandler
 from sovrin_node.server.constants import CONFIG_LEDGER_ID, openTxns, \
@@ -268,19 +263,6 @@ class Node(PlenumNode, HasPoolManager):
             return self.nodeAuthNr
         else:
             return super().authNr(req)
-
-    # def _addTxnsToGraphIfNeeded(self):
-    #     # TODO: should it be replaced by state tree store somehow?
-    #     i = 0
-    #     txnCountInGraph = self.graphStore.countTxns()
-    #     for seqNo, txn in self.domainLedger.getAllTxn().items():
-    #         if seqNo > txnCountInGraph:
-    #             txn[F.seqNo.name] = seqNo
-    #             self.storeTxnInGraph(txn)
-    #             i += 1
-    #     logger.debug("{} adding {} transactions to graph from ledger".
-    #                  format(self, i))
-    #     return i
 
     def isSignatureVerificationNeeded(self, msg: Any):
         op = msg.get(OPERATION)
@@ -510,68 +492,49 @@ class Node(PlenumNode, HasPoolManager):
     #         self.transmitToClient(Reply(result), frm)
 
     def processGetSchemaReq(self, request: Request, frm: str):
+        self.transmitToClient(RequestAck(*request.key), frm)
         issuerDid = request.operation[TARGET_NYM]
-        schema = self.stateTreeStore.getSchema(
+        schema, lastSeqNo = self.stateTreeStore.getSchema(
             did=issuerDid,
             schemaName=(request.operation[DATA][NAME]),
             schemaVersion=(request.operation[DATA][VERSION])
         )
-        result = {
-            TXN_ID: self.genTxnId(request.identifier, request.reqId)
-        }
-        result.update(request.operation)
-        result[DATA] = schema
-        result.update({
+        result = {**request.operation, **{
+            DATA: schema,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
-        })
+            f.SEQ_NO: lastSeqNo
+        }}
         self.transmitToClient(Reply(result), frm)
 
     def processGetAttrsReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
         attrName = request.operation[RAW]
         nym = request.operation[TARGET_NYM]
-
-        attrValue = self.stateTreeStore.getAttr(
-            did=nym,
-            key=attrName
-        )
-
-        # TODO: Implement selecting of seqNo
-        # When graphStore was used it was a part of getRawAttr result, but
-        # StateTreeStore does not store seqNo
-        seqNo = "not implemented!"
-
-        result = {
-            TXN_ID: self.genTxnId(
-                request.identifier, request.reqId)
-        }
-        if attrValue:
-            attr = {attrName: attrValue}
-            result[DATA] = json.dumps(attr, sort_keys=True)
-            result[f.SEQ_NO.nm] = seqNo
-        result.update(request.operation)
-        result.update({
+        attrValue, lastSeqNo = \
+            self.stateTreeStore.getAttr(did=nym, key=attrName)
+        result = {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
-        })
+        }}
+        if attrValue is not None:
+            attr = json.dumps({attrName: attrValue}, sort_keys=True)
+            result[DATA] = attr
+            result[f.SEQ_NO.nm] = lastSeqNo
         self.transmitToClient(Reply(result), frm)
 
     def processGetIssuerKeyReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys = self.stateTreeStore.getIssuerKey(
+        keys, lastSeqNo = self.stateTreeStore.getIssuerKey(
             did=request.operation[ORIGIN],
             schemaSeqNo=request.operation[REF]
         )
-        result = {
-            TXN_ID: self.genTxnId(request.identifier, request.reqId)
-        }
-        result.update(request.operation)
-        result[DATA] = keys
-        result.update({
+        result = {**request.operation, **{
+            DATA: keys,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
-        })
+            f.SEQ_NO.nm: lastSeqNo
+        }}
         self.transmitToClient(Reply(result), frm)
 
     def processRequest(self, request: Request, frm: str):
@@ -664,27 +627,19 @@ class Node(PlenumNode, HasPoolManager):
                          format(txn[TXN_TYPE]))
 
     def storeTxnInStateTree(self, txn) -> None:
-        did = txn[TARGET_NYM]
         self.stateTreeStore.addTxn(txn)
 
     def storeTxnInGraph(self, txn) -> None:
-        txn = deepcopy(txn)
-        # Remove root hash and audit path from result if present since they can
-        # be generated on the fly from the ledger so no need to store it
-        txn.pop(F.rootHash.name, None)
-        txn.pop(F.auditPath.name, None)
-
         if txn[TXN_TYPE] == NYM:
+            txn = deepcopy(txn)
+            # Remove root hash and audit path from result if present since they can
+            # be generated on the fly from the ledger so no need to store it
+            txn.pop(F.rootHash.name, None)
+            txn.pop(F.auditPath.name, None)
             self.graphStore.addNymTxnToGraph(txn)
-        elif txn[TXN_TYPE] == ATTRIB:
-            self.graphStore.addAttribTxnToGraph(txn)
-        elif txn[TXN_TYPE] == SCHEMA:
-            self.graphStore.addSchemaTxnToGraph(txn)
-        elif txn[TXN_TYPE] == ISSUER_KEY:
-            self.graphStore.addIssuerKeyTxnToGraph(txn)
         else:
-            logger.debug("Got an unknown type {} to process".
-                         format(txn[TXN_TYPE]))
+            logger.debug("Only NYM can be stored in graphStore for now, "
+                         "but {} was passed".format(txn[TXN_TYPE]))
 
     def getReplyFor(self, request):
         typ = request.operation.get(TXN_TYPE)
@@ -703,7 +658,6 @@ class Node(PlenumNode, HasPoolManager):
         if typ in CONFIG_TXN_TYPES:
             return self.getReplyFromLedger(self.configLedger, request)
 
-    # def doCustomAction(self, ppTime: float, req: Request) -> None:
     def doCustomAction(self, ppTime, reqs: List[Request],
                        stateRoot, txnRoot) -> None:
         """
@@ -738,15 +692,3 @@ class Node(PlenumNode, HasPoolManager):
             self.configReqHandler.onBatchCreated(stateRoot)
         else:
             super().onBatchCreated(ledgerId, stateRoot)
-
-    # def generateReply(self, ppTime: float, req: Request):
-    #     operation = req.operation
-    #     txnId = self.genTxnId(req.identifier, req.reqId)
-    #     result = {TXN_ID: txnId, TXN_TIME: int(ppTime)}
-    #     result.update(operation)
-    #     result.update({
-    #         f.IDENTIFIER.nm: req.identifier,
-    #         f.REQ_ID.nm: req.reqId,
-    #     })
-    #
-    #     return Reply(result)
