@@ -6,13 +6,15 @@ from sovrin_common.auth import Authoriser
 from sovrin_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION
 from sovrin_common.types import Request
 from sovrin_node.persistence.idr_cache import IdrCache
+from sovrin_node.server.upgrader import Upgrader
 
 
 class ConfigReqHandler(RequestHandler):
-
-    def __init__(self, ledger, state, idrCache: IdrCache, poolManager):
+    def __init__(self, ledger, state, idrCache: IdrCache, upgrader: Upgrader,
+                 poolManager):
         super().__init__(ledger, state)
         self.idrCache = idrCache
+        self.upgrader = upgrader
         self.poolManager = poolManager
 
     def validate(self, req: Request, config=None):

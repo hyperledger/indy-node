@@ -100,10 +100,10 @@ class Node(PlenumNode, HasPoolManager):
                                      postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
                                      postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
         self.states[CONFIG_LEDGER_ID] = self.loadConfigState()
+        self.upgrader = self.getUpgrader()
         self.configReqHandler = self.getConfigReqHandler()
         self.initConfigState()
 
-        self.upgrader = self.getUpgrader()
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
 
@@ -164,7 +164,8 @@ class Node(PlenumNode, HasPoolManager):
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,
                                 self.states[CONFIG_LEDGER_ID],
-                                self.idrCache, self.poolManager)
+                                self.idrCache, self.upgrader,
+                                self.poolManager)
 
     def initConfigState(self):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
@@ -726,11 +727,11 @@ class Node(PlenumNode, HasPoolManager):
         #     # so transaction goes to Upgrader
         #     self.upgrader.handleUpgradeTxn(reply.result)
         committedTxns = self.reqHandler.commit(len(reqs), stateRoot, txnRoot)
-        for txn in committedTxns:
-            if txn[TXN_TYPE] == NYM:
-                self.addNewRole(txn)
-                # self.cacheVerkey(txn)
         self.sendRepliesToClients(committedTxns, ppTime)
+        # for txn in committedTxns:
+        #     if txn[TXN_TYPE] == NYM:
+        #         self.addNewRole(txn)
+        #         # self.cacheVerkey(txn)
 
     def onBatchCreated(self, ledgerId, stateRoot):
         if ledgerId == CONFIG_LEDGER_ID:
