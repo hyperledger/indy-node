@@ -1,13 +1,43 @@
-from plenum.common.exceptions import InvalidClientRequest
+from plenum.common.exceptions import InvalidClientRequest, \
+    UnauthorizedClientRequest
 from plenum.server.req_handler import RequestHandler
-from plenum.common.constants import TXN_TYPE
+from plenum.common.constants import TXN_TYPE, NAME, VERSION
+from sovrin_common.auth import Authoriser
 from sovrin_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION
+from sovrin_common.types import Request
+from sovrin_node.persistence.idr_cache import IdrCache
 
 
 class ConfigReqHandler(RequestHandler):
 
-    def __init__(self, ledger, state):
+    def __init__(self, ledger, state, idrCache: IdrCache, poolManager):
         super().__init__(ledger, state)
+        self.idrCache = idrCache
+        self.poolManager = poolManager
+
+    def validate(self, req: Request, config=None):
+        origin = req.identifier
+        try:
+            originRole = self.idrCache.getRole(origin, isCommitted=False)
+        except:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "Nym {} not added to the ledger yet".format(origin))
+
+        action = req.operation.get(ACTION)
+        # TODO: Some validation needed for making sure name and version
+        # present
+        status = self.upgrader.statusInLedger(req.operation.get(NAME),
+                                              req.operation.get(VERSION))
+
+        r, msg = Authoriser.authorised(POOL_UPGRADE, ACTION, originRole,
+                                       oldVal=status, newVal=action)
+        if not r:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "{} cannot do {}".format(originRole, POOL_UPGRADE))
 
     def doStaticValidation(self, identifier, reqId, operation):
         if operation[TXN_TYPE] == POOL_UPGRADE:

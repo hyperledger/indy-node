@@ -40,7 +40,8 @@ def anotherSteward1(nodeSet, tdir, looper, trustee, trusteeWallet):
 @pytest.fixture(scope="module")
 def anotherTrustAnchor(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newTrustAnchor', TRUST_ANCHOR)
+                                  trustee, trusteeWallet, 'newTrustAnchor',
+                                  TRUST_ANCHOR)
 
 
 def testTrusteeAddingAnotherTrustee(anotherTrustee):

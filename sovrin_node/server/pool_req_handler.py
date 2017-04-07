@@ -1,0 +1,57 @@
+from copy import deepcopy
+
+from ledger.serializers.json_serializer import JsonSerializer
+from plenum.common.constants import TARGET_NYM, TXN_TYPE, DATA, ALIAS, SERVICES
+
+from plenum.common.ledger import Ledger
+from plenum.common.state import PruningState
+from plenum.server.pool_req_handler import PoolRequestHandler as PHandler
+from sovrin_common.auth import Authoriser
+from sovrin_node.persistence.idr_cache import IdrCache
+
+
+class PoolRequestHandler(PHandler):
+    def __init__(self, ledger: Ledger, state: PruningState,
+                 domainState: PruningState, idrCache: IdrCache):
+        super().__init__(ledger, state, domainState)
+        self.stateSerializer = JsonSerializer()
+        self.idrCache = idrCache
+
+    def isSteward(self, nym, isCommitted: bool=True):
+        return self.idrCache.hasSteward(nym, isCommitted)
+
+    def authErrorWhileUpdatingNode(self, request):
+        origin = request.identifier
+        isTrustee = self.idrCache.hasTrustee(origin, isCommitted=False)
+        if not isTrustee:
+            error = super().authErrorWhileUpdatingNode(request)
+            if error:
+                return error
+        origin = request.identifier
+        operation = request.operation
+        nodeNym = operation.get(TARGET_NYM)
+        isSteward = self.idrCache.hasSteward(origin, isCommitted=False)
+        actorRole = self.idrCache.getRole(origin, isCommitted=False)
+        _, nodeInfo = self.getNodeInfoFromLedger(nodeNym, excludeLast=False)
+        typ = operation.get(TXN_TYPE)
+        data = deepcopy(operation.get(DATA))
+        data.pop(ALIAS, None)
+        vals = []
+        msgs = []
+        for k in data:
+            oldVal = (nodeInfo.get(DATA, {})).get(k, None) if nodeInfo else None
+            newVal = data[k]
+            if k == SERVICES:
+                if not oldVal:
+                    oldVal = []
+                if not newVal:
+                    newVal = []
+            if oldVal != newVal:
+                r, msg = Authoriser.authorised(typ, k, actorRole,
+                                               oldVal=oldVal,
+                                               newVal=newVal,
+                                               isActorOwnerOfSubject=isSteward)
+                vals.append(r)
+                msgs.append(msg)
+        msg = None if all(vals) else '\n'.join(msgs)
+        return msg
