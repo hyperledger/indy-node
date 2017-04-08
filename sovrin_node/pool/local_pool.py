@@ -14,6 +14,7 @@ from sovrin_common.config_util import getConfig
 from sovrin_common.init_util import initialize_node_environment
 from sovrin_common.pool.pool import Pool
 from sovrin_common.txn_util import getTxnOrderedFields
+from stp_core.crypto.util import randomSeed
 
 from stp_core.loop.looper import Looper
 
@@ -40,7 +41,8 @@ def create_local_pool(base_dir, node_size=4, looper=None):
         n_verkey = initialize_node_environment(name=n_config.name,
                                                base_dir=n_config.basedirpath,
                                                override_keep=True,
-                                               config=conf)
+                                               config=conf,
+                                               sigseed=randomSeed())
 
         s.set_node(n_config, verkey=n_verkey)
 
