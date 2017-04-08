@@ -24,6 +24,9 @@ class DomainReqHandler(PHandler):
     def onBatchCreated(self, stateRoot):
         self.idrCache.currentBatchCreated(stateRoot)
 
+    def onBatchRejected(self, stateRoot=None):
+        self.idrCache.batchRejected(stateRoot)
+
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot)
         self.idrCache.onBatchCommitted(unhexlify(stateRoot.encode()))

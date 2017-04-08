@@ -6,6 +6,7 @@ import rlp
 
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, GUARDIAN
 from plenum.common.types import f
+from plenum.persistence.util import removeLockFiles
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
 from stp_core.common.log import getlogger
 
@@ -61,7 +62,6 @@ class IdrCache:
 
     @staticmethod
     def getPrefixAndIv(guardian=None, verkey=None):
-        # prefix = IdrCache.guardianPrefix if guardian else IdrCache.ownerPrefix
         iv = guardian if guardian else verkey
         prefix = b'1' if guardian else b'0'
         return prefix, iv
@@ -74,22 +74,10 @@ class IdrCache:
         if role is None:
             role = b''
         verkey = IdrCache.encodeVerkey(verkey)
-        # return '{}{}{}{}'.format(prefix, iv, IdrCache.roleSep, role).encode()
         return rlp.encode([ta, verkey, role])
 
     @staticmethod
     def unpackIdrValue(value):
-        # hasGuardian = None
-        # part, role = value.rsplit(IdrCache.roleSep, 1)
-        # if part:
-        #     if part[0] == IdrCache.ownerPrefix:
-        #         hasGuardian = False
-        #         verkey = part[1:]
-        #     elif part[0] == IdrCache.guardianPrefix:
-        #         hasGuardian = True
-        #         guardian = part[1:]
-        #     else:
-        #         assert 'No acceptable prefix found while parsing {}'.format(part)
         ta, verkey, role = rlp.decode(value)
         return ta.decode(), IdrCache.decodeVerkey(verkey), role.decode()
 
@@ -118,22 +106,33 @@ class IdrCache:
             self.currentBatchOps.append((idr, val))
 
     def close(self):
+        removeLockFiles(self.dbPath)
+        del self._db
         self._db = None
 
     def open(self):
-        self._db = leveldb.LevelDB(self.dbName)
+        self._db = leveldb.LevelDB(self.dbPath)
 
     @property
-    def dbName(self):
+    def dbPath(self):
         return os.path.join(self._basedir, self._name)
 
     def currentBatchCreated(self, stateRoot):
         self.unCommitted[stateRoot] = OrderedDict(self.currentBatchOps)
         self.currentBatchOps = []
 
+    def batchRejected(self, stateRoot=None):
+        if stateRoot:
+            self.unCommitted[stateRoot] = OrderedDict(self.currentBatchOps)
+        else:
+            self.currentBatchOps = []
+
     def onBatchCommitted(self, stateRoot):
+        batch = leveldb.WriteBatch()
         for idr, val in self.unCommitted[stateRoot].items():
-            self._db.Put(idr, val)
+            # self._db.Put(idr, val)
+            batch.Put(idr, val)
+        self._db.Write(batch, sync=False)
         self.unCommitted.pop(stateRoot)
 
     def setVerkey(self, idr, verkey):

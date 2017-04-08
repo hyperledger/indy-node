@@ -8,7 +8,8 @@ from stp_core.loop.eventually import eventually
 from plenum.common.constants import NAME, VERSION, STEWARD
 from sovrin_common.constants import START, CANCEL, \
     ACTION, SCHEDULE, JUSTIFICATION
-from plenum.test.helper import checkSufficientRepliesForRequests
+from plenum.test.helper import checkSufficientRepliesForRequests, \
+    ensureRejectsRecvd
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 from sovrin_client.test.helper import getClientAddedWithRole, checkNacks
 from sovrin_node.test.upgrade.helper import sendUpgrade, \
@@ -70,7 +71,7 @@ def testNodeRejectsPoolUpgrade(looper, nodeSet, tdir, trustee,
 
 
 def testOnlyTrusteeCanSendPoolUpgrade(validUpgradeSent, looper, steward,
-                                      validUpgrade):
+                                      validUpgrade, nodeSet):
     # A steward sending POOL_UPGRADE but txn fails
     stClient, stWallet = steward
     validUpgrade = deepcopy(validUpgrade)
@@ -80,8 +81,7 @@ def testOnlyTrusteeCanSendPoolUpgrade(validUpgradeSent, looper, steward,
     with pytest.raises(AssertionError):
         checkSufficientRepliesForRequests(looper, stClient, [req, ],
                                           timeoutPerReq=10)
-    looper.run(eventually(checkNacks, stClient, req.reqId,
-                          'cannot do', retryWait=1, timeout=5))
+    ensureRejectsRecvd(looper, nodeSet, stClient, 'cannot do')
 
 
 @pytest.fixture(scope="module")

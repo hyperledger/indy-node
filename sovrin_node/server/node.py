@@ -1,5 +1,6 @@
 import json
 import os
+from collections import deque
 from copy import deepcopy
 from hashlib import sha256
 from typing import Iterable, Any, List
@@ -98,6 +99,9 @@ class Node(PlenumNode, HasPoolManager):
         self.upgrader = self.getUpgrader()
         self.configReqHandler = self.getConfigReqHandler()
         self.initConfigState()
+        for r in self.replicas:
+            r.requestQueues[CONFIG_LEDGER_ID] = deque()
+        self.requestExecuter[CONFIG_LEDGER_ID] = self.executeConfigTxn
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
@@ -298,144 +302,14 @@ class Node(PlenumNode, HasPoolManager):
             self.configReqHandler.doStaticValidation(identifier, reqId,
                                                      operation)
 
-        #     if not (not operation.get(TARGET_NYM) or
-        #             self.graphStore.hasNym(operation[TARGET_NYM])):
-        #         raise InvalidClientRequest(identifier, reqId,
-        #                                    '{} should be added before adding '
-        #                                    'attribute for it'.
-        #                                    format(TARGET_NYM))
-        #
-        # if operation[TXN_TYPE] == NYM:
-        #     role = operation.get(ROLE)
-        #     nym = operation.get(TARGET_NYM)
-        #     if not nym:
-        #         raise InvalidClientRequest(identifier, reqId,
-        #                                    "{} needs to be present".
-        #                                    format(TARGET_NYM))
-        #     if not Authoriser.isValidRole(role):
-        #         raise InvalidClientRequest(identifier, reqId,
-        #                                    "{} not a valid role".
-        #                                    format(role))
-        #     s, reason = self.canNymRequestBeProcessed(identifier, operation)
-        #     if not s:
-        #         raise InvalidClientRequest(identifier, reqId, reason)
-        #
-        # if operation[TXN_TYPE] == POOL_UPGRADE:
-        #     action = operation.get(ACTION)
-        #     if action not in (START, CANCEL):
-        #         raise InvalidClientRequest(identifier, reqId,
-        #                                    "{} not a valid action".
-        #                                    format(action))
-        #     if action == START:
-        #         schedule = operation.get(SCHEDULE, {})
-        #         isValid, msg = self.upgrader.isScheduleValid(schedule,
-        #                                                      self.poolManager.nodeIds)
-        #         if not isValid:
-        #             raise InvalidClientRequest(identifier, reqId,
-        #                                        "{} not a valid schedule since {}".
-        #                                        format(schedule, msg))
-
-            # TODO: Check if cancel is submitted before start
-
-    def checkRequestAuthorized(self, request: Request):
-        op = request.operation
-        typ = op[TXN_TYPE]
-        origin = request.identifier
-
-        # s = self.graphStore  # type: identity_graph.IdentityGraph
-        #
-        #
-        # if typ == NYM:
-        #     try:
-        #         originRole = s.getRole(origin)
-        #     except:
-        #         raise UnauthorizedClientRequest(
-        #             request.identifier,
-        #             request.reqId,
-        #             "Nym {} not added to the ledger yet".format(origin))
-        #
-        #     nymV = self.graphStore.getNym(op[TARGET_NYM])
-        #     if not nymV:
-        #         # If nym does not exist
-        #         role = op.get(ROLE)
-        #         r, msg = Authoriser.authorised(NYM, ROLE, originRole,
-        #                                        oldVal=None, newVal=role)
-        #         if not r:
-        #             raise UnauthorizedClientRequest(
-        #                 request.identifier,
-        #                 request.reqId,
-        #                 "{} cannot add {}".format(originRole, role))
-        #     else:
-        #         nymData = nymV.oRecordData
-        #         owner = self.graphStore.getOwnerFor(nymData.get(NYM_KEY))
-        #         isOwner = origin == owner
-        #         updateKeys = [ROLE, VERKEY]
-        #         for key in updateKeys:
-        #             if key in op:
-        #                 newVal = op[key]
-        #                 oldVal = nymData.get(key)
-        #                 if oldVal != newVal:
-        #                     r, msg = Authoriser.authorised(NYM, key, originRole,
-        #                                                    oldVal=oldVal,
-        #                                                    newVal=newVal,
-        #                                                    isActorOwnerOfSubject=isOwner)
-        #                     if not r:
-        #                         raise UnauthorizedClientRequest(
-        #                             request.identifier,
-        #                             request.reqId,
-        #                             "{} cannot update {}".format(originRole,
-        #                                                          key))
-        #
-        # elif typ == ATTRIB:
-        #     if op.get(TARGET_NYM) and \
-        #                     op[TARGET_NYM] != request.identifier and \
-        #             not s.getOwnerFor(op[TARGET_NYM]) == origin:
-        #         raise UnauthorizedClientRequest(
-        #             request.identifier,
-        #             request.reqId,
-        #             "Only identity owner/guardian can add attribute "
-        #             "for that identity")
-        #
-        # # TODO: Just for now. Later do something meaningful here
-        # elif typ in [DISCLO, GET_ATTR, SCHEMA, GET_SCHEMA, ISSUER_KEY,
-        #              GET_ISSUER_KEY]:
-        #     pass
-        if request.operation.get(TXN_TYPE) in POOL_TXN_TYPES:
-            return self.poolManager.checkRequestAuthorized(request)
-
-        elif typ == POOL_UPGRADE:
-            # TODO: Refactor urgently
-            try:
-                originRole = s.getRole(origin)
-            except:
-                raise UnauthorizedClientRequest(
-                    request.identifier,
-                    request.reqId,
-                    "Nym {} not added to the ledger yet".format(origin))
-
-            action = request.operation.get(ACTION)
-            # TODO: Some validation needed for making sure name and version
-            # present
-            status = self.upgrader.statusInLedger(request.operation.get(NAME),
-                                                  request.operation.get(
-                                                      VERSION))
-
-            r, msg = Authoriser.authorised(POOL_UPGRADE, ACTION, originRole,
-                                           oldVal=status, newVal=action)
-            if not r:
-                raise UnauthorizedClientRequest(
-                    request.identifier,
-                    request.reqId,
-                    "{} cannot do {}".format(originRole, POOL_UPGRADE))
-
-    # def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
-    #     nym = msg.get(TARGET_NYM)
-    #     if self.graphStore.hasNym(nym):
-    #         if not self.graphStore.hasTrustee(identifier) and \
-    #                         self.graphStore.getOwnerFor(nym) != identifier:
-    #                 reason = '{} is neither Trustee nor owner of {}'.format(identifier, nym)
-    #                 return False, reason
-    #     return True, ''
+    def doDynamicValidation(self, request: Request):
+        """
+        State based validation
+        """
+        if self.ledgerIdForRequest(request) == CONFIG_LEDGER_ID:
+            self.configReqHandler.validate(request, self.config)
+        else:
+            super().doDynamicValidation(request)
 
     def defaultAuthNr(self):
         return TxnBasedAuthNr(self.idrCache)
@@ -580,14 +454,23 @@ class Node(PlenumNode, HasPoolManager):
         reply.result[F.seqNo.name] = txnWithMerkleInfo.get(F.seqNo.name)
         self.storeTxn(reply.result)
 
-    @staticmethod
-    def ledgerId(txnType: str):
+    @classmethod
+    def ledgerId(cls, txnType: str):
         if txnType in POOL_TXN_TYPES:
             return POOL_LEDGER_ID
         if txnType in IDENTITY_TXN_TYPES:
             return DOMAIN_LEDGER_ID
         if txnType in CONFIG_TXN_TYPES:
             return CONFIG_LEDGER_ID
+
+    def applyReq(self, request: Request):
+        """
+        Apply request to appropriate ledger and state
+        """
+        if self.__class__.ledgerIdForRequest(request) == CONFIG_LEDGER_ID:
+            return self.configReqHandler.apply(request)
+        else:
+            return super().applyReq(request)
 
     def storeTxnInLedger(self, result):
         if result[TXN_TYPE] == ATTRIB:
@@ -658,8 +541,13 @@ class Node(PlenumNode, HasPoolManager):
         if typ in CONFIG_TXN_TYPES:
             return self.getReplyFromLedger(self.configLedger, request)
 
-    def doCustomAction(self, ppTime, reqs: List[Request],
-                       stateRoot, txnRoot) -> None:
+    def commitAndUpdate(self, reqHandler, ppTime, reqs: List[Request],
+                       stateRoot, txnRoot):
+        committedTxns = reqHandler.commit(len(reqs), stateRoot, txnRoot)
+        self.updateSeqNoMap(committedTxns)
+        self.sendRepliesToClients(committedTxns, ppTime)
+
+    def doCustomAction(self, ppTime, reqs: List[Request], stateRoot, txnRoot) -> None:
         """
         Execute the REQUEST sent to this Node
 
@@ -680,15 +568,32 @@ class Node(PlenumNode, HasPoolManager):
         #     # Currently config ledger has only code update related changes
         #     # so transaction goes to Upgrader
         #     self.upgrader.handleUpgradeTxn(reply.result)
-        committedTxns = self.reqHandler.commit(len(reqs), stateRoot, txnRoot)
-        self.sendRepliesToClients(committedTxns, ppTime)
-        # for txn in committedTxns:
-        #     if txn[TXN_TYPE] == NYM:
-        #         self.addNewRole(txn)
-        #         # self.cacheVerkey(txn)
+        # committedTxns = self.reqHandler.commit(len(reqs), stateRoot, txnRoot)
+        # self.updateSeqNoMap(committedTxns)
+        # self.sendRepliesToClients(committedTxns, ppTime)
+        self.commitAndUpdate(self.reqHandler, ppTime, reqs, stateRoot, txnRoot)
+
+    def executeConfigTxn(self, ppTime, reqs: List[Request], stateRoot, txnRoot):
+        # committedTxns = self.configReqHandler.commit(len(reqs), stateRoot,
+        #                                              txnRoot)
+        # self.updateSeqNoMap(committedTxns)
+        # self.sendRepliesToClients(committedTxns, ppTime)
+        self.commitAndUpdate(self.configReqHandler, ppTime, reqs, stateRoot,
+                             txnRoot)
+
+    def closeAllLevelDBs(self):
+        super().closeAllLevelDBs()
+        if self.idrCache:
+            self.idrCache.close()
 
     def onBatchCreated(self, ledgerId, stateRoot):
         if ledgerId == CONFIG_LEDGER_ID:
             self.configReqHandler.onBatchCreated(stateRoot)
         else:
             super().onBatchCreated(ledgerId, stateRoot)
+
+    def onBatchRejected(self, ledgerId, stateRoot=None):
+        if ledgerId == CONFIG_LEDGER_ID:
+            self.configReqHandler.onBatchRejected(stateRoot)
+        else:
+            super().onBatchRejected(ledgerId, stateRoot)
