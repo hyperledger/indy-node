@@ -14,6 +14,7 @@ from ledger.serializers.json_serializer import JsonSerializer
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
+from sovrin_node.persistence.attribute_store import AttributeStore
 from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, VERKEY, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
@@ -70,9 +71,10 @@ class Node(PlenumNode, HasPoolManager):
                  storage=None,
                  config=None):
         self.config = config or getConfig()
-        # TODO: 2 ugly lines ahead, don't know how to avoid
+        # TODO: 3 ugly lines ahead, don't know how to avoid
         self.stateTreeStore = None
         self.idrCache = None
+        self.attributeStore = None
 
         super().__init__(name=name,
                          nodeRegistry=nodeRegistry,
@@ -144,10 +146,14 @@ class Node(PlenumNode, HasPoolManager):
     def getDomainReqHandler(self):
         if self.idrCache is None:
             self.idrCache = IdrCache(self.dataLocation, name=self.name)
+        if self.attributeStore is None:
+            self.attributeStore = self.loadAttributeStore()
         return DomainReqHandler(self.domainLedger,
                                 self.states[DOMAIN_LEDGER_ID],
+                                self.reqProcessors,
                                 self.idrCache,
-                                self.reqProcessors)
+                                self.attributeStore
+                                )
 
     def getConfigLedger(self):
         return Ledger(CompactMerkleTree(hashStore=FileHashStore(
@@ -159,6 +165,10 @@ class Node(PlenumNode, HasPoolManager):
     def loadConfigState(self):
         return PruningState(os.path.join(self.dataLocation,
                                          self.config.configStateDbName))
+
+    def loadAttributeStore(self):
+        dbPath = os.path.join(self.dataLocation, self.config.attrDB)
+        return AttributeStore(dbPath)
 
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,
@@ -298,6 +308,7 @@ class Node(PlenumNode, HasPoolManager):
         if ledgerId == DOMAIN_LEDGER_ID:
             self.reqHandler.doStaticValidation(identifier, reqId,
                                                operation)
+            return
         if ledgerId == CONFIG_LEDGER_ID:
             self.configReqHandler.doStaticValidation(identifier, reqId,
                                                      operation)
@@ -554,30 +565,9 @@ class Node(PlenumNode, HasPoolManager):
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        # if req.operation[TXN_TYPE] == NYM:
-        #     s, reason = self.canNymRequestBeProcessed(req.identifier,
-        #                                               req.operation)
-        #     if not s:
-        #         if req.key in self.requestSender:
-        #             self.transmitToClient(RequestNack(*req.key, reason),
-        #                                   self.requestSender.pop(req.key))
-        #         return
-        # reply = self.generateReply(int(ppTime), req)
-        # self.storeTxnAndSendToClient(reply)
-        # if req.operation[TXN_TYPE] in CONFIG_TXN_TYPES:
-        #     # Currently config ledger has only code update related changes
-        #     # so transaction goes to Upgrader
-        #     self.upgrader.handleUpgradeTxn(reply.result)
-        # committedTxns = self.reqHandler.commit(len(reqs), stateRoot, txnRoot)
-        # self.updateSeqNoMap(committedTxns)
-        # self.sendRepliesToClients(committedTxns, ppTime)
         self.commitAndUpdate(self.reqHandler, ppTime, reqs, stateRoot, txnRoot)
 
     def executeConfigTxn(self, ppTime, reqs: List[Request], stateRoot, txnRoot):
-        # committedTxns = self.configReqHandler.commit(len(reqs), stateRoot,
-        #                                              txnRoot)
-        # self.updateSeqNoMap(committedTxns)
-        # self.sendRepliesToClients(committedTxns, ppTime)
         self.commitAndUpdate(self.configReqHandler, ppTime, reqs, stateRoot,
                              txnRoot)
 
@@ -585,6 +575,8 @@ class Node(PlenumNode, HasPoolManager):
         super().closeAllLevelDBs()
         if self.idrCache:
             self.idrCache.close()
+        if self.attributeStore:
+            self.attributeStore.close()
 
     def onBatchCreated(self, ledgerId, stateRoot):
         if ledgerId == CONFIG_LEDGER_ID:

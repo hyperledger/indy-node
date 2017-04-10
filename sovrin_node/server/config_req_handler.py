@@ -64,4 +64,4 @@ class ConfigReqHandler(RequestHandler):
         txn = reqToTxn(req)
         self.ledger.appendTxns([txn])
         self.upgrader.handleUpgradeTxn(txn)
-        return True
+        return txn

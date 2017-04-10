@@ -17,15 +17,23 @@ from stp_core.network.exceptions import EndpointException
 
 
 class DomainReqHandler(PHandler):
-    def __init__(self, ledger, state, idrCache, requestProcessor):
+    def __init__(self, ledger, state, requestProcessor, idrCache, attributeStore):
         super().__init__(ledger, state, requestProcessor)
         self.idrCache = idrCache
+        self.attributeStore = attributeStore
 
     def onBatchCreated(self, stateRoot):
         self.idrCache.currentBatchCreated(stateRoot)
 
     def onBatchRejected(self, stateRoot=None):
         self.idrCache.batchRejected(stateRoot)
+
+    def apply(self, req: Request):
+        txn = super().apply(req)
+        if txn[TXN_TYPE] == ATTRIB:
+            if RAW in txn:
+                self.attributeStore.set(txn[RAW], txn[DATA])
+        return txn
 
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot)
