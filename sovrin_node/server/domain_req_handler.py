@@ -3,7 +3,7 @@ from binascii import unhexlify
 from typing import List
 
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest
+    UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, VERKEY, \
     GUARDIAN, DATA, STEWARD
 from plenum.common.txn_util import reqToTxn
@@ -100,10 +100,9 @@ class DomainReqHandler(PHandler):
             try:
                 originRole = s.getRole(origin, isCommitted=False) or None
             except:
-                raise UnauthorizedClientRequest(
+                raise UnknownIdentifier(
                     req.identifier,
-                    req.reqId,
-                    "Nym {} not added to the ledger yet".format(origin))
+                    req.reqId)
 
             nymData = s.getNym(op[TARGET_NYM], isCommitted=False)
             if not nymData:
