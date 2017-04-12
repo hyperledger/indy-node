@@ -122,7 +122,7 @@ def compareGraph(table, nodeSet):
     tableRecodesStoppedNode = stoppedNodeClient.query("SELECT * FROM {}".format(table))
     for nodeRecord in tableRecodesStoppedNode:
 
-        if table == "IssuerKey" and isinstance(nodeRecord.oRecordData["data"], str):
+        if table == "ClaimDef" and isinstance(nodeRecord.oRecordData["data"], str):
             nodeRecord.oRecordData["data"] = json.loads(nodeRecord.oRecordData["data"])
 
         stoppedNodeRecords.append({k: v for k, v in nodeRecord.oRecordData.items()
@@ -138,7 +138,7 @@ def compareGraph(table, nodeSet):
         tableRecodes = client.query("SELECT * FROM {}".format(table))
         for record in tableRecodes:
 
-            if table == "IssuerKey" and isinstance(record.oRecordData["data"], str):
+            if table == "ClaimDef" and isinstance(record.oRecordData["data"], str):
                 record.oRecordData["data"] = json.loads(record.oRecordData["data"])
 
             records.append({k: v for k, v in record.oRecordData.items()
@@ -175,5 +175,5 @@ def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                           *txnPoolNodeSet[1:4], retryWait=1, timeout=15))
 
     compareGraph("NYM", nodeSet)
-    compareGraph("IssuerKey", nodeSet)
+    compareGraph("ClaimDef", nodeSet)
     compareGraph("Schema", nodeSet)
