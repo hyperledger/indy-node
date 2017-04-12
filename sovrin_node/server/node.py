@@ -14,6 +14,7 @@ from ledger.serializers.json_serializer import JsonSerializer
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
+from plenum.persistence.util import txnsWithMerkleInfo
 from sovrin_node.persistence.attribute_store import AttributeStore
 from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, VERSION, ORIGIN, \
@@ -39,7 +40,7 @@ from sovrin_common.constants import allOpKeys, ATTRIB, NYM,\
     NODE_UPGRADE, COMPLETE, FAIL
 from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
-from sovrin_common.persistence import identity_graph
+# from sovrin_common.persistence import identity_graph
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.config_req_handler import ConfigReqHandler
@@ -49,7 +50,7 @@ from sovrin_node.server.domain_req_handler import DomainReqHandler
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
-from sovrin_node.persistence.state_tree_store import StateTreeStore
+# from sovrin_node.persistence.state_tree_store import StateTreeStore
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
@@ -71,8 +72,9 @@ class Node(PlenumNode, HasPoolManager):
                  storage=None,
                  config=None):
         self.config = config or getConfig()
+
         # TODO: 3 ugly lines ahead, don't know how to avoid
-        self.stateTreeStore = None
+        # self.stateTreeStore = None
         self.idrCache = None
         self.attributeStore = None
 
@@ -88,7 +90,7 @@ class Node(PlenumNode, HasPoolManager):
                          storage=storage,
                          config=self.config)
         domainState = self.getState(DOMAIN_LEDGER_ID)
-        self.stateTreeStore = StateTreeStore(domainState)
+        # self.stateTreeStore = StateTreeStore(domainState)
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
@@ -217,27 +219,25 @@ class Node(PlenumNode, HasPoolManager):
         self.upgrader.nodeId = self.id
 
     def postConfigLedgerCaughtUp(self):
-        self.upgrader.processLedger()
-        if self.upgrader.isItFirstRunAfterUpgrade:
-            lastUpgradeVersion = self.upgrader.lastExecutedUpgradeInfo[1]
-            op = {
-                TXN_TYPE: NODE_UPGRADE,
-                DATA: {
-                    ACTION: None,
-                    VERSION: lastUpgradeVersion
+        if all(r.primaryName is not None for r in self.replicas):
+            self.upgrader.processLedger()
+            if self.upgrader.isItFirstRunAfterUpgrade:
+                lastUpgradeVersion = self.upgrader.lastExecutedUpgradeInfo[1]
+                op = {
+                    TXN_TYPE: NODE_UPGRADE,
+                    DATA: {
+                        ACTION: COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL,
+                        VERSION: lastUpgradeVersion
+                    }
                 }
-            }
-            op[DATA][ACTION] = COMPLETE if \
-                self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
-            op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
-            request = self.wallet.signOp(op)
-            self.startedProcessingReq(*request.key, self.nodestack.name)
-            self.send(request)
-
-        # TODO:
-        # if node finds code has not been upgraded where it should have been
-            # (there is some configurable max time after scheduled time) then
-            # it sends NODE_UPGRADE with status fail
+                op[DATA][ACTION] = COMPLETE if \
+                    self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
+                op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
+                request = self.wallet.signOp(op)
+                self.startedProcessingReq(*request.key, self.nodestack.name)
+                self.send(request)
+        else:
+            self._schedule(self.postConfigLedgerCaughtUp, 3)
 
     def processNodeRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == NODE_UPGRADE:
@@ -378,17 +378,18 @@ class Node(PlenumNode, HasPoolManager):
 
     def processGetSchemaReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        issuerDid = request.operation[TARGET_NYM]
-        schema, lastSeqNo = self.stateTreeStore.getSchema(
-            did=issuerDid,
+        authorDid = request.operation[TARGET_NYM]
+        schema, lastSeqNo = self.reqHandler.getSchema(
+            author=authorDid,
             schemaName=(request.operation[DATA][NAME]),
             schemaVersion=(request.operation[DATA][VERSION])
         )
+        schema.update({ORIGIN: authorDid})
         result = {**request.operation, **{
             DATA: schema,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
-            f.SEQ_NO: lastSeqNo
+            f.SEQ_NO.nm: lastSeqNo
         }}
         self.transmitToClient(Reply(result), frm)
 
@@ -397,7 +398,7 @@ class Node(PlenumNode, HasPoolManager):
         attrName = request.operation[RAW]
         nym = request.operation[TARGET_NYM]
         attrValue, lastSeqNo = \
-            self.stateTreeStore.getAttr(did=nym, key=attrName)
+            self.reqHandler.getAttr(did=nym, key=attrName)
         result = {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
@@ -410,8 +411,8 @@ class Node(PlenumNode, HasPoolManager):
 
     def processGetIssuerKeyReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys, lastSeqNo = self.stateTreeStore.getIssuerKey(
-            did=request.operation[ORIGIN],
+        keys, lastSeqNo = self.reqHandler.getIssuerKey(
+            author=request.operation[ORIGIN],
             schemaSeqNo=request.operation[REF]
         )
         result = {**request.operation, **{
@@ -440,30 +441,30 @@ class Node(PlenumNode, HasPoolManager):
         else:
             super().processRequest(request, frm)
 
-    def storeTxnAndSendToClient(self, reply):
-        """
-        Does 4 things in following order
-         1. Add reply to ledger.
-         2. Send the reply to client.
-         3. Add the reply to identity graph if needed.
-         4. Add the reply to storage so it can be served later if the
-         client requests it.
-        """
-        result = reply.result
-        if result[TXN_TYPE] in (SCHEMA, ISSUER_KEY):
-            result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
-
-        txnWithMerkleInfo = self.storeTxnInLedger(result)
-
-        if result[TXN_TYPE] == NODE_UPGRADE:
-            logger.info('{} processed {}'.format(self, NODE_UPGRADE))
-            # Returning since NODE_UPGRADE is not sent to client and neither
-            # goes in graph
-            return
-        self.sendReplyToClient(Reply(txnWithMerkleInfo),
-                               (result[f.IDENTIFIER.nm], result[f.REQ_ID.nm]))
-        reply.result[F.seqNo.name] = txnWithMerkleInfo.get(F.seqNo.name)
-        self.storeTxn(reply.result)
+    # def storeTxnAndSendToClient(self, reply):
+    #     """
+    #     Does 4 things in following order
+    #      1. Add reply to ledger.
+    #      2. Send the reply to client.
+    #      3. Add the reply to identity graph if needed.
+    #      4. Add the reply to storage so it can be served later if the
+    #      client requests it.
+    #     """
+    #     result = reply.result
+    #     if result[TXN_TYPE] in (SCHEMA, ISSUER_KEY):
+    #         result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
+    #
+    #     txnWithMerkleInfo = self.storeTxnInLedger(result)
+    #
+    #     if result[TXN_TYPE] == NODE_UPGRADE:
+    #         logger.info('{} processed {}'.format(self, NODE_UPGRADE))
+    #         # Returning since NODE_UPGRADE is not sent to client and neither
+    #         # goes in graph
+    #         return
+    #     self.sendReplyToClient(Reply(txnWithMerkleInfo),
+    #                            (result[f.IDENTIFIER.nm], result[f.REQ_ID.nm]))
+    #     reply.result[F.seqNo.name] = txnWithMerkleInfo.get(F.seqNo.name)
+    #     self.storeTxn(reply.result)
 
     @classmethod
     def ledgerId(cls, txnType: str):
@@ -507,40 +508,37 @@ class Node(PlenumNode, HasPoolManager):
             error("Transaction missing required field")
         return result
 
-    def storeTxn(self, txn) -> None:
-        """
-        Adds transaction to external non-ledger store
-        """
-        if txn[TXN_TYPE] == NYM:
-            # TODO: this one should be stored in verkey store
-            self.storeTxnInGraph(txn)
-        elif txn[TXN_TYPE] in {ATTRIB, SCHEMA, ISSUER_KEY}:
-            self.storeTxnInStateTree(txn)
-        else:
-            logger.debug("Got an unknown type {} to process".
-                         format(txn[TXN_TYPE]))
-
-    def storeTxnInStateTree(self, txn) -> None:
-        self.stateTreeStore.addTxn(txn)
-
-    def storeTxnInGraph(self, txn) -> None:
-        if txn[TXN_TYPE] == NYM:
-            txn = deepcopy(txn)
-            # Remove root hash and audit path from result if present since they can
-            # be generated on the fly from the ledger so no need to store it
-            txn.pop(F.rootHash.name, None)
-            txn.pop(F.auditPath.name, None)
-            self.graphStore.addNymTxnToGraph(txn)
-        else:
-            logger.debug("Only NYM can be stored in graphStore for now, "
-                         "but {} was passed".format(txn[TXN_TYPE]))
+    # def storeTxn(self, txn) -> None:
+    #     """
+    #     Adds transaction to external non-ledger store
+    #     """
+    #     if txn[TXN_TYPE] == NYM:
+    #         # TODO: this one should be stored in verkey store
+    #         self.storeTxnInGraph(txn)
+    #     elif txn[TXN_TYPE] in {ATTRIB, SCHEMA, ISSUER_KEY}:
+    #         self.storeTxnInStateTree(txn)
+    #     else:
+    #         logger.debug("Got an unknown type {} to process".
+    #                      format(txn[TXN_TYPE]))
+    #
+    # def storeTxnInStateTree(self, txn) -> None:
+    #     self.stateTreeStore.addTxn(txn)
+    #
+    # def storeTxnInGraph(self, txn) -> None:
+    #     if txn[TXN_TYPE] == NYM:
+    #         txn = deepcopy(txn)
+    #         # Remove root hash and audit path from result if present since they can
+    #         # be generated on the fly from the ledger so no need to store it
+    #         txn.pop(F.rootHash.name, None)
+    #         txn.pop(F.auditPath.name, None)
+    #         self.graphStore.addNymTxnToGraph(txn)
+    #     else:
+    #         logger.debug("Only NYM can be stored in graphStore for now, "
+    #                      "but {} was passed".format(txn[TXN_TYPE]))
 
     def getReplyFor(self, request):
         typ = request.operation.get(TXN_TYPE)
         if typ in IDENTITY_TXN_TYPES:
-            # result = self.secondaryStorage.getReply(request.identifier,
-            #                                         request.reqId,
-            #                                         type=request.operation[TXN_TYPE])
             reply = self.getReplyFromLedger(self.domainLedger, request)
             if reply:
                 if request.operation[TXN_TYPE] == ATTRIB:
@@ -556,6 +554,8 @@ class Node(PlenumNode, HasPoolManager):
                        stateRoot, txnRoot):
         committedTxns = reqHandler.commit(len(reqs), stateRoot, txnRoot)
         self.updateSeqNoMap(committedTxns)
+        committedTxns = txnsWithMerkleInfo(reqHandler.ledger,
+                                           committedTxns)
         self.sendRepliesToClients(committedTxns, ppTime)
 
     def doCustomAction(self, ppTime, reqs: List[Request], stateRoot, txnRoot) -> None:

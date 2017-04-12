@@ -44,4 +44,4 @@ def testDoNotScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
 
     # Now the upgrade for lower version should be scheduled
     looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
-                          retryWait=1, timeout=5))
+                          retryWait=1, timeout=10))

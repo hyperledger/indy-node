@@ -57,7 +57,7 @@ def upgradeSentToAllNodes(looper, nodeSet, nodeIds):
 
             assert ids == set(nodeIds)
 
-    looper.run(eventually(check, retryWait=1, timeout=5))
+    looper.run(eventually(check, retryWait=1, timeout=10))
 
 
 def testNodeDetectsUpgradeDone(looper, nodeSet):
@@ -65,7 +65,7 @@ def testNodeDetectsUpgradeDone(looper, nodeSet):
         for node in nodeSet:
             assert node.upgrader.lastExecutedUpgradeInfo[1] == newVer
 
-    looper.run(eventually(check, retryWait=1, timeout=5))
+    looper.run(eventually(check, retryWait=1, timeout=10))
 
 
 def testSendNodeUpgradeToAllNodes(upgradeSentToAllNodes):

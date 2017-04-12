@@ -1,6 +1,4 @@
-import leveldb
-
-from plenum.persistence.util import removeLockFiles
+from plenum.persistence.kv_store import KVStoreLeveldb
 
 
 class AttributeStore:
@@ -11,27 +9,17 @@ class AttributeStore:
 
     def __init__(self, dbPath):
         self.dbPath = dbPath
-        self.db = leveldb.LevelDB(dbPath)
+        self.db = KVStoreLeveldb(dbPath)
 
     def set(self, key, value):
-        if not isinstance(key, str):
-            key = key.encode()
-        if not isinstance(value, str):
-            value = value.encode()
-        self.db.Put(key, value)
+        self.db.set(key, value)
 
     def get(self, key):
-        if not isinstance(key, str):
-            key = key.encode()
-        val = self.db.Get(key)
+        val = self.db.get(key)
         return val.decode()
 
     def remove(self, key):
-        if not isinstance(key, str):
-            key = key.encode()
-        self.db.Delete(key)
+        self.db.remove(key)
 
     def close(self):
-        removeLockFiles(self.dbPath)
-        del self._db
-        self._db = None
+        self.db.close()

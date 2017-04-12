@@ -1,3 +1,5 @@
+from typing import List
+
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn
@@ -37,31 +39,38 @@ class ConfigReqHandler(RequestHandler):
             # TODO: Check if cancel is submitted before start
 
     def validate(self, req: Request, config=None):
-        origin = req.identifier
-        try:
-            originRole = self.idrCache.getRole(origin, isCommitted=False)
-        except:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "Nym {} not added to the ledger yet".format(origin))
+        operation = req.operation
+        if operation.get(TXN_TYPE) == POOL_UPGRADE:
+            origin = req.identifier
+            try:
+                originRole = self.idrCache.getRole(origin, isCommitted=False)
+            except:
+                raise UnauthorizedClientRequest(
+                    req.identifier,
+                    req.reqId,
+                    "Nym {} not added to the ledger yet".format(origin))
 
-        action = req.operation.get(ACTION)
-        # TODO: Some validation needed for making sure name and version
-        # present
-        status = self.upgrader.statusInLedger(req.operation.get(NAME),
-                                              req.operation.get(VERSION))
+            action = operation.get(ACTION)
+            # TODO: Some validation needed for making sure name and version
+            # present
+            status = self.upgrader.statusInLedger(req.operation.get(NAME),
+                                                  req.operation.get(VERSION))
 
-        r, msg = Authoriser.authorised(POOL_UPGRADE, ACTION, originRole,
-                                       oldVal=status, newVal=action)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "{} cannot do {}".format(originRole, POOL_UPGRADE))
+            r, msg = Authoriser.authorised(POOL_UPGRADE, ACTION, originRole,
+                                           oldVal=status, newVal=action)
+            if not r:
+                raise UnauthorizedClientRequest(
+                    req.identifier,
+                    req.reqId,
+                    "{} cannot do {}".format(originRole, POOL_UPGRADE))
 
     def apply(self, req: Request):
         txn = reqToTxn(req)
         self.ledger.appendTxns([txn])
-        self.upgrader.handleUpgradeTxn(txn)
         return txn
+
+    def commit(self, txnCount, stateRoot, txnRoot) -> List:
+        committedTxns = super().commit(txnCount, stateRoot, txnRoot)
+        for txn in committedTxns:
+            self.upgrader.handleUpgradeTxn(txn)
+        return committedTxns

@@ -7,6 +7,7 @@ from plenum.common.ledger import Ledger
 from plenum.common.state import PruningState
 from plenum.server.pool_req_handler import PoolRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
+from sovrin_common.constants import NODE
 from sovrin_node.persistence.idr_cache import IdrCache
 
 
@@ -30,16 +31,19 @@ class PoolRequestHandler(PHandler):
         origin = request.identifier
         operation = request.operation
         nodeNym = operation.get(TARGET_NYM)
-        isSteward = self.idrCache.hasSteward(origin, isCommitted=False)
+        if self.isNodeDataConflicting(operation.get(DATA, {}), nodeNym,
+                                      isCommitted=False):
+            return "existing data has conflicts with request " \
+                   "data {}".format(operation.get(DATA))
+        isStewardOfNode = self.isStewardOfNode(origin, nodeNym)
         actorRole = self.idrCache.getRole(origin, isCommitted=False)
-        _, nodeInfo = self.getNodeInfoFromLedger(nodeNym, excludeLast=False)
-        typ = operation.get(TXN_TYPE)
+        nodeInfo = self.getNodeData(nodeNym, isCommitted=False)
         data = deepcopy(operation.get(DATA))
         data.pop(ALIAS, None)
         vals = []
         msgs = []
         for k in data:
-            oldVal = (nodeInfo.get(DATA, {})).get(k, None) if nodeInfo else None
+            oldVal = nodeInfo.get(k, None) if nodeInfo else None
             newVal = data[k]
             if k == SERVICES:
                 if not oldVal:
@@ -47,10 +51,10 @@ class PoolRequestHandler(PHandler):
                 if not newVal:
                     newVal = []
             if oldVal != newVal:
-                r, msg = Authoriser.authorised(typ, k, actorRole,
+                r, msg = Authoriser.authorised(NODE, k, actorRole,
                                                oldVal=oldVal,
                                                newVal=newVal,
-                                               isActorOwnerOfSubject=isSteward)
+                                               isActorOwnerOfSubject=isStewardOfNode)
                 vals.append(r)
                 msgs.append(msg)
         msg = None if all(vals) else '\n'.join(msgs)

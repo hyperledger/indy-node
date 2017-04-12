@@ -9,7 +9,7 @@ from plenum.server.client_authn import NaclAuthNr
 
 from sovrin_common.constants import ATTRIB
 from sovrin_node.persistence.idr_cache import IdrCache
-from sovrin_node.persistence.state_tree_store import StateTreeStore
+# from sovrin_node.persistence.state_tree_store import StateTreeStore
 
 
 class TxnBasedAuthNr(NaclAuthNr):
@@ -26,7 +26,8 @@ class TxnBasedAuthNr(NaclAuthNr):
                 set(msgCopy[OPERATION].keys())).pop()
             msgCopy[OPERATION][keyName] = sha256(
                 msgCopy[OPERATION][keyName].encode()).hexdigest()
-            return super().serializeForSig(msgCopy)
+            return super().serializeForSig(msgCopy,
+                                           topLevelKeysToIgnore=topLevelKeysToIgnore)
         else:
             return super().serializeForSig(msg,
                                            topLevelKeysToIgnore=topLevelKeysToIgnore)

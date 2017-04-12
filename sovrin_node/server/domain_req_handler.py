@@ -1,22 +1,34 @@
 import json
 from binascii import unhexlify
 from typing import List
+from hashlib import sha256
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, VERKEY, \
-    GUARDIAN, DATA, STEWARD
+    GUARDIAN, DATA, STEWARD, NAME, VERSION
 from plenum.common.txn_util import reqToTxn
-from plenum.common.types import f, RequestAck, Reply
+from plenum.common.types import f
 from plenum.common.util import check_endpoint_valid
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
-from sovrin_common.constants import NYM, ROLE, ATTRIB, ENDPOINT
+from sovrin_common.constants import NYM, ROLE, ATTRIB, ENDPOINT, SCHEMA, \
+    ISSUER_KEY, REF
 from sovrin_common.types import Request
+from stp_core.common.log import getlogger
 from stp_core.network.exceptions import EndpointException
 
 
+logger = getlogger()
+
+
 class DomainReqHandler(PHandler):
+    MARKER_ATTR = "\01"
+    MARKER_SCHEMA = "\02"
+    MARKER_IPK = "\03"
+    LAST_SEQ_NO = "lsn"
+    VALUE = "val"
+
     def __init__(self, ledger, state, requestProcessor, idrCache, attributeStore):
         super().__init__(ledger, state, requestProcessor)
         self.idrCache = idrCache
@@ -28,12 +40,24 @@ class DomainReqHandler(PHandler):
     def onBatchRejected(self, stateRoot=None):
         self.idrCache.batchRejected(stateRoot)
 
-    def apply(self, req: Request):
-        txn = super().apply(req)
-        if txn[TXN_TYPE] == ATTRIB:
-            if RAW in txn:
-                self.attributeStore.set(txn[RAW], txn[DATA])
-        return txn
+    def updateState(self, txns, isCommitted=False):
+        for txn in txns:
+            typ = txn.get(TXN_TYPE)
+            nym = txn.get(TARGET_NYM)
+            if typ == NYM:
+                self.updateNym(nym, {
+                    f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm),
+                    ROLE: txn.get(ROLE),
+                    VERKEY: txn.get(VERKEY)
+                }, isCommitted=isCommitted)
+            elif typ == ATTRIB:
+                self._addAttr(txn)
+            elif typ == SCHEMA:
+                self._addSchema(txn)
+            elif typ == ISSUER_KEY:
+                self._addIssuerKey(txn)
+            else:
+                logger.debug('Cannot apply request of type {} to state'.format(typ))
 
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot)
@@ -166,14 +190,158 @@ class DomainReqHandler(PHandler):
     def handleGetNymReq(self, request: Request, frm: str):
         nym = request.operation[TARGET_NYM]
         nymData = self.idrCache.getNym(nym, isCommitted=True)
-        # TODO: We should have a single JSON encoder which does the
-        # encoding for us, like sorting by keys, handling datetime objects.
         if nymData:
             nymData[TARGET_NYM] = nym
-            data = json.dumps(nymData, sort_keys=True)
+            data = self.stateSerializer.serialize(nymData)
         else:
             data = None
         result = {f.IDENTIFIER.nm: request.identifier,
                   f.REQ_ID.nm: request.reqId, DATA: data}
         result.update(request.operation)
         return result
+
+    def lookup(self, path, isCommitted=True) -> (str, int):
+        """
+        Queries state for data on specified path
+
+        :param path: path to data
+        :return: data
+        """
+        assert path is not None
+        raw = self.state.get(path, isCommitted)
+        if raw is None:
+            return None, None
+        raw = self.stateSerializer.deserialize(raw)
+        value = raw.get(self.VALUE)
+        lastSeqNo = raw.get(self.LAST_SEQ_NO)
+        return value, lastSeqNo
+
+    def _addAttr(self, txn) -> None:
+        assert txn[TXN_TYPE] == ATTRIB
+        nym = txn.get(TARGET_NYM)
+
+        def parse(txn):
+            raw = txn.get(RAW)
+            if raw:
+                data = json.loads(raw)
+                key, value = data.popitem()
+                return key, value
+            encOrHash = txn.get(ENC) or txn.get(HASH)
+            if encOrHash:
+                return encOrHash, encOrHash
+            raise ValueError("One of 'raw', 'enc', 'hash' "
+                             "fields of ATTR must present")
+
+        attrName, value = parse(txn)
+        path = self._makeAttrPath(nym, attrName)
+        seqNo = txn[f.SEQ_NO.nm]
+        value = self.stateSerializer.serialize(value)
+        hashedVal = self._hashOf(value)
+        valueBytes = self._encodeValue(hashedVal, seqNo)
+        self.state.set(path, valueBytes)
+        self.attributeStore.set(hashedVal, value)
+
+    def _addSchema(self, txn) -> None:
+        assert txn[TXN_TYPE] == SCHEMA
+        origin = txn.get(f.IDENTIFIER.nm)
+
+        data = txn.get(DATA)
+        schemaName = data[NAME]
+        schemaVersion = data[VERSION]
+        path = self._makeSchemaPath(origin, schemaName, schemaVersion)
+
+        seqNo = txn[f.SEQ_NO.nm]
+        valueBytes = self._encodeValue(data, seqNo)
+        self.state.set(path, valueBytes)
+
+    def _addIssuerKey(self, txn) -> None:
+        assert txn[TXN_TYPE] == ISSUER_KEY
+        origin = txn.get(f.IDENTIFIER.nm)
+
+        schemaSeqNo = txn[REF]
+        if schemaSeqNo is None:
+            raise ValueError("'{}' field is absent, "
+                             "but it must contain schema seq no".format(REF))
+        issuerKey = txn[DATA]
+        if issuerKey is None:
+            raise ValueError("'{}' field is absent, "
+                             "but it must contain key components".format(DATA))
+        path = self._makeIssuerKeyPath(origin, schemaSeqNo)
+
+        seqNo = txn[f.SEQ_NO.nm]
+        valueBytes = self._encodeValue(issuerKey, seqNo)
+        self.state.set(path, valueBytes)
+
+    def getAttr(self,
+                did: str,
+                key: str,
+                isCommitted=True) -> (str, int):
+        assert did is not None
+        assert key is not None
+        path = self._makeAttrPath(did, key)
+        hashedVal, lastSeqNo = self.lookup(path, isCommitted)
+        try:
+            value = self.attributeStore.get(hashedVal)
+            value = self.stateSerializer.deserialize(value)
+        except KeyError:
+            value = hashedVal
+        return value, lastSeqNo
+
+    def getSchema(self,
+                  author: str,
+                  schemaName: str,
+                  schemaVersion: str,
+                  isCommitted=True) -> (str, int):
+        assert author is not None
+        assert schemaName is not None
+        assert schemaVersion is not None
+        path = self._makeSchemaPath(author, schemaName, schemaVersion)
+        return self.lookup(path, isCommitted)
+
+    def getIssuerKey(self,
+                     author: str,
+                     schemaSeqNo: str,
+                     isCommitted=True) -> (str, int):
+        assert author is not None
+        assert schemaSeqNo is not None
+        path = self._makeIssuerKeyPath(author, schemaSeqNo)
+        return self.lookup(path, isCommitted)
+
+    @staticmethod
+    def _hashOf(text) -> str:
+        if not isinstance(text, (str, bytes)):
+            text = DomainReqHandler.stateSerializer.serialize(text)
+        if not isinstance(text, bytes):
+            text = text.encode()
+        return sha256(text).hexdigest()
+
+    @staticmethod
+    def _makeAttrPath(did, attrName) -> bytes:
+        nameHash = DomainReqHandler._hashOf(attrName)
+        return "{DID}:{MARKER}:{ATTR_NAME}" \
+            .format(DID=did,
+                    MARKER=DomainReqHandler.MARKER_ATTR,
+                    ATTR_NAME=nameHash).encode()
+
+    @staticmethod
+    def _makeSchemaPath(did, schemaName, schemaVersion) -> bytes:
+        return "{DID}:{MARKER}:{SCHEMA_NAME}{SCHEMA_VERSION}" \
+            .format(DID=did,
+                    MARKER=DomainReqHandler.MARKER_SCHEMA,
+                    SCHEMA_NAME=schemaName,
+                    SCHEMA_VERSION=schemaVersion) \
+            .encode()
+
+    @staticmethod
+    def _makeIssuerKeyPath(did, schemaSeqNo) -> bytes:
+        return "{DID}:{MARKER}:{SCHEMA_SEQ_NO}" \
+                   .format(DID=did,
+                           MARKER=DomainReqHandler.MARKER_IPK,
+                           SCHEMA_SEQ_NO=schemaSeqNo)\
+                   .encode()
+
+    def _encodeValue(self, value, seqNo):
+        return self.stateSerializer.serialize({
+            DomainReqHandler.LAST_SEQ_NO: seqNo,
+            DomainReqHandler.VALUE: value
+        })

@@ -194,7 +194,7 @@ class Upgrader(HasActionQueue):
                                               lastEvent[1] == UpgradeLog.UPGRADE_SCHEDULED
         return self.__isItFirstRunAfterUpgrade
 
-    def isScheduleValid(self, schedule, nodeIds) -> bool:
+    def isScheduleValid(self, schedule, nodeIds) -> (bool, str):
         """
         Validates schedule of planned node upgrades
 
@@ -219,9 +219,9 @@ class Upgrader(HasActionQueue):
         for i in range(len(times) - 1):
             diff = (times[i + 1] - times[i]).seconds
             if diff < self.config.MinSepBetweenNodeUpgrades:
-                return False, 'time span between upgrades is {} seconds which ' \
-                              'is less than specified in the config'.format(
-                    diff)
+                return False, 'time span between upgrades is {} ' \
+                              'seconds which is less than specified ' \
+                              'in the config'.format(diff)
         return True, ''
 
     def statusInLedger(self, name, version) -> dict:

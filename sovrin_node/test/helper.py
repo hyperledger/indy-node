@@ -7,7 +7,7 @@ from plenum.common.constants import REQACK, TXN_ID
 from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import getMaxFailures, runall
-from plenum.persistence import orientdb_store
+# from plenum.persistence import orientdb_store
 from plenum.test.helper import TestNodeSet as PlenumTestNodeSet
 from plenum.test.helper import checkSufficientRepliesRecvd, \
     checkLastClientReqForNode, buildCompletedTxnFromReply
@@ -230,7 +230,7 @@ class TestUpgrader(Upgrader):
              Node.reportSuspiciousNode, Node.reportSuspiciousClient,
              Node.processRequest, Node.processPropagate, Node.propagate,
              Node.forward, Node.send, Node.processInstanceChange,
-             Node.checkPerformance, Node.getReplyFor])
+             Node.checkPerformance, Node.getReplyFromLedger])
 class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
@@ -241,11 +241,11 @@ class TestNode(TempStorage, TestNodeCore, Node):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
                             self.configLedger)
 
-    def _getOrientDbStore(self, name, dbType):
-        if not hasattr(self, '_orientDbStore'):
-            self._orientDbStore = orientdb_store.createOrientDbInMemStore(
-                self.config, name, dbType)
-        return self._orientDbStore
+    # def _getOrientDbStore(self, name, dbType):
+    #     if not hasattr(self, '_orientDbStore'):
+    #         self._orientDbStore = orientdb_store.createOrientDbInMemStore(
+    #             self.config, name, dbType)
+    #     return self._orientDbStore
 
     def onStopping(self, *args, **kwargs):
         if self.cleanupOnStopping:

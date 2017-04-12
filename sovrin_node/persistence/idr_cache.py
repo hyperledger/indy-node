@@ -1,12 +1,11 @@
 import os
 
-import leveldb
 from collections import OrderedDict
 import rlp
 
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, GUARDIAN
 from plenum.common.types import f
-from plenum.persistence.util import removeLockFiles
+from plenum.persistence.kv_store import KVStoreLeveldb
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
 from stp_core.common.log import getlogger
 
@@ -84,7 +83,7 @@ class IdrCache:
     def get(self, idr, isCommitted=True):
         idr = idr.encode()
         if isCommitted:
-            value = self._db.Get(idr)
+            value = self._db.get(idr)
         else:
             # Looking for uncommitted values, iterating over `self.unCommitted`
             # in reverse to get the latest value
@@ -93,25 +92,22 @@ class IdrCache:
                     value = cache[idr]
                     break
             else:
-                value = self._db.Get(idr)
+                value = self._db.get(idr)
         ta, iv, r = self.unpackIdrValue(value)
         return ta, iv, r
 
     def set(self, idr, ta=None, verkey=None, role=None, isCommitted=True):
-        idr = idr.encode()
         val = self.packIdrValue(ta, role, verkey)
         if isCommitted:
-            self._db.Put(idr, val)
+            self._db.set(idr, val)
         else:
             self.currentBatchOps.append((idr, val))
 
     def close(self):
-        removeLockFiles(self.dbPath)
-        del self._db
-        self._db = None
+        self._db.close()
 
     def open(self):
-        self._db = leveldb.LevelDB(self.dbPath)
+        self._db = KVStoreLeveldb(self.dbPath)
 
     @property
     def dbPath(self):
@@ -128,11 +124,7 @@ class IdrCache:
             self.currentBatchOps = []
 
     def onBatchCommitted(self, stateRoot):
-        batch = leveldb.WriteBatch()
-        for idr, val in self.unCommitted[stateRoot].items():
-            # self._db.Put(idr, val)
-            batch.Put(idr, val)
-        self._db.Write(batch, sync=False)
+        self._db.setBatch([(idr, val) for idr, val in self.unCommitted[stateRoot].items()])
         self.unCommitted.pop(stateRoot)
 
     def setVerkey(self, idr, verkey):
