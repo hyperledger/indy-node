@@ -7,21 +7,29 @@ import argparse
 import re
 
 
-def pathList(*pathes):
-    return {os.path.expanduser(path) for path in pathes}
+def pathList(*paths):
+    return {os.path.expanduser(path) for path in paths}
+
 
 TARGET_DIRS = pathList(
     "~/.sovrin",
     "~/.plenum"
 )
 
+PATHS_TO_CLEAR = (
+    '/.*/role',
+    '/.*/verif_keys',
+    '/.*/sig_keys',
+    '/.*/public_keys',
+    '/.*/private_keys'
+)
+
 WHITE_LIST = pathList(
     "~/.sovrin/sovrin_config.py",
     "~/.plenum/plenum_config.py",
-    "~/.sovrin/.*/role",
-    "~/.plenum/.*/role",
     "~/.sovrin/.*log"
-)
+).union(pathList(*{d+p for d in TARGET_DIRS for p in PATHS_TO_CLEAR}))
+
 
 ORIENTDB_HOST = "localhost"
 ORIENTDB_PORT = 2424
@@ -48,6 +56,7 @@ def clean_files(full):
         return
 
     files_to_keep = [re.compile(pattern) for pattern in WHITE_LIST]
+
     def isOk(path):
          return any(pattern.match(path) for pattern in files_to_keep)
 
@@ -62,6 +71,7 @@ def clean_files(full):
                     os.rmdir(root)
             else:
                 dirs[:] = []
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

@@ -1,4 +1,6 @@
-# Sovrin -- identity for all
+# Sovrin -- identity for all    
+
+[![Build Status](https://jenkins.evernym.com/buildStatus/icon?job=Sovrin Node/master)](https://jenkins.evernym.com/view/Core/job/Sovrin%20Node/job/master/)    
 
 Sovrin Identity Network public/permissioned distributed ledger
 
