@@ -3,7 +3,7 @@ import warnings
 from plenum.common.keygen_utils import initLocalKeys
 from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
-from plenum.test.helper import checkSufficientRepliesForRequests
+from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import \
     ensureClientConnectedToNodesAndPoolLedgerSame
 from plenum.test.test_node import checkNodesConnected
@@ -261,7 +261,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     reqs = newStewardWallet.preparePending()
     req, = newSteward.submitReqs(*reqs)
 
-    checkSufficientRepliesForRequests(looper, newSteward, [req, ])
+    waitForSufficientRepliesForRequests(looper, newSteward, requests=[req])
 
     def chk():
         assert newStewardWallet.getNode(node.id).seqNo is not None
