@@ -170,7 +170,7 @@ def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                        ha=nha, cliha=cha)
     looper.add(newNode)
     nodeSet[0] = newNode
-    looper.run(checkNodesConnected(nodeSet, overrideTimeout=30))
+    looper.run(checkNodesConnected(nodeSet, customTimeout=30))
     looper.run(eventually(checkNodeLedgersForEquality, newNode,
                           *txnPoolNodeSet[1:4], retryWait=1, timeout=15))
 
