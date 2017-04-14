@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 import pytest
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION, NAME
 from plenum.common.util import randomString
 

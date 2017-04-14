@@ -1,7 +1,7 @@
 import pytest
 from copy import deepcopy
 
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION, NAME
 from plenum.common.util import randomString
 from plenum.test.test_node import checkNodesConnected

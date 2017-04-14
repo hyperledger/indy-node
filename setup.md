@@ -38,7 +38,7 @@ To run a node you need to generate its keys. The keys are stored on a disk in fi
 The  following generates keys for a node named `Alpha` in the keep. 
 The keep for node `Alpha` is located at `~/.sovrin/Alpha`. 
 ```
-init_sovrin_raet_keep --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
+init_sovrin_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
 ```
 
 
