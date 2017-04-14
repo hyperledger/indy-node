@@ -45,11 +45,12 @@ class DomainReqHandler(PHandler):
             typ = txn.get(TXN_TYPE)
             nym = txn.get(TARGET_NYM)
             if typ == NYM:
-                self.updateNym(nym, {
-                    f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm),
-                    ROLE: txn.get(ROLE),
-                    VERKEY: txn.get(VERKEY)
-                }, isCommitted=isCommitted)
+                data = {f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm)}
+                if ROLE in txn:
+                    data[ROLE] = txn.get(ROLE)
+                if VERKEY in txn:
+                    data[VERKEY] = txn.get(VERKEY)
+                self.updateNym(nym, data, isCommitted=isCommitted)
             elif typ == ATTRIB:
                 self._addAttr(txn)
             elif typ == SCHEMA:
@@ -148,7 +149,7 @@ class DomainReqHandler(PHandler):
                         req.reqId,
                         "{} cannot add {}".format(originRole, role))
             else:
-                owner = s.getOwnerFor(op[TARGET_NYM])
+                owner = s.getOwnerFor(op[TARGET_NYM], isCommitted=False)
                 isOwner = origin == owner
                 updateKeys = [ROLE, VERKEY]
                 for key in updateKeys:
@@ -168,9 +169,8 @@ class DomainReqHandler(PHandler):
                                                                  key))
 
         elif typ == ATTRIB:
-            if op.get(TARGET_NYM) and \
-                            op[TARGET_NYM] != req.identifier and \
-                    not s.getOwnerFor(op[TARGET_NYM]) == origin:
+            if op.get(TARGET_NYM) and op[TARGET_NYM] != req.identifier and \
+                    not s.getOwnerFor(op[TARGET_NYM], isCommitted=False) == origin:
                 raise UnauthorizedClientRequest(
                     req.identifier,
                     req.reqId,
@@ -180,8 +180,8 @@ class DomainReqHandler(PHandler):
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
         self.idrCache.set(nym, ta=updatedData.get(f.IDENTIFIER.nm),
-                          verkey=data.get(VERKEY),
-                          role=data.get(ROLE),
+                          verkey=updatedData.get(VERKEY),
+                          role=updatedData.get(ROLE),
                           isCommitted=isCommitted)
 
     def hasNym(self, nym, isCommitted: bool = True):

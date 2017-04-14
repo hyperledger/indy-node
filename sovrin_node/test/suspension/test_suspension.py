@@ -1,6 +1,7 @@
 import pytest
 
 from stp_core.loop.eventually import eventually
+from stp_core.common.log import getlogger
 from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.util import randomString, hexToFriendly
 from plenum.test.pool_transactions.helper import suspendNode
@@ -11,6 +12,9 @@ from sovrin_client.test.helper import addRole, suspendRole, \
 from sovrin_common.constants import TGB, TRUST_ANCHOR
 
 whitelist = ['Observer threw an exception', 'while verifying message']
+
+
+logger = getlogger()
 
 
 @pytest.fixture(scope="module")
@@ -112,6 +116,8 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
         # Trustee cannot change verkey
         with pytest.raises(AssertionError):
             _, wallet = identity
+            logger.debug('Trustee attempting to change verkey '
+                         'of {}'.format(wallet))
             changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '')
         # Identity owner can change verkey
         changeVerkey(looper, *identity, wallet.defaultId, '')
