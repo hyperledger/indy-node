@@ -57,7 +57,7 @@ def create_local_pool(base_dir, node_size=4, looper=None):
         pool.add(n)
         nodes.append(n)
 
-    pool.run_till_quiet(1)
+    pool.runFor(5)
 
     return pool
 
