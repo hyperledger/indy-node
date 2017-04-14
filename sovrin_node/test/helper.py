@@ -10,7 +10,7 @@ from plenum.common.constants import REQACK, TXN_ID
 from plenum.common.util import getMaxFailures, runall
 from plenum.persistence import orientdb_store
 from plenum.test.helper import TestNodeSet as PlenumTestNodeSet
-from plenum.test.helper import checkSufficientRepliesRecvd, \
+from plenum.test.helper import waitForSufficientRepliesForRequests, \
     checkLastClientReqForNode, buildCompletedTxnFromReply
 from plenum.test.test_node import checkNodesAreReady, TestNodeCore
 from plenum.test.test_node import checkNodesConnected
@@ -145,7 +145,7 @@ class Scenario(ExitStack):
 
         nodeCount = sum(1 for _ in self.nodes)
         f = getMaxFailures(nodeCount)
-        corogen = (eventually(checkSufficientRepliesRecvd,
+        corogen = (eventually(waitForSufficientRepliesForRequests,
                               org.client.inBox,
                               r.reqId,
                               f,

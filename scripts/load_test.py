@@ -154,7 +154,7 @@ class ClientPoll:
             idy = Identity(identifier=signer.identifier,
                            verkey=signer.verkey)
 
-            wallet.addSponsoredIdentity(idy)
+            wallet.addTrustAnchoredIdentity(idy)
 
         return self.submitGeneric(makeRequest, reqsPerClient)
 
@@ -229,15 +229,15 @@ async def checkReply(client, requestId, identifier):
         # nacks = client.reqRepStore.getNacks(requestId)
         # replies = client.reqRepStore.getReplies(requestId)
         nodeCount = len(client.nodeReg)
-        acks = getAcksFromInbox(client, requestId, maxm=nodeCount)
-        nacks = getNacksFromInbox(client, requestId, maxm=nodeCount)
-        replies = getRepliesFromInbox(client, requestId, maxm=nodeCount)
+        acks = getAcksFromInbox(client, requestId)
+        nacks = getNacksFromInbox(client, requestId)
+        replies = getRepliesFromInbox(client, requestId)
         hasConsensus = client.hasConsensus(identifier, requestId)
         queryTime = sum(map(lambda f:  f.__wrapped__.elapsed,
                                [getAcksFromInbox, getNacksFromInbox,
                                 getRepliesFromInbox, client.hasConsensus]))
-    except Exception as e:  # TODO: Can be a problem?
-        pass
+    except Exception as e:
+        logger.warn("Error occured during checking replies: ".format(e))
     finally:
         return hasConsensus, (hasConsensus, acks, nacks, replies, queryTime)
 
