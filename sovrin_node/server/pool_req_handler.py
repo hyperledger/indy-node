@@ -4,7 +4,7 @@ from ledger.serializers.json_serializer import JsonSerializer
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, DATA, ALIAS, SERVICES
 
 from plenum.common.ledger import Ledger
-from plenum.common.state import PruningState
+from plenum.persistence.state import PruningState
 from plenum.server.pool_req_handler import PoolRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NODE
@@ -31,14 +31,17 @@ class PoolRequestHandler(PHandler):
         origin = request.identifier
         operation = request.operation
         nodeNym = operation.get(TARGET_NYM)
-        if self.isNodeDataConflicting(operation.get(DATA, {}), nodeNym,
-                                      isCommitted=False):
-            return "existing data has conflicts with request " \
-                   "data {}".format(operation.get(DATA))
-        isStewardOfNode = self.isStewardOfNode(origin, nodeNym)
+
+        data = operation.get(DATA, {})
+        error = self.dataErrorWhileValidatingUpdate(data, nodeNym)
+        if error:
+            return error
+
+        isStewardOfNode = self.isStewardOfNode(origin, nodeNym, isCommitted=False)
+
         actorRole = self.idrCache.getRole(origin, isCommitted=False)
         nodeInfo = self.getNodeData(nodeNym, isCommitted=False)
-        data = deepcopy(operation.get(DATA))
+        data = deepcopy(data)
         data.pop(ALIAS, None)
         vals = []
         msgs = []
