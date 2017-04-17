@@ -238,11 +238,11 @@ class Node(PlenumNode, HasPoolManager):
         # corresponding client request(REQUEST)
         self.recordAndPropagate(request, frm)
 
-    def postTxnFromCatchupAddedToLedger(self, ledgerId: int, txn: Any):
+    def postTxnFromCatchup(self, ledgerId: int, txn: Any):
         if ledgerId == CONFIG_LEDGER_ID:
-            pass
+            return self.configReqHandler
         else:
-            super().postTxnFromCatchupAddedToLedger(ledgerId, txn)
+            return super().postTxnFromCatchup(ledgerId, txn)
 
     def validateNodeMsg(self, wrappedMsg):
         msg, frm = wrappedMsg
