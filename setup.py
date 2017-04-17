@@ -91,7 +91,7 @@ setup(
     )],
     install_requires=['sovrin-common-dev==0.2.35', 'python-dateutil'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'sovrin-client-dev==0.3.49'],
+    tests_require=['pytest', 'sovrin-client-dev==0.3.50'],
     scripts=['scripts/start_sovrin_node',
              'scripts/node_control_tool.py',
              'scripts/clear_node.py',
