@@ -33,7 +33,7 @@ from sovrin_common.constants import TXN_TYPE, \
     ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
     reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
     SCHEMA, GET_SCHEMA, openTxns, \
-    ISSUER_KEY, GET_ISSUER_KEY, REF, IDENTITY_TXN_TYPES, \
+    CLAIM_DEF, GET_CLAIM_DEF, REF, IDENTITY_TXN_TYPES, \
     CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
     NODE_UPGRADE, COMPLETE, FAIL, ENDPOINT
 from sovrin_common.txn_util import getTxnOrderedFields
@@ -45,6 +45,8 @@ from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from stp_core.network.exceptions import EndpointException
+from sovrin_common.constants import SIGNATURE_TYPE
+
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
@@ -389,8 +391,8 @@ class Node(PlenumNode, HasPoolManager):
                         "for that identity")
 
         # TODO: Just for now. Later do something meaningful here
-        elif typ in [DISCLO, GET_ATTR, SCHEMA, GET_SCHEMA, ISSUER_KEY,
-                     GET_ISSUER_KEY]:
+        elif typ in [DISCLO, GET_ATTR, SCHEMA, GET_SCHEMA, CLAIM_DEF,
+                     GET_CLAIM_DEF]:
             pass
         elif request.operation.get(TXN_TYPE) in POOL_TXN_TYPES:
             return self.poolManager.checkRequestAuthorized(request)
@@ -532,10 +534,11 @@ class Node(PlenumNode, HasPoolManager):
         })
         self.transmitToClient(Reply(result), frm)
 
-    def processGetIssuerKeyReq(self, request: Request, frm: str):
+    def processGetClaimDefReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys = self.graphStore.getIssuerKeys(request.operation[ORIGIN],
-                                             request.operation[REF])
+        keys = self.graphStore.getClaimDef(request.operation[ORIGIN],
+                                           request.operation[REF],
+                                           request.operation[SIGNATURE_TYPE])
         result = {
             TXN_ID: self.genTxnId(
                 request.identifier, request.reqId)
@@ -557,8 +560,8 @@ class Node(PlenumNode, HasPoolManager):
             self.processGetSchemaReq(request, frm)
         elif request.operation[TXN_TYPE] == GET_ATTR:
             self.processGetAttrsReq(request, frm)
-        elif request.operation[TXN_TYPE] == GET_ISSUER_KEY:
-            self.processGetIssuerKeyReq(request, frm)
+        elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
+            self.processGetClaimDefReq(request, frm)
         else:
             super().processRequest(request, frm)
 
@@ -572,7 +575,7 @@ class Node(PlenumNode, HasPoolManager):
          client requests it.
         """
         result = reply.result
-        if result[TXN_TYPE] in (SCHEMA, ISSUER_KEY):
+        if result[TXN_TYPE] in (SCHEMA, CLAIM_DEF):
             result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
 
         txnWithMerkleInfo = self.storeTxnInLedger(result)
@@ -632,8 +635,8 @@ class Node(PlenumNode, HasPoolManager):
             self.graphStore.addAttribTxnToGraph(result)
         elif result[TXN_TYPE] == SCHEMA:
             self.graphStore.addSchemaTxnToGraph(result)
-        elif result[TXN_TYPE] == ISSUER_KEY:
-            self.graphStore.addIssuerKeyTxnToGraph(result)
+        elif result[TXN_TYPE] == CLAIM_DEF:
+            self.graphStore.addClaimDefTxnToGraph(result)
         else:
             logger.debug("Got an unknown type {} to process".
                          format(result[TXN_TYPE]))
