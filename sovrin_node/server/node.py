@@ -45,6 +45,8 @@ from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from stp_core.network.exceptions import EndpointException
+from sovrin_common.constants import SIGNATURE_TYPE
+
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
@@ -535,7 +537,8 @@ class Node(PlenumNode, HasPoolManager):
     def processGetClaimDefReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
         keys = self.graphStore.getClaimDef(request.operation[ORIGIN],
-                                             request.operation[REF])
+                                           request.operation[REF],
+                                           request.operation[SIGNATURE_TYPE])
         result = {
             TXN_ID: self.genTxnId(
                 request.identifier, request.reqId)
