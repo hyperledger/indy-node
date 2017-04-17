@@ -10,16 +10,15 @@ from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.stores.file_hash_store import FileHashStore
 from ledger.serializers.json_serializer import JsonSerializer
 
-from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest
+from plenum.common.exceptions import InvalidClientRequest
 from plenum.persistence.util import txnsWithMerkleInfo
 from sovrin_node.persistence.attribute_store import AttributeStore
 from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, VERKEY, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
-    DATA, TXN_ID, HASH, ENC, RAW, NYM_KEY
-from plenum.common.types import Reply, RequestAck, RequestNack, f, \
-    OPERATION, LedgerStatus, DOMAIN_LEDGER_ID, POOL_LEDGER_ID
+    POOL_TXN_TYPES, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
+    DATA, HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID
+from plenum.common.types import Reply, RequestAck, f, \
+    OPERATION, LedgerStatus
 from plenum.common.util import error
 
 from plenum.persistence.storage import initStorage
@@ -30,11 +29,9 @@ from plenum.persistence.state import PruningState
 
 
 from sovrin_common.config_util import getConfig
-from sovrin_common.constants import allOpKeys, ATTRIB, NYM,\
-    ROLE, GET_ATTR, DISCLO, GET_NYM, reqOpKeys, GET_TXNS, \
-    SCHEMA, GET_SCHEMA,\
-    ISSUER_KEY, GET_ISSUER_KEY, REF, POOL_UPGRADE, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL
+from sovrin_common.constants import allOpKeys, ATTRIB, GET_ATTR, \
+    GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, \
+    GET_ISSUER_KEY, REF, ACTION, NODE_UPGRADE, COMPLETE, FAIL
 from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
 from sovrin_node.persistence.idr_cache import IdrCache
@@ -100,7 +97,7 @@ class Node(PlenumNode, HasPoolManager):
         self.initConfigState()
         for r in self.replicas:
             r.requestQueues[CONFIG_LEDGER_ID] = deque()
-        self.requestExecuter[CONFIG_LEDGER_ID] = self.executeConfigTxn
+        self.requestExecuter[CONFIG_LEDGER_ID] = self.executeConfigTxns
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
@@ -170,13 +167,13 @@ class Node(PlenumNode, HasPoolManager):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
                                  self.configLedger, self.configReqHandler)
 
-    def postDomainLedgerCaughtUp(self):
+    def postDomainLedgerCaughtUp(self, **kwargs):
         # TODO: Reconsider, shouldn't config ledger be synced before domain
         # ledger, since processing config ledger can lead to restart and
-        # thus rework (running the sync for leders again).
+        # thus rework (running the sync for ledgers again).
         # A counter argument is since domain ledger contains identities and thus
         # trustees, its needs to sync first
-        super().postDomainLedgerCaughtUp()
+        super().postDomainLedgerCaughtUp(**kwargs)
         self.ledgerManager.setLedgerCanSync(CONFIG_LEDGER_ID, True)
         # Node has discovered other nodes now sync up domain ledger
         for nm in self.nodestack.connecteds:
@@ -197,29 +194,28 @@ class Node(PlenumNode, HasPoolManager):
         else:
             return super().getLedgerStatus(ledgerId)
 
-    def postPoolLedgerCaughtUp(self):
+    def postPoolLedgerCaughtUp(self, **kwargs):
         # The only reason to override this is to set the correct node id in
         # the upgrader since when the upgrader is initialized, node might not
         # have its id since it maybe missing the complete pool ledger.
         # TODO: Maybe a cleaner way is to initialize upgrader only when pool
         # ledger has caught up.
-        super().postPoolLedgerCaughtUp()
+        super().postPoolLedgerCaughtUp(**kwargs)
         self.upgrader.nodeId = self.id
 
-    def postConfigLedgerCaughtUp(self):
+    def postConfigLedgerCaughtUp(self, **kwargs):
         if all(r.primaryName is not None for r in self.replicas):
             self.upgrader.processLedger()
             if self.upgrader.isItFirstRunAfterUpgrade:
                 lastUpgradeVersion = self.upgrader.lastExecutedUpgradeInfo[1]
+                action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
                 op = {
                     TXN_TYPE: NODE_UPGRADE,
                     DATA: {
-                        ACTION: COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL,
+                        ACTION: action,
                         VERSION: lastUpgradeVersion
                     }
                 }
-                op[DATA][ACTION] = COMPLETE if \
-                    self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
                 op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
                 request = self.wallet.signOp(op)
                 self.startedProcessingReq(*request.key, self.nodestack.name)
@@ -443,26 +439,29 @@ class Node(PlenumNode, HasPoolManager):
             return self.getReplyFromLedger(self.configLedger, request)
 
     def commitAndUpdate(self, reqHandler, ppTime, reqs: List[Request],
-                       stateRoot, txnRoot):
+                       stateRoot, txnRoot) -> List:
         committedTxns = reqHandler.commit(len(reqs), stateRoot, txnRoot)
         self.updateSeqNoMap(committedTxns)
         committedTxns = txnsWithMerkleInfo(reqHandler.ledger,
                                            committedTxns)
         self.sendRepliesToClients(committedTxns, ppTime)
+        return committedTxns
 
-    def doCustomAction(self, ppTime, reqs: List[Request], stateRoot,
-                       txnRoot) -> None:
+    def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
+                          txnRoot) -> List:
         """
         Execute the REQUEST sent to this Node
 
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        self.commitAndUpdate(self.reqHandler, ppTime, reqs, stateRoot, txnRoot)
+        return self.commitAndUpdate(self.reqHandler, ppTime, reqs, stateRoot,
+                                    txnRoot)
 
-    def executeConfigTxn(self, ppTime, reqs: List[Request], stateRoot, txnRoot):
-        self.commitAndUpdate(self.configReqHandler, ppTime, reqs, stateRoot,
-                             txnRoot)
+    def executeConfigTxns(self, ppTime, reqs: List[Request], stateRoot,
+                          txnRoot) -> List:
+        return self.commitAndUpdate(self.configReqHandler, ppTime, reqs,
+                                    stateRoot, txnRoot)
 
     def closeAllLevelDBs(self):
         super().closeAllLevelDBs()
