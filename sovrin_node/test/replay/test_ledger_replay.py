@@ -64,8 +64,7 @@ def publicRepo(steward, stewardWallet):
 
 @pytest.fixture(scope="module")
 def schemaDefGvt(stewardWallet):
-    return Schema('GVT', '1.0', GVT.attribNames(), 'CL',
-                  stewardWallet.defaultId)
+    return Schema('GVT', '1.0', GVT.attribNames(), stewardWallet.defaultId)
 
 
 @pytest.fixture(scope="module")
@@ -145,7 +144,6 @@ def compareGraph(table, nodeSet):
                             if not isinstance(v, OrientBinaryObject)
                             })
         assert records == stoppedNodeRecords
-
 
 def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                      nodeSet, looper, tconf, tdirWithPoolTxns,
