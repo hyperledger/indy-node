@@ -3,7 +3,7 @@ from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.identity import Identity
 from stp_core.network.port_dispenser import genHa, HA
 from stp_core.loop.looper import Looper
-from plenum.test.helper import checkSufficientRepliesForRequests
+from plenum.test.helper import waitForSufficientRepliesForRequests
 from time import *
 from plenum.common.signer_simple import SimpleSigner
 
@@ -38,9 +38,9 @@ def load():
         for i in range(0, numReqs, numReqs // splits):
             print('Will wait for {} now'.format(numReqs // splits))
             s = perf_counter()
-            checkSufficientRepliesForRequests(looper, client, requests[
-                                                              i:i + numReqs // splits + 1],
-                                              2, 3)
+            reqs = requests[i:i + numReqs // splits + 1]
+            waitForSufficientRepliesForRequests(looper, client, requests=reqs,
+                                                fVal=2, customTimeoutPerReq=3)
             print('>>> Got replies for {} requests << in {}'.
                   format(numReqs // splits, perf_counter() - s))
         end = perf_counter()
