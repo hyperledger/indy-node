@@ -463,8 +463,8 @@ class Node(PlenumNode, HasPoolManager):
         return self.commitAndUpdate(self.configReqHandler, ppTime, reqs,
                                     stateRoot, txnRoot)
 
-    def closeAllLevelDBs(self):
-        super().closeAllLevelDBs()
+    def closeAllKVStores(self):
+        super().closeAllKVStores()
         if self.idrCache:
             self.idrCache.close()
         if self.attributeStore:
