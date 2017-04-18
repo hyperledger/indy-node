@@ -1,6 +1,8 @@
 from copy import deepcopy
 
 import pytest
+
+from sovrin_node.test import waits
 from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION, NAME
 from plenum.common.util import randomString
@@ -28,14 +30,14 @@ def testDoNotScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
     # An upgrade for higher version scheduled, it should pass
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr2)
     looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr2[VERSION],
-                          retryWait=1, timeout=5))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
     # An upgrade for lower version scheduled, the transaction should pass but
     # the upgrade should not be scheduled
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
     with pytest.raises(AssertionError):
         looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
-                              retryWait=1, timeout=5))
+                              retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
     # Cancel the upgrade with higher version
     upgr3 = deepcopy(upgr2)
@@ -44,4 +46,4 @@ def testDoNotScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
 
     # Now the upgrade for lower version should be scheduled
     looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
-                          retryWait=1, timeout=5))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))

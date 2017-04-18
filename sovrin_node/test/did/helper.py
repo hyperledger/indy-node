@@ -3,6 +3,7 @@ from plenum.common.signer_did import DidSigner
 from plenum.common.verifier import DidVerifier
 from stp_core.loop.eventually import eventually
 from plenum.test.helper import assertEquality
+from plenum.test import waits as plenumWaits
 
 from sovrin_common.identity import Identity
 
@@ -38,8 +39,8 @@ def updateWalletIdrWithFullVerkeySigner(wallet, idr, signer):
     checkFullVerkeySize(wallet.getVerkey(idr))
 
 
-def updateSovrinIdrWithFullKey(looper, senderWallet, senderClient, ownerWallet,
-                               idr, fullKey):
+def updateSovrinIdrWithFullKey(looper, senderWallet, senderClient,
+                               ownerWallet, idr, fullKey):
     idy = Identity(identifier=idr, verkey=fullKey)
     senderWallet.updateTrustAnchoredIdentity(idy)
     # TODO: What if the request fails, there must be some rollback mechanism
@@ -50,12 +51,13 @@ def updateSovrinIdrWithFullKey(looper, senderWallet, senderClient, ownerWallet,
     def chk():
         assert senderWallet.getTrustAnchoredIdentity(idr).seqNo is not None
 
-    looper.run(eventually(chk, retryWait=1, timeout=5))
+    timeout = plenumWaits.expectedReqAckQuorumTime()
+    looper.run(eventually(chk, retryWait=1, timeout=timeout))
     return ownerWallet
 
 
-def fetchFullVerkeyFromSovrin(looper, senderWallet, senderClient, ownerWallet,
-                               idr):
+def fetchFullVerkeyFromSovrin(looper, senderWallet, senderClient,
+                              ownerWallet, idr):
     identity = Identity(identifier=idr)
     req = senderWallet.requestIdentity(identity, sender=senderWallet.defaultId)
     senderClient.submitReqs(req)
@@ -64,7 +66,9 @@ def fetchFullVerkeyFromSovrin(looper, senderWallet, senderClient, ownerWallet,
         retrievedVerkey = senderWallet.getIdentity(idr).verkey
         assertEquality(retrievedVerkey, ownerWallet.getVerkey(idr))
         checkFullVerkeySize(retrievedVerkey)
-    looper.run(eventually(chk, retryWait=1, timeout=5))
+
+    timeout = plenumWaits.expectedReqAckQuorumTime()
+    looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
 
 def checkDidSize(did):

@@ -13,6 +13,7 @@ Full verkey tests
 """
 from stp_core.loop.eventually import eventually
 from plenum.common.signer_did import DidSigner
+from plenum.test import waits as plenumWaits
 
 from sovrin_common.identity import Identity
 from sovrin_node.test.did.conftest import pf
@@ -78,7 +79,8 @@ def testRetrieveFullVerkey(didAddedWithFullVerkey, looper, trustAnchor,
         assert retrievedVerkey == wallet.getVerkey(fullKeyIdr)
         checkFullVerkeySize(retrievedVerkey)
 
-    looper.run(eventually(chk, retryWait=1, timeout=5))
+    timeout = plenumWaits.expectedReqAckQuorumTime()
+    looper.run(eventually(chk, retryWait=1, timeout=timeout))
     chkVerifyForRetrievedIdentity(wallet, trustAnchorWallet, fullKeyIdr)
 
 

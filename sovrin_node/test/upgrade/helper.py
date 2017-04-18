@@ -1,5 +1,6 @@
 from stp_core.loop.eventually import eventually
 from plenum.test.helper import waitForSufficientRepliesForRequests
+from plenum.test import waits as plenumWaits
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_node.server.upgrader import Upgrader
 
@@ -14,13 +15,13 @@ def sendUpgrade(client, wallet, upgradeData):
 
 def ensureUpgradeSent(looper, trustee, trusteeWallet, upgradeData):
     upgrade, req = sendUpgrade(trustee, trusteeWallet, upgradeData)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=[req],
-                                      customTimeoutPerReq=10)
+    waitForSufficientRepliesForRequests(looper, trustee, requests=[req])
 
     def check():
         assert trusteeWallet.getPoolUpgrade(upgrade.key).seqNo
 
-    looper.run(eventually(check, retryWait=1, timeout=5))
+    timeout = plenumWaits.expectedReqAckQuorumTime()
+    looper.run(eventually(check, retryWait=1, timeout=timeout))
     return upgrade
 
 
