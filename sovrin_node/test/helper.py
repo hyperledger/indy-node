@@ -14,6 +14,7 @@ from plenum.test.helper import waitForSufficientRepliesForRequests, \
 from plenum.test.test_node import checkNodesAreReady, TestNodeCore
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.testable import spyable
+from plenum.test import waits as plenumWaits
 from sovrin_client.client.wallet.attribute import LedgerStore, Attribute
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.test.helper import genTestClient, genTestClientProvider
