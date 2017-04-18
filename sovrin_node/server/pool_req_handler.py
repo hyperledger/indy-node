@@ -1,10 +1,10 @@
 from copy import deepcopy
 
 from ledger.serializers.json_serializer import JsonSerializer
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, DATA, ALIAS, SERVICES
+from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES
 
 from plenum.common.ledger import Ledger
-from plenum.persistence.state import PruningState
+from plenum.persistence.pruning_state import PruningState
 from plenum.server.pool_req_handler import PoolRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NODE

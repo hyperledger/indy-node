@@ -25,7 +25,7 @@ from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from plenum.common.ledger import Ledger
 
-from plenum.persistence.state import PruningState
+from plenum.persistence.pruning_state import PruningState
 
 
 from sovrin_common.config_util import getConfig

@@ -5,7 +5,7 @@ import rlp
 
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, GUARDIAN
 from plenum.common.types import f
-from plenum.persistence.kv_store import KVStoreLeveldb
+from plenum.persistence.kv_store_leveldb import KVStoreLeveldb
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
 from stp_core.common.log import getlogger
 
