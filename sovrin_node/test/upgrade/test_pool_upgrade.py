@@ -63,25 +63,19 @@ def validUpgradeSent(looper, nodeSet, tdir, trustee, trusteeWallet,
 def testNodeRejectsPoolUpgrade(looper, nodeSet, tdir, trustee,
                                       trusteeWallet, invalidUpgrade):
     _, req = sendUpgrade(trustee, trusteeWallet, invalidUpgrade)
-    with pytest.raises(AssertionError):
-        waitForSufficientRepliesForRequests(looper, trustee, requests=[req])
     timeout = plenumWaits.expectedReqNAckQuorumTime()
     looper.run(eventually(checkNacks, trustee, req.reqId,
                           'since time span between upgrades', retryWait=1,
                           timeout=timeout))
 
 
-@pytest.mark.skip('Somehow `steward` has role the Trustee, actorRole=`0`, SOV-')
-def testOnlyTrusteeCanSendPoolUpgrade(validUpgradeSent, looper, steward,
-                                      validUpgrade):
+def testOnlyTrusteeCanSendPoolUpgrade(looper, steward, validUpgrade):
     # A steward sending POOL_UPGRADE but txn fails
     stClient, stWallet = steward
     validUpgrade = deepcopy(validUpgrade)
     validUpgrade[NAME] = 'upgrade-20'
     validUpgrade[VERSION] = bumpedVersion()
     _, req = sendUpgrade(stClient, stWallet, validUpgrade)
-    with pytest.raises(AssertionError):
-        waitForSufficientRepliesForRequests(looper, stClient, requests=[req])
     timeout = plenumWaits.expectedReqNAckQuorumTime()
     looper.run(eventually(checkNacks, stClient, req.reqId,
                           'cannot do', retryWait=1, timeout=timeout))
@@ -127,29 +121,24 @@ def testPrimaryNodeTriggersElectionBeforeUpgrading(upgradeScheduled, looper,
     pass
 
 
-@pytest.mark.skip("SOV-557. Skipping due to failing test, when run as module")
 def testNonTrustyCannotCancelUpgrade(validUpgradeSent, looper, nodeSet,
                                      steward, validUpgrade):
     stClient, stWallet = steward
-    validUpgrade = deepcopy(validUpgrade)
-    validUpgrade[ACTION] = CANCEL
-    _, req = sendUpgrade(stClient, stWallet, validUpgrade)
-    with pytest.raises(AssertionError):
-        waitForSufficientRepliesForRequests(looper, stClient, requests=[req])
+    validUpgradeCopy = deepcopy(validUpgrade)
+    validUpgradeCopy[ACTION] = CANCEL
+    _, req = sendUpgrade(stClient, stWallet, validUpgradeCopy)
     looper.run(eventually(checkNacks, stClient, req.reqId,
                           'cannot do'))
 
 
-@pytest.mark.skip("SOV-558. Skipping due to failing test, when run as module")
 def testTrustyCancelsUpgrade(validUpgradeSent, looper, nodeSet, trustee,
                              trusteeWallet, validUpgrade):
-    validUpgrade = deepcopy(validUpgrade)
-    validUpgrade[ACTION] = CANCEL
-    validUpgrade[JUSTIFICATION] = '"not gonna give you one"'
+    validUpgradeCopy = deepcopy(validUpgrade)
+    validUpgradeCopy[ACTION] = CANCEL
+    validUpgradeCopy[JUSTIFICATION] = '"not gonna give you one"'
 
-    validUpgrade.pop(SCHEDULE, None)
-    upgrade, req = sendUpgrade(trustee, trusteeWallet, validUpgrade)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=[req])
+    validUpgradeCopy.pop(SCHEDULE, None)
+    upgrade, req = sendUpgrade(trustee, trusteeWallet, validUpgradeCopy)
 
     def check():
         assert trusteeWallet.getPoolUpgrade(upgrade.key).seqNo
