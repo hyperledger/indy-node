@@ -11,6 +11,7 @@ from anoncreds.test.conftest import GVT
 
 from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
+from plenum.test import waits as plenumWaits
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.node_catchup.helper import checkNodeLedgersForEquality
 
@@ -168,9 +169,10 @@ def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                        ha=nha, cliha=cha)
     looper.add(newNode)
     nodeSet[0] = newNode
-    looper.run(checkNodesConnected(nodeSet, customTimeout=30))
+    looper.run(checkNodesConnected(nodeSet))
+    timeout = plenumWaits.expectedPoolLedgerCheck(len(txnPoolNodeSet))
     looper.run(eventually(checkNodeLedgersForEquality, newNode,
-                          *txnPoolNodeSet[1:4], retryWait=1, timeout=15))
+                          *txnPoolNodeSet[1:4], retryWait=1, timeout=timeout))
 
     compareGraph("NYM", nodeSet)
     compareGraph("ClaimDef", nodeSet)

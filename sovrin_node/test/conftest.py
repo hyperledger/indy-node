@@ -1,6 +1,7 @@
 import warnings
 
 from plenum.common.keygen_utils import initLocalKeys
+from plenum.test import waits as plenumWaits
 from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
 from plenum.test.helper import waitForSufficientRepliesForRequests
@@ -266,7 +267,8 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     def chk():
         assert newStewardWallet.getNode(node.id).seqNo is not None
 
-    looper.run(eventually(chk, retryWait=1, timeout=10))
+    timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
+    looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
     initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
