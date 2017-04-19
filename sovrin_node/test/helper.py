@@ -14,6 +14,7 @@ from plenum.test.helper import waitForSufficientRepliesForRequests, \
 from plenum.test.test_node import checkNodesAreReady, TestNodeCore
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.testable import Spyable
+from plenum.test import waits as plenumWaits
 from sovrin_client.client.wallet.attribute import LedgerStore, Attribute
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.test.helper import genTestClient, genTestClientProvider
@@ -23,6 +24,7 @@ from sovrin_node.server.node import Node
 from sovrin_node.server.upgrader import Upgrader
 from stp_core.loop.eventually import eventually
 from stp_core.loop.looper import Looper
+
 
 logger = getlogger()
 
@@ -87,10 +89,11 @@ class Scenario(ExitStack):
 
     async def start(self):
         await checkNodesConnected(self.nodes)
+        timeout = plenumWaits.expectedPoolStartUpTimeout(len(self.nodes))
         await eventually(checkNodesAreReady,
                          self.nodes,
                          retryWait=.25,
-                         timeout=20,
+                         timeout=timeout,
                          ratchetSteps=10)
 
     async def startClient(self, org=None):
@@ -109,6 +112,7 @@ class Scenario(ExitStack):
             for x in minusInBox:
                 ib.remove(x)
 
+        timeout = plenumWaits.expectedReqAckQuorumTime()
         for node in self.nodes:
             await eventually(self.checkInboxForReAck,
                              org.client.name,
@@ -117,7 +121,7 @@ class Scenario(ExitStack):
                              node,
                              count,
                              retryWait=.1,
-                             timeout=10,
+                             timeout=timeout,
                              ratchetSteps=10)
 
     @staticmethod
@@ -139,9 +143,6 @@ class Scenario(ExitStack):
         if not isinstance(reqs, Iterable):
             reqs = [reqs]
 
-        if timeout is None:
-            timeout = len(reqs) * 5 + 5
-
         nodeCount = sum(1 for _ in self.nodes)
         f = getMaxFailures(nodeCount)
         corogen = (eventually(waitForSufficientRepliesForRequests,
@@ -157,12 +158,14 @@ class Scenario(ExitStack):
     async def send(self, op, org=None):
         org = org if org else self.actor
         req = org.client.submit(op)[0]
+        timeout = plenumWaits.expectedTransactionExecutionTime(
+            len(self.nodes))
         for node in self.nodes:
             await eventually(checkLastClientReqForNode,
                              node,
                              req,
                              retryWait=1,
-                             timeout=10)
+                             timeout=timeout)
         return req
 
     async def sendAndCheckAcks(self, op, count: int = 1, org=None):
@@ -279,7 +282,9 @@ def checkSubmitted(looper, client, optype, txnsBefore):
         logger.debug("old and new txns {} {}".format(txnsBefore, txnsAfter))
         assert len(txnsAfter) > len(txnsBefore)
 
-    looper.run(eventually(checkTxnCountAdvanced, retryWait=1, timeout=15))
+    timeout = plenumWaits.expectedReqAckQuorumTime()
+    looper.run(eventually(checkTxnCountAdvanced, retryWait=1,
+                          timeout=timeout))
     txnIdsBefore = [txn[TXN_ID] for txn in txnsBefore]
     txnIdsAfter = [txn[TXN_ID] for txn in txnsAfter]
     logger.debug("old and new txnids {} {}".format(txnIdsBefore, txnIdsAfter))
@@ -345,7 +350,8 @@ def addAttributeAndCheck(looper, client, wallet, attrib):
     def chk():
         assert wallet.getAttribute(attrib).seqNo is not None
 
-    looper.run(eventually(chk, retryWait=1, timeout=15))
+    timeout = plenumWaits.expectedReqAckQuorumTime()
+    looper.run(eventually(chk, retryWait=1, timeout=timeout))
     return wallet.getAttribute(attrib).seqNo
 
 

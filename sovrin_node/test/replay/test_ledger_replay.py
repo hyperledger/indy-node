@@ -11,6 +11,7 @@ from anoncreds.test.conftest import GVT
 
 from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
+from plenum.test import waits as plenumWaits
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.node_catchup.helper import checkNodeLedgersForEquality
 
@@ -64,8 +65,7 @@ def publicRepo(steward, stewardWallet):
 
 @pytest.fixture(scope="module")
 def schemaDefGvt(stewardWallet):
-    return Schema('GVT', '1.0', GVT.attribNames(), 'CL',
-                  stewardWallet.defaultId)
+    return Schema('GVT', '1.0', GVT.attribNames(), stewardWallet.defaultId)
 
 
 @pytest.fixture(scope="module")
@@ -122,7 +122,7 @@ def compareGraph(table, nodeSet):
     tableRecodesStoppedNode = stoppedNodeClient.query("SELECT * FROM {}".format(table))
     for nodeRecord in tableRecodesStoppedNode:
 
-        if table == "IssuerKey" and isinstance(nodeRecord.oRecordData["data"], str):
+        if table == "ClaimDef" and isinstance(nodeRecord.oRecordData["data"], str):
             nodeRecord.oRecordData["data"] = json.loads(nodeRecord.oRecordData["data"])
 
         stoppedNodeRecords.append({k: v for k, v in nodeRecord.oRecordData.items()
@@ -138,14 +138,13 @@ def compareGraph(table, nodeSet):
         tableRecodes = client.query("SELECT * FROM {}".format(table))
         for record in tableRecodes:
 
-            if table == "IssuerKey" and isinstance(record.oRecordData["data"], str):
+            if table == "ClaimDef" and isinstance(record.oRecordData["data"], str):
                 record.oRecordData["data"] = json.loads(record.oRecordData["data"])
 
             records.append({k: v for k, v in record.oRecordData.items()
                             if not isinstance(v, OrientBinaryObject)
                             })
         assert records == stoppedNodeRecords
-
 
 def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                      nodeSet, looper, tconf, tdirWithPoolTxns,
@@ -170,10 +169,11 @@ def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                        ha=nha, cliha=cha)
     looper.add(newNode)
     nodeSet[0] = newNode
-    looper.run(checkNodesConnected(nodeSet, customTimeout=30))
+    looper.run(checkNodesConnected(nodeSet))
+    timeout = plenumWaits.expectedPoolLedgerCheck(len(txnPoolNodeSet))
     looper.run(eventually(checkNodeLedgersForEquality, newNode,
-                          *txnPoolNodeSet[1:4], retryWait=1, timeout=15))
+                          *txnPoolNodeSet[1:4], retryWait=1, timeout=timeout))
 
     compareGraph("NYM", nodeSet)
-    compareGraph("IssuerKey", nodeSet)
+    compareGraph("ClaimDef", nodeSet)
     compareGraph("Schema", nodeSet)

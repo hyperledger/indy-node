@@ -67,4 +67,6 @@ def testWindowsNoDocker = {
 }
 
 //testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
-testAndPublish(name, [ubuntu: testUbuntu])
+options = new TestAndPublishOptions()
+options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
+testAndPublish(name, [ubuntu: testUbuntu], true, options)
