@@ -60,14 +60,7 @@ class IdrCache:
             return verkey.decode()
 
     @staticmethod
-    def getPrefixAndIv(guardian=None, verkey=None):
-        iv = guardian if guardian else verkey
-        prefix = b'1' if guardian else b'0'
-        return prefix, iv
-
-    @staticmethod
     def packIdrValue(ta=None, role=None, verkey=None):
-        # prefix, iv = IdrCache.getPrefixAndIv(guardian, verkey)
         if ta is None:
             ta = b''
         if role is None:
