@@ -363,7 +363,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def processGetClaimDefReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys, lastSeqNo = self.reqHandler.getIssuerKey(
+        keys, signatureType, lastSeqNo = self.reqHandler.getClaimDef(
             author=request.operation[ORIGIN],
             schemaSeqNo=request.operation[REF]
         )
@@ -371,6 +371,7 @@ class Node(PlenumNode, HasPoolManager):
             DATA: keys,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
+            SIGNATURE_TYPE: signatureType,
             f.SEQ_NO.nm: lastSeqNo
         }}
 
