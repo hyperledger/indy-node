@@ -12,7 +12,7 @@ from sovrin_common.constants import START, CANCEL, \
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     ensureRejectsRecvd
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
-from sovrin_client.test.helper import getClientAddedWithRole, checkRejects
+from sovrin_client.test.helper import getClientAddedWithRole, checkRejects, checkNacks
 from sovrin_node.test.upgrade.helper import sendUpgrade, \
     checkUpgradeScheduled, checkNoUpgradeScheduled, \
     bumpedVersion, ensureUpgradeSent
