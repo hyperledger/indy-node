@@ -400,13 +400,6 @@ class Node(PlenumNode, HasPoolManager):
         else:
             return super().applyReq(request)
 
-    def storeTxnInLedger(self, result):
-        if result[TXN_TYPE] == ATTRIB:
-            result = self.hashAttribTxn(result)
-        merkleInfo = self.appendResultToLedger(result)
-        result.update(merkleInfo)
-        return result
-
     @staticmethod
     def hashAttribTxn(result):
         # Creating copy of result so that `RAW`, `ENC` or `HASH` can be
