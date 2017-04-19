@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import dateutil.tz
 import pytest
 
+from sovrin_node.test import waits
 from stp_core.loop.eventually import eventually
 from plenum.common.constants import NAME, VERSION, STEWARD
 from sovrin_common.constants import START, CANCEL, \
@@ -11,11 +12,11 @@ from sovrin_common.constants import START, CANCEL, \
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     ensureRejectsRecvd
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
-from sovrin_client.test.helper import getClientAddedWithRole, checkNacks
+from sovrin_client.test.helper import getClientAddedWithRole, checkRejects
 from sovrin_node.test.upgrade.helper import sendUpgrade, \
     checkUpgradeScheduled, checkNoUpgradeScheduled, \
     bumpedVersion, ensureUpgradeSent
-
+from plenum.test import waits as plenumWaits
 
 whitelist = ['Failed to upgrade node']
 
@@ -29,6 +30,7 @@ def validUpgrade(nodeIds, tconf):
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff + 3)
+    # TODO select or create a timeout from 'waits'
     return dict(name='upgrade-13', version=bumpedVersion(), action=START,
                 schedule=schedule, sha256='aad1242', timeout=10)
 
@@ -42,7 +44,7 @@ def invalidUpgrade(nodeIds, tconf):
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff - 3)
-
+    # TODO select or create a timeout from 'waits'
     return dict(name='upgrade-14', version=bumpedVersion(), action=START,
                 schedule=schedule, sha256='ffd1224', timeout=10)
 
@@ -62,32 +64,31 @@ def validUpgradeSent(looper, nodeSet, tdir, trustee, trusteeWallet,
 def testNodeRejectsPoolUpgrade(looper, nodeSet, tdir, trustee,
                                       trusteeWallet, invalidUpgrade):
     _, req = sendUpgrade(trustee, trusteeWallet, invalidUpgrade)
-    with pytest.raises(AssertionError):
-        waitForSufficientRepliesForRequests(looper, trustee, requests=[req],
-                                            customTimeoutPerReq=10)
+    timeout = plenumWaits.expectedReqNAckQuorumTime()
     looper.run(eventually(checkNacks, trustee, req.reqId,
                           'since time span between upgrades', retryWait=1,
-                          timeout=10))
+                          timeout=timeout))
 
-
-def testOnlyTrusteeCanSendPoolUpgrade(validUpgradeSent, looper, steward,
-                                      validUpgrade, nodeSet):
+# validUpgradeSent - this one may be needed
+def testOnlyTrusteeCanSendPoolUpgrade(looper, steward, validUpgrade, nodeSet):
     # A steward sending POOL_UPGRADE but txn fails
     stClient, stWallet = steward
     validUpgrade = deepcopy(validUpgrade)
     validUpgrade[NAME] = 'upgrade-20'
     validUpgrade[VERSION] = bumpedVersion()
     _, req = sendUpgrade(stClient, stWallet, validUpgrade)
+    timeout = plenumWaits.expectedReqNAckQuorumTime()
     with pytest.raises(AssertionError):
         waitForSufficientRepliesForRequests(looper, stClient, requests=[req],
-                                            customTimeoutPerReq=10)
+                                            customTimeoutPerReq=timeout)
     ensureRejectsRecvd(looper, nodeSet, stClient, 'cannot do')
+
 
 
 @pytest.fixture(scope="module")
 def upgradeScheduled(validUpgradeSent, looper, nodeSet, validUpgrade):
     looper.run(eventually(checkUpgradeScheduled, nodeSet, validUpgrade[VERSION],
-                          retryWait=1, timeout=10))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
 
 def testNodeSchedulesUpgrade(upgradeScheduled):
@@ -114,10 +115,9 @@ def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
         nodeSet.append(node)
 
     looper.run(checkNodesConnected(nodeSet))
-    ensureElectionsDone(looper=looper, nodes=nodeSet, retryWait=1,
-                        timeout=10)
+    ensureElectionsDone(looper=looper, nodes=nodeSet, retryWait=1)
     looper.run(eventually(checkUpgradeScheduled, nodeSet, validUpgrade[VERSION],
-                          retryWait=1, timeout=10))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
 
 def testPrimaryNodeTriggersElectionBeforeUpgrading(upgradeScheduled, looper,
@@ -125,36 +125,29 @@ def testPrimaryNodeTriggersElectionBeforeUpgrading(upgradeScheduled, looper,
     pass
 
 
-@pytest.mark.skip("SOV-557. Skipping due to failing test, when run as module")
 def testNonTrustyCannotCancelUpgrade(validUpgradeSent, looper, nodeSet,
                                      steward, validUpgrade):
     stClient, stWallet = steward
-    validUpgrade = deepcopy(validUpgrade)
-    validUpgrade[ACTION] = CANCEL
-    _, req = sendUpgrade(stClient, stWallet, validUpgrade)
-    with pytest.raises(AssertionError):
-        waitForSufficientRepliesForRequests(looper, stClient, requests=[req],
-                                            customTimeoutPerReq=10)
-    looper.run(eventually(checkNacks, stClient, req.reqId,
-                          'cannot do'))
+    validUpgradeCopy = deepcopy(validUpgrade)
+    validUpgradeCopy[ACTION] = CANCEL
+    _, req = sendUpgrade(stClient, stWallet, validUpgradeCopy)
+    looper.run(eventually(checkRejects, stClient, req.reqId, 'cannot do', timeout=40))
 
 
-@pytest.mark.skip("SOV-558. Skipping due to failing test, when run as module")
 def testTrustyCancelsUpgrade(validUpgradeSent, looper, nodeSet, trustee,
                              trusteeWallet, validUpgrade):
-    validUpgrade = deepcopy(validUpgrade)
-    validUpgrade[ACTION] = CANCEL
-    validUpgrade[JUSTIFICATION] = '"not gonna give you one"'
+    validUpgradeCopy = deepcopy(validUpgrade)
+    validUpgradeCopy[ACTION] = CANCEL
+    validUpgradeCopy[JUSTIFICATION] = '"not gonna give you one"'
 
-    validUpgrade.pop(SCHEDULE, None)
-    upgrade, req = sendUpgrade(trustee, trusteeWallet, validUpgrade)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=[req],
-                                        customTimeoutPerReq=10)
+    validUpgradeCopy.pop(SCHEDULE, None)
+    upgrade, req = sendUpgrade(trustee, trusteeWallet, validUpgradeCopy)
 
     def check():
         assert trusteeWallet.getPoolUpgrade(upgrade.key).seqNo
 
-    looper.run(eventually(check, retryWait=1, timeout=5))
+    timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
+    looper.run(eventually(check, retryWait=1, timeout=timeout))
 
-    looper.run(eventually(checkNoUpgradeScheduled, nodeSet,
-                          retryWait=1, timeout=10))
+    looper.run(eventually(checkNoUpgradeScheduled, nodeSet, retryWait=1,
+                          timeout=waits.expectedNoUpgradeScheduled()))

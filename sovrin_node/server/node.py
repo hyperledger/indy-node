@@ -31,22 +31,33 @@ from plenum.persistence.pruning_state import PruningState
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import allOpKeys, ATTRIB, GET_ATTR, \
     GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, \
-    GET_ISSUER_KEY, REF, ACTION, NODE_UPGRADE, COMPLETE, FAIL
+    REF, ACTION, NODE_UPGRADE, COMPLETE, FAIL
+from sovrin_common.persistence import identity_graph
+from sovrin_common.constants import TXN_TYPE, \
+    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, NYM,\
+    ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
+    reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
+    SCHEMA, GET_SCHEMA, openTxns, \
+    CLAIM_DEF, GET_CLAIM_DEF, REF, IDENTITY_TXN_TYPES, \
+    CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
+    NODE_UPGRADE, COMPLETE, FAIL, ENDPOINT
 from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.server.client_authn import TxnBasedAuthNr
 from sovrin_node.server.config_req_handler import ConfigReqHandler
-from sovrin_node.server.constants import CONFIG_LEDGER_ID, openTxns, \
-    validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from sovrin_node.server.domain_req_handler import DomainReqHandler
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
+from stp_core.network.exceptions import EndpointException
+from sovrin_common.constants import SIGNATURE_TYPE, openTxns, \
+    validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
 
+CONFIG_LEDGER_ID = 2
 
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
@@ -350,9 +361,9 @@ class Node(PlenumNode, HasPoolManager):
             result[f.SEQ_NO.nm] = lastSeqNo
         self.transmitToClient(Reply(result), frm)
 
-    def processGetIssuerKeyReq(self, request: Request, frm: str):
+    def processGetClaimDefReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys, lastSeqNo = self.reqHandler.getIssuerKey(
+        keys, signatureType, lastSeqNo = self.reqHandler.getClaimDef(
             author=request.operation[ORIGIN],
             schemaSeqNo=request.operation[REF]
         )
@@ -360,8 +371,10 @@ class Node(PlenumNode, HasPoolManager):
             DATA: keys,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
+            SIGNATURE_TYPE: signatureType,
             f.SEQ_NO.nm: lastSeqNo
         }}
+
         self.transmitToClient(Reply(result), frm)
 
     def processRequest(self, request: Request, frm: str):
@@ -377,13 +390,40 @@ class Node(PlenumNode, HasPoolManager):
             self.processGetSchemaReq(request, frm)
         elif request.operation[TXN_TYPE] == GET_ATTR:
             self.processGetAttrsReq(request, frm)
-        elif request.operation[TXN_TYPE] == GET_ISSUER_KEY:
-            self.processGetIssuerKeyReq(request, frm)
+        elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
+            self.processGetClaimDefReq(request, frm)
         else:
             super().processRequest(request, frm)
 
+    def storeTxnAndSendToClient(self, reply):
+        """
+        Does 4 things in following order
+         1. Add reply to ledger.
+         2. Send the reply to client.
+         3. Add the reply to identity graph if needed.
+         4. Add the reply to storage so it can be served later if the
+         client requests it.
+        """
+        result = reply.result
+        if result[TXN_TYPE] in (SCHEMA, CLAIM_DEF):
+            result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
+
+        txnWithMerkleInfo = self.storeTxnInLedger(result)
+
+        if result[TXN_TYPE] == NODE_UPGRADE:
+            logger.info('{} processed {}'.format(self, NODE_UPGRADE))
+            # Returning since NODE_UPGRADE is not sent to client and neither
+            # goes in graph
+            return
+        self.sendReplyToClient(Reply(txnWithMerkleInfo),
+                               (result[f.IDENTIFIER.nm], result[f.REQ_ID.nm]))
+        reply.result[f.seqNo.name] = txnWithMerkleInfo.get(f.seqNo.name)
+        self.storeTxnInGraph(reply.result)
+
+
     @classmethod
     def ledgerId(cls, txnType: str):
+        # It was called ledgerTypeForTxn before
         if txnType in POOL_TXN_TYPES:
             return POOL_LEDGER_ID
         if txnType in IDENTITY_TXN_TYPES:

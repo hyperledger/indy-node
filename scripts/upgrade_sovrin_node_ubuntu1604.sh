@@ -23,12 +23,6 @@ fi
 echo "Stop sovrin-node"
 systemctl stop sovrin-node
 
-echo "Run sovrin dependencies upgrade to latest version"
-apt-get -y install python3-plenum python3-sovrin-common python3-ledger
-ret=$?
-if [ $ret -ne 0 ] ; then
-  echo "Upgrade of dependencies to lastest version failed"
-fi
 echo "Run sovrin upgrade to version $vers"
 apt-get -y install sovrin-node="$vers"
 ret=$?

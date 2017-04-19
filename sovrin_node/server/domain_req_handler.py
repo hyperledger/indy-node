@@ -12,7 +12,7 @@ from plenum.common.util import check_endpoint_valid
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NYM, ROLE, ATTRIB, ENDPOINT, SCHEMA, \
-    ISSUER_KEY, REF
+    CLAIM_DEF, REF, SIGNATURE_TYPE
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
 from stp_core.network.exceptions import EndpointException
@@ -54,8 +54,8 @@ class DomainReqHandler(PHandler):
                 self._addAttr(txn)
             elif typ == SCHEMA:
                 self._addSchema(txn)
-            elif typ == ISSUER_KEY:
-                self._addIssuerKey(txn)
+            elif typ == CLAIM_DEF:
+                self._addClaimDef(txn)
             else:
                 logger.debug('Cannot apply request of type {} to state'.format(typ))
 
@@ -253,22 +253,28 @@ class DomainReqHandler(PHandler):
         valueBytes = self._encodeValue(data, seqNo)
         self.state.set(path, valueBytes)
 
-    def _addIssuerKey(self, txn) -> None:
-        assert txn[TXN_TYPE] == ISSUER_KEY
+    def _addClaimDef(self, txn) -> None:
+        assert txn[TXN_TYPE] == CLAIM_DEF
         origin = txn.get(f.IDENTIFIER.nm)
 
-        schemaSeqNo = txn[REF]
+        schemaSeqNo = txn.get(REF)
         if schemaSeqNo is None:
             raise ValueError("'{}' field is absent, "
                              "but it must contain schema seq no".format(REF))
-        issuerKey = txn[DATA]
-        if issuerKey is None:
+        keys = txn.get(DATA)
+        if keys is None:
             raise ValueError("'{}' field is absent, "
-                             "but it must contain key components".format(DATA))
-        path = self._makeIssuerKeyPath(origin, schemaSeqNo)
+                             "but it must contain components of keys"
+                             .format(DATA))
 
+        signatureType = txn.get(SIGNATURE_TYPE)
+        path = self._makeClaimDefPath(origin, schemaSeqNo)
         seqNo = txn[f.SEQ_NO.nm]
-        valueBytes = self._encodeValue(issuerKey, seqNo)
+        values = {
+            "keys": keys,
+            "signatureType": signatureType
+        }
+        valueBytes = self._encodeValue(values, seqNo)
         self.state.set(path, valueBytes)
 
     def getAttr(self,
@@ -297,14 +303,17 @@ class DomainReqHandler(PHandler):
         path = self._makeSchemaPath(author, schemaName, schemaVersion)
         return self.lookup(path, isCommitted)
 
-    def getIssuerKey(self,
-                     author: str,
-                     schemaSeqNo: str,
-                     isCommitted=True) -> (str, int):
+    def getClaimDef(self,
+                    author: str,
+                    schemaSeqNo: str,
+                    isCommitted=True) -> (str, int):
         assert author is not None
         assert schemaSeqNo is not None
-        path = self._makeIssuerKeyPath(author, schemaSeqNo)
-        return self.lookup(path, isCommitted)
+        path = self._makeClaimDefPath(author, schemaSeqNo)
+        values, seqno  = self.lookup(path, isCommitted)
+        signatureType = values['signatureType']
+        keys = values['keys']
+        return keys, signatureType, seqno
 
     @staticmethod
     def _hashOf(text) -> str:
@@ -332,7 +341,7 @@ class DomainReqHandler(PHandler):
             .encode()
 
     @staticmethod
-    def _makeIssuerKeyPath(did, schemaSeqNo) -> bytes:
+    def _makeClaimDefPath(did, schemaSeqNo) -> bytes:
         return "{DID}:{MARKER}:{SCHEMA_SEQ_NO}" \
                    .format(DID=did,
                            MARKER=DomainReqHandler.MARKER_IPK,
