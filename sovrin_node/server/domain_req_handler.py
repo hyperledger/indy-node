@@ -257,17 +257,17 @@ class DomainReqHandler(PHandler):
         assert txn[TXN_TYPE] == CLAIM_DEF
         origin = txn.get(f.IDENTIFIER.nm)
 
-        schemaSeqNo = txn[REF]
+        schemaSeqNo = txn.get(REF)
         if schemaSeqNo is None:
             raise ValueError("'{}' field is absent, "
                              "but it must contain schema seq no".format(REF))
-        keys = txn[DATA]
+        keys = txn.get(DATA)
         if keys is None:
             raise ValueError("'{}' field is absent, "
                              "but it must contain components of keys"
                              .format(DATA))
 
-        signatureType = txn[SIGNATURE_TYPE]
+        signatureType = txn.get(SIGNATURE_TYPE)
         path = self._makeClaimDefPath(origin, schemaSeqNo)
         seqNo = txn[f.SEQ_NO.nm]
         values = {
