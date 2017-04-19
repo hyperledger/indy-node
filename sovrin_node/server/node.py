@@ -395,31 +395,6 @@ class Node(PlenumNode, HasPoolManager):
         else:
             super().processRequest(request, frm)
 
-    def storeTxnAndSendToClient(self, reply):
-        """
-        Does 4 things in following order
-         1. Add reply to ledger.
-         2. Send the reply to client.
-         3. Add the reply to identity graph if needed.
-         4. Add the reply to storage so it can be served later if the
-         client requests it.
-        """
-        result = reply.result
-        if result[TXN_TYPE] in (SCHEMA, CLAIM_DEF):
-            result[DATA] = jsonSerz.serialize(result[DATA], toBytes=False)
-
-        txnWithMerkleInfo = self.storeTxnInLedger(result)
-
-        if result[TXN_TYPE] == NODE_UPGRADE:
-            logger.info('{} processed {}'.format(self, NODE_UPGRADE))
-            # Returning since NODE_UPGRADE is not sent to client and neither
-            # goes in graph
-            return
-        self.sendReplyToClient(Reply(txnWithMerkleInfo),
-                               (result[f.IDENTIFIER.nm], result[f.REQ_ID.nm]))
-        reply.result[f.seqNo.name] = txnWithMerkleInfo.get(f.seqNo.name)
-        self.storeTxnInGraph(reply.result)
-
 
     @classmethod
     def ledgerId(cls, txnType: str):
