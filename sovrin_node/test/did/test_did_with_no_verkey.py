@@ -34,6 +34,7 @@ from sovrin_node.test.did.conftest import pf
 from sovrin_node.test.did.helper import chkVerifyForRetrievedIdentity, \
     updateSovrinIdrWithFullKey
 from sovrin_client.test.helper import createNym
+from plenum.test import waits as plenumWaits
 
 
 @pf
@@ -64,7 +65,8 @@ def verkeyFetched(didUpdatedWithVerkey, looper, trustAnchor, trustAnchorWallet,
         assert trustAnchorWallet.getIdentity(noKeyIdr).verkey == wallet.getVerkey(
             noKeyIdr)
 
-    looper.run(eventually(chk, retryWait=1, timeout=5))
+    timeout = plenumWaits.expectedReqAckQuorumTime()
+    looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
 
 def testWalletCanProvideAnIdentifierWithoutAKey(wallet, noKeyIdr):
@@ -86,7 +88,8 @@ def testRetrieveEmptyVerkey(didAddedWithoutVerkey, looper, trustAnchor,
     def chk():
         assert trustAnchorWallet.getIdentity(noKeyIdr).verkey is None
 
-    looper.run(eventually(chk, retryWait=1, timeout=5))
+    timeout = plenumWaits.expectedReqAckQuorumTime()
+    looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
 
 def testChangeEmptyVerkeyToNewVerkey(didUpdatedWithVerkey):

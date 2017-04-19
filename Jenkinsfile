@@ -16,17 +16,14 @@ def testUbuntu = {
 
         testEnv.inside('--network host') {
             echo 'Ubuntu Test: Install dependencies'
-
             def sovrinCommon = helpers.extractVersion('sovrin-common')
             def sovrinClient = helpers.extractVersion('sovrin-client')
             def plenum = helpers.extractVersionOfSubdependency(sovrinCommon, 'plenum')
-
-            deps = [plenum, sovrinCommon, sovrinClient]
-            testHelpers.installDeps(deps)
+            testHelpers.install(deps: [plenum, sovrinCommon, sovrinClient])
 
             echo 'Ubuntu Test: Test'
-            sh 'python runner.py --pytest \"python -m pytest\" --output "test-result.txt"'
-            //testHelpers.testJunit()
+            testHelpers.testRunner(resFile: "test-result.${NODE_NAME}.txt")
+            //testHelpers.testJUnit(resFile: "test-result.${NODE_NAME}.xml")
         }
     }
     finally {
@@ -51,13 +48,11 @@ def testWindowsNoDocker = {
 
         testHelpers.createVirtualEnvAndExecute({ python, pip ->
             echo 'Windows No Docker Test: Install dependencies'
-
             def sovrinClient = helpers.extractVersion('sovrin-client')
-
-            testHelpers.installDepsBat(python, pip, [sovrinClient])
+            testHelpers.install(python: python, pip: pip, deps: [sovrinClient], isVEnv: true)
 
             echo 'Windows No Docker Test: Test'
-            testHelpers.testJunitBat(python, pip)
+            testHelpers.testJUnit(resFile: "test-result.${NODE_NAME}.xml", python: python)
         })
     }
     finally {
@@ -67,4 +62,6 @@ def testWindowsNoDocker = {
 }
 
 //testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
-testAndPublish(name, [ubuntu: testUbuntu])
+options = new TestAndPublishOptions()
+options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
+testAndPublish(name, [ubuntu: testUbuntu], true, options)

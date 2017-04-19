@@ -133,6 +133,20 @@ if __name__ == "__main__":
     parser.add_argument('--pytest', type=str, help='pytest instance', default='python -m pytest')
     parser.add_argument('--output', type=str, help='result file', default='../Test-Report.txt')
     parser.add_argument('--nooutput', help='no result file', action="store_true")
+    parser.add_argument('--repeat', dest='repeatUntilFailure',
+                        action="store_true",
+                        help='repeat the test suite until failure')
     args = parser.parse_args()
-    r = run(pytest=args.pytest, output_file=args.output if not args.nooutput else None)
+    runNumber = 0
+    while True:
+        runNumber += 1
+        r = run(pytest=args.pytest, output_file=args.output if not args.nooutput else None)
+        if r == 0:
+            print('\x1b[6;30;42mRun #{} passed\x1b[0m'.format(runNumber))
+            if args.repeatUntilFailure:
+                continue  # go on another test run
+        else:
+            print('\x1b[0;30;41mRun #{} failed\x1b[0m'.format(runNumber))
+        break  # stop testing, repeatUntilFailure is not set
+
     sys.exit(0 if r == 0 else 1)
