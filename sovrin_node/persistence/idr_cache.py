@@ -3,9 +3,9 @@ import os
 from collections import OrderedDict
 import rlp
 
-from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, GUARDIAN
+from plenum.common.constants import VERKEY, TRUSTEE, STEWARD
 from plenum.common.types import f
-from plenum.persistence.kv_store import KVStoreLeveldb
+from plenum.persistence.kv_store_leveldb import KVStoreLeveldb
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
 from stp_core.common.log import getlogger
 
@@ -60,14 +60,7 @@ class IdrCache:
             return verkey.decode()
 
     @staticmethod
-    def getPrefixAndIv(guardian=None, verkey=None):
-        iv = guardian if guardian else verkey
-        prefix = b'1' if guardian else b'0'
-        return prefix, iv
-
-    @staticmethod
     def packIdrValue(ta=None, role=None, verkey=None):
-        # prefix, iv = IdrCache.getPrefixAndIv(guardian, verkey)
         if ta is None:
             ta = b''
         if role is None:

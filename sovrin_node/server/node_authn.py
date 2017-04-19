@@ -10,8 +10,6 @@ class NodeAuthNr(NaclAuthNr):
     def __init__(self, ledger: Ledger):
         self.ledger = ledger
 
-    # TODO: This is not right, what if verkey changes?
-    @functools.lru_cache(maxsize=20)
     def getVerkey(self, identifier):
         # TODO: This is very inefficient
         verkey = None

@@ -1,7 +1,6 @@
-from plenum.common.types import POOL_LEDGER_ID, DOMAIN_LEDGER_ID
+from plenum.common.constants import POOL_LEDGER_ID, DOMAIN_LEDGER_ID
 from plenum.server.pool_manager import HasPoolManager as PHasPoolManager, \
     TxnPoolManager as PTxnPoolManager
-from sovrin_common.auth import Authoriser
 from sovrin_node.server.pool_req_handler import PoolRequestHandler
 
 

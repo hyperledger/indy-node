@@ -5,9 +5,8 @@ from hashlib import sha256
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, VERKEY, \
-    GUARDIAN, DATA, STEWARD, NAME, VERSION
-from plenum.common.txn_util import reqToTxn
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
+    VERKEY, DATA, NAME, VERSION
 from plenum.common.types import f
 from plenum.common.util import check_endpoint_valid
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler

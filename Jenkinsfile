@@ -67,15 +67,10 @@ def testWindowsNoDocker = {
 }
 
 //testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
-testAndPublish(name, [ubuntu: testUbuntu], false) // run tests only
 
-if (env.BRANCH_NAME == '3pc-batch') { // not PR
-    def releaseVersion = ''
-    stage('Get release version') {
-        node('ubuntu-master') {
-            releaseVersion = getReleaseVersion()
-        }
-    }
-
-    testAndPublish.publishPypi('Publish to pypi', [:], releaseVersion)
-}
+options = new TestAndPublishOptions()
+options.skip([StagesEnum.GITHUB_RELEASE])
+options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
+options.setPublishableBranches(['3pc-batch']) //REMOVE IT BEFORE MERGE
+options.setPostfixes([master: '3pc-batch']) //REMOVE IT BEFORE MERGE
+testAndPublish(name, [ubuntu: testUbuntu], true, options)

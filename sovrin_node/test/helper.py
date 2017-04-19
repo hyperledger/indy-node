@@ -231,7 +231,7 @@ class TestUpgrader(Upgrader):
              Node.processRequest, Node.processPropagate, Node.propagate,
              Node.forward, Node.send, Node.processInstanceChange,
              Node.checkPerformance, Node.getReplyFromLedger])
-class TestNode(TempStorage, TestNodeCore, Node):
+class TestNode(TempStorage, Node, TestNodeCore):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
@@ -240,12 +240,6 @@ class TestNode(TempStorage, TestNodeCore, Node):
     def getUpgrader(self):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
                             self.configLedger)
-
-    # def _getOrientDbStore(self, name, dbType):
-    #     if not hasattr(self, '_orientDbStore'):
-    #         self._orientDbStore = orientdb_store.createOrientDbInMemStore(
-    #             self.config, name, dbType)
-    #     return self._orientDbStore
 
     def onStopping(self, *args, **kwargs):
         if self.cleanupOnStopping:

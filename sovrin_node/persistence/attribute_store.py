@@ -1,4 +1,4 @@
-from plenum.persistence.kv_store import KVStoreLeveldb
+from plenum.persistence.kv_store_leveldb import KVStoreLeveldb
 
 
 class AttributeStore:
