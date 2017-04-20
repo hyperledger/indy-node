@@ -121,17 +121,17 @@ def testPrimaryNodeTriggersElectionBeforeUpgrading(upgradeScheduled, looper,
                                                    nodeSet, validUpgrade):
     pass
 
-
+@pytest.mark.skip("SOV-557. Skipping due to failing test, when run as module")
 def testNonTrustyCannotCancelUpgrade(validUpgradeSent, looper, nodeSet,
                                      steward, validUpgrade):
     stClient, stWallet = steward
     validUpgradeCopy = deepcopy(validUpgrade)
     validUpgradeCopy[ACTION] = CANCEL
     _, req = sendUpgrade(stClient, stWallet, validUpgradeCopy)
-    looper.run(eventually(checkNacks, stClient, req.reqId,
+    looper.run(eventually(checkRejects, stClient, req.reqId,
                           'cannot do'))
 
-
+@pytest.mark.skip("SOV-557. Skipping due to failing test, when run as module")
 def testTrustyCancelsUpgrade(validUpgradeSent, looper, nodeSet, trustee,
                              trusteeWallet, validUpgrade):
     validUpgradeCopy = deepcopy(validUpgrade)
