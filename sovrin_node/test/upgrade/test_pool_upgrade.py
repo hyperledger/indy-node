@@ -78,7 +78,7 @@ def testOnlyTrusteeCanSendPoolUpgrade(looper, steward, validUpgrade):
     validUpgrade[VERSION] = bumpedVersion()
     _, req = sendUpgrade(stClient, stWallet, validUpgrade)
     timeout = plenumWaits.expectedReqNAckQuorumTime()
-    looper.run(eventually(checkNacks, stClient, req.reqId,
+    looper.run(eventually(checkRejects, stClient, req.reqId,
                           'cannot do', retryWait=1, timeout=timeout))
 
 
