@@ -363,9 +363,11 @@ class Node(PlenumNode, HasPoolManager):
 
     def processGetClaimDefReq(self, request: Request, frm: str):
         self.transmitToClient(RequestAck(*request.key), frm)
-        keys, signatureType, lastSeqNo = self.reqHandler.getClaimDef(
+        signatureType = request.operation[SIGNATURE_TYPE]
+        keys, lastSeqNo = self.reqHandler.getClaimDef(
             author=request.operation[ORIGIN],
-            schemaSeqNo=request.operation[REF]
+            schemaSeqNo=request.operation[REF],
+            signatureType=signatureType
         )
         result = {**request.operation, **{
             DATA: keys,

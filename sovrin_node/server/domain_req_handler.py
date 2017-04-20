@@ -267,14 +267,10 @@ class DomainReqHandler(PHandler):
                              "but it must contain components of keys"
                              .format(DATA))
 
-        signatureType = txn.get(SIGNATURE_TYPE)
-        path = self._makeClaimDefPath(origin, schemaSeqNo)
+        signatureType = txn.get(SIGNATURE_TYPE, 'CL')
+        path = self._makeClaimDefPath(origin, schemaSeqNo, signatureType)
         seqNo = txn[f.SEQ_NO.nm]
-        values = {
-            "keys": keys,
-            "signatureType": signatureType
-        }
-        valueBytes = self._encodeValue(values, seqNo)
+        valueBytes = self._encodeValue(keys, seqNo)
         self.state.set(path, valueBytes)
 
     def getAttr(self,
@@ -306,14 +302,13 @@ class DomainReqHandler(PHandler):
     def getClaimDef(self,
                     author: str,
                     schemaSeqNo: str,
+                    signatureType = 'CL',
                     isCommitted=True) -> (str, int):
         assert author is not None
         assert schemaSeqNo is not None
-        path = self._makeClaimDefPath(author, schemaSeqNo)
-        values, seqno  = self.lookup(path, isCommitted)
-        signatureType = values['signatureType']
-        keys = values['keys']
-        return keys, signatureType, seqno
+        path = self._makeClaimDefPath(author, schemaSeqNo, signatureType)
+        keys, seqno = self.lookup(path, isCommitted)
+        return keys, seqno
 
     @staticmethod
     def _hashOf(text) -> str:
@@ -341,10 +336,11 @@ class DomainReqHandler(PHandler):
             .encode()
 
     @staticmethod
-    def _makeClaimDefPath(did, schemaSeqNo) -> bytes:
-        return "{DID}:{MARKER}:{SCHEMA_SEQ_NO}" \
+    def _makeClaimDefPath(did, schemaSeqNo, signatureType) -> bytes:
+        return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}" \
                    .format(DID=did,
                            MARKER=DomainReqHandler.MARKER_IPK,
+                           SIGNATURE_TYPE=signatureType,
                            SCHEMA_SEQ_NO=schemaSeqNo)\
                    .encode()
 
