@@ -91,7 +91,7 @@ setup(
     )],
     install_requires=['sovrin-common-3pc-batch==0.2.9', 'python-dateutil', 'leveldb'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'sovrin-client-3pc-batch==0.3.31'],
+    tests_require=['pytest', 'sovrin-client-3pc-batch==0.3.45'],
     scripts=['scripts/start_sovrin_node',
              'scripts/node_control_tool.py',
              'scripts/clear_node.py',
