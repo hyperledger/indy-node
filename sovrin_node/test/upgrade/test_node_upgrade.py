@@ -56,6 +56,7 @@ def upgradeSentToAllNodes(looper, nodeSet, nodeIds):
             ids.add(node.id)
 
             assert ids == set(nodeIds)
+
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(check, retryWait=1, timeout=timeout))
 

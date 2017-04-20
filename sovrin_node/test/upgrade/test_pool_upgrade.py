@@ -69,8 +69,8 @@ def testNodeRejectsPoolUpgrade(looper, nodeSet, tdir, trustee,
                           'since time span between upgrades', retryWait=1,
                           timeout=timeout))
 
-# validUpgradeSent - this one may be needed
-def testOnlyTrusteeCanSendPoolUpgrade(looper, steward, validUpgrade, nodeSet):
+
+def testOnlyTrusteeCanSendPoolUpgrade(looper, steward, validUpgrade):
     # A steward sending POOL_UPGRADE but txn fails
     stClient, stWallet = steward
     validUpgrade = deepcopy(validUpgrade)
@@ -78,11 +78,8 @@ def testOnlyTrusteeCanSendPoolUpgrade(looper, steward, validUpgrade, nodeSet):
     validUpgrade[VERSION] = bumpedVersion()
     _, req = sendUpgrade(stClient, stWallet, validUpgrade)
     timeout = plenumWaits.expectedReqNAckQuorumTime()
-    with pytest.raises(AssertionError):
-        waitForSufficientRepliesForRequests(looper, stClient, requests=[req],
-                                            customTimeoutPerReq=timeout)
-    ensureRejectsRecvd(looper, nodeSet, stClient, 'cannot do')
-
+    looper.run(eventually(checkNacks, stClient, req.reqId,
+                          'cannot do', retryWait=1, timeout=timeout))
 
 
 @pytest.fixture(scope="module")
@@ -124,17 +121,17 @@ def testPrimaryNodeTriggersElectionBeforeUpgrading(upgradeScheduled, looper,
                                                    nodeSet, validUpgrade):
     pass
 
-@pytest.mark.skip("SOV-557. Skipping due to failing test, when run as module")
+
 def testNonTrustyCannotCancelUpgrade(validUpgradeSent, looper, nodeSet,
                                      steward, validUpgrade):
     stClient, stWallet = steward
     validUpgradeCopy = deepcopy(validUpgrade)
     validUpgradeCopy[ACTION] = CANCEL
     _, req = sendUpgrade(stClient, stWallet, validUpgradeCopy)
-    looper.run(eventually(checkRejects, stClient, req.reqId, 'cannot do', timeout=40))
+    looper.run(eventually(checkNacks, stClient, req.reqId,
+                          'cannot do'))
 
 
-@pytest.mark.skip("SOV-557. Skipping due to failing test, when run as module")
 def testTrustyCancelsUpgrade(validUpgradeSent, looper, nodeSet, trustee,
                              trusteeWallet, validUpgrade):
     validUpgradeCopy = deepcopy(validUpgrade)
