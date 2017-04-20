@@ -13,7 +13,7 @@ from plenum.test.helper import waitForSufficientRepliesForRequests, \
     checkLastClientReqForNode, buildCompletedTxnFromReply
 from plenum.test.test_node import checkNodesAreReady, TestNodeCore
 from plenum.test.test_node import checkNodesConnected
-from plenum.test.testable import Spyable
+from plenum.test.testable import spyable
 from plenum.test import waits as plenumWaits
 from sovrin_client.client.wallet.attribute import LedgerStore, Attribute
 from sovrin_client.client.wallet.wallet import Wallet
@@ -220,13 +220,13 @@ class Organization:
                 wallet.addCompletedTxn(txn)
 
 
-@Spyable(methods=[Upgrader.processLedger])
+@spyable(methods=[Upgrader.processLedger])
 class TestUpgrader(Upgrader):
     pass
 
 
 # noinspection PyShadowingNames,PyShadowingNames
-@Spyable(
+@spyable(
     methods=[Node.handleOneNodeMsg, Node.processRequest, Node.processOrdered,
              Node.postToClientInBox, Node.postToNodeInBox, "eatTestMsg",
              Node.decidePrimaries, Node.startViewChange, Node.discard,
