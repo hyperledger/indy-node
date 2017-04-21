@@ -19,23 +19,23 @@ strict_types.defaultShouldCheck = True
 import pytest
 
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.constants import VERKEY, NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
+from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
     ALIAS, SERVICES, VALIDATOR, STEWARD, TXN_ID, TRUSTEE, TYPE
 
 from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.constants import NYM, TRUST_ANCHOR, TXN_TYPE, \
-    TARGET_NYM, ROLE
+from sovrin_common.constants import NYM, TARGET_NYM, ROLE
 
 from sovrin_node.test.helper import TestNode, \
-    makePendingTxnsRequest, buildStewardClient
+    buildStewardClient
 
-from sovrin_client.test.helper import addRole, getClientAddedWithRole, \
-    genTestClient, TestClient, createNym
+from sovrin_client.test.helper import addRole, getClientAddedWithRole
 
 # noinspection PyUnresolvedReferences
 from sovrin_client.test.conftest import trustAnchorWallet, \
     trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, trusteeData,\
-    trusteeWallet, warnfilters as client_warnfilters
+    trusteeWallet, stewardWallet, steward, genesisTxns, testClientClass, \
+    addedTrustAnchor, userIdA, userIdB, userClientA, userClientB, \
+    warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, nodeReg, up, ready, \
@@ -99,41 +99,8 @@ def trustee(nodeSet, looper, tdir, up, trusteeWallet):
 
 
 @pytest.fixture(scope="module")
-def stewardWallet(poolTxnStewardData):
-    name, sigseed = poolTxnStewardData
-    wallet = Wallet('steward')
-    signer = SimpleSigner(seed=sigseed)
-    wallet.addIdentifier(signer=signer)
-    return wallet
-
-
-@pytest.fixture(scope="module")
-def steward(nodeSet, looper, tdir, stewardWallet):
-    return buildStewardClient(looper, tdir, stewardWallet)
-
-
-@pytest.fixture(scope="module")
-def genesisTxns(stewardWallet: Wallet, trusteeWallet: Wallet):
-    nym = stewardWallet.defaultId
-    return [
-        {
-            TXN_TYPE: NYM,
-            TARGET_NYM: nym,
-            TXN_ID: "9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
-            ROLE: STEWARD,
-            VERKEY: stewardWallet.getVerkey()
-        },
-    ]
-
-
-@pytest.fixture(scope="module")
 def testNodeClass():
     return TestNode
-
-
-@pytest.fixture(scope="module")
-def testClientClass():
-    return TestClient
 
 
 @pytest.fixture(scope="module")
@@ -142,50 +109,8 @@ def nodeSet(tconf, updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet):
 
 
 @pytest.fixture(scope="module")
-def addedTrustAnchor(nodeSet, steward, stewardWallet, looper,
-                 trustAnchorWallet):
-    createNym(looper,
-              trustAnchorWallet.defaultId,
-              steward,
-              stewardWallet,
-              role=TRUST_ANCHOR,
-              verkey=trustAnchorWallet.getVerkey())
-    return trustAnchorWallet
-
-
-@pytest.fixture(scope="module")
 def userWalletB(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, trustAnchor):
     return addRole(looper, trustAnchor, trustAnchorWallet, 'userB', useDid=False)
-
-
-@pytest.fixture(scope="module")
-def userIdA(userWalletA):
-    return userWalletA.defaultId
-
-
-@pytest.fixture(scope="module")
-def userIdB(userWalletB):
-    return userWalletB.defaultId
-
-
-@pytest.fixture(scope="module")
-def userClientA(nodeSet, userWalletA, looper, tdir):
-    u, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
-    u.registerObserver(userWalletA.handleIncomingReply)
-    looper.add(u)
-    looper.run(u.ensureConnectedToNodes())
-    makePendingTxnsRequest(u, userWalletA)
-    return u
-
-
-@pytest.fixture(scope="module")
-def userClientB(nodeSet, userWalletB, looper, tdir):
-    u, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
-    u.registerObserver(userWalletB.handleIncomingReply)
-    looper.add(u)
-    looper.run(u.ensureConnectedToNodes())
-    makePendingTxnsRequest(u, userWalletB)
-    return u
 
 
 @pytest.fixture("module")
@@ -228,10 +153,10 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
     initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
+
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),
                             pluginPaths=allPluginsPath)
-
 
     nodeSet.append(newNode)
     looper.add(newNode)
