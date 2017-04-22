@@ -8,7 +8,7 @@ from typing import Tuple, Union, Optional
 import dateutil.parser
 import dateutil.tz
 
-from plenum.common.log import getlogger
+from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, TXN_TYPE
 from plenum.common.constants import VERSION
 from plenum.server.has_action_queue import HasActionQueue
@@ -149,7 +149,7 @@ class Upgrader(HasActionQueue):
                         self.isVersionHigher(currentVer, version):
                     schedule = txn[SCHEDULE]
                     if self.nodeId not in schedule:
-                        logger.warn('{} not present in schedule {}'.
+                        logger.warning('{} not present in schedule {}'.
                                     format(self, schedule))
                     else:
                         upgrades[version] = schedule[self.nodeId]

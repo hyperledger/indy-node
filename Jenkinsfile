@@ -25,7 +25,8 @@ def testUbuntu = {
             testHelpers.installDeps(deps)
 
             echo 'Ubuntu Test: Test'
-            testHelpers.testJunit()
+            sh 'python runner.py --pytest \"python -m pytest\" --output "test-result.txt"'
+            //testHelpers.testJunit()
         }
     }
     finally {
@@ -65,7 +66,7 @@ def testWindowsNoDocker = {
     }
 }
 
-
+//testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
 options = new TestAndPublishOptions()
 options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
-testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker], true, options)
+testAndPublish(name, [ubuntu: testUbuntu], true, options)

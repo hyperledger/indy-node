@@ -9,8 +9,9 @@ from anoncreds.protocol.types import Schema, ID
 from anoncreds.protocol.wallet.issuer_wallet import IssuerWalletInMemory
 from anoncreds.test.conftest import GVT
 
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
+from plenum.test import waits as plenumWaits
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.node_catchup.helper import checkNodeLedgersForEquality
 
@@ -26,7 +27,6 @@ from sovrin_common.constants import TGB
 
 from sovrin_node.test.helper import addAttributeAndCheck
 from sovrin_node.test.upgrade.conftest import validUpgrade
-from sovrin_node.test.upgrade.helper import checkUpgradeScheduled
 from sovrin_node.test.helper import TestNode
 
 
@@ -65,8 +65,7 @@ def publicRepo(steward, stewardWallet):
 
 @pytest.fixture(scope="module")
 def schemaDefGvt(stewardWallet):
-    return Schema('GVT', '1.0', GVT.attribNames(), 'CL',
-                  stewardWallet.defaultId)
+    return Schema('GVT', '1.0', GVT.attribNames(), stewardWallet.defaultId)
 
 
 @pytest.fixture(scope="module")
@@ -123,7 +122,7 @@ def compareGraph(table, nodeSet):
     tableRecodesStoppedNode = stoppedNodeClient.query("SELECT * FROM {}".format(table))
     for nodeRecord in tableRecodesStoppedNode:
 
-        if table == "IssuerKey" and isinstance(nodeRecord.oRecordData["data"], str):
+        if table == "ClaimDef" and isinstance(nodeRecord.oRecordData["data"], str):
             nodeRecord.oRecordData["data"] = json.loads(nodeRecord.oRecordData["data"])
 
         stoppedNodeRecords.append({k: v for k, v in nodeRecord.oRecordData.items()
@@ -139,7 +138,7 @@ def compareGraph(table, nodeSet):
         tableRecodes = client.query("SELECT * FROM {}".format(table))
         for record in tableRecodes:
 
-            if table == "IssuerKey" and isinstance(record.oRecordData["data"], str):
+            if table == "ClaimDef" and isinstance(record.oRecordData["data"], str):
                 record.oRecordData["data"] = json.loads(record.oRecordData["data"])
 
             records.append({k: v for k, v in record.oRecordData.items()
@@ -147,29 +146,34 @@ def compareGraph(table, nodeSet):
                             })
         assert records == stoppedNodeRecords
 
-
 def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
-                                   nodeSet, looper, tconf, tdirWithPoolTxns,
-                                   allPluginsPath, txnPoolNodeSet):
+                     nodeSet, looper, tconf, tdirWithPoolTxns,
+                     allPluginsPath, txnPoolNodeSet):
     """
     stop first node (which will clean graph db too)
     then restart node
     """
     nodeToStop = nodeSet[0]
     nodeToStop.cleanupOnStopping = False
-    nodeToStop.stop()
     looper.removeProdable(nodeToStop)
+    nodeToStop.stop()
+    name = nodeToStop.name
+    nha = nodeToStop.nodestack.ha
+    cha = nodeToStop.clientstack.ha
+    del nodeToStop
+
     #client = nodeToStop.graphStore.client
     #client.db_drop(client._connection.db_opened)
-    newNode = TestNode(nodeToStop.name, basedirpath=tdirWithPoolTxns,
+    newNode = TestNode(name, basedirpath=tdirWithPoolTxns,
                        config=tconf, pluginPaths=allPluginsPath,
-                       ha=nodeToStop.nodestack.ha, cliha=nodeToStop.clientstack.ha)
+                       ha=nha, cliha=cha)
     looper.add(newNode)
     nodeSet[0] = newNode
-    looper.run(checkNodesConnected(nodeSet, overrideTimeout=30))
+    looper.run(checkNodesConnected(nodeSet))
+    timeout = plenumWaits.expectedPoolLedgerCheck(len(txnPoolNodeSet))
     looper.run(eventually(checkNodeLedgersForEquality, newNode,
-                          *txnPoolNodeSet[1:4], retryWait=1, timeout=15))
+                          *txnPoolNodeSet[1:4], retryWait=1, timeout=timeout))
 
     compareGraph("NYM", nodeSet)
-    compareGraph("IssuerKey", nodeSet)
+    compareGraph("ClaimDef", nodeSet)
     compareGraph("Schema", nodeSet)
