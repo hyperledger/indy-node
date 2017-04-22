@@ -2,6 +2,7 @@ from hashlib import sha256
 from copy import deepcopy
 
 from plenum.common.exceptions import UnknownIdentifier
+from plenum.common.types import OPERATION
 from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH
 from plenum.server.client_authn import NaclAuthNr
 
@@ -17,12 +18,12 @@ class TxnBasedAuthNr(NaclAuthNr):
         self.storage = storage
 
     def serializeForSig(self, msg):
-        if msg["operation"].get(TXN_TYPE) == ATTRIB:
+        if msg[OPERATION].get(TXN_TYPE) == ATTRIB:
             msgCopy = deepcopy(msg)
             keyName = {RAW, ENC, HASH}.intersection(
-                set(msgCopy["operation"].keys())).pop()
-            msgCopy["operation"][keyName] = sha256(msgCopy["operation"][keyName]
-                                                   .encode()).hexdigest()
+                set(msgCopy[OPERATION].keys())).pop()
+            msgCopy[OPERATION][keyName] = sha256(msgCopy[OPERATION][keyName]
+                                                .encode()).hexdigest()
             return super().serializeForSig(msgCopy)
         else:
             return super().serializeForSig(msg)

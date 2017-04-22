@@ -1,7 +1,8 @@
 import pytest
 from copy import deepcopy
 
-from plenum.common.eventually import eventually
+from sovrin_node.test import waits
+from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION, NAME
 from plenum.common.util import randomString
 from plenum.test.test_node import checkNodesConnected
@@ -11,7 +12,7 @@ from plenum.test.conftest import allPluginsPath
 from sovrin_node.test.helper import TestNode
 from sovrin_node.test.upgrade.helper import bumpVersion, sendUpgrade, \
     ensureUpgradeSent, checkUpgradeScheduled
-
+from plenum.test import waits as plenumWaits
 
 whitelist = ['Failed to upgrade node']
 
@@ -60,19 +61,19 @@ def testUpgradeLatestUncancelledVersion(looper,
 
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
     looper.run(eventually(checkUpgradeScheduled, nodeSet[:-1], upgr1[VERSION],
-                          retryWait=1, timeout=5))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr2)
     looper.run(eventually(checkUpgradeScheduled, nodeSet[:-1], upgr2[VERSION],
-                          retryWait=1, timeout=5))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr3)
     looper.run(eventually(checkUpgradeScheduled, nodeSet[:-1], upgr3[VERSION],
-                          retryWait=1, timeout=5))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr4)
     looper.run(eventually(checkUpgradeScheduled, nodeSet[:-1], upgr2[VERSION],
-                          retryWait=1, timeout=5))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
     trustee.stopRetrying()
 
@@ -81,9 +82,9 @@ def testUpgradeLatestUncancelledVersion(looper,
                        ha=newNode.nodestack.ha, cliha=newNode.clientstack.ha)
     looper.add(newNode)
     nodeSet.append(newNode)
-    looper.run(checkNodesConnected(nodeSet, overrideTimeout=30))
+    looper.run(checkNodesConnected(nodeSet))
 
     looper.run(eventually(checkUpgradeScheduled, [newNode, ], upgr2[VERSION],
-                          retryWait=1, timeout=10))
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
 

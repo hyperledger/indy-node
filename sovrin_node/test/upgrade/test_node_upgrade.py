@@ -5,13 +5,14 @@ import dateutil.tz
 import pytest
 
 import sovrin_node
-from plenum.common.eventually import eventually
+from stp_core.loop.eventually import eventually
 from plenum.common.constants import TXN_TYPE
-from plenum.common.types import OPERATION, f
 from sovrin_common.constants import NODE_UPGRADE
+
+from plenum.common.types import OPERATION, f
 from sovrin_node.server.upgrade_log import UpgradeLog
 from sovrin_node.test.upgrade.helper import bumpedVersion
-
+from plenum.test import waits as plenumWaits
 oldVersion = sovrin_node.__metadata__.__version_info__
 oldVersionStr = sovrin_node.__metadata__.__version__
 
@@ -56,7 +57,8 @@ def upgradeSentToAllNodes(looper, nodeSet, nodeIds):
 
             assert ids == set(nodeIds)
 
-    looper.run(eventually(check, retryWait=1, timeout=5))
+    timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
+    looper.run(eventually(check, retryWait=1, timeout=timeout))
 
 
 def testNodeDetectsUpgradeDone(looper, nodeSet):
@@ -64,7 +66,8 @@ def testNodeDetectsUpgradeDone(looper, nodeSet):
         for node in nodeSet:
             assert node.upgrader.lastExecutedUpgradeInfo[1] == newVer
 
-    looper.run(eventually(check, retryWait=1, timeout=5))
+    timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
+    looper.run(eventually(check, retryWait=1, timeout=timeout))
 
 
 def testSendNodeUpgradeToAllNodes(upgradeSentToAllNodes):
