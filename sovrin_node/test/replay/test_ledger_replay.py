@@ -148,14 +148,14 @@ def compareGraph(table, nodeSet):
 
 def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                      nodeSet, looper, tconf, tdirWithPoolTxns,
-                     allPluginsPath, txnPoolNodeSet):
+                     allPluginsPath, txnPoolNodeSet, txnPoolNodesLooper):
     """
     stop first node (which will clean graph db too)
     then restart node
     """
     nodeToStop = nodeSet[0]
     nodeToStop.cleanupOnStopping = False
-    looper.removeProdable(nodeToStop)
+    txnPoolNodesLooper.removeProdable(nodeToStop)
     nodeToStop.stop()
     name = nodeToStop.name
     nha = nodeToStop.nodestack.ha
