@@ -20,13 +20,7 @@ import pytest
 
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
-    ALIAS, SERVICES, VALIDATOR, STEWARD, TXN_ID, TRUSTEE, TYPE
-
-from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.constants import NYM, TARGET_NYM, ROLE
-
-from sovrin_node.test.helper import TestNode, \
-    buildStewardClient
+    ALIAS, SERVICES, VALIDATOR, STEWARD
 
 from sovrin_client.test.helper import addRole, getClientAddedWithRole
 
