@@ -34,8 +34,8 @@ from sovrin_client.test.helper import addRole, getClientAddedWithRole
 from sovrin_client.test.conftest import trustAnchorWallet, \
     trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, trusteeData,\
     trusteeWallet, stewardWallet, steward, genesisTxns, testClientClass, \
-    addedTrustAnchor, userIdA, userIdB, userClientA, userClientB, \
-    warnfilters as client_warnfilters
+    addedTrustAnchor, userIdA, userIdB, userClientA, userClientB, nodeSet, \
+    testNodeClass, warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, nodeReg, up, ready, \
@@ -96,16 +96,6 @@ def trusteeWallet(trusteeData):
 @pytest.fixture(scope="module")
 def trustee(nodeSet, looper, tdir, up, trusteeWallet):
     return buildStewardClient(looper, tdir, trusteeWallet)
-
-
-@pytest.fixture(scope="module")
-def testNodeClass():
-    return TestNode
-
-
-@pytest.fixture(scope="module")
-def nodeSet(tconf, updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet):
-    return txnPoolNodeSet
 
 
 @pytest.fixture(scope="module")
