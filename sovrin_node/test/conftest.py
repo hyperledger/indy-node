@@ -35,7 +35,8 @@ from sovrin_client.test.conftest import trustAnchorWallet, \
     trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, trusteeData,\
     trusteeWallet, stewardWallet, steward, genesisTxns, testClientClass, \
     addedTrustAnchor, userIdA, userIdB, userClientA, userClientB, nodeSet, \
-    testNodeClass, warnfilters as client_warnfilters
+    testNodeClass, updatedPoolTxnData, trusteeData, trusteeWallet, trustee, \
+    warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, nodeReg, up, ready, \
@@ -58,44 +59,6 @@ def warnfilters(client_warnfilters):
         warnings.filterwarnings('ignore', category=DeprecationWarning, module='sovrin_common\.persistence\.identity_graph', message="The 'warn' method is deprecated")
         warnings.filterwarnings('ignore', category=ResourceWarning, message='unclosed transport')
     return _
-
-
-@pytest.fixture(scope="module")
-def updatedPoolTxnData(poolTxnData):
-    data = poolTxnData
-    trusteeSeed = 'thisistrusteeseednotsteward12345'
-    signer = SimpleSigner(seed=trusteeSeed.encode())
-    t = {
-        TARGET_NYM: signer.verkey,
-        ROLE: TRUSTEE,
-        TYPE: NYM,
-        ALIAS: "Trustee1",
-        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"
-    }
-    data["seeds"]["Trustee1"] = trusteeSeed
-    data["txns"].insert(0, t)
-    return data
-
-
-@pytest.fixture(scope="module")
-def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
-    name = poolTxnTrusteeNames[0]
-    seed = updatedPoolTxnData["seeds"][name]
-    return name, seed.encode()
-
-
-@pytest.fixture(scope="module")
-def trusteeWallet(trusteeData):
-    name, sigseed = trusteeData
-    wallet = Wallet('trustee')
-    signer = SimpleSigner(seed=sigseed)
-    wallet.addIdentifier(signer=signer)
-    return wallet
-
-
-@pytest.fixture(scope="module")
-def trustee(nodeSet, looper, tdir, up, trusteeWallet):
-    return buildStewardClient(looper, tdir, trusteeWallet)
 
 
 @pytest.fixture(scope="module")
