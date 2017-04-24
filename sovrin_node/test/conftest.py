@@ -44,7 +44,7 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     nodeAndClientInfoFilePath, patchPluginManager, txnPoolNodesLooper, \
-    warncheck, warnfilters as plenum_warnfilters, setResourceLimits
+    warncheck, warnfilters as plenum_warnfilters
 
 # noinspection PyUnresolvedReferences
 from sovrin_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
