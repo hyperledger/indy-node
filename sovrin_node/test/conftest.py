@@ -51,7 +51,7 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, nodeAndClientInfoFilePath, conf, patchPluginManager, \
-    warncheck, warnfilters as plenum_warnfilters, setResourceLimits
+    warncheck, warnfilters as plenum_warnfilters
 
 
 @pytest.fixture(scope="session")
