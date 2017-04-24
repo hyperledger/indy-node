@@ -26,11 +26,10 @@ from sovrin_client.test.helper import addRole, getClientAddedWithRole
 
 # noinspection PyUnresolvedReferences
 from sovrin_client.test.conftest import trustAnchorWallet, \
-    trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, trusteeData,\
-    trusteeWallet, stewardWallet, steward, genesisTxns, testClientClass, \
-    addedTrustAnchor, userIdA, userIdB, userClientA, userClientB, nodeSet, \
-    testNodeClass, updatedPoolTxnData, trusteeData, trusteeWallet, trustee, \
-    warnfilters as client_warnfilters
+    trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, \
+    stewardWallet, steward, genesisTxns, testClientClass, \
+    addedTrustAnchor, userWalletB, nodeSet, testNodeClass, updatedPoolTxnData, \
+    trusteeData, trusteeWallet, trustee, warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, nodeReg, up, ready, \
@@ -53,11 +52,6 @@ def warnfilters(client_warnfilters):
         warnings.filterwarnings('ignore', category=DeprecationWarning, module='sovrin_common\.persistence\.identity_graph', message="The 'warn' method is deprecated")
         warnings.filterwarnings('ignore', category=ResourceWarning, message='unclosed transport')
     return _
-
-
-@pytest.fixture(scope="module")
-def userWalletB(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, trustAnchor):
-    return addRole(looper, trustAnchor, trustAnchorWallet, 'userB', useDid=False)
 
 
 @pytest.fixture("module")

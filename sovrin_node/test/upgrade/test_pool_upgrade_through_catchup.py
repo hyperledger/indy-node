@@ -8,7 +8,7 @@ from plenum.common.util import randomString
 from plenum.test.test_node import checkNodesConnected
 from sovrin_common.constants import SHA256, CANCEL, ACTION
 from sovrin_common.test.conftest import tconf
-from sovrin_node.test.conftest import testNodeClass
+from sovrin_client.test.conftest import testNodeClass
 from sovrin_client.test.conftest import testClientClass
 from plenum.test.conftest import allPluginsPath
 from sovrin_node.test.helper import TestNode
