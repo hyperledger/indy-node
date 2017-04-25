@@ -59,6 +59,7 @@ jsonSerz = JsonSerializer()
 
 CONFIG_LEDGER_ID = 2
 
+
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
 

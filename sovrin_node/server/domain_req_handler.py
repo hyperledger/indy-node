@@ -39,25 +39,24 @@ class DomainReqHandler(PHandler):
     def onBatchRejected(self, stateRoot=None):
         self.idrCache.batchRejected(stateRoot)
 
-    def updateState(self, txns, isCommitted=False):
-        for txn in txns:
-            typ = txn.get(TXN_TYPE)
-            nym = txn.get(TARGET_NYM)
-            if typ == NYM:
-                data = {f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm)}
-                if ROLE in txn:
-                    data[ROLE] = txn.get(ROLE)
-                if VERKEY in txn:
-                    data[VERKEY] = txn.get(VERKEY)
-                self.updateNym(nym, data, isCommitted=isCommitted)
-            elif typ == ATTRIB:
-                self._addAttr(txn)
-            elif typ == SCHEMA:
-                self._addSchema(txn)
-            elif typ == CLAIM_DEF:
-                self._addClaimDef(txn)
-            else:
-                logger.debug('Cannot apply request of type {} to state'.format(typ))
+    def _updateStateWithSingleTxn(self, txn, isCommitted=False):
+        typ = txn.get(TXN_TYPE)
+        nym = txn.get(TARGET_NYM)
+        if typ == NYM:
+            data = {f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm)}
+            if ROLE in txn:
+                data[ROLE] = txn.get(ROLE)
+            if VERKEY in txn:
+                data[VERKEY] = txn.get(VERKEY)
+            self.updateNym(nym, data, isCommitted=isCommitted)
+        elif typ == ATTRIB:
+            self._addAttr(txn)
+        elif typ == SCHEMA:
+            self._addSchema(txn)
+        elif typ == CLAIM_DEF:
+            self._addClaimDef(txn)
+        else:
+            logger.debug('Cannot apply request of type {} to state'.format(typ))
 
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot)
@@ -245,6 +244,7 @@ class DomainReqHandler(PHandler):
         origin = txn.get(f.IDENTIFIER.nm)
 
         data = txn.get(DATA)
+        data = json.loads(data)
         schemaName = data[NAME]
         schemaVersion = data[VERSION]
         path = self._makeSchemaPath(origin, schemaName, schemaVersion)
@@ -261,8 +261,9 @@ class DomainReqHandler(PHandler):
         if schemaSeqNo is None:
             raise ValueError("'{}' field is absent, "
                              "but it must contain schema seq no".format(REF))
-        keys = txn.get(DATA)
-        if keys is None:
+        data = txn.get(DATA)
+        data = json.loads(data)
+        if data is None:
             raise ValueError("'{}' field is absent, "
                              "but it must contain components of keys"
                              .format(DATA))
@@ -270,7 +271,7 @@ class DomainReqHandler(PHandler):
         signatureType = txn.get(SIGNATURE_TYPE, 'CL')
         path = self._makeClaimDefPath(origin, schemaSeqNo, signatureType)
         seqNo = txn[f.SEQ_NO.nm]
-        valueBytes = self._encodeValue(keys, seqNo)
+        valueBytes = self._encodeValue(data, seqNo)
         self.state.set(path, valueBytes)
 
     def getAttr(self,
