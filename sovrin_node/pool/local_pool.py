@@ -1,11 +1,13 @@
 import os
 from collections import deque
 
+import shutil
 from plenum.common.member.steward import Steward
 from plenum.common.test_network_setup import TestNetworkSetup
 from plenum.common.constants import TYPE, NODE, NYM
-from plenum.common.util import adict
-from sovrin_client.agent.agent import WalletedAgent
+from plenum.common.util import adict, randomString
+
+from sovrin_client.agent.walleted_agent import WalletedAgent
 from sovrin_client.client.client import Client
 from sovrin_node.server.node import Node
 from sovrin_client.client.wallet.wallet import Wallet
@@ -19,15 +21,19 @@ from stp_core.crypto.util import randomSeed
 from stp_core.loop.looper import Looper
 
 
-def create_local_pool(base_dir, node_size=4, looper=None):
+def create_local_pool(base_dir, node_size=4):
     conf = getConfig(base_dir)
     pool_dir = os.path.join(base_dir, "pool")
+
+    # TODO: Need to come back to this why we need this cleanup
+    shutil.rmtree(pool_dir, ignore_errors=True)
+
     stewards = []
     node_conf = []
     nodes = []
     genesis_txns = []
     for i in range(node_size):
-        w = Wallet()
+        w = Wallet("steward")
         s = Steward(wallet=w)
         s.wallet.addIdentifier()
 
@@ -84,7 +90,8 @@ class LocalPool(Pool, Looper):
         return self.genesis_txns
 
     def create_client(self, port: int):
-        return Client(basedirpath=self.base_dir,
+        return Client(name=randomString(6),
+                      basedirpath=self.base_dir,
                       ha=('127.0.0.1', port))
 
     def steward_agent(self):
