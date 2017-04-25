@@ -5,7 +5,8 @@ from plenum.common.member.steward import Steward
 from plenum.common.test_network_setup import TestNetworkSetup
 from plenum.common.constants import TYPE, NODE, NYM
 from plenum.common.util import adict
-from sovrin_client.agent.agent import WalletedAgent
+
+from sovrin_client.agent.walleted_agent import WalletedAgent
 from sovrin_client.client.client import Client
 from sovrin_node.server.node import Node
 from sovrin_client.client.wallet.wallet import Wallet
