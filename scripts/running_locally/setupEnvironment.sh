@@ -1,7 +1,5 @@
 # This script can be used when following the Sovrin_Running_Locally guide
 
-# reset database
-/opt/orientdb/bin/console.sh < resetDB.sql
 stty sane
 
 # Remove .sovrin folder

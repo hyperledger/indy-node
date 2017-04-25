@@ -1,12 +1,10 @@
-import os
-
 from collections import OrderedDict
-import rlp
 
+import rlp
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD
 from plenum.common.types import f
-from plenum.persistence.kv_store_leveldb import KVStoreLeveldb
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
+from state.kv.kv_store import KeyValueStorage
 from stp_core.common.log import getlogger
 
 logger = getlogger()
@@ -27,13 +25,10 @@ class IdrCache:
 
     unsetVerkey = b'-'
 
-    def __init__(self, basedir: str, name):
-        logger.debug('Initializing identity cache {} at {}'
-                     .format(name, basedir))
-        self._basedir = basedir
+    def __init__(self, name, keyValueStorage: KeyValueStorage):
+        logger.debug('Initializing identity cache {}'.format(name))
+        self._keyValueStorage = keyValueStorage
         self._name = name
-        self._db = None
-        self.open()
         # OrderedDict where key is the state root after batch and value is a
         # dictionary similar to cache which can be queried like the
         # database, i.e `self._db`. Keys (state roots are purged) when they
@@ -76,7 +71,7 @@ class IdrCache:
     def get(self, idr, isCommitted=True):
         idr = idr.encode()
         if isCommitted:
-            value = self._db.get(idr)
+            value = self._keyValueStorage.get(idr)
         else:
             # Looking for uncommitted values, iterating over `self.unCommitted`
             # in reverse to get the latest value
@@ -85,26 +80,19 @@ class IdrCache:
                     value = cache[idr]
                     break
             else:
-                value = self._db.get(idr)
+                value = self._keyValueStorage.get(idr)
         ta, iv, r = self.unpackIdrValue(value)
         return ta, iv, r
 
     def set(self, idr, ta=None, verkey=None, role=None, isCommitted=True):
         val = self.packIdrValue(ta, role, verkey)
         if isCommitted:
-            self._db.set(idr, val)
+            self._keyValueStorage.put(idr, val)
         else:
             self.currentBatchOps.append((idr, val))
 
     def close(self):
-        self._db.close()
-
-    def open(self):
-        self._db = KVStoreLeveldb(self.dbPath)
-
-    @property
-    def dbPath(self):
-        return os.path.join(self._basedir, self._name)
+        self._keyValueStorage.close()
 
     def currentBatchCreated(self, stateRoot):
         self.unCommitted[stateRoot] = OrderedDict(self.currentBatchOps)
@@ -117,7 +105,7 @@ class IdrCache:
             self.currentBatchOps = []
 
     def onBatchCommitted(self, stateRoot):
-        self._db.setBatch([(idr, val) for idr, val in self.unCommitted[stateRoot].items()])
+        self._keyValueStorage.setBatch([(idr, val) for idr, val in self.unCommitted[stateRoot].items()])
         self.unCommitted.pop(stateRoot)
 
     def setVerkey(self, idr, verkey):

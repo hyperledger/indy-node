@@ -4,16 +4,16 @@ from ledger.serializers.json_serializer import JsonSerializer
 from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES
 
 from plenum.common.ledger import Ledger
-from plenum.persistence.pruning_state import PruningState
 from plenum.server.pool_req_handler import PoolRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NODE
 from sovrin_node.persistence.idr_cache import IdrCache
+from state.state import State
 
 
 class PoolRequestHandler(PHandler):
-    def __init__(self, ledger: Ledger, state: PruningState,
-                 domainState: PruningState, idrCache: IdrCache):
+    def __init__(self, ledger: Ledger, state: State,
+                 domainState: State, idrCache: IdrCache):
         super().__init__(ledger, state, domainState)
         self.stateSerializer = JsonSerializer()
         self.idrCache = idrCache

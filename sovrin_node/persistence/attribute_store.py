@@ -1,4 +1,4 @@
-from plenum.persistence.kv_store_leveldb import KVStoreLeveldb
+from state.kv.kv_store import KeyValueStorage
 
 
 class AttributeStore:
@@ -7,19 +7,18 @@ class AttributeStore:
     attribute as stored in ledger and value is the actual value if the attribute
     """
 
-    def __init__(self, dbPath):
-        self.dbPath = dbPath
-        self.db = KVStoreLeveldb(dbPath)
+    def __init__(self, keyValueStorage: KeyValueStorage):
+        self._keyValueStorage = keyValueStorage
 
     def set(self, key, value):
-        self.db.set(key, value)
+        self._keyValueStorage.put(key, value)
 
     def get(self, key):
-        val = self.db.get(key)
+        val = self._keyValueStorage.get(key)
         return val.decode()
 
     def remove(self, key):
-        self.db.remove(key)
+        self._keyValueStorage.remove(key)
 
     def close(self):
-        self.db.close()
+        self._keyValueStorage.close()

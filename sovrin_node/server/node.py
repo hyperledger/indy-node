@@ -13,6 +13,7 @@ from ledger.serializers.json_serializer import JsonSerializer
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.persistence.util import txnsWithMerkleInfo
 from sovrin_node.persistence.attribute_store import AttributeStore
+from state.pruning_state import PruningState
 from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
@@ -21,18 +22,11 @@ from plenum.common.types import Reply, RequestAck, f, \
     OPERATION, LedgerStatus
 from plenum.common.util import error
 
-from plenum.persistence.storage import initStorage
+from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.server.node import Node as PlenumNode
 from plenum.common.ledger import Ledger
 
-from plenum.persistence.pruning_state import PruningState
-
-
 from sovrin_common.config_util import getConfig
-from sovrin_common.constants import allOpKeys, ATTRIB, GET_ATTR, \
-    GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, \
-    REF, ACTION, NODE_UPGRADE, COMPLETE, FAIL
-from sovrin_common.persistence import identity_graph
 from sovrin_common.constants import TXN_TYPE, \
     TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, NYM,\
     ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
@@ -144,7 +138,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def getDomainReqHandler(self):
         if self.idrCache is None:
-            self.idrCache = IdrCache(self.dataLocation, name=self.name)
+            self.idrCache = self.getIdrCache()
         if self.attributeStore is None:
             self.attributeStore = self.loadAttributeStore()
         return DomainReqHandler(self.domainLedger,
@@ -154,6 +148,15 @@ class Node(PlenumNode, HasPoolManager):
                                 self.attributeStore
                                 )
 
+    def getIdrCache(self):
+        return IdrCache(
+            self.name,
+            initKeyValueStorage(
+                self.config.idrCacheStorage,
+                self.dataLocation,
+                self.name)
+        )
+
     def getConfigLedger(self):
         return Ledger(CompactMerkleTree(hashStore=FileHashStore(
             fileNamePrefix='config', dataDir=self.dataLocation)),
@@ -162,12 +165,22 @@ class Node(PlenumNode, HasPoolManager):
             ensureDurability=self.config.EnsureLedgerDurability)
 
     def loadConfigState(self):
-        return PruningState(os.path.join(self.dataLocation,
-                                         self.config.configStateDbName))
+        return PruningState(
+            initKeyValueStorage(
+                self.config.configStateStorage,
+                self.dataLocation,
+                self.config.configStateDbName)
+        )
+
 
     def loadAttributeStore(self):
-        dbPath = os.path.join(self.dataLocation, self.config.attrDB)
-        return AttributeStore(dbPath)
+        return AttributeStore(
+            initKeyValueStorage(
+                self.config.attrStorage,
+                self.dataLocation,
+                self.config.attrDbName)
+        )
+
 
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,

@@ -15,8 +15,6 @@ Note - I'm still trying to get my head around the details of Sovrin so there may
 
 I’m assuming that you have Sovrin-node installed (I recommend installing this in an Ubuntu Virtual Machine if possible) – If not follow the instructions at: https://github.com/sovrin-foundation/sovrin-node/blob/master/setup.md
 
-You will also need OrientDB installed again and again instructions for that can be found at https://github.com/sovrin-foundation/sovrin/blob/master/orientdb_installation.md
-
 Finally make sure that `pytest` module is installed (it is required to run test-related functionality like Faber, Acme and ThriftBank test agents): 
 
 ```
@@ -80,7 +78,7 @@ Then run the following commands:
 new key with seed 000000000000000000000000Steward1
 connect test
 send NYM dest=FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB role=TRUST_ANCHOR
-send ATTRIB dest=FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB raw={"endpoint": "127.0.0.1:5555"}
+send ATTRIB dest=FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB raw={"endpoint": {"ha":"127.0.0.1:5555"}}
 ```
 
 We first add the Stewards key into the Keyring (this enables us to assume the Steward role) - Note this key is hardcoded into the test scripts at the moment so is pre-generated
@@ -109,7 +107,7 @@ I've included the full steps for the getting started console commands in the Get
 ### ACME Client
 ```
 send NYM dest=7YD5NKn3P4wVJLesAmA1rr7sLPqW9mR1nhFdKD518k21 role=TRUST_ANCHOR
-send ATTRIB dest=7YD5NKn3P4wVJLesAmA1rr7sLPqW9mR1nhFdKD518k21 raw={"endpoint": "127.0.0.1:6666"}
+send ATTRIB dest=7YD5NKn3P4wVJLesAmA1rr7sLPqW9mR1nhFdKD518k21 raw={"endpoint": {"ha":"127.0.0.1:6666"}}
 
 python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin_client/test/agent/acme.py --port 6666
 ```
@@ -117,7 +115,7 @@ python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin_client/test/agen
 ### ThriftBank Client
 ```
 send NYM dest=9jegUr9vAMqoqQQUEAiCBYNQDnUbTktQY9nNspxfasZW role=TRUST_ANCHOR
-send ATTRIB dest=9jegUr9vAMqoqQQUEAiCBYNQDnUbTktQY9nNspxfasZW raw={"endpoint": "127.0.0.1:7777"}
+send ATTRIB dest=9jegUr9vAMqoqQQUEAiCBYNQDnUbTktQY9nNspxfasZW raw={"endpoint": {"ha":"127.0.0.1:7777"}}
 
 python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin_client/test/agent/thrift.py --port 7777
 ```
@@ -125,27 +123,7 @@ python ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin_client/test/agen
 
 # Resetting the Sovrin environment
 
-If you wish to reset your Sovrin environment and recreate it again, you can remove your ```~/.sovrin``` folder **however** you also need to clear out some tables from the OrientDB database too.
-
-So, create a new file in your Sovrin folder called resetDB.sql containiing:
-```
-connect remote:127.0.0.1 root password
-drop database remote:localhost/Node1 root password
-drop database remote:localhost/Node2 root password
-drop database remote:localhost/Node3 root password
-drop database remote:localhost/Node4 root password
-exit
-```
-
-This connects to your local OrientDB database and deletes the Node1, Node2, Node3, and Node4 databases
-
-And add the following to the top of the setupEnvironment.sh script:
-```
-# reset database
-/opt/orientdb/bin/console.sh < resetDB.sql
-stty sane
-```
-This just runs the above resetDB.sql script and the resets the terminal back to normal (for some reason on my Ubuntu machine, the terminal stops echoing out commands after running the console)
+If you wish to reset your Sovrin environment and recreate it again, you can remove your ```~/.sovrin``` folder.
 
 Then, when you want to re-create your environment from scratch, ensure that all the nodes and agents are stopped and just run the setupEnvironment.sh script.
 Then you can restart the Nodes, attach the agents and away you go again.

@@ -7,7 +7,6 @@ from plenum.common.constants import REQACK, TXN_ID
 from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import getMaxFailures, runall
-# from plenum.persistence import orientdb_store
 from plenum.test.helper import TestNodeSet as PlenumTestNodeSet
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     checkLastClientReqForNode, buildCompletedTxnFromReply
