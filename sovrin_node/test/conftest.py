@@ -20,22 +20,16 @@ import pytest
 
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
-    ALIAS, SERVICES, VALIDATOR, STEWARD, TXN_ID, TRUSTEE, TYPE
-
-from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.constants import NYM, TARGET_NYM, ROLE
-
-from sovrin_node.test.helper import TestNode, \
-    buildStewardClient
+    ALIAS, SERVICES, VALIDATOR, STEWARD
 
 from sovrin_client.test.helper import addRole, getClientAddedWithRole
 
 # noinspection PyUnresolvedReferences
 from sovrin_client.test.conftest import trustAnchorWallet, \
-    trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, trusteeData,\
-    trusteeWallet, stewardWallet, steward, genesisTxns, testClientClass, \
-    addedTrustAnchor, userIdA, userIdB, userClientA, userClientB, \
-    warnfilters as client_warnfilters
+    trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, \
+    stewardWallet, steward, genesisTxns, testClientClass, \
+    addedTrustAnchor, userWalletB, nodeSet, testNodeClass, updatedPoolTxnData, \
+    trusteeData, trusteeWallet, trustee, warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, nodeReg, up, ready, \
@@ -58,59 +52,6 @@ def warnfilters(client_warnfilters):
         warnings.filterwarnings('ignore', category=DeprecationWarning, module='sovrin_common\.persistence\.identity_graph', message="The 'warn' method is deprecated")
         warnings.filterwarnings('ignore', category=ResourceWarning, message='unclosed transport')
     return _
-
-
-@pytest.fixture(scope="module")
-def updatedPoolTxnData(poolTxnData):
-    data = poolTxnData
-    trusteeSeed = 'thisistrusteeseednotsteward12345'
-    signer = SimpleSigner(seed=trusteeSeed.encode())
-    t = {
-        TARGET_NYM: signer.verkey,
-        ROLE: TRUSTEE,
-        TYPE: NYM,
-        ALIAS: "Trustee1",
-        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"
-    }
-    data["seeds"]["Trustee1"] = trusteeSeed
-    data["txns"].insert(0, t)
-    return data
-
-
-@pytest.fixture(scope="module")
-def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
-    name = poolTxnTrusteeNames[0]
-    seed = updatedPoolTxnData["seeds"][name]
-    return name, seed.encode()
-
-
-@pytest.fixture(scope="module")
-def trusteeWallet(trusteeData):
-    name, sigseed = trusteeData
-    wallet = Wallet('trustee')
-    signer = SimpleSigner(seed=sigseed)
-    wallet.addIdentifier(signer=signer)
-    return wallet
-
-
-@pytest.fixture(scope="module")
-def trustee(nodeSet, looper, tdir, up, trusteeWallet):
-    return buildStewardClient(looper, tdir, trusteeWallet)
-
-
-@pytest.fixture(scope="module")
-def testNodeClass():
-    return TestNode
-
-
-@pytest.fixture(scope="module")
-def nodeSet(tconf, updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet):
-    return txnPoolNodeSet
-
-
-@pytest.fixture(scope="module")
-def userWalletB(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, trustAnchor):
-    return addRole(looper, trustAnchor, trustAnchorWallet, 'userB', useDid=False)
 
 
 @pytest.fixture("module")
