@@ -24,7 +24,7 @@ logger = getlogger()
 class DomainReqHandler(PHandler):
     MARKER_ATTR = "\01"
     MARKER_SCHEMA = "\02"
-    MARKER_IPK = "\03"
+    MARKER_CLAIM_DEF = "\03"
     LAST_SEQ_NO = "lsn"
     VALUE = "val"
 
@@ -75,105 +75,123 @@ class DomainReqHandler(PHandler):
 
     def doStaticValidation(self, identifier, reqId, operation):
         if operation[TXN_TYPE] == NYM:
-            role = operation.get(ROLE)
-            nym = operation.get(TARGET_NYM)
-            if not nym:
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} needs to be present".
-                                           format(TARGET_NYM))
-            if not Authoriser.isValidRole(role):
-                raise InvalidClientRequest(identifier, reqId,
-                                           "{} not a valid role".
-                                           format(role))
-            s, reason = self.canNymRequestBeProcessed(identifier, operation)
-            if not s:
-                raise InvalidClientRequest(identifier, reqId, reason)
-
+            self._doStaticValidationNym(identifier, reqId, operation)
         if operation[TXN_TYPE] == ATTRIB:
-            dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
-            if len(dataKeys) != 1:
-                raise InvalidClientRequest(identifier, reqId,
-                                           '{} should have one and only one of '
-                                           '{}, {}, {}'
-                                           .format(ATTRIB, RAW, ENC, HASH))
-            if RAW in dataKeys:
-                try:
-                    data = json.loads(operation[RAW])
-                    endpoint = data.get(ENDPOINT, {}).get('ha')
-                    check_endpoint_valid(endpoint, required=False)
+            self._doStaticValidationAttrib(identifier, reqId, operation)
 
-                except EndpointException as exc:
-                    raise InvalidClientRequest(identifier, reqId, str(exc))
-                except BaseException as exc:
-                    raise InvalidClientRequest(identifier, reqId, str(exc))
-                    # PREVIOUS CODE, ASSUMED ANY EXCEPTION WAS A JSON ISSUE
-                    # except:
-                    #     raise InvalidClientRequest(identifier, reqId,
-                    #                                'raw attribute {} should be '
-                    #                                'JSON'.format(operation[RAW]))
 
-            if not (not operation.get(TARGET_NYM) or
+    def _doStaticValidationNym(self, identifier, reqId, operation):
+        role = operation.get(ROLE)
+        nym = operation.get(TARGET_NYM)
+        if not nym:
+            raise InvalidClientRequest(identifier, reqId,
+                                       "{} needs to be present".
+                                       format(TARGET_NYM))
+        if not Authoriser.isValidRole(role):
+            raise InvalidClientRequest(identifier, reqId,
+                                       "{} not a valid role".
+                                       format(role))
+        s, reason = self.canNymRequestBeProcessed(identifier, operation)
+        if not s:
+            raise InvalidClientRequest(identifier, reqId, reason)
+
+    def _doStaticValidationAttrib(self, identifier, reqId, operation):
+        dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
+        if len(dataKeys) != 1:
+            raise InvalidClientRequest(identifier, reqId,
+                                       '{} should have one and only one of '
+                                       '{}, {}, {}'
+                                       .format(ATTRIB, RAW, ENC, HASH))
+        if RAW in dataKeys:
+            try:
+                data = json.loads(operation[RAW])
+                endpoint = data.get(ENDPOINT, {}).get('ha')
+                check_endpoint_valid(endpoint, required=False)
+
+            except EndpointException as exc:
+                raise InvalidClientRequest(identifier, reqId, str(exc))
+            except BaseException as exc:
+                raise InvalidClientRequest(identifier, reqId, str(exc))
+                # PREVIOUS CODE, ASSUMED ANY EXCEPTION WAS A JSON ISSUE
+                # except:
+                #     raise InvalidClientRequest(identifier, reqId,
+                #                                'raw attribute {} should be '
+                #                                'JSON'.format(operation[RAW]))
+        if not (not operation.get(TARGET_NYM) or
                     self.hasNym(operation[TARGET_NYM], isCommitted=False)):
-                raise InvalidClientRequest(identifier, reqId,
-                                           '{} should be added before adding '
-                                           'attribute for it'.
-                                           format(TARGET_NYM))
+            raise InvalidClientRequest(identifier, reqId,
+                                       '{} should be added before adding '
+                                       'attribute for it'.
+                                       format(TARGET_NYM))
 
     def validate(self, req: Request, config=None):
         op = req.operation
         typ = op[TXN_TYPE]
 
-        s = self.idrCache
-
-        origin = req.identifier
-
         if typ == NYM:
-            try:
-                originRole = s.getRole(origin, isCommitted=False) or None
-            except:
-                raise UnknownIdentifier(
-                    req.identifier,
-                    req.reqId)
-
-            nymData = s.getNym(op[TARGET_NYM], isCommitted=False)
-            if not nymData:
-                # If nym does not exist
-                role = op.get(ROLE)
-                r, msg = Authoriser.authorised(NYM, ROLE, originRole,
-                                               oldVal=None, newVal=role)
-                if not r:
-                    raise UnauthorizedClientRequest(
-                        req.identifier,
-                        req.reqId,
-                        "{} cannot add {}".format(originRole, role))
-            else:
-                owner = s.getOwnerFor(op[TARGET_NYM], isCommitted=False)
-                isOwner = origin == owner
-                updateKeys = [ROLE, VERKEY]
-                for key in updateKeys:
-                    if key in op:
-                        newVal = op[key]
-                        oldVal = nymData.get(key)
-                        if oldVal != newVal:
-                            r, msg = Authoriser.authorised(NYM, key, originRole,
-                                                           oldVal=oldVal,
-                                                           newVal=newVal,
-                                                           isActorOwnerOfSubject=isOwner)
-                            if not r:
-                                raise UnauthorizedClientRequest(
-                                    req.identifier,
-                                    req.reqId,
-                                    "{} cannot update {}".format(originRole,
-                                                                 key))
-
+            self._validateNym(req)
         elif typ == ATTRIB:
-            if op.get(TARGET_NYM) and op[TARGET_NYM] != req.identifier and \
-                    not s.getOwnerFor(op[TARGET_NYM], isCommitted=False) == origin:
-                raise UnauthorizedClientRequest(
-                    req.identifier,
-                    req.reqId,
-                    "Only identity owner/guardian can add attribute "
-                    "for that identity")
+            self._validateAttrib(req)
+
+    def _validateNym(self, req: Request):
+        origin = req.identifier
+        op = req.operation
+
+        try:
+            originRole = self.idrCache.getRole(origin, isCommitted=False) or None
+        except:
+            raise UnknownIdentifier(
+                req.identifier,
+                req.reqId)
+
+        nymData = self.idrCache.getNym(op[TARGET_NYM], isCommitted=False)
+        if not nymData:
+            # If nym does not exist
+            self._validateNewNym(req, op, originRole)
+        else:
+            self._validateExistingNym(req, op, originRole, nymData)
+
+    def _validateNewNym(self, req: Request, op, originRole):
+        role = op.get(ROLE)
+        r, msg = Authoriser.authorised(NYM, ROLE, originRole,
+                                       oldVal=None, newVal=role)
+        if not r:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "{} cannot add {}".format(originRole, role))
+
+    def _validateExistingNym(self, req: Request, op, originRole, nymData):
+        origin = req.identifier
+        owner = self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
+        isOwner = origin == owner
+        updateKeys = [ROLE, VERKEY]
+        for key in updateKeys:
+            if key in op:
+                newVal = op[key]
+                oldVal = nymData.get(key)
+                if oldVal != newVal:
+                    r, msg = Authoriser.authorised(NYM, key, originRole,
+                                                   oldVal=oldVal,
+                                                   newVal=newVal,
+                                                   isActorOwnerOfSubject=isOwner)
+                    if not r:
+                        raise UnauthorizedClientRequest(
+                            req.identifier,
+                            req.reqId,
+                            "{} cannot update {}".format(originRole,
+                                                         key))
+
+    def _validateAttrib(self, req: Request):
+        origin = req.identifier
+        op = req.operation
+        if op.get(TARGET_NYM) and op[TARGET_NYM] != req.identifier and \
+                not self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False) == origin:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "Only identity owner/guardian can add attribute "
+                "for that identity")
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
@@ -340,7 +358,7 @@ class DomainReqHandler(PHandler):
     def _makeClaimDefPath(did, schemaSeqNo, signatureType) -> bytes:
         return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}" \
                    .format(DID=did,
-                           MARKER=DomainReqHandler.MARKER_IPK,
+                           MARKER=DomainReqHandler.MARKER_CLAIM_DEF,
                            SIGNATURE_TYPE=signatureType,
                            SCHEMA_SEQ_NO=schemaSeqNo)\
                    .encode()
