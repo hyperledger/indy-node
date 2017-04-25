@@ -64,7 +64,7 @@ def parseArgs():
     parser.add_argument("-t", "--request_type",
                         action="store",
                         type=str,
-                        default="ATTRIB",
+                        default="NYM",
                         dest="requestType",
                         help="type of requests to send, supported = NYM, ATTRIB")
 
