@@ -100,15 +100,6 @@ def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
         suspendRole(looper, trClient, trWallet, sWallet.defaultId)
 
 
-def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
-    node = nodeSet[-1]
-    nodeNym = hexToFriendly(node.nodestack.verhex)
-    suspendNode(looper, trustee, trusteeWallet, nodeNym, node.name)
-    for n in nodeSet[:-1]:
-        looper.run(eventually(checkNodeNotInNodeReg, n, node.name))
-    looper.run(eventually(checkNodeNotInNodeReg, trustee, node.name))
-    
-
 def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
                                   anotherTrustee, anotherTGB, anotherSteward,
                                   anotherTrustAnchor):
@@ -121,3 +112,14 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
             changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '')
         # Identity owner can change verkey
         changeVerkey(looper, *identity, wallet.defaultId, '')
+
+
+# Keep the test below at the end of the suite since it will make one of the
+# nodes inactive, unless you are planning to add new nodes.
+def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
+    node = nodeSet[-1]
+    nodeNym = hexToFriendly(node.nodestack.verhex)
+    suspendNode(looper, trustee, trusteeWallet, nodeNym, node.name)
+    for n in nodeSet[:-1]:
+        looper.run(eventually(checkNodeNotInNodeReg, n, node.name))
+    looper.run(eventually(checkNodeNotInNodeReg, trustee, node.name))
