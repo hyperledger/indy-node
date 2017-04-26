@@ -3,7 +3,7 @@ import os
 from collections import deque
 from copy import deepcopy
 from hashlib import sha256
-from typing import Iterable, Any, List
+from typing import Iterable, Any, List, Set
 
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.serializers.compact_serializer import CompactSerializer
@@ -17,7 +17,7 @@ from state.pruning_state import PruningState
 from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, VERSION, ORIGIN, \
     POOL_TXN_TYPES, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
-    DATA, HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID
+    DATA, HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID, LedgerState
 from plenum.common.types import Reply, RequestAck, f, \
     OPERATION, LedgerStatus
 from plenum.common.util import error
@@ -127,6 +127,14 @@ class Node(PlenumNode, HasPoolManager):
                                dataDir=self.dataLocation,
                                config=self.config)
 
+    def send_ledger_status_to_newly_connected_node(self, node_name):
+        super().send_ledger_status_to_newly_connected_node(node_name)
+        # If the domain ledger is already synced send config ledger status
+        # else after the domain ledger is caught up, config ledger status
+        # will be sent
+        if self.ledgerManager.ledgers[DOMAIN_LEDGER_ID]["state"] == LedgerState.synced:
+            self.sendConfigLedgerStatus(node_name)
+
     def getUpgrader(self):
         return Upgrader(self.id,
                         self.name,
@@ -171,7 +179,6 @@ class Node(PlenumNode, HasPoolManager):
                 self.config.configStateDbName)
         )
 
-
     def loadAttributeStore(self):
         return AttributeStore(
             initKeyValueStorage(
@@ -179,7 +186,6 @@ class Node(PlenumNode, HasPoolManager):
                 self.dataLocation,
                 self.config.attrDbName)
         )
-
 
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,

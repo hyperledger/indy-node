@@ -14,13 +14,9 @@ class IdrCache:
     """
     A cache to store a role and verkey of an identifier, the db is only used to
     store committed data, uncommitted data goes to memory
-    The key is the identifier and value is a pack of fields
-    The first byte indicates whether the identifier has a guardian or not,
-    if it has then the next few bytes will be the guardian's identifier
-    otherwise they will be the verkey. Then there is delimiter byte after which
-    the value of role starts. eg.
-    Value in case of guardian: '\2<guardian's DID>\0<role of the DID>'
-    Value in case of no guardian: '\1<verkey of the DID>\0<role of the DID>'
+    The key is the identifier and value is a pack of fields in rlp
+    The first item is the trust anchor, the second item is verkey and the
+    third item is role
     """
 
     unsetVerkey = b'-'
