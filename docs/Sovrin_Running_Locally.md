@@ -151,12 +151,12 @@ load sample/acme-job-application.sovrin
 sync acme
 accept invitation from acme
 
-show claim request Job-Application
+show proof request Job-Application
 set first_name to Alice
 set last_name to Garcia
 set phone_number to 123-45-6789
-show claim request Job-Application
-send claim Job-Application to Acme
+show proof request Job-Application
+send proof Job-Application to Acme
 
 show link acme
 
@@ -168,9 +168,9 @@ load sample/thrift-loan-application.sovrin
 sync thrift
 accept invitation from thrift
 
-show claim request Loan-Application-Basic
-send claim Loan-Application-Basic to Thrift Bank
+show proof request Loan-Application-Basic
+send proof Loan-Application-Basic to Thrift Bank
 
-show claim request Loan-Application-KYC
-send claim Loan-Application-KYC to Thrift Bank
+show proof request Loan-Application-KYC
+send proof Loan-Application-KYC to Thrift Bank
 ```
