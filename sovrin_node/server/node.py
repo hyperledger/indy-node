@@ -350,29 +350,15 @@ class Node(PlenumNode, HasPoolManager):
             schemaName=(request.operation[DATA][NAME]),
             schemaVersion=(request.operation[DATA][VERSION])
         )
-        schema.update({ORIGIN: authorDid})
+
+        if schema is not None:
+            schema.update({ORIGIN: authorDid})
         result = {**request.operation, **{
             DATA: schema,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
             f.SEQ_NO.nm: lastSeqNo
         }}
-        self.transmitToClient(Reply(result), frm)
-
-    def processGetAttrsReq(self, request: Request, frm: str):
-        self.transmitToClient(RequestAck(*request.key), frm)
-        attrName = request.operation[RAW]
-        nym = request.operation[TARGET_NYM]
-        attrValue, lastSeqNo = \
-            self.reqHandler.getAttr(did=nym, key=attrName)
-        result = {**request.operation, **{
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-        }}
-        if attrValue is not None:
-            attr = json.dumps({attrName: attrValue}, sort_keys=True)
-            result[DATA] = attr
-            result[f.SEQ_NO.nm] = lastSeqNo
         self.transmitToClient(Reply(result), frm)
 
     def processGetClaimDefReq(self, request: Request, frm: str):
@@ -393,6 +379,22 @@ class Node(PlenumNode, HasPoolManager):
 
         self.transmitToClient(Reply(result), frm)
 
+    def processGetAttrsReq(self, request: Request, frm: str):
+        self.transmitToClient(RequestAck(*request.key), frm)
+        attrName = request.operation[RAW]
+        nym = request.operation[TARGET_NYM]
+        attrValue, lastSeqNo = \
+            self.reqHandler.getAttr(did=nym, key=attrName)
+        result = {**request.operation, **{
+            f.IDENTIFIER.nm: request.identifier,
+            f.REQ_ID.nm: request.reqId,
+        }}
+        if attrValue is not None:
+            attr = json.dumps({attrName: attrValue}, sort_keys=True)
+            result[DATA] = attr
+            result[f.SEQ_NO.nm] = lastSeqNo
+        self.transmitToClient(Reply(result), frm)
+
     def processRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == GET_NYM:
             self.transmitToClient(RequestAck(*request.key), frm)
@@ -410,7 +412,6 @@ class Node(PlenumNode, HasPoolManager):
             self.processGetClaimDefReq(request, frm)
         else:
             super().processRequest(request, frm)
-
 
     @classmethod
     def ledgerId(cls, txnType: str):
