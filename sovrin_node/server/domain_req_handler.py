@@ -300,11 +300,15 @@ class DomainReqHandler(PHandler):
         assert key is not None
         path = self._makeAttrPath(did, key)
         hashedVal, lastSeqNo = self.lookup(path, isCommitted)
+        if not hashedVal:
+            return hashedVal, lastSeqNo
+
         try:
             value = self.attributeStore.get(hashedVal)
             value = self.stateSerializer.deserialize(value)
         except KeyError:
             value = hashedVal
+
         return value, lastSeqNo
 
     def getSchema(self,
