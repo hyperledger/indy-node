@@ -41,8 +41,4 @@ class TxnBasedAuthNr(NaclAuthNr):
         except KeyError:
             return None
         return verkey
-        # nym = self.storage.getNym(identifier)
-        # if not nym:
-        #     raise UnknownIdentifier(identifier)
-        # verkey = nym.oRecordData.get(VERKEY) or ''
-        # return verkey
+
