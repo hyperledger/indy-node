@@ -6,7 +6,7 @@ from hashlib import sha256
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
-    VERKEY, DATA, NAME, VERSION
+    VERKEY, DATA, NAME, VERSION, ORIGIN
 from plenum.common.types import f
 from plenum.common.util import check_endpoint_valid
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
@@ -214,6 +214,55 @@ class DomainReqHandler(PHandler):
         result = {f.IDENTIFIER.nm: request.identifier,
                   f.REQ_ID.nm: request.reqId, DATA: data}
         result.update(request.operation)
+        return result
+
+    def handleGetSchemaReq(self, request: Request, frm: str):
+        authorDid = request.operation[TARGET_NYM]
+        schema, lastSeqNo = self.getSchema(
+            author=authorDid,
+            schemaName=(request.operation[DATA][NAME]),
+            schemaVersion=(request.operation[DATA][VERSION])
+        )
+
+        if schema is not None:
+            schema.update({ORIGIN: authorDid})
+        result = {**request.operation, **{
+            DATA: schema,
+            f.IDENTIFIER.nm: request.identifier,
+            f.REQ_ID.nm: request.reqId,
+            f.SEQ_NO.nm: lastSeqNo
+        }}
+        return result
+
+    def handleGetClaimDefReq(self, request: Request, frm: str):
+        signatureType = request.operation[SIGNATURE_TYPE]
+        keys, lastSeqNo = self.getClaimDef(
+            author=request.operation[ORIGIN],
+            schemaSeqNo=request.operation[REF],
+            signatureType=signatureType
+        )
+        result = {**request.operation, **{
+            DATA: keys,
+            f.IDENTIFIER.nm: request.identifier,
+            f.REQ_ID.nm: request.reqId,
+            SIGNATURE_TYPE: signatureType,
+            f.SEQ_NO.nm: lastSeqNo
+        }}
+        return result
+
+    def handleGetAttrsReq(self, request: Request, frm: str):
+        attrName = request.operation[RAW]
+        nym = request.operation[TARGET_NYM]
+        attrValue, lastSeqNo = \
+            self.getAttr(did=nym, key=attrName)
+        result = {**request.operation, **{
+            f.IDENTIFIER.nm: request.identifier,
+            f.REQ_ID.nm: request.reqId,
+        }}
+        if attrValue is not None:
+            attr = json.dumps({attrName: attrValue}, sort_keys=True)
+            result[DATA] = attr
+            result[f.SEQ_NO.nm] = lastSeqNo
         return result
 
     def lookup(self, path, isCommitted=True) -> (str, int):

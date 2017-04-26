@@ -44,8 +44,7 @@ from sovrin_node.server.domain_req_handler import DomainReqHandler
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
-from stp_core.network.exceptions import EndpointException
-from sovrin_common.constants import SIGNATURE_TYPE, openTxns, \
+from sovrin_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 
 logger = getlogger()
@@ -342,59 +341,6 @@ class Node(PlenumNode, HasPoolManager):
         c += self.upgrader.service()
         return c
 
-    def processGetSchemaReq(self, request: Request, frm: str):
-        self.transmitToClient(RequestAck(*request.key), frm)
-        authorDid = request.operation[TARGET_NYM]
-        schema, lastSeqNo = self.reqHandler.getSchema(
-            author=authorDid,
-            schemaName=(request.operation[DATA][NAME]),
-            schemaVersion=(request.operation[DATA][VERSION])
-        )
-
-        if schema is not None:
-            schema.update({ORIGIN: authorDid})
-        result = {**request.operation, **{
-            DATA: schema,
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            f.SEQ_NO.nm: lastSeqNo
-        }}
-        self.transmitToClient(Reply(result), frm)
-
-    def processGetClaimDefReq(self, request: Request, frm: str):
-        self.transmitToClient(RequestAck(*request.key), frm)
-        signatureType = request.operation[SIGNATURE_TYPE]
-        keys, lastSeqNo = self.reqHandler.getClaimDef(
-            author=request.operation[ORIGIN],
-            schemaSeqNo=request.operation[REF],
-            signatureType=signatureType
-        )
-        result = {**request.operation, **{
-            DATA: keys,
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            SIGNATURE_TYPE: signatureType,
-            f.SEQ_NO.nm: lastSeqNo
-        }}
-
-        self.transmitToClient(Reply(result), frm)
-
-    def processGetAttrsReq(self, request: Request, frm: str):
-        self.transmitToClient(RequestAck(*request.key), frm)
-        attrName = request.operation[RAW]
-        nym = request.operation[TARGET_NYM]
-        attrValue, lastSeqNo = \
-            self.reqHandler.getAttr(did=nym, key=attrName)
-        result = {**request.operation, **{
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-        }}
-        if attrValue is not None:
-            attr = json.dumps({attrName: attrValue}, sort_keys=True)
-            result[DATA] = attr
-            result[f.SEQ_NO.nm] = lastSeqNo
-        self.transmitToClient(Reply(result), frm)
-
     def processRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == GET_NYM:
             self.transmitToClient(RequestAck(*request.key), frm)
@@ -405,11 +351,17 @@ class Node(PlenumNode, HasPoolManager):
             # self.processGetTxnReq(request, frm)
             return
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
-            self.processGetSchemaReq(request, frm)
+            self.transmitToClient(RequestAck(*request.key), frm)
+            result = self.reqHandler.handleGetSchemaReq(request, frm)
+            self.transmitToClient(Reply(result), frm)
         elif request.operation[TXN_TYPE] == GET_ATTR:
-            self.processGetAttrsReq(request, frm)
+            self.transmitToClient(RequestAck(*request.key), frm)
+            result = self.reqHandler.handleGetAttrsReq(request, frm)
+            self.transmitToClient(Reply(result), frm)
         elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
-            self.processGetClaimDefReq(request, frm)
+            self.transmitToClient(RequestAck(*request.key), frm)
+            result = self.reqHandler.handleGetClaimDefReq(request, frm)
+            self.transmitToClient(Reply(result), frm)
         else:
             super().processRequest(request, frm)
 
