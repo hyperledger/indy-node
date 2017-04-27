@@ -1,9 +1,7 @@
-import json
-import os
 from collections import deque
 from copy import deepcopy
 from hashlib import sha256
-from typing import Iterable, Any, List, Set
+from typing import Iterable, Any, List
 
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.serializers.compact_serializer import CompactSerializer
@@ -11,13 +9,14 @@ from ledger.stores.file_hash_store import FileHashStore
 from ledger.serializers.json_serializer import JsonSerializer
 
 from plenum.common.exceptions import InvalidClientRequest
+from plenum.common.startable import LedgerState
 from plenum.persistence.util import txnsWithMerkleInfo
 from sovrin_node.persistence.attribute_store import AttributeStore
 from state.pruning_state import PruningState
 from stp_core.common.log import getlogger
-from plenum.common.constants import NAME, VERSION, ORIGIN, \
-    POOL_TXN_TYPES, NODE_PRIMARY_STORAGE_SUFFIX, TXN_TYPE, TARGET_NYM, \
-    DATA, HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID, LedgerState
+from plenum.common.constants import VERSION, \
+    POOL_TXN_TYPES, NODE_PRIMARY_STORAGE_SUFFIX, \
+    HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID
 from plenum.common.types import Reply, RequestAck, f, \
     OPERATION, LedgerStatus
 from plenum.common.util import error
@@ -28,13 +27,13 @@ from plenum.common.ledger import Ledger
 
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import TXN_TYPE, \
-    TARGET_NYM, allOpKeys, validTxnTypes, ATTRIB, NYM,\
-    ROLE, GET_ATTR, DISCLO, DATA, GET_NYM, \
-    reqOpKeys, GET_TXNS, LAST_TXN, TXNS, \
-    SCHEMA, GET_SCHEMA, openTxns, \
-    CLAIM_DEF, GET_CLAIM_DEF, REF, IDENTITY_TXN_TYPES, \
-    CONFIG_TXN_TYPES, POOL_UPGRADE, ACTION, START, CANCEL, SCHEDULE, \
-    NODE_UPGRADE, COMPLETE, FAIL, ENDPOINT
+    allOpKeys, ATTRIB, \
+    GET_ATTR, DATA, GET_NYM, \
+    reqOpKeys, GET_TXNS, \
+    GET_SCHEMA, \
+    GET_CLAIM_DEF, \
+    ACTION, \
+    NODE_UPGRADE, COMPLETE, FAIL
 from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.types import Request
 from sovrin_node.persistence.idr_cache import IdrCache
