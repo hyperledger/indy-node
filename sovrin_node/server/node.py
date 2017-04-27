@@ -160,7 +160,7 @@ class Node(PlenumNode, HasPoolManager):
             initKeyValueStorage(
                 self.config.idrCacheStorage,
                 self.dataLocation,
-                self.name)
+                self.config.idrCacheDbName)
         )
 
     def getConfigLedger(self):
