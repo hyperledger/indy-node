@@ -1,7 +1,9 @@
+import logging
 import warnings
 
 from plenum.common.keygen_utils import initLocalKeys
 from plenum.test import waits as plenumWaits
+from stp_core.common.log import Logger
 from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
 from plenum.test.helper import waitForSufficientRepliesForRequests
@@ -53,6 +55,7 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
     txnPoolNodesLooper, nodeAndClientInfoFilePath, conf, patchPluginManager, \
     warncheck, warnfilters as plenum_warnfilters
 
+Logger.setLogLevel(logging.DEBUG)
 
 @pytest.fixture(scope="session")
 def warnfilters(client_warnfilters):
