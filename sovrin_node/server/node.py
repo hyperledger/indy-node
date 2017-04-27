@@ -171,15 +171,12 @@ class Node(PlenumNode, HasPoolManager):
             ensureDurability=self.config.EnsureLedgerDurability)
 
     def loadConfigState(self):
-        # return PruningState(
-        #     initKeyValueStorage(
-        #         self.config.configStateStorage,
-        #         self.dataLocation,
-        #         self.config.configStateDbName)
-        # )
-        import os
-        return PruningState(os.path.join(self.dataLocation,
-                                         self.config.configStateDbName))
+        return PruningState(
+            initKeyValueStorage(
+                self.config.configStateStorage,
+                self.dataLocation,
+                self.config.configStateDbName)
+        )
 
     def loadAttributeStore(self):
         return AttributeStore(
