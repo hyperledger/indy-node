@@ -21,20 +21,6 @@ whitelist = ['Failed to upgrade node']
 
 
 @pytest.fixture(scope='module')
-def validUpgrade(nodeIds, tconf):
-    schedule = {}
-    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=90)
-    acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
-    for i in nodeIds:
-        schedule[i] = datetime.isoformat(startAt)
-        startAt = startAt + timedelta(seconds=acceptableDiff + 3)
-    # TODO select or create a timeout from 'waits'
-    return dict(name='upgrade-13', version=bumpedVersion(), action=START,
-                schedule=schedule, sha256='aad1242', timeout=10)
-
-
-@pytest.fixture(scope='module')
 def invalidUpgrade(nodeIds, tconf):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
@@ -124,15 +110,24 @@ def testPrimaryNodeTriggersElectionBeforeUpgrading(upgradeScheduled, looper,
 def testNonTrustyCannotCancelUpgrade(validUpgradeSent, looper, nodeSet,
                                      steward, validUpgrade):
     stClient, stWallet = steward
+    # here there is a dependency from 'testNodeSchedulesUpgradeAfterRestart'
+    # we have to reconnect client after the nodes is restarted.
+    looper.run(stClient.ensureConnectedToNodes())
+
     validUpgradeCopy = deepcopy(validUpgrade)
     validUpgradeCopy[ACTION] = CANCEL
     _, req = sendUpgrade(stClient, stWallet, validUpgradeCopy)
+    timeout = plenumWaits.expectedReqNAckQuorumTime()
     looper.run(eventually(checkNacks, stClient, req.reqId,
-                          'cannot do'))
+                          'cannot do', timeout=timeout))
 
 
 def testTrustyCancelsUpgrade(validUpgradeSent, looper, nodeSet, trustee,
                              trusteeWallet, validUpgrade):
+    # here there is a dependency from 'testNodeSchedulesUpgradeAfterRestart'
+    # we have to reconnect client after the nodes is restarted.
+    looper.run(trustee.ensureConnectedToNodes())
+
     validUpgradeCopy = deepcopy(validUpgrade)
     validUpgradeCopy[ACTION] = CANCEL
     validUpgradeCopy[JUSTIFICATION] = '"not gonna give you one"'
