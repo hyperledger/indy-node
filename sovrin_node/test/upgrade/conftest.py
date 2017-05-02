@@ -16,11 +16,11 @@ def nodeIds(nodeSet):
 def validUpgrade(nodeIds, tconf):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=90)
+    startAt = unow + timedelta(seconds=30)
     acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff + 3)
     # TODO select or create a timeout from 'waits' if it is needed
     return dict(name='upgrade-13', version=bumpedVersion(), action=START,
-                schedule=schedule, sha256='aad1242', timeout=10)
+                schedule=schedule, sha256='aad1242', timeout=1)
