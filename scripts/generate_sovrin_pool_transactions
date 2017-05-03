@@ -7,10 +7,11 @@ from sovrin_common.txn_util import getTxnOrderedFields
 
 config = getConfig()
 portsStart = 9700
+nodeParamsFileName = 'sovrin.env'
 
 
 if __name__ == "__main__":
-    TestNetworkSetup.bootstrapTestNodes(config, portsStart,
+    TestNetworkSetup.bootstrapTestNodes(config, portsStart, nodeParamsFileName,
                                         getTxnOrderedFields())
 
 
