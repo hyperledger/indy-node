@@ -89,9 +89,9 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['sovrin-common==0.2.5', 'python-dateutil'],
+    install_requires=['sovrin-common==0.2.7', 'python-dateutil'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'sovrin-client==0.3.15'],
+    tests_require=['pytest', 'sovrin-client==0.3.16'],
     scripts=['scripts/start_sovrin_node',
              'scripts/node_control_tool.py',
              'scripts/clear_node.py',
