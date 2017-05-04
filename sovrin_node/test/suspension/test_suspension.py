@@ -1,13 +1,15 @@
 import pytest
 
+from sovrin_node.test.suspension.helper import sendChangeVerkey, checkIdentityRequestFailed, \
+    checkIdentityRequestSucceed, sendSuspendRole, changeVerkey, suspendRole
 from stp_core.loop.eventually import eventually
 from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.util import randomString, hexToFriendly
 from plenum.test.pool_transactions.helper import suspendNode
 from plenum.test.pool_transactions.test_suspend_node import \
     checkNodeNotInNodeReg
-from sovrin_client.test.helper import addRole, suspendRole, \
-    getClientAddedWithRole, changeVerkey
+from sovrin_client.test.helper import addRole, \
+    getClientAddedWithRole
 from sovrin_common.constants import TGB, TRUST_ANCHOR
 
 whitelist = ['Observer threw an exception', 'while verifying message']
@@ -88,11 +90,14 @@ def testTrustAnchorSuspensionByTrustee(looper, anotherTrustee, anotherTrustAncho
 
 def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
                                    anotherTrustee, anotherSteward1):
+    # trustee suspension by trustee is succeed
     trClient, trWallet = anotherTrustee
     suspendRole(looper, trustee, trusteeWallet, trWallet.defaultId)
+
+    # trustee suspension by steward1 is failed
     _, sWallet = anotherSteward1
-    with pytest.raises(AssertionError):
-        suspendRole(looper, trClient, trWallet, sWallet.defaultId)
+    suspendRole(looper, trClient, trWallet, sWallet.defaultId,
+                nAckReasonContains='is neither Trustee nor owner of')
 
 
 def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
@@ -109,8 +114,14 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
                                   anotherTrustAnchor):
     for identity in (anotherTrustee, anotherTGB, anotherSteward, anotherTrustAnchor):
         # Trustee cannot change verkey
-        with pytest.raises(AssertionError):
-            _, wallet = identity
-            changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '')
+        _, wallet = identity
+        changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '',
+                     nAckReasonContains='cannot update verkey')
+        # with pytest.raises(AssertionError):
+        #     _, wallet = identity
+        #     changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '')
         # Identity owner can change verkey
         changeVerkey(looper, *identity, wallet.defaultId, '')
+        #sendChangeVerkey(*identity, wallet.defaultId, '')
+        #checkIdentityRequestSucceed(looper, *identity, wallet.defaultId)
+        # changeVerkey(looper, *identity, wallet.defaultId, '')
