@@ -8,6 +8,7 @@ from anoncreds.protocol.repo.attributes_repo import AttributeRepoInMemory
 from anoncreds.protocol.types import Schema, ID
 from anoncreds.protocol.wallet.issuer_wallet import IssuerWalletInMemory
 from anoncreds.test.conftest import GVT
+from plenum.test.pool_transactions.helper import ensureNodeDisconnectedFromPool
 
 from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
@@ -169,7 +170,10 @@ def testReplayLedger(addNymTxn, addedRawAttribute, submittedPublicKeys,
                        ha=nha, cliha=cha)
     looper.add(newNode)
     nodeSet[0] = newNode
-    looper.run(checkNodesConnected(nodeSet))
+    timeout = plenumWaits.expectedPoolDisconnectionTime(len(nodeSet)) + \
+        plenumWaits.expectedPoolInterconnectionTime(len(nodeSet))
+
+    looper.run(checkNodesConnected(nodeSet, customTimeout=timeout))
     timeout = plenumWaits.expectedPoolLedgerCheck(len(txnPoolNodeSet))
     looper.run(eventually(checkNodeLedgersForEquality, newNode,
                           *txnPoolNodeSet[1:4], retryWait=1, timeout=timeout))

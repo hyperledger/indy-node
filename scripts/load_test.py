@@ -34,7 +34,7 @@ from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.client.client import Client
 from sovrin_common.identity import Identity
-from sovrin_node.test.helper import GET_NYM
+from sovrin_common.constants import GET_NYM
 
 
 logger = getlogger()
