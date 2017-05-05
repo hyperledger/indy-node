@@ -100,15 +100,6 @@ def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
                 nAckReasonContains='is neither Trustee nor owner of')
 
 
-def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
-    node = nodeSet[-1]
-    nodeNym = hexToFriendly(node.nodestack.verhex)
-    suspendNode(looper, trustee, trusteeWallet, nodeNym, node.name)
-    for n in nodeSet[:-1]:
-        looper.run(eventually(checkNodeNotInNodeReg, n, node.name))
-    looper.run(eventually(checkNodeNotInNodeReg, trustee, node.name))
-    
-
 def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
                                   anotherTrustee, anotherTGB, anotherSteward,
                                   anotherTrustAnchor):
@@ -117,11 +108,17 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
         _, wallet = identity
         changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '',
                      nAckReasonContains='cannot update verkey')
-        # with pytest.raises(AssertionError):
-        #     _, wallet = identity
-        #     changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '')
-        # Identity owner can change verkey
+        # Owner can change verkey
         changeVerkey(looper, *identity, wallet.defaultId, '')
-        #sendChangeVerkey(*identity, wallet.defaultId, '')
-        #checkIdentityRequestSucceed(looper, *identity, wallet.defaultId)
-        # changeVerkey(looper, *identity, wallet.defaultId, '')
+
+
+# The test suspends a node, this action affects on other tests.
+# The test has to be the last in this module. It is not a good way.
+# TODO testValidatorSuspensionByTrustee should not affect on other tests
+def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
+    node = nodeSet[-1]
+    nodeNym = hexToFriendly(node.nodestack.verhex)
+    suspendNode(looper, trustee, trusteeWallet, nodeNym, node.name)
+    for n in nodeSet[:-1]:
+        looper.run(eventually(checkNodeNotInNodeReg, n, node.name))
+    looper.run(eventually(checkNodeNotInNodeReg, trustee, node.name))
