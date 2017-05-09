@@ -79,7 +79,6 @@ class DomainReqHandler(PHandler):
         if operation[TXN_TYPE] == ATTRIB:
             self._doStaticValidationAttrib(identifier, reqId, operation)
 
-
     def _doStaticValidationNym(self, identifier, reqId, operation):
         role = operation.get(ROLE)
         nym = operation.get(TARGET_NYM)
@@ -112,11 +111,6 @@ class DomainReqHandler(PHandler):
                 raise InvalidClientRequest(identifier, reqId, str(exc))
             except BaseException as exc:
                 raise InvalidClientRequest(identifier, reqId, str(exc))
-                # PREVIOUS CODE, ASSUMED ANY EXCEPTION WAS A JSON ISSUE
-                # except:
-                #     raise InvalidClientRequest(identifier, reqId,
-                #                                'raw attribute {} should be '
-                #                                'JSON'.format(operation[RAW]))
         if not (not operation.get(TARGET_NYM) or
                     self.hasNym(operation[TARGET_NYM], isCommitted=False)):
             raise InvalidClientRequest(identifier, reqId,
