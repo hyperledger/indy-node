@@ -34,6 +34,8 @@ from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.client.client import Client
 from sovrin_common.identity import Identity
+from sovrin_common.constants import GET_NYM
+
 
 logger = getlogger()
 config = getConfig()
@@ -64,9 +66,9 @@ def parseArgs():
     parser.add_argument("-t", "--request_type",
                         action="store",
                         type=str,
-                        default="ATTRIB",
+                        default="NYM",
                         dest="requestType",
-                        help="type of requests to send, supported = NYM, ATTRIB")
+                        help="type of requests to send, supported = NYM, GET_NYM, ATTRIB")
 
     parser.add_argument("--at-once",
                         action='store_true',
@@ -116,6 +118,24 @@ def createClientAndWalletWithSeed(name, seed, ha=None):
     return client, wallet
 
 
+class Rotator:
+
+    def __init__(self, collection):
+        self._collection = collection
+        self._index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if len(self._collection) == 0:
+            raise StopIteration()
+        if self._index >= len(self._collection):
+            self._index = 0
+        x = self._collection[self._index]
+        self._index += 1
+        return x
+
 class ClientPoll:
 
     def __init__(self, filePath, limit=-1, skip=0):
@@ -155,6 +175,21 @@ class ClientPoll:
                            verkey=signer.verkey)
 
             wallet.addTrustAnchoredIdentity(idy)
+
+        return self.submitGeneric(makeRequest, reqsPerClient)
+
+    def submitGetNym(self, reqsPerClient=1):
+
+        ids = Rotator([wallet.defaultId
+                       for _, wallet in self._clientsWallets])
+
+        def makeRequest(cli, wallet):
+            op = {
+                TARGET_NYM: next(ids),
+                TXN_TYPE: GET_NYM,
+            }
+            req = wallet.signOp(op)
+            wallet.pendRequest(req)
 
         return self.submitGeneric(makeRequest, reqsPerClient)
 
@@ -361,9 +396,10 @@ def main(args):
 
         requestType = args.requestType
         sendRequests = {
-            "NYM": clientPoll.submitNym,
-            "ATTRIB": clientPoll.submitSetAttr,
-            "ATTR": clientPoll.submitSetAttr
+            "NYM":     clientPoll.submitNym,
+            "GET_NYM": clientPoll.submitGetNym,
+            "ATTRIB":  clientPoll.submitSetAttr,
+            "ATTR":    clientPoll.submitSetAttr
         }.get(requestType)
 
         if sendRequests is None:

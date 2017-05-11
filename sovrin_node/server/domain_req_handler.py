@@ -90,6 +90,7 @@ class DomainReqHandler(PHandler):
             raise InvalidClientRequest(identifier, reqId,
                                        "{} not a valid role".
                                        format(role))
+        # TODO: This is not static validation as it involves state
         s, reason = self.canNymRequestBeProcessed(identifier, operation)
         if not s:
             raise InvalidClientRequest(identifier, reqId, reason)
@@ -111,6 +112,8 @@ class DomainReqHandler(PHandler):
                 raise InvalidClientRequest(identifier, reqId, str(exc))
             except BaseException as exc:
                 raise InvalidClientRequest(identifier, reqId, str(exc))
+
+        # TODO: This is not static validation as it involves state
         if not (not operation.get(TARGET_NYM) or
                     self.hasNym(operation[TARGET_NYM], isCommitted=False)):
             raise InvalidClientRequest(identifier, reqId,

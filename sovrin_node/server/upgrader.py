@@ -41,7 +41,9 @@ class Upgrader(HasActionQueue):
             return 0
 
         def parse(x):
-            return (int(num) for num in x.rstrip(".0").split("."))
+            if x.endswith(".0"):
+                x = x[:-2]
+            return [int(num) for num in x.split(".")]
 
         partsA = parse(verA)
         partsB = parse(verB)

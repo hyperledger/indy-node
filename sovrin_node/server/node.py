@@ -209,6 +209,9 @@ class Node(PlenumNode, HasPoolManager):
             self.sendConfigLedgerStatus(nm)
         self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
 
+    def post_txn_from_catchup_added_to_domain_ledger(self, txn):
+        self.storeTxnInGraph(txn)
+
     def sendConfigLedgerStatus(self, nodeName):
         self.sendLedgerStatus(nodeName, CONFIG_LEDGER_ID)
 

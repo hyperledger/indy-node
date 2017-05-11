@@ -45,6 +45,10 @@ def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
 
 def testTrustyCancelsUpgrade(validUpgradeSent, looper, nodeSet, trustee,
                              trusteeWallet, validUpgrade):
+    # here there is a dependency from 'testNodeSchedulesUpgradeAfterRestart'
+    # we have to reconnect client after the nodes is restarted.
+    looper.run(trustee.ensureConnectedToNodes())
+
     validUpgradeCopy = deepcopy(validUpgrade)
     validUpgradeCopy[ACTION] = CANCEL
     validUpgradeCopy[JUSTIFICATION] = '"not gonna give you one"'
