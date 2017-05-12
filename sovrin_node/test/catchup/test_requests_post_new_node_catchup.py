@@ -1,5 +1,6 @@
 import pytest
 
+from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.test.node_catchup.helper import checkNodeDataForEquality, \
     waitNodeDataEquality
 from sovrin_client.test.client.TestClient import TestClient
@@ -10,7 +11,6 @@ from sovrin_node.test.conftest import nodeThetaAdded
 from sovrin_node.test.helper import TestNode
 
 
-@pytest.mark.skip(reason='Orientdb is removed, update it for checking state')
 def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
                                         tdirWithDomainTxnsUpdated,
                                         nodeSet, tconf,
@@ -35,8 +35,8 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
                                                                tdirWithPoolTxns)
 
     waitNodeDataEquality(looper, new_node, *nodeSet[:-1])
-    ta_count = 5
-    np_count = 5
+    ta_count = 2
+    np_count = 2
     new_txn_count = ta_count + np_count
     old_ledger_sizes = {}
     new_ledger_sizes = {}
@@ -47,7 +47,8 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
         return len(node.domainLedger)
 
     def get_projection_size(node):
-        return len(node.graphStore.client.command('select * from Nym'))
+        domain_state = node.getState(DOMAIN_LEDGER_ID)
+        return len(domain_state.as_dict)
 
     def fill_counters(ls, ps, nodes):
         for n in nodes:
@@ -101,7 +102,7 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
     # Set the old counters to be current ledger and projection size
     fill_counters(old_ledger_sizes, old_projection_sizes, nodeSet)
 
-    more_nyms_count = 5
+    more_nyms_count = 2
     for tc, tw in trust_anchors:
         for i in range(more_nyms_count):
             non_privileged.append(getClientAddedWithRole(other_nodes,

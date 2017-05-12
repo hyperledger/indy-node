@@ -85,8 +85,6 @@ class Node(PlenumNode, HasPoolManager):
                          pluginPaths=pluginPaths,
                          storage=storage,
                          config=self.config)
-        domainState = self.getState(DOMAIN_LEDGER_ID)
-        # self.stateTreeStore = StateTreeStore(domainState)
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
@@ -131,7 +129,7 @@ class Node(PlenumNode, HasPoolManager):
         # If the domain ledger is already synced send config ledger status
         # else after the domain ledger is caught up, config ledger status
         # will be sent
-        if self.ledgerManager.ledgers[DOMAIN_LEDGER_ID]["state"] == LedgerState.synced:
+        if self.ledgerManager.ledgerRegistry[DOMAIN_LEDGER_ID].state == LedgerState.synced:
             self.sendConfigLedgerStatus(node_name)
 
     def getUpgrader(self):
@@ -210,7 +208,7 @@ class Node(PlenumNode, HasPoolManager):
         self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
-        self.storeTxnInGraph(txn)
+        pass
 
     def sendConfigLedgerStatus(self, nodeName):
         self.sendLedgerStatus(nodeName, CONFIG_LEDGER_ID)
