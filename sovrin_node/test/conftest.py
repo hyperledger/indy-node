@@ -19,6 +19,7 @@ strict_types.defaultShouldCheck = True
 import pytest
 
 from plenum.common.signer_simple import SimpleSigner
+from plenum.common.keygen_utils import initNodeKeysForBothStacks
 from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
     ALIAS, SERVICES, VALIDATOR, STEWARD
 
@@ -93,7 +94,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
-    initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
+    initNodeKeysForBothStacks(newNodeName, tdirWithPoolTxns, sigseed, override=True)
 
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),
