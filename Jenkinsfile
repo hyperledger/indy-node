@@ -57,8 +57,5 @@ def testWindowsNoDocker = {
 //testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
 
 options = new TestAndPublishOptions()
-options.skip([StagesEnum.GITHUB_RELEASE])
 options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
-options.setPublishableBranches(['3pc-batch']) //REMOVE IT BEFORE MERGE
-options.setPostfixes([master: '3pc-batch']) //REMOVE IT BEFORE MERGE
 testAndPublish(name, [ubuntu: testUbuntu], true, options)
