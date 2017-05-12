@@ -1,5 +1,5 @@
 from plenum.test import waits
-from sovrin_client.test.helper import checkNacks
+from sovrin_client.test.helper import checkRejects, checkNacks
 from sovrin_common.constants import NULL
 from sovrin_common.identity import Identity
 from stp_core.loop.eventually import eventually
@@ -27,11 +27,18 @@ def sendSuspendRole(actingClient, actingWallet, did):
 
 
 def checkIdentityRequestFailed(looper, client, req, cause):
-    timeout = waits.expectedReqNAckQuorumTime()
-    looper.run(eventually(checkNacks,
-                          client,
-                          req.reqId,
-                          cause, retryWait=1, timeout=timeout))
+    timeout = waits.expectedReqRejectQuorumTime()
+    # TODO: Just for now, better to have a generic negative response checker
+    try:
+        looper.run(eventually(checkRejects,
+                              client,
+                              req.reqId,
+                              cause, retryWait=1, timeout=timeout))
+    except AssertionError:
+        looper.run(eventually(checkNacks,
+                              client,
+                              req.reqId,
+                              cause, retryWait=1, timeout=timeout))
 
 
 def checkIdentityRequestSucceed(looper, actingClient, actingWallet, idr):

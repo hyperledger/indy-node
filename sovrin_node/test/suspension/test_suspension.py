@@ -3,6 +3,7 @@ import pytest
 from sovrin_node.test.suspension.helper import sendChangeVerkey, checkIdentityRequestFailed, \
     checkIdentityRequestSucceed, sendSuspendRole, changeVerkey, suspendRole
 from stp_core.loop.eventually import eventually
+from stp_core.common.log import getlogger
 from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.util import randomString, hexToFriendly
 from plenum.test.pool_transactions.helper import suspendNode
@@ -13,6 +14,9 @@ from sovrin_client.test.helper import addRole, \
 from sovrin_common.constants import TGB, TRUST_ANCHOR
 
 whitelist = ['Observer threw an exception', 'while verifying message']
+
+
+logger = getlogger()
 
 
 @pytest.fixture(scope="module")
@@ -42,7 +46,8 @@ def anotherSteward1(nodeSet, tdir, looper, trustee, trusteeWallet):
 @pytest.fixture(scope="module")
 def anotherTrustAnchor(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newTrustAnchor', TRUST_ANCHOR)
+                                  trustee, trusteeWallet, 'newTrustAnchor',
+                                  TRUST_ANCHOR)
 
 
 def testTrusteeAddingAnotherTrustee(anotherTrustee):
@@ -108,13 +113,12 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
         _, wallet = identity
         changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '',
                      nAckReasonContains='cannot update verkey')
-        # Owner can change verkey
+        # Identity owner can change verkey
         changeVerkey(looper, *identity, wallet.defaultId, '')
 
 
-# The test suspends a node, this action affects on other tests.
-# The test has to be the last in this module. It is not a good way.
-# TODO testValidatorSuspensionByTrustee should not affect on other tests
+# Keep the test below at the end of the suite since it will make one of the
+# nodes inactive, unless you are planning to add new nodes.
 def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
     node = nodeSet[-1]
     nodeNym = hexToFriendly(node.nodestack.verhex)

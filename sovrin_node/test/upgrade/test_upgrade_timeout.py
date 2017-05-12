@@ -1,7 +1,5 @@
 import pytest
 from stp_core.loop.eventually import eventually
-from sovrin_node.test.upgrade.test_pool_upgrade \
-    import validUpgradeSent, upgradeScheduled
 
 whitelist = ['Failed to upgrade node', 'Failed to send update request!']
 

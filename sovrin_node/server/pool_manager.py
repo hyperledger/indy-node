@@ -1,10 +1,7 @@
-from copy import deepcopy
-
-from plenum.common.constants import POOL_TXN_TYPES, TXN_TYPE, DATA, ALIAS, \
-    TARGET_NYM, SERVICES
+from plenum.common.constants import POOL_LEDGER_ID, DOMAIN_LEDGER_ID
 from plenum.server.pool_manager import HasPoolManager as PHasPoolManager, \
     TxnPoolManager as PTxnPoolManager
-from sovrin_common.auth import Authoriser
+from sovrin_node.server.pool_req_handler import PoolRequestHandler
 
 
 class HasPoolManager(PHasPoolManager):
@@ -13,47 +10,19 @@ class HasPoolManager(PHasPoolManager):
         if not nodeRegistry:
             self.poolManager = TxnPoolManager(self, ha=ha, cliname=cliname,
                                               cliha=cliha)
-            for types in POOL_TXN_TYPES:
-                self.requestExecuter[types] = \
-                    self.poolManager.executePoolTxnRequest
+            self.requestExecuter[POOL_LEDGER_ID] = \
+                self.poolManager.executePoolTxnBatch
         else:
             super().__init__(nodeRegistry=nodeRegistry, ha=ha, cliname=cliname,
                              cliha=cliha)
 
 
 class TxnPoolManager(PTxnPoolManager):
-    def authErrorWhileUpdatingNode(self, request):
-        origin = request.identifier
-        isTrustee = self.node.secondaryStorage.isTrustee(origin)
-        if not isTrustee:
-            error = super().authErrorWhileUpdatingNode(request)
-            if error:
-                return error
-        origin = request.identifier
-        operation = request.operation
-        nodeNym = operation.get(TARGET_NYM)
-        isSteward = self.node.secondaryStorage.isSteward(origin)
-        actorRole = self.node.graphStore.getRole(origin)
-        _, nodeInfo = self.getNodeInfoFromLedger(nodeNym, excludeLast=False)
-        typ = operation.get(TXN_TYPE)
-        data = deepcopy(operation.get(DATA))
-        data.pop(ALIAS, None)
-        vals = []
-        msgs = []
-        for k in data:
-            oldVal = (nodeInfo.get(DATA, {})).get(k, None) if nodeInfo else None
-            newVal = data[k]
-            if k == SERVICES:
-                if not oldVal:
-                    oldVal = []
-                if not newVal:
-                    newVal = []
-            if oldVal != newVal:
-                r, msg = Authoriser.authorised(typ, k, actorRole,
-                                               oldVal=oldVal,
-                                               newVal=newVal,
-                                               isActorOwnerOfSubject=isSteward)
-                vals.append(r)
-                msgs.append(msg)
-        msg = None if all(vals) else '\n'.join(msgs)
-        return msg
+    def __init__(self, node, ha=None, cliname=None, cliha=None):
+        self.idrCache = node.reqHandler.idrCache
+        super().__init__(node=node, ha=ha, cliname=cliname, cliha=cliha)
+
+    def getPoolReqHandler(self):
+        return PoolRequestHandler(self.ledger, self.state,
+                                  self.node.states[DOMAIN_LEDGER_ID],
+                                  self.idrCache)

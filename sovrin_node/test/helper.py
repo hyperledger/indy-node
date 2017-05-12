@@ -7,7 +7,6 @@ from plenum.common.constants import REQACK, TXN_ID
 from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import getMaxFailures, runall
-from plenum.persistence import orientdb_store
 from plenum.test.helper import TestNodeSet as PlenumTestNodeSet
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     checkLastClientReqForNode, buildCompletedTxnFromReply
@@ -233,8 +232,8 @@ class TestUpgrader(Upgrader):
              Node.reportSuspiciousNode, Node.reportSuspiciousClient,
              Node.processRequest, Node.processPropagate, Node.propagate,
              Node.forward, Node.send, Node.processInstanceChange,
-             Node.checkPerformance, Node.getReplyFor])
-class TestNode(TempStorage, TestNodeCore, Node):
+             Node.checkPerformance, Node.getReplyFromLedger])
+class TestNode(TempStorage, Node, TestNodeCore):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
@@ -244,16 +243,10 @@ class TestNode(TempStorage, TestNodeCore, Node):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
                             self.configLedger)
 
-    def _getOrientDbStore(self, name, dbType):
-        if not hasattr(self, '_orientDbStore'):
-            self._orientDbStore = orientdb_store.createOrientDbInMemStore(
-                self.config, name, dbType)
-        return self._orientDbStore
-
     def onStopping(self, *args, **kwargs):
         if self.cleanupOnStopping:
             self.cleanupDataLocation()
-        self.graphStore.store.close()
+        # self.graphStore.store.close()
         super().onStopping(*args, **kwargs)
 
 
@@ -326,11 +319,6 @@ def makeAttribRequest(client, wallet, attrib):
     # TODO: This looks boilerplate
     reqs = wallet.preparePending()
     return client.submitReqs(*reqs)
-
-
-class TestGraphStorage:
-    def __init__(self):
-        pass
 
 
 def _newWallet(name=None):

@@ -1,5 +1,8 @@
-from plenum.test.node_catchup.helper import checkNodeLedgersForEquality, \
-    waitNodeLedgersEquality
+import pytest
+
+from plenum.common.constants import DOMAIN_LEDGER_ID
+from plenum.test.node_catchup.helper import checkNodeDataForEquality, \
+    waitNodeDataEquality
 from sovrin_client.test.client.TestClient import TestClient
 from sovrin_common.constants import TRUST_ANCHOR
 from sovrin_client.test.helper import getClientAddedWithRole
@@ -31,9 +34,9 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
                                                                TestClient,
                                                                tdirWithPoolTxns)
 
-    waitNodeLedgersEquality(looper, new_node, *nodeSet[:-1])
-    ta_count = 5
-    np_count = 5
+    waitNodeDataEquality(looper, new_node, *nodeSet[:-1])
+    ta_count = 2
+    np_count = 2
     new_txn_count = ta_count + np_count
     old_ledger_sizes = {}
     new_ledger_sizes = {}
@@ -44,7 +47,8 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
         return len(node.domainLedger)
 
     def get_projection_size(node):
-        return len(node.graphStore.client.command('select * from Nym'))
+        domain_state = node.getState(DOMAIN_LEDGER_ID)
+        return len(domain_state.as_dict)
 
     def fill_counters(ls, ps, nodes):
         for n in nodes:
@@ -80,7 +84,7 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
                                                     'NP'+str(i),
                                                      client_connects_to=len(other_nodes)))
 
-    checkNodeLedgersForEquality(nodeSet[0], *other_nodes)
+    checkNodeDataForEquality(nodeSet[0], *other_nodes)
     fill_counters(new_ledger_sizes, new_projection_sizes, other_nodes)
     # The size difference should be same as number of new NYM txns
     check_sizes(other_nodes)
@@ -91,14 +95,14 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
     looper.add(new_node)
     nodeSet[-1] = new_node
     fill_counters(old_ledger_sizes, old_projection_sizes, [new_node])
-    waitNodeLedgersEquality(looper, new_node, *other_nodes)
+    waitNodeDataEquality(looper, new_node, *other_nodes)
     fill_counters(new_ledger_sizes, new_projection_sizes, [new_node])
     check_sizes([new_node])
 
     # Set the old counters to be current ledger and projection size
     fill_counters(old_ledger_sizes, old_projection_sizes, nodeSet)
 
-    more_nyms_count = 5
+    more_nyms_count = 2
     for tc, tw in trust_anchors:
         for i in range(more_nyms_count):
             non_privileged.append(getClientAddedWithRole(other_nodes,
