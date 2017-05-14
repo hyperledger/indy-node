@@ -9,14 +9,13 @@ from ledger.stores.file_hash_store import FileHashStore
 from ledger.serializers.json_serializer import JsonSerializer
 
 from plenum.common.exceptions import InvalidClientRequest
-from plenum.common.startable import LedgerState
 from plenum.persistence.util import txnsWithMerkleInfo
 from sovrin_node.persistence.attribute_store import AttributeStore
 from state.pruning_state import PruningState
 from stp_core.common.log import getlogger
 from plenum.common.constants import VERSION, \
     POOL_TXN_TYPES, NODE_PRIMARY_STORAGE_SUFFIX, \
-    HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID
+    HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID, LedgerState
 from plenum.common.types import Reply, RequestAck, f, \
     OPERATION, LedgerStatus
 from plenum.common.util import error

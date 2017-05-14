@@ -11,12 +11,13 @@ from sovrin_node.test.conftest import nodeThetaAdded
 from sovrin_node.test.helper import TestNode
 
 
-def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
-                                        tdirWithDomainTxnsUpdated,
-                                        nodeSet, tconf,
-                                        trustee, trusteeWallet,
-                                        allPluginsPath):
+def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
+                                            tdirWithDomainTxnsUpdated,
+                                            nodeSet, tconf,
+                                            trustee, trusteeWallet,
+                                            allPluginsPath):
     """
+    A node which receives txns from catchup updates both ledger and projection
     4 nodes start up and some txns happen, after txns are done, new node joins
     and starts catching up, the node should not process requests while catchup
     is in progress. Make sure the new requests are coming from the new NYMs
@@ -60,7 +61,7 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
             assert new_ledger_sizes[node.name] - old_ledger_sizes[node.name] == new_txn_count
             assert new_projection_sizes[node.name] - old_projection_sizes[node.name] == new_txn_count
 
-    # Stop a node and note down the sizes of ledger and projection (orientdb)
+    # Stop a node and note down the sizes of ledger and projection (state)
     other_nodes = nodeSet[:-1]
     fill_counters(old_ledger_sizes, old_projection_sizes, other_nodes)
     new_node.cleanupOnStopping = False
@@ -116,3 +117,6 @@ def test_new_node_catchup_update_graph(looper, tdirWithPoolTxns,
     fill_counters(new_ledger_sizes, new_projection_sizes, nodeSet)
     new_txn_count = more_nyms_count*len(trust_anchors)
     check_sizes(nodeSet)
+
+
+
