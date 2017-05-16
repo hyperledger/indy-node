@@ -3,6 +3,8 @@ from binascii import unhexlify
 from typing import List
 from hashlib import sha256
 
+from copy import deepcopy
+
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
@@ -95,16 +97,25 @@ class DomainReqHandler(PHandler):
         if not s:
             raise InvalidClientRequest(identifier, reqId, reason)
 
-    def _doStaticValidationAttrib(self, identifier, reqId, operation):
+    @staticmethod
+    def _validate_attrib_keys(operation):
         dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
         if len(dataKeys) != 1:
+            return False
+        else:
+            return True
+
+    def _doStaticValidationAttrib(self, identifier, reqId, operation):
+        if not self._validate_attrib_keys(operation):
             raise InvalidClientRequest(identifier, reqId,
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
-        if RAW in dataKeys:
+        if RAW in operation:
             try:
                 data = json.loads(operation[RAW])
+                # QUESTION: This does not fit here, this should be the
+                # client's responsibility to check.
                 endpoint = data.get(ENDPOINT, {}).get('ha')
                 check_endpoint_valid(endpoint, required=False)
 
@@ -115,7 +126,7 @@ class DomainReqHandler(PHandler):
 
         # TODO: This is not static validation as it involves state
         if not (not operation.get(TARGET_NYM) or
-                    self.hasNym(operation[TARGET_NYM], isCommitted=False)):
+                self.hasNym(operation[TARGET_NYM], isCommitted=False)):
             raise InvalidClientRequest(identifier, reqId,
                                        '{} should be added before adding '
                                        'attribute for it'.
@@ -248,18 +259,35 @@ class DomainReqHandler(PHandler):
         return result
 
     def handleGetAttrsReq(self, request: Request, frm: str):
-        attrName = request.operation[RAW]
+        if not self._validate_attrib_keys(request.operation):
+            raise InvalidClientRequest(request.identifier, request.reqId,
+                                       '{} should have one and only one of '
+                                       '{}, {}, {}'
+                                       .format(ATTRIB, RAW, ENC, HASH))
         nym = request.operation[TARGET_NYM]
-        attrValue, lastSeqNo = \
-            self.getAttr(did=nym, key=attrName)
+        if RAW in request.operation:
+            attr_key = request.operation[RAW]
+        elif ENC in request.operation:
+            # If attribute is encrypted, it will be queried by its hash
+            attr_key = request.operation[ENC]
+        else:
+            attr_key = request.operation[HASH]
+
+        value, lastSeqNo = \
+            self.getAttr(did=nym, key=attr_key)
+        attr = None
+        if value is not None:
+            if HASH in request.operation:
+                attr = attr_key
+            else:
+                attr = value
+
         result = {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
+            DATA: attr,
+            f.SEQ_NO.nm: lastSeqNo
         }}
-        if attrValue is not None:
-            attr = json.dumps({attrName: attrValue}, sort_keys=True)
-            result[DATA] = attr
-            result[f.SEQ_NO.nm] = lastSeqNo
         return result
 
     def lookup(self, path, isCommitted=True) -> (str, int):
@@ -270,15 +298,22 @@ class DomainReqHandler(PHandler):
         :return: data
         """
         assert path is not None
-        raw = self.state.get(path, isCommitted)
-        if raw is None:
-            return None, None
-        raw = self.stateSerializer.deserialize(raw)
-        value = raw.get(self.VALUE)
-        lastSeqNo = raw.get(self.LAST_SEQ_NO)
+        encoded = self.state.get(path, isCommitted)
+        if encoded is None:
+            raise KeyError
+        decoded = self.stateSerializer.deserialize(encoded)
+        value = decoded.get(self.VALUE)
+        lastSeqNo = decoded.get(self.LAST_SEQ_NO)
         return value, lastSeqNo
 
     def _addAttr(self, txn) -> None:
+        """
+        The state trie stores the hash of the whole attribute data at:
+            the did+attribute name if the data is plaintext (RAW)
+            the did+hash(attribute) if the data is encrypted (ENC)
+        If the attribute is HASH, then nothing is stored in attribute store,
+        the trie stores a blank value for the key did+hash
+        """
         assert txn[TXN_TYPE] == ATTRIB
         nym = txn.get(TARGET_NYM)
 
@@ -286,20 +321,22 @@ class DomainReqHandler(PHandler):
             raw = txn.get(RAW)
             if raw:
                 data = json.loads(raw)
-                key, value = data.popitem()
-                return key, value
-            encOrHash = txn.get(ENC) or txn.get(HASH)
-            if encOrHash:
-                return encOrHash, encOrHash
+                key, _ = data.popitem()
+                return key, raw
+            enc = txn.get(ENC)
+            if enc:
+                return self._hashOf(enc), enc
+            hsh = txn.get(HASH)
+            if hsh:
+                return hsh, None
             raise ValueError("One of 'raw', 'enc', 'hash' "
                              "fields of ATTR must present")
 
-        attrName, value = parse(txn)
-        path = self._makeAttrPath(nym, attrName)
+        attr_key, value = parse(txn)
+        hashedVal = self._hashOf(value) if value else ''
         seqNo = txn[f.SEQ_NO.nm]
-        value = self.stateSerializer.serialize(value)
-        hashedVal = self._hashOf(value)
         valueBytes = self._encodeValue(hashedVal, seqNo)
+        path = self._makeAttrPath(nym, attr_key)
         self.state.set(path, valueBytes)
         self.attributeStore.set(hashedVal, value)
 
@@ -345,16 +382,20 @@ class DomainReqHandler(PHandler):
         assert did is not None
         assert key is not None
         path = self._makeAttrPath(did, key)
-        hashedVal, lastSeqNo = self.lookup(path, isCommitted)
-        if not hashedVal:
-            return hashedVal, lastSeqNo
-
         try:
-            value = self.attributeStore.get(hashedVal)
-            value = self.stateSerializer.deserialize(value)
+            hashed_val, lastSeqNo = self.lookup(path, isCommitted)
         except KeyError:
-            value = hashedVal
-
+            return None, None
+        if hashed_val == '':
+            # Its a HASH attribute
+            return hashed_val, lastSeqNo
+        else:
+            try:
+                value = self.attributeStore.get(hashed_val)
+            except KeyError:
+                logger.error('Could not get value from attribute store for {}'
+                             .format(hashed_val))
+                return None, None
         return value, lastSeqNo
 
     def getSchema(self,
@@ -366,7 +407,11 @@ class DomainReqHandler(PHandler):
         assert schemaName is not None
         assert schemaVersion is not None
         path = self._makeSchemaPath(author, schemaName, schemaVersion)
-        return self.lookup(path, isCommitted)
+        try:
+            keys, seqno = self.lookup(path, isCommitted)
+            return keys, seqno
+        except KeyError:
+            return None, None
 
     def getClaimDef(self,
                     author: str,
@@ -376,8 +421,11 @@ class DomainReqHandler(PHandler):
         assert author is not None
         assert schemaSeqNo is not None
         path = self._makeClaimDefPath(author, schemaSeqNo, signatureType)
-        keys, seqno = self.lookup(path, isCommitted)
-        return keys, seqno
+        try:
+            keys, seqno = self.lookup(path, isCommitted)
+            return keys, seqno
+        except KeyError:
+            return None, None
 
     @staticmethod
     def _hashOf(text) -> str:
@@ -418,3 +466,29 @@ class DomainReqHandler(PHandler):
             DomainReqHandler.LAST_SEQ_NO: seqNo,
             DomainReqHandler.VALUE: value
         })
+
+    @staticmethod
+    def transform_txn_for_ledger(txn):
+        """
+        Some transactions need to be transformed before they can be stored in the
+        ledger, eg. storing certain payload in another data store and only its
+        hash in the ledger
+        """
+        if txn[TXN_TYPE] == ATTRIB:
+            txn = DomainReqHandler.hash_attrib_txn(txn)
+        return txn
+
+    @staticmethod
+    def hash_attrib_txn(txn):
+        # Creating copy of result so that `RAW`, `ENC` or `HASH` can be
+        # replaced by their hashes. We do not insert actual attribute data
+        # in the ledger but only the hash of it.
+        txn = deepcopy(txn)
+        if RAW in txn:
+            txn[RAW] = sha256(txn[RAW].encode()).hexdigest()
+            # TODO: add checking for a number of keys in json
+        elif ENC in txn:
+            txn[ENC] = sha256(txn[ENC].encode()).hexdigest()
+        elif HASH in txn:
+            txn[HASH] = txn[HASH]
+        return txn
