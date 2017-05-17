@@ -7,6 +7,8 @@ from plenum.server.req_handler import RequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION
+from sovrin_common.roles import Roles
+from sovrin_common.transactions import SovrinTransactions
 from sovrin_common.types import Request
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.server.upgrader import Upgrader
@@ -65,7 +67,9 @@ class ConfigReqHandler(RequestHandler):
                 raise UnauthorizedClientRequest(
                     req.identifier,
                     req.reqId,
-                    "{} cannot do {}".format(originRole, POOL_UPGRADE))
+                    "{} cannot do {}".format(
+                        Roles.nameFromValue(originRole),
+                        SovrinTransactions.POOL_UPGRADE.name))
 
     def apply(self, req: Request):
         txn = reqToTxn(req)
