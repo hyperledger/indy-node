@@ -112,7 +112,7 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
         # Trustee cannot change verkey
         _, wallet = identity
         changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '',
-                     nAckReasonContains='cannot update verkey')
+                     nAckReasonContains='TRUSTEE cannot update verkey')
         # Identity owner can change verkey
         changeVerkey(looper, *identity, wallet.defaultId, '')
 

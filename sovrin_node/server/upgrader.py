@@ -171,6 +171,8 @@ class Upgrader(HasActionQueue):
             self._scheduleUpgrade(latestVer,
                                   upgradeAt,
                                   self.defaultUpgradeTimeout)
+            #TODO: Consider reporting a signal if the node is going to upgrade
+            # very soon so that catchup for domain ledger does not start
 
     @property
     def didLastExecutedUpgradeSucceeded(self) -> bool:
@@ -190,6 +192,7 @@ class Upgrader(HasActionQueue):
 
     @property
     def isItFirstRunAfterUpgrade(self):
+        # TODO: What if node restarts after upgrading but before acknowledging?
         if self.__isItFirstRunAfterUpgrade is None:
             lastEvent = self._upgradeLog.lastEvent
             self.__isItFirstRunAfterUpgrade = lastEvent and \

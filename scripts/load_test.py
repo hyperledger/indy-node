@@ -24,7 +24,7 @@ from plenum.common.constants import \
     DATA, ALIAS, CLIENT_IP, \
     CLIENT_PORT
 
-from plenum.test.helper import eventually, eventuallyAll
+from plenum.test.helper import eventually
 from plenum.test.test_client import \
     getAcksFromInbox, getNacksFromInbox, getRepliesFromInbox
 
@@ -258,7 +258,7 @@ async def eventuallyAny(coroFunc, *args, retryWait: float = 0.01,
 
 async def checkReply(client, requestId, identifier):
     hasConsensus = False
-    acks, nacks, replies, queryTime = [], [], [], 0
+    acks, nacks, replies = [], [], []
     try:
         # acks = client.reqRepStore.getAcks(requestId)
         # nacks = client.reqRepStore.getNacks(requestId)
@@ -268,20 +268,18 @@ async def checkReply(client, requestId, identifier):
         nacks = getNacksFromInbox(client, requestId)
         replies = getRepliesFromInbox(client, requestId)
         hasConsensus = client.hasConsensus(identifier, requestId)
-        queryTime = sum(map(lambda f:  f.__wrapped__.elapsed,
-                               [getAcksFromInbox, getNacksFromInbox,
-                                getRepliesFromInbox, client.hasConsensus]))
     except Exception as e:
-        logger.warn("Error occured during checking replies: ".format(e))
+        logger.warn("Error occured during checking replies: {}".format(repr(e)))
     finally:
-        return hasConsensus, (hasConsensus, acks, nacks, replies, queryTime)
+        return hasConsensus, (hasConsensus, acks, nacks, replies)
 
 
 async def checkReplyAndLogStat(client, wallet, request, sentAt, writeResultsRow, stats):
-    hasConsensus, ackNodes, nackNodes, replyNodes, queryTime = \
+    hasConsensus, ackNodes, nackNodes, replyNodes = \
         await eventuallyAny(checkReply, client,
                             request.reqId, wallet.defaultId,
-                            retryWait=RETRY_WAIT, timeout=TTL)
+                            retryWait=RETRY_WAIT, timeout=TTL
+                            )
 
     endTime = time.time()
     quorumAt = endTime if hasConsensus else ""  # TODO: only first hasConsensus=True make sense
@@ -298,7 +296,7 @@ async def checkReplyAndLogStat(client, wallet, request, sentAt, writeResultsRow,
                     ackNodes=",".join(ackNodes),
                     nackNodes=",".join(nackNodes.keys()),
                     replyNodes=",".join(replyNodes.keys()))
-    stats.append((latency, hasConsensus, queryTime))
+    stats.append((latency, hasConsensus))
     writeResultsRow(row._asdict())
 
 
@@ -321,11 +319,9 @@ def printCurrentTestResults(stats, testStartedAt):
     totalNum = len(stats)
     totalLatency = 0
     successNum = 0
-    queryTime = 0
-    for lat, hasConsensus, qt in stats:
+    for lat, hasConsensus in stats:
         totalLatency += lat
         successNum += int(bool(hasConsensus))
-        queryTime += qt
     avgLatency = totalLatency / totalNum if totalNum else 0.0
     secSinceTestStart = time.time() - testStartedAt
     failNum = totalNum - successNum
@@ -340,10 +336,9 @@ def printCurrentTestResults(stats, testStartedAt):
         Error rate: {}
         Succeeded: {}
         Failed: {}
-        Query Time: {}
         ================================
         """.format(secSinceTestStart, avgLatency, throughput,
-                   errRate, successNum, failNum, queryTime)
+                   errRate, successNum, failNum)
     )
 
 
@@ -386,9 +381,11 @@ def main(args):
         for cli in clientPoll.clients:
             looper.add(cli)
             connectionCoros.append(functools.partial(checkIfConnectedToAll, cli))
-        looper.run(eventuallyAll(*connectionCoros,
-                                 totalTimeout=CONNECTION_TTL,
-                                 retryWait=RETRY_WAIT))
+        for coro in connectionCoros:
+            looper.run(eventually(coro,
+                                  timeout=CONNECTION_TTL,
+                                  retryWait=RETRY_WAIT,
+                                  verbose=False))
 
         testStartedAt = time.time()
         stats.clear()
@@ -409,9 +406,12 @@ def main(args):
         def sendAndWaitReplies(numRequests):
             corosArgs = sendRequests(numRequests)
             coros = buildCoros(checkReplyAndLogStat, corosArgs)
-            looper.run(eventuallyAll(*coros,
-                                     totalTimeout=numRequests * TTL,
-                                     retryWait=RETRY_WAIT))
+            for coro in coros:
+                looper.run(eventually(coro,
+                                      retryWait=RETRY_WAIT,
+                                      timeout=TTL,
+                                      verbose=False)
+                           )
             printCurrentTestResults(stats, testStartedAt)
             logger.info("Sent and waited for {} {} requests"
                         .format(len(coros), requestType))
