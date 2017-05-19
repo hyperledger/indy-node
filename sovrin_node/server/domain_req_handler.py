@@ -15,6 +15,7 @@ from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NYM, ROLE, ATTRIB, ENDPOINT, SCHEMA, \
     CLAIM_DEF, REF, SIGNATURE_TYPE
+from sovrin_common.roles import Roles
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
 from stp_core.network.exceptions import EndpointException
@@ -167,7 +168,10 @@ class DomainReqHandler(PHandler):
             raise UnauthorizedClientRequest(
                 req.identifier,
                 req.reqId,
-                "{} cannot add {}".format(originRole, role))
+                "{} cannot add {}".format(
+                    Roles.nameFromValue(originRole),
+                    Roles.nameFromValue(role))
+            )
 
     def _validateExistingNym(self, req: Request, op, originRole, nymData):
         origin = req.identifier
@@ -187,7 +191,7 @@ class DomainReqHandler(PHandler):
                         raise UnauthorizedClientRequest(
                             req.identifier,
                             req.reqId,
-                            "{} cannot update {}".format(originRole,
+                            "{} cannot update {}".format(Roles.nameFromValue(originRole),
                                                          key))
 
     def _validateAttrib(self, req: Request):
