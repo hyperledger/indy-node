@@ -40,7 +40,7 @@ from sovrin_common.constants import GET_NYM
 logger = getlogger()
 config = getConfig()
 
-TTL = 120.0#60.0
+TTL = 120.0  # 60.0
 CONNECTION_TTL = 30.0
 RETRY_WAIT = 0.25
 
@@ -263,11 +263,12 @@ async def checkReply(client, requestId, identifier):
         # acks = client.reqRepStore.getAcks(requestId)
         # nacks = client.reqRepStore.getNacks(requestId)
         # replies = client.reqRepStore.getReplies(requestId)
-        nodeCount = len(client.nodeReg)
         acks = getAcksFromInbox(client, requestId)
         nacks = getNacksFromInbox(client, requestId)
         replies = getRepliesFromInbox(client, requestId)
         hasConsensus = client.hasConsensus(identifier, requestId)
+    except KeyError:
+        logger.info("No replies for {}:{} yet".format(identifier, requestId))
     except Exception as e:
         logger.warn("Error occured during checking replies: {}".format(repr(e)))
     finally:
