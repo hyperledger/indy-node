@@ -106,7 +106,7 @@ class Node(PlenumNode, HasPoolManager):
         if self.config.primaryStorage is None:
             fields = getTxnOrderedFields()
 
-            defaultTxnFile = os.path.join(self.config.baseDir,
+            defaultTxnFile = os.path.join(self.basedirpath,
                                           self.config.domainTransactionsFile)
             if not os.path.exists(defaultTxnFile):
                 logger.debug("Not using default initialization file for "
