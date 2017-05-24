@@ -37,6 +37,8 @@ from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from stp_core.common.log import getlogger
+import os
+
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
@@ -103,11 +105,21 @@ class Node(PlenumNode, HasPoolManager):
         """
         if self.config.primaryStorage is None:
             fields = getTxnOrderedFields()
+
+            defaultTxnFile = os.path.join(self.config.baseDir,
+                                          self.config.domainTransactionsFile)
+            if not os.path.exists(defaultTxnFile):
+                logger.debug("Not using default initialization file for "
+                             "domain ledger, since it does not exist: {}"
+                             .format(defaultTxnFile))
+                defaultTxnFile = None
+
             return Ledger(CompactMerkleTree(hashStore=self.hashStore),
                           dataDir=self.dataLocation,
                           serializer=CompactSerializer(fields=fields),
                           fileName=self.config.domainTransactionsFile,
-                          ensureDurability=self.config.EnsureLedgerDurability)
+                          ensureDurability=self.config.EnsureLedgerDurability,
+                          defaultFile=defaultTxnFile)
         else:
             return initStorage(self.config.primaryStorage,
                                name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
