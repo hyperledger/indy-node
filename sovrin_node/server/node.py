@@ -27,7 +27,7 @@ from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
 from sovrin_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from sovrin_common.txn_util import getTxnOrderedFields
-from sovrin_common.types import Request
+from sovrin_common.types import Request, SafeRequest
 from sovrin_node.persistence.attribute_store import AttributeStore
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.server.client_authn import TxnBasedAuthNr
@@ -37,6 +37,8 @@ from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from stp_core.common.log import getlogger
+import os
+
 
 logger = getlogger()
 jsonSerz = JsonSerializer()
@@ -44,6 +46,7 @@ jsonSerz = JsonSerializer()
 
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
+    _client_request_class = SafeRequest
 
     def __init__(self,
                  name,
@@ -103,11 +106,21 @@ class Node(PlenumNode, HasPoolManager):
         """
         if self.config.primaryStorage is None:
             fields = getTxnOrderedFields()
+
+            defaultTxnFile = os.path.join(self.basedirpath,
+                                          self.config.domainTransactionsFile)
+            if not os.path.exists(defaultTxnFile):
+                logger.debug("Not using default initialization file for "
+                             "domain ledger, since it does not exist: {}"
+                             .format(defaultTxnFile))
+                defaultTxnFile = None
+
             return Ledger(CompactMerkleTree(hashStore=self.hashStore),
                           dataDir=self.dataLocation,
                           serializer=CompactSerializer(fields=fields),
                           fileName=self.config.domainTransactionsFile,
-                          ensureDurability=self.config.EnsureLedgerDurability)
+                          ensureDurability=self.config.EnsureLedgerDurability,
+                          defaultFile=defaultTxnFile)
         else:
             return initStorage(self.config.primaryStorage,
                                name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
