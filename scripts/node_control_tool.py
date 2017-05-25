@@ -4,6 +4,10 @@ import select
 import socket
 import argparse
 import os
+from migration_tool import migrate
+from stp_core.common.log import getlogger
+
+logger = getlogger()
 
 
 def compose_cmd(cmd):
@@ -14,30 +18,31 @@ def compose_cmd(cmd):
 
 def call_upgrade_script(version):
     import subprocess
-    print('Upgrading sovrin node to version %s, test_mode %d ' % (version, int(test_mode)))
+    logger.info('Upgrading sovrin node to version %s, test_mode %d ' % (version, int(test_mode)))
     try:
         if test_mode:
             retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node_test', version]), shell=True)
         else:
             retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node', version]), shell=True)
         if retcode != 0:
-            print('Upgrade failed')
-    except:
-        print('Something went wrong with calling upgrade script')
+            logger.error('Upgrade failed: upgrade script returned {}'.format(retcode))
+    except Exception as e:
+        logger.error('Something went wrong with calling upgrade script: {}'.format(e))
 
 
 def process_data(data):
     import json
     try:
         command = json.loads(data.decode("utf-8"))
-        print("Decoded ", command)
+        logger.debug("Decoded ", command)
         version = command['version']
+        current_version = ''
+        migrate(current_version)
         call_upgrade_script(version)
-    except json.decoder.JSONDecodeError:
-        print("JSON decoding failed. Skip this command")
-    except:
-        print("Unexpected error in function below. Pass it")
-        pass
+    except json.decoder.JSONDecodeError as e:
+        logger.error("JSON decoding failed: {}".format(e))
+    except Exception as e:
+        logger.error("Unexpected error in process_data: {}".format(e))
 
 # Parse command line arguments
 test_mode = False
@@ -55,7 +60,7 @@ server.setblocking(0)
 
 # Bind the socket to the port
 server_address = ('localhost', 30003)
-print('starting up on %s port %s' % server_address)
+logger.info('Node control tools is starting up on %s port %s' % server_address)
 server.bind(server_address)
 
 # Listen for incoming connections
@@ -70,25 +75,25 @@ errs = [ ]
 
 while readers:
     # Wait for at least one of the sockets to be ready for processing
-    print('\nwaiting for the next event')
+    logger.debug('\nwaiting for the next event')
     readable, writable, exceptional = select.select(readers, writers, errs)
     for s in readable:
         if s is server:
             # A "readable" server socket is ready to accept a connection
             connection, client_address = s.accept()
-            print('new connection from %s on fd %d' % (client_address,
+            logger.debug('new connection from %s on fd %d' % (client_address,
                                                        connection.fileno()))
             connection.setblocking(0)
             readers.append(connection)
         else:
             data = s.recv(8192)
             if data:
-                print('received "%s" from %s on fd %d' % (data,
+                logger.debug('received "%s" from %s on fd %d' % (data,
                                                           s.getpeername(),
                                                           s.fileno()))
                 process_data(data)
             else:
-                print('closing socket with fd %d' % (s.fileno()))
+                logger.debug('closing socket with fd %d' % (s.fileno()))
                 readers.remove(s)
                 s.close()
 
