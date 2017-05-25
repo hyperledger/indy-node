@@ -19,15 +19,24 @@ def compose_cmd(cmd):
 def call_upgrade_script(version):
     import subprocess
     logger.info('Upgrading sovrin node to version %s, test_mode %d ' % (version, int(test_mode)))
-    try:
-        if test_mode:
-            retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node_test', version]), shell=True)
-        else:
-            retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node', version]), shell=True)
-        if retcode != 0:
-            logger.error('Upgrade failed: upgrade script returned {}'.format(retcode))
-    except Exception as e:
-        logger.error('Something went wrong with calling upgrade script: {}'.format(e))
+    if test_mode:
+        retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node_test', version]), shell=True)
+    else:
+        retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node', version]), shell=True)
+    if retcode != 0:
+        msg = 'Upgrade failed: upgrade script returned {}'.format(retcode)
+        logger.error(msg)
+        raise Exception(msg)
+
+
+def call_restart_node_script():
+    import subprocess
+    logger.info('Restarting sovrin')
+    retcode = subprocess.call(compose_cmd(['restart_sovrin_node']), shell=True)
+    if retcode != 0:
+        msg = 'Restart failed: script returned {}'.format(retcode)
+        logger.error(msg)
+        raise Exception(msg)
 
 
 def process_data(data):
@@ -35,10 +44,11 @@ def process_data(data):
     try:
         command = json.loads(data.decode("utf-8"))
         logger.debug("Decoded ", command)
-        version = command['version']
+        new_version = command['version']
         current_version = ''
+        call_upgrade_script(new_version)
         migrate(current_version)
-        call_upgrade_script(version)
+        call_restart_node_script()
     except json.decoder.JSONDecodeError as e:
         logger.error("JSON decoding failed: {}".format(e))
     except Exception as e:
