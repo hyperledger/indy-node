@@ -27,7 +27,7 @@ from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
 from sovrin_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from sovrin_common.txn_util import getTxnOrderedFields
-from sovrin_common.types import Request
+from sovrin_common.types import Request, SafeRequest
 from sovrin_node.persistence.attribute_store import AttributeStore
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.server.client_authn import TxnBasedAuthNr
@@ -46,6 +46,7 @@ jsonSerz = JsonSerializer()
 
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
+    _client_request_class = SafeRequest
 
     def __init__(self,
                  name,
