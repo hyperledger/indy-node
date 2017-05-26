@@ -5,24 +5,13 @@ import pkgutil
 import importlib
 import os
 
-from stp_core.common.log import Logger
+from stp_core.common.log import getlogger
 
 # Data folder is published as a separate 'data' python package
 from data import migrations
 
 
 SCRIPT_PREFIX = 'data.migrations.'
-
-
-class MigrationLogger(Logger):
-    def __init__(self, config=None):
-        super().__init__(config)
-        logFileName = os.path.join(self._config.baseDir, "migrations.log")
-        self.enableFileLogging(logFileName)
-
-
-def getlogger(name: object = None) -> object:
-    return MigrationLogger().getlogger(name)
 
 
 logger = getlogger()
