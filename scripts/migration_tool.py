@@ -1,18 +1,31 @@
 #!/usr/bin/python3
 
-import select
 import time
 import pkgutil
 import importlib
+import os
 
-from stp_core.common.log import getlogger
+from stp_core.common.log import Logger
 
 # Data folder is published as a separate 'data' python package
 from data import migrations
 
-logger = getlogger()
 
 SCRIPT_PREFIX = 'data.migrations.'
+
+
+class MigrationLogger(Logger):
+    def __init__(self, config=None):
+        super().__init__(config)
+        logFileName = os.path.join(self._config.baseDir, "migrations.log")
+        self.enableFileLogging(logFileName)
+
+
+def getlogger(name: object = None) -> object:
+    return MigrationLogger().getlogger(name)
+
+
+logger = getlogger()
 
 
 # Returns number of performed migrations
@@ -34,9 +47,7 @@ def migrate(current_version):
 
 
 def _get_migration_scripts():
-    migrations = [name for module_finder, name, ispkg in pkgutil.iter_modules(migrations.__path__)]
-    migrations.sort()
-    return migrations
+    return [name for module_finder, name, ispkg in pkgutil.iter_modules(migrations.__path__)]
 
 
 def _get_relevalnt_migrations(migration_scripts, current_version):
@@ -45,6 +56,7 @@ def _get_relevalnt_migrations(migration_scripts, current_version):
         migration_version = migration.split('_')[0]
         if migration_version >= current_version:
             relevant_migrations.append(migration)
+    relevant_migrations.sort()
     return relevant_migrations
 
 
