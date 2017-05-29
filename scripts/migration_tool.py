@@ -3,12 +3,8 @@
 import time
 import pkgutil
 import importlib
-import os
 
 from stp_core.common.log import getlogger
-
-# Data folder is published as a separate 'data' python package
-from data import migrations
 
 
 SCRIPT_PREFIX = 'data.migrations.'
@@ -36,13 +32,16 @@ def migrate(current_version):
 
 
 def _get_migration_scripts():
+    # Data folder is published as a separate 'data' python package
+    from data import migrations
     return [name for module_finder, name, ispkg in pkgutil.iter_modules(migrations.__path__)]
 
 
 def _get_relevalnt_migrations(migration_scripts, current_version):
     relevant_migrations = []
     for migration in migration_scripts:
-        migration_version = migration.split('_')[0]
+        migration_split = migration.split('_')
+        migration_version = '.'.join(migration_split[0:3])
         if migration_version >= current_version:
             relevant_migrations.append(migration)
     relevant_migrations.sort()
