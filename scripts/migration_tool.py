@@ -15,7 +15,7 @@ logger = getlogger()
 
 # Returns number of performed migrations
 def migrate(current_version):
-    logger.debug('Looking for migrations')
+    logger.info('Migrating from {}'.format(current_version))
     migration_scripts = _get_migration_scripts()
     logger.debug('Found migration scripts: {}'.format(migration_scripts))
     migration_scripts = _get_relevalnt_migrations(migration_scripts, current_version)

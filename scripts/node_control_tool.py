@@ -6,6 +6,7 @@ import argparse
 import os
 from migration_tool import migrate
 from stp_core.common.log import getlogger
+from sovrin_node.server.upgrader import Upgrader
 
 logger = getlogger()
 
@@ -45,7 +46,7 @@ def process_data(data):
         command = json.loads(data.decode("utf-8"))
         logger.debug("Decoded ", command)
         new_version = command['version']
-        current_version = ''
+        current_version = Upgrader.getVersion()
         call_upgrade_script(new_version)
         migrate(current_version)
         call_restart_node_script()
