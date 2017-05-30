@@ -117,8 +117,9 @@ class DomainReqHandler(PHandler):
                 data = json.loads(operation[RAW])
                 # QUESTION: This does not fit here, this should be the
                 # client's responsibility to check.
-                endpoint = data.get(ENDPOINT, {}).get('ha')
-                check_endpoint_valid(endpoint, required=False)
+                endpoint = data.get(ENDPOINT)
+                if endpoint is not None:
+                    check_endpoint_valid(data[ENDPOINT])
 
             except EndpointException as exc:
                 raise InvalidClientRequest(identifier, reqId, str(exc))
