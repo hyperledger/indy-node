@@ -18,7 +18,7 @@ def migrate(current_version):
     logger.info('Migrating from {}'.format(current_version))
     migration_scripts = _get_migration_scripts()
     logger.debug('Found migration scripts: {}'.format(migration_scripts))
-    migration_scripts = _get_relevalnt_migrations(migration_scripts, current_version)
+    migration_scripts = _get_relevant_migrations(migration_scripts, current_version)
     if not len(migration_scripts):
         logger.info('No migrations can be applied to the current code.')
         return 0
@@ -37,7 +37,7 @@ def _get_migration_scripts():
     return [name for module_finder, name, ispkg in pkgutil.iter_modules(migrations.__path__)]
 
 
-def _get_relevalnt_migrations(migration_scripts, current_version):
+def _get_relevant_migrations(migration_scripts, current_version):
     relevant_migrations = []
     for migration in migration_scripts:
         migration_split = migration.split('_')

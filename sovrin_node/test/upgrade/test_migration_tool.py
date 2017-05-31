@@ -6,7 +6,7 @@ TEST_VERSION = '0.3.100'
 
 
 def testGetRelevantMigrations():
-    relevantMigrations = migration_tool._get_relevalnt_migrations(TEST_MIGRATION_SCRIPTS, TEST_VERSION)
+    relevantMigrations = migration_tool._get_relevant_migrations(TEST_MIGRATION_SCRIPTS, TEST_VERSION)
     assert len(relevantMigrations) == 4
     assert relevantMigrations == ['0_3_100_0_test', '0_3_100_1_test4', '0_9_2_test3', '10_2_1_test1']
 
