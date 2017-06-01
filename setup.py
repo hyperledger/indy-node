@@ -56,7 +56,7 @@ class EnhancedInstallDev(develop):
         post_install()
 
 setup(
-    name='sovrin-node-dev',
+    name='sovrin-node',
     version=__version__,
     description='Sovrin node',
     url='https://github.com/sovrin-foundation/sovrin-node.git',
