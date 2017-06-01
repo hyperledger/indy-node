@@ -112,18 +112,6 @@ class DomainReqHandler(PHandler):
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
-        if RAW in operation:
-            try:
-                data = json.loads(operation[RAW])
-                # QUESTION: This does not fit here, this should be the
-                # client's responsibility to check.
-                endpoint = data.get(ENDPOINT, {}).get('ha')
-                check_endpoint_valid(endpoint, required=False)
-
-            except EndpointException as exc:
-                raise InvalidClientRequest(identifier, reqId, str(exc))
-            except BaseException as exc:
-                raise InvalidClientRequest(identifier, reqId, str(exc))
 
         # TODO: This is not static validation as it involves state
         if not (not operation.get(TARGET_NYM) or
