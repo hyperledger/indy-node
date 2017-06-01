@@ -15,7 +15,3 @@ SET RET=%ERRORLEVEL%
 IF NOT "%RET%"=="0" (
   echo "Upgrade to version %VERS% failed %RET%"
 )
-
-echo "Restarting node and agent"
-nssm start SovrinNode
-schtasks /run /TN "RestartSovrinNodeUpgradeAgent"
