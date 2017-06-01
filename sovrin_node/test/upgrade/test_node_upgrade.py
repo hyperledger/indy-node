@@ -23,8 +23,6 @@ sovrin_node.__metadata__.__version_info__ = tuple(int(v) for v in
                                                   newVer.split('.'))
 
 
-from sovrin_node.test.conftest import tdirWithPoolTxns, poolTxnNodeNames
-
 whitelist = ['unable to send message']
 # TODO: Implement a client in node
 

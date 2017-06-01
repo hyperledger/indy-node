@@ -171,6 +171,8 @@ class Upgrader(HasActionQueue):
             self._scheduleUpgrade(latestVer,
                                   upgradeAt,
                                   self.defaultUpgradeTimeout)
+            #TODO: Consider reporting a signal if the node is going to upgrade
+            # very soon so that catchup for domain ledger does not start
 
     @property
     def didLastExecutedUpgradeSucceeded(self) -> bool:
@@ -190,13 +192,14 @@ class Upgrader(HasActionQueue):
 
     @property
     def isItFirstRunAfterUpgrade(self):
+        # TODO: What if node restarts after upgrading but before acknowledging?
         if self.__isItFirstRunAfterUpgrade is None:
             lastEvent = self._upgradeLog.lastEvent
             self.__isItFirstRunAfterUpgrade = lastEvent and \
                                               lastEvent[1] == UpgradeLog.UPGRADE_SCHEDULED
         return self.__isItFirstRunAfterUpgrade
 
-    def isScheduleValid(self, schedule, nodeIds) -> bool:
+    def isScheduleValid(self, schedule, nodeIds) -> (bool, str):
         """
         Validates schedule of planned node upgrades
 
@@ -221,9 +224,9 @@ class Upgrader(HasActionQueue):
         for i in range(len(times) - 1):
             diff = (times[i + 1] - times[i]).seconds
             if diff < self.config.MinSepBetweenNodeUpgrades:
-                return False, 'time span between upgrades is {} seconds which ' \
-                              'is less than specified in the config'.format(
-                    diff)
+                return False, 'time span between upgrades is {} ' \
+                              'seconds which is less than specified ' \
+                              'in the config'.format(diff)
         return True, ''
 
     def statusInLedger(self, name, version) -> dict:
