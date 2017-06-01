@@ -35,44 +35,28 @@ METADATA = os.path.join(SETUP_DIRNAME, 'sovrin_node', '__metadata__.py')
 exec(compile(open(METADATA).read(), METADATA, 'exec'))
 
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".sovrin")
-CONFIG_FILE = os.path.join(BASE_DIR, "sovrin_config.py")
 
 if not os.path.exists(BASE_DIR):
     os.makedirs(BASE_DIR)
 
-if not os.path.exists(CONFIG_FILE):
-    with open(CONFIG_FILE, 'w') as f:
-        msg = "# Here you can create config entries according to your " \
-              "needs.\n " \
-              "# For help, refer config.py in the sovrin package.\n " \
-              "# Any entry you add here would override that from config " \
-              "example\n"
-        f.write(msg)
-
-
-def compose_cmd(cmd):
-    if os.name != 'nt':
-        cmd = ' '.join(cmd)
-    return cmd
-
 
 def post_install():
-    subprocess.run(compose_cmd(['python', 'post-setup.py']), shell=True)
+    subprocess.run(['python post-setup.py'], shell=True)
 
 
-class PostInstall(install):
+class EnhancedInstall(install):
     def run(self):
         install.run(self)
         post_install()
 
 
-class PostInstallDev(develop):
+class EnhancedInstallDev(develop):
     def run(self):
         develop.run(self)
         post_install()
 
 setup(
-    name='sovrin-node',
+    name='sovrin-node-dev',
     version=__version__,
     description='Sovrin node',
     url='https://github.com/sovrin-foundation/sovrin-node.git',
@@ -89,22 +73,25 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['sovrin-common==0.2.8', 'python-dateutil'],
+    install_requires=['sovrin-common==0.2.9', 'python-dateutil'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'sovrin-client==0.3.17'],
+    tests_require=['pytest', 'sovrin-client==0.3.18'],
     scripts=['scripts/start_sovrin_node',
              'scripts/node_control_tool.py',
+             'scripts/migration_tool.py',
              'scripts/clear_node.py',
              'scripts/upgrade_sovrin_node_ubuntu1604.sh',
              'scripts/upgrade_sovrin_node_ubuntu1604_test.sh',
              'scripts/upgrade_sovrin_node.bat',
-             'scripts/upgrade_sovrin_node_test.bat', 
+             'scripts/upgrade_sovrin_node_test.bat',
+             'scripts/restart_sovrin_node_ubuntu1604.sh',
+             'scripts/restart_sovrin_node.bat',
              'scripts/install_sovrin_node.bat',
              'scripts/delete_sovrin_node.bat',
              'scripts/restart_upgrade_agent.bat',
              'scripts/install_nssm.bat'],
     cmdclass={
-        'install': PostInstall,
-        'develop': PostInstallDev
+        'install': EnhancedInstall,
+        'develop': EnhancedInstallDev
     }
 )

@@ -3,18 +3,17 @@ import json
 from contextlib import ExitStack
 from typing import Iterable
 
-from plenum.common.constants import REQACK, TXN_ID
+from plenum.common.constants import REQACK, TXN_ID, DATA
 from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import getMaxFailures, runall
-from plenum.persistence import orientdb_store
 from plenum.test.helper import TestNodeSet as PlenumTestNodeSet
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     checkLastClientReqForNode, buildCompletedTxnFromReply
 from plenum.test.test_node import checkNodesAreReady, TestNodeCore
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.testable import spyable
-from plenum.test import waits as plenumWaits
+from plenum.test import waits as plenumWaits, waits
 from sovrin_client.client.wallet.attribute import LedgerStore, Attribute
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.test.helper import genTestClient, genTestClientProvider
@@ -233,8 +232,8 @@ class TestUpgrader(Upgrader):
              Node.reportSuspiciousNode, Node.reportSuspiciousClient,
              Node.processRequest, Node.processPropagate, Node.propagate,
              Node.forward, Node.send, Node.processInstanceChange,
-             Node.checkPerformance, Node.getReplyFor])
-class TestNode(TempStorage, TestNodeCore, Node):
+             Node.checkPerformance, Node.getReplyFromLedger])
+class TestNode(TempStorage, Node, TestNodeCore):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
@@ -244,16 +243,10 @@ class TestNode(TempStorage, TestNodeCore, Node):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
                             self.configLedger)
 
-    def _getOrientDbStore(self, name, dbType):
-        if not hasattr(self, '_orientDbStore'):
-            self._orientDbStore = orientdb_store.createOrientDbInMemStore(
-                self.config, name, dbType)
-        return self._orientDbStore
-
     def onStopping(self, *args, **kwargs):
         if self.cleanupOnStopping:
             self.cleanupDataLocation()
-        self.graphStore.store.close()
+        # self.graphStore.store.close()
         super().onStopping(*args, **kwargs)
 
 
@@ -328,11 +321,6 @@ def makeAttribRequest(client, wallet, attrib):
     return client.submitReqs(*reqs)
 
 
-class TestGraphStorage:
-    def __init__(self):
-        pass
-
-
 def _newWallet(name=None):
     signer = SimpleSigner()
     w = Wallet(name or signer.identifier)
@@ -368,6 +356,31 @@ def addRawAttribute(looper, client, wallet, name, value, dest=None,
     addAttributeAndCheck(looper, client, wallet, attrib)
 
 
+def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
+    reply, status = trustAnchor.getReply(*reqKey)
+    assert reply
+    data = json.loads(reply.get(DATA))
+    assert status == "CONFIRMED" and \
+           (data is not None and data.get(attrName) == attrValue)
+    return reply
+
+
+def getAttribute(looper, trustAnchor, trustAnchorWallet, userIdA, attributeName,
+                 attributeValue):
+    # Should be renamed to get_attribute_and_check
+    attrib = Attribute(name=attributeName,
+                       value=None,
+                       dest=userIdA,
+                       ledgerStore=LedgerStore.RAW)
+    req = trustAnchorWallet.requestAttribute(attrib,
+                                             sender=trustAnchorWallet.defaultId)
+    trustAnchor.submitReqs(req)
+    timeout = waits.expectedTransactionExecutionTime(len(trustAnchor.nodeReg))
+    return looper.run(eventually(checkGetAttr, req.key, trustAnchor,
+                                 attributeName, attributeValue, retryWait=1,
+                                 timeout=timeout))
+
+
 def buildStewardClient(looper, tdir, stewardWallet):
     s, _ = genTestClient(tmpdir=tdir, usePoolLedger=True)
     s.registerObserver(stewardWallet.handleIncomingReply)
@@ -375,4 +388,3 @@ def buildStewardClient(looper, tdir, stewardWallet):
     looper.run(s.ensureConnectedToNodes())
     makePendingTxnsRequest(s, stewardWallet)
     return s
-

@@ -6,7 +6,6 @@ Sovrin Identity Network public/permissioned distributed ledger
 
 #### Run common setup instructions
 Follow instructions mentioned here [Common Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
-Follow instructions mentioned here [OrientDB Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
 
 ### Run tests [Optional]
 

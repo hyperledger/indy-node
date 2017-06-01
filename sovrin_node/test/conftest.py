@@ -1,6 +1,10 @@
+import logging
 import warnings
 
 from plenum.common.keygen_utils import initLocalKeys
+from plenum.test import waits as plenumWaits
+from stp_core.common.log import Logger
+from stp_core.loop.eventually import eventually
 from plenum.common.util import randomString
 from plenum.test import waits as plenumWaits
 from plenum.test.helper import waitForSufficientRepliesForRequests
@@ -19,6 +23,7 @@ strict_types.defaultShouldCheck = True
 import pytest
 
 from plenum.common.signer_simple import SimpleSigner
+from plenum.common.keygen_utils import initNodeKeysForBothStacks
 from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
     ALIAS, SERVICES, VALIDATOR, STEWARD
 
@@ -44,6 +49,7 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
 from sovrin_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper
 
+Logger.setLogLevel(logging.DEBUG)
 
 @pytest.fixture(scope="session")
 def warnfilters(client_warnfilters):
@@ -93,7 +99,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
-    initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
+    initNodeKeysForBothStacks(newNodeName, tdirWithPoolTxns, sigseed, override=True)
 
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),

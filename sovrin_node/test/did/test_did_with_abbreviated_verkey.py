@@ -57,8 +57,6 @@ def didUpdatedWithFullVerkey(didAddedWithAbbrvVerkey, looper, trustAnchor,
                             trustAnchorWallet, abbrevIdr, newFullKey,
                              newFullKeySigner, wallet, client):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
-    # updateSovrinIdrWithFullKey(looper, trustAnchorWallet, trustAnchor, wallet,
-    #                            abbrevIdr, newFullKey)
     updateSovrinIdrWithFullKey(looper, wallet, client, wallet,
                                abbrevIdr, newFullKey)
     updateWalletIdrWithFullVerkeySigner(wallet, abbrevIdr, newFullKeySigner)
