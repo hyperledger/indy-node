@@ -22,32 +22,35 @@ logger = getlogger()
 @pytest.fixture(scope="module")
 def anotherTrustee(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newTrustee', TRUSTEE)
+                                  trustee, trusteeWallet, 'newTrustee',
+                                  role=TRUSTEE)
 
 
 @pytest.fixture(scope="module")
 def anotherTGB(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newTGB', TGB)
+                                  trustee, trusteeWallet, 'newTGB', role=TGB)
 
 
 @pytest.fixture(scope="module")
 def anotherSteward(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newSteward', STEWARD)
+                                  trustee, trusteeWallet, 'newSteward',
+                                  role=STEWARD)
 
 
 @pytest.fixture(scope="module")
 def anotherSteward1(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newSteward1', STEWARD)
+                                  trustee, trusteeWallet, 'newSteward1',
+                                  role=STEWARD)
 
 
 @pytest.fixture(scope="module")
 def anotherTrustAnchor(nodeSet, tdir, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(nodeSet, tdir, looper,
                                   trustee, trusteeWallet, 'newTrustAnchor',
-                                  TRUST_ANCHOR)
+                                  role=TRUST_ANCHOR)
 
 
 def testTrusteeAddingAnotherTrustee(anotherTrustee):
