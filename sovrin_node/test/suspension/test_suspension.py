@@ -1,5 +1,6 @@
 import pytest
 
+from plenum.common.signer_did import DidSigner
 from sovrin_node.test.suspension.helper import sendChangeVerkey, checkIdentityRequestFailed, \
     checkIdentityRequestSucceed, sendSuspendRole, changeVerkey, suspendRole
 from stp_core.loop.eventually import eventually
@@ -114,10 +115,12 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
     for identity in (anotherTrustee, anotherTGB, anotherSteward, anotherTrustAnchor):
         # Trustee cannot change verkey
         _, wallet = identity
-        changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, '',
+        signer = DidSigner()
+        changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId,
+                     signer.verkey,
                      nAckReasonContains='TRUSTEE cannot update verkey')
         # Identity owner can change verkey
-        changeVerkey(looper, *identity, wallet.defaultId, '')
+        changeVerkey(looper, *identity, wallet.defaultId, signer.verkey)
 
 
 # Keep the test below at the end of the suite since it will make one of the

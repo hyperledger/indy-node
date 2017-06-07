@@ -82,7 +82,8 @@ def testRetrieveEmptyVerkey(didAddedWithoutVerkey, looper, trustAnchor,
                             trustAnchorWallet, noKeyIdr):
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=noKeyIdr)
-    req = trustAnchorWallet.requestIdentity(identity, sender=trustAnchorWallet.defaultId)
+    req = trustAnchorWallet.requestIdentity(identity,
+                                            sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
 
     def chk():

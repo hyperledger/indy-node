@@ -28,8 +28,8 @@ def some_transactions_done(looper, nodeSet, tdirWithPoolTxns, trustee,
     # in the same manner, this fails during catchup since the nodes that
     # processed the transaction saw verkey as `''` but while deserialising the
     # ledger they cannot differentiate between None and empty string.
-    updateSovrinIdrWithVerkey(looper, new_w, new_c,
-                              new_idr, '')
+    # updateSovrinIdrWithVerkey(looper, new_w, new_c,
+    #                           new_idr, '')
 
 
 def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
@@ -37,8 +37,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
                                             nodeSet, tconf,
                                             trustee, trusteeWallet,
                                             allPluginsPath,
-                                            # The next fixture fails the test, explained in the fixture
-                                            # some_transactions_done
+                                            some_transactions_done
                                             ):
     """
     A node which receives txns from catchup updates both ledger and projection

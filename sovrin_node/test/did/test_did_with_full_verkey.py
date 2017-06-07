@@ -52,8 +52,8 @@ def didUpdatedWithFullVerkey(didAddedWithFullVerkey, looper, trustAnchor,
 
 
 @pf
-def newVerkeyFetched(didAddedWithFullVerkey, looper, trustAnchor, trustAnchorWallet,
-                     fullKeyIdr, wallet):
+def newVerkeyFetched(didAddedWithFullVerkey, looper, trustAnchor,
+                     trustAnchorWallet, fullKeyIdr, wallet):
     """{ type: GET_NYM, dest: <id1> }"""
     fetchFullVerkeyFromSovrin(looper, trustAnchorWallet, trustAnchor, wallet,
                               fullKeyIdr)
@@ -68,7 +68,7 @@ def testRetrieveFullVerkey(didAddedWithFullVerkey, looper, trustAnchor,
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=fullKeyIdr)
     req = trustAnchorWallet.requestIdentity(identity,
-                                        sender=trustAnchorWallet.defaultId)
+                                            sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
 
     def chk():
