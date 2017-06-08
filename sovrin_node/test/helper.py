@@ -3,8 +3,7 @@ import json
 from contextlib import ExitStack
 from typing import Iterable
 
-from plenum.common.constants import REQACK, TXN_ID, DATA, DOMAIN_LEDGER_ID
-from sovrin_node.server.domain_req_handler import DomainReqHandler
+from plenum.common.constants import REQACK, TXN_ID, DATA
 from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import getMaxFailures, runall

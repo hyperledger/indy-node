@@ -99,12 +99,6 @@ class IdrCache:
 
     def batchRejected(self):
         # Batches are always rejected from end of `self.unCommitted`
-
-        # if stateRoot:
-        #     self.unCommitted[stateRoot] = OrderedDict(self.currentBatchOps)
-        # else:
-        #     self.currentBatchOps = []
-
         self.currentBatchOps = []
         self.unCommitted = self.unCommitted[:-1]
 
@@ -122,15 +116,6 @@ class IdrCache:
         else:
             logger.warning('{} is trying to commit a batch with state root {} '
                            'but no uncommitted found'.format(self, stateRoot))
-        # if stateRoot in self.unCommitted:
-        #     self._keyValueStorage.setBatch([(idr, val) for idr, val in
-        #                                     self.unCommitted[stateRoot].items()])
-        #     self.unCommitted.pop(stateRoot)
-        # else:
-        #     # If the state root is not changed then
-        #     logger.info('{} already committed state root {} in one of the '
-        #                 'previous batches, so will not commit again'
-        #                 .format(self, stateRoot))
 
     def setVerkey(self, idr, verkey):
         # This method acts as if guardianship is being terminated.
