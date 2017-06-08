@@ -112,7 +112,7 @@ class IdrCache:
                                                      'committed'
             self._keyValueStorage.setBatch([(idr, val) for idr, val in
                                             self.unCommitted[0][1].items()])
-            self.unCommitted = self.unCommitted[:-1]
+            self.unCommitted = self.unCommitted[1:]
         else:
             logger.warning('{} is trying to commit a batch with state root {} '
                            'but no uncommitted found'.format(self, stateRoot))
