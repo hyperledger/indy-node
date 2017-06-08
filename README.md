@@ -29,3 +29,4 @@ To learn more about the Sovrin Identity Network and the Sovrin Foundation, see [
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
