@@ -443,8 +443,8 @@ class Node(PlenumNode, HasPoolManager):
         else:
             super().onBatchCreated(ledgerId, stateRoot)
 
-    def onBatchRejected(self, ledgerId, stateRoot=None):
+    def onBatchRejected(self, ledgerId):
         if ledgerId == CONFIG_LEDGER_ID:
-            self.configReqHandler.onBatchRejected(stateRoot)
+            self.configReqHandler.onBatchRejected()
         else:
-            super().onBatchRejected(ledgerId, stateRoot)
+            super().onBatchRejected(ledgerId)
