@@ -109,7 +109,8 @@ class IdrCache:
                                                      'not been committed or ' \
                                                      'reverted and yet another ' \
                                                      'batch is trying to be ' \
-                                                     'committed'
+                                                     'committed, {} {}'.format(
+                self.unCommitted[0][0], stateRoot)
             self._keyValueStorage.setBatch([(idr, val) for idr, val in
                                             self.unCommitted[0][1].items()])
             self.unCommitted = self.unCommitted[1:]
