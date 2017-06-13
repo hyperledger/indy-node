@@ -35,6 +35,7 @@ if __name__ == "__main__":
         Logger().setupRaet(RAETVerbosity, RAETLogFile)
 
         logger = getlogger()
+        logger.setLevel(config.logLevel)
         logger.debug("You can find logs in {}".format(logFileName))
 
         vars = [var for var in os.environ.keys() if var.startswith("SOVRIN")]
