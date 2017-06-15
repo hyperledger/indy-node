@@ -39,8 +39,8 @@ class DomainReqHandler(PHandler):
     def onBatchCreated(self, stateRoot):
         self.idrCache.currentBatchCreated(stateRoot)
 
-    def onBatchRejected(self, stateRoot=None):
-        self.idrCache.batchRejected(stateRoot)
+    def onBatchRejected(self):
+        self.idrCache.batchRejected()
 
     def _updateStateWithSingleTxn(self, txn, isCommitted=False):
         typ = txn.get(TXN_TYPE)

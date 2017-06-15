@@ -19,7 +19,7 @@ from plenum.test import waits as plenumWaits
 from sovrin_common.identity import Identity
 from sovrin_node.test.did.conftest import pf
 from sovrin_node.test.did.helper import chkVerifyForRetrievedIdentity, \
-    updateWalletIdrWithFullKeySigner, updateSovrinIdrWithFullKey, \
+    updateWalletIdrWithFullKeySigner, updateSovrinIdrWithVerkey, \
     fetchFullVerkeyFromSovrin, checkAbbrVerkeySize, checkDidSize, \
     updateWalletIdrWithFullVerkeySigner
 from sovrin_client.test.helper import createNym
@@ -57,8 +57,7 @@ def didUpdatedWithFullVerkey(didAddedWithAbbrvVerkey, looper, trustAnchor,
                             trustAnchorWallet, abbrevIdr, newFullKey,
                              newFullKeySigner, wallet, client):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
-    updateSovrinIdrWithFullKey(looper, wallet, client, wallet,
-                               abbrevIdr, newFullKey)
+    updateSovrinIdrWithVerkey(looper, wallet, client, abbrevIdr, newFullKey)
     updateWalletIdrWithFullVerkeySigner(wallet, abbrevIdr, newFullKeySigner)
 
 

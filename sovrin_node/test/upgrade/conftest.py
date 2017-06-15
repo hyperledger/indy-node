@@ -25,7 +25,6 @@ def validUpgrade(nodeIds, tconf):
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff + 3)
-    # TODO select or create a timeout from 'waits' if it is needed
     return dict(name='upgrade-13', version=bumpedVersion(), action=START,
                 schedule=schedule, sha256='aad1242', timeout=1)
 
