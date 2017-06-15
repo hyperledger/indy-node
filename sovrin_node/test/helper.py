@@ -233,7 +233,7 @@ class TestUpgrader(Upgrader):
              Node.processRequest, Node.processPropagate, Node.propagate,
              Node.forward, Node.send, Node.processInstanceChange,
              Node.checkPerformance, Node.getReplyFromLedger])
-class TestNode(TempStorage, Node, TestNodeCore):
+class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
@@ -242,6 +242,9 @@ class TestNode(TempStorage, Node, TestNodeCore):
     def getUpgrader(self):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
                             self.configLedger)
+
+    def getDomainReqHandler(self):
+        return Node.getDomainReqHandler(self)
 
     def onStopping(self, *args, **kwargs):
         if self.cleanupOnStopping:
