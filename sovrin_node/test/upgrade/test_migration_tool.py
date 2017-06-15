@@ -1,4 +1,4 @@
-import migration_tool
+import scripts.migration_tool as migration_tool
 
 
 TEST_MIGRATION_SCRIPTS = ['0_3_100_0_test', '10_2_1_test1', '0_9_2_test3', '0_3_100_1_test4', '0_1_10_2_test5']

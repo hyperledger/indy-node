@@ -69,7 +69,8 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     newSteward, newStewardWallet = getClientAddedWithRole(nodeSet, tdir,
                                                           looper, steward,
                                                           stewardWallet,
-                                                          newStewardName, STEWARD)
+                                                          newStewardName,
+                                                          role=STEWARD)
 
     sigseed = randomString(32).encode()
     nodeSigner = SimpleSigner(seed=sigseed)
