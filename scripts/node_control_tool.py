@@ -37,6 +37,7 @@ def call_upgrade_script(version):
     logger.info('Upgrading sovrin node to version {}, test_mode {}'.format(version, int(test_mode)))
 
     deps = get_deps_list('sovrin-node={}'.format(version))
+    deps = '"{}"'.format(deps)
 
     cmd_file = 'upgrade_sovrin_node'
     if test_mode:
