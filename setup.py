@@ -80,6 +80,7 @@ setup(
              'scripts/node_control_tool.py',
              'scripts/migration_tool.py',
              'scripts/clear_node.py',
+             'scripts/get_package_dependencies_ubuntu.sh',
              'scripts/upgrade_sovrin_node_ubuntu1604.sh',
              'scripts/upgrade_sovrin_node_ubuntu1604_test.sh',
              'scripts/upgrade_sovrin_node.bat',
