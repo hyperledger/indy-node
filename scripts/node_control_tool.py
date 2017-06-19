@@ -5,6 +5,7 @@ import socket
 import argparse
 import os
 import timeout_decorator
+import subprocess
 from migration_tool import migrate
 from stp_core.common.log import getlogger
 from sovrin_node.server.upgrader import Upgrader
@@ -20,24 +21,31 @@ def compose_cmd(cmd):
     return cmd
 
 
+def get_deps_list(package):
+    logger.info('Getting dependencies for {}'.format(package))
+    ret = subprocess.run(compose_cmd(['get_package_dependencies_ubuntu', package]), shell=True, check=True, universal_newlines=True, timeout=TIMEOUT)
+    return ret.stdout
+
 def call_upgrade_script(version):
-    import subprocess
-    logger.info('Upgrading sovrin node to version %s, test_mode %d ' % (version, int(test_mode)))
+    logger.info('Upgrading sovrin node to version {}, test_mode {}'.format(version, int(test_mode)))
+
+    deps = get_deps_list('sovrin-node={}'.format(version))
+
+    cmd_file = 'upgrade_sovrin_node'
     if test_mode:
-        retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node_test', version]), shell=True, timeout=TIMEOUT)
-    else:
-        retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node', version]), shell=True, timeout=TIMEOUT)
-    if retcode != 0:
+        cmd_file = 'upgrade_sovrin_node_test'
+    ret = subprocess.run(compose_cmd([cmd_file, deps]), shell=True, timeout=TIMEOUT)
+
+    if ret.returncode != 0:
         msg = 'Upgrade failed: upgrade script returned {}'.format(retcode)
         logger.error(msg)
         raise Exception(msg)
 
 
 def call_restart_node_script():
-    import subprocess
     logger.info('Restarting sovrin')
-    retcode = subprocess.call(compose_cmd(['restart_sovrin_node']), shell=True, timeout=TIMEOUT)
-    if retcode != 0:
+    ret = subprocess.run(compose_cmd(['restart_sovrin_node']), shell=True, timeout=TIMEOUT)
+    if ret.returncode != 0:
         msg = 'Restart failed: script returned {}'.format(retcode)
         logger.error(msg)
         raise Exception(msg)
