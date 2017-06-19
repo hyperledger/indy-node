@@ -23,7 +23,7 @@ def compose_cmd(cmd):
 
 def get_deps_list(package):
     logger.info('Getting dependencies for {}'.format(package))
-    ret = subprocess.run(compose_cmd(['get_package_dependencies_ubuntu', package]), shell=True, check=True, universal_newlines=True, timeout=TIMEOUT)
+    ret = subprocess.run(compose_cmd(['get_package_dependencies_ubuntu', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
     return ret.stdout
 
 def call_upgrade_script(version):
