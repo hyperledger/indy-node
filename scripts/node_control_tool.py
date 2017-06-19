@@ -4,11 +4,14 @@ import select
 import socket
 import argparse
 import os
+import timeout_decorator
 from migration_tool import migrate
 from stp_core.common.log import getlogger
 from sovrin_node.server.upgrader import Upgrader
 
 logger = getlogger()
+
+TIMEOUT=300
 
 
 def compose_cmd(cmd):
@@ -21,9 +24,9 @@ def call_upgrade_script(version):
     import subprocess
     logger.info('Upgrading sovrin node to version %s, test_mode %d ' % (version, int(test_mode)))
     if test_mode:
-        retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node_test', version]), shell=True)
+        retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node_test', version]), shell=True, timeout=TIMEOUT)
     else:
-        retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node', version]), shell=True)
+        retcode = subprocess.call(compose_cmd(['upgrade_sovrin_node', version]), shell=True, timeout=TIMEOUT)
     if retcode != 0:
         msg = 'Upgrade failed: upgrade script returned {}'.format(retcode)
         logger.error(msg)
@@ -33,11 +36,29 @@ def call_upgrade_script(version):
 def call_restart_node_script():
     import subprocess
     logger.info('Restarting sovrin')
-    retcode = subprocess.call(compose_cmd(['restart_sovrin_node']), shell=True)
+    retcode = subprocess.call(compose_cmd(['restart_sovrin_node']), shell=True, timeout=TIMEOUT)
     if retcode != 0:
         msg = 'Restart failed: script returned {}'.format(retcode)
         logger.error(msg)
         raise Exception(msg)
+
+
+@timeout_decorator.timeout(TIMEOUT)
+def do_migration(current_version):
+    migrate(current_version)
+
+
+def upgrade(new_version, migrate=True, rollback=True):
+    try:
+        current_version = Upgrader.getVersion()
+        call_upgrade_script(new_version)
+        if migrate:
+            do_migration(current_version)
+        call_restart_node_script()
+    except Exception as e:
+        logger.error("Unexpected error in upgrade {}, trying to rollback to the previous version {}".format(e, current_version))
+        if rollback:
+            upgrade(current_version, migrate=False, rollback=False)
 
 
 def process_data(data):
@@ -46,14 +67,12 @@ def process_data(data):
         command = json.loads(data.decode("utf-8"))
         logger.debug("Decoded ", command)
         new_version = command['version']
-        current_version = Upgrader.getVersion()
-        call_upgrade_script(new_version)
-        migrate(current_version)
-        call_restart_node_script()
+        upgrade(new_version)
     except json.decoder.JSONDecodeError as e:
         logger.error("JSON decoding failed: {}".format(e))
     except Exception as e:
-        logger.error("Unexpected error in process_data: {}".format(e))
+        logger.error("Unexpected error in process_data {}".format(e))
+
 
 # Parse command line arguments
 test_mode = False
