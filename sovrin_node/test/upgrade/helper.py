@@ -62,7 +62,7 @@ def bumpedVersion():
     return bumpVersion(v)
 
 
-class NCT:
+class NodeControlToolExecutor:
     def __init__(self, transform = lambda tool: None):
         self.tool = NodeControlTool()
         transform(self.tool)
