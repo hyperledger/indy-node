@@ -6,13 +6,17 @@ import argparse
 import os
 import timeout_decorator
 import subprocess
+import shutil
 from migration_tool import migrate
 from stp_core.common.log import getlogger
 from sovrin_node.server.upgrader import Upgrader
 
 logger = getlogger()
 
-TIMEOUT=300
+TIMEOUT = 300
+BASE_DIR = '/home/sovrin/'
+SOVRIN_DIR = os.path.join(BASE_DIR, '.sovrin')
+BACKUP_FORMAT = 'zip'
 
 
 def compose_cmd(cmd):
@@ -58,10 +62,31 @@ def call_restart_node_script():
         logger.error(msg)
         raise Exception(msg)
 
+def backup_name(version):
+    return os.path.join(BASE_DIR, 'sovrin_backup_{}'.format(version))
+
+
+def create_backup(version):
+    shutil.make_archive(backup_name(version), BACKUP_FORMAT, SOVRIN_DIR)
+
+
+def restore_from_backup(version):
+    shutil.unpack_archive(backup_name(version), SOVRIN_DIR, BACKUP_FORMAT)
+
+
+def remove_backup(version):
+    os.remove(backup_name(version))
+
 
 @timeout_decorator.timeout(TIMEOUT)
-def do_migration(current_version):
-    migrate(current_version)
+def do_migration(version):
+    try:
+        create_backup(version)
+        migrate(version)
+    except Exception:
+        restore_from_backup(version)
+    finally:
+        remove_backup(version)
 
 
 def upgrade(new_version, migrate=True, rollback=True):
