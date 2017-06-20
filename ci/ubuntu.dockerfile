@@ -33,4 +33,6 @@ USER root
 RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
 RUN ln -sf /home/sovrin/test/bin/pip /usr/local/bin/pip
 USER sovrin
+RUN export PYTHONPATH="${PYTHONPATH}:/usr/local/bin"
+RUN echo $PYTHONPATH
 WORKDIR /home/sovrin
