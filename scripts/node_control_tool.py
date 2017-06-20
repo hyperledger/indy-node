@@ -13,159 +13,169 @@ from sovrin_node.server.upgrader import Upgrader
 
 logger = getlogger()
 
+
 TIMEOUT = 300
 BASE_DIR = '/home/sovrin/'
-SOVRIN_DIR = os.path.join(BASE_DIR, '.sovrin')
 BACKUP_FORMAT = 'zip'
 
 
-def compose_cmd(cmd):
-    if os.name != 'nt':
-        cmd = ' '.join(cmd)
-    return cmd
+class NodeControlTool:
+    def __init__(self, timeout: int = TIMEOUT, base_dir: str = BASE_DIR, backup_format: str = BACKUP_FORMAT, test_mode: bool = False):
+        self.test_mode = test_mode
+        self.timeout = timeout
+        self.base_dir = base_dir
+        self.sovrin_dir = os.path.join(self.base_dir, '.sovrin')
+        self.backup_format = backup_format
 
+        # Create a TCP/IP socket
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server.setblocking(0)
 
-def get_deps_list(package):
-    logger.info('Getting dependencies for {}'.format(package))
-    ret = subprocess.run(compose_cmd(['get_package_dependencies_ubuntu', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
-    
-    if ret.returncode != 0:
-        msg = 'Upgrade failed: get_deps_list returned {}'.format(retcode)
-        logger.error(msg)
-        raise Exception(msg)
-    
-    return ret.stdout.strip()
+        # Bind the socket to the port
+        self.server_address = ('localhost', 30003)
 
+        logger.info('Node control tool is starting up on {} port {}'.format(*self.server_address))
+        self.server.bind(self.server_address)
 
-def call_upgrade_script(version):
-    logger.info('Upgrading sovrin node to version {}, test_mode {}'.format(version, int(test_mode)))
+        # Listen for incoming connections
+        self.server.listen(1)
 
-    deps = get_deps_list('sovrin-node={}'.format(version))
-    deps = '"{}"'.format(deps)
+    @staticmethod
+    def _compose_cmd(cmd):
+        if os.name != 'nt':
+            cmd = ' '.join(cmd)
+        return cmd
 
-    cmd_file = 'upgrade_sovrin_node'
-    if test_mode:
-        cmd_file = 'upgrade_sovrin_node_test'
-    ret = subprocess.run(compose_cmd([cmd_file, deps]), shell=True, timeout=TIMEOUT)
+    def _get_deps_list(self, package):
+        logger.info('Getting dependencies for {}'.format(package))
+        ret = subprocess.run(self.__class__._compose_cmd(['get_package_dependencies_ubuntu', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+        
+        if ret.returncode != 0:
+            msg = 'Upgrade failed: _get_deps_list returned {}'.format(retcode)
+            logger.error(msg)
+            raise Exception(msg)
+        
+        return ret.stdout.strip()
 
-    if ret.returncode != 0:
-        msg = 'Upgrade failed: upgrade script returned {}'.format(retcode)
-        logger.error(msg)
-        raise Exception(msg)
+    def _call_upgrade_script(self, version):
+        logger.info('Upgrading sovrin node to version {}, test_mode {}'.format(version, int(self.test_mode)))
 
+        deps = self._get_deps_list('sovrin-node={}'.format(version))
+        deps = '"{}"'.format(deps)
 
-def call_restart_node_script():
-    logger.info('Restarting sovrin')
-    ret = subprocess.run(compose_cmd(['restart_sovrin_node']), shell=True, timeout=TIMEOUT)
-    if ret.returncode != 0:
-        msg = 'Restart failed: script returned {}'.format(retcode)
-        logger.error(msg)
-        raise Exception(msg)
+        cmd_file = 'upgrade_sovrin_node'
+        if self.test_mode:
+            cmd_file = 'upgrade_sovrin_node_test'
+        ret = subprocess.run(self.__class__._compose_cmd([cmd_file, deps]), shell=True, timeout=self.timeout)
 
-def backup_name(version):
-    return os.path.join(BASE_DIR, 'sovrin_backup_{}'.format(version))
+        if ret.returncode != 0:
+            msg = 'Upgrade failed: _upgrade script returned {}'.format(retcode)
+            logger.error(msg)
+            raise Exception(msg)
 
+    def _call_restart_node_script(self):
+        logger.info('Restarting sovrin')
+        ret = subprocess.run(self.__class__._compose_cmd(['restart_sovrin_node']), shell=True, timeout=self.timeout)
+        if ret.returncode != 0:
+            msg = 'Restart failed: script returned {}'.format(retcode)
+            logger.error(msg)
+            raise Exception(msg)
 
-def create_backup(version):
-    shutil.make_archive(backup_name(version), BACKUP_FORMAT, SOVRIN_DIR)
+    def _backup_name(self, version):
+        return os.path.join(self.base_dir, 'sovrin_backup_{}'.format(version))
 
+    def _create_backup(self, version):
+        shutil.make_archive(self._backup_name(version), self.backup_format, self.sovrin_dir)
 
-def restore_from_backup(version):
-    shutil.unpack_archive(backup_name(version), SOVRIN_DIR, BACKUP_FORMAT)
+    def _restore_from_backup(self, version):
+        shutil.unpack_archive(self._backup_name(version), self.sovrin_dir, self.backup_format)
 
+    def _remove_backup(self, version):
+        os.remove('{}.{}'.format(self._backup_name(version), self.backup_format))
 
-def remove_backup(version):
-    os.remove(backup_name(version))
-
-
-@timeout_decorator.timeout(TIMEOUT)
-def do_migration(version):
-    try:
-        create_backup(version)
+    def _migrate(self, version):
         migrate(version)
-    except Exception:
-        restore_from_backup(version)
-    finally:
-        remove_backup(version)
+
+    @timeout_decorator.timeout(TIMEOUT)
+    def _do_migration(self, version):
+        try:
+            self._create_backup(version)
+            self._migrate(version)
+        except Exception:
+            self._restore_from_backup(version)
+        finally:
+            self._remove_backup(version)
+
+    def _upgrade(self, new_version, migrate=True, rollback=True):
+        try:
+            current_version = Upgrader.getVersion()
+            self._call_upgrade_script(new_version)
+            if migrate:
+                self._do_migration(current_version)
+            self._call_restart_node_script()
+        except Exception as e:
+            logger.error("Unexpected error in _upgrade {}, trying to rollback to the previous version {}".format(e, current_version))
+            if rollback:
+                self._upgrade(current_version, migrate=False, rollback=False)
+
+    def _process_data(self, data):
+        import json
+        try:
+            command = json.loads(data.decode("utf-8"))
+            logger.debug("Decoded ", command)
+            new_version = command['version']
+            self._upgrade(new_version)
+        except json.decoder.JSONDecodeError as e:
+            logger.error("JSON decoding failed: {}".format(e))
+        except Exception as e:
+            logger.error("Unexpected error in process_data {}".format(e))
+
+    def start(self):
+        # Sockets from which we expect to read
+        readers = [ self.server ]
+
+        # Sockets to which we expect to write
+        writers = [ ]
+        errs = [ ]
+
+        while readers:
+            # Wait for at least one of the sockets to be ready for processing
+            logger.debug('Waiting for the next event')
+            readable, writable, exceptional = select.select(readers, writers, errs)
+            for s in readable:
+                if s is self.server:
+                    # A "readable" server socket is ready to accept a connection
+                    connection, client_address = s.accept()
+                    logger.debug('New connection from {} on fd {}'.format(client_address,
+                                                               connection.fileno()))
+                    connection.setblocking(0)
+                    readers.append(connection)
+                else:
+                    data = s.recv(8192)
+                    if data:
+                        logger.debug('Received "{}" from {} on fd {}'.format(data,
+                                                                  s.getpeername(),
+                                                                  s.fileno()))
+                        self._process_data(data)
+                    else:
+                        logger.debug('Closing socket with fd {}'.format(s.fileno()))
+                        readers.remove(s)
+                        s.close()
 
 
-def upgrade(new_version, migrate=True, rollback=True):
-    try:
-        current_version = Upgrader.getVersion()
-        call_upgrade_script(new_version)
-        if migrate:
-            do_migration(current_version)
-        call_restart_node_script()
-    except Exception as e:
-        logger.error("Unexpected error in upgrade {}, trying to rollback to the previous version {}".format(e, current_version))
-        if rollback:
-            upgrade(current_version, migrate=False, rollback=False)
+if __name__ == "__main__":
+    # Parse command line arguments
+    test_mode = False
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-t", "--test", help="runs in special Test mode",
+                        action="store_true")
+    args = parser.parse_args()
+    if args.test:
+        test_mode = True
 
-
-def process_data(data):
-    import json
-    try:
-        command = json.loads(data.decode("utf-8"))
-        logger.debug("Decoded ", command)
-        new_version = command['version']
-        upgrade(new_version)
-    except json.decoder.JSONDecodeError as e:
-        logger.error("JSON decoding failed: {}".format(e))
-    except Exception as e:
-        logger.error("Unexpected error in process_data {}".format(e))
-
-
-# Parse command line arguments
-test_mode = False
-parser = argparse.ArgumentParser()
-parser.add_argument("-t", "--test", help="runs in special Test mode",
-                    action="store_true")
-args = parser.parse_args()
-if args.test:
-    test_mode = True
-
-# Create a TCP/IP socket
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server.setblocking(0)
-
-# Bind the socket to the port
-server_address = ('localhost', 30003)
-logger.info('Node control tools is starting up on %s port %s' % server_address)
-server.bind(server_address)
-
-# Listen for incoming connections
-server.listen(1)
-
-# Sockets from which we expect to read
-readers = [ server ]
-
-# Sockets to which we expect to write
-writers = [ ]
-errs = [ ]
-
-while readers:
-    # Wait for at least one of the sockets to be ready for processing
-    logger.debug('\nwaiting for the next event')
-    readable, writable, exceptional = select.select(readers, writers, errs)
-    for s in readable:
-        if s is server:
-            # A "readable" server socket is ready to accept a connection
-            connection, client_address = s.accept()
-            logger.debug('new connection from %s on fd %d' % (client_address,
-                                                       connection.fileno()))
-            connection.setblocking(0)
-            readers.append(connection)
-        else:
-            data = s.recv(8192)
-            if data:
-                logger.debug('received "%s" from %s on fd %d' % (data,
-                                                          s.getpeername(),
-                                                          s.fileno()))
-                process_data(data)
-            else:
-                logger.debug('closing socket with fd %d' % (s.fileno()))
-                readers.remove(s)
-                s.close()
+    nodeControlTool = NodeControlTool(test_mode = test_mode)
+    nodeControlTool.start()
+    
 
 

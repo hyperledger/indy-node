@@ -3,6 +3,16 @@ from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test import waits as plenumWaits
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_node.server.upgrader import Upgrader
+from scripts.node_control_tool import NodeControlTool
+from sovrin_common.config_util import getConfig
+import subprocess
+import os
+import multiprocessing
+import socket
+import json
+
+
+config = getConfig()
 
 
 def sendUpgrade(client, wallet, upgradeData):
@@ -50,3 +60,37 @@ def bumpVersion(v):
 def bumpedVersion():
     v = codeVersion()
     return bumpVersion(v)
+
+
+class NCT:
+    def __init__(self, transform = lambda tool: None):
+        self.tool = NodeControlTool()
+        transform(self.tool)
+        self.p = multiprocessing.Process(target = self.tool.start)
+        self.p.start()
+    
+    def stop(self):
+        self.p.terminate()
+        self.tool.server.close()
+
+
+def composeUpgradeMessage(version):
+    return (json.dumps({"version": version})).encode()
+
+
+def sendUpgradeMessage(version):
+    sock = socket.create_connection((config.controlServiceHost, config.controlServicePort))
+    sock.sendall(composeUpgradeMessage(version))
+    sock.close()
+
+
+def nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout):
+    ret = type("", (), {})()
+    ret.returncode = 0
+    ret.stdout = stdout
+    tool.base_dir = tdir
+    tool.sovrin_dir = os.path.join(tool.base_dir, '.sovrin')
+    if not os.path.exists(tool.sovrin_dir):
+        os.mkdir(tool.sovrin_dir)
+    monkeypatch.setattr(subprocess, 'run', lambda *x, **y: ret)
+    monkeypatch.setattr(tool, '_migrate', lambda *x: None)
