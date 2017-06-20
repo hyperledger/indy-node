@@ -28,10 +28,11 @@ USER sovrin
 RUN virtualenv -p python3.5 /home/sovrin/test
 RUN cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/sovrin/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
 RUN cp -r /usr/local/lib/python3.5/dist-packages/charm /home/sovrin/test/lib/python3.5/site-packages/charm
-RUN echo "/usr/local/bin" > /home/sovrin/test/lib/python3.5/site-packages/origbin.pth
 RUN mkdir /home/sovrin/.sovrin
 USER root
 RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
 RUN ln -sf /home/sovrin/test/bin/pip /usr/local/bin/pip
+ENV PYTHONPATH $PYTHONPATH:/home/sovrin/test/bin
 USER sovrin
+ENV PYTHONPATH $PYTHONPATH:/home/sovrin/test/bin
 WORKDIR /home/sovrin
