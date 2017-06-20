@@ -7,7 +7,7 @@ import os
 import timeout_decorator
 import subprocess
 import shutil
-from .migration_tool import migrate
+from migration_tool import migrate
 from stp_core.common.log import getlogger
 from sovrin_node.server.upgrader import Upgrader
 
