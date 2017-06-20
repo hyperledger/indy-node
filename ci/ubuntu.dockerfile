@@ -33,5 +33,5 @@ USER root
 RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
 RUN ln -sf /home/sovrin/test/bin/pip /usr/local/bin/pip
 USER sovrin
-ENV PYTHONPATH="${PYTHONPATH}:/usr/local/bin"
+ENV PYTHONPATH $PYTHONPATH:/usr/local/bin
 WORKDIR /home/sovrin
