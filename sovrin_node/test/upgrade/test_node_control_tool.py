@@ -12,18 +12,21 @@ from sovrin_node.server.upgrader import Upgrader
 m = multiprocessing.Manager()
 
 
-def testNodeControlReceivesMessages(monkeypatch):
+def testNodeControlReceivesMessages(monkeypatch, looper):
     received = m.list()
     msg = 'test'
 
     def transform(tool):
         monkeypatch.setattr(tool, '_process_data', received.append)
 
+    def checkMessage():
+        assert len(received) == 1
+        assert received[0] == composeUpgradeMessage(msg)
+
     nct = NCT(transform = transform)
     try:
         sendUpgradeMessage(msg)
-        assert len(received) == 1
-        assert received[0] == composeUpgradeMessage(msg)
+        looper.run(eventually(checkMessage))
     finally:
         nct.stop()
 
