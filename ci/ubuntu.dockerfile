@@ -32,7 +32,6 @@ RUN mkdir /home/sovrin/.sovrin
 USER root
 RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
 RUN ln -sf /home/sovrin/test/bin/pip /usr/local/bin/pip
-ENV PYTHONPATH $PYTHONPATH:/home/sovrin/test/bin
 USER sovrin
 ENV PYTHONPATH $PYTHONPATH:/home/sovrin/test/bin
 WORKDIR /home/sovrin
