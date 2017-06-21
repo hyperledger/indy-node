@@ -2,12 +2,11 @@
 
 import select
 import socket
-import argparse
 import os
 import timeout_decorator
 import subprocess
 import shutil
-from migration_tool import migrate
+from sovrin_node.utils.migration_tool import migrate
 from stp_core.common.log import getlogger
 from sovrin_node.server.upgrader import Upgrader
 
@@ -52,7 +51,7 @@ class NodeControlTool:
         ret = subprocess.run(self.__class__._compose_cmd(['get_package_dependencies_ubuntu', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
         
         if ret.returncode != 0:
-            msg = 'Upgrade failed: _get_deps_list returned {}'.format(retcode)
+            msg = 'Upgrade failed: _get_deps_list returned {}'.format(ret.returncode)
             logger.error(msg)
             raise Exception(msg)
         
@@ -70,7 +69,7 @@ class NodeControlTool:
         ret = subprocess.run(self.__class__._compose_cmd([cmd_file, deps]), shell=True, timeout=self.timeout)
 
         if ret.returncode != 0:
-            msg = 'Upgrade failed: _upgrade script returned {}'.format(retcode)
+            msg = 'Upgrade failed: _upgrade script returned {}'.format(ret.returncode)
             logger.error(msg)
             raise Exception(msg)
 
@@ -78,7 +77,7 @@ class NodeControlTool:
         logger.info('Restarting sovrin')
         ret = subprocess.run(self.__class__._compose_cmd(['restart_sovrin_node']), shell=True, timeout=self.timeout)
         if ret.returncode != 0:
-            msg = 'Restart failed: script returned {}'.format(retcode)
+            msg = 'Restart failed: script returned {}'.format(ret.returncode)
             logger.error(msg)
             raise Exception(msg)
 
@@ -162,20 +161,5 @@ class NodeControlTool:
                         logger.debug('Closing socket with fd {}'.format(s.fileno()))
                         readers.remove(s)
                         s.close()
-
-
-if __name__ == "__main__":
-    # Parse command line arguments
-    test_mode = False
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--test", help="runs in special Test mode",
-                        action="store_true")
-    args = parser.parse_args()
-    if args.test:
-        test_mode = True
-
-    nodeControlTool = NodeControlTool(test_mode = test_mode)
-    nodeControlTool.start()
-    
 
 
