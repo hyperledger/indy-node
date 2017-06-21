@@ -341,7 +341,7 @@ def addAttributeAndCheck(looper, client, wallet, attrib):
     def chk():
         assert wallet.getAttribute(attrib).seqNo is not None
 
-    timeout = plenumWaits.expectedReqAckQuorumTime()
+    timeout = plenumWaits.expectedTransactionExecutionTime(client.totalNodes)
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
     return wallet.getAttribute(attrib).seqNo
 
