@@ -51,7 +51,7 @@ class NodeControlTool:
         ret = subprocess.run(self.__class__._compose_cmd(['get_package_dependencies_ubuntu', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
         
         if ret.returncode != 0:
-            msg = 'Upgrade failed: _get_deps_list returned {}'.format(retcode)
+            msg = 'Upgrade failed: _get_deps_list returned {}'.format(ret.returncode)
             logger.error(msg)
             raise Exception(msg)
         
@@ -69,7 +69,7 @@ class NodeControlTool:
         ret = subprocess.run(self.__class__._compose_cmd([cmd_file, deps]), shell=True, timeout=self.timeout)
 
         if ret.returncode != 0:
-            msg = 'Upgrade failed: _upgrade script returned {}'.format(retcode)
+            msg = 'Upgrade failed: _upgrade script returned {}'.format(ret.returncode)
             logger.error(msg)
             raise Exception(msg)
 
@@ -77,7 +77,7 @@ class NodeControlTool:
         logger.info('Restarting sovrin')
         ret = subprocess.run(self.__class__._compose_cmd(['restart_sovrin_node']), shell=True, timeout=self.timeout)
         if ret.returncode != 0:
-            msg = 'Restart failed: script returned {}'.format(retcode)
+            msg = 'Restart failed: script returned {}'.format(ret.returncode)
             logger.error(msg)
             raise Exception(msg)
 
