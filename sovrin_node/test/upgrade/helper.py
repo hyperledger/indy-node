@@ -3,7 +3,7 @@ from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test import waits as plenumWaits
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_node.server.upgrader import Upgrader
-from scripts.node_control_tool import NodeControlTool
+from node_control_tool import NodeControlTool
 from sovrin_common.config_util import getConfig
 import subprocess
 import os

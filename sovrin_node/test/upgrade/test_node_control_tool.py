@@ -3,7 +3,7 @@ import multiprocessing
 import os
 import functools
 
-import scripts.migration_tool as migration_tool
+import migration_tool as migration_tool
 from stp_core.loop.eventually import eventually
 from sovrin_node.test.upgrade.helper import NodeControlToolExecutor as NCT, composeUpgradeMessage, sendUpgradeMessage, nodeControlGeneralMonkeypatching
 from sovrin_node.server.upgrader import Upgrader
