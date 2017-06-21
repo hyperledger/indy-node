@@ -73,13 +73,13 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['sovrin-common==0.2.12', 'python-dateutil'],
+    install_requires=['sovrin-common==0.2.13', 'python-dateutil', 'timeout-decorator'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'sovrin-client==0.3.21'],
     scripts=['scripts/start_sovrin_node',
-             'scripts/node_control_tool.py',
-             'scripts/migration_tool.py',
+             'scripts/start_node_control_tool.py',
              'scripts/clear_node.py',
+             'scripts/get_package_dependencies_ubuntu.sh',
              'scripts/upgrade_sovrin_node_ubuntu1604.sh',
              'scripts/upgrade_sovrin_node_ubuntu1604_test.sh',
              'scripts/upgrade_sovrin_node.bat',
