@@ -2,12 +2,11 @@
 
 import select
 import socket
-import argparse
 import os
 import timeout_decorator
 import subprocess
 import shutil
-from migration_tool import migrate
+from sovrin_node.utils.migration_tool import migrate
 from stp_core.common.log import getlogger
 from sovrin_node.server.upgrader import Upgrader
 
@@ -162,20 +161,5 @@ class NodeControlTool:
                         logger.debug('Closing socket with fd {}'.format(s.fileno()))
                         readers.remove(s)
                         s.close()
-
-
-if __name__ == "__main__":
-    # Parse command line arguments
-    test_mode = False
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--test", help="runs in special Test mode",
-                        action="store_true")
-    args = parser.parse_args()
-    if args.test:
-        test_mode = True
-
-    nodeControlTool = NodeControlTool(test_mode = test_mode)
-    nodeControlTool.start()
-    
 
 
