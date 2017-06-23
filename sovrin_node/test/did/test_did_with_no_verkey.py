@@ -32,7 +32,7 @@ from stp_core.loop.eventually import eventually
 from sovrin_common.identity import Identity
 from sovrin_node.test.did.conftest import pf
 from sovrin_node.test.did.helper import chkVerifyForRetrievedIdentity, \
-    updateSovrinIdrWithFullKey
+    updateSovrinIdrWithVerkey
 from sovrin_client.test.helper import createNym
 from plenum.test import waits as plenumWaits
 
@@ -48,8 +48,8 @@ def didAddedWithoutVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWall
 def didUpdatedWithVerkey(didAddedWithoutVerkey, looper, trustAnchor,
                             trustAnchorWallet, noKeyIdr, wallet):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
-    updateSovrinIdrWithFullKey(looper, trustAnchorWallet, trustAnchor, wallet,
-                               noKeyIdr, wallet.getVerkey(noKeyIdr))
+    updateSovrinIdrWithVerkey(looper, trustAnchorWallet, trustAnchor,
+                              noKeyIdr, wallet.getVerkey(noKeyIdr))
 
 
 @pf
@@ -82,7 +82,8 @@ def testRetrieveEmptyVerkey(didAddedWithoutVerkey, looper, trustAnchor,
                             trustAnchorWallet, noKeyIdr):
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=noKeyIdr)
-    req = trustAnchorWallet.requestIdentity(identity, sender=trustAnchorWallet.defaultId)
+    req = trustAnchorWallet.requestIdentity(identity,
+                                            sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
 
     def chk():

@@ -7,6 +7,7 @@ from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.serializers.json_serializer import JsonSerializer
 from ledger.stores.file_hash_store import FileHashStore
+from orderedset._orderedset import OrderedSet
 from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, \
@@ -86,12 +87,11 @@ class Node(PlenumNode, HasPoolManager):
         self.ledgerManager.addLedger(CONFIG_LEDGER_ID, self.configLedger,
                                      postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
                                      postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
+        self.on_new_ledger_added(CONFIG_LEDGER_ID)
         self.states[CONFIG_LEDGER_ID] = self.loadConfigState()
         self.upgrader = self.getUpgrader()
         self.configReqHandler = self.getConfigReqHandler()
         self.initConfigState()
-        for r in self.replicas:
-            r.requestQueues[CONFIG_LEDGER_ID] = deque()
         self.requestExecuter[CONFIG_LEDGER_ID] = self.executeConfigTxns
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
@@ -134,6 +134,10 @@ class Node(PlenumNode, HasPoolManager):
         # will be sent
         if self.ledgerManager.ledgerRegistry[DOMAIN_LEDGER_ID].state == LedgerState.synced:
             self.sendConfigLedgerStatus(node_name)
+
+    @property
+    def ledger_ids(self):
+        return super().ledger_ids + [CONFIG_LEDGER_ID]
 
     def getUpgrader(self):
         return Upgrader(self.id,
@@ -439,8 +443,8 @@ class Node(PlenumNode, HasPoolManager):
         else:
             super().onBatchCreated(ledgerId, stateRoot)
 
-    def onBatchRejected(self, ledgerId, stateRoot=None):
+    def onBatchRejected(self, ledgerId):
         if ledgerId == CONFIG_LEDGER_ID:
-            self.configReqHandler.onBatchRejected(stateRoot)
+            self.configReqHandler.onBatchRejected()
         else:
-            super().onBatchRejected(ledgerId, stateRoot)
+            super().onBatchRejected(ledgerId)
