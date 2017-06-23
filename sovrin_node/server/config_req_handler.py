@@ -35,6 +35,7 @@ class ConfigReqHandler(RequestHandler):
         if action == START:
             schedule = operation.get(SCHEDULE, {})
             force = operation.get(FORCE)
+            force = str(force) == 'True'
             isValid, msg = self.upgrader.isScheduleValid(schedule,
                                                          self.poolManager.nodeIds,
                                                          force)

@@ -216,7 +216,7 @@ class Upgrader(HasActionQueue):
         for dateStr in schedule.values():
             try:
                 when = dateutil.parser.parse(dateStr)
-                if when <= now or not force:
+                if when <= now and not force:
                     return False, '{} is less than current time'.format(when)
                 times.append(when)
             except ValueError:
