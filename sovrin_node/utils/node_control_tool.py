@@ -101,8 +101,9 @@ class NodeControlTool:
         try:
             self._create_backup(version)
             self._migrate(version)
-        except Exception:
+        except Exception as e:
             self._restore_from_backup(version)
+            raise e
         finally:
             self._remove_backup(version)
 
