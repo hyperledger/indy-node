@@ -4,7 +4,7 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn
 from plenum.server.req_handler import RequestHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION
 from sovrin_common.roles import Roles
@@ -34,8 +34,11 @@ class ConfigReqHandler(RequestHandler):
                                        format(action))
         if action == START:
             schedule = operation.get(SCHEDULE, {})
+            force = operation.get(FORCE)
+            force = str(force) == 'True'
             isValid, msg = self.upgrader.isScheduleValid(schedule,
-                                                         self.poolManager.nodeIds)
+                                                         self.poolManager.nodeIds,
+                                                         force)
             if not isValid:
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} not a valid schedule since {}".
@@ -79,5 +82,12 @@ class ConfigReqHandler(RequestHandler):
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         committedTxns = super().commit(txnCount, stateRoot, txnRoot)
         for txn in committedTxns:
+            # TODO: for now pool_upgrade will not be scheduled twice because of version check
+            # make sure it will be the same in future
             self.upgrader.handleUpgradeTxn(txn)
         return committedTxns
+
+    def applyForced(self, req: Request):
+        if req.isForced():
+            txn = reqToTxn(req)
+            self.upgrader.handleUpgradeTxn(txn)
