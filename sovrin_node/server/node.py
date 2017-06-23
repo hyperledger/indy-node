@@ -24,7 +24,7 @@ from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE
 from sovrin_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from sovrin_common.txn_util import getTxnOrderedFields
@@ -375,6 +375,9 @@ class Node(PlenumNode, HasPoolManager):
             result = self.reqHandler.handleGetClaimDefReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         else:
+            # forced request should be processed before consensus
+            if request.operation[TXN_TYPE] == POOL_UPGRADE and request.isForced():
+                self.configReqHandler.applyForced(request)
             super().processRequest(request, frm)
 
     @classmethod

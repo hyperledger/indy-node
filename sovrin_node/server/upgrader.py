@@ -199,7 +199,7 @@ class Upgrader(HasActionQueue):
                                               lastEvent[1] == UpgradeLog.UPGRADE_SCHEDULED
         return self.__isItFirstRunAfterUpgrade
 
-    def isScheduleValid(self, schedule, nodeIds) -> (bool, str):
+    def isScheduleValid(self, schedule, nodeIds, force) -> (bool, str):
         """
         Validates schedule of planned node upgrades
 
@@ -208,18 +208,21 @@ class Upgrader(HasActionQueue):
         :return: whether schedule valid
         """
 
+        # flag "force=True" ignore basic checks! only datetime format is checked
         times = []
-        if set(schedule.keys()) != nodeIds:
+        if not force and set(schedule.keys()) != nodeIds:
             return False, 'Schedule should contain id of all nodes'
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         for dateStr in schedule.values():
             try:
                 when = dateutil.parser.parse(dateStr)
-                if when <= now:
+                if when <= now and not force:
                     return False, '{} is less than current time'.format(when)
                 times.append(when)
             except ValueError:
                 return False, '{} cannot be parsed to a time'.format(dateStr)
+        if force:
+            return True, ''
         times = sorted(times)
         for i in range(len(times) - 1):
             diff = (times[i + 1] - times[i]).seconds
@@ -261,6 +264,9 @@ class Upgrader(HasActionQueue):
             currentVersion = self.getVersion()
 
             if action == START:
+                #forced txn could have partial schedule list
+                if self.nodeId not in txn[SCHEDULE]:
+                    return
                 when = txn[SCHEDULE][self.nodeId]
                 failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
