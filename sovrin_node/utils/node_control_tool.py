@@ -3,7 +3,6 @@
 import select
 import socket
 import os
-import timeout_decorator
 import subprocess
 import shutil
 from sovrin_node.utils.migration_tool import migrate
@@ -93,31 +92,31 @@ class NodeControlTool:
     def _remove_backup(self, version):
         os.remove('{}.{}'.format(self._backup_name(version), self.backup_format))
 
-    def _migrate(self, version):
-        migrate(version)
+    def _migrate(self, current_version, new_version):
+        migrate(current_version, new_version, self.timeout)
 
-    @timeout_decorator.timeout(TIMEOUT)
-    def _do_migration(self, version):
+    def _do_migration(self, current_version, new_version):
         try:
-            self._create_backup(version)
-            self._migrate(version)
+            self._create_backup(current_version)
+            self._migrate(current_version, new_version)
         except Exception as e:
-            self._restore_from_backup(version)
+            self._restore_from_backup(current_version)
             raise e
         finally:
-            self._remove_backup(version)
+            self._remove_backup(current_version)
 
     def _upgrade(self, new_version, migrate=True, rollback=True):
         try:
             current_version = Upgrader.getVersion()
+            logger.info('Trying to upgrade from {} to {}'.format(current_version, new_version))
             self._call_upgrade_script(new_version)
             if migrate:
-                self._do_migration(current_version)
+                self._do_migration(current_version, new_version)
             self._call_restart_node_script()
         except Exception as e:
             logger.error("Unexpected error in _upgrade {}, trying to rollback to the previous version {}".format(e, current_version))
             if rollback:
-                self._upgrade(current_version, migrate=False, rollback=False)
+                self._upgrade(current_version, rollback=False)
 
     def _process_data(self, data):
         import json
