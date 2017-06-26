@@ -6,7 +6,7 @@ if [ -z "$deps" ] ; then
 fi
 
 echo "Try to donwload sovrin version $deps"
-apt-get -y update && apt-get --download-only -y install $deps
+apt-get -y update && apt-get --download-only -y --allow-downgrades install $deps
 ret=$?
 if [ $ret -ne 0 ] ; then
   echo "Failed to obtain $deps"
@@ -17,7 +17,7 @@ echo "Stop sovrin-node"
 systemctl stop sovrin-node
 
 echo "Run sovrin upgrade to $deps"
-apt-get -y install $deps
+apt-get -y --allow-downgrades install $deps
 ret=$?
 if [ $ret -ne 0 ] ; then
   echo "Upgrade to $deps failed"
