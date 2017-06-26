@@ -5,6 +5,8 @@ from hashlib import sha256
 
 from copy import deepcopy
 
+import base58
+
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
@@ -63,7 +65,8 @@ class DomainReqHandler(PHandler):
 
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot)
-        self.idrCache.onBatchCommitted(unhexlify(stateRoot.encode()))
+        stateRoot = base58.b58decode(stateRoot.encode())
+        self.idrCache.onBatchCommitted(stateRoot)
         return r
 
     def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
