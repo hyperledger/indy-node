@@ -1,11 +1,7 @@
-import argparse
 import json
-import os
 import random
 from abc import abstractmethod, ABCMeta
 from collections import namedtuple
-from concurrent import futures
-from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 
 from stp_core.common.log import getlogger
@@ -19,8 +15,6 @@ from plenum.common.signer_simple import SimpleSigner
 from sovrin_client.client.client import Client
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.constants import NYM, GET_NYM
-
-STEWARD1_SEED = b"000000000000000000000000Steward1"
 
 logger = getlogger()
 
@@ -139,13 +133,13 @@ class UserScenario(metaclass=ABCMeta):
 
 
 class NymsCreationScenario(UserScenario):
-    def __init__(self, seed, nymsAndVerkeys):
+    def __init__(self, seed, nymsIdsAndVerkeys):
         super().__init__(seed)
-        self.nymsAndVerkeys = nymsAndVerkeys
+        self.nymsIdsAndVerkeys = nymsIdsAndVerkeys
 
     def do(self):
-        for nym, verkey in self.nymsAndVerkeys:
-            self.setNym(nym, verkey)
+        for id, verkey in self.nymsIdsAndVerkeys:
+            self.setNym(id, verkey)
 
     def setNym(self, dest, verkey):
         logger.info("Setting nym: dest={}, verkey={}...".format(dest, verkey))
@@ -215,15 +209,17 @@ class KeyRotationScenario(UserScenario):
 
 
 class ForeignKeysReadScenario(UserScenario):
-    def __init__(self, seed, nyms, iterations):
+    def __init__(self, seed, nymsIds, iterations):
         super().__init__(seed)
-        self.nyms = nyms
+        self.nymsIds = nymsIds
         self.iterations = iterations
 
     def do(self):
         for i in range(self.iterations):
-            nym = random.choice(self.nyms)
-            self.getVerkey(nym)
+            id = random.choice(self.nymsIds)
+            self.getVerkey(id)
+            # TODO: Add an assertion verifying that the gotten verkey is
+            # from the expected section of the nym's verkey values history
 
     def getVerkey(self, dest):
         logger.info("Getting verkey of NYM {}...".format(dest))
@@ -235,118 +231,8 @@ class ForeignKeysReadScenario(UserScenario):
         return result[VERKEY]
 
 
-def getUserNameAndSeed(clientNo):
-    seedFilePath = "{}/load_test_clients.list".format(os.getcwd())
-
-    with open(seedFilePath, "r") as file:
-        for i in range(clientNo - 1):
-            next(file)
-        name, seedStr = next(file).strip().split(":")
-        seed = seedStr.encode()
-
-        logger.info("User name: {}".format(name))
-        logger.info("Seed: {}".format(seed))
-
-        return name, seed
-
-
 def generateNymsData(count):
     signers = [SimpleSigner() for i in range(count)]
     Nym = namedtuple("Nym", ["seed", "identifier", "verkey"])
     return [Nym(signer.seed, signer.identifier, signer.verkey)
             for signer in signers]
-
-
-def main(args):
-    numOfWriters = args.writers
-    numOfReaders = args.readers
-    numOfIterations = args.iterations
-    timeout = args.timeout
-
-    if timeout:
-        nymsCreationTimeout = 0.1 * timeout
-        nymsReadWriteTimeout = 0.9 * timeout
-    else:
-        nymsCreationTimeout = None
-        nymsReadWriteTimeout = None
-
-    writers = generateNymsData(numOfWriters)
-    readers = generateNymsData(numOfReaders)
-
-    with ProcessPoolExecutor(numOfWriters + numOfReaders) as executor:
-        allNymsAndVerkeys = [(nym.identifier, nym.verkey)
-                             for nym in writers + readers]
-
-        nymsCreationScenarioFuture = \
-            executor.submit(NymsCreationScenario.runInstance,
-                            seed=STEWARD1_SEED,
-                            nymsAndVerkeys=allNymsAndVerkeys)
-
-        nymsCreationScenarioFuture.result(timeout=nymsCreationTimeout)
-        logger.info("Created {} nyms".format(numOfWriters + numOfReaders))
-
-        keyRotationScenariosFutures = \
-            [executor.submit(KeyRotationScenario.runInstance,
-                             seed=writer.seed,
-                             iterations=numOfIterations)
-             for writer in writers]
-
-        writersNyms = [writer.identifier for writer in writers]
-
-        foreignKeysReadScenariosFutures = \
-            [executor.submit(ForeignKeysReadScenario.runInstance,
-                             seed=reader.seed,
-                             nyms=writersNyms,
-                             iterations=numOfIterations)
-             for reader in readers]
-
-        futures.wait(keyRotationScenariosFutures +
-                     foreignKeysReadScenariosFutures,
-                     timeout=nymsReadWriteTimeout)
-
-        failed = False
-        for future in keyRotationScenariosFutures + \
-                foreignKeysReadScenariosFutures:
-            ex = future.exception(timeout=0)
-            if ex:
-                failed = True
-                logger.exception(ex)
-
-        if failed:
-            logger.error("Some writers or readers failed")
-        else:
-            logger.info("All writers and readers finished successfully")
-
-
-def parseArgs():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("-w", "--writers",
-                        action="store",
-                        type=int,
-                        dest="writers",
-                        help="number of writers")
-
-    parser.add_argument("-r", "--readers",
-                        action="store",
-                        type=int,
-                        dest="readers",
-                        help="number of readers")
-
-    parser.add_argument("-i", "--iterations",
-                        action="store",
-                        type=int,
-                        dest="iterations",
-                        help="number of iterations")
-
-    parser.add_argument("-t", "--timeout",
-                        action="store",
-                        type=int,
-                        dest="timeout",
-                        help="timeout in seconds")
-
-    return parser.parse_args()
-
-
-if __name__ == "__main__":
-    main(parseArgs())
