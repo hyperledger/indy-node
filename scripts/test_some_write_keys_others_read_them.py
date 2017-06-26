@@ -22,8 +22,8 @@ from concurrent.futures import ProcessPoolExecutor
 
 from stp_core.common.log import getlogger
 
-from scripts.user_scenarios import generateNymsData, NymsCreationScenario, \
-    KeyRotationScenario, ForeignKeysReadScenario
+from sovrin_node.utils.user_scenarios import generateNymsData, \
+    NymsCreationScenario, KeyRotationScenario, ForeignKeysReadScenario
 
 STEWARD1_SEED = b"000000000000000000000000Steward1"
 
@@ -71,7 +71,7 @@ def main(args):
 
     with ProcessPoolExecutor(numOfWriters + numOfReaders) as executor:
         usersIdsAndVerkeys = [(user.identifier, user.verkey)
-                             for user in writers + readers]
+                              for user in writers + readers]
 
         nymsCreationScenarioFuture = \
             executor.submit(NymsCreationScenario.runInstance,
