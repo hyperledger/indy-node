@@ -48,6 +48,7 @@ jsonSerz = JsonSerializer()
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
     _client_request_class = SafeRequest
+    ledger_ids = PlenumNode.ledger_ids + [CONFIG_LEDGER_ID]
 
     def __init__(self,
                  name,
@@ -135,10 +136,6 @@ class Node(PlenumNode, HasPoolManager):
         if self.ledgerManager.ledgerRegistry[DOMAIN_LEDGER_ID].state == LedgerState.synced:
             self.sendConfigLedgerStatus(node_name)
 
-    @property
-    def ledger_ids(self):
-        return super().ledger_ids + [CONFIG_LEDGER_ID]
-
     def getUpgrader(self):
         return Upgrader(self.id,
                         self.name,
@@ -219,8 +216,7 @@ class Node(PlenumNode, HasPoolManager):
 
     @property
     def configLedgerStatus(self):
-        return LedgerStatus(CONFIG_LEDGER_ID, self.configLedger.size,
-                            self.configLedger.root_hash)
+        return self.build_ledger_status(CONFIG_LEDGER_ID)
 
     def getLedgerStatus(self, ledgerId: int):
         if ledgerId == CONFIG_LEDGER_ID:
