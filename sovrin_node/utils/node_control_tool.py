@@ -84,14 +84,17 @@ class NodeControlTool:
     def _backup_name(self, version):
         return os.path.join(self.base_dir, 'sovrin_backup_{}'.format(version))
 
+    def _backup_name_ext(self, version):
+        return '{}.{}'.format(self._backup_name(version), self.backup_format)
+
     def _create_backup(self, version):
         shutil.make_archive(self._backup_name(version), self.backup_format, self.sovrin_dir)
 
     def _restore_from_backup(self, version):
-        shutil.unpack_archive(self._backup_name(version), self.sovrin_dir, self.backup_format)
+        shutil.unpack_archive(self._backup_name_ext(version), self.sovrin_dir, self.backup_format)
 
     def _remove_backup(self, version):
-        os.remove('{}.{}'.format(self._backup_name(version), self.backup_format))
+        os.remove(self._backup_name_ext(version))
 
     def _migrate(self, version):
         migrate(version)
