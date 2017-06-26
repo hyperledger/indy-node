@@ -27,7 +27,7 @@ logger = getlogger()
 
 class UserScenario(metaclass=ABCMeta):
     def __init__(self, seed):
-        self.seed = seed
+        self._seed = seed
 
         self._client = None
         self._wallet = None
@@ -101,7 +101,7 @@ class UserScenario(metaclass=ABCMeta):
         logger.info("Changed signer. New verkey: {}".format(self.verkey))
 
     def _createClientAndWallet(self):
-        signer = SimpleSigner(seed=self.seed)
+        signer = SimpleSigner(seed=self._seed)
 
         port = genHa()[1]
         ha = HA('0.0.0.0', port)
@@ -148,7 +148,7 @@ class NymsCreationScenario(UserScenario):
             self.setNym(nym, verkey)
 
     def setNym(self, dest, verkey):
-        logger.info("Setting nym: dest={}, verkey={}".format(dest, verkey))
+        logger.info("Setting nym: dest={}, verkey={}...".format(dest, verkey))
         self.performOperation({
             TXN_TYPE: NYM,
             TARGET_NYM: dest,
@@ -175,7 +175,7 @@ class KeyRotationAndReadScenario(UserScenario):
             self.changeSigner(newSigner)
 
     def setMyVerkey(self, verkey):
-        logger.info("Setting my verkey to {}".format(verkey))
+        logger.info("Setting my verkey to {}...".format(verkey))
         self.performOperation({
             TXN_TYPE: NYM,
             TARGET_NYM: self.identifier,
@@ -184,7 +184,7 @@ class KeyRotationAndReadScenario(UserScenario):
         logger.info("Verkey set")
 
     def getMyVerkey(self):
-        logger.info("Getting my verkey")
+        logger.info("Getting my verkey...")
         result = self.performOperation({
             TXN_TYPE: GET_NYM,
             TARGET_NYM: self.identifier
@@ -205,7 +205,7 @@ class KeyRotationScenario(UserScenario):
             self.changeSigner(newSigner)
 
     def setMyVerkey(self, verkey):
-        logger.info("Setting my verkey to {}".format(verkey))
+        logger.info("Setting my verkey to {}...".format(verkey))
         self.performOperation({
             TXN_TYPE: NYM,
             TARGET_NYM: self.identifier,
@@ -226,7 +226,7 @@ class ForeignKeysReadScenario(UserScenario):
             self.getVerkey(nym)
 
     def getVerkey(self, dest):
-        logger.info("Getting verkey of NYM {}".format(dest))
+        logger.info("Getting verkey of NYM {}...".format(dest))
         result = self.performOperation({
             TXN_TYPE: GET_NYM,
             TARGET_NYM: dest
@@ -261,6 +261,14 @@ def main(args):
     numOfWriters = args.writers
     numOfReaders = args.readers
     numOfIterations = args.iterations
+    timeout = args.timeout
+
+    if timeout:
+        nymsCreationTimeout = 0.1 * timeout
+        nymsReadWriteTimeout = 0.9 * timeout
+    else:
+        nymsCreationTimeout = None
+        nymsReadWriteTimeout = None
 
     writers = generateNymsData(numOfWriters)
     readers = generateNymsData(numOfReaders)
@@ -274,7 +282,7 @@ def main(args):
                             seed=STEWARD1_SEED,
                             nymsAndVerkeys=allNymsAndVerkeys)
 
-        nymsCreationScenarioFuture.result()
+        nymsCreationScenarioFuture.result(timeout=nymsCreationTimeout)
         logger.info("Created {} nyms".format(numOfWriters + numOfReaders))
 
         keyRotationScenariosFutures = \
@@ -293,18 +301,19 @@ def main(args):
              for reader in readers]
 
         futures.wait(keyRotationScenariosFutures +
-                     foreignKeysReadScenariosFutures)
+                     foreignKeysReadScenariosFutures,
+                     timeout=nymsReadWriteTimeout)
 
         failed = False
         for future in keyRotationScenariosFutures + \
                 foreignKeysReadScenariosFutures:
-            ex = future.exception()
+            ex = future.exception(timeout=0)
             if ex:
                 failed = True
                 logger.exception(ex)
 
         if failed:
-            logger.info("Some writers or readers failed")
+            logger.error("Some writers or readers failed")
         else:
             logger.info("All writers and readers finished successfully")
 
@@ -329,6 +338,12 @@ def parseArgs():
                         type=int,
                         dest="iterations",
                         help="number of iterations")
+
+    parser.add_argument("-t", "--timeout",
+                        action="store",
+                        type=int,
+                        dest="timeout",
+                        help="timeout in seconds")
 
     return parser.parse_args()
 
