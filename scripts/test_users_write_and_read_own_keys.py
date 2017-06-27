@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 """
 Test performing the following scenario on behalf of multiple users in parallel:
 - each user cyclically updates and reads his/her own verkey.

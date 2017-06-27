@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 """
 Test performing the following scenarios on behalf of multiple users in parallel:
 - some users cyclically update their own verkeys,
