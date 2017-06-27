@@ -21,7 +21,6 @@ from plenum.common.util import error
 from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.persistence.util import txnsWithMerkleInfo
 from plenum.server.node import Node as PlenumNode
-from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
@@ -50,7 +49,6 @@ class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
     _client_request_class = SafeRequest
     ledger_ids = PlenumNode.ledger_ids + [CONFIG_LEDGER_ID]
-    _wallet_class = Wallet
 
     def __init__(self,
                  name,
