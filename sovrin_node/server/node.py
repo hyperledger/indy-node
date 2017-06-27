@@ -205,9 +205,7 @@ class Node(PlenumNode, HasPoolManager):
         self.acknowledge_upgrade()
 
     def start_config_ledger_sync(self):
-        self.ledgerManager.setLedgerCanSync(CONFIG_LEDGER_ID, True)
-        for nm in self.nodestack.connecteds:
-            self.sendConfigLedgerStatus(nm)
+        self._sync_ledger(CONFIG_LEDGER_ID)
         self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
