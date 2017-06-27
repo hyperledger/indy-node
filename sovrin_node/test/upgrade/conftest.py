@@ -7,7 +7,8 @@ from sovrin_client.test.helper import getClientAddedWithRole
 
 from sovrin_common.constants import START, FORCE
 from sovrin_node.test import waits
-from sovrin_node.test.upgrade.helper import bumpedVersion, ensureUpgradeSent, checkUpgradeScheduled, bumpVersion
+from sovrin_node.test.upgrade.helper import bumpedVersion, ensureUpgradeSent, \
+    checkUpgradeScheduled, bumpVersion
 from stp_core.loop.eventually import eventually
 
 
