@@ -234,6 +234,21 @@ class DomainReqHandler(PHandler):
         }}
         return result
 
+    def handleGetTnxReq(self, request: Request, frm: str, node):
+        ledgerId = node.ledgerIdForRequest(request)
+        ledger = node.getLedger(ledgerId)
+        tnx = node.getReplyFromLedger(ledger, request, request.operation[DATA])
+
+        data = json.loads(tnx.result[DATA])
+        data.update({ORIGIN: tnx.result[f.IDENTIFIER.nm]})
+
+        result = {f.IDENTIFIER.nm: request.identifier,
+                  f.REQ_ID.nm: request.reqId,
+                  DATA: data,
+                  TXN_TYPE: tnx.result[TXN_TYPE],
+                  f.SEQ_NO.nm: tnx.result[f.SEQ_NO.nm]}
+        return result
+
     def handleGetClaimDefReq(self, request: Request, frm: str):
         signatureType = request.operation[SIGNATURE_TYPE]
         keys, lastSeqNo = self.getClaimDef(
