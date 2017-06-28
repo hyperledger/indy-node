@@ -12,15 +12,13 @@ from plenum.common.exceptions import InvalidClientRequest, \
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     VERKEY, DATA, NAME, VERSION, ORIGIN
 from plenum.common.types import f
-from plenum.common.util import check_endpoint_valid
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
-from sovrin_common.constants import NYM, ROLE, ATTRIB, ENDPOINT, SCHEMA, \
-    CLAIM_DEF, REF, SIGNATURE_TYPE
+from sovrin_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
+    SIGNATURE_TYPE
 from sovrin_common.roles import Roles
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
-from stp_core.network.exceptions import EndpointException
 
 
 logger = getlogger()
