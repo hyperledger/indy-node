@@ -25,7 +25,8 @@ def testDoNotScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
     upgr2 = deepcopy(upgr1)
     upgr2[VERSION] = bumpVersion(upgr1[VERSION])
     upgr2[NAME] += randomString(3)
-    upgr2[SHA256] = get_valid_code_hash()
+    # upgr2[SHA256] = get_valid_code_hash()
+    upgr2[SHA256] = 'ef9c3984e7a31994d4f692139116120bd0dd1ff7e270b6a2d773f8f2f9214d4c'
 
     # An upgrade for higher version scheduled, it should pass
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr2)

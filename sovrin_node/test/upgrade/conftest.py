@@ -28,7 +28,10 @@ def validUpgrade(nodeIds, tconf):
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff + 3)
     return dict(name='upgrade-13', version=bumpedVersion(), action=START,
-                schedule=schedule, sha256=get_valid_code_hash(), timeout=1)
+                schedule=schedule,
+                # sha256=get_valid_code_hash(),
+                sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55',
+                timeout=1)
 
 
 @pytest.fixture(scope='module')
@@ -97,7 +100,10 @@ def invalidUpgrade(nodeIds, tconf):
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff - 3)
     return dict(name='upgrade-14', version=bumpedVersion(), action=START,
-                schedule=schedule, sha256=get_valid_code_hash(), timeout=10)
+                schedule=schedule,
+                # sha256=get_valid_code_hash(),
+                sha256='46c715a90b1067142d548cb1f1405b0486b32b1a27d418ef3a52bd976e9fae50',
+                timeout=10)
 
 
 @pytest.fixture(scope="module")
