@@ -1,3 +1,4 @@
+from plenum.common.util import randomString
 from stp_core.loop.eventually import eventually
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test import waits as plenumWaits
@@ -94,3 +95,7 @@ def nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout):
         os.mkdir(tool.sovrin_dir)
     monkeypatch.setattr(subprocess, 'run', lambda *x, **y: ret)
     monkeypatch.setattr(tool, '_migrate', lambda *x: None)
+
+
+def get_valid_code_hash():
+    return randomString(64)
