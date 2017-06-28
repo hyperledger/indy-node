@@ -51,12 +51,12 @@ def testUpgradeLatestUncancelledVersion(looper,
     upgr2 = deepcopy(upgr1)
     upgr2[VERSION] = bumpVersion(upgr1[VERSION])
     upgr2[NAME] += randomString(3)
-    upgr2[SHA256] = randomString(32)
+    upgr2[SHA256] = randomString(64)
 
     upgr3 = deepcopy(upgr2)
     upgr3[VERSION] = bumpVersion(upgr2[VERSION])
     upgr3[NAME] += randomString(3)
-    upgr3[SHA256] = randomString(32)
+    upgr3[SHA256] = randomString(64)
 
     upgr4 = deepcopy(upgr3)
     upgr4[ACTION] = CANCEL
