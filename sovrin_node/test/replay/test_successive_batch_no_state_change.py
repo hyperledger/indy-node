@@ -5,7 +5,7 @@ import pytest
 
 from plenum.common.constants import VERKEY
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.types import PrePrepare, Commit
+from plenum.common.messages.node_messages import PrePrepare, Commit
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import randomString
 from plenum.test.delayers import cDelay
