@@ -63,8 +63,9 @@ class ConfigReqHandler(RequestHandler):
             # present
             status = self.upgrader.statusInLedger(req.operation.get(NAME),
                                                   req.operation.get(VERSION))
+
             if status == START and action == START:
-                raise UnauthorizedClientRequest(
+                raise InvalidClientRequest(
                     req.identifier,
                     req.reqId,
                     "Upgrade '{}' is already scheduled".format(
