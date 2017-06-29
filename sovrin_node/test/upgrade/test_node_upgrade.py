@@ -34,8 +34,6 @@ def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tconf):
     for nm in poolTxnNodeNames:
         path = os.path.join(tdirWithPoolTxns, tconf.nodeDataDir, nm)
         os.makedirs(path)
-        # with open(os.path.join(path, tconf.lastRunVersionFile), 'w') as f:
-        #     f.write(oldVersionStr)
         l = UpgradeLog(os.path.join(path, tconf.upgradeLogFile))
         when = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         l.appendScheduled(when, sovrin_node.__metadata__.__version__)
