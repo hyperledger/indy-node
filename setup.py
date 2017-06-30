@@ -56,7 +56,7 @@ class EnhancedInstallDev(develop):
         post_install()
 
 setup(
-    name='sovrin-node-simple-election',
+    name='sovrin-node-dev',
     version=__version__,
     description='Sovrin node',
     url='https://github.com/sovrin-foundation/sovrin-node.git',
@@ -73,7 +73,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['sovrin-common-dev==0.3.11', 'python-dateutil',
+    install_requires=['sovrin-common-dev==0.2.96', 'python-dateutil',
                       'timeout-decorator'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'sovrin-client-dev==0.4.7'],
