@@ -48,7 +48,7 @@ jsonSerz = JsonSerializer()
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
     _client_request_class = SafeRequest
-    ledger_ids = [*PlenumNode.ledger_ids, *CONFIG_LEDGER_ID]
+    ledger_ids = PlenumNode.ledger_ids + [CONFIG_LEDGER_ID]
 
     def __init__(self,
                  name,
