@@ -1,31 +1,26 @@
-# Sovrin -- identity for all    
+# Indy Node
 
 [![Build Status](https://jenkins.evernym.com/buildStatus/icon?job=Sovrin%20Node/master)](https://jenkins.evernym.com/view/Core/job/Sovrin%20Node/job/master/)    
 
-Sovrin Identity Network public/permissioned distributed ledger
+This codebase embodies all the functionality to run nodes--validators and/or observers
+that provide a [self-sovereign identity ecosystem](https://sovrin.org) on top of a
+distributed ledger. It is the core project for Indy; over time, all other indy-\* projects may
+collapse into this one, except for [indy-sdk](https://github.com/hyperledger/indy-sdk).
 
-This codebase contains the code to run Sovrin validator or observer nodes.
+This code is tightly associated with [Sovrin](https://sovrin.org). Sovrin is a public utility
+for identity, built on top of this codebase. People who install sovrin packages (e.g., with
+`sudo apt install sovrin-node`) get prepackaged genesis transactions that integrate a
+with an Indy validator pool using [Sovrin's governance and trust framework](https://sovrin.org/wp-content/uploads/2017/06/SovrinProvisionalTrustFramework2017-03-22.pdf). However, it is possible to use Indy Node
+with a different network, using whatever conventions a community chooses.
 
-Developers should explore the [Getting Started Guide](https://github.com/sovrin-foundation/sovrin-client/blob/master/getting-started.md) to learn how Sovrin works.
+Bugs, stories, and backlog for this codebase are managed in [Hyperledger's Jira](https://jira.hyperledger.org).
+Use project name INDY.
+
+Today, documentation for Indy is sparse. Most materials that exist were written for Sovrin. Therefore,
+we recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/sovrin-foundation/sovrin-client/blob/master/getting-started.md) to learn about Indy Node basics. In the future, documentation
+will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
 
 Have a look at [Setup Instructions](https://github.com/sovrin-foundation/sovrin-client/blob/master/setup.md)
 to understand how to work with the code. Note that setup instructions are
 still changing hour-by-hour as we identify
 install preconditions.
-
-To learn more about the Sovrin Identity Network and the Sovrin Foundation, see [sovrin.org](https://www.sovrin.org).
-
-----
-   Copyright 2016 Sovrin Foundation
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
