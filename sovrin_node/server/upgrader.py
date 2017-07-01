@@ -143,7 +143,7 @@ class Upgrader(HasActionQueue):
                     extra={"tags": ["node-config"]})
         currentVer = self.getVersion()
         upgrades = {}  # Map of version to scheduled time
-        for txn in self.ledger.getAllTxn().values():
+        for _, txn in self.ledger.getAllTxn():
             if txn[TXN_TYPE] == POOL_UPGRADE:
                 version = txn[VERSION]
                 action = txn[ACTION]
@@ -243,7 +243,7 @@ class Upgrader(HasActionQueue):
         """
 
         upgradeTxn = {}
-        for txn in self.ledger.getAllTxn().values():
+        for _, txn in self.ledger.getAllTxn():
             if txn.get(NAME) == name and txn.get(VERSION) == version:
                 upgradeTxn = txn
         return upgradeTxn.get(ACTION)
