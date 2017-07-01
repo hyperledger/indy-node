@@ -3,7 +3,7 @@ import shutil
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.util import randomString
 from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data, \
-    checkNodeDataForEquality
+    checkNodeDataForEquality, waitNodeDataEquality
 from plenum.test.test_node import checkNodesConnected
 from sovrin_client.test.helper import getClientAddedWithRole
 from sovrin_common.constants import TRUST_ANCHOR
@@ -56,4 +56,6 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     nodeSet[-1] = restarted_node
 
     looper.run(checkNodesConnected(nodeSet))
-    checkNodeDataForEquality(restarted_node, *nodeSet[:-1])
+    # Need some time as `last_ordered_3PC` is compared too and that is
+    # communicated through catchup
+    waitNodeDataEquality(looper, restarted_node, *nodeSet[:-1])
