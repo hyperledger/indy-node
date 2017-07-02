@@ -3,11 +3,14 @@ import shutil
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.util import randomString
 from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data, \
-    checkNodeDataForEquality, waitNodeDataEquality
-from plenum.test.test_node import checkNodesConnected
+    waitNodeDataEquality
+from plenum.test.test_node import checkNodesConnected, ensure_node_disconnected
 from sovrin_client.test.helper import getClientAddedWithRole
 from sovrin_common.constants import TRUST_ANCHOR
 from sovrin_node.test.helper import addRawAttribute, TestNode
+
+
+TestRunningTimeLimitSec = 200
 
 
 def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
@@ -46,6 +49,7 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     node_to_stop.cleanupOnStopping = False
     node_to_stop.stop()
     looper.removeProdable(node_to_stop)
+    ensure_node_disconnected(looper, node_to_stop.name, nodeSet[:-1])
 
     shutil.rmtree(state_db_path)
 
@@ -59,3 +63,13 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     # Need some time as `last_ordered_3PC` is compared too and that is
     # communicated through catchup
     waitNodeDataEquality(looper, restarted_node, *nodeSet[:-1])
+
+    # Pool is still functional
+    for tc, tw in trust_anchors:
+        getClientAddedWithRole(nodeSet,
+                             tdirWithPoolTxns,
+                             looper,
+                             tc, tw,
+                             'NP--{}'.format(tc.name))
+
+    ensure_all_nodes_have_same_data(looper, nodeSet)
