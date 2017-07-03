@@ -89,7 +89,8 @@ class ConfigReqHandler(RequestHandler):
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         committedTxns = super().commit(txnCount, stateRoot, txnRoot)
         for txn in committedTxns:
-            # TODO: for now pool_upgrade will not be scheduled twice because of version check
+            # TODO: for now pool_upgrade will not be scheduled twice
+            # because of version check
             # make sure it will be the same in future
             self.upgrader.handleUpgradeTxn(txn)
         return committedTxns
