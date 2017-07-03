@@ -14,7 +14,7 @@ class NodeAuthNr(NaclAuthNr):
         # TODO: This is very inefficient
         verkey = None
         found = False
-        for txn in self.ledger.getAllTxn().values():
+        for _, txn in self.ledger.getAllTxn():
             if txn[TARGET_NYM] == identifier:
                 found = True
                 if txn.get(VERKEY):

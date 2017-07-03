@@ -46,7 +46,7 @@ def upgradeSentToAllNodes(looper, nodeSet, nodeIds):
         for node in nodeSet:
             assert len(node.configLedger) == len(nodeSet)
             ids = set()
-            for txn in node.configLedger.getAllTxn().values():
+            for _, txn in node.configLedger.getAllTxn():
                 assert txn[TXN_TYPE] == NODE_UPGRADE
                 ids.add(txn[f.IDENTIFIER.nm])
             ids.add(node.id)
