@@ -5,20 +5,20 @@ from hashlib import sha256
 
 from copy import deepcopy
 
+import base58
+
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     VERKEY, DATA, NAME, VERSION, ORIGIN
 from plenum.common.types import f
-from plenum.common.util import check_endpoint_valid
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
-from sovrin_common.constants import NYM, ROLE, ATTRIB, ENDPOINT, SCHEMA, \
-    CLAIM_DEF, REF, SIGNATURE_TYPE
+from sovrin_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
+    SIGNATURE_TYPE
 from sovrin_common.roles import Roles
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
-from stp_core.network.exceptions import EndpointException
 
 
 logger = getlogger()
@@ -63,7 +63,8 @@ class DomainReqHandler(PHandler):
 
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot)
-        self.idrCache.onBatchCommitted(unhexlify(stateRoot.encode()))
+        stateRoot = base58.b58decode(stateRoot.encode())
+        self.idrCache.onBatchCommitted(stateRoot)
         return r
 
     def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):

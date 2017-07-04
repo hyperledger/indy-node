@@ -12,8 +12,8 @@ from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, TXN_TYPE
 from plenum.common.constants import VERSION
 from plenum.server.has_action_queue import HasActionQueue
-from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, CANCEL, \
-    JUSTIFICATION, TIMEOUT
+from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
+    CANCEL, JUSTIFICATION, TIMEOUT
 from sovrin_node.server.upgrade_log import UpgradeLog
 from plenum.server import notifier_plugin_manager
 import asyncio
@@ -143,7 +143,7 @@ class Upgrader(HasActionQueue):
                     extra={"tags": ["node-config"]})
         currentVer = self.getVersion()
         upgrades = {}  # Map of version to scheduled time
-        for txn in self.ledger.getAllTxn().values():
+        for _, txn in self.ledger.getAllTxn():
             if txn[TXN_TYPE] == POOL_UPGRADE:
                 version = txn[VERSION]
                 action = txn[ACTION]
@@ -243,7 +243,7 @@ class Upgrader(HasActionQueue):
         """
 
         upgradeTxn = {}
-        for txn in self.ledger.getAllTxn().values():
+        for _, txn in self.ledger.getAllTxn():
             if txn.get(NAME) == name and txn.get(VERSION) == version:
                 upgradeTxn = txn
         return upgradeTxn.get(ACTION)
