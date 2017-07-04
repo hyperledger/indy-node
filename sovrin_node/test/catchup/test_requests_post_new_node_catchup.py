@@ -1,4 +1,5 @@
 import pytest
+from plenum.test.test_node import ensure_node_disconnected, checkNodesConnected
 
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.types import f
@@ -98,6 +99,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
     new_node.cleanupOnStopping = False
     new_node.stop()
     looper.removeProdable(new_node)
+    ensure_node_disconnected(looper, new_node.name, other_nodes)
 
     trust_anchors = []
     attributes = []
@@ -131,6 +133,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
     nodeSet[-1] = new_node
     fill_counters(old_ledger_sizes, old_projection_sizes, old_seq_no_map_sizes,
                   [new_node])
+    looper.run(checkNodesConnected(nodeSet))
     waitNodeDataEquality(looper, new_node, *other_nodes)
     fill_counters(new_ledger_sizes, new_projection_sizes, new_seq_no_map_sizes,
                   [new_node])
