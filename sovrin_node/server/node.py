@@ -356,7 +356,7 @@ class Node(PlenumNode, HasPoolManager):
             self.transmitToClient(Reply(result), frm)
         elif request.operation[TXN_TYPE] == GET_TXNS:
             self.transmitToClient(RequestAck(*request.key), frm)
-            result = self.reqHandler.handleGetTnxReq(request, frm, super())
+            result = super().handleGetTnxReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
             self.transmitToClient(RequestAck(*request.key), frm)
