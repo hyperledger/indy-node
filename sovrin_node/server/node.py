@@ -15,8 +15,9 @@ from plenum.common.constants import VERSION, \
     HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID, LedgerState
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
-from plenum.common.types import Reply, RequestAck, f, \
-    OPERATION, LedgerStatus
+from plenum.common.types import f, \
+    OPERATION
+from plenum.common.messages.node_messages import RequestAck, Reply, LedgerStatus
 from plenum.common.util import error
 from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.persistence.util import txnsWithMerkleInfo
@@ -281,7 +282,7 @@ class Node(PlenumNode, HasPoolManager):
         if all(attr in msg.keys()
                for attr in [OPERATION, f.IDENTIFIER.nm, f.REQ_ID.nm]) \
                 and msg.get(OPERATION, {}).get(TXN_TYPE) == NODE_UPGRADE:
-            cls = Request
+            cls = self._client_request_class
             cMsg = cls(**msg)
             return cMsg, frm
         else:
@@ -401,7 +402,7 @@ class Node(PlenumNode, HasPoolManager):
         Execute the REQUEST sent to this Node
 
         :param ppTime: the time at which PRE-PREPARE was sent
-        :param req: the client REQUEST
+        :param req: the client REQUEST  
         """
         return self.commitAndSendReplies(self.reqHandler, ppTime, reqs,
                                          stateRoot, txnRoot)
