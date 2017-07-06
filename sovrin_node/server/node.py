@@ -374,6 +374,7 @@ class Node(PlenumNode, HasPoolManager):
         else:
             # forced request should be processed before consensus
             if request.operation[TXN_TYPE] == POOL_UPGRADE and request.isForced():
+                self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
             super().processRequest(request, frm)
 
