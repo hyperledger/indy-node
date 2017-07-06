@@ -47,5 +47,5 @@ def test_accept_then_reject_upgrade(looper, trustee, trusteeWallet, validUpgrade
     _, req = sendUpgrade(trustee, trusteeWallet, validUpgrade2)
     timeout = plenumWaits.expectedReqNAckQuorumTime()
     looper.run(eventually(checkRejects, trustee, req.reqId,
-                          'UnauthorizedClientRequest', retryWait=1, timeout=timeout))
+                          'InvalidClientRequest', retryWait=1, timeout=timeout))
 
