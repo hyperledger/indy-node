@@ -235,7 +235,6 @@ class DomainReqHandler(PHandler):
         }}
         return result
 
-
     def handleGetClaimDefReq(self, request: Request, frm: str):
         signatureType = request.operation[SIGNATURE_TYPE]
         keys, lastSeqNo = self.getClaimDef(
