@@ -18,7 +18,7 @@ RUN pip3 install -U \
 	pip \ 
 	setuptools \
 	virtualenv
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EAA542E8
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
 RUN echo "deb https://repo.evernym.com/deb xenial master" >> /etc/apt/sources.list
 RUN apt-get update -y
 RUN apt-get install -y \ 
