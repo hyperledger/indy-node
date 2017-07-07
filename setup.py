@@ -76,7 +76,7 @@ setup(
     install_requires=['sovrin-common-dev==0.3.22', 'python-dateutil',
                       'timeout-decorator'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'sovrin-client-dev==0.4.23'],
+    tests_require=['pytest', 'sovrin-client-dev==0.4.24'],
     scripts=['scripts/start_sovrin_node',
              'scripts/start_node_control_tool.py',
              'scripts/clear_node.py',
