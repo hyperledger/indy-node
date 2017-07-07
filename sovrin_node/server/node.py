@@ -352,7 +352,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def processRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == GET_NYM:
-            self.transmitToClient(RequestAck(*request.key), frm)
+            self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetNymReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         # TODO: Come back to it
@@ -360,15 +360,19 @@ class Node(PlenumNode, HasPoolManager):
             # self.processGetTxnReq(request, frm)
             return
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
-            self.transmitToClient(RequestAck(*request.key), frm)
+            self.send_ack_to_client(request.key, frm)
+            # TODO: `handleGetSchemaReq` should be changed to
+            # `get_reply_for_schema_req`, the rationale being that the method
+            # is not completely handling the request but fetching a response.
+            # Similar reasoning follows for other methods below
             result = self.reqHandler.handleGetSchemaReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         elif request.operation[TXN_TYPE] == GET_ATTR:
-            self.transmitToClient(RequestAck(*request.key), frm)
+            self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetAttrsReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
-            self.transmitToClient(RequestAck(*request.key), frm)
+            self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetClaimDefReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         else:
