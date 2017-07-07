@@ -355,10 +355,6 @@ class Node(PlenumNode, HasPoolManager):
             self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetNymReq(request, frm)
             self.transmitToClient(Reply(result), frm)
-        # TODO: Come back to it
-        elif request.operation[TXN_TYPE] == GET_TXNS:
-            # self.processGetTxnReq(request, frm)
-            return
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
             self.send_ack_to_client(request.key, frm)
             # TODO: `handleGetSchemaReq` should be changed to
