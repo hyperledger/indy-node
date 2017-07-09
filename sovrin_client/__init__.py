@@ -2,7 +2,6 @@ import os
 import sovrin_client
 
 from sovrin_client.agent.jsonpickle_util import setUpJsonpickle
-from .__metadata__ import *
 
 from sovrin_common.plugin_helper import writeAnonCredPlugin
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".sovrin")
