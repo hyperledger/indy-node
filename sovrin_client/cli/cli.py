@@ -68,7 +68,7 @@ from stp_core.network.port_dispenser import genHa
 from sovrin_common.roles import Roles
 from sovrin_common.txn_util import getTxnOrderedFields
 from sovrin_common.util import ensureReqCompleted, getIndex
-from sovrin_client.__metadata__ import __version__
+from sovrin_node.__metadata__ import __version__
 
 try:
     nodeMod = importlib.import_module('sovrin_node.server.node')
