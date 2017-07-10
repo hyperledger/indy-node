@@ -73,7 +73,5 @@ def commonTestUbuntu = {
 }
 
 options = new TestAndPublishOptions()
-options.setPublishableBranches(['feature/repo-merge']) //REMOVE IT BEFORE MERGE
-options.setPostfixes([master: 'repo-merge']) //REMOVE IT BEFORE MERGE
 options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options)
