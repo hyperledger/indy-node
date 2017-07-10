@@ -68,7 +68,7 @@ class EnhancedInstallDev(develop):
         post_install()
 
 setup(
-    name='sovrin-node-repo-merge',
+    name='sovrin-node-dev',
     version=__version__,
     description='Sovrin node',
     url='https://github.com/hyperledger/indy-node',
@@ -85,7 +85,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['plenum-repo-merge==0.4.39', 
+    install_requires=['plenum-dev==0.4.31', 
                       'anoncreds-dev==0.4.7',
                       'python-dateutil',
                       'timeout-decorator'],
