@@ -505,7 +505,7 @@ def aliceRequestedTranscriptClaim(be, do, aliceCli, transcriptClaimMap,
        mapper=transcriptClaimMap)
 
     async def assertTotalClaimsRcvdIncreasedByOne():
-        total_claims = len((await aliceCli.agent.prover.wallet.getAllClaims()).keys())
+        total_claims = len((await aliceCli.agent.prover.wallet.getAllClaimsSignatures()).keys())
         assert totalClaimsRcvdBefore + 1 == total_claims
 
     aliceCli.looper.runFor(10)

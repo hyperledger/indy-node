@@ -1,17 +1,14 @@
-from abc import abstractmethod
-from typing import Dict, Any
-
-from plenum.common.constants import NAME, VERSION, ORIGIN
+import json
 from plenum.common.types import f
 
 from anoncreds.protocol.issuer import Issuer
-from anoncreds.protocol.types import SchemaKey, ID
+from anoncreds.protocol.types import ID
 from anoncreds.protocol.types import ClaimRequest
 from sovrin_client.agent.constants import EVENT_NOTIFY_MSG, CLAIMS_LIST_FIELD
 from sovrin_client.agent.msg_constants import CLAIM, CLAIM_REQ_FIELD, CLAIM_FIELD, \
-    AVAIL_CLAIM_LIST, SCHEMA_SEQ_NO
+    AVAIL_CLAIM_LIST, REVOC_REG_SEQ_NO, SCHEMA_SEQ_NO, ISSUER_DID
 from sovrin_common.identity import Identity
-
+from plenum.common.constants import DATA
 from sovrin_client.client.wallet.attribute import Attribute
 
 
@@ -34,7 +31,9 @@ class AgentIssuer:
         if not link:
             raise NotImplementedError
 
-        schemaId = ID(schemaId=body[SCHEMA_SEQ_NO])
+        claimReqDetails = body[DATA]
+
+        schemaId = ID(schemaId=claimReqDetails[SCHEMA_SEQ_NO])
         schema = await self.issuer.wallet.getSchema(schemaId)
 
         if not self.is_claim_available(link, schema.name):
@@ -45,19 +44,19 @@ class AgentIssuer:
             return
 
         public_key = await self.issuer.wallet.getPublicKey(schemaId)
-        claimReq = ClaimRequest.from_str_dict(body[CLAIM_REQ_FIELD], public_key.N)
+        claimReq = ClaimRequest.from_str_dict(claimReqDetails[CLAIM_REQ_FIELD], public_key.N)
 
-        schemaKey = SchemaKey(schema.name, schema.version, schema.issuerId)
-        self._add_attribute(schemaKey=schemaKey, proverId=claimReq.userId,
+        self._add_attribute(schemaKey=schema.getKey(), proverId=claimReq.userId,
                             link=link)
 
-        claim = await self.issuer.issueClaim(schemaId, claimReq)
+        claim_signature, claim_attributes = await self.issuer.issueClaim(schemaId, claimReq)
 
         claimDetails = {
-            NAME: schema.name,
-            VERSION: schema.version,
-            CLAIM_FIELD: claim.toStrDict(),
-            f.IDENTIFIER.nm: schema.issuerId
+            f.SIG.nm: claim_signature.to_str_dict(),
+            ISSUER_DID: schema.issuerId,
+            CLAIM_FIELD: json.dumps({k: v.to_str_dict() for k, v in claim_attributes.items()}),
+            REVOC_REG_SEQ_NO: None,
+            SCHEMA_SEQ_NO: claimReqDetails[SCHEMA_SEQ_NO]
         }
 
         resp = self.getCommonMsg(CLAIM, claimDetails)

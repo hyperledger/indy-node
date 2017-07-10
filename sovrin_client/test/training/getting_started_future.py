@@ -117,7 +117,7 @@ def demo_wait_for_claim_available(looper, link, claim_name):
 
 def demo_wait_for_claim_received(looper, agent, claim_name):
     async def _():
-        claims = await agent.prover.wallet.getAllClaims()
+        claims = await agent.prover.wallet.getAllClaimsSignatures()
         assert len(claims) > 0
         for schema_key, claims in claims.items():
             if schema_key.name == claim_name:
