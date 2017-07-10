@@ -1,0 +1,46 @@
+#! /usr/bin/env python3
+
+import argparse
+import os.path
+
+from plenum.common.keygen_utils import initLocalKeys
+from plenum.common.constants import CLIENT_STACK_SUFFIX
+from plenum.common.util import randomString
+
+from sovrin_common.config_util import getConfig
+
+config = getConfig()
+keepDir = config.baseDir
+
+
+if __name__ == "__main__":
+    if not os.path.exists(keepDir):
+        os.makedirs(keepDir, exist_ok=True)
+
+    parser = argparse.ArgumentParser(
+        description="Generate keys for a node's stacks "
+                    "by taking the node's name and 2 "
+                    "seed values")
+
+    parser.add_argument('--name', required=True, help='node name')
+    parser.add_argument('--seed', required=False, type=str,
+                        help='seed for keypair')
+    parser.add_argument('--force', help='overrides keys', action='store_true')
+    args = parser.parse_args()
+    # Initialize node stack
+    print("For node stack, stack name is", args.name)
+    if not args.seed:
+        args.seed = randomString(32)
+        print("Generating a random seed for the keypair {}".format(args.seed))
+    try:
+        initLocalKeys(args.name, keepDir, args.seed, args.force, config=config)
+    except Exception as ex:
+        print(ex)
+        exit()
+    # Initialize client stack
+    print("For client stack, stack name is", args.name + CLIENT_STACK_SUFFIX)
+    try:
+        initLocalKeys(args.name + CLIENT_STACK_SUFFIX, keepDir, args.seed, args.force)
+    except Exception as ex:
+        print(ex)
+        exit()
