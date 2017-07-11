@@ -77,4 +77,4 @@ options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
 options.setPublishableBranches(['feature/indy-399']) //REMOVE IT BEFORE MERGE     
 options.setPostfixes([master: 'new-names']) //REMOVE IT BEFORE MERGE
 options.skip([StagesEnum.GITHUB_RELEASE])
-testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options)
+testAndPublish(name, [ubuntu: [:]], true, options)
