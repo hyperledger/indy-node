@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpersRepoMerge') _
+@Library('SovrinHelpersNewPackageNames') _
 
 def name = 'indy-node'
 
