@@ -21,8 +21,6 @@ ISSUER_DID = 'issuer_did'
 CLAIM_REQ_FIELD = 'blinded_ms'
 CLAIM_FIELD = 'claim'
 PROOF_FIELD = 'proof'
-PROOF_INPUT_FIELD = 'proofInput'
-REVEALED_ATTRS_FIELD = 'revealedAttrs'
 SCHEMA_SEQ_NO = 'schema_seq_no'
 PROOF_REQUEST_FIELD = 'proof_request'
 

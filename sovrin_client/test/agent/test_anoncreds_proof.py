@@ -1,6 +1,6 @@
 from sovrin_client.test import waits
 from stp_core.loop.eventually import eventually
-from anoncreds.protocol.types import SchemaKey, ID, ProofInput
+from anoncreds.protocol.types import SchemaKey, ID, ProofRequest
 from sovrin_client.test.agent.messages import get_proof_libsovrin_msg
 
 
@@ -13,7 +13,6 @@ def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
     aliceAgent.sendReqClaim(faberLink, schemaKey)
 
     schema = faberAgent.issuer.wallet._schemasByKey[schemaKey]
-
 
     # 2. check that claim is received from Faber
     async def chkClaims():
@@ -28,11 +27,11 @@ def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
         "Job-Application", "Acme Corp")[0]
 
     async def create_proof():
-        proof_input = ProofInput(nonce=int(acme_proof_req.nonce),
-                                 revealedAttrs=acme_proof_req.verifiableAttributes,
-                                 predicates=acme_proof_req.predicates)
+        proofRequest = ProofRequest("proof1", "1.0", int(acme_proof_req.nonce),
+                                    verifiableAttributes=acme_proof_req.verifiableAttributes,
+                                    predicates=acme_proof_req.predicates)
 
-        proof = await  aliceAgent.prover.presentProof(proof_input)
+        proof = await  aliceAgent.prover.presentProof(proofRequest)
 
         msg = get_proof_libsovrin_msg(acme_link, acme_proof_req, proof, str(schema.seqId), schema.seqId)
 

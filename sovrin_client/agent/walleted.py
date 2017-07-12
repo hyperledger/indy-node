@@ -25,7 +25,7 @@ from anoncreds.protocol.issuer import Issuer
 from anoncreds.protocol.prover import Prover
 from anoncreds.protocol.verifier import Verifier
 from anoncreds.protocol.globals import TYPE_CL
-from anoncreds.protocol.types import AttribDef, ID
+from anoncreds.protocol.types import AttribDef, ID, ProofRequest, AvailableClaim
 from plenum.common.exceptions import NotConnectedToAny
 from plenum.common.constants import NAME, VERSION
 from sovrin_client.agent.agent_issuer import AgentIssuer
@@ -42,7 +42,6 @@ from sovrin_client.agent.msg_constants import ACCEPT_INVITE, CLAIM_REQUEST, \
     REF_REQUEST_ID, REQ_AVAIL_CLAIMS, INVITE_ACCEPTED, PROOF_REQUEST
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.client.wallet.link import Link, constant
-from sovrin_client.client.wallet.types import ProofRequest, AvailableClaim
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.exceptions import LinkNotFound, LinkAlreadyExists, \
     NotConnectedToNetwork, LinkNotReady, VerkeyNotFound, RemoteEndpointNotFound

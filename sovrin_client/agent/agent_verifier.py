@@ -6,13 +6,12 @@ from plenum.common.constants import NAME, NONCE, TYPE, DATA, VERSION, \
 from plenum.common.types import f
 
 from anoncreds.protocol.types import FullProof, ProofInfo, ID, AggregatedProof, RequestedProof
-from anoncreds.protocol.types import ProofInput
+from anoncreds.protocol.types import ProofRequest
 from anoncreds.protocol.verifier import Verifier
 from sovrin_client.agent.msg_constants import PROOF_STATUS, PROOF_FIELD, PROOF_REQUEST, \
     PROOF_REQUEST_FIELD, ERR_NO_PROOF_REQUEST_SCHEMA_FOUND
 from sovrin_client.client.wallet.link import Link
 from sovrin_common.util import getNonceForProof
-from sovrin_client.client.wallet.types import ProofRequest
 
 
 class AgentVerifier(Verifier):
@@ -41,10 +40,7 @@ class AgentVerifier(Verifier):
                           AggregatedProof.from_str_dict(proof['aggregated_proof']),
                           RequestedProof.from_str_dict(proof['requested_proof']))
 
-        proofInput = ProofInput(nonce=int(proofRequest.nonce),
-                                revealedAttrs=proofRequest.verifiableAttributes,
-                                predicates=proofRequest.predicates)
-        result = await self.verifier.verify(proofInput, proof)
+        result = await self.verifier.verify(proofRequest, proof)
 
         self.logger.info('Proof "{}" accepted with nonce {}'
                          .format(proofName, nonce))
@@ -60,7 +56,7 @@ class AgentVerifier(Verifier):
                          origReqId=body.get(f.REQ_ID.nm))
 
         if result:
-            for uuid, attribute in proofInput.revealedAttrs.items():
+            for uuid, attribute in proofRequest.verifiableAttributes.items():
                 # Log attributes that were verified
                 self.logger.info('verified {}: {}'.
                                  format(attribute.name, proof.requestedProof.revealed_attrs[uuid][1]))

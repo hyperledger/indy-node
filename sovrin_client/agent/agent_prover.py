@@ -8,11 +8,10 @@ from plenum.common.types import f
 from plenum.common.util import getCryptonym
 
 from anoncreds.protocol.prover import Prover
-from anoncreds.protocol.types import SchemaKey, ID, Claims, ProofInput, ClaimAttributeValues
+from anoncreds.protocol.types import SchemaKey, ID, Claims, ClaimAttributeValues, ProofRequest
 from sovrin_client.agent.msg_constants import CLAIM_REQUEST, PROOF, CLAIM_FIELD, \
     CLAIM_REQ_FIELD, PROOF_FIELD, \
     REQ_AVAIL_CLAIMS, ISSUER_DID, SCHEMA_SEQ_NO, PROOF_REQUEST_FIELD
-from sovrin_client.client.wallet.types import ProofRequest
 from sovrin_client.client.wallet.link import Link
 from sovrin_common.exceptions import LinkNotReady
 
@@ -128,12 +127,9 @@ class AgentProver:
     async def sendProofAsync(self, link: Link, proofRequest: ProofRequest):
         # TODO _F_ this nonce should be from the Proof Request, not from an
         # invitation
-        proofInput = ProofInput(nonce=proofRequest.nonce,
-                                revealedAttrs=proofRequest.verifiableAttributes,
-                                predicates=proofRequest.predicates)
         # TODO rename presentProof to buildProof or generateProof
 
-        proof = await self.prover.presentProof(proofInput)
+        proof = await self.prover.presentProof(proofRequest)
         proof.requestedProof.self_attested_attrs.update(proofRequest.selfAttestedAttrs)
 
         op = {
