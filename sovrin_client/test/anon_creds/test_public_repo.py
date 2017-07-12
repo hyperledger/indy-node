@@ -137,15 +137,6 @@ def testGetPrimaryPublicKey(submittedSchemaDefGvtID, submittedPublicKey,
     assert non_existent_cd is None
 
 
-def testGetPrimaryPublicKeyBySeqNo(submittedPublicKey, publicRepo, looper):
-    pk = looper.run(publicRepo.getPublicKey(seqId=submittedPublicKey.seqId))
-    assert pk == submittedPublicKey
-
-
-def testGetPrimaryPublicKeyByInvalidSeqNo(submittedPublicKey, publicRepo, looper):
-    assert not looper.run(publicRepo.getPublicKey(seqId=(submittedPublicKey.seqId + randint(100, 1000))))
-
-
 def testGetPrimaryPublicKeyNonExistent(submittedSchemaDefGvtID,
                             publicRepo, looper):
     schemaId = submittedSchemaDefGvtID._replace(schemaId=random.randint(100, 300))

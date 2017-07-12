@@ -82,26 +82,15 @@ class SovrinPublicRepo(PublicRepo):
                       issuerId=data[ORIGIN],
                       seqId=seqNo) if data else None
 
-    async def getPublicKey(self, id: ID = None,
-                           signatureType='CL', seqId=None) -> Optional[PublicKey]:
-        data = None
-        if id:
-            op = {
-                TXN_TYPE: GET_CLAIM_DEF,
-                REF: id.schemaId,
-                ORIGIN: id.schemaKey.issuerId,
-                SIGNATURE_TYPE: signatureType
-            }
-            data, seqNo = await self._sendGetReq(op)
-        else:
-            op = {
-                TXN_TYPE: GET_TXNS,
-                DATA: seqId
-            }
-            res, seqNo = await self._sendGetReq(op)
-            if res:
-                data = json.loads(res[DATA]) if res else {}
+    async def getPublicKey(self, id: ID = None, signatureType='CL') -> Optional[PublicKey]:
+        op = {
+            TXN_TYPE: GET_CLAIM_DEF,
+            REF: id.schemaId,
+            ORIGIN: id.schemaKey.issuerId,
+            SIGNATURE_TYPE: signatureType
+        }
 
+        data, seqNo = await self._sendGetReq(op)
         if not data:
             return None
         data = data[PRIMARY]
