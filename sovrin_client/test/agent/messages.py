@@ -41,7 +41,7 @@ def get_claim_libsovrin_msg(signature, schema_seq_no):
              },
              'reqId': 1498207879197729,
              'signature': '3v4CJnCpFv3on9DJKzourd9RfvX3gz5yXY1jkhxc8FktHVbvx1ghBJC7DUYMAJzApPUAYMyTzyMB6Dm8HEzhAtvM',
-             'identifier': 'FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB'}, ('Faber College', ('127.0.0.1', 6918)))
+             'identifier': 'ULtgFQJe6bjiFbs7ke3NJD'}, ('Faber College', ('127.0.0.1', 6918)))
 
 
 def get_proof_libsovrin_msg(link, proof_req, proof, uuid, schema_seq_no):
