@@ -181,7 +181,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
             return await wallet.getPublicKey(schemaId)
 
         async def getClaim(schemaId):
-            return await userCLI.agent.prover.wallet.getClaims(schemaId)
+            return await userCLI.agent.prover.wallet.getClaimSignature(schemaId)
 
         # Start User cli
 

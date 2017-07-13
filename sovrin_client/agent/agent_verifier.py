@@ -2,18 +2,14 @@ from typing import Any
 from collections import OrderedDict
 
 from plenum.common.constants import NAME, NONCE, TYPE, DATA, VERSION, \
-    ATTRIBUTES, VERIFIABLE_ATTRIBUTES
+    ATTRIBUTES, VERIFIABLE_ATTRIBUTES, PREDICATES
 from plenum.common.types import f
 
-from anoncreds.protocol.types import FullProof
-from anoncreds.protocol.types import ProofInput
-from anoncreds.protocol.utils import fromDictWithStrValues
+from anoncreds.protocol.types import FullProof, ProofInfo, ID, AggregatedProof, RequestedProof
+from anoncreds.protocol.types import ProofRequest
 from anoncreds.protocol.verifier import Verifier
-from sovrin_client.agent.msg_constants import PROOF_STATUS, PROOF_FIELD, \
-    PROOF_INPUT_FIELD, REVEALED_ATTRS_FIELD, PROOF_REQUEST, \
-    PROOF_REQ_SCHEMA_NAME, PROOF_REQ_SCHEMA_VERSION, \
-    PROOF_REQ_SCHEMA_ATTRIBUTES, PROOF_REQ_SCHEMA_VERIFIABLE_ATTRIBUTES, \
-    ERR_NO_PROOF_REQUEST_SCHEMA_FOUND
+from sovrin_client.agent.msg_constants import PROOF_STATUS, PROOF_FIELD, PROOF_REQUEST, \
+    PROOF_REQUEST_FIELD, ERR_NO_PROOF_REQUEST_SCHEMA_FOUND
 from sovrin_client.client.wallet.link import Link
 from sovrin_common.util import getNonceForProof
 
@@ -28,53 +24,69 @@ class AgentVerifier(Verifier):
         if not link:
             raise NotImplementedError
 
-        proofName = body[NAME]
+        proof = body[PROOF_FIELD]
+        proofRequest = ProofRequest.from_str_dict(body[PROOF_REQUEST_FIELD])
         nonce = getNonceForProof(body[NONCE])
-        proof = FullProof.fromStrDict(body[PROOF_FIELD])
-        proofInput = ProofInput.fromStrDict(body[PROOF_INPUT_FIELD])
-        revealedAttrs = fromDictWithStrValues(body[REVEALED_ATTRS_FIELD])
-        result = await self.verifier.verify(proofInput, proof,
-                                            revealedAttrs, nonce)
+        proofName = proofRequest.name
+
+        proofs = {}
+
+        for key, p in proof['proofs'].items():
+            schema = await self.verifier.wallet.getSchema(ID(schemaId=int(p['schema_seq_no'])))
+            pk = await self.verifier.wallet.getPublicKey(ID(schemaKey=schema.getKey()))
+            proofs[key] = ProofInfo.from_str_dict(p, str(pk.N))
+
+        proof = FullProof(proofs,
+                          AggregatedProof.from_str_dict(proof['aggregated_proof']),
+                          RequestedProof.from_str_dict(proof['requested_proof']))
+
+        result = await self.verifier.verify(proofRequest, proof)
 
         self.logger.info('Proof "{}" accepted with nonce {}'
-                              .format(proofName, nonce))
+                         .format(proofName, nonce))
         self.logger.info('Verifying proof "{}" from {}'
-                              .format(proofName, link.name))
+                         .format(proofName, link.name))
         status = 'verified' if result else 'failed verification'
         resp = {
             TYPE: PROOF_STATUS,
             DATA: '    Your Proof {} {} was received and {}\n'.
-                format(body[NAME], body[VERSION], status),
+                format(proofRequest.name, proofRequest.version, status),
         }
         self.signAndSend(resp, link.localIdentifier, frm,
                          origReqId=body.get(f.REQ_ID.nm))
 
         if result:
-            for attribute in proofInput.revealedAttrs:
+            for uuid, attribute in proofRequest.verifiableAttributes.items():
                 # Log attributes that were verified
                 self.logger.info('verified {}: {}'.
-                                 format(attribute, revealedAttrs[attribute]))
+                                 format(attribute.name, proof.requestedProof.revealed_attrs[uuid][1]))
             self.logger.info('Verified that proof "{}" contains attributes '
                              'from claim(s) issued by: {}'.format(
                 proofName, ", ".join(
-                    sorted([sk.issuerId for sk in proof.schemaKeys]))))
+                    sorted([v.issuer_did for k, v in proof.proofs.items()]))))
             await self._postProofVerif(proofName, link, frm)
         else:
             self.logger.info('Verification failed for proof {} from {} '
-                              .format(proofName, link.name))
+                             .format(proofName, link.name))
 
     def sendProofReq(self, link: Link, proofReqSchemaKey):
         if self._proofRequestsSchema and (
                     proofReqSchemaKey in self._proofRequestsSchema):
             proofRequest = self._proofRequestsSchema[proofReqSchemaKey]
-            op = OrderedDict([
-                (TYPE, PROOF_REQUEST),
-                (NAME, proofRequest[PROOF_REQ_SCHEMA_NAME]),
-                (VERSION, proofRequest[PROOF_REQ_SCHEMA_VERSION]),
-                (ATTRIBUTES, proofRequest[PROOF_REQ_SCHEMA_ATTRIBUTES]),
-                (VERIFIABLE_ATTRIBUTES,
-                 proofRequest[PROOF_REQ_SCHEMA_VERIFIABLE_ATTRIBUTES])
-            ])
+
+            proofRequest = ProofRequest(
+                proofRequest[NAME],
+                proofRequest[VERSION],
+                getNonceForProof(link.invitationNonce),
+                proofRequest[ATTRIBUTES],
+                proofRequest[VERIFIABLE_ATTRIBUTES] if VERIFIABLE_ATTRIBUTES in proofRequest else [],
+                proofRequest[PREDICATES] if PREDICATES in proofRequest else []
+            )
+
+            op = {
+                TYPE: PROOF_REQUEST,
+                PROOF_REQUEST_FIELD: proofRequest.to_str_dict()
+            }
 
             self.signAndSendToLink(msg=op, linkName=link.name)
         else:

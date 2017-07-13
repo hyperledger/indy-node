@@ -1,7 +1,7 @@
 import pytest
 
 from anoncreds.protocol.repo.attributes_repo import AttributeRepoInMemory
-from anoncreds.protocol.types import ID, ProofInput, PredicateGE
+from anoncreds.protocol.types import ID, PredicateGE, AttributeInfo, ProofRequest
 from sovrin_client.anon_creds.sovrin_issuer import SovrinIssuer
 from sovrin_client.anon_creds.sovrin_prover import SovrinProver
 from sovrin_client.anon_creds.sovrin_verifier import SovrinVerifier
@@ -48,16 +48,16 @@ def testAnonCredsPrimaryOnly(issuer, prover, verifier, attrRepo, primes1, looper
 
         # 5. request Claims
         claimsReq = await prover.createClaimRequest(schemaId, proverId, False)
-        claims = await issuer.issueClaim(schemaId, claimsReq)
-        await prover.processClaim(schemaId, claims)
+        (claim_signature, claim_attributes) = await issuer.issueClaim(schemaId, claimsReq)
+        await prover.processClaim(schemaId, claim_attributes, claim_signature)
 
         # 6. proof Claims
-        proofInput = ProofInput(
-            ['name'],
-            [PredicateGE('age', 18)])
+        proofRequest = ProofRequest("proof1", "1.0", verifier.generateNonce(),
+                                    verifiableAttributes={'attr_uuid': AttributeInfo('name', schema.seqId)},
+                                    predicates={'predicate_uuid': PredicateGE('age', 18)})
 
-        nonce = verifier.generateNonce()
-        proof, revealedAttrs = await prover.presentProof(proofInput, nonce)
-        assert await verifier.verify(proofInput, proof, revealedAttrs, nonce)
+        proof = await prover.presentProof(proofRequest)
+        assert proof.requestedProof.revealed_attrs['attr_uuid'][1] == 'Alex'
+        assert await verifier.verify(proofRequest, proof)
 
     looper.run(doTestAnonCredsPrimaryOnly)

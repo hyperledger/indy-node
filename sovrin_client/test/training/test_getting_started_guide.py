@@ -72,7 +72,7 @@ def getting_started(base_dir=None):
 
     demo_wait_for_claim_received(pool, alice_agent, 'Transcript')
 
-    claims = pool.run(alice_agent.prover.wallet.getAllClaims())
+    claims = pool.run(alice_agent.prover.wallet.getAllClaimsSignatures())
 
     print(claims)
 
@@ -119,7 +119,7 @@ def getting_started(base_dir=None):
 
     demo_wait_for_claim_received(pool, alice_agent, 'Job-Certificate')
 
-    claims = pool.run(alice_agent.prover.wallet.getAllClaims())
+    claims = pool.run(alice_agent.prover.wallet.getAllClaimsSignatures())
 
     print(claims)
 
