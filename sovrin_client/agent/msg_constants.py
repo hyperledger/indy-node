@@ -18,13 +18,11 @@ PROOF_STATUS = 'PROOF_STATUS'
 
 
 ISSUER_DID = 'issuer_did'
-CLAIM_DEF_SEQ_NO = 'claim_def_seq_no'
 CLAIM_REQ_FIELD = 'blinded_ms'
 CLAIM_FIELD = 'claim'
 PROOF_FIELD = 'proof'
-PROOF_INPUT_FIELD = 'proofInput'
-REVEALED_ATTRS_FIELD = 'revealedAttrs'
 SCHEMA_SEQ_NO = 'schema_seq_no'
+PROOF_REQUEST_FIELD = 'proof_request'
 
 # Proof request schema keys
 PROOF_REQ_SCHEMA_NAME = 'name'
@@ -35,6 +33,7 @@ PROOF_REQ_SCHEMA_VERIFIABLE_ATTRIBUTES = 'verifiableAttributes'
 # Other
 CLAIM_NAME_FIELD = "claimName"
 REF_REQUEST_ID = "refRequestId"
+REVOC_REG_SEQ_NO = "revoc_reg_seq_no"
 
 # Error constants
 ERR_NO_PROOF_REQUEST_SCHEMA_FOUND = 'Error: No proof request schema found'

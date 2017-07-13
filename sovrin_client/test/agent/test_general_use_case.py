@@ -199,7 +199,7 @@ def test_end_to_end(tconf):
 
         run_async(alice_agent.send_claim(alices_link_to_bank,
                                          claim_to_request))
-        network.runFor(3)
+        network.runFor(5)
 
         claim = run_async(alice_agent.get_claim(schema_id))
         print(claim)
