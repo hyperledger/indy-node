@@ -1,8 +1,8 @@
 #!groovy
 
-@Library('SovrinHelpersRepoMerge') _
+@Library('SovrinHelpersNewPackageNames') _
 
-def name = 'sovrin-node'
+def name = 'indy-node'
 
 def nodeTestUbuntu = {
     try {
