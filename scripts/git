@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# set -e
+
+dirs=( "sovrin-common" "sovrin-client" "sovrin-node" "plenum" "anoncreds" "ledger" )
+
+# quiet pushd
+pushd() {
+  command pushd "$@" > /dev/null
+}
+
+# quiet popd
+popd() {
+  command popd "$@" > /dev/null
+}
+
+for dir in "${dirs[@]}"
+do
+  pushd ../$dir
+  echo '----------' 'RUNNING' $1 'ON' $(pwd) '----------'
+  git "$@"
+  popd
+done
