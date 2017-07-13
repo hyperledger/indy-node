@@ -68,7 +68,7 @@ class EnhancedInstallDev(develop):
         post_install()
 
 setup(
-    name='indy-node-new-names',
+    name='indy-node-dev',
     version=__version__,
     description='Sovrin node',
     url='https://github.com/hyperledger/indy-node',
