@@ -87,7 +87,6 @@ setup(
     )],
     install_requires=['indy-plenum-dev==0.4.43',
                       'indy-anoncreds-dev==0.4.12',
-                      'sovrin-dev==0.2.4',
                       'python-dateutil',
                       'timeout-decorator'],
     setup_requires=['pytest-runner'],
