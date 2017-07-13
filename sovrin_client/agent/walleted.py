@@ -15,7 +15,7 @@ from stp_core.common.log import getlogger
 from plenum.common.signer_did import DidSigner
 from plenum.common.signing import serializeMsg
 from plenum.common.constants import TYPE, DATA, NONCE, IDENTIFIER, NAME, VERSION, \
-    TARGET_NYM, ATTRIBUTES, VERKEY, VERIFIABLE_ATTRIBUTES
+    TARGET_NYM, ATTRIBUTES, VERKEY, VERIFIABLE_ATTRIBUTES, PREDICATES
 from plenum.common.types import f
 from plenum.common.util import getTimeBasedId, getCryptonym, \
     isMaxCheckTimeExpired, convertTimeBasedReqIdToMillis, friendlyToRaw
@@ -25,7 +25,7 @@ from anoncreds.protocol.issuer import Issuer
 from anoncreds.protocol.prover import Prover
 from anoncreds.protocol.verifier import Verifier
 from anoncreds.protocol.globals import TYPE_CL
-from anoncreds.protocol.types import AttribDef, ID
+from anoncreds.protocol.types import AttribDef, ID, ProofRequest, AvailableClaim
 from plenum.common.exceptions import NotConnectedToAny
 from plenum.common.constants import NAME, VERSION
 from sovrin_client.agent.agent_issuer import AgentIssuer
@@ -42,7 +42,6 @@ from sovrin_client.agent.msg_constants import ACCEPT_INVITE, CLAIM_REQUEST, \
     REF_REQUEST_ID, REQ_AVAIL_CLAIMS, INVITE_ACCEPTED, PROOF_REQUEST
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.client.wallet.link import Link, constant
-from sovrin_client.client.wallet.types import ProofRequest, AvailableClaim
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.exceptions import LinkNotFound, LinkAlreadyExists, \
     NotConnectedToNetwork, LinkNotReady, VerkeyNotFound, RemoteEndpointNotFound
@@ -52,6 +51,7 @@ from sovrin_common.util import ensureReqCompleted
 from sovrin_common.config import agentLoggingLevel
 from sovrin_common.exceptions import InvalidLinkException
 from plenum.common.constants import PUBKEY
+from sovrin_common.util import getNonceForProof
 
 logger = getlogger()
 logger.setLevel(agentLoggingLevel)
@@ -268,12 +268,11 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         schema_id = ID(schemaKey=schema.getKey(), schemaId=schema.seqId)
         return schema_id
 
-
     def add_attribute_definition(self, attr_def: AttribDef):
         self._attribDefs[attr_def.name] = attr_def
 
     async def get_claim(self, schema_id: ID):
-        return await self.prover.wallet.getClaims(schema_id)
+        return await self.prover.wallet.getClaimAttributes(schema_id)
 
     def new_identifier(self, seed=None):
         idr, _ = self.wallet.addIdentifier(seed=seed)
@@ -789,8 +788,9 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         if proofRequestsJson:
             for cr in proofRequestsJson:
                 proofRequests.append(
-                    ProofRequest(cr[NAME], cr[VERSION], cr[ATTRIBUTES],
-                                 cr[VERIFIABLE_ATTRIBUTES]))
+                    ProofRequest(cr[NAME], cr[VERSION], getNonceForProof(linkNonce), cr[ATTRIBUTES],
+                                 cr[VERIFIABLE_ATTRIBUTES] if VERIFIABLE_ATTRIBUTES in cr else [],
+                                 cr[PREDICATES] if PREDICATES in cr else []))
 
         self.notifyMsgListener("1 link invitation found for {}.".
                                format(linkInvitationName))

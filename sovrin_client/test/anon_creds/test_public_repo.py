@@ -11,6 +11,7 @@ from stp_core.common.log import getlogger
 
 from sovrin_client.anon_creds.sovrin_public_repo import SovrinPublicRepo
 from sovrin_client.test.anon_creds.conftest import GVT
+from random import randint
 
 
 logger = getlogger()
@@ -105,6 +106,15 @@ def testGetSchema(submittedSchemaDefGvt, publicRepo, looper):
     schema = looper.run(publicRepo.getSchema(ID(schemaKey=key)))
     assert schema == submittedSchemaDefGvt
 
+def testGetSchemaBySeqNo(submittedSchemaDefGvt, publicRepo, looper):
+    schema = looper.run(publicRepo.getSchema(ID(schemaId=submittedSchemaDefGvt.seqId)))
+    assert schema == submittedSchemaDefGvt
+
+
+def testGetSchemaByInvalidSeqNo(submittedSchemaDefGvt, publicRepo, looper):
+    assert not looper.run(publicRepo.getSchema(ID(schemaId=(submittedSchemaDefGvt.seqId + randint(100, 1000)))))
+
+
 def testGetSchemaNonExistent(submittedSchemaDefGvt, publicRepo, looper):
     key = submittedSchemaDefGvt.getKey()
     key = key._replace(name=key.name+randomString(5))
@@ -125,6 +135,7 @@ def testGetPrimaryPublicKey(submittedSchemaDefGvtID, submittedPublicKey,
     non_existent_cd = looper.run(publicRepo.getPublicKey(
         id=submittedSchemaDefGvtID, signatureType='CL'))
     assert non_existent_cd is None
+
 
 def testGetPrimaryPublicKeyNonExistent(submittedSchemaDefGvtID,
                             publicRepo, looper):

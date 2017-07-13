@@ -85,9 +85,9 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-new-names==0.4.4', 
-                      'indy-anoncreds-new-names==0.4.2',
-                      'sovrin==0.1.2',
+    install_requires=['indy-plenum-dev==0.4.43',
+                      'indy-anoncreds-dev==0.4.12',
+                      'sovrin-dev==0.2.4',
                       'python-dateutil',
                       'timeout-decorator'],
     setup_requires=['pytest-runner'],

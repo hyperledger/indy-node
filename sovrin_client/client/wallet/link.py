@@ -5,7 +5,7 @@ from plenum.common.signer_did import DidIdentity
 from plenum.common.types import f
 from plenum.common.util import prettyDateDifference, friendlyToRaw
 from plenum.common.verifier import DidVerifier
-from sovrin_client.client.wallet.types import AvailableClaim
+from anoncreds.protocol.types import AvailableClaim
 
 from sovrin_common.exceptions import InvalidLinkException, \
     RemoteEndpointNotFound, NotFound

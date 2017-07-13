@@ -303,7 +303,7 @@ def check_wallet(cli,
                     format(totalSchemas, actualSchemas)
 
             assert (totalClaimsRcvd is None or
-                    totalClaimsRcvd == len((await w.getAllClaims()).keys()))
+                    totalClaimsRcvd == len((await w.getAllClaimsSignatures()).keys()))
 
     if within:
         cli.looper.run(eventually(check, timeout=within))
@@ -390,7 +390,7 @@ def getTotalSchemas(userCli):
 def getTotalClaimsRcvd(userCli):
     async def getTotalClaimsRcvdCoro():
         return 0 if userCli.agent.prover is None \
-            else len((await userCli.agent.prover.wallet.getAllClaims()).keys())
+            else len((await userCli.agent.prover.wallet.getAllClaimsSignatures()).keys())
     return userCli.looper.run(getTotalClaimsRcvdCoro)
 
 

@@ -66,7 +66,7 @@ GET_CLAIM_DEF = SovrinTransactions.GET_CLAIM_DEF.value
 POOL_UPGRADE = SovrinTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = SovrinTransactions.NODE_UPGRADE.value
 
-openTxns = (GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF)
+openTxns = (GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, GET_TXNS)
 
 # TXN_TYPE -> (requireds, optionals)
 fields = {NYM: ([TARGET_NYM], [ROLE]),

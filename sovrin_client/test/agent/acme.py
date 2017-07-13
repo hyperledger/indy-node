@@ -126,6 +126,19 @@ def create_acme(name=None, wallet=None, base_dir_path=None, port=6666, client=No
                 "ssn": "string"
             },
             "verifiableAttributes": ["degree", "status", "ssn"]
+        },
+        "Job-Application-v0.3": {
+            "name": "Job-Application-2",
+            "version": "0.3",
+            "attributes": {
+                "first_name": "string",
+                "last_name": "string",
+                "phone_number": "string",
+                "degree": "string",
+                "status": "string",
+                "ssn": "string"
+            },
+            "verifiableAttributes": ["degree", "status"]
         }
     }
 

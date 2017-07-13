@@ -20,7 +20,7 @@ from prompt_toolkit.layout.lexers import SimpleLexer
 from pygments.token import Token
 
 from anoncreds.protocol.globals import KEYS
-from anoncreds.protocol.types import Schema, ID
+from anoncreds.protocol.types import Schema, ID, ProofRequest
 from plenum.cli.constants import PROMPT_ENV_SEPARATOR, NO_ENV
 from plenum.cli.helper import getClientGrams
 from plenum.cli.phrase_word_completer import PhraseWordCompleter
@@ -49,7 +49,6 @@ from sovrin_client.client.client import Client
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.client.wallet.link import Link
 from sovrin_client.client.wallet.node import Node
-from sovrin_client.client.wallet.types import ProofRequest
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.auth import Authoriser
@@ -1509,7 +1508,7 @@ class SovrinCli(PlenumCli):
     async def _showProofWithMatchingClaims(self, c: Context):
         self.print(c.proofRequest.fixedInfo + self._formatProofRequestAttribute(
             c.proofRequest.attributes,
-            c.proofRequest.verifiableAttributes,
+            [v.name for k, v in c.proofRequest.verifiableAttributes.items()],
             c.proofRequest.fulfilledByClaims
         ))
 
