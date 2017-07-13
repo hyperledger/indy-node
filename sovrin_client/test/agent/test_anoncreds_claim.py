@@ -27,7 +27,7 @@ def test_claim_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
                                                   attributes=attr)
         claim_signature, claim_attributes = await faberAgent.issuer.issueClaim(ID(schemaKey=schemaKey), claimReq)
 
-        msg = get_claim_libsovrin_msg(signature, schema.seqId)
+        msg = get_claim_libsovrin_msg(claim_signature, schema.seqId)
 
         await aliceAgent.handleReqClaimResponse(msg)
 
