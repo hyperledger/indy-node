@@ -1508,7 +1508,7 @@ class SovrinCli(PlenumCli):
     async def _showProofWithMatchingClaims(self, c: Context):
         self.print(c.proofRequest.fixedInfo + self._formatProofRequestAttribute(
             c.proofRequest.attributes,
-            c.proofRequest.verifiableAttributes,
+            [v.name for k, v in c.proofRequest.verifiableAttributes.items()],
             c.proofRequest.fulfilledByClaims
         ))
 
