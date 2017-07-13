@@ -6,7 +6,7 @@ if [ -z "$package" ] ; then
 fi
 
 SCRIPT_DIR=$(dirname $0)
-TARGET_PACKAGES=("python3-sovrin-common" "python3-plenum" "python3-stp" "python3-ledger" "python3-state-trie" "python3-anoncreds")
+TARGET_PACKAGES=("indy-plenum" "indy-anoncreds")
 
 res=""
 for item in "${TARGET_PACKAGES[@]}"
