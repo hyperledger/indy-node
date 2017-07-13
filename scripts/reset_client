@@ -1,0 +1,24 @@
+#! /usr/bin/env python3
+
+import os
+
+from sovrin_client.script_helper import performSovrinBaseDirCleanup
+from sovrin_common.config_util import getConfig
+
+config = getConfig()
+baseDir = os.path.expanduser(config.baseDir)
+
+print("\nIMPORTANT: This will clean up sovrin base directory: {}".format(baseDir))
+userAnswer = "no"
+validAns = "YeS"
+try:
+    userAnswer = input("\nAre you sure, type {} to continue: ".format(validAns))
+except KeyboardInterrupt:
+    pass
+
+if userAnswer == validAns:
+    performSovrinBaseDirCleanup(baseDir)
+    print("\nSovrin base directory cleaned up.\n")
+else:
+    print("\nOk, no cleanup performed.\n")
+
