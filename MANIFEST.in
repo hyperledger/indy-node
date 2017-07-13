@@ -1,2 +1,3 @@
 recursive-include data *
+recursive-include sample *
 include post-setup.py
