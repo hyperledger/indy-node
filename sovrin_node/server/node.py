@@ -15,8 +15,9 @@ from plenum.common.constants import VERSION, \
     HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID, LedgerState
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
-from plenum.common.types import Reply, RequestAck, f, \
-    OPERATION, LedgerStatus
+from plenum.common.types import f, \
+    OPERATION
+from plenum.common.messages.node_messages import RequestAck, Reply, LedgerStatus
 from plenum.common.util import error
 from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.persistence.util import txnsWithMerkleInfo
@@ -24,7 +25,7 @@ from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE
 from sovrin_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from sovrin_common.txn_util import getTxnOrderedFields
@@ -48,6 +49,7 @@ jsonSerz = JsonSerializer()
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
     _client_request_class = SafeRequest
+    ledger_ids = PlenumNode.ledger_ids + [CONFIG_LEDGER_ID]
 
     def __init__(self,
                  name,
@@ -135,10 +137,6 @@ class Node(PlenumNode, HasPoolManager):
         if self.ledgerManager.ledgerRegistry[DOMAIN_LEDGER_ID].state == LedgerState.synced:
             self.sendConfigLedgerStatus(node_name)
 
-    @property
-    def ledger_ids(self):
-        return super().ledger_ids + [CONFIG_LEDGER_ID]
-
     def getUpgrader(self):
         return Upgrader(self.id,
                         self.name,
@@ -206,9 +204,7 @@ class Node(PlenumNode, HasPoolManager):
         self.acknowledge_upgrade()
 
     def start_config_ledger_sync(self):
-        self.ledgerManager.setLedgerCanSync(CONFIG_LEDGER_ID, True)
-        for nm in self.nodestack.connecteds:
-            self.sendConfigLedgerStatus(nm)
+        self._sync_ledger(CONFIG_LEDGER_ID)
         self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
@@ -219,8 +215,7 @@ class Node(PlenumNode, HasPoolManager):
 
     @property
     def configLedgerStatus(self):
-        return LedgerStatus(CONFIG_LEDGER_ID, self.configLedger.size,
-                            self.configLedger.root_hash)
+        return self.build_ledger_status(CONFIG_LEDGER_ID)
 
     def getLedgerStatus(self, ledgerId: int):
         if ledgerId == CONFIG_LEDGER_ID:
@@ -244,6 +239,8 @@ class Node(PlenumNode, HasPoolManager):
 
     def acknowledge_upgrade(self):
         if self.upgrader.isItFirstRunAfterUpgrade:
+            logger.debug('{} found the first run after upgrade, will '
+                         'send NODE_UPGRADE'.format(self))
             lastUpgradeVersion = self.upgrader.lastExecutedUpgradeInfo[1]
             action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
             op = {
@@ -285,7 +282,7 @@ class Node(PlenumNode, HasPoolManager):
         if all(attr in msg.keys()
                for attr in [OPERATION, f.IDENTIFIER.nm, f.REQ_ID.nm]) \
                 and msg.get(OPERATION, {}).get(TXN_TYPE) == NODE_UPGRADE:
-            cls = Request
+            cls = self._client_request_class
             cMsg = cls(**msg)
             return cMsg, frm
         else:
@@ -355,26 +352,30 @@ class Node(PlenumNode, HasPoolManager):
 
     def processRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == GET_NYM:
-            self.transmitToClient(RequestAck(*request.key), frm)
+            self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetNymReq(request, frm)
             self.transmitToClient(Reply(result), frm)
-        # TODO: Come back to it
-        elif request.operation[TXN_TYPE] == GET_TXNS:
-            # self.processGetTxnReq(request, frm)
-            return
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
-            self.transmitToClient(RequestAck(*request.key), frm)
+            self.send_ack_to_client(request.key, frm)
+            # TODO: `handleGetSchemaReq` should be changed to
+            # `get_reply_for_schema_req`, the rationale being that the method
+            # is not completely handling the request but fetching a response.
+            # Similar reasoning follows for other methods below
             result = self.reqHandler.handleGetSchemaReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         elif request.operation[TXN_TYPE] == GET_ATTR:
-            self.transmitToClient(RequestAck(*request.key), frm)
+            self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetAttrsReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
-            self.transmitToClient(RequestAck(*request.key), frm)
+            self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetClaimDefReq(request, frm)
             self.transmitToClient(Reply(result), frm)
         else:
+            # forced request should be processed before consensus
+            if request.operation[TXN_TYPE] == POOL_UPGRADE and request.isForced():
+                self.configReqHandler.validate(request)
+                self.configReqHandler.applyForced(request)
             super().processRequest(request, frm)
 
     @classmethod
@@ -402,7 +403,7 @@ class Node(PlenumNode, HasPoolManager):
         Execute the REQUEST sent to this Node
 
         :param ppTime: the time at which PRE-PREPARE was sent
-        :param req: the client REQUEST
+        :param req: the client REQUEST  
         """
         return self.commitAndSendReplies(self.reqHandler, ppTime, reqs,
                                          stateRoot, txnRoot)

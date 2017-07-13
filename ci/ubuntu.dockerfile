@@ -18,7 +18,7 @@ RUN pip3 install -U \
 	pip \ 
 	setuptools \
 	virtualenv
-RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EAA542E8
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
 RUN echo "deb https://repo.evernym.com/deb xenial master" >> /etc/apt/sources.list
 RUN apt-get update -y
 RUN apt-get install -y \ 
@@ -33,5 +33,27 @@ USER root
 RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
 RUN ln -sf /home/sovrin/test/bin/pip /usr/local/bin/pip
 USER sovrin
+# TODO: Automate dependency collection
+RUN pip install jsonpickle \
+	ujson \
+	prompt_toolkit==0.57 \
+	pygments \
+	crypto==1.4.1 \
+	rlp \
+	sha3 \
+	leveldb \
+	ioflo==1.5.4 \
+	semver \
+	base58 \
+	orderedset \
+	sortedcontainers==1.5.7 \
+	psutil \
+	pip \
+	portalocker==0.5.7 \
+	pyzmq \
+	raet \
+	ioflo==1.5.4 \
+	psutil \
+	intervaltree
 ENV PYTHONPATH $PYTHONPATH:/home/sovrin/test/bin
 WORKDIR /home/sovrin

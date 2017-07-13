@@ -112,7 +112,8 @@ def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
 def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
                                   anotherTrustee, anotherTGB, anotherSteward,
                                   anotherTrustAnchor):
-    for identity in (anotherTrustee, anotherTGB, anotherSteward, anotherTrustAnchor):
+    for identity in (anotherTrustee, anotherTGB, anotherSteward,
+                     anotherTrustAnchor):
         # Trustee cannot change verkey
         _, wallet = identity
         signer = DidSigner()
