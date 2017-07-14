@@ -128,6 +128,19 @@ def demo_wait_for_claim_received(looper, agent, claim_name):
     _wait_for(looper, _)
 
 
+def demo_wait_for_claim_attrs_received(looper, agent, claim_name):
+    async def _():
+        claims = await agent.prover.wallet.getAllClaimsAttributes()
+        assert len(claims) > 0
+        for schema_key, claims in claims.items():
+            if schema_key.name == claim_name:
+                return claims
+
+        assert False
+
+    _wait_for(looper, _)
+
+
 def demo_wait_for_sync(looper, link):
     def _():
         last_sync = link.linkLastSynced
@@ -209,5 +222,18 @@ ACME_INVITE = """
         "nonce": "57fbf9dc8c8e6acde33de98c6d747b28c",
         "endpoint": "127.0.0.1:6666"
     },
+    "proof-requests": [{
+      "name": "Job-Application",
+      "version": "0.2",
+      "attributes": {
+          "first_name": "string",
+          "last_name": "string",
+          "phone_number": "string",
+          "degree": "string",
+          "status": "string",
+          "ssn": "string"
+      },
+      "verifiableAttributes": ["degree", "status", "ssn"]
+    }],
     "sig": "sdf"
 }""" % (ACME_ID, ACME_VERKEY)

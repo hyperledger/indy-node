@@ -70,9 +70,9 @@ def getting_started(base_dir=None):
 
     pool.run(alice_agent.send_claim(link_to_faber, claim_to_request))
 
-    demo_wait_for_claim_received(pool, alice_agent, 'Transcript')
+    demo_wait_for_claim_attrs_received(pool, alice_agent, 'Transcript')
 
-    claims = pool.run(alice_agent.prover.wallet.getAllClaimsSignatures())
+    claims = pool.run(alice_agent.prover.wallet.getAllClaimsAttributes())
 
     print(claims)
 
@@ -117,9 +117,9 @@ def getting_started(base_dir=None):
 
     pool.run(alice_agent.send_claim(link_to_acme, job_certificate))
 
-    demo_wait_for_claim_received(pool, alice_agent, 'Job-Certificate')
+    demo_wait_for_claim_attrs_received(pool, alice_agent, 'Job-Certificate')
 
-    claims = pool.run(alice_agent.prover.wallet.getAllClaimsSignatures())
+    claims = pool.run(alice_agent.prover.wallet.getAllClaimsAttributes())
 
     print(claims)
 
