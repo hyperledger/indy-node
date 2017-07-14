@@ -68,7 +68,7 @@ class EnhancedInstallDev(develop):
         post_install()
 
 setup(
-    name='sovrin-node-dev',
+    name='indy-node-dev',
     version=__version__,
     description='Sovrin node',
     url='https://github.com/hyperledger/indy-node',
@@ -85,8 +85,8 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['plenum-dev==0.4.41',
-                      'anoncreds-dev==0.4.11',
+    install_requires=['indy-plenum-dev==0.4.46',
+                      'indy-anoncreds-dev==0.4.12',
                       'python-dateutil',
                       'timeout-decorator'],
     setup_requires=['pytest-runner'],
