@@ -14,7 +14,7 @@ file.
 specific maintainers; if you see another `MAINTAINERS.md` in a subfolder,
 that governs the tree below it.
 
-3. A lot of interactions with maintainers take place on [Jira](https://jira.hyperledger.org).
+3. A lot of interactions with maintainers take place on [Jira](https://jira.hyperledger.org/projects/INDY).
 You'll need [Linux Foundation credentials](https://identity.linuxfoundation.org) to
 comment there; creating them is self-service. The project name you want, once in
 jira, is "INDY".
