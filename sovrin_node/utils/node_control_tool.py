@@ -59,7 +59,7 @@ class NodeControlTool:
     def _call_upgrade_script(self, version):
         logger.info('Upgrading sovrin node to version {}, test_mode {}'.format(version, int(self.test_mode)))
 
-        deps = self._get_deps_list('sovrin-node={}'.format(version))
+        deps = self._get_deps_list('indy-node={}'.format(version))
         deps = '"{}"'.format(deps)
 
         cmd_file = 'upgrade_sovrin_node'
