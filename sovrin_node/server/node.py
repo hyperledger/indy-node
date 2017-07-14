@@ -1,26 +1,20 @@
-from collections import deque
-from copy import deepcopy
-from hashlib import sha256
 from typing import Iterable, Any, List
 
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.serializers.compact_serializer import CompactSerializer
 from ledger.serializers.json_serializer import JsonSerializer
 from ledger.stores.file_hash_store import FileHashStore
-from orderedset._orderedset import OrderedSet
 from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, \
     POOL_TXN_TYPES, NODE_PRIMARY_STORAGE_SUFFIX, \
-    HASH, ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID, LedgerState
+    ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID, LedgerState
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.types import f, \
     OPERATION
-from plenum.common.messages.node_messages import RequestAck, Reply, LedgerStatus
-from plenum.common.util import error
+from plenum.common.messages.node_messages import Reply
 from plenum.persistence.storage import initStorage, initKeyValueStorage
-from plenum.persistence.util import txnsWithMerkleInfo
 from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
@@ -388,14 +382,14 @@ class Node(PlenumNode, HasPoolManager):
         if txnType in CONFIG_TXN_TYPES:
             return CONFIG_LEDGER_ID
 
-    def applyReq(self, request: Request):
+    def applyReq(self, request: Request, cons_time):
         """
         Apply request to appropriate ledger and state
         """
         if self.__class__.ledgerIdForRequest(request) == CONFIG_LEDGER_ID:
-            return self.configReqHandler.apply(request)
+            return self.configReqHandler.apply(request, cons_time)
         else:
-            return super().applyReq(request)
+            return super().applyReq(request, cons_time)
 
     def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
                           txnRoot) -> List:

@@ -81,8 +81,8 @@ class ConfigReqHandler(RequestHandler):
                         Roles.nameFromValue(originRole),
                         SovrinTransactions.POOL_UPGRADE.name))
 
-    def apply(self, req: Request):
-        txn = reqToTxn(req)
+    def apply(self, req: Request, cons_time):
+        txn = reqToTxn(req, cons_time)
         self.ledger.appendTxns([txn])
         return txn
 
