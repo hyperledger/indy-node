@@ -15,7 +15,7 @@ from sovrin_common.constants import GET_SCHEMA, SCHEMA, ATTR_NAMES, \
 from anoncreds.protocol.repo.public_repo import PublicRepo
 from anoncreds.protocol.types import Schema, ID, PublicKey, \
     RevocationPublicKey, AccumulatorPublicKey, \
-    Accumulator, TailsType, TimestampType
+    Accumulator, Tails, TimestampType
 from sovrin_common.types import Request
 from sovrin_common.constants import SIGNATURE_TYPE
 
@@ -118,7 +118,7 @@ class SovrinPublicRepo(PublicRepo):
     async def getAccumulator(self, id: ID) -> Accumulator:
         raise NotImplementedError
 
-    async def getTails(self, id: ID) -> TailsType:
+    async def getTails(self, id: ID) -> Tails:
         raise NotImplementedError
 
     # SUBMIT
@@ -171,7 +171,7 @@ class SovrinPublicRepo(PublicRepo):
             return pk, pkR
 
     async def submitAccumulator(self, id: ID, accumPK: AccumulatorPublicKey,
-                                accum: Accumulator, tails: TailsType):
+                                accum: Accumulator, tails: Tails):
         raise NotImplementedError
 
     async def submitAccumUpdate(self, id: ID, accum: Accumulator,
