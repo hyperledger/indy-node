@@ -1,5 +1,4 @@
 import json
-from binascii import unhexlify
 from typing import List
 from hashlib import sha256
 
