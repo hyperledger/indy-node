@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="master-artboard"
+   viewBox="0 0 964 300"
+   width="964"
+   height="300"
+   version="1.1"
+   style="clip-rule:evenodd;fill-rule:evenodd;image-rendering:optimizeQuality;shape-rendering:geometricPrecision;text-rendering:geometricPrecision"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="indy-logo.svg">
+  <title
+     id="title4590">Hyperledger Indy Logo</title>
+  <metadata
+     id="metadata3568">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Hyperledger Indy Logo</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Daniel Hardman</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>CC0 Public Domain (donated to Indy without condition)</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:contributor>
+          <cc:Agent>
+            <dc:title>Daniel Hardman (built from scratch; not derived from anything)</dc:title>
+          </cc:Agent>
+        </dc:contributor>
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3566" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1498"
+     inkscape:window-height="955"
+     id="namedview3564"
+     showgrid="true"
+     fit-margin-top="10"
+     fit-margin-left="10"
+     fit-margin-right="10"
+     fit-margin-bottom="10"
+     showborder="true"
+     inkscape:zoom="0.83972969"
+     inkscape:cx="412.25586"
+     inkscape:cy="64.543945"
+     inkscape:window-x="307"
+     inkscape:window-y="162"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="master-artboard">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3570"
+       originx="-14.132563"
+       originy="0.00589104" />
+  </sodipodi:namedview>
+  <rect
+     id="ee-background"
+     x="-14.132563"
+     y="-0.0058802366"
+     width="900"
+     height="300"
+     style="fill:#ffffff;fill-opacity:0" />
+  <g
+     id="g3476"
+     transform="matrix(0.79543424,0,0,0.79543424,-29.374918,-164.19294)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-39"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-40"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3480"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3482"
+     transform="matrix(0.4773114,0,0,0.4773114,-22.142277,-214.49827)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-11"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-12"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3486"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3488"
+     transform="matrix(0.31250858,0,0,0.31250858,197.9259,-14.885247)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-1"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-2"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3492"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3494"
+     transform="matrix(0.40373871,0,0,0.40373871,118.6681,47.206187)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-15"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-16"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3498"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3500"
+     transform="matrix(1.7972,0,0,1.7972,-306.01556,-798.51339)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-31"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-32"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3504"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3506"
+     transform="matrix(0.94327003,0,0,0.94327003,35.370161,-283.14336)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-3"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-4"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3510"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3512"
+     transform="matrix(0.17330407,0,0,0.17330407,246.03239,38.641745)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-25"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-26"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3516"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3518"
+     transform="matrix(0.62891477,0,0,0.62891477,-110.12272,-108.14605)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-5"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-6"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3522"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3524"
+     transform="matrix(0.23412183,0,0,0.23412183,0.764975,-82.9111)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-7"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-8"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3528"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3530"
+     transform="matrix(0.08473194,0,0,0.08473194,280.53852,83.104273)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-9"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-10"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3534"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3536"
+     transform="matrix(0.08473194,0,0,0.08473194,25.876638,7.8212873)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-13"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-14"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3540"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3542"
+     transform="matrix(0.20680638,0,0,0.20680638,143.41198,-29.113302)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-17"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-18"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3546"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3548"
+     transform="matrix(0.37989122,0,0,0.37989122,131.63043,-117.61278)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-19"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-20"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3552"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <g
+     id="g3554"
+     transform="matrix(0.1165688,0,0,0.1165688,86.558337,205.88381)"
+     style="fill:#00528e;fill-opacity:1">
+    <g
+       id="g-21"
+       style="fill:#00528e;fill-opacity:1">
+      <g
+         id="g-22"
+         style="fill:#00528e;fill-opacity:1">
+        <path
+           inkscape:connector-curvature="0"
+           id="path3558"
+           style="fill:#00528e;fill-opacity:1"
+           d="m 277,546 -43,25 -43,-25 0,-50 43,-25 43,25 0,50 z"
+           class="st0" />
+      </g>
+    </g>
+  </g>
+  <flowRoot
+     xml:space="preserve"
+     id="flowRoot4486"
+     style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     transform="translate(-14.132563,-0.00588023)"><flowRegion
+       id="flowRegion4488"><rect
+         id="rect4490"
+         width="450"
+         height="60"
+         x="350"
+         y="40" /></flowRegion><flowPara
+       id="flowPara4492" /></flowRoot>  <g
+     id="g4510"
+     transform="matrix(1.3210495,0,0,1.3210495,-130.81496,-73.757167)">
+    <text
+       sodipodi:linespacing="125%"
+       id="text4494"
+       y="132.3187"
+       x="355.14133"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:800;font-stretch:normal;font-size:63.75px;font-family:Avenir;-inkscape-font-specification:'Avenir Ultra-Bold'"
+         y="132.3187"
+         x="355.14133"
+         id="tspan4496"
+         sodipodi:role="line">HYPERLEDGER</tspan></text>
+    <flowRoot
+       transform="translate(-12.486681,-1.5608351)"
+       style="font-style:normal;font-weight:normal;font-size:127.5px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#939598;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       id="flowRoot4498"
+       xml:space="preserve"><flowRegion
+         id="flowRegion4500"><rect
+           style="font-size:127.5px;fill:#939598;fill-opacity:1"
+           y="130"
+           x="360"
+           height="170"
+           width="380"
+           id="rect4502" /></flowRegion><flowPara
+         style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:135px;font-family:Avenir;-inkscape-font-specification:'Avenir Medium';fill:#939598;fill-opacity:1"
+         id="flowPara4504">INDY</flowPara></flowRoot>  </g>
+</svg>
