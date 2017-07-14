@@ -30,3 +30,5 @@ to understand how to work with the code. Note that setup instructions may change
 ## Contributions
 
 We'd love your help; see these [instructions on how to contribute](http://bit.ly/2ugd0bq).
+You may also want to read this info about [maintainers](MAINTAINERS.md).
+
