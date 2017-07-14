@@ -1,4 +1,6 @@
-# Indy Node
+![logo](collateral/logos/indy-logo.png)
+
+## Indy Node
 
 [![Build Status](https://jenkins.evernym.com/buildStatus/icon?job=Sovrin%20Node/master)](https://jenkins.evernym.com/view/Core/job/Sovrin%20Node/job/master/)    
 
