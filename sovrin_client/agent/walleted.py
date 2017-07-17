@@ -821,12 +821,12 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             existingLinkInvites = self.wallet. \
                 getMatchingLinks(linkName)
             if len(existingLinkInvites) >= 1:
-                return self._mergeInvitaion(invitationData)
+                return self._mergeInvitation(invitationData)
             Link.validate(invitationData)
             link = self.loadInvitation(invitationData)
             return link
 
-    def _mergeInvitaion(self, invitationData):
+    def _mergeInvitation(self, invitationData):
         linkInvitation = invitationData.get('link-invitation')
         linkName = linkInvitation['name']
         link = self.wallet.getLink(linkName)
@@ -883,9 +883,9 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             VERKEY: self.wallet.getVerkey(link.localIdentifier)
         }
         logger.debug("{} accepting invitation from {} with id {}".
-                     format(self.name, link.name, link.localIdentifier))
+                     format(self.name, link.name, link.remoteIdentifier))
         self.logger.info('Accepting invitation with nonce {} from id {}'
-                         .format(link.invitationNonce, link.localIdentifier))
+                         .format(link.invitationNonce, link.remoteIdentifier))
         self.signAndSendToLink(msg, link.name)
 
     # def _handleSyncNymResp(self, link, additionalCallback):
