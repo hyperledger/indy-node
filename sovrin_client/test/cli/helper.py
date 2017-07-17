@@ -140,7 +140,7 @@ def getLinkInvitation(name, wallet) -> Link:
     return li
 
 
-def getPoolTxnData(nodeAndClientInfoFilePath, poolId, newPoolTxnNodeNames):
+def getPoolTxnData(poolId, newPoolTxnNodeNames):
     data={}
     data["seeds"]={}
     data["txns"]=[]

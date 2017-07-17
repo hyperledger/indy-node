@@ -13,7 +13,7 @@ from sovrin_node.pool.local_pool import create_local_pool
 # noinspection PyUnresolvedReferences
 from sovrin_node.test.conftest import tdir, conf, nodeSet, tconf, \
     updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet, poolTxnData, \
-    nodeAndClientInfoFilePath, dirName, tdirWithDomainTxns, tdirWithPoolTxns, \
+    dirName, tdirWithDomainTxns, tdirWithPoolTxns, \
     domainTxnOrderedFields, genesisTxns, stewardWallet, poolTxnStewardData, \
     poolTxnStewardNames, trusteeWallet, trusteeData, poolTxnTrusteeNames, \
     patchPluginManager, txnPoolNodesLooper, tdirWithPoolTxns, \

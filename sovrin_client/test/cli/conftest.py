@@ -947,8 +947,7 @@ def multiPoolNodesCreated(request, tconf, looper, tdir, nodeAndClientInfoFilePat
         newPoolTxnNodeNames = [poolName + n for n
                                in ("Alpha", "Beta", "Gamma", "Delta")]
         newTdir = os.path.join(tdir, poolName + "basedir")
-        newPoolTxnData = getPoolTxnData(
-            nodeAndClientInfoFilePath, poolName, newPoolTxnNodeNames)
+        newPoolTxnData = getPoolTxnData(poolName, newPoolTxnNodeNames)
         newTdirWithPoolTxns = tdirWithPoolTxns(newPoolTxnData, newTdir, tconf)
         newTdirWithDomainTxns = tdirWithDomainTxns(
             newPoolTxnData, newTdir, tconf, domainTxnOrderedFields())
