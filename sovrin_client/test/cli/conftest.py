@@ -936,7 +936,7 @@ class TestMultiNode:
 
 
 @pytest.yield_fixture(scope="module")
-def multiPoolNodesCreated(request, tconf, looper, tdir, nodeAndClientInfoFilePath,
+def multiPoolNodesCreated(request, tconf, looper, tdir,
                           cliTempLogger, namesOfPools=("pool1", "pool2")):
     oldENVS = tconf.ENVS
     oldPoolTxnFile = tconf.poolTransactionsFile
