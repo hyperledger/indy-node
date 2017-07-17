@@ -281,8 +281,8 @@ def notConnectedStatus(connectUsage):
 
 @pytest.fixture(scope="module")
 def newKeyringOut():
-    return ["New keyring {keyring-name} created",
-            'Active keyring set to "{keyring-name}"'
+    return ["New wallet {keyring-name} created",
+            'Active wallet set to "{keyring-name}"'
             ]
 
 

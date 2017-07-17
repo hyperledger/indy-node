@@ -92,7 +92,7 @@ def aliceAcceptedAcmeInvitationNoProofReq(
         keyringMapper = {
             'keyring-name': keyring
         }
-        do('new keyring {}'.format(keyring),
+        do('new wallet {}'.format(keyring),
            expect=newKeyringOut,
            mapper=keyringMapper)
         do('load {}'.format(invitationFile),

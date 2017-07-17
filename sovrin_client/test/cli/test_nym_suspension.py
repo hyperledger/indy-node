@@ -79,8 +79,8 @@ def trustAnchorCLI(CliBuilder):
 @pytest.fixture(scope="module")
 def trustAnchorCli(trustAnchorCLI, be, do, connectedToTest, trustAnchorAdded):
     be(trustAnchorCLI)
-    do('new wallet TS', expect=['New keyring TS created',
-                                   'Active keyring set to "TS"'])
+    do('new wallet TS', expect=['New wallet TS created',
+                                   'Active wallet set to "TS"'])
     seed = hexlify(vals['newTrustAnchorIdr'][1]).decode()
     do('new key with seed {seed}', expect=['Key created in keyring TS'],
        mapper={'seed': seed})
@@ -96,8 +96,8 @@ def anotherTrusteeCLI(CliBuilder):
 @pytest.fixture(scope="module")
 def anotherTrusteeCli(anotherTrusteeCLI, be, do, connectedToTest, anotherTrusteeAdded):
     be(anotherTrusteeCLI)
-    do('new wallet TS1', expect=['New keyring TS1 created',
-                                   'Active keyring set to "TS1"'])
+    do('new wallet TS1', expect=['New wallet TS1 created',
+                                   'Active wallet set to "TS1"'])
     seed = hexlify(vals['newTrusteeIdr'][1]).decode()
     do('new key with seed {seed}', expect=['Key created in keyring TS1'],
        mapper={'seed': seed})
