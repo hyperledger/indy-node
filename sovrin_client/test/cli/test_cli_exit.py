@@ -12,7 +12,7 @@ def testCliExitCommand(be, do, poolNodesStarted, aliceCLI, CliBuilder,
     name = 'Alice'
     be(aliceCLI)
     do('prompt {}'.format(name), expect=prompt_is(name))
-    do('new keyring {}'.format(name), expect=newKeyringOut, mapper=aliceMap)
+    do('new wallet {}'.format(name), expect=newKeyringOut, mapper=aliceMap)
     do('connect test', within=within, expect=connectedToTest)
     with pytest.raises(Exit):
         do('exit')

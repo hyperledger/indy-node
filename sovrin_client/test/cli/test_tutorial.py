@@ -134,7 +134,7 @@ def connectIfNotAlreadyConnected(do, expectMsgs, userCli, userMap):
 
 def setPromptAndKeyring(do, name, newKeyringOut, userMap):
     do('prompt {}'.format(name), expect=prompt_is(name))
-    do('new keyring {}'.format(name), expect=newKeyringOut, mapper=userMap)
+    do('new wallet {}'.format(name), expect=newKeyringOut, mapper=userMap)
 
 
 @pytest.fixture(scope="module")

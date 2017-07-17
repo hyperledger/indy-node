@@ -1316,7 +1316,7 @@ def philCli(be, do, philCLI, trusteeCli):
 
     do('prompt Phil', expect=prompt_is('Phil'))
 
-    do('new keyring Phil', expect=['New keyring Phil created',
+    do('new wallet Phil', expect=['New keyring Phil created',
                                    'Active keyring set to "Phil"'])
     phil_seed = '11111111111111111111111111111111'
     phil_signer = DidSigner(seed=phil_seed.encode())
