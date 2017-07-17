@@ -997,11 +997,6 @@ def assertReqAvailClaims(be, do, userCli, agentMap,
        within=3)
 
 
-# TODO: This test is failing on this branch as the available claims are tied
-# with internal id, which would be same for whosoever uses the same invitation
-# file (which has the nonce, and hence their internal id would be same),
-# so either this test's expectation is wrong OR we'll have to fix the issue.
-@pytest.mark.skip(reason='INDY-107')
 def testBobReqAvailClaimsFromAgents(
         be, do, bobCli, loadInviteOut, faberMap, acmeMap, thriftMap,
         connectedToTest, syncedInviteAcceptedWithClaimsOut,
