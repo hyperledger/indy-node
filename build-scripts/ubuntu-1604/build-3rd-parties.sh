@@ -28,9 +28,9 @@ function build_from_pypi {
         --python-bin "/usr/bin/python3" \
         --exclude "*.pyc" \
         --exclude "*.pyo" \
+        --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
         --after-install ${POSTINST_TMP} \
         --before-remove ${PREREM_TMP} \
-        --maintainer "Evernym <dev@evernym.com>" \
         --package ${OUTPUT_PATH} \
         ${PACKAGE_NAME}${PACKAGE_VERSION}
 
