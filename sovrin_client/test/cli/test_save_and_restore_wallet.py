@@ -53,8 +53,8 @@ def connectTo(envName, do, cli, activeWalletPresents, identifiers,
     _connectTo(envName, do, cli)
     if currActiveWallet is None and firstTimeConnect:
         do(None, expect=[
-            "New keyring Default created",
-            'Active keyring set to "Default"']
+            "New wallet Default created",
+            'Active wallet set to "Default"']
         )
 
     if activeWalletPresents:
@@ -92,13 +92,13 @@ def restartCliWithCorruptedWalletFile(cli, be, do, filePath):
     do(None,
        expect=[
            'error occurred while restoring wallet',
-           'New keyring Default_',
-           'Active keyring set to "Default_',
+           'New wallet Default_',
+           'Active wallet set to "Default_',
        ],
        not_expect=[
-           'Saved keyring "Default" restored',
-           'New keyring Default created',
-           'Active keyring set to "Default"'
+           'Saved wallet "Default" restored',
+           'New wallet Default created',
+           'Active wallet set to "Default"'
     ], within=5)
 
 

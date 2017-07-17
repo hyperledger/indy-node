@@ -281,8 +281,8 @@ def notConnectedStatus(connectUsage):
 
 @pytest.fixture(scope="module")
 def newKeyringOut():
-    return ["New keyring {keyring-name} created",
-            'Active keyring set to "{keyring-name}"'
+    return ["New wallet {keyring-name} created",
+            'Active wallet set to "{keyring-name}"'
             ]
 
 
@@ -1316,8 +1316,8 @@ def philCli(be, do, philCLI, trusteeCli):
 
     do('prompt Phil', expect=prompt_is('Phil'))
 
-    do('new wallet Phil', expect=['New keyring Phil created',
-                                   'Active keyring set to "Phil"'])
+    do('new wallet Phil', expect=['New wallet Phil created',
+                                   'Active wallet set to "Phil"'])
     phil_seed = '11111111111111111111111111111111'
     phil_signer = DidSigner(seed=phil_seed.encode())
 
