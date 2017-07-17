@@ -976,7 +976,7 @@ class SovrinCli(PlenumCli):
 
     def _getTargetEndpoint(self, li, postSync):
         if not self.activeWallet.identifiers:
-            self.print("No key present in keyring for making request on Sovrin,"
+            self.print("No key present in wallet for making request on Sovrin,"
                        " so adding one")
             self._newSigner(wallet=self.activeWallet)
         if self._isConnectedToAnyEnv():
@@ -1082,7 +1082,7 @@ class SovrinCli(PlenumCli):
         self.printSuggestion(msgs)
 
     def _printNoLinkFoundMsg(self):
-        self.print("No matching link invitations found in current keyring")
+        self.print("No matching link invitations found in current wallet")
         self._printShowAndLoadFileSuggestion()
 
     def _isConnectedToAnyEnv(self):
@@ -1176,14 +1176,14 @@ class SovrinCli(PlenumCli):
             return True
 
     # def _printNoClaimReqFoundMsg(self):
-    #     self.print("No matching Claim Requests found in current keyring\n")
+    #     self.print("No matching Claim Requests found in current wallet\n")
     #
     def _printNoProofReqFoundMsg(self):
-        self.print("No matching Proof Requests found in current keyring\n")
+        self.print("No matching Proof Requests found in current wallet\n")
 
     def _printNoClaimFoundMsg(self):
         self.print("No matching Claims found in "
-                   "any links in current keyring\n")
+                   "any links in current wallet\n")
 
     def _printMoreThanOneLinkFoundForRequest(self, requestedName, linkNames):
         self.print('More than one link matches "{}"'.format(requestedName))
@@ -1308,7 +1308,7 @@ class SovrinCli(PlenumCli):
 
         id, signer = self.activeWallet.addIdentifier(identifier,
                                                      seed=cseed, alias=alias)
-        self.print("Identifier created in keyring {}".format(self.activeWallet))
+        self.print("Identifier created in wallet {}".format(self.activeWallet))
         self.print("New identifier is {}".format(signer.identifier))
         self.print("New verification key is {}".format(signer.verkey))
         self._setActiveIdentifier(id)
@@ -1406,7 +1406,7 @@ class SovrinCli(PlenumCli):
             return rcvdClaim
         else:
             self.print("No matching Claims found "
-                       "in any links in current keyring")
+                       "in any links in current wallet")
 
     def _printRequestClaimMsg(self, claimName):
         self.printSuggestion(self._getReqClaimUsage(claimName))
@@ -1623,7 +1623,7 @@ class SovrinCli(PlenumCli):
         if self._activeWallet:
             if not self.checkIfWalletBelongsToCurrentContext(self._activeWallet):
                 self.print(self.getWalletContextMistmatchMsg, Token.BoldOrange)
-                self.print("Any changes made to this keyring won't "
+                self.print("Any changes made to this wallet won't "
                            "be persisted.", Token.BoldOrange)
 
     def moveActiveWalletToNewContext(self, newEnv):
@@ -1651,10 +1651,10 @@ class SovrinCli(PlenumCli):
                 targetWalletFilePath = getWalletFilePath(
                     targetContextDir, self.walletFileName)
 
-                self.print("Current active keyring got moved to '{}' "
+                self.print("Current active wallet got moved to '{}' "
                            "environment. Here is the detail:".format(newEnv),
                            Token.BoldBlue)
-                self.print("    keyring name: {}".format(
+                self.print("    wallet name: {}".format(
                     currentWalletName), Token.BoldBlue)
                 self.print("    old location: {}".format(
                     sourceWalletFilePath), Token.BoldBlue)
@@ -1664,10 +1664,10 @@ class SovrinCli(PlenumCli):
                     self.print("    new wallet name: {}".format(
                         self._activeWallet.name), Token.BoldBlue)
                     self.print("    Note:\n       Target environment "
-                               "already had a keyring with name '{}', so we "
-                               "renamed current active keyring to '{}'.\n      "
-                               " You can always rename any keyring with more "
-                               "meaningful name with 'rename keyring' command.".
+                               "already had a wallet with name '{}', so we "
+                               "renamed current active wallet to '{}'.\n      "
+                               " You can always rename any wallet with more "
+                               "meaningful name with 'rename wallet' command.".
                                format(currentWalletName, self._activeWallet.name),
                                Token.BoldBlue)
                 self._activeWallet = None
@@ -1742,7 +1742,7 @@ class SovrinCli(PlenumCli):
                 else NO_ENV
 
     def getStatus(self):
-        # TODO: This needs to show active keyring and active identifier
+        # TODO: This needs to show active wallet and active identifier
         if not self.activeEnv:
             self._printNotConnectedEnvMessage()
         else:

@@ -358,8 +358,8 @@ def getAgentCliHelpString():
          Usage:
             help [<command name>]
        prompt - Changes the prompt to given principal (a person like Alice, an organization like Faber College, or an IoT-style thing)
-       list keyrings - Lists all keyrings
-       list ids - Lists all identifiers of active keyring
+       list wallets - Lists all wallets
+       list ids - Lists all identifiers of active wallet
        show - Shows content of given file
        show link - Shows link info in case of one matching link, otherwise shows all the matching link names
        ping - Pings given remote's endpoint

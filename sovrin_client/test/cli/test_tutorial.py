@@ -953,7 +953,7 @@ def testAliceReqAvailClaimsFromNonExistentConnection(
         be, do, aliceCli, bankKYCProofSent, faberMap):
     be(aliceCli)
     do('request available claims from dummy-link', mapper=faberMap,
-       expect=["No matching link invitations found in current keyring"])
+       expect=["No matching link invitations found in current wallet"])
 
 
 def testAliceReqAvailClaimsFromFaber(
