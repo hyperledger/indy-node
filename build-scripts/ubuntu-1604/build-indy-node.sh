@@ -17,7 +17,7 @@ fpm --input-type "python" \
     --output-type "deb" \
     --architecture "amd64" \
     --verbose \
-    --maintainer "Sovrin Foundation <dev@sovrin.org>" \
+    --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
     --python-package-name-prefix "python3" \
     --python-bin "/usr/bin/python3" \
     --exclude "*.pyc" \
