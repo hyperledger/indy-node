@@ -51,7 +51,7 @@ Requires=sovrin-node-control.service
 
 [Service]
 EnvironmentFile=/home/sovrin/.sovrin/sovrin.env
-ExecStart=/usr/local/bin/start_sovrin_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
+ExecStart=/usr/bin/env python3 -OO /usr/local/bin/start_sovrin_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
 User=sovrin
 Group=sovrin
 Restart=on-failure
@@ -75,7 +75,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=/etc/sovrin/node_control.conf
-ExecStart=/usr/local/bin/start_node_control_tool.py $TEST_MODE
+ExecStart=/usr/bin/env python3 -OO /usr/local/bin/start_node_control_tool.py $TEST_MODE
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
