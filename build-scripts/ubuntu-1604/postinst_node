@@ -1,0 +1,119 @@
+#!/bin/bash
+
+# it should be fixed
+
+# workaround when .sovrin become regular file
+if [ -f /home/sovrin/.sovrin ]; then
+    rm /home/sovrin/.sovrin
+fi
+mkdir -p /home/sovrin/.sovrin
+
+# create sovrin config if not exists
+if [ ! -f /home/sovrin/.sovrin/sovrin_config.py ]; then
+    touch /home/sovrin/.sovrin/sovrin_config.py
+fi
+
+chown -R sovrin:sovrin /home/sovrin/.sovrin
+
+# init_sovrin_node script
+cat <<EOF > /usr/local/bin/init_sovrin_node
+#!/bin/bash
+
+if [ \$# -lt 3 ]; then
+    echo ""
+    echo "Usage: \$0 name port client_port [seed]";
+    echo "  name        - node name";
+    echo "  port        - node port";
+    echo "  client_port - node client port";
+    echo "  seed        - node seed";
+    echo ""
+    exit 1;
+fi
+
+echo "NODE_NAME=\$1" > /home/sovrin/.sovrin/sovrin.env
+echo "NODE_PORT=\$2" >> /home/sovrin/.sovrin/sovrin.env
+echo "NODE_CLIENT_PORT=\$3" >> /home/sovrin/.sovrin/sovrin.env
+
+if [ -z \$4 ]; then
+    init_sovrin_keys --name \$1
+else
+    init_sovrin_keys --name \$1 --seed \$4
+fi
+EOF
+
+chmod +x /usr/local/bin/init_sovrin_node
+
+# add systemd script
+cat <<EOF > /etc/systemd/system/sovrin-node.service
+[Unit]
+Description=Sovrin Node
+Requires=sovrin-node-control.service
+
+[Service]
+EnvironmentFile=/home/sovrin/.sovrin/sovrin.env
+ExecStart=/usr/local/bin/start_sovrin_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
+User=sovrin
+Group=sovrin
+Restart=on-failure
+RestartSec=10
+StartLimitBurst=10
+StartLimitInterval=200
+TimeoutSec=300
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+
+cat <<EOF > /etc/systemd/system/sovrin-node-control.service
+[Unit]
+Description=Service for upgrade existing Sovrin and another operations
+#Requires=sovrin.service
+#After=sovrin.service
+After=network.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/sovrin/node_control.conf
+ExecStart=/usr/local/bin/start_node_control_tool.py $TEST_MODE
+Restart=on-failure
+RestartSec=10
+StartLimitBurst=10
+StartLimitInterval=200
+TimeoutSec=300
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+mkdir -p /etc/sovrin
+cat <<EOF > /etc/sovrin/node_control.conf
+# Uncomment this to run agent in test mode:
+#TEST_MODE=--test
+
+TEST_MODE=
+EOF
+
+mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604.sh /usr/local/bin/upgrade_sovrin_node
+mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604_test.sh /usr/local/bin/upgrade_sovrin_node_test
+mv /usr/local/bin/restart_sovrin_node_ubuntu1604.sh /usr/local/bin/restart_sovrin_node
+mv /usr/local/bin/get_package_dependencies_ubuntu.sh /usr/local/bin/get_package_dependencies_ubuntu
+
+chmod +x /usr/local/bin/upgrade_sovrin_node
+chmod +x /usr/local/bin/upgrade_sovrin_node_test
+chmod +x /usr/local/bin/restart_sovrin_node
+chmod +x /usr/local/bin/get_package_dependencies_ubuntu
+chmod +x /usr/local/bin/start_node_control_tool.py
+
+rm -f /usr/local/bin/delete_sovrin_node.bat /usr/local/bin/upgrade_sovrin_node_test.bat /usr/local/bin/restart_sovrin_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_sovrin_node.bat /usr/local/bin/install_sovrin_node.bat
+
+# disable stdout logging
+echo "enableStdOutLogging=False" >> /home/sovrin/.sovrin/sovrin_config.py
+
+
+# Automatically added from template:
+if which py3compile >/dev/null 2>&1; then
+	py3compile -p indy-node /usr/local/lib/python3.5/dist-packages/
+fi
+
+# End automatically added section
