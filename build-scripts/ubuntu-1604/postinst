@@ -1,0 +1,7 @@
+
+# Automatically added from template:
+if which py3compile >/dev/null 2>&1; then
+	py3compile -p {package_name} /usr/local/lib/python3.5/dist-packages/
+fi
+
+# End automatically added section
