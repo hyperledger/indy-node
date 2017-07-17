@@ -445,12 +445,12 @@ def showBankingProofOut():
 
 @pytest.fixture(scope="module")
 def proofRequestNotExists():
-    return ["No matching Proof Requests found in current keyring"]
+    return ["No matching Proof Requests found in current wallet"]
 
 
 @pytest.fixture(scope="module")
 def linkNotExists():
-    return ["No matching link invitations found in current keyring"]
+    return ["No matching link invitations found in current wallet"]
 
 
 @pytest.fixture(scope="module")
@@ -549,7 +549,7 @@ def showUnSyncedLinkOut(unAcceptedLinkHeading, showLinkOut):
 
 @pytest.fixture(scope="module")
 def showClaimNotFoundOut():
-    return ["No matching Claims found in any links in current keyring"]
+    return ["No matching Claims found in any links in current wallet"]
 
 
 @pytest.fixture(scope="module")
@@ -1184,7 +1184,7 @@ def thriftIsRunning(emptyLooper, tdirWithPoolTxns, thriftWallet,
 
 @pytest.fixture(scope='module')
 def savedKeyringRestored():
-    return ['Saved keyring {keyring-name} restored']
+    return ['Saved wallet {keyring-name} restored']
 
 
 # TODO: Need to refactor following three fixture to reuse code
@@ -1324,7 +1324,7 @@ def philCli(be, do, philCLI, trusteeCli):
     mapper = {
         'seed': phil_seed,
         'idr': phil_signer.identifier}
-    do('new key with seed {seed}', expect=['Key created in keyring Phil',
+    do('new key with seed {seed}', expect=['Key created in wallet Phil',
                                            'Identifier for key is {idr}',
                                            'Current identifier set to {idr}'],
        mapper=mapper)

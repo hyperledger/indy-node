@@ -77,7 +77,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
                                       'Active wallet set to "Steward"'])
 
     mapper = {'seed': stewardSeed.decode()}
-    do('new key with seed {seed}', expect=['Key created in keyring Steward'],
+    do('new key with seed {seed}', expect=['Key created in wallet Steward'],
        mapper=mapper)
     do('connect test', within=3, expect=connectedToTest)
 
