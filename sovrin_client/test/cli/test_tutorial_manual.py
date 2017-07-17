@@ -70,7 +70,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     # Create steward and add nyms and endpoint attributes of all agents
     _, stewardSeed = poolTxnStewardData
     be(philCli)
-    do('new keyring Steward', expect=['New keyring Steward created',
+    do('new wallet Steward', expect=['New keyring Steward created',
                                       'Active keyring set to "Steward"'])
 
     mapper = {'seed': stewardSeed.decode()}
