@@ -159,16 +159,16 @@ def testLoadFileCommandRegEx(grammar):
 
 
 def testShowLinkRegEx(grammar):
-    matchedVars = getMatchedVariables(grammar, "show link faber")
-    assertCliTokens(matchedVars, {"show_link": "show link",
+    matchedVars = getMatchedVariables(grammar, "show connection faber")
+    assertCliTokens(matchedVars, {"show_connection": "show connection",
                                   "link_name": "faber"})
 
-    matchedVars = getMatchedVariables(grammar, "show link faber college")
-    assertCliTokens(matchedVars, {"show_link": "show link",
+    matchedVars = getMatchedVariables(grammar, "show connection faber college")
+    assertCliTokens(matchedVars, {"show_connection": "show connection",
                                   "link_name": "faber college"})
 
-    matchedVars = getMatchedVariables(grammar, "show link faber college ")
-    assertCliTokens(matchedVars, {"show_link": "show link",
+    matchedVars = getMatchedVariables(grammar, "show connection faber college ")
+    assertCliTokens(matchedVars, {"show_connection": "show connection",
                                   "link_name": "faber college "})
 
 

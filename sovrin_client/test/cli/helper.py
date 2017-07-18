@@ -361,7 +361,7 @@ def getAgentCliHelpString():
        list wallets - Lists all wallets
        list ids - Lists all identifiers of active wallet
        show - Shows content of given file
-       show link - Shows link info in case of one matching link, otherwise shows all the matching link names
+       show connection - Shows connection info in case of one matching connection, otherwise shows all the matching connection names
        ping - Pings given remote's endpoint
        list links - List available links in active wallet
        send proofreq - Send a proof request

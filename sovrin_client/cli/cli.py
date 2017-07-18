@@ -138,7 +138,7 @@ class SovrinCli(PlenumCli):
             'conn',
             'disconn',
             'load_file',
-            'show_link',
+            'show_connection',
             'sync_link',
             'ping_target'
             'show_claim',
@@ -174,7 +174,7 @@ class SovrinCli(PlenumCli):
             addGenesisTxnCmd.id)
         completers["show_file"] = WordCompleter([showFileCmd.id])
         completers["load_file"] = WordCompleter([loadFileCmd.id])
-        completers["show_link"] = PhraseWordCompleter(showLinkCmd.id)
+        completers["show_connection"] = PhraseWordCompleter(showLinkCmd.id)
         completers["conn"] = WordCompleter([connectToCmd.id])
         completers["disconn"] = WordCompleter([disconnectCmd.id])
         completers["env_name"] = WordCompleter(list(self.config.ENVS.keys()))
@@ -1082,7 +1082,7 @@ class SovrinCli(PlenumCli):
         self.printSuggestion(msgs)
 
     def _printNoLinkFoundMsg(self):
-        self.print("No matching link invitations found in current wallet")
+        self.print("No matching connection invitations found in current wallet")
         self._printShowAndLoadFileSuggestion()
 
     def _isConnectedToAnyEnv(self):
@@ -1147,7 +1147,7 @@ class SovrinCli(PlenumCli):
         self._printShowAndAcceptLinkUsage()
 
     def _showLink(self, matchedVars):
-        if matchedVars.get('show_link') == showLinkCmd.id:
+        if matchedVars.get('show_connection') == showLinkCmd.id:
             linkName = matchedVars.get('link_name').replace('"', '')
 
             totalFound, exactlyMatchedLinks, likelyMatchedLinks = \
@@ -1867,7 +1867,7 @@ class SovrinCli(PlenumCli):
             'prompt': promptHelper,
             'principals': principalsHelper,
             'load': loadHelper,
-            'show link': showLinkHelper,
+            'show connection': showLinkHelper,
             'connect': connectHelper,
             'sync': syncHelper
         }
