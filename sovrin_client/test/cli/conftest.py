@@ -1309,7 +1309,7 @@ def poolNodesStarted(be, do, poolCLI):
 
 
 @pytest.fixture(scope="module")
-def philCli(be, do, philCLI, trusteeCli):
+def philCli(be, do, philCLI, trusteeCli, poolTxnData):
 
     be(philCLI)
 
@@ -1317,7 +1317,7 @@ def philCli(be, do, philCLI, trusteeCli):
 
     do('new keyring Phil', expect=['New keyring Phil created',
                                    'Active keyring set to "Phil"'])
-    phil_seed = '11111111111111111111111111111111'
+    phil_seed = poolTxnData['seeds']['Steward1']
     phil_signer = DidSigner(seed=phil_seed.encode())
 
     mapper = {

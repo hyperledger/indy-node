@@ -9,13 +9,10 @@ from anoncreds.protocol.types import SchemaKey, ID
 from sovrin_client.test import waits
 from sovrin_client.test.agent.faber import create_faber, bootstrap_faber, FABER_ID, FABER_VERKEY
 
-from sovrin_common.roles import Roles
 from stp_core.loop.eventually import eventually
-from sovrin_client.test.agent.test_walleted_agent import TestWalletedAgent
 from sovrin_common.roles import Roles
 from sovrin_client.agent.walleted_agent import WalletedAgent
 from sovrin_client.agent.runnable_agent import RunnableAgent
-from sovrin_common.setup_util import Setup
 from sovrin_common.constants import ENDPOINT
 
 from sovrin_client.test.agent.acme import create_acme, bootstrap_acme, ACME_ID, ACME_VERKEY
@@ -86,9 +83,6 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     faberAgentPort = 5555
     acmeAgentPort = 6666
     thriftAgentPort = 7777
-    faberEndpoint = "{}:{}".format(agentIpAddress, faberAgentPort)
-    acmeEndpoint = "{}:{}".format(agentIpAddress, acmeAgentPort)
-    thriftEndpoint = "{}:{}".format(agentIpAddress, thriftAgentPort)
 
     faberHa = "{}:{}".format(agentIpAddress, faberAgentPort)
     acmeHa = "{}:{}".format(agentIpAddress, acmeAgentPort)
