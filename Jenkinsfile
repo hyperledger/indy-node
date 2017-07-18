@@ -2,9 +2,9 @@
 
 @Library('SovrinHelpers') _
 
-def name = 'sovrin-node'
+def name = 'indy-node'
 
-def testUbuntu = {
+def nodeTestUbuntu = {
     try {
         echo 'Ubuntu Test: Checkout csm'
         checkout scm
@@ -14,14 +14,11 @@ def testUbuntu = {
 
         testEnv.inside('--network host') {
             echo 'Ubuntu Test: Install dependencies'
-            def sovrinCommon = helpers.extractVersion('sovrin-common')
-            def sovrinClient = helpers.extractVersion('sovrin-client')
-            def plenum = helpers.extractVersionOfSubdependency(sovrinCommon, 'plenum')
-            testHelpers.install(deps: [plenum, sovrinCommon, sovrinClient])
+            testHelpers.install()
 
             echo 'Ubuntu Test: Test'
-            testHelpers.testRunner(resFile: "test-result.${NODE_NAME}.txt")
-            //testHelpers.testJUnit(resFile: "test-result.${NODE_NAME}.xml")
+            testHelpers.testRunner([resFile: "test-result-node.${NODE_NAME}.txt", testDir: 'sovrin_node'])
+            //testHelpers.testJUnit(resFile: "test-result-node.${NODE_NAME}.xml")
         }
     }
     finally {
@@ -30,32 +27,51 @@ def testUbuntu = {
     }
 }
 
-def testWindows = {
-    echo 'TODO: Implement me'
-}
-
-def testWindowsNoDocker = {
+def clientTestUbuntu = {
     try {
-        echo 'Windows No Docker Test: Checkout csm'
+        echo 'Ubuntu Test: Checkout csm'
         checkout scm
 
-        testHelpers.createVirtualEnvAndExecute({ python, pip ->
-            echo 'Windows No Docker Test: Install dependencies'
-            def sovrinClient = helpers.extractVersion('sovrin-client')
-            testHelpers.install(python: python, pip: pip, deps: [sovrinClient], isVEnv: true)
+        echo 'Ubuntu Test: Build docker image'
+        def testEnv = dockerHelpers.build(name)
 
-            echo 'Windows No Docker Test: Test'
-            testHelpers.testJUnit(resFile: "test-result.${NODE_NAME}.xml", python: python)
-        })
+        testEnv.inside('--network host') {
+            echo 'Ubuntu Test: Install dependencies'
+            testHelpers.install()
+
+            echo 'Ubuntu Test: Test'
+            testHelpers.testRunner([resFile: "test-result-client.${NODE_NAME}.txt", testDir: 'sovrin_client'])
+            //testHelpers.testJUnit(resFile: "test-result-client.${NODE_NAME}.xml")
+        }
     }
     finally {
-        echo 'Windows No Docker Test: Cleanup'
+        echo 'Ubuntu Test: Cleanup'
         step([$class: 'WsCleanup'])
     }
 }
 
-//testAndPublish(name, [ubuntu: testUbuntu, windows: testWindowsNoDocker, windowsNoDocker: testWindowsNoDocker])
+def commonTestUbuntu = {
+    try {
+        echo 'Ubuntu Test: Checkout csm'
+        checkout scm
+
+        echo 'Ubuntu Test: Build docker image'
+        def testEnv = dockerHelpers.build(name)
+
+        testEnv.inside {
+            echo 'Ubuntu Test: Install dependencies'
+            testHelpers.install()
+
+            echo 'Ubuntu Test: Test'
+            testHelpers.testJUnit([resFile: "test-result-common.${NODE_NAME}.xml", testDir: 'sovrin_common'])
+        }
+    }
+    finally {
+        echo 'Ubuntu Test: Cleanup'
+        step([$class: 'WsCleanup'])
+    }
+}
 
 options = new TestAndPublishOptions()
 options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
-testAndPublish(name, [ubuntu: testUbuntu], true, options)
+testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options)

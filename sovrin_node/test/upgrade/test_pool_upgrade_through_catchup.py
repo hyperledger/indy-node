@@ -13,7 +13,7 @@ from sovrin_client.test.conftest import testClientClass
 from plenum.test.conftest import allPluginsPath
 from sovrin_node.test.helper import TestNode
 from sovrin_node.test.upgrade.helper import bumpVersion, sendUpgrade, \
-    ensureUpgradeSent, checkUpgradeScheduled
+    ensureUpgradeSent, checkUpgradeScheduled, get_valid_code_hash
 from plenum.test import waits as plenumWaits
 
 whitelist = ['Failed to upgrade node']
@@ -51,12 +51,14 @@ def testUpgradeLatestUncancelledVersion(looper,
     upgr2 = deepcopy(upgr1)
     upgr2[VERSION] = bumpVersion(upgr1[VERSION])
     upgr2[NAME] += randomString(3)
-    upgr2[SHA256] = randomString(32)
+    # upgr2[SHA256] = get_valid_code_hash()
+    upgr2[SHA256] = 'db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55'
 
     upgr3 = deepcopy(upgr2)
     upgr3[VERSION] = bumpVersion(upgr2[VERSION])
     upgr3[NAME] += randomString(3)
-    upgr3[SHA256] = randomString(32)
+    # upgr3[SHA256] = get_valid_code_hash()
+    upgr3[SHA256] = '112c060527e8cecfafe64dcb5bdabc4010cc7b64e0bf9bc2a43d23c37d927128'
 
     upgr4 = deepcopy(upgr3)
     upgr4[ACTION] = CANCEL

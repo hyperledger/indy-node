@@ -5,7 +5,7 @@ from plenum.test import waits as plenumWaits
 from sovrin_client.test.helper import checkRejects, checkNacks
 from sovrin_common.constants import CANCEL, \
     ACTION
-from sovrin_node.test.upgrade.helper import sendUpgrade, \
+from sovrin_node.test.upgrade.helper import sendUpgrade, ensureUpgradeSent, \
     bumpedVersion
 from stp_core.loop.eventually import eventually
 
@@ -42,4 +42,21 @@ def testNonTrustyCannotCancelUpgrade(looper, validUpgradeSent,
     looper.run(eventually(checkRejects, stClient, req.reqId,
                           'cannot do'))
 
+def test_accept_then_reject_upgrade(looper, trustee, trusteeWallet, validUpgradeSent, validUpgrade):
+    upgrade_name = validUpgrade[NAME]
+    error_msg = "InvalidClientRequest(\"Upgrade '{}' is already scheduled\"".format(upgrade_name)
 
+    validUpgrade2 = deepcopy(validUpgrade)
+
+    _, req = sendUpgrade(trustee, trusteeWallet, validUpgrade2)
+    timeout = plenumWaits.expectedReqNAckQuorumTime()
+
+    looper.run(eventually(checkRejects, trustee, req.reqId,
+                          error_msg, retryWait=1, timeout=timeout))
+
+def testOnlyTrusteeCanSendPoolUpgradeForceTrue(looper, steward, validUpgradeExpForceTrue):
+    stClient, stWallet = steward
+    _, req = sendUpgrade(stClient, stWallet, validUpgradeExpForceTrue)
+    timeout = plenumWaits.expectedReqNAckQuorumTime()
+    looper.run(eventually(checkNacks, stClient, req.reqId,
+                          'cannot do', retryWait=1, timeout=timeout))
