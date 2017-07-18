@@ -103,7 +103,7 @@ def testAddCID(cidAdded):
 
 
 def getNoVerkeyEverAssignedMsgs(idr):
-    return ["No verkey ever assigned to the identifier {}".format(idr)]
+    return ["No verkey ever assigned to the DID {}".format(idr)]
 
 
 def testGetDIDWithoutVerkey(be, do, philCli, didAdded, trust_anchor_did_signer):
@@ -112,7 +112,7 @@ def testGetDIDWithoutVerkey(be, do, philCli, didAdded, trust_anchor_did_signer):
 
 
 def getVerkeyIsSameAsIdentifierMsgs(idr):
-    return ["Current verkey is same as identifier {}".format(idr)]
+    return ["Current verkey is same as DID {}".format(idr)]
 
 
 def testGetCIDWithoutVerkey(be, do, philCli, cidAdded, trust_anchor_cid_signer):

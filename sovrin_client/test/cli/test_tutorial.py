@@ -261,7 +261,7 @@ def testShowFaberLink(be, do, aliceCli, faberInviteLoadedByAlice,
     be(aliceCli)
     cp = faberMap.copy()
     cp.update(endpoint='<unknown, waiting for sync>',
-              last_synced='<this link has not yet been synchronized>')
+              last_synced='<this connection has not yet been synchronized>')
     do('show connection {inviter}', expect=showUnSyncedLinkOut, mapper=cp)
 
 
@@ -283,7 +283,7 @@ def testAcceptUnSyncedFaberInviteWhenNotConnected(be, do, aliceCli,
                                                   acceptUnSyncedWhenNotConnected,
                                                   faberMap):
     be(aliceCli)
-    do('accept invitation from {inviter}',
+    do('accept request from {inviter}',
        expect=acceptUnSyncedWhenNotConnected,
        mapper=faberMap)
 
@@ -333,7 +333,7 @@ def testShowSyncedFaberInvite(be, do, aliceCli, faberMap, linkNotYetSynced,
 
     cp = faberMap.copy()
     cp.update(endpoint='<unknown, waiting for sync>',
-              last_synced='<this link has not yet been synchronized>')
+              last_synced='<this connection has not yet been synchronized>')
 
     do('show connection {inviter}', within=4,
        expect=showSyncedLinkWithoutEndpointOut,
@@ -355,7 +355,7 @@ def faberInviteSyncedWithEndpoint(be, do, faberMap, aliceCLI, preRequisite,
                                   faberInviteSyncedWithoutEndpoint,
                                   syncLinkOutWithEndpoint):
     cp = faberMap.copy()
-    cp.update(last_synced='<this link has not yet been synchronized>')
+    cp.update(last_synced='<this connection has not yet been synchronized>')
     syncInvite(be, do, aliceCLI, syncLinkOutWithEndpoint, cp)
     return aliceCLI
 
@@ -381,14 +381,14 @@ def testPingBeforeAccept(be, do, aliceCli, faberMap, connectedToTest,
        within=3,
        expect=[
            'Ping sent.',
-           'Error processing ping. Link is not yet created.'
+           'Error processing ping. Connection is not yet created.'
        ],
        mapper=faberMap)
 
 
 def testAcceptNotExistsLink(be, do, aliceCli, linkNotExists, faberMap):
     be(aliceCli)
-    do('accept invitation from {inviter-not-exists}',
+    do('accept request from {inviter-not-exists}',
        expect=linkNotExists, mapper=faberMap)
 
 
@@ -400,13 +400,13 @@ def getSignedRespMsg(msg, signer):
 
 def acceptInvitation(be, do, userCli, agentMap, expect):
     be(userCli)
-    do("accept invitation from {inviter}",
+    do("accept request from {inviter}",
        within=15,
        mapper=agentMap,
        expect=expect,
        not_expect=[
            "Observer threw an exception",
-           "Identifier is not yet written to Sovrin"]
+           "DID is not yet written to Sovrin"]
        )
     li = userCli.agent.wallet.getLinkBy(nonce=agentMap['nonce'])
     assert li
@@ -559,7 +559,7 @@ def testShowAcmeLink(be, do, aliceCli, acmeInviteLoadedByAlice,
     be(aliceCli)
 
     cp = acmeMap.copy()
-    cp.update(last_synced='<this link has not yet been synchronized>')
+    cp.update(last_synced='<this connection has not yet been synchronized>')
     do('show connection {inviter}', expect=showUnSyncedLinkWithClaimReqs, mapper=cp)
 
 
@@ -594,7 +594,7 @@ def testShowAcmeLinkAfterInviteAccept(be, do, aliceCli, acmeMap,
     be(aliceCli)
 
     do("show connection {inviter}", expect=showAcceptedLinkWithoutAvailableClaimsOut,
-       not_expect="Link (not yet accepted)",
+       not_expect="Connection (not yet accepted)",
        mapper=acmeMap)
 
 
@@ -953,7 +953,7 @@ def testAliceReqAvailClaimsFromNonExistentConnection(
         be, do, aliceCli, bankKYCProofSent, faberMap):
     be(aliceCli)
     do('request available claims from dummy-link', mapper=faberMap,
-       expect=["No matching connection invitations found in current wallet"])
+       expect=["No matching connection requests found in current wallet"])
 
 
 def testAliceReqAvailClaimsFromFaber(

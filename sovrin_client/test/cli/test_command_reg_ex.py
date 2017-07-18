@@ -195,16 +195,16 @@ def testPingTargetRegEx(grammar):
 
 
 def testAcceptInvitationLinkRegEx(grammar):
-    matchedVars = getMatchedVariables(grammar, "accept invitation from faber")
-    assertCliTokens(matchedVars, {"accept_link_invite": "accept invitation from",
+    matchedVars = getMatchedVariables(grammar, "accept request from faber")
+    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
                                   "link_name": "faber"})
 
-    matchedVars = getMatchedVariables(grammar, 'accept invitation from "faber"')
-    assertCliTokens(matchedVars, {"accept_link_invite": "accept invitation from",
+    matchedVars = getMatchedVariables(grammar, 'accept request from "faber"')
+    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
                                   "link_name": '"faber"'})
 
-    matchedVars = getMatchedVariables(grammar, 'accept invitation from "faber" ')
-    assertCliTokens(matchedVars, {"accept_link_invite": "accept invitation from",
+    matchedVars = getMatchedVariables(grammar, 'accept request from "faber" ')
+    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
                                   "link_name": '"faber" '})
 
 
@@ -287,27 +287,27 @@ def testDisconnect(grammar):
 
 def testNewIdentifier(grammar):
     matchedVars = getMatchedVariables(
-        grammar, "new identifier")
-    assertCliTokens(matchedVars, {"new_id": "new identifier",
+        grammar, "new DID")
+    assertCliTokens(matchedVars, {"new_id": "new DID",
                                   "id": None,
                                   "seed": None, "alias": None})
 
     matchedVars = getMatchedVariables(
-        grammar, "new identifier as myalis")
+        grammar, "new DID as myalis")
     assertCliTokens(matchedVars,
-                    {"new_id": "new identifier", "id": None,
+                    {"new_id": "new DID", "id": None,
                      "seed": None, "alias": "myalis"})
 
     matchedVars = getMatchedVariables(
-        grammar, "new identifier 4QxzWk3ajdnEA37NdNU5Kt")
-    assertCliTokens(matchedVars, {"new_id": "new identifier",
+        grammar, "new DID 4QxzWk3ajdnEA37NdNU5Kt")
+    assertCliTokens(matchedVars, {"new_id": "new DID",
                                   "id": "4QxzWk3ajdnEA37NdNU5Kt",
                                   "seed": None, "alias": None})
 
     matchedVars = getMatchedVariables(
-        grammar, "new identifier 4QxzWk3ajdnEA37NdNU5Kt "
+        grammar, "new DID 4QxzWk3ajdnEA37NdNU5Kt "
                  "with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    assertCliTokens(matchedVars, {"new_id": "new identifier",
+    assertCliTokens(matchedVars, {"new_id": "new DID",
                                   "id": "4QxzWk3ajdnEA37NdNU5Kt",
                                   "seed": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                                   "alias": None})
@@ -333,7 +333,7 @@ def testAddGenTxnRegEx(grammar):
                                       '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}')
     assertCliTokens(matchedVars, {"add_gen_txn": "add genesis transaction", "type": "NODE",
                                   "dest": "2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML",
-                                  "identifier": "FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW", "role": None,
+                                  "DID": "FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW", "role": None,
                                   "data": '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}'})
 
 

@@ -392,7 +392,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             # and we are still missing link, then return the error
             if link is None:
                 linkNotCreated = '    Error processing {}. ' \
-                                 'Link is not yet created.'.format(typ)
+                                 'Connection is not yet created.'.format(typ)
                 self.notifyToRemoteCaller(EVENT_NOTIFY_MSG,
                                           linkNotCreated,
                                           self.wallet.defaultId,
@@ -517,7 +517,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             if alreadyAccepted:
                 self.notifyMsgListener("    Already accepted.")
             else:
-                self.notifyMsgListener("    Identifier created in Sovrin.")
+                self.notifyMsgListener("    DID created in Sovrin.")
 
                 li.linkStatus = constant.LINK_STATUS_ACCEPTED
                 rcvdAvailableClaims = body[DATA][CLAIMS_LIST_FIELD]
@@ -597,11 +597,11 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             if reply.get(DATA) and json.loads(reply[DATA])[TARGET_NYM] == \
                     li.localIdentifier:
                 self.notifyMsgListener(
-                    "    Confirmed identifier written to Sovrin.")
+                    "    Confirmed DID written to Sovrin.")
                 self.notifyEventListeners(EVENT_POST_ACCEPT_INVITE, link=li)
             else:
                 self.notifyMsgListener(
-                    "    Identifier is not yet written to Sovrin")
+                    "    DID is not yet written to Sovrin")
 
         self.loop.call_later(.2, ensureReqCompleted, self.loop, req.key,
                              self.client, getNymReply, (availableClaims, li))
@@ -792,10 +792,10 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                                  cr[VERIFIABLE_ATTRIBUTES] if VERIFIABLE_ATTRIBUTES in cr else [],
                                  cr[PREDICATES] if PREDICATES in cr else []))
 
-        self.notifyMsgListener("1 link invitation found for {}.".
+        self.notifyMsgListener("1 connection request found for {}.".
                                format(linkInvitationName))
 
-        self.notifyMsgListener("Creating Link for {}.".
+        self.notifyMsgListener("Creating connection for {}.".
                                format(linkInvitationName))
         # TODO: Would we always have a trust anchor corresponding to a link?
 
@@ -949,7 +949,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                         link.full_remote_verkey) if link.full_remote_verkey else None
 
             link.linkLastSynced = datetime.now()
-            self.notifyMsgListener("    Link {} synced".format(link.name))
+            self.notifyMsgListener("    Connection {} synced".format(link.name))
 
     def _pingToEndpoint(self, name, endpoint):
         self.notifyMsgListener("\nPinging target endpoint: {}".
