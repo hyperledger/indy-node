@@ -28,7 +28,7 @@ function build_from_pypi {
         --python-bin "/usr/bin/python3" \
         --exclude "*.pyc" \
         --exclude "*.pyo" \
-        --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
+        --maintainer "Sovrin Foundation <repo@sovrin.org>" \
         --after-install ${POSTINST_TMP} \
         --before-remove ${PREREM_TMP} \
         --package ${OUTPUT_PATH} \

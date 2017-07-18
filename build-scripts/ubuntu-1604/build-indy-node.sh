@@ -17,12 +17,12 @@ fpm --input-type "python" \
     --output-type "deb" \
     --architecture "amd64" \
     --verbose \
-    --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
     --python-package-name-prefix "python3" \
     --python-bin "/usr/bin/python3" \
     --exclude "*.pyc" \
     --exclude "*.pyo" \
     --no-python-fix-dependencies \
+    --maintainer "Sovrin Foundation <repo@sovrin.org>" \
     --before-install "preinst_node" \
     --after-install "postinst_node" \
     --before-remove ${PREREM_TMP} \
