@@ -99,7 +99,7 @@ LOAD_FILE_REG_EX = "(\s*(?P<load_file>load) " \
 SHOW_LINK_REG_EX = '(\s*(?P<show_connection>show \s+ connection) ' \
                    '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
 
-SYNC_LINK_REG_EX = '(\s*(?P<sync_link>sync) ' \
+SYNC_LINK_REG_EX = '(\s*(?P<sync_connection>sync) ' \
                    '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
 
 PING_TARGET_REG_EX = '(\s*(?P<ping>ping) ' \
