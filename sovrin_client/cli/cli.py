@@ -82,7 +82,7 @@ Sovrin needs the client nyms to be added as transactions first.
 I'm thinking maybe the cli needs to support something like this:
 new node all
 <each node reports genesis transactions>
-new client steward with identifier <nym> (nym matches the genesis transactions)
+new client steward with DID <nym> (nym matches the genesis transactions)
 client steward add bob (cli creates a signer and an ADDNYM for that signer's
 cryptonym, and then an alias for bobto that cryptonym.)
 new client bob (cli uses the signer previously stored for this client)
@@ -147,7 +147,7 @@ class SovrinCli(PlenumCli):
             # 'show_claim_req',
             'show_proof_req',
             'req_claim',
-            'accept_link_invite',
+            'accept_connection_request',
             'set_attr',
             'send_proof_request'
             'send_proof',
@@ -182,7 +182,7 @@ class SovrinCli(PlenumCli):
         completers["ping_target"] = WordCompleter([pingTargetCmd.id])
         completers["show_claim"] = PhraseWordCompleter(showClaimCmd.id)
         completers["req_claim"] = PhraseWordCompleter(reqClaimCmd.id)
-        completers["accept_link_invite"] = PhraseWordCompleter(acceptLinkCmd.id)
+        completers["accept_connection_request"] = PhraseWordCompleter(acceptLinkCmd.id)
         completers["set_attr"] = WordCompleter([setAttrCmd.id])
         completers["new_id"] = PhraseWordCompleter(newIdentifierCmd.id)
         completers["list_claims"] = PhraseWordCompleter(listClaimsCmd.id)
@@ -503,15 +503,15 @@ class SovrinCli(PlenumCli):
                         if data.get(VERKEY) is None:
                             if len(idr) == 32:
                                 self.print(
-                                    "Current verkey is same as identifier {}"
+                                    "Current verkey is same as DID {}"
                                         .format(nym), Token.BoldBlue)
                             else:
                                 self.print(
-                                    "No verkey ever assigned to the identifier {}".
+                                    "No verkey ever assigned to the DID {}".
                                     format(nym), Token.BoldBlue)
                             return
                         if data.get(VERKEY) == '':
-                            self.print("No active verkey found for the identifier {}".
+                            self.print("No active verkey found for the DID {}".
                                        format(nym), Token.BoldBlue)
                         else:
                             self.print("Current verkey for NYM {} is {}".
@@ -530,7 +530,7 @@ class SovrinCli(PlenumCli):
         try:
             self.activeWallet.addTrustAnchoredIdentity(idy)
         except Exception as e:
-            if e.args[0] == 'identifier already added':
+            if e.args[0] == 'DID already added':
                 pass
             else:
                 raise e
@@ -650,7 +650,7 @@ class SovrinCli(PlenumCli):
         self.activeWallet.addNode(node)
         reqs = self.activeWallet.preparePending()
         req, = self.activeClient.submitReqs(*reqs)
-        self.print("Sending node request for node identifier {} by {} "
+        self.print("Sending node request for node DID {} by {} "
                    "(request id: {})".format(nym, self.activeIdentifier,
                                              req.reqId))
 
@@ -901,7 +901,7 @@ class SovrinCli(PlenumCli):
                 except LinkAlreadyExists:
                     self.print("Link already exists")
                 except LinkNotFound:
-                    self.print("No link invitation found in the given file")
+                    self.print("No connection request found in the given file")
                 except ValueError:
                     self.print("Input is not a valid json"
                                "please check and try again")
@@ -1028,9 +1028,9 @@ class SovrinCli(PlenumCli):
             if li.isAccepted:
                 self._printLinkAlreadyExcepted(li.name)
             else:
-                self.print("Invitation not yet verified.")
+                self.print("Request not yet verified.")
                 if not li.linkLastSynced:
-                    self.print("Link not yet synchronized.")
+                    self.print("Connection not yet synchronized.")
 
                 if self._isConnectedToAnyEnv():
                     self.print("Attempting to sync...")
@@ -1039,7 +1039,7 @@ class SovrinCli(PlenumCli):
                     if li.isRemoteEndpointAvailable:
                         self._sendAcceptInviteToTargetEndpoint(li)
                     else:
-                        self.print("Invitation acceptance aborted.")
+                        self.print("Request acceptance aborted.")
                         self._printNotConnectedEnvMessage(
                             "Cannot sync because not connected")
 
@@ -1066,7 +1066,7 @@ class SovrinCli(PlenumCli):
         self.printSuggestion(msgs)
 
     def _printLinkAlreadyExcepted(self, linkName):
-        self.print("Link {} is already accepted\n".format(linkName))
+        self.print("Connection {} is already accepted\n".format(linkName))
 
     def _printShowAndAcceptLinkUsage(self, linkName=None):
         msgs = self._getShowLinkUsage(linkName) + \
@@ -1082,7 +1082,7 @@ class SovrinCli(PlenumCli):
         self.printSuggestion(msgs)
 
     def _printNoLinkFoundMsg(self):
-        self.print("No matching connection invitations found in current wallet")
+        self.print("No matching connection requests found in current wallet")
         self._printShowAndLoadFileSuggestion()
 
     def _isConnectedToAnyEnv(self):
@@ -1090,7 +1090,7 @@ class SovrinCli(PlenumCli):
                self.activeClient.hasSufficientConnections
 
     def _acceptInvitationLink(self, matchedVars):
-        if matchedVars.get('accept_link_invite') == acceptLinkCmd.id:
+        if matchedVars.get('accept_connection_request') == acceptLinkCmd.id:
             linkName = SovrinCli.removeSpecialChars(matchedVars.get('link_name'))
             self._acceptLinkInvitation(linkName)
             return True
@@ -1143,7 +1143,7 @@ class SovrinCli(PlenumCli):
             for li in v:
                 self.print("{}".format(li.name))
         self.print("\nRe enter the command with more specific "
-                   "link invitation name")
+                   "connection request name")
         self._printShowAndAcceptLinkUsage()
 
     def _showLink(self, matchedVars):
@@ -1183,7 +1183,7 @@ class SovrinCli(PlenumCli):
 
     def _printNoClaimFoundMsg(self):
         self.print("No matching Claims found in "
-                   "any links in current wallet\n")
+                   "any connections in current wallet\n")
 
     def _printMoreThanOneLinkFoundForRequest(self, requestedName, linkNames):
         self.print('More than one link matches "{}"'.format(requestedName))
@@ -1279,7 +1279,7 @@ class SovrinCli(PlenumCli):
                 if SovrinCli.isNotMatching(claimName, name):
                     self.print('Expanding {} to "{}"'.format(
                         claimName, name))
-                self.print("Found claim {} in link {}".
+                self.print("Found claim {} in connection {}".
                            format(claimName, matchingLink.name))
                 if not self._isConnectedToAnyEnv():
                     self._printNotConnectedEnvMessage()
@@ -1308,8 +1308,8 @@ class SovrinCli(PlenumCli):
 
         id, signer = self.activeWallet.addIdentifier(identifier,
                                                      seed=cseed, alias=alias)
-        self.print("Identifier created in wallet {}".format(self.activeWallet))
-        self.print("New identifier is {}".format(signer.identifier))
+        self.print("DID created in wallet {}".format(self.activeWallet))
+        self.print("New DID is {}".format(signer.identifier))
         self.print("New verification key is {}".format(signer.verkey))
         self._setActiveIdentifier(id)
 
@@ -1380,7 +1380,7 @@ class SovrinCli(PlenumCli):
         matchingLink, rcvdClaim, attributes = \
             await self._getOneLinkAndReceivedClaim(claimName)
         if matchingLink:
-            self.print("Found claim {} in link {}".
+            self.print("Found claim {} in connection {}".
                        format(claimName, matchingLink.name))
 
             # TODO: Figure out how to get time of issuance
@@ -1839,12 +1839,12 @@ class SovrinCli(PlenumCli):
                        "or an IoT-style thing")
 
         def loadHelper():
-            self.print("Creates the link, generates Identifier and signing keys")
-            self.printUsage(self._getLoadFileUsage("<invitation filename>"))
+            self.print("Creates the link, generates DID and signing keys")
+            self.printUsage(self._getLoadFileUsage("<request filename>"))
 
         def showHelper():
-            self.print("Shows the info about the link invitation")
-            self.printUsage(self._getShowFileUsage("<invitation filename>"))
+            self.print("Shows the info about the link request")
+            self.printUsage(self._getShowFileUsage("<request filename>"))
 
         def showLinkHelper():
             self.print("Shows link info in case of one matching link, "

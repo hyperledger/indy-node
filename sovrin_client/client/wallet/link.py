@@ -32,7 +32,7 @@ class constant:
     LINK_LAST_SEQ_NO = "Last Sync no"
     LINK_STATUS_ACCEPTED = "Accepted"
 
-    LINK_NOT_SYNCHRONIZED = "<this link has not yet been synchronized>"
+    LINK_NOT_SYNCHRONIZED = "<this connection has not yet been synchronized>"
     UNKNOWN_WAITING_FOR_SYNC = "<unknown, waiting for sync>"
 
     LINK_ITEM_PREFIX = '\n    '
@@ -130,7 +130,7 @@ class Link:
         # TODO: This should be set as verkey in case of DID but need it from
         # wallet
         verKey = self.localVerkey if self.localVerkey else constant.SIGNER_VER_KEY_EMPTY
-        fixedLinkHeading = "Link"
+        fixedLinkHeading = "Connection"
         if not self.isAccepted:
             fixedLinkHeading += " (not yet accepted)"
 
@@ -139,7 +139,7 @@ class Link:
         fixedLinkItems = \
             '\n' \
             'Name: ' + self.name + '\n' \
-            'Identifier: ' + localIdr + '\n' \
+            'DID: ' + localIdr + '\n' \
             'Trust anchor: ' + trustAnchor + ' ' + trustAnchorStatus + '\n' \
             'Verification key: ' + verKey + '\n' \
             'Signing key: <hidden>' '\n' \
@@ -147,8 +147,8 @@ class Link:
                           constant.UNKNOWN_WAITING_FOR_SYNC) + '\n' \
             'Remote Verification key: ' + remoteVerKey + '\n' \
             'Remote endpoint: ' + remoteEndPoint + '\n' \
-            'Invitation nonce: ' + self.invitationNonce + '\n' \
-            'Invitation status: ' + linkStatus + '\n'
+            'Request nonce: ' + self.invitationNonce + '\n' \
+            'Request status: ' + linkStatus + '\n'
 
         optionalLinkItems = ""
         if len(self.proofRequests) > 0:
