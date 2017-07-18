@@ -73,7 +73,7 @@ setup(
     description='Sovrin node',
     url='https://github.com/hyperledger/indy-node',
     author=__author__,
-    author_email='dev@evernym.us',
+    author_email='repo@sovrin.org',
     license=__license__,
     keywords='Sovrin Node',
     packages=find_packages(exclude=['docs', 'docs*']) + [
