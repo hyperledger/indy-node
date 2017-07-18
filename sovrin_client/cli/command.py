@@ -109,10 +109,10 @@ loadFileCmd = Command(
     examples="load sample/faber-invitation.sovrin")
 
 showLinkCmd = Command(
-    id="show link",
-    title="Shows link info in case of one matching link, otherwise shows all the matching link names",
-    usage="show link <link-name>",
-    examples="show link faber")
+    id="show connection",
+    title="Shows connection info in case of one matching connection, otherwise shows all the matching connection names",
+    usage="show connection <connection-name>",
+    examples="show connection faber")
 
 connectToCmd = Command(
     id="connect",

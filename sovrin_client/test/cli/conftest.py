@@ -199,7 +199,7 @@ def loadInviteOut(nextCommandsToTryUsageLine):
             "Creating Link for {inviter}.",
             ''] + \
            nextCommandsToTryUsageLine + \
-           ['    show link "{inviter}"',
+           ['    show connection "{inviter}"',
             '    accept invitation from "{inviter}"',
             '',
             '']
@@ -450,7 +450,7 @@ def proofRequestNotExists():
 
 @pytest.fixture(scope="module")
 def linkNotExists():
-    return ["No matching link invitations found in current wallet"]
+    return ["No matching connection invitations found in current wallet"]
 
 
 @pytest.fixture(scope="module")
