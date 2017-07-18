@@ -139,11 +139,11 @@ class SovrinCli(PlenumCli):
             'disconn',
             'load_file',
             'show_connection',
-            'sync_link',
+            'sync_connection',
             'ping_target'
             'show_claim',
             'list_claims',
-            'list_links',
+            'list_connections',
             # 'show_claim_req',
             'show_proof_req',
             'req_claim',
@@ -186,7 +186,7 @@ class SovrinCli(PlenumCli):
         completers["set_attr"] = WordCompleter([setAttrCmd.id])
         completers["new_id"] = PhraseWordCompleter(newIdentifierCmd.id)
         completers["list_claims"] = PhraseWordCompleter(listClaimsCmd.id)
-        completers["list_links"] = PhraseWordCompleter(listLinksCmd.id)
+        completers["list_connections"] = PhraseWordCompleter(listLinksCmd.id)
         completers["show_proof_req"] = PhraseWordCompleter(
             showProofRequestCmd.id)
         completers["send_proof_request"] = PhraseWordCompleter(
@@ -1915,7 +1915,6 @@ class SovrinCli(PlenumCli):
         mappings['listLinks'] = listLinksCmd
         mappings['reqClaim'] = reqClaimCmd
         mappings['showProofRequest'] = showProofRequestCmd
-        mappings['acceptInvitationLink'] = acceptLinkCmd
         mappings['addGenTxnAction'] = addGenesisTxnCmd
         mappings['setAttr'] = setAttrCmd
         mappings['sendProofRequest'] = sendProofRequestCmd

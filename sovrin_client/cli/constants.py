@@ -116,7 +116,7 @@ SHOW_CLAIM_REG_EX = '(\s*(?P<show_claim>show \s+ claim) ' \
 LIST_CLAIMS_REG_EX = '(\s*(?P<list_claims>list \s+ claims) ' \
                      '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
 
-LIST_LINKS_REG_EX = '(\s*(?P<list_links>list \s+ links))'
+LIST_LINKS_REG_EX = '(\s*(?P<list_connections>list \s+ connections))'
 
 REQUEST_CLAIM_REG_EX = '(\s*(?P<req_claim>request \s+ claim) ' \
                        '\s+ (?P<claim_name>[A-Za-z0-9-." ]+) ' \

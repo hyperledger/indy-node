@@ -150,10 +150,10 @@ listClaimsCmd = Command(
     examples="list claims faber")
 
 listLinksCmd = Command(
-    id='list links',
-    title='List available links in active wallet',
-    usage='list links',
-    examples='list links'
+    id='list connections',
+    title='List available connections in active wallet',
+    usage='list connections',
+    examples='list connections'
 )
 
 reqClaimCmd = Command(
