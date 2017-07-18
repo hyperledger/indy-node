@@ -12,8 +12,8 @@ from stp_core.common.log import getlogger
 from plenum.common.constants import NAME, TXN_TYPE
 from plenum.common.constants import VERSION
 from plenum.server.has_action_queue import HasActionQueue
-from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, CANCEL, \
-    JUSTIFICATION, TIMEOUT
+from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
+    CANCEL, JUSTIFICATION, TIMEOUT
 from sovrin_node.server.upgrade_log import UpgradeLog
 from plenum.server import notifier_plugin_manager
 import asyncio
@@ -143,7 +143,7 @@ class Upgrader(HasActionQueue):
                     extra={"tags": ["node-config"]})
         currentVer = self.getVersion()
         upgrades = {}  # Map of version to scheduled time
-        for txn in self.ledger.getAllTxn().values():
+        for _, txn in self.ledger.getAllTxn():
             if txn[TXN_TYPE] == POOL_UPGRADE:
                 version = txn[VERSION]
                 action = txn[ACTION]
@@ -199,7 +199,7 @@ class Upgrader(HasActionQueue):
                                               lastEvent[1] == UpgradeLog.UPGRADE_SCHEDULED
         return self.__isItFirstRunAfterUpgrade
 
-    def isScheduleValid(self, schedule, nodeIds) -> (bool, str):
+    def isScheduleValid(self, schedule, nodeIds, force) -> (bool, str):
         """
         Validates schedule of planned node upgrades
 
@@ -208,18 +208,21 @@ class Upgrader(HasActionQueue):
         :return: whether schedule valid
         """
 
+        # flag "force=True" ignore basic checks! only datetime format is checked
         times = []
-        if set(schedule.keys()) != nodeIds:
+        if not force and set(schedule.keys()) != nodeIds:
             return False, 'Schedule should contain id of all nodes'
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         for dateStr in schedule.values():
             try:
                 when = dateutil.parser.parse(dateStr)
-                if when <= now:
+                if when <= now and not force:
                     return False, '{} is less than current time'.format(when)
                 times.append(when)
             except ValueError:
                 return False, '{} cannot be parsed to a time'.format(dateStr)
+        if force:
+            return True, ''
         times = sorted(times)
         for i in range(len(times) - 1):
             diff = (times[i + 1] - times[i]).seconds
@@ -240,7 +243,7 @@ class Upgrader(HasActionQueue):
         """
 
         upgradeTxn = {}
-        for txn in self.ledger.getAllTxn().values():
+        for _, txn in self.ledger.getAllTxn():
             if txn.get(NAME) == name and txn.get(VERSION) == version:
                 upgradeTxn = txn
         return upgradeTxn.get(ACTION)
@@ -261,6 +264,9 @@ class Upgrader(HasActionQueue):
             currentVersion = self.getVersion()
 
             if action == START:
+                #forced txn could have partial schedule list
+                if self.nodeId not in txn[SCHEDULE]:
+                    return
                 when = txn[SCHEDULE][self.nodeId]
                 failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 

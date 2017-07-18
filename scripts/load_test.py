@@ -16,7 +16,7 @@ from stp_core.common.log import getlogger
 from plenum.common.types import HA
 from plenum.common.util import randomString
 from stp_core.network.port_dispenser import genHa
-from plenum.common.signer_simple import SimpleSigner
+from plenum.common.signer_did import DidSigner
 
 from plenum.common.constants import \
     TARGET_NYM, TXN_TYPE, NYM, \
@@ -113,7 +113,7 @@ def createClientAndWalletWithSeed(name, seed, ha=None):
         port = genHa()[1]
         ha = HA('0.0.0.0', port)
     wallet = Wallet(name)
-    wallet.addIdentifier(signer=SimpleSigner(seed=seed))
+    wallet.addIdentifier(signer=DidSigner(seed=seed))
     client = Client(name, ha=ha)
     return client, wallet
 
@@ -163,7 +163,7 @@ class ClientPoll:
 
         def newSigner():
             while True:
-                signer = SimpleSigner()
+                signer = DidSigner()
                 idr = signer.identifier
                 if idr not in usedIdentifiers:
                     usedIdentifiers.add(idr)
@@ -408,11 +408,11 @@ def main(args):
             corosArgs = sendRequests(numRequests)
             coros = buildCoros(checkReplyAndLogStat, corosArgs)
             for coro in coros:
-                looper.run(eventually(coro,
+                task = eventually(coro,
                                       retryWait=RETRY_WAIT,
                                       timeout=TTL,
                                       verbose=False)
-                           )
+                looper.run(task)
             printCurrentTestResults(stats, testStartedAt)
             logger.info("Sent and waited for {} {} requests"
                         .format(len(coros), requestType))
