@@ -10,7 +10,7 @@ import sys
 from itertools import groupby
 
 from stp_core.loop.looper import Looper
-from plenum.common.signer_simple import SimpleSigner
+from plenum.common.signer_did import DidSigner
 from plenum.common.types import HA
 from stp_core.common.log import getlogger
 from plenum.test.helper import eventually, eventuallyAll
@@ -50,7 +50,7 @@ def spawnClient(clientName, port, signerSeed, host='0.0.0.0'):
     # store = FileRequestIdStore(walletFilePath)
     # wallet = Wallet(clientName, store)
     wallet = Wallet(clientName)
-    wallet.addIdentifier(signer=SimpleSigner(seed=signerSeed))
+    wallet.addIdentifier(signer=DidSigner(seed=signerSeed))
     client = Client(clientName, ha=clientAddress)
     return client, wallet
 
@@ -116,7 +116,7 @@ def addNyms():
         print("Creating request")
         bad = []
         for seed in trustAnchorSeeds:
-            signer = SimpleSigner(seed=seed.encode())
+            signer = DidSigner(seed=seed.encode())
             nym = signer.identifier
             verkey = signer.verkey
             # Sending requests

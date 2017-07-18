@@ -1,0 +1,17 @@
+[package]
+name = "sovclient"
+version = "0.1.0"
+authors = ["Daniel Hardman <daniel.hardman@gmail.com>"]
+
+[lib]
+name = "sovclient"
+crate-type = ["dylib"]
+
+[dependencies]
+libc = "0.2.0"
+rust-base58 = "0.0.4"
+time = "0.1"
+
+#[dependencies.fixture]
+#git = "https://github.com/Jenselme/rust-fixture"
+#tag = "0.1.5"

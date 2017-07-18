@@ -1,0 +1,78 @@
+#! /usr/bin/env python3
+"""
+Convenience script for calling the sovrin command line interface (CLI). For now,
+the CLI is designed for experimenting with the Sovrin Identity platform, and not
+for creating a live consensus pool. For that, it's as simple as defining a node
+registry, creating a looper, creating a node, and running it.
+
+$ sovrin
+
+or supply a command to be executed first
+
+$ sovrin "new nodes all"
+
+"""
+
+import logging
+import os
+import sys
+
+# NOTE: Loading of plugin should happen as early as possible
+# So put all other required imports after loadPlugins function call below
+from plenum.common.plugin_helper import loadPlugins
+from sovrin_common.config_util import getConfig
+
+logging.root.handlers = []
+logger = logging.getLogger()
+logger.propagate = False
+logger.disabled = True
+
+config = getConfig()
+baseDir = config.baseDir
+if not os.path.exists(baseDir):
+    os.makedirs(baseDir)
+loadPlugins(baseDir)
+
+# NOTE: Put all regular imports below (not related to loadplugin)
+from sovrin_client.cli.cli import SovrinCli
+from stp_core.loop.looper import Looper
+
+
+def run_cli():
+
+    commands = sys.argv[1:]
+
+    withNode = True if '--with-node' in commands else False
+
+    with Looper(debug=False) as looper:
+        curDir = os.getcwd()
+        logFilePath = os.path.join(curDir, config.logFilePath)
+        cli = SovrinCli(looper=looper,
+                        basedirpath=baseDir,
+                        logFileName=logFilePath,
+                        withNode=withNode
+                        )
+
+        looper.run(cli.shell(*commands))
+
+
+default_config = """
+[node_reg]
+Alpha = 127.0.0.1 8001
+Beta = 127.0.0.1 8003
+Gamma = 127.0.0.1 8005
+Delta = 127.0.0.1 8007
+
+[client_node_reg]
+AlphaC = 127.0.0.1 8002
+BetaC = 127.0.0.1 8004
+GammaC = 127.0.0.1 8006
+DeltaC = 127.0.0.1 8008
+
+[storage_locations]
+basePath = ~
+"""
+
+
+if __name__ == '__main__':
+    run_cli()
