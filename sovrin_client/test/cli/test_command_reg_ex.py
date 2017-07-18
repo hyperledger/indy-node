@@ -180,13 +180,13 @@ def testConnectRegEx(grammar):
 
 def testSyncLinkRegEx(grammar):
     matchedVars = getMatchedVariables(grammar, "sync faber")
-    assertCliTokens(matchedVars, {"sync_link": "sync", "link_name": "faber"})
+    assertCliTokens(matchedVars, {"sync_connection": "sync", "link_name": "faber"})
 
     matchedVars = getMatchedVariables(grammar, 'sync "faber"')
-    assertCliTokens(matchedVars, {"sync_link": "sync", "link_name": '"faber"'})
+    assertCliTokens(matchedVars, {"sync_connection": "sync", "link_name": '"faber"'})
 
     matchedVars = getMatchedVariables(grammar, 'sync "faber" ')
-    assertCliTokens(matchedVars, {"sync_link": "sync", "link_name": '"faber" '})
+    assertCliTokens(matchedVars, {"sync_connection": "sync", "link_name": '"faber" '})
 
 
 def testPingTargetRegEx(grammar):

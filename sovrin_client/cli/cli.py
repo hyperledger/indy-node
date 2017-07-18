@@ -178,7 +178,7 @@ class SovrinCli(PlenumCli):
         completers["conn"] = WordCompleter([connectToCmd.id])
         completers["disconn"] = WordCompleter([disconnectCmd.id])
         completers["env_name"] = WordCompleter(list(self.config.ENVS.keys()))
-        completers["sync_link"] = WordCompleter([syncLinkCmd.id])
+        completers["sync_connection"] = WordCompleter([syncLinkCmd.id])
         completers["ping_target"] = WordCompleter([pingTargetCmd.id])
         completers["show_claim"] = PhraseWordCompleter(showClaimCmd.id)
         completers["req_claim"] = PhraseWordCompleter(reqClaimCmd.id)
@@ -1109,7 +1109,7 @@ class SovrinCli(PlenumCli):
             return True
 
     def _syncLink(self, matchedVars):
-        if matchedVars.get('sync_link') == syncLinkCmd.id:
+        if matchedVars.get('sync_connection') == syncLinkCmd.id:
             # TODO: Shouldn't we remove single quotes too?
             linkName = SovrinCli.removeSpecialChars(matchedVars.get('link_name'))
             self._syncLinkInvitation(linkName)

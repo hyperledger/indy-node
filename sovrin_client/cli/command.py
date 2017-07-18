@@ -127,9 +127,9 @@ disconnectCmd = Command(
 
 syncLinkCmd = Command(
     id="sync",
-    title="Synchronizes the link between the endpoints",
-    usage="sync link <link-name>",
-    examples="sync link faber")
+    title="Synchronizes the connection between the endpoints",
+    usage="sync connection <connection-name>",
+    examples="sync connection faber")
 
 pingTargetCmd = Command(
     id="ping",
