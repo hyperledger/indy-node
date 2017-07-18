@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpers') _
+@Library('SovrinHelpersTest') _
 
 def name = 'indy-node'
 
@@ -72,6 +72,16 @@ def commonTestUbuntu = {
     }
 }
 
+def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
+    def volumeName = "indy-node-deb-u1604"
+    sh "docker volume rm -f $volumeName"
+    dir('build-scripts/ubuntu-1604') {
+        sh "./build-indy-node-docker.sh $sourcePath"
+        sh "./build-3rd-parties-docker.sh"
+    }
+    return "$volumeName"
+}
+
 options = new TestAndPublishOptions()
 options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
-testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options)
+testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
