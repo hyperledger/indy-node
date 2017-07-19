@@ -6,25 +6,32 @@ from plenum.common.txn_util import reqToTxn
 from plenum.server.req_handler import RequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from sovrin_common.auth import Authoriser
-from sovrin_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION
+from sovrin_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG
 from sovrin_common.roles import Roles
 from sovrin_common.transactions import SovrinTransactions
 from sovrin_common.types import Request
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.server.upgrader import Upgrader
+from sovrin_node.server.pool_config import PoolConfig
 
 
 class ConfigReqHandler(RequestHandler):
-    def __init__(self, ledger, state, idrCache: IdrCache, upgrader: Upgrader,
-                 poolManager):
+    def __init__(self, ledger, state, idrCache: IdrCache, upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
         self.poolManager = poolManager
+        self.poolCfg = poolCfg
 
     def doStaticValidation(self, identifier, reqId, operation):
         if operation[TXN_TYPE] == POOL_UPGRADE:
             self._doStaticValidationPoolUpgrade(identifier, reqId, operation)
+        elif operation[TXN_TYPE] == POOL_CONFIG:
+            self._doStaticValidationPoolConfig(identifier, reqId, operation)
+
+    def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
+        print("@@!!@@ pool_config staticval")
+        pass
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)
@@ -48,16 +55,16 @@ class ConfigReqHandler(RequestHandler):
 
     def validate(self, req: Request, config=None):
         operation = req.operation
-        if operation.get(TXN_TYPE) == POOL_UPGRADE:
-            origin = req.identifier
-            try:
-                originRole = self.idrCache.getRole(origin, isCommitted=False)
-            except:
-                raise UnauthorizedClientRequest(
-                    req.identifier,
-                    req.reqId,
-                    "Nym {} not added to the ledger yet".format(origin))
+        origin = req.identifier
+        try:
+            originRole = self.idrCache.getRole(origin, isCommitted=False)
+        except:
+            raise UnauthorizedClientRequest(req.identifier, req.reqId,
+                                            "Nym {} not added to the ledger yet".format(origin))
 
+        typ = operation.get(TXN_TYPE)
+
+        if typ == POOL_UPGRADE:
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version
             # present
@@ -65,21 +72,17 @@ class ConfigReqHandler(RequestHandler):
                                                   req.operation.get(VERSION))
 
             if status == START and action == START:
-                raise InvalidClientRequest(
-                    req.identifier,
-                    req.reqId,
-                    "Upgrade '{}' is already scheduled".format(
-                        req.operation.get(NAME)))
+                raise InvalidClientRequest(req.identifier, req.reqId,
+                                           "Upgrade '{}' is already scheduled".format(req.operation.get(NAME)))
+        else:
+            action = None
+            status = None
 
-            r, msg = Authoriser.authorised(POOL_UPGRADE, ACTION, originRole,
-                                           oldVal=status, newVal=action)
-            if not r:
-                raise UnauthorizedClientRequest(
-                    req.identifier,
-                    req.reqId,
-                    "{} cannot do {}".format(
-                        Roles.nameFromValue(originRole),
-                        SovrinTransactions.POOL_UPGRADE.name))
+        r, msg = Authoriser.authorised(typ, ACTION, originRole, oldVal=status, newVal=action)
+        if not r:
+            raise UnauthorizedClientRequest(req.identifier, req.reqId,
+                                            "{} cannot do {}".format(Roles.nameFromValue(originRole),
+                                                                     SovrinTransactions.POOL_UPGRADE.name))
 
     def apply(self, req: Request, cons_time):
         txn = reqToTxn(req, cons_time)
@@ -92,10 +95,13 @@ class ConfigReqHandler(RequestHandler):
             # TODO: for now pool_upgrade will not be scheduled twice
             # because of version check
             # make sure it will be the same in future
+            print("@@!!@@ commit")
             self.upgrader.handleUpgradeTxn(txn)
+            self.poolCfg.handleConfigTxn(txn)
         return committedTxns
 
     def applyForced(self, req: Request):
         if req.isForced():
             txn = reqToTxn(req)
             self.upgrader.handleUpgradeTxn(txn)
+            self.poolCfg.handleConfigTxn(txn)
