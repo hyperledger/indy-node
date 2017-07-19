@@ -104,7 +104,7 @@ showFileCmd = Command(
 
 loadFileCmd = Command(
     id="load",
-    title="Creates the link",
+    title="Creates the connection",
     usage="load <file-path>",
     examples="load sample/faber-invitation.sovrin")
 

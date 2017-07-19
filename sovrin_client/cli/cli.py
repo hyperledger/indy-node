@@ -1557,7 +1557,7 @@ class SovrinCli(PlenumCli):
         if matchedVars.get('list_links') == listLinksCmd.id:
             links = self.activeWallet.getLinkNames()
             if len(links) == 0:
-                self.print("No links exists")
+                self.print("No connections exists")
             else:
                 for link in links:
                     self.print(link + "\n")
@@ -1839,15 +1839,15 @@ class SovrinCli(PlenumCli):
                        "or an IoT-style thing")
 
         def loadHelper():
-            self.print("Creates the link, generates DID and signing keys")
+            self.print("Creates the connection, generates DID and signing keys")
             self.printUsage(self._getLoadFileUsage("<request filename>"))
 
         def showHelper():
-            self.print("Shows the info about the link request")
+            self.print("Shows the info about the link connection")
             self.printUsage(self._getShowFileUsage("<request filename>"))
 
         def showLinkHelper():
-            self.print("Shows link info in case of one matching link, "
+            self.print("Shows connection info in case of one matching link, "
                        "otherwise shows all the matching links")
             self.printUsage(self._getShowLinkUsage())
 
