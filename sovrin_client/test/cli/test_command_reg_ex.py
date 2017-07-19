@@ -333,7 +333,7 @@ def testAddGenTxnRegEx(grammar):
                                       '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}')
     assertCliTokens(matchedVars, {"add_gen_txn": "add genesis transaction", "type": "NODE",
                                   "dest": "2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML",
-                                  "DID": "FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW", "role": None,
+                                  "identifier": "FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW", "role": None,
                                   "data": '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}'})
 
 
