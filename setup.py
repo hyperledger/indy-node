@@ -73,7 +73,7 @@ setup(
     description='Sovrin node',
     url='https://github.com/hyperledger/indy-node',
     author=__author__,
-    author_email='dev@evernym.us',
+    author_email='repo@sovrin.org',
     license=__license__,
     keywords='Sovrin Node',
     packages=find_packages(exclude=['docs', 'docs*']) + [
@@ -85,8 +85,8 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==0.4.50',
-                      'indy-anoncreds-dev==0.4.15',
+    install_requires=['indy-plenum-dev==0.4.61',
+                      'indy-anoncreds-dev==0.4.18',
                       'python-dateutil',
                       'timeout-decorator'],
     setup_requires=['pytest-runner'],

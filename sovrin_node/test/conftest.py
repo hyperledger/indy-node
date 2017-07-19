@@ -40,8 +40,8 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
     startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
-    nodeAndClientInfoFilePath, patchPluginManager, txnPoolNodesLooper, \
-    warncheck, warnfilters as plenum_warnfilters
+    patchPluginManager, txnPoolNodesLooper, warncheck, \
+    warnfilters as plenum_warnfilters
 
 # noinspection PyUnresolvedReferences
 from sovrin_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
