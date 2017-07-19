@@ -22,7 +22,7 @@ fpm --input-type "python" \
     --exclude "*.pyc" \
     --exclude "*.pyo" \
     --no-python-fix-dependencies \
-    --maintainer "Sovrin Foundation <repo@sovrin.org>" \
+    --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
     --before-install "preinst_node" \
     --after-install "postinst_node" \
     --before-remove ${PREREM_TMP} \
