@@ -30,7 +30,6 @@ class ConfigReqHandler(RequestHandler):
             self._doStaticValidationPoolConfig(identifier, reqId, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
-        print("@@!!@@ pool_config staticval")
         pass
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
@@ -95,7 +94,6 @@ class ConfigReqHandler(RequestHandler):
             # TODO: for now pool_upgrade will not be scheduled twice
             # because of version check
             # make sure it will be the same in future
-            print("@@!!@@ commit")
             self.upgrader.handleUpgradeTxn(txn)
             self.poolCfg.handleConfigTxn(txn)
         return committedTxns

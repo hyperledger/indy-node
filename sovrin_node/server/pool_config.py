@@ -1,26 +1,7 @@
 from plenum.common.constants import TXN_TYPE
 from sovrin_common.constants import POOL_CONFIG, WRITES
 
-import os
-from collections import deque
-from datetime import datetime, timedelta
-from functools import cmp_to_key
-from functools import partial
-from typing import Tuple, Union, Optional
-
-import dateutil.parser
-import dateutil.tz
-
 from stp_core.common.log import getlogger
-from plenum.common.constants import NAME, TXN_TYPE
-from plenum.common.constants import VERSION
-from plenum.server.has_action_queue import HasActionQueue
-from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT
-from sovrin_node.server.upgrade_log import UpgradeLog
-from plenum.server import notifier_plugin_manager
-import asyncio
-
 
 logger = getlogger()
 
@@ -41,6 +22,8 @@ class PoolConfig:
         if txn[TXN_TYPE] == POOL_CONFIG:
             self.writes = txn[WRITES]
 
+    #TODO: config ledger is read from the start to the end. Think about optimization
+    #TODO: PoolConfig and Updater both read config ledger independently
     def processLedger(self) -> None:
         """
         Checks ledger config txns and perfomes recent one
