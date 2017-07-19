@@ -100,7 +100,6 @@ setup(
              'scripts/clear_node.py',
              'scripts/get_keys',
              'scripts/generate_sovrin_pool_transactions',
-             'scripts/get_package_dependencies_ubuntu.sh',
              'scripts/init_sovrin_keys',
              'scripts/upgrade_sovrin_node_ubuntu1604.sh',
              'scripts/upgrade_sovrin_node_ubuntu1604_test.sh',
