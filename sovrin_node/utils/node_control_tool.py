@@ -56,7 +56,16 @@ class NodeControlTool:
 
     @classmethod
     def _get_info_from_package_manager(cls, package):
-        ret = subprocess.run(cls._compose_cmd(['apt-cache', 'show', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+        ret = subprocess.run(cls._compose_cmd(['apt', 'update']), shell=True, check=True,
+                             universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+
+        if ret.returncode != 0:
+            msg = 'Upgrade failed: _get_deps_list returned {}'.format(ret.returncode)
+            logger.error(msg)
+            raise Exception(msg)
+
+        ret = subprocess.run(cls._compose_cmd(['apt-cache', 'show', package]), shell=True, check=True,
+                             universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
 
         if ret.returncode != 0:
             msg = 'Upgrade failed: _get_deps_list returned {}'.format(ret.returncode)
