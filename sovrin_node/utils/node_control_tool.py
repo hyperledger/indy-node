@@ -5,9 +5,12 @@ import socket
 import os
 import subprocess
 import shutil
+import re
+from typing import List
 from sovrin_node.utils.migration_tool import migrate
 from stp_core.common.log import getlogger
 from sovrin_node.server.upgrader import Upgrader
+from sovrin_common.config_util import getConfig
 
 logger = getlogger()
 
@@ -15,15 +18,21 @@ logger = getlogger()
 TIMEOUT = 300
 BASE_DIR = '/home/sovrin/'
 BACKUP_FORMAT = 'zip'
+DEPS = ['indy-plenum', 'indy-anoncreds']
+CONFIG = getConfig()
+FILES_TO_PRESERVE = [CONFIG.lastRunVersionFile, CONFIG.nextVersionFile, CONFIG.upgradeLogFile, CONFIG.lastVersionFilePath]
 
 
 class NodeControlTool:
-    def __init__(self, timeout: int = TIMEOUT, base_dir: str = BASE_DIR, backup_format: str = BACKUP_FORMAT, test_mode: bool = False):
+    def __init__(self, timeout: int = TIMEOUT, base_dir: str = BASE_DIR, backup_format: str = BACKUP_FORMAT, test_mode: bool = False, deps: List[str] = DEPS, files_to_preserve: List[str] = FILES_TO_PRESERVE):
         self.test_mode = test_mode
         self.timeout = timeout
         self.base_dir = base_dir
         self.sovrin_dir = os.path.join(self.base_dir, '.sovrin')
+        self.tmp_dir = os.path.join(self.base_dir, '.sovrin_tmp')
         self.backup_format = backup_format
+        self.deps = deps
+        self.files_to_preserve = files_to_preserve
 
         # Create a TCP/IP socket
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -45,16 +54,47 @@ class NodeControlTool:
             cmd = ' '.join(cmd)
         return cmd
 
-    def _get_deps_list(self, package):
-        logger.info('Getting dependencies for {}'.format(package))
-        ret = subprocess.run(self.__class__._compose_cmd(['get_package_dependencies_ubuntu', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
-        
+    @classmethod
+    def _get_info_from_package_manager(cls, package):
+        ret = subprocess.run(cls._compose_cmd(['apt-cache', 'show', package]), shell=True, check=True,
+                             universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+
         if ret.returncode != 0:
             msg = 'Upgrade failed: _get_deps_list returned {}'.format(ret.returncode)
             logger.error(msg)
             raise Exception(msg)
-        
+
         return ret.stdout.strip()
+
+    @classmethod
+    def _update_package_cache(cls):
+        ret = subprocess.run(cls._compose_cmd(['apt', 'update']), shell=True, check=True,
+                             universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+
+        if ret.returncode != 0:
+            msg = 'Upgrade failed: _get_deps_list returned {}'.format(ret.returncode)
+            logger.error(msg)
+            raise Exception(msg)
+
+        return ret.stdout.strip()
+
+    def _get_deps_list(self, package):
+        logger.info('Getting dependencies for {}'.format(package))
+        ret = ''
+        self.__class__._update_package_cache()
+        package_info = self.__class__._get_info_from_package_manager(package)
+
+        for dep in self.deps:
+            if dep in package_info:
+                match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep), package_info)
+                if match:
+                    dep_version = match.group(1)
+                    dep_package = '{}={}'.format(dep, dep_version)
+                    dep_tree = self._get_deps_list(dep_package)
+                    ret = '{} {}'.format(dep_tree, ret)
+
+        ret = '{} {}'.format(ret, package)
+        return ret
 
     def _call_upgrade_script(self, version):
         logger.info('Upgrading sovrin node to version {}, test_mode {}'.format(version, int(self.test_mode)))
@@ -90,7 +130,18 @@ class NodeControlTool:
         shutil.make_archive(self._backup_name(version), self.backup_format, self.sovrin_dir)
 
     def _restore_from_backup(self, version):
+        for file_path in self.files_to_preserve:
+            try:
+                shutil.copy2(os.path.join(self.sovrin_dir, file_path), os.path.join(self.tmp_dir, file_path))
+            except IOError as e:
+                logger.warning('Copying {} failed due to {}'.format(file_path, e))
         shutil.unpack_archive(self._backup_name_ext(version), self.sovrin_dir, self.backup_format)
+        for file_path in self.files_to_preserve:
+            try:
+                shutil.copy2(os.path.join(self.tmp_dir, file_path), os.path.join(self.sovrin_dir, file_path))
+            except IOError as e:
+                logger.warning('Copying {} failed due to {}'.format(file_path, e))
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
     def _remove_backup(self, version):
         os.remove(self._backup_name_ext(version))
