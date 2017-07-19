@@ -230,7 +230,7 @@ def testNewverkeyAddedToCID(be, do, philCli, trustAnchorSigner,
            getCurrentVerkeyIsgMsgs(trustAnchorSigner.identifier, newSigner.verkey))
 
 
-def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted,
+def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted, poolTxnData,
                                       susanCLI, connectedToTest):
     mywallet = Wallet('my wallet')
     keyseed = 'a' * 32
@@ -244,7 +244,7 @@ def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted,
 
     do('send NYM dest={}'.format(idr))
 
-    do('new key with seed 11111111111111111111111111111111')
+    do('new key with seed {}'.format(poolTxnData['seeds']['Steward1']))
 
     do('send NYM dest={}'.format(idr), within=3,
        expect=["Nym {} added".format(idr)])

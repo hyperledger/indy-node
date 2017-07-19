@@ -936,7 +936,7 @@ class TestMultiNode:
 
 
 @pytest.yield_fixture(scope="module")
-def multiPoolNodesCreated(request, tconf, looper, tdir, nodeAndClientInfoFilePath,
+def multiPoolNodesCreated(request, tconf, looper, tdir,
                           cliTempLogger, namesOfPools=("pool1", "pool2")):
     oldENVS = tconf.ENVS
     oldPoolTxnFile = tconf.poolTransactionsFile
@@ -947,8 +947,7 @@ def multiPoolNodesCreated(request, tconf, looper, tdir, nodeAndClientInfoFilePat
         newPoolTxnNodeNames = [poolName + n for n
                                in ("Alpha", "Beta", "Gamma", "Delta")]
         newTdir = os.path.join(tdir, poolName + "basedir")
-        newPoolTxnData = getPoolTxnData(
-            nodeAndClientInfoFilePath, poolName, newPoolTxnNodeNames)
+        newPoolTxnData = getPoolTxnData(poolName, newPoolTxnNodeNames)
         newTdirWithPoolTxns = tdirWithPoolTxns(newPoolTxnData, newTdir, tconf)
         newTdirWithDomainTxns = tdirWithDomainTxns(
             newPoolTxnData, newTdir, tconf, domainTxnOrderedFields())
@@ -1310,7 +1309,7 @@ def poolNodesStarted(be, do, poolCLI):
 
 
 @pytest.fixture(scope="module")
-def philCli(be, do, philCLI, trusteeCli):
+def philCli(be, do, philCLI, trusteeCli, poolTxnData):
 
     be(philCLI)
 
