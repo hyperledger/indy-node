@@ -54,17 +54,22 @@ class NodeControlTool:
             cmd = ' '.join(cmd)
         return cmd
 
-    def _get_deps_list(self, package):
-        logger.info('Getting dependencies for {}'.format(package))
-        ret = ''
-        package_info = subprocess.run(self.__class__._compose_cmd(['apt-cache', 'show', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
-        
-        if package_info.returncode != 0:
-            msg = 'Upgrade failed: _get_deps_list returned {}'.format(package_info.returncode)
+    @classmethod
+    def _get_info_from_package_manager(cls, package):
+        ret = subprocess.run(cls._compose_cmd(['apt-cache', 'show', package]), shell=True, check=True, universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+
+        if ret.returncode != 0:
+            msg = 'Upgrade failed: _get_deps_list returned {}'.format(ret.returncode)
             logger.error(msg)
             raise Exception(msg)
 
-        package_info = package_info.stdout.strip()
+        return ret.stdout.strip()
+
+    def _get_deps_list(self, package):
+        logger.info('Getting dependencies for {}'.format(package))
+        ret = ''
+        package_info = self.__class__._get_info_from_package_manager(package)
+
         for dep in self.deps:
             if dep in package_info:
                 match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep), package_info)
@@ -72,7 +77,7 @@ class NodeControlTool:
                     dep_version = match.group(1)
                     dep_package = '{}={}'.format(dep, dep_version)
                     dep_tree = self._get_deps_list(dep_package)
-                    ret = '{} {}'.format(dep_tree, dep_package)
+                    ret = '{} {}'.format(dep_tree, ret)
 
         ret = '{} {}'.format(ret, package)
         return ret
