@@ -97,12 +97,10 @@ EOF
 mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604.sh /usr/local/bin/upgrade_sovrin_node
 mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604_test.sh /usr/local/bin/upgrade_sovrin_node_test
 mv /usr/local/bin/restart_sovrin_node_ubuntu1604.sh /usr/local/bin/restart_sovrin_node
-mv /usr/local/bin/get_package_dependencies_ubuntu.sh /usr/local/bin/get_package_dependencies_ubuntu
 
 chmod +x /usr/local/bin/upgrade_sovrin_node
 chmod +x /usr/local/bin/upgrade_sovrin_node_test
 chmod +x /usr/local/bin/restart_sovrin_node
-chmod +x /usr/local/bin/get_package_dependencies_ubuntu
 chmod +x /usr/local/bin/start_node_control_tool.py
 
 rm -f /usr/local/bin/delete_sovrin_node.bat /usr/local/bin/upgrade_sovrin_node_test.bat /usr/local/bin/restart_sovrin_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_sovrin_node.bat /usr/local/bin/install_sovrin_node.bat
