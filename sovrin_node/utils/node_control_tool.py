@@ -141,6 +141,7 @@ class NodeControlTool:
                 shutil.copy2(os.path.join(self.tmp_dir, file_path), os.path.join(self.sovrin_dir, file_path))
             except IOError as e:
                 logger.warning('Copying {} failed due to {}'.format(file_path, e))
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
     def _remove_backup(self, version):
         os.remove(self._backup_name_ext(version))
