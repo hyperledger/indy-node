@@ -56,7 +56,7 @@ class NodeControlTool:
 
     @classmethod
     def _get_info_from_package_manager(cls, package):
-        ret = subprocess.run(cls._compose_cmd(['apt', 'update']), shell=True, check=True,
+        ret = subprocess.run(cls._compose_cmd(['apt-cache', 'show', package]), shell=True, check=True,
                              universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
 
         if ret.returncode != 0:
@@ -64,7 +64,11 @@ class NodeControlTool:
             logger.error(msg)
             raise Exception(msg)
 
-        ret = subprocess.run(cls._compose_cmd(['apt-cache', 'show', package]), shell=True, check=True,
+        return ret.stdout.strip()
+
+    @classmethod
+    def _update_package_cache(cls):
+        ret = subprocess.run(cls._compose_cmd(['apt', 'update']), shell=True, check=True,
                              universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
 
         if ret.returncode != 0:
@@ -77,6 +81,7 @@ class NodeControlTool:
     def _get_deps_list(self, package):
         logger.info('Getting dependencies for {}'.format(package))
         ret = ''
+        self.__class__._update_package_cache()
         package_info = self.__class__._get_info_from_package_manager(package)
 
         for dep in self.deps:

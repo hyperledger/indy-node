@@ -52,6 +52,7 @@ def testNodeControlResolvesDependencies(monkeypatch):
         return mock_info.get(package, None)
 
     monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager', mock_get_info_from_package_manager)
+    monkeypatch.setattr(nct.__class__, '_update_package_cache', lambda *x: None)
     ret = nct._get_deps_list(node_package_with_version)
     assert ret.split() == [anoncreds_package_with_version, plenum_package_with_version, node_package_with_version]
 
