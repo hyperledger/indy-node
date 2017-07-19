@@ -123,7 +123,7 @@ class WalletedAgent(Walleted, Agent, Caching):
             fileName = normalizedWalletFileName(walletName)
             walletFilePath = self.walletSaver.saveWallet(
                 wallet, getWalletFilePath(contextDir, fileName))
-            self.logger.info('Active keyring "{}" saved ({})'.
+            self.logger.info('Active wallet "{}" saved ({})'.
                              format(walletName, walletFilePath))
         except IOError as ex:
             self.logger.info("Error occurred while saving wallet. " +
@@ -135,7 +135,7 @@ class WalletedAgent(Walleted, Agent, Caching):
             self.getContextDir())
         if restoredWallet:
             self.wallet = restoredWallet
-            self.logger.info('Saved keyring "{}" restored ({})'.
+            self.logger.info('Saved wallet "{}" restored ({})'.
                              format(self.wallet.name, walletFilePath))
 
     def _restoreIssuerWallet(self):
@@ -144,7 +144,7 @@ class WalletedAgent(Walleted, Agent, Caching):
                 self._getIssuerWalletContextDir())
             if restoredWallet:
                 self.issuer.restorePersistedWallet(restoredWallet)
-                self.logger.info('Saved keyring "issuer" restored ({})'.
+                self.logger.info('Saved wallet "issuer" restored ({})'.
                              format(walletFilePath))
 
     def _restoreLastActiveWallet(self, contextDir):
@@ -164,7 +164,7 @@ class WalletedAgent(Walleted, Agent, Caching):
                     format(walletFilePath, e))
         except IOError as exc:
             if exc.errno == errno.ENOENT:
-                self.logger.debug("no such keyring file exists ({})".
+                self.logger.debug("no such wallet file exists ({})".
                               format(walletFilePath))
             else:
                 raise exc
