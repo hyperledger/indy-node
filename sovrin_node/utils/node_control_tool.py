@@ -117,10 +117,16 @@ class NodeControlTool:
 
     def _restore_from_backup(self, version):
         for file_path in self.files_to_preserve:
-            shutil.copy2(os.path.join(self.sovrin_dir, file_path), os.path.join(self.tmp_dir, file_path))
+            try:
+                shutil.copy2(os.path.join(self.sovrin_dir, file_path), os.path.join(self.tmp_dir, file_path))
+            except IOError as e:
+                logger.warning('Copying {} failed due to {}'.format(file_path, e))
         shutil.unpack_archive(self._backup_name_ext(version), self.sovrin_dir, self.backup_format)
         for file_path in self.files_to_preserve:
-            shutil.copy2(os.path.join(self.tmp_dir, file_path), os.path.join(self.sovrin_dir, file_path))
+            try:
+                shutil.copy2(os.path.join(self.tmp_dir, file_path), os.path.join(self.sovrin_dir, file_path))
+            except IOError as e:
+                logger.warning('Copying {} failed due to {}'.format(file_path, e))
 
     def _remove_backup(self, version):
         os.remove(self._backup_name_ext(version))
