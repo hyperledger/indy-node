@@ -1,5 +1,5 @@
 from sovrin_client.test.helper import getClientAddedWithRole
-from sovrin_client.test.helper import checkRejects
+from sovrin_client.test.helper import checkRejects, checkNacks
 from stp_core.loop.eventually import eventually
 from sovrin_node.test.pool_config.helper import ensurePoolConfigSent, checkPoolConfigWritableSet, sendPoolConfig
 from plenum.common.constants import STEWARD
@@ -20,10 +20,10 @@ def test_only_trustee_send_pool_config_wfff(nodeSet, tdir, looper, trustee, trus
 def test_only_trustee_send_pool_config_wtft(nodeSet, tdir, looper, trustee, trusteeWallet, poolConfigWTFT):
     stClient, stWallet = getClientAddedWithRole(nodeSet, tdir, looper, trustee, trusteeWallet, 'tmpname', STEWARD)
     _, req = sendPoolConfig(stClient, stWallet, poolConfigWTFT)
-    looper.run(eventually(checkRejects, stClient, req.reqId, 'cannot do'))
+    looper.run(eventually(checkNacks, stClient, req.reqId, 'cannot do'))
 
 
 def test_only_trustee_send_pool_config_wfft(nodeSet, tdir, looper, trustee, trusteeWallet, poolConfigWFFT):
     stClient, stWallet = getClientAddedWithRole(nodeSet, tdir, looper, trustee, trusteeWallet, 'tmpname', STEWARD)
     _, req = sendPoolConfig(stClient, stWallet, poolConfigWFFT)
-    looper.run(eventually(checkRejects, stClient, req.reqId, 'cannot do'))
+    looper.run(eventually(checkNacks, stClient, req.reqId, 'cannot do'))
