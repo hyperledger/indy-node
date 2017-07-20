@@ -1554,7 +1554,7 @@ class SovrinCli(PlenumCli):
             return True
 
     def _listLinks(self, matchedVars):
-        if matchedVars.get('list_links') == listLinksCmd.id:
+        if matchedVars.get('list_connections') == listLinksCmd.id:
             links = self.activeWallet.getLinkNames()
             if len(links) == 0:
                 self.print("No connections exists")

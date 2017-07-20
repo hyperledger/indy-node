@@ -421,6 +421,9 @@ def aliceAcceptedFaberInvitation(be, do, aliceCli, faberMap,
                                  faberInviteSyncedWithEndpoint):
     acceptInvitation(be, do, aliceCli, faberMap,
                  syncedInviteAcceptedWithClaimsOut)
+    do("list connections", within = 10,
+       mapper=faberMap,
+       expect="Faber College")
     return aliceCli
 
 
