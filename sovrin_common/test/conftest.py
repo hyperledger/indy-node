@@ -1,8 +1,10 @@
 import pytest
+import logging
 
 from sovrin_common import strict_types
 from sovrin_common.config_util import getConfig
 from sovrin_common.txn_util import getTxnOrderedFields
+from stp_core.common.log import getlogger
 
 # typecheck during tests
 strict_types.defaultShouldCheck = True
@@ -36,3 +38,9 @@ def looper(txnPoolNodesLooper):
 @pytest.fixture(scope="module")
 def domainTxnOrderedFields():
     return getTxnOrderedFields()
+
+
+@pytest.fixture(autouse=True)
+def setTestLogLevel():
+    logger = getlogger()
+    logger.level = logging.NOTSET
