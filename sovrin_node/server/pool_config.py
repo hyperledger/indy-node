@@ -7,7 +7,7 @@ logger = getlogger()
 
 class PoolConfig:
     def __init__(self, ledger):
-        self.writes = None
+        self.writes = True
         self.ledger = ledger
 
     def isWritable(self):
