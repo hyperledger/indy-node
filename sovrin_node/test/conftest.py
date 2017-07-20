@@ -45,7 +45,7 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
 
 # noinspection PyUnresolvedReferences
 from sovrin_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
-    domainTxnOrderedFields, looper
+    domainTxnOrderedFields, looper, setTestLogLevel
 
 Logger.setLogLevel(logging.NOTSET)
 
