@@ -23,3 +23,14 @@ def testPoolConfigWritableTrue(be, do, trusteeCli):
     do('send NYM dest=33333333333333333333333333333333333333333333', expect="Pool is in readonly mode", within=10)
     do('send POOL_CONFIG writes=True force=False', expect="Pool config successful", within=10)
     do('send NYM dest=33333333333333333333333333333333333333333333', expect="added", within=10)
+
+
+def testPoolConfigWritableFalseCanRead(be, do, trusteeCli):
+    be(trusteeCli)
+    do('send NYM dest=44444444444444444444444444444444444444444444', expect="added", within=10)
+    do('send GET_NYM dest=44444444444444444444444444444444444444444444',
+       expect="Current verkey is same as identifier", within=10)
+    do('send POOL_CONFIG writes=False force=False', expect="Pool config successful", within=10)
+    do('send NYM dest=55555555555555555555555555555555555555555555', expect="Pool is in readonly mode", within=10)
+    do('send GET_NYM dest=44444444444444444444444444444444444444444444',
+       expect="Current verkey is same as identifier", within=10)
