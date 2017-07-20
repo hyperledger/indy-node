@@ -1315,8 +1315,8 @@ def philCli(be, do, philCLI, trusteeCli, poolTxnData):
 
     do('prompt Phil', expect=prompt_is('Phil'))
 
-    do('new wallet Phil', expect=['New keyring Phil created',
-                                   'Active keyring set to "Phil"'])
+    do('new wallet Phil', expect=['New wallet Phil created',
+                                   'Active wallet set to "Phil"'])
     phil_seed = poolTxnData['seeds']['Steward1']
     phil_signer = DidSigner(seed=phil_seed.encode())
 

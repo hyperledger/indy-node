@@ -1915,6 +1915,7 @@ class SovrinCli(PlenumCli):
         mappings['listLinks'] = listLinksCmd
         mappings['reqClaim'] = reqClaimCmd
         mappings['showProofRequest'] = showProofRequestCmd
+        mappings['acceptInvitationLink'] = acceptLinkCmd
         mappings['addGenTxnAction'] = addGenesisTxnCmd
         mappings['setAttr'] = setAttrCmd
         mappings['sendProofRequest'] = sendProofRequestCmd
