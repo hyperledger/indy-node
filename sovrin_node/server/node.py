@@ -13,7 +13,7 @@ from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.types import f, \
     OPERATION
-from plenum.common.messages.node_messages import Reply
+from plenum.common.messages.node_messages import Reply, PrePrepare
 from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
@@ -94,6 +94,14 @@ class Node(PlenumNode, HasPoolManager):
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
+
+        self.nodeMsgRouter.routes[PrePrepare] = self.extraPrePrepareProcesing
+
+
+    def extraPrePrepareProcesing(self, msg, frm):
+        ledgerid = getattr(msg, f.LEDGER_ID.nm, -1)
+        if self.poolCfg.isWritable() or ledgerid == CONFIG_LEDGER_ID:
+            super().sendToReplica(msg, frm)
 
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)

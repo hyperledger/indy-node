@@ -64,24 +64,23 @@ class ConfigReqHandler(RequestHandler):
         typ = operation.get(TXN_TYPE)
 
         if typ == POOL_UPGRADE:
+            trname = SovrinTransactions.POOL_UPGRADE.name
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version
             # present
-            status = self.upgrader.statusInLedger(req.operation.get(NAME),
-                                                  req.operation.get(VERSION))
-
+            status = self.upgrader.statusInLedger(req.operation.get(NAME), req.operation.get(VERSION))
             if status == START and action == START:
                 raise InvalidClientRequest(req.identifier, req.reqId,
                                            "Upgrade '{}' is already scheduled".format(req.operation.get(NAME)))
-        else:
+        elif typ == POOL_CONFIG:
+            trname = SovrinTransactions.POOL_CONFIG.name
             action = None
             status = None
 
         r, msg = Authoriser.authorised(typ, ACTION, originRole, oldVal=status, newVal=action)
         if not r:
             raise UnauthorizedClientRequest(req.identifier, req.reqId,
-                                            "{} cannot do {}".format(Roles.nameFromValue(originRole),
-                                                                     SovrinTransactions.POOL_UPGRADE.name))
+                                            "{} cannot do {}".format(Roles.nameFromValue(originRole), trname))
 
     def apply(self, req: Request, cons_time):
         txn = reqToTxn(req, cons_time)
