@@ -398,6 +398,4 @@ base58Alphabet = set(base58.alphabet)
 
 
 def checkStrIsBase58Compatible(str):
-    print((set(str) - base58Alphabet))
-    print(not (set(str) - base58Alphabet))
     return not (set(str) - base58Alphabet)
