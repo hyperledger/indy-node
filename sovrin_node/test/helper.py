@@ -2,6 +2,7 @@ import inspect
 import json
 from contextlib import ExitStack
 from typing import Iterable
+import base58
 
 from plenum.common.constants import REQACK, TXN_ID, DATA
 from stp_core.common.log import getlogger
@@ -391,3 +392,10 @@ def buildStewardClient(looper, tdir, stewardWallet):
     looper.run(s.ensureConnectedToNodes())
     makePendingTxnsRequest(s, stewardWallet)
     return s
+
+
+base58_alphabet = set(base58.alphabet)
+
+
+def check_str_is_base58_compatible(str):
+    return not (set(str) - base58_alphabet)
