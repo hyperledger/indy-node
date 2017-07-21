@@ -54,15 +54,15 @@ class ConfigReqHandler(RequestHandler):
 
     def validate(self, req: Request, config=None):
         operation = req.operation
+        typ = operation.get(TXN_TYPE)
+        if typ not in [POOL_UPGRADE, POOL_CONFIG]:
+            return
         origin = req.identifier
         try:
             originRole = self.idrCache.getRole(origin, isCommitted=False)
         except:
             raise UnauthorizedClientRequest(req.identifier, req.reqId,
                                             "Nym {} not added to the ledger yet".format(origin))
-
-        typ = operation.get(TXN_TYPE)
-
         if typ == POOL_UPGRADE:
             trname = SovrinTransactions.POOL_UPGRADE.name
             action = operation.get(ACTION)

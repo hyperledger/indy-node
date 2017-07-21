@@ -102,6 +102,9 @@ class Node(PlenumNode, HasPoolManager):
         ledgerid = getattr(msg, f.LEDGER_ID.nm, -1)
         if self.poolCfg.isWritable() or ledgerid == CONFIG_LEDGER_ID:
             super().sendToReplica(msg, frm)
+        else:
+            logger.debug("Message {} from {} was ignored due to readonly mode".format(msg, frm))
+
 
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)
