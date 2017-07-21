@@ -6,7 +6,7 @@ from plenum.common.util import friendlyToRaw
 from sovrin_client.test.cli.constants import INVALID_SYNTAX
 from sovrin_client.test.cli.helper import createUuidIdentifier, addNym, \
     createHalfKeyIdentifierAndAbbrevVerkey, createCryptonym
-from sovrin_node.test.helper import checkStrIsBase58Compatible
+from sovrin_node.test.helper import check_str_is_base58_compatible
 
 CURRENT_VERKEY_FOR_NYM = 'Current verkey for NYM {dest} is {verkey}'
 CURRENT_VERKEY_IS_SAME_AS_IDENTIFIER = \
@@ -61,7 +61,7 @@ def testSendGetNymFailsIfDestIsPassedInHexFormat(
     while True:
         uuidIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
         hexEncodedUuidIdentifier = hexlify(friendlyToRaw(uuidIdentifier)).decode()
-        if not checkStrIsBase58Compatible(hexEncodedUuidIdentifier):
+        if not check_str_is_base58_compatible(hexEncodedUuidIdentifier):
             break
 
     addNym(be, do, trusteeCli, idr=uuidIdentifier, verkey=abbrevVerkey)

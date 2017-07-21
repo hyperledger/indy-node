@@ -394,8 +394,8 @@ def buildStewardClient(looper, tdir, stewardWallet):
     return s
 
 
-base58Alphabet = set(base58.alphabet)
+base58_alphabet = set(base58.alphabet)
 
 
-def checkStrIsBase58Compatible(str):
-    return not (set(str) - base58Alphabet)
+def check_str_is_base58_compatible(str):
+    return not (set(str) - base58_alphabet)
