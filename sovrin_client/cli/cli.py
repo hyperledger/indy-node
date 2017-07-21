@@ -681,7 +681,7 @@ class SovrinCli(PlenumCli):
                     "Pool upgrade failed: {}".format(error),
                     Token.BoldOrange)
             else:
-                self.print("Pool upgrade successful", Token.BoldBlue)
+                self.print("Pool Upgrade Transaction Scheduled", Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
                                     req.key, self.activeClient, out)
