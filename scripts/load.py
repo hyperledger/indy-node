@@ -10,8 +10,8 @@ from stp_core.loop.looper import Looper
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from time import *
 
-numReqs = 1000
-splits = 2
+numReqs = 100
+splits = 1
 
 Logger.setLogLevel(logging.INFO)
 logger = getlogger()
@@ -46,7 +46,7 @@ def put_load():
             s = perf_counter()
             reqs = requests[i:i + numReqs // splits + 1]
             waitForSufficientRepliesForRequests(looper, client, requests=reqs,
-                                                fVal=2, customTimeoutPerReq=100,
+                                                customTimeoutPerReq=100,
                                                 override_timeout_limit=True)
             print('>>> Got replies for {} requests << in {}'.
                   format(numReqs // splits, perf_counter() - s))

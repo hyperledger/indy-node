@@ -62,9 +62,9 @@ def warnfilters(client_warnfilters):
 @pytest.fixture("module")
 def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
                    stewardWallet, allPluginsPath, testNodeClass,
-                   testClientClass, tdir):
+                   testClientClass, tdir, node_name='Theta'):
     newStewardName = "testClientSteward" + randomString(3)
-    newNodeName = "Theta"
+    newNodeName = node_name
     newSteward, newStewardWallet = getClientAddedWithRole(nodeSet, tdir,
                                                           looper, steward,
                                                           stewardWallet,
