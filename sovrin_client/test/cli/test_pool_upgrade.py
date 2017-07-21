@@ -21,7 +21,7 @@ def send_upgrade_cmd(do, expect, upgrade_data):
 @pytest.fixture(scope="module")
 def poolUpgradeSubmitted(be, do, trusteeCli, validUpgrade):
     be(trusteeCli)
-    send_upgrade_cmd(do, ['Sending pool upgrade', 'Pool upgrade successful'],
+    send_upgrade_cmd(do, ['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'],
                      validUpgrade)
 
 
@@ -44,7 +44,7 @@ def poolUpgradeCancelled(poolUpgradeScheduled, be, do, trusteeCli,
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
        'action={action} justification={justification}',
        within=10,
-       expect=['Sending pool upgrade', 'Pool upgrade successful'],
+       expect=['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'],
        mapper=validUpgrade)
 
 
@@ -82,7 +82,7 @@ def send_force_false_upgrade_cmd(do, expect, upgrade_data):
 
 def test_force_false_upgrade(be, do, trusteeCli, poolNodesStarted, validUpgradeExpForceFalse):
     be(trusteeCli)
-    send_force_false_upgrade_cmd(do, ['Sending pool upgrade', 'Pool upgrade successful'], validUpgradeExpForceFalse)
+    send_force_false_upgrade_cmd(do, ['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'], validUpgradeExpForceFalse)
     poolNodesStarted.looper.run(
         eventually(checkUpgradeScheduled, poolNodesStarted.nodes.values(),
                    validUpgradeExpForceFalse[VERSION], retryWait=1, timeout=10))

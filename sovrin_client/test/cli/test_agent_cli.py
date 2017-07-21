@@ -92,7 +92,7 @@ def aliceAcceptedAcmeInvitationNoProofReq(
         keyringMapper = {
             'keyring-name': keyring
         }
-        do('new keyring {}'.format(keyring),
+        do('new wallet {}'.format(keyring),
            expect=newKeyringOut,
            mapper=keyringMapper)
         do('load {}'.format(invitationFile),
@@ -102,7 +102,7 @@ def aliceAcceptedAcmeInvitationNoProofReq(
            mapper=acmeMap,
            expect=syncLinkOutWithEndpoint,
            within=15)
-        do('accept invitation from {inviter}',
+        do('accept request from {inviter}',
            within=15,
            mapper=acmeMap,
            expect=unsycedAcceptedInviteWithoutClaimOut)

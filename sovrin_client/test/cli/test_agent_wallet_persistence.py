@@ -50,8 +50,8 @@ def changeAndPersistWallet(agent, emptyLooper):
     agent.stop()
     emptyLooper.runFor(.5)
     assert os.path.isfile(expectedFilePath)
-    assert stat.S_IMODE(os.stat(agent.getContextDir()).st_mode) == agent.config.KEYRING_DIR_MODE
-    assert stat.S_IMODE(os.stat(expectedFilePath).st_mode) == agent.config.KEYRING_FILE_MODE
+    assert stat.S_IMODE(os.stat(agent.getContextDir()).st_mode) == agent.config.WALLET_DIR_MODE
+    assert stat.S_IMODE(os.stat(expectedFilePath).st_mode) == agent.config.WALLET_FILE_MODE
     return walletToBePersisted
 
 

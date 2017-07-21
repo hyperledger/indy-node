@@ -348,7 +348,7 @@ def newKey(be, do, userCli, seed=None):
     if seed is not None:
         cmd += ' with seed {}'.format(seed)
 
-    do(cmd, expect='Current identifier set to')
+    do(cmd, expect='Current DID set to')
 
 
 def getAgentCliHelpString():
@@ -358,12 +358,12 @@ def getAgentCliHelpString():
          Usage:
             help [<command name>]
        prompt - Changes the prompt to given principal (a person like Alice, an organization like Faber College, or an IoT-style thing)
-       list keyrings - Lists all keyrings
-       list ids - Lists all identifiers of active keyring
+       list wallets - Lists all wallets
+       list ids - Lists all DIDs of active wallet
        show - Shows content of given file
-       show link - Shows link info in case of one matching link, otherwise shows all the matching link names
+       show connection - Shows connection info in case of one matching connection, otherwise shows all the matching connection names
        ping - Pings given remote's endpoint
-       list links - List available links in active wallet
+       list connections - List available connections in active wallet
        send proofreq - Send a proof request
        license - Shows the license
        exit - Exit the command-line interface ('quit' also works)"""

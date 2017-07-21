@@ -5,7 +5,7 @@ from sovrin_common.transactions import SovrinTransactions
 
 CLIENT_GRAMS_CLIENT_WITH_IDENTIFIER_FORMATTED_REG_EX = getPipedRegEx(
     CLIENT_GRAMS_CLIENT_COMMAND_REG_EX +
-    "\s+ (?P<with_identifier>with\s+identifier) "
+    "\s+ (?P<with_DID>with\s+DID) "
     "\s+ (?P<nym>[a-zA-Z0-9=]+) \s*") \
     .format(relist(CLI_CMDS))
 
@@ -32,7 +32,7 @@ SEND_NYM_REG_EX = TXN_NYM.format(cmdName='send_nym', cmd='send')
 ADD_GENESIS_NYM_REG_EX = TXN_NYM.format(cmdName='add_genesis',
                                         cmd='add \s+ genesis \s+ transaction')
 
-NEW_ID_REG_EX = "(\s* (?P<new_id>new\s+identifier)" \
+NEW_ID_REG_EX = "(\s* (?P<new_id>new\s+DID)" \
                 "\s? (?P<id>([A-Za-z0-9+=/]+))? " \
                 "\s? (with\s+seed\s+(?P<seed>[a-zA-Z0-9]+))? " \
                 "\s? (as\s+(?P<alias>[a-zA-Z0-9-]+))?)"
@@ -96,17 +96,17 @@ DISCONNECT_REG_EX = "(\s*(?P<disconn>disconnect))"
 LOAD_FILE_REG_EX = "(\s*(?P<load_file>load) " \
                    "\s+ (?P<file_path>[A-Za-z0-9+-.=/]+)\s*)"
 
-SHOW_LINK_REG_EX = '(\s*(?P<show_link>show \s+ link) ' \
+SHOW_LINK_REG_EX = '(\s*(?P<show_connection>show \s+ connection) ' \
                    '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
 
-SYNC_LINK_REG_EX = '(\s*(?P<sync_link>sync) ' \
+SYNC_LINK_REG_EX = '(\s*(?P<sync_connection>sync) ' \
                    '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
 
 PING_TARGET_REG_EX = '(\s*(?P<ping>ping) ' \
                      '\s+ (?P<target_name>[A-Za-z0-9-." ]+) \s*)'
 
 ACCEPT_LINK_REG_EX = \
-    '(\s*(?P<accept_link_invite>accept \s+ invitation \s+ from) ' \
+    '(\s*(?P<accept_connection_request>accept \s+ request \s+ from) ' \
     '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
 
 SHOW_CLAIM_REG_EX = '(\s*(?P<show_claim>show \s+ claim) ' \
@@ -116,7 +116,7 @@ SHOW_CLAIM_REG_EX = '(\s*(?P<show_claim>show \s+ claim) ' \
 LIST_CLAIMS_REG_EX = '(\s*(?P<list_claims>list \s+ claims) ' \
                      '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
 
-LIST_LINKS_REG_EX = '(\s*(?P<list_links>list \s+ links))'
+LIST_LINKS_REG_EX = '(\s*(?P<list_connections>list \s+ connections))'
 
 REQUEST_CLAIM_REG_EX = '(\s*(?P<req_claim>request \s+ claim) ' \
                        '\s+ (?P<claim_name>[A-Za-z0-9-." ]+) ' \

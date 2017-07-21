@@ -195,12 +195,12 @@ def thriftMap(agentIpAddress, thriftAgentPort):
 
 @pytest.fixture(scope="module")
 def loadInviteOut(nextCommandsToTryUsageLine):
-    return ["1 link invitation found for {inviter}.",
-            "Creating Link for {inviter}.",
+    return ["1 connection request found for {inviter}.",
+            "Creating connection for {inviter}.",
             ''] + \
            nextCommandsToTryUsageLine + \
-           ['    show link "{inviter}"',
-            '    accept invitation from "{inviter}"',
+           ['    show connection "{inviter}"',
+            '    accept request from "{inviter}"',
             '',
             '']
 
@@ -244,8 +244,8 @@ def acceptUnSyncedWithoutEndpointWhenConnected(
 
 @pytest.fixture(scope="module")
 def commonAcceptInvitationMsgs():
-    return ["Invitation not yet verified",
-            "Link not yet synchronized.",
+    return ["Request not yet verified",
+            "Connection not yet synchronized.",
             ]
 
 
@@ -253,7 +253,7 @@ def commonAcceptInvitationMsgs():
 def acceptUnSyncedWhenNotConnected(commonAcceptInvitationMsgs,
                                    canNotSyncMsg, connectUsage):
     return commonAcceptInvitationMsgs + \
-            ["Invitation acceptance aborted."] + \
+            ["Request acceptance aborted."] + \
             canNotSyncMsg + connectUsage
 
 
@@ -281,14 +281,14 @@ def notConnectedStatus(connectUsage):
 
 @pytest.fixture(scope="module")
 def newKeyringOut():
-    return ["New keyring {keyring-name} created",
-            'Active keyring set to "{keyring-name}"'
+    return ["New wallet {keyring-name} created",
+            'Active wallet set to "{keyring-name}"'
             ]
 
 
 @pytest.fixture(scope="module")
 def linkAlreadyExists():
-    return ["Link already exists"]
+    return ["Connection already exists"]
 
 
 @pytest.fixture(scope="module")
@@ -309,9 +309,9 @@ def unsyncedInviteAcceptedWhenNotConnected(availableClaims):
     return [
         "Response from {inviter}",
         "Trust established.",
-        "Identifier created in Sovrin."
+        "DID created in Sovrin."
     ] + availableClaims + [
-        "Cannot check if identifier is written to Sovrin."
+        "Cannot check if DID is written to Sovrin."
     ]
 
 
@@ -320,9 +320,9 @@ def syncedInviteAcceptedOutWithoutClaims():
     return [
         "Signature accepted.",
         "Trust established.",
-        "Identifier created in Sovrin.",
+        "DID created in Sovrin.",
         "Synchronizing...",
-        "Confirmed identifier written to Sovrin."
+        "Confirmed DID written to Sovrin."
     ]
 
 
@@ -340,17 +340,17 @@ def syncedInviteAcceptedWithClaimsOut(
 @pytest.fixture(scope="module")
 def unsycedAcceptedInviteWithoutClaimOut(syncedInviteAcceptedOutWithoutClaims):
     return [
-        "Invitation not yet verified",
+        "Request not yet verified",
         "Attempting to sync...",
         "Synchronizing...",
     ] + syncedInviteAcceptedOutWithoutClaims + \
-           ["Confirmed identifier written to Sovrin."]
+           ["Confirmed DID written to Sovrin."]
 
 
 @pytest.fixture(scope="module")
 def unsycedAlreadyAcceptedInviteAcceptedOut():
     return [
-        "Invitation not yet verified",
+        "Request not yet verified",
         "Attempting to sync...",
         "Synchronizing..."
     ]
@@ -445,12 +445,12 @@ def showBankingProofOut():
 
 @pytest.fixture(scope="module")
 def proofRequestNotExists():
-    return ["No matching Proof Requests found in current keyring"]
+    return ["No matching Proof Requests found in current wallet"]
 
 
 @pytest.fixture(scope="module")
 def linkNotExists():
-    return ["No matching link invitations found in current keyring"]
+    return ["No matching connection requests found in current wallet"]
 
 
 @pytest.fixture(scope="module")
@@ -497,7 +497,7 @@ def endpointNotAvailable():
 
 @pytest.fixture(scope="module")
 def syncLinkOutEndsWith():
-    return ["Link {inviter} synced"]
+    return ["Connection {inviter} synced"]
 
 
 @pytest.fixture(scope="module")
@@ -534,12 +534,12 @@ def linkNotYetSynced():
 
 @pytest.fixture(scope="module")
 def acceptedLinkHeading():
-    return ["Link"]
+    return ["Connection"]
 
 
 @pytest.fixture(scope="module")
 def unAcceptedLinkHeading():
-    return ["Link (not yet accepted)"]
+    return ["Connection (not yet accepted)"]
 
 
 @pytest.fixture(scope="module")
@@ -549,7 +549,7 @@ def showUnSyncedLinkOut(unAcceptedLinkHeading, showLinkOut):
 
 @pytest.fixture(scope="module")
 def showClaimNotFoundOut():
-    return ["No matching Claims found in any links in current keyring"]
+    return ["No matching Claims found in any connections in current wallet"]
 
 
 @pytest.fixture(scope="module")
@@ -646,14 +646,14 @@ def jobCertificateClaimMap():
 
 @pytest.fixture(scope="module")
 def reqClaimOut():
-    return ["Found claim {name} in link {inviter}",
+    return ["Found claim {name} in connection {inviter}",
             "Requesting claim {name} from {inviter}..."]
 
 
 # TODO Change name
 @pytest.fixture(scope="module")
 def reqClaimOut1():
-    return ["Found claim {name} in link {inviter}",
+    return ["Found claim {name} in connection {inviter}",
             "Requesting claim {name} from {inviter}...",
             "Signature accepted.",
             'Received claim "{name}".']
@@ -661,7 +661,7 @@ def reqClaimOut1():
 
 @pytest.fixture(scope="module")
 def rcvdTranscriptClaimOut():
-    return ["Found claim {name} in link {inviter}",
+    return ["Found claim {name} in connection {inviter}",
             "Name: {name}",
             "Status: ",
             "Version: {version}",
@@ -676,7 +676,7 @@ def rcvdTranscriptClaimOut():
 
 @pytest.fixture(scope="module")
 def rcvdBankingRelationshipClaimOut():
-    return ["Found claim {name} in link {inviter}",
+    return ["Found claim {name} in connection {inviter}",
             "Name: {name}",
             "Status: ",
             "Version: {version}",
@@ -696,7 +696,7 @@ def rcvdBankingRelationshipClaimOut():
 
 @pytest.fixture(scope="module")
 def rcvdJobCertClaimOut():
-    return ["Found claim {name} in link {inviter}",
+    return ["Found claim {name} in connection {inviter}",
             "Name: {name}",
             "Status: ",
             "Version: {version}",
@@ -711,7 +711,7 @@ def rcvdJobCertClaimOut():
 
 @pytest.fixture(scope="module")
 def showTranscriptClaimOut(nextCommandsToTryUsageLine):
-    return ["Found claim {name} in link {inviter}",
+    return ["Found claim {name} in connection {inviter}",
             "Name: {name}",
             "Status: {status}",
             "Version: {version}",
@@ -727,7 +727,7 @@ def showTranscriptClaimOut(nextCommandsToTryUsageLine):
 
 @pytest.fixture(scope="module")
 def showJobCertClaimOut(nextCommandsToTryUsageLine):
-    return ["Found claim {name} in link {inviter}",
+    return ["Found claim {name} in connection {inviter}",
             "Name: {name}",
             "Status: {status}",
             "Version: {version}",
@@ -743,7 +743,7 @@ def showJobCertClaimOut(nextCommandsToTryUsageLine):
 
 @pytest.fixture(scope="module")
 def showBankingRelationshipClaimOut(nextCommandsToTryUsageLine):
-    return ["Found claim {name} in link {inviter}",
+    return ["Found claim {name} in connection {inviter}",
             "Name: {name}",
             "Status: {status}",
             "Version: {version}",
@@ -807,34 +807,34 @@ def showLinkSuggestion(nextCommandsToTryUsageLine):
 @pytest.fixture(scope="module")
 def showAcceptedLinkOut():
     return [
-            "Link",
+            "Connection",
             "Name: {inviter}",
-            "Identifier: {identifier}",
+            "DID: {identifier}",
             "Verification key: {verkey}",
             "Remote: {remote}",
             "Remote Verification key: {remote-verkey}",
             "Trust anchor: {inviter} (confirmed)",
-            "Invitation nonce: {nonce}",
-            "Invitation status: Accepted"]
+            "Request nonce: {nonce}",
+            "Request status: Accepted"]
 
 
 @pytest.fixture(scope="module")
 def showLinkOut(nextCommandsToTryUsageLine, linkNotYetSynced):
     return [
             "    Name: {inviter}",
-            "    Identifier: not yet assigned",
+            "    DID: not yet assigned",
             "    Trust anchor: {inviter} (not yet written to Sovrin)",
             "    Verification key: <empty>",
             "    Signing key: <hidden>",
             "    Remote: {remote}",
             "    Remote endpoint: {endpoint}",
-            "    Invitation nonce: {nonce}",
-            "    Invitation status: not verified, remote verkey unknown",
+            "    Request nonce: {nonce}",
+            "    Request status: not verified, remote verkey unknown",
             "    Last synced: {last_synced}"] + \
            [""] + \
            nextCommandsToTryUsageLine + \
            ['    sync "{inviter}"',
-            '    accept invitation from "{inviter}"',
+            '    accept request from "{inviter}"',
             '',
             '']
 
@@ -842,15 +842,15 @@ def showLinkOut(nextCommandsToTryUsageLine, linkNotYetSynced):
 @pytest.fixture(scope="module")
 def showAcceptedSyncedLinkOut(nextCommandsToTryUsageLine):
     return [
-            "Link",
+            "Connection",
             "Name: {inviter}",
             "Trust anchor: {inviter} (confirmed)",
             "Verification key: ~",
             "Signing key: <hidden>",
             "Remote: {remote}",
             "Remote Verification key: <same as Remote>",
-            "Invitation nonce: {nonce}",
-            "Invitation status: Accepted",
+            "Request nonce: {nonce}",
+            "Request status: Accepted",
             "Proof Request(s): {proof-requests}",
             "Available Claim(s): {claims}"] + \
            nextCommandsToTryUsageLine + \
@@ -1183,7 +1183,7 @@ def thriftIsRunning(emptyLooper, tdirWithPoolTxns, thriftWallet,
 
 @pytest.fixture(scope='module')
 def savedKeyringRestored():
-    return ['Saved keyring {keyring-name} restored']
+    return ['Saved wallet {keyring-name} restored']
 
 
 # TODO: Need to refactor following three fixture to reuse code
@@ -1263,8 +1263,8 @@ def trusteeCli(be, do, trusteeMap, poolNodesStarted,
                connectedToTest, nymAddedOut, trusteeCLI):
     be(trusteeCLI)
     do('new key with seed {trusteeSeed}', expect=[
-        'Identifier for key is {trusteeIdr}',
-        'Current identifier set to {trusteeIdr}'],
+        'DID for key is {trusteeIdr}',
+        'Current DID set to {trusteeIdr}'],
        mapper=trusteeMap)
 
     if not trusteeCLI._isConnectedToAnyEnv():
@@ -1315,17 +1315,17 @@ def philCli(be, do, philCLI, trusteeCli, poolTxnData):
 
     do('prompt Phil', expect=prompt_is('Phil'))
 
-    do('new keyring Phil', expect=['New keyring Phil created',
-                                   'Active keyring set to "Phil"'])
+    do('new wallet Phil', expect=['New wallet Phil created',
+                                   'Active wallet set to "Phil"'])
     phil_seed = poolTxnData['seeds']['Steward1']
     phil_signer = DidSigner(seed=phil_seed.encode())
 
     mapper = {
         'seed': phil_seed,
         'idr': phil_signer.identifier}
-    do('new key with seed {seed}', expect=['Key created in keyring Phil',
-                                           'Identifier for key is {idr}',
-                                           'Current identifier set to {idr}'],
+    do('new key with seed {seed}', expect=['Key created in wallet Phil',
+                                           'DID for key is {idr}',
+                                           'Current DID set to {idr}'],
        mapper=mapper)
 
     addNym(be, do, trusteeCli,
@@ -1409,8 +1409,8 @@ def newStewardCli(be, do, poolNodesStarted, trusteeCli, connectedToTest,
     be(cliWithNewStewardName)
 
     do('new key with seed {newStewardSeed}', expect=[
-        'Identifier for key is {newStewardIdr}',
-        'Current identifier set to {newStewardIdr}'],
+        'DID for key is {newStewardIdr}',
+        'Current DID set to {newStewardIdr}'],
        mapper=newStewardVals)
 
     if not cliWithNewStewardName._isConnectedToAnyEnv():
