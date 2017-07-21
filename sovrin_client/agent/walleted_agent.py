@@ -75,9 +75,9 @@ class WalletedAgent(Walleted, Agent, Caching):
     def walletSaver(self):
         if self._walletSaver is None:
             self._walletSaver = WalletStorageHelper(
-                    self.getKeyringsBaseDir(),
-                    dmode=self.config.KEYRING_DIR_MODE,
-                    fmode=self.config.KEYRING_FILE_MODE)
+                    self.getWalletsBaseDir(),
+                    dmode=self.config.WALLET_DIR_MODE,
+                    fmode=self.config.WALLET_FILE_MODE)
         return self._walletSaver
 
     @Agent.client.setter
@@ -93,13 +93,13 @@ class WalletedAgent(Walleted, Agent, Caching):
         self._saveAllWallets()
         super().stop(*args, **kwargs)
 
-    def getKeyringsBaseDir(self):
+    def getWalletsBaseDir(self):
         return os.path.expanduser(os.path.join(
-            self.config.baseDir, self.config.keyringsDir))
+            self.config.baseDir, self.config.walletsDir))
 
     def getContextDir(self):
         return os.path.join(
-            self.getKeyringsBaseDir(),
+            self.getWalletsBaseDir(),
             "agents", self.name.lower().replace(" ", "-"))
 
     def _getIssuerWalletContextDir(self):

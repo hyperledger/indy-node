@@ -25,7 +25,7 @@ class AgentCli(SovrinCli):
         if not self._actions:
             self._actions = [self._simpleAction, self._helpAction,
                              self._listIdsAction, self._changePrompt,
-                             self._listKeyringsAction, self._showFile,
+                             self._listWalletsAction, self._showFile,
                              self._showLink, self._pingTarget,
                              self._listLinks, self._sendProofRequest]
         return self._actions

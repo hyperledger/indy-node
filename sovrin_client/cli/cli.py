@@ -1633,8 +1633,8 @@ class SovrinCli(PlenumCli):
                 self._activeWallet.env = newEnv
                 randomSuffix = ''
                 sourceWalletFilePath = getWalletFilePath(
-                    self.getContextBasedKeyringsBaseDir(), self.walletFileName)
-                targetContextDir = os.path.join(self.getKeyringsBaseDir(),
+                    self.getContextBasedWalletsBaseDir(), self.walletFileName)
+                targetContextDir = os.path.join(self.getWalletsBaseDir(),
                                                 newEnv)
                 if os.path.exists(sourceWalletFilePath):
                     while True:

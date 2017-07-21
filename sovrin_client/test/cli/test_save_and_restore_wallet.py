@@ -38,7 +38,7 @@ def testPersistentWalletName():
 
 def getActiveWalletFilePath(cli):
     fileName = cli.getActiveWalletPersitentFileName()
-    return getWalletFilePath(cli.getContextBasedKeyringsBaseDir(), fileName)
+    return getWalletFilePath(cli.getContextBasedWalletsBaseDir(), fileName)
 
 
 def _connectTo(envName, do, cli):
@@ -145,7 +145,7 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
                          '"mykr0" conflicts with an existing wallet',
                          'Please choose a new name.'])
 
-    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedKeyringsBaseDir(),
+    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedWalletsBaseDir(),
                                      cliForMultiNodePools.walletFileName)
     switchEnv("pool1", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="mykr1", restoredIdentifiers=1)
@@ -159,7 +159,7 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
     exitFromCli(do)
 
     # different tests for restoring saved wallet
-    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedKeyringsBaseDir(),
+    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedWalletsBaseDir(),
                                      cliForMultiNodePools.walletFileName)
     restartCli(aliceMultiNodePools, be, do, "mykr1", 1)
     restartCliWithCorruptedWalletFile(earlMultiNodePools, be, do, filePath)
@@ -170,7 +170,7 @@ def testRestoreWalletFile(aliceCLI):
     fileName = "tmp_wallet_restore_issue"
     curPath = os.path.dirname(os.path.realpath(__file__))
     walletFilePath = os.path.join(curPath, fileName)
-    noEnvKeyringsDir = os.path.join(aliceCLI.getKeyringsBaseDir(), NO_ENV)
+    noEnvKeyringsDir = os.path.join(aliceCLI.getWalletsBaseDir(), NO_ENV)
     createDirIfNotExists(noEnvKeyringsDir)
     shutil.copy2(walletFilePath, noEnvKeyringsDir)
     targetWalletFilePath = os.path.join(noEnvKeyringsDir, fileName)
