@@ -247,10 +247,10 @@ class TestNode(TempStorage, TestNodeCore, Node):
         return Node.getDomainReqHandler(self)
 
     def onStopping(self, *args, **kwargs):
-        if self.cleanupOnStopping:
-            self.cleanupDataLocation()
         # self.graphStore.store.close()
         super().onStopping(*args, **kwargs)
+        if self.cleanupOnStopping:
+            self.cleanupDataLocation()
 
 
 class TestNodeSet(PlenumTestNodeSet):
