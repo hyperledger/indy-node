@@ -95,17 +95,6 @@ class Node(PlenumNode, HasPoolManager):
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
 
-        self.nodeMsgRouter.routes[PrePrepare] = self.extraPrePrepareProcesing
-
-
-    def extraPrePrepareProcesing(self, msg, frm):
-        ledgerid = getattr(msg, f.LEDGER_ID.nm, -1)
-        if self.poolCfg.isWritable() or ledgerid == CONFIG_LEDGER_ID:
-            super().sendToReplica(msg, frm)
-        else:
-            logger.debug("Message {} from {} was ignored due to readonly mode".format(msg, frm))
-
-
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)
 
@@ -390,7 +379,7 @@ class Node(PlenumNode, HasPoolManager):
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
             #here we should have write transactions that should be processed only on writable pool
-            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] == POOL_CONFIG):
+            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
             else:
                 raise InvalidClientRequest(request.identifier, request.reqId,
