@@ -130,6 +130,8 @@ class Upgrader(HasActionQueue):
         lastEvent = self._upgradeLog.lastEvent
         return lastEvent[2:4] if lastEvent else None
 
+    #TODO: config ledger is read from the start to the end. Think about optimization
+    #TODO: PoolConfig and Updater both read config ledger independently
     def processLedger(self) -> None:
         """
         Checks ledger for planned but not yet performed upgrades

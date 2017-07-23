@@ -41,7 +41,7 @@ from sovrin_client.cli.command import acceptLinkCmd, connectToCmd, \
     sendGetAttrCmd, sendGetSchemaCmd, sendGetClaimDefCmd, \
     sendNymCmd, sendPoolUpgCmd, sendSchemaCmd, setAttrCmd, showClaimCmd, \
     listClaimsCmd, showFileCmd, showLinkCmd, syncLinkCmd, addGenesisTxnCmd, \
-    sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listLinksCmd
+    sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listLinksCmd, sendPoolConfigCmd
 
 from sovrin_client.cli.helper import getNewClientGrams, \
     USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
@@ -51,6 +51,7 @@ from sovrin_client.client.wallet.link import Link
 from sovrin_client.client.wallet.node import Node
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_client.client.wallet.wallet import Wallet
+from sovrin_client.client.wallet.pool_config import PoolConfig
 from sovrin_common.auth import Authoriser
 from sovrin_common.config import ENVS
 from sovrin_common.config_util import getConfig
@@ -59,7 +60,7 @@ from sovrin_common.exceptions import InvalidLinkException, LinkAlreadyExists, \
 from sovrin_common.identity import Identity
 from sovrin_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, GET_SCHEMA, \
-    START, JUSTIFICATION, NULL
+    START, JUSTIFICATION, NULL, WRITES
 
 from stp_core.crypto.signer import Signer
 from stp_core.crypto.util import cleanSeed
@@ -170,6 +171,7 @@ class SovrinCli(PlenumCli):
         completers["send_claim_def"] = PhraseWordCompleter(sendClaimDefCmd.id)
         completers["send_node"] = PhraseWordCompleter(sendNodeCmd.id)
         completers["send_pool_upg"] = PhraseWordCompleter(sendPoolUpgCmd.id)
+        completers["send_pool_config"] = PhraseWordCompleter(sendPoolConfigCmd.id)
         completers["add_genesis"] = PhraseWordCompleter(
             addGenesisTxnCmd.id)
         completers["show_file"] = WordCompleter([showFileCmd.id])
@@ -211,6 +213,7 @@ class SovrinCli(PlenumCli):
                             self._sendGetAttrAction,
                             self._sendNodeAction,
                             self._sendPoolUpgAction,
+                            self._sendPoolConfigAction,
                             self._sendSchemaAction,
                             self._sendGetSchemaAction,
                             self._sendClaimDefAction,
@@ -686,6 +689,22 @@ class SovrinCli(PlenumCli):
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
                                     req.key, self.activeClient, out)
 
+    def _sendPoolConfigTxn(self, writes, force=False):
+        poolConfig = PoolConfig(trustee=self.activeIdentifier, writes=writes, force=force)
+        self.activeWallet.doPoolConfig(poolConfig)
+        reqs = self.activeWallet.preparePending()
+        req, = self.activeClient.submitReqs(*reqs)
+        self.print("Sending pool config writes={} force={}".format(writes, force))
+
+        def out(reply, error, *args, **kwargs):
+            if error:
+                self.print("Pool config failed: {}".format(error), Token.BoldOrange)
+            else:
+                self.print("Pool config successful", Token.BoldBlue)
+
+        self.looper.loop.call_later(.2, self._ensureReqCompleted,
+                                    req.key, self.activeClient, out)
+
     @staticmethod
     def parseAttributeString(attrs):
         attrInput = {}
@@ -816,6 +835,17 @@ class SovrinCli(PlenumCli):
             self._sendPoolUpgTxn(name, version, action, sha256,
                                  schedule=schedule, timeout=timeout,
                                  justification=justification, force=force)
+            return True
+
+    def _sendPoolConfigAction(self, matchedVars):
+        if matchedVars.get('send_pool_config') == sendPoolConfigCmd.id:
+            if not self.canMakeSovrinRequest:
+                return True
+            writes = matchedVars.get(WRITES, "False")
+            writes = writes == "True"
+            force = matchedVars.get(FORCE, "False")
+            force = force == "True"
+            self._sendPoolConfigTxn(writes, force=force)
             return True
 
     def _sendSchemaAction(self, matchedVars):
@@ -1900,6 +1930,7 @@ class SovrinCli(PlenumCli):
         mappings['sendGetAttrAction'] = sendGetAttrCmd
         mappings['sendNodeAction'] = sendNodeCmd
         mappings['sendPoolUpgAction'] = sendPoolUpgCmd
+        mappings['sendPoolConfigAction'] = sendPoolConfigCmd
         mappings['sendSchemaAction'] = sendSchemaCmd
         mappings['sendGetSchemaAction'] = sendGetSchemaCmd
         mappings['sendClaimDefAction'] = sendClaimDefCmd

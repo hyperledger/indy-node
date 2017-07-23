@@ -157,6 +157,10 @@ SEND_POOL_UPG_REG_EX = "(\s*(?P<send_pool_upg>send\s+{poolUpgrade})" \
                        "(\s+ (?P<timeout_key>timeout=)\s*(?P<timeout>[0-9+]+))?)" \
                        "(\s+ (?P<force_key>force=)\s*(?P<force>True|False))?".format(poolUpgrade=SovrinTransactions.POOL_UPGRADE.name)
 
+SEND_POOL_CONFIG_REG_EX = "(\s*(?P<send_pool_config>send\s+{poolConfig})" \
+                          "\s+(?P<writes_key>writes=)\s*(?P<writes>True|False))" \
+                          "(\s+(?P<force_key>force=)\s*(?P<force>True|False))?".format(poolConfig=SovrinTransactions.POOL_CONFIG.name)
+
 REQ_AVAIL_CLAIMS_REG_EX = '(\s*(?P<req_avail_claims>request \s+ available \s+ claims \s+ from) ' \
                           '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
 
@@ -191,5 +195,6 @@ SEND_PROOF_FORMATTED_REG_EX = getPipedRegEx(SEND_PROOF_REG_EX)
 SEND_PROOF_REQ_FORMATTED_REG_EX = getPipedRegEx(SEND_PROOF_REQ_REG_EX)
 SEND_NODE_FORMATTED_REG_EX = getPipedRegEx(SEND_NODE_REG_EX)
 SEND_POOL_UPG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_UPG_REG_EX)
+SEND_POOL_CONFIG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_CONFIG_REG_EX)
 REQ_AVAIL_CLAIMS_FORMATTED_REG_EX = getPipedRegEx(REQ_AVAIL_CLAIMS_REG_EX)
 NEW_ID_FORMATTED_REG_EX = getPipedRegEx(NEW_ID_REG_EX)

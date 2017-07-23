@@ -175,6 +175,14 @@ class ClientPoolUpgradeOperation(MessageValidator):
     )
 
 
+class ClientPoolConfigOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(POOL_CONFIG)),
+        (WRITES, BooleanField()),
+        (FORCE, BooleanField(optional=True)),
+    )
+
+
 class ClientOperationField(PClientOperationField):
 
     _specific_operations = {
@@ -187,6 +195,7 @@ class ClientOperationField(PClientOperationField):
         GET_NYM: ClientGetNymOperation(),
         GET_SCHEMA: ClientGetSchemaOperation(),
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
+        POOL_CONFIG: ClientPoolConfigOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class constant
