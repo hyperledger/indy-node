@@ -23,5 +23,7 @@ class SovrinTransactions(Enum):
     POOL_UPGRADE = "109"
     NODE_UPGRADE = "110"
 
+    POOL_CONFIG = "111"
+
     def __str__(self):
         return self.name

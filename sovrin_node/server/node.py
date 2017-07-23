@@ -13,13 +13,13 @@ from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.types import f, \
     OPERATION
-from plenum.common.messages.node_messages import Reply
+from plenum.common.messages.node_messages import Reply, PrePrepare
 from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG
 from sovrin_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from sovrin_common.txn_util import getTxnOrderedFields
@@ -32,6 +32,7 @@ from sovrin_node.server.domain_req_handler import DomainReqHandler
 from sovrin_node.server.node_authn import NodeAuthNr
 from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
+from sovrin_node.server.pool_config import PoolConfig
 from stp_core.common.log import getlogger
 import os
 
@@ -86,12 +87,16 @@ class Node(PlenumNode, HasPoolManager):
         self.on_new_ledger_added(CONFIG_LEDGER_ID)
         self.states[CONFIG_LEDGER_ID] = self.loadConfigState()
         self.upgrader = self.getUpgrader()
+        self.poolCfg = self.getPoolConfig()
         self.configReqHandler = self.getConfigReqHandler()
         self.initConfigState()
         self.requestExecuter[CONFIG_LEDGER_ID] = self.executeConfigTxns
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
+
+    def getPoolConfig(self):
+        return PoolConfig(self.configLedger)
 
     def initPoolManager(self, nodeRegistry, ha, cliname, cliha):
         HasPoolManager.__init__(self, nodeRegistry, ha, cliname, cliha)
@@ -187,7 +192,7 @@ class Node(PlenumNode, HasPoolManager):
         return ConfigReqHandler(self.configLedger,
                                 self.states[CONFIG_LEDGER_ID],
                                 self.idrCache, self.upgrader,
-                                self.poolManager)
+                                self.poolManager, self.poolCfg)
 
     def initConfigState(self):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
@@ -228,6 +233,7 @@ class Node(PlenumNode, HasPoolManager):
         self.start_config_ledger_sync()
 
     def postConfigLedgerCaughtUp(self, **kwargs):
+        self.poolCfg.processLedger()
         self.upgrader.processLedger()
         self.start_domain_ledger_sync()
 
@@ -365,12 +371,19 @@ class Node(PlenumNode, HasPoolManager):
             self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetClaimDefReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+        elif request.operation[TXN_TYPE] == GET_TXNS:
+            super().processRequest(request, frm)
         else:
             # forced request should be processed before consensus
-            if request.operation[TXN_TYPE] == POOL_UPGRADE and request.isForced():
+            if (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
-            super().processRequest(request, frm)
+            #here we should have write transactions that should be processed only on writable pool
+            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]):
+                super().processRequest(request, frm)
+            else:
+                raise InvalidClientRequest(request.identifier, request.reqId,
+                                           'Pool is in readonly mode, try again in 60 seconds')
 
     @classmethod
     def ledgerId(cls, txnType: str):

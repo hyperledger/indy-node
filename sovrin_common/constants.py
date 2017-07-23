@@ -37,9 +37,11 @@ REF = "ref"
 PRIMARY = "primary"
 REVOCATION = "revocation"
 
+WRITES = "writes"
+
 allOpKeys = (TXN_TYPE, TARGET_NYM, VERKEY, ORIGIN, ROLE, DATA, NONCE, REF, RAW,
              ENC, HASH, ALIAS, ACTION, SCHEDULE, TIMEOUT, SHA256, START, CANCEL,
-             NAME, VERSION, JUSTIFICATION, SIGNATURE_TYPE, FORCE)
+             NAME, VERSION, JUSTIFICATION, SIGNATURE_TYPE, FORCE, WRITES)
 
 reqOpKeys = (TXN_TYPE,)
 
@@ -66,6 +68,8 @@ GET_CLAIM_DEF = SovrinTransactions.GET_CLAIM_DEF.value
 POOL_UPGRADE = SovrinTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = SovrinTransactions.NODE_UPGRADE.value
 
+POOL_CONFIG = SovrinTransactions.POOL_CONFIG.value
+
 openTxns = (GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, GET_TXNS)
 
 # TXN_TYPE -> (requireds, optionals)
@@ -77,7 +81,7 @@ fields = {NYM: ([TARGET_NYM], [ROLE]),
           GET_CLAIM_DEF: ([REF, ORIGIN, SIGNATURE_TYPE])
           }
 
-CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE}
+CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
 IDENTITY_TXN_TYPES = {NYM,
                       ATTRIB,
                       DISCLO,
