@@ -22,7 +22,7 @@ from sovrin_client.client.wallet.node import Node
 from sovrin_client.client.wallet.trustAnchoring import TrustAnchoring
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_common.did_method import DefaultDidMethods
-from sovrin_common.exceptions import LinkNotFound
+from sovrin_common.exceptions import ConnectionNotFound
 from sovrin_common.types import Request
 from sovrin_common.identity import Identity
 from sovrin_common.constants import ATTRIB, GET_TXNS, GET_ATTR, \
@@ -52,7 +52,7 @@ class Wallet(PWallet, TrustAnchoring):
         self._nodes = {}
         self._upgrades = {}
 
-        self._links = OrderedDict()  # type: Dict[str, Link]
+        self._connections = OrderedDict()  # type: Dict[str, Link]
         # Note, ordered dict to make iteration deterministic
 
         self.knownIds = {}  # type: Dict[str, Identifier]
@@ -89,33 +89,33 @@ class Wallet(PWallet, TrustAnchoring):
     # have attribute values from issuer.
 
     # TODO: Few of the below methods have duplicate code, need to refactor it
-    def getMatchingLinksWithAvailableClaim(self, claimName=None):
-        matchingLinkAndAvailableClaim = []
-        for k, li in self._links.items():
+    def getMatchingConnectionsWithAvailableClaim(self, claimName=None):
+        matchingConnectionsAndAvailableClaim = []
+        for k, li in self._connections.items():
             for cl in li.availableClaims:
                 if not claimName or Wallet._isMatchingName(claimName, cl[0]):
-                    matchingLinkAndAvailableClaim.append((li, cl))
-        return matchingLinkAndAvailableClaim
+                    matchingConnectionsAndAvailableClaim.append((li, cl))
+        return matchingConnectionsAndAvailableClaim
 
-    def findAllProofRequests(self, claimReqName, linkName=None):
+    def findAllProofRequests(self, claimReqName, connectionName=None):
         matches = []
-        for k, li in self._links.items():
+        for k, li in self._connections.items():
             for cpr in li.proofRequests:
                 if Wallet._isMatchingName(claimReqName, cpr.name):
-                    if linkName is None or Wallet._isMatchingName(linkName,
-                                                                  li.name):
+                    if connectionName is None or Wallet._isMatchingName(connectionName,
+                                                                        li.name):
                         matches.append((li, cpr))
         return matches
 
-    def getMatchingLinksWithProofReq(self, proofReqName, linkName=None):
-        matchingLinkAndProofReq = []
-        for k, li in self._links.items():
+    def getMatchingConnectionsWithProofReq(self, proofReqName, connectionName=None):
+        matchingConnectionAndProofReq = []
+        for k, li in self._connections.items():
             for cpr in li.proofRequests:
                 if Wallet._isMatchingName(proofReqName, cpr.name):
-                    if linkName is None or Wallet._isMatchingName(linkName,
-                                                                  li.name):
-                        matchingLinkAndProofReq.append((li, cpr))
-        return matchingLinkAndProofReq
+                    if connectionName is None or Wallet._isMatchingName(connectionName,
+                                                                        li.name):
+                        matchingConnectionAndProofReq.append((li, cpr))
+        return matchingConnectionAndProofReq
 
     def addAttribute(self, attrib: Attribute):
         """
@@ -174,8 +174,8 @@ class Wallet(PWallet, TrustAnchoring):
     def getAttributesForNym(self, idr: Identifier):
         return [a for a in self._attributes.values() if a.dest == idr]
 
-    def addLink(self, link: Link):
-        self._links[link.key] = link
+    def addConnection(self, connection: Link):
+        self._connections[connection.key] = connection
 
     def addLastKnownSeqs(self, identifier, seqNo):
         self.lastKnownSeqs[identifier] = seqNo
@@ -277,12 +277,12 @@ class Wallet(PWallet, TrustAnchoring):
     def pendRequest(self, req, key=None):
         self._pending.appendleft((req, key))
 
-    def getLinkInvitation(self, name: str):
-        return self._links.get(name)
+    def getConnectionInvitation(self, name: str):
+        return self._connections.get(name)
 
-    def getMatchingLinks(self, name: str) -> List[Link]:
+    def getMatchingConnections(self, name: str) -> List[Link]:
         allMatched = []
-        for k, v in self._links.items():
+        for k, v in self._connections.items():
             if self._isMatchingName(name, k):
                 allMatched.append(v)
         return allMatched
@@ -345,33 +345,33 @@ class Wallet(PWallet, TrustAnchoring):
         self.pendRequest(req, key=key)
         return self.preparePending(limit=1)[0]
 
-    def getLink(self, name, required=False) -> Link:
-        l = self._links.get(name)
+    def getConnection(self, name, required=False) -> Link:
+        l = self._connections.get(name)
         if not l and required:
-            logger.debug("Wallet has links {}".format(self._links))
-            raise LinkNotFound(name)
+            logger.debug("Wallet has connections {}".format(self._connections))
+            raise ConnectionNotFound(name)
         return l
 
-    def getLinkBy(self,
-                  remote: Identifier=None,
-                  nonce=None,
-                  internalId=None,
-                  required=False) -> Optional[Link]:
-        for _, li in self._links.items():
+    def getConnectionBy(self,
+                        remote: Identifier=None,
+                        nonce=None,
+                        internalId=None,
+                        required=False) -> Optional[Link]:
+        for _, li in self._connections.items():
             if (not remote or li.remoteIdentifier == remote) and \
                (not nonce or li.invitationNonce == nonce) and \
                (not internalId or li.internalId == internalId):
                 return li
         if required:
-            raise LinkNotFound
+            raise ConnectionNotFound
 
     def getIdentity(self, idr):
         # TODO, Question: Should it consider self owned identities too or
         # should it just have identities that are retrieved from the DL
         return self.knownIds.get(idr)
 
-    def getLinkNames(self):
-        return list(self._links.keys())
+    def getConnectionNames(self):
+        return list(self._connections.keys())
 
     def build_attrib(self, nym, raw=None, enc=None, hsh=None):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1

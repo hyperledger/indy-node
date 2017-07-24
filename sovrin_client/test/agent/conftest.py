@@ -341,8 +341,8 @@ def checkAcceptInvitation(emptyLooper,
     inviterAgent, inviterWallet = inviterAgentAndWallet  # type: WalletedAgent, Wallet
 
     inviteeAgent.connectTo(linkName)
-    inviteeAcceptanceLink = inviteeAgent.wallet.getLink(linkName,
-                                                required=True)
+    inviteeAcceptanceLink = inviteeAgent.wallet.getConnection(linkName,
+                                                              required=True)
     ensureAgentConnected(emptyLooper, inviteeAgent, inviteeAcceptanceLink)
 
     inviteeAgent.accept_invitation(linkName)
@@ -352,7 +352,7 @@ def checkAcceptInvitation(emptyLooper,
         assert inviteeAcceptanceLink.remoteEndPoint[1] == inviterAgent.endpoint.ha[1]
         assert inviteeAcceptanceLink.isAccepted
 
-        link = inviterAgent.wallet.getLinkBy(internalId=internalId)
+        link = inviterAgent.wallet.getConnectionBy(internalId=internalId)
         assert link
         assert link.remoteIdentifier == inviteeAcceptanceLink.localIdentifier
 
@@ -414,7 +414,7 @@ def agentInvitationLinkSynced(agent,
     agent.sync(linkName, cb)
     looper.run(eventually(checkDone))
 
-    link = agent.wallet.getLink(linkName, required=True)
+    link = agent.wallet.getConnection(linkName, required=True)
     assert link
     ep = link.remoteEndPoint
     assert ep

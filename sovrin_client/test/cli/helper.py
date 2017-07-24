@@ -134,8 +134,8 @@ def doubleBraces(lines):
     return alteredLines
 
 
-def getLinkInvitation(name, wallet) -> Link:
-    existingLinkInvites = wallet.getMatchingLinks(name)
+def getConnectionInvitation(name, wallet) -> Link:
+    existingLinkInvites = wallet.getMatchingConnections(name)
     li = existingLinkInvites[0]
     return li
 
@@ -369,13 +369,13 @@ def getAgentCliHelpString():
        exit - Exit the command-line interface ('quit' also works)"""
 
 
-def getTotalLinks(userCli):
-    return len(userCli.activeWallet._links)
+def getTotalConnections(userCli):
+    return len(userCli.activeWallet._connections)
 
 
 def getTotalAvailableClaims(userCli):
     availableClaimsCount = 0
-    for li in userCli.activeWallet._links.values():
+    for li in userCli.activeWallet._connections.values():
         availableClaimsCount += len(li.availableClaims)
     return availableClaimsCount
 

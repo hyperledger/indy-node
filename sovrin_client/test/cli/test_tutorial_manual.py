@@ -62,7 +62,7 @@ def testGettingStartedTutorialAgainstSandbox(newGuyCLI, be, do):
 def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
                connectedToTest, nymAddedOut, attrAddedOut,
                aliceCLI, newKeyringOut, aliceMap,
-               tdir, syncLinkOutWithEndpoint, jobCertificateClaimMap,
+               tdir, syncConnectionOutWithEndpoint, jobCertificateClaimMap,
                syncedInviteAcceptedOutWithoutClaims, transcriptClaimMap,
                reqClaimOut, reqClaimOut1, susanCLI, susanMap):
     eventually.slowFactor = 3
@@ -255,7 +255,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
 
     executeGstFlow("Alice", aliceCLI, aliceMap, be, connectedToTest, do, fMap,
                    aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
-                   reqClaimOut1, syncLinkOutWithEndpoint,
+                   reqClaimOut1, syncConnectionOutWithEndpoint,
                    syncedInviteAcceptedOutWithoutClaims, tMap,
                    transcriptClaimMap)
 

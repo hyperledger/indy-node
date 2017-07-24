@@ -35,13 +35,13 @@ from sovrin_client.agent.walleted_agent import WalletedAgent
 from sovrin_client.agent.constants import EVENT_NOTIFY_MSG, EVENT_POST_ACCEPT_INVITE, \
     EVENT_NOT_CONNECTED_TO_ANY_ENV
 from sovrin_client.agent.msg_constants import ERR_NO_PROOF_REQUEST_SCHEMA_FOUND
-from sovrin_client.cli.command import acceptLinkCmd, connectToCmd, \
+from sovrin_client.cli.command import acceptConnectionCmd, connectToCmd, \
     disconnectCmd, loadFileCmd, newIdentifierCmd, pingTargetCmd, reqClaimCmd, \
     sendAttribCmd, sendProofCmd, sendGetNymCmd, sendClaimDefCmd, sendNodeCmd, \
     sendGetAttrCmd, sendGetSchemaCmd, sendGetClaimDefCmd, \
     sendNymCmd, sendPoolUpgCmd, sendSchemaCmd, setAttrCmd, showClaimCmd, \
-    listClaimsCmd, showFileCmd, showLinkCmd, syncLinkCmd, addGenesisTxnCmd, \
-    sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listLinksCmd
+    listClaimsCmd, showFileCmd, showConnectionCmd, syncConnectionCmd, addGenesisTxnCmd, \
+    sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listConnectionsCmd
 
 from sovrin_client.cli.helper import getNewClientGrams, \
     USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
@@ -54,8 +54,8 @@ from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.auth import Authoriser
 from sovrin_common.config import ENVS
 from sovrin_common.config_util import getConfig
-from sovrin_common.exceptions import InvalidLinkException, LinkAlreadyExists, \
-    LinkNotFound, NotConnectedToNetwork, SchemaNotFound
+from sovrin_common.exceptions import InvalidConnectionException, ConnectionAlreadyExists, \
+    ConnectionNotFound, NotConnectedToNetwork, SchemaNotFound
 from sovrin_common.identity import Identity
 from sovrin_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, GET_SCHEMA, \
@@ -145,14 +145,14 @@ class SovrinCli(PlenumCli):
             'list_claims',
             'list_connections',
             # 'show_claim_req',
-            'show_proof_req',
-            'req_claim',
+            'show_proof_request',
+            'request_claim',
             'accept_connection_request',
             'set_attr',
             'send_proof_request'
             'send_proof',
             'new_id',
-            'req_avail_claims'
+            'request_avail_claims'
         ]
         lexers = {n: SimpleLexer(Token.Keyword) for n in lexerNames}
         # Add more lexers to base class lexers
@@ -174,25 +174,25 @@ class SovrinCli(PlenumCli):
             addGenesisTxnCmd.id)
         completers["show_file"] = WordCompleter([showFileCmd.id])
         completers["load_file"] = WordCompleter([loadFileCmd.id])
-        completers["show_connection"] = PhraseWordCompleter(showLinkCmd.id)
+        completers["show_connection"] = PhraseWordCompleter(showConnectionCmd.id)
         completers["conn"] = WordCompleter([connectToCmd.id])
         completers["disconn"] = WordCompleter([disconnectCmd.id])
         completers["env_name"] = WordCompleter(list(self.config.ENVS.keys()))
-        completers["sync_connection"] = WordCompleter([syncLinkCmd.id])
+        completers["sync_connection"] = WordCompleter([syncConnectionCmd.id])
         completers["ping_target"] = WordCompleter([pingTargetCmd.id])
         completers["show_claim"] = PhraseWordCompleter(showClaimCmd.id)
-        completers["req_claim"] = PhraseWordCompleter(reqClaimCmd.id)
-        completers["accept_connection_request"] = PhraseWordCompleter(acceptLinkCmd.id)
+        completers["request_claim"] = PhraseWordCompleter(reqClaimCmd.id)
+        completers["accept_connection_request"] = PhraseWordCompleter(acceptConnectionCmd.id)
         completers["set_attr"] = WordCompleter([setAttrCmd.id])
         completers["new_id"] = PhraseWordCompleter(newIdentifierCmd.id)
         completers["list_claims"] = PhraseWordCompleter(listClaimsCmd.id)
-        completers["list_connections"] = PhraseWordCompleter(listLinksCmd.id)
-        completers["show_proof_req"] = PhraseWordCompleter(
+        completers["list_connections"] = PhraseWordCompleter(listConnectionsCmd.id)
+        completers["show_proof_request"] = PhraseWordCompleter(
             showProofRequestCmd.id)
         completers["send_proof_request"] = PhraseWordCompleter(
             sendProofRequestCmd.id)
         completers["send_proof"] = PhraseWordCompleter(sendProofCmd.id)
-        completers["req_avail_claims"] = PhraseWordCompleter(reqAvailClaimsCmd.id)
+        completers["request_avail_claims"] = PhraseWordCompleter(reqAvailClaimsCmd.id)
 
         return {**super().completers, **completers}
 
@@ -218,17 +218,17 @@ class SovrinCli(PlenumCli):
                             self._addGenTxnAction,
                             self._showFile,
                             self._loadFile,
-                            self._showLink,
+                            self._showConnection,
                             self._connectTo,
                             self._disconnect,
-                            self._syncLink,
+                            self._syncConnection,
                             self._pingTarget,
                             self._showClaim,
                             self._listClaims,
-                            self._listLinks,
+                            self._listConnections,
                             self._reqClaim,
                             self._showProofRequest,
-                            self._acceptInvitationLink,
+                            self._acceptInvitationConnection,
                             self._setAttr,
                             self._sendProofRequest,
                             self._sendProof,
@@ -284,22 +284,22 @@ class SovrinCli(PlenumCli):
             claimName or "<claim-name>")]
 
     @staticmethod
-    def _getShowLinkUsage(linkName=None):
+    def _getShowConnectionUsage(connectionName=None):
         return ['{} "{}"'.format(
-            showLinkCmd.id,
-            linkName or "<link-name>")]
+            showConnectionCmd.id,
+            connectionName or "<connection-name>")]
 
     @staticmethod
-    def _getSyncLinkUsage(linkName=None):
+    def _getSyncConnectionUsage(connectionName=None):
         return ['{} "{}"'.format(
-            syncLinkCmd.id,
-            linkName or "<link-name>")]
+            syncConnectionCmd.id,
+            connectionName or "<connection-name>")]
 
     @staticmethod
-    def _getAcceptLinkUsage(linkName=None):
+    def _getAcceptConnectionUsage(connectionName=None):
         return ['{} "{}"'.format(
-            acceptLinkCmd.id,
-            linkName or "<link-name>")]
+            acceptConnectionCmd.id,
+            connectionName or "<connection-name>")]
 
     @staticmethod
     def _getPromptUsage():
@@ -317,28 +317,28 @@ class SovrinCli(PlenumCli):
     def _printMsg(self, notifier, msg):
         self.print(msg)
 
-    def _printSuggestionPostAcceptLink(self, notifier,
-                                       link: Link):
+    def _printSuggestionPostAcceptConnection(self, notifier,
+                                             connection: Link):
         suggestions = []
-        if len(link.availableClaims) > 0:
-            claimName = "|".join([n.name for n in link.availableClaims])
+        if len(connection.availableClaims) > 0:
+            claimName = "|".join([n.name for n in connection.availableClaims])
             claimName = claimName or "<claim-name>"
             suggestions += self._getShowClaimUsage(claimName)
             suggestions += self._getReqClaimUsage(claimName)
-        if len(link.proofRequests) > 0:
-            for pr in link.proofRequests:
+        if len(connection.proofRequests) > 0:
+            for pr in connection.proofRequests:
                 suggestions += self._getShowProofRequestUsage(pr)
-                suggestions += self._getSendProofUsage(pr, link)
+                suggestions += self._getSendProofUsage(pr, connection)
         if suggestions:
             self.printSuggestion(suggestions)
         else:
             self.print("")
 
-    def sendToAgent(self, msg: Any, link: Link):
+    def sendToAgent(self, msg: Any, connection: Link):
         if not self.agent:
             return
 
-        endpoint = link.remoteEndPoint
+        endpoint = connection.remoteEndPoint
         self.agent.sendMessage(msg, ha=endpoint)
 
     @property
@@ -397,14 +397,14 @@ class SovrinCli(PlenumCli):
     def registerAgentListeners(self, agent):
         agent.registerEventListener(EVENT_NOTIFY_MSG, self._printMsg)
         agent.registerEventListener(EVENT_POST_ACCEPT_INVITE,
-                                    self._printSuggestionPostAcceptLink)
+                                    self._printSuggestionPostAcceptConnection)
         agent.registerEventListener(EVENT_NOT_CONNECTED_TO_ANY_ENV,
                                     self._handleNotConnectedToAnyEnv)
 
     def deregisterAgentListeners(self, agent):
         agent.deregisterEventListener(EVENT_NOTIFY_MSG, self._printMsg)
         agent.deregisterEventListener(EVENT_POST_ACCEPT_INVITE,
-                                    self._printSuggestionPostAcceptLink)
+                                      self._printSuggestionPostAcceptConnection)
         agent.deregisterEventListener(EVENT_NOT_CONNECTED_TO_ANY_ENV,
                                     self._handleNotConnectedToAnyEnv)
 
@@ -892,20 +892,20 @@ class SovrinCli(PlenumCli):
                 try:
                     # TODO: Shouldn't just be the wallet be involved in loading
                     # an invitation.
-                    link = self.agent.loadInvitationFile(filePath)
-                    self._printShowAndAcceptLinkUsage(link.name)
+                    connection = self.agent.loadInvitationFile(filePath)
+                    self._printShowAndAcceptConnectionUsage(connection.name)
                 except (FileNotFoundError, TypeError):
                     self.print("Given file does not exist")
                     msgs = self._getShowFileUsage() + self._getLoadFileUsage()
                     self.printUsage(msgs)
-                except LinkAlreadyExists:
-                    self.print("Link already exists")
-                except LinkNotFound:
+                except ConnectionAlreadyExists:
+                    self.print("Connection already exists")
+                except ConnectionNotFound:
                     self.print("No connection request found in the given file")
                 except ValueError:
                     self.print("Input is not a valid json"
                                "please check and try again")
-                except InvalidLinkException as e:
+                except InvalidConnectionException as e:
                     self.print(e.args[0])
             return True
 
@@ -926,7 +926,7 @@ class SovrinCli(PlenumCli):
         else:
             return None
 
-    def _getInvitationMatchingLinks(self, linkName):
+    def _getInvitationMatchingConnections(self, connectionName):
         exactMatched = {}
         likelyMatched = {}
         # if we want to search in all wallets, then,
@@ -934,9 +934,9 @@ class SovrinCli(PlenumCli):
         walletsToBeSearched = [self.activeWallet]  # self.wallets.values()
         for w in walletsToBeSearched:
             # TODO: This should be moved to wallet
-            invitations = w.getMatchingLinks(linkName)
+            invitations = w.getMatchingConnections(connectionName)
             for i in invitations:
-                if i.name == linkName:
+                if i.name == connectionName:
                     if w.name in exactMatched:
                         exactMatched[w.name].append(i)
                     else:
@@ -951,8 +951,8 @@ class SovrinCli(PlenumCli):
         # Here is how the return dictionary should look like:
         # {
         #    "exactlyMatched": {
-        #           "Default": [linkWithExactName],
-        #           "WalletOne" : [linkWithExactName],
+        #           "Default": [connectionWithExactName],
+        #           "WalletOne" : [connectionWithExactName],
         #     }, "likelyMatched": {
         #           "Default": [similarMatches1, similarMatches2],
         #           "WalletOne": [similarMatches2, similarMatches3]
@@ -963,16 +963,16 @@ class SovrinCli(PlenumCli):
             "likelyMatched": likelyMatched
         }
 
-    def _syncLinkPostEndPointRetrieval(self, postSync,
-                                       link: Link, reply, err, **kwargs):
+    def _syncConnectionPostEndPointRetrieval(self, postSync,
+                                             connection: Link, reply, err, **kwargs):
         if err:
             self.print('    {}'.format(err))
             return True
 
-        postSync(link)
+        postSync(connection)
 
-    def _printUsagePostSync(self, link):
-        self._printShowAndAcceptLinkUsage(link.name)
+    def _printUsagePostSync(self, connection):
+        self._printShowAndAcceptConnectionUsage(connection.name)
 
     def _getTargetEndpoint(self, li, postSync):
         if not self.activeWallet.identifiers:
@@ -981,7 +981,7 @@ class SovrinCli(PlenumCli):
             self._newSigner(wallet=self.activeWallet)
         if self._isConnectedToAnyEnv():
             self.print("\nSynchronizing...")
-            doneCallback = partial(self._syncLinkPostEndPointRetrieval,
+            doneCallback = partial(self._syncConnectionPostEndPointRetrieval,
                                    postSync, li)
             try:
                 self.agent.sync(li.name, doneCallback)
@@ -991,50 +991,50 @@ class SovrinCli(PlenumCli):
             if not self.activeEnv:
                 self._printCannotSyncSinceNotConnectedEnvMessage()
 
-    def _getOneLinkForFurtherProcessing(self, linkName):
-        totalFound, exactlyMatchedLinks, likelyMatchedLinks = \
-            self._getMatchingInvitationsDetail(linkName)
+    def _getOneConnectionForFurtherProcessing(self, connectionName):
+        totalFound, exactlyMatchedConnections, likelyMatchedConnections = \
+            self._getMatchingInvitationsDetail(connectionName)
 
         if totalFound == 0:
-            self._printNoLinkFoundMsg()
+            self._printNoConnectionFoundMsg()
             return None
 
         if totalFound > 1:
-            self._printMoreThanOneLinkFoundMsg(linkName, exactlyMatchedLinks,
-                                               likelyMatchedLinks)
+            self._printMoreThanOneConnectionFoundMsg(connectionName, exactlyMatchedConnections,
+                                                     likelyMatchedConnections)
             return None
-        li = self._getOneLink(exactlyMatchedLinks, likelyMatchedLinks)
-        if SovrinCli.isNotMatching(linkName, li.name):
-            self.print('Expanding {} to "{}"'.format(linkName, li.name))
+        li = self._getOneConnection(exactlyMatchedConnections, likelyMatchedConnections)
+        if SovrinCli.isNotMatching(connectionName, li.name):
+            self.print('Expanding {} to "{}"'.format(connectionName, li.name))
         return li
 
-    def _sendAcceptInviteToTargetEndpoint(self, link: Link):
-        self.agent.accept_invitation(link)
+    def _sendAcceptInviteToTargetEndpoint(self, connection: Link):
+        self.agent.accept_invitation(connection)
 
-    def _acceptLinkPostSync(self, link: Link):
-        if link.isRemoteEndpointAvailable:
-            self._sendAcceptInviteToTargetEndpoint(link)
+    def _acceptConnectionPostSync(self, connection: Link):
+        if connection.isRemoteEndpointAvailable:
+            self._sendAcceptInviteToTargetEndpoint(connection)
         else:
             self.print("Remote endpoint ({}) not found, "
                        "can not connect to {}\n".format(
-                link.remoteEndPoint, link.name))
+                connection.remoteEndPoint, connection.name))
             self.logger.debug("{} has remote endpoint {}".
-                              format(link, link.remoteEndPoint))
+                              format(connection, connection.remoteEndPoint))
 
-    def _acceptLinkInvitation(self, linkName):
-        li = self._getOneLinkForFurtherProcessing(linkName)
+    def _acceptConnectionInvitation(self, connectionName):
+        li = self._getOneConnectionForFurtherProcessing(connectionName)
 
         if li:
             if li.isAccepted:
-                self._printLinkAlreadyExcepted(li.name)
+                self._printConnectionAlreadyExcepted(li.name)
             else:
                 self.print("Request not yet verified.")
-                if not li.linkLastSynced:
+                if not li.connectionLastSynced:
                     self.print("Connection not yet synchronized.")
 
                 if self._isConnectedToAnyEnv():
                     self.print("Attempting to sync...")
-                    self._getTargetEndpoint(li, self._acceptLinkPostSync)
+                    self._getTargetEndpoint(li, self._acceptConnectionPostSync)
                 else:
                     if li.isRemoteEndpointAvailable:
                         self._sendAcceptInviteToTargetEndpoint(li)
@@ -1043,8 +1043,8 @@ class SovrinCli(PlenumCli):
                         self._printNotConnectedEnvMessage(
                             "Cannot sync because not connected")
 
-    def _syncLinkInvitation(self, linkName):
-        li = self._getOneLinkForFurtherProcessing(linkName)
+    def _syncConnectionInvitation(self, connectionName):
+        li = self._getOneConnectionForFurtherProcessing(connectionName)
         if li:
             self._getTargetEndpoint(li, self._printUsagePostSync)
 
@@ -1056,21 +1056,21 @@ class SovrinCli(PlenumCli):
     def removeSpecialChars(name):
         return name.replace('"', '').replace("'", "") if name else None
 
-    def _printSyncLinkUsage(self, linkName):
-        msgs = self._getSyncLinkUsage(linkName)
+    def _printSyncConnectionUsage(self, connectionName):
+        msgs = self._getSyncConnectionUsage(connectionName)
         self.printSuggestion(msgs)
 
-    def _printSyncAndAcceptUsage(self, linkName):
-        msgs = self._getSyncLinkUsage(linkName) + \
-               self._getAcceptLinkUsage(linkName)
+    def _printSyncAndAcceptUsage(self, connectionName):
+        msgs = self._getSyncConnectionUsage(connectionName) + \
+               self._getAcceptConnectionUsage(connectionName)
         self.printSuggestion(msgs)
 
-    def _printLinkAlreadyExcepted(self, linkName):
-        self.print("Connection {} is already accepted\n".format(linkName))
+    def _printConnectionAlreadyExcepted(self, connectionName):
+        self.print("Connection {} is already accepted\n".format(connectionName))
 
-    def _printShowAndAcceptLinkUsage(self, linkName=None):
-        msgs = self._getShowLinkUsage(linkName) + \
-               self._getAcceptLinkUsage(linkName)
+    def _printShowAndAcceptConnectionUsage(self, connectionName=None):
+        msgs = self._getShowConnectionUsage(connectionName) + \
+               self._getAcceptConnectionUsage(connectionName)
         self.printSuggestion(msgs)
 
     def _printShowAndLoadFileUsage(self):
@@ -1081,7 +1081,7 @@ class SovrinCli(PlenumCli):
         msgs = self._getShowFileUsage() + self._getLoadFileUsage()
         self.printSuggestion(msgs)
 
-    def _printNoLinkFoundMsg(self):
+    def _printNoConnectionFoundMsg(self):
         self.print("No matching connection requests found in current wallet")
         self._printShowAndLoadFileSuggestion()
 
@@ -1089,89 +1089,89 @@ class SovrinCli(PlenumCli):
         return self.activeEnv and self.activeClient and \
                self.activeClient.hasSufficientConnections
 
-    def _acceptInvitationLink(self, matchedVars):
-        if matchedVars.get('accept_connection_request') == acceptLinkCmd.id:
-            linkName = SovrinCli.removeSpecialChars(matchedVars.get('link_name'))
-            self._acceptLinkInvitation(linkName)
+    def _acceptInvitationConnection(self, matchedVars):
+        if matchedVars.get('accept_connection_request') == acceptConnectionCmd.id:
+            connectionName = SovrinCli.removeSpecialChars(matchedVars.get('connection_name'))
+            self._acceptConnectionInvitation(connectionName)
             return True
 
     def _pingTarget(self, matchedVars):
         if matchedVars.get('ping') == pingTargetCmd.id:
-            linkName = SovrinCli.removeSpecialChars(
+            connectionName = SovrinCli.removeSpecialChars(
                 matchedVars.get('target_name'))
-            li = self._getOneLinkForFurtherProcessing(linkName)
+            li = self._getOneConnectionForFurtherProcessing(connectionName)
             if li:
                 if li.isRemoteEndpointAvailable:
                     self.agent._pingToEndpoint(li.name, li.remoteEndPoint)
                 else:
                     self.print("Please sync first to get target endpoint")
-                    self._printSyncLinkUsage(li.name)
+                    self._printSyncConnectionUsage(li.name)
             return True
 
-    def _syncLink(self, matchedVars):
-        if matchedVars.get('sync_connection') == syncLinkCmd.id:
+    def _syncConnection(self, matchedVars):
+        if matchedVars.get('sync_connection') == syncConnectionCmd.id:
             # TODO: Shouldn't we remove single quotes too?
-            linkName = SovrinCli.removeSpecialChars(matchedVars.get('link_name'))
-            self._syncLinkInvitation(linkName)
+            connectionName = SovrinCli.removeSpecialChars(matchedVars.get('connection_name'))
+            self._syncConnectionInvitation(connectionName)
             return True
 
-    def _getMatchingInvitationsDetail(self, linkName):
-        linkInvitations = self._getInvitationMatchingLinks(
-            SovrinCli.removeSpecialChars(linkName))
+    def _getMatchingInvitationsDetail(self, connectionName):
+        connectionInvitations = self._getInvitationMatchingConnections(
+            SovrinCli.removeSpecialChars(connectionName))
 
-        exactlyMatchedLinks = linkInvitations["exactlyMatched"]
-        likelyMatchedLinks = linkInvitations["likelyMatched"]
+        exactlyMatchedConnections = connectionInvitations["exactlyMatched"]
+        likelyMatchedConnections = connectionInvitations["likelyMatched"]
 
-        totalFound = sum([len(v) for v in {**exactlyMatchedLinks,
-                                           **likelyMatchedLinks}.values()])
-        return totalFound, exactlyMatchedLinks, likelyMatchedLinks
+        totalFound = sum([len(v) for v in {**exactlyMatchedConnections,
+                                           **likelyMatchedConnections}.values()])
+        return totalFound, exactlyMatchedConnections, likelyMatchedConnections
 
     @staticmethod
-    def _getOneLink(exactlyMatchedLinks, likelyMatchedLinks) -> Link:
+    def _getOneConnection(exactlyMatchedConnections, likelyMatchedConnections) -> Link:
         li = None
-        if len(exactlyMatchedLinks) == 1:
-            li = list(exactlyMatchedLinks.values())[0][0]
+        if len(exactlyMatchedConnections) == 1:
+            li = list(exactlyMatchedConnections.values())[0][0]
         else:
-            li = list(likelyMatchedLinks.values())[0][0]
+            li = list(likelyMatchedConnections.values())[0][0]
         return li
 
-    def _printMoreThanOneLinkFoundMsg(self, linkName, exactlyMatchedLinks,
-                                      likelyMatchedLinks):
-        self.print('More than one link matches "{}"'.format(linkName))
-        exactlyMatchedLinks.update(likelyMatchedLinks)
-        for k, v in exactlyMatchedLinks.items():
+    def _printMoreThanOneConnectionFoundMsg(self, connectionName, exactlyMatchedConnections,
+                                            likelyMatchedConnections):
+        self.print('More than one connection matches "{}"'.format(connectionName))
+        exactlyMatchedConnections.update(likelyMatchedConnections)
+        for k, v in exactlyMatchedConnections.items():
             for li in v:
                 self.print("{}".format(li.name))
         self.print("\nRe enter the command with more specific "
                    "connection request name")
-        self._printShowAndAcceptLinkUsage()
+        self._printShowAndAcceptConnectionUsage()
 
-    def _showLink(self, matchedVars):
-        if matchedVars.get('show_connection') == showLinkCmd.id:
-            linkName = matchedVars.get('link_name').replace('"', '')
+    def _showConnection(self, matchedVars):
+        if matchedVars.get('show_connection') == showConnectionCmd.id:
+            connectionName = matchedVars.get('connection_name').replace('"', '')
 
-            totalFound, exactlyMatchedLinks, likelyMatchedLinks = \
-                self._getMatchingInvitationsDetail(linkName)
+            totalFound, exactlyMatchedConnections, likelyMatchedConnections = \
+                self._getMatchingInvitationsDetail(connectionName)
 
             if totalFound == 0:
-                self._printNoLinkFoundMsg()
+                self._printNoConnectionFoundMsg()
                 return True
 
             if totalFound == 1:
-                li = self._getOneLink(exactlyMatchedLinks, likelyMatchedLinks)
+                li = self._getOneConnection(exactlyMatchedConnections, likelyMatchedConnections)
 
-                if SovrinCli.isNotMatching(linkName, li.name):
-                    self.print('Expanding {} to "{}"'.format(linkName, li.name))
+                if SovrinCli.isNotMatching(connectionName, li.name):
+                    self.print('Expanding {} to "{}"'.format(connectionName, li.name))
 
                 self.print("{}".format(str(li)))
                 if li.isAccepted:
-                    self._printSuggestionPostAcceptLink(self, li)
+                    self._printSuggestionPostAcceptConnection(self, li)
                 else:
                     self._printSyncAndAcceptUsage(li.name)
             else:
-                self._printMoreThanOneLinkFoundMsg(linkName,
-                                                   exactlyMatchedLinks,
-                                                   likelyMatchedLinks)
+                self._printMoreThanOneConnectionFoundMsg(connectionName,
+                                                         exactlyMatchedConnections,
+                                                         likelyMatchedConnections)
 
             return True
 
@@ -1185,11 +1185,11 @@ class SovrinCli(PlenumCli):
         self.print("No matching Claims found in "
                    "any connections in current wallet\n")
 
-    def _printMoreThanOneLinkFoundForRequest(self, requestedName, linkNames):
-        self.print('More than one link matches "{}"'.format(requestedName))
-        for li in linkNames:
+    def _printMoreThanOneConnectionFoundForRequest(self, requestedName, connectionNames):
+        self.print('More than one connection matches "{}"'.format(requestedName))
+        for li in connectionNames:
             self.print("{}".format(li))
-            # TODO: Any suggestion in more than one link?
+            # TODO: Any suggestion in more than one connection?
 
     # TODO: Refactor following three methods
     # as most of the pattern looks similar
@@ -1200,67 +1200,67 @@ class SovrinCli(PlenumCli):
             msg += "Extra info: {}".format(extra)
         self.print(msg)
 
-    def _printMoreThanOneClaimFoundForRequest(self, claimName, linkAndClaimNames):
+    def _printMoreThanOneClaimFoundForRequest(self, claimName, connectionAndClaimNames):
         self.print('More than one match for "{}"'.format(claimName))
-        for li, cl in linkAndClaimNames:
+        for li, cl in connectionAndClaimNames:
             self.print("{} in {}".format(li, cl))
 
-    def _findProofRequest(self, claimReqName: str, linkName: str=None) -> \
+    def _findProofRequest(self, claimReqName: str, connectionName: str=None) -> \
             (Link, ProofRequest):
-        matchingLinksWithClaimReq = self.activeWallet. \
-            findAllProofRequests(claimReqName, linkName)  # TODO rename claimReqName -> proofRequestName
+        matchingConnectionWithClaimReq = self.activeWallet. \
+            findAllProofRequests(claimReqName, connectionName)  # TODO rename claimReqName -> proofRequestName
 
-        if len(matchingLinksWithClaimReq) == 0:
+        if len(matchingConnectionWithClaimReq) == 0:
             self._printNoProofReqFoundMsg()
             return None, None
 
-        if len(matchingLinksWithClaimReq) > 1:
-            linkNames = [ml.name for ml, cr in matchingLinksWithClaimReq]
-            self._printMoreThanOneLinkFoundForRequest(claimReqName, linkNames)
+        if len(matchingConnectionWithClaimReq) > 1:
+            connectionNames = [ml.name for ml, cr in matchingConnectionWithClaimReq]
+            self._printMoreThanOneConnectionFoundForRequest(claimReqName, connectionNames)
             return None, None
 
-        return matchingLinksWithClaimReq[0]
+        return matchingConnectionWithClaimReq[0]
 
-    def _getOneLinkAndAvailableClaim(self, claimName, printMsgs: bool = True) -> \
+    def _getOneConnectionAndAvailableClaim(self, claimName, printMsgs: bool = True) -> \
             (Link, Schema):
-        matchingLinksWithAvailableClaim = self.activeWallet. \
-            getMatchingLinksWithAvailableClaim(claimName)
+        matchingConnectionsWithAvailableClaim = self.activeWallet. \
+            getMatchingConnectionsWithAvailableClaim(claimName)
 
-        if len(matchingLinksWithAvailableClaim) == 0:
+        if len(matchingConnectionsWithAvailableClaim) == 0:
             if printMsgs:
                 self._printNoClaimFoundMsg()
             return None, None
 
-        if len(matchingLinksWithAvailableClaim) > 1:
-            linkNames = [ml.name for ml, _ in matchingLinksWithAvailableClaim]
+        if len(matchingConnectionsWithAvailableClaim) > 1:
+            connectionNames = [ml.name for ml, _ in matchingConnectionsWithAvailableClaim]
             if printMsgs:
-                self._printMoreThanOneLinkFoundForRequest(claimName, linkNames)
+                self._printMoreThanOneConnectionFoundForRequest(claimName, connectionNames)
             return None, None
 
-        return matchingLinksWithAvailableClaim[0]
+        return matchingConnectionsWithAvailableClaim[0]
 
-    async def _getOneLinkAndReceivedClaim(self, claimName, printMsgs: bool = True) -> \
+    async def _getOneConnectionAndReceivedClaim(self, claimName, printMsgs: bool = True) -> \
             (Link, Tuple, Dict):
-        matchingLinksWithRcvdClaim = await self.agent.getMatchingLinksWithReceivedClaimAsync(claimName)
+        matchingConnectionsWithRcvdClaim = await self.agent.getMatchingConnectionsWithReceivedClaimAsync(claimName)
 
-        if len(matchingLinksWithRcvdClaim) == 0:
+        if len(matchingConnectionsWithRcvdClaim) == 0:
             if printMsgs:
                 self._printNoClaimFoundMsg()
             return None, None, None
 
-        if len(matchingLinksWithRcvdClaim) > 1:
-            linkNames = [ml.name for ml, _, _ in matchingLinksWithRcvdClaim]
+        if len(matchingConnectionsWithRcvdClaim) > 1:
+            connectionNames = [ml.name for ml, _, _ in matchingConnectionsWithRcvdClaim]
             if printMsgs:
-                self._printMoreThanOneLinkFoundForRequest(claimName, linkNames)
+                self._printMoreThanOneConnectionFoundForRequest(claimName, connectionNames)
             return None, None, None
 
-        return matchingLinksWithRcvdClaim[0]
+        return matchingConnectionsWithRcvdClaim[0]
 
     def _setAttr(self, matchedVars):
         if matchedVars.get('set_attr') == setAttrCmd.id:
             attrName = matchedVars.get('attr_name')
             attrValue = matchedVars.get('attr_value')
-            curLink, curProofReq, selfAttestedAttrs = self.curContext
+            curConnection, curProofReq, selfAttestedAttrs = self.curContext
             if curProofReq:
                 selfAttestedAttrs[attrName] = attrValue
             else:
@@ -1269,27 +1269,27 @@ class SovrinCli(PlenumCli):
             return True
 
     def _reqClaim(self, matchedVars):
-        if matchedVars.get('req_claim') == reqClaimCmd.id:
+        if matchedVars.get('request_claim') == reqClaimCmd.id:
             claimName = SovrinCli.removeSpecialChars(
                 matchedVars.get('claim_name'))
-            matchingLink, ac = \
-                self._getOneLinkAndAvailableClaim(claimName, printMsgs=False)
-            if matchingLink:
+            matchingConnection, ac = \
+                self._getOneConnectionAndAvailableClaim(claimName, printMsgs=False)
+            if matchingConnection:
                 name, version, origin = ac
                 if SovrinCli.isNotMatching(claimName, name):
                     self.print('Expanding {} to "{}"'.format(
                         claimName, name))
                 self.print("Found claim {} in connection {}".
-                           format(claimName, matchingLink.name))
+                           format(claimName, matchingConnection.name))
                 if not self._isConnectedToAnyEnv():
                     self._printNotConnectedEnvMessage()
                     return True
 
                 schemaKey = (name, version, origin)
                 self.print("Requesting claim {} from {}...".format(
-                    name, matchingLink.name))
+                    name, matchingConnection.name))
 
-                self.agent.sendReqClaim(matchingLink, schemaKey)
+                self.agent.sendReqClaim(matchingConnection, schemaKey)
             else:
                 self._printNoClaimFoundMsg()
             return True
@@ -1314,9 +1314,9 @@ class SovrinCli(PlenumCli):
         self._setActiveIdentifier(id)
 
     def _reqAvailClaims(self, matchedVars):
-        if matchedVars.get('req_avail_claims') == reqAvailClaimsCmd.id:
-            linkName = SovrinCli.removeSpecialChars(matchedVars.get('link_name'))
-            li = self._getOneLinkForFurtherProcessing(linkName)
+        if matchedVars.get('request_avail_claims') == reqAvailClaimsCmd.id:
+            connectionName = SovrinCli.removeSpecialChars(matchedVars.get('connection_name'))
+            li = self._getOneConnectionForFurtherProcessing(connectionName)
             if li:
                 self.agent.sendRequestForAvailClaims(li)
             return True
@@ -1334,10 +1334,10 @@ class SovrinCli(PlenumCli):
         if matchedVars.get('send_proof') == sendProofCmd.id:
             proofName = SovrinCli.removeSpecialChars(
                 matchedVars.get('proof_name').strip())
-            linkName = SovrinCli.removeSpecialChars(
-                matchedVars.get('link_name').strip())
+            connectionName = SovrinCli.removeSpecialChars(
+                matchedVars.get('connection_name').strip())
 
-            li, proofReq = self._findProofRequest(proofName, linkName)
+            li, proofReq = self._findProofRequest(proofName, connectionName)
 
             if not li or not proofReq:
                 return False
@@ -1345,7 +1345,7 @@ class SovrinCli(PlenumCli):
             self.logger.debug("Building proof using {} for {}".
                               format(proofReq, li))
 
-            # if link or proof request doesn't match with context information,
+            # if connection or proof request doesn't match with context information,
             # then set the context accordingly
             if li != self.curContext.link or \
                             proofReq != self.curContext.proofRequest:
@@ -1356,13 +1356,13 @@ class SovrinCli(PlenumCli):
             return True
 
     def _sendProofRequest(self, matchedVars):
-        if matchedVars.get('send_proof_req') == 'send proof-request':
+        if matchedVars.get('send_proof_request') == 'send proof-request':
             proofRequestName = SovrinCli.removeSpecialChars(
                 matchedVars.get('proof_request_name').strip())
             target = SovrinCli.removeSpecialChars(
                 matchedVars.get('target').strip())
 
-            li = self._getOneLinkForFurtherProcessing(target)
+            li = self._getOneConnectionForFurtherProcessing(target)
 
             if li:
                 result = self.agent.sendProofReq(li, proofRequestName)
@@ -1372,16 +1372,16 @@ class SovrinCli(PlenumCli):
                 else:
                     self.print(ERR_NO_PROOF_REQUEST_SCHEMA_FOUND)
             else:
-                self.print('No link found with name {}'.format(target))
+                self.print('No connection found with name {}'.format(target))
 
             return True
 
     async def _showReceivedOrAvailableClaim(self, claimName):
-        matchingLink, rcvdClaim, attributes = \
-            await self._getOneLinkAndReceivedClaim(claimName)
-        if matchingLink:
+        matchingConnection, rcvdClaim, attributes = \
+            await self._getOneConnectionAndReceivedClaim(claimName)
+        if matchingConnection:
             self.print("Found claim {} in connection {}".
-                       format(claimName, matchingLink.name))
+                       format(claimName, matchingConnection.name))
 
             # TODO: Figure out how to get time of issuance
             issued = None not in attributes.values()
@@ -1406,14 +1406,14 @@ class SovrinCli(PlenumCli):
             return rcvdClaim
         else:
             self.print("No matching Claims found "
-                       "in any links in current wallet")
+                       "in any connections in current wallet")
 
     def _printRequestClaimMsg(self, claimName):
         self.printSuggestion(self._getReqClaimUsage(claimName))
 
     @staticmethod
     def _formatProofRequestAttribute(attributes, verifiableAttributes,
-                                     matchingLinkAndReceivedClaim):
+                                     matchingConnectionAndReceivedClaim):
         getClaim = itemgetter(2)
         containsAttr = lambda key: lambda t: key in getClaim(t)
         formatted = 'Attributes:\n'
@@ -1421,9 +1421,9 @@ class SovrinCli(PlenumCli):
         for k, v in attributes.items():
             # determine if we need to show number for claims which
             # were participated in proof generation
-            attrClaimIndex = getIndex(containsAttr(k), matchingLinkAndReceivedClaim)
+            attrClaimIndex = getIndex(containsAttr(k), matchingConnectionAndReceivedClaim)
             showClaimNumber = attrClaimIndex > -1 and \
-                              len(matchingLinkAndReceivedClaim) > 1
+                              len(matchingConnectionAndReceivedClaim) > 1
 
             formatted += ('    '
                           + ('[{}] '.format(attrClaimIndex + 1)
@@ -1461,13 +1461,13 @@ class SovrinCli(PlenumCli):
         return toPrint
 
     async def _fulfillProofRequestByContext(self, c: Context):
-        matchingLinkAndReceivedClaim = await self.agent.getClaimsUsedForAttrs(
+        matchingConnectionAndReceivedClaim = await self.agent.getClaimsUsedForAttrs(
             c.proofRequest.attributes)
 
         # filter all those claims who has some None value
         # since they are not yet requested
         filteredMatchingClaims = []
-        for li, cl, issuedAttrs in matchingLinkAndReceivedClaim:
+        for li, cl, issuedAttrs in matchingConnectionAndReceivedClaim:
             if None not in [v for k, v in issuedAttrs.items()]:
                 filteredMatchingClaims.append((li, cl, issuedAttrs))
 
@@ -1492,14 +1492,14 @@ class SovrinCli(PlenumCli):
 
     async def fulfillProofRequest(self, proofReqName):
         proof_req_name = SovrinCli.removeSpecialChars(proofReqName)
-        matchingLink, proofRequest = self._findProofRequest(proof_req_name)
+        matchingConnection, proofRequest = self._findProofRequest(proof_req_name)
 
-        if matchingLink and proofRequest:
-            if matchingLink != self.curContext.link or \
+        if matchingConnection and proofRequest:
+            if matchingConnection != self.curContext.link or \
                             proofRequest != self.curContext.proofRequest:
-                self.curContext = Context(matchingLink, proofRequest, {})
-            self.print('Found proof request "{}" in link "{}"'.
-                       format(proofRequest.name, matchingLink.name))
+                self.curContext = Context(matchingConnection, proofRequest, {})
+            self.print('Found proof request "{}" in connection "{}"'.
+                       format(proofRequest.name, matchingConnection.name))
 
             return await self._fulfillProofRequestByContext(self.curContext)
         else:
@@ -1525,9 +1525,9 @@ class SovrinCli(PlenumCli):
             await self._showProofWithMatchingClaims(self.curContext)
 
     def _showProofRequest(self, matchedVars):
-        if matchedVars.get('show_proof_req') == showProofRequestCmd.id:
+        if matchedVars.get('show_proof_request') == showProofRequestCmd.id:
             proof_request_name = SovrinCli.removeSpecialChars(
-                matchedVars.get('proof_req_name'))
+                matchedVars.get('proof_request_name'))
 
             self.agent.loop.call_soon(asyncio.ensure_future,
                                       self._fulfillAndShowConstructedProof(
@@ -1545,26 +1545,26 @@ class SovrinCli(PlenumCli):
 
     def _listClaims(self, matchedVars):
         if matchedVars.get('list_claims') == listClaimsCmd.id:
-            link_name = SovrinCli.removeSpecialChars(matchedVars.get('link_name'))
+            connection_name = SovrinCli.removeSpecialChars(matchedVars.get('connection_name'))
 
-            li = self._getOneLinkForFurtherProcessing(link_name)
+            li = self._getOneConnectionForFurtherProcessing(connection_name)
             if li:
                 # TODO sync if needed, send msg to agent
                 self._printAvailClaims(li)
             return True
 
-    def _listLinks(self, matchedVars):
-        if matchedVars.get('list_connections') == listLinksCmd.id:
-            links = self.activeWallet.getLinkNames()
-            if len(links) == 0:
+    def _listConnections(self, matchedVars):
+        if matchedVars.get('list_connections') == listConnectionsCmd.id:
+            connections = self.activeWallet.getConnectionNames()
+            if len(connections) == 0:
                 self.print("No connections exists")
             else:
-                for link in links:
-                    self.print(link + "\n")
+                for connection in connections:
+                    self.print(connection + "\n")
             return True
 
-    def _printAvailClaims(self, link):
-        self.print(link.avail_claims_str())
+    def _printAvailClaims(self, connection):
+        self.print(connection.avail_claims_str())
 
     def _showFile(self, matchedVars):
         if matchedVars.get('show_file') == showFileCmd.id:
@@ -1843,21 +1843,21 @@ class SovrinCli(PlenumCli):
             self.printUsage(self._getLoadFileUsage("<request filename>"))
 
         def showHelper():
-            self.print("Shows the info about the link connection")
+            self.print("Shows the info about the connection")
             self.printUsage(self._getShowFileUsage("<request filename>"))
 
-        def showLinkHelper():
-            self.print("Shows connection info in case of one matching link, "
-                       "otherwise shows all the matching links")
-            self.printUsage(self._getShowLinkUsage())
+        def showConnectionHelper():
+            self.print("Shows connection info in case of one matching connection, "
+                       "otherwise shows all the matching connections")
+            self.printUsage(self._getShowConnectionUsage())
 
         def connectHelper():
             self.print("Lets you connect to the respective environment")
             self.printUsage(self._getConnectUsage())
 
         def syncHelper():
-            self.print("Synchronizes the link between the endpoints")
-            self.printUsage(self._getSyncLinkUsage())
+            self.print("Synchronizes the connection between the endpoints")
+            self.printUsage(self._getSyncConnectionUsage())
 
         def defaultHelper():
             self.printHelp()
@@ -1867,7 +1867,7 @@ class SovrinCli(PlenumCli):
             'prompt': promptHelper,
             'principals': principalsHelper,
             'load': loadHelper,
-            'show connection': showLinkHelper,
+            'show connection': showConnectionHelper,
             'connect': connectHelper,
             'sync': syncHelper
         }
@@ -1906,13 +1906,13 @@ class SovrinCli(PlenumCli):
         mappings['sendGetClaimDefAction'] = sendGetClaimDefCmd
         mappings['showFile'] = showFileCmd
         mappings['loadFile'] = loadFileCmd
-        mappings['showLink'] = showLinkCmd
-        mappings['syncLink'] = syncLinkCmd
+        mappings['showConnection'] = showConnectionCmd
+        mappings['syncConnection'] = syncConnectionCmd
         mappings['pingTarget'] = pingTargetCmd
-        mappings['acceptInvitationLink'] = acceptLinkCmd
+        mappings['acceptInvitationConnection'] = acceptConnectionCmd
         mappings['showClaim'] = showClaimCmd
         mappings['listClaims'] = listClaimsCmd
-        mappings['listLinks'] = listLinksCmd
+        mappings['listConnections'] = listConnectionsCmd
         mappings['reqClaim'] = reqClaimCmd
         mappings['showProofRequest'] = showProofRequestCmd
         mappings['addGenTxnAction'] = addGenesisTxnCmd

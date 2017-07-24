@@ -7,7 +7,7 @@ from plenum.common.util import prettyDateDifference, friendlyToRaw
 from plenum.common.verifier import DidVerifier
 from anoncreds.protocol.types import AvailableClaim
 
-from sovrin_common.exceptions import InvalidLinkException, \
+from sovrin_common.exceptions import InvalidConnectionException, \
     RemoteEndpointNotFound, NotFound
 
 
@@ -75,7 +75,7 @@ class Link:
 
         self.remoteVerkey = remote_verkey
         self.linkStatus = None
-        self.linkLastSynced = None
+        self.connectionLastSynced = None
         self.linkLastSyncNo = None
 
     def __repr__(self):
@@ -112,7 +112,7 @@ class Link:
         if isinstance(remoteEndPoint, tuple):
             remoteEndPoint = "{}:{}".format(*remoteEndPoint)
         linkStatus = 'not verified, remote verkey unknown'
-        linkLastSynced = prettyDateDifference(self.linkLastSynced) or \
+        linkLastSynced = prettyDateDifference(self.connectionLastSynced) or \
                          constant.LINK_NOT_SYNCHRONIZED
 
         if linkLastSynced != constant.LINK_NOT_SYNCHRONIZED and \
@@ -180,15 +180,15 @@ class Link:
 
         def checkIfFieldPresent(msg, searchInName, fieldName):
             if not msg.get(fieldName):
-                raise InvalidLinkException(
+                raise InvalidConnectionException(
                     "Field not found in {}: {}".format(searchInName, fieldName))
 
         checkIfFieldPresent(invitationData, 'given input', 'sig')
-        checkIfFieldPresent(invitationData, 'given input', 'link-invitation')
-        linkInvitation = invitationData.get("link-invitation")
+        checkIfFieldPresent(invitationData, 'given input', 'connection-request')
+        linkInvitation = invitationData.get("connection-request")
         linkInvitationReqFields = [f.IDENTIFIER.nm, NAME, NONCE]
         for fn in linkInvitationReqFields:
-            checkIfFieldPresent(linkInvitation, 'link-invitation', fn)
+            checkIfFieldPresent(linkInvitation, 'connection-request', fn)
 
     def getRemoteEndpoint(self, required=False):
         if not self.remoteEndPoint and required:

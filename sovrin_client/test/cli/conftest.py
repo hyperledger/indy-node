@@ -42,7 +42,7 @@ from plenum.test.cli.helper import newKeyPair, waitAllNodesStarted, \
     doByCtx
 
 from sovrin_common.config_util import getConfig
-from sovrin_client.test.cli.helper import ensureNodesCreated, getLinkInvitation, \
+from sovrin_client.test.cli.helper import ensureNodesCreated, getConnectionInvitation, \
     getPoolTxnData, newCLI, getCliBuilder, P, prompt_is, addAgent, doSendNodeCmd, addNym
 from sovrin_client.test.agent.conftest import faberIsRunning as runningFaber, \
     acmeIsRunning as runningAcme, thriftIsRunning as runningThrift, emptyLooper,\
@@ -96,7 +96,7 @@ def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf, cliTemp
 
 def getDefaultUserMap(name):
     return {
-        'keyring-name': name,
+        'wallet-name': name,
     }
 
 @pytest.fixture(scope="module")
@@ -136,7 +136,7 @@ def faberMap(agentIpAddress, faberAgentPort):
             "claims": "Transcript",
             "claim-to-show": "Transcript",
             "proof-req-to-match": "Transcript",
-            'keyring-name': 'Faber'
+            'wallet-name': 'Faber'
             }
 
 
@@ -166,7 +166,7 @@ def acmeMap(agentIpAddress, acmeAgentPort):
             'send-proof-target': 'Alice',
             'pr-name': 'Job-Application',
             'pr-schema-version': '0.2',
-            'keyring-name': 'Acme'
+            'wallet-name': 'Acme'
             }
 
 
@@ -189,7 +189,7 @@ def thriftMap(agentIpAddress, thriftAgentPort):
             "rcvd-claim-job-certificate-version": "0.2",
             "rcvd-claim-job-certificate-provider": "Acme Corp",
             "claim-ver-req-to-show": "0.1",
-            'keyring-name': 'Thrift'
+            'wallet-name': 'Thrift'
             }
 
 
@@ -281,13 +281,13 @@ def notConnectedStatus(connectUsage):
 
 @pytest.fixture(scope="module")
 def newKeyringOut():
-    return ["New wallet {keyring-name} created",
-            'Active wallet set to "{keyring-name}"'
+    return ["New wallet {wallet-name} created",
+            'Active wallet set to "{wallet-name}"'
             ]
 
 
 @pytest.fixture(scope="module")
-def linkAlreadyExists():
+def connectionAlreadyExists():
     return ["Connection already exists"]
 
 
@@ -392,7 +392,7 @@ def proofConstructedMsg():
 @pytest.fixture(scope="module")
 def showJobAppProofRequestOut(proofConstructedMsg, showTranscriptProofOut):
     return [
-        'Found proof request "{proof-req-to-match}" in link "{inviter}"',
+        'Found proof request "{proof-req-to-match}" in connection "{inviter}"',
         "Status: Requested",
         "Name: {proof-request-to-show}",
         "Version: {proof-request-version}",
@@ -409,7 +409,7 @@ def showJobAppProofRequestOut(proofConstructedMsg, showTranscriptProofOut):
 @pytest.fixture(scope="module")
 def showNameProofRequestOut(showJobCertificateClaimInProofOut):
     return [
-        'Found proof request "{proof-req-to-match}" in link "{inviter}"',
+        'Found proof request "{proof-req-to-match}" in connection "{inviter}"',
         "Name: {proof-req-to-match}",
         "Version: {proof-request-version}",
         "Status: Requested",
@@ -449,7 +449,7 @@ def proofRequestNotExists():
 
 
 @pytest.fixture(scope="module")
-def linkNotExists():
+def connectionNotExists():
     return ["No matching connection requests found in current wallet"]
 
 
@@ -481,8 +481,8 @@ def unSyncedEndpointOut():
 
 
 @pytest.fixture(scope="module")
-def showLinkOutWithoutEndpoint(showLinkOut, unSyncedEndpointOut):
-    return showLinkOut + unSyncedEndpointOut
+def showConnectionOutWithoutEndpoint(showConnectionOut, unSyncedEndpointOut):
+    return showConnectionOut + unSyncedEndpointOut
 
 
 @pytest.fixture(scope="module")
@@ -496,55 +496,55 @@ def endpointNotAvailable():
 
 
 @pytest.fixture(scope="module")
-def syncLinkOutEndsWith():
+def syncConnectionOutEndsWith():
     return ["Connection {inviter} synced"]
 
 
 @pytest.fixture(scope="module")
-def syncLinkOutStartsWith():
+def syncConnectionOutStartsWith():
     return ["Synchronizing..."]
 
 
 @pytest.fixture(scope="module")
-def syncLinkOutWithEndpoint(syncLinkOutStartsWith,
-                            syncLinkOutEndsWith):
-    return syncLinkOutStartsWith + syncLinkOutEndsWith
+def syncConnectionOutWithEndpoint(syncConnectionOutStartsWith,
+                                  syncConnectionOutEndsWith):
+    return syncConnectionOutStartsWith + syncConnectionOutEndsWith
 
 
 @pytest.fixture(scope="module")
-def syncLinkOutWithoutEndpoint(syncLinkOutStartsWith):
-    return syncLinkOutStartsWith
+def syncConnectionOutWithoutEndpoint(syncConnectionOutStartsWith):
+    return syncConnectionOutStartsWith
 
 
 @pytest.fixture(scope="module")
-def showSyncedLinkWithEndpointOut(acceptedLinkHeading, showLinkOut):
-    return acceptedLinkHeading + showLinkOut + \
-        ["Last synced: "]
+def showSyncedConnectionWithEndpointOut(acceptedConnectionHeading, showConnectionOut):
+    return acceptedConnectionHeading + showConnectionOut + \
+           ["Last synced: "]
 
 
 @pytest.fixture(scope="module")
-def showSyncedLinkWithoutEndpointOut(showLinkOut):
-    return showLinkOut
+def showSyncedConnectionWithoutEndpointOut(showConnectionOut):
+    return showConnectionOut
 
 
 @pytest.fixture(scope="module")
-def linkNotYetSynced():
-    return ["    Last synced: <this link has not yet been synchronized>"]
+def connectionNotYetSynced():
+    return ["    Last synced: <this connection has not yet been synchronized>"]
 
 
 @pytest.fixture(scope="module")
-def acceptedLinkHeading():
+def acceptedConnectionHeading():
     return ["Connection"]
 
 
 @pytest.fixture(scope="module")
-def unAcceptedLinkHeading():
+def unAcceptedConnectionHeading():
     return ["Connection (not yet accepted)"]
 
 
 @pytest.fixture(scope="module")
-def showUnSyncedLinkOut(unAcceptedLinkHeading, showLinkOut):
-    return unAcceptedLinkHeading + showLinkOut
+def showUnSyncedConnectionOut(unAcceptedConnectionHeading, showConnectionOut):
+    return unAcceptedConnectionHeading + showConnectionOut
 
 
 @pytest.fixture(scope="module")
@@ -764,48 +764,48 @@ def showBankingRelationshipClaimOut(nextCommandsToTryUsageLine):
 
 
 @pytest.fixture(scope="module")
-def showLinkWithProofRequestsOut():
+def showConnectionWithProofRequestsOut():
     return ["Proof Request(s): {proof-requests}"]
 
 
 @pytest.fixture(scope="module")
-def showLinkWithAvailableClaimsOut():
+def showConnectionWithAvailableClaimsOut():
     return ["Available Claim(s): {claims}"]
 
 
 @pytest.fixture(scope="module")
-def showAcceptedLinkWithClaimReqsOut(showAcceptedLinkOut,
-                                     showLinkWithProofRequestsOut,
-                                     showLinkWithAvailableClaimsOut,
-                                     showLinkSuggestion):
-    return showAcceptedLinkOut + showLinkWithProofRequestsOut + \
-           showLinkWithAvailableClaimsOut + \
-           showLinkSuggestion
+def showAcceptedConnectionWithClaimReqsOut(showAcceptedConnectionOut,
+                                           showConnectionWithProofRequestsOut,
+                                           showConnectionWithAvailableClaimsOut,
+                                           showConnectionSuggestion):
+    return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
+           showConnectionWithAvailableClaimsOut + \
+           showConnectionSuggestion
 
 
 @pytest.fixture(scope="module")
-def showAcceptedLinkWithoutAvailableClaimsOut(showAcceptedLinkOut,
-                                        showLinkWithProofRequestsOut):
-    return showAcceptedLinkOut + showLinkWithProofRequestsOut
+def showAcceptedConnectionWithoutAvailableClaimsOut(showAcceptedConnectionOut,
+                                                    showConnectionWithProofRequestsOut):
+    return showAcceptedConnectionOut + showConnectionWithProofRequestsOut
 
 
 @pytest.fixture(scope="module")
-def showAcceptedLinkWithAvailableClaimsOut(showAcceptedLinkOut,
-                                           showLinkWithProofRequestsOut,
-                                           showLinkWithAvailableClaimsOut):
-    return showAcceptedLinkOut + showLinkWithProofRequestsOut + \
-           showLinkWithAvailableClaimsOut
+def showAcceptedConnectionWithAvailableClaimsOut(showAcceptedConnectionOut,
+                                                 showConnectionWithProofRequestsOut,
+                                                 showConnectionWithAvailableClaimsOut):
+    return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
+           showConnectionWithAvailableClaimsOut
 
 
 @pytest.fixture(scope="module")
-def showLinkSuggestion(nextCommandsToTryUsageLine):
+def showConnectionSuggestion(nextCommandsToTryUsageLine):
     return nextCommandsToTryUsageLine + \
     ['show claim "{claims}"',
      'request claim "{claims}"']
 
 
 @pytest.fixture(scope="module")
-def showAcceptedLinkOut():
+def showAcceptedConnectionOut():
     return [
             "Connection",
             "Name: {inviter}",
@@ -819,7 +819,7 @@ def showAcceptedLinkOut():
 
 
 @pytest.fixture(scope="module")
-def showLinkOut(nextCommandsToTryUsageLine, linkNotYetSynced):
+def showConnectionOut(nextCommandsToTryUsageLine, connectionNotYetSynced):
     return [
             "    Name: {inviter}",
             "    DID: not yet assigned",
@@ -840,7 +840,7 @@ def showLinkOut(nextCommandsToTryUsageLine, linkNotYetSynced):
 
 
 @pytest.fixture(scope="module")
-def showAcceptedSyncedLinkOut(nextCommandsToTryUsageLine):
+def showAcceptedSyncedConnectionOut(nextCommandsToTryUsageLine):
     return [
             "Connection",
             "Name: {inviter}",
@@ -1140,7 +1140,7 @@ def faberAdded(poolNodesCreated,
              faberInviteLoaded,
              aliceConnected,
             steward, stewardWallet):
-    li = getLinkInvitation("Faber", aliceCLI.activeWallet)
+    li = getConnectionInvitation("Faber", aliceCLI.activeWallet)
     createNym(looper, li.remoteIdentifier, steward, stewardWallet,
               role=TRUST_ANCHOR)
 
@@ -1183,7 +1183,7 @@ def thriftIsRunning(emptyLooper, tdirWithPoolTxns, thriftWallet,
 
 @pytest.fixture(scope='module')
 def savedKeyringRestored():
-    return ['Saved wallet {keyring-name} restored']
+    return ['Saved wallet {wallet-name} restored']
 
 
 # TODO: Need to refactor following three fixture to reuse code

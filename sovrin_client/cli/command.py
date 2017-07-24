@@ -91,7 +91,7 @@ sendGetClaimDefCmd = Command(
     examples="send {getClaimDef} ref=10 signature_type=CL".format(getClaimDef=getClaimDefName))
 
 sendProofRequestCmd = Command(
-    id="send proofreq",
+    id="send proof request",
     title="Send a proof request",
     usage="send proofreq <proof-name> to <remote>",
     examples="send proofreq Over-21 to JaneDo")
@@ -108,7 +108,7 @@ loadFileCmd = Command(
     usage="load <file-path>",
     examples="load sample/faber-invitation.sovrin")
 
-showLinkCmd = Command(
+showConnectionCmd = Command(
     id="show connection",
     title="Shows connection info in case of one matching connection, otherwise shows all the matching connection names",
     usage="show connection <connection-name>",
@@ -125,7 +125,7 @@ disconnectCmd = Command(
     title="Disconnects from currently connected environment",
     usage="disconnect")
 
-syncLinkCmd = Command(
+syncConnectionCmd = Command(
     id="sync",
     title="Synchronizes the connection between the endpoints",
     usage="sync connection <connection-name>",
@@ -149,7 +149,7 @@ listClaimsCmd = Command(
     usage="list claims <link-name>",
     examples="list claims faber")
 
-listLinksCmd = Command(
+listConnectionsCmd = Command(
     id='list connections',
     title='List available connections in active wallet',
     usage='list connections',
@@ -168,7 +168,7 @@ showProofRequestCmd = Command(
     usage="show proof request <proof-req-name>",
     examples="show proof request Transcription")
 
-acceptLinkCmd = Command(
+acceptConnectionCmd = Command(
     id="accept request from",
     title="Accept request from given remote",
     usage="accept request from <remote>",

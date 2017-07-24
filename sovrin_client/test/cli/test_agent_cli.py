@@ -77,7 +77,7 @@ def checkProofRequestReceived(be, do, userCli, commandMap):
 
 
 def getProofRequestsCount(userCli, target):
-    li = userCli.activeWallet.getLinkBy(remote=target)
+    li = userCli.activeWallet.getConnectionBy(remote=target)
     return len(li.proofRequests)
 
 
