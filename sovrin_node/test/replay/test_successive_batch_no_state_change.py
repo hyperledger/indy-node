@@ -10,6 +10,7 @@ from plenum.common.signer_did import DidSigner
 from plenum.common.util import randomString
 from plenum.test.delayers import cDelay
 from plenum.test.helper import waitForSufficientRepliesForRequests
+from plenum.test.node_catchup.helper import waitNodeDataEquality
 from plenum.test.test_node import getPrimaryReplica
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.identity import Identity
@@ -158,10 +159,12 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
         # Patch methods to record and check roots after commit
 
         def patched_cre(self, stateRoot):
+            print('patched_cre {}: batch for {} created'.format(self._name, stateRoot))
             uncommitteds[self._name].append(stateRoot)
             return methods[self._name][0](stateRoot)
 
         def patched_com(self, stateRoot):
+            print('patched_com {}: committing {}'.format(self._name, stateRoot))
             assert uncommitteds[self._name][0] == stateRoot
             rv = methods[self._name][1](stateRoot)
             uncommitteds[self._name] = uncommitteds[self._name][1:]
@@ -170,6 +173,7 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
         cache.currentBatchCreated = types.MethodType(patched_cre, cache)
         cache.onBatchCommitted = types.MethodType(patched_com, cache)
 
+    print('check111')
     # Set verkey of multiple identities
     more = 5
     keys = {}
@@ -192,6 +196,9 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     for i, v in keys.items():
         check_verkey(i, v)
 
+    waitNodeDataEquality(looper, nodeSet[0], *nodeSet[1:])
+
+    print('check222')
     keys = {}
     for _ in range(3):
         idy = new_identity()
