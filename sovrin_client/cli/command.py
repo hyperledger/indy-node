@@ -39,8 +39,8 @@ sendAttribCmd = Command(
 sendGetAttrCmd = Command(
     id="send {getAttr}".format(getAttr=getAttrName),
     title="Get ATTR from sovrin",
-    usage="send {getAttr} dest=<target identifier>".format(getAttr=getAttrName),
-    examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT".format(getAttr=getAttrName))
+    usage="send {getAttr} dest=<target identifier> raw=<name>".format(getAttr=getAttrName),
+    examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT raw=endpoint".format(getAttr=getAttrName))
 
 sendNodeCmd = Command(
     id="send {node}".format(node=nodeName),
@@ -77,7 +77,7 @@ sendGetSchemaCmd = Command(
     id="send {getSchema}".format(getSchema=getSchemaName),
     title="Gets schema from sovrin",
     usage="send {getSchema} dest=<target identifier> name=<schema-name> version=<version>".format(getSchema=getSchemaName),
-    examples="send {getSchema} name=Degree version=1.0".format(getSchema=getSchemaName))
+    examples="send {getSchema} dest=33A18XMqWqTzDpLHXLR5nT name=Degree version=1.0".format(getSchema=getSchemaName))
 
 sendClaimDefCmd = Command(
     id="send {claimDef}".format(claimDef=claimDefName),
