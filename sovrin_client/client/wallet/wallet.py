@@ -21,12 +21,13 @@ from sovrin_client.client.wallet.link import Link
 from sovrin_client.client.wallet.node import Node
 from sovrin_client.client.wallet.trustAnchoring import TrustAnchoring
 from sovrin_client.client.wallet.upgrade import Upgrade
+from sovrin_client.client.wallet.pool_config import PoolConfig
 from sovrin_common.did_method import DefaultDidMethods
 from sovrin_common.exceptions import ConnectionNotFound
 from sovrin_common.types import Request
 from sovrin_common.identity import Identity
 from sovrin_common.constants import ATTRIB, GET_TXNS, GET_ATTR, \
-    GET_NYM, POOL_UPGRADE, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE
+    GET_NYM, POOL_UPGRADE, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE, POOL_CONFIG
 from stp_core.types import Identifier
 
 ENCODING = "utf-8"
@@ -51,6 +52,7 @@ class Wallet(PWallet, TrustAnchoring):
         self.env = None     # Helps to know associated environment
         self._nodes = {}
         self._upgrades = {}
+        self._pconfigs = {}
 
         self._connections = OrderedDict()  # type: Dict[str, Link]
         # Note, ordered dict to make iteration deterministic
@@ -72,7 +74,8 @@ class Wallet(PWallet, TrustAnchoring):
             GET_NYM: self._getNymReply,
             GET_TXNS: self._getTxnsReply,
             NODE: self._nodeReply,
-            POOL_UPGRADE: self._poolUpgradeReply
+            POOL_UPGRADE: self._poolUpgradeReply,
+            POOL_CONFIG: self._poolConfigReply
         }
 
     @property
@@ -154,6 +157,19 @@ class Wallet(PWallet, TrustAnchoring):
             self.pendRequest(req, key)
         return len(self._pending)
 
+    def doPoolConfig(self, pconfig: PoolConfig):
+        """
+        Used to send a new code upgrade
+        :param PoolConfig: upgrade data
+        :return: number of pending txns
+        """
+        key = pconfig.key
+        self._pconfigs[key] = pconfig
+        req = pconfig.ledgerRequest()
+        if req:
+            self.pendRequest(req, key)
+        return len(self._pending)
+
     def hasAttribute(self, key: AttributeKey) -> bool:
         """
         Checks if attribute is present in the wallet
@@ -170,6 +186,9 @@ class Wallet(PWallet, TrustAnchoring):
 
     def getPoolUpgrade(self, key: str):
         return self._upgrades.get(key)
+
+    def getPoolConfig(self, key: str):
+        return self._pconfigs.get(key)
 
     def getAttributesForNym(self, idr: Identifier):
         return [a for a in self._attributes.values() if a.dest == idr]
@@ -255,6 +274,11 @@ class Wallet(PWallet, TrustAnchoring):
         _, upgKey = preparedReq
         upgrade = self.getPoolUpgrade(upgKey)
         upgrade.seqNo = result[F.seqNo.name]
+
+    def _poolConfigReply(self, result, preparedReq):
+        _, cfgKey = preparedReq
+        pconf = self.getPoolConfig(cfgKey)
+        pconf.seqNo = result[F.seqNo.name]
 
     def _getNymReply(self, result, preparedReq):
         jsonData = result.get(DATA)

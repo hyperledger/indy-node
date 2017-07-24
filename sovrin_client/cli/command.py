@@ -12,6 +12,7 @@ getSchemaName = SovrinTransactions.GET_SCHEMA.name
 poolUpgradeName = SovrinTransactions.POOL_UPGRADE.name
 claimDefName = SovrinTransactions.CLAIM_DEF.name
 getClaimDefName = SovrinTransactions.GET_CLAIM_DEF.name
+poolConfigName = SovrinTransactions.POOL_CONFIG.name
 
 sendNymCmd = Command(
     id="send {nym}".format(nym=nymName),
@@ -40,6 +41,7 @@ sendGetAttrCmd = Command(
     title="Get ATTR from sovrin",
     usage="send {getAttr} dest=<target DID>".format(getAttr=getAttrName),
     examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT".format(getAttr=getAttrName))
+
 
 sendNodeCmd = Command(
     id="send {node}".format(node=nodeName),
@@ -77,6 +79,7 @@ sendGetSchemaCmd = Command(
     title="Gets schema from sovrin",
     usage="send {getSchema} dest=<target DID> name=<schema-name> version=<version>".format(getSchema=getSchemaName),
     examples="send {getSchema} name=Degree version=1.0".format(getSchema=getSchemaName))
+
 
 sendClaimDefCmd = Command(
     id="send {claimDef}".format(claimDef=claimDefName),
@@ -215,4 +218,11 @@ reqAvailClaimsCmd = Command(
     title="Requests all available claims from given connection",
     usage="request available claims from <connection-name>",
     examples="request available claims from Faber"
+)
+
+sendPoolConfigCmd = Command(
+    id="send {poolConfig}".format(poolConfig=poolConfigName),
+    title="Sends write configuration to pool",
+    usage="send {poolConfig} writes=<writes> force=<force>".format(poolConfig=poolConfigName),
+    examples="send {poolConfig} writes=True force=False".format(poolConfig=poolConfigName)
 )

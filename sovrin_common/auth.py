@@ -1,6 +1,6 @@
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
-from sovrin_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM
+from sovrin_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM, POOL_CONFIG
 from sovrin_common.roles import Roles
 
 logger = getlogger()
@@ -48,7 +48,9 @@ class Authoriser:
         '{}_action__start'.format(POOL_UPGRADE):
             {TRUSTEE: [], TGB: []},
         '{}_action_start_cancel'.format(POOL_UPGRADE):
-            {TRUSTEE: [], TGB: []}
+            {TRUSTEE: [], TGB: []},
+        '{}_action_<any>_<any>'.format(POOL_CONFIG):
+            {TRUSTEE: [], TGB: []},
     }
 
     @staticmethod
