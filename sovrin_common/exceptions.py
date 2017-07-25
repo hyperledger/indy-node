@@ -2,7 +2,7 @@ class GraphDBNotPresent(Exception):
     reason = 'Install and then configure a Graph Database'
 
 
-class InvalidLinkException(Exception):
+class InvalidConnectionException(Exception):
     pass
 
 
@@ -10,10 +10,10 @@ class NotFound(RuntimeError):
     pass
 
 
-class LinkNotFound(NotFound):
+class ConnectionNotFound(NotFound):
     def __init__(self, name: str=None):
         if name:
-            self.reason = "Link with name not found".format(name)
+            self.reason = "Connection with name not found".format(name)
 
 
 class VerkeyNotFound(NotFound):
@@ -32,7 +32,7 @@ class RemotePubkeyNotFound(NotFound):
     pass
 
 
-class LinkAlreadyExists(RuntimeError):
+class ConnectionAlreadyExists(RuntimeError):
     pass
 
 
