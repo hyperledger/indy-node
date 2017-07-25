@@ -5,7 +5,7 @@ from sovrin_common.transactions import SovrinTransactions
 
 CLIENT_GRAMS_CLIENT_WITH_IDENTIFIER_FORMATTED_REG_EX = getPipedRegEx(
     CLIENT_GRAMS_CLIENT_COMMAND_REG_EX +
-    "\s+ (?P<with_identifier>with\s+identifier) "
+    "\s+ (?P<with_DID>with\s+DID) "
     "\s+ (?P<nym>[a-zA-Z0-9=]+) \s*") \
     .format(relist(CLI_CMDS))
 
@@ -32,7 +32,7 @@ SEND_NYM_REG_EX = TXN_NYM.format(cmdName='send_nym', cmd='send')
 ADD_GENESIS_NYM_REG_EX = TXN_NYM.format(cmdName='add_genesis',
                                         cmd='add \s+ genesis \s+ transaction')
 
-NEW_ID_REG_EX = "(\s* (?P<new_id>new\s+identifier)" \
+NEW_ID_REG_EX = "(\s* (?P<new_id>new\s+DID)" \
                 "\s? (?P<id>([A-Za-z0-9+=/]+))? " \
                 "\s? (with\s+seed\s+(?P<seed>[a-zA-Z0-9]+))? " \
                 "\s? (as\s+(?P<alias>[a-zA-Z0-9-]+))?)"
@@ -96,29 +96,29 @@ DISCONNECT_REG_EX = "(\s*(?P<disconn>disconnect))"
 LOAD_FILE_REG_EX = "(\s*(?P<load_file>load) " \
                    "\s+ (?P<file_path>[A-Za-z0-9+-.=/]+)\s*)"
 
-SHOW_LINK_REG_EX = '(\s*(?P<show_link>show \s+ link) ' \
-                   '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
+SHOW_LINK_REG_EX = '(\s*(?P<show_connection>show \s+ connection) ' \
+                   '\s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
-SYNC_LINK_REG_EX = '(\s*(?P<sync_link>sync) ' \
-                   '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
+SYNC_LINK_REG_EX = '(\s*(?P<sync_connection>sync) ' \
+                   '\s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
 PING_TARGET_REG_EX = '(\s*(?P<ping>ping) ' \
                      '\s+ (?P<target_name>[A-Za-z0-9-." ]+) \s*)'
 
 ACCEPT_LINK_REG_EX = \
-    '(\s*(?P<accept_link_invite>accept \s+ invitation \s+ from) ' \
-    '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
+    '(\s*(?P<accept_connection_request>accept \s+ request \s+ from) ' \
+    '\s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
 SHOW_CLAIM_REG_EX = '(\s*(?P<show_claim>show \s+ claim) ' \
                     '\s+ (?P<claim_name>[A-Za-z0-9-." ]+) ' \
                     '\s*)'
 
 LIST_CLAIMS_REG_EX = '(\s*(?P<list_claims>list \s+ claims) ' \
-                     '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
+                     '\s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
-LIST_LINKS_REG_EX = '(\s*(?P<list_links>list \s+ links))'
+LIST_LINKS_REG_EX = '(\s*(?P<list_connections>list \s+ connections))'
 
-REQUEST_CLAIM_REG_EX = '(\s*(?P<req_claim>request \s+ claim) ' \
+REQUEST_CLAIM_REG_EX = '(\s*(?P<request_claim>request \s+ claim) ' \
                        '\s+ (?P<claim_name>[A-Za-z0-9-." ]+) ' \
                        '\s*)'
 
@@ -126,8 +126,8 @@ REQUEST_CLAIM_REG_EX = '(\s*(?P<req_claim>request \s+ claim) ' \
 #                     '\s+ (?P<claim_req_name>[A-Za-z0-9-." ]+) ' \
 #                     '\s*)'
 #
-SHOW_PROOF_REQ_REG_EX = '(\s*(?P<show_proof_req>show \s+ proof \s+ request) ' \
-                        '\s+ (?P<proof_req_name>[A-Za-z0-9-." ]+) ' \
+SHOW_PROOF_REQ_REG_EX = '(\s*(?P<show_proof_request>show \s+ proof \s+ request) ' \
+                        '\s+ (?P<proof_request_name>[A-Za-z0-9-." ]+) ' \
                         '\s*)'
 
 SET_ATTRIBUTE_REG_EX = '(\s*(?P<set_attr>set) ' \
@@ -137,9 +137,9 @@ SET_ATTRIBUTE_REG_EX = '(\s*(?P<set_attr>set) ' \
 
 SEND_PROOF_REG_EX = '(\s*(?P<send_proof>send \s+ proof) ' \
                     '\s+ (?P<proof_name>[A-Za-z0-9-." ]+) ' \
-                    '\s+ to \s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
+                    '\s+ to \s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
-SEND_PROOF_REQ_REG_EX = '(\s*(?P<send_proof_req>send \s+ proof-request) ' \
+SEND_PROOF_REQ_REG_EX = '(\s*(?P<send_proof_request>send \s+ proof-request) ' \
                     '\s+ (?P<proof_request_name>[A-Za-z0-9-." ]+) ' \
                     '\s+ to (?P<target>[A-Za-z0-9-." ]+) \s*)'
 
@@ -157,8 +157,15 @@ SEND_POOL_UPG_REG_EX = "(\s*(?P<send_pool_upg>send\s+{poolUpgrade})" \
                        "(\s+ (?P<timeout_key>timeout=)\s*(?P<timeout>[0-9+]+))?)" \
                        "(\s+ (?P<force_key>force=)\s*(?P<force>True|False))?".format(poolUpgrade=SovrinTransactions.POOL_UPGRADE.name)
 
-REQ_AVAIL_CLAIMS_REG_EX = '(\s*(?P<req_avail_claims>request \s+ available \s+ claims \s+ from) ' \
-                          '\s+ (?P<link_name>[A-Za-z0-9-." ]+) \s*)'
+
+REQ_AVAIL_CLAIMS_REG_EX = '(\s*(?P<request_avail_claims>request \s+ available \s+ claims \s+ from) ' \
+                          '\s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
+
+  
+SEND_POOL_CONFIG_REG_EX = "(\s*(?P<send_pool_config>send\s+{poolConfig})" \
+                          "\s+(?P<writes_key>writes=)\s*(?P<writes>True|False))" \
+                          "(\s+(?P<force_key>force=)\s*(?P<force>True|False))?".format(poolConfig=SovrinTransactions.POOL_CONFIG.name)
+
 
 SEND_NYM_FORMATTED_REG_EX = getPipedRegEx(SEND_NYM_REG_EX)
 GET_NYM_FORMATTED_REG_EX = getPipedRegEx(GET_NYM_REG_EX)
@@ -191,5 +198,6 @@ SEND_PROOF_FORMATTED_REG_EX = getPipedRegEx(SEND_PROOF_REG_EX)
 SEND_PROOF_REQ_FORMATTED_REG_EX = getPipedRegEx(SEND_PROOF_REQ_REG_EX)
 SEND_NODE_FORMATTED_REG_EX = getPipedRegEx(SEND_NODE_REG_EX)
 SEND_POOL_UPG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_UPG_REG_EX)
+SEND_POOL_CONFIG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_CONFIG_REG_EX)
 REQ_AVAIL_CLAIMS_FORMATTED_REG_EX = getPipedRegEx(REQ_AVAIL_CLAIMS_REG_EX)
 NEW_ID_FORMATTED_REG_EX = getPipedRegEx(NEW_ID_REG_EX)

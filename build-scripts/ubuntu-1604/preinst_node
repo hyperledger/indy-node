@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if ! id -u sovrin > /dev/null 2>&1; then
+    useradd -r -m -s /bin/bash -U sovrin
+fi

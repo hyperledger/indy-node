@@ -115,7 +115,7 @@ class AgentProver:
 
             await self.prover.processClaim(schemaId, claim_attributes, claim_signature)
         else:
-            self.notifyMsgListener("No matching link found")
+            self.notifyMsgListener("No matching connection found")
 
     def sendProof(self, link: Link, proofReq: ProofRequest):
         if self.loop.is_running():
@@ -149,8 +149,8 @@ class AgentProver:
         self.notifyResponseFromMsg(li.name, body.get(f.REQ_ID.nm))
         self.notifyMsgListener(data)
 
-    async def getMatchingLinksWithReceivedClaimAsync(self, claimName=None):
-        matchingLinkAndAvailableClaim = self.wallet.getMatchingLinksWithAvailableClaim(
+    async def getMatchingConnectionsWithReceivedClaimAsync(self, claimName=None):
+        matchingLinkAndAvailableClaim = self.wallet.getMatchingConnectionsWithAvailableClaim(
             claimName)
         matchingLinkAndReceivedClaim = []
         for li, cl in matchingLinkAndAvailableClaim:
@@ -175,7 +175,7 @@ class AgentProver:
         return matchingLinkAndReceivedClaim
 
     async def getMatchingRcvdClaimsAsync(self, attributes):
-        linksAndReceivedClaim = await self.getMatchingLinksWithReceivedClaimAsync()
+        linksAndReceivedClaim = await self.getMatchingConnectionsWithReceivedClaimAsync()
         attributes = set(attributes)
 
         matchingLinkAndRcvdClaim = []
@@ -185,7 +185,7 @@ class AgentProver:
         return matchingLinkAndRcvdClaim
 
     async def getClaimsUsedForAttrs(self, attributes):
-        allMatchingClaims = await self.getMatchingLinksWithReceivedClaimAsync()
+        allMatchingClaims = await self.getMatchingConnectionsWithReceivedClaimAsync()
         alreadySatisfiedKeys = {}
         claimsToUse = []
         alreadyAddedClaims = []

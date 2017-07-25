@@ -103,7 +103,7 @@ def testAddCID(cidAdded):
 
 
 def getNoVerkeyEverAssignedMsgs(idr):
-    return ["No verkey ever assigned to the identifier {}".format(idr)]
+    return ["No verkey ever assigned to the DID {}".format(idr)]
 
 
 def testGetDIDWithoutVerkey(be, do, philCli, didAdded, trust_anchor_did_signer):
@@ -112,7 +112,7 @@ def testGetDIDWithoutVerkey(be, do, philCli, didAdded, trust_anchor_did_signer):
 
 
 def getVerkeyIsSameAsIdentifierMsgs(idr):
-    return ["Current verkey is same as identifier {}".format(idr)]
+    return ["Current verkey is same as DID {}".format(idr)]
 
 
 def testGetCIDWithoutVerkey(be, do, philCli, cidAdded, trust_anchor_cid_signer):
@@ -230,7 +230,7 @@ def testNewverkeyAddedToCID(be, do, philCli, trustAnchorSigner,
            getCurrentVerkeyIsgMsgs(trustAnchorSigner.identifier, newSigner.verkey))
 
 
-def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted,
+def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted, poolTxnData,
                                       susanCLI, connectedToTest):
     mywallet = Wallet('my wallet')
     keyseed = 'a' * 32
@@ -244,7 +244,7 @@ def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted,
 
     do('send NYM dest={}'.format(idr))
 
-    do('new key with seed 11111111111111111111111111111111')
+    do('new key with seed {}'.format(poolTxnData['seeds']['Steward1']))
 
     do('send NYM dest={}'.format(idr), within=3,
        expect=["Nym {} added".format(idr)])

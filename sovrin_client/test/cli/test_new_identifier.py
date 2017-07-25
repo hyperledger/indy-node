@@ -14,7 +14,7 @@ def checkWalletState(cli, totalIds, isAbbr, isCrypto):
                     format(activeSigner.verkey)
 
             assert cli._activeWallet.defaultId != activeSigner.verkey, \
-                "new identifier should not be equal to abbreviated verkey"
+                "new DID should not be equal to abbreviated verkey"
 
         if isCrypto:
             assert not activeSigner.verkey.startswith("~"), \
@@ -22,7 +22,7 @@ def checkWalletState(cli, totalIds, isAbbr, isCrypto):
                     format(activeSigner.verkey)
 
             assert cli._activeWallet.defaultId == activeSigner.verkey, \
-                "new identifier should be equal to verkey"
+                "new DID should be equal to verkey"
 
 
 def getTotalIds(cli):
@@ -36,21 +36,21 @@ def testNewIdWithIncorrectSeed(be, do, aliceCLI):
     totalIds = getTotalIds(aliceCLI)
     be(aliceCLI)
     # Seed not of length 32 or 64
-    do("new identifier with seed aaaaaaaaaaa",
+    do("new DID with seed aaaaaaaaaaa",
        expect=["Seed needs to be 32 or 64 characters (if hex) long"])
     checkWalletState(aliceCLI, totalIds=totalIds, isAbbr=False, isCrypto=False)
 
     # Seed of length 64 but not hex
-    do("new identifier with seed "
+    do("new DID with seed "
        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
        expect=["Seed needs to be 32 or 64 characters (if hex) long"])
     checkWalletState(aliceCLI, totalIds=totalIds, isAbbr=False,
                      isCrypto=False)
 
     # Seed of length 64 and hex
-    do("new identifier with seed "
+    do("new DID with seed "
        "2af3d062450c942be50ee766ce2571a6c75c0aca0de322293e7e9f116959c9c3",
-       expect=["Current identifier set to"])
+       expect=["Current DID set to"])
     checkWalletState(aliceCLI, totalIds=totalIds+1, isAbbr=False,
                      isCrypto=False)
 
@@ -58,15 +58,15 @@ def testNewIdWithIncorrectSeed(be, do, aliceCLI):
 def testNewIdIsNotInvalidCommand(be, do, aliceCLI):
     totalIds = getTotalIds(aliceCLI)
     be(aliceCLI)
-    do("new identifier", not_expect=["Invalid command"])
+    do("new DID", not_expect=["Invalid command"])
     checkWalletState(aliceCLI, totalIds=totalIds+1, isAbbr=False, isCrypto=False)
 
 
 def testNewId(be, do, aliceCLI):
     totalIds = getTotalIds(aliceCLI)
     be(aliceCLI)
-    do("new identifier",
-       expect=["Current identifier set to"])
+    do("new DID",
+       expect=["Current DID set to"])
     checkWalletState(aliceCLI, totalIds=totalIds+1, isAbbr=False, isCrypto=False)
 
 
