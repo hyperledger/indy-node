@@ -221,7 +221,7 @@ Target: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
 Target Verification key: < unknown, waiting for sync >
 ```
 
-Communication from the target can’t be confirmed unless we know its verification key. We know the target is a **CID** (a cryptographic identifier, that’s what the Target line just above told us) --  but since key revocations and rotations might happen at any time, we cannot assume that a CID has not updated its verification key. To know the true verification key of an identifier, we have to query Sovrin.
+Communication from the target can’t be confirmed unless we know its verification key. To know the true verification key of an identifier, we have to query Sovrin.
 
 Different use cases require different levels of assurance as to how recently we’ve queried Sovrin for any key replacements. In this case we might be comfortable if we know that the key was synchronized in the last hour. But we can see that we’ve never synchronized this connection, so we don’t know what the verification key is at all. Until Alice connects to Sovrin, she won’t be able to trust communication from Faber College.
 ```
@@ -230,15 +230,15 @@ Target endpoint: < unknown, waiting for sync >
 
 Targets can have endpoints -- locations (IRIs / URIs / URLs) on the network where others can contact them. These endpoints can be static or they can be ephemeral pseudonymous endpoints facilitated by a third party agency. To keep things simple, we’ll just use static endpoints for now.
 ```
-Invitation nonce: b1134a647eb818069c089e7694f63e6d
+Request nonce: b1134a647eb818069c089e7694f63e6d
 ```
 
 This **nonce** is just a big random number that Faber College generated to track the unique connection request. A nonce is a random arbitrary number that can only be used one time. When a connection request is accepted, the invitee digitally signs the nonce such that the inviter can match the acceptance with a prior request.
 ```
-Invitation status: not verified, target verification key unknown
+Request status: not verified, target verification key unknown
 ```
 
-Invitations are signed by the target. We have a signature, but we don’t yet know Faber College’s verification key, so the signature can’t be proved authentic. We might have a connection request from someone masquerading as Faber College. We’ll resolve that uncertainty when we sync.
+Requests are signed by the target. We have a signature, but we don’t yet know Faber College’s verification key, so the signature can’t be proved authentic. We might have a connection request from someone masquerading as Faber College. We’ll resolve that uncertainty when we sync.
 ```
 Last synced: < this connection has not yet been synchronized >
 ```
@@ -275,13 +275,13 @@ Alice tries again to accept the connection request from Faber College. This time
 ```
 ALICE@test> accept request from Faber
 Expanding Faber to "Faber College"
-Invitation not yet verified.
+Request not yet verified.
 Connection not yet synchronized.
 Attempting to sync...
 No key present in wallet for making request on Sovrin, so adding one
 Key created in wallet Default
 DID for key is E6HrMGPwGn4B3ASUu9xmWdAG1WqqpWPXtS9GU1BTXFmY
-Current identifier set to E6HrMGPwGn4B3ASUu9xmWdAG1WqqpWPXtS9GU1BTXFmY
+Current DID set to E6HrMGPwGn4B3ASUu9xmWdAG1WqqpWPXtS9GU1BTXFmY
 
 Synchronizing...
     Connection Faber College synced
@@ -298,7 +298,7 @@ Response from Faber College (24.59 ms):
     Available Claim(s): Transcript
 
 Synchronizing...
-    Confirmed identifier written to Sovrin.
+    Confirmed DID written to Sovrin.
 
 Try Next:
     show claim "Transcript"
@@ -320,8 +320,8 @@ Connection
     Target: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
     Target Verification key: <same as target>
     Target endpoint: 10.20.30.101:5555
-    Invitation nonce: b1134a647eb818069c089e7694f63e6d
-    Invitation status: Accepted
+    Request nonce: b1134a647eb818069c089e7694f63e6d
+    Request status: Accepted
     Available Claim(s): Transcript
     Last synced: 14 seconds ago
 
@@ -719,7 +719,7 @@ Response from Thrift Bank (1.59 ms):
     DID created in Sovrin.
 
 Synchronizing...
-    Confirmed identifier written to Sovrin.
+    Confirmed DID written to Sovrin.
 
 Try Next:
     show proof request "Loan-Application-Basic"
