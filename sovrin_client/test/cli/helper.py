@@ -279,12 +279,12 @@ def check_wallet(cli,
                  totalClaimsRcvd=None,
                  within=None):
     async def check():
-        actualLinks = len(cli.activeWallet._links)
+        actualLinks = len(cli.activeWallet._connections)
         assert (totalLinks is None or (totalLinks == actualLinks)),\
             'connections expected to be {} but is {}'.format(totalLinks, actualLinks)
 
         tac = 0
-        for li in cli.activeWallet._links.values():
+        for li in cli.activeWallet._connections.values():
             tac += len(li.availableClaims)
 
         assert (totalAvailableClaims is None or

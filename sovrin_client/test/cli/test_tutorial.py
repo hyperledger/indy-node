@@ -941,7 +941,7 @@ def restartCliAndTestWalletRestoration(be, do, cli, connectedToTest):
         'Active wallet set to '
     ], within=5)
     assert cli._activeWallet is not None
-    # assert len(cli._activeWallet._links) == 3
+    # assert len(cli._activeWallet._connections) == 3
     # assert len(cli._activeWallet.identifiers) == 4
 
 

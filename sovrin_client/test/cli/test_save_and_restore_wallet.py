@@ -106,7 +106,7 @@ def createNewKey(do, cli, walletName):
     createAndAssertNewCreation(do, cli, walletName)
 
 
-def createNewKeyring(name, do, expectedMsgs=None):
+def createNewWallet(name, do, expectedMsgs=None):
     createAndAssertNewKeyringCreation(do, name, expectedMsgs)
 
 
@@ -127,7 +127,7 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
 
     switchEnv("pool2", do, cliForMultiNodePools, checkIfWalletRestored=False)
     createNewKey(do, cliForMultiNodePools, walletName="Default")
-    createNewKeyring("mykr0", do)
+    createNewWallet("mykr0", do)
     createNewKey(do, cliForMultiNodePools, walletName="mykr0")
     createNewKey(do, cliForMultiNodePools, walletName="mykr0")
     useKeyring("Default", do)
@@ -135,12 +135,12 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
     sleep(10)
     switchEnv("pool1", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="Default", restoredIdentifiers=1)
-    createNewKeyring("mykr1", do)
+    createNewWallet("mykr1", do)
     createNewKey(do, cliForMultiNodePools, walletName="mykr1")
 
     switchEnv("pool2", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="Default", restoredIdentifiers=2)
-    createNewKeyring("mykr0", do,
+    createNewWallet("mykr0", do,
                      expectedMsgs = [
                          '"mykr0" conflicts with an existing wallet',
                          'Please choose a new name.'])

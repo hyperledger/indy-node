@@ -9,8 +9,8 @@
   * [What We'll Cover](#what-well-cover)
   * [Alice Gets a Transcript](#alice-gets-a-transcript)
   * [Install Sovrin](#install-sovrin)
-  * [Evaluate the Connection Request](#evaluate-the-invitation)
-  * [Accept the Connection Request](#accept-the-invitation)
+  * [Evaluate a Connection Request](#evaluate-the-invitation)
+  * [Accept a Connection Request](#accept-the-invitation)
   * [Test Secure Interaction](#test-secure-interaction)
   * [Apply for a Job](#apply-for-a-job)
   * [Apply for a Loan](#apply-for-a-loan)
@@ -97,7 +97,7 @@ Usage:
 ```
 Alice might also try the 'help' command to see a list of the other commands that are available to her.
 
-## Evaluate an Invitation
+## Evaluate a Connection Request
 
 To make this guide more convenient, the sovrin CLI package installs a sample Faber College connection request in a file at /<CLI_ROOT>/sample/faber-invitation.sovrin. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Sovrin app would be doing a lot of these steps automatically.)
 
@@ -123,7 +123,7 @@ ALICE> load sample/faber-invitation.sovrin
 New wallet Default created
 Active wallet set to "Default"
 1 connection request found for Faber College.
-Creating Link for Faber College.
+Creating Connection for Faber College.
 
 Try Next:
     show connection "Faber College"
@@ -140,17 +140,17 @@ Unlike the 'show' command for files, this one asks Sovrin to show a connection. 
 
 ```
 Expanding Faber to "Faber College"
-Link (not yet accepted)
+Connection (not yet accepted)
     Name: Faber College
-    Identifier: not yet assigned
+    DID: not yet assigned
     Trust anchor: Faber College (not yet written to Sovrin)
     Verification key: <empty>
     Signing key: <hidden>
     Target: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
     Target Verification key: <unknown, waiting for sync>
     Target endpoint: <unknown, waiting for sync>
-    Invitation nonce: b1134a647eb818069c089e7694f63e6d
-    Invitation status: not verified, target verkey unknown
+    Request nonce: b1134a647eb818069c089e7694f63e6d
+    Request status: not verified, target verkey unknown
     Last synced: <this connection has not yet been synchronized>
 
 Try Next:
@@ -167,10 +167,11 @@ Name: Faber College
 This is a friendly name for the connection that Alice has been invited to accept. The name is stored locally and not shared. Alice can always rename a connection; its initial value is just provided by Faber for convenience.
 
 ```
-Identifier: not yet assigned
+DID: not yet assigned
 ```
 
-**Identifier** is a unique value that gets generated when user tries to accept the connection request, and that identifier will be sent to Faber College, and used by Faber College to reference Alice in secure interactions. Each connection request on Sovrin establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different identifiers. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within Sovrin.) Alice won’t use this identifier with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
+**DID** (**distributed identifier**) is an opaque, unique sequences of bits, like UUIDs or GUIDs that gets generated when user tries to accept the connection request, and that identifier will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
+ Each connection request on Sovrin establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different identifiers. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within Sovrin.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
 
 ```
 Trust anchor: Faber College(not yet written to Sovrin)
@@ -190,8 +191,7 @@ Alice’s **verification key** allows Sovrin and Faber College to trust, in cryp
 
 The verification key is a 32 byte Ed25519 verification key. Ed25519 is a particular [elliptic curve](https://en.wikipedia.org/wiki/Elliptic_curve_cryptography), and is the default signature scheme for Sovrin.
 
-The verification key has a subtle relationship with the Identifier value a couple lines above it in the CLI output.
-Identifiers in Sovrin are called **DIDs** (**distributed identifiers**). These are opaque, unique sequences of bits, like UUIDs or GUIDs.
+The verification key has a subtle relationship with the DID value a couple lines above it in the CLI output.
 
 There are three options possible for verification key associated with a DID:
 - **Empty.** There is no verkey (verification key) associated with a DID, and the DID is a **NCID** (non-cryptographic identifier).
@@ -244,16 +244,16 @@ Last synced: < this connection has not yet been synchronized >
 ```
 A connection stores when it was last synchronized with the Sovrin network, so we can tell how stale some of the information might be. Ultimately, values will be proved current when a transaction is committed to the ledger, so staleness isn’t dangerous -- but it makes Sovrin more efficient when identity owners work with up-to-date data.
 
-## Accept the Invitation
+## Accept a Connection Request
 
 Alice _attempts_ to accept the connection request from Faber College.
 
 ```
 ALICE> accept request from Faber
 Expanding Faber to "Faber College"
-Invitation not yet verified.
-Link not yet synchronized.
-Invitation acceptance aborted.
+Request not yet verified.
+Connection not yet synchronized.
+Request acceptance aborted.
 Cannot sync because not connected. Please connect first.
 
 Usage:
@@ -276,15 +276,15 @@ Alice tries again to accept the connection request from Faber College. This time
 ALICE@test> accept request from Faber
 Expanding Faber to "Faber College"
 Invitation not yet verified.
-Link not yet synchronized.
+Connection not yet synchronized.
 Attempting to sync...
 No key present in wallet for making request on Sovrin, so adding one
 Key created in wallet Default
-Identifier for key is E6HrMGPwGn4B3ASUu9xmWdAG1WqqpWPXtS9GU1BTXFmY
+DID for key is E6HrMGPwGn4B3ASUu9xmWdAG1WqqpWPXtS9GU1BTXFmY
 Current identifier set to E6HrMGPwGn4B3ASUu9xmWdAG1WqqpWPXtS9GU1BTXFmY
 
 Synchronizing...
-    Link Faber College synced
+    Connection Faber College synced
 Accepting request with nonce b1134a647eb818069c089e7694f63e6d from id Qgjf1bJQumWtsPAswytB5V
 SGdY53 looking for Faber College at 10.20.30.101:5555
 SGdY53 pinged Faber College at HA(host='0.0.0.0', port=6001)
@@ -294,7 +294,7 @@ Signature accepted.
 
 Response from Faber College (24.59 ms):
     Trust established.
-    Identifier created in Sovrin.
+    DID created in Sovrin.
     Available Claim(s): Transcript
 
 Synchronizing...
@@ -311,9 +311,9 @@ Once the connection is accepted and synchronized, Alice inspects it again.
 ```
 ALICE@test> show connection Faber
 Expanding Faber to "Faber College"
-Link
+Connection
     Name: Faber College
-    Identifier: LZ46KqKd1VrNFjXuVFUSY9
+    DID: LZ46KqKd1VrNFjXuVFUSY9
     Trust anchor: Faber College (confirmed)
     Verification key: ~CoEeFmQtaCRMrTy5SCfLLx
     Signing key: <hidden>
@@ -359,7 +359,7 @@ Alice receives a successful response from Faber College. Here’s what happens b
 
 5. Alice verifies that the response contained the same random challenge she sent.
 
-6. Alice uses the verification key in the Faber College Link to verify the Faber College digital signature.
+6. Alice uses the verification key in the Faber College Connection to verify the Faber College digital signature.
 
 She can trust the response from Faber College because (1) she connects to the current endpoint, (2) no replay - attack is possible, due to her random challenge, (3) she knows the verification key used to verify Faber College’s digital signature is the correct one because she just confirmed it on Sovrin.
 
@@ -466,17 +466,17 @@ Try Next:
 
 ALICE@test> show connection Acme
 Expanding Acme to "Acme Corp"
-Link (not yet accepted)
+Connection (not yet accepted)
     Name: Acme Corp
-    Identifier: not yet assigned
+    DID: not yet assigned
     Trust anchor: Acme Corp (not yet written to Sovrin)
     Verification key: <empty>
     Signing key: <hidden>
     Target: CzkavE58zgX7rUMrzSinLr
     Target Verification key: <unknown, waiting for sync>
     Target endpoint: 127.0.0.1:1213
-    Invitation nonce: 57fbf9dc8c8e6acde33de98c6d747b28c
-    Invitation status: not verified, target verkey unknown
+    Request nonce: 57fbf9dc8c8e6acde33de98c6d747b28c
+    Request status: not verified, target verkey unknown
     Proof Request(s): Job-Application
     Last synced: <this connection has not yet been synchronized>
 
@@ -487,12 +487,12 @@ Try Next:
 
 ALICE@test> accept request from Acme
 Expanding Acme to "Acme Corp"
-Invitation not yet verified.
-Link not yet synchronized.
+Request not yet verified.
+Connection not yet synchronized.
 Attempting to sync...
 
 Synchronizing...
-    Link Acme Corp synced
+    Connection Acme Corp synced
 Accepting request with nonce 57fbf9dc8c8e6acde33de98c6d747b28c from id 4rAx2tWErJXEfu7usUNQes
 SGdY53 looking for Acme Corp at 10.20.30.102:5555
 SGdY53 pinged Acme Corp at HA(host='0.0.0.0', port=6001)
@@ -502,7 +502,7 @@ Signature accepted.
 
 Response from Acme Corp (14.81 ms):
     Trust established.
-    Identifier created in Sovrin.
+    DID created in Sovrin.
 
 Synchronizing...
     Confirmed identifier written to Sovrin.
@@ -609,17 +609,17 @@ Here, we’ll assume the application is accepted, and Alice ends up getting the 
 ```
 ALICE@test> show connection Acme
 Expanding Acme to "Acme Corp"
-Link
+Connection
     Name: Acme Corp
-    Identifier: QANW5P3tjRX8Q8w8iyN9A5
+    DID: QANW5P3tjRX8Q8w8iyN9A5
     Trust anchor: Acme Corp (confirmed)
     Verification key: ~KdJUJwAq6Wj8To8pJgGHqE
     Signing key: <hidden>
     Target: CzkavE58zgX7rUMrzSinLr
     Target Verification key: <same as target>
     Target endpoint: 10.20.30.102:6666
-    Invitation nonce: 57fbf9dc8c8e6acde33de98c6d747b28c
-    Invitation status: Accepted
+    Request nonce: 57fbf9dc8c8e6acde33de98c6d747b28c
+    Request status: Accepted
     Proof Request(s): Job-Application
     Available Claim(s): Job-Certificate
     Last synced: 11 minutes ago
@@ -689,7 +689,7 @@ Alice now loads Thrift Bank's loan application connection:
 ```
 ALICE@test> load sample/thrift-loan-application.sovrin
 1 connection request found for Thrift Bank.
-Creating Link for Thrift Bank.
+Creating Connection for Thrift Bank.
 
 Try Next:
     show connection "Thrift Bank"
@@ -701,12 +701,12 @@ Alice accepts the loan application connection:
 ```
 ALICE@test> accept request from Thrift
 Expanding thrift to "Thrift Bank"
-Invitation not yet verified.
-Link not yet synchronized.
+Request not yet verified.
+Connection not yet synchronized.
 Attempting to sync...
 
 Synchronizing...
-    Link Thrift Bank synced
+    Connection Thrift Bank synced
 Accepting request with nonce 77fbf9dc8c8e6acde33de98c6d747b28c from id NyvGP1B1RQ14wyUHAbVdNh
 nLkB5S looking for Thrift Bank at 10.20.30.103:7777
 nLkB5S pinged Thrift Bank at HA(host='0.0.0.0', port=6002)
@@ -716,7 +716,7 @@ Signature accepted.
 
 Response from Thrift Bank (1.59 ms):
     Trust established.
-    Identifier created in Sovrin.
+    DID created in Sovrin.
 
 Synchronizing...
     Confirmed identifier written to Sovrin.
