@@ -77,12 +77,12 @@ The CLI could play the role of multiple **identity owners** (a person like Alice
 sovrin> prompt ALICE
 ALICE>
 ```
-Next, we will create a new empty keyring for Alice. Creating a new empty keyring basically resets the agent to a clean slate. Because this is the first time you're setting this up, this step is not actually necessary. If you're wanting to do interact with other identifiers held by the agent then this does become necessary.
+Next, we will create a new empty wallet for Alice. Creating a new empty wallet basically resets the agent to a clean slate. Because this is the first time you're setting this up, this step is not actually necessary. If you're wanting to do interact with other identifiers held by the agent then this does become necessary.
 
-It's a good habit to get into. Go ahead and create the new keyring now:
+It's a good habit to get into. Go ahead and create the new wallet now:
 
 ```
-new keyring Alice
+new wallet Alice
 ```
 
 
@@ -120,8 +120,8 @@ Alice sees a bunch of data that looks interesting but mysterious. She wants Sovr
 
 ```
 ALICE> load sample/faber-invitation.sovrin
-New keyring Default created
-Active keyring set to "Default"
+New wallet Default created
+Active wallet set to "Default"
 1 connection request found for Faber College.
 Creating Link for Faber College.
 
@@ -278,8 +278,8 @@ Expanding Faber to "Faber College"
 Invitation not yet verified.
 Link not yet synchronized.
 Attempting to sync...
-No key present in keyring for making request on Sovrin, so adding one
-Key created in keyring Default
+No key present in wallet for making request on Sovrin, so adding one
+Key created in wallet Default
 Identifier for key is E6HrMGPwGn4B3ASUu9xmWdAG1WqqpWPXtS9GU1BTXFmY
 Current identifier set to E6HrMGPwGn4B3ASUu9xmWdAG1WqqpWPXtS9GU1BTXFmY
 

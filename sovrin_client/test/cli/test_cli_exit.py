@@ -20,7 +20,7 @@ def testCliExitCommand(be, do, poolNodesStarted, aliceCLI, CliBuilder,
     def checkWalletRestore():
         # open cli again
         aliceCliNew = yield from CliBuilder(name)
-        # check message of saved keyring alice restored
+        # check message of saved wallet alice restored
         be(aliceCliNew)
         do('connect test', within=within, expect=savedKeyringRestored,
            mapper=aliceKeyringMap)
@@ -32,5 +32,5 @@ def testCliExitCommand(be, do, poolNodesStarted, aliceCLI, CliBuilder,
 @pytest.fixture(scope='module')
 def aliceKeyringMap():
     return {
-        'keyring-name': 'Alice'
+        'wallet-name': 'Alice'
     }

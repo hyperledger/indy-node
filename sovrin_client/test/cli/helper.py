@@ -364,7 +364,7 @@ def getAgentCliHelpString():
        show connection - Shows connection info in case of one matching connection, otherwise shows all the matching connection names
        ping - Pings given remote's endpoint
        list connections - List available connections in active wallet
-       send proofreq - Send a proof request
+       send proof request - Send a proof request
        license - Shows the license
        exit - Exit the command-line interface ('quit' also works)"""
 

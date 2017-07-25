@@ -167,7 +167,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     # Defining inner method for closures
     def executeGstFlow(name, userCLI, userMap, be, connectedToTest, do, fMap,
                        aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
-                       reqClaimOut1, syncLinkOutWithEndpoint,
+                       reqClaimOut1, syncConnectionOutWithEndpoint,
                        syncedInviteAcceptedOutWithoutClaims, tMap,
                        transcriptClaimMap):
 
@@ -184,7 +184,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
         do('connect test', within=3, expect=connectedToTest)
         # Accept faber
         do('load sample/faber-invitation.sovrin')
-        syncInvite(be, do, userCLI, syncLinkOutWithEndpoint, fMap)
+        syncInvite(be, do, userCLI, syncConnectionOutWithEndpoint, fMap)
         do('show connection faber')
         acceptInvitation(be, do, userCLI, fMap,
                          syncedInviteAcceptedOutWithoutClaims)
@@ -207,7 +207,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
 
         # Accept acme
         do('load sample/acme-job-application.sovrin')
-        syncInvite(be, do, userCLI, syncLinkOutWithEndpoint, aMap)
+        syncInvite(be, do, userCLI, syncConnectionOutWithEndpoint, aMap)
         acceptInvitation(be, do, userCLI, aMap,
                          syncedInviteAcceptedOutWithoutClaims)
         # Send claim
@@ -266,6 +266,6 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     # with different data or it is the same person but from a different state
     # executeGstFlow("Susan", susanCLI, susanMap, be, connectedToTest, do, fMap,
     #                aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
-    #                reqClaimOut1, syncLinkOutWithEndpoint,
+    #                reqClaimOut1, syncConnectionOutWithEndpoint,
     #                syncedInviteAcceptedOutWithoutClaims, tMap,
     #                transcriptClaimMap)

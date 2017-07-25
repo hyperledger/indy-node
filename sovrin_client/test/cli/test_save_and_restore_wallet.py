@@ -25,12 +25,12 @@ def testPersistentWalletName():
     assert "test.wallet" == walletFileName
     assert "test" == Cli.getWalletKeyName(walletFileName)
 
-    # New default wallet (keyring) gets created
+    # New default wallet gets created
     walletFileName = normalizedWalletFileName("Default")
     assert "default.wallet" == walletFileName
     assert "default" == Cli.getWalletKeyName(walletFileName)
 
-    # User creates new wallet (keyring)
+    # User creates new wallet
     walletFileName = normalizedWalletFileName("MyVault")
     assert "myvault.wallet" == walletFileName
     assert "myvault" == Cli.getWalletKeyName(walletFileName)
@@ -102,8 +102,8 @@ def restartCliWithCorruptedWalletFile(cli, be, do, filePath):
     ], within=5)
 
 
-def createNewKey(do, cli, keyringName):
-    createAndAssertNewCreation(do, cli, keyringName)
+def createNewKey(do, cli, walletName):
+    createAndAssertNewCreation(do, cli, walletName)
 
 
 def createNewKeyring(name, do, expectedMsgs=None):
@@ -123,20 +123,20 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
 
     connectTo("pool1", do, cliForMultiNodePools,
               activeWalletPresents=True, identifiers=0, firstTimeConnect=True)
-    createNewKey(do, cliForMultiNodePools, keyringName="Default")
+    createNewKey(do, cliForMultiNodePools, walletName="Default")
 
     switchEnv("pool2", do, cliForMultiNodePools, checkIfWalletRestored=False)
-    createNewKey(do, cliForMultiNodePools, keyringName="Default")
+    createNewKey(do, cliForMultiNodePools, walletName="Default")
     createNewKeyring("mykr0", do)
-    createNewKey(do, cliForMultiNodePools, keyringName="mykr0")
-    createNewKey(do, cliForMultiNodePools, keyringName="mykr0")
+    createNewKey(do, cliForMultiNodePools, walletName="mykr0")
+    createNewKey(do, cliForMultiNodePools, walletName="mykr0")
     useKeyring("Default", do)
-    createNewKey(do, cliForMultiNodePools, keyringName="Default")
+    createNewKey(do, cliForMultiNodePools, walletName="Default")
     sleep(10)
     switchEnv("pool1", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="Default", restoredIdentifiers=1)
     createNewKeyring("mykr1", do)
-    createNewKey(do, cliForMultiNodePools, keyringName="mykr1")
+    createNewKey(do, cliForMultiNodePools, walletName="mykr1")
 
     switchEnv("pool2", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="Default", restoredIdentifiers=2)
