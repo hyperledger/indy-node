@@ -185,7 +185,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
         # Accept faber
         do('load sample/faber-invitation.sovrin')
         syncInvite(be, do, userCLI, syncLinkOutWithEndpoint, fMap)
-        do('show link faber')
+        do('show connection faber')
         acceptInvitation(be, do, userCLI, fMap,
                          syncedInviteAcceptedOutWithoutClaims)
         # Request claim

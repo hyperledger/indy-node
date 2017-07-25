@@ -479,7 +479,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                         "    Available Claim(s): {}\n".format(claimNames))
 
             else:
-                self.notifyMsgListener("No matching link found")
+                self.notifyMsgListener("No matching connection found")
 
     @staticmethod
     def _getNewAvailableClaims(li, rcvdAvailableClaims) -> List[AvailableClaim]:
@@ -536,14 +536,14 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                         EVENT_NOT_CONNECTED_TO_ANY_ENV,
                         msg="Cannot check if identifier is written to Sovrin.")
         else:
-            self.notifyMsgListener("No matching link found")
+            self.notifyMsgListener("No matching connection found")
 
     def getVerkeyForLink(self, link):
         # TODO: Get latest verkey for this link's remote identifier from Sovrin
         if link.remoteVerkey:
             return link.remoteVerkey
         else:
-            raise VerkeyNotFound("verkey not set in link")
+            raise VerkeyNotFound("verkey not set in connection")
 
     def getLinkForMsg(self, msg):
         nonce = msg.get(NONCE)
@@ -639,7 +639,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         # exception handling, separation of concerns, etc.
         if not link:
             return
-        logger.debug("proceeding with link: {}".format(link.name))
+        logger.debug("proceeding with connection: {}".format(link.name))
         identifier = body.get(f.IDENTIFIER.nm)
         verkey = body.get(VERKEY)
         idy = Identity(identifier, verkey=verkey)
@@ -871,7 +871,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         elif isinstance(link, Link):
             pass
         else:
-            raise TypeError("Type of link must be either string or Link but "
+            raise TypeError("Type of connection must be either string or Link but "
                             "provided {}".format(type(link)))
         # TODO should move to wallet in a method like accept(link)
         if not link.localIdentifier:

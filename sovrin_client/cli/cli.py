@@ -41,8 +41,7 @@ from sovrin_client.cli.command import acceptConnectionCmd, connectToCmd, \
     sendGetAttrCmd, sendGetSchemaCmd, sendGetClaimDefCmd, \
     sendNymCmd, sendPoolUpgCmd, sendSchemaCmd, setAttrCmd, showClaimCmd, \
     listClaimsCmd, showFileCmd, showConnectionCmd, syncConnectionCmd, addGenesisTxnCmd, \
-    sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listConnectionsCmd
-
+    sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listConnectionsCmd, sendPoolConfigCmd
 
 from sovrin_client.cli.helper import getNewClientGrams, \
     USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT

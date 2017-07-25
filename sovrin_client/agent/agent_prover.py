@@ -115,7 +115,7 @@ class AgentProver:
 
             await self.prover.processClaim(schemaId, claim_attributes, claim_signature)
         else:
-            self.notifyMsgListener("No matching link found")
+            self.notifyMsgListener("No matching connection found")
 
     def sendProof(self, link: Link, proofReq: ProofRequest):
         if self.loop.is_running():

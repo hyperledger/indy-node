@@ -409,7 +409,7 @@ def agentInvitationLinkSynced(agent,
         done = True
 
     def checkDone():
-        assert done, 'never got reply for agent link sync'
+        assert done, 'never got reply for agent connection sync'
 
     agent.sync(linkName, cb)
     looper.run(eventually(checkDone))
