@@ -130,7 +130,7 @@ class SovrinCli(PlenumCli):
             'send_nym',
             'send_get_nym',
             'send_attrib',
-            'send_get_attr'
+            'send_get_attr',
             'send_schema',
             'send_get_schema',
             'send_claim_def',
@@ -172,7 +172,7 @@ class SovrinCli(PlenumCli):
         completers["send_attrib"] = PhraseWordCompleter(sendAttribCmd.id)
         completers["send_get_attr"] = PhraseWordCompleter(sendGetAttrCmd.id)
         completers["send_schema"] = PhraseWordCompleter(sendSchemaCmd.id)
-        completers["send__get_schema"] = PhraseWordCompleter(sendGetSchemaCmd.id)
+        completers["send_get_schema"] = PhraseWordCompleter(sendGetSchemaCmd.id)
         completers["send_claim_def"] = PhraseWordCompleter(sendClaimDefCmd.id)
         completers["send_get_claim_def"] = PhraseWordCompleter(sendGetClaimDefCmd.id)
         completers["send_node"] = PhraseWordCompleter(sendNodeCmd.id)
