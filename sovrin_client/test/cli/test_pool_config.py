@@ -41,7 +41,7 @@ def testPoolUpgradeOnReadonlyPool(poolNodesStarted, be, do, trusteeCli, validUpg
     be(trusteeCli)
     do('send POOL_CONFIG writes=False force=False', expect="Pool config successful", within=10)
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} action={action} schedule={schedule} timeout={timeout}',
-       within=10, expect=['Sending pool upgrade', 'Pool upgrade successful'], mapper=validUpgrade)
+       within=10, expect=['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'], mapper=validUpgrade)
 
     for node in poolNodesStarted.nodes.values():
         assert len(node.upgrader.aqStash) > 0
