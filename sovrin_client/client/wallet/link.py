@@ -7,7 +7,7 @@ from plenum.common.util import prettyDateDifference, friendlyToRaw
 from plenum.common.verifier import DidVerifier
 from anoncreds.protocol.types import AvailableClaim
 
-from sovrin_common.exceptions import InvalidLinkException, \
+from sovrin_common.exceptions import InvalidConnectionException, \
     RemoteEndpointNotFound, NotFound
 
 
@@ -32,7 +32,7 @@ class constant:
     LINK_LAST_SEQ_NO = "Last Sync no"
     LINK_STATUS_ACCEPTED = "Accepted"
 
-    LINK_NOT_SYNCHRONIZED = "<this link has not yet been synchronized>"
+    LINK_NOT_SYNCHRONIZED = "<this connection has not yet been synchronized>"
     UNKNOWN_WAITING_FOR_SYNC = "<unknown, waiting for sync>"
 
     LINK_ITEM_PREFIX = '\n    '
@@ -75,7 +75,7 @@ class Link:
 
         self.remoteVerkey = remote_verkey
         self.linkStatus = None
-        self.linkLastSynced = None
+        self.connectionLastSynced = None
         self.linkLastSyncNo = None
 
     def __repr__(self):
@@ -112,7 +112,7 @@ class Link:
         if isinstance(remoteEndPoint, tuple):
             remoteEndPoint = "{}:{}".format(*remoteEndPoint)
         linkStatus = 'not verified, remote verkey unknown'
-        linkLastSynced = prettyDateDifference(self.linkLastSynced) or \
+        linkLastSynced = prettyDateDifference(self.connectionLastSynced) or \
                          constant.LINK_NOT_SYNCHRONIZED
 
         if linkLastSynced != constant.LINK_NOT_SYNCHRONIZED and \
@@ -130,7 +130,7 @@ class Link:
         # TODO: This should be set as verkey in case of DID but need it from
         # wallet
         verKey = self.localVerkey if self.localVerkey else constant.SIGNER_VER_KEY_EMPTY
-        fixedLinkHeading = "Link"
+        fixedLinkHeading = "Connection"
         if not self.isAccepted:
             fixedLinkHeading += " (not yet accepted)"
 
@@ -139,7 +139,7 @@ class Link:
         fixedLinkItems = \
             '\n' \
             'Name: ' + self.name + '\n' \
-            'Identifier: ' + localIdr + '\n' \
+            'DID: ' + localIdr + '\n' \
             'Trust anchor: ' + trustAnchor + ' ' + trustAnchorStatus + '\n' \
             'Verification key: ' + verKey + '\n' \
             'Signing key: <hidden>' '\n' \
@@ -147,8 +147,8 @@ class Link:
                           constant.UNKNOWN_WAITING_FOR_SYNC) + '\n' \
             'Remote Verification key: ' + remoteVerKey + '\n' \
             'Remote endpoint: ' + remoteEndPoint + '\n' \
-            'Invitation nonce: ' + self.invitationNonce + '\n' \
-            'Invitation status: ' + linkStatus + '\n'
+            'Request nonce: ' + self.invitationNonce + '\n' \
+            'Request status: ' + linkStatus + '\n'
 
         optionalLinkItems = ""
         if len(self.proofRequests) > 0:
@@ -180,15 +180,15 @@ class Link:
 
         def checkIfFieldPresent(msg, searchInName, fieldName):
             if not msg.get(fieldName):
-                raise InvalidLinkException(
+                raise InvalidConnectionException(
                     "Field not found in {}: {}".format(searchInName, fieldName))
 
         checkIfFieldPresent(invitationData, 'given input', 'sig')
-        checkIfFieldPresent(invitationData, 'given input', 'link-invitation')
-        linkInvitation = invitationData.get("link-invitation")
+        checkIfFieldPresent(invitationData, 'given input', 'connection-request')
+        linkInvitation = invitationData.get("connection-request")
         linkInvitationReqFields = [f.IDENTIFIER.nm, NAME, NONCE]
         for fn in linkInvitationReqFields:
-            checkIfFieldPresent(linkInvitation, 'link-invitation', fn)
+            checkIfFieldPresent(linkInvitation, 'connection-request', fn)
 
     def getRemoteEndpoint(self, required=False):
         if not self.remoteEndPoint and required:

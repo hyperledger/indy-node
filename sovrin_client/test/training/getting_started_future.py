@@ -164,7 +164,7 @@ def _wait_for(looper, func, *args, retry_wait=.1, timeout=20):
 
 FABER_INVITE = """
 {
-  "link-invitation": {
+  "connection-request": {
     "name": "Faber College",
     "identifier": "%s",
     "verkey": "%s",
@@ -176,7 +176,7 @@ FABER_INVITE = """
 
 THRIFT_INVITE = """
 {
-  "link-invitation": {
+  "connection-request": {
     "name": "Thrift Bank",
     "identifier": "%s",
     "verkey": "%s",
@@ -215,7 +215,7 @@ THRIFT_INVITE = """
 
 ACME_INVITE = """
 {
-    "link-invitation": {
+    "connection-request": {
         "name": "Acme Corp",
         "identifier": "%s",
         "verkey": "%s",
