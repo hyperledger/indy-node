@@ -74,9 +74,9 @@ class Link:
         self.availableClaims = []  # type: List[AvailableClaim]
 
         self.remoteVerkey = remote_verkey
-        self.linkStatus = None
-        self.connectionLastSynced = None
-        self.linkLastSyncNo = None
+        self.connection_status = None
+        self.connection_last_synced = None
+        self.connection_last_sync_no = None
 
     def __repr__(self):
         return self.key
@@ -92,7 +92,7 @@ class Link:
 
     @property
     def isAccepted(self):
-        return self.linkStatus == constant.LINK_STATUS_ACCEPTED
+        return self.connection_status == constant.LINK_STATUS_ACCEPTED
 
     def __str__(self):
         localIdr = self.localIdentifier if self.localIdentifier \
@@ -111,11 +111,11 @@ class Link:
                          constant.UNKNOWN_WAITING_FOR_SYNC
         if isinstance(remoteEndPoint, tuple):
             remoteEndPoint = "{}:{}".format(*remoteEndPoint)
-        linkStatus = 'not verified, remote verkey unknown'
-        linkLastSynced = prettyDateDifference(self.connectionLastSynced) or \
+        connectionStatus = 'not verified, remote verkey unknown'
+        connection_last_synced = prettyDateDifference(self.connection_last_synced) or \
                          constant.LINK_NOT_SYNCHRONIZED
 
-        if linkLastSynced != constant.LINK_NOT_SYNCHRONIZED and \
+        if connection_last_synced != constant.LINK_NOT_SYNCHRONIZED and \
                         remoteEndPoint == constant.UNKNOWN_WAITING_FOR_SYNC:
             remoteEndPoint = constant.NOT_AVAILABLE
 
@@ -123,7 +123,7 @@ class Link:
             trustAnchorStatus = '(confirmed)'
             if self.remoteVerkey is None:
                 remoteVerKey = constant.REMOTE_VER_KEY_SAME_AS_ID
-            linkStatus = self.linkStatus
+            connectionStatus = self.connection_status
 
         # TODO: The verkey would be same as the local identifier until we
         # support key rotation
@@ -148,7 +148,7 @@ class Link:
             'Remote Verification key: ' + remoteVerKey + '\n' \
             'Remote endpoint: ' + remoteEndPoint + '\n' \
             'Request nonce: ' + self.invitationNonce + '\n' \
-            'Request status: ' + linkStatus + '\n'
+            'Request status: ' + connectionStatus + '\n'
 
         optionalLinkItems = ""
         if len(self.proofRequests) > 0:
@@ -159,15 +159,15 @@ class Link:
         if self.availableClaims:
             optionalLinkItems += self.avail_claims_str()
 
-        if self.linkLastSyncNo:
-            optionalLinkItems += 'Last sync seq no: ' + self.linkLastSyncNo \
+        if self.connection_last_sync_no:
+            optionalLinkItems += 'Last sync seq no: ' + self.connection_last_sync_no \
                                  + '\n'
 
-        fixedEndingLines = 'Last synced: ' + linkLastSynced
+        fixedEndingLines = 'Last synced: ' + connection_last_synced
 
-        linkItems = fixedLinkItems + optionalLinkItems + fixedEndingLines
+        connection_items = fixedLinkItems + optionalLinkItems + fixedEndingLines
         indentedLinkItems = constant.LINK_ITEM_PREFIX.join(
-            linkItems.splitlines())
+            connection_items.splitlines())
         return fixedLinkHeading + indentedLinkItems
 
     def avail_claims_str(self):
@@ -185,10 +185,10 @@ class Link:
 
         checkIfFieldPresent(invitationData, 'given input', 'sig')
         checkIfFieldPresent(invitationData, 'given input', 'connection-request')
-        linkInvitation = invitationData.get("connection-request")
-        linkInvitationReqFields = [f.IDENTIFIER.nm, NAME, NONCE]
-        for fn in linkInvitationReqFields:
-            checkIfFieldPresent(linkInvitation, 'connection-request', fn)
+        connection_request = invitationData.get("connection-request")
+        connection_request_req_fields = [f.IDENTIFIER.nm, NAME, NONCE]
+        for fn in connection_request_req_fields:
+            checkIfFieldPresent(connection_request, 'connection-request', fn)
 
     def getRemoteEndpoint(self, required=False):
         if not self.remoteEndPoint and required:

@@ -519,7 +519,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             else:
                 self.notifyMsgListener("    DID created in Sovrin.")
 
-                li.linkStatus = constant.LINK_STATUS_ACCEPTED
+                li.connection_status = constant.LINK_STATUS_ACCEPTED
                 rcvdAvailableClaims = body[DATA][CLAIMS_LIST_FIELD]
                 newAvailableClaims = self._getNewAvailableClaims(
                     li, rcvdAvailableClaims)
@@ -948,7 +948,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                     link.remotePubkey = friendlyVerkeyToPubkey(
                         link.full_remote_verkey) if link.full_remote_verkey else None
 
-            link.connectionLastSynced = datetime.now()
+            link.connection_last_synced = datetime.now()
             self.notifyMsgListener("    Connection {} synced".format(link.name))
 
     def _pingToEndpoint(self, name, endpoint):

@@ -123,8 +123,8 @@ def susanMap():
 def faberMap(agentIpAddress, faberAgentPort):
     ha = "{}:{}".format(agentIpAddress, faberAgentPort)
     return {'inviter': 'Faber College',
-            'invite': "sample/faber-invitation.sovrin",
-            'invite-not-exists': "sample/faber-invitation.sovrin.not.exists",
+            'invite': "sample/faber-request.sovrin",
+            'invite-not-exists': "sample/faber-request.sovrin.not.exists",
             'inviter-not-exists': "non-existing-inviter",
             'seed': FABER_SEED.decode(),
             "remote": FABER_ID,
@@ -809,7 +809,7 @@ def showAcceptedConnectionOut():
     return [
             "Connection",
             "Name: {inviter}",
-            "DID: {identifier}",
+            "DID: {DID}",
             "Verification key: {verkey}",
             "Remote: {remote}",
             "Remote Verification key: {remote-verkey}",

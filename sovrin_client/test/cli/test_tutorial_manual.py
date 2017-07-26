@@ -183,7 +183,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
         setPromptAndKeyring(do, name, newKeyringOut, userMap)
         do('connect test', within=3, expect=connectedToTest)
         # Accept faber
-        do('load sample/faber-invitation.sovrin')
+        do('load sample/faber-request.sovrin')
         syncInvite(be, do, userCLI, syncConnectionOutWithEndpoint, fMap)
         do('show connection faber')
         acceptInvitation(be, do, userCLI, fMap,
