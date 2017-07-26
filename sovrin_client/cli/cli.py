@@ -36,7 +36,7 @@ from sovrin_client.agent.constants import EVENT_NOTIFY_MSG, EVENT_POST_ACCEPT_IN
     EVENT_NOT_CONNECTED_TO_ANY_ENV
 from sovrin_client.agent.msg_constants import ERR_NO_PROOF_REQUEST_SCHEMA_FOUND
 from sovrin_client.cli.command import acceptConnectionCmd, connectToCmd, \
-    disconnectCmd, loadFileCmd, newIdentifierCmd, pingTargetCmd, reqClaimCmd, \
+    disconnectCmd, loadFileCmd, newDIDCmd, pingTargetCmd, reqClaimCmd, \
     sendAttribCmd, sendProofCmd, sendGetNymCmd, sendClaimDefCmd, sendNodeCmd, \
     sendGetAttrCmd, sendGetSchemaCmd, sendGetClaimDefCmd, \
     sendNymCmd, sendPoolUpgCmd, sendSchemaCmd, setAttrCmd, showClaimCmd, \
@@ -192,7 +192,7 @@ class SovrinCli(PlenumCli):
         completers["request_claim"] = PhraseWordCompleter(reqClaimCmd.id)
         completers["accept_connection_request"] = PhraseWordCompleter(acceptConnectionCmd.id)
         completers["set_attr"] = WordCompleter([setAttrCmd.id])
-        completers["new_id"] = PhraseWordCompleter(newIdentifierCmd.id)
+        completers["new_id"] = PhraseWordCompleter(newDIDCmd.id)
         completers["list_claims"] = PhraseWordCompleter(listClaimsCmd.id)
         completers["list_connections"] = PhraseWordCompleter(listConnectionsCmd.id)
         completers["show_proof_request"] = PhraseWordCompleter(
@@ -241,7 +241,7 @@ class SovrinCli(PlenumCli):
                             self._setAttr,
                             self._sendProofRequest,
                             self._sendProof,
-                            self._newIdentifier,
+                            self._newDID,
                             self._reqAvailClaims
                             ])
         return actions
@@ -655,12 +655,12 @@ class SovrinCli(PlenumCli):
                                     req.key, self.activeClient, getClaimDef)
 
     def _sendNodeTxn(self, nym, data):
-        node = Node(nym, data, self.activeIdentifier)
+        node = Node(nym, data, self.activeDID)
         self.activeWallet.addNode(node)
         reqs = self.activeWallet.preparePending()
         req, = self.activeClient.submitReqs(*reqs)
         self.print("Sending node request for node DID {} by {} "
-                   "(request id: {})".format(nym, self.activeIdentifier,
+                   "(request id: {})".format(nym, self.activeDID,
                                              req.reqId))
 
         def out(reply, error, *args, **kwargs):
@@ -676,7 +676,7 @@ class SovrinCli(PlenumCli):
     def _sendPoolUpgTxn(self, name, version, action, sha256, schedule=None,
                         justification=None, timeout=None, force=False):
         upgrade = Upgrade(name, version, action, sha256, schedule=schedule,
-                          trustee=self.activeIdentifier, timeout=timeout,
+                          trustee=self.activeDID, timeout=timeout,
                           justification=justification, force=force)
         self.activeWallet.doPoolUpgrade(upgrade)
         reqs = self.activeWallet.preparePending()
@@ -696,7 +696,7 @@ class SovrinCli(PlenumCli):
                                     req.key, self.activeClient, out)
 
     def _sendPoolConfigTxn(self, writes, force=False):
-        poolConfig = PoolConfig(trustee=self.activeIdentifier, writes=writes, force=force)
+        poolConfig = PoolConfig(trustee=self.activeDID, writes=writes, force=force)
         self.activeWallet.doPoolConfig(poolConfig)
         reqs = self.activeWallet.preparePending()
         req, = self.activeClient.submitReqs(*reqs)
@@ -1330,7 +1330,7 @@ class SovrinCli(PlenumCli):
                 self._printNoClaimFoundMsg()
             return True
 
-    def _createNewIdentifier(self, identifier, seed,
+    def _createNewIdentifier(self, DID, seed,
                              alias=None):
         if not self.isValidSeedForNewKey(seed):
             return True
@@ -1340,9 +1340,9 @@ class SovrinCli(PlenumCli):
 
         cseed = cleanSeed(seed)
 
-        signer = DidSigner(identifier=identifier, seed=cseed, alias=alias)
+        signer = DidSigner(identifier=DID, seed=cseed, alias=alias)
 
-        id, signer = self.activeWallet.addIdentifier(identifier,
+        id, signer = self.activeWallet.addIdentifier(DID,
                                                      seed=cseed, alias=alias)
         self.print("DID created in wallet {}".format(self.activeWallet))
         self.print("New DID is {}".format(signer.identifier))
@@ -1357,13 +1357,13 @@ class SovrinCli(PlenumCli):
                 self.agent.sendRequestForAvailClaims(li)
             return True
 
-    def _newIdentifier(self, matchedVars):
-        if matchedVars.get('new_id') == newIdentifierCmd.id:
-            identifier = matchedVars.get('id')
+    def _newDID(self, matchedVars):
+        if matchedVars.get('new_id') == newDIDCmd.id:
+            DID = matchedVars.get('id')
             alias = matchedVars.get('alias')
 
             seed = matchedVars.get('seed')
-            self._createNewIdentifier(identifier, seed, alias)
+            self._createNewIdentifier(DID, seed, alias)
             return True
 
     def _sendProof(self, matchedVars):
@@ -1778,7 +1778,7 @@ class SovrinCli(PlenumCli):
                 else NO_ENV
 
     def getStatus(self):
-        # TODO: This needs to show active wallet and active identifier
+        # TODO: This needs to show active wallet and active DID
         if not self.activeEnv:
             self._printNotConnectedEnvMessage()
         else:
@@ -1929,7 +1929,7 @@ class SovrinCli(PlenumCli):
         mappings['connectTo'] = connectToCmd
         mappings['disconnect'] = disconnectCmd
         mappings['addGenTxnAction'] = addGenesisTxnCmd
-        mappings['newIdentifier'] = newIdentifierCmd
+        mappings['newDID'] = newDIDCmd
         mappings['sendNymAction'] = sendNymCmd
         mappings['sendGetNymAction'] = sendGetNymCmd
         mappings['sendAttribAction'] = sendAttribCmd
@@ -1956,7 +1956,6 @@ class SovrinCli(PlenumCli):
         mappings['setAttr'] = setAttrCmd
         mappings['sendProofRequest'] = sendProofRequestCmd
         mappings['sendProof'] = sendProofCmd
-        mappings['newIdentifier'] = newIdentifierCmd
         mappings['reqAvailClaims'] = reqAvailClaimsCmd
 
         # TODO: These seems to be obsolete, so either we need to remove these
