@@ -103,13 +103,13 @@ showFileCmd = Command(
     id="show",
     title="Shows content of given file",
     usage="show <file-path>",
-    examples="show sample/faber-invitation.sovrin")
+    examples="show sample/faber-request.sovrin")
 
 loadFileCmd = Command(
     id="load",
     title="Creates the connection",
     usage="load <file-path>",
-    examples="load sample/faber-invitation.sovrin")
+    examples="load sample/faber-request.sovrin")
 
 showConnectionCmd = Command(
     id="show connection",

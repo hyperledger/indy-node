@@ -410,7 +410,7 @@ def acceptInvitation(be, do, userCli, agentMap, expect):
        )
     li = userCli.agent.wallet.getConnectionBy(nonce=agentMap['nonce'])
     assert li
-    agentMap['identifier'] = li.localIdentifier
+    agentMap['DID'] = li.localIdentifier
     agentMap['verkey'] = li.localVerkey
 
 
@@ -446,11 +446,11 @@ def testAliceAcceptFaberInvitationAgain(be, do, aliceCli, faberMap,
                                         unsycedAlreadyAcceptedInviteAcceptedOut,
                                         aliceAcceptedFaberInvitation):
     li = aliceCli.activeWallet.getConnectionBy(remote=faberMap['remote'])
-    li.linkStatus = None
+    li.connection_status = None
     be(aliceCli)
     acceptInvitation(be, do, aliceCli, faberMap,
                      unsycedAlreadyAcceptedInviteAcceptedOut)
-    li.linkStatus = constant.LINK_STATUS_ACCEPTED
+    li.connection_status = constant.LINK_STATUS_ACCEPTED
 
 
 # TODO: Write tests which sends request with invalid signature
@@ -1009,7 +1009,7 @@ def testBobReqAvailClaimsFromAgents(
     # When new user/cli requests available claims from Faber,
     # Transcript claim should be send as available claims
     bob_faber_map = dict(faberMap)
-    bob_faber_map.update({'invite':'sample/faber-bob-link-invite.sovrin',
+    bob_faber_map.update({'invite':'sample/faber-bob-connection-request.sovrin',
                          'nonce': '710b78be79f29fc81335abaa4ee1c5e8'})
     assertReqAvailClaims(be, do, userCli, bob_faber_map, connectedToTest,
                          loadInviteOut, syncedInviteAcceptedWithClaimsOut)
@@ -1020,7 +1020,7 @@ def testBobReqAvailClaimsFromAgents(
     # proof request and it is verified.
     bob_acme_map = dict(acmeMap)
     bob_acme_map.update({"claims": "No available claims found",
-                         'invite':'sample/acme-bob-link-invite.sovrin',
+                         'invite':'sample/acme-bob-connection-request.sovrin',
                          'nonce': '810b78be79f29fc81335abaa4ee1c5e8'})
     assertReqAvailClaims(be, do, userCli, bob_acme_map, connectedToTest,
                          loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)
@@ -1029,7 +1029,7 @@ def testBobReqAvailClaimsFromAgents(
     # No claims should be sent as available claims.
     bob_thrift_map = dict(thriftMap)
     bob_thrift_map.update({"claims": "No available claims found",
-                         'invite':'sample/thrift-bob-link-invite.sovrin',
+                         'invite':'sample/thrift-bob-connection-request.sovrin',
                          'nonce': 'ousezru20ic4yz3j074trcgthwlsnfsef'})
     assertReqAvailClaims(be, do, userCli, bob_thrift_map, connectedToTest,
                           loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)

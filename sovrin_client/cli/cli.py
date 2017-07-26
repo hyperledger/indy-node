@@ -1065,7 +1065,7 @@ class SovrinCli(PlenumCli):
                 self._printConnectionAlreadyExcepted(li.name)
             else:
                 self.print("Request not yet verified.")
-                if not li.connectionLastSynced:
+                if not li.connection_last_synced:
                     self.print("Connection not yet synchronized.")
 
                 if self._isConnectedToAnyEnv():

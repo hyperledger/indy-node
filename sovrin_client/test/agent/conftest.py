@@ -269,7 +269,7 @@ def aliceAcceptedFaber(faberIsRunning, faberNonceForAlice, faberAdded,
 
 @pytest.fixture(scope="module")
 def faberInvitation():
-    return getInvitationFile('faber-invitation.sovrin')
+    return getInvitationFile('faber-request.sovrin')
 
 
 @pytest.fixture(scope="module")

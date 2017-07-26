@@ -136,26 +136,26 @@ def test_send_get_claim_def_regex(grammar):
 
 def testShowFileCommandRegEx(grammar):
     matchedVars = getMatchedVariables(grammar,
-                                      "show sample/faber-invitation.sovrin")
+                                      "show sample/faber-request.sovrin")
     assertCliTokens(matchedVars, {
-        "show_file": "show", "file_path": "sample/faber-invitation.sovrin"})
+        "show_file": "show", "file_path": "sample/faber-request.sovrin"})
 
     matchedVars = getMatchedVariables(grammar,
-                                      "show sample/faber-invitation.sovrin ")
+                                      "show sample/faber-request.sovrin ")
     assertCliTokens(matchedVars, {
-        "show_file": "show", "file_path": "sample/faber-invitation.sovrin"})
+        "show_file": "show", "file_path": "sample/faber-request.sovrin"})
 
 
 def testLoadFileCommandRegEx(grammar):
     matchedVars = getMatchedVariables(grammar,
-                                      "load sample/faber-invitation.sovrin")
+                                      "load sample/faber-request.sovrin")
     assertCliTokens(matchedVars, {
-        "load_file": "load", "file_path": "sample/faber-invitation.sovrin"})
+        "load_file": "load", "file_path": "sample/faber-request.sovrin"})
 
     matchedVars = getMatchedVariables(grammar,
-                                      "load sample/faber-invitation.sovrin ")
+                                      "load sample/faber-request.sovrin ")
     assertCliTokens(matchedVars, {
-        "load_file": "load", "file_path": "sample/faber-invitation.sovrin"})
+        "load_file": "load", "file_path": "sample/faber-request.sovrin"})
 
 
 def testShowLinkRegEx(grammar):
