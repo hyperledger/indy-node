@@ -3,7 +3,7 @@ from plenum.cli.constants import CLIENT_GRAMS_CLIENT_COMMAND_REG_EX, relist, \
 from sovrin_common.roles import Roles
 from sovrin_common.transactions import SovrinTransactions
 
-CLIENT_GRAMS_CLIENT_WITH_IDENTIFIER_FORMATTED_REG_EX = getPipedRegEx(
+CLIENT_GRAMS_CLIENT_WITH_DID_FORMATTED_REG_EX = getPipedRegEx(
     CLIENT_GRAMS_CLIENT_COMMAND_REG_EX +
     "\s+ (?P<with_DID>with\s+DID) "
     "\s+ (?P<nym>[a-zA-Z0-9=]+) \s*") \
