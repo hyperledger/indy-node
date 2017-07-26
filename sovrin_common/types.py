@@ -9,13 +9,12 @@ from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
 from plenum.common.messages.node_messages import \
     ConstantField, IdentifierField, NonEmptyStringField, \
-    JsonField, NonNegativeNumberField, IterableField, MapField, LedgerIdField as PLedgerIdField, \
-    BooleanField, LimitedLengthStringField, TxnSeqNoField, Sha256HexField, \
-    LedgerInfoField as PLedgerInfoField, \
-    JsonField, NonNegativeNumberField, MapField, LedgerIdField as PLedgerIdField, BooleanField, VersionField
+    LimitedLengthStringField, TxnSeqNoField, Sha256HexField, \
+    LedgerInfoField as PLedgerInfoField, JsonField, NonNegativeNumberField, \
+    MapField, LedgerIdField as PLedgerIdField, BooleanField, VersionField
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
-from plenum.common.util import check_endpoint_valid, is_network_ip_address_valid, is_network_port_valid
+from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
 
 from sovrin_common.constants import *
 
@@ -176,6 +175,14 @@ class ClientPoolUpgradeOperation(MessageValidator):
     )
 
 
+class ClientPoolConfigOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(POOL_CONFIG)),
+        (WRITES, BooleanField()),
+        (FORCE, BooleanField(optional=True)),
+    )
+
+
 class ClientOperationField(PClientOperationField):
 
     _specific_operations = {
@@ -188,6 +195,7 @@ class ClientOperationField(PClientOperationField):
         GET_NYM: ClientGetNymOperation(),
         GET_SCHEMA: ClientGetSchemaOperation(),
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
+        POOL_CONFIG: ClientPoolConfigOperation(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class constant
