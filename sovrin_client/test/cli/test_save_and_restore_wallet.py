@@ -25,12 +25,12 @@ def testPersistentWalletName():
     assert "test.wallet" == walletFileName
     assert "test" == Cli.getWalletKeyName(walletFileName)
 
-    # New default wallet (keyring) gets created
+    # New default wallet gets created
     walletFileName = normalizedWalletFileName("Default")
     assert "default.wallet" == walletFileName
     assert "default" == Cli.getWalletKeyName(walletFileName)
 
-    # User creates new wallet (keyring)
+    # User creates new wallet
     walletFileName = normalizedWalletFileName("MyVault")
     assert "myvault.wallet" == walletFileName
     assert "myvault" == Cli.getWalletKeyName(walletFileName)
@@ -38,7 +38,7 @@ def testPersistentWalletName():
 
 def getActiveWalletFilePath(cli):
     fileName = cli.getActiveWalletPersitentFileName()
-    return getWalletFilePath(cli.getContextBasedKeyringsBaseDir(), fileName)
+    return getWalletFilePath(cli.getContextBasedWalletsBaseDir(), fileName)
 
 
 def _connectTo(envName, do, cli):
@@ -53,8 +53,8 @@ def connectTo(envName, do, cli, activeWalletPresents, identifiers,
     _connectTo(envName, do, cli)
     if currActiveWallet is None and firstTimeConnect:
         do(None, expect=[
-            "New keyring Default created",
-            'Active keyring set to "Default"']
+            "New wallet Default created",
+            'Active wallet set to "Default"']
         )
 
     if activeWalletPresents:
@@ -92,21 +92,21 @@ def restartCliWithCorruptedWalletFile(cli, be, do, filePath):
     do(None,
        expect=[
            'error occurred while restoring wallet',
-           'New keyring Default_',
-           'Active keyring set to "Default_',
+           'New wallet Default_',
+           'Active wallet set to "Default_',
        ],
        not_expect=[
-           'Saved keyring "Default" restored',
-           'New keyring Default created',
-           'Active keyring set to "Default"'
+           'Saved wallet "Default" restored',
+           'New wallet Default created',
+           'Active wallet set to "Default"'
     ], within=5)
 
 
-def createNewKey(do, cli, keyringName):
-    createAndAssertNewCreation(do, cli, keyringName)
+def createNewKey(do, cli, walletName):
+    createAndAssertNewCreation(do, cli, walletName)
 
 
-def createNewKeyring(name, do, expectedMsgs=None):
+def createNewWallet(name, do, expectedMsgs=None):
     createAndAssertNewKeyringCreation(do, name, expectedMsgs)
 
 
@@ -123,29 +123,29 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
 
     connectTo("pool1", do, cliForMultiNodePools,
               activeWalletPresents=True, identifiers=0, firstTimeConnect=True)
-    createNewKey(do, cliForMultiNodePools, keyringName="Default")
+    createNewKey(do, cliForMultiNodePools, walletName="Default")
 
     switchEnv("pool2", do, cliForMultiNodePools, checkIfWalletRestored=False)
-    createNewKey(do, cliForMultiNodePools, keyringName="Default")
-    createNewKeyring("mykr0", do)
-    createNewKey(do, cliForMultiNodePools, keyringName="mykr0")
-    createNewKey(do, cliForMultiNodePools, keyringName="mykr0")
+    createNewKey(do, cliForMultiNodePools, walletName="Default")
+    createNewWallet("mykr0", do)
+    createNewKey(do, cliForMultiNodePools, walletName="mykr0")
+    createNewKey(do, cliForMultiNodePools, walletName="mykr0")
     useKeyring("Default", do)
-    createNewKey(do, cliForMultiNodePools, keyringName="Default")
+    createNewKey(do, cliForMultiNodePools, walletName="Default")
     sleep(10)
     switchEnv("pool1", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="Default", restoredIdentifiers=1)
-    createNewKeyring("mykr1", do)
-    createNewKey(do, cliForMultiNodePools, keyringName="mykr1")
+    createNewWallet("mykr1", do)
+    createNewKey(do, cliForMultiNodePools, walletName="mykr1")
 
     switchEnv("pool2", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="Default", restoredIdentifiers=2)
-    createNewKeyring("mykr0", do,
+    createNewWallet("mykr0", do,
                      expectedMsgs = [
-                         '"mykr0" conflicts with an existing keyring',
+                         '"mykr0" conflicts with an existing wallet',
                          'Please choose a new name.'])
 
-    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedKeyringsBaseDir(),
+    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedWalletsBaseDir(),
                                      cliForMultiNodePools.walletFileName)
     switchEnv("pool1", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="mykr1", restoredIdentifiers=1)
@@ -159,7 +159,7 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
     exitFromCli(do)
 
     # different tests for restoring saved wallet
-    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedKeyringsBaseDir(),
+    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedWalletsBaseDir(),
                                      cliForMultiNodePools.walletFileName)
     restartCli(aliceMultiNodePools, be, do, "mykr1", 1)
     restartCliWithCorruptedWalletFile(earlMultiNodePools, be, do, filePath)
@@ -170,7 +170,7 @@ def testRestoreWalletFile(aliceCLI):
     fileName = "tmp_wallet_restore_issue"
     curPath = os.path.dirname(os.path.realpath(__file__))
     walletFilePath = os.path.join(curPath, fileName)
-    noEnvKeyringsDir = os.path.join(aliceCLI.getKeyringsBaseDir(), NO_ENV)
+    noEnvKeyringsDir = os.path.join(aliceCLI.getWalletsBaseDir(), NO_ENV)
     createDirIfNotExists(noEnvKeyringsDir)
     shutil.copy2(walletFilePath, noEnvKeyringsDir)
     targetWalletFilePath = os.path.join(noEnvKeyringsDir, fileName)
