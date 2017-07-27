@@ -48,7 +48,7 @@ class REndpoint(SimpleRStack, EndpointCore):
 class ZEndpoint(SimpleZStack, EndpointCore):
     def __init__(self, port: int, msgHandler: Callable,
                  name: str=None, basedirpath: str=None, seed=None,
-                 onlyListener=False):
+                 onlyListener=False, msgRejectHandler=None):
         stackParams = {
             "name": name or randomString(8),
             "ha": HA("0.0.0.0", port),
@@ -59,7 +59,7 @@ class ZEndpoint(SimpleZStack, EndpointCore):
 
         seed = seed or randomSeed()
         SimpleZStack.__init__(self, stackParams, self.tracedMsgHandler,
-                              seed=seed, onlyListener=onlyListener)
+                              seed=seed, onlyListener=onlyListener, msgRejectHandler=msgRejectHandler)
 
         self.msgHandler = msgHandler
 
