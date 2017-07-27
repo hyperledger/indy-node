@@ -398,7 +398,7 @@ def getSignedRespMsg(msg, signer):
     return msg
 
 
-def acceptInvitation(be, do, userCli, agentMap, expect):
+def accept_request(be, do, userCli, agentMap, expect):
     be(userCli)
     do("accept request from {inviter}",
        within=15,
@@ -415,24 +415,24 @@ def acceptInvitation(be, do, userCli, agentMap, expect):
 
 
 @pytest.fixture(scope="module")
-def aliceAcceptedFaberInvitation(be, do, aliceCli, faberMap,
+def alice_accepted_faber_request(be, do, aliceCli, faberMap,
                                  preRequisite,
                                  syncedInviteAcceptedWithClaimsOut,
                                  faberInviteSyncedWithEndpoint):
-    acceptInvitation(be, do, aliceCli, faberMap,
-                 syncedInviteAcceptedWithClaimsOut)
+    accept_request(be, do, aliceCli, faberMap,
+                   syncedInviteAcceptedWithClaimsOut)
     do("list connections", within = 10,
        mapper=faberMap,
        expect="Faber College")
     return aliceCli
 
 
-def testAliceAcceptFaberInvitationFirstTime(aliceAcceptedFaberInvitation):
+def testAliceAcceptFaberInvitationFirstTime(alice_accepted_faber_request):
     pass
 
 
 def testPingFaber(be, do, aliceCli, faberMap,
-                  aliceAcceptedFaberInvitation):
+                  alice_accepted_faber_request):
     be(aliceCli)
     do('ping {inviter}',
        within=3,
@@ -442,14 +442,14 @@ def testPingFaber(be, do, aliceCli, faberMap,
        mapper=faberMap)
 
 
-def testAliceAcceptFaberInvitationAgain(be, do, aliceCli, faberMap,
-                                        unsycedAlreadyAcceptedInviteAcceptedOut,
-                                        aliceAcceptedFaberInvitation):
+def test_alice_accept_faber_request_again(be, do, aliceCli, faberMap,
+                                          unsyced_already_accepted_request_accepted_out,
+                                          alice_accepted_faber_request):
     li = aliceCli.activeWallet.getConnectionBy(remote=faberMap['remote'])
     li.connection_status = None
     be(aliceCli)
-    acceptInvitation(be, do, aliceCli, faberMap,
-                     unsycedAlreadyAcceptedInviteAcceptedOut)
+    accept_request(be, do, aliceCli, faberMap,
+                   unsyced_already_accepted_request_accepted_out)
     li.connection_status = constant.LINK_STATUS_ACCEPTED
 
 
@@ -457,8 +457,8 @@ def testAliceAcceptFaberInvitationAgain(be, do, aliceCli, faberMap,
 # TODO: Write tests which receives response with invalid signature
 
 def testShowFaberConnectionAfterInviteAccept(be, do, aliceCli, faberMap,
-                                       showAcceptedConnectionOut,
-                                       aliceAcceptedFaberInvitation):
+                                             showAcceptedConnectionOut,
+                                             alice_accepted_faber_request):
     be(aliceCli)
 
     do("show connection {inviter}", expect=showAcceptedConnectionOut,
@@ -467,7 +467,7 @@ def testShowFaberConnectionAfterInviteAccept(be, do, aliceCli, faberMap,
 
 
 def testShowClaimNotExists(be, do, aliceCli, faberMap, showClaimNotFoundOut,
-                                   aliceAcceptedFaberInvitation):
+                                    alice_accepted_faber_request):
     be(aliceCli)
 
     do("show claim claim-to-show-not-exists",
@@ -478,7 +478,7 @@ def testShowClaimNotExists(be, do, aliceCli, faberMap, showClaimNotFoundOut,
 
 def testShowTranscriptClaim(be, do, aliceCli, transcriptClaimMap,
                             showTranscriptClaimOut,
-                            aliceAcceptedFaberInvitation):
+                            alice_accepted_faber_request):
     be(aliceCli)
     totalSchemasBefore = getTotalSchemas(aliceCli)
     do("show claim {name}",
@@ -489,7 +489,7 @@ def testShowTranscriptClaim(be, do, aliceCli, transcriptClaimMap,
 
 
 def testReqClaimNotExists(be, do, aliceCli, faberMap, showClaimNotFoundOut,
-                          aliceAcceptedFaberInvitation):
+                          alice_accepted_faber_request):
     be(aliceCli)
 
     do("request claim claim-to-req-not-exists",
@@ -500,7 +500,7 @@ def testReqClaimNotExists(be, do, aliceCli, faberMap, showClaimNotFoundOut,
 @pytest.fixture(scope="module")
 def aliceRequestedTranscriptClaim(be, do, aliceCli, transcriptClaimMap,
                                        reqClaimOut, preRequisite,
-                                       aliceAcceptedFaberInvitation):
+                                  alice_accepted_faber_request):
     be(aliceCli)
     totalClaimsRcvdBefore = getTotalClaimsRcvd(aliceCli)
     do("request claim {name}", within=5,
@@ -574,8 +574,8 @@ def aliceAcceptedAcmeJobInvitation(aliceCli, be, do,
                                    acmeInviteLoadedByAlice,
                                    acmeMap):
     be(aliceCli)
-    acceptInvitation(be, do, aliceCli, acmeMap,
-                     unsycedAcceptedInviteWithoutClaimOut)
+    accept_request(be, do, aliceCli, acmeMap,
+                   unsycedAcceptedInviteWithoutClaimOut)
     return aliceCli
 
 
@@ -880,8 +880,8 @@ def aliceAcceptedThriftLoanApplication(be, do, aliceCli, thriftMap,
                                        syncedInviteAcceptedOutWithoutClaims):
 
     connectIfNotAlreadyConnected(do, connectedToTest, aliceCli, thriftMap)
-    acceptInvitation(be, do, aliceCli, thriftMap,
-                     syncedInviteAcceptedOutWithoutClaims)
+    accept_request(be, do, aliceCli, thriftMap,
+                   syncedInviteAcceptedOutWithoutClaims)
     return aliceCli
 
 
@@ -992,8 +992,8 @@ def assertReqAvailClaims(be, do, userCli, agentMap,
     be(userCli)
     connectIfNotAlreadyConnected(do, connectedToTestExpMsgs, userCli, agentMap)
     do('load {invite}', expect=inviteLoadedExpMsgs, mapper=agentMap)
-    acceptInvitation(be, do, userCli, agentMap,
-                     invitedAcceptedExpMsgs)
+    accept_request(be, do, userCli, agentMap,
+                   invitedAcceptedExpMsgs)
     do('request available claims from {inviter}',
        mapper=agentMap,
        expect=["Available Claim(s): {claims}"],

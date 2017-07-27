@@ -928,7 +928,7 @@ class SovrinCli(PlenumCli):
                 try:
                     # TODO: Shouldn't just be the wallet be involved in loading
                     # an invitation.
-                    connection = self.agent.loadInvitationFile(filePath)
+                    connection = self.agent.load_request_file(filePath)
                     self._printShowAndAcceptConnectionUsage(connection.name)
                 except (FileNotFoundError, TypeError):
                     self.print("Given file does not exist")
@@ -962,7 +962,7 @@ class SovrinCli(PlenumCli):
         else:
             return None
 
-    def _getInvitationMatchingConnections(self, connectionName):
+    def _get_request_matching_connections(self, connectionName):
         exactMatched = {}
         likelyMatched = {}
         # if we want to search in all wallets, then,
@@ -1045,7 +1045,7 @@ class SovrinCli(PlenumCli):
         return li
 
     def _sendAcceptInviteToTargetEndpoint(self, connection: Link):
-        self.agent.accept_invitation(connection)
+        self.agent.accept_request(connection)
 
     def _acceptConnectionPostSync(self, connection: Link):
         if connection.isRemoteEndpointAvailable:
@@ -1152,7 +1152,7 @@ class SovrinCli(PlenumCli):
             return True
 
     def _getMatchingInvitationsDetail(self, connectionName):
-        connectionInvitations = self._getInvitationMatchingConnections(
+        connectionInvitations = self._get_request_matching_connections(
             SovrinCli.removeSpecialChars(connectionName))
 
         exactlyMatchedConnections = connectionInvitations["exactlyMatched"]

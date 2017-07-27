@@ -51,7 +51,7 @@ class Link:
                  remoteIdentifier=None,
                  remoteEndPoint=None,
                  remotePubkey=None,
-                 invitationNonce=None,
+                 request_nonce=None,
                  proofRequests=None,
                  internalId=None,
                  remote_verkey=None):
@@ -62,7 +62,7 @@ class Link:
         self.remoteIdentifier = remoteIdentifier
         self.remoteEndPoint = remoteEndPoint
         self.remotePubkey = remotePubkey
-        self.invitationNonce = invitationNonce
+        self.request_nonce = request_nonce
 
         # for optionally storing a reference to an identifier in another system
         # for example, a college may already have a student ID for a particular
@@ -147,7 +147,7 @@ class Link:
                           constant.UNKNOWN_WAITING_FOR_SYNC) + '\n' \
             'Remote Verification key: ' + remoteVerKey + '\n' \
             'Remote endpoint: ' + remoteEndPoint + '\n' \
-            'Request nonce: ' + self.invitationNonce + '\n' \
+            'Request nonce: ' + self.request_nonce + '\n' \
             'Request status: ' + connectionStatus + '\n'
 
         optionalLinkItems = ""
@@ -176,16 +176,16 @@ class Link:
                    format(", ".join(claim_names)) + '\n'
 
     @staticmethod
-    def validate(invitationData):
+    def validate(request_data):
 
         def checkIfFieldPresent(msg, searchInName, fieldName):
             if not msg.get(fieldName):
                 raise InvalidConnectionException(
                     "Field not found in {}: {}".format(searchInName, fieldName))
 
-        checkIfFieldPresent(invitationData, 'given input', 'sig')
-        checkIfFieldPresent(invitationData, 'given input', 'connection-request')
-        connection_request = invitationData.get("connection-request")
+        checkIfFieldPresent(request_data, 'given input', 'sig')
+        checkIfFieldPresent(request_data, 'given input', 'connection-request')
+        connection_request = request_data.get("connection-request")
         connection_request_req_fields = [f.IDENTIFIER.nm, NAME, NONCE]
         for fn in connection_request_req_fields:
             checkIfFieldPresent(connection_request, 'connection-request', fn)

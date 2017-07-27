@@ -252,88 +252,88 @@ def acmeNonceForAlice():
 @pytest.fixture(scope="module")
 def aliceAcceptedFaber(faberIsRunning, faberNonceForAlice, faberAdded,
                        aliceIsRunning, emptyLooper,
-                       aliceFaberInvitationLoaded,
-                       aliceFaberInvitationLinkSynced):
+                       alice_faber_request_loaded,
+                       alice_faber_request_link_synced):
     """
-    Faber creates a Link object, generates a link invitation file.
+    Faber creates a Link object, generates a link request file.
     Start FaberAgent
     Start AliceAgent and send a ACCEPT_INVITE to FaberAgent.
     """
 
-    checkAcceptInvitation(emptyLooper,
-                          faberNonceForAlice,
-                          aliceIsRunning,
-                          faberIsRunning,
-                          linkName='Faber College')
+    check_accept_request(emptyLooper,
+                         faberNonceForAlice,
+                         aliceIsRunning,
+                         faberIsRunning,
+                         linkName='Faber College')
 
 
 @pytest.fixture(scope="module")
-def faberInvitation():
-    return getInvitationFile('faber-request.sovrin')
+def faber_request():
+    return get_request_file('faber-request.sovrin')
 
 
 @pytest.fixture(scope="module")
-def acmeInvitation():
-    return getInvitationFile('acme-job-application.sovrin')
+def acme_request():
+    return get_request_file('acme-job-application.sovrin')
 
 
 @pytest.fixture(scope="module")
-def aliceFaberInvitationLoaded(aliceAgent, faberInvitation):
-    link = agentInvitationLoaded(aliceAgent, faberInvitation)
+def alice_faber_request_loaded(aliceAgent, faber_request):
+    link = agent_request_loaded(aliceAgent, faber_request)
     assert link.name == 'Faber College'
     return link
 
 
 @pytest.fixture(scope="module")
-def aliceFaberInvitationLinkSynced(aliceFaberInvitationLoaded,
-                                   aliceAgentConnected,
-                                   aliceAgent: WalletedAgent,
-                                   emptyLooper,
-                                   faberAdded):
-    agentInvitationLinkSynced(aliceAgent,
-                              aliceFaberInvitationLoaded.name,
+def alice_faber_request_link_synced(alice_faber_request_loaded,
+                                    aliceAgentConnected,
+                                    aliceAgent: WalletedAgent,
+                                    emptyLooper,
+                                    faberAdded):
+    agent_request_link_synced(aliceAgent,
+                              alice_faber_request_loaded.name,
                               emptyLooper)
 
 
 @pytest.fixture(scope="module")
-def aliceAcmeInvitationLoaded(aliceAgent, acmeInvitation):
-    link = agentInvitationLoaded(aliceAgent, acmeInvitation)
+def alice_acme_request_loaded(aliceAgent, acme_request):
+    link = agent_request_loaded(aliceAgent, acme_request)
     assert link.name == 'Acme Corp'
     return link
 
 
 @pytest.fixture(scope="module")
-def aliceAcmeInvitationLinkSynced(aliceAcmeInvitationLoaded,
-                                  aliceAgentConnected,
-                                  aliceAgent: WalletedAgent,
-                                  emptyLooper,
-                                  acmeAdded):
-    agentInvitationLinkSynced(aliceAgent, aliceAcmeInvitationLoaded.name,
+def alice_acme_request_link_synced(alice_acme_request_loaded,
+                                   aliceAgentConnected,
+                                   aliceAgent: WalletedAgent,
+                                   emptyLooper,
+                                   acmeAdded):
+    agent_request_link_synced(aliceAgent, alice_acme_request_loaded.name,
                               emptyLooper)
 
 
 @pytest.fixture(scope="module")
 def aliceAcceptedAcme(acmeIsRunning, acmeNonceForAlice, acmeAdded,
                       aliceIsRunning, emptyLooper,
-                      aliceAcmeInvitationLinkSynced):
+                      alice_acme_request_link_synced):
     """
-    Faber creates a Link object, generates a link invitation file.
+    Faber creates a Link object, generates a link request file.
     Start FaberAgent
     Start AliceAgent and send a ACCEPT_INVITE to FaberAgent.
     """
 
-    checkAcceptInvitation(emptyLooper,
-                          acmeNonceForAlice,
-                          aliceIsRunning,
-                          acmeIsRunning,
-                          linkName='Acme Corp')
+    check_accept_request(emptyLooper,
+                         acmeNonceForAlice,
+                         aliceIsRunning,
+                         acmeIsRunning,
+                         linkName='Acme Corp')
 
 
-def checkAcceptInvitation(emptyLooper,
-                          nonce,
-                          inviteeAgent: WalletedAgent,
-                          inviterAgentAndWallet,
-                          linkName):
+def check_accept_request(emptyLooper,
+                         nonce,
+                         inviteeAgent: WalletedAgent,
+                         inviterAgentAndWallet,
+                         linkName):
     """
     Assumes link identified by linkName is already created
     """
@@ -345,7 +345,7 @@ def checkAcceptInvitation(emptyLooper,
                                                               required=True)
     ensureAgentConnected(emptyLooper, inviteeAgent, inviteeAcceptanceLink)
 
-    inviteeAgent.accept_invitation(linkName)
+    inviteeAgent.accept_request(linkName)
     internalId = inviterAgent.get_internal_id_by_nonce(nonce)
 
     def chk():
@@ -356,7 +356,7 @@ def checkAcceptInvitation(emptyLooper,
         assert link
         assert link.remoteIdentifier == inviteeAcceptanceLink.localIdentifier
 
-    timeout = waits.expectedAcceptInvitation()
+    timeout = waits.expected_accept_request()
     emptyLooper.run(eventually(chk, timeout=timeout))
 
 
@@ -386,18 +386,18 @@ def addAgent(looper, agent, steward, stewardWallet):
     return attrib
 
 
-def getInvitationFile(fileName):
+def get_request_file(fileName):
     sampleDir = os.path.dirname(sample.__file__)
     return os.path.join(sampleDir, fileName)
 
 
-def agentInvitationLoaded(agent, invitation):
-    link = agent.loadInvitationFile(invitation)
+def agent_request_loaded(agent, request):
+    link = agent.load_request_file(request)
     assert link
     return link
 
 
-def agentInvitationLinkSynced(agent,
+def agent_request_link_synced(agent,
                               linkName,
                               looper):
     done = False

@@ -383,7 +383,7 @@ class Wallet(PWallet, TrustAnchoring):
                         required=False) -> Optional[Link]:
         for _, li in self._connections.items():
             if (not remote or li.remoteIdentifier == remote) and \
-               (not nonce or li.invitationNonce == nonce) and \
+               (not nonce or li.request_nonce == nonce) and \
                (not internalId or li.internalId == internalId):
                 return li
         if required:

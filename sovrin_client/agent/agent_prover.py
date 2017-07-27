@@ -31,7 +31,7 @@ class AgentProver:
     async def sendRequestForAvailClaimsAsync(self, link: Link):
         op = {
             TYPE: REQ_AVAIL_CLAIMS,
-            NONCE: link.invitationNonce
+            NONCE: link.request_nonce
         }
         try:
             self.signAndSendToLink(msg=op, linkName=link.name)
@@ -55,7 +55,7 @@ class AgentProver:
 
         claimReq = await self.prover.createClaimRequest(
             schemaId=ID(schema_key),
-            proverId=link.invitationNonce,
+            proverId=link.request_nonce,
             reqNonRevoc=False)
 
         # It has served its purpose by this point. Claim Requests do not need a nonce.
@@ -69,7 +69,7 @@ class AgentProver:
 
         op = {
             TYPE: CLAIM_REQUEST,
-            NONCE: link.invitationNonce,
+            NONCE: link.request_nonce,
             DATA: claimRequestDetails
         }
 
@@ -134,7 +134,7 @@ class AgentProver:
 
         op = {
             TYPE: PROOF,
-            NONCE: link.invitationNonce,
+            NONCE: link.request_nonce,
             PROOF_FIELD: proof.to_str_dict(),
             PROOF_REQUEST_FIELD: proofRequest.to_str_dict()
         }
