@@ -24,13 +24,13 @@ BANK_SEED = b'BANK0000000000000000000000000000'
 
 class RefAgent(WalletedAgent):
 
-    def create_link(self, internal_id, name):
+    def create_connection_request(self, internal_id, name):
 
         nonce = str(self.verifier.generateNonce())
         # endpoint = self.endpoint.host_address()
         endpoint = "127.0.0.1" + ":" + str(self.endpoint.ha[1])  #TODO: this should be done by endpoint
 
-        msg = {'link-invitation': {
+        msg = {'connection-request': {
             'name': self.name,
             'identifier': self._wallet.defaultId,
             'nonce': nonce,
@@ -172,7 +172,7 @@ def test_end_to_end(tconf):
 
         network.runFor(1)
 
-        invitation = bank_agent.create_link(alices_id_in_banks_system, "Alice")
+        invitation = bank_agent.create_connection_request(alices_id_in_banks_system, "Alice")
 
         # Transfer of this invitation happens out-of-band (website, QR code, etc)
 

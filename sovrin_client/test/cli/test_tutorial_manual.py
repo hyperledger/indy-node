@@ -62,7 +62,7 @@ def testGettingStartedTutorialAgainstSandbox(newGuyCLI, be, do):
 def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
                connectedToTest, nymAddedOut, attrAddedOut,
                aliceCLI, newKeyringOut, aliceMap,
-               tdir, syncLinkOutWithEndpoint, jobCertificateClaimMap,
+               tdir, syncConnectionOutWithEndpoint, jobCertificateClaimMap,
                syncedInviteAcceptedOutWithoutClaims, transcriptClaimMap,
                reqClaimOut, reqClaimOut1, susanCLI, susanMap):
     eventually.slowFactor = 3
@@ -70,11 +70,11 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     # Create steward and add nyms and endpoint attributes of all agents
     _, stewardSeed = poolTxnStewardData
     be(philCli)
-    do('new keyring Steward', expect=['New keyring Steward created',
-                                      'Active keyring set to "Steward"'])
+    do('new wallet Steward', expect=['New wallet Steward created',
+                                      'Active wallet set to "Steward"'])
 
     mapper = {'seed': stewardSeed.decode()}
-    do('new key with seed {seed}', expect=['Key created in keyring Steward'],
+    do('new key with seed {seed}', expect=['Key created in wallet Steward'],
        mapper=mapper)
     do('connect test', within=3, expect=connectedToTest)
 
@@ -167,7 +167,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     # Defining inner method for closures
     def executeGstFlow(name, userCLI, userMap, be, connectedToTest, do, fMap,
                        aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
-                       reqClaimOut1, syncLinkOutWithEndpoint,
+                       reqClaimOut1, syncConnectionOutWithEndpoint,
                        syncedInviteAcceptedOutWithoutClaims, tMap,
                        transcriptClaimMap):
 
@@ -184,8 +184,8 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
         do('connect test', within=3, expect=connectedToTest)
         # Accept faber
         do('load sample/faber-invitation.sovrin')
-        syncInvite(be, do, userCLI, syncLinkOutWithEndpoint, fMap)
-        do('show link faber')
+        syncInvite(be, do, userCLI, syncConnectionOutWithEndpoint, fMap)
+        do('show connection faber')
         acceptInvitation(be, do, userCLI, fMap,
                          syncedInviteAcceptedOutWithoutClaims)
         # Request claim
@@ -207,7 +207,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
 
         # Accept acme
         do('load sample/acme-job-application.sovrin')
-        syncInvite(be, do, userCLI, syncLinkOutWithEndpoint, aMap)
+        syncInvite(be, do, userCLI, syncConnectionOutWithEndpoint, aMap)
         acceptInvitation(be, do, userCLI, aMap,
                          syncedInviteAcceptedOutWithoutClaims)
         # Send claim
@@ -255,7 +255,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
 
     executeGstFlow("Alice", aliceCLI, aliceMap, be, connectedToTest, do, fMap,
                    aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
-                   reqClaimOut1, syncLinkOutWithEndpoint,
+                   reqClaimOut1, syncConnectionOutWithEndpoint,
                    syncedInviteAcceptedOutWithoutClaims, tMap,
                    transcriptClaimMap)
 
@@ -266,6 +266,6 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     # with different data or it is the same person but from a different state
     # executeGstFlow("Susan", susanCLI, susanMap, be, connectedToTest, do, fMap,
     #                aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
-    #                reqClaimOut1, syncLinkOutWithEndpoint,
+    #                reqClaimOut1, syncConnectionOutWithEndpoint,
     #                syncedInviteAcceptedOutWithoutClaims, tMap,
     #                transcriptClaimMap)

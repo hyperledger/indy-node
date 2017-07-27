@@ -63,8 +63,8 @@ def testMultipleAcceptance(aliceAcceptedFaber,
     For the test agent, Faber. Any invite nonce is acceptable.
     """
     faberAgent, _ = faberIsRunning
-    assert len(faberAgent.wallet._links) == 1
-    link = next(faberAgent.wallet._links.values())
+    assert len(faberAgent.wallet._connections) == 1
+    link = next(faberAgent.wallet._connections.values())
     wallet = walletBuilder("Bob")
     otherAgent = agentBuilder(wallet)
     emptyLooper.add(otherAgent)
@@ -75,4 +75,4 @@ def testMultipleAcceptance(aliceAcceptedFaber,
                           inviterAgentAndWallet=faberIsRunning,
                           linkName=link.name)
 
-    assert len(faberAgent.wallet._links) == 2
+    assert len(faberAgent.wallet._connections) == 2
