@@ -12,11 +12,12 @@ getSchemaName = SovrinTransactions.GET_SCHEMA.name
 poolUpgradeName = SovrinTransactions.POOL_UPGRADE.name
 claimDefName = SovrinTransactions.CLAIM_DEF.name
 getClaimDefName = SovrinTransactions.GET_CLAIM_DEF.name
+poolConfigName = SovrinTransactions.POOL_CONFIG.name
 
 sendNymCmd = Command(
     id="send {nym}".format(nym=nymName),
-    title="Adds given identifier to sovrin",
-    usage="send {nym} dest=<target identifier> role=<role> [verkey=<ver-key>]".format(nym=nymName),
+    title="Adds given DID to sovrin",
+    usage="send {nym} dest=<target DID> role=<role> [verkey=<ver-key>]".format(nym=nymName),
     examples=[
         "send {nym} dest=BiCMHDqC5EjheFHumZX9nuAoVEp8xyuBgiRi5JcY5whi role={role}".format(nym=nymName,
                                                                                           role=Roles.TRUST_ANCHOR.name),
@@ -25,26 +26,27 @@ sendNymCmd = Command(
 sendGetNymCmd = Command(
     id="send {getNym}".format(getNym=getNymName),
     title="Get NYM from sovrin",
-    usage="send {getNym} dest=<target identifier>".format(getNym=getNymName),
+    usage="send {getNym} dest=<target DID>".format(getNym=getNymName),
     examples="send {getNym} dest=33A18XMqWqTzDpLHXLR5nT".format(getNym=getNymName))
 
 sendAttribCmd = Command(
     id="send {attrib}".format(attrib=attribName),
-    title="Adds attributes to existing identifier",
-    usage="send {attrib} dest=<target identifier> [raw={{<json-data>}}] [hash=<hashed-data>] [enc: <encrypted-data>]".format(
+    title="Adds attributes to existing DID",
+    usage="send {attrib} dest=<target DID> [raw={{<json-data>}}] [hash=<hashed-data>] [enc: <encrypted-data>]".format(
         attrib=attribName),
     examples='send {attrib} dest=33A18XMqWqTzDpLHXLR5nT raw={{"endpoint": "127.0.0.1:5555"}}'.format(attrib=attribName))
 
 sendGetAttrCmd = Command(
     id="send {getAttr}".format(getAttr=getAttrName),
     title="Get ATTR from sovrin",
-    usage="send {getAttr} dest=<target identifier>".format(getAttr=getAttrName),
-    examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT".format(getAttr=getAttrName))
+    usage="send {getAttr} dest=<target identifier> raw=<name>".format(getAttr=getAttrName),
+    examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT raw=endpoint".format(getAttr=getAttrName))
+
 
 sendNodeCmd = Command(
     id="send {node}".format(node=nodeName),
     title="Adds a node to the pool",
-    usage="send {node} dest=<target node identifier> data={{<json-data>}}".format(node=nodeName),
+    usage="send {node} dest=<target node DID> data={{<json-data>}}".format(node=nodeName),
     note="Only Steward (must be already added on sovrin) can execute this command to add new node to the pool",
     examples='send {node} dest=87Ys5T2eZfau4AATsBZAYvqwvD8XL5xYCHgg2o1ffjqg data={{"services":["VALIDATOR"], "node_ip": "127.0.0.1", "node_port": 9711, "client_ip": "127.0.0.1", "client_port": 9712, "alias": "Node101"}}'.format(
         node=nodeName))
@@ -75,8 +77,9 @@ sendSchemaCmd = Command(
 sendGetSchemaCmd = Command(
     id="send {getSchema}".format(getSchema=getSchemaName),
     title="Gets schema from sovrin",
-    usage="send {getSchema} dest=<target identifier> name=<schema-name> version=<version>".format(getSchema=getSchemaName),
-    examples="send {getSchema} name=Degree version=1.0".format(getSchema=getSchemaName))
+    usage="send {getSchema} dest=<target DID> name=<schema-name> version=<version>".format(getSchema=getSchemaName),
+    examples="send {getSchema} dest=33A18XMqWqTzDpLHXLR5nT name=Degree version=1.0".format(getSchema=getSchemaName))
+
 
 sendClaimDefCmd = Command(
     id="send {claimDef}".format(claimDef=claimDefName),
@@ -91,7 +94,7 @@ sendGetClaimDefCmd = Command(
     examples="send {getClaimDef} ref=10 signature_type=CL".format(getClaimDef=getClaimDefName))
 
 sendProofRequestCmd = Command(
-    id="send proofreq",
+    id="send proof request",
     title="Send a proof request",
     usage="send proofreq <proof-name> to <remote>",
     examples="send proofreq Over-21 to JaneDo")
@@ -104,15 +107,15 @@ showFileCmd = Command(
 
 loadFileCmd = Command(
     id="load",
-    title="Creates the link",
+    title="Creates the connection",
     usage="load <file-path>",
     examples="load sample/faber-invitation.sovrin")
 
-showLinkCmd = Command(
-    id="show link",
-    title="Shows link info in case of one matching link, otherwise shows all the matching link names",
-    usage="show link <link-name>",
-    examples="show link faber")
+showConnectionCmd = Command(
+    id="show connection",
+    title="Shows connection info in case of one matching connection, otherwise shows all the matching connection names",
+    usage="show connection <connection-name>",
+    examples="show connection faber")
 
 connectToCmd = Command(
     id="connect",
@@ -125,11 +128,11 @@ disconnectCmd = Command(
     title="Disconnects from currently connected environment",
     usage="disconnect")
 
-syncLinkCmd = Command(
+syncConnectionCmd = Command(
     id="sync",
-    title="Synchronizes the link between the endpoints",
-    usage="sync link <link-name>",
-    examples="sync link faber")
+    title="Synchronizes the connection between the endpoints",
+    usage="sync connection <connection-name>",
+    examples="sync connection faber")
 
 pingTargetCmd = Command(
     id="ping",
@@ -149,11 +152,11 @@ listClaimsCmd = Command(
     usage="list claims <link-name>",
     examples="list claims faber")
 
-listLinksCmd = Command(
-    id='list links',
-    title='List available links in active wallet',
-    usage='list links',
-    examples='list links'
+listConnectionsCmd = Command(
+    id='list connections',
+    title='List available connections in active wallet',
+    usage='list connections',
+    examples='list connections'
 )
 
 reqClaimCmd = Command(
@@ -168,11 +171,11 @@ showProofRequestCmd = Command(
     usage="show proof request <proof-req-name>",
     examples="show proof request Transcription")
 
-acceptLinkCmd = Command(
-    id="accept invitation from",
-    title="Accept invitation from given remote",
-    usage="accept invitation from <remote>",
-    examples="accept invitation from Faber")
+acceptConnectionCmd = Command(
+    id="accept request from",
+    title="Accept request from given remote",
+    usage="accept request from <remote>",
+    examples="accept request from Faber")
 
 setAttrCmd = Command(
     id="set",
@@ -189,7 +192,7 @@ sendProofCmd = Command(
 addGenesisTxnCmd = Command(
     id="add genesis transaction",
     title="Adds given genesis transaction",
-    usage="add genesis transaction {nym} dest=<dest-identifier> [role=<role>]".format(nym=nymName),
+    usage="add genesis transaction {nym} dest=<dest-DID> [role=<role>]".format(nym=nymName),
     examples=[
         'add genesis transaction {nym} dest=2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML'.format(nym=nymName),
         'add genesis transaction {nym} dest=2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML role={role}'.format(
@@ -198,21 +201,28 @@ addGenesisTxnCmd = Command(
         '{{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}}'.format(node=nodeName)])
 
 newIdentifierCmd = Command(
-    id="new identifier",
-    title="Creates new Identifier",
-    usage="new identifier [<identifier>|abbr|crypto] [with seed <seed>] [as <alias>]",
-    note="crypto = cryptographic identifier, abbr = abbreviated verkey",
+    id="new DID",
+    title="Creates new DID",
+    usage="new DID [<DID>|abbr|crypto] [with seed <seed>] [as <alias>]",
+    note="crypto = cryptographic DID, abbr = abbreviated verkey",
     examples=[
-        "new identifier",
-        "new identifier abbr",
-        "new identifier 4QxzWk3ajdnEA37NdNU5Kt",
-        "new identifier with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "new identifier abbr with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        "new identifier 4QxzWk3ajdnEA37NdNU5Kt with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"])
+        "new DID",
+        "new DID abbr",
+        "new DID 4QxzWk3ajdnEA37NdNU5Kt",
+        "new DID with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "new DID abbr with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "new DID 4QxzWk3ajdnEA37NdNU5Kt with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"])
 
 reqAvailClaimsCmd = Command(
     id="request available claims from",
     title="Requests all available claims from given connection",
     usage="request available claims from <connection-name>",
     examples="request available claims from Faber"
+)
+
+sendPoolConfigCmd = Command(
+    id="send {poolConfig}".format(poolConfig=poolConfigName),
+    title="Sends write configuration to pool",
+    usage="send {poolConfig} writes=<writes> force=<force>".format(poolConfig=poolConfigName),
+    examples="send {poolConfig} writes=True force=False".format(poolConfig=poolConfigName)
 )

@@ -7,7 +7,7 @@ from sovrin_client.test.agent.messages import get_proof_libsovrin_msg
 def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAcceptedAcme,
                                     acmeAgent, emptyLooper, faberAgent):
     # 1. request Claims from Faber
-    faberLink = aliceAgent.wallet.getLink('Faber College')
+    faberLink = aliceAgent.wallet.getConnection('Faber College')
     name, version, origin = faberLink.availableClaims[0]
     schemaKey = SchemaKey(name, version, origin)
     aliceAgent.sendReqClaim(faberLink, schemaKey)
@@ -23,7 +23,7 @@ def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
     emptyLooper.run(eventually(chkClaims, timeout=timeout))
 
     # 3. send proof to Acme
-    acme_link, acme_proof_req = aliceAgent.wallet.getMatchingLinksWithProofReq(
+    acme_link, acme_proof_req = aliceAgent.wallet.getMatchingConnectionsWithProofReq(
         "Job-Application", "Acme Corp")[0]
 
     async def create_proof():
@@ -42,7 +42,7 @@ def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
     # 4. check that proof is verified by Acme
     def chkProof():
         internalId = acmeAgent.get_internal_id_by_nonce(acme_link.invitationNonce)
-        link = acmeAgent.wallet.getLinkBy(internalId=internalId)
+        link = acmeAgent.wallet.getConnectionBy(internalId=internalId)
         assert "Job-Application" in link.verifiedClaimProofs
 
     emptyLooper.run(eventually(chkProof, timeout=timeout))
