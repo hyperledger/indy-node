@@ -1,7 +1,7 @@
 import json
 from typing import Optional
 
-from ledger.serializers.json_serializer import JsonSerializer
+from common.serializers.json_serializer import JsonSerializer
 from ledger.util import F
 from stp_core.loop.eventually import eventually
 from plenum.common.exceptions import NoConsensusYet, OperationError

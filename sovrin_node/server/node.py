@@ -1,9 +1,8 @@
 from typing import Iterable, Any, List
 
 from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.serializers.compact_serializer import CompactSerializer
-from ledger.serializers.json_serializer import JsonSerializer
-from ledger.stores.file_hash_store import FileHashStore
+from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
+from ledger.hash_stores.file_hash_store import FileHashStore
 from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, \
@@ -38,7 +37,6 @@ import os
 
 
 logger = getlogger()
-jsonSerz = JsonSerializer()
 
 
 class Node(PlenumNode, HasPoolManager):
@@ -106,22 +104,21 @@ class Node(PlenumNode, HasPoolManager):
         This is usually an implementation of Ledger
         """
         if self.config.primaryStorage is None:
-            fields = getTxnOrderedFields()
-
+            genesis_txn_initiator = GenesisTxnInitiatorFromFile(self.basedirpath,
+                                                                self.config.domainTransactionsFileGenesis)
             defaultTxnFile = os.path.join(self.basedirpath,
-                                          self.config.domainTransactionsFile)
+                                       self.config.domainTransactionsFileGenesis)
             if not os.path.exists(defaultTxnFile):
                 logger.debug("Not using default initialization file for "
                              "domain ledger, since it does not exist: {}"
                              .format(defaultTxnFile))
-                defaultTxnFile = None
+                genesis_txn_initiator = None
 
             return Ledger(CompactMerkleTree(hashStore=self.hashStore),
                           dataDir=self.dataLocation,
-                          serializer=CompactSerializer(fields=fields),
                           fileName=self.config.domainTransactionsFile,
                           ensureDurability=self.config.EnsureLedgerDurability,
-                          defaultFile=defaultTxnFile)
+                          genesis_txn_initiator=genesis_txn_initiator)
         else:
             return initStorage(self.config.primaryStorage,
                                name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
@@ -166,8 +163,8 @@ class Node(PlenumNode, HasPoolManager):
         )
 
     def getConfigLedger(self):
-        return Ledger(CompactMerkleTree(hashStore=FileHashStore(
-            fileNamePrefix='config', dataDir=self.dataLocation)),
+        hashStore = FileHashStore(fileNamePrefix='config', dataDir=self.dataLocation)
+        return Ledger(CompactMerkleTree(hashStore=hashStore),
             dataDir=self.dataLocation,
             fileName=self.config.configTransactionsFile,
             ensureDurability=self.config.EnsureLedgerDurability)

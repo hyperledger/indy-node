@@ -34,7 +34,6 @@ from sovrin_client.test.client.TestClient import TestClient
 from sovrin_common.txn_util import getTxnOrderedFields
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
-from ledger.serializers.compact_serializer import CompactSerializer
 from sovrin_common.roles import Roles
 
 logger = getlogger()
@@ -188,7 +187,6 @@ def prompt_is(prompt):
 def addTxnToFile(dir, file, txns, fields=getTxnOrderedFields()):
     ledger = Ledger(CompactMerkleTree(),
                     dataDir=dir,
-                    serializer=CompactSerializer(fields=fields),
                     fileName=file)
     for txn in txns:
         ledger.add(txn)
