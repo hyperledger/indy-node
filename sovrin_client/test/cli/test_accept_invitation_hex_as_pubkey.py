@@ -11,11 +11,11 @@ from sovrin_client.test.cli.conftest \
     import faberMap as faberMapWithoutEndpointPubkey
 
 # noinspection PyUnresolvedReferences
-from sovrin_client.test.cli.test_tutorial import aliceAcceptedFaberInvitation, \
+from sovrin_client.test.cli.test_tutorial import alice_accepted_faber_request, \
     aliceCli, preRequisite, faberCli, acmeCli, thriftCli, faberWithEndpointAdded, acmeWithEndpointAdded, \
     thriftWithEndpointAdded, walletCreatedForTestEnv, \
     faberInviteSyncedWithEndpoint, faberInviteSyncedWithoutEndpoint, \
-    faberInviteLoadedByAlice, acceptInvitation
+    faberInviteLoadedByAlice, accept_request
 
 from sovrin_common.constants import ENDPOINT
 
@@ -35,5 +35,5 @@ def testInvitationNotAcceptedIfAgentWasAddedUsingHexAsPubkey(
         be, do, aliceCli, faberMap, preRequisite,
         syncedInviteAcceptedWithClaimsOut, faberInviteSyncedWithEndpoint):
     with pytest.raises(BlowUp):
-        acceptInvitation(be, do, aliceCli, faberMap,
-                         syncedInviteAcceptedWithClaimsOut)
+        accept_request(be, do, aliceCli, faberMap,
+                       syncedInviteAcceptedWithClaimsOut)

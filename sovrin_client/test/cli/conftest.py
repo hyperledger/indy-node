@@ -348,7 +348,7 @@ def unsycedAcceptedInviteWithoutClaimOut(syncedInviteAcceptedOutWithoutClaims):
 
 
 @pytest.fixture(scope="module")
-def unsycedAlreadyAcceptedInviteAcceptedOut():
+def unsyced_already_accepted_request_accepted_out():
     return [
         "Request not yet verified",
         "Attempting to sync...",

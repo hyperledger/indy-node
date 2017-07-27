@@ -22,7 +22,7 @@ from sovrin_client.test.agent.thrift import create_thrift, bootstrap_thrift, THR
 from sovrin_client.test.cli.conftest import faberMap, acmeMap, \
     thriftMap
 from sovrin_client.test.cli.helper import newCLI
-from sovrin_client.test.cli.test_tutorial import syncInvite, acceptInvitation, \
+from sovrin_client.test.cli.test_tutorial import syncInvite, accept_request, \
     aliceRequestedTranscriptClaim, jobApplicationProofSent, \
     jobCertClaimRequested, bankBasicProofSent, bankKYCProofSent, \
     setPromptAndKeyring
@@ -186,8 +186,8 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
         do('load sample/faber-request.sovrin')
         syncInvite(be, do, userCLI, syncConnectionOutWithEndpoint, fMap)
         do('show connection faber')
-        acceptInvitation(be, do, userCLI, fMap,
-                         syncedInviteAcceptedOutWithoutClaims)
+        accept_request(be, do, userCLI, fMap,
+                       syncedInviteAcceptedOutWithoutClaims)
         # Request claim
         do('show claim Transcript')
         aliceRequestedTranscriptClaim(be, do, userCLI, transcriptClaimMap,
@@ -208,8 +208,8 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
         # Accept acme
         do('load sample/acme-job-application.sovrin')
         syncInvite(be, do, userCLI, syncConnectionOutWithEndpoint, aMap)
-        acceptInvitation(be, do, userCLI, aMap,
-                         syncedInviteAcceptedOutWithoutClaims)
+        accept_request(be, do, userCLI, aMap,
+                       syncedInviteAcceptedOutWithoutClaims)
         # Send claim
         do('show claim request Job-Application')
         do('set first_name to Alice')
@@ -235,8 +235,8 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
 
         # Accept thrift
         do('load sample/thrift-loan-application.sovrin')
-        acceptInvitation(be, do, userCLI, tMap,
-                         syncedInviteAcceptedOutWithoutClaims)
+        accept_request(be, do, userCLI, tMap,
+                       syncedInviteAcceptedOutWithoutClaims)
         # Send proofs
         bankBasicProofSent(be, do, userCLI, tMap, None)
 

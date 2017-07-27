@@ -20,5 +20,5 @@ def expectedJobCertWritten():
     return 10
 
 
-def expectedAcceptInvitation():
+def expected_accept_request():
     return 10
