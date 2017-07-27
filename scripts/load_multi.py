@@ -36,6 +36,8 @@ def hard_blow():
     # if the values of `num_tasks`, `num_threads` are chosen such that they
     # are not multiples of `num_procs`
 
+    #TODO: WIP
+
     num_tasks = 10000
     num_procs = 4
     threads_per_proc = 10
