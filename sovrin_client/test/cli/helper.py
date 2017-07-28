@@ -134,7 +134,7 @@ def doubleBraces(lines):
     return alteredLines
 
 
-def getConnectionInvitation(name, wallet) -> Link:
+def get_connection_request(name, wallet) -> Link:
     existingLinkInvites = wallet.getMatchingConnections(name)
     li = existingLinkInvites[0]
     return li

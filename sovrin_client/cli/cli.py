@@ -237,7 +237,7 @@ class SovrinCli(PlenumCli):
                             self._listConnections,
                             self._reqClaim,
                             self._showProofRequest,
-                            self._acceptInvitationConnection,
+                            self._accept_request_connection,
                             self._setAttr,
                             self._sendProofRequest,
                             self._sendProof,
@@ -927,7 +927,7 @@ class SovrinCli(PlenumCli):
                 filePath = SovrinCli._getFilePath(givenFilePath)
                 try:
                     # TODO: Shouldn't just be the wallet be involved in loading
-                    # an invitation.
+                    # a request.
                     connection = self.agent.load_request_file(filePath)
                     self._printShowAndAcceptConnectionUsage(connection.name)
                 except (FileNotFoundError, TypeError):
@@ -970,8 +970,8 @@ class SovrinCli(PlenumCli):
         walletsToBeSearched = [self.activeWallet]  # self.wallets.values()
         for w in walletsToBeSearched:
             # TODO: This should be moved to wallet
-            invitations = w.getMatchingConnections(connectionName)
-            for i in invitations:
+            requests = w.getMatchingConnections(connectionName)
+            for i in requests:
                 if i.name == connectionName:
                     if w.name in exactMatched:
                         exactMatched[w.name].append(i)
@@ -1029,7 +1029,7 @@ class SovrinCli(PlenumCli):
 
     def _getOneConnectionForFurtherProcessing(self, connectionName):
         totalFound, exactlyMatchedConnections, likelyMatchedConnections = \
-            self._getMatchingInvitationsDetail(connectionName)
+            self._get_matching_requests_detail(connectionName)
 
         if totalFound == 0:
             self._printNoConnectionFoundMsg()
@@ -1057,7 +1057,7 @@ class SovrinCli(PlenumCli):
             self.logger.debug("{} has remote endpoint {}".
                               format(connection, connection.remoteEndPoint))
 
-    def _acceptConnectionInvitation(self, connectionName):
+    def _accept_connection_request(self, connectionName):
         li = self._getOneConnectionForFurtherProcessing(connectionName)
 
         if li:
@@ -1079,7 +1079,7 @@ class SovrinCli(PlenumCli):
                         self._printNotConnectedEnvMessage(
                             "Cannot sync because not connected")
 
-    def _syncConnectionInvitation(self, connectionName):
+    def _sync_connection_request(self, connectionName):
         li = self._getOneConnectionForFurtherProcessing(connectionName)
         if li:
             self._getTargetEndpoint(li, self._printUsagePostSync)
@@ -1125,10 +1125,10 @@ class SovrinCli(PlenumCli):
         return self.activeEnv and self.activeClient and \
                self.activeClient.hasSufficientConnections
 
-    def _acceptInvitationConnection(self, matchedVars):
+    def _accept_request_connection(self, matchedVars):
         if matchedVars.get('accept_connection_request') == acceptConnectionCmd.id:
             connectionName = SovrinCli.removeSpecialChars(matchedVars.get('connection_name'))
-            self._acceptConnectionInvitation(connectionName)
+            self._accept_connection_request(connectionName)
             return True
 
     def _pingTarget(self, matchedVars):
@@ -1148,15 +1148,15 @@ class SovrinCli(PlenumCli):
         if matchedVars.get('sync_connection') == syncConnectionCmd.id:
             # TODO: Shouldn't we remove single quotes too?
             connectionName = SovrinCli.removeSpecialChars(matchedVars.get('connection_name'))
-            self._syncConnectionInvitation(connectionName)
+            self._sync_connection_request(connectionName)
             return True
 
-    def _getMatchingInvitationsDetail(self, connectionName):
-        connectionInvitations = self._get_request_matching_connections(
+    def _get_matching_requests_detail(self, connectionName):
+        connection_requests = self._get_request_matching_connections(
             SovrinCli.removeSpecialChars(connectionName))
 
-        exactlyMatchedConnections = connectionInvitations["exactlyMatched"]
-        likelyMatchedConnections = connectionInvitations["likelyMatched"]
+        exactlyMatchedConnections = connection_requests["exactlyMatched"]
+        likelyMatchedConnections = connection_requests["likelyMatched"]
 
         totalFound = sum([len(v) for v in {**exactlyMatchedConnections,
                                            **likelyMatchedConnections}.values()])
@@ -1187,7 +1187,7 @@ class SovrinCli(PlenumCli):
             connectionName = matchedVars.get('connection_name').replace('"', '')
 
             totalFound, exactlyMatchedConnections, likelyMatchedConnections = \
-                self._getMatchingInvitationsDetail(connectionName)
+                self._get_matching_requests_detail(connectionName)
 
             if totalFound == 0:
                 self._printNoConnectionFoundMsg()
@@ -1946,7 +1946,7 @@ class SovrinCli(PlenumCli):
         mappings['showConnection'] = showConnectionCmd
         mappings['syncConnection'] = syncConnectionCmd
         mappings['pingTarget'] = pingTargetCmd
-        mappings['acceptInvitationConnection'] = acceptConnectionCmd
+        mappings['acceptrequestconnection'] = acceptConnectionCmd
         mappings['showClaim'] = showClaimCmd
         mappings['listClaims'] = listClaimsCmd
         mappings['listConnections'] = listConnectionsCmd
