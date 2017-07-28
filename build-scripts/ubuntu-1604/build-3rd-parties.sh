@@ -38,6 +38,7 @@ function build_from_pypi {
     rm ${PREREM_TMP}
 }
 
-build_from_pypi timeout-decorator
-
+# examples:
+# build_from_pypi timeout-decorator 0.57  -- build v0.57 python3-timeout-decorator deb package
+# build_from_pypi timeout-decorator       -- build latest python3-timeout-decorator deb package
 
