@@ -10,7 +10,7 @@ from sovrin_common.exceptions import InvalidConnectionException
 from sovrin_common.constants import ENDPOINT
 from plenum.common.signer_did import DidSigner
 
-from sovrin_client.client.wallet.link import Link, constant
+from sovrin_client.client.wallet.connection import Connection, constant
 from sovrin_client.test.cli.helper import getFileLines, prompt_is, doubleBraces, \
     getTotalConnections, getTotalSchemas, getTotalClaimsRcvd, getTotalAvailableClaims, \
     newKey, ensureConnectedToTestEnv
@@ -220,7 +220,7 @@ def testLoadConnectionInviteWithoutSig():
     li = getSampleConnectionInvitation()
     del li["sig"]
     with pytest.raises(InvalidConnectionException) as excinfo:
-        Link.validate(li)
+        Connection.validate(li)
     assert "Field not found in given input: sig" in str(excinfo.value)
 
 
@@ -450,7 +450,7 @@ def test_alice_accept_faber_request_again(be, do, aliceCli, faberMap,
     be(aliceCli)
     accept_request(be, do, aliceCli, faberMap,
                    unsyced_already_accepted_request_accepted_out)
-    li.connection_status = constant.LINK_STATUS_ACCEPTED
+    li.connection_status = constant.CONNECTION_STATUS_ACCEPTED
 
 
 # TODO: Write tests which sends request with invalid signature

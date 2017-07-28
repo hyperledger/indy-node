@@ -47,7 +47,7 @@ from sovrin_client.cli.helper import getNewClientGrams, \
     USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
 from sovrin_client.client.client import Client
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
-from sovrin_client.client.wallet.link import Link
+from sovrin_client.client.wallet.connection import Connection
 from sovrin_client.client.wallet.node import Node
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_client.client.wallet.wallet import Wallet
@@ -89,7 +89,7 @@ cryptonym, and then an alias for bobto that cryptonym.)
 new client bob (cli uses the signer previously stored for this client)
 """
 
-Context = NamedTuple("Context", [("link", Link),
+Context = NamedTuple("Context", [("link", Connection),
                                  ("proofRequest", Any),
                                  ("selfAttestedAttrs", Any)])
 
@@ -258,7 +258,7 @@ class SovrinCli(PlenumCli):
 
     @staticmethod
     def _getSendProofUsage(proofRequest: ProofRequest=None,
-                           inviter: Link=None):
+                           inviter: Connection=None):
         return ['{} "{}" to "{}"'.format(
             sendProofCmd.id,
             proofRequest.name or "<proof-request-name>",
@@ -327,7 +327,7 @@ class SovrinCli(PlenumCli):
         self.print(msg)
 
     def _printSuggestionPostAcceptConnection(self, notifier,
-                                             connection: Link):
+                                             connection: Connection):
         suggestions = []
         if len(connection.availableClaims) > 0:
             claimName = "|".join([n.name for n in connection.availableClaims])
@@ -343,7 +343,7 @@ class SovrinCli(PlenumCli):
         else:
             self.print("")
 
-    def sendToAgent(self, msg: Any, connection: Link):
+    def sendToAgent(self, msg: Any, connection: Connection):
         if not self.agent:
             return
 
@@ -1000,7 +1000,7 @@ class SovrinCli(PlenumCli):
         }
 
     def _syncConnectionPostEndPointRetrieval(self, postSync,
-                                             connection: Link, reply, err, **kwargs):
+                                             connection: Connection, reply, err, **kwargs):
         if err:
             self.print('    {}'.format(err))
             return True
@@ -1044,10 +1044,10 @@ class SovrinCli(PlenumCli):
             self.print('Expanding {} to "{}"'.format(connectionName, li.name))
         return li
 
-    def _sendAcceptInviteToTargetEndpoint(self, connection: Link):
+    def _sendAcceptInviteToTargetEndpoint(self, connection: Connection):
         self.agent.accept_request(connection)
 
-    def _acceptConnectionPostSync(self, connection: Link):
+    def _acceptConnectionPostSync(self, connection: Connection):
         if connection.isRemoteEndpointAvailable:
             self._sendAcceptInviteToTargetEndpoint(connection)
         else:
@@ -1163,7 +1163,7 @@ class SovrinCli(PlenumCli):
         return totalFound, exactlyMatchedConnections, likelyMatchedConnections
 
     @staticmethod
-    def _getOneConnection(exactlyMatchedConnections, likelyMatchedConnections) -> Link:
+    def _getOneConnection(exactlyMatchedConnections, likelyMatchedConnections) -> Connection:
         li = None
         if len(exactlyMatchedConnections) == 1:
             li = list(exactlyMatchedConnections.values())[0][0]
@@ -1242,7 +1242,7 @@ class SovrinCli(PlenumCli):
             self.print("{} in {}".format(li, cl))
 
     def _findProofRequest(self, claimReqName: str, connectionName: str=None) -> \
-            (Link, ProofRequest):
+            (Connection, ProofRequest):
         matchingConnectionWithClaimReq = self.activeWallet. \
             findAllProofRequests(claimReqName, connectionName)  # TODO rename claimReqName -> proofRequestName
 
@@ -1258,7 +1258,7 @@ class SovrinCli(PlenumCli):
         return matchingConnectionWithClaimReq[0]
 
     def _getOneConnectionAndAvailableClaim(self, claimName, printMsgs: bool = True) -> \
-            (Link, Schema):
+            (Connection, Schema):
         matchingConnectionsWithAvailableClaim = self.activeWallet. \
             getMatchingConnectionsWithAvailableClaim(claimName)
 
@@ -1276,7 +1276,7 @@ class SovrinCli(PlenumCli):
         return matchingConnectionsWithAvailableClaim[0]
 
     async def _getOneConnectionAndReceivedClaim(self, claimName, printMsgs: bool = True) -> \
-            (Link, Tuple, Dict):
+            (Connection, Tuple, Dict):
         matchingConnectionsWithRcvdClaim = await self.agent.getMatchingConnectionsWithReceivedClaimAsync(claimName)
 
         if len(matchingConnectionsWithRcvdClaim) == 0:

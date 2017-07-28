@@ -17,7 +17,7 @@ from plenum.common.types import f
 
 from sovrin_client.client.wallet.attribute import Attribute, AttributeKey, \
     LedgerStore
-from sovrin_client.client.wallet.link import Link
+from sovrin_client.client.wallet.connection import Connection
 from sovrin_client.client.wallet.node import Node
 from sovrin_client.client.wallet.trustAnchoring import TrustAnchoring
 from sovrin_client.client.wallet.upgrade import Upgrade
@@ -54,7 +54,7 @@ class Wallet(PWallet, TrustAnchoring):
         self._upgrades = {}
         self._pconfigs = {}
 
-        self._connections = OrderedDict()  # type: Dict[str, Link]
+        self._connections = OrderedDict()  # type: Dict[str, Connection]
         # Note, ordered dict to make iteration deterministic
 
         self.knownIds = {}  # type: Dict[str, Identifier]
@@ -193,7 +193,7 @@ class Wallet(PWallet, TrustAnchoring):
     def getAttributesForNym(self, idr: Identifier):
         return [a for a in self._attributes.values() if a.dest == idr]
 
-    def addConnection(self, connection: Link):
+    def addConnection(self, connection: Connection):
         self._connections[connection.key] = connection
 
     def addLastKnownSeqs(self, identifier, seqNo):
@@ -304,7 +304,7 @@ class Wallet(PWallet, TrustAnchoring):
     def getConnectionInvitation(self, name: str):
         return self._connections.get(name)
 
-    def getMatchingConnections(self, name: str) -> List[Link]:
+    def getMatchingConnections(self, name: str) -> List[Connection]:
         allMatched = []
         for k, v in self._connections.items():
             if self._isMatchingName(name, k):
@@ -369,7 +369,7 @@ class Wallet(PWallet, TrustAnchoring):
         self.pendRequest(req, key=key)
         return self.preparePending(limit=1)[0]
 
-    def getConnection(self, name, required=False) -> Link:
+    def getConnection(self, name, required=False) -> Connection:
         l = self._connections.get(name)
         if not l and required:
             logger.debug("Wallet has connections {}".format(self._connections))
@@ -380,7 +380,7 @@ class Wallet(PWallet, TrustAnchoring):
                         remote: Identifier=None,
                         nonce=None,
                         internalId=None,
-                        required=False) -> Optional[Link]:
+                        required=False) -> Optional[Connection]:
         for _, li in self._connections.items():
             if (not remote or li.remoteIdentifier == remote) and \
                (not nonce or li.request_nonce == nonce) and \
