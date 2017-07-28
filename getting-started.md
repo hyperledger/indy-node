@@ -77,7 +77,7 @@ The CLI could play the role of multiple **identity owners** (a person like Alice
 sovrin> prompt ALICE
 ALICE>
 ```
-Next, we will create a new empty wallet for Alice. Creating a new empty wallet basically resets the agent to a clean slate. Because this is the first time you're setting this up, this step is not actually necessary. If you're wanting to do interact with other DIDs held by the agent then this does become necessary.
+Next, we will create a new empty wallet for Alice. Creating a new empty wallet basically resets the agent to a clean slate. Because this is the first time you're setting this up, this step is not actually necessary. If you're wanting to interact with other DIDs held by the agent then this does become necessary.
 
 It's a good habit to get into. Go ahead and create the new wallet now:
 
@@ -97,12 +97,12 @@ Usage:
 ```
 Alice might also try the 'help' command to see a list of the other commands that are available to her.
 
-## Evaluate a Connection Request
+## Evaluate a Connection Invitiation
 
-To make this guide more convenient, the sovrin CLI package installs a sample Faber College connection request in a file at /<CLI_ROOT>/sample/faber-request.sovrin. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Sovrin app would be doing a lot of these steps automatically.)
+To make this guide more convenient, the sovrin CLI package installs a sample Faber College invitation request in a file at /<CLI_ROOT>/sample/faber-invitation.sovrin. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Sovrin app would be doing a lot of these steps automatically.)
 
 ```
-ALICE> show sample/faber-request.sovrin
+ALICE> show sample/faber-invitation.sovrin
 {
   "connection-request": {
     "name": "Faber College",
@@ -113,13 +113,13 @@ ALICE> show sample/faber-request.sovrin
 }
 
 Try Next:
-    load sample/faber-request.sovrin
+    load sample/faber-invitation.sovrin
 ```
 
 Alice sees a bunch of data that looks interesting but mysterious. She wants Sovrin to tell her if the connection request file is well formed and has something useful in it, so she uses the 'load' command:
 
 ```
-ALICE> load sample/faber-request.sovrin
+ALICE> load sample/faber-invitation.sovrin
 New wallet Default created
 Active wallet set to "Default"
 1 connection request found for Faber College.
