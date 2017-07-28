@@ -41,7 +41,7 @@ from sovrin_client.agent.msg_constants import ACCEPT_INVITE, CLAIM_REQUEST, \
     PROOF, AVAIL_CLAIM_LIST, CLAIM, PROOF_STATUS, NEW_AVAILABLE_CLAIMS, \
     REF_REQUEST_ID, REQ_AVAIL_CLAIMS, INVITE_ACCEPTED, PROOF_REQUEST
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
-from sovrin_client.client.wallet.link import Link, constant
+from sovrin_client.client.wallet.connection import Connection, constant
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.exceptions import ConnectionNotFound, ConnectionAlreadyExists, \
     NotConnectedToNetwork, LinkNotReady, VerkeyNotFound, RemoteEndpointNotFound
@@ -202,14 +202,14 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         if not link:
             # QUESTION: We use wallet.defaultId as the local identifier,
             # this looks ok for test code, but not production code
-            link = Link(linkName,
-                        self.wallet.defaultId,
-                        self.wallet.getVerkey(),
-                        request_nonce=nonce,
-                        remoteIdentifier=remoteIdr,
-                        remoteEndPoint=remoteHa,
-                        internalId=internalId,
-                        remotePubkey=remotePubkey)
+            link = Connection(linkName,
+                              self.wallet.defaultId,
+                              self.wallet.getVerkey(),
+                              request_nonce=nonce,
+                              remoteIdentifier=remoteIdr,
+                              remoteEndPoint=remoteHa,
+                              internalId=internalId,
+                              remotePubkey=remotePubkey)
             self.wallet.addConnection(link)
         else:
             link.remoteIdentifier = remoteIdr
@@ -519,7 +519,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             else:
                 self.notifyMsgListener("    DID created in Sovrin.")
 
-                li.connection_status = constant.LINK_STATUS_ACCEPTED
+                li.connection_status = constant.CONNECTION_STATUS_ACCEPTED
                 rcvdAvailableClaims = body[DATA][CLAIMS_LIST_FIELD]
                 newAvailableClaims = self._getNewAvailableClaims(
                     li, rcvdAvailableClaims)
@@ -586,14 +586,14 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                 self.logger.info('Signature accepted.')
             return True
 
-    def _getLinkByTarget(self, target) -> Link:
+    def _getLinkByTarget(self, target) -> Connection:
         return self.wallet.getConnectionBy(remote=target)
 
-    def _checkIfLinkIdentifierWrittenToSovrin(self, li: Link, availableClaims):
+    def _checkIfLinkIdentifierWrittenToSovrin(self, li: Connection, availableClaims):
         req = self.getIdentity(li.localIdentifier)
         self.notifyMsgListener("\nSynchronizing...")
 
-        def getNymReply(reply, err, availableClaims, li: Link):
+        def getNymReply(reply, err, availableClaims, li: Connection):
             if reply.get(DATA) and json.loads(reply[DATA])[TARGET_NYM] == \
                     li.localIdentifier:
                 self.notifyMsgListener(
@@ -769,7 +769,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             getMatchingConnections(linkName)
         if len(existingLinkInvites) >= 1:
             return self._merge_request(request_dict)
-        Link.validate(request_dict)
+        Connection.validate(request_dict)
         link = self.load_request(request_dict)
         return link
 
@@ -799,13 +799,13 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                                format(link_request_name))
         # TODO: Would we always have a trust anchor corresponding to a link?
 
-        li = Link(name=link_request_name,
-                  trustAnchor=link_request_name,
-                  remoteIdentifier=remoteIdentifier,
-                  remoteEndPoint=remoteEndPoint,
-                  request_nonce=linkNonce,
-                  proofRequests=proofRequests,
-                  remote_verkey=remote_verkey)
+        li = Connection(name=link_request_name,
+                        trustAnchor=link_request_name,
+                        remoteIdentifier=remoteIdentifier,
+                        remoteEndPoint=remoteEndPoint,
+                        request_nonce=linkNonce,
+                        proofRequests=proofRequests,
+                        remote_verkey=remote_verkey)
 
         self.wallet.addConnection(li)
         return li
@@ -822,7 +822,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                 getMatchingConnections(linkName)
             if len(existingLinkInvites) >= 1:
                 return self._merge_request(request_data)
-            Link.validate(request_data)
+            Connection.validate(request_data)
             link = self.load_request(request_data)
             return link
 
@@ -865,10 +865,10 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         else:
             raise ConnectionAlreadyExists
 
-    def accept_request(self, link: Union[str, Link]):
+    def accept_request(self, link: Union[str, Connection]):
         if isinstance(link, str):
             link = self.wallet.getConnection(link, required=True)
-        elif isinstance(link, Link):
+        elif isinstance(link, Connection):
             pass
         else:
             raise TypeError("Type of connection must be either string or Link but "
@@ -927,7 +927,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
 
         return _
 
-    def _updateLinkWithLatestInfo(self, link: Link, reply):
+    def _updateLinkWithLatestInfo(self, link: Connection, reply):
         if DATA in reply and reply[DATA]:
             data = json.loads(reply[DATA])
 

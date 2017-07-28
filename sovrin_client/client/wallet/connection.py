@@ -26,23 +26,23 @@ class constant:
     AVAILABLE_CLAIMS = "Available Claims"
     RECEIVED_CLAIMS = "Received Claims"
 
-    LINK_NONCE = "Nonce"
-    LINK_STATUS = "Request status"
-    LINK_LAST_SYNCED = "Last Synced"
-    LINK_LAST_SEQ_NO = "Last Sync no"
-    LINK_STATUS_ACCEPTED = "Accepted"
+    CONNECTION_NONCE = "Nonce"
+    CONNECTION_STATUS = "Request status"
+    CONNECTION_LAST_SYNCED = "Last Synced"
+    CONNECTION_LAST_SEQ_NO = "Last Sync no"
+    CONNECTION_STATUS_ACCEPTED = "Accepted"
 
-    LINK_NOT_SYNCHRONIZED = "<this connection has not yet been synchronized>"
+    CONNECTION_NOT_SYNCHRONIZED = "<this connection has not yet been synchronized>"
     UNKNOWN_WAITING_FOR_SYNC = "<unknown, waiting for sync>"
 
-    LINK_ITEM_PREFIX = '\n    '
+    CONNECTION_ITEM_PREFIX = '\n    '
 
     NOT_AVAILABLE = "Not Available"
 
     NOT_ASSIGNED = "not yet assigned"
 
 
-class Link:
+class Connection:
     def __init__(self,
                  name,
                  localIdentifier=None,
@@ -92,7 +92,7 @@ class Link:
 
     @property
     def isAccepted(self):
-        return self.connection_status == constant.LINK_STATUS_ACCEPTED
+        return self.connection_status == constant.CONNECTION_STATUS_ACCEPTED
 
     def __str__(self):
         localIdr = self.localIdentifier if self.localIdentifier \
@@ -113,9 +113,9 @@ class Link:
             remoteEndPoint = "{}:{}".format(*remoteEndPoint)
         connectionStatus = 'not verified, remote verkey unknown'
         connection_last_synced = prettyDateDifference(self.connection_last_synced) or \
-                         constant.LINK_NOT_SYNCHRONIZED
+                         constant.CONNECTION_NOT_SYNCHRONIZED
 
-        if connection_last_synced != constant.LINK_NOT_SYNCHRONIZED and \
+        if connection_last_synced != constant.CONNECTION_NOT_SYNCHRONIZED and \
                         remoteEndPoint == constant.UNKNOWN_WAITING_FOR_SYNC:
             remoteEndPoint = constant.NOT_AVAILABLE
 
@@ -130,13 +130,13 @@ class Link:
         # TODO: This should be set as verkey in case of DID but need it from
         # wallet
         verKey = self.localVerkey if self.localVerkey else constant.SIGNER_VER_KEY_EMPTY
-        fixedLinkHeading = "Connection"
+        fixed_connection_heading = "Connection"
         if not self.isAccepted:
-            fixedLinkHeading += " (not yet accepted)"
+            fixed_connection_heading += " (not yet accepted)"
 
         # TODO: Refactor to use string interpolation
         # try:
-        fixedLinkItems = \
+        fixed_connection_items = \
             '\n' \
             'Name: ' + self.name + '\n' \
             'DID: ' + localIdr + '\n' \
@@ -150,25 +150,25 @@ class Link:
             'Request nonce: ' + self.request_nonce + '\n' \
             'Request status: ' + connectionStatus + '\n'
 
-        optionalLinkItems = ""
+        optional_connection_items = ""
         if len(self.proofRequests) > 0:
-            optionalLinkItems += "Proof Request(s): {}". \
+            optional_connection_items += "Proof Request(s): {}". \
                                      format(", ".join([cr.name for cr in self.proofRequests])) \
                                  + '\n'
 
         if self.availableClaims:
-            optionalLinkItems += self.avail_claims_str()
+            optional_connection_items += self.avail_claims_str()
 
         if self.connection_last_sync_no:
-            optionalLinkItems += 'Last sync seq no: ' + self.connection_last_sync_no \
+            optional_connection_items += 'Last sync seq no: ' + self.connection_last_sync_no \
                                  + '\n'
 
         fixedEndingLines = 'Last synced: ' + connection_last_synced
 
-        connection_items = fixedLinkItems + optionalLinkItems + fixedEndingLines
-        indentedLinkItems = constant.LINK_ITEM_PREFIX.join(
+        connection_items = fixed_connection_items + optional_connection_items + fixedEndingLines
+        indented_connection_items = constant.CONNECTION_ITEM_PREFIX.join(
             connection_items.splitlines())
-        return fixedLinkHeading + indentedLinkItems
+        return fixed_connection_heading + indented_connection_items
 
     def avail_claims_str(self):
         claim_names = [name for name, _, _ in self.availableClaims]
