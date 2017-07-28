@@ -27,7 +27,7 @@ class constant:
     RECEIVED_CLAIMS = "Received Claims"
 
     LINK_NONCE = "Nonce"
-    LINK_STATUS = "Invitation status"
+    LINK_STATUS = "Request status"
     LINK_LAST_SYNCED = "Last Synced"
     LINK_LAST_SEQ_NO = "Last Sync no"
     LINK_STATUS_ACCEPTED = "Accepted"

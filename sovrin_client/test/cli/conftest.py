@@ -42,7 +42,7 @@ from plenum.test.cli.helper import newKeyPair, waitAllNodesStarted, \
     doByCtx
 
 from sovrin_common.config_util import getConfig
-from sovrin_client.test.cli.helper import ensureNodesCreated, getConnectionInvitation, \
+from sovrin_client.test.cli.helper import ensureNodesCreated, get_connection_request, \
     getPoolTxnData, newCLI, getCliBuilder, P, prompt_is, addAgent, doSendNodeCmd, addNym
 from sovrin_client.test.agent.conftest import faberIsRunning as runningFaber, \
     acmeIsRunning as runningAcme, thriftIsRunning as runningThrift, emptyLooper,\
@@ -237,24 +237,24 @@ def acceptWhenNotConnected(canNotAcceptMsg, connectUsage):
 
 @pytest.fixture(scope="module")
 def acceptUnSyncedWithoutEndpointWhenConnected(
-        commonAcceptInvitationMsgs, syncedInviteAcceptedOutWithoutClaims):
-    return commonAcceptInvitationMsgs + \
-        syncedInviteAcceptedOutWithoutClaims
+        common_accept_request_msgs, syncedInviteAcceptedOutWithoutClaims):
+    return common_accept_request_msgs + \
+           syncedInviteAcceptedOutWithoutClaims
 
 
 @pytest.fixture(scope="module")
-def commonAcceptInvitationMsgs():
+def common_accept_requests_msgs():
     return ["Request not yet verified",
             "Connection not yet synchronized.",
             ]
 
 
 @pytest.fixture(scope="module")
-def acceptUnSyncedWhenNotConnected(commonAcceptInvitationMsgs,
+def acceptUnSyncedWhenNotConnected(common_accept_requests_msgs,
                                    canNotSyncMsg, connectUsage):
-    return commonAcceptInvitationMsgs + \
-            ["Request acceptance aborted."] + \
-            canNotSyncMsg + connectUsage
+    return common_accept_requests_msgs + \
+           ["Request acceptance aborted."] + \
+           canNotSyncMsg + connectUsage
 
 
 @pytest.fixture(scope="module")
@@ -1140,7 +1140,7 @@ def faberAdded(poolNodesCreated,
              faberInviteLoaded,
              aliceConnected,
             steward, stewardWallet):
-    li = getConnectionInvitation("Faber", aliceCLI.activeWallet)
+    li = get_connection_request("Faber", aliceCLI.activeWallet)
     createNym(looper, li.remoteIdentifier, steward, stewardWallet,
               role=TRUST_ANCHOR)
 

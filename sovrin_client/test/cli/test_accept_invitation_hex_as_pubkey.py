@@ -31,7 +31,7 @@ def faberMap(faberMapWithoutEndpointPubkey):
     return fbrMap
 
 
-def testInvitationNotAcceptedIfAgentWasAddedUsingHexAsPubkey(
+def test_request_not_accepted_if_agent_was_added_using_hex_as_pubkey(
         be, do, aliceCli, faberMap, preRequisite,
         syncedInviteAcceptedWithClaimsOut, faberInviteSyncedWithEndpoint):
     with pytest.raises(BlowUp):
