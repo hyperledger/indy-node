@@ -32,9 +32,9 @@ class Authoriser:
             {r: [OWNER] for r in ValidRoles},
         '{}_services__[VALIDATOR]'.format(NODE):
             {STEWARD: [OWNER, ]},
-        # TODO: should a steward be allowed to suspend its validator?
+        # INDY-410 - steward allowed to suspend its validator
         '{}_services_[VALIDATOR]_[]'.format(NODE):
-            {TRUSTEE: []},
+            {TRUSTEE: [], STEWARD: [OWNER, ]},
         '{}_services_[]_[VALIDATOR]'.format(NODE):
             {TRUSTEE: []},
         '{}_node_ip_<any>_<any>'.format(NODE):
