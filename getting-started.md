@@ -9,8 +9,8 @@
   * [What We'll Cover](#what-well-cover)
   * [Alice Gets a Transcript](#alice-gets-a-transcript)
   * [Install Sovrin](#install-sovrin)
-  * [Evaluate a Connection Request](#evaluate-the-request)
-  * [Accept a Connection Request](#accept-the-request)
+  * [Evaluate a Connection Invitation](#evaluate-a-connection-invitation)
+  * [Accept a Connection Request](#accept-a-connection request)
   * [Test Secure Interaction](#test-secure-interaction)
   * [Apply for a Job](#apply-for-a-job)
   * [Apply for a Loan](#apply-for-a-loan)
@@ -97,7 +97,7 @@ Usage:
 ```
 Alice might also try the 'help' command to see a list of the other commands that are available to her.
 
-## Evaluate a Connection Invitiation
+## Evaluate a Connection Invitation
 
 To make this guide more convenient, the sovrin CLI package installs a sample Faber College invitation request in a file at /<CLI_ROOT>/sample/faber-invitation.sovrin. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Sovrin app would be doing a lot of these steps automatically.)
 
