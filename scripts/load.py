@@ -13,7 +13,7 @@ from time import *
 numReqs = 100
 splits = 1
 
-Logger.setLogLevel(logging.INFO)
+Logger.setLogLevel(logging.WARNING)
 logger = getlogger()
 
 
