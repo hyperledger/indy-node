@@ -13,7 +13,7 @@ from plenum.common.constants import NAME, TXN_TYPE
 from plenum.common.constants import VERSION
 from plenum.server.has_action_queue import HasActionQueue
 from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT
+    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL
 from sovrin_node.server.upgrade_log import UpgradeLog
 from plenum.server import notifier_plugin_manager
 import asyncio
@@ -34,6 +34,16 @@ class Upgrader(HasActionQueue):
     def isVersionHigher(oldVer, newVer):
         r = Upgrader.compareVersions(oldVer, newVer)
         return True if r == 1 else False
+
+    @staticmethod
+    def isVersionSame(oldVer, newVer):
+        r = Upgrader.compareVersions(oldVer, newVer)
+        return True if r == 0 else False
+
+    @staticmethod
+    def isVersionLower(oldVer, newVer):
+        r = Upgrader.compareVersions(oldVer, newVer)
+        return True if r == -1 else False
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -263,6 +273,7 @@ class Upgrader(HasActionQueue):
             action = txn[ACTION]
             version = txn[VERSION]
             justification = txn.get(JUSTIFICATION)
+            reinstall = txn.get(REINSTALL, False)
             currentVersion = self.getVersion()
 
             if action == START:
@@ -273,7 +284,8 @@ class Upgrader(HasActionQueue):
                 failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
                 if not self.scheduledUpgrade:
-                    if self.isVersionHigher(currentVersion, version):
+                    if self.isVersionHigher(currentVersion, version) or \
+                            (self.isVersionSame(currentVersion, version) and reinstall):
                         # If no upgrade has been scheduled
                         self._scheduleUpgrade(version, when, failTimeout)
                 else:

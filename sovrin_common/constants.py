@@ -23,6 +23,7 @@ CANCEL = 'cancel'
 COMPLETE = 'complete'
 FAIL = 'fail'
 JUSTIFICATION = 'justification'
+REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 
 NULL = 'null'

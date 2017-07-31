@@ -60,7 +60,7 @@ from sovrin_common.exceptions import InvalidConnectionException, ConnectionAlrea
 from sovrin_common.identity import Identity
 from sovrin_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, GET_SCHEMA, \
-    START, JUSTIFICATION, NULL, WRITES
+    START, JUSTIFICATION, NULL, WRITES, REINSTALL
 
 from stp_core.crypto.signer import Signer
 from stp_core.crypto.util import cleanSeed
@@ -674,10 +674,10 @@ class SovrinCli(PlenumCli):
                                     req.key, self.activeClient, out)
 
     def _sendPoolUpgTxn(self, name, version, action, sha256, schedule=None,
-                        justification=None, timeout=None, force=False):
+                        justification=None, timeout=None, force=False, reinstall=False):
         upgrade = Upgrade(name, version, action, sha256, schedule=schedule,
                           trustee=self.activeIdentifier, timeout=timeout,
-                          justification=justification, force=force)
+                          justification=justification, force=force, reinstall=reinstall)
         self.activeWallet.doPoolUpgrade(upgrade)
         reqs = self.activeWallet.preparePending()
         req, = self.activeClient.submitReqs(*reqs)
@@ -820,7 +820,9 @@ class SovrinCli(PlenumCli):
             schedule = matchedVars.get(SCHEDULE)
             justification = matchedVars.get(JUSTIFICATION)
             force = matchedVars.get(FORCE, "False")
+            reinstall = matchedVars.get(REINSTALL, "False")
             force = force == "True"
+            reinstall = reinstall == "True"
             if action == START:
                 if not schedule:
                     self.print('{} need to be provided'.format(SCHEDULE),
@@ -840,7 +842,8 @@ class SovrinCli(PlenumCli):
                 timeout = int(timeout.strip())
             self._sendPoolUpgTxn(name, version, action, sha256,
                                  schedule=schedule, timeout=timeout,
-                                 justification=justification, force=force)
+                                 justification=justification, force=force,
+                                 reinstall=reinstall)
             return True
 
     def _sendPoolConfigAction(self, matchedVars):
