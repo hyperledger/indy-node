@@ -8,16 +8,17 @@ from plenum.common.constants import VERSION, NAME
 
 from sovrin_node.test.upgrade.helper import codeVersion, checkUpgradeScheduled, \
     ensureUpgradeSent, get_valid_code_hash
+from sovrin_common.constants import REINSTALL
 
 
-def testDoNotUpgradeToTheSameVersion(looper, tconf, nodeSet,
+def testDoUpgradeToTheSameVersionIfReinstall(looper, tconf, nodeSet,
                                              validUpgrade, trustee,
                                              trusteeWallet):
     upgr1 = deepcopy(validUpgrade)
     upgr1[VERSION] = codeVersion()
+    upgr1[REINSTALL] = True
 
     # An upgrade scheduled, it should pass
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
-    with pytest.raises(AssertionError):
-        looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
-                              retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
+                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
