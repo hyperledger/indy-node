@@ -10,7 +10,7 @@ from sovrin_node.test.upgrade.helper import codeVersion, checkUpgradeScheduled, 
     ensureUpgradeSent, get_valid_code_hash
 
 
-def testDoNotUpgradeToTheSameVersion(looper, tconf, nodeSet,
+def test_do_not_upgrade_to_the_same_version(looper, tconf, nodeSet,
                                              validUpgrade, trustee,
                                              trusteeWallet):
     upgr1 = deepcopy(validUpgrade)

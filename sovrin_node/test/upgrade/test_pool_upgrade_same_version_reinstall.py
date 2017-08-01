@@ -11,7 +11,7 @@ from sovrin_node.test.upgrade.helper import codeVersion, checkUpgradeScheduled, 
 from sovrin_common.constants import REINSTALL
 
 
-def testDoUpgradeToTheSameVersionIfReinstall(looper, tconf, nodeSet,
+def test_do_upgrade_to_the_same_version_if_reinstall(looper, tconf, nodeSet,
                                              validUpgrade, trustee,
                                              trusteeWallet):
     upgr1 = deepcopy(validUpgrade)
