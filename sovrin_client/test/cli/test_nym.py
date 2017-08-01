@@ -2,12 +2,17 @@ import pytest
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
 from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_client.test.cli.helper import prompt_is, addNym, ensureConnectedToTestEnv
+from sovrin_client.test.cli.helper import prompt_is, addNym, ensureConnectedToTestEnv, createUuidIdentifier, \
+    createHalfKeyIdentifierAndAbbrevVerkey
 from sovrin_common.roles import Roles
+from plenum.common.constants import TARGET_NYM
 from sovrin_node.test.did.conftest import wallet, abbrevVerkey
 
 TRUST_ANCHOR_SEED = b'TRUST0NO0ONE00000000000000000000'
 
+NYM_ADDED = 'Nym {dest} added'
+CURRENT_VERKEY_FOR_NYM = 'Current verkey for NYM {dest} is {verkey}'
+NOT_OWNER = 'is neither Trustee nor owner of'
 
 @pytest.fixture("module")
 def trust_anchor_did_signer():
@@ -250,5 +255,30 @@ def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted, poolTxnData,
        expect=["Nym {} added".format(idr)])
 
 
+def testSend2NymsSucceedsWhenBatched(
+        be, do, poolNodesStarted, newStewardCli):
 
+    be(newStewardCli)
+
+    halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
+    _, anotherAbbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
+
+    newStewardCli.enterCmd("send NYM {dest}={nym} verkey={verkey}".
+            format(dest=TARGET_NYM, nym=halfKeyIdentifier, verkey=abbrevVerkey))
+
+    parameters = {
+        'dest': halfKeyIdentifier,
+        'verkey': anotherAbbrevVerkey
+    }
+
+    do('send NYM dest={dest} verkey={verkey}',
+       mapper=parameters, expect=NYM_ADDED, within=10)
+
+    parameters = {
+        'dest': halfKeyIdentifier,
+        'verkey': abbrevVerkey
+    }
+
+    do('send GET_NYM dest={dest}',
+        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
 
