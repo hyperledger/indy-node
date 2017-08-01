@@ -172,6 +172,7 @@ class ClientPoolUpgradeOperation(MessageValidator):
         (JUSTIFICATION, LimitedLengthStringField(max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
         (NAME, NonEmptyStringField(optional=True)),
         (FORCE, BooleanField(optional=True)),
+        (REINSTALL, BooleanField(optional=True)),
     )
 
 

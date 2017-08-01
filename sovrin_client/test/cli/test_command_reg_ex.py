@@ -271,7 +271,10 @@ def testSendPoolUpgrade(grammar):
                                  "'2017-01-25T12:44:01.258870+00:00', "
                                  "'DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2': "
                                  "'2017-01-25T12:38:57.258870+00:00'} "
-                                 "timeout=10")
+                                 "timeout=10 "
+                                 "force=True "
+                                 "reinstall=True"
+                        )
 
     # Testing for cancel
     getMatchedVariables(grammar, 'send POOL_UPGRADE name=upgrade-13 version=0.0.6 '
