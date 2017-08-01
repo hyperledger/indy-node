@@ -15,6 +15,7 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
     ('justification', LimitedLengthStringField),
     ("name", NonEmptyStringField),
     ("force", BooleanField),
+    ("reinstall", BooleanField),
 ])
 
 
