@@ -40,12 +40,12 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
     startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
-    nodeAndClientInfoFilePath, patchPluginManager, txnPoolNodesLooper, \
-    warncheck, warnfilters as plenum_warnfilters
+    patchPluginManager, txnPoolNodesLooper, warncheck, \
+    warnfilters as plenum_warnfilters
 
 # noinspection PyUnresolvedReferences
 from sovrin_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
-    domainTxnOrderedFields, looper
+    domainTxnOrderedFields, looper, setTestLogLevel
 
 Logger.setLogLevel(logging.NOTSET)
 
@@ -62,9 +62,9 @@ def warnfilters(client_warnfilters):
 @pytest.fixture("module")
 def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
                    stewardWallet, allPluginsPath, testNodeClass,
-                   testClientClass, tdir):
+                   testClientClass, tdir, node_name='Theta'):
     newStewardName = "testClientSteward" + randomString(3)
-    newNodeName = "Theta"
+    newNodeName = node_name
     newSteward, newStewardWallet = getClientAddedWithRole(nodeSet, tdir,
                                                           looper, steward,
                                                           stewardWallet,

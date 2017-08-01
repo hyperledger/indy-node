@@ -1,14 +1,20 @@
+import logging
+
+from plenum.common.signer_did import DidSigner
 from sovrin_client.client.client import Client
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.identity import Identity
+from stp_core.common.log import getlogger, Logger
 from stp_core.network.port_dispenser import genHa, HA
 from stp_core.loop.looper import Looper
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from time import *
-from plenum.common.signer_simple import SimpleSigner
 
-numReqs = 10000
-splits = 5
+numReqs = 100
+splits = 1
+
+Logger.setLogLevel(logging.INFO)
+logger = getlogger()
 
 
 def sendRandomRequests(wallet: Wallet, client: Client, count: int):
@@ -22,13 +28,13 @@ def sendRandomRequests(wallet: Wallet, client: Client, count: int):
     return client.submitReqs(*reqs)
 
 
-def load():
+def put_load():
     port = genHa()[1]
     ha = HA('0.0.0.0', port)
     name = "hello"
     wallet = Wallet(name)
     wallet.addIdentifier(
-        signer=SimpleSigner(seed=b'000000000000000000000000Steward1'))
+        signer=DidSigner(seed=b'000000000000000000000000Steward1'))
     client = Client(name, ha=ha)
     with Looper(debug=True) as looper:
         looper.add(client)
@@ -40,7 +46,8 @@ def load():
             s = perf_counter()
             reqs = requests[i:i + numReqs // splits + 1]
             waitForSufficientRepliesForRequests(looper, client, requests=reqs,
-                                                fVal=2, customTimeoutPerReq=3)
+                                                customTimeoutPerReq=100,
+                                                override_timeout_limit=True)
             print('>>> Got replies for {} requests << in {}'.
                   format(numReqs // splits, perf_counter() - s))
         end = perf_counter()
@@ -49,4 +56,4 @@ def load():
 
 
 if __name__ == "__main__":
-    load()
+    put_load()

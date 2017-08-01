@@ -10,6 +10,7 @@ from plenum.common.signer_did import DidSigner
 from plenum.common.util import randomString
 from plenum.test.delayers import cDelay
 from plenum.test.helper import waitForSufficientRepliesForRequests
+from plenum.test.node_catchup.helper import waitNodeDataEquality
 from plenum.test.test_node import getPrimaryReplica
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.identity import Identity
@@ -191,6 +192,8 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     # The verkeys are correct
     for i, v in keys.items():
         check_verkey(i, v)
+
+    waitNodeDataEquality(looper, nodeSet[0], *nodeSet[1:])
 
     keys = {}
     for _ in range(3):

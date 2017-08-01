@@ -6,18 +6,18 @@ from sovrin_client.test import waits
 from stp_core.loop.eventually import eventually
 from plenum.test.cli.helper import exitFromCli, \
     createAndAssertNewKeyringCreation
-from sovrin_common.exceptions import InvalidLinkException
+from sovrin_common.exceptions import InvalidConnectionException
 from sovrin_common.constants import ENDPOINT
 from plenum.common.signer_did import DidSigner
 
 from sovrin_client.client.wallet.link import Link, constant
 from sovrin_client.test.cli.helper import getFileLines, prompt_is, doubleBraces, \
-    getTotalLinks, getTotalSchemas, getTotalClaimsRcvd, getTotalAvailableClaims, \
+    getTotalConnections, getTotalSchemas, getTotalClaimsRcvd, getTotalAvailableClaims, \
     newKey, ensureConnectedToTestEnv
 
-def getSampleLinkInvitation():
+def getSampleConnectionInvitation():
     return {
-        "link-invitation": {
+        "connection-request": {
             "name": "Acme Corp",
             "identifier": "CzkavE58zgX7rUMrzSinLr",
             "nonce": "57fbf9dc8c8e6acde33de98c6d747b28c",
@@ -134,7 +134,7 @@ def connectIfNotAlreadyConnected(do, expectMsgs, userCli, userMap):
 
 def setPromptAndKeyring(do, name, newKeyringOut, userMap):
     do('prompt {}'.format(name), expect=prompt_is(name))
-    do('new keyring {}'.format(name), expect=newKeyringOut, mapper=userMap)
+    do('new wallet {}'.format(name), expect=newKeyringOut, mapper=userMap)
 
 
 @pytest.fixture(scope="module")
@@ -216,10 +216,10 @@ def testShowInviteWithDirPath(be, do, aliceCli, fileNotExists, faberMap):
     do('show sample', expect=fileNotExists, mapper=faberMap)
 
 
-def testLoadLinkInviteWithoutSig():
-    li = getSampleLinkInvitation()
+def testLoadConnectionInviteWithoutSig():
+    li = getSampleConnectionInvitation()
     del li["sig"]
-    with pytest.raises(InvalidLinkException) as excinfo:
+    with pytest.raises(InvalidConnectionException) as excinfo:
         Link.validate(li)
     assert "Field not found in given input: sig" in str(excinfo.value)
 
@@ -238,10 +238,10 @@ def testLoadInviteNotExists(be, do, aliceCli, fileNotExists, faberMap):
 
 @pytest.fixture(scope="module")
 def faberInviteLoadedByAlice(be, do, aliceCli, loadInviteOut, faberMap):
-    totalLinksBefore = getTotalLinks(aliceCli)
+    totalConnectionsBefore = getTotalConnections(aliceCli)
     be(aliceCli)
     do('load {invite}', expect=loadInviteOut, mapper=faberMap)
-    assert totalLinksBefore + 1 == getTotalLinks(aliceCli)
+    assert totalConnectionsBefore + 1 == getTotalConnections(aliceCli)
     return aliceCli
 
 
@@ -249,25 +249,25 @@ def testLoadFaberInvite(faberInviteLoadedByAlice):
     pass
 
 
-def testShowLinkNotExists(be, do, aliceCli, linkNotExists, faberMap):
+def testShowConnectionNotExists(be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
-    do('show link {inviter-not-exists}',
-       expect=linkNotExists,
+    do('show connection {inviter-not-exists}',
+       expect=connectionNotExists,
        mapper=faberMap)
 
 
-def testShowFaberLink(be, do, aliceCli, faberInviteLoadedByAlice,
-                      showUnSyncedLinkOut, faberMap):
+def testShowFaberConnection(be, do, aliceCli, faberInviteLoadedByAlice,
+                            showUnSyncedConnectionOut, faberMap):
     be(aliceCli)
     cp = faberMap.copy()
     cp.update(endpoint='<unknown, waiting for sync>',
-              last_synced='<this link has not yet been synchronized>')
-    do('show link {inviter}', expect=showUnSyncedLinkOut, mapper=cp)
+              last_synced='<this connection has not yet been synchronized>')
+    do('show connection {inviter}', expect=showUnSyncedConnectionOut, mapper=cp)
 
 
-def testSyncLinkNotExists(be, do, aliceCli, linkNotExists, faberMap):
+def testSyncConnectionNotExists(be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
-    do('sync {inviter-not-exists}', expect=linkNotExists, mapper=faberMap)
+    do('sync {inviter-not-exists}', expect=connectionNotExists, mapper=faberMap)
 
 
 def testSyncFaberWhenNotConnected(be, do, aliceCli, faberMap,
@@ -283,7 +283,7 @@ def testAcceptUnSyncedFaberInviteWhenNotConnected(be, do, aliceCli,
                                                   acceptUnSyncedWhenNotConnected,
                                                   faberMap):
     be(aliceCli)
-    do('accept invitation from {inviter}',
+    do('accept request from {inviter}',
        expect=acceptUnSyncedWhenNotConnected,
        mapper=faberMap)
 
@@ -310,13 +310,13 @@ def faberInviteSyncedWithoutEndpoint(be, do, aliceCli, faberMap,
                                      preRequisite,
                                      faberInviteLoadedByAlice,
                                      connectedToTest,
-                                     linkNotYetSynced,
-                                     syncLinkOutWithoutEndpoint):
+                                     connectionNotYetSynced,
+                                     syncConnectionOutWithoutEndpoint):
     be(aliceCli)
     connectIfNotAlreadyConnected(do, connectedToTest, aliceCli, faberMap)
 
     do('sync {inviter}', within=2,
-       expect=syncLinkOutWithoutEndpoint,
+       expect=syncConnectionOutWithoutEndpoint,
        mapper=faberMap)
     return aliceCli
 
@@ -325,18 +325,18 @@ def testSyncFaberInviteWithoutEndpoint(faberInviteSyncedWithoutEndpoint):
     pass
 
 
-def testShowSyncedFaberInvite(be, do, aliceCli, faberMap, linkNotYetSynced,
+def testShowSyncedFaberInvite(be, do, aliceCli, faberMap, connectionNotYetSynced,
                               faberInviteSyncedWithoutEndpoint,
-                              showSyncedLinkWithoutEndpointOut):
+                              showSyncedConnectionWithoutEndpointOut):
 
     be(aliceCli)
 
     cp = faberMap.copy()
     cp.update(endpoint='<unknown, waiting for sync>',
-              last_synced='<this link has not yet been synchronized>')
+              last_synced='<this connection has not yet been synchronized>')
 
-    do('show link {inviter}', within=4,
-       expect=showSyncedLinkWithoutEndpointOut,
+    do('show connection {inviter}', within=4,
+       expect=showSyncedConnectionWithoutEndpointOut,
        # TODO, need to come back to not_expect
        # not_expect=linkNotYetSynced,
        mapper=cp)
@@ -353,10 +353,10 @@ def syncInvite(be, do, userCli, expectedMsgs, mapping):
 @pytest.fixture(scope="module")
 def faberInviteSyncedWithEndpoint(be, do, faberMap, aliceCLI, preRequisite,
                                   faberInviteSyncedWithoutEndpoint,
-                                  syncLinkOutWithEndpoint):
+                                  syncConnectionOutWithEndpoint):
     cp = faberMap.copy()
-    cp.update(last_synced='<this link has not yet been synchronized>')
-    syncInvite(be, do, aliceCLI, syncLinkOutWithEndpoint, cp)
+    cp.update(last_synced='<this connection has not yet been synchronized>')
+    syncInvite(be, do, aliceCLI, syncConnectionOutWithEndpoint, cp)
     return aliceCLI
 
 
@@ -366,11 +366,11 @@ def testSyncFaberInvite(faberInviteSyncedWithEndpoint):
 
 def testShowSyncedFaberInviteWithEndpoint(be, do, aliceCLI, faberMap,
                                           faberInviteSyncedWithEndpoint,
-                                          showSyncedLinkWithEndpointOut):
+                                          showSyncedConnectionWithEndpointOut):
     be(aliceCLI)
     cp = faberMap.copy()
     cp.update(last_synced='just now')
-    do('show link {inviter}', expect=showSyncedLinkWithEndpointOut, mapper=cp, within=3)
+    do('show connection {inviter}', expect=showSyncedConnectionWithEndpointOut, mapper=cp, within=3)
 
 
 def testPingBeforeAccept(be, do, aliceCli, faberMap, connectedToTest,
@@ -381,15 +381,15 @@ def testPingBeforeAccept(be, do, aliceCli, faberMap, connectedToTest,
        within=3,
        expect=[
            'Ping sent.',
-           'Error processing ping. Link is not yet created.'
+           'Error processing ping. Connection is not yet created.'
        ],
        mapper=faberMap)
 
 
-def testAcceptNotExistsLink(be, do, aliceCli, linkNotExists, faberMap):
+def testAcceptNotExistsConnection(be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
-    do('accept invitation from {inviter-not-exists}',
-       expect=linkNotExists, mapper=faberMap)
+    do('accept request from {inviter-not-exists}',
+       expect=connectionNotExists, mapper=faberMap)
 
 
 def getSignedRespMsg(msg, signer):
@@ -400,15 +400,15 @@ def getSignedRespMsg(msg, signer):
 
 def acceptInvitation(be, do, userCli, agentMap, expect):
     be(userCli)
-    do("accept invitation from {inviter}",
+    do("accept request from {inviter}",
        within=15,
        mapper=agentMap,
        expect=expect,
        not_expect=[
            "Observer threw an exception",
-           "Identifier is not yet written to Sovrin"]
+           "DID is not yet written to Sovrin"]
        )
-    li = userCli.agent.wallet.getLinkBy(nonce=agentMap['nonce'])
+    li = userCli.agent.wallet.getConnectionBy(nonce=agentMap['nonce'])
     assert li
     agentMap['identifier'] = li.localIdentifier
     agentMap['verkey'] = li.localVerkey
@@ -421,6 +421,9 @@ def aliceAcceptedFaberInvitation(be, do, aliceCli, faberMap,
                                  faberInviteSyncedWithEndpoint):
     acceptInvitation(be, do, aliceCli, faberMap,
                  syncedInviteAcceptedWithClaimsOut)
+    do("list connections", within = 10,
+       mapper=faberMap,
+       expect="Faber College")
     return aliceCli
 
 
@@ -442,7 +445,7 @@ def testPingFaber(be, do, aliceCli, faberMap,
 def testAliceAcceptFaberInvitationAgain(be, do, aliceCli, faberMap,
                                         unsycedAlreadyAcceptedInviteAcceptedOut,
                                         aliceAcceptedFaberInvitation):
-    li = aliceCli.activeWallet.getLinkBy(remote=faberMap['remote'])
+    li = aliceCli.activeWallet.getConnectionBy(remote=faberMap['remote'])
     li.linkStatus = None
     be(aliceCli)
     acceptInvitation(be, do, aliceCli, faberMap,
@@ -453,12 +456,12 @@ def testAliceAcceptFaberInvitationAgain(be, do, aliceCli, faberMap,
 # TODO: Write tests which sends request with invalid signature
 # TODO: Write tests which receives response with invalid signature
 
-def testShowFaberLinkAfterInviteAccept(be, do, aliceCli, faberMap,
-                                       showAcceptedLinkOut,
+def testShowFaberConnectionAfterInviteAccept(be, do, aliceCli, faberMap,
+                                       showAcceptedConnectionOut,
                                        aliceAcceptedFaberInvitation):
     be(aliceCli)
 
-    do("show link {inviter}", expect=showAcceptedLinkOut,
+    do("show connection {inviter}", expect=showAcceptedConnectionOut,
        # not_expect="Link (not yet accepted)",
        mapper=faberMap)
 
@@ -539,12 +542,12 @@ def testShowAcmeInvite(be, do, aliceCli, acmeMap):
 
 @pytest.fixture(scope="module")
 def acmeInviteLoadedByAlice(be, do, aliceCli, loadInviteOut, acmeMap):
-    totalLinksBefore = getTotalLinks(aliceCli)
+    totalConnectionsBefore = getTotalConnections(aliceCli)
     be(aliceCli)
     do('load {invite}', expect=loadInviteOut, mapper=acmeMap)
-    link = aliceCli.activeWallet.getLinkInvitation(acmeMap.get("inviter"))
-    link.remoteEndPoint = acmeMap.get(ENDPOINT)
-    assert totalLinksBefore + 1 == getTotalLinks(aliceCli)
+    connection = aliceCli.activeWallet.getConnectionInvitation(acmeMap.get("inviter"))
+    connection.remoteEndPoint = acmeMap.get(ENDPOINT)
+    assert totalConnectionsBefore + 1 == getTotalConnections(aliceCli)
     return aliceCli
 
 
@@ -552,15 +555,15 @@ def testLoadAcmeInvite(acmeInviteLoadedByAlice):
     pass
 
 
-def testShowAcmeLink(be, do, aliceCli, acmeInviteLoadedByAlice,
-                     showUnSyncedLinkOut, showLinkWithProofRequestsOut, acmeMap):
-    showUnSyncedLinkWithClaimReqs = \
-        showUnSyncedLinkOut + showLinkWithProofRequestsOut
+def testShowAcmeConnection(be, do, aliceCli, acmeInviteLoadedByAlice,
+                           showUnSyncedConnectionOut, showConnectionWithProofRequestsOut, acmeMap):
+    showUnSyncedConnectionWithClaimReqs = \
+        showUnSyncedConnectionOut + showConnectionWithProofRequestsOut
     be(aliceCli)
 
     cp = acmeMap.copy()
-    cp.update(last_synced='<this link has not yet been synchronized>')
-    do('show link {inviter}', expect=showUnSyncedLinkWithClaimReqs, mapper=cp)
+    cp.update(last_synced='<this connection has not yet been synchronized>')
+    do('show connection {inviter}', expect=showUnSyncedConnectionWithClaimReqs, mapper=cp)
 
 
 @pytest.fixture(scope="module")
@@ -588,13 +591,13 @@ def testSetAttrWithoutContext(be, do, aliceCli):
         "set the context"])
 
 
-def testShowAcmeLinkAfterInviteAccept(be, do, aliceCli, acmeMap,
-                                      aliceAcceptedAcmeJobInvitation,
-                                      showAcceptedLinkWithoutAvailableClaimsOut):
+def testShowAcmeConnectionAfterInviteAccept(be, do, aliceCli, acmeMap,
+                                            aliceAcceptedAcmeJobInvitation,
+                                            showAcceptedConnectionWithoutAvailableClaimsOut):
     be(aliceCli)
 
-    do("show link {inviter}", expect=showAcceptedLinkWithoutAvailableClaimsOut,
-       not_expect="Link (not yet accepted)",
+    do("show connection {inviter}", expect=showAcceptedConnectionWithoutAvailableClaimsOut,
+       not_expect="Connection (not yet accepted)",
        mapper=acmeMap)
 
 
@@ -780,16 +783,16 @@ def testAliceSendClaimProofToAcme(jobApplicationProofSent):
 # test works correctly all the time and also we start supporting
 # building and sending proofs from more than one claim
 
-def testShowAcmeLinkAfterClaimSent(be, do, aliceCli, acmeMap,
-                                   jobApplicationProofSent,
-                                   showAcceptedLinkWithAvailableClaimsOut):
+def testShowAcmeConnectionAfterClaimSent(be, do, aliceCli, acmeMap,
+                                         jobApplicationProofSent,
+                                         showAcceptedConnectionWithAvailableClaimsOut):
     be(aliceCli)
     mapping = {}
     mapping.update(acmeMap)
     mapping["claims"] = "Job-Certificate"
 
     acmeMap.update(acmeMap)
-    do("show link {inviter}", expect=showAcceptedLinkWithAvailableClaimsOut,
+    do("show connection {inviter}", expect=showAcceptedConnectionWithAvailableClaimsOut,
        mapper=mapping)
 
 
@@ -812,9 +815,9 @@ def jobCertClaimRequested(be, do, aliceCli, preRequisite,
 
     def removeSchema():
         inviter = jobCertificateClaimMap["inviter"]
-        links = aliceCli.activeWallet.getMatchingLinks(inviter)
-        assert len(links) == 1
-        faberId = links[0].remoteIdentifier
+        connections = aliceCli.activeWallet.getMatchingConnections(inviter)
+        assert len(connections) == 1
+        faberId = connections[0].remoteIdentifier
         name, version = jobCertificateClaimMap["name"], \
                         jobCertificateClaimMap["version"]
         aliceCli.activeWallet._schemas.pop((name, version, faberId))
@@ -851,9 +854,9 @@ def thriftInviteLoadedByAlice(be, do, aliceCli, loadInviteOut, thriftMap,
                               jobCertClaimRequested,
                               preRequisite):
     be(aliceCli)
-    totalLinksBefore = getTotalLinks(aliceCli)
+    totalConnectionsBefore = getTotalConnections(aliceCli)
     do('load {invite}', expect=loadInviteOut, mapper=thriftMap)
-    assert totalLinksBefore + 1 == getTotalLinks(aliceCli)
+    assert totalConnectionsBefore + 1 == getTotalConnections(aliceCli)
     return aliceCli
 
 
@@ -934,11 +937,11 @@ def restartCliAndTestWalletRestoration(be, do, cli, connectedToTest):
     be(cli)
     connectIfNotAlreadyConnected(do, connectedToTest, cli, {})
     do(None, expect=[
-        'Saved keyring ',
-        'Active keyring set to '
+        'Saved wallet ',
+        'Active wallet set to '
     ], within=5)
     assert cli._activeWallet is not None
-    # assert len(cli._activeWallet._links) == 3
+    # assert len(cli._activeWallet._connections) == 3
     # assert len(cli._activeWallet.identifiers) == 4
 
 
@@ -952,8 +955,8 @@ def testAliceSendBankKYCClaim(be, do, aliceCli, susanCli, bankKYCProofSent,
 def testAliceReqAvailClaimsFromNonExistentConnection(
         be, do, aliceCli, bankKYCProofSent, faberMap):
     be(aliceCli)
-    do('request available claims from dummy-link', mapper=faberMap,
-       expect=["No matching link invitations found in current keyring"])
+    do('request available claims from dummy-connection', mapper=faberMap,
+       expect=["No matching connection requests found in current wallet"])
 
 
 def testAliceReqAvailClaimsFromFaber(
@@ -997,11 +1000,6 @@ def assertReqAvailClaims(be, do, userCli, agentMap,
        within=3)
 
 
-# TODO: This test is failing on this branch as the available claims are tied
-# with internal id, which would be same for whosoever uses the same invitation
-# file (which has the nonce, and hence their internal id would be same),
-# so either this test's expectation is wrong OR we'll have to fix the issue.
-@pytest.mark.skip(reason='INDY-107')
 def testBobReqAvailClaimsFromAgents(
         be, do, bobCli, loadInviteOut, faberMap, acmeMap, thriftMap,
         connectedToTest, syncedInviteAcceptedWithClaimsOut,

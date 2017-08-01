@@ -1,5 +1,5 @@
 from sovrin_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, GET_ATTR, GET_NYM, GET_TXNS, \
-    GET_SCHEMA, GET_CLAIM_DEF, POOL_UPGRADE, NODE_UPGRADE
+    GET_SCHEMA, GET_CLAIM_DEF, POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG
 from sovrin_common.transactions import SovrinTransactions
 
 
@@ -17,6 +17,7 @@ def testTransactionsAreEncoded():
     assert GET_CLAIM_DEF == "108"
     assert POOL_UPGRADE == "109"
     assert NODE_UPGRADE == "110"
+    assert POOL_CONFIG == "111"
 
 
 def testTransactionEnumDecoded():
@@ -35,6 +36,7 @@ def testTransactionEnumDecoded():
     assert SovrinTransactions.GET_CLAIM_DEF.name == "GET_CLAIM_DEF"
     assert SovrinTransactions.POOL_UPGRADE.name == "POOL_UPGRADE"
     assert SovrinTransactions.NODE_UPGRADE.name == "NODE_UPGRADE"
+    assert SovrinTransactions.POOL_CONFIG.name == "POOL_CONFIG"
 
 
 def testTransactionEnumEncoded():
@@ -53,3 +55,4 @@ def testTransactionEnumEncoded():
     assert SovrinTransactions.GET_CLAIM_DEF.value == "108"
     assert SovrinTransactions.POOL_UPGRADE.value == "109"
     assert SovrinTransactions.NODE_UPGRADE.value == "110"
+    assert SovrinTransactions.POOL_CONFIG.value == "111"
