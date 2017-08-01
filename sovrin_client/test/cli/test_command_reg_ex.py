@@ -159,17 +159,17 @@ def testLoadFileCommandRegEx(grammar):
 
 
 def testShowLinkRegEx(grammar):
-    matchedVars = getMatchedVariables(grammar, "show link faber")
-    assertCliTokens(matchedVars, {"show_link": "show link",
-                                  "link_name": "faber"})
+    matchedVars = getMatchedVariables(grammar, "show connection faber")
+    assertCliTokens(matchedVars, {"show_connection": "show connection",
+                                  "connection_name": "faber"})
 
-    matchedVars = getMatchedVariables(grammar, "show link faber college")
-    assertCliTokens(matchedVars, {"show_link": "show link",
-                                  "link_name": "faber college"})
+    matchedVars = getMatchedVariables(grammar, "show connection faber college")
+    assertCliTokens(matchedVars, {"show_connection": "show connection",
+                                  "connection_name": "faber college"})
 
-    matchedVars = getMatchedVariables(grammar, "show link faber college ")
-    assertCliTokens(matchedVars, {"show_link": "show link",
-                                  "link_name": "faber college "})
+    matchedVars = getMatchedVariables(grammar, "show connection faber college ")
+    assertCliTokens(matchedVars, {"show_connection": "show connection",
+                                  "connection_name": "faber college "})
 
 
 def testConnectRegEx(grammar):
@@ -180,13 +180,13 @@ def testConnectRegEx(grammar):
 
 def testSyncLinkRegEx(grammar):
     matchedVars = getMatchedVariables(grammar, "sync faber")
-    assertCliTokens(matchedVars, {"sync_link": "sync", "link_name": "faber"})
+    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": "faber"})
 
     matchedVars = getMatchedVariables(grammar, 'sync "faber"')
-    assertCliTokens(matchedVars, {"sync_link": "sync", "link_name": '"faber"'})
+    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": '"faber"'})
 
     matchedVars = getMatchedVariables(grammar, 'sync "faber" ')
-    assertCliTokens(matchedVars, {"sync_link": "sync", "link_name": '"faber" '})
+    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": '"faber" '})
 
 
 def testPingTargetRegEx(grammar):
@@ -195,17 +195,17 @@ def testPingTargetRegEx(grammar):
 
 
 def testAcceptInvitationLinkRegEx(grammar):
-    matchedVars = getMatchedVariables(grammar, "accept invitation from faber")
-    assertCliTokens(matchedVars, {"accept_link_invite": "accept invitation from",
-                                  "link_name": "faber"})
+    matchedVars = getMatchedVariables(grammar, "accept request from faber")
+    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
+                                  "connection_name": "faber"})
 
-    matchedVars = getMatchedVariables(grammar, 'accept invitation from "faber"')
-    assertCliTokens(matchedVars, {"accept_link_invite": "accept invitation from",
-                                  "link_name": '"faber"'})
+    matchedVars = getMatchedVariables(grammar, 'accept request from "faber"')
+    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
+                                  "connection_name": '"faber"'})
 
-    matchedVars = getMatchedVariables(grammar, 'accept invitation from "faber" ')
-    assertCliTokens(matchedVars, {"accept_link_invite": "accept invitation from",
-                                  "link_name": '"faber" '})
+    matchedVars = getMatchedVariables(grammar, 'accept request from "faber" ')
+    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
+                                  "connection_name": '"faber" '})
 
 
 def testShowClaimRegEx(grammar):
@@ -220,30 +220,30 @@ def testShowClaimRegEx(grammar):
 
 def testRequestClaimRegEx(grammar):
     matchedVars = getMatchedVariables(grammar, "request claim Transcript")
-    assertCliTokens(matchedVars, {"req_claim": "request claim",
+    assertCliTokens(matchedVars, {"request_claim": "request claim",
                                   "claim_name": "Transcript"})
 
     matchedVars = getMatchedVariables(grammar, 'request claim "Transcript"')
-    assertCliTokens(matchedVars, {"req_claim": "request claim",
+    assertCliTokens(matchedVars, {"request_claim": "request claim",
                                   "claim_name": '"Transcript"'})
 
 
 def testProofReqRegEx(grammar):
     matchedVars = getMatchedVariables(grammar,
                                       "show proof request Transcript")
-    assertCliTokens(matchedVars, {"show_proof_req": "show proof request",
-                                  "proof_req_name": "Transcript"})
+    assertCliTokens(matchedVars, {"show_proof_request": "show proof request",
+                                  "proof_request_name": "Transcript"})
 
     matchedVars = getMatchedVariables(grammar,
                                       "show proof request Transcript ")
-    assertCliTokens(matchedVars, {"show_proof_req": "show proof request",
-                                  "proof_req_name": "Transcript "})
+    assertCliTokens(matchedVars, {"show_proof_request": "show proof request",
+                                  "proof_request_name": "Transcript "})
 
 
 def testSendProofReqRegEx(grammar):
     matchedVars = getMatchedVariables(grammar,
                                       "send proof-request Over-21 to JaneDoe")
-    assertCliTokens(matchedVars, {"send_proof_req": "send proof-request",
+    assertCliTokens(matchedVars, {"send_proof_request": "send proof-request",
                                   "proof_request_name": "Over-21",
                                   "target": " JaneDoe"})
 
@@ -287,27 +287,27 @@ def testDisconnect(grammar):
 
 def testNewIdentifier(grammar):
     matchedVars = getMatchedVariables(
-        grammar, "new identifier")
-    assertCliTokens(matchedVars, {"new_id": "new identifier",
+        grammar, "new DID")
+    assertCliTokens(matchedVars, {"new_id": "new DID",
                                   "id": None,
                                   "seed": None, "alias": None})
 
     matchedVars = getMatchedVariables(
-        grammar, "new identifier as myalis")
+        grammar, "new DID as myalis")
     assertCliTokens(matchedVars,
-                    {"new_id": "new identifier", "id": None,
+                    {"new_id": "new DID", "id": None,
                      "seed": None, "alias": "myalis"})
 
     matchedVars = getMatchedVariables(
-        grammar, "new identifier 4QxzWk3ajdnEA37NdNU5Kt")
-    assertCliTokens(matchedVars, {"new_id": "new identifier",
+        grammar, "new DID 4QxzWk3ajdnEA37NdNU5Kt")
+    assertCliTokens(matchedVars, {"new_id": "new DID",
                                   "id": "4QxzWk3ajdnEA37NdNU5Kt",
                                   "seed": None, "alias": None})
 
     matchedVars = getMatchedVariables(
-        grammar, "new identifier 4QxzWk3ajdnEA37NdNU5Kt "
+        grammar, "new DID 4QxzWk3ajdnEA37NdNU5Kt "
                  "with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    assertCliTokens(matchedVars, {"new_id": "new identifier",
+    assertCliTokens(matchedVars, {"new_id": "new DID",
                                   "id": "4QxzWk3ajdnEA37NdNU5Kt",
                                   "seed": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                                   "alias": None})
@@ -342,6 +342,6 @@ def testReqAvailClaims(grammar):
                                       "request available claims from Faber")
 
     assertCliTokens(matchedVars, {
-        "req_avail_claims": "request available claims from",
-        "link_name": "Faber"
+        "request_avail_claims": "request available claims from",
+        "connection_name": "Faber"
     })

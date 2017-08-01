@@ -134,13 +134,13 @@ def doubleBraces(lines):
     return alteredLines
 
 
-def getLinkInvitation(name, wallet) -> Link:
-    existingLinkInvites = wallet.getMatchingLinks(name)
+def getConnectionInvitation(name, wallet) -> Link:
+    existingLinkInvites = wallet.getMatchingConnections(name)
     li = existingLinkInvites[0]
     return li
 
 
-def getPoolTxnData(nodeAndClientInfoFilePath, poolId, newPoolTxnNodeNames):
+def getPoolTxnData(poolId, newPoolTxnNodeNames):
     data={}
     data["seeds"]={}
     data["txns"]=[]
@@ -279,12 +279,12 @@ def check_wallet(cli,
                  totalClaimsRcvd=None,
                  within=None):
     async def check():
-        actualLinks = len(cli.activeWallet._links)
+        actualLinks = len(cli.activeWallet._connections)
         assert (totalLinks is None or (totalLinks == actualLinks)),\
-            'links expected to be {} but is {}'.format(totalLinks, actualLinks)
+            'connections expected to be {} but is {}'.format(totalLinks, actualLinks)
 
         tac = 0
-        for li in cli.activeWallet._links.values():
+        for li in cli.activeWallet._connections.values():
             tac += len(li.availableClaims)
 
         assert (totalAvailableClaims is None or
@@ -348,7 +348,7 @@ def newKey(be, do, userCli, seed=None):
     if seed is not None:
         cmd += ' with seed {}'.format(seed)
 
-    do(cmd, expect='Current identifier set to')
+    do(cmd, expect='Current DID set to')
 
 
 def getAgentCliHelpString():
@@ -358,24 +358,24 @@ def getAgentCliHelpString():
          Usage:
             help [<command name>]
        prompt - Changes the prompt to given principal (a person like Alice, an organization like Faber College, or an IoT-style thing)
-       list keyrings - Lists all keyrings
-       list ids - Lists all identifiers of active keyring
+       list wallets - Lists all wallets
+       list ids - Lists all DIDs of active wallet
        show - Shows content of given file
-       show link - Shows link info in case of one matching link, otherwise shows all the matching link names
+       show connection - Shows connection info in case of one matching connection, otherwise shows all the matching connection names
        ping - Pings given remote's endpoint
-       list links - List available links in active wallet
-       send proofreq - Send a proof request
+       list connections - List available connections in active wallet
+       send proof request - Send a proof request
        license - Shows the license
        exit - Exit the command-line interface ('quit' also works)"""
 
 
-def getTotalLinks(userCli):
-    return len(userCli.activeWallet._links)
+def getTotalConnections(userCli):
+    return len(userCli.activeWallet._connections)
 
 
 def getTotalAvailableClaims(userCli):
     availableClaimsCount = 0
-    for li in userCli.activeWallet._links.values():
+    for li in userCli.activeWallet._connections.values():
         availableClaimsCount += len(li.availableClaims)
     return availableClaimsCount
 

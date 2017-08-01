@@ -77,7 +77,7 @@ def checkProofRequestReceived(be, do, userCli, commandMap):
 
 
 def getProofRequestsCount(userCli, target):
-    li = userCli.activeWallet.getLinkBy(remote=target)
+    li = userCli.activeWallet.getConnectionBy(remote=target)
     return len(li.proofRequests)
 
 
@@ -85,24 +85,24 @@ def getProofRequestsCount(userCli, target):
 def aliceAcceptedAcmeInvitationNoProofReq(
         acmeAgentCliRunning, be, do, aliceCLI, acmeMap, loadInviteOut,
         unsycedAcceptedInviteWithoutClaimOut, connectedToTest,
-        syncLinkOutWithEndpoint, newKeyringOut):
-    def _(invitationFile, keyring):
+        syncConnectionOutWithEndpoint, newKeyringOut):
+    def _(invitationFile, wallet):
         be(aliceCLI)
         connectIfNotAlreadyConnected(do, connectedToTest, aliceCLI, acmeMap)
-        keyringMapper = {
-            'keyring-name': keyring
+        walletMapper = {
+            'wallet-name': wallet
         }
-        do('new keyring {}'.format(keyring),
+        do('new wallet {}'.format(wallet),
            expect=newKeyringOut,
-           mapper=keyringMapper)
+           mapper=walletMapper)
         do('load {}'.format(invitationFile),
            mapper=acmeMap,
            expect=loadInviteOut)
         do('sync {inviter}',
            mapper=acmeMap,
-           expect=syncLinkOutWithEndpoint,
+           expect=syncConnectionOutWithEndpoint,
            within=15)
-        do('accept invitation from {inviter}',
+        do('accept request from {inviter}',
            within=15,
            mapper=acmeMap,
            expect=unsycedAcceptedInviteWithoutClaimOut)

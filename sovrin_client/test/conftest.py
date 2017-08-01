@@ -41,7 +41,7 @@ from plenum.test.conftest import tdir, nodeReg, up, ready, \
     startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
-    txnPoolNodesLooper, nodeAndClientInfoFilePath, patchPluginManager, \
+    txnPoolNodesLooper, patchPluginManager, \
     warncheck, warnfilters as plenum_warnfilters, setResourceLimits
 
 # noinspection PyUnresolvedReferences

@@ -1,5 +1,5 @@
 {
-  "link-invitation": {
+  "connection-request": {
     "name": "Thrift Bank",
     "identifier": "H2aKRiDeq8aLZSydQMDbtf",
     "nonce": "77fbf9dc8c8e6acde33de98c6d747b28c",
