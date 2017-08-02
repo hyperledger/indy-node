@@ -17,7 +17,7 @@ echo "Stop sovrin-node"
 systemctl stop sovrin-node
 
 echo "Run sovrin upgrade to $deps"
-apt-get -y --allow-downgrades install $deps
+apt-get -y --allow-downgrades --reinstall install $deps
 ret=$?
 if [ $ret -ne 0 ] ; then
   echo "Upgrade to $deps failed"
