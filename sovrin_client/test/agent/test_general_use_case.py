@@ -172,16 +172,16 @@ def test_end_to_end(tconf):
 
         network.runFor(1)
 
-        invitation = bank_agent.create_connection_request(alices_id_in_banks_system, "Alice")
+        request = bank_agent.create_connection_request(alices_id_in_banks_system, "Alice")
 
-        # Transfer of this invitation happens out-of-band (website, QR code, etc)
+        # Transfer of this request happens out-of-band (website, QR code, etc)
 
-        alices_link_to_bank = alice_agent.load_invitation_str(invitation)
+        alices_link_to_bank = alice_agent.load_request_str(request)
 
         # notice the link is not accepted
         print(alices_link_to_bank)
 
-        alice_agent.accept_invitation(alices_link_to_bank)
+        alice_agent.accept_request(alices_link_to_bank)
 
         network.runFor(10)
 
