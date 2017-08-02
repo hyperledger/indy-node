@@ -9,7 +9,7 @@
   * [What We'll Cover](#what-well-cover)
   * [Alice Gets a Transcript](#alice-gets-a-transcript)
   * [Install Sovrin](#install-sovrin)
-  * [Evaluate a Connection Invitation](#evaluate-a-connection-invitation)
+  * [Evaluate a Connection Reuest](#evaluate-a-connection-request)
   * [Accept a Connection Request](#accept-a-connection-request)
   * [Test Secure Interaction](#test-secure-interaction)
   * [Apply for a Job](#apply-for-a-job)
@@ -97,12 +97,12 @@ Usage:
 ```
 Alice might also try the 'help' command to see a list of the other commands that are available to her.
 
-## Evaluate a Connection Invitation
+## Evaluate a Connection Request
 
-To make this guide more convenient, the sovrin CLI package installs a sample Faber College invitation request in a file at /<CLI_ROOT>/sample/faber-invitation.sovrin. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Sovrin app would be doing a lot of these steps automatically.)
+To make this guide more convenient, the sovrin CLI package installs a sample Faber College invitation request in a file at /<CLI_ROOT>/sample/faber-request.sovrin. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Sovrin app would be doing a lot of these steps automatically.)
 
 ```
-ALICE> show sample/faber-invitation.sovrin
+ALICE> show sample/faber-request.sovrin
 {
   "connection-request": {
     "name": "Faber College",
@@ -113,13 +113,13 @@ ALICE> show sample/faber-invitation.sovrin
 }
 
 Try Next:
-    load sample/faber-invitation.sovrin
+    load sample/faber-request.sovrin
 ```
 
 Alice sees a bunch of data that looks interesting but mysterious. She wants Sovrin to tell her if the connection request file is well formed and has something useful in it, so she uses the 'load' command:
 
 ```
-ALICE> load sample/faber-invitation.sovrin
+ALICE> load sample/faber-request.sovrin
 New wallet Default created
 Active wallet set to "Default"
 1 connection request found for Faber College.
