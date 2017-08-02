@@ -9,8 +9,8 @@
   * [What We'll Cover](#what-well-cover)
   * [Alice Gets a Transcript](#alice-gets-a-transcript)
   * [Install Sovrin](#install-sovrin)
-  * [Evaluate a Connection Request](#evaluate-the-invitation)
-  * [Accept a Connection Request](#accept-the-invitation)
+  * [Evaluate a Connection Invitation](#evaluate-a-connection-invitation)
+  * [Accept a Connection Request](#accept-a-connection request)
   * [Test Secure Interaction](#test-secure-interaction)
   * [Apply for a Job](#apply-for-a-job)
   * [Apply for a Loan](#apply-for-a-loan)
@@ -21,7 +21,7 @@
 
 ## What Sovrin is, and Why it Matters
 
-Sovrin is a software ecosystem for private, secure, and powerful identity. It puts people — not the organizations that traditionally centralize identity — in charge of decisions about their own privacy and disclosure. This enables all kinds of rich innovation: link contracts, revocation, novel payment workflows, asset and document management features, creative forms of escrow, curated reputation, integrations with other cool technologies, and so on.
+Sovrin is a software ecosystem for private, secure, and powerful identity. It puts people — not the organizations that traditionally centralize identity — in charge of decisions about their own privacy and disclosure. This enables all kinds of rich innovation: connection contracts, revocation, novel payment workflows, asset and document management features, creative forms of escrow, curated reputation, integrations with other cool technologies, and so on.
 
 Sovrin uses open-source, distributed ledger technology. These ledgers are a form of database that is provided cooperatively by a pool of participants, instead of by a giant database with a central admin. Data lives redundantly in many places, and it accrues in transactions orchestrated by many machines. Strong, industry-standard cryptography protects it. Best practices in key management and cybersecurity pervade its design. The result is a reliable, public source of truth under no single entity’s control, robust to system failure, resilient to hacking, and highly immune to subversion by hostile entities.
 
@@ -77,7 +77,7 @@ The CLI could play the role of multiple **identity owners** (a person like Alice
 sovrin> prompt ALICE
 ALICE>
 ```
-Next, we will create a new empty wallet for Alice. Creating a new empty wallet basically resets the agent to a clean slate. Because this is the first time you're setting this up, this step is not actually necessary. If you're wanting to do interact with other identifiers held by the agent then this does become necessary.
+Next, we will create a new empty wallet for Alice. Creating a new empty wallet basically resets the agent to a clean slate. Because this is the first time you're setting this up, this step is not actually necessary. If you're wanting to interact with other DIDs held by the agent then this does become necessary.
 
 It's a good habit to get into. Go ahead and create the new wallet now:
 
@@ -97,16 +97,16 @@ Usage:
 ```
 Alice might also try the 'help' command to see a list of the other commands that are available to her.
 
-## Evaluate a Connection Request
+## Evaluate a Connection Invitation
 
-To make this guide more convenient, the sovrin CLI package installs a sample Faber College connection request in a file at /<CLI_ROOT>/sample/faber-invitation.sovrin. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Sovrin app would be doing a lot of these steps automatically.)
+To make this guide more convenient, the sovrin CLI package installs a sample Faber College invitation request in a file at /<CLI_ROOT>/sample/faber-invitation.sovrin. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Sovrin app would be doing a lot of these steps automatically.)
 
 ```
 ALICE> show sample/faber-invitation.sovrin
 {
   "connection-request": {
     "name": "Faber College",
-    "identifier": "ULtgFQJe6bjiFbs7ke3NJD",
+    "DID": "ULtgFQJe6bjiFbs7ke3NJD",
     "nonce": "b1134a647eb818069c089e7694f63e6d"
   },
   "sig": "4QKqkwv9gXmc3Sw7YFkGm2vdF6ViZz9FKZcNJGh6pjnjgBXRqZ17Sk8bUDSb6hsXHoPxrzq2F51eDn1DKAaCzhqP"
@@ -170,16 +170,16 @@ This is a friendly name for the connection that Alice has been invited to accept
 DID: not yet assigned
 ```
 
-**DID** (**distributed identifier**) is an opaque, unique sequences of bits, like UUIDs or GUIDs that gets generated when user tries to accept the connection request, and that identifier will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
- Each connection request on Sovrin establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different identifiers. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within Sovrin.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
+**DID** (**distributed identifier**) is an opaque, unique sequences of bits, like UUIDs or GUIDs that gets generated when user tries to accept the connection request, and that DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
+ Each connection request on Sovrin establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within Sovrin.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
 
 ```
 Trust anchor: Faber College(not yet written to Sovrin)
 ```
 
-This gives Alice a friendly name for the entity that will bootstrap the new pairwise relationship onto the Sovrin ecosystem. **Trust anchors** provide a way for identifiers to be added to Sovrin. They are generally organizations but can be persons as well. Faber College is a trust anchor, and if its connection request is accepted, will write Alice’s identifier to Sovrin.
+This gives Alice a friendly name for the entity that will bootstrap the new pairwise relationship onto the Sovrin ecosystem. **Trust anchors** provide a way for DIDs to be added to Sovrin. They are generally organizations but can be persons as well. Faber College is a trust anchor, and if its connection request is accepted, will write Alice’s DID to Sovrin.
 
-It is important to understand that this identifier for Alice is not, in and of itself, the same thing as Alice’s self-sovereign identity. Rather, Alice’s identity will -- for her -- be the sum total of **_all_** of the pairwise relationships she has, and **_all_** the attributes knowable about those manifestations of her identity, across the full network.
+It is important to understand that this DID for Alice is not, in and of itself, the same thing as Alice’s self-sovereign identity. Rather, Alice’s identity will -- for her -- be the sum total of **_all_** of the pairwise relationships she has, and **_all_** the attributes knowable about those manifestations of her identity, across the full network.
 
 If Alice accepts this connection request, she will have a self-sovereign identity by virtue of the fact that she is accessible on the network through at least one relationship. In this case Faber College will be creating the first of many independent relationships that will participate in Alice’s overall identity--but Alice’s identity will not be captive to Faber College in any way.
 
@@ -195,7 +195,7 @@ The verification key has a subtle relationship with the DID value a couple lines
 
 There are three options possible for verification key associated with a DID:
 - **Empty.** There is no verkey (verification key) associated with a DID, and the DID is a **NCID** (non-cryptographic identifier).
-In this case, the creator of the Sovrin identity record (the trust anchor) controls the identifier, and no independent proof-of-existence is possible until either an Abbreviated or Full verkey is created.
+In this case, the creator of the Sovrin identity record (the trust anchor) controls the DID, and no independent proof-of-existence is possible until either an Abbreviated or Full verkey is created.
 - **Abbreviated.** In this case, there is a verkey starting with a tilde '~' followed by 22 or 23 characters. The tilde indicates that the DID itself represents the first 16 bytes of the verkey and the string following the tilde represents the second 16 bytes of the verkey, both using base58Check encoding.
 - **Full.** In this case, there is a full 44 character verkey, representing a base58Check encoding of all 32 bytes of a Ed25519 verification key.
 
@@ -215,13 +215,13 @@ It’s important that _this signing key is kept secret,_ as someone with this ke
 Target: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
 ```
 
-**Target** is the unique identifier Alice uses to reference Faber College. Faber College provided this value in the connection request. Alice can use it to look up Faber College’s verification key in the Sovrin Ledger to ensure interactions with Faber College are authentic.
+**Target** is the unique DID Alice uses to reference Faber College. Faber College provided this value in the connection request. Alice can use it to look up Faber College’s verification key in the Sovrin Ledger to ensure interactions with Faber College are authentic.
 
 ```
 Target Verification key: < unknown, waiting for sync >
 ```
 
-Communication from the target can’t be confirmed unless we know its verification key. To know the true verification key of an identifier, we have to query Sovrin.
+Communication from the target can’t be confirmed unless we know its verification key. To know the true verification key of an DID, we have to query Sovrin.
 
 Different use cases require different levels of assurance as to how recently we’ve queried Sovrin for any key replacements. In this case we might be comfortable if we know that the key was synchronized in the last hour. But we can see that we’ve never synchronized this connection, so we don’t know what the verification key is at all. Until Alice connects to Sovrin, she won’t be able to trust communication from Faber College.
 ```
@@ -304,7 +304,7 @@ Try Next:
     show claim "Transcript"
     request claim "Transcript"
 ```
-Accepting a connection request takes the nonce that Faber College provided, and signs it with the Alice’s signing key. It then securely transmits the signed data along with the identifier and verification key to Faber College’s endpoint, which is discovered when the connection is synchronized. Faber College matches the provided nonce to the record of the nonce it sent to Alice, verifies the signature, then records Alice’s new pairwise identifier in the Sovrin ledger.
+Accepting a connection request takes the nonce that Faber College provided, and signs it with the Alice’s signing key. It then securely transmits the signed data along with the DID and verification key to Faber College’s endpoint, which is discovered when the connection is synchronized. Faber College matches the provided nonce to the record of the nonce it sent to Alice, verifies the signature, then records Alice’s new pairwise DID in the Sovrin ledger.
 
 Once the connection is accepted and synchronized, Alice inspects it again.
 
@@ -332,7 +332,7 @@ Try Next:
 
 Notice now that the Last synced line is updated.
 
-Alice can see now that the target verification key and target endpoint, as well as identifier and verification key are updated, which allows her to communicate with Faber College. She can also see that the identity of the trust anchor was confirmed (from the Sovrin network), and that her connection request has been accepted.
+Alice can see now that the target verification key and target endpoint, as well as DID and verification key are updated, which allows her to communicate with Faber College. She can also see that the identity of the trust anchor was confirmed (from the Sovrin network), and that her connection request has been accepted.
 
 ## Test Secure Interaction
 
@@ -351,7 +351,7 @@ Alice receives a successful response from Faber College. Here’s what happens b
 
 1. The ping she sends contains a random challenge.
 
-2. The ping also includes Alice’s pairwise identifier and a signature.
+2. The ping also includes Alice’s pairwise DID and a signature.
 
 3. Faber College verifies Alice’s signature.
 
@@ -425,7 +425,7 @@ ALICE@test> show sample/acme-job-application.sovrin
 {
   "connection-request": {
     "name": "Acme Corp",
-    "identifier": "CzkavE58zgX7rUMrzSinLr",
+    "DID": "CzkavE58zgX7rUMrzSinLr",
     "nonce": "57fbf9dc8c8e6acde33de98c6d747b28c",
     "endpoint": "127.0.0.1:1213"
   },
@@ -505,7 +505,7 @@ Response from Acme Corp (14.81 ms):
     DID created in Sovrin.
 
 Synchronizing...
-    Confirmed identifier written to Sovrin.
+    Confirmed DID written to Sovrin.
 
 Try Next:
     show proof request "Job-Application"
@@ -822,7 +822,7 @@ You may need to be signed into Github to view this link.
 
 The following operations show how Transcripts are defined on the ledger, such that they can later be issued with reference to a known schema.
 ```
-faber> use Schema-Keyring
+faber> use Schema-Wallet
 
 faber> new schema
 name = "Transcript"
@@ -835,7 +835,7 @@ attributes = {
     "status": "string"
 }
 
-Schema Transcript v1 .2 added to Schema-Keyring
+Schema Transcript v1 .2 added to Schema-Wallet
 
 faber> add keys of type CL for schema Transcript version 1.2
 Keys added
