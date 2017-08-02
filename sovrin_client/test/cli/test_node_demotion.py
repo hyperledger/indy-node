@@ -2,7 +2,7 @@ import pytest
 from plenum.common.signer_did import DidSigner
 from stp_core.crypto.util import randomSeed
 from sovrin_client.test.cli.helper import addAgent
-from plenum.common.constants import SERVICES, VALIDATOR
+from plenum.common.constants import SERVICES, VALIDATOR, TARGET_NYM, DATA
 from sovrin_client.test.cli.constants import NODE_REQUEST_COMPLETED, NODE_REQUEST_FAILED
 
 
@@ -31,3 +31,8 @@ def testStewardCanDemoteNode(
        mapper=newNodeVals, expect=NODE_REQUEST_COMPLETED, within=8)
 
     ensurePoolIsOperable(be, do, newStewardCli)
+
+    for node in poolNodesStarted.nodes.values():
+        txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
+        assert txn[TARGET_NYM] == newNodeVals['newNodeIdr']
+        assert SERVICES in txn[DATA] and txn[DATA][SERVICES] == []
