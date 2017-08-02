@@ -11,11 +11,21 @@ from sovrin_client.test.cli.conftest \
     import faberMap as faberMapWithoutEndpointPubkey
 
 # noinspection PyUnresolvedReferences
-from sovrin_client.test.cli.test_tutorial import aliceAcceptedFaberInvitation, \
-    aliceCli, preRequisite, faberCli, acmeCli, thriftCli, faberWithEndpointAdded, acmeWithEndpointAdded, \
-    thriftWithEndpointAdded, walletCreatedForTestEnv, \
-    faberInviteSyncedWithEndpoint, faberInviteSyncedWithoutEndpoint, \
-    faberInviteLoadedByAlice, acceptInvitation
+from sovrin_client.test.cli.conftest import \
+    acmeWithEndpointAdded, \
+    aliceAcceptedFaberInvitation, \
+    aliceCli, \
+    faberCli, \
+    acmeCli, \
+    thriftCli, \
+    preRequisite, \
+    faberWithEndpointAdded, \
+    thriftWithEndpointAdded, \
+    walletCreatedForTestEnv, \
+    faberInviteSyncedWithEndpoint, \
+    faberInviteSyncedWithoutEndpoint, \
+    faberInviteLoadedByAlice, \
+    acceptInvitation
 
 from sovrin_common.constants import ENDPOINT
 

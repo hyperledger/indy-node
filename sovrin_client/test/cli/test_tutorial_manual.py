@@ -19,13 +19,23 @@ from sovrin_client.test.agent.acme import create_acme, bootstrap_acme, ACME_ID, 
 from sovrin_client.test.agent.helper import buildFaberWallet, buildAcmeWallet, \
     buildThriftWallet
 from sovrin_client.test.agent.thrift import create_thrift, bootstrap_thrift, THRIFT_ID, THRIFT_VERKEY
-from sovrin_client.test.cli.conftest import faberMap, acmeMap, \
-    thriftMap
 from sovrin_client.test.cli.helper import newCLI
-from sovrin_client.test.cli.test_tutorial import syncInvite, acceptInvitation, \
-    aliceRequestedTranscriptClaim, jobApplicationProofSent, \
-    jobCertClaimRequested, bankBasicProofSent, bankKYCProofSent, \
+
+from sovrin_client.test.cli.conftest import \
+    faberMap, \
+    acmeMap, \
+    thriftMap
+
+from sovrin_client.test.cli.conftest import \
+    syncInvite, \
+    acceptInvitation, \
+    aliceRequestedTranscriptClaim, \
+    jobApplicationProofSent, \
+    jobCertClaimRequested, \
+    bankBasicProofSent, \
+    bankKYCProofSent, \
     setPromptAndKeyring
+
 
 concerningLogLevels = [logging.WARNING,
                        logging.ERROR,

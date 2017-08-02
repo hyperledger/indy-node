@@ -901,10 +901,10 @@ def faberCLI(CliBuilder):
 def acmeCLI(CliBuilder):
     yield from CliBuilder("acme")
 
+
 @pytest.yield_fixture(scope="module")
 def thriftCLI(CliBuilder):
     yield from CliBuilder("thrift")
-
 
 
 @pytest.fixture(scope="module")
@@ -1464,3 +1464,301 @@ def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
 @pytest.fixture(scope='module')
 def nodeIds(poolNodesStarted):
     return next(iter(poolNodesStarted.nodes.values())).poolManager.nodeIds
+
+
+# test tutorial fixtures
+from sovrin_client.test.cli.helper import \
+    getTotalClaimsRcvd, \
+    getTotalAvailableClaims, \
+    ensureConnectedToTestEnv, \
+    newKey,getTotalConnections
+
+from plenum.test.cli.helper import \
+    createAndAssertNewKeyringCreation,\
+    exitFromCli
+
+from sovrin_client.test import waits
+
+
+def syncInvite(be, do, userCli, expectedMsgs, mapping):
+    be(userCli)
+    do('sync {inviter}', within=3,
+       expect=expectedMsgs,
+       mapper=mapping)
+
+
+def acceptInvitation(be, do, userCli, agentMap, expect):
+    be(userCli)
+    do("accept request from {inviter}",
+       within=15,
+       mapper=agentMap,
+       expect=expect,
+       not_expect=[
+           "Observer threw an exception",
+           "DID is not yet written to Sovrin"]
+       )
+    li = userCli.agent.wallet.getConnectionBy(nonce=agentMap['nonce'])
+    assert li
+    agentMap['identifier'] = li.localIdentifier
+    agentMap['verkey'] = li.localVerkey
+
+
+@pytest.fixture(scope="module")
+def aliceRequestedTranscriptClaim(be, do, aliceCli, transcriptClaimMap,
+                                       reqClaimOut, preRequisite,
+                                       aliceAcceptedFaberInvitation):
+    be(aliceCli)
+    totalClaimsRcvdBefore = getTotalClaimsRcvd(aliceCli)
+    do("request claim {name}", within=5,
+       expect=reqClaimOut,
+       mapper=transcriptClaimMap)
+
+    async def assertTotalClaimsRcvdIncreasedByOne():
+        total_claims = len((await aliceCli.agent.prover.wallet.getAllClaimsSignatures()).keys())
+        assert totalClaimsRcvdBefore + 1 == total_claims
+
+    aliceCli.looper.runFor(10)
+    timeout = waits.expectedClaimsReceived()
+    aliceCli.looper.run(
+        eventually(assertTotalClaimsRcvdIncreasedByOne, timeout=timeout))
+
+
+@pytest.fixture(scope="module")
+def jobApplicationProofSent(be, do, aliceCli, acmeMap,
+                            aliceAcceptedAcmeJobInvitation,
+                            aliceRequestedTranscriptClaim,
+                            aliceSelfAttestsAttributes):
+    totalAvailableClaimsBefore = getTotalAvailableClaims(aliceCli)
+    sendProof(be, do, aliceCli, acmeMap, "Job-Certificate")
+    assert totalAvailableClaimsBefore + 1 == getTotalAvailableClaims(aliceCli)
+
+
+def sendProof(be, do, userCli, agentMap, newAvailableClaims, extraMsgs=None):
+    be(userCli)
+
+    expectMsgs = [
+        "Your Proof {proof-req-to-match} "
+        "{claim-ver-req-to-show} was "
+        "received and verified"
+    ]
+    if extraMsgs:
+        expectMsgs.extend(extraMsgs)
+    mapping = {}
+    mapping.update(agentMap)
+    if newAvailableClaims:
+        mapping['new-available-claims'] = newAvailableClaims
+        expectMsgs.append("Available Claim(s): {new-available-claims}")
+
+    do("send proof {proof-req-to-match} to {inviter}",
+       within=7,
+       expect=expectMsgs,
+       mapper=mapping)
+
+
+@pytest.fixture(scope="module")
+def jobCertClaimRequested(be, do, aliceCli, preRequisite,
+                        jobCertificateClaimMap, reqClaimOut1,
+                        jobApplicationProofSent):
+
+    def removeSchema():
+        inviter = jobCertificateClaimMap["inviter"]
+        connections = aliceCli.activeWallet.getMatchingConnections(inviter)
+        assert len(connections) == 1
+        faberId = connections[0].remoteIdentifier
+        name, version = jobCertificateClaimMap["name"], \
+                        jobCertificateClaimMap["version"]
+        aliceCli.activeWallet._schemas.pop((name, version, faberId))
+
+    # Removing schema to check if it fetches the schema again or not
+    # removeSchema()
+
+    be(aliceCli)
+
+    totalClaimsRcvdBefore = getTotalClaimsRcvd(aliceCli)
+    do("request claim {name}", within=7,
+       expect=reqClaimOut1,
+       mapper=jobCertificateClaimMap)
+    assert totalClaimsRcvdBefore + 1 == getTotalClaimsRcvd(aliceCli)
+
+
+@pytest.fixture(scope="module")
+def bankBasicProofSent(be, do, aliceCli, thriftMap,
+                       aliceAcceptedThriftLoanApplication):
+    mapping = {}
+    mapping.update(thriftMap)
+    mapping["proof-req-to-match"] = "Loan-Application-Basic"
+    extraMsgs = ["Loan eligibility criteria satisfied, "
+                 "please send another claim 'Loan-Application-KYC'"]
+    sendProof(be, do, aliceCli, mapping, None, extraMsgs)
+
+
+@pytest.fixture(scope="module")
+def bankKYCProofSent(be, do, aliceCli, thriftMap,
+                     bankBasicProofSent):
+    mapping = {}
+    mapping.update(thriftMap)
+    mapping["proof-req-to-match"] = "Loan-Application-KYC"
+    sendProof(be, do, aliceCli, mapping, None)
+
+
+def setPromptAndKeyring(do, name, newKeyringOut, userMap):
+    do('prompt {}'.format(name), expect=prompt_is(name))
+    do('new wallet {}'.format(name), expect=newKeyringOut, mapper=userMap)
+
+
+@pytest.fixture(scope="module")
+def acmeWithEndpointAdded(be, do, acmeCli, acmeAddedByPhil,
+                          acmeMap, attrAddedOut):
+    agentWithEndpointAdded(be, do, acmeCli, acmeMap, attrAddedOut)
+
+
+def agentWithEndpointAdded(be, do, agentCli, agentMap, attrAddedOut):
+    be(agentCli)
+
+    ensureConnectedToTestEnv(be, do, agentCli)
+
+    # TODO these belong in there own test, not
+    # TODO part of standing up agents
+
+    # checkIfInvalidEndpointIsRejected(do, agentMap)
+    # checkIfValidEndpointIsAccepted(do, agentMap, attrAddedOut)
+    do('send ATTRIB dest={remote} raw={endpointAttr}',
+       within=5,
+       expect=attrAddedOut,
+       mapper=agentMap)
+    return agentCli
+
+
+def connectIfNotAlreadyConnected(do, expectMsgs, userCli, userMap):
+    # TODO: Shouldn't this be testing the cli command `status`?
+    if not userCli._isConnectedToAnyEnv():
+        do('connect test', within=3,
+           expect=expectMsgs,
+           mapper=userMap)
+
+
+@pytest.fixture(scope="module")
+def aliceAcceptedFaberInvitation(be, do, aliceCli, faberMap,
+                                 preRequisite,
+                                 syncedInviteAcceptedWithClaimsOut,
+                                 faberInviteSyncedWithEndpoint):
+    acceptInvitation(be, do, aliceCli, faberMap,
+                 syncedInviteAcceptedWithClaimsOut)
+    do("list connections", within = 10,
+       mapper=faberMap,
+       expect="Faber College")
+    return aliceCli
+
+
+@pytest.fixture(scope="module")
+def aliceCli(preRequisite, be, do, walletCreatedForTestEnv,
+             aliceCLI, newKeyringOut, aliceMap):
+    be(aliceCLI)
+    setPromptAndKeyring(do, "Alice", newKeyringOut, aliceMap)
+    return aliceCLI
+
+
+@pytest.fixture(scope="module")
+def susanCli(preRequisite, be, do, susanCLI, newKeyringOut, susanMap):
+    be(susanCLI)
+    setPromptAndKeyring(do, "Susan", newKeyringOut, susanMap)
+    return susanCLI
+
+
+@pytest.fixture(scope="module")
+def bobCli(preRequisite, be, do, bobCLI, newKeyringOut, bobMap):
+    be(bobCLI)
+    setPromptAndKeyring(do, "Bob", newKeyringOut, bobMap)
+    return bobCLI
+
+
+@pytest.fixture(scope="module")
+def faberCli(be, do, faberCLI, newKeyringOut, faberMap):
+    be(faberCLI)
+    setPromptAndKeyring(do, "Faber", newKeyringOut, faberMap)
+    newKey(be, do, faberCLI, seed=faberMap['seed'])
+
+    return faberCLI
+
+
+@pytest.fixture(scope="module")
+def acmeCli(be, do, acmeCLI, newKeyringOut, acmeMap):
+    be(acmeCLI)
+    setPromptAndKeyring(do, "Acme", newKeyringOut, acmeMap)
+    newKey(be, do, acmeCLI, seed=acmeMap['seed'])
+
+    return acmeCLI
+
+
+@pytest.fixture(scope="module")
+def thriftCli(be, do, thriftCLI, newKeyringOut, thriftMap):
+    be(thriftCLI)
+    setPromptAndKeyring(do, "Thrift", newKeyringOut, thriftMap)
+    newKey(be, do, thriftCLI, seed=thriftMap['seed'])
+
+    return thriftCLI
+
+
+@pytest.fixture(scope="module")
+def preRequisite(poolNodesStarted,
+                 faberIsRunning, acmeIsRunning, thriftIsRunning,
+                 faberWithEndpointAdded, acmeWithEndpointAdded,
+                 thriftWithEndpointAdded):
+    pass
+
+
+@pytest.fixture(scope="module")
+def faberWithEndpointAdded(be, do, faberCli, faberAddedByPhil,
+                           faberMap, attrAddedOut):
+    agentWithEndpointAdded(be, do, faberCli, faberMap, attrAddedOut)
+
+
+@pytest.fixture(scope="module")
+def thriftWithEndpointAdded(be, do, thriftCli, thriftAddedByPhil,
+                            thriftMap, attrAddedOut):
+    agentWithEndpointAdded(be, do, thriftCli, thriftMap, attrAddedOut)
+
+
+@pytest.fixture(scope="module")
+def walletCreatedForTestEnv(preRequisite, be, do, earlCLI, connectedToTest):
+    be(earlCLI)
+    createAndAssertNewKeyringCreation(do, "default1")
+    createAndAssertNewKeyringCreation(do, "default2")
+    connectIfNotAlreadyConnected(do, connectedToTest, earlCLI, {})
+    createAndAssertNewKeyringCreation(do, "test2")
+    exitFromCli(do)
+
+
+@pytest.fixture(scope="module")
+def faberInviteSyncedWithEndpoint(be, do, faberMap, aliceCLI, preRequisite,
+                                  faberInviteSyncedWithoutEndpoint,
+                                  syncConnectionOutWithEndpoint):
+    cp = faberMap.copy()
+    cp.update(last_synced='<this connection has not yet been synchronized>')
+    syncInvite(be, do, aliceCLI, syncConnectionOutWithEndpoint, cp)
+    return aliceCLI
+
+
+@pytest.fixture(scope="module")
+def faberInviteSyncedWithoutEndpoint(be, do, aliceCli, faberMap,
+                                     preRequisite,
+                                     faberInviteLoadedByAlice,
+                                     connectedToTest,
+                                     connectionNotYetSynced,
+                                     syncConnectionOutWithoutEndpoint):
+    be(aliceCli)
+    connectIfNotAlreadyConnected(do, connectedToTest, aliceCli, faberMap)
+
+    do('sync {inviter}', within=2,
+       expect=syncConnectionOutWithoutEndpoint,
+       mapper=faberMap)
+    return aliceCli
+
+
+@pytest.fixture(scope="module")
+def faberInviteLoadedByAlice(be, do, aliceCli, loadInviteOut, faberMap):
+    totalConnectionsBefore = getTotalConnections(aliceCli)
+    be(aliceCli)
+    do('load {invite}', expect=loadInviteOut, mapper=faberMap)
+    assert totalConnectionsBefore + 1 == getTotalConnections(aliceCli)
+    return aliceCli

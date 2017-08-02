@@ -7,9 +7,18 @@ from plenum.test.testable import spyable
 from sovrin_client.agent.agent_cli import AgentCli
 from sovrin_client.test.agent.acme import create_acme, bootstrap_acme
 from sovrin_client.test.agent.helper import buildAcmeWallet
-from sovrin_client.test.cli.helper import getCliBuilder, getAgentCliHelpString
-from sovrin_client.test.cli.test_tutorial import acmeWithEndpointAdded,\
-    connectIfNotAlreadyConnected, faberCli, acmeCli, thriftCli
+
+from sovrin_client.test.cli.helper import \
+    getCliBuilder, \
+    getAgentCliHelpString
+
+# noinspection PyUnresolvedReferences
+from sovrin_client.test.cli.conftest import \
+    acmeWithEndpointAdded, \
+    connectIfNotAlreadyConnected, \
+    faberCli, \
+    acmeCli, \
+    thriftCli
 
 
 @spyable(methods=[AgentCli.print, AgentCli.printTokens])
