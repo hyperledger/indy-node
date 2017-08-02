@@ -10,7 +10,7 @@
   * [Alice Gets a Transcript](#alice-gets-a-transcript)
   * [Install Sovrin](#install-sovrin)
   * [Evaluate a Connection Invitation](#evaluate-a-connection-invitation)
-  * [Accept a Connection Request](#accept-a-connection request)
+  * [Accept a Connection Request](#accept-a-connection-request)
   * [Test Secure Interaction](#test-secure-interaction)
   * [Apply for a Job](#apply-for-a-job)
   * [Apply for a Loan](#apply-for-a-loan)
