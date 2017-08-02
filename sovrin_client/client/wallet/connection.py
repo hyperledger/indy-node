@@ -26,23 +26,23 @@ class constant:
     AVAILABLE_CLAIMS = "Available Claims"
     RECEIVED_CLAIMS = "Received Claims"
 
-    LINK_NONCE = "Nonce"
-    LINK_STATUS = "Invitation status"
-    LINK_LAST_SYNCED = "Last Synced"
-    LINK_LAST_SEQ_NO = "Last Sync no"
-    LINK_STATUS_ACCEPTED = "Accepted"
+    CONNECTION_NONCE = "Nonce"
+    CONNECTION_STATUS = "Request status"
+    CONNECTION_LAST_SYNCED = "Last Synced"
+    CONNECTION_LAST_SEQ_NO = "Last Sync no"
+    CONNECTION_STATUS_ACCEPTED = "Accepted"
 
-    LINK_NOT_SYNCHRONIZED = "<this connection has not yet been synchronized>"
+    CONNECTION_NOT_SYNCHRONIZED = "<this connection has not yet been synchronized>"
     UNKNOWN_WAITING_FOR_SYNC = "<unknown, waiting for sync>"
 
-    LINK_ITEM_PREFIX = '\n    '
+    CONNECTION_ITEM_PREFIX = '\n    '
 
     NOT_AVAILABLE = "Not Available"
 
     NOT_ASSIGNED = "not yet assigned"
 
 
-class Link:
+class Connection:
     def __init__(self,
                  name,
                  localIdentifier=None,
@@ -51,7 +51,7 @@ class Link:
                  remoteIdentifier=None,
                  remoteEndPoint=None,
                  remotePubkey=None,
-                 invitationNonce=None,
+                 request_nonce=None,
                  proofRequests=None,
                  internalId=None,
                  remote_verkey=None):
@@ -62,7 +62,7 @@ class Link:
         self.remoteIdentifier = remoteIdentifier
         self.remoteEndPoint = remoteEndPoint
         self.remotePubkey = remotePubkey
-        self.invitationNonce = invitationNonce
+        self.request_nonce = request_nonce
 
         # for optionally storing a reference to an identifier in another system
         # for example, a college may already have a student ID for a particular
@@ -74,9 +74,9 @@ class Link:
         self.availableClaims = []  # type: List[AvailableClaim]
 
         self.remoteVerkey = remote_verkey
-        self.linkStatus = None
-        self.connectionLastSynced = None
-        self.linkLastSyncNo = None
+        self.connection_status = None
+        self.connection_last_synced = None
+        self.connection_last_sync_no = None
 
     def __repr__(self):
         return self.key
@@ -92,7 +92,7 @@ class Link:
 
     @property
     def isAccepted(self):
-        return self.linkStatus == constant.LINK_STATUS_ACCEPTED
+        return self.connection_status == constant.CONNECTION_STATUS_ACCEPTED
 
     def __str__(self):
         localIdr = self.localIdentifier if self.localIdentifier \
@@ -111,11 +111,11 @@ class Link:
                          constant.UNKNOWN_WAITING_FOR_SYNC
         if isinstance(remoteEndPoint, tuple):
             remoteEndPoint = "{}:{}".format(*remoteEndPoint)
-        linkStatus = 'not verified, remote verkey unknown'
-        linkLastSynced = prettyDateDifference(self.connectionLastSynced) or \
-                         constant.LINK_NOT_SYNCHRONIZED
+        connectionStatus = 'not verified, remote verkey unknown'
+        connection_last_synced = prettyDateDifference(self.connection_last_synced) or \
+                         constant.CONNECTION_NOT_SYNCHRONIZED
 
-        if linkLastSynced != constant.LINK_NOT_SYNCHRONIZED and \
+        if connection_last_synced != constant.CONNECTION_NOT_SYNCHRONIZED and \
                         remoteEndPoint == constant.UNKNOWN_WAITING_FOR_SYNC:
             remoteEndPoint = constant.NOT_AVAILABLE
 
@@ -123,20 +123,20 @@ class Link:
             trustAnchorStatus = '(confirmed)'
             if self.remoteVerkey is None:
                 remoteVerKey = constant.REMOTE_VER_KEY_SAME_AS_ID
-            linkStatus = self.linkStatus
+            connectionStatus = self.connection_status
 
         # TODO: The verkey would be same as the local identifier until we
         # support key rotation
         # TODO: This should be set as verkey in case of DID but need it from
         # wallet
         verKey = self.localVerkey if self.localVerkey else constant.SIGNER_VER_KEY_EMPTY
-        fixedLinkHeading = "Connection"
+        fixed_connection_heading = "Connection"
         if not self.isAccepted:
-            fixedLinkHeading += " (not yet accepted)"
+            fixed_connection_heading += " (not yet accepted)"
 
         # TODO: Refactor to use string interpolation
         # try:
-        fixedLinkItems = \
+        fixed_connection_items = \
             '\n' \
             'Name: ' + self.name + '\n' \
             'DID: ' + localIdr + '\n' \
@@ -147,28 +147,28 @@ class Link:
                           constant.UNKNOWN_WAITING_FOR_SYNC) + '\n' \
             'Remote Verification key: ' + remoteVerKey + '\n' \
             'Remote endpoint: ' + remoteEndPoint + '\n' \
-            'Request nonce: ' + self.invitationNonce + '\n' \
-            'Request status: ' + linkStatus + '\n'
+            'Request nonce: ' + self.request_nonce + '\n' \
+            'Request status: ' + connectionStatus + '\n'
 
-        optionalLinkItems = ""
+        optional_connection_items = ""
         if len(self.proofRequests) > 0:
-            optionalLinkItems += "Proof Request(s): {}". \
+            optional_connection_items += "Proof Request(s): {}". \
                                      format(", ".join([cr.name for cr in self.proofRequests])) \
                                  + '\n'
 
         if self.availableClaims:
-            optionalLinkItems += self.avail_claims_str()
+            optional_connection_items += self.avail_claims_str()
 
-        if self.linkLastSyncNo:
-            optionalLinkItems += 'Last sync seq no: ' + self.linkLastSyncNo \
+        if self.connection_last_sync_no:
+            optional_connection_items += 'Last sync seq no: ' + self.connection_last_sync_no \
                                  + '\n'
 
-        fixedEndingLines = 'Last synced: ' + linkLastSynced
+        fixedEndingLines = 'Last synced: ' + connection_last_synced
 
-        linkItems = fixedLinkItems + optionalLinkItems + fixedEndingLines
-        indentedLinkItems = constant.LINK_ITEM_PREFIX.join(
-            linkItems.splitlines())
-        return fixedLinkHeading + indentedLinkItems
+        connection_items = fixed_connection_items + optional_connection_items + fixedEndingLines
+        indented_connection_items = constant.CONNECTION_ITEM_PREFIX.join(
+            connection_items.splitlines())
+        return fixed_connection_heading + indented_connection_items
 
     def avail_claims_str(self):
         claim_names = [name for name, _, _ in self.availableClaims]
@@ -176,19 +176,19 @@ class Link:
                    format(", ".join(claim_names)) + '\n'
 
     @staticmethod
-    def validate(invitationData):
+    def validate(request_data):
 
         def checkIfFieldPresent(msg, searchInName, fieldName):
             if not msg.get(fieldName):
                 raise InvalidConnectionException(
                     "Field not found in {}: {}".format(searchInName, fieldName))
 
-        checkIfFieldPresent(invitationData, 'given input', 'sig')
-        checkIfFieldPresent(invitationData, 'given input', 'connection-request')
-        linkInvitation = invitationData.get("connection-request")
-        linkInvitationReqFields = [f.IDENTIFIER.nm, NAME, NONCE]
-        for fn in linkInvitationReqFields:
-            checkIfFieldPresent(linkInvitation, 'connection-request', fn)
+        checkIfFieldPresent(request_data, 'given input', 'sig')
+        checkIfFieldPresent(request_data, 'given input', 'connection-request')
+        connection_request = request_data.get("connection-request")
+        connection_request_req_fields = [f.IDENTIFIER.nm, NAME, NONCE]
+        for fn in connection_request_req_fields:
+            checkIfFieldPresent(connection_request, 'connection-request', fn)
 
     def getRemoteEndpoint(self, required=False):
         if not self.remoteEndPoint and required:
