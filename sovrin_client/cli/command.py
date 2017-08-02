@@ -54,9 +54,9 @@ sendNodeCmd = Command(
 sendPoolUpgCmd = Command(
     id="send {poolUpgrade}".format(poolUpgrade=poolUpgradeName),
     title="Sends instructions to nodes to update themselves",
-    usage="send {poolUpgrade} name=<name> version=<version> sha256=<sha256> action=<action> schedule=<schedule> timeout=<timeout> force=<force>".format(poolUpgrade=poolUpgradeName),
+    usage="send {poolUpgrade} name=<name> version=<version> sha256=<sha256> action=<action> schedule=<schedule> timeout=<timeout> force=<force> reinstall=<reinstall>".format(poolUpgrade=poolUpgradeName),
     examples="send {poolUpgrade} name=upgrade-01 "
-             "version=0.0.1 sha256=aad1242 action=start "
+             "version=0.0.1 sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 action=start "
              "schedule={{'AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3': "
              "'2017-01-25T12:49:05.258870+00:00', "
              "'4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2': "
@@ -66,7 +66,8 @@ sendPoolUpgCmd = Command(
              "'DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2': "
              "'2017-01-25T12:38:57.258870+00:00'}} "
              "timeout=10 "
-             "force=False".format(poolUpgrade=poolUpgradeName))
+             "force=False"
+             "reinstall=False".format(poolUpgrade=poolUpgradeName))
 
 sendSchemaCmd = Command(
     id="send {schema}".format(schema=schemaName),
