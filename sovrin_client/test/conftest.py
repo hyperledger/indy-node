@@ -29,7 +29,7 @@ from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYP
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.constants import NYM, TRUST_ANCHOR
 from sovrin_common.constants import TXN_TYPE, TARGET_NYM, ROLE
-from sovrin_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToFile
+from sovrin_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToGenesisFile
 from sovrin_node.test.helper import makePendingTxnsRequest, buildStewardClient, \
     TestNode
 from sovrin_client.test.helper import addRole, \
@@ -157,14 +157,14 @@ def testClientClass():
 def tdirWithDomainTxnsUpdated(tdirWithDomainTxns, poolTxnTrusteeNames,
                               trusteeData, tconf):
     addTrusteeTxnsToGenesis(poolTxnTrusteeNames, trusteeData,
-                            tdirWithDomainTxns, tconf.domainTransactionsFile)
+                            tdirWithDomainTxns, tconf.domainTransactionsFileGenesis)
     return tdirWithDomainTxns
 
 
 @pytest.fixture(scope="module")
 def updatedDomainTxnFile(tdir, tdirWithDomainTxnsUpdated, genesisTxns,
                          domainTxnOrderedFields, tconf):
-    addTxnToFile(tdir, tconf.domainTransactionsFile, genesisTxns, domainTxnOrderedFields)
+    addTxnToGenesisFile(tdir, tconf.domainTransactionsFileGenesis, genesisTxns, domainTxnOrderedFields)
 
 
 @pytest.fixture(scope="module")

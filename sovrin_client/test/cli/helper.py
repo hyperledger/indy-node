@@ -4,6 +4,7 @@ import re
 from _sha256 import sha256
 from typing import Dict
 
+from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from libnacl import randombytes
 
 from plenum.common import util
@@ -184,10 +185,9 @@ def prompt_is(prompt):
     return x
 
 
-def addTxnToFile(dir, file, txns, fields=getTxnOrderedFields()):
-    ledger = Ledger(CompactMerkleTree(),
-                    dataDir=dir,
-                    fileName=file)
+def addTxnToGenesisFile(dir, file, txns, fields=getTxnOrderedFields()):
+    initiator = GenesisTxnInitiatorFromFile(dir, file)
+    ledger = initiator.create_initiator_ledger()
     for txn in txns:
         ledger.add(txn)
     ledger.stop()
@@ -204,7 +204,7 @@ def addTrusteeTxnsToGenesis(trusteeList, trusteeData, txnDir, txnFileName):
                 txns.append(txn)
             except StopIteration as e:
                 logger.debug('{} not found in trusteeData'.format(trusteeToAdd))
-        addTxnToFile(txnDir, txnFileName, txns)
+        addTxnToGenesisFile(txnDir, txnFileName, txns)
     return added
 
 
@@ -218,8 +218,8 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
     if multiPoolNodes:
         conf.ENVS = {}
         for pool in multiPoolNodes:
-            conf.poolTransactionsFile = "pool_transactions_{}".format(pool.name)
-            conf.domainTransactionsFile = "transactions_{}".format(pool.name)
+            conf.poolTransactionsFileGenesis = "pool_transactions_{}".format(pool.name)
+            conf.domainTransactionsFileGenesis = "transactions_{}".format(pool.name)
             conf.ENVS[pool.name] = \
                 Environment("pool_transactions_{}".format(pool.name),
                                 "transactions_{}".format(pool.name))

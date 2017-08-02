@@ -939,8 +939,8 @@ class TestMultiNode:
 def multiPoolNodesCreated(request, tconf, looper, tdir,
                           cliTempLogger, namesOfPools=("pool1", "pool2")):
     oldENVS = tconf.ENVS
-    oldPoolTxnFile = tconf.poolTransactionsFile
-    oldDomainTxnFile = tconf.domainTransactionsFile
+    oldPoolTxnFile = tconf.poolTransactionsFileGenesis
+    oldDomainTxnFile = tconf.domainTransactionsFileGenesis
 
     multiNodes=[]
     for poolName in namesOfPools:
@@ -967,8 +967,8 @@ def multiPoolNodesCreated(request, tconf, looper, tdir,
 
     def reset():
         tconf.ENVS = oldENVS
-        tconf.poolTransactionsFile = oldPoolTxnFile
-        tconf.domainTransactionsFile = oldDomainTxnFile
+        tconf.poolTransactionsFileGenesis = oldPoolTxnFile
+        tconf.domainTransactionsFileGenesis = oldDomainTxnFile
 
     request.addfinalizer(reset)
     return multiNodes
