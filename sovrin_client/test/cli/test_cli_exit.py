@@ -1,6 +1,6 @@
 import pytest
 
-from sovrin_client.test.cli.test_tutorial import prompt_is
+from sovrin_client.test.cli.conftest import prompt_is
 from stp_core.loop.eventually import eventually
 from plenum.cli.cli import Exit
 
