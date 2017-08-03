@@ -60,7 +60,7 @@ def upgradeSentToAllNodes(looper, nodeSet, nodeIds):
 def testNodeDetectsUpgradeDone(looper, nodeSet):
     def check():
         for node in nodeSet:
-            assert node.upgrader.lastExecutedUpgradeInfo[1] == newVer
+            assert node.upgrader.lastUpgradeEventInfo[2] == newVer
 
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(check, retryWait=1, timeout=timeout))

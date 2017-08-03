@@ -25,15 +25,15 @@ def testTimeoutWorks(nodeSet, looper, dontClearNode, validUpgradeSent,
 
     def callback(oldCallback, nodeName):
         def f():
-            print("_upgradeFailedCallback called of {}'s upgrader".format(nodeName))
+            print("_upgrade_failed_callback called of {}'s upgrader".format(nodeName))
             oldCallback()
             nonlocal pending
             pending.remove(nodeName)
         return f
 
     for node in nodeSet:
-        oldCallback = node.upgrader._upgradeFailedCallback
-        node.upgrader._upgradeFailedCallback = \
+        oldCallback = node.upgrader._upgrade_failed_callback
+        node.upgrader._upgrade_failed_callback = \
             callback(oldCallback, node.name)
         print(node.upgrader.scheduledUpgrade)
 

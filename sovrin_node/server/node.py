@@ -19,7 +19,8 @@ from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
+    IN_PROGRESS
 from sovrin_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from sovrin_common.txn_util import getTxnOrderedFields
@@ -142,7 +143,8 @@ class Node(PlenumNode, HasPoolManager):
                         self.dataLocation,
                         self.config,
                         self.configLedger,
-                        upgradeFailedCallback=self.postConfigLedgerCaughtUp)
+                        upgradeFailedCallback=self.postConfigLedgerCaughtUp,
+                        upgrade_start_callback=self.notify_upgrade_start)
 
     def getDomainReqHandler(self):
         if self.idrCache is None:
@@ -238,10 +240,10 @@ class Node(PlenumNode, HasPoolManager):
         self.start_domain_ledger_sync()
 
     def acknowledge_upgrade(self):
-        if self.upgrader.isItFirstRunAfterUpgrade:
-            logger.debug('{} found the first run after upgrade, will '
-                         'send NODE_UPGRADE'.format(self))
-            lastUpgradeVersion = self.upgrader.lastExecutedUpgradeInfo[1]
+        if self.upgrader.should_notify_about_upgrade_result():
+            logger.debug('{} found the first run after upgrade, '
+                         'sending NODE_UPGRADE'.format(self))
+            lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
             action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
             op = {
                 TXN_TYPE: NODE_UPGRADE,
@@ -254,6 +256,23 @@ class Node(PlenumNode, HasPoolManager):
             request = self.wallet.signOp(op)
             self.startedProcessingReq(*request.key, self.nodestack.name)
             self.send(request)
+
+    def notify_upgrade_start(self):
+        logger.debug('{} is about to be upgraded, '
+                     'sending NODE_UPGRADE'.format(self))
+        scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
+        action = IN_PROGRESS
+        op = {
+            TXN_TYPE: NODE_UPGRADE,
+            DATA: {
+                ACTION: action,
+                VERSION: scheduled_upgrade_version
+            }
+        }
+        op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
+        request = self.wallet.signOp(op)
+        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.send(request)
 
     def processNodeRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == NODE_UPGRADE:

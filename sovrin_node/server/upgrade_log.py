@@ -10,6 +10,7 @@ class UpgradeLog:
     """
 
     UPGRADE_SCHEDULED = "scheduled"
+    UPGRADE_STARTED = "started"
     UPGRADE_SUCCEEDED = "succeeded"
     UPGRADE_FAILED = "failed"
     UPGRADE_CANCELLED = "cancelled"
@@ -39,6 +40,9 @@ class UpgradeLog:
 
     def appendScheduled(self, when, version) -> None:
         self.__append(UpgradeLog.UPGRADE_SCHEDULED, when, version)
+
+    def appendStarted(self, when, version) -> None:
+        self.__append(UpgradeLog.UPGRADE_STARTED, when, version)
 
     def appendSucceeded(self, when, version) -> None:
         self.__append(UpgradeLog.UPGRADE_SUCCEEDED, when, version)
