@@ -39,7 +39,7 @@ sendAttribCmd = Command(
 sendGetAttrCmd = Command(
     id="send {getAttr}".format(getAttr=getAttrName),
     title="Get ATTR from sovrin",
-    usage="send {getAttr} dest=<target identifier> raw=<name>".format(getAttr=getAttrName),
+    usage="send {getAttr} dest=<target DID> raw=<name>".format(getAttr=getAttrName),
     examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT raw=endpoint".format(getAttr=getAttrName))
 
 
@@ -104,13 +104,13 @@ showFileCmd = Command(
     id="show",
     title="Shows content of given file",
     usage="show <file-path>",
-    examples="show sample/faber-invitation.sovrin")
+    examples="show sample/faber-request.sovrin")
 
 loadFileCmd = Command(
     id="load",
     title="Creates the connection",
     usage="load <file-path>",
-    examples="load sample/faber-invitation.sovrin")
+    examples="load sample/faber-request.sovrin")
 
 showConnectionCmd = Command(
     id="show connection",
@@ -201,7 +201,7 @@ addGenesisTxnCmd = Command(
         'add genesis transaction {node} for 2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML by FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW with data '
         '{{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}}'.format(node=nodeName)])
 
-newIdentifierCmd = Command(
+newDIDCmd = Command(
     id="new DID",
     title="Creates new DID",
     usage="new DID [<DID>|abbr|crypto] [with seed <seed>] [as <alias>]",
