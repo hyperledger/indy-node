@@ -39,7 +39,7 @@ def getting_started(base_dir=None):
 
     print(FABER_INVITE)
 
-    link_to_faber = alice_agent.load_invitation_str(FABER_INVITE)
+    link_to_faber = alice_agent.load_request_str(FABER_INVITE)
 
     print(link_to_faber)
 
@@ -49,7 +49,7 @@ def getting_started(base_dir=None):
 
     print(link_to_faber)
 
-    alice_agent.accept_invitation(link_to_faber)
+    alice_agent.accept_request(link_to_faber)
 
     demo_wait_for_accept(pool, link_to_faber)
 
@@ -81,7 +81,7 @@ def getting_started(base_dir=None):
     ####################################
 
     print(ACME_INVITE)
-    link_to_acme = alice_agent.load_invitation_str(ACME_INVITE)
+    link_to_acme = alice_agent.load_request_str(ACME_INVITE)
 
     print(link_to_acme)
 
@@ -91,7 +91,7 @@ def getting_started(base_dir=None):
 
     print(link_to_acme)
 
-    alice_agent.accept_invitation(link_to_acme)
+    alice_agent.accept_request(link_to_acme)
 
     demo_wait_for_accept(pool, link_to_acme)
 
@@ -127,7 +127,7 @@ def getting_started(base_dir=None):
     #  Thrift Invitation
     ####################################
 
-    link_to_thrift = alice_agent.load_invitation_str(THRIFT_INVITE)
+    link_to_thrift = alice_agent.load_request_str(THRIFT_INVITE)
 
     print(link_to_thrift)
 
@@ -137,7 +137,7 @@ def getting_started(base_dir=None):
 
     print(link_to_thrift)
 
-    alice_agent.accept_invitation(link_to_thrift)
+    alice_agent.accept_request(link_to_thrift)
 
     demo_wait_for_accept(pool, link_to_thrift)
 

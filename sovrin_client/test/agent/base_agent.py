@@ -103,10 +103,10 @@ class BaseAgent(TestWalletedAgent):
 
     def getAvailableClaimList(self, link):
         assert link
-        assert link.invitationNonce
+        assert link.request_nonce
         assert link.remoteIdentifier
         return self.issuer.wallet.availableClaimsToAll + \
-               self.issuer.wallet.availableClaimsByNonce.get(link.invitationNonce, []) + \
+               self.issuer.wallet.availableClaimsByNonce.get(link.request_nonce, []) + \
                self.issuer.wallet.availableClaimsByIdentifier.get(link.remoteIdentifier, [])
 
     def isClaimAvailable(self, link, claimName):

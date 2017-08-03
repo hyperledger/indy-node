@@ -33,7 +33,7 @@ def test_send_proof_works(aliceAgent, aliceAcceptedFaber, aliceAcceptedAcme,
 
     # 5. check that proof is verified by Acme
     def chkProof():
-        internalId = acmeAgent.get_internal_id_by_nonce(acme_link.invitationNonce)
+        internalId = acmeAgent.get_internal_id_by_nonce(acme_link.request_nonce)
         link = acmeAgent.wallet.getConnectionBy(internalId=internalId)
         assert "Job-Application-2" in link.verifiedClaimProofs
 
