@@ -37,6 +37,7 @@ def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tconf):
         l = UpgradeLog(os.path.join(path, tconf.upgradeLogFile))
         when = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         l.appendScheduled(when, sovrin_node.__metadata__.__version__)
+        l.appendStarted(when, sovrin_node.__metadata__.__version__)
     return tdirWithPoolTxns
 
 

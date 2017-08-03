@@ -123,7 +123,7 @@ class Upgrader(HasActionQueue):
         (event_type, when, version) = self.lastUpgradeEventInfo
 
         if event_type != UpgradeLog.UPGRADE_STARTED:
-            logger.debug('Upgrade for node {} was not schduled. Last event is {}:{}:{}'
+            logger.debug('Upgrade for node {} was not scheduled. Last event is {}:{}:{}'
                          .format(self.nodeName, event_type, when, version))
             return
 
@@ -146,6 +146,8 @@ class Upgrader(HasActionQueue):
 
     def should_notify_about_upgrade_result(self):
         last_node_upgrade_txn = self.get_last_node_upgrade_txn()
+        logger.debug("Node's '{}' last upgrade txn is {}"
+                     .format(self.nodeName, last_node_upgrade_txn))
         return last_node_upgrade_txn and last_node_upgrade_txn[TXN_TYPE] == NODE_UPGRADE \
                and last_node_upgrade_txn[DATA] and last_node_upgrade_txn[DATA][ACTION] == IN_PROGRESS \
                and self.lastUpgradeEventInfo \
@@ -153,7 +155,7 @@ class Upgrader(HasActionQueue):
                     or self.lastUpgradeEventInfo[1] == UpgradeLog.UPGRADE_FAILED)
 
     def get_last_node_upgrade_txn(self):
-        seqNo = self.ledger.lastCount() - 1
+        seqNo = self.ledger.size - 1
         while seqNo >= 0:
             txn = self.ledger.getBySeqNo(seqNo)
             if txn[TXN_TYPE] == NODE_UPGRADE:
