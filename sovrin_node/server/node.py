@@ -200,10 +200,6 @@ class Node(PlenumNode, HasPoolManager):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
                                  self.configLedger, self.configReqHandler)
 
-    def postDomainLedgerCaughtUp(self, **kwargs):
-        super().postDomainLedgerCaughtUp(**kwargs)
-        self.acknowledge_upgrade()
-
     def start_config_ledger_sync(self):
         self._sync_ledger(CONFIG_LEDGER_ID)
         self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
@@ -238,6 +234,7 @@ class Node(PlenumNode, HasPoolManager):
         self.poolCfg.processLedger()
         self.upgrader.processLedger()
         self.start_domain_ledger_sync()
+        self.acknowledge_upgrade()
 
     def acknowledge_upgrade(self):
         if self.upgrader.should_notify_about_upgrade_result():
