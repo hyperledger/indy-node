@@ -392,6 +392,12 @@ class Node(PlenumNode, HasPoolManager):
         if txnType in CONFIG_TXN_TYPES:
             return CONFIG_LEDGER_ID
 
+    @property
+    def ledgers(self):
+        ledgers = super().ledgers
+        ledgers.append(self.configLedger)
+        return ledgers
+
     def applyReq(self, request: Request, cons_time):
         """
         Apply request to appropriate ledger and state
