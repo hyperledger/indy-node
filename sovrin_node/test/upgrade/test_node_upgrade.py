@@ -58,6 +58,7 @@ def upgradeSentToAllNodes(looper, nodeSet, nodeIds):
     for node in nodeSet:
         node.upgrader.scheduledUpgrade = (sovrin_node.__metadata__.__version__, 0)
         node.notify_upgrade_start()
+        node.upgrader.scheduledUpgrade = None
 
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(functools.partial(check, len(nodeSet)), retryWait=1, timeout=timeout))
