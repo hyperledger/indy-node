@@ -33,13 +33,13 @@ def _ensureReqCompleted(reqKey, client, clbk):
 
 
 def _getData(result, error):
-    data = json.loads(result.get(DATA).replace("\'", '"')) if result.get(DATA) else {}
+    data = result.get(DATA) if result.get(DATA) else {}
     seqNo = result.get(F.seqNo.name)
     return data, seqNo
 
 
 def _submitData(result, error):
-    data = json.loads(result.get(DATA).replace("\'", '"'))
+    data = result.get(DATA)
     seqNo = result.get(F.seqNo.name)
     return data, seqNo
 
@@ -73,7 +73,7 @@ class SovrinPublicRepo(PublicRepo):
             }
             res, seqNo = await self._sendGetReq(op)
             if res:
-                data = json.loads(res[DATA]) if res else {}
+                data = res[DATA] if res else {}
                 data[ORIGIN] = res[IDENTIFIER]
 
         return Schema(name=data[NAME],
@@ -132,7 +132,7 @@ class SovrinPublicRepo(PublicRepo):
         }
         op = {
             TXN_TYPE: SCHEMA,
-            DATA: JsonSerializer.dumps(data, toBytes=False)
+            DATA: data
         }
         _, seqNo = await self._sendSubmitReq(op)
         if seqNo:
@@ -156,7 +156,7 @@ class SovrinPublicRepo(PublicRepo):
         op = {
             TXN_TYPE: CLAIM_DEF,
             REF: id.schemaId,
-            DATA: JsonSerializer.dumps(data, toBytes=False),
+            DATA: data,
             SIGNATURE_TYPE: signatureType
         }
 

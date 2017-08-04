@@ -129,15 +129,7 @@ class Client(PlenumClient):
         raise NotImplementedError
 
     def getTxnsByType(self, txnType):
-        txns = self.txnLog.getTxnsByType(txnType)
-        if txnType == SCHEMA:
-            for txn in txns:
-                txn[DATA] = json.loads(txn[DATA].replace("\'", '"')
-                                       .replace('"{', '{')
-                                       .replace('}"', '}'))
-                txn[NAME] = txn[DATA][NAME]
-                txn[VERSION] = txn[DATA][VERSION]
-        return txns
+        return self.txnLog.getTxnsByType(txnType)
 
     # TODO: Just for now. Remove it later
     def doAttrDisclose(self, origin, target, txnId, key):

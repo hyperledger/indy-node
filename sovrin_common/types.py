@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
+from plenum.common.messages.fields import AnyField
 from plenum.common.messages.node_message_factory import node_message_factory
 
 from plenum.common.messages.message_base import MessageValidator, MessageBase
@@ -55,7 +56,7 @@ class ClientDiscloOperation(MessageValidator):
 class ClientSchemaOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(SCHEMA)),
-        (DATA, NonEmptyStringField()),
+        (DATA, AnyField()),
     )
 
 
@@ -145,7 +146,7 @@ class ClientClaimDefSubmitOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(CLAIM_DEF)),
         (REF, TxnSeqNoField()),
-        (DATA, NonEmptyStringField()),
+        (DATA, AnyField()),
         (SIGNATURE_TYPE, NonEmptyStringField()),
     )
 
