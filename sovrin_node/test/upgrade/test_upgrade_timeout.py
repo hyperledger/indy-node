@@ -32,8 +32,8 @@ def testTimeoutWorks(nodeSet, looper, dontClearNode, validUpgradeSent,
         return f
 
     for node in nodeSet:
-        oldCallback = node.upgrader._upgrade_failed_callback
-        node.upgrader._upgrade_failed_callback = \
+        oldCallback = node.upgrader._upgradeFailedCallback
+        node.upgrader._upgradeFailedCallback = \
             callback(oldCallback, node.name)
         print(node.upgrader.scheduledUpgrade)
 
