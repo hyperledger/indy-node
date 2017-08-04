@@ -8,7 +8,7 @@ import dateutil.parser
 import dateutil.tz
 
 from stp_core.common.log import getlogger
-from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
+from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER, NAME
 from plenum.server.has_action_queue import HasActionQueue
 from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, IN_PROGRESS
