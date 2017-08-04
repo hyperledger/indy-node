@@ -468,3 +468,11 @@ def compareAgentIssuerWallet(unpersistedWallet, restoredWallet):
     assert restoredWallet._repo.client is not None
     for oldDict, newDict in compareList:
         compare(oldDict, newDict)
+
+
+def getSeqNoFromCliOutput(cli):
+    seqPat = re.compile("Sequence number is ([0-9]+)")
+    m = seqPat.search(cli.lastCmdOutput)
+    assert m
+    seqNo, = m.groups()
+    return int(seqNo)
