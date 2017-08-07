@@ -26,7 +26,7 @@ def testNodeControlReceivesMessages(monkeypatch, looper):
         assert len(received) == 1
         assert received[0] == composeUpgradeMessage(msg)
 
-    nct = NCT(transform = transform)
+    nct = NCT(transform=transform)
     try:
         sendUpgradeMessage(msg)
         looper.run(eventually(checkMessage))

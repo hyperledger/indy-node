@@ -25,3 +25,5 @@ def test_node_handles_unsuccessful_upgrade(looper, nodeSet, nodeIds):
     for node in nodeSet:
         assert node.upgrader.scheduledUpgrade is None
         assert node.upgrader.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_FAILED
+
+

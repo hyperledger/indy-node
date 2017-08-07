@@ -21,7 +21,7 @@ def nodeIds(nodeSet):
 def validUpgrade(nodeIds, tconf):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=30)
+    startAt = unow + timedelta(seconds=100)
     acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)

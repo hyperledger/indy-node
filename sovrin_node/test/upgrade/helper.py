@@ -120,33 +120,42 @@ def populate_log_with_upgrade_events(tdir_with_pool_txns, pool_txn_node_names, t
         os.makedirs(path)
         log = UpgradeLog(os.path.join(path, tconf.upgradeLogFile))
         when = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        log.appendScheduled(when, version)
-        log.appendStarted(when, version)
+        log.appendScheduled(when, version, randomString(10))
+        log.appendStarted(when, version, randomString(10))
 
 
 def check_node_set_acknowledges_upgrade(looper, node_set, node_ids, allowed_actions: List,
                                         version: Tuple[str, str, str]):
-    def check(ledger_size):
-        for node in node_set:
-            assert len(node.configLedger) == ledger_size
-            ids = set()
-            for _, txn in node.configLedger.getAllTxn():
-                assert txn[TXN_TYPE] == NODE_UPGRADE
-                assert txn[DATA][ACTION] in allowed_actions
-                ids.add(txn[f.IDENTIFIER.nm])
-            ids.add(node.id)
-
-            assert ids == set(node_ids)
+    check = functools.partial(check_ledger_after_upgrade, node_set, allowed_actions, node_ids=node_ids)
 
     for node in node_set:
-        node.upgrader.scheduledUpgrade = (version, 0)
+        node.upgrader.scheduledUpgrade = (version, 0, randomString(10))
         node.notify_upgrade_start()
         node.upgrader.scheduledUpgrade = None
 
     timeout = plenumWaits.expectedTransactionExecutionTime(len(node_set))
-    looper.run(eventually(functools.partial(check, len(node_set)), retryWait=1, timeout=timeout))
+    looper.run(eventually(functools.partial(check, ledger_size=len(node_set)), retryWait=1, timeout=timeout))
 
     for node in node_set:
         node.acknowledge_upgrade()
 
-    looper.run(eventually(functools.partial(check, 2 * len(node_set)), retryWait=1, timeout=timeout))
+    looper.run(eventually(functools.partial(check, ledger_size=2 * len(node_set)), retryWait=1, timeout=timeout))
+
+
+def check_ledger_after_upgrade(node_set, allowed_actions, ledger_size, node_ids=None, allowed_txn_types=[NODE_UPGRADE]):
+    for node in node_set:
+        print(len(node.configLedger))
+        assert len(node.configLedger) == ledger_size
+        ids = set()
+        for _, txn in node.configLedger.getAllTxn():
+            type = txn[TXN_TYPE]
+            assert type in allowed_txn_types
+            data = txn
+            if type == NODE_UPGRADE:
+                data = txn[DATA]
+            assert data[ACTION] in allowed_actions
+            ids.add(txn[f.IDENTIFIER.nm])
+        ids.add(node.id)
+
+        if node_ids:
+            assert ids == set(node_ids)
