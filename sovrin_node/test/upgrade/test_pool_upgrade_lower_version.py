@@ -9,7 +9,7 @@ from plenum.common.util import randomString
 
 from sovrin_common.constants import SHA256, ACTION, CANCEL
 from sovrin_node.test.upgrade.helper import bumpVersion, checkUpgradeScheduled, \
-    ensureUpgradeSent, get_valid_code_hash
+    ensureUpgradeSent
 
 
 def testDoNotScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,

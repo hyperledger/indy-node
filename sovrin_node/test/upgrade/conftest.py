@@ -3,13 +3,12 @@ from datetime import datetime, timedelta
 import dateutil.tz
 import pytest
 from plenum.common.constants import VERSION, STEWARD
-from plenum.common.util import randomString
 from sovrin_client.test.helper import getClientAddedWithRole
 
 from sovrin_common.constants import START, FORCE
 from sovrin_node.test import waits
 from sovrin_node.test.upgrade.helper import bumpedVersion, ensureUpgradeSent, \
-    checkUpgradeScheduled, bumpVersion, get_valid_code_hash
+    checkUpgradeScheduled, bumpVersion
 from stp_core.loop.eventually import eventually
 
 

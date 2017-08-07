@@ -207,14 +207,12 @@ class Upgrader(HasActionQueue):
         checking is done
         :return:
         """
-        logger.info('{} processing config ledger for any upgrades'.format(self),
-                    extra={"tags": ["node-config"]})
+        logger.info('{} processing config ledger for any upgrades'.format(self))
         current_version = self.getVersion()
         last_pool_upgrade_txn_start = self.get_upgrade_txn(
             lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == START, reverse=True)
         if last_pool_upgrade_txn_start:
-            logger.debug('{} found upgrade START txn {}'.format(self, last_pool_upgrade_txn_start),
-                        extra={"tags": ["node-config"]})
+            logger.debug('{} found upgrade START txn {}'.format(self, last_pool_upgrade_txn_start))
             last_pool_upgrade_txn_seq_no = last_pool_upgrade_txn_start[F.seqNo.name]
 
             # searching for CANCEL for this upgrade submitted after START txn
@@ -223,8 +221,7 @@ class Upgrader(HasActionQueue):
                             txn[VERSION] == current_version,
                 start_no=last_pool_upgrade_txn_seq_no)
             if last_pool_upgrade_txn_cancel:
-                logger.debug('{} found upgrade CANCEL txn {}'.format(self, last_pool_upgrade_txn_cancel),
-                             extra={"tags": ["node-config"]})
+                logger.debug('{} found upgrade CANCEL txn {}'.format(self, last_pool_upgrade_txn_cancel))
                 return
 
             self.handleUpgradeTxn(last_pool_upgrade_txn_start)
@@ -290,6 +287,7 @@ class Upgrader(HasActionQueue):
         """
 
         if txn[TXN_TYPE] == POOL_UPGRADE:
+            logger.debug("Node '{}' handles upgrade txn {}".format(self.nodeName, txn))
             action = txn[ACTION]
             version = txn[VERSION]
             justification = txn.get(JUSTIFICATION)
@@ -299,18 +297,24 @@ class Upgrader(HasActionQueue):
             if action == START:
                 #forced txn could have partial schedule list
                 if self.nodeId not in txn[SCHEDULE]:
+                    logger.debug("Node '{}' disregards upgrade txn {}".format(self.nodeName, txn))
                     return
                 when = txn[SCHEDULE][self.nodeId]
                 failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
-                if self.scheduledUpgrade and self.isVersionHigher(self.scheduledUpgrade[0], version):
-                    # If upgrade has been scheduled but for version
-                    # lower than this transaction propose
-                    self._cancelScheduledUpgrade(justification)
-                    self._scheduleUpgrade(version, when, failTimeout)
+                if self.scheduledUpgrade:
+                    logger.debug("Node '{}' has a scheduled upgrade".format(self.nodeName))
+                    if self.isVersionHigher(self.scheduledUpgrade[0], version):
+                        logger.debug("Node '{}' cancels previous upgrade and schedules a new one to {}".
+                                     format(self.nodeName, version))
+                        # If upgrade has been scheduled but for version
+                        # lower than this transaction propose
+                        self._cancelScheduledUpgrade(justification)
+                        self._scheduleUpgrade(version, when, failTimeout)
                     return
 
                 if self.is_version_upgradable(currentVersion, version, reinstall):
+                    logger.debug("Node '{}' schedules upgrade to {}".format(self.nodeName, version))
                     # If no upgrade has been scheduled
                     self._scheduleUpgrade(version, when, failTimeout)
                 return
@@ -319,6 +323,7 @@ class Upgrader(HasActionQueue):
                 if self.scheduledUpgrade and \
                                 self.scheduledUpgrade[0] == version:
                     self._cancelScheduledUpgrade(justification)
+                    logger.debug("Node '{}' cancels upgrade to {}".format(self.nodeName, version))
                 return
 
             logger.error("Got {} transaction with unsupported action {}".format(POOL_UPGRADE, action))
