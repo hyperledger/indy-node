@@ -4,10 +4,10 @@ import pytest
 
 from sovrin_node.test import waits
 from stp_core.loop.eventually import eventually
-from plenum.common.constants import VERSION, NAME
+from plenum.common.constants import VERSION
 
 from sovrin_node.test.upgrade.helper import codeVersion, checkUpgradeScheduled, \
-    ensureUpgradeSent, get_valid_code_hash
+    ensureUpgradeSent
 from sovrin_common.constants import REINSTALL
 
 

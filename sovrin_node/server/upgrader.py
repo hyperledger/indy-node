@@ -1,8 +1,8 @@
 import os
 from collections import deque
 from datetime import datetime, timedelta
-from functools import cmp_to_key, partial, reduce
-from typing import Tuple, Union, Optional, Callable, List, Any, Dict
+from functools import cmp_to_key, partial
+from typing import Tuple, Union, Optional, Callable, Dict
 
 import dateutil.parser
 import dateutil.tz
@@ -14,6 +14,7 @@ from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, IN_PROGRESS
 from sovrin_node.server.upgrade_log import UpgradeLog
 from plenum.server import notifier_plugin_manager
+from ledger.util import F
 import asyncio
 
 logger = getlogger()
@@ -138,6 +139,7 @@ class Upgrader(HasActionQueue):
                 "Upgrade of node '{}' to version {} "
                 "scheduled on {} failed"
                 .format(self.nodeName, version, when))
+            return
 
         self._upgradeLog.appendSucceeded(when, version)
         logger.debug("Node '{}' successfully upgraded to version {}"
@@ -157,34 +159,44 @@ class Upgrader(HasActionQueue):
                and (self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_SUCCEEDED
                     or self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_FAILED)
 
-    def get_last_node_upgrade_txn(self):
-        return self.get_last_upgrade_txn([(TXN_TYPE, NODE_UPGRADE), (IDENTIFIER, self.nodeId)])
+    def get_last_node_upgrade_txn(self, start_no: int = None):
+        return self.get_upgrade_txn(lambda txn: txn[TXN_TYPE] == NODE_UPGRADE and txn[IDENTIFIER] == self.nodeId,
+                                    start_no=start_no, reverse=True)
 
-    def get_last_upgrade_txn(self, predicates: List[Tuple[str, Any]] = None) -> Optional[Dict]:
-        def predicate(txn):
-            return not predicates or \
-                   reduce(lambda accum, field_filter: accum and (txn.get(field_filter[0], None) == field_filter[1]),
-                          predicates, True)
+    def get_upgrade_txn(self, predicate: Callable = None, start_no: int = None,
+                        reverse: bool = False) -> Optional[Dict]:
+        def txn_filter(txn):
+            return not predicate or predicate(txn)
 
-        seqNo = len(self.ledger)
-        while seqNo > 0:
-            txn = self.ledger.getBySeqNo(seqNo)
-            if predicate(txn):
+        def traverse_end_condition(seq_no):
+            if reverse:
+                return seq_no > 0
+            return seq_no < len(self.ledger)
+
+        inc = 1
+        init_start_no = 0
+        if reverse:
+            inc = -1
+            init_start_no = len(self.ledger)
+
+        seq_no = start_no if start_no is not None else init_start_no
+        while traverse_end_condition(seq_no):
+            txn = self.ledger.getBySeqNo(seq_no)
+            if txn_filter(txn):
                 return txn
-            seqNo -= 1
+            seq_no += inc
         return None
 
     @property
-    def lastUpgradeEventInfo(self) -> Optional[Tuple[str, str]]:
+    def lastUpgradeEventInfo(self) -> Optional[Tuple[str, str, str]]:
         """
-        Version of last performed upgrade
+        (event, when, version) of last performed upgrade
 
-        :returns: bool or None if there were no upgrades
+        :returns: (event, when, version) or None if there were no upgrades
         """
-        lastEvent = self._upgradeLog.lastEvent
-        return lastEvent[1:4] if lastEvent else None
+        last_event = self._upgradeLog.lastEvent
+        return last_event[1:4] if last_event else None
 
-    #TODO: config ledger is read from the start to the end. Think about optimization
     #TODO: PoolConfig and Updater both read config ledger independently
     def processLedger(self) -> None:
         """
@@ -197,38 +209,27 @@ class Upgrader(HasActionQueue):
         """
         logger.info('{} processing config ledger for any upgrades'.format(self),
                     extra={"tags": ["node-config"]})
-        currentVer = self.getVersion()
-        upgrades = {}  # Map of version to scheduled time
-        for _, txn in self.ledger.getAllTxn():
-            if txn[TXN_TYPE] == POOL_UPGRADE:
-                version = txn[VERSION]
-                action = txn[ACTION]
-                reinstall = txn.get(REINSTALL, None)
-                if action == START and self.is_version_upgradable(currentVer, version, reinstall):
-                    schedule = txn[SCHEDULE]
-                    if self.nodeId not in schedule:
-                        logger.warning('{} not present in schedule {}'.
-                                    format(self, schedule))
-                    else:
-                        upgrades[version] = schedule[self.nodeId]
-                elif action == CANCEL:
-                    if version not in upgrades:
-                        logger.error('{} encountered before {}'.
-                                     format(CANCEL, START))
-                    else:
-                        upgrades.pop(version)
-                else:
-                    logger.error('{} cannot be {}'.format(ACTION, action))
-        upgradeKeys = self.versionsDescOrder(upgrades.keys())
-        if upgradeKeys:
-            latestVer, upgradeAt = upgradeKeys[0], upgrades[upgradeKeys[0]]
-            logger.info('{} found upgrade for version {} to be run at {}'.
-                        format(self, latestVer, upgradeAt))
-            self._scheduleUpgrade(latestVer,
-                                  upgradeAt,
-                                  self.defaultUpgradeTimeout)
-            #TODO: Consider reporting a signal if the node is going to upgrade
-            # very soon so that catchup for domain ledger does not start
+        current_version = self.getVersion()
+        last_pool_upgrade_txn_start = self.get_upgrade_txn(
+            lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == START, reverse=True)
+        if last_pool_upgrade_txn_start:
+            logger.debug('{} found upgrade START txn {}'.format(self, last_pool_upgrade_txn_start),
+                        extra={"tags": ["node-config"]})
+            last_pool_upgrade_txn_seq_no = last_pool_upgrade_txn_start[F.seqNo.name]
+
+            # searching for CANCEL for this upgrade submitted after START txn
+            last_pool_upgrade_txn_cancel = self.get_upgrade_txn(
+                lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == CANCEL and
+                            txn[VERSION] == current_version,
+                start_no=last_pool_upgrade_txn_seq_no)
+            if last_pool_upgrade_txn_cancel:
+                logger.debug('{} found upgrade CANCEL txn {}'.format(self, last_pool_upgrade_txn_cancel),
+                             extra={"tags": ["node-config"]})
+                return
+
+            self.handleUpgradeTxn(last_pool_upgrade_txn_start)
+
+
 
     @property
     def didLastExecutedUpgradeSucceeded(self) -> bool:
@@ -302,26 +303,25 @@ class Upgrader(HasActionQueue):
                 when = txn[SCHEDULE][self.nodeId]
                 failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
-                if not self.scheduledUpgrade:
-                    if self.is_version_upgradable(currentVersion, version, reinstall):
-                        # If no upgrade has been scheduled
-                        self._scheduleUpgrade(version, when, failTimeout)
-                else:
-                    if self.isVersionHigher(self.scheduledUpgrade[0], version):
-                        # If upgrade has been scheduled but for version
-                        # lower than this transaction propose
-                        self._cancelScheduledUpgrade(justification)
-                        self._scheduleUpgrade(version, when, failTimeout)
+                if self.scheduledUpgrade and self.isVersionHigher(self.scheduledUpgrade[0], version):
+                    # If upgrade has been scheduled but for version
+                    # lower than this transaction propose
+                    self._cancelScheduledUpgrade(justification)
+                    self._scheduleUpgrade(version, when, failTimeout)
+                    return
 
-            elif action == CANCEL:
+                if self.is_version_upgradable(currentVersion, version, reinstall):
+                    # If no upgrade has been scheduled
+                    self._scheduleUpgrade(version, when, failTimeout)
+                return
+
+            if action == CANCEL:
                 if self.scheduledUpgrade and \
                                 self.scheduledUpgrade[0] == version:
                     self._cancelScheduledUpgrade(justification)
-                    self.processLedger()
-            else:
-                logger.error(
-                    "Got {} transaction with unsupported action {}".format(
-                        POOL_UPGRADE, action))
+                return
+
+            logger.error("Got {} transaction with unsupported action {}".format(POOL_UPGRADE, action))
 
     def _scheduleUpgrade(self,
                          version,

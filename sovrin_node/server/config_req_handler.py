@@ -69,8 +69,9 @@ class ConfigReqHandler(RequestHandler):
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version
             # present
-            txn = self.upgrader\
-                .get_last_upgrade_txn([(NAME, req.operation.get(NAME)), (VERSION, req.operation.get(VERSION))])
+            txn = self.upgrader.get_upgrade_txn(
+                lambda txn: txn[NAME] == req.operation.get(NAME) and txn[VERSION] == req.operation.get(VERSION),
+                reverse=True)
             if txn:
                 status = txn.get(ACTION, None)
 

@@ -2,15 +2,24 @@ from plenum.common.util import randomString
 from stp_core.loop.eventually import eventually
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test import waits as plenumWaits
+from plenum.common.types import f
+from plenum.common.constants import TXN_TYPE, DATA
+from sovrin_common.constants import NODE_UPGRADE, ACTION
 from sovrin_client.client.wallet.upgrade import Upgrade
 from sovrin_node.server.upgrader import Upgrader
+from sovrin_node.server.upgrade_log import UpgradeLog
 from sovrin_node.utils.node_control_tool import NodeControlTool
 from sovrin_common.config_util import getConfig
+from datetime import datetime
+from typing import List, Tuple
+import dateutil.tz
 import subprocess
 import os
 import multiprocessing
 import socket
 import json
+import functools
+
 
 
 config = getConfig()
@@ -102,3 +111,42 @@ def nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout):
 
 def get_valid_code_hash():
     return randomString(64)
+
+
+def populate_log_with_upgrade_events(tdir_with_pool_txns, pool_txn_node_names, tconf,
+                                      version: Tuple[str, str, str]):
+    for nm in pool_txn_node_names:
+        path = os.path.join(tdir_with_pool_txns, tconf.nodeDataDir, nm)
+        os.makedirs(path)
+        log = UpgradeLog(os.path.join(path, tconf.upgradeLogFile))
+        when = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+        log.appendScheduled(when, version)
+        log.appendStarted(when, version)
+
+
+def check_node_set_acknowledges_upgrade(looper, node_set, node_ids, allowed_actions: List,
+                                        version: Tuple[str, str, str]):
+    def check(ledger_size):
+        for node in node_set:
+            assert len(node.configLedger) == ledger_size
+            ids = set()
+            for _, txn in node.configLedger.getAllTxn():
+                assert txn[TXN_TYPE] == NODE_UPGRADE
+                assert txn[DATA][ACTION] in allowed_actions
+                ids.add(txn[f.IDENTIFIER.nm])
+            ids.add(node.id)
+
+            assert ids == set(node_ids)
+
+    for node in node_set:
+        node.upgrader.scheduledUpgrade = (version, 0)
+        node.notify_upgrade_start()
+        node.upgrader.scheduledUpgrade = None
+
+    timeout = plenumWaits.expectedTransactionExecutionTime(len(node_set))
+    looper.run(eventually(functools.partial(check, len(node_set)), retryWait=1, timeout=timeout))
+
+    for node in node_set:
+        node.acknowledge_upgrade()
+
+    looper.run(eventually(functools.partial(check, 2 * len(node_set)), retryWait=1, timeout=timeout))
