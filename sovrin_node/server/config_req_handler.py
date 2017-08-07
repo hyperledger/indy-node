@@ -53,6 +53,7 @@ class ConfigReqHandler(RequestHandler):
         # TODO: Check if cancel is submitted before start
 
     def validate(self, req: Request, config=None):
+        status = None
         operation = req.operation
         typ = operation.get(TXN_TYPE)
         if typ not in [POOL_UPGRADE, POOL_CONFIG]:
@@ -68,7 +69,11 @@ class ConfigReqHandler(RequestHandler):
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version
             # present
-            status = self.upgrader.statusInLedger(req.operation.get(NAME), req.operation.get(VERSION))
+            txn = self.upgrader\
+                .get_last_upgrade_txn([(NAME, req.operation.get(NAME)), (VERSION, req.operation.get(VERSION))])
+            if txn:
+                status = txn.get(ACTION, None)
+
             if status == START and action == START:
                 raise InvalidClientRequest(req.identifier, req.reqId,
                                            "Upgrade '{}' is already scheduled".format(req.operation.get(NAME)))

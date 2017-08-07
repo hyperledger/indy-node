@@ -2,13 +2,13 @@ import os
 from collections import deque
 from datetime import datetime, timedelta
 from functools import cmp_to_key, partial, reduce
-from typing import Tuple, Union, Optional, Callable, List, Any
+from typing import Tuple, Union, Optional, Callable, List, Any, Dict
 
 import dateutil.parser
 import dateutil.tz
 
 from stp_core.common.log import getlogger
-from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER, NAME
+from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.server.has_action_queue import HasActionQueue
 from sovrin_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, IN_PROGRESS
@@ -42,6 +42,10 @@ class Upgrader(HasActionQueue):
     def isVersionLower(oldVer, newVer):
         r = Upgrader.compareVersions(oldVer, newVer)
         return True if r == -1 else False
+
+    @staticmethod
+    def is_version_upgradable(old, new, reinstall: bool = False):
+        return Upgrader.isVersionHigher(old, new) or (Upgrader.isVersionSame(old, new) and reinstall)
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -156,35 +160,19 @@ class Upgrader(HasActionQueue):
     def get_last_node_upgrade_txn(self):
         return self.get_last_upgrade_txn([(TXN_TYPE, NODE_UPGRADE), (IDENTIFIER, self.nodeId)])
 
-    def get_last_upgrade_txn(self, predicates: List[Tuple[str, Any]] = None):
+    def get_last_upgrade_txn(self, predicates: List[Tuple[str, Any]] = None) -> Optional[Dict]:
         def predicate(txn):
-            return reduce(lambda accum, field_filter: accum and (txn.get(field_filter[0], None) == field_filter[1]),
+            return not predicates or \
+                   reduce(lambda accum, field_filter: accum and (txn.get(field_filter[0], None) == field_filter[1]),
                           predicates, True)
 
         seqNo = len(self.ledger)
-        ret = None
         while seqNo > 0:
             txn = self.ledger.getBySeqNo(seqNo)
             if predicate(txn):
-                ret = txn
+                return txn
             seqNo -= 1
-        return ret
-
-    def statusInLedger(self, name, version) -> dict:
-        """
-        Searches ledger for transaction that schedules or cancels
-        upgrade to specified version
-
-        :param name:
-        :param version:
-        :return: corresponding transaction
-        """
-
-        upgradeTxn = {}
-        for _, txn in self.ledger.getAllTxn():
-            if txn.get(NAME) == name and txn.get(VERSION) == version:
-                upgradeTxn = txn
-        return upgradeTxn.get(ACTION)
+        return None
 
     @property
     def lastUpgradeEventInfo(self) -> Optional[Tuple[str, str]]:
@@ -215,8 +203,8 @@ class Upgrader(HasActionQueue):
             if txn[TXN_TYPE] == POOL_UPGRADE:
                 version = txn[VERSION]
                 action = txn[ACTION]
-                if action == START and \
-                        self.isVersionHigher(currentVer, version):
+                reinstall = txn.get(REINSTALL, None)
+                if action == START and self.is_version_upgradable(currentVer, version, reinstall):
                     schedule = txn[SCHEDULE]
                     if self.nodeId not in schedule:
                         logger.warning('{} not present in schedule {}'.
@@ -315,8 +303,7 @@ class Upgrader(HasActionQueue):
                 failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
                 if not self.scheduledUpgrade:
-                    if self.isVersionHigher(currentVersion, version) or \
-                            (self.isVersionSame(currentVersion, version) and reinstall):
+                    if self.is_version_upgradable(currentVersion, version, reinstall):
                         # If no upgrade has been scheduled
                         self._scheduleUpgrade(version, when, failTimeout)
                 else:
