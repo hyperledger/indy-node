@@ -1,3 +1,4 @@
+from anoncreds.protocol.exceptions import SchemaNotFoundError
 from plenum.common.signer_did import DidSigner
 from sovrin_client.agent.helper import bootstrap_schema, buildAgentWallet
 from sovrin_client.client.wallet.wallet import Wallet
@@ -95,7 +96,7 @@ async def bootstrap_faber(agent):
 
     try:
         schema = await agent.issuer.wallet.getSchema(schema_id)
-    except ValueError:
+    except SchemaNotFoundError:
         schema_id = await bootstrap_schema(agent,
                                      'Transcript',
                                      'Transcript',
