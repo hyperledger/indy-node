@@ -1,10 +1,9 @@
 import pytest
-from sovrin_client.test.cli.constants import INVALID_SYNTAX
+from sovrin_client.test.cli.constants import INVALID_SYNTAX, SCHEMA_ADDED
 from sovrin_client.test.cli.helper import createUuidIdentifier
 from sovrin_node.test.did.conftest import wallet
 
 
-SCHEMA_ADDED = ['The following schema is published to the Sovrin distributed ledger', 'Sequence number is']
 SCHEMA_FOUND = ['Found schema', 'Degree', '1.0','attrib1', 'attrib2', 'attrib3']
 SCHEMA_NOT_FOUND = 'Schema not found'
 

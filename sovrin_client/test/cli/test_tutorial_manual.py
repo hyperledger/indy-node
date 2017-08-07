@@ -1,6 +1,5 @@
 import json
 import logging
-import re
 
 import pytest
 from plenum.common.constants import PUBKEY
@@ -35,13 +34,6 @@ whitelist = ["is not connected - message will not be sent immediately.If this pr
 
 class TestWalletedAgent(WalletedAgent, RunnableAgent):
     pass
-
-def getSeqNoFromCliOutput(cli):
-    seqPat = re.compile("Sequence number is ([0-9]+)")
-    m = seqPat.search(cli.lastCmdOutput)
-    assert m
-    seqNo, = m.groups()
-    return seqNo
 
 
 @pytest.fixture(scope="module")
