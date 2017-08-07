@@ -1,4 +1,5 @@
-SCHEMA_ADDED = ['The following schema is published to the Sovrin distributed ledger', 'Sequence number is']
+from sovrin_client.test.cli.constants import SCHEMA_ADDED
+
 
 def testSendSchemaMultipleAttribs(be, do, poolNodesStarted, trusteeCli):
     be(trusteeCli)

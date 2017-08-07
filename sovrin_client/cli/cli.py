@@ -14,6 +14,8 @@ import asyncio
 
 import base58
 from libnacl import randombytes
+
+from anoncreds.protocol.exceptions import SchemaNotFoundError
 from plenum.cli.cli import Cli as PlenumCli
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit.layout.lexers import SimpleLexer
@@ -56,7 +58,7 @@ from sovrin_common.auth import Authoriser
 from sovrin_common.config import ENVS
 from sovrin_common.config_util import getConfig
 from sovrin_common.exceptions import InvalidConnectionException, ConnectionAlreadyExists, \
-    ConnectionNotFound, NotConnectedToNetwork, SchemaNotFound
+    ConnectionNotFound, NotConnectedToNetwork
 from sovrin_common.identity import Identity
 from sovrin_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, GET_SCHEMA, \
@@ -904,7 +906,7 @@ class SovrinCli(PlenumCli):
         id = ID(schemaId=reference)
         try:
             pk, pkR = await self.agent.issuer.genKeys(id)
-        except SchemaNotFound:
+        except SchemaNotFoundError:
             self.print("Schema with seqNo {} not found".format(reference),
                        Token.BoldOrange)
             return False
