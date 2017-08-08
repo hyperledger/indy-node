@@ -170,7 +170,7 @@ class ClientPoolUpgradeOperation(MessageValidator):
         (SHA256, Sha256HexField()),
         (TIMEOUT, NonNegativeNumberField(optional=True)),
         (JUSTIFICATION, LimitedLengthStringField(max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
-        (NAME, NonEmptyStringField(optional=True)),
+        (NAME, NonEmptyStringField()),
         (FORCE, BooleanField(optional=True)),
         (REINSTALL, BooleanField(optional=True)),
     )
