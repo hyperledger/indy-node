@@ -159,3 +159,18 @@ def check_ledger_after_upgrade(node_set, allowed_actions, ledger_size, node_ids=
 
         if node_ids:
             assert ids == set(node_ids)
+
+
+def check_no_loop(nodeSet, event):
+    for node in nodeSet:
+        # mimicking upgrade start
+        node.upgrader._upgradeLog.appendStarted(0, node.upgrader.scheduledUpgrade[0], node.upgrader.scheduledUpgrade[2])
+        node.notify_upgrade_start()
+        # mimicking upgrader's initialization after restart
+        node.upgrader.check_upgrade_succeeded()
+        node.upgrader.scheduledUpgrade = None
+        assert node.upgrader._upgradeLog.lastEvent[1] == event
+        # mimicking node's catchup after restart
+        node.postConfigLedgerCaughtUp()
+        assert node.upgrader.scheduledUpgrade is None
+        assert node.upgrader._upgradeLog.lastEvent[1] == event
