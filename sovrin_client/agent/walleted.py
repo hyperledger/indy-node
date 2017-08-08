@@ -832,6 +832,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         link = self.wallet.getConnection(linkName)
         request_proof_requests = request_data.get('proof-requests',
                                                    None)
+        nonce = link_request.get('nonce') or "1"
         if request_proof_requests:
             for icr in request_proof_requests:
                 # match is found if name and version are same
@@ -856,8 +857,8 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                     # otherwise append proof request to link
                     link.proofRequests.append(
                         ProofRequest(
-                            icr[NAME], icr[VERSION], icr[ATTRIBUTES],
-                            icr[VERIFIABLE_ATTRIBUTES]
+                            icr[NAME], icr[VERSION], getNonceForProof(nonce), attributes=icr[ATTRIBUTES],
+                            verifiableAttributes=icr[VERIFIABLE_ATTRIBUTES]
                         )
                     )
 
