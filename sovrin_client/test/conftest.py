@@ -157,14 +157,14 @@ def testClientClass():
 def tdirWithDomainTxnsUpdated(tdirWithDomainTxns, poolTxnTrusteeNames,
                               trusteeData, tconf):
     addTrusteeTxnsToGenesis(poolTxnTrusteeNames, trusteeData,
-                            tdirWithDomainTxns, tconf.domainTransactionsFileGenesis)
+                            tdirWithDomainTxns, tconf.domainTransactionsFile)
     return tdirWithDomainTxns
 
 
 @pytest.fixture(scope="module")
 def updatedDomainTxnFile(tdir, tdirWithDomainTxnsUpdated, genesisTxns,
                          domainTxnOrderedFields, tconf):
-    addTxnToGenesisFile(tdir, tconf.domainTransactionsFileGenesis, genesisTxns, domainTxnOrderedFields)
+    addTxnToGenesisFile(tdir, tconf.domainTransactionsFile, genesisTxns, domainTxnOrderedFields)
 
 
 @pytest.fixture(scope="module")

@@ -105,13 +105,11 @@ class Node(PlenumNode, HasPoolManager):
         """
         if self.config.primaryStorage is None:
             genesis_txn_initiator = GenesisTxnInitiatorFromFile(self.basedirpath,
-                                                                self.config.domainTransactionsFileGenesis)
-            defaultTxnFile = os.path.join(self.basedirpath,
-                                       self.config.domainTransactionsFileGenesis)
-            if not os.path.exists(defaultTxnFile):
+                                                                self.config.domainTransactionsFile)
+            if not os.path.exists(genesis_txn_initiator.init_file):
                 logger.debug("Not using default initialization file for "
                              "domain ledger, since it does not exist: {}"
-                             .format(defaultTxnFile))
+                             .format(genesis_txn_initiator.init_file))
                 genesis_txn_initiator = None
 
             return Ledger(CompactMerkleTree(hashStore=self.hashStore),

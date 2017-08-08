@@ -10,6 +10,7 @@ from libnacl import randombytes
 from plenum.common import util
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import rawToFriendly
+from plenum.config import pool_transactions_file_base, domain_transactions_file_base
 
 from plenum.test import waits
 from stp_core.loop.eventually import eventually
@@ -218,11 +219,11 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
     if multiPoolNodes:
         conf.ENVS = {}
         for pool in multiPoolNodes:
-            conf.poolTransactionsFileGenesis = "pool_transactions_{}".format(pool.name)
-            conf.domainTransactionsFileGenesis = "transactions_{}".format(pool.name)
             conf.ENVS[pool.name] = \
-                Environment("pool_transactions_{}".format(pool.name),
-                                "transactions_{}".format(pool.name))
+                Environment("{}_{}".format(pool_transactions_file_base, pool.name),
+                            "{}_{}".format(domain_transactions_file_base, pool.name))
+            conf.poolTransactionsFile = conf.ENVS[pool.name].poolLedger
+            conf.domainTransactionsFile = conf.ENVS[pool.name].domainLedger
             initDirWithGenesisTxns(
                 tempDir, conf, os.path.join(pool.tdirWithPoolTxns, pool.name),
                 os.path.join(pool.tdirWithDomainTxns, pool.name))

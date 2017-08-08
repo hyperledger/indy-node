@@ -34,11 +34,11 @@ class Setup:
         # but that gives error due to some dependency issue
         allEnvs = {
             "local": Environment("pool_transactions_local",
-                                 "transactions_local"),
+                                 "domain_transactions_local"),
             "test": Environment("pool_transactions_sandbox",
-                                "transactions_sandbox"),
+                                "domain_transactions_sandbox"),
             "live": Environment("pool_transactions_live",
-                                "transactions_live")
+                                "domain_transactions_live")
         }
         for env in allEnvs.values():
             fileName = getattr(env, key, None)
