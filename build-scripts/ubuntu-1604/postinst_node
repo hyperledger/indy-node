@@ -108,8 +108,6 @@ rm -f /usr/local/bin/delete_sovrin_node.bat /usr/local/bin/upgrade_sovrin_node_t
 # disable stdout logging
 echo "enableStdOutLogging=False" >> /home/sovrin/.sovrin/sovrin_config.py
 
-# disabling auto update for indy-node package
-apt-mark hold indy-node
 
 # Automatically added from template:
 if which py3compile >/dev/null 2>&1; then
