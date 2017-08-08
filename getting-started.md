@@ -9,7 +9,7 @@
   * [What We'll Cover](#what-well-cover)
   * [Alice Gets a Transcript](#alice-gets-a-transcript)
   * [Install Sovrin](#install-sovrin)
-  * [Evaluate a Connection Reuest](#evaluate-a-connection-request)
+  * [Evaluate a Connection Request](#evaluate-a-connection-request)
   * [Accept a Connection Request](#accept-a-connection-request)
   * [Test Secure Interaction](#test-secure-interaction)
   * [Apply for a Job](#apply-for-a-job)
