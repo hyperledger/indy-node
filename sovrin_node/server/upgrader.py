@@ -87,6 +87,10 @@ class Upgrader(HasActionQueue):
             seq_no = ''
         return '{}{}'.format(txn[f.REQ_ID.nm], seq_no)
 
+    @staticmethod
+    def get_timeout(timeout):
+        return timedelta(minutes=timeout).seconds
+
     def __defaultLog(self, dataDir, config):
         log = os.path.join(dataDir, config.upgradeLogFile)
         return UpgradeLog(filePath=log)
@@ -114,6 +118,9 @@ class Upgrader(HasActionQueue):
             upgradeFailedCallback if upgradeFailedCallback else lambda: None
         self._upgrade_start_callback = \
             upgrade_start_callback if upgrade_start_callback else lambda: None
+
+        self.retry_timeout = 5
+        self.retry_limit = 3
 
         self.check_upgrade_succeeded()
 
@@ -427,25 +434,16 @@ class Upgrader(HasActionQueue):
         asyncio.ensure_future(self._sendUpdateRequest(when, version, failTimeout))
 
     async def _sendUpdateRequest(self, when, version, failTimeout):
-        retryLimit = 3
-        retryTimeout = 5  # seconds
+        retryLimit = self.retry_limit
         while retryLimit:
             try:
-                controlServiceHost = self.config.controlServiceHost
-                controlServicePort = self.config.controlServicePort
                 msg = UpgradeMessage(version=version).toJson()
-                msgBytes = bytes(msg, "utf-8")
-                _, writer = await asyncio.open_connection(
-                    host=controlServiceHost,
-                    port=controlServicePort
-                )
-                writer.write(msgBytes)
-                writer.close()
+                logger.debug("Sending message to control tool: {}".format(msg))
+                await self._open_connection_and_send(msg)
                 break
             except Exception as ex:
-                logger.debug(
-                    "Failed to communicate to control tool: {}".format(ex))
-                asyncio.sleep(retryTimeout)
+                logger.debug("Failed to communicate to control tool: {}".format(ex))
+                asyncio.sleep(self.retry_timeout)
                 retryLimit -= 1
         if not retryLimit:
             logger.error("Failed to send update request!")
@@ -457,16 +455,29 @@ class Upgrader(HasActionQueue):
             self._unscheduleUpgrade()
             self._upgradeFailedCallback()
         else:
+            logger.debug("Waiting {} minutes for upgrade to be performed".format(failTimeout))
             timesUp = partial(self._declareTimeoutExceeded, when, version)
-            self._schedule(timesUp, timedelta(minutes=failTimeout).seconds)
+            self._schedule(timesUp, self.get_timeout(failTimeout))
+
+    async def _open_connection_and_send(self, message: str):
+        controlServiceHost = self.config.controlServiceHost
+        controlServicePort = self.config.controlServicePort
+        msgBytes = bytes(message, "utf-8")
+        _, writer = await asyncio.open_connection(
+            host=controlServiceHost,
+            port=controlServicePort
+        )
+        writer.write(msgBytes)
+        writer.close()
 
     def _declareTimeoutExceeded(self, when, version):
         """
         This function is called when time for upgrade is up
         """
 
+        logger.debug("Timeout exceeded for {}:{}".format(when, version))
         last = self._upgradeLog.lastEvent
-        if last and last[1:-2] == (UpgradeLog.UPGRADE_FAILED, when, version):
+        if last and last[1:-1] == (UpgradeLog.UPGRADE_FAILED, when, version):
             return None
 
         logger.error("Upgrade to version {} scheduled on {} "
