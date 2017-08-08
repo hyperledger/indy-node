@@ -21,10 +21,16 @@ BACKUP_FORMAT = 'zip'
 DEPS = ['indy-plenum', 'indy-anoncreds']
 CONFIG = getConfig()
 FILES_TO_PRESERVE = [CONFIG.lastRunVersionFile, CONFIG.nextVersionFile, CONFIG.upgradeLogFile, CONFIG.lastVersionFilePath]
+PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'
 
 
 class NodeControlTool:
-    def __init__(self, timeout: int = TIMEOUT, base_dir: str = BASE_DIR, backup_format: str = BACKUP_FORMAT, test_mode: bool = False, deps: List[str] = DEPS, files_to_preserve: List[str] = FILES_TO_PRESERVE):
+    MAX_LINE_SIZE = 1024
+
+    def __init__(self, timeout: int = TIMEOUT, base_dir: str = BASE_DIR, backup_format: str = BACKUP_FORMAT,
+                 test_mode: bool = False, deps: List[str] = DEPS,
+                 files_to_preserve: List[str] = FILES_TO_PRESERVE,
+                 hold_ext: str = ''):
         self.test_mode = test_mode
         self.timeout = timeout
         self.base_dir = base_dir
@@ -33,6 +39,9 @@ class NodeControlTool:
         self.backup_format = backup_format
         self.deps = deps
         self.files_to_preserve = files_to_preserve
+        self.packages_to_hold = ' '.join([PACKAGES_TO_HOLD, hold_ext])
+
+        self._hold_packages()
 
         # Create a TCP/IP socket
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -78,11 +87,22 @@ class NodeControlTool:
 
         return ret.stdout.strip()
 
+    def _hold_packages(self):
+        ret = subprocess.run(self._compose_cmd(['apt-mark', 'hold', self.packages_to_hold]), shell=True, check=True,
+                             universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+
+        if ret.returncode != 0:
+            msg = 'Holding {} packages failed: _hold_packages returned {}'.format(self.packages_to_hold, ret.returncode)
+            logger.error(msg)
+            raise Exception(msg)
+
+        logger.info('Successfully put {} packages on hold'.format(self.packages_to_hold))
+
     def _get_deps_list(self, package):
         logger.info('Getting dependencies for {}'.format(package))
         ret = ''
-        self.__class__._update_package_cache()
-        package_info = self.__class__._get_info_from_package_manager(package)
+        self._update_package_cache()
+        package_info = self._get_info_from_package_manager(package)
 
         for dep in self.deps:
             if dep in package_info:
@@ -105,7 +125,7 @@ class NodeControlTool:
         cmd_file = 'upgrade_sovrin_node'
         if self.test_mode:
             cmd_file = 'upgrade_sovrin_node_test'
-        ret = subprocess.run(self.__class__._compose_cmd([cmd_file, deps]), shell=True, timeout=self.timeout)
+        ret = subprocess.run(self._compose_cmd([cmd_file, deps]), shell=True, timeout=self.timeout)
 
         if ret.returncode != 0:
             msg = 'Upgrade failed: _upgrade script returned {}'.format(ret.returncode)
@@ -114,7 +134,7 @@ class NodeControlTool:
 
     def _call_restart_node_script(self):
         logger.info('Restarting sovrin')
-        ret = subprocess.run(self.__class__._compose_cmd(['restart_sovrin_node']), shell=True, timeout=self.timeout)
+        ret = subprocess.run(self._compose_cmd(['restart_sovrin_node']), shell=True, timeout=self.timeout)
         if ret.returncode != 0:
             msg = 'Restart failed: script returned {}'.format(ret.returncode)
             logger.error(msg)
