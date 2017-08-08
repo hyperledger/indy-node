@@ -34,6 +34,10 @@ def _ensureReqCompleted(reqKey, client, clbk):
 
 def _getData(result, error):
     data = result.get(DATA) if result.get(DATA) else {}
+    # TODO: we have an old txn in the live pool where DATA is stored a json string.
+    # We can get rid of the code above once we create a versioning support in txns
+    if isinstance(data, str):
+        data = json.loads(data)
     seqNo = result.get(F.seqNo.name)
     return data, seqNo
 
