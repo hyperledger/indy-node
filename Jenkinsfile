@@ -84,4 +84,7 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 
 options = new TestAndPublishOptions()
 options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
+options.skip([StagesEnum.TEST, StagesEnum.PYPI_RELEASE])
+options.setPublishableBranches(['bugfix/indy-425']) //REMOVE IT BEFORE MERGE
+options.setPostfixes([master: 'hold-test']) //REMOVE IT BEFORE MERGE
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
