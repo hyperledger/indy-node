@@ -89,8 +89,8 @@ if __name__ == "__main__":
     base_dir = config.baseDir
     nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     for (_, dirnames, _) in os.walk(nodes_data_dir):
-        node_data_dir = os.path.join(nodes_data_dir, node_dir)
         for node_dir in dirnames:
+            node_data_dir = os.path.join(nodes_data_dir, node_dir)
             migrate_all_ledgers_for_node(node_data_dir)
             migrate_all_hash_stores(node_data_dir)
 
