@@ -29,7 +29,7 @@ def sendUpgrade(client, wallet, upgradeData):
     upgrade = Upgrade(**upgradeData, trustee=wallet.defaultId)
     wallet.doPoolUpgrade(upgrade)
     reqs = wallet.preparePending()
-    req, = client.submitReqs(*reqs)
+    req = client.submitReqs(*reqs)[0][0]
     return upgrade, req
 
 

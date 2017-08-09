@@ -546,7 +546,7 @@ class SovrinCli(PlenumCli):
             else:
                 raise e
         reqs = self.activeWallet.preparePending()
-        req, = self.activeClient.submitReqs(*reqs)
+        req = self.activeClient.submitReqs(*reqs)[0][0]
         printStr = "Adding nym {}".format(nym)
 
         if otherClientName:
@@ -572,7 +572,16 @@ class SovrinCli(PlenumCli):
 
         self.activeWallet.addAttribute(attrib)
         reqs = self.activeWallet.preparePending()
-        req, = self.activeClient.submitReqs(*reqs)
+        req, errs = self.activeClient.submitReqs(*reqs)
+        if errs:
+            for err in errs:
+                self.print("Request error: {}".format(err), Token.BoldOrange)
+
+        if not req:
+            return
+
+        req = req[0]
+
         self.print("Adding attributes {} for {}".format(attrib.value, nym))
 
         def out(reply, error, *args, **kwargs):
@@ -660,7 +669,7 @@ class SovrinCli(PlenumCli):
         node = Node(nym, data, self.activeDID)
         self.activeWallet.addNode(node)
         reqs = self.activeWallet.preparePending()
-        req, = self.activeClient.submitReqs(*reqs)
+        req = self.activeClient.submitReqs(*reqs)[0][0]
         self.print("Sending node request for node DID {} by {} "
                    "(request id: {})".format(nym, self.activeDID,
                                              req.reqId))
@@ -682,7 +691,7 @@ class SovrinCli(PlenumCli):
                           justification=justification, force=force, reinstall=reinstall)
         self.activeWallet.doPoolUpgrade(upgrade)
         reqs = self.activeWallet.preparePending()
-        req, = self.activeClient.submitReqs(*reqs)
+        req = self.activeClient.submitReqs(*reqs)[0][0]
         self.print("Sending pool upgrade {} for version {}".
                    format(name, version))
 
@@ -701,7 +710,7 @@ class SovrinCli(PlenumCli):
         poolConfig = PoolConfig(trustee=self.activeDID, writes=writes, force=force)
         self.activeWallet.doPoolConfig(poolConfig)
         reqs = self.activeWallet.preparePending()
-        req, = self.activeClient.submitReqs(*reqs)
+        req = self.activeClient.submitReqs(*reqs)[0][0]
         self.print("Sending pool config writes={} force={}".format(writes, force))
 
         def out(reply, error, *args, **kwargs):
