@@ -3,7 +3,7 @@ from collections import OrderedDict
 import pytest
 
 from sovrin_client.cli.cli import SovrinCli
-from sovrin_client.client.wallet.link import Link
+from sovrin_client.client.wallet.connection import Connection
 
 
 @pytest.fixture()
@@ -22,12 +22,12 @@ def claimsUsedForProof():
 
     return [
         (
-            Link(name='Issuer 1'),
+            Connection(name='Issuer 1'),
             ('TestClaim-1', '0.1', 'Other data'),
             claim1Attr
         ),
         (
-            Link(name='Issuer 2'),
+            Connection(name='Issuer 2'),
             ('TestClaim-2', '0.1', 'Other claim 2 data'),
             claim2Attr
         )

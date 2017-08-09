@@ -28,7 +28,7 @@ from plenum.test.cli.helper import TestCliCore, assertAllNodesCreated, \
 from plenum.test.helper import initDirWithGenesisTxns
 from plenum.test.testable import spyable
 from sovrin_client.cli.cli import SovrinCli
-from sovrin_client.client.wallet.link import Link
+from sovrin_client.client.wallet.connection import Connection
 from sovrin_common.constants import Environment
 from stp_core.network.port_dispenser import genHa
 from sovrin_common.constants import NYM
@@ -135,7 +135,7 @@ def doubleBraces(lines):
     return alteredLines
 
 
-def getConnectionInvitation(name, wallet) -> Link:
+def get_connection_request(name, wallet) -> Connection:
     existingLinkInvites = wallet.getMatchingConnections(name)
     li = existingLinkInvites[0]
     return li
@@ -472,3 +472,11 @@ def compareAgentIssuerWallet(unpersistedWallet, restoredWallet):
     assert restoredWallet._repo.client is not None
     for oldDict, newDict in compareList:
         compare(oldDict, newDict)
+
+
+def getSeqNoFromCliOutput(cli):
+    seqPat = re.compile("Sequence number is ([0-9]+)")
+    m = seqPat.search(cli.lastCmdOutput)
+    assert m
+    seqNo, = m.groups()
+    return int(seqNo)

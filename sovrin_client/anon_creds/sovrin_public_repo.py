@@ -1,6 +1,7 @@
 import json
 from typing import Optional
 
+from anoncreds.protocol.exceptions import SchemaNotFoundError
 from common.serializers.json_serializer import JsonSerializer
 from ledger.util import F
 from stp_core.loop.eventually import eventually
@@ -76,15 +77,21 @@ class SovrinPublicRepo(PublicRepo):
                 DATA: id.schemaId
             }
             res, seqNo = await self._sendGetReq(op)
-            if res:
-                data = res[DATA] if res else {}
+            if res and res[TXN_TYPE] == SCHEMA:
+                data = res[DATA]
                 data[ORIGIN] = res[IDENTIFIER]
+
+        if not data:
+            raise SchemaNotFoundError(
+                'No schema with ID={} and key={}'.format(
+                    id.schemaId,
+                    id.schemaKey))
 
         return Schema(name=data[NAME],
                       version=data[VERSION],
                       attrNames=data[ATTR_NAMES],
                       issuerId=data[ORIGIN],
-                      seqId=seqNo) if data else None
+                      seqId=seqNo)
 
     async def getPublicKey(self, id: ID = None, signatureType='CL') -> Optional[PublicKey]:
         op = {
@@ -96,7 +103,9 @@ class SovrinPublicRepo(PublicRepo):
 
         data, seqNo = await self._sendGetReq(op)
         if not data:
-            return None
+            raise ValueError(
+                'No value for schema with ID={} and key={}'.format(
+                    id.schemaId, id.schemaKey))
         data = data[PRIMARY]
         pk = PublicKey.from_str_dict(data)._replace(seqId=seqNo)
         return pk
@@ -111,7 +120,9 @@ class SovrinPublicRepo(PublicRepo):
         }
         data, seqNo = await self._sendGetReq(op)
         if not data:
-            return None
+            raise ValueError(
+                'No value for schema with ID={} and key={}'.format(
+                    id.schemaId, id.schemaKey))
         data = data[REVOCATION]
         pkR = RevocationPublicKey.fromStrDict(data)._replace(seqId=seqNo)
         return pkR

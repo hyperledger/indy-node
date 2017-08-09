@@ -1,9 +1,8 @@
 import pytest
 from sovrin_node.test.did.conftest import wallet
-from sovrin_client.test.cli.constants import INVALID_SYNTAX
+from sovrin_client.test.cli.constants import INVALID_SYNTAX, SCHEMA_ADDED, \
+    CLAIM_DEF_ADDED
 
-SCHEMA_ADDED = ['The following schema is published to the Sovrin distributed ledger', 'Sequence number is']
-CLAIM_DEF_ADDED = ['The claim definition was published to the Sovrin distributed ledger', 'Sequence number is']
 CLAIM_DEF_FOUND = ['Found claim def', 'attrib1', 'attrib2', 'attrib3']
 CLAIM_DEF_NOT_FOUND = 'Claim def not found'
 
