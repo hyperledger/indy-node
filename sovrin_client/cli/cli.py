@@ -1626,7 +1626,7 @@ class SovrinCli(PlenumCli):
         if envName not in self.envs:
             return "Unknown environment {}".format(envName)
         if not os.path.exists(os.path.join(self.basedirpath,
-                                           self.envs[envName].poolLedger)):
+                                           genesis_txn_file(self.envs[envName].poolLedger))):
             return "Do not have information to connect to {}".format(envName)
 
     def _disconnect(self, matchedVars):
