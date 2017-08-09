@@ -2,6 +2,7 @@ import pytest
 import multiprocessing
 import os
 import functools
+import shutil
 
 from stp_core.loop.eventually import eventually
 from sovrin_node.test.upgrade.helper import NodeControlToolExecutor as NCT, composeUpgradeMessage, sendUpgradeMessage, nodeControlGeneralMonkeypatching
@@ -48,7 +49,7 @@ def testNodeControlResolvesDependencies(monkeypatch):
         anoncreds_package_with_version: '{}'.format(randomText(100))
     }
 
-    def mock_get_info_from_package_manager(package):
+    def mock_get_info_from_package_manager(self, package):
         return mock_info.get(package, None)
 
     monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager', mock_get_info_from_package_manager)
@@ -109,8 +110,8 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper):
     backupWasRemoved = m.Value('b', False)
 
     def testRemoveBackup(tool, version):
-        backupWasRemoved.value = True
         tool._remove_backup_test(version)
+        backupWasRemoved.value = True
 
     def transform(tool):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
@@ -135,12 +136,14 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
     currentVersion = Upgrader.getVersion()
     backupWasRestored = m.Value('b', False)
     testFile = 'testFile'
+    testFilePersist = 'testFile1'
 
     def testRestoreBackup(tool, version):
-        backupWasRestored.value = True
+        shutil.rmtree(tool.sovrin_dir)
         tool._restore_from_backup_test(version)
+        backupWasRestored.value = True
 
-    def mockMigrate(tool):
+    def mockMigrate(tool, *args):
         with open(os.path.join(tool.sovrin_dir, testFile), 'w') as f:
             f.write('random')
         raise Exception('test')
@@ -154,11 +157,14 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
     def checkBackupRestored(tool):
         assert backupWasRestored.value
 
-    nct = NCT(transform = transform)
+    nct = NCT(transform=transform)
     try:
+        with open(os.path.join(nct.tool.sovrin_dir, testFilePersist), 'w') as f:
+            f.write('random')
         sendUpgradeMessage(msg)
         looper.run(eventually(checkBackupRestored, nct.tool))
         assert not os.path.exists(os.path.join(nct.tool.sovrin_dir, testFile))
+        assert os.path.exists(os.path.join(nct.tool.sovrin_dir, testFilePersist))
     finally:
         nct.stop()
 
