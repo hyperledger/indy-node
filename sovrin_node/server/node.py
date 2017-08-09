@@ -2,7 +2,7 @@ from typing import Iterable, Any, List
 
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
-from ledger.hash_stores.file_hash_store import FileHashStore
+from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, \
@@ -113,7 +113,7 @@ class Node(PlenumNode, HasPoolManager):
                              .format(genesis_txn_initiator.init_file))
                 genesis_txn_initiator = None
 
-            return Ledger(CompactMerkleTree(hashStore=self.hashStore),
+            return Ledger(CompactMerkleTree(hashStore=self.getHashStore('domain')),
                           dataDir=self.dataLocation,
                           fileName=self.config.domainTransactionsFile,
                           ensureDurability=self.config.EnsureLedgerDurability,
@@ -163,7 +163,7 @@ class Node(PlenumNode, HasPoolManager):
         )
 
     def getConfigLedger(self):
-        hashStore = FileHashStore(fileNamePrefix='config', dataDir=self.dataLocation)
+        hashStore = LevelDbHashStore(dataDir=self.dataLocation, fileNamePrefix='config')
         return Ledger(CompactMerkleTree(hashStore=hashStore),
             dataDir=self.dataLocation,
             fileName=self.config.configTransactionsFile,
