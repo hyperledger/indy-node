@@ -15,11 +15,13 @@ m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
 
-def testNodeControlReceivesMessages(monkeypatch, looper):
+def testNodeControlReceivesMessages(monkeypatch, looper, tdir):
     received = m.list()
     msg = 'test'
+    stdout = 'teststdout'
 
     def transform(tool):
+        nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
         monkeypatch.setattr(tool, '_process_data', received.append)
 
     def checkMessage():

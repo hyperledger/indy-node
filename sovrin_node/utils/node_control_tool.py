@@ -47,8 +47,6 @@ class NodeControlTool:
         self.backup_name_prefix = backup_name_prefix
         self.packages_to_hold = ' '.join([PACKAGES_TO_HOLD, hold_ext])
 
-        self._hold_packages()
-
         # Create a TCP/IP socket
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -223,6 +221,8 @@ class NodeControlTool:
             logger.error("Unexpected error in process_data {}".format(e))
 
     def start(self):
+        self._hold_packages()
+
         # Sockets from which we expect to read
         readers = [ self.server ]
 
