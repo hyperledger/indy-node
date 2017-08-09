@@ -25,7 +25,7 @@ def sendRandomRequests(wallet: Wallet, client: Client, count: int):
                        verkey=signer.verkey)
         wallet.addTrustAnchoredIdentity(idy)
     reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)
+    return client.submitReqs(*reqs)[0]
 
 
 def put_load():
