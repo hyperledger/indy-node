@@ -429,8 +429,8 @@ class Upgrader(HasActionQueue):
 
         logger.info("{}'s upgrader calling agent for upgrade".format(self))
         self._upgradeLog.appendStarted(when, version, upgrade_id)
-        self.scheduledUpgrade = None
         self._upgrade_start_callback()
+        self.scheduledUpgrade = None
         asyncio.ensure_future(self._sendUpdateRequest(when, version, failTimeout))
 
     async def _sendUpdateRequest(self, when, version, failTimeout):
