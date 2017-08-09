@@ -15,11 +15,13 @@ m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
 
-def testNodeControlReceivesMessages(monkeypatch, looper):
+def testNodeControlReceivesMessages(monkeypatch, looper, tdir):
     received = m.list()
     msg = 'test'
+    stdout = 'teststdout'
 
     def transform(tool):
+        nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
         monkeypatch.setattr(tool, '_process_data', received.append)
 
     def checkMessage():
@@ -50,7 +52,7 @@ def testNodeControlResolvesDependencies(monkeypatch):
         anoncreds_package_with_version: '{}'.format(randomText(100))
     }
 
-    def mock_get_info_from_package_manager(package):
+    def mock_get_info_from_package_manager(self, package):
         return mock_info.get(package, None)
 
     monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager', mock_get_info_from_package_manager)

@@ -75,7 +75,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=/etc/sovrin/node_control.conf
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool.py $TEST_MODE
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool.py \$TEST_MODE --hold-ext \$HOLD_EXT
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
@@ -92,6 +92,7 @@ cat <<EOF > /etc/sovrin/node_control.conf
 #TEST_MODE=--test
 
 TEST_MODE=
+HOLD_EXT=
 EOF
 
 mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604.sh /usr/local/bin/upgrade_sovrin_node
