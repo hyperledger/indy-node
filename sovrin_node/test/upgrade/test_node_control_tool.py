@@ -12,6 +12,7 @@ from plenum.test.helper import randomText
 
 
 m = multiprocessing.Manager()
+whitelist = ['Unexpected error in _upgrade test']
 
 
 def testNodeControlReceivesMessages(monkeypatch, looper):
@@ -25,7 +26,7 @@ def testNodeControlReceivesMessages(monkeypatch, looper):
         assert len(received) == 1
         assert received[0] == composeUpgradeMessage(msg)
 
-    nct = NCT(transform = transform)
+    nct = NCT(transform=transform)
     try:
         sendUpgradeMessage(msg)
         looper.run(eventually(checkMessage))
@@ -91,15 +92,17 @@ def testNodeControlCreatesBackups(monkeypatch, tdir, looper):
 
     def transform(tool):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
-        monkeypatch.setattr(tool, '_remove_backup', lambda *x: None)
+        monkeypatch.setattr(tool, '_remove_old_backups', lambda *x: None)
 
     def checkBackup(tool):
         assert os.path.isfile('{}.{}'.format(tool._backup_name(currentVersion), tool.backup_format))
+
     nct = NCT(transform = transform)
     try:
         sendUpgradeMessage(msg)
         looper.run(eventually(checkBackup, nct.tool))
     finally:
+        clean_dir(nct.tool.base_dir)
         nct.stop()
 
 
@@ -107,26 +110,35 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper):
     msg = 'test'
     stdout = 'teststdout'
     currentVersion = Upgrader.getVersion()
-    backupWasRemoved = m.Value('b', False)
+    backupsWereRemoved = m.Value('b', False)
 
-    def testRemoveBackup(tool, version):
-        tool._remove_backup_test(version)
-        backupWasRemoved.value = True
+    def testRemoveOldBackups(tool):
+        assert len(tool._get_backups()) == (tool.backup_num + 1)
+        tool._remove_old_backups_test()
+        backupsWereRemoved.value = True
 
     def transform(tool):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
-        tool._remove_backup_test = tool._remove_backup
-        monkeypatch.setattr(tool, '_remove_backup', functools.partial(testRemoveBackup, tool))
+        tool._remove_old_backups_test = tool._remove_old_backups
+        monkeypatch.setattr(tool, '_remove_old_backups', functools.partial(testRemoveOldBackups, tool))
 
-    def checkBackupRemoved(tool):
-        assert backupWasRemoved.value
+    def checkOldBackupsRemoved():
+        assert backupsWereRemoved.value
 
-    nct = NCT(transform = transform)
+    nct = NCT(transform=transform)
     try:
+        assert len(nct.tool._get_backups()) == 0
+        for i in range(nct.tool.backup_num):
+            file = os.path.join(nct.tool.base_dir, '{}{}'.format(nct.tool.backup_name_prefix, i))
+            with open(file, 'w') as f:
+                f.write('random')
+        assert len(nct.tool._get_backups()) == nct.tool.backup_num
         sendUpgradeMessage(msg)
-        looper.run(eventually(checkBackupRemoved, nct.tool))
-        assert not os.path.exists('{}.{}'.format(nct.tool._backup_name(currentVersion), nct.tool.backup_format))
+        looper.run(eventually(checkOldBackupsRemoved))
+        assert os.path.exists('{}.{}'.format(nct.tool._backup_name(currentVersion), nct.tool.backup_format))
+        assert len(nct.tool._get_backups()) == nct.tool.backup_num
     finally:
+        clean_dir(nct.tool.base_dir)
         nct.stop()
 
 
@@ -136,16 +148,17 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
     currentVersion = Upgrader.getVersion()
     backupWasRestored = m.Value('b', False)
     testFile = 'testFile'
-    testFilePersist = 'testFile1'
+    original_text = '1'
+    new_text = '2'
 
     def testRestoreBackup(tool, version):
-        shutil.rmtree(tool.sovrin_dir)
         tool._restore_from_backup_test(version)
         backupWasRestored.value = True
 
     def mockMigrate(tool, *args):
+        monkeypatch.setattr(tool, '_migrate', lambda *args: None)
         with open(os.path.join(tool.sovrin_dir, testFile), 'w') as f:
-            f.write('random')
+            f.write(new_text)
         raise Exception('test')
 
     def transform(tool):
@@ -157,14 +170,23 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
     def checkBackupRestored(tool):
         assert backupWasRestored.value
 
-    nct = NCT(transform=transform)
+    nct = NCT(transform = transform)
     try:
-        with open(os.path.join(nct.tool.sovrin_dir, testFilePersist), 'w') as f:
-            f.write('random')
+        with open(os.path.join(nct.tool.sovrin_dir, testFile), 'w') as f:
+            f.write(original_text)
         sendUpgradeMessage(msg)
         looper.run(eventually(checkBackupRestored, nct.tool))
-        assert not os.path.exists(os.path.join(nct.tool.sovrin_dir, testFile))
-        assert os.path.exists(os.path.join(nct.tool.sovrin_dir, testFilePersist))
+        with open(os.path.join(nct.tool.sovrin_dir, testFile)) as f:
+            assert original_text == f.read()
     finally:
+        clean_dir(nct.tool.base_dir)
         nct.stop()
 
+
+def clean_dir(dir):
+    for file in os.listdir(dir):
+        file = os.path.join(dir, file)
+        if os.path.isfile(file):
+            os.remove(file)
+        if os.path.isdir(file):
+            shutil.rmtree(file, ignore_errors=True)

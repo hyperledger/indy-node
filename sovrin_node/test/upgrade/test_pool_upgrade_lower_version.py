@@ -9,7 +9,7 @@ from plenum.common.util import randomString
 
 from sovrin_common.constants import SHA256, ACTION, CANCEL
 from sovrin_node.test.upgrade.helper import bumpVersion, checkUpgradeScheduled, \
-    ensureUpgradeSent, get_valid_code_hash
+    ensureUpgradeSent
 
 
 def testDoNotScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
@@ -45,6 +45,8 @@ def testDoNotScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
     upgr3[ACTION] = CANCEL
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr3)
 
-    # Now the upgrade for lower version should be scheduled
+    # Now we can schedule an upgrade to the lower version
+    upgr1[NAME] = randomString(3)
+    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
     looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
                           retryWait=1, timeout=waits.expectedUpgradeScheduled()))

@@ -21,6 +21,8 @@ BACKUP_FORMAT = 'zip'
 DEPS = ['indy-plenum', 'indy-anoncreds']
 CONFIG = getConfig()
 FILES_TO_PRESERVE = [CONFIG.lastRunVersionFile, CONFIG.nextVersionFile, CONFIG.upgradeLogFile, CONFIG.lastVersionFilePath]
+BACKUP_NAME_PREFIX = 'sovrin_backup_'
+BACKUP_NUM = 10
 PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'
 
 
@@ -30,6 +32,8 @@ class NodeControlTool:
     def __init__(self, timeout: int = TIMEOUT, base_dir: str = BASE_DIR, backup_format: str = BACKUP_FORMAT,
                  test_mode: bool = False, deps: List[str] = DEPS,
                  files_to_preserve: List[str] = FILES_TO_PRESERVE,
+                 backup_name_prefix: str = BACKUP_NAME_PREFIX,
+                 backup_num: int = BACKUP_NUM,
                  hold_ext: str = ''):
         self.test_mode = test_mode
         self.timeout = timeout
@@ -39,6 +43,8 @@ class NodeControlTool:
         self.backup_format = backup_format
         self.deps = deps
         self.files_to_preserve = files_to_preserve
+        self.backup_num = backup_num
+        self.backup_name_prefix = backup_name_prefix
         self.packages_to_hold = ' '.join([PACKAGES_TO_HOLD, hold_ext])
 
         self._hold_packages()
@@ -141,15 +147,17 @@ class NodeControlTool:
             raise Exception(msg)
 
     def _backup_name(self, version):
-        return os.path.join(self.base_dir, 'sovrin_backup_{}'.format(version))
+        return os.path.join(self.base_dir, '{}{}'.format(self.backup_name_prefix, version))
 
     def _backup_name_ext(self, version):
         return '{}.{}'.format(self._backup_name(version), self.backup_format)
 
     def _create_backup(self, version):
+        logger.debug('Creating backup for {}'.format(version))
         shutil.make_archive(self._backup_name(version), self.backup_format, self.sovrin_dir)
 
     def _restore_from_backup(self, version):
+        logger.debug('Restoring from backup for {}'.format(version))
         for file_path in self.files_to_preserve:
             try:
                 shutil.copy2(os.path.join(self.sovrin_dir, file_path), os.path.join(self.tmp_dir, file_path))
@@ -163,8 +171,18 @@ class NodeControlTool:
                 logger.warning('Copying {} failed due to {}'.format(file_path, e))
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
-    def _remove_backup(self, version):
-        os.remove(self._backup_name_ext(version))
+    def _get_backups(self):
+        files = [os.path.join(self.base_dir, file) for file in os.listdir(self.base_dir)]
+        files = [file for file in files if os.path.isfile(file) and self.backup_name_prefix in file]
+        return sorted(files, key=os.path.getmtime, reverse=True)
+
+    def _remove_old_backups(self):
+        logger.debug('Removing old backups')
+        files = self._get_backups()
+        if len(files):
+            files = files[self.backup_num:]
+        for file in files:
+            os.remove(file)
 
     def _migrate(self, current_version, new_version):
         migrate(current_version, new_version, self.timeout)
@@ -177,7 +195,7 @@ class NodeControlTool:
             self._restore_from_backup(current_version)
             raise e
         finally:
-            self._remove_backup(current_version)
+            self._remove_old_backups()
 
     def _upgrade(self, new_version, migrate=True, rollback=True):
         try:
