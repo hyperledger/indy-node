@@ -255,7 +255,7 @@ def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted, poolTxnData,
        expect=["Nym {} added".format(idr)])
 
 
-def testSend2NymsSucceedsWhenBatched(
+def test_send_same_nyms_fails_when_batched(
         be, do, poolNodesStarted, newStewardCli):
 
     be(newStewardCli)
@@ -277,6 +277,45 @@ def testSend2NymsSucceedsWhenBatched(
     parameters = {
         'dest': halfKeyIdentifier,
         'verkey': abbrevVerkey
+    }
+
+    do('send GET_NYM dest={dest}',
+        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
+
+def test_send_different_nyms_succeeds_when_batched(
+        be, do, poolNodesStarted, newStewardCli):
+
+    be(newStewardCli)
+
+    idr_1, verkey_1 = createHalfKeyIdentifierAndAbbrevVerkey()
+    idr_2, verkey_2 = createHalfKeyIdentifierAndAbbrevVerkey()
+
+    parameters = {
+        'dest': idr_1,
+        'verkey': verkey_1
+    }
+
+    newStewardCli.enterCmd("send NYM dest={dest} verkey={verkey}".format(dest=idr_1, verkey=verkey_1))
+
+    parameters = {
+        'dest': idr_2,
+        'verkey': verkey_2
+    }
+
+    do('send NYM dest={dest} verkey={verkey}',
+       mapper=parameters, expect=NYM_ADDED, within=10)
+
+    parameters = {
+        'dest': idr_1,
+        'verkey': verkey_1
+    }
+
+    do('send GET_NYM dest={dest}',
+        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
+
+    parameters = {
+        'dest': idr_2,
+        'verkey': verkey_2
     }
 
     do('send GET_NYM dest={dest}',

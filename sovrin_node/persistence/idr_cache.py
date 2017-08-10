@@ -73,10 +73,12 @@ class IdrCache:
         else:
             # Looking for uncommitted values, iterating over `currentBatchOps and unCommitted`
             # in reverse to get the latest value
-            for _, cache in reversed(self.currentBatchOps):
-                if idr in cache:
-                    value = cache[idr]
-                    break;
+            for iter, cache in reversed(self.currentBatchOps):
+                if iter == idr.decode():
+                    value = cache
+                    ta, iv, r = self.unpackIdrValue(value)
+                    return ta, iv, r
+
             for _, cache in reversed(self.unCommitted):
                 if idr in cache:
                     value = cache[idr]
