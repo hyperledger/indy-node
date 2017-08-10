@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpersXDist') _
+@Library('SovrinHelpers') _
 
 def name = 'indy-node'
 
