@@ -89,7 +89,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     newStewardWallet.addNode(node)
     reqs = newStewardWallet.preparePending()
-    req, = newSteward.submitReqs(*reqs)
+    req = newSteward.submitReqs(*reqs)[0][0]
 
     waitForSufficientRepliesForRequests(looper, newSteward, requests=[req])
 

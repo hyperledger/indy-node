@@ -9,7 +9,7 @@
   * [What We'll Cover](#what-well-cover)
   * [Alice Gets a Transcript](#alice-gets-a-transcript)
   * [Install Sovrin](#install-sovrin)
-  * [Evaluate a Connection Reuest](#evaluate-a-connection-request)
+  * [Evaluate a Connection Request](#evaluate-a-connection-request)
   * [Accept a Connection Request](#accept-a-connection-request)
   * [Test Secure Interaction](#test-secure-interaction)
   * [Apply for a Job](#apply-for-a-job)
@@ -146,11 +146,11 @@ Connection (not yet accepted)
     Trust anchor: Faber College (not yet written to Sovrin)
     Verification key: <empty>
     Signing key: <hidden>
-    Target: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
-    Target Verification key: <unknown, waiting for sync>
-    Target endpoint: <unknown, waiting for sync>
+    Remote: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
+    Remote Verification key: <unknown, waiting for sync>
+    Remote endpoint: <unknown, waiting for sync>
     Request nonce: b1134a647eb818069c089e7694f63e6d
-    Request status: not verified, target verkey unknown
+    Request status: not verified, remote verkey unknown
     Last synced: <this connection has not yet been synchronized>
 
 Try Next:
@@ -170,7 +170,7 @@ This is a friendly name for the connection that Alice has been invited to accept
 DID: not yet assigned
 ```
 
-**DID** (**distributed identifier**) is an opaque, unique sequences of bits, like UUIDs or GUIDs that gets generated when user tries to accept the connection request, and that DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
+**DID** (**distributed identifier**) is an opaque, unique sequences of bits, (like UUIDs or GUIDs) that get generated when a user tries to accept the connection request. - That DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
  Each connection request on Sovrin establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within Sovrin.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
 
 ```
@@ -212,33 +212,33 @@ A different **signing key** is used by Alice to interact with each party on Sovr
 It’s important that _this signing key is kept secret,_ as someone with this key can impersonate Alice. If this key is ever compromised, Alice can replace it with a new one using several methods not covered here.
 
 ```
-Target: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
+Remote: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
 ```
 
-**Target** is the unique DID Alice uses to reference Faber College. Faber College provided this value in the connection request. Alice can use it to look up Faber College’s verification key in the Sovrin Ledger to ensure interactions with Faber College are authentic.
+**Remote** is the unique DID Alice uses to reference Faber College. Faber College provided this value in the connection request. Alice can use it to look up Faber College’s verification key in the Sovrin Ledger to ensure interactions with Faber College are authentic.
 
 ```
-Target Verification key: < unknown, waiting for sync >
+Remote Verification key: < unknown, waiting for sync >
 ```
 
-Communication from the target can’t be confirmed unless we know its verification key. To know the true verification key of an DID, we have to query Sovrin.
+Communication from the remote can’t be confirmed unless we know its verification key. To know the true verification key of an DID, we have to query Sovrin.
 
 Different use cases require different levels of assurance as to how recently we’ve queried Sovrin for any key replacements. In this case we might be comfortable if we know that the key was synchronized in the last hour. But we can see that we’ve never synchronized this connection, so we don’t know what the verification key is at all. Until Alice connects to Sovrin, she won’t be able to trust communication from Faber College.
 ```
-Target endpoint: < unknown, waiting for sync >
+Remote endpoint: < unknown, waiting for sync >
 ```
 
-Targets can have endpoints -- locations (IRIs / URIs / URLs) on the network where others can contact them. These endpoints can be static or they can be ephemeral pseudonymous endpoints facilitated by a third party agency. To keep things simple, we’ll just use static endpoints for now.
+Remotes can have endpoints -- locations (IRIs / URIs / URLs) on the network where others can contact them. These endpoints can be static or they can be ephemeral pseudonymous endpoints facilitated by a third party agency. To keep things simple, we’ll just use static endpoints for now.
 ```
 Request nonce: b1134a647eb818069c089e7694f63e6d
 ```
 
 This **nonce** is just a big random number that Faber College generated to track the unique connection request. A nonce is a random arbitrary number that can only be used one time. When a connection request is accepted, the invitee digitally signs the nonce such that the inviter can match the acceptance with a prior request.
 ```
-Request status: not verified, target verification key unknown
+Request status: not verified, remote verification key unknown
 ```
 
-Requests are signed by the target. We have a signature, but we don’t yet know Faber College’s verification key, so the signature can’t be proved authentic. We might have a connection request from someone masquerading as Faber College. We’ll resolve that uncertainty when we sync.
+Requests are signed by the remote. We have a signature, but we don’t yet know Faber College’s verification key, so the signature can’t be proved authentic. We might have a connection request from someone masquerading as Faber College. We’ll resolve that uncertainty when we sync.
 ```
 Last synced: < this connection has not yet been synchronized >
 ```
@@ -317,9 +317,9 @@ Connection
     Trust anchor: Faber College (confirmed)
     Verification key: ~CoEeFmQtaCRMrTy5SCfLLx
     Signing key: <hidden>
-    Target: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
-    Target Verification key: <same as target>
-    Target endpoint: 10.20.30.101:5555
+    Remote: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
+    Remote Verification key: <same as remote>
+    Remote endpoint: 10.20.30.101:5555
     Request nonce: b1134a647eb818069c089e7694f63e6d
     Request status: Accepted
     Available Claim(s): Transcript
@@ -332,7 +332,7 @@ Try Next:
 
 Notice now that the Last synced line is updated.
 
-Alice can see now that the target verification key and target endpoint, as well as DID and verification key are updated, which allows her to communicate with Faber College. She can also see that the identity of the trust anchor was confirmed (from the Sovrin network), and that her connection request has been accepted.
+Alice can see now that the remote verification key and remote endpoint, as well as DID and verification key are updated, which allows her to communicate with Faber College. She can also see that the identity of the trust anchor was confirmed (from the Sovrin network), and that her connection request has been accepted.
 
 ## Test Secure Interaction
 
@@ -342,7 +342,7 @@ At this point Alice is connected to Faber College and can interact in a secure w
 ALICE@test> ping Faber
 Expanding Faber to "Faber College"
 
-Pinging target endpoint: ('10.20.30.101', 5555)
+Pinging remote endpoint: ('10.20.30.101', 5555)
     Ping sent.
     Pong received.
 ```
@@ -472,11 +472,11 @@ Connection (not yet accepted)
     Trust anchor: Acme Corp (not yet written to Sovrin)
     Verification key: <empty>
     Signing key: <hidden>
-    Target: CzkavE58zgX7rUMrzSinLr
-    Target Verification key: <unknown, waiting for sync>
-    Target endpoint: 127.0.0.1:1213
+    Remote: CzkavE58zgX7rUMrzSinLr
+    Remote Verification key: <unknown, waiting for sync>
+    Remote endpoint: 127.0.0.1:1213
     Request nonce: 57fbf9dc8c8e6acde33de98c6d747b28c
-    Request status: not verified, target verkey unknown
+    Request status: not verified, remote verkey unknown
     Proof Request(s): Job-Application
     Last synced: <this connection has not yet been synchronized>
 
@@ -615,9 +615,9 @@ Connection
     Trust anchor: Acme Corp (confirmed)
     Verification key: ~KdJUJwAq6Wj8To8pJgGHqE
     Signing key: <hidden>
-    Target: CzkavE58zgX7rUMrzSinLr
-    Target Verification key: <same as target>
-    Target endpoint: 10.20.30.102:6666
+    Remote: CzkavE58zgX7rUMrzSinLr
+    Remote Verification key: <same as remote>
+    Remote endpoint: 10.20.30.102:6666
     Request nonce: 57fbf9dc8c8e6acde33de98c6d747b28c
     Request status: Accepted
     Proof Request(s): Job-Application
