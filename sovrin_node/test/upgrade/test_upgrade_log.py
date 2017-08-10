@@ -25,13 +25,15 @@ def test_update_log():
 
     now = datetime.utcnow()
     version = "1.2.3"
+    upgrade_id = '1'
 
     # Check that we can add and then get event
-    log.appendScheduled(now, version)
+    log.appendScheduled(now, version, upgrade_id)
     last = log.lastEvent
     assert last[1] is UpgradeLog.UPGRADE_SCHEDULED
     assert last[2] == now
     assert last[3] == version
+    assert last[4] == upgrade_id
 
     # Check that the we can load and parse the line we appended before
     assert UpgradeLog(tmpFilePath).lastEvent == last
