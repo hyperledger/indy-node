@@ -30,7 +30,7 @@ class PoolConfig:
 
         :return:
         """
-        logger.info('{} processing config ledger for any POOL_CONFIGs'.format(self), extra={"tags": ["pool-config"]})
+        logger.debug('{} processing config ledger for any POOL_CONFIGs'.format(self), extra={"tags": ["pool-config"]})
         for _, txn in self.ledger.getAllTxn():
             if txn[TXN_TYPE] == POOL_CONFIG:
                 self.handleConfigTxn(txn)

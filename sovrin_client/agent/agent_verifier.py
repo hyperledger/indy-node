@@ -42,10 +42,10 @@ class AgentVerifier(Verifier):
 
         result = await self.verifier.verify(proofRequest, proof)
 
-        self.logger.info('Proof "{}" accepted with nonce {}'
-                         .format(proofName, nonce))
-        self.logger.info('Verifying proof "{}" from {}'
-                         .format(proofName, link.name))
+        self.logger.debug('Proof "{}" accepted with nonce {}'
+                          .format(proofName, nonce))
+        self.logger.debug('Verifying proof "{}" from {}'
+                          .format(proofName, link.name))
         status = 'verified' if result else 'failed verification'
         resp = {
             TYPE: PROOF_STATUS,
@@ -58,10 +58,10 @@ class AgentVerifier(Verifier):
         if result:
             for uuid, attribute in proofRequest.verifiableAttributes.items():
                 # Log attributes that were verified
-                self.logger.info('verified {}: {}'.
-                                 format(attribute.name, proof.requestedProof.revealed_attrs[uuid][1]))
-            self.logger.info('Verified that proof "{}" contains attributes '
-                             'from claim(s) issued by: {}'.format(
+                self.logger.debug('verified {}: {}'.
+                                  format(attribute.name, proof.requestedProof.revealed_attrs[uuid][1]))
+            self.logger.debug('Verified that proof "{}" contains attributes '
+                              'from claim(s) issued by: {}'.format(
                 proofName, ", ".join(
                     sorted([v.issuer_did for k, v in proof.proofs.items()]))))
             await self._postProofVerif(proofName, link, frm)
