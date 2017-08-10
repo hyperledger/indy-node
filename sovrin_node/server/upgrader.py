@@ -377,12 +377,11 @@ class Upgrader(HasActionQueue):
         self._upgradeLog.appendScheduled(when, version, upgrade_id)
 
         callAgent = partial(self._callUpgradeAgent, when, version, failTimeout, upgrade_id)
-        if when > now:
+        delay = 0
+        if now < when:
             delay = (when - now).seconds
-            self._schedule(callAgent, delay)
-            self.scheduledUpgrade = (version, delay, upgrade_id)
-        else:
-            callAgent()
+        self.scheduledUpgrade = (version, delay, upgrade_id)
+        self._schedule(callAgent, delay)
 
     def _cancelScheduledUpgrade(self, justification=None) -> None:
         """
