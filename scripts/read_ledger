@@ -1,0 +1,139 @@
+#! /usr/bin/env python3
+"""
+Convenience script for reading a ledger transaction data (stored in leveldb)
+
+"""
+import argparse
+import logging
+import os
+
+from common.serializers.json_serializer import JsonSerializer
+from ledger.compact_merkle_tree import CompactMerkleTree
+from plenum.common.ledger import Ledger
+from plenum.persistence.leveldb_hash_store import LevelDbHashStore
+
+from sovrin_common.config_util import getConfig
+
+logging.root.handlers = []
+logger = logging.getLogger()
+logger.propagate = False
+logger.disabled = True
+
+
+def read_args():
+    parser = argparse.ArgumentParser(
+        description="Read ledger transactions")
+
+    parser.add_argument('--type', required=True, help='Ledger type (pool, domain, config)')
+    parser.add_argument('--frm', required=False, default=None,
+                        help="read all transactions starting from (beginning by default)")
+    parser.add_argument('--to', required=False, default=100, help="read all transactions till (100 by default)")
+    parser.add_argument('--seq_no', required=False, help="read a particular transaction")
+    parser.add_argument('--node_name', required=False, help="Node's name")
+    parser.add_argument('--client_name', required=False, help="Client's name")
+    parser.add_argument('--serializer', required=False, default='json',
+                        help="How to represent the data (json by default)")
+
+    return parser.parse_args()
+
+
+def get_ledger_dir(args, config):
+    if args.node_name and args.client_name:
+        print("Either 'node_name' or 'client_name' can be specified")
+        exit()
+
+    config = getConfig()
+    base_dir = config.baseDir
+    data_dir = config.clientDataDir if args.client_name else config.nodeDataDir
+    ledger_data_dir = os.path.join(base_dir, data_dir)
+    if not os.path.isdir(ledger_data_dir):
+        print("No initiated nodes/client found: {}".format(ledger_data_dir))
+        exit()
+
+    if args.client_name:
+        target_dir = args.client_name
+    elif args.node_name:
+        target_dir = args.node_name
+    else:
+        target_dir = None
+
+    if target_dir:
+        ledger_data_dir = os.path.join(ledger_data_dir, target_dir)
+        if not os.path.isdir(ledger_data_dir):
+            print("Specified Node or Client folder not found: {}".format(ledger_data_dir))
+            exit()
+        return ledger_data_dir
+
+    dirs = os.listdir(ledger_data_dir)
+    if len(dirs) == 0:
+        print("Node's 'data' folder not found: {}".format(ledger_data_dir))
+        exit()
+    return os.path.join(ledger_data_dir, dirs[0])
+
+
+def get_ledger(args):
+    config = getConfig()
+    ledger_data_dir = get_ledger_dir(args, config)
+
+    hash_store_name = None
+    ledger_name = None
+    if args.type == 'pool':
+        hash_store_name = 'pool'
+        ledger_name = config.poolTransactionsFile
+    elif args.type == 'domain':
+        hash_store_name = 'domain'
+        ledger_name = config.domainTransactionsFile
+    elif args.type == 'config':
+        hash_store_name = 'config'
+        ledger_name = config.configTransactionsFile
+    else:
+        print("Unknown ledger type: {}".format(args.type))
+        exit()
+
+    hash_store = LevelDbHashStore(
+        dataDir=ledger_data_dir,
+        fileNamePrefix=hash_store_name)
+    return Ledger(
+        CompactMerkleTree(hashStore=hash_store),
+        dataDir=ledger_data_dir,
+        fileName=ledger_name)
+
+
+def print_txns(ledger, args):
+    serializer = None
+    if args.serializer == 'json':
+        serializer = JsonSerializer()
+    else:
+        print("Unknown serializer for output: {}".format(args.serializer))
+        exit()
+
+    seq_no = args.seq_no
+    if seq_no:
+        print_by_seq_no(seq_no, serializer)
+        return
+
+    print_all(serializer)
+
+
+def print_by_seq_no(seq_no, serializer):
+    try:
+        txn = ledger.getBySeqNo(seq_no)
+    except KeyError:
+        print('No transactions found for seq_no={}'.format(seq_no))
+        return
+    txn = serializer.serialize(txn, toBytes=False)
+    print(txn)
+    return
+
+def print_all(serializer):
+    frm = args.frm
+    to = args.to
+    for txn in ledger.getAllTxn(frm=frm, to=to):
+        txn = serializer.serialize(txn, toBytes=False)
+        print(txn)
+
+
+if __name__ == '__main__':
+    args = read_args()
+    ledger = get_ledger(args)
+    print_txns(ledger, args)
