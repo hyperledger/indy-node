@@ -90,12 +90,12 @@ mkdir -p /etc/sovrin
 
 if [ ! -f /etc/sovrin/node_control.conf ]; then
     cat <<EOF > /etc/sovrin/node_control.conf
-    # Uncomment this to run agent in test mode:
-    #TEST_MODE=--test
+# Uncomment this to run agent in test mode:
+#TEST_MODE=--test
 
-    TEST_MODE=
-    HOLD_EXT=\"\"
-    EOF
+TEST_MODE=
+HOLD_EXT=\"\"
+EOF
 fi
 
 mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604.sh /usr/local/bin/upgrade_sovrin_node
