@@ -4,7 +4,7 @@ import re
 from _sha256 import sha256
 from typing import Dict
 
-from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
+from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from libnacl import randombytes
 
 from plenum.common import util
@@ -187,8 +187,7 @@ def prompt_is(prompt):
 
 
 def addTxnToGenesisFile(dir, file, txns, fields=getTxnOrderedFields()):
-    initiator = GenesisTxnInitiatorFromFile(dir, file)
-    ledger = initiator.create_initiator_ledger()
+    ledger = create_genesis_txn_init_ledger(dir, file)
     for txn in txns:
         ledger.add(txn)
     ledger.stop()
