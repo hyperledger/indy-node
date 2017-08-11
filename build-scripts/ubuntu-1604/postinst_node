@@ -88,7 +88,8 @@ EOF
 
 mkdir -p /etc/sovrin
 
-if [ ! -f /etc/sovrin/node_control.conf ]; then
+HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/sovrin/node_control.conf)
+if [ ! -f /etc/sovrin/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
     cat <<EOF > /etc/sovrin/node_control.conf
 # Uncomment this to run agent in test mode:
 #TEST_MODE=--test
