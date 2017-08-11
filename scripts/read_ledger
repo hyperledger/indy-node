@@ -44,6 +44,13 @@ def get_ledger_dir(args, config):
 
     config = getConfig()
     base_dir = config.baseDir
+    if not os.path.exists(base_dir):
+        # TODO: find a better way
+        base_dir = '/home/sovrin/.sovrin'
+    if not os.path.exists(base_dir):
+        print("Can not find the directory with the ledger: {}".format(base_dir))
+        exit()
+
     data_dir = config.clientDataDir if args.client_name else config.nodeDataDir
     ledger_data_dir = os.path.join(base_dir, data_dir)
     if not os.path.isdir(ledger_data_dir):
@@ -74,7 +81,6 @@ def get_ledger_dir(args, config):
 def get_ledger(args):
     config = getConfig()
     ledger_data_dir = get_ledger_dir(args, config)
-
     hash_store_name = None
     ledger_name = None
     if args.type == 'pool':

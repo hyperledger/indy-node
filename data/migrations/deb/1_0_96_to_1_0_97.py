@@ -12,8 +12,10 @@ from storage.chunked_file_store import ChunkedFileStore
 
 from sovrin_common.config_util import getConfig
 from sovrin_common.txn_util import getTxnOrderedFields
+from stp_core.common.log import getlogger
 
 config = getConfig()
+logger = getlogger()
 
 def __migrate_ledger(data_directory,
                    old_ledger_file, new_ledger_file,
@@ -24,7 +26,7 @@ def __migrate_ledger(data_directory,
 
     # we should have ChunkedFileStorage implementation of the Ledger
     if not os.path.isdir(os.path.join(data_directory, old_ledger_file)):
-        print("Could not find directory {} for migration.".format(old_ledger_file))
+        logger.error("Could not find directory {} for migration.".format(old_ledger_file))
         return
 
     # open the current ledger using the specified serializer
@@ -38,7 +40,7 @@ def __migrate_ledger(data_directory,
                         hash_serializer=serializer,
                         fileName=old_ledger_file,
                         transactionLogStore=old_txn_log_store)
-    print("old size for {}: {}".format(old_ledger_file, str(old_ledger.size)))
+    logger.info("old size for {}: {}".format(old_ledger_file, str(old_ledger.size)))
 
     # open the new ledger with new serialization
     new_ledger_file_backup = new_ledger_file + "_new"
@@ -49,7 +51,7 @@ def __migrate_ledger(data_directory,
     # add all txns into the new ledger
     for _, txn in old_ledger.getAllTxn():
         new_ledger.add(txn)
-    print("new size for {}: {}".format(new_ledger_file, str(new_ledger.size)))
+    logger.info("new size for {}: {}".format(new_ledger_file, str(new_ledger.size)))
 
     old_ledger.stop()
     new_ledger.stop()
@@ -123,6 +125,13 @@ def migrate_all_states(node_data_directory):
 
 def migrate_all():
     base_dir = config.baseDir
+    if not os.path.exists(base_dir):
+        # TODO: find a better way
+        base_dir = '/home/sovrin/.sovrin'
+    if not os.path.exists(base_dir):
+        logger.error("Can not find the directory with the ledger: {}".format(base_dir))
+        exit()
+
     nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     for node_dir in os.listdir(nodes_data_dir):
         node_data_dir = os.path.join(nodes_data_dir, node_dir)
