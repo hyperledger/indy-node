@@ -13,6 +13,7 @@ poolUpgradeName = SovrinTransactions.POOL_UPGRADE.name
 claimDefName = SovrinTransactions.CLAIM_DEF.name
 getClaimDefName = SovrinTransactions.GET_CLAIM_DEF.name
 poolConfigName = SovrinTransactions.POOL_CONFIG.name
+changeKeyName = SovrinTransactions.CHANGE_KEY.name
 
 sendNymCmd = Command(
     id="send {nym}".format(nym=nymName),
@@ -226,4 +227,13 @@ sendPoolConfigCmd = Command(
     title="Sends write configuration to pool",
     usage="send {poolConfig} writes=<writes> force=<force>".format(poolConfig=poolConfigName),
     examples="send {poolConfig} writes=True force=False".format(poolConfig=poolConfigName)
+)
+
+changeKeyCmd = Command(
+    id="change current key",
+    title="Changes key for the current identifier",
+    usage="change current key [with seed <seed>]",
+    examples=[
+        "change current key",
+        "change current key with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
 )
