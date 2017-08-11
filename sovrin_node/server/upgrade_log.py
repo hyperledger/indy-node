@@ -31,7 +31,7 @@ class UpgradeLog:
                     event = item[1]
                     when = parseDate(item[2])
                     version = item[3]
-                    upgrade_id = item[4]
+                    upgrade_id = item.get(4, None)  # default parameter required for backward compatibility
                     parsed = (record_date, event, when, version, upgrade_id)
                     self.__items.append(parsed)
 
