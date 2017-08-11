@@ -255,7 +255,7 @@ def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted, poolTxnData,
        expect=["Nym {} added".format(idr)])
 
 
-def test_send_same_nyms_fails_when_batched(
+def test_send_same_nyms_only_first_gets_written(
         be, do, poolNodesStarted, newStewardCli):
 
     be(newStewardCli)
@@ -263,6 +263,7 @@ def test_send_same_nyms_fails_when_batched(
     halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
     _, anotherAbbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
 
+    # request 1
     newStewardCli.enterCmd("send NYM {dest}={nym} verkey={verkey}".
             format(dest=TARGET_NYM, nym=halfKeyIdentifier, verkey=abbrevVerkey))
 
@@ -271,6 +272,10 @@ def test_send_same_nyms_fails_when_batched(
         'verkey': anotherAbbrevVerkey
     }
 
+    # "enterCmd" does not immediately send to server, second request with same NYM
+    # and different verkey should not get written to ledger.
+
+    # request 2
     do('send NYM dest={dest} verkey={verkey}',
        mapper=parameters, expect=NYM_ADDED, within=10)
 
@@ -279,6 +284,7 @@ def test_send_same_nyms_fails_when_batched(
         'verkey': abbrevVerkey
     }
 
+    # check that second request didn't write to ledger and first verkey is written
     do('send GET_NYM dest={dest}',
         mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
 
@@ -295,6 +301,7 @@ def test_send_different_nyms_succeeds_when_batched(
         'verkey': verkey_1
     }
 
+    # request 1
     newStewardCli.enterCmd("send NYM dest={dest} verkey={verkey}".format(dest=idr_1, verkey=verkey_1))
 
     parameters = {
@@ -302,6 +309,8 @@ def test_send_different_nyms_succeeds_when_batched(
         'verkey': verkey_2
     }
 
+    # two different nyms, batched, both should be written
+    # request 2
     do('send NYM dest={dest} verkey={verkey}',
        mapper=parameters, expect=NYM_ADDED, within=10)
 
