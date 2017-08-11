@@ -13,8 +13,9 @@ from storage.chunked_file_store import ChunkedFileStore
 from sovrin_common.config_util import getConfig
 from sovrin_common.txn_util import getTxnOrderedFields
 
+config = getConfig()
 
-def migrate_ledger(data_directory,
+def __migrate_ledger(data_directory,
                    old_ledger_file, new_ledger_file,
                    serializer: MappingSerializer = None):
     """
@@ -61,7 +62,7 @@ def migrate_ledger(data_directory,
         os.path.join(data_directory, new_ledger_file))
 
 
-def open_new_ledger(data_directory, new_ledger_file, hash_store_name):
+def __open_new_ledger(data_directory, new_ledger_file, hash_store_name):
     # open new Ledger with leveldb hast store (to re-init it)
     new_ledger = Ledger(CompactMerkleTree(
         hashStore=LevelDbHashStore(
@@ -71,49 +72,64 @@ def open_new_ledger(data_directory, new_ledger_file, hash_store_name):
     new_ledger.stop()
 
 
-def migrate_all_hash_stores(data_directory):
+def migrate_all_hash_stores(node_data_directory):
     # the new hash store (merkle tree) will be recovered from the new transaction log after re-start
     # just delete the current hash store
     shutil.rmtree(
-        os.path.join(data_directory, '_merkleNodes'))
+        os.path.join(node_data_directory, '_merkleNodes'))
     shutil.rmtree(
-        os.path.join(data_directory, '_merkleLeaves'))
+        os.path.join(node_data_directory, '_merkleLeaves'))
     os.remove(
-        os.path.join(data_directory, '_merkleNodes.bin'))
+        os.path.join(node_data_directory, '_merkleNodes.bin'))
     os.remove(
-        os.path.join(data_directory, '_merkleLeaves.bin'))
+        os.path.join(node_data_directory, '_merkleLeaves.bin'))
     os.remove(
-        os.path.join(data_directory, 'config_merkleNodes.bin'))
+        os.path.join(node_data_directory, 'config_merkleNodes.bin'))
     os.remove(
-        os.path.join(data_directory, 'config_merkleLeaves.bin'))
+        os.path.join(node_data_directory, 'config_merkleLeaves.bin'))
 
     # open new Ledgers
-    open_new_ledger(data_directory, config.poolTransactionsFile, 'pool')
-    open_new_ledger(data_directory, config.domainTransactionsFile, 'domain')
-    open_new_ledger(data_directory, config.configTransactionsFile, 'config')
+    __open_new_ledger(node_data_directory, config.poolTransactionsFile, 'pool')
+    __open_new_ledger(node_data_directory, config.domainTransactionsFile, 'domain')
+    __open_new_ledger(node_data_directory, config.configTransactionsFile, 'config')
 
 
 def migrate_all_ledgers_for_node(node_data_directory):
     # using default ledger names
-    migrate_ledger(node_data_directory,
+    __migrate_ledger(node_data_directory,
                    config.poolTransactionsFile, config.poolTransactionsFile,
                    serializer=JsonSerializer())
-    migrate_ledger(node_data_directory,
+    __migrate_ledger(node_data_directory,
                    config.configTransactionsFile, config.configTransactionsFile,
                    serializer=JsonSerializer())
 
     # domain ledger uses custom CompactSerializer and old file name
     fields = getTxnOrderedFields()
-    migrate_ledger(node_data_directory,
+    __migrate_ledger(node_data_directory,
                    config.domainTransactionsFile.replace('domain_', ''), config.domainTransactionsFile,
                    serializer=CompactSerializer(fields=fields))
 
 
-if __name__ == "__main__":
-    config = getConfig()
+def migrate_all_states(node_data_directory):
+    # the states will be recovered from the ledger during the start-up.
+    # just delete the current ones
+    shutil.rmtree(
+        os.path.join(node_data_directory, 'pool_state'))
+    shutil.rmtree(
+        os.path.join(node_data_directory, 'domain_state'))
+    shutil.rmtree(
+        os.path.join(node_data_directory, 'config_state'))
+
+
+def migrate_all():
     base_dir = config.baseDir
     nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     for node_dir in os.listdir(nodes_data_dir):
         node_data_dir = os.path.join(nodes_data_dir, node_dir)
         migrate_all_ledgers_for_node(node_data_dir)
         migrate_all_hash_stores(node_data_dir)
+        migrate_all_states(node_data_dir)
+
+
+if __name__ == "__main__":
+    migrate_all()
