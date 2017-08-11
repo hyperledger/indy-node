@@ -337,7 +337,6 @@ class DomainReqHandler(PHandler):
         origin = txn.get(f.IDENTIFIER.nm)
 
         data = txn.get(DATA)
-        data = json.loads(data)
         schemaName = data[NAME]
         schemaVersion = data[VERSION]
         path = self._makeSchemaPath(origin, schemaName, schemaVersion)
@@ -355,7 +354,6 @@ class DomainReqHandler(PHandler):
             raise ValueError("'{}' field is absent, "
                              "but it must contain schema seq no".format(REF))
         data = txn.get(DATA)
-        data = json.loads(data)
         if data is None:
             raise ValueError("'{}' field is absent, "
                              "but it must contain components of keys"

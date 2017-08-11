@@ -3,6 +3,8 @@ import logging
 from collections import OrderedDict
 
 from plenum.common.constants import ClientBootStrategy, HS_LEVELDB, KeyValueStorageType
+from plenum.config import pool_transactions_file_base, domain_transactions_file_base
+
 from sovrin_common.constants import Environment
 
 nodeReg = OrderedDict([
@@ -21,9 +23,16 @@ cliNodeReg = OrderedDict([
 
 baseDir = "~/.sovrin"
 
-# TODO: Rename `transactions_sandbox` to `domain_transactions_sandbox`
-domainTransactionsFile = "transactions_sandbox"
-poolTransactionsFile = "pool_transactions_sandbox"
+ENVS = {
+    "test": Environment(pool_transactions_file_base + "_sandbox",
+                        domain_transactions_file_base + "_sandbox"),
+    "live": Environment(pool_transactions_file_base + "_live",
+                        domain_transactions_file_base + "_live")
+}
+
+current_env = "test"
+domainTransactionsFile = ENVS[current_env].domainLedger
+poolTransactionsFile = ENVS[current_env].poolLedger
 configTransactionsFile = "config_transactions"
 
 logFilePath = "cli.log"
@@ -54,11 +63,6 @@ RAETMessageTimeout = 30
 
 
 PluginsToLoad = []
-
-ENVS = {
-    "test": Environment("pool_transactions_sandbox", "transactions_sandbox"),
-    "live": Environment("pool_transactions_live", "transactions_live")
-}
 
 
 # TODO: This should be in sovrin_node's config

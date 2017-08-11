@@ -2,8 +2,9 @@ from collections import OrderedDict
 import rlp
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD
 from plenum.common.types import f
+from storage.kv_store import KeyValueStorage
+
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
-from state.kv.kv_store import KeyValueStorage
 from stp_core.common.log import getlogger
 
 logger = getlogger()

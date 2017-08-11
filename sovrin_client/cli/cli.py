@@ -13,6 +13,7 @@ from typing import Dict, Any, Tuple, Callable, NamedTuple
 import asyncio
 
 import base58
+from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file
 from libnacl import randombytes
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
@@ -1668,8 +1669,8 @@ class SovrinCli(PlenumCli):
             return "Already connected to {}".format(envName)
         if envName not in self.envs:
             return "Unknown environment {}".format(envName)
-        if not os.path.isfile(os.path.join(self.basedirpath,
-                                           self.envs[envName].poolLedger)):
+        if not os.path.exists(os.path.join(self.basedirpath,
+                                           genesis_txn_file(self.envs[envName].poolLedger))):
             return "Do not have information to connect to {}".format(envName)
 
     def _disconnect(self, matchedVars):
@@ -1779,8 +1780,7 @@ class SovrinCli(PlenumCli):
                         self._disconnectFromCurrentEnv(envName)
 
                     self.config.poolTransactionsFile = self.envs[envName].poolLedger
-                    self.config.domainTransactionsFile = \
-                        self.envs[envName].domainLedger
+                    self.config.domainTransactionsFile = self.envs[envName].domainLedger
                     # Prompt has to be changed, so it show the environment too
                     self.activeEnv = envName
                     self._setPrompt(self.currPromptText.replace("{}{}".format(
@@ -1801,7 +1801,7 @@ class SovrinCli(PlenumCli):
                           '\nThis is an error. To correct the error, get the file containing genesis transactions ' \
                           '\n(the file name is `{}`) from the github repository and place ' \
                           '\nit in directory `{}`.\n' \
-                          '\nThe github url is {}.\n'.format(self.config.poolTransactionsFile,
+                          '\nThe github url is {}.\n'.format(genesis_txn_file(self.config.poolTransactionsFile),
                                                              self.config.baseDir,
                                                              self.githubUrl)
                     self.print(msg)

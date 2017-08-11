@@ -45,7 +45,7 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     node_to_stop = nodeSet[-1]
     node_state = node_to_stop.states[DOMAIN_LEDGER_ID]
     assert not node_state.isEmpty
-    state_db_path = node_state._kv._dbPath
+    state_db_path = node_state._kv.db_path
     node_to_stop.cleanupOnStopping = False
     node_to_stop.stop()
     looper.removeProdable(node_to_stop)
