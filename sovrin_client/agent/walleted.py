@@ -10,10 +10,10 @@ from typing import Dict, Tuple, Union, List
 from typing import Set
 
 from base58 import b58decode
+from common.serializers.serialization import serialize_msg_for_signing
 
 from stp_core.common.log import getlogger
 from plenum.common.signer_did import DidSigner
-from plenum.common.signing import serializeMsg
 from plenum.common.constants import TYPE, DATA, NONCE, IDENTIFIER, NAME, VERSION, \
     TARGET_NYM, ATTRIBUTES, VERKEY, VERIFIABLE_ATTRIBUTES, PREDICATES
 from plenum.common.types import f
@@ -560,7 +560,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         msgWithoutSig = {k: v for k, v in msg.items() if k != f.SIG.nm}
         # TODO This assumes the current key is the cryptonym. This is a BAD
         # ASSUMPTION!!! Sovrin needs to provide the current key.
-        ser = serializeMsg(msgWithoutSig)
+        ser = serialize_msg_for_signing(msgWithoutSig)
         signature = b58decode(signature.encode())
         typ = msg.get(TYPE)
         # TODO: Maybe keeping ACCEPT_INVITE open is a better option than keeping

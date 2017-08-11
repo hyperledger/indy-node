@@ -2,7 +2,7 @@ import json
 from typing import Optional
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
-from ledger.serializers.json_serializer import JsonSerializer
+from common.serializers.json_serializer import JsonSerializer
 from ledger.util import F
 from stp_core.loop.eventually import eventually
 from plenum.common.exceptions import NoConsensusYet, OperationError
@@ -34,13 +34,17 @@ def _ensureReqCompleted(reqKey, client, clbk):
 
 
 def _getData(result, error):
-    data = json.loads(result.get(DATA).replace("\'", '"')) if result.get(DATA) else {}
+    data = result.get(DATA) if result.get(DATA) else {}
+    # TODO: we have an old txn in the live pool where DATA is stored a json string.
+    # We can get rid of the code above once we create a versioning support in txns
+    if isinstance(data, str):
+        data = json.loads(data)
     seqNo = result.get(F.seqNo.name)
     return data, seqNo
 
 
 def _submitData(result, error):
-    data = json.loads(result.get(DATA).replace("\'", '"'))
+    data = result.get(DATA)
     seqNo = result.get(F.seqNo.name)
     return data, seqNo
 
@@ -74,7 +78,7 @@ class SovrinPublicRepo(PublicRepo):
             }
             res, seqNo = await self._sendGetReq(op)
             if res and res[TXN_TYPE] == SCHEMA:
-                data = json.loads(res[DATA])
+                data = res[DATA]
                 data[ORIGIN] = res[IDENTIFIER]
 
         if not data:
@@ -143,7 +147,7 @@ class SovrinPublicRepo(PublicRepo):
         }
         op = {
             TXN_TYPE: SCHEMA,
-            DATA: JsonSerializer.dumps(data, toBytes=False)
+            DATA: data
         }
         _, seqNo = await self._sendSubmitReq(op)
         if seqNo:
@@ -167,7 +171,7 @@ class SovrinPublicRepo(PublicRepo):
         op = {
             TXN_TYPE: CLAIM_DEF,
             REF: id.schemaId,
-            DATA: JsonSerializer.dumps(data, toBytes=False),
+            DATA: data,
             SIGNATURE_TYPE: signatureType
         }
 

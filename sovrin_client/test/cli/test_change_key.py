@@ -10,7 +10,7 @@ def test_change_key(be, do, susanCLI, connectedToTest, newStewardCli):
     # check that id cannot be used for the time
     id = susanCLI.activeDID
     verk = susanCLI.activeWallet.getVerkey(id)
-    do('send NYM dest={}'.format(id), within=3, expect=["Error: client request invalid: CouldNotAuthenticate()"])
+    do('send NYM dest={}'.format(id), within=3, expect=["Error: client request invalid: CouldNotAuthenticate("])
 
     #Add verkey
     be(newStewardCli)
@@ -42,7 +42,7 @@ def test_change_key_with_seed(be, do, philCli, connectedToTest, newStewardCli):
     # check that id cannot be used for the time
     id = philCli.activeDID
     verk = philCli.activeWallet.getVerkey(id)
-    do('send NYM dest={}'.format(id), within=3, expect=["Error: client request invalid: CouldNotAuthenticate()"])
+    do('send NYM dest={}'.format(id), within=3, expect=["Error: client request invalid: CouldNotAuthenticate("])
 
     #Add verkey
     be(newStewardCli)
