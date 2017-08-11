@@ -80,7 +80,7 @@ def migrate_all_hash_stores(node_data_directory):
     old_merkle_nodes = os.path.join(node_data_directory, '_merkleNodes')
     old_merkle_leaves = os.path.join(node_data_directory, '_merkleLeaves')
     old_merkle_nodes_bin = os.path.join(node_data_directory, '_merkleNodes.bin')
-    old_merkle_leaves_bin = os.path.join(node_data_directory, '_merkleNodes.bin')
+    old_merkle_leaves_bin = os.path.join(node_data_directory, '_merkleLeaves.bin')
     old_merkle_nodes_config_bin = os.path.join(node_data_directory, 'config_merkleNodes.bin')
     old_merkle_leaves_config_bin = os.path.join(node_data_directory, 'config_merkleLeaves.bin')
 
