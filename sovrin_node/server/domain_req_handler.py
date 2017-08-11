@@ -385,7 +385,7 @@ class DomainReqHandler(PHandler):
             try:
                 value = self.attributeStore.get(hashed_val)
             except KeyError:
-                logger.debug('Could not get value from attribute store for {}'
+                logger.error('Could not get value from attribute store for {}'
                              .format(hashed_val))
                 return None, None
         return value, lastSeqNo

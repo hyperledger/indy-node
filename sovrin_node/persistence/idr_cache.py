@@ -118,8 +118,8 @@ class IdrCache:
                                             self.unCommitted[0][1].items()])
             self.unCommitted = self.unCommitted[1:]
         else:
-            logger.debug('{} is trying to commit a batch with state root {} '
-                         'but no uncommitted found'.format(self, stateRoot))
+            logger.warning('{} is trying to commit a batch with state root {} '
+                           'but no uncommitted found'.format(self, stateRoot))
 
     def setVerkey(self, idr, verkey):
         # This method acts as if guardianship is being terminated.
@@ -192,4 +192,4 @@ class IdrCache:
                 return nymData[f.IDENTIFIER.nm]
             else:
                 return nym
-        logger.debug('Nym {} not found'.format(nym))
+        logger.error('Nym {} not found'.format(nym))
