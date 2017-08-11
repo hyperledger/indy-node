@@ -90,7 +90,7 @@ setup(
                       'python-dateutil',
                       'timeout-decorator'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-xdist'],
     scripts=['scripts/sovrin',
              'scripts/change_node_ha',
              'scripts/add_new_node',
