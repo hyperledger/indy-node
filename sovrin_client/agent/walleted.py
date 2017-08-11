@@ -530,7 +530,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                         [rc.get(NAME) for rc in rcvdAvailableClaims])))
                 try:
                     self._checkIfLinkIdentifierWrittenToSovrin(li,
-                                                           newAvailableClaims)
+                                                               newAvailableClaims)
                 except NotConnectedToAny:
                     self.notifyEventListeners(
                         EVENT_NOT_CONNECTED_TO_ANY_ENV,
@@ -669,7 +669,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             logger.debug("already accepted, "
                          "so directly sending available claims")
             self.logger.info('Already added identifier [{}] in sovrin'
-                                  .format(identifier))
+                             .format(identifier))
             # self.notifyToRemoteCaller(EVENT_NOTIFY_MSG,
             #                       "    Already accepted",
             #                       link.verkey, frm)
@@ -685,7 +685,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             # anyhow this class should be implemented by each agent
             # so we might not even need to add it as a separate logic
             self.logger.info('Creating identifier [{}] in sovrin'
-                                  .format(identifier))
+                             .format(identifier))
             self._sendToSovrinAndDo(reqs[0], clbk=send_claims)
 
             # TODO: If I have the below exception thrown, somehow the
@@ -744,10 +744,11 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         if publicKeyRaw is None:
             publicKeyRaw = rawVerkeyToPubkey(verKeyRaw)
         self.endpoint.connectIfNotConnected(
-                         name=link.name,
-                         ha=ha,
-                         verKeyRaw=verKeyRaw,
-                         publicKeyRaw=publicKeyRaw)
+            name=link.name,
+            ha=ha,
+            verKeyRaw=verKeyRaw,
+            publicKeyRaw=publicKeyRaw)
+
     # duplicate function
     # def loadInvitationFile(self, filePath):
     #     with open(filePath) as data_file:
@@ -831,7 +832,8 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         linkName = link_request['name']
         link = self.wallet.getConnection(linkName)
         request_proof_requests = request_data.get('proof-requests',
-                                                   None)
+                                                  None)
+        nonce = link_request.get(NONCE)
         if request_proof_requests:
             for icr in request_proof_requests:
                 # match is found if name and version are same
@@ -848,16 +850,15 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                         **matchedProofRequest.attributes,
                         **icr[ATTRIBUTES]
                     }
-                    matchedProofRequest.verifiableAttributes = list(
-                        set(matchedProofRequest.verifiableAttributes)
-                        .union(icr[VERIFIABLE_ATTRIBUTES])
-                    )
+                    matchedProofRequest.verifiableAttributes = dict(matchedProofRequest.verifiableAttributes,
+                                                                    **icr[VERIFIABLE_ATTRIBUTES])
+
                 else:
                     # otherwise append proof request to link
                     link.proofRequests.append(
                         ProofRequest(
-                            icr[NAME], icr[VERSION], icr[ATTRIBUTES],
-                            icr[VERIFIABLE_ATTRIBUTES]
+                            icr[NAME], icr[VERSION], getNonceForProof(nonce), attributes=icr[ATTRIBUTES],
+                            verifiableAttributes=icr[VERIFIABLE_ATTRIBUTES]
                         )
                     )
 
@@ -966,7 +967,6 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         req = self.wallet.requestIdentity(identity,
                                           sender=self.wallet.defaultId)
 
-
         self.client.submitReqs(req)
 
         self.loop.call_later(.2,
@@ -990,7 +990,6 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                              req.key,
                              self.client,
                              self._handleSyncResp(link, doneCallback))
-
 
     def executeWhenResponseRcvd(self, startTime, maxCheckForMillis,
                                 loop, reqId, respType,
@@ -1024,4 +1023,3 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                 loop.call_later(.2, self.executeWhenResponseRcvd,
                                 startTime, maxCheckForMillis, loop,
                                 reqId, respType, checkIfLinkExists, clbk, *args)
-
