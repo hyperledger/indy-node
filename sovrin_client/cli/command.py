@@ -232,6 +232,8 @@ sendPoolConfigCmd = Command(
 changeKeyCmd = Command(
     id="change current key",
     title="Changes key for the current identifier",
-    usage="change current key",
-    examples="change current key"
+    usage="change current key [with seed <seed>]",
+    examples=[
+        "change current key",
+        "change current key with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
 )

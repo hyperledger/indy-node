@@ -1351,10 +1351,14 @@ class SovrinCli(PlenumCli):
         if matchedVars.get('change_ckey') == changeKeyCmd.id:
             if not self.canMakeSovrinRequest:
                 return True
-            self._change_current_key()
+            seed = matchedVars.get('seed')
+            self._change_current_key(seed=seed)
             return True
 
     def _change_current_key(self, seed=None):
+        if not self.isValidSeedForNewKey(seed):
+            return True
+
         cur_id = self.activeWallet.requiredIdr()
         cseed = cleanSeed(seed or randombytes(32))
 
