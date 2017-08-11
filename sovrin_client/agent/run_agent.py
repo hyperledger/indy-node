@@ -40,7 +40,7 @@ def bootstrapAgentCli(name, agent, looper, bootstrap, config):
 def runAgentCli(agent, config, looper=None, bootstrap=None):
     def run(looper):
         agent.loop = looper.loop
-        logger.debug("Running {} now (port: {})".format(agent.name, agent.port))
+        logger.info("Running {} now (port: {})".format(agent.name, agent.port))
         agentCli = bootstrapAgentCli(agent.name, agent, looper, bootstrap, config)
         commands = sys.argv[1:]
         looper.run(agentCli.shell(*commands))
@@ -58,7 +58,7 @@ def runAgent(agent, looper=None, bootstrap=None):
     def do_run(looper):
         agent.loop = looper.loop
         looper.add(agent)
-        logger.debug("Running {} now (port: {})".format(agent.name, agent.port))
+        logger.info("Running {} now (port: {})".format(agent.name, agent.port))
         if bootstrap:
             looper.run(runBootstrap(bootstrap))
 

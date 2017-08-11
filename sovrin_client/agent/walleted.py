@@ -442,7 +442,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         body, (frm, ha) = msg
         link = self.wallet.getConnectionBy(nonce=body.get(NONCE))
         if link:
-            self.logger.debug('Ping sent to %s', link.remoteIdentifier)
+            self.logger.info('Ping sent to %s', link.remoteIdentifier)
             self.signAndSend({TYPE: 'pong'}, self.wallet.defaultId, frm,
                              origReqId=body.get(f.REQ_ID.nm))
 
@@ -452,7 +452,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         if identifier:
             li = self._getLinkByTarget(getCryptonym(identifier))
             if li:
-                self.logger.debug('Pong received from %s', li.remoteIdentifier)
+                self.logger.info('Pong received from %s', li.remoteIdentifier)
                 self.notifyMsgListener("    Pong received.")
             else:
                 self.notifyMsgListener("    Pong received from unknown endpoint.")
@@ -583,7 +583,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             raise SignatureRejected
         else:
             if typ == ACCEPT_INVITE:
-                self.logger.debug('Signature accepted.')
+                self.logger.info('Signature accepted.')
             return True
 
     def _getLinkByTarget(self, target) -> Connection:
@@ -668,7 +668,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             send_claims()
             logger.debug("already accepted, "
                          "so directly sending available claims")
-            self.logger.debug('Already added identifier [{}] in sovrin'
+            self.logger.info('Already added identifier [{}] in sovrin'
                                   .format(identifier))
             # self.notifyToRemoteCaller(EVENT_NOTIFY_MSG,
             #                       "    Already accepted",
@@ -684,7 +684,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             # how to provide separate logging for each agent
             # anyhow this class should be implemented by each agent
             # so we might not even need to add it as a separate logic
-            self.logger.debug('Creating identifier [{}] in sovrin'
+            self.logger.info('Creating identifier [{}] in sovrin'
                                   .format(identifier))
             self._sendToSovrinAndDo(reqs[0], clbk=send_claims)
 
@@ -884,8 +884,8 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         }
         logger.debug("{} accepting request from {} with id {}".
                      format(self.name, link.name, link.remoteIdentifier))
-        self.logger.debug('Accepting request with nonce {} from id {}'
-                          .format(link.request_nonce, link.remoteIdentifier))
+        self.logger.info('Accepting request with nonce {} from id {}'
+                         .format(link.request_nonce, link.remoteIdentifier))
         self.signAndSendToLink(msg, link.name)
 
     # def _handleSyncNymResp(self, link, additionalCallback):

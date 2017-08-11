@@ -123,8 +123,8 @@ class WalletedAgent(Walleted, Agent, Caching):
             fileName = normalizedWalletFileName(walletName)
             walletFilePath = self.walletSaver.saveWallet(
                 wallet, getWalletFilePath(contextDir, fileName))
-            self.logger.debug('Active wallet "{}" saved ({})'.
-                              format(walletName, walletFilePath))
+            self.logger.info('Active wallet "{}" saved ({})'.
+                             format(walletName, walletFilePath))
         except IOError as ex:
             self.logger.info("Error occurred while saving wallet. " +
                              "error no.{}, error.{}"
@@ -135,8 +135,8 @@ class WalletedAgent(Walleted, Agent, Caching):
             self.getContextDir())
         if restoredWallet:
             self.wallet = restoredWallet
-            self.logger.debug('Saved wallet "{}" restored ({})'.
-                              format(self.wallet.name, walletFilePath))
+            self.logger.info('Saved wallet "{}" restored ({})'.
+                             format(self.wallet.name, walletFilePath))
 
     def _restoreIssuerWallet(self):
         if self.issuer:
@@ -144,8 +144,8 @@ class WalletedAgent(Walleted, Agent, Caching):
                 self._getIssuerWalletContextDir())
             if restoredWallet:
                 self.issuer.restorePersistedWallet(restoredWallet)
-                self.logger.debug('Saved wallet "issuer" restored ({})'.
-                                  format(walletFilePath))
+                self.logger.info('Saved wallet "issuer" restored ({})'.
+                                 format(walletFilePath))
 
     def _restoreLastActiveWallet(self, contextDir):
         walletFilePath = None
