@@ -145,7 +145,7 @@ class WalletedAgent(Walleted, Agent, Caching):
             if restoredWallet:
                 self.issuer.restorePersistedWallet(restoredWallet)
                 self.logger.info('Saved wallet "issuer" restored ({})'.
-                                 format(walletFilePath))
+                             format(walletFilePath))
 
     def _restoreLastActiveWallet(self, contextDir):
         walletFilePath = None
