@@ -37,6 +37,3 @@ def testScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
     looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
                           retryWait=1, timeout=waits.expectedUpgradeScheduled()))
-
-    for node in nodeSet:
-        assert node.upgrader.scheduledUpgrade[0] == upgr1[VERSION]
