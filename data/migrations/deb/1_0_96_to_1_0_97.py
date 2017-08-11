@@ -77,18 +77,25 @@ def __open_new_ledger(data_directory, new_ledger_file, hash_store_name):
 def migrate_all_hash_stores(node_data_directory):
     # the new hash store (merkle tree) will be recovered from the new transaction log after re-start
     # just delete the current hash store
-    shutil.rmtree(
-        os.path.join(node_data_directory, '_merkleNodes'))
-    shutil.rmtree(
-        os.path.join(node_data_directory, '_merkleLeaves'))
-    os.remove(
-        os.path.join(node_data_directory, '_merkleNodes.bin'))
-    os.remove(
-        os.path.join(node_data_directory, '_merkleLeaves.bin'))
-    os.remove(
-        os.path.join(node_data_directory, 'config_merkleNodes.bin'))
-    os.remove(
-        os.path.join(node_data_directory, 'config_merkleLeaves.bin'))
+    old_merkle_nodes = os.path.join(node_data_directory, '_merkleNodes')
+    old_merkle_leaves = os.path.join(node_data_directory, '_merkleLeaves')
+    old_merkle_nodes_bin = os.path.join(node_data_directory, '_merkleNodes.bin')
+    old_merkle_leaves_bin = os.path.join(node_data_directory, '_merkleNodes.bin')
+    old_merkle_nodes_config_bin = os.path.join(node_data_directory, 'config_merkleNodes.bin')
+    old_merkle_leaves_config_bin = os.path.join(node_data_directory, 'config_merkleLeaves.bin')
+
+    if os.path.exists(old_merkle_nodes):
+        shutil.rmtree(old_merkle_nodes)
+    if os.path.exists(old_merkle_leaves):
+        shutil.rmtree(old_merkle_leaves)
+    if os.path.exists(old_merkle_nodes_bin):
+        os.remove(old_merkle_nodes_bin)
+    if os.path.exists(old_merkle_leaves_bin):
+        os.remove(old_merkle_leaves_bin)
+    if os.path.exists(old_merkle_nodes_config_bin):
+        os.remove(old_merkle_nodes_config_bin)
+    if os.path.exists(old_merkle_leaves_config_bin):
+        os.remove(old_merkle_leaves_config_bin)
 
     # open new Ledgers
     __open_new_ledger(node_data_directory, config.poolTransactionsFile, 'pool')
@@ -125,14 +132,14 @@ def migrate_all_states(node_data_directory):
 
 def migrate_all():
     base_dir = config.baseDir
-    if not os.path.exists(base_dir):
+    nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
+    if not os.path.exists(nodes_data_dir):
         # TODO: find a better way
-        base_dir = '/home/sovrin/.sovrin'
-    if not os.path.exists(base_dir):
-        logger.error("Can not find the directory with the ledger: {}".format(base_dir))
+        nodes_data_dir = os.path.join('/home/sovrin/.sovrin', config.nodeDataDir)
+    if not os.path.exists(nodes_data_dir):
+        logger.error("Can not find the directory with the ledger: {}".format(nodes_data_dir))
         exit()
 
-    nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     for node_dir in os.listdir(nodes_data_dir):
         node_data_dir = os.path.join(nodes_data_dir, node_dir)
         migrate_all_ledgers_for_node(node_data_dir)
