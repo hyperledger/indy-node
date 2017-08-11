@@ -222,7 +222,7 @@ class Upgrader(HasActionQueue):
         checking is done
         :return:
         """
-        logger.info('{} processing config ledger for any upgrades'.format(self))
+        logger.debug('{} processing config ledger for any upgrades'.format(self))
         current_version = self.getVersion()
         last_pool_upgrade_txn_start = self.get_upgrade_txn(
             lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == START, reverse=True)
