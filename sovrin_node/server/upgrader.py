@@ -31,23 +31,8 @@ class Upgrader(HasActionQueue):
         return __version__
 
     @staticmethod
-    def isVersionHigher(oldVer, newVer):
-        r = Upgrader.compareVersions(oldVer, newVer)
-        return True if r == 1 else False
-
-    @staticmethod
-    def isVersionSame(oldVer, newVer):
-        r = Upgrader.compareVersions(oldVer, newVer)
-        return True if r == 0 else False
-
-    @staticmethod
-    def isVersionLower(oldVer, newVer):
-        r = Upgrader.compareVersions(oldVer, newVer)
-        return True if r == -1 else False
-
-    @staticmethod
     def is_version_upgradable(old, new, reinstall: bool = False):
-        return Upgrader.isVersionHigher(old, new) or (Upgrader.isVersionSame(old, new) and reinstall)
+        return reinstall or (Upgrader.compareVersions(old, new) != 0)
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -73,12 +58,6 @@ class Upgrader(HasActionQueue):
         if lenB > lenA:
             return 1
         return 0
-
-    @staticmethod
-    def versionsDescOrder(versions):
-        "Returns versions ordered in descending order"
-        return sorted(versions,
-                      key=cmp_to_key(Upgrader.compareVersions))
 
     @staticmethod
     def get_upgrade_id(txn):
@@ -325,21 +304,14 @@ class Upgrader(HasActionQueue):
                 when = txn[SCHEDULE][self.nodeId]
                 failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
-                if self.scheduledUpgrade:
-                    logger.debug("Node '{}' has a scheduled upgrade".format(self.nodeName))
-
-                    if self.isVersionHigher(self.scheduledUpgrade[0], version):
-                        logger.debug("Node '{}' cancels previous upgrade and schedules a new one to {}".
-                                     format(self.nodeName, version))
-                        # If upgrade has been scheduled but for version
-                        # lower than this transaction propose
-                        self._cancelScheduledUpgrade(justification)
-                        self._scheduleUpgrade(version, when, failTimeout, upgrade_id)
-                    return
-
                 if self.is_version_upgradable(currentVersion, version, reinstall):
-                    logger.debug("Node '{}' schedules upgrade to {}".format(self.nodeName, version))
-                    # If no upgrade has been scheduled
+                    logger.info("Node '{}' schedules upgrade to {}".format(self.nodeName, version))
+
+                    if self.scheduledUpgrade:
+                        logger.info("Node '{}' cancels previous upgrade and schedules a new one to {}".
+                                    format(self.nodeName, version))
+                        self._cancelScheduledUpgrade(justification)
+
                     self._scheduleUpgrade(version, when, failTimeout, upgrade_id)
                 return
 
