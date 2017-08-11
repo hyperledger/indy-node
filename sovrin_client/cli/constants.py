@@ -167,6 +167,8 @@ SEND_POOL_CONFIG_REG_EX = "(\s*(?P<send_pool_config>send\s+{poolConfig})" \
                           "\s+(?P<writes_key>writes=)\s*(?P<writes>True|False))" \
                           "(\s+(?P<force_key>force=)\s*(?P<force>True|False))?".format(poolConfig=SovrinTransactions.POOL_CONFIG.name)
 
+CHANGE_CURENT_KEY_REG_EX = "(\s*(?P<change_ckey>change \s+ current \s+ key))"
+
 
 SEND_NYM_FORMATTED_REG_EX = getPipedRegEx(SEND_NYM_REG_EX)
 GET_NYM_FORMATTED_REG_EX = getPipedRegEx(GET_NYM_REG_EX)
@@ -202,3 +204,4 @@ SEND_POOL_UPG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_UPG_REG_EX)
 SEND_POOL_CONFIG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_CONFIG_REG_EX)
 REQ_AVAIL_CLAIMS_FORMATTED_REG_EX = getPipedRegEx(REQ_AVAIL_CLAIMS_REG_EX)
 NEW_ID_FORMATTED_REG_EX = getPipedRegEx(NEW_ID_REG_EX)
+CHANGE_CURENT_KEY_FORMATTED_REG_EX = getPipedRegEx(CHANGE_CURENT_KEY_REG_EX)

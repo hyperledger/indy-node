@@ -43,7 +43,7 @@ from sovrin_client.cli.command import acceptConnectionCmd, connectToCmd, \
     sendGetAttrCmd, sendGetSchemaCmd, sendGetClaimDefCmd, \
     sendNymCmd, sendPoolUpgCmd, sendSchemaCmd, setAttrCmd, showClaimCmd, \
     listClaimsCmd, showFileCmd, showConnectionCmd, syncConnectionCmd, addGenesisTxnCmd, \
-    sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listConnectionsCmd, sendPoolConfigCmd
+    sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listConnectionsCmd, sendPoolConfigCmd, changeKeyCmd
 
 from sovrin_client.cli.helper import getNewClientGrams, \
     USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
@@ -158,7 +158,8 @@ class SovrinCli(PlenumCli):
             'send_proof_request'
             'send_proof',
             'new_id',
-            'request_avail_claims'
+            'request_avail_claims',
+            'change_ckey'
         ]
         lexers = {n: SimpleLexer(Token.Keyword) for n in lexerNames}
         # Add more lexers to base class lexers
@@ -203,6 +204,7 @@ class SovrinCli(PlenumCli):
             sendProofRequestCmd.id)
         completers["send_proof"] = PhraseWordCompleter(sendProofCmd.id)
         completers["request_avail_claims"] = PhraseWordCompleter(reqAvailClaimsCmd.id)
+        completers["change_ckey"] = PhraseWordCompleter(changeKeyCmd.id)
 
         return {**super().completers, **completers}
 
@@ -244,7 +246,8 @@ class SovrinCli(PlenumCli):
                             self._sendProofRequest,
                             self._sendProof,
                             self._newDID,
-                            self._reqAvailClaims
+                            self._reqAvailClaims,
+                            self._change_current_key_req
                             ])
         return actions
 
@@ -536,7 +539,7 @@ class SovrinCli(PlenumCli):
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
                                     req.key, self.activeClient, getNymReply)
 
-    def _addNym(self, nym, role, newVerKey=None, otherClientName=None):
+    def _addNym(self, nym, role, newVerKey=None, otherClientName=None, custom_clb=None):
         idy = Identity(nym, verkey=newVerKey, role=role)
         try:
             self.activeWallet.addTrustAnchoredIdentity(idy)
@@ -561,7 +564,7 @@ class SovrinCli(PlenumCli):
                            Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    req.key, self.activeClient, custom_clb or out)
         return True
 
     def _addAttribToNym(self, nym, raw, enc, hsh):
@@ -1344,6 +1347,32 @@ class SovrinCli(PlenumCli):
                 self._printNoClaimFoundMsg()
             return True
 
+    def _change_current_key_req(self, matchedVars):
+        if matchedVars.get('change_ckey') == changeKeyCmd.id:
+            if not self.canMakeSovrinRequest:
+                return True
+            self._change_current_key()
+            return True
+
+    def _change_current_key(self, seed=None):
+        cur_id = self.activeWallet.requiredIdr()
+        cseed = cleanSeed(seed or randombytes(32))
+
+        dm = self.activeWallet.didMethods.get(None)
+        signer = dm.newSigner(identifier=cur_id, seed=cseed)
+
+        def change_verkey_cb(reply, error, *args, **kwargs):
+            if error:
+                self.print("Error: {}".format(error), Token.BoldBlue)
+            else:
+                self.activeWallet.updateSigner(cur_id, signer)
+                self._saveActiveWallet()
+                self.print("Key changed for {}".format(reply[TARGET_NYM]), Token.BoldBlue)
+                self.print("New verification key is {}".format(signer.verkey), Token.BoldBlue)
+
+        self._addNym(nym=cur_id, role=None, newVerKey=signer.verkey, otherClientName=None, custom_clb=change_verkey_cb)
+
+
     def _createNewIdentifier(self, DID, seed,
                              alias=None):
         if not self.isValidSeedForNewKey(seed):
@@ -1971,6 +2000,7 @@ class SovrinCli(PlenumCli):
         mappings['sendProofRequest'] = sendProofRequestCmd
         mappings['sendProof'] = sendProofCmd
         mappings['reqAvailClaims'] = reqAvailClaimsCmd
+        mappings['changecurrentkeyreq'] = changeKeyCmd
 
         # TODO: These seems to be obsolete, so either we need to remove these
         # command handlers or let it point to None
