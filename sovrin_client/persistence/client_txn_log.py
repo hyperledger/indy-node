@@ -16,8 +16,8 @@ class ClientTxnLog(PClientTxnLog):
 
     def getTxnsByType(self, txnType: str) -> List:
         txns = []
-        for val in self.transactionLog.iterator(includeKey=False,
-                                                includeValue=True):
+        for val in self.transactionLog.iterator(include_key=False,
+                                                include_value=True):
             txn = self.serializer.deserialize(val, fields=self.txnFieldOrdering)
             if txn.get(TXN_TYPE) == txnType:
                 txns.append(txn)

@@ -32,11 +32,11 @@ class Authoriser:
             {r: [OWNER] for r in ValidRoles},
         '{}_services__[VALIDATOR]'.format(NODE):
             {STEWARD: [OWNER, ]},
-        # INDY-410 - steward allowed to suspend its validator
+        # INDY-410 - steward allowed to demote/promote its validator
         '{}_services_[VALIDATOR]_[]'.format(NODE):
             {TRUSTEE: [], STEWARD: [OWNER, ]},
         '{}_services_[]_[VALIDATOR]'.format(NODE):
-            {TRUSTEE: []},
+            {TRUSTEE: [], STEWARD: [OWNER, ]},
         '{}_node_ip_<any>_<any>'.format(NODE):
             {STEWARD: [OWNER, ]},
         '{}_node_port_<any>_<any>'.format(NODE):

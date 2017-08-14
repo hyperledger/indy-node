@@ -87,13 +87,17 @@ WantedBy=multi-user.target
 EOF
 
 mkdir -p /etc/sovrin
-cat <<EOF > /etc/sovrin/node_control.conf
+
+HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/sovrin/node_control.conf)
+if [ ! -f /etc/sovrin/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
+    cat <<EOF > /etc/sovrin/node_control.conf
 # Uncomment this to run agent in test mode:
 #TEST_MODE=--test
 
 TEST_MODE=
-HOLD_EXT=
+HOLD_EXT=\"\"
 EOF
+fi
 
 mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604.sh /usr/local/bin/upgrade_sovrin_node
 mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604_test.sh /usr/local/bin/upgrade_sovrin_node_test

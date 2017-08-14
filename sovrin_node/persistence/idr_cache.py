@@ -2,8 +2,9 @@ from collections import OrderedDict
 import rlp
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX
 from plenum.common.types import f
+from storage.kv_store import KeyValueStorage
+
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
-from state.kv.kv_store import KeyValueStorage
 from stp_core.common.log import getlogger
 
 logger = getlogger()
@@ -73,10 +74,12 @@ class IdrCache:
         else:
             # Looking for uncommitted values, iterating over `currentBatchOps and unCommitted`
             # in reverse to get the latest value
-            for _, cache in reversed(self.currentBatchOps):
-                if idr in cache:
-                    value = cache[idr]
-                    break;
+            for key, cache in reversed(self.currentBatchOps):
+                if key == idr.decode():
+                    value = cache
+                    ta, iv, r = self.unpackIdrValue(value)
+                    return ta, iv, r
+
             for _, cache in reversed(self.unCommitted):
                 if idr in cache:
                     value = cache[idr]

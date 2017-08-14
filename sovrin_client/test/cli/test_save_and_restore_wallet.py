@@ -114,6 +114,19 @@ def useKeyring(name, do, expectedName=None, expectedMsgs=None):
     useAndAssertKeyring(do, name, expectedName, expectedMsgs)
 
 
+def testRestoreWalletFile(aliceCLI):
+    import shutil
+    fileName = "tmp_wallet_restore_issue"
+    curPath = os.path.dirname(os.path.realpath(__file__))
+    walletFilePath = os.path.join(curPath, fileName)
+    noEnvKeyringsDir = os.path.join(aliceCLI.getWalletsBaseDir(), NO_ENV)
+    createDirIfNotExists(noEnvKeyringsDir)
+    shutil.copy2(walletFilePath, noEnvKeyringsDir)
+    targetWalletFilePath = os.path.join(noEnvKeyringsDir, fileName)
+    restored = aliceCLI.restoreWalletByPath(targetWalletFilePath)
+    assert restored and isinstance(aliceCLI.activeWallet, Wallet)
+
+
 def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
                              aliceMultiNodePools,
                              earlMultiNodePools):
@@ -163,16 +176,3 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
                                      cliForMultiNodePools.walletFileName)
     restartCli(aliceMultiNodePools, be, do, "mykr1", 1)
     restartCliWithCorruptedWalletFile(earlMultiNodePools, be, do, filePath)
-
-
-def testRestoreWalletFile(aliceCLI):
-    import shutil
-    fileName = "tmp_wallet_restore_issue"
-    curPath = os.path.dirname(os.path.realpath(__file__))
-    walletFilePath = os.path.join(curPath, fileName)
-    noEnvKeyringsDir = os.path.join(aliceCLI.getWalletsBaseDir(), NO_ENV)
-    createDirIfNotExists(noEnvKeyringsDir)
-    shutil.copy2(walletFilePath, noEnvKeyringsDir)
-    targetWalletFilePath = os.path.join(noEnvKeyringsDir, fileName)
-    restored = aliceCLI.restoreWalletByPath(targetWalletFilePath)
-    assert restored and isinstance(aliceCLI.activeWallet, Wallet)
