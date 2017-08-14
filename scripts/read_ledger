@@ -7,6 +7,8 @@ import argparse
 import logging
 import os
 
+import shutil
+
 from common.serializers.json_serializer import JsonSerializer
 from ledger.compact_merkle_tree import CompactMerkleTree
 from plenum.common.ledger import Ledger
@@ -37,8 +39,8 @@ def read_args():
     return parser.parse_args()
 
 
-def get_ledger_dir(args, config):
-    if args.node_name and args.client_name:
+def get_ledger_dir(node_name, client_name):
+    if node_name and client_name:
         print("Either 'node_name' or 'client_name' can be specified")
         exit()
 
@@ -51,16 +53,16 @@ def get_ledger_dir(args, config):
         print("Can not find the directory with the ledger: {}".format(base_dir))
         exit()
 
-    data_dir = config.clientDataDir if args.client_name else config.nodeDataDir
+    data_dir = config.clientDataDir if client_name else config.nodeDataDir
     ledger_data_dir = os.path.join(base_dir, data_dir)
     if not os.path.isdir(ledger_data_dir):
         print("No initiated nodes/client found: {}".format(ledger_data_dir))
         exit()
 
-    if args.client_name:
-        target_dir = args.client_name
-    elif args.node_name:
-        target_dir = args.node_name
+    if client_name:
+        target_dir = client_name
+    elif node_name:
+        target_dir = node_name
     else:
         target_dir = None
 
@@ -78,26 +80,26 @@ def get_ledger_dir(args, config):
     return os.path.join(ledger_data_dir, dirs[0])
 
 
-def get_ledger(args):
+def get_ledger(type_, ledger_data_dir):
     config = getConfig()
-    ledger_data_dir = get_ledger_dir(args, config)
+
     hash_store_name = None
     ledger_name = None
-    if args.type == 'pool':
+    if type_ == 'pool':
         hash_store_name = 'pool'
         ledger_name = config.poolTransactionsFile
-    elif args.type == 'domain':
+    elif type_ == 'domain':
         hash_store_name = 'domain'
         ledger_name = config.domainTransactionsFile
-    elif args.type == 'config':
+    elif type_ == 'config':
         hash_store_name = 'config'
         ledger_name = config.configTransactionsFile
     else:
-        print("Unknown ledger type: {}".format(args.type))
+        print("Unknown ledger type: {}".format(type_))
         exit()
 
     hash_store = LevelDbHashStore(
-        dataDir=ledger_data_dir,
+        dataDir=read_copy_ledger_data_dir,
         fileNamePrefix=hash_store_name)
     return Ledger(
         CompactMerkleTree(hashStore=hash_store),
@@ -131,6 +133,7 @@ def print_by_seq_no(seq_no, serializer):
     print(txn)
     return
 
+
 def print_all(serializer):
     frm = args.frm
     to = args.to
@@ -139,7 +142,23 @@ def print_all(serializer):
         print(txn)
 
 
+def make_copy_of_ledger(data_dir):
+    read_copy_data_dir = data_dir + '-read-copy'
+    if os.path.exists(read_copy_data_dir):
+        shutil.rmtree(read_copy_data_dir)
+    shutil.copytree(data_dir, read_copy_data_dir)
+    return read_copy_data_dir
+
+
 if __name__ == '__main__':
     args = read_args()
-    ledger = get_ledger(args)
+
+    # TODO: works well only for small ledgers,
+    ledger_data_dir = get_ledger_dir(args.node_name, args.client_name)
+    read_copy_ledger_data_dir = make_copy_of_ledger(ledger_data_dir)
+
+    ledger = get_ledger(args.type, read_copy_ledger_data_dir)
     print_txns(ledger, args)
+
+    # TODO be careful about removing original the ledger data dir
+    shutil.rmtree(read_copy_ledger_data_dir)
