@@ -88,7 +88,7 @@ class Authoriser:
             if anyKey not in Authoriser.AuthMap:
                 msg = "key '{}' not found in authorized map". \
                     format(key)
-                logger.error(msg)
+                logger.debug(msg)
                 return False, msg
             else:
                 key = anyKey
