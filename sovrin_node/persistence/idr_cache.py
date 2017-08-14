@@ -1,6 +1,6 @@
 from collections import OrderedDict
 import rlp
-from plenum.common.constants import VERKEY, TRUSTEE, STEWARD
+from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX
 from plenum.common.types import f
 from storage.kv_store import KeyValueStorage
 
@@ -121,8 +121,9 @@ class IdrCache:
                                             self.unCommitted[0][1].items()])
             self.unCommitted = self.unCommitted[1:]
         else:
-            logger.warning('{} is trying to commit a batch with state root {} '
-                           'but no uncommitted found'.format(self, stateRoot))
+            logger.warning('{}{} is trying to commit a batch with state root'
+                           ' {} but no uncommitted found'
+                           .format(THREE_PC_PREFIX, self, stateRoot))
 
     def setVerkey(self, idr, verkey):
         # This method acts as if guardianship is being terminated.
