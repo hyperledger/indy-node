@@ -146,5 +146,5 @@ class LocalPool(Pool, Looper):
             pass
         finally:
             ledger.stop()
-        with open(ledger._transactionLog.dbPath) as f:
+        with open(ledger._transactionLog.db_path) as f:
             return f.readlines()

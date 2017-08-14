@@ -1,12 +1,28 @@
 import pytest
-from sovrin_common.types import ClientSchemaOperation
+from sovrin_common.types import ClientSchemaOperation, SchemaField
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, NonEmptyStringField
+from plenum.common.messages.fields import ConstantField, NonEmptyStringField, VersionField, IterableField
 
+EXPECTED_ORDERED_FIELDS_SCHEMA = OrderedDict([
+    ("name", NonEmptyStringField),
+    ("version", VersionField),
+    ("attr_names", IterableField),
+])
+
+
+def test_has_expected_fields_s():
+    actual_field_names = OrderedDict(SchemaField.schema).keys()
+    assert actual_field_names == EXPECTED_ORDERED_FIELDS_SCHEMA.keys()
+
+
+def test_has_expected_validators_s():
+    schema = dict(SchemaField.schema)
+    for field, validator in EXPECTED_ORDERED_FIELDS_SCHEMA.items():
+        assert isinstance(schema[field], validator)
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
-    ("data", NonEmptyStringField),
+    ("data", SchemaField),
 ])
 
 

@@ -85,12 +85,12 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.0.84',
+    install_requires=['indy-plenum-dev==1.0.91',
                       'indy-anoncreds-dev==1.0.25',
                       'python-dateutil',
                       'timeout-decorator'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-xdist'],
     scripts=['scripts/sovrin',
              'scripts/change_node_ha',
              'scripts/add_new_node',
@@ -110,7 +110,8 @@ setup(
              'scripts/install_sovrin_node.bat',
              'scripts/delete_sovrin_node.bat',
              'scripts/restart_upgrade_agent.bat',
-             'scripts/install_nssm.bat'],
+             'scripts/install_nssm.bat',
+             'scripts/read_ledger'],
     cmdclass={
         'install': EnhancedInstall,
         'develop': EnhancedInstallDev
