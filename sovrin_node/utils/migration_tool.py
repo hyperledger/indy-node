@@ -1,13 +1,15 @@
 #!/usr/bin/python3
 
-import time
-import pkgutil
 import importlib
+import pkgutil
 import platform
-import timeout_decorator
+import time
+from functools import cmp_to_key
 
+import timeout_decorator
 from stp_core.common.log import getlogger
 
+from sovrin_node.server.upgrader import Upgrader
 
 SCRIPT_PREFIX = 'data.migrations'
 PLATFORM_PREFIX = {
@@ -19,7 +21,6 @@ logger = getlogger()
 
 # Returns number of performed migrations
 def migrate(current_version, new_version, timeout):
-
     @timeout_decorator.timeout(timeout)
     def _call_migration_script(migration_script, current_platform):
         importlib.import_module('.'.join([SCRIPT_PREFIX, PLATFORM_PREFIX[current_platform], migration_script]))
@@ -50,15 +51,31 @@ def _get_migration_scripts(current_platform):
 def _get_relevant_migrations(migration_scripts, current_version, new_version):
     relevant_migrations = []
     for migration in migration_scripts:
-        migration_split = migration.split('_')
-        if len(migration_split) != 7:
+        migration_original_version, migration_new_version = _get_migration_versions(migration)
+        if not migration_original_version or not migration_new_version:
             continue
-        migration_original_version = '.'.join(migration_split[0:3])
-        migration_new_version = '.'.join(migration_split[-3])
-        if (migration_original_version >= current_version) and (migration_new_version <= new_version):
+        if Upgrader.compareVersions(migration_original_version, current_version) <= 0 and \
+                        Upgrader.compareVersions(migration_new_version, new_version) >= 0:
             relevant_migrations.append(migration)
-    relevant_migrations.sort()
+        relevant_migrations = sorted(relevant_migrations, key=cmp_to_key(_compare_migration_scripts))
     return relevant_migrations
+
+
+def _get_migration_versions(migration):
+    migration_split = migration.split('_')
+    if len(migration_split) != 7:
+        return None, None
+    migration_original_version = '.'.join(migration_split[0:3])
+    migration_new_version = '.'.join(migration_split[-3:])
+    return migration_original_version, migration_new_version
+
+
+def _compare_migration_scripts(migration1, migration2):
+    migration_original_version1, migration_new_version1 = _get_migration_versions(migration1)
+    migration_original_version2, migration_new_version2 = _get_migration_versions(migration2)
+    if Upgrader.compareVersions(migration_original_version2, migration_original_version1) == 0:
+        return Upgrader.compareVersions(migration_new_version2, migration_new_version1)
+    return Upgrader.compareVersions(migration_original_version2, migration_original_version1)
 
 
 def _get_current_platform():

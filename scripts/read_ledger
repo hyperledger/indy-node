@@ -46,17 +46,13 @@ def get_ledger_dir(node_name, client_name):
 
     config = getConfig()
     base_dir = config.baseDir
-    if not os.path.exists(base_dir):
-        # TODO: find a better way
-        base_dir = '/home/sovrin/.sovrin'
-    if not os.path.exists(base_dir):
-        print("Can not find the directory with the ledger: {}".format(base_dir))
-        exit()
-
     data_dir = config.clientDataDir if client_name else config.nodeDataDir
     ledger_data_dir = os.path.join(base_dir, data_dir)
-    if not os.path.isdir(ledger_data_dir):
-        print("No initiated nodes/client found: {}".format(ledger_data_dir))
+    if not os.path.exists(ledger_data_dir):
+        # TODO: find a better way
+        ledger_data_dir = os.path.join('/home/sovrin/.sovrin', data_dir)
+    if not os.path.exists(ledger_data_dir):
+        logger.error("Can not find the directory with the ledger: {}".format(ledger_data_dir))
         exit()
 
     if client_name:
