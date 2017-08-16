@@ -166,6 +166,7 @@ def migrate_genesis_txn(base_dir):
                         txn = new_ser.deserialize(line)
                         txn = old_ser.serialize(txn)
                         f2.write(txn)
+            os.remove(new_domain_genesis)
         if os.path.exists(new_pool_genesis):
             os.rename(new_pool_genesis, old_domain_genesis)
 

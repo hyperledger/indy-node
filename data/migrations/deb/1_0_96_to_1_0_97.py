@@ -154,9 +154,11 @@ def migrate_genesis_txn(base_dir):
                 with open(new_domain_genesis, 'w') as f2:
                     for line in store_utils.cleanLines(f1):
                         txn = old_ser.deserialize(line)
+                        txn = {k: v for k,v in txn.items() if v}
                         txn = new_ser.serialize(txn, toBytes=False)
                         f2.write(txn)
                         f2.write('\n')
+            os.remove(old_domain_genesis)
         if os.path.exists(old_pool_genesis):
             os.rename(old_pool_genesis, new_pool_genesis)
 
