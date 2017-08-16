@@ -136,26 +136,26 @@ def test_send_get_claim_def_regex(grammar):
 
 def testShowFileCommandRegEx(grammar):
     matchedVars = getMatchedVariables(grammar,
-                                      "show sample/faber-invitation.sovrin")
+                                      "show sample/faber-request.sovrin")
     assertCliTokens(matchedVars, {
-        "show_file": "show", "file_path": "sample/faber-invitation.sovrin"})
+        "show_file": "show", "file_path": "sample/faber-request.sovrin"})
 
     matchedVars = getMatchedVariables(grammar,
-                                      "show sample/faber-invitation.sovrin ")
+                                      "show sample/faber-request.sovrin ")
     assertCliTokens(matchedVars, {
-        "show_file": "show", "file_path": "sample/faber-invitation.sovrin"})
+        "show_file": "show", "file_path": "sample/faber-request.sovrin"})
 
 
 def testLoadFileCommandRegEx(grammar):
     matchedVars = getMatchedVariables(grammar,
-                                      "load sample/faber-invitation.sovrin")
+                                      "load sample/faber-request.sovrin")
     assertCliTokens(matchedVars, {
-        "load_file": "load", "file_path": "sample/faber-invitation.sovrin"})
+        "load_file": "load", "file_path": "sample/faber-request.sovrin"})
 
     matchedVars = getMatchedVariables(grammar,
-                                      "load sample/faber-invitation.sovrin ")
+                                      "load sample/faber-request.sovrin ")
     assertCliTokens(matchedVars, {
-        "load_file": "load", "file_path": "sample/faber-invitation.sovrin"})
+        "load_file": "load", "file_path": "sample/faber-request.sovrin"})
 
 
 def testShowLinkRegEx(grammar):
@@ -271,7 +271,10 @@ def testSendPoolUpgrade(grammar):
                                  "'2017-01-25T12:44:01.258870+00:00', "
                                  "'DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2': "
                                  "'2017-01-25T12:38:57.258870+00:00'} "
-                                 "timeout=10")
+                                 "timeout=10 "
+                                 "force=True "
+                                 "reinstall=True"
+                        )
 
     # Testing for cancel
     getMatchedVariables(grammar, 'send POOL_UPGRADE name=upgrade-13 version=0.0.6 '

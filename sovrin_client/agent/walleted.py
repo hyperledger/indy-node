@@ -10,10 +10,10 @@ from typing import Dict, Tuple, Union, List
 from typing import Set
 
 from base58 import b58decode
+from common.serializers.serialization import serialize_msg_for_signing
 
 from stp_core.common.log import getlogger
 from plenum.common.signer_did import DidSigner
-from plenum.common.signing import serializeMsg
 from plenum.common.constants import TYPE, DATA, NONCE, IDENTIFIER, NAME, VERSION, \
     TARGET_NYM, ATTRIBUTES, VERKEY, VERIFIABLE_ATTRIBUTES, PREDICATES
 from plenum.common.types import f
@@ -41,7 +41,7 @@ from sovrin_client.agent.msg_constants import ACCEPT_INVITE, CLAIM_REQUEST, \
     PROOF, AVAIL_CLAIM_LIST, CLAIM, PROOF_STATUS, NEW_AVAILABLE_CLAIMS, \
     REF_REQUEST_ID, REQ_AVAIL_CLAIMS, INVITE_ACCEPTED, PROOF_REQUEST
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
-from sovrin_client.client.wallet.link import Link, constant
+from sovrin_client.client.wallet.connection import Connection, constant
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.exceptions import ConnectionNotFound, ConnectionAlreadyExists, \
     NotConnectedToNetwork, LinkNotReady, VerkeyNotFound, RemoteEndpointNotFound
@@ -202,14 +202,14 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         if not link:
             # QUESTION: We use wallet.defaultId as the local identifier,
             # this looks ok for test code, but not production code
-            link = Link(linkName,
-                        self.wallet.defaultId,
-                        self.wallet.getVerkey(),
-                        invitationNonce=nonce,
-                        remoteIdentifier=remoteIdr,
-                        remoteEndPoint=remoteHa,
-                        internalId=internalId,
-                        remotePubkey=remotePubkey)
+            link = Connection(linkName,
+                              self.wallet.defaultId,
+                              self.wallet.getVerkey(),
+                              request_nonce=nonce,
+                              remoteIdentifier=remoteIdr,
+                              remoteEndPoint=remoteHa,
+                              internalId=internalId,
+                              remotePubkey=remotePubkey)
             self.wallet.addConnection(link)
         else:
             link.remoteIdentifier = remoteIdr
@@ -519,7 +519,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             else:
                 self.notifyMsgListener("    DID created in Sovrin.")
 
-                li.linkStatus = constant.LINK_STATUS_ACCEPTED
+                li.connection_status = constant.CONNECTION_STATUS_ACCEPTED
                 rcvdAvailableClaims = body[DATA][CLAIMS_LIST_FIELD]
                 newAvailableClaims = self._getNewAvailableClaims(
                     li, rcvdAvailableClaims)
@@ -530,7 +530,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                         [rc.get(NAME) for rc in rcvdAvailableClaims])))
                 try:
                     self._checkIfLinkIdentifierWrittenToSovrin(li,
-                                                           newAvailableClaims)
+                                                               newAvailableClaims)
                 except NotConnectedToAny:
                     self.notifyEventListeners(
                         EVENT_NOT_CONNECTED_TO_ANY_ENV,
@@ -560,7 +560,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         msgWithoutSig = {k: v for k, v in msg.items() if k != f.SIG.nm}
         # TODO This assumes the current key is the cryptonym. This is a BAD
         # ASSUMPTION!!! Sovrin needs to provide the current key.
-        ser = serializeMsg(msgWithoutSig)
+        ser = serialize_msg_for_signing(msgWithoutSig)
         signature = b58decode(signature.encode())
         typ = msg.get(TYPE)
         # TODO: Maybe keeping ACCEPT_INVITE open is a better option than keeping
@@ -586,14 +586,14 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                 self.logger.info('Signature accepted.')
             return True
 
-    def _getLinkByTarget(self, target) -> Link:
+    def _getLinkByTarget(self, target) -> Connection:
         return self.wallet.getConnectionBy(remote=target)
 
-    def _checkIfLinkIdentifierWrittenToSovrin(self, li: Link, availableClaims):
+    def _checkIfLinkIdentifierWrittenToSovrin(self, li: Connection, availableClaims):
         req = self.getIdentity(li.localIdentifier)
         self.notifyMsgListener("\nSynchronizing...")
 
-        def getNymReply(reply, err, availableClaims, li: Link):
+        def getNymReply(reply, err, availableClaims, li: Connection):
             if reply.get(DATA) and json.loads(reply[DATA])[TARGET_NYM] == \
                     li.localIdentifier:
                 self.notifyMsgListener(
@@ -669,7 +669,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             logger.debug("already accepted, "
                          "so directly sending available claims")
             self.logger.info('Already added identifier [{}] in sovrin'
-                                  .format(identifier))
+                             .format(identifier))
             # self.notifyToRemoteCaller(EVENT_NOTIFY_MSG,
             #                       "    Already accepted",
             #                       link.verkey, frm)
@@ -685,7 +685,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
             # anyhow this class should be implemented by each agent
             # so we might not even need to add it as a separate logic
             self.logger.info('Creating identifier [{}] in sovrin'
-                                  .format(identifier))
+                             .format(identifier))
             self._sendToSovrinAndDo(reqs[0], clbk=send_claims)
 
             # TODO: If I have the below exception thrown, somehow the
@@ -721,7 +721,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         params = dict(ha=ha)
         msg = {
             TYPE: 'ping',
-            NONCE: link.invitationNonce,
+            NONCE: link.request_nonce,
             f.REQ_ID.nm: getTimeBasedId(),
             f.IDENTIFIER.nm: link.localIdentifier
         }
@@ -744,45 +744,46 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         if publicKeyRaw is None:
             publicKeyRaw = rawVerkeyToPubkey(verKeyRaw)
         self.endpoint.connectIfNotConnected(
-                         name=link.name,
-                         ha=ha,
-                         verKeyRaw=verKeyRaw,
-                         publicKeyRaw=publicKeyRaw)
+            name=link.name,
+            ha=ha,
+            verKeyRaw=verKeyRaw,
+            publicKeyRaw=publicKeyRaw)
 
-    def loadInvitationFile(self, filePath):
-        with open(filePath) as data_file:
-            invitation = json.load(
-                data_file, object_pairs_hook=collections.OrderedDict)
-            return self.loadInvitationDict(invitation)
+    # duplicate function
+    # def loadInvitationFile(self, filePath):
+    #     with open(filePath) as data_file:
+    #         request = json.load(
+    #             data_file, object_pairs_hook=collections.OrderedDict)
+    #         return self.load_request_dict(request)
 
-    def load_invitation_str(self, json_str):
-        invitation = json.loads(
+    def load_request_str(self, json_str):
+        request = json.loads(
             json_str, object_pairs_hook=collections.OrderedDict)
-        return self.loadInvitationDict(invitation)
+        return self.load_request_dict(request)
 
-    def loadInvitationDict(self, invitation_dict):
-        linkInvitation = invitation_dict.get("connection-request")
-        if not linkInvitation:
+    def load_request_dict(self, request_dict):
+        link_request = request_dict.get("connection-request")
+        if not link_request:
             raise ConnectionNotFound
-        linkName = linkInvitation["name"]
+        linkName = link_request["name"]
         existingLinkInvites = self.wallet. \
             getMatchingConnections(linkName)
         if len(existingLinkInvites) >= 1:
-            return self._mergeInvitation(invitation_dict)
-        Link.validate(invitation_dict)
-        link = self.loadInvitation(invitation_dict)
+            return self._merge_request(request_dict)
+        Connection.validate(request_dict)
+        link = self.load_request(request_dict)
         return link
 
-    def loadInvitation(self, invitationData):
-        linkInvitation = invitationData["connection-request"]
-        remoteIdentifier = linkInvitation[f.IDENTIFIER.nm]
+    def load_request(self, request_data):
+        link_request = request_data["connection-request"]
+        remoteIdentifier = link_request[f.IDENTIFIER.nm]
         # TODO signature should be validated!
-        signature = invitationData["sig"]
-        linkInvitationName = linkInvitation[NAME]
-        remoteEndPoint = linkInvitation.get("endpoint", None)
-        remote_verkey = linkInvitation.get("verkey", None)
-        linkNonce = linkInvitation[NONCE]
-        proofRequestsJson = invitationData.get("proof-requests", None)
+        signature = request_data["sig"]
+        link_request_name = link_request[NAME]
+        remoteEndPoint = link_request.get("endpoint", None)
+        remote_verkey = link_request.get("verkey", None)
+        linkNonce = link_request[NONCE]
+        proofRequestsJson = request_data.get("proof-requests", None)
 
         proofRequests = []
         if proofRequestsJson:
@@ -793,47 +794,48 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                                  cr[PREDICATES] if PREDICATES in cr else []))
 
         self.notifyMsgListener("1 connection request found for {}.".
-                               format(linkInvitationName))
+                               format(link_request_name))
 
         self.notifyMsgListener("Creating connection for {}.".
-                               format(linkInvitationName))
+                               format(link_request_name))
         # TODO: Would we always have a trust anchor corresponding to a link?
 
-        li = Link(name=linkInvitationName,
-                  trustAnchor=linkInvitationName,
-                  remoteIdentifier=remoteIdentifier,
-                  remoteEndPoint=remoteEndPoint,
-                  invitationNonce=linkNonce,
-                  proofRequests=proofRequests,
-                  remote_verkey=remote_verkey)
+        li = Connection(name=link_request_name,
+                        trustAnchor=link_request_name,
+                        remoteIdentifier=remoteIdentifier,
+                        remoteEndPoint=remoteEndPoint,
+                        request_nonce=linkNonce,
+                        proofRequests=proofRequests,
+                        remote_verkey=remote_verkey)
 
         self.wallet.addConnection(li)
         return li
 
-    def loadInvitationFile(self, filePath):
+    def load_request_file(self, filePath):
         with open(filePath) as data_file:
-            invitationData = json.load(
+            request_data = json.load(
                 data_file, object_pairs_hook=collections.OrderedDict)
-            linkInvitation = invitationData.get("connection-request")
-            if not linkInvitation:
+            link_request = request_data.get("connection-request")
+            if not link_request:
                 raise ConnectionNotFound
-            linkName = linkInvitation["name"]
+            linkName = link_request["name"]
             existingLinkInvites = self.wallet. \
                 getMatchingConnections(linkName)
             if len(existingLinkInvites) >= 1:
-                return self._mergeInvitation(invitationData)
-            Link.validate(invitationData)
-            link = self.loadInvitation(invitationData)
+                return self._merge_request(request_data)
+            Connection.validate(request_data)
+            link = self.load_request(request_data)
             return link
 
-    def _mergeInvitation(self, invitationData):
-        linkInvitation = invitationData.get('connection-request')
-        linkName = linkInvitation['name']
+    def _merge_request(self, request_data):
+        link_request = request_data.get('connection-request')
+        linkName = link_request['name']
         link = self.wallet.getConnection(linkName)
-        invitationProofRequests = invitationData.get('proof-requests',
-                                                          None)
-        if invitationProofRequests:
-            for icr in invitationProofRequests:
+        request_proof_requests = request_data.get('proof-requests',
+                                                  None)
+        nonce = link_request.get(NONCE)
+        if request_proof_requests:
+            for icr in request_proof_requests:
                 # match is found if name and version are same
                 matchedProofRequest = next(
                     (cr for cr in link.proofRequests
@@ -848,16 +850,15 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                         **matchedProofRequest.attributes,
                         **icr[ATTRIBUTES]
                     }
-                    matchedProofRequest.verifiableAttributes = list(
-                        set(matchedProofRequest.verifiableAttributes)
-                        .union(icr[VERIFIABLE_ATTRIBUTES])
-                    )
+                    matchedProofRequest.verifiableAttributes = dict(matchedProofRequest.verifiableAttributes,
+                                                                    **icr[VERIFIABLE_ATTRIBUTES])
+
                 else:
                     # otherwise append proof request to link
                     link.proofRequests.append(
                         ProofRequest(
-                            icr[NAME], icr[VERSION], icr[ATTRIBUTES],
-                            icr[VERIFIABLE_ATTRIBUTES]
+                            icr[NAME], icr[VERSION], getNonceForProof(nonce), attributes=icr[ATTRIBUTES],
+                            verifiableAttributes=icr[VERIFIABLE_ATTRIBUTES]
                         )
                     )
 
@@ -865,10 +866,10 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         else:
             raise ConnectionAlreadyExists
 
-    def accept_invitation(self, link: Union[str, Link]):
+    def accept_request(self, link: Union[str, Connection]):
         if isinstance(link, str):
             link = self.wallet.getConnection(link, required=True)
-        elif isinstance(link, Link):
+        elif isinstance(link, Connection):
             pass
         else:
             raise TypeError("Type of connection must be either string or Link but "
@@ -879,13 +880,13 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         msg = {
             TYPE: ACCEPT_INVITE,
             # TODO should not send this... because origin should be the sender
-            NONCE: link.invitationNonce,
+            NONCE: link.request_nonce,
             VERKEY: self.wallet.getVerkey(link.localIdentifier)
         }
-        logger.debug("{} accepting invitation from {} with id {}".
+        logger.debug("{} accepting request from {} with id {}".
                      format(self.name, link.name, link.remoteIdentifier))
-        self.logger.info('Accepting invitation with nonce {} from id {}'
-                         .format(link.invitationNonce, link.remoteIdentifier))
+        self.logger.info('Accepting request with nonce {} from id {}'
+                         .format(link.request_nonce, link.remoteIdentifier))
         self.signAndSendToLink(msg, link.name)
 
     # def _handleSyncNymResp(self, link, additionalCallback):
@@ -927,7 +928,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
 
         return _
 
-    def _updateLinkWithLatestInfo(self, link: Link, reply):
+    def _updateLinkWithLatestInfo(self, link: Connection, reply):
         if DATA in reply and reply[DATA]:
             data = json.loads(reply[DATA])
 
@@ -948,7 +949,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                     link.remotePubkey = friendlyVerkeyToPubkey(
                         link.full_remote_verkey) if link.full_remote_verkey else None
 
-            link.connectionLastSynced = datetime.now()
+            link.connection_last_synced = datetime.now()
             self.notifyMsgListener("    Connection {} synced".format(link.name))
 
     def _pingToEndpoint(self, name, endpoint):
@@ -965,7 +966,6 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         identity = Identity(identifier=identifier)
         req = self.wallet.requestIdentity(identity,
                                           sender=self.wallet.defaultId)
-
 
         self.client.submitReqs(req)
 
@@ -990,7 +990,6 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                              req.key,
                              self.client,
                              self._handleSyncResp(link, doneCallback))
-
 
     def executeWhenResponseRcvd(self, startTime, maxCheckForMillis,
                                 loop, reqId, respType,
@@ -1024,4 +1023,3 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                 loop.call_later(.2, self.executeWhenResponseRcvd,
                                 startTime, maxCheckForMillis, loop,
                                 reqId, respType, checkIfLinkExists, clbk, *args)
-

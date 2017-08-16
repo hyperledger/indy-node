@@ -54,6 +54,7 @@ RUN pip install jsonpickle \
 	raet \
 	ioflo==1.5.4 \
 	psutil \
-	intervaltree
+	intervaltree \
+	pytest-xdist
 ENV PYTHONPATH $PYTHONPATH:/home/sovrin/test/bin
 WORKDIR /home/sovrin

@@ -12,7 +12,7 @@ from anoncreds.protocol.types import SchemaKey, ID, Claims, ClaimAttributeValues
 from sovrin_client.agent.msg_constants import CLAIM_REQUEST, PROOF, CLAIM_FIELD, \
     CLAIM_REQ_FIELD, PROOF_FIELD, \
     REQ_AVAIL_CLAIMS, ISSUER_DID, SCHEMA_SEQ_NO, PROOF_REQUEST_FIELD
-from sovrin_client.client.wallet.link import Link
+from sovrin_client.client.wallet.connection import Connection
 from sovrin_common.exceptions import LinkNotReady
 
 
@@ -20,7 +20,7 @@ class AgentProver:
     def __init__(self, prover: Prover):
         self.prover = prover
 
-    def sendRequestForAvailClaims(self, link: Link):
+    def sendRequestForAvailClaims(self, link: Connection):
         if self.loop.is_running():
             self.loop.call_soon(asyncio.ensure_future,
                                 self.sendRequestForAvailClaimsAsync(link))
@@ -28,17 +28,17 @@ class AgentProver:
             self.loop.run_until_complete(
                 self.sendRequestForAvailClaimsAsync(link))
 
-    async def sendRequestForAvailClaimsAsync(self, link: Link):
+    async def sendRequestForAvailClaimsAsync(self, link: Connection):
         op = {
             TYPE: REQ_AVAIL_CLAIMS,
-            NONCE: link.invitationNonce
+            NONCE: link.request_nonce
         }
         try:
             self.signAndSendToLink(msg=op, linkName=link.name)
         except LinkNotReady as ex:
             self.notifyMsgListener(str(ex))
 
-    def sendReqClaim(self, link: Link, schemaKey):
+    def sendReqClaim(self, link: Connection, schemaKey):
         if self.loop.is_running():
             self.loop.call_soon(asyncio.ensure_future,
                                 self.send_claim(link, schemaKey))
@@ -49,13 +49,13 @@ class AgentProver:
     # async def send_claim(self, link, claim_to_request):
     #     return await self.sendReqClaimAsync(link, claim_to_request)
 
-    async def send_claim(self, link: Link, schema_key):
+    async def send_claim(self, link: Connection, schema_key):
         name, version, origin = schema_key
         schema_key = SchemaKey(name, version, origin)
 
         claimReq = await self.prover.createClaimRequest(
             schemaId=ID(schema_key),
-            proverId=link.invitationNonce,
+            proverId=link.request_nonce,
             reqNonRevoc=False)
 
         # It has served its purpose by this point. Claim Requests do not need a nonce.
@@ -69,7 +69,7 @@ class AgentProver:
 
         op = {
             TYPE: CLAIM_REQUEST,
-            NONCE: link.invitationNonce,
+            NONCE: link.request_nonce,
             DATA: claimRequestDetails
         }
 
@@ -117,14 +117,14 @@ class AgentProver:
         else:
             self.notifyMsgListener("No matching connection found")
 
-    def sendProof(self, link: Link, proofReq: ProofRequest):
+    def sendProof(self, link: Connection, proofReq: ProofRequest):
         if self.loop.is_running():
             self.loop.call_soon(asyncio.ensure_future,
                                 self.sendProofAsync(link, proofReq))
         else:
             self.loop.run_until_complete(self.sendProofAsync(link, proofReq))
 
-    async def sendProofAsync(self, link: Link, proofRequest: ProofRequest):
+    async def sendProofAsync(self, link: Connection, proofRequest: ProofRequest):
         # TODO _F_ this nonce should be from the Proof Request, not from an
         # invitation
         # TODO rename presentProof to buildProof or generateProof
@@ -134,7 +134,7 @@ class AgentProver:
 
         op = {
             TYPE: PROOF,
-            NONCE: link.invitationNonce,
+            NONCE: link.request_nonce,
             PROOF_FIELD: proof.to_str_dict(),
             PROOF_REQUEST_FIELD: proofRequest.to_str_dict()
         }

@@ -315,14 +315,14 @@ def makeGetNymRequest(client, wallet, nym):
     # TODO: This looks boilerplate
     wallet.pendRequest(req)
     reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)
+    return client.submitReqs(*reqs)[0]
 
 
 def makeAttribRequest(client, wallet, attrib):
     wallet.addAttribute(attrib)
     # TODO: This looks boilerplate
     reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)
+    return client.submitReqs(*reqs)[0]
 
 
 def _newWallet(name=None):

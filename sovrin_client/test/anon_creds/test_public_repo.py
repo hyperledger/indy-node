@@ -2,6 +2,8 @@ import random
 import sys
 
 import pytest
+
+from anoncreds.protocol.exceptions import SchemaNotFoundError
 from anoncreds.protocol.issuer import Issuer
 from anoncreds.protocol.repo.attributes_repo import AttributeRepoInMemory
 from anoncreds.protocol.types import Schema, ID
@@ -112,14 +114,16 @@ def testGetSchemaBySeqNo(submittedSchemaDefGvt, publicRepo, looper):
 
 
 def testGetSchemaByInvalidSeqNo(submittedSchemaDefGvt, publicRepo, looper):
-    assert not looper.run(publicRepo.getSchema(ID(schemaId=(submittedSchemaDefGvt.seqId + randint(100, 1000)))))
+    with pytest.raises(SchemaNotFoundError):
+        looper.run(publicRepo.getSchema(
+            ID(schemaId=(submittedSchemaDefGvt.seqId + randint(100, 1000)))))
 
 
 def testGetSchemaNonExistent(submittedSchemaDefGvt, publicRepo, looper):
     key = submittedSchemaDefGvt.getKey()
     key = key._replace(name=key.name+randomString(5))
-    non_existent_schema = looper.run(publicRepo.getSchema(ID(schemaKey=key)))
-    assert non_existent_schema is None
+    with pytest.raises(SchemaNotFoundError):
+        looper.run(publicRepo.getSchema(ID(schemaKey=key)))
 
 def testSubmitPublicKey(submittedPublicKeys):
     assert submittedPublicKeys
@@ -132,17 +136,16 @@ def testGetPrimaryPublicKey(submittedSchemaDefGvtID, submittedPublicKey,
     assert pk == submittedPublicKey
     submittedSchemaDefGvtID = submittedSchemaDefGvtID._replace(
         schemaId=random.randint(100, 300))
-    non_existent_cd = looper.run(publicRepo.getPublicKey(
-        id=submittedSchemaDefGvtID, signatureType='CL'))
-    assert non_existent_cd is None
+    with pytest.raises(ValueError):
+        looper.run(publicRepo.getPublicKey(
+            id=submittedSchemaDefGvtID, signatureType='CL'))
 
 
 def testGetPrimaryPublicKeyNonExistent(submittedSchemaDefGvtID,
                             publicRepo, looper):
     schemaId = submittedSchemaDefGvtID._replace(schemaId=random.randint(100, 300))
-    non_existent_cd = looper.run(publicRepo.getPublicKey(
-        id=schemaId, signatureType='CL'))
-    assert non_existent_cd is None
+    with pytest.raises(ValueError):
+        looper.run(publicRepo.getPublicKey(id=schemaId, signatureType='CL'))
 
 def testGetRevocationPublicKey(submittedSchemaDefGvtID,
                                submittedPublicRevocationKey,
@@ -163,15 +166,6 @@ def testGetRevocationPublicKey(submittedSchemaDefGvtID,
 def testGetRevocationPublicKeyNonExistent(submittedSchemaDefGvtID,
                                publicRepo, looper):
     schemaId = submittedSchemaDefGvtID._replace(schemaId=random.randint(100, 300))
-    pk = looper.run(
-        publicRepo.getPublicKeyRevocation(id=schemaId,
-                                          signatureType='CL'))
-
-    if sys.platform == 'win32':
-        assert pk
-        logger.warning("Gotten public revocation key is not verified "
-                       "on Windows for matching against submitted public "
-                       "revocation key since they are different on Windows "
-                       "due to an issue in charm-crypto package.")
-    else:
-        assert pk is None
+    with pytest.raises(ValueError):
+        looper.run(publicRepo.getPublicKeyRevocation(id=schemaId,
+                                                     signatureType='CL'))
