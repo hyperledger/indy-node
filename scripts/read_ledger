@@ -6,7 +6,6 @@ Convenience script for reading a ledger transaction data (stored in leveldb)
 import argparse
 import logging
 import os
-
 import shutil
 
 from common.serializers.json_serializer import JsonSerializer
@@ -31,6 +30,8 @@ def read_args():
                         help="read all transactions starting from (beginning by default)")
     parser.add_argument('--to', required=False, default=100, help="read all transactions till (100 by default)")
     parser.add_argument('--seq_no', required=False, help="read a particular transaction")
+    parser.add_argument('--count', required=False, action='store_true',
+                        help="returns the number of txns in the given ledger")
     parser.add_argument('--node_name', required=False, help="Node's name")
     parser.add_argument('--client_name', required=False, help="Client's name")
     parser.add_argument('--serializer', required=False, default='json',
@@ -111,15 +112,23 @@ def print_txns(ledger, args):
         print("Unknown serializer for output: {}".format(args.serializer))
         exit()
 
-    seq_no = args.seq_no
-    if seq_no:
-        print_by_seq_no(seq_no, serializer)
+    # --count
+    count = args.count
+    if count:
+        print_count(ledger)
         return
 
-    print_all(serializer)
+    # --seq_no
+    seq_no = args.seq_no
+    if seq_no:
+        print_by_seq_no(ledger, seq_no, serializer)
+        return
+
+    # print all (--from --to)
+    print_all(ledger, serializer)
 
 
-def print_by_seq_no(seq_no, serializer):
+def print_by_seq_no(ledger, seq_no, serializer):
     try:
         txn = ledger.getBySeqNo(seq_no)
     except KeyError:
@@ -130,7 +139,11 @@ def print_by_seq_no(seq_no, serializer):
     return
 
 
-def print_all(serializer):
+def print_count(ledger):
+    print(ledger.size)
+
+
+def print_all(ledger, serializer):
     frm = args.frm
     to = args.to
     for txn in ledger.getAllTxn(frm=frm, to=to):
@@ -151,10 +164,12 @@ if __name__ == '__main__':
 
     # TODO: works well only for small ledgers,
     ledger_data_dir = get_ledger_dir(args.node_name, args.client_name)
-    read_copy_ledger_data_dir = make_copy_of_ledger(ledger_data_dir)
-
-    ledger = get_ledger(args.type, read_copy_ledger_data_dir)
-    print_txns(ledger, args)
-
-    # TODO be careful about removing original the ledger data dir
-    shutil.rmtree(read_copy_ledger_data_dir)
+    read_copy_ledger_data_dir = None
+    try:
+        read_copy_ledger_data_dir = make_copy_of_ledger(ledger_data_dir)
+        ledger = get_ledger(args.type, read_copy_ledger_data_dir)
+        print_txns(ledger, args)
+    finally:
+        # TODO be careful about removing original the ledger data dir
+        if read_copy_ledger_data_dir:
+            shutil.rmtree(read_copy_ledger_data_dir)
