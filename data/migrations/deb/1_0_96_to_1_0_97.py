@@ -1,14 +1,15 @@
 #!/usr/bin/python3.5
 import os
 import shutil
-
 import subprocess
+
 from common.serializers.compact_serializer import CompactSerializer
 from common.serializers.json_serializer import JsonSerializer
 from common.serializers.mapping_serializer import MappingSerializer
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
+from storage import store_utils
 from storage.chunked_file_store import ChunkedFileStore
 from stp_core.common.log import getlogger
 
@@ -134,21 +135,30 @@ def migrate_all_states(node_data_directory):
 
 
 def migrate_genesis_txn(base_dir):
-    old_domain_genesis = os.path.join(base_dir, 'transactions_sandbox')
-    old_config_genesis = os.path.join(base_dir, 'pool_transactions_sandbox')
-    old_pool_genesis = os.path.join(base_dir, 'config_transactions_sandbox')
+    for suffix in ('sandbox', 'live', 'local'):
+        old_domain_genesis = os.path.join(base_dir, 'transactions_{}'.format(suffix))
+        old_pool_genesis = os.path.join(base_dir, 'pool_transactions_{}'.format(suffix))
 
-    new_domain_genesis = os.path.join(base_dir, 'domain_transactions_sandbox_genesis')
-    new_config_genesis = os.path.join(base_dir, 'config_transactions_sandbox_genesis')
-    new_pool_genesis = os.path.join(base_dir, 'pool_transactions_sandbox_genesis')
+        new_domain_genesis = os.path.join(base_dir, 'domain_transactions_{}_genesis'.format(suffix))
+        new_pool_genesis = os.path.join(base_dir, 'pool_transactions_{}_genesis'.format(suffix))
 
-    os.remove(new_domain_genesis)
-    os.remove(new_config_genesis)
-    os.remove(new_pool_genesis)
+        if os.path.exists(new_domain_genesis):
+            os.remove(new_domain_genesis)
+        if os.path.exists(new_pool_genesis):
+            os.remove(new_pool_genesis)
 
-    os.rename(old_domain_genesis, new_domain_genesis)
-    os.rename(old_config_genesis, new_config_genesis)
-    os.rename(old_pool_genesis, new_pool_genesis)
+        if os.path.exists(old_domain_genesis):
+            old_ser = CompactSerializer(getTxnOrderedFields())
+            new_ser = JsonSerializer()
+            with open(old_domain_genesis, 'r') as f1:
+                with open(new_domain_genesis, 'w') as f2:
+                    for line in store_utils.cleanLines(f1):
+                        txn = old_ser.deserialize(line)
+                        txn = new_ser.serialize(txn, toBytes=False)
+                        f2.write(txn)
+                        f2.write('\n')
+        if os.path.exists(old_pool_genesis):
+            os.rename(old_pool_genesis, new_pool_genesis)
 
 
 def migrate_all():
@@ -171,6 +181,7 @@ def migrate_all():
 
     migrate_genesis_txn(base_dir)
     subprocess.run(['chown', '-R', 'sovrin:sovrin', '/home/sovrin/.sovrin'])
+
 
 if __name__ == "__main__":
     migrate_all()

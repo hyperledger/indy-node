@@ -9,6 +9,7 @@ from common.serializers.mapping_serializer import MappingSerializer
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
+from storage import store_utils
 from storage.chunked_file_store import ChunkedFileStore
 
 from sovrin_common.config_util import getConfig
@@ -143,12 +144,39 @@ def migrate_all_states(node_data_directory):
         os.path.join(node_data_directory, 'config_state'))
 
 
+def migrate_genesis_txn(base_dir):
+    for suffix in ('sandbox', 'live', 'local'):
+        old_domain_genesis = os.path.join(base_dir, 'transactions_{}'.format(suffix))
+        old_pool_genesis = os.path.join(base_dir, 'pool_transactions_{}'.format(suffix))
+
+        new_domain_genesis = os.path.join(base_dir, 'domain_transactions_{}_genesis'.format(suffix))
+        new_pool_genesis = os.path.join(base_dir, 'pool_transactions_{}_genesis'.format(suffix))
+
+        if os.path.exists(old_domain_genesis):
+            os.remove(old_domain_genesis)
+        if os.path.exists(old_pool_genesis):
+            os.remove(old_pool_genesis)
+
+        if os.path.exists(new_domain_genesis):
+            old_ser = CompactSerializer(getTxnOrderedFields())
+            new_ser = JsonSerializer()
+            with open(new_domain_genesis, 'r') as f1:
+                with open(old_domain_genesis, 'w') as f2:
+                    for line in store_utils.cleanLines(f1):
+                        txn = new_ser.deserialize(line)
+                        txn = old_ser.serialize(txn)
+                        f2.write(txn)
+        if os.path.exists(new_pool_genesis):
+            os.rename(new_pool_genesis, old_domain_genesis)
+
+
 def migrate_all():
     base_dir = config.baseDir
     nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     if not os.path.exists(nodes_data_dir):
         # TODO: find a better way
-        nodes_data_dir = os.path.join('/home/sovrin/.sovrin', config.nodeDataDir)
+        base_dir = '/home/sovrin/.sovrin'
+        nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     if not os.path.exists(nodes_data_dir):
         msg = 'Can not find the directory with the ledger: {}'.format(nodes_data_dir)
         logger.error(msg)
@@ -160,6 +188,7 @@ def migrate_all():
         migrate_all_hash_stores(node_data_dir)
         migrate_all_states(node_data_dir)
 
+    migrate_genesis_txn(base_dir)
     subprocess.run(['chown', '-R', 'sovrin:sovrin', '/home/sovrin/.sovrin'])
 
 
