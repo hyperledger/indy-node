@@ -3,6 +3,8 @@ import os
 import shutil
 from shutil import copyfile
 
+from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file
+
 from sovrin_common.constants import Environment
 
 
@@ -34,11 +36,11 @@ class Setup:
         # but that gives error due to some dependency issue
         allEnvs = {
             "local": Environment("pool_transactions_local",
-                                 "transactions_local"),
+                                 "domain_transactions_local"),
             "test": Environment("pool_transactions_sandbox",
-                                "transactions_sandbox"),
+                                "domain_transactions_sandbox"),
             "live": Environment("pool_transactions_live",
-                                "transactions_live")
+                                "domain_transactions_live")
         }
         for env in allEnvs.values():
             fileName = getattr(env, key, None)
@@ -47,7 +49,7 @@ class Setup:
             sourceFilePath = os.path.join(dataDir, fileName)
             if not os.path.exists(sourceFilePath):
                 continue
-            destFilePath = os.path.join(self.base_dir, fileName)
+            destFilePath = os.path.join(self.base_dir, genesis_txn_file(fileName))
             if os.path.exists(destFilePath) and not force:
                 continue
             copyfile(sourceFilePath, destFilePath)

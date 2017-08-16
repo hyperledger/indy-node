@@ -56,7 +56,7 @@ def create_acme(name=None, wallet=None, base_dir_path=None, port=6666, client=No
                       port=port,
                       endpointArgs=endpoint_args)
 
-    # maps invitation nonces to internal ids
+    # maps request nonces to internal ids
     agent._invites = {
         "57fbf9dc8c8e6acde33de98c6d747b28c": (1, "Alice"),
         "3a2eb72eca8b404e8d412c5bf79f2640": (2, "Carol"),

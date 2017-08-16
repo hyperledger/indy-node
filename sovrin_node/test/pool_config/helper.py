@@ -19,7 +19,7 @@ def sendPoolConfig(client, wallet, poolConfigData):
     poolCfg = WPoolConfig(trustee=wallet.defaultId, **poolConfigData)
     wallet.doPoolConfig(poolCfg)
     reqs = wallet.preparePending()
-    req, = client.submitReqs(*reqs)
+    req = client.submitReqs(*reqs)[0][0]
     return poolCfg, req
 
 

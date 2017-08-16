@@ -20,10 +20,6 @@ class VerkeyNotFound(NotFound):
     pass
 
 
-class SchemaNotFound(NotFound):
-    pass
-
-
 class RemoteEndpointNotFound(NotFound):
     pass
 

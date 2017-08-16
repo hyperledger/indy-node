@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from sovrin_client.test.agent.conftest import checkAcceptInvitation
+from sovrin_client.test.agent.conftest import check_accept_request
 
 concerningLogLevels = [logging.WARNING,
                        logging.ERROR,
@@ -14,11 +14,11 @@ def testFaberCreateLink(faberLinkAdded):
     pass
 
 
-def testAliceLoadsFaberInvitation(aliceFaberInvitationLoaded):
+def test_alice_loads_faber_request(alice_faber_request_loaded):
     pass
 
 
-def testAliceSyncsFaberInvitationLink(aliceFaberInvitationLinkSynced):
+def test_alice_syncs_faber_request_link(alice_faber_request_link_synced):
     pass
 
 
@@ -31,12 +31,12 @@ def testAliceAgentConnected(faberAdded, aliceAgentConnected):
 
 
 @pytest.mark.skipif('sys.platform == "win32"', reason='SOV-332')
-def testAliceAcceptFaberInvitation(aliceAcceptedFaber):
+def test_alice_accept_faber_request(aliceAcceptedFaber):
     pass
 
 
 @pytest.mark.skipif('sys.platform == "win32"', reason='SOV-332')
-def testAliceAcceptAcmeInvitation(aliceAcceptedAcme):
+def test_alice_accept_acme_request(aliceAcceptedAcme):
     pass
 
 
@@ -69,10 +69,10 @@ def testMultipleAcceptance(aliceAcceptedFaber,
     otherAgent = agentBuilder(wallet)
     emptyLooper.add(otherAgent)
 
-    checkAcceptInvitation(emptyLooper,
-                          nonce=faberNonceForAlice,
-                          inviteeAgent=otherAgent,
-                          inviterAgentAndWallet=faberIsRunning,
-                          linkName=link.name)
+    check_accept_request(emptyLooper,
+                         nonce=faberNonceForAlice,
+                         inviteeAgent=otherAgent,
+                         inviterAgentAndWallet=faberIsRunning,
+                         linkName=link.name)
 
     assert len(faberAgent.wallet._connections) == 2

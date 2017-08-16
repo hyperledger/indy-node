@@ -13,6 +13,7 @@ poolUpgradeName = SovrinTransactions.POOL_UPGRADE.name
 claimDefName = SovrinTransactions.CLAIM_DEF.name
 getClaimDefName = SovrinTransactions.GET_CLAIM_DEF.name
 poolConfigName = SovrinTransactions.POOL_CONFIG.name
+changeKeyName = SovrinTransactions.CHANGE_KEY.name
 
 sendNymCmd = Command(
     id="send {nym}".format(nym=nymName),
@@ -39,7 +40,7 @@ sendAttribCmd = Command(
 sendGetAttrCmd = Command(
     id="send {getAttr}".format(getAttr=getAttrName),
     title="Get ATTR from sovrin",
-    usage="send {getAttr} dest=<target identifier> raw=<name>".format(getAttr=getAttrName),
+    usage="send {getAttr} dest=<target DID> raw=<name>".format(getAttr=getAttrName),
     examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT raw=endpoint".format(getAttr=getAttrName))
 
 
@@ -54,9 +55,9 @@ sendNodeCmd = Command(
 sendPoolUpgCmd = Command(
     id="send {poolUpgrade}".format(poolUpgrade=poolUpgradeName),
     title="Sends instructions to nodes to update themselves",
-    usage="send {poolUpgrade} name=<name> version=<version> sha256=<sha256> action=<action> schedule=<schedule> timeout=<timeout> force=<force>".format(poolUpgrade=poolUpgradeName),
+    usage="send {poolUpgrade} name=<name> version=<version> sha256=<sha256> action=<action> schedule=<schedule> timeout=<timeout> force=<force> reinstall=<reinstall>".format(poolUpgrade=poolUpgradeName),
     examples="send {poolUpgrade} name=upgrade-01 "
-             "version=0.0.1 sha256=aad1242 action=start "
+             "version=0.0.1 sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 action=start "
              "schedule={{'AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3': "
              "'2017-01-25T12:49:05.258870+00:00', "
              "'4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2': "
@@ -66,7 +67,8 @@ sendPoolUpgCmd = Command(
              "'DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2': "
              "'2017-01-25T12:38:57.258870+00:00'}} "
              "timeout=10 "
-             "force=False".format(poolUpgrade=poolUpgradeName))
+             "force=False"
+             "reinstall=False".format(poolUpgrade=poolUpgradeName))
 
 sendSchemaCmd = Command(
     id="send {schema}".format(schema=schemaName),
@@ -103,13 +105,13 @@ showFileCmd = Command(
     id="show",
     title="Shows content of given file",
     usage="show <file-path>",
-    examples="show sample/faber-invitation.sovrin")
+    examples="show sample/faber-request.sovrin")
 
 loadFileCmd = Command(
     id="load",
     title="Creates the connection",
     usage="load <file-path>",
-    examples="load sample/faber-invitation.sovrin")
+    examples="load sample/faber-request.sovrin")
 
 showConnectionCmd = Command(
     id="show connection",
@@ -200,7 +202,7 @@ addGenesisTxnCmd = Command(
         'add genesis transaction {node} for 2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML by FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW with data '
         '{{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}}'.format(node=nodeName)])
 
-newIdentifierCmd = Command(
+newDIDCmd = Command(
     id="new DID",
     title="Creates new DID",
     usage="new DID [<DID>|abbr|crypto] [with seed <seed>] [as <alias>]",
@@ -225,4 +227,13 @@ sendPoolConfigCmd = Command(
     title="Sends write configuration to pool",
     usage="send {poolConfig} writes=<writes> force=<force>".format(poolConfig=poolConfigName),
     examples="send {poolConfig} writes=True force=False".format(poolConfig=poolConfigName)
+)
+
+changeKeyCmd = Command(
+    id="change current key",
+    title="Changes key for the current identifier",
+    usage="change current key [with seed <seed>]",
+    examples=[
+        "change current key",
+        "change current key with seed aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]
 )

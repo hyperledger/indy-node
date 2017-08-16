@@ -48,7 +48,7 @@ def get_proof_libsovrin_msg(link, proof_req, proof, uuid, schema_seq_no):
     eqProof = proof.proofs[str(uuid)].proof.primaryProof.eqProof
 
     return ({'type': 'PROOF',
-             'nonce': '{}'.format(link.invitationNonce),
+             'nonce': '{}'.format(link.request_nonce),
              'proof_request': proof_req.to_str_dict(),
              'proof': {
                  'proofs': {

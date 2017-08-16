@@ -2,12 +2,17 @@ import pytest
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
 from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_client.test.cli.helper import prompt_is, addNym, ensureConnectedToTestEnv
+from sovrin_client.test.cli.helper import prompt_is, addNym, ensureConnectedToTestEnv, createUuidIdentifier, \
+    createHalfKeyIdentifierAndAbbrevVerkey
 from sovrin_common.roles import Roles
+from plenum.common.constants import TARGET_NYM
 from sovrin_node.test.did.conftest import wallet, abbrevVerkey
 
 TRUST_ANCHOR_SEED = b'TRUST0NO0ONE00000000000000000000'
 
+NYM_ADDED = 'Nym {dest} added'
+CURRENT_VERKEY_FOR_NYM = 'Current verkey for NYM {dest} is {verkey}'
+NOT_OWNER = 'is neither Trustee nor owner of'
 
 @pytest.fixture("module")
 def trust_anchor_did_signer():
@@ -250,5 +255,78 @@ def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted, poolTxnData,
        expect=["Nym {} added".format(idr)])
 
 
+def test_send_same_nyms_only_first_gets_written(
+        be, do, poolNodesStarted, newStewardCli):
 
+    be(newStewardCli)
+
+    halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
+    _, anotherAbbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
+
+    # request 1
+    newStewardCli.enterCmd("send NYM {dest}={nym} verkey={verkey}".
+            format(dest=TARGET_NYM, nym=halfKeyIdentifier, verkey=abbrevVerkey))
+
+    parameters = {
+        'dest': halfKeyIdentifier,
+        'verkey': anotherAbbrevVerkey
+    }
+
+    # "enterCmd" does not immediately send to server, second request with same NYM
+    # and different verkey should not get written to ledger.
+
+    # request 2
+    do('send NYM dest={dest} verkey={verkey}',
+       mapper=parameters, expect=NYM_ADDED, within=10)
+
+    parameters = {
+        'dest': halfKeyIdentifier,
+        'verkey': abbrevVerkey
+    }
+
+    # check that second request didn't write to ledger and first verkey is written
+    do('send GET_NYM dest={dest}',
+        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
+
+def test_send_different_nyms_succeeds_when_batched(
+        be, do, poolNodesStarted, newStewardCli):
+
+    be(newStewardCli)
+
+    idr_1, verkey_1 = createHalfKeyIdentifierAndAbbrevVerkey()
+    idr_2, verkey_2 = createHalfKeyIdentifierAndAbbrevVerkey()
+
+    parameters = {
+        'dest': idr_1,
+        'verkey': verkey_1
+    }
+
+    # request 1
+    newStewardCli.enterCmd("send NYM dest={dest} verkey={verkey}".format(dest=idr_1, verkey=verkey_1))
+
+    parameters = {
+        'dest': idr_2,
+        'verkey': verkey_2
+    }
+
+    # two different nyms, batched, both should be written
+    # request 2
+    do('send NYM dest={dest} verkey={verkey}',
+       mapper=parameters, expect=NYM_ADDED, within=10)
+
+    parameters = {
+        'dest': idr_1,
+        'verkey': verkey_1
+    }
+
+    do('send GET_NYM dest={dest}',
+        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
+
+    parameters = {
+        'dest': idr_2,
+        'verkey': verkey_2
+    }
+
+    do('send GET_NYM dest={dest}',
+        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
 

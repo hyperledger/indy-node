@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
+from plenum.common.messages.fields import AnyField, IterableField, AnyMapField
 from plenum.common.messages.node_message_factory import node_message_factory
 
 from plenum.common.messages.message_base import MessageValidator, MessageBase
@@ -52,15 +53,7 @@ class ClientDiscloOperation(MessageValidator):
     )
 
 
-class ClientSchemaOperation(MessageValidator):
-    schema = (
-        (TXN_TYPE, ConstantField(SCHEMA)),
-        (DATA, NonEmptyStringField()),
-    )
-
-
-class SchemaField(MessageValidator):
-
+class GetSchemaField(MessageValidator):
     schema = (
         (NAME, NonEmptyStringField()),
         (VERSION, VersionField(components_number=(2, 3,))),
@@ -68,11 +61,33 @@ class SchemaField(MessageValidator):
     )
 
 
+class SchemaField(MessageValidator):
+    schema = (
+        (NAME, NonEmptyStringField()),
+        (VERSION, VersionField(components_number=(2, 3,))),
+        (ATTR_NAMES, IterableField(NonEmptyStringField())),
+    )
+
+
+class ClaimDefField(MessageValidator):
+    schema = (
+        (PRIMARY, AnyMapField()),
+        (REVOCATION, AnyMapField()),
+    )
+
+
+class ClientSchemaOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(SCHEMA)),
+        (DATA, SchemaField()),
+    )
+
+
 class ClientGetSchemaOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_SCHEMA)),
         (TARGET_NYM, IdentifierField()),
-        (DATA, SchemaField()),
+        (DATA, GetSchemaField()),
     )
 
 
@@ -145,7 +160,7 @@ class ClientClaimDefSubmitOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(CLAIM_DEF)),
         (REF, TxnSeqNoField()),
-        (DATA, NonEmptyStringField()),
+        (DATA, ClaimDefField()),
         (SIGNATURE_TYPE, NonEmptyStringField()),
     )
 
@@ -172,6 +187,7 @@ class ClientPoolUpgradeOperation(MessageValidator):
         (JUSTIFICATION, LimitedLengthStringField(max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
         (NAME, NonEmptyStringField(optional=True)),
         (FORCE, BooleanField(optional=True)),
+        (REINSTALL, BooleanField(optional=True)),
     )
 
 

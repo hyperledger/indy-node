@@ -13,7 +13,7 @@ from time import *
 numReqs = 100
 splits = 1
 
-Logger.setLogLevel(logging.INFO)
+Logger.setLogLevel(logging.WARNING)
 logger = getlogger()
 
 
@@ -25,7 +25,7 @@ def sendRandomRequests(wallet: Wallet, client: Client, count: int):
                        verkey=signer.verkey)
         wallet.addTrustAnchoredIdentity(idy)
     reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)
+    return client.submitReqs(*reqs)[0]
 
 
 def put_load():
