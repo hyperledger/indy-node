@@ -38,6 +38,7 @@ function build_from_pypi {
     rm ${PREREM_TMP}
 }
 
+# build 3rd parties:
+#   build_from_pypi <pypi-name> <version>
+
 build_from_pypi timeout-decorator
-
-

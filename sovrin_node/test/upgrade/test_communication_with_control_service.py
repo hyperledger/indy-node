@@ -72,7 +72,7 @@ def testScheduleNodeUpgrade(nodeSet):
                         dataDir=node.dataLocation,
                         config=config,
                         ledger=None)
-    upgrader._callUpgradeAgent(time.time(), "1.2", failTimeout=1000)
+    upgrader._callUpgradeAgent(time.time(), "1.2", failTimeout=1000, upgrade_id=None)
 
     result = loop.run_until_complete(eventuallySoon(_checkFuture(indicator)))
     expectedResult = UpgradeMessage(version)

@@ -3,7 +3,7 @@ from plenum.cli.constants import CLIENT_GRAMS_CLIENT_COMMAND_REG_EX, relist, \
 from sovrin_common.roles import Roles
 from sovrin_common.transactions import SovrinTransactions
 
-CLIENT_GRAMS_CLIENT_WITH_IDENTIFIER_FORMATTED_REG_EX = getPipedRegEx(
+CLIENT_GRAMS_CLIENT_WITH_DID_FORMATTED_REG_EX = getPipedRegEx(
     CLIENT_GRAMS_CLIENT_COMMAND_REG_EX +
     "\s+ (?P<with_DID>with\s+DID) "
     "\s+ (?P<nym>[a-zA-Z0-9=]+) \s*") \
@@ -155,7 +155,8 @@ SEND_POOL_UPG_REG_EX = "(\s*(?P<send_pool_upg>send\s+{poolUpgrade})" \
                        '(\s+ (?P<justification_key>justification=)\s*(?P<justification>\"[a-zA-z0-9-_\s]+\") \s*)? ' \
                        "(\s+ (?P<schedule_key>schedule=)\s*(?P<schedule>\{{\s*.*\}}) \s*)? " \
                        "(\s+ (?P<timeout_key>timeout=)\s*(?P<timeout>[0-9+]+))?)" \
-                       "(\s+ (?P<force_key>force=)\s*(?P<force>True|False))?".format(poolUpgrade=SovrinTransactions.POOL_UPGRADE.name)
+                       "(\s+ (?P<force_key>force=)\s*(?P<force>True|False))?" \
+                       "(\s+ (?P<reinstall_key>reinstall=)\s*(?P<reinstall>True|False))?".format(poolUpgrade=SovrinTransactions.POOL_UPGRADE.name)
 
 
 REQ_AVAIL_CLAIMS_REG_EX = '(\s*(?P<request_avail_claims>request \s+ available \s+ claims \s+ from) ' \
@@ -165,6 +166,9 @@ REQ_AVAIL_CLAIMS_REG_EX = '(\s*(?P<request_avail_claims>request \s+ available \s
 SEND_POOL_CONFIG_REG_EX = "(\s*(?P<send_pool_config>send\s+{poolConfig})" \
                           "\s+(?P<writes_key>writes=)\s*(?P<writes>True|False))" \
                           "(\s+(?P<force_key>force=)\s*(?P<force>True|False))?".format(poolConfig=SovrinTransactions.POOL_CONFIG.name)
+
+CHANGE_CURENT_KEY_REG_EX = "(\s*(?P<change_ckey>change\s+current\s+key))" \
+                           "(\s? with\s+seed\s+(?P<seed>[a-zA-Z0-9]+))?"
 
 
 SEND_NYM_FORMATTED_REG_EX = getPipedRegEx(SEND_NYM_REG_EX)
@@ -201,3 +205,4 @@ SEND_POOL_UPG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_UPG_REG_EX)
 SEND_POOL_CONFIG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_CONFIG_REG_EX)
 REQ_AVAIL_CLAIMS_FORMATTED_REG_EX = getPipedRegEx(REQ_AVAIL_CLAIMS_REG_EX)
 NEW_ID_FORMATTED_REG_EX = getPipedRegEx(NEW_ID_REG_EX)
+CHANGE_CURENT_KEY_FORMATTED_REG_EX = getPipedRegEx(CHANGE_CURENT_KEY_REG_EX)

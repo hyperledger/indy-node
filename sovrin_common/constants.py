@@ -21,8 +21,10 @@ SHA256 = 'sha256'
 START = 'start'
 CANCEL = 'cancel'
 COMPLETE = 'complete'
+IN_PROGRESS = 'in_progress'
 FAIL = 'fail'
 JUSTIFICATION = 'justification'
+REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 
 NULL = 'null'
@@ -41,7 +43,7 @@ WRITES = "writes"
 
 allOpKeys = (TXN_TYPE, TARGET_NYM, VERKEY, ORIGIN, ROLE, DATA, NONCE, REF, RAW,
              ENC, HASH, ALIAS, ACTION, SCHEDULE, TIMEOUT, SHA256, START, CANCEL,
-             NAME, VERSION, JUSTIFICATION, SIGNATURE_TYPE, FORCE, WRITES)
+             NAME, VERSION, JUSTIFICATION, SIGNATURE_TYPE, FORCE, WRITES, REINSTALL)
 
 reqOpKeys = (TXN_TYPE,)
 

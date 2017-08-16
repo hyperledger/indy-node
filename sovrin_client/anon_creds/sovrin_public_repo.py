@@ -1,7 +1,8 @@
 import json
 from typing import Optional
 
-from ledger.serializers.json_serializer import JsonSerializer
+from anoncreds.protocol.exceptions import SchemaNotFoundError
+from common.serializers.json_serializer import JsonSerializer
 from ledger.util import F
 from stp_core.loop.eventually import eventually
 from plenum.common.exceptions import NoConsensusYet, OperationError
@@ -33,13 +34,17 @@ def _ensureReqCompleted(reqKey, client, clbk):
 
 
 def _getData(result, error):
-    data = json.loads(result.get(DATA).replace("\'", '"')) if result.get(DATA) else {}
+    data = result.get(DATA) if result.get(DATA) else {}
+    # TODO: we have an old txn in the live pool where DATA is stored a json string.
+    # We can get rid of the code above once we create a versioning support in txns
+    if isinstance(data, str):
+        data = json.loads(data)
     seqNo = result.get(F.seqNo.name)
     return data, seqNo
 
 
 def _submitData(result, error):
-    data = json.loads(result.get(DATA).replace("\'", '"'))
+    data = result.get(DATA)
     seqNo = result.get(F.seqNo.name)
     return data, seqNo
 
@@ -72,15 +77,21 @@ class SovrinPublicRepo(PublicRepo):
                 DATA: id.schemaId
             }
             res, seqNo = await self._sendGetReq(op)
-            if res:
-                data = json.loads(res[DATA]) if res else {}
+            if res and res[TXN_TYPE] == SCHEMA:
+                data = res[DATA]
                 data[ORIGIN] = res[IDENTIFIER]
+
+        if not data:
+            raise SchemaNotFoundError(
+                'No schema with ID={} and key={}'.format(
+                    id.schemaId,
+                    id.schemaKey))
 
         return Schema(name=data[NAME],
                       version=data[VERSION],
                       attrNames=data[ATTR_NAMES],
                       issuerId=data[ORIGIN],
-                      seqId=seqNo) if data else None
+                      seqId=seqNo)
 
     async def getPublicKey(self, id: ID = None, signatureType='CL') -> Optional[PublicKey]:
         op = {
@@ -92,7 +103,9 @@ class SovrinPublicRepo(PublicRepo):
 
         data, seqNo = await self._sendGetReq(op)
         if not data:
-            return None
+            raise ValueError(
+                'No value for schema with ID={} and key={}'.format(
+                    id.schemaId, id.schemaKey))
         data = data[PRIMARY]
         pk = PublicKey.from_str_dict(data)._replace(seqId=seqNo)
         return pk
@@ -107,7 +120,9 @@ class SovrinPublicRepo(PublicRepo):
         }
         data, seqNo = await self._sendGetReq(op)
         if not data:
-            return None
+            raise ValueError(
+                'No value for schema with ID={} and key={}'.format(
+                    id.schemaId, id.schemaKey))
         data = data[REVOCATION]
         pkR = RevocationPublicKey.fromStrDict(data)._replace(seqId=seqNo)
         return pkR
@@ -132,7 +147,7 @@ class SovrinPublicRepo(PublicRepo):
         }
         op = {
             TXN_TYPE: SCHEMA,
-            DATA: JsonSerializer.dumps(data, toBytes=False)
+            DATA: data
         }
         _, seqNo = await self._sendSubmitReq(op)
         if seqNo:
@@ -156,7 +171,7 @@ class SovrinPublicRepo(PublicRepo):
         op = {
             TXN_TYPE: CLAIM_DEF,
             REF: id.schemaId,
-            DATA: JsonSerializer.dumps(data, toBytes=False),
+            DATA: data,
             SIGNATURE_TYPE: signatureType
         }
 

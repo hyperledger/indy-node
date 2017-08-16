@@ -4,11 +4,13 @@ import re
 from _sha256 import sha256
 from typing import Dict
 
+from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from libnacl import randombytes
 
 from plenum.common import util
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import rawToFriendly
+from plenum.config import pool_transactions_file_base, domain_transactions_file_base
 
 from plenum.test import waits
 from stp_core.loop.eventually import eventually
@@ -26,7 +28,7 @@ from plenum.test.cli.helper import TestCliCore, assertAllNodesCreated, \
 from plenum.test.helper import initDirWithGenesisTxns
 from plenum.test.testable import spyable
 from sovrin_client.cli.cli import SovrinCli
-from sovrin_client.client.wallet.link import Link
+from sovrin_client.client.wallet.connection import Connection
 from sovrin_common.constants import Environment
 from stp_core.network.port_dispenser import genHa
 from sovrin_common.constants import NYM
@@ -34,7 +36,6 @@ from sovrin_client.test.client.TestClient import TestClient
 from sovrin_common.txn_util import getTxnOrderedFields
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
-from ledger.serializers.compact_serializer import CompactSerializer
 from sovrin_common.roles import Roles
 
 logger = getlogger()
@@ -134,7 +135,7 @@ def doubleBraces(lines):
     return alteredLines
 
 
-def getConnectionInvitation(name, wallet) -> Link:
+def get_connection_request(name, wallet) -> Connection:
     existingLinkInvites = wallet.getMatchingConnections(name)
     li = existingLinkInvites[0]
     return li
@@ -185,11 +186,8 @@ def prompt_is(prompt):
     return x
 
 
-def addTxnToFile(dir, file, txns, fields=getTxnOrderedFields()):
-    ledger = Ledger(CompactMerkleTree(),
-                    dataDir=dir,
-                    serializer=CompactSerializer(fields=fields),
-                    fileName=file)
+def addTxnToGenesisFile(dir, file, txns, fields=getTxnOrderedFields()):
+    ledger = create_genesis_txn_init_ledger(dir, file)
     for txn in txns:
         ledger.add(txn)
     ledger.stop()
@@ -206,7 +204,7 @@ def addTrusteeTxnsToGenesis(trusteeList, trusteeData, txnDir, txnFileName):
                 txns.append(txn)
             except StopIteration as e:
                 logger.debug('{} not found in trusteeData'.format(trusteeToAdd))
-        addTxnToFile(txnDir, txnFileName, txns)
+        addTxnToGenesisFile(txnDir, txnFileName, txns)
     return added
 
 
@@ -220,14 +218,19 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
     if multiPoolNodes:
         conf.ENVS = {}
         for pool in multiPoolNodes:
-            conf.poolTransactionsFile = "pool_transactions_{}".format(pool.name)
-            conf.domainTransactionsFile = "transactions_{}".format(pool.name)
             conf.ENVS[pool.name] = \
-                Environment("pool_transactions_{}".format(pool.name),
-                                "transactions_{}".format(pool.name))
+                Environment("{}_{}".format(pool_transactions_file_base, pool.name),
+                            "{}_{}".format(domain_transactions_file_base, pool.name))
+            # conf.poolTransactionsFile = conf.ENVS[pool.name].poolLedger
+            # conf.domainTransactionsFile = conf.ENVS[pool.name].domainLedger
             initDirWithGenesisTxns(
-                tempDir, conf, os.path.join(pool.tdirWithPoolTxns, pool.name),
-                os.path.join(pool.tdirWithDomainTxns, pool.name))
+                tempDir,
+                conf,
+                os.path.join(pool.tdirWithPoolTxns, pool.name),
+                os.path.join(pool.tdirWithDomainTxns, pool.name),
+                conf.ENVS[pool.name].poolLedger,
+                conf.ENVS[pool.name].domainLedger
+            )
     from sovrin_node.test.helper import TestNode
     new_cli = newPlenumCLI(looper, tempDir, cliClass=cliClass,
                            nodeClass=TestNode, clientClass=TestClient, config=conf,
@@ -468,3 +471,11 @@ def compareAgentIssuerWallet(unpersistedWallet, restoredWallet):
     assert restoredWallet._repo.client is not None
     for oldDict, newDict in compareList:
         compare(oldDict, newDict)
+
+
+def getSeqNoFromCliOutput(cli):
+    seqPat = re.compile("Sequence number is ([0-9]+)")
+    m = seqPat.search(cli.lastCmdOutput)
+    assert m
+    seqNo, = m.groups()
+    return int(seqNo)

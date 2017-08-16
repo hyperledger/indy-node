@@ -1,14 +1,14 @@
 ### Build indy-node using docker
 
 ```
-./build-indy-node-docker.sh <path-to-sources> 
+./build-indy-node-docker.sh <path-to-sources> <version>
 ```
 Built package is placed in a docker volume `indy-node-deb-u1604`. 
 
 ### Build indy-node
 
 ```
-./build-indy-node.sh <path to sources> <output-path: default='.'>
+./build-indy-node.sh <path to sources> <version> <output-path: default='.'>
 ```
 
 Built package is placed in the `output-path` folder.
