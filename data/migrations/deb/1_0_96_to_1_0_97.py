@@ -2,6 +2,7 @@
 import os
 import shutil
 
+import subprocess
 from common.serializers.compact_serializer import CompactSerializer
 from common.serializers.json_serializer import JsonSerializer
 from common.serializers.mapping_serializer import MappingSerializer
@@ -9,17 +10,18 @@ from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from storage.chunked_file_store import ChunkedFileStore
+from stp_core.common.log import getlogger
 
 from sovrin_common.config_util import getConfig
 from sovrin_common.txn_util import getTxnOrderedFields
-from stp_core.common.log import getlogger
 
 config = getConfig()
 logger = getlogger()
 
+
 def __migrate_ledger(data_directory,
-                   old_ledger_file, new_ledger_file,
-                   serializer: MappingSerializer = None):
+                     old_ledger_file, new_ledger_file,
+                     serializer: MappingSerializer = None):
     """
     Test for the directory, open old and new ledger, migrate data, rename directories
     """
@@ -107,17 +109,17 @@ def migrate_all_hash_stores(node_data_directory):
 def migrate_all_ledgers_for_node(node_data_directory):
     # using default ledger names
     __migrate_ledger(node_data_directory,
-                   config.poolTransactionsFile, config.poolTransactionsFile,
-                   serializer=JsonSerializer())
+                     config.poolTransactionsFile, config.poolTransactionsFile,
+                     serializer=JsonSerializer())
     __migrate_ledger(node_data_directory,
-                   config.configTransactionsFile, config.configTransactionsFile,
-                   serializer=JsonSerializer())
+                     config.configTransactionsFile, config.configTransactionsFile,
+                     serializer=JsonSerializer())
 
     # domain ledger uses custom CompactSerializer and old file name
     fields = getTxnOrderedFields()
     __migrate_ledger(node_data_directory,
-                   config.domainTransactionsFile.replace('domain_', ''), config.domainTransactionsFile,
-                   serializer=CompactSerializer(fields=fields))
+                     config.domainTransactionsFile.replace('domain_', ''), config.domainTransactionsFile,
+                     serializer=CompactSerializer(fields=fields))
 
 
 def migrate_all_states(node_data_directory):
@@ -131,12 +133,31 @@ def migrate_all_states(node_data_directory):
         os.path.join(node_data_directory, 'config_state'))
 
 
+def migrate_genesis_txn(base_dir):
+    old_domain_genesis = os.path.join(base_dir, 'transactions_sandbox')
+    old_config_genesis = os.path.join(base_dir, 'pool_transactions_sandbox')
+    old_pool_genesis = os.path.join(base_dir, 'config_transactions_sandbox')
+
+    new_domain_genesis = os.path.join(base_dir, 'domain_transactions_sandbox_genesis')
+    new_config_genesis = os.path.join(base_dir, 'config_transactions_sandbox_genesis')
+    new_pool_genesis = os.path.join(base_dir, 'pool_transactions_sandbox_genesis')
+
+    os.remove(new_domain_genesis)
+    os.remove(new_config_genesis)
+    os.remove(new_pool_genesis)
+
+    os.rename(old_domain_genesis, new_domain_genesis)
+    os.rename(old_config_genesis, new_config_genesis)
+    os.rename(old_pool_genesis, new_pool_genesis)
+
+
 def migrate_all():
     base_dir = config.baseDir
     nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     if not os.path.exists(nodes_data_dir):
         # TODO: find a better way
-        nodes_data_dir = os.path.join('/home/sovrin/.sovrin', config.nodeDataDir)
+        base_dir = '/home/sovrin/.sovrin'
+        nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     if not os.path.exists(nodes_data_dir):
         msg = 'Can not find the directory with the ledger: {}'.format(nodes_data_dir)
         logger.error(msg)
@@ -148,6 +169,8 @@ def migrate_all():
         migrate_all_hash_stores(node_data_dir)
         migrate_all_states(node_data_dir)
 
+    migrate_genesis_txn(base_dir)
+    subprocess.run(['chown', '-R', 'sovrin:sovrin', '/home/sovrin/.sovrin'])
 
 if __name__ == "__main__":
     migrate_all()
