@@ -4,7 +4,7 @@ from typing import Tuple, Union, TypeVar, List, Callable
 
 import libnacl.secret
 from base58 import b58decode
-from plenum.common.signing import serializeMsg
+from common.serializers.serialization import serialize_msg_for_signing
 from plenum.common.types import f
 from plenum.common.util import isHex, error, cryptonymToHex
 from stp_core.crypto.nacl_wrappers import Verifier
@@ -21,7 +21,7 @@ def getMsgWithoutSig(msg, sigFieldName=f.SIG.nm):
 def verifySig(identifier, signature, msg) -> bool:
     key = cryptonymToHex(identifier) if not isHex(
         identifier) else identifier
-    ser = serializeMsg(msg)
+    ser = serialize_msg_for_signing(msg)
     b64sig = signature.encode('utf-8')
     sig = b58decode(b64sig)
     vr = Verifier(key)

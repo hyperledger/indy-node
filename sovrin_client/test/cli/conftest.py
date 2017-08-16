@@ -42,7 +42,7 @@ from plenum.test.cli.helper import newKeyPair, waitAllNodesStarted, \
     doByCtx
 
 from sovrin_common.config_util import getConfig
-from sovrin_client.test.cli.helper import ensureNodesCreated, getConnectionInvitation, \
+from sovrin_client.test.cli.helper import ensureNodesCreated, get_connection_request, \
     getPoolTxnData, newCLI, getCliBuilder, P, prompt_is, addAgent, doSendNodeCmd, addNym
 from sovrin_client.test.agent.conftest import faberIsRunning as runningFaber, \
     acmeIsRunning as runningAcme, thriftIsRunning as runningThrift, emptyLooper,\
@@ -123,8 +123,8 @@ def susanMap():
 def faberMap(agentIpAddress, faberAgentPort):
     ha = "{}:{}".format(agentIpAddress, faberAgentPort)
     return {'inviter': 'Faber College',
-            'invite': "sample/faber-invitation.sovrin",
-            'invite-not-exists': "sample/faber-invitation.sovrin.not.exists",
+            'invite': "sample/faber-request.sovrin",
+            'invite-not-exists': "sample/faber-request.sovrin.not.exists",
             'inviter-not-exists': "non-existing-inviter",
             'seed': FABER_SEED.decode(),
             "remote": FABER_ID,
@@ -237,24 +237,24 @@ def acceptWhenNotConnected(canNotAcceptMsg, connectUsage):
 
 @pytest.fixture(scope="module")
 def acceptUnSyncedWithoutEndpointWhenConnected(
-        commonAcceptInvitationMsgs, syncedInviteAcceptedOutWithoutClaims):
-    return commonAcceptInvitationMsgs + \
-        syncedInviteAcceptedOutWithoutClaims
+        common_accept_request_msgs, syncedInviteAcceptedOutWithoutClaims):
+    return common_accept_request_msgs + \
+           syncedInviteAcceptedOutWithoutClaims
 
 
 @pytest.fixture(scope="module")
-def commonAcceptInvitationMsgs():
+def common_accept_requests_msgs():
     return ["Request not yet verified",
             "Connection not yet synchronized.",
             ]
 
 
 @pytest.fixture(scope="module")
-def acceptUnSyncedWhenNotConnected(commonAcceptInvitationMsgs,
+def acceptUnSyncedWhenNotConnected(common_accept_requests_msgs,
                                    canNotSyncMsg, connectUsage):
-    return commonAcceptInvitationMsgs + \
-            ["Request acceptance aborted."] + \
-            canNotSyncMsg + connectUsage
+    return common_accept_requests_msgs + \
+           ["Request acceptance aborted."] + \
+           canNotSyncMsg + connectUsage
 
 
 @pytest.fixture(scope="module")
@@ -348,7 +348,7 @@ def unsycedAcceptedInviteWithoutClaimOut(syncedInviteAcceptedOutWithoutClaims):
 
 
 @pytest.fixture(scope="module")
-def unsycedAlreadyAcceptedInviteAcceptedOut():
+def unsyced_already_accepted_request_accepted_out():
     return [
         "Request not yet verified",
         "Attempting to sync...",
@@ -809,7 +809,7 @@ def showAcceptedConnectionOut():
     return [
             "Connection",
             "Name: {inviter}",
-            "DID: {identifier}",
+            "DID: {DID}",
             "Verification key: {verkey}",
             "Remote: {remote}",
             "Remote Verification key: {remote-verkey}",
@@ -1140,7 +1140,7 @@ def faberAdded(poolNodesCreated,
              faberInviteLoaded,
              aliceConnected,
             steward, stewardWallet):
-    li = getConnectionInvitation("Faber", aliceCLI.activeWallet)
+    li = get_connection_request("Faber", aliceCLI.activeWallet)
     createNym(looper, li.remoteIdentifier, steward, stewardWallet,
               role=TRUST_ANCHOR)
 

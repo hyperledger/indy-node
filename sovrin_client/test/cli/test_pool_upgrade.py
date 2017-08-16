@@ -111,3 +111,17 @@ def test_force_upgrade(be, do, trusteeCli, poolNodesStarted, validUpgradeExpForc
                 assert node.upgrader.scheduledUpgrade[0] == validUpgradeExpForceTrue[VERSION]
 
     poolNodesStarted.looper.run(eventually(checksched, retryWait=1, timeout=10))
+
+
+def send_reinstall_true_upgrade_cmd(do, expect, upgrade_data):
+    do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
+       'action={action} schedule={schedule} timeout={timeout} reinstall=True',
+       within=10,
+       expect=expect, mapper=upgrade_data)
+
+
+def send_reinstall_false_upgrade_cmd(do, expect, upgrade_data):
+    do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
+       'action={action} schedule={schedule} timeout={timeout} reinstall=False',
+       within=10,
+       expect=expect, mapper=upgrade_data)

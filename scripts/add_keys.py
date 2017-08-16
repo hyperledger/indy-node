@@ -70,7 +70,7 @@ async def checkReply(client, requestId):
 async def doRequesting(client, wallet, op):
     signedOp = wallet.signOp(op)
     logger.info("Client {} sending request {}".format(client, op))
-    request = client.submitReqs(signedOp)[0]
+    request = client.submitReqs(signedOp)[0][0]
     requestId = request.reqId
     args = [client, requestId]
     await eventually(checkReply, *args, timeout=requestTTL)

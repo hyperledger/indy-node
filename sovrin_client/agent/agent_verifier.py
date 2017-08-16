@@ -10,7 +10,7 @@ from anoncreds.protocol.types import ProofRequest
 from anoncreds.protocol.verifier import Verifier
 from sovrin_client.agent.msg_constants import PROOF_STATUS, PROOF_FIELD, PROOF_REQUEST, \
     PROOF_REQUEST_FIELD, ERR_NO_PROOF_REQUEST_SCHEMA_FOUND
-from sovrin_client.client.wallet.link import Link
+from sovrin_client.client.wallet.connection import Connection
 from sovrin_common.util import getNonceForProof
 
 
@@ -69,7 +69,7 @@ class AgentVerifier(Verifier):
             self.logger.info('Verification failed for proof {} from {} '
                              .format(proofName, link.name))
 
-    def sendProofReq(self, link: Link, proofReqSchemaKey):
+    def sendProofReq(self, link: Connection, proofReqSchemaKey):
         if self._proofRequestsSchema and (
                     proofReqSchemaKey in self._proofRequestsSchema):
             proofRequest = self._proofRequestsSchema[proofReqSchemaKey]
@@ -77,7 +77,7 @@ class AgentVerifier(Verifier):
             proofRequest = ProofRequest(
                 proofRequest[NAME],
                 proofRequest[VERSION],
-                getNonceForProof(link.invitationNonce),
+                getNonceForProof(link.request_nonce),
                 proofRequest[ATTRIBUTES],
                 proofRequest[VERIFIABLE_ATTRIBUTES] if VERIFIABLE_ATTRIBUTES in proofRequest else [],
                 proofRequest[PREDICATES] if PREDICATES in proofRequest else []

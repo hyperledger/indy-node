@@ -3,13 +3,12 @@ from datetime import datetime, timedelta
 import dateutil.tz
 import pytest
 from plenum.common.constants import VERSION, STEWARD
-from plenum.common.util import randomString
 from sovrin_client.test.helper import getClientAddedWithRole
 
 from sovrin_common.constants import START, FORCE
 from sovrin_node.test import waits
 from sovrin_node.test.upgrade.helper import bumpedVersion, ensureUpgradeSent, \
-    checkUpgradeScheduled, bumpVersion, get_valid_code_hash
+    checkUpgradeScheduled, bumpVersion
 from stp_core.loop.eventually import eventually
 
 
@@ -22,7 +21,7 @@ def nodeIds(nodeSet):
 def validUpgrade(nodeIds, tconf):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=30)
+    startAt = unow + timedelta(seconds=100)
     acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
