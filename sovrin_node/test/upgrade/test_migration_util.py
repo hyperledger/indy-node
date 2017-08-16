@@ -47,6 +47,25 @@ def test_relevant_migration_script_current_version_higher():
                                          [])
 
 
+def test_relevant_migration_script_downgrade():
+    comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
+                                         '1.0.97',
+                                         '1.0.96',
+                                         [])
+    comparator_relevant_migration_script(['1_0_97_to_1_0_96'],
+                                         '1.0.97',
+                                         '1.0.96',
+                                         ['1_0_97_to_1_0_96'])
+    comparator_relevant_migration_script(['1_0_96_to_1_0_97', '1_0_97_to_1_0_96'],
+                                         '1.0.84',
+                                         '1.0.102',
+                                         ['1_0_96_to_1_0_97'])
+    comparator_relevant_migration_script(['1_0_96_to_1_0_97', '1_0_97_to_1_0_96'],
+                                         '1.0.102',
+                                         '1.0.84',
+                                         ['1_0_97_to_1_0_96'])
+
+
 def test_relevant_migration_script_new_version_lower():
     comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
                                          '1.0.87',
@@ -95,4 +114,3 @@ def test_relevant_migration_script_multiple_scripts():
                                          '1.0.87',
                                          '1.0.104',
                                          ['1_0_96_to_1_0_97', '1_0_97_to_1_0_102', '1_0_102_to_1_0_104'])
-
