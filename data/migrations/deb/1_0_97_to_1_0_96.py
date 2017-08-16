@@ -2,6 +2,7 @@
 import os
 import shutil
 
+import subprocess
 from common.serializers.compact_serializer import CompactSerializer
 from common.serializers.json_serializer import JsonSerializer
 from common.serializers.mapping_serializer import MappingSerializer
@@ -158,6 +159,8 @@ def migrate_all():
         migrate_all_ledgers_for_node(node_data_dir)
         migrate_all_hash_stores(node_data_dir)
         migrate_all_states(node_data_dir)
+
+    subprocess.run(['chown', '-R', 'sovrin:sovrin', '/home/sovrin/.sovrin'])
 
 
 if __name__ == "__main__":
