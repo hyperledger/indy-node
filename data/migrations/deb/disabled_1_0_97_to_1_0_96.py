@@ -193,5 +193,4 @@ def migrate_all():
     subprocess.run(['chown', '-R', 'sovrin:sovrin', '/home/sovrin/.sovrin'])
 
 
-if __name__ == "__main__":
-    migrate_all()
+migrate_all()
