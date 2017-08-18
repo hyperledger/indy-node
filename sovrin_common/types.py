@@ -2,22 +2,27 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
+from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, VERSION, ORIGIN, FORCE
 from plenum.common.messages.fields import AnyField, IterableField, AnyMapField
 from plenum.common.messages.node_message_factory import node_message_factory
 
 from plenum.common.messages.message_base import MessageValidator, MessageBase
 from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
-from plenum.common.messages.node_messages import \
-    ConstantField, IdentifierField, NonEmptyStringField, \
-    LimitedLengthStringField, TxnSeqNoField, Sha256HexField, \
-    LedgerInfoField as PLedgerInfoField, JsonField, NonNegativeNumberField, \
-    MapField, LedgerIdField as PLedgerIdField, BooleanField, VersionField
+from plenum.common.messages.node_messages import NonEmptyStringField, \
+    LedgerInfoField as PLedgerInfoField, NonNegativeNumberField, \
+    LedgerIdField as PLedgerIdField
+from plenum.common.messages.fields import ConstantField, IdentifierField, LimitedLengthStringField, TxnSeqNoField, \
+    Sha256HexField, JsonField, MapField, BooleanField, VersionField
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
 
-from sovrin_common.constants import *
+from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
+    DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
+    IN_PROGRESS, DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
+    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY
 
 
 class Request(PRequest):
@@ -111,7 +116,8 @@ class ClientAttribOperation(MessageValidator):
             self._raise_missed_fields(RAW, ENC, HASH)
         if fields_n > 1:
             self._raise_invalid_message(
-                "only one field from {}, {}, {} is expected".format(RAW, ENC, HASH)
+                "only one field from {}, {}, {} is expected".format(
+                    RAW, ENC, HASH)
             )
 
     def __validate_raw_field(self, raw_field):
@@ -184,7 +190,8 @@ class ClientPoolUpgradeOperation(MessageValidator):
                             NonEmptyStringField(), optional=True)),
         (SHA256, Sha256HexField()),
         (TIMEOUT, NonNegativeNumberField(optional=True)),
-        (JUSTIFICATION, LimitedLengthStringField(max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
+        (JUSTIFICATION, LimitedLengthStringField(
+            max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
         (NAME, NonEmptyStringField(optional=True)),
         (FORCE, BooleanField(optional=True)),
         (REINSTALL, BooleanField(optional=True)),
@@ -214,7 +221,8 @@ class ClientOperationField(PClientOperationField):
         POOL_CONFIG: ClientPoolConfigOperation(),
     }
 
-    # TODO: it is a workaround because INDY-338, `operations` must be a class constant
+    # TODO: it is a workaround because INDY-338, `operations` must be a class
+    # constant
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.operations.update(self._specific_operations)
@@ -240,8 +248,10 @@ class LedgerInfoField(PLedgerInfoField):
 # TODO: it is a workaround which helps extend some fields from
 # downstream projects, should be removed after we find a better way
 # to do this
-node_message_factory.update_schemas_by_field_type(PLedgerIdField, LedgerIdField)
-node_message_factory.update_schemas_by_field_type(PLedgerInfoField, LedgerInfoField)
+node_message_factory.update_schemas_by_field_type(
+    PLedgerIdField, LedgerIdField)
+node_message_factory.update_schemas_by_field_type(
+    PLedgerInfoField, LedgerInfoField)
 
 
 class SafeRequest(Request, ClientMessageValidator):

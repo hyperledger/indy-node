@@ -5,4 +5,3 @@ OrientDB = {
     "shutdownScript": "/opt/orientdb/bin/shutdown.sh"
 }
 EOT
-

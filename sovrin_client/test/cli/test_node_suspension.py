@@ -30,7 +30,7 @@ def testSuspendNode(be, do, trusteeCli, newNodeAdded):
     # Re-cancel suspension
     newNodeVals['newNodeData'][SERVICES] = [VALIDATOR]
     doSendNodeCmd(do, nodeVals=newNodeVals,
-              expMsgs=['node already has the same data as requested'])
+                  expMsgs=['node already has the same data as requested'])
 
 
 @pytest.mark.skip(reason='INDY-133. Broken compatibility')

@@ -13,7 +13,8 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
 
 
 def test_has_expected_fields():
-    actual_field_names = OrderedDict(ClientClaimDefSubmitOperation.schema).keys()
+    actual_field_names = OrderedDict(
+        ClientClaimDefSubmitOperation.schema).keys()
     assert actual_field_names == EXPECTED_ORDERED_FIELDS.keys()
 
 

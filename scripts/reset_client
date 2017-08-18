@@ -12,7 +12,8 @@ print("\nIMPORTANT: This will clean up sovrin base directory: {}".format(baseDir
 userAnswer = "no"
 validAns = "YeS"
 try:
-    userAnswer = input("\nAre you sure, type {} to continue: ".format(validAns))
+    userAnswer = input(
+        "\nAre you sure, type {} to continue: ".format(validAns))
 except KeyboardInterrupt:
     pass
 
@@ -21,4 +22,3 @@ if userAnswer == validAns:
     print("\nSovrin base directory cleaned up.\n")
 else:
     print("\nOk, no cleanup performed.\n")
-

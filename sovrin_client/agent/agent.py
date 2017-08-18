@@ -1,6 +1,5 @@
 import asyncio
 import os
-from typing import Dict
 from typing import Tuple
 
 from plenum.common.motor import Motor
@@ -48,7 +47,8 @@ class Agent(Motor, AgentNet):
         self._port = port
 
         self.config = config or getConfig()
-        self.basedirpath = basedirpath or os.path.expanduser(self.config.baseDir)
+        self.basedirpath = basedirpath or os.path.expanduser(
+            self.config.baseDir)
         self.endpointArgs = endpointArgs
 
         # Client used to connect to Sovrin and forward on owner's txns
@@ -92,10 +92,8 @@ class Agent(Motor, AgentNet):
                           port=self._port,
                           basedirpath=self.basedirpath,
                           msgHandler=self.handleEndpointMessage,
-                          config = self.config,
+                          config=self.config,
                           endpoint_args=self.endpointArgs)
-
-
 
         super().start(loop)
         if self.client:
@@ -214,5 +212,3 @@ def create_client(base_dir_path=None, client_class=Client):
                           ha=("0.0.0.0", clientPort),
                           basedirpath=base_dir_path)
     return client
-
-

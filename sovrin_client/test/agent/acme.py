@@ -22,6 +22,7 @@ ACME_ID = DidSigner(seed=ACME_SEED).identifier
 ACME_VERKEY = DidSigner(seed=ACME_SEED).verkey
 ACME_SIGNER = DidSigner(seed=ACME_SEED)
 
+
 class AcmeAgent(WalletedAgent):
     async def postProofVerif(self, claimName, link, frm):
         if claimName == "Job-Application":
@@ -30,14 +31,15 @@ class AcmeAgent(WalletedAgent):
 
                 if schema.name == 'Job-Certificate':
                     await self._set_available_claim_by_internal_id(link.internalId,
-                                                   ID(schemaKey=schema.getKey(),
-                                                      schemaId=schema.seqId))
+                                                                   ID(schemaKey=schema.getKey(),
+                                                                      schemaId=schema.seqId))
 
                     claims = self.get_available_claim_list(link)
                     self.sendNewAvailableClaimsData(claims, frm, link)
 
 
-def create_acme(name=None, wallet=None, base_dir_path=None, port=6666, client=None):
+def create_acme(name=None, wallet=None, base_dir_path=None,
+                port=6666, client=None):
     if client is None:
         client = create_client(base_dir_path=None, client_class=TestClient)
 

@@ -30,7 +30,8 @@ class DomainReqHandler(PHandler):
     LAST_SEQ_NO = "lsn"
     VALUE = "val"
 
-    def __init__(self, ledger, state, requestProcessor, idrCache, attributeStore):
+    def __init__(self, ledger, state, requestProcessor,
+                 idrCache, attributeStore):
         super().__init__(ledger, state, requestProcessor)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
@@ -58,7 +59,8 @@ class DomainReqHandler(PHandler):
         elif typ == CLAIM_DEF:
             self._addClaimDef(txn)
         else:
-            logger.debug('Cannot apply request of type {} to state'.format(typ))
+            logger.debug(
+                'Cannot apply request of type {} to state'.format(typ))
 
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot)
@@ -69,8 +71,9 @@ class DomainReqHandler(PHandler):
     def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
         nym = msg.get(TARGET_NYM)
         if self.hasNym(nym, isCommitted=False):
-            if not self.idrCache.hasTrustee(identifier, isCommitted=False) and \
-                            self.idrCache.getOwnerFor(nym, isCommitted=False) != identifier:
+            if not self.idrCache.hasTrustee(
+                    identifier, isCommitted=False) and self.idrCache.getOwnerFor(
+                    nym, isCommitted=False) != identifier:
                 reason = '{} is neither Trustee nor owner of {}'\
                     .format(identifier, nym)
                 return False, reason
@@ -135,8 +138,9 @@ class DomainReqHandler(PHandler):
         op = req.operation
 
         try:
-            originRole = self.idrCache.getRole(origin, isCommitted=False) or None
-        except:
+            originRole = self.idrCache.getRole(
+                origin, isCommitted=False) or None
+        except BaseException:
             raise UnknownIdentifier(
                 req.identifier,
                 req.reqId)
@@ -177,10 +181,8 @@ class DomainReqHandler(PHandler):
                                                    isActorOwnerOfSubject=isOwner)
                     if not r:
                         raise UnauthorizedClientRequest(
-                            req.identifier,
-                            req.reqId,
-                            "{} cannot update {}".format(Roles.nameFromValue(originRole),
-                                                         key))
+                            req.identifier, req.reqId, "{} cannot update {}".format(
+                                Roles.nameFromValue(originRole), key))
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier
@@ -406,7 +408,7 @@ class DomainReqHandler(PHandler):
     def getClaimDef(self,
                     author: str,
                     schemaSeqNo: str,
-                    signatureType = 'CL',
+                    signatureType='CL',
                     isCommitted=True) -> (str, int):
         assert author is not None
         assert schemaSeqNo is not None
@@ -445,11 +447,11 @@ class DomainReqHandler(PHandler):
     @staticmethod
     def _makeClaimDefPath(did, schemaSeqNo, signatureType) -> bytes:
         return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}" \
-                   .format(DID=did,
-                           MARKER=DomainReqHandler.MARKER_CLAIM_DEF,
-                           SIGNATURE_TYPE=signatureType,
-                           SCHEMA_SEQ_NO=schemaSeqNo)\
-                   .encode()
+            .format(DID=did,
+                    MARKER=DomainReqHandler.MARKER_CLAIM_DEF,
+                    SIGNATURE_TYPE=signatureType,
+                    SCHEMA_SEQ_NO=schemaSeqNo)\
+            .encode()
 
     def _encodeValue(self, value, seqNo):
         return self.stateSerializer.serialize({

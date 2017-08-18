@@ -27,7 +27,7 @@ WHITE_LIST = pathList(
     "~/.sovrin/sovrin_config.py",
     "~/.plenum/plenum_config.py",
     "~/.sovrin/.*log"
-).union(pathList(*{d+p for d in TARGET_DIRS for p in PATHS_TO_CLEAR}))
+).union(pathList(*{d + p for d in TARGET_DIRS for p in PATHS_TO_CLEAR}))
 
 
 def clean_files(full):
@@ -40,7 +40,7 @@ def clean_files(full):
     files_to_keep = [re.compile(pattern) for pattern in WHITE_LIST]
 
     def isOk(path):
-         return any(pattern.match(path) for pattern in files_to_keep)
+        return any(pattern.match(path) for pattern in files_to_keep)
 
     for dir in TARGET_DIRS:
         for root, dirs, files in os.walk(dir):

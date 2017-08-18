@@ -18,4 +18,5 @@ if __name__ == "__main__":
 # Usages:
 # generate_sovrin_pool_transactions --nodes=1 --clients=1 --nodeNum=1
 # generate_sovrin_pool_transactions --nodes=4 --clients=1 --nodeNum=1 --envName=live
-# generate_sovrin_pool_transactions --nodes=4 --clients=1 --nodeNum=1 --envName=live --appendToLedgers
+# generate_sovrin_pool_transactions --nodes=4 --clients=1 --nodeNum=1
+# --envName=live --appendToLedgers

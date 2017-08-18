@@ -19,7 +19,6 @@ class AgentCli(SovrinCli):
             if name is None:
                 self.name = init_agent.name
 
-
     @property
     def actions(self):
         if not self._actions:
@@ -43,7 +42,7 @@ class AgentCli(SovrinCli):
         return ['helpAction']
 
     def getComdMappingKeysToNotShowInHelp(self):
-        allowedCmds = [func.__name__.replace("_","") for func in self.actions ]
+        allowedCmds = [func.__name__.replace("_", "") for func in self.actions]
         return {k: v for (k, v) in
                 self.cmdHandlerToCmdMappings().items() if k not in allowedCmds}
 
@@ -66,7 +65,7 @@ class AgentCli(SovrinCli):
     @property
     def activeWallet(self):
         return self.agent._wallet
-    
+
     @activeWallet.setter
     def activeWallet(self, wallet):
         pass
