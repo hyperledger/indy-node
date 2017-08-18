@@ -1,4 +1,5 @@
 #!/usr/bin/python3.5
+import json
 import os
 import shutil
 import subprocess
@@ -8,12 +9,14 @@ from common.serializers.json_serializer import JsonSerializer
 from common.serializers.mapping_serializer import MappingSerializer
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
+from plenum.common.constants import TXN_TYPE, DATA
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from storage import store_utils
 from storage.chunked_file_store import ChunkedFileStore
 from stp_core.common.log import getlogger
 
 from sovrin_common.config_util import getConfig
+from sovrin_common.constants import SCHEMA, CLAIM_DEF
 from sovrin_common.txn_util import getTxnOrderedFields
 
 config = getConfig()
@@ -38,6 +41,8 @@ def __migrate_ledger(data_directory,
                                          old_ledger_file,
                                          isLineNoKey=True,
                                          storeContentHash=False)
+    logger.info("Old ledger folder: {}, {}".format(
+        data_directory, old_ledger_file))
     old_ledger = Ledger(CompactMerkleTree(),
                         dataDir=data_directory,
                         txn_serializer=serializer,
@@ -48,12 +53,20 @@ def __migrate_ledger(data_directory,
 
     # open the new ledger with new serialization
     new_ledger_file_backup = new_ledger_file + "_new"
+    logger.info("New ledger folder: {}, {}".format(
+        data_directory, new_ledger_file_backup))
     new_ledger = Ledger(CompactMerkleTree(),
                         dataDir=data_directory,
                         fileName=new_ledger_file_backup)
 
     # add all txns into the new ledger
     for _, txn in old_ledger.getAllTxn():
+        if txn[TXN_TYPE] == SCHEMA:
+            if DATA in txn:
+                txn[DATA] = json.loads(txn[DATA])
+        if txn[TXN_TYPE] == CLAIM_DEF:
+            if DATA in txn:
+                txn[DATA] = json.loads(txn[DATA])
         new_ledger.add(txn)
     logger.info("new size for {}: {}".format(new_ledger_file, str(new_ledger.size)))
 
@@ -67,9 +80,14 @@ def __migrate_ledger(data_directory,
         os.path.join(data_directory, new_ledger_file_backup),
         os.path.join(data_directory, new_ledger_file))
 
+    logger.info("Final new ledger folder: {}".format(
+        os.path.join(data_directory, new_ledger_file)))
+
 
 def __open_new_ledger(data_directory, new_ledger_file, hash_store_name):
     # open new Ledger with leveldb hash store (to re-init it)
+    logger.info("Open new ledger folder: {}".format(
+        os.path.join(data_directory, new_ledger_file)))
     new_ledger = Ledger(CompactMerkleTree(
         hashStore=LevelDbHashStore(
             dataDir=data_directory, fileNamePrefix=hash_store_name)),
@@ -154,7 +172,7 @@ def migrate_genesis_txn(base_dir):
                 with open(new_domain_genesis, 'w') as f2:
                     for line in store_utils.cleanLines(f1):
                         txn = old_ser.deserialize(line)
-                        txn = {k: v for k,v in txn.items() if v}
+                        txn = {k: v for k, v in txn.items() if v}
                         txn = new_ser.serialize(txn, toBytes=False)
                         f2.write(txn)
                         f2.write('\n')
@@ -177,6 +195,7 @@ def migrate_all():
 
     for node_dir in os.listdir(nodes_data_dir):
         node_data_dir = os.path.join(nodes_data_dir, node_dir)
+        logger.info("Applying migration to {}".format(node_data_dir))
         migrate_all_ledgers_for_node(node_data_dir)
         migrate_all_hash_stores(node_data_dir)
         migrate_all_states(node_data_dir)
