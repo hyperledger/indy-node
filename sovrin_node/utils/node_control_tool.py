@@ -69,7 +69,7 @@ class NodeControlTool:
         self.server.listen(1)
 
     @staticmethod
-    def _compose_cmd(cmd):
+    def compose_cmd(cmd):
         if os.name != 'nt':
             cmd = ' '.join(cmd)
         return cmd
@@ -77,7 +77,7 @@ class NodeControlTool:
     @classmethod
     def _get_info_from_package_manager(cls, package):
         ret = subprocess.run(
-            cls._compose_cmd(
+            cls.compose_cmd(
                 [
                     'apt-cache',
                     'show',
@@ -99,7 +99,7 @@ class NodeControlTool:
     @classmethod
     def _update_package_cache(cls):
         ret = subprocess.run(
-            cls._compose_cmd(
+            cls.compose_cmd(
                 [
                     'apt',
                     'update']),
@@ -119,7 +119,7 @@ class NodeControlTool:
 
     def _hold_packages(self):
         ret = subprocess.run(
-            self._compose_cmd(
+            self.compose_cmd(
                 [
                     'apt-mark',
                     'hold',
@@ -169,7 +169,7 @@ class NodeControlTool:
         cmd_file = 'upgrade_sovrin_node'
         if self.test_mode:
             cmd_file = 'upgrade_sovrin_node_test'
-        ret = subprocess.run(self._compose_cmd(
+        ret = subprocess.run(self.compose_cmd(
             [cmd_file, deps]), shell=True, timeout=self.timeout)
 
         if ret.returncode != 0:
@@ -180,7 +180,7 @@ class NodeControlTool:
 
     def _call_restart_node_script(self):
         logger.info('Restarting sovrin')
-        ret = subprocess.run(self._compose_cmd(
+        ret = subprocess.run(self.compose_cmd(
             ['restart_sovrin_node']), shell=True, timeout=self.timeout)
         if ret.returncode != 0:
             msg = 'Restart failed: script returned {}'.format(ret.returncode)

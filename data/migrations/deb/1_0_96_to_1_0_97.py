@@ -16,7 +16,7 @@ migration_script_path = \
 
 logger.info('script path {}'.format(migration_script_path))
 ret = subprocess.run(
-    NodeControlTool._compose_cmd(
+    NodeControlTool.compose_cmd(
         ['python3 {}'.format(migration_script_path)]
     ),
     shell=True,
