@@ -1,3 +1,3 @@
 import sovrin_node
 
-from .__metadata__ import *
+from .__metadata__ import *  # noqa

@@ -1574,7 +1574,9 @@ class SovrinCli(PlenumCli):
                                      matchingConnectionAndReceivedClaim):
         getClaim = itemgetter(2)
 
-        def containsAttr(key): return lambda t: key in getClaim(t)
+        def containsAttr(key):
+            return lambda t: key in getClaim(t)
+
         formatted = 'Attributes:\n'
 
         for k, v in attributes.items():
@@ -2115,7 +2117,7 @@ class SovrinCli(PlenumCli):
 
         return True
 
-    def getConfig(homeDir=None):
+    def getConfig(self, homeDir=None):
         return getConfig(homeDir)
 
 

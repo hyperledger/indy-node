@@ -3,7 +3,6 @@ from hashlib import sha256
 
 from plenum.common.exceptions import UnknownIdentifier
 from plenum.common.types import OPERATION
-from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH
 from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH, VERKEY
 from plenum.server.client_authn import NaclAuthNr
 

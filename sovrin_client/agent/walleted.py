@@ -24,7 +24,6 @@ from anoncreds.protocol.verifier import Verifier
 from anoncreds.protocol.globals import TYPE_CL
 from anoncreds.protocol.types import AttribDef, ID, ProofRequest, AvailableClaim
 from plenum.common.exceptions import NotConnectedToAny
-from plenum.common.constants import NAME, VERSION
 from sovrin_client.agent.agent_issuer import AgentIssuer
 from sovrin_client.agent.backend import BackendSystem
 from sovrin_client.agent.agent_prover import AgentProver
@@ -790,7 +789,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         link_request = request_data["connection-request"]
         remoteIdentifier = link_request[f.IDENTIFIER.nm]
         # TODO signature should be validated!
-        signature = request_data["sig"]
+        # signature = request_data["sig"]
         link_request_name = link_request[NAME]
         remoteEndPoint = link_request.get("endpoint", None)
         remote_verkey = link_request.get("verkey", None)

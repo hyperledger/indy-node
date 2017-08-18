@@ -13,7 +13,7 @@ from plenum.common.startable import Status
 
 from plenum.common.constants import REPLY, NAME, VERSION, REQACK, REQNACK, \
     TXN_ID, TARGET_NYM, NONCE, STEWARD, OP_FIELD_NAME, REJECT
-from plenum.common.types import f, HA
+from plenum.common.types import f
 from plenum.common.util import libnacl
 from plenum.server.router import Router
 from stp_core.network.auth_mode import AuthMode

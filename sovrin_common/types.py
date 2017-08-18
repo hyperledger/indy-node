@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
-from plenum.common.constants import RAW, ENC, HASH, TARGET_NYM, NONCE, NAME, VERSION, ORIGIN, PRIMARY, FORCE
+from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, VERSION, ORIGIN, FORCE
 from plenum.common.messages.fields import AnyField, IterableField, AnyMapField
 from plenum.common.messages.node_message_factory import node_message_factory
 
@@ -22,7 +22,7 @@ from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
     IN_PROGRESS, DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
-    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES
+    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY
 
 
 class Request(PRequest):
