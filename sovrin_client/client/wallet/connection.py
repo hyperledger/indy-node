@@ -1,4 +1,3 @@
-from typing import List
 
 from plenum.common.constants import NAME, NONCE
 from plenum.common.signer_did import DidIdentity

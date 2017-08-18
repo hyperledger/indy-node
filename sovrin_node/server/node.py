@@ -34,7 +34,6 @@ from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from sovrin_node.server.pool_config import PoolConfig
 from stp_core.common.log import getlogger
-import os
 
 
 logger = getlogger()

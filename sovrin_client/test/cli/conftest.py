@@ -2,7 +2,6 @@ import json
 import os
 import re
 import tempfile
-from copy import copy
 from typing import List
 
 import pytest

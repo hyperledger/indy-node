@@ -1,4 +1,3 @@
-import functools
 
 from plenum.common.ledger import Ledger
 from plenum.common.exceptions import UnknownIdentifier

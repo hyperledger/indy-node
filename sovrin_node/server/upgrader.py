@@ -1,7 +1,7 @@
 import os
 from collections import deque
 from datetime import datetime, timedelta
-from functools import cmp_to_key, partial
+from functools import partial
 from typing import Tuple, Union, Optional, Callable, Dict
 
 import dateutil.parser

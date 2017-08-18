@@ -1843,7 +1843,6 @@ class SovrinCli(PlenumCli):
                                       self._activeWallet.name),
                                Token.BoldBlue)
                 self._activeWallet = None
-        pass
 
     def _connectTo(self, matchedVars):
         if matchedVars.get('conn') == connectToCmd.id:

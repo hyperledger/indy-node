@@ -1,5 +1,4 @@
 import json
-import traceback
 import uuid
 from collections import deque
 from typing import Dict, Union, Tuple, Optional, Callable

@@ -1,5 +1,4 @@
 import types
-from collections import OrderedDict
 
 import pytest
 

@@ -1,6 +1,5 @@
 import asyncio
 import os
-from typing import Dict
 from typing import Tuple
 
 from plenum.common.motor import Motor

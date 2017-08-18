@@ -1,5 +1,4 @@
 from typing import Any
-from collections import OrderedDict
 
 from plenum.common.constants import NAME, NONCE, TYPE, DATA, VERSION, \
     ATTRIBUTES, VERIFIABLE_ATTRIBUTES, PREDICATES

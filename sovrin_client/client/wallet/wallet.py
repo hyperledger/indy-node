@@ -3,7 +3,7 @@ import json
 import operator
 from collections import OrderedDict
 from collections import deque
-from typing import Dict, List
+from typing import List
 from typing import Optional
 
 from ledger.util import F

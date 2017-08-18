@@ -32,7 +32,6 @@ from sovrin_client.agent.walleted_agent import WalletedAgent
 # noinspection PyUnresolvedReferences
 from sovrin_client.client.wallet.wallet import Wallet
 # noinspection PyUnresolvedReferences
-from tempfile import TemporaryDirectory
 
 from logging import Formatter
 from stp_core.common.log import Logger
