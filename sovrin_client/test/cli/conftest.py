@@ -99,6 +99,7 @@ def getDefaultUserMap(name):
         'wallet-name': name,
     }
 
+
 @pytest.fixture(scope="module")
 def aliceMap():
     return getDefaultUserMap("Alice")
@@ -198,8 +199,8 @@ def loadInviteOut(nextCommandsToTryUsageLine):
     return ["1 connection request found for {inviter}.",
             "Creating connection for {inviter}.",
             ''] + \
-           nextCommandsToTryUsageLine + \
-           ['    show connection "{inviter}"',
+        nextCommandsToTryUsageLine + \
+        ['    show connection "{inviter}"',
             '    accept request from "{inviter}"',
             '',
             '']
@@ -239,7 +240,7 @@ def acceptWhenNotConnected(canNotAcceptMsg, connectUsage):
 def acceptUnSyncedWithoutEndpointWhenConnected(
         common_accept_request_msgs, syncedInviteAcceptedOutWithoutClaims):
     return common_accept_request_msgs + \
-           syncedInviteAcceptedOutWithoutClaims
+        syncedInviteAcceptedOutWithoutClaims
 
 
 @pytest.fixture(scope="module")
@@ -253,8 +254,8 @@ def common_accept_requests_msgs():
 def acceptUnSyncedWhenNotConnected(common_accept_requests_msgs,
                                    canNotSyncMsg, connectUsage):
     return common_accept_requests_msgs + \
-           ["Request acceptance aborted."] + \
-           canNotSyncMsg + connectUsage
+        ["Request acceptance aborted."] + \
+        canNotSyncMsg + connectUsage
 
 
 @pytest.fixture(scope="module")
@@ -275,8 +276,8 @@ def connectUsage(usageLine):
 @pytest.fixture(scope="module")
 def notConnectedStatus(connectUsage):
     return ['Not connected to Sovrin network. Please connect first.', ''] +\
-            connectUsage +\
-            ['', '']
+        connectUsage +\
+        ['', '']
 
 
 @pytest.fixture(scope="module")
@@ -344,7 +345,7 @@ def unsycedAcceptedInviteWithoutClaimOut(syncedInviteAcceptedOutWithoutClaims):
         "Attempting to sync...",
         "Synchronizing...",
     ] + syncedInviteAcceptedOutWithoutClaims + \
-           ["Confirmed DID written to Sovrin."]
+        ["Confirmed DID written to Sovrin."]
 
 
 @pytest.fixture(scope="module")
@@ -383,6 +384,7 @@ def showJobCertificateClaimInProofOut():
         "  experience: {attr-experience}",
         "  salary_bracket: {attr-salary_bracket}"
     ]
+
 
 @pytest.fixture(scope="module")
 def proofConstructedMsg():
@@ -519,7 +521,7 @@ def syncConnectionOutWithoutEndpoint(syncConnectionOutStartsWith):
 @pytest.fixture(scope="module")
 def showSyncedConnectionWithEndpointOut(acceptedConnectionHeading, showConnectionOut):
     return acceptedConnectionHeading + showConnectionOut + \
-           ["Last synced: "]
+        ["Last synced: "]
 
 
 @pytest.fixture(scope="module")
@@ -573,6 +575,7 @@ def transcriptClaimValueMap(transcriptClaimAttrValueMap):
     }
     basic.update(transcriptClaimAttrValueMap)
     return basic
+
 
 @pytest.fixture(scope="module")
 def bankingRelationshipClaimAttrValueMap():
@@ -671,7 +674,7 @@ def rcvdTranscriptClaimOut():
             "degree: {attr-degree}",
             "year: {attr-year}",
             "status: {attr-status}"
-    ]
+            ]
 
 
 @pytest.fixture(scope="module")
@@ -706,7 +709,7 @@ def rcvdJobCertClaimOut():
             "employee_status: {attr-employee_status}",
             "experience: {attr-experience}",
             "salary_bracket: {attr-salary_bracket}"
-    ]
+            ]
 
 
 @pytest.fixture(scope="module")
@@ -722,7 +725,7 @@ def showTranscriptClaimOut(nextCommandsToTryUsageLine):
             "year",
             "status"
             ] + nextCommandsToTryUsageLine + \
-           ['request claim "{name}"']
+        ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -738,7 +741,7 @@ def showJobCertClaimOut(nextCommandsToTryUsageLine):
             "experience",
             "salary_bracket"
             ] + nextCommandsToTryUsageLine + \
-           ['request claim "{name}"']
+        ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -760,7 +763,7 @@ def showBankingRelationshipClaimOut(nextCommandsToTryUsageLine):
             "year_opened",
             "account_status"
             ] + nextCommandsToTryUsageLine + \
-           ['request claim "{name}"']
+        ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -779,8 +782,8 @@ def showAcceptedConnectionWithClaimReqsOut(showAcceptedConnectionOut,
                                            showConnectionWithAvailableClaimsOut,
                                            showConnectionSuggestion):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
-           showConnectionWithAvailableClaimsOut + \
-           showConnectionSuggestion
+        showConnectionWithAvailableClaimsOut + \
+        showConnectionSuggestion
 
 
 @pytest.fixture(scope="module")
@@ -794,46 +797,46 @@ def showAcceptedConnectionWithAvailableClaimsOut(showAcceptedConnectionOut,
                                                  showConnectionWithProofRequestsOut,
                                                  showConnectionWithAvailableClaimsOut):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
-           showConnectionWithAvailableClaimsOut
+        showConnectionWithAvailableClaimsOut
 
 
 @pytest.fixture(scope="module")
 def showConnectionSuggestion(nextCommandsToTryUsageLine):
     return nextCommandsToTryUsageLine + \
-    ['show claim "{claims}"',
-     'request claim "{claims}"']
+        ['show claim "{claims}"',
+         'request claim "{claims}"']
 
 
 @pytest.fixture(scope="module")
 def showAcceptedConnectionOut():
     return [
-            "Connection",
-            "Name: {inviter}",
-            "DID: {DID}",
-            "Verification key: {verkey}",
-            "Remote: {remote}",
-            "Remote Verification key: {remote-verkey}",
-            "Trust anchor: {inviter} (confirmed)",
-            "Request nonce: {nonce}",
-            "Request status: Accepted"]
+        "Connection",
+        "Name: {inviter}",
+        "DID: {DID}",
+        "Verification key: {verkey}",
+        "Remote: {remote}",
+        "Remote Verification key: {remote-verkey}",
+        "Trust anchor: {inviter} (confirmed)",
+        "Request nonce: {nonce}",
+        "Request status: Accepted"]
 
 
 @pytest.fixture(scope="module")
 def showConnectionOut(nextCommandsToTryUsageLine, connectionNotYetSynced):
     return [
-            "    Name: {inviter}",
-            "    DID: not yet assigned",
-            "    Trust anchor: {inviter} (not yet written to Sovrin)",
-            "    Verification key: <empty>",
-            "    Signing key: <hidden>",
-            "    Remote: {remote}",
-            "    Remote endpoint: {endpoint}",
-            "    Request nonce: {nonce}",
-            "    Request status: not verified, remote verkey unknown",
-            "    Last synced: {last_synced}"] + \
-           [""] + \
-           nextCommandsToTryUsageLine + \
-           ['    sync "{inviter}"',
+        "    Name: {inviter}",
+        "    DID: not yet assigned",
+        "    Trust anchor: {inviter} (not yet written to Sovrin)",
+        "    Verification key: <empty>",
+        "    Signing key: <hidden>",
+        "    Remote: {remote}",
+        "    Remote endpoint: {endpoint}",
+        "    Request nonce: {nonce}",
+        "    Request status: not verified, remote verkey unknown",
+        "    Last synced: {last_synced}"] + \
+        [""] + \
+        nextCommandsToTryUsageLine + \
+        ['    sync "{inviter}"',
             '    accept request from "{inviter}"',
             '',
             '']
@@ -842,19 +845,19 @@ def showConnectionOut(nextCommandsToTryUsageLine, connectionNotYetSynced):
 @pytest.fixture(scope="module")
 def showAcceptedSyncedConnectionOut(nextCommandsToTryUsageLine):
     return [
-            "Connection",
-            "Name: {inviter}",
-            "Trust anchor: {inviter} (confirmed)",
-            "Verification key: ~",
-            "Signing key: <hidden>",
-            "Remote: {remote}",
-            "Remote Verification key: <same as Remote>",
-            "Request nonce: {nonce}",
-            "Request status: Accepted",
-            "Proof Request(s): {proof-requests}",
-            "Available Claim(s): {claims}"] + \
-           nextCommandsToTryUsageLine + \
-           ['show claim "{claim-to-show}"',
+        "Connection",
+        "Name: {inviter}",
+        "Trust anchor: {inviter} (confirmed)",
+        "Verification key: ~",
+        "Signing key: <hidden>",
+        "Remote: {remote}",
+        "Remote Verification key: <same as Remote>",
+        "Request nonce: {nonce}",
+        "Request status: Accepted",
+        "Proof Request(s): {proof-requests}",
+        "Available Claim(s): {claims}"] + \
+        nextCommandsToTryUsageLine + \
+        ['show claim "{claim-to-show}"',
             'send proof "{proof-requests}"']
 
 
@@ -866,6 +869,7 @@ def poolCLI_baby(CliBuilder):
 @pytest.yield_fixture(scope="module")
 def aliceCLI(CliBuilder):
     yield from CliBuilder("alice")
+
 
 @pytest.yield_fixture(scope="module")
 def devinCLI(CliBuilder):
@@ -901,18 +905,18 @@ def faberCLI(CliBuilder):
 def acmeCLI(CliBuilder):
     yield from CliBuilder("acme")
 
+
 @pytest.yield_fixture(scope="module")
 def thriftCLI(CliBuilder):
     yield from CliBuilder("thrift")
-
 
 
 @pytest.fixture(scope="module")
 def poolCLI(poolCLI_baby, poolTxnData, poolTxnNodeNames, conf):
     seeds = poolTxnData["seeds"]
     for nName in poolTxnNodeNames:
-       initNodeKeysForBothStacks(nName, poolCLI_baby.basedirpath,
-                                      seeds[nName], override=True)
+        initNodeKeysForBothStacks(nName, poolCLI_baby.basedirpath,
+                                  seeds[nName], override=True)
     return poolCLI_baby
 
 
@@ -942,7 +946,7 @@ def multiPoolNodesCreated(request, tconf, looper, tdir,
     oldPoolTxnFile = tconf.poolTransactionsFile
     oldDomainTxnFile = tconf.domainTransactionsFile
 
-    multiNodes=[]
+    multiNodes = []
     for poolName in namesOfPools:
         newPoolTxnNodeNames = [poolName + n for n
                                in ("Alpha", "Beta", "Gamma", "Delta")]
@@ -1116,7 +1120,8 @@ def expect(current_cli, get_bookmark, inc_bookmark):
                 for x in actual:
                     explanation += "  > {}\n".format(x)
                 if line_no:
-                    explanation += "section ends line number: {}\n".format(line_no)
+                    explanation += "section ends line number: {}\n".format(
+                        line_no)
                 pytest.fail(''.join(explanation))
             else:
                 inc_bookmark(len(actual))
@@ -1135,11 +1140,11 @@ def steward(poolNodesCreated, looper, tdir, stewardWallet):
 
 @pytest.fixture(scope="module")
 def faberAdded(poolNodesCreated,
-             looper,
-             aliceCLI,
-             faberInviteLoaded,
-             aliceConnected,
-            steward, stewardWallet):
+               looper,
+               aliceCLI,
+               faberInviteLoaded,
+               aliceConnected,
+               steward, stewardWallet):
     li = get_connection_request("Faber", aliceCLI.activeWallet)
     createNym(looper, li.remoteIdentifier, steward, stewardWallet,
               role=TRUST_ANCHOR)
@@ -1163,7 +1168,7 @@ def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
 
 @pytest.fixture(scope="module")
 def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet,
-                   acmeAddedByPhil, acmeAgent, acmeBootstrap):
+                  acmeAddedByPhil, acmeAgent, acmeBootstrap):
     acme, acmeWallet = runningAcme(emptyLooper, tdirWithPoolTxns,
                                    acmeWallet, acmeAgent, acmeAddedByPhil, acmeBootstrap)
 
@@ -1178,7 +1183,6 @@ def thriftIsRunning(emptyLooper, tdirWithPoolTxns, thriftWallet,
                                          thriftAddedByPhil)
 
     return thrift, thriftWallet
-
 
 
 @pytest.fixture(scope='module')
@@ -1278,7 +1282,7 @@ def trusteeCli(be, do, trusteeMap, poolNodesStarted,
 def poolNodesStarted(be, do, poolCLI):
     be(poolCLI)
 
-    connectedExpect=[
+    connectedExpect = [
         'Alpha now connected to Beta',
         'Alpha now connected to Gamma',
         'Alpha now connected to Delta',
@@ -1316,7 +1320,7 @@ def philCli(be, do, philCLI, trusteeCli, poolTxnData):
     do('prompt Phil', expect=prompt_is('Phil'))
 
     do('new wallet Phil', expect=['New wallet Phil created',
-                                   'Active wallet set to "Phil"'])
+                                  'Active wallet set to "Phil"'])
     phil_seed = poolTxnData['seeds']['Steward1']
     phil_signer = DidSigner(seed=phil_seed.encode())
 

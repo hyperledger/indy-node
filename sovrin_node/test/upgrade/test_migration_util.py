@@ -2,7 +2,8 @@ from sovrin_node.utils.migration_tool import _get_relevant_migrations
 
 
 def comparator_relevant_migration_script(migration_scripts, current_version, new_version, expected_migration_scripts):
-    assert expected_migration_scripts == _get_relevant_migrations(migration_scripts, current_version, new_version)
+    assert expected_migration_scripts == _get_relevant_migrations(
+        migration_scripts, current_version, new_version)
 
 
 def test_relevant_migration_script_positive():

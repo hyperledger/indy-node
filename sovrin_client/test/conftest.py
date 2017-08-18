@@ -50,11 +50,13 @@ from sovrin_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
 
 Logger.setLogLevel(logging.DEBUG)
 
+
 @pytest.fixture(scope="session")
 def warnfilters(plenum_warnfilters):
     def _():
         plenum_warnfilters()
-        warnings.filterwarnings('ignore', category=ResourceWarning, message='unclosed file')
+        warnings.filterwarnings(
+            'ignore', category=ResourceWarning, message='unclosed file')
     return _
 
 
@@ -93,7 +95,8 @@ def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
     ret = []
     for name in poolTxnTrusteeNames:
         seed = updatedPoolTxnData["seeds"][name]
-        txn = next((txn for txn in updatedPoolTxnData["txns"] if txn[ALIAS] == name), None)
+        txn = next(
+            (txn for txn in updatedPoolTxnData["txns"] if txn[ALIAS] == name), None)
         ret.append((name, seed.encode(), txn))
     return ret
 
@@ -110,7 +113,7 @@ def trusteeWallet(trusteeData):
 # TODO: This fixture is present in sovrin_node too, it should be
 # sovrin_common's conftest.
 @pytest.fixture(scope="module")
-#TODO devin
+# TODO devin
 def trustee(nodeSet, looper, tdir, up, trusteeWallet):
     return buildStewardClient(looper, tdir, trusteeWallet)
 
@@ -164,7 +167,8 @@ def tdirWithDomainTxnsUpdated(tdirWithDomainTxns, poolTxnTrusteeNames,
 @pytest.fixture(scope="module")
 def updatedDomainTxnFile(tdir, tdirWithDomainTxnsUpdated, genesisTxns,
                          domainTxnOrderedFields, tconf):
-    addTxnToGenesisFile(tdir, tconf.domainTransactionsFile, genesisTxns, domainTxnOrderedFields)
+    addTxnToGenesisFile(tdir, tconf.domainTransactionsFile,
+                        genesisTxns, domainTxnOrderedFields)
 
 
 @pytest.fixture(scope="module")
@@ -229,7 +233,7 @@ def trustAnchor(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, tdir):
 
 @pytest.fixture(scope="module")
 def addedTrustAnchor(nodeSet, steward, stewardWallet, looper,
-                 trustAnchorWallet):
+                     trustAnchorWallet):
     createNym(looper,
               trustAnchorWallet.defaultId,
               steward,
@@ -330,7 +334,8 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
 
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
-                            ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),
+                            ha=(nodeIp, nodePort), cliha=(
+                                clientIp, clientPort),
                             pluginPaths=allPluginsPath)
 
     nodeSet.append(newNode)

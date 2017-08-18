@@ -14,10 +14,10 @@ TestRunningTimeLimitSec = 200
 
 
 def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
-                                            tdirWithDomainTxnsUpdated,
-                                            nodeSet, tconf,
-                                            trustee, trusteeWallet,
-                                            allPluginsPath):
+                                       tdirWithDomainTxnsUpdated,
+                                       nodeSet, tconf,
+                                       trustee, trusteeWallet,
+                                       allPluginsPath):
     """
     Node loses its state database but recreates it from ledger after start.
     Checking ATTRIB txns too since they store some data off ledger too
@@ -35,10 +35,10 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     for tc, tw in trust_anchors:
         for i in range(3):
             getClientAddedWithRole(nodeSet,
-                                 tdirWithPoolTxns,
-                                 looper,
-                                 tc, tw,
-                                 'NP1' + str(i))
+                                   tdirWithPoolTxns,
+                                   looper,
+                                   tc, tw,
+                                   'NP1' + str(i))
 
     ensure_all_nodes_have_same_data(looper, nodeSet)
 
@@ -54,8 +54,8 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     shutil.rmtree(state_db_path)
 
     restarted_node = TestNode(node_to_stop.name, basedirpath=tdirWithPoolTxns,
-                        config=tconf, pluginPaths=allPluginsPath,
-                        ha=node_to_stop.nodestack.ha, cliha=node_to_stop.clientstack.ha)
+                              config=tconf, pluginPaths=allPluginsPath,
+                              ha=node_to_stop.nodestack.ha, cliha=node_to_stop.clientstack.ha)
     looper.add(restarted_node)
     nodeSet[-1] = restarted_node
 
@@ -67,9 +67,9 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     # Pool is still functional
     for tc, tw in trust_anchors:
         getClientAddedWithRole(nodeSet,
-                             tdirWithPoolTxns,
-                             looper,
-                             tc, tw,
-                             'NP--{}'.format(tc.name))
+                               tdirWithPoolTxns,
+                               looper,
+                               tc, tw,
+                               'NP--{}'.format(tc.name))
 
     ensure_all_nodes_have_same_data(looper, nodeSet)

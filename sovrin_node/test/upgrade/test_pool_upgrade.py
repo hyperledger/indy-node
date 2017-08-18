@@ -62,4 +62,5 @@ def testForcedUpgradeNoConsensusOnSingleNode(validUpgradeExpForceTrue, looper, n
                 assert node.upgrader.scheduledUpgrade
                 assert node.upgrader.scheduledUpgrade[0] == nup[VERSION]
 
-    looper.run(eventually(testsched, retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(eventually(testsched, retryWait=1,
+                          timeout=waits.expectedUpgradeScheduled()))

@@ -11,8 +11,8 @@ from sovrin_node.test.upgrade.helper import codeVersion, checkUpgradeScheduled, 
 
 
 def test_do_not_upgrade_to_the_same_version(looper, tconf, nodeSet,
-                                             validUpgrade, trustee,
-                                             trusteeWallet):
+                                            validUpgrade, trustee,
+                                            trusteeWallet):
     upgr1 = deepcopy(validUpgrade)
     upgr1[VERSION] = codeVersion()
 

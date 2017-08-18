@@ -70,7 +70,8 @@ class ConfigReqHandler(RequestHandler):
             # TODO: Some validation needed for making sure name and version
             # present
             txn = self.upgrader.get_upgrade_txn(
-                lambda txn: txn.get(NAME, None) == req.operation.get(NAME, None) and txn.get(VERSION) == req.operation.get(VERSION),
+                lambda txn: txn.get(NAME, None) == req.operation.get(
+                    NAME, None) and txn.get(VERSION) == req.operation.get(VERSION),
                 reverse=True)
             if txn:
                 status = txn.get(ACTION, None)
@@ -83,7 +84,8 @@ class ConfigReqHandler(RequestHandler):
             action = None
             status = None
 
-        r, msg = Authoriser.authorised(typ, ACTION, originRole, oldVal=status, newVal=action)
+        r, msg = Authoriser.authorised(
+            typ, ACTION, originRole, oldVal=status, newVal=action)
         if not r:
             raise UnauthorizedClientRequest(req.identifier, req.reqId,
                                             "{} cannot do {}".format(Roles.nameFromValue(originRole), trname))

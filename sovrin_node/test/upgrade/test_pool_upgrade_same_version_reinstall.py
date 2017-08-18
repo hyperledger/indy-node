@@ -12,8 +12,8 @@ from sovrin_common.constants import REINSTALL
 
 
 def test_do_upgrade_to_the_same_version_if_reinstall(looper, tconf, nodeSet,
-                                             validUpgrade, trustee,
-                                             trusteeWallet):
+                                                     validUpgrade, trustee,
+                                                     trusteeWallet):
     upgr1 = deepcopy(validUpgrade)
     upgr1[VERSION] = codeVersion()
     upgr1[REINSTALL] = True

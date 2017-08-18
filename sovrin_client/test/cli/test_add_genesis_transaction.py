@@ -60,6 +60,6 @@ def testAddGenTxnForNode(cli):
     role = None
     typ = NODE
     data = '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}'
-    cmd = 'add genesis transaction {} for {} by {} with data {}'.format(typ, nym, by, data)
+    cmd = 'add genesis transaction {} for {} by {} with data {}'.format(
+        typ, nym, by, data)
     executeAndCheckGenTxn(cli, cmd, typ, nym, role, data)
-

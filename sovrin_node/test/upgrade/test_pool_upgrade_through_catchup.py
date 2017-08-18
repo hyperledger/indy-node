@@ -90,5 +90,3 @@ def testUpgradeLatestUncancelledVersion(looper,
 
     looper.run(eventually(checkUpgradeScheduled, [newNode, ], upgr2[VERSION],
                           retryWait=1, timeout=waits.expectedUpgradeScheduled()))
-
-

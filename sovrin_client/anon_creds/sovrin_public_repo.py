@@ -111,7 +111,7 @@ class SovrinPublicRepo(PublicRepo):
         return pk
 
     async def getPublicKeyRevocation(self, id: ID,
-                                     signatureType = 'CL') -> Optional[RevocationPublicKey]:
+                                     signatureType='CL') -> Optional[RevocationPublicKey]:
         op = {
             TXN_TYPE: GET_CLAIM_DEF,
             REF: id.schemaId,
@@ -159,7 +159,7 @@ class SovrinPublicRepo(PublicRepo):
                                id: ID,
                                pk: PublicKey,
                                pkR: RevocationPublicKey = None,
-                               signatureType = 'CL') -> \
+                               signatureType='CL') -> \
             (PublicKey, RevocationPublicKey):
 
         data = {}

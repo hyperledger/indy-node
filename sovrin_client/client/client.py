@@ -63,7 +63,7 @@ class Client(PlenumClient):
             self.peerMsgRoutes = []
             self.peerMsgRouter = Router(*self.peerMsgRoutes)
             self.peerStack = self.peerStackClass(stackargs,
-                                          msgHandler=self.handlePeerMessage)
+                                                 msgHandler=self.handlePeerMessage)
             self.peerStack.sign = self.sign
             self.peerInbox = deque()
         self._observers = {}  # type Dict[str, Callable]
@@ -99,7 +99,7 @@ class Client(PlenumClient):
         excludeReply = msg.get(OP_FIELD_NAME) == REPLY
         excludeReject = msg.get(OP_FIELD_NAME) == REJECT
         excludeFromCli = excludeFromCli or excludeReqAcks or excludeReqNacks \
-                         or excludeReply or excludeReject
+            or excludeReply or excludeReject
         super().handleOneNodeMsg(wrappedMsg, excludeFromCli)
         if OP_FIELD_NAME not in msg:
             logger.error("Op absent in message {}".format(msg))

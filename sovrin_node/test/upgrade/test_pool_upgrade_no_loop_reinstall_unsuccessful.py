@@ -15,8 +15,8 @@ whitelist = ['Failed to upgrade node']
 
 
 def test_upgrade_does_not_get_into_loop_if_reinstall_and_failed(looper, tconf, nodeSet,
-                                             validUpgrade, trustee,
-                                             trusteeWallet, monkeypatch):
+                                                                validUpgrade, trustee,
+                                                                trusteeWallet, monkeypatch):
     new_version = bumpedVersion()
     upgr1 = deepcopy(validUpgrade)
     upgr1[VERSION] = new_version
@@ -29,5 +29,3 @@ def test_upgrade_does_not_get_into_loop_if_reinstall_and_failed(looper, tconf, n
 
     # we have not patched sovrin_node version so nodes think the upgrade had failed
     check_no_loop(nodeSet, UpgradeLog.UPGRADE_FAILED)
-
-

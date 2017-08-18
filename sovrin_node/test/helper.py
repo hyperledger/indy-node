@@ -203,7 +203,7 @@ class Organization:
             raise ValueError("No wallet exists for this user id")
 
     def addTxnsForCompletedRequestsInWallet(self, reqs: Iterable, wallet:
-    Wallet):
+                                            Wallet):
         for req in reqs:
             reply, status = self.client.getReply(req.reqId)
             if status == "CONFIRMED":
@@ -365,7 +365,7 @@ def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
-           (data is not None and data.get(attrName) == attrValue)
+        (data is not None and data.get(attrName) == attrValue)
     return reply
 
 

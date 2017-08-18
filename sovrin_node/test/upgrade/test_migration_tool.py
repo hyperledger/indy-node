@@ -13,26 +13,30 @@ TEST_TIMEOUT = 1
 
 
 def testGetRelevantMigrations():
-    relevantMigrations = migration_tool._get_relevant_migrations(TEST_MIGRATION_SCRIPTS, TEST_VERSION, TEST_NEW_VERSION)
+    relevantMigrations = migration_tool._get_relevant_migrations(
+        TEST_MIGRATION_SCRIPTS, TEST_VERSION, TEST_NEW_VERSION)
     assert len(relevantMigrations) == 3
-    assert relevantMigrations == ['0_3_100_to_0_3_101', '0_3_100_to_0_3_104', '0_9_2_to_0_9_10']
+    assert relevantMigrations == [
+        '0_3_100_to_0_3_101', '0_3_100_to_0_3_104', '0_9_2_to_0_9_10']
 
 
 def testMigrate(monkeypatch):
     testList = []
 
     monkeypatch.setattr(importlib, 'import_module', testList.append)
-    monkeypatch.setattr(migration_tool, '_get_migration_scripts', lambda *x: TEST_MIGRATION_SCRIPTS)
+    monkeypatch.setattr(migration_tool, '_get_migration_scripts',
+                        lambda *x: TEST_MIGRATION_SCRIPTS)
 
-    assert migration_tool.migrate(TEST_VERSION, TEST_NEW_VERSION, TEST_TIMEOUT) == 3
+    assert migration_tool.migrate(
+        TEST_VERSION, TEST_NEW_VERSION, TEST_TIMEOUT) == 3
     assert len(testList) == 3
 
 
 def testMigrateTimesOut(monkeypatch):
-    monkeypatch.setattr(importlib, 'import_module', lambda *x: time.sleep(TEST_TIMEOUT * 2))
-    monkeypatch.setattr(migration_tool, '_get_migration_scripts', lambda *x: TEST_MIGRATION_SCRIPTS)
+    monkeypatch.setattr(importlib, 'import_module',
+                        lambda *x: time.sleep(TEST_TIMEOUT * 2))
+    monkeypatch.setattr(migration_tool, '_get_migration_scripts',
+                        lambda *x: TEST_MIGRATION_SCRIPTS)
 
     with pytest.raises(TimeoutError):
         migration_tool.migrate(TEST_VERSION, TEST_NEW_VERSION, TEST_TIMEOUT)
-
-

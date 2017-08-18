@@ -55,6 +55,7 @@ def create_thrift(name=None, wallet=None, base_dir_path=None, port=7777, client=
 
     return agent
 
+
 async def bootstrap_thrift(agent):
     pass
 

@@ -94,8 +94,9 @@ def checkIfConnectedToAll(client):
 
 async def ensureConnectedToNodes(client):
     wait = 5
-    logger.info("waiting for {} seconds to check client connections to nodes...".format(wait))
-    await eventuallyAll(lambda : checkIfConnectedToAll(client), retryWait=.5, totalTimeout=wait)
+    logger.info(
+        "waiting for {} seconds to check client connections to nodes...".format(wait))
+    await eventuallyAll(lambda: checkIfConnectedToAll(client), retryWait=.5, totalTimeout=wait)
 
 
 def addNyms():
@@ -128,7 +129,6 @@ def addNyms():
             except Exception as ex:
                 bad.append(seed)
                 print("Failed to create nym for {}".format(seed))
-
 
         print("=======================")
         if not bad:

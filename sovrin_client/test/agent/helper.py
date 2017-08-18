@@ -18,6 +18,7 @@ def connectAgents(agent1, agent2):
 
 def ensureAgentConnected(looper, agent, link):
     linkHa = link.getRemoteEndpoint(required=True)
+
     def _checkConnected():
         assert agent.endpoint.isConnectedTo(ha=linkHa)
 

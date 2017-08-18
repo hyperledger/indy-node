@@ -16,6 +16,7 @@ class TxnBasedAuthNr(NaclAuthNr):
     """
     Transaction-based client authenticator.
     """
+
     def __init__(self, cache: IdrCache):
         self.cache = cache
 
@@ -41,4 +42,3 @@ class TxnBasedAuthNr(NaclAuthNr):
         except KeyError:
             return None
         return verkey
-

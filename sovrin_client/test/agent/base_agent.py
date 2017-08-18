@@ -59,7 +59,7 @@ class BaseAgent(TestWalletedAgent):
         return '{}/{}.log'.format(path, (name or self.name).replace(" ", "-").lower())
 
     def getClaimVersionFileName(self):
-        return self.name.replace(" ","-").lower() + "-schema-version.txt"
+        return self.name.replace(" ", "-").lower() + "-schema-version.txt"
 
     def updateClaimVersionFile(self, fileName,):
         claimVersionFilePath = '{}/{}'.format(self.basedirpath, fileName)
@@ -74,7 +74,7 @@ class BaseAgent(TestWalletedAgent):
                     file.truncate()
             except OSError as e:
                 self.logger.warning('Error occurred while reading version file: '
-                                 'error:{}'.format(e))
+                                    'error:{}'.format(e))
                 raise e
             except ValueError as e:
                 self.logger.warning('Invalid version number')
@@ -106,8 +106,9 @@ class BaseAgent(TestWalletedAgent):
         assert link.request_nonce
         assert link.remoteIdentifier
         return self.issuer.wallet.availableClaimsToAll + \
-               self.issuer.wallet.availableClaimsByNonce.get(link.request_nonce, []) + \
-               self.issuer.wallet.availableClaimsByIdentifier.get(link.remoteIdentifier, [])
+            self.issuer.wallet.availableClaimsByNonce.get(link.request_nonce, []) + \
+            self.issuer.wallet.availableClaimsByIdentifier.get(
+                link.remoteIdentifier, [])
 
     def isClaimAvailable(self, link, claimName):
         return claimName in [cl.get("name") for cl in
@@ -146,11 +147,13 @@ class BaseAgent(TestWalletedAgent):
 
         for nonce, schemaNames in self.getSchemaKeysForClaimsAvailableToSpecificNonce().items():
             for schemaName in schemaNames:
-                schemaKeys = list(filter(lambda sk: sk.name ==schemaName, self.getSchemaKeysToBeGenerated()))
+                schemaKeys = list(
+                    filter(lambda sk: sk.name == schemaName, self.getSchemaKeysToBeGenerated()))
                 assert len(schemaKeys) == 1, \
                     "no such schema name found in generated schema keys"
                 schema = await getSchema(schemaKeys[0])
-                oldAvailClaims = self.issuer.wallet.availableClaimsByNonce.get(nonce, [])
+                oldAvailClaims = self.issuer.wallet.availableClaimsByNonce.get(nonce, [
+                ])
                 oldAvailClaims.append(schema)
                 self.issuer.wallet.availableClaimsByNonce[nonce] = oldAvailClaims
 
@@ -170,10 +173,10 @@ class BaseAgent(TestWalletedAgent):
             attrDef = matchedAttrDefs[0]
             if not self.issuer.isSchemaExists(schemaKey):
                 self.logger.info("schema not found in wallet, will go and "
-                                 "get id from repo: {}".format( str(schemaKey)))
+                                 "get id from repo: {}".format(str(schemaKey)))
                 schema = await self.issuer.genSchema(schemaKey.name,
-                                                 schemaKey.version,
-                                                 attrDef.attribNames())
+                                                     schemaKey.version,
+                                                     attrDef.attribNames())
                 if schema:
                     schemaId = ID(schemaKey=schema.getKey(),
                                   schemaId=schema.seqId, seqId=schema.seqId)
@@ -181,7 +184,8 @@ class BaseAgent(TestWalletedAgent):
                     await self.issuer.genKeys(schemaId, p_prime=p_prime, q_prime=q_prime)
                     await self.issuer.issueAccumulator(schemaId=schemaId, iA='110', L=5)
             else:
-                self.logger.info("schema is already loaded in wallet: {}".format(str(schemaKey)))
+                self.logger.info(
+                    "schema is already loaded in wallet: {}".format(str(schemaKey)))
         await self.initAvailableClaimList()
 
     async def bootstrap(self):

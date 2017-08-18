@@ -60,7 +60,8 @@ def testSendGetNymFailsIfDestIsPassedInHexFormat(
     # Sometimes hex representation can use only base58 compatible characters
     while True:
         uuidIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
-        hexEncodedUuidIdentifier = hexlify(friendlyToRaw(uuidIdentifier)).decode()
+        hexEncodedUuidIdentifier = hexlify(
+            friendlyToRaw(uuidIdentifier)).decode()
         if not check_str_is_base58_compatible(hexEncodedUuidIdentifier):
             break
 

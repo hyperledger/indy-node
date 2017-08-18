@@ -22,13 +22,15 @@ from sovrin_node.test.conftest import tdir, conf, nodeSet, tconf, \
 
 BANK_SEED = b'BANK0000000000000000000000000000'
 
+
 class RefAgent(WalletedAgent):
 
     def create_connection_request(self, internal_id, name):
 
         nonce = str(self.verifier.generateNonce())
         # endpoint = self.endpoint.host_address()
-        endpoint = "127.0.0.1" + ":" + str(self.endpoint.ha[1])  #TODO: this should be done by endpoint
+        # TODO: this should be done by endpoint
+        endpoint = "127.0.0.1" + ":" + str(self.endpoint.ha[1])
 
         msg = {'connection-request': {
             'name': self.name,
@@ -36,7 +38,7 @@ class RefAgent(WalletedAgent):
             'nonce': nonce,
             'endpoint': endpoint,
             'verkey': self._wallet.getVerkey(self.wallet.defaultId)
-            },
+        },
             'sig': None
         }
 
@@ -93,15 +95,24 @@ def test_end_to_end(tconf):
         bank_attribute_definition = \
             anoncreds.protocol.types.AttribDef('basic',
                                                [anoncreds.protocol.types.AttribType('title', encode=True),
-                                                anoncreds.protocol.types.AttribType('first_name', encode=True),
-                                                anoncreds.protocol.types.AttribType('last_name', encode=True),
-                                                anoncreds.protocol.types.AttribType('address_1', encode=True),
-                                                anoncreds.protocol.types.AttribType('address_2', encode=True),
-                                                anoncreds.protocol.types.AttribType('address_3', encode=True),
-                                                anoncreds.protocol.types.AttribType('postcode_zip', encode=True),
-                                                anoncreds.protocol.types.AttribType('date_of_birth', encode=True),
-                                                anoncreds.protocol.types.AttribType('account_type', encode=True),
-                                                anoncreds.protocol.types.AttribType('year_opened', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'first_name', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'last_name', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'address_1', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'address_2', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'address_3', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'postcode_zip', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'date_of_birth', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'account_type', encode=True),
+                                                anoncreds.protocol.types.AttribType(
+                                                    'year_opened', encode=True),
                                                 anoncreds.protocol.types.AttribType('account_status', encode=True)])
 
         bank_agent.add_attribute_definition(bank_attribute_definition)
@@ -158,8 +169,10 @@ def test_end_to_end(tconf):
 
         # print(accPK)
 
-        run_async(bank_agent._set_available_claim_by_internal_id(alices_id_in_banks_system, schema_id))
-        run_async(bank_agent._set_available_claim_by_internal_id(bobs_id_in_banks_system, schema_id))
+        run_async(bank_agent._set_available_claim_by_internal_id(
+            alices_id_in_banks_system, schema_id))
+        run_async(bank_agent._set_available_claim_by_internal_id(
+            bobs_id_in_banks_system, schema_id))
 
         alice_wallet = Wallet()
         alice_agent = RefAgent(name="Alice",
@@ -172,7 +185,8 @@ def test_end_to_end(tconf):
 
         network.runFor(1)
 
-        request = bank_agent.create_connection_request(alices_id_in_banks_system, "Alice")
+        request = bank_agent.create_connection_request(
+            alices_id_in_banks_system, "Alice")
 
         # Transfer of this request happens out-of-band (website, QR code, etc)
 
@@ -188,12 +202,14 @@ def test_end_to_end(tconf):
         # notice that the link is accepted
         print(alices_link_to_bank)
 
-        banks_link_to_alice = bank_agent.get_link_by_name(alices_id_in_banks_system)
+        banks_link_to_alice = bank_agent.get_link_by_name(
+            alices_id_in_banks_system)
 
         # note the available claims are now there
         print(banks_link_to_alice)
 
-        claim_to_request = alices_link_to_bank.find_available_claim(name='Bank Membership')
+        claim_to_request = alices_link_to_bank.find_available_claim(
+            name='Bank Membership')
 
         print(claim_to_request)
 
@@ -224,4 +240,3 @@ def test_end_to_end(tconf):
         #
         # network.runFor(3)
         # print()
-

@@ -45,6 +45,7 @@ class REndpoint(SimpleRStack, EndpointCore):
 
         self.msgHandler = msgHandler
 
+
 class ZEndpoint(SimpleZStack, EndpointCore):
     def __init__(self, port: int, msgHandler: Callable,
                  name: str=None, basedirpath: str=None, seed=None,
@@ -62,4 +63,3 @@ class ZEndpoint(SimpleZStack, EndpointCore):
                               seed=seed, onlyListener=onlyListener, msgRejectHandler=msgRejectHandler)
 
         self.msgHandler = msgHandler
-

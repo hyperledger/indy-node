@@ -37,7 +37,8 @@ class AgentVerifier(Verifier):
             proofs[key] = ProofInfo.from_str_dict(p, str(pk.N))
 
         proof = FullProof(proofs,
-                          AggregatedProof.from_str_dict(proof['aggregated_proof']),
+                          AggregatedProof.from_str_dict(
+                              proof['aggregated_proof']),
                           RequestedProof.from_str_dict(proof['requested_proof']))
 
         result = await self.verifier.verify(proofRequest, proof)
@@ -50,7 +51,7 @@ class AgentVerifier(Verifier):
         resp = {
             TYPE: PROOF_STATUS,
             DATA: '    Your Proof {} {} was received and {}\n'.
-                format(proofRequest.name, proofRequest.version, status),
+            format(proofRequest.name, proofRequest.version, status),
         }
         self.signAndSend(resp, link.localIdentifier, frm,
                          origReqId=body.get(f.REQ_ID.nm))
@@ -62,8 +63,8 @@ class AgentVerifier(Verifier):
                                  format(attribute.name, proof.requestedProof.revealed_attrs[uuid][1]))
             self.logger.info('Verified that proof "{}" contains attributes '
                              'from claim(s) issued by: {}'.format(
-                proofName, ", ".join(
-                    sorted([v.issuer_did for k, v in proof.proofs.items()]))))
+                                 proofName, ", ".join(
+                                     sorted([v.issuer_did for k, v in proof.proofs.items()]))))
             await self._postProofVerif(proofName, link, frm)
         else:
             self.logger.info('Verification failed for proof {} from {} '
@@ -71,7 +72,7 @@ class AgentVerifier(Verifier):
 
     def sendProofReq(self, link: Connection, proofReqSchemaKey):
         if self._proofRequestsSchema and (
-                    proofReqSchemaKey in self._proofRequestsSchema):
+                proofReqSchemaKey in self._proofRequestsSchema):
             proofRequest = self._proofRequestsSchema[proofReqSchemaKey]
 
             proofRequest = ProofRequest(
@@ -79,7 +80,8 @@ class AgentVerifier(Verifier):
                 proofRequest[VERSION],
                 getNonceForProof(link.request_nonce),
                 proofRequest[ATTRIBUTES],
-                proofRequest[VERIFIABLE_ATTRIBUTES] if VERIFIABLE_ATTRIBUTES in proofRequest else [],
+                proofRequest[VERIFIABLE_ATTRIBUTES] if VERIFIABLE_ATTRIBUTES in proofRequest else [
+                ],
                 proofRequest[PREDICATES] if PREDICATES in proofRequest else []
             )
 

@@ -39,10 +39,10 @@ def create_local_pool(base_dir, node_size=4):
 
         stewards.append(s)
 
-        n_config = adict(name='Node'+str(i+1),
+        n_config = adict(name='Node' + str(i + 1),
                          basedirpath=pool_dir,
-                         ha=('127.0.0.1', 9700+(i * 2)),
-                         cliha=('127.0.0.1', 9700+(i * 2)+1))
+                         ha=('127.0.0.1', 9700 + (i * 2)),
+                         cliha=('127.0.0.1', 9700 + (i * 2) + 1))
 
         n_verkey = initialize_node_environment(name=n_config.name,
                                                base_dir=n_config.basedirpath,
@@ -80,7 +80,8 @@ class LocalPool(Pool, Looper):
         if steward is not None:
             self._steward_agent = WalletedAgent(name="steward1",
                                                 basedirpath=self.base_dir,
-                                                client=self.create_client(5005),
+                                                client=self.create_client(
+                                                    5005),
                                                 wallet=steward.wallet,
                                                 port=8781)
             self.add(self._steward_agent)

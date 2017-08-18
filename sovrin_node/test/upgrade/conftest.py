@@ -58,7 +58,8 @@ def validUpgradeSent(looper, nodeSet, tdir, trustee, trusteeWallet,
 @pytest.fixture(scope="module")
 def validUpgradeSentExpForceFalse(looper, nodeSet, tdir, trustee, trusteeWallet,
                                   validUpgradeExpForceFalse):
-    ensureUpgradeSent(looper, trustee, trusteeWallet, validUpgradeExpForceFalse)
+    ensureUpgradeSent(looper, trustee, trusteeWallet,
+                      validUpgradeExpForceFalse)
 
 
 @pytest.fixture(scope="module")

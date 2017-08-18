@@ -33,7 +33,8 @@ def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
 
         proof = await  aliceAgent.prover.presentProof(proofRequest)
 
-        msg = get_proof_libsovrin_msg(acme_link, acme_proof_req, proof, str(schema.seqId), schema.seqId)
+        msg = get_proof_libsovrin_msg(
+            acme_link, acme_proof_req, proof, str(schema.seqId), schema.seqId)
 
         aliceAgent.signAndSendToLink(msg=msg, linkName=acme_link.name)
 
@@ -41,7 +42,8 @@ def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
 
     # 4. check that proof is verified by Acme
     def chkProof():
-        internalId = acmeAgent.get_internal_id_by_nonce(acme_link.request_nonce)
+        internalId = acmeAgent.get_internal_id_by_nonce(
+            acme_link.request_nonce)
         link = acmeAgent.wallet.getConnectionBy(internalId=internalId)
         assert "Job-Application" in link.verifiedClaimProofs
 

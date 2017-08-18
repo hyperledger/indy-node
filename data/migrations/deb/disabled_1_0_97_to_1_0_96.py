@@ -19,19 +19,20 @@ from stp_core.common.log import getlogger
 config = getConfig()
 logger = getlogger()
 
+
 def __migrate_ledger(data_directory,
-                   old_ledger_file, new_ledger_file,
-                   serializer: MappingSerializer = None):
+                     old_ledger_file, new_ledger_file,
+                     serializer: MappingSerializer = None):
     """
     Test for the directory, open old and new ledger, migrate data, rename directories
     """
 
     # we should have ChunkedFileStorage implementation of the Ledger
     if not os.path.isdir(os.path.join(data_directory, old_ledger_file)):
-        msg = 'Could not find directory {} for migration.'.format(old_ledger_file)
+        msg = 'Could not find directory {} for migration.'.format(
+            old_ledger_file)
         logger.error(msg)
         raise Exception(msg)
-
 
     # open the old ledger using the specified serializer
     old_ledger_file_backup = old_ledger_file + "_new"
@@ -50,12 +51,14 @@ def __migrate_ledger(data_directory,
     new_ledger = Ledger(CompactMerkleTree(),
                         dataDir=data_directory,
                         fileName=new_ledger_file)
-    logger.info("new size for {}: {}".format(old_ledger_file_backup, str(new_ledger.size)))
+    logger.info("new size for {}: {}".format(
+        old_ledger_file_backup, str(new_ledger.size)))
 
     # add all txns into the old ledger
     for _, txn in new_ledger.getAllTxn():
         old_ledger.add(txn)
-    logger.info("old size for {}: {}".format(new_ledger_file, str(old_ledger.size)))
+    logger.info("old size for {}: {}".format(
+        new_ledger_file, str(old_ledger.size)))
 
     old_ledger.stop()
     new_ledger.stop()
@@ -75,14 +78,14 @@ def __open_old_ledger(data_directory, old_ledger_file, hash_store_name, serializ
                                          isLineNoKey=True,
                                          storeContentHash=False)
     old_ledger = Ledger(CompactMerkleTree(
-                            hashStore=LevelDbHashStore(
-                            dataDir=data_directory, 
-                            fileNamePrefix=hash_store_name)),
-                        dataDir=data_directory,
-                        txn_serializer=serializer,
-                        hash_serializer=serializer,
-                        fileName=old_ledger_file,
-                        transactionLogStore=old_txn_log_store)
+        hashStore=LevelDbHashStore(
+            dataDir=data_directory,
+            fileNamePrefix=hash_store_name)),
+        dataDir=data_directory,
+        txn_serializer=serializer,
+        hash_serializer=serializer,
+        fileName=old_ledger_file,
+        transactionLogStore=old_txn_log_store)
 
     old_ledger.stop()
 
@@ -92,10 +95,14 @@ def migrate_all_hash_stores(node_data_directory):
     # just delete the current hash store
     new_merkle_nodes = os.path.join(node_data_directory, '_merkleNodes')
     new_merkle_leaves = os.path.join(node_data_directory, '_merkleLeaves')
-    new_merkle_nodes_bin = os.path.join(node_data_directory, '_merkleNodes.bin')
-    new_merkle_leaves_bin = os.path.join(node_data_directory, '_merkleLeaves.bin')
-    new_merkle_nodes_config_bin = os.path.join(node_data_directory, 'config_merkleNodes.bin')
-    new_merkle_leaves_config_bin = os.path.join(node_data_directory, 'config_merkleLeaves.bin')
+    new_merkle_nodes_bin = os.path.join(
+        node_data_directory, '_merkleNodes.bin')
+    new_merkle_leaves_bin = os.path.join(
+        node_data_directory, '_merkleLeaves.bin')
+    new_merkle_nodes_config_bin = os.path.join(
+        node_data_directory, 'config_merkleNodes.bin')
+    new_merkle_leaves_config_bin = os.path.join(
+        node_data_directory, 'config_merkleLeaves.bin')
 
     if os.path.exists(new_merkle_nodes):
         shutil.rmtree(new_merkle_nodes)
@@ -112,25 +119,29 @@ def migrate_all_hash_stores(node_data_directory):
 
     # open new Ledgers
     fields = getTxnOrderedFields()
-    __open_old_ledger(node_data_directory, config.poolTransactionsFile, 'pool', serializer=JsonSerializer())
-    __open_old_ledger(node_data_directory, config.domainTransactionsFile, 'domain', serializer=CompactSerializer(fields=fields))
-    __open_old_ledger(node_data_directory, config.configTransactionsFile, 'config', serializer=JsonSerializer())
+    __open_old_ledger(node_data_directory, config.poolTransactionsFile,
+                      'pool', serializer=JsonSerializer())
+    __open_old_ledger(node_data_directory, config.domainTransactionsFile,
+                      'domain', serializer=CompactSerializer(fields=fields))
+    __open_old_ledger(node_data_directory, config.configTransactionsFile,
+                      'config', serializer=JsonSerializer())
 
 
 def migrate_all_ledgers_for_node(node_data_directory):
     # using default ledger names
     __migrate_ledger(node_data_directory,
-                   config.poolTransactionsFile, config.poolTransactionsFile,
-                   serializer=JsonSerializer())
+                     config.poolTransactionsFile, config.poolTransactionsFile,
+                     serializer=JsonSerializer())
     __migrate_ledger(node_data_directory,
-                   config.configTransactionsFile, config.configTransactionsFile,
-                   serializer=JsonSerializer())
+                     config.configTransactionsFile, config.configTransactionsFile,
+                     serializer=JsonSerializer())
 
     # domain ledger uses custom CompactSerializer and old file name
     fields = getTxnOrderedFields()
     __migrate_ledger(node_data_directory,
-                   config.domainTransactionsFile.replace('domain_', ''), config.domainTransactionsFile,
-                   serializer=CompactSerializer(fields=fields))
+                     config.domainTransactionsFile.replace(
+                         'domain_', ''), config.domainTransactionsFile,
+                     serializer=CompactSerializer(fields=fields))
 
 
 def migrate_all_states(node_data_directory):
@@ -146,11 +157,15 @@ def migrate_all_states(node_data_directory):
 
 def migrate_genesis_txn(base_dir):
     for suffix in ('sandbox', 'live', 'local'):
-        old_domain_genesis = os.path.join(base_dir, 'transactions_{}'.format(suffix))
-        old_pool_genesis = os.path.join(base_dir, 'pool_transactions_{}'.format(suffix))
+        old_domain_genesis = os.path.join(
+            base_dir, 'transactions_{}'.format(suffix))
+        old_pool_genesis = os.path.join(
+            base_dir, 'pool_transactions_{}'.format(suffix))
 
-        new_domain_genesis = os.path.join(base_dir, 'domain_transactions_{}_genesis'.format(suffix))
-        new_pool_genesis = os.path.join(base_dir, 'pool_transactions_{}_genesis'.format(suffix))
+        new_domain_genesis = os.path.join(
+            base_dir, 'domain_transactions_{}_genesis'.format(suffix))
+        new_pool_genesis = os.path.join(
+            base_dir, 'pool_transactions_{}_genesis'.format(suffix))
 
         if os.path.exists(old_domain_genesis):
             os.remove(old_domain_genesis)
@@ -179,7 +194,8 @@ def migrate_all():
         base_dir = '/home/sovrin/.sovrin'
         nodes_data_dir = os.path.join(base_dir, config.nodeDataDir)
     if not os.path.exists(nodes_data_dir):
-        msg = 'Can not find the directory with the ledger: {}'.format(nodes_data_dir)
+        msg = 'Can not find the directory with the ledger: {}'.format(
+            nodes_data_dir)
         logger.error(msg)
         raise Exception(msg)
 

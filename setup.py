@@ -67,6 +67,7 @@ class EnhancedInstallDev(develop):
         develop.run(self)
         post_install()
 
+
 setup(
     name='indy-node-dev',
     version=__version__,

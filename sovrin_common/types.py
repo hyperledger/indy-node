@@ -111,7 +111,8 @@ class ClientAttribOperation(MessageValidator):
             self._raise_missed_fields(RAW, ENC, HASH)
         if fields_n > 1:
             self._raise_invalid_message(
-                "only one field from {}, {}, {} is expected".format(RAW, ENC, HASH)
+                "only one field from {}, {}, {} is expected".format(
+                    RAW, ENC, HASH)
             )
 
     def __validate_raw_field(self, raw_field):
@@ -184,7 +185,8 @@ class ClientPoolUpgradeOperation(MessageValidator):
                             NonEmptyStringField(), optional=True)),
         (SHA256, Sha256HexField()),
         (TIMEOUT, NonNegativeNumberField(optional=True)),
-        (JUSTIFICATION, LimitedLengthStringField(max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
+        (JUSTIFICATION, LimitedLengthStringField(
+            max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
         (NAME, NonEmptyStringField(optional=True)),
         (FORCE, BooleanField(optional=True)),
         (REINSTALL, BooleanField(optional=True)),
@@ -240,8 +242,10 @@ class LedgerInfoField(PLedgerInfoField):
 # TODO: it is a workaround which helps extend some fields from
 # downstream projects, should be removed after we find a better way
 # to do this
-node_message_factory.update_schemas_by_field_type(PLedgerIdField, LedgerIdField)
-node_message_factory.update_schemas_by_field_type(PLedgerInfoField, LedgerInfoField)
+node_message_factory.update_schemas_by_field_type(
+    PLedgerIdField, LedgerIdField)
+node_message_factory.update_schemas_by_field_type(
+    PLedgerInfoField, LedgerInfoField)
 
 
 class SafeRequest(Request, ClientMessageValidator):

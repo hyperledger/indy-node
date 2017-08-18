@@ -8,7 +8,7 @@ from sovrin_common.types import ClientAttribOperation
 
 validator = ClientAttribOperation()
 
-VALID_TARGET_NYM = 'a'*43
+VALID_TARGET_NYM = 'a' * 43
 
 
 def test_attrib_with_enc_raw_hash_at_same_time_fails():

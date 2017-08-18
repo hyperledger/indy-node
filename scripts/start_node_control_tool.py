@@ -17,6 +17,3 @@ if args.test:
 
 nodeControlTool = NodeControlTool(test_mode=test_mode, hold_ext=args.hold_ext)
 nodeControlTool.start()
-    
-
-

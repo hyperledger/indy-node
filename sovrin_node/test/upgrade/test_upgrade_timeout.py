@@ -3,7 +3,8 @@ from stp_core.loop.eventually import eventually
 from sovrin_node.server.upgrader import Upgrader
 import functools
 
-whitelist = ['Upgrade to version {} scheduled on {} failed because timeout exceeded']
+whitelist = [
+    'Upgrade to version {} scheduled on {} failed because timeout exceeded']
 
 
 def testTimeoutWorks(nodeSet, looper, monkeypatch):

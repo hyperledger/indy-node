@@ -106,11 +106,13 @@ class AgentProver:
             schema = await self.prover.wallet.getSchema(schemaId)
 
             self.notifyResponseFromMsg(li.name, body.get(f.REQ_ID.nm))
-            self.notifyMsgListener('    Received claim "{}".\n'.format(schema.name))
+            self.notifyMsgListener(
+                '    Received claim "{}".\n'.format(schema.name))
 
             pk = await self.prover.wallet.getPublicKey(schemaId)
 
-            claim_attributes = {k: ClaimAttributeValues.from_str_dict(v) for k, v in json.loads(claim[CLAIM_FIELD]).items()}
+            claim_attributes = {k: ClaimAttributeValues.from_str_dict(
+                v) for k, v in json.loads(claim[CLAIM_FIELD]).items()}
             claim_signature = Claims.from_str_dict(claim[f.SIG.nm], pk.N)
 
             await self.prover.processClaim(schemaId, claim_attributes, claim_signature)
@@ -130,7 +132,8 @@ class AgentProver:
         # TODO rename presentProof to buildProof or generateProof
 
         proof = await self.prover.presentProof(proofRequest)
-        proof.requestedProof.self_attested_attrs.update(proofRequest.selfAttestedAttrs)
+        proof.requestedProof.self_attested_attrs.update(
+            proofRequest.selfAttestedAttrs)
 
         op = {
             TYPE: PROOF,

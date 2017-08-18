@@ -121,14 +121,16 @@ def testAddAttrProverRegEx(grammar):
 
 
 def testSendClaimDefRegEx(grammar):
-    matchedVars = getMatchedVariables(grammar, "send CLAIM_DEF ref=15 signature_type=CL")
+    matchedVars = getMatchedVariables(
+        grammar, "send CLAIM_DEF ref=15 signature_type=CL")
     from sovrin_common.constants import SIGNATURE_TYPE
     assertCliTokens(matchedVars, {
         "send_claim_def": "send CLAIM_DEF", REF: "15", SIGNATURE_TYPE: "CL"})
 
 
 def test_send_get_claim_def_regex(grammar):
-    matchedVars = getMatchedVariables(grammar, "send GET_CLAIM_DEF ref=15 signature_type=CL")
+    matchedVars = getMatchedVariables(
+        grammar, "send GET_CLAIM_DEF ref=15 signature_type=CL")
     from sovrin_common.constants import SIGNATURE_TYPE
     assertCliTokens(matchedVars, {
         "send_get_claim_def": "send GET_CLAIM_DEF", REF: "15", SIGNATURE_TYPE: "CL"})
@@ -167,7 +169,8 @@ def testShowLinkRegEx(grammar):
     assertCliTokens(matchedVars, {"show_connection": "show connection",
                                   "connection_name": "faber college"})
 
-    matchedVars = getMatchedVariables(grammar, "show connection faber college ")
+    matchedVars = getMatchedVariables(
+        grammar, "show connection faber college ")
     assertCliTokens(matchedVars, {"show_connection": "show connection",
                                   "connection_name": "faber college "})
 
@@ -180,13 +183,16 @@ def testConnectRegEx(grammar):
 
 def testSyncLinkRegEx(grammar):
     matchedVars = getMatchedVariables(grammar, "sync faber")
-    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": "faber"})
+    assertCliTokens(
+        matchedVars, {"sync_connection": "sync", "connection_name": "faber"})
 
     matchedVars = getMatchedVariables(grammar, 'sync "faber"')
-    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": '"faber"'})
+    assertCliTokens(
+        matchedVars, {"sync_connection": "sync", "connection_name": '"faber"'})
 
     matchedVars = getMatchedVariables(grammar, 'sync "faber" ')
-    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": '"faber" '})
+    assertCliTokens(
+        matchedVars, {"sync_connection": "sync", "connection_name": '"faber" '})
 
 
 def testPingTargetRegEx(grammar):

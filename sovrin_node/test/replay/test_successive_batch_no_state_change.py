@@ -31,9 +31,9 @@ def tconf(tconf, request):
 
 
 def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
-                                            tdirWithDomainTxnsUpdated,
+                                             tdirWithDomainTxnsUpdated,
                                              tconf, nodeSet,
-                                            trustee, trusteeWallet):
+                                             trustee, trusteeWallet):
     """
     Send 2 NYM txns in different batches such that the second batch does not
     change state so that state root remains same, but keep the identifier
@@ -51,8 +51,8 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
         nonlocal pp_seq_no_to_delay
         msg, sender = wrappedMsg
         if isinstance(msg, PrePrepare) and \
-                        msg.instId == 0 and \
-                        msg.ppSeqNo == pp_seq_no_to_delay:
+                msg.instId == 0 and \
+                msg.ppSeqNo == pp_seq_no_to_delay:
             return 5
 
     def delay_commits(wrappedMsg):

@@ -48,7 +48,7 @@ def build_wallet_core(wallet_name, seed_file):
     baseDir = os.path.expanduser(config.baseDir)
 
     seedFilePath = '{}/{}'.format(baseDir, seed_file)
-    seed = wallet_name + '0'*(32 - len(wallet_name))
+    seed = wallet_name + '0' * (32 - len(wallet_name))
 
     # if seed file is available, read seed from it
     if os.path.isfile(seedFilePath):

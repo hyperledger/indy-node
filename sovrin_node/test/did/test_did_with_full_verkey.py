@@ -26,7 +26,7 @@ from sovrin_client.test.helper import createNym
 
 @pf
 def didAddedWithFullVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWallet,
-                          wallet, fullKeyIdr):
+                           wallet, fullKeyIdr):
     """{ type: NYM, dest: <id1> }"""
     createNym(looper, fullKeyIdr, trustAnchor, trustAnchorWallet,
               verkey=wallet.getVerkey(fullKeyIdr))
@@ -42,9 +42,10 @@ def newFullKeySigner(wallet, fullKeyIdr):
 def newFullKey(newFullKeySigner):
     return newFullKeySigner.verkey
 
+
 @pf
 def didUpdatedWithFullVerkey(didAddedWithFullVerkey, looper, trustAnchor,
-                            trustAnchorWallet, fullKeyIdr, newFullKey,
+                             trustAnchorWallet, fullKeyIdr, newFullKey,
                              newFullKeySigner, wallet, client):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
     updateSovrinIdrWithVerkey(looper, wallet, client, fullKeyIdr, newFullKey)
@@ -64,7 +65,7 @@ def testAddDidWithVerkey(didAddedWithFullVerkey):
 
 
 def testRetrieveFullVerkey(didAddedWithFullVerkey, looper, trustAnchor,
-                            trustAnchorWallet, wallet, fullKeyIdr):
+                           trustAnchorWallet, wallet, fullKeyIdr):
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=fullKeyIdr)
     req = trustAnchorWallet.requestIdentity(identity,

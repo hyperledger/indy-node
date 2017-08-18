@@ -44,7 +44,8 @@ class AgentIssuer:
             return
 
         public_key = await self.issuer.wallet.getPublicKey(schemaId)
-        claimReq = ClaimRequest.from_str_dict(claimReqDetails[CLAIM_REQ_FIELD], public_key.N)
+        claimReq = ClaimRequest.from_str_dict(
+            claimReqDetails[CLAIM_REQ_FIELD], public_key.N)
 
         self._add_attribute(schemaKey=schema.getKey(), proverId=claimReq.userId,
                             link=link)

@@ -263,7 +263,8 @@ class Wallet(PWallet, TrustAnchoring):
         if idy:
             idy.seqNo = result[F.seqNo.name]
         else:
-            logger.warning("Target {} not found in trust anchored".format(target))
+            logger.warning(
+                "Target {} not found in trust anchored".format(target))
 
     def _nodeReply(self, result, preparedReq):
         _, nodeKey = preparedReq
@@ -331,11 +332,11 @@ class Wallet(PWallet, TrustAnchoring):
         :param version: version of schema
         :return: req object
         """
-        operation = { TARGET_NYM: nym,
-                      TXN_TYPE: GET_SCHEMA,
-                      DATA: {NAME : name,
-                             VERSION: version}
-        }
+        operation = {TARGET_NYM: nym,
+                     TXN_TYPE: GET_SCHEMA,
+                     DATA: {NAME: name,
+                            VERSION: version}
+                     }
 
         req = Request(sender, operation=operation)
         return self.prepReq(req)
@@ -347,15 +348,14 @@ class Wallet(PWallet, TrustAnchoring):
         :param signature: CL is only supported option currently
         :return: req object
         """
-        operation = { TXN_TYPE: GET_CLAIM_DEF,
-                      ORIGIN: sender,
-                      REF : seqNo,
-                      SIGNATURE_TYPE : signature
-                    }
+        operation = {TXN_TYPE: GET_CLAIM_DEF,
+                     ORIGIN: sender,
+                     REF: seqNo,
+                     SIGNATURE_TYPE: signature
+                     }
 
         req = Request(sender, operation=operation)
         return self.prepReq(req)
-
 
     # TODO: sender by default should be `self.defaultId`
     def requestIdentity(self, identity: Identity, sender):
@@ -412,4 +412,4 @@ class Wallet(PWallet, TrustAnchoring):
             raise RuntimeError('One of raw, enc, or hash are required.')
 
         return Attribute(randomString(5), data, self.defaultId,
-                           dest=nym, ledgerStore=LedgerStore.RAW)
+                         dest=nym, ledgerStore=LedgerStore.RAW)

@@ -15,7 +15,8 @@ whitelist = ['unable to send message']
 def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tconf):
     # For each node, adding a file with he current version number which makes the node
     # think that an upgrade has been performed
-    populate_log_with_upgrade_events(tdirWithPoolTxns, poolTxnNodeNames, tconf, sovrin_node.__metadata__.__version__)
+    populate_log_with_upgrade_events(
+        tdirWithPoolTxns, poolTxnNodeNames, tconf, sovrin_node.__metadata__.__version__)
     return tdirWithPoolTxns
 
 

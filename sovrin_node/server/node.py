@@ -157,11 +157,12 @@ class Node(PlenumNode, HasPoolManager):
         )
 
     def getConfigLedger(self):
-        hashStore = LevelDbHashStore(dataDir=self.dataLocation, fileNamePrefix='config')
+        hashStore = LevelDbHashStore(
+            dataDir=self.dataLocation, fileNamePrefix='config')
         return Ledger(CompactMerkleTree(hashStore=hashStore),
-            dataDir=self.dataLocation,
-            fileName=self.config.configTransactionsFile,
-            ensureDurability=self.config.EnsureLedgerDurability)
+                      dataDir=self.dataLocation,
+                      fileName=self.config.configTransactionsFile,
+                      ensureDurability=self.config.EnsureLedgerDurability)
 
     def loadConfigState(self):
         return PruningState(
@@ -245,7 +246,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def notify_upgrade_start(self):
         logger.info('{} is about to be upgraded, '
-                     'sending NODE_UPGRADE'.format(self))
+                    'sending NODE_UPGRADE'.format(self))
         scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
         action = IN_PROGRESS
         op = {
@@ -383,7 +384,7 @@ class Node(PlenumNode, HasPoolManager):
             if (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
-            #here we should have write transactions that should be processed only on writable pool
+            # here we should have write transactions that should be processed only on writable pool
             if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
             else:

@@ -13,8 +13,8 @@ from sovrin_node.test.upgrade.helper import bumpVersion, checkUpgradeScheduled, 
 
 
 def testScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
-                                             validUpgrade, trustee,
-                                             trusteeWallet):
+                                        validUpgrade, trustee,
+                                        trusteeWallet):
     """
     A node starts at version 1.2 running has scheduled upgrade for version 1.5
     but get a txn for upgrade 1.4, it will schedule it and cancel upgrade to 1.5.

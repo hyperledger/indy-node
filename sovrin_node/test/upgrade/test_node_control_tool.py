@@ -46,7 +46,8 @@ def testNodeControlResolvesDependencies(monkeypatch):
     anoncreds_package_with_version = '{}={}'.format(*anoncreds_package)
     mock_info = {
         node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(randomText(100), *plenum_package,
-                                                                     randomText(100), *anoncreds_package,
+                                                                     randomText(
+                                                                         100), *anoncreds_package,
                                                                      randomText(100)),
         plenum_package_with_version: '{}'.format(randomText(100)),
         anoncreds_package_with_version: '{}'.format(randomText(100))
@@ -55,10 +56,13 @@ def testNodeControlResolvesDependencies(monkeypatch):
     def mock_get_info_from_package_manager(self, package):
         return mock_info.get(package, None)
 
-    monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager', mock_get_info_from_package_manager)
-    monkeypatch.setattr(nct.__class__, '_update_package_cache', lambda *x: None)
+    monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager',
+                        mock_get_info_from_package_manager)
+    monkeypatch.setattr(
+        nct.__class__, '_update_package_cache', lambda *x: None)
     ret = nct._get_deps_list(node_package_with_version)
-    assert ret.split() == [anoncreds_package_with_version, plenum_package_with_version, node_package_with_version]
+    assert ret.split() == [anoncreds_package_with_version,
+                           plenum_package_with_version, node_package_with_version]
 
 
 def testNodeControlPerformsMigrations(monkeypatch, tdir, looper):
@@ -79,7 +83,7 @@ def testNodeControlPerformsMigrations(monkeypatch, tdir, looper):
         with open(os.path.join(tdir, migrationFile)) as f:
             assert f.read() == migrationText
 
-    nct = NCT(transform = transform)
+    nct = NCT(transform=transform)
     try:
         sendUpgradeMessage(msg)
         looper.run(eventually(checkMigration))
@@ -97,9 +101,10 @@ def testNodeControlCreatesBackups(monkeypatch, tdir, looper):
         monkeypatch.setattr(tool, '_remove_old_backups', lambda *x: None)
 
     def checkBackup(tool):
-        assert os.path.isfile('{}.{}'.format(tool._backup_name(currentVersion), tool.backup_format))
+        assert os.path.isfile('{}.{}'.format(
+            tool._backup_name(currentVersion), tool.backup_format))
 
-    nct = NCT(transform = transform)
+    nct = NCT(transform=transform)
     try:
         sendUpgradeMessage(msg)
         looper.run(eventually(checkBackup, nct.tool))
@@ -122,7 +127,8 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper):
     def transform(tool):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
         tool._remove_old_backups_test = tool._remove_old_backups
-        monkeypatch.setattr(tool, '_remove_old_backups', functools.partial(testRemoveOldBackups, tool))
+        monkeypatch.setattr(tool, '_remove_old_backups',
+                            functools.partial(testRemoveOldBackups, tool))
 
     def checkOldBackupsRemoved():
         assert backupsWereRemoved.value
@@ -131,13 +137,15 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper):
     try:
         assert len(nct.tool._get_backups()) == 0
         for i in range(nct.tool.backup_num):
-            file = os.path.join(nct.tool.base_dir, '{}{}'.format(nct.tool.backup_name_prefix, i))
+            file = os.path.join(nct.tool.base_dir, '{}{}'.format(
+                nct.tool.backup_name_prefix, i))
             with open(file, 'w') as f:
                 f.write('random')
         assert len(nct.tool._get_backups()) == nct.tool.backup_num
         sendUpgradeMessage(msg)
         looper.run(eventually(checkOldBackupsRemoved))
-        assert os.path.exists('{}.{}'.format(nct.tool._backup_name(currentVersion), nct.tool.backup_format))
+        assert os.path.exists('{}.{}'.format(
+            nct.tool._backup_name(currentVersion), nct.tool.backup_format))
         assert len(nct.tool._get_backups()) == nct.tool.backup_num
     finally:
         clean_dir(nct.tool.base_dir)
@@ -166,13 +174,15 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
     def transform(tool):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
         tool._restore_from_backup_test = tool._restore_from_backup
-        monkeypatch.setattr(tool, '_migrate', functools.partial(mockMigrate, tool))
-        monkeypatch.setattr(tool, '_restore_from_backup', functools.partial(testRestoreBackup, tool))
+        monkeypatch.setattr(
+            tool, '_migrate', functools.partial(mockMigrate, tool))
+        monkeypatch.setattr(tool, '_restore_from_backup',
+                            functools.partial(testRestoreBackup, tool))
 
     def checkBackupRestored(tool):
         assert backupWasRestored.value
 
-    nct = NCT(transform = transform)
+    nct = NCT(transform=transform)
     try:
         with open(os.path.join(nct.tool.sovrin_dir, testFile), 'w') as f:
             f.write(original_text)

@@ -31,7 +31,8 @@ def test_claim_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
 
         await aliceAgent.handleReqClaimResponse(msg)
 
-    emptyLooper.run(eventually(create_claim_and_send_to_prover, timeout=timeout))
+    emptyLooper.run(eventually(
+        create_claim_and_send_to_prover, timeout=timeout))
 
     # 2. check that claim is received from Faber
     async def chkClaims():
@@ -47,7 +48,8 @@ def test_claim_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
 
     # 4. check that proof is verified by Acme
     def chkProof():
-        internalId = acmeAgent.get_internal_id_by_nonce(acme_link.request_nonce)
+        internalId = acmeAgent.get_internal_id_by_nonce(
+            acme_link.request_nonce)
         link = acmeAgent.wallet.getConnectionBy(internalId=internalId)
         assert "Job-Application" in link.verifiedClaimProofs
 
