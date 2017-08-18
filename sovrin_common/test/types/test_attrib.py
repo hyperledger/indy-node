@@ -1,8 +1,12 @@
 import itertools
 import pytest
 
-from plenum.common.constants import *
-from sovrin_common.constants import ATTRIB, ENDPOINT
+from plenum.common.constants import TARGET_NYM, RAW, ENC, HASH
+from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
+    DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
+    IN_PROGRESS, DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
+    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES
 from sovrin_common.types import ClientAttribOperation
 
 
