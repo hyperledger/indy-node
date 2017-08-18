@@ -1,3 +1,7 @@
+import inspect
+
+import typing
+
 """
 Thanks to Ilya Peterov for the base code from
 https://github.com/ipeterov/strict_types.
@@ -5,10 +9,6 @@ https://github.com/ipeterov/strict_types.
 
 if 'defaultShouldCheck' not in globals():
     defaultShouldCheck = False
-
-import inspect
-
-import typing
 
 
 class strict_types:
