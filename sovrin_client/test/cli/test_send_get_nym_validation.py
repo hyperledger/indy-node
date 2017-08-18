@@ -60,7 +60,8 @@ def testSendGetNymFailsIfDestIsPassedInHexFormat(
     # Sometimes hex representation can use only base58 compatible characters
     while True:
         uuidIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
-        hexEncodedUuidIdentifier = hexlify(friendlyToRaw(uuidIdentifier)).decode()
+        hexEncodedUuidIdentifier = hexlify(
+            friendlyToRaw(uuidIdentifier)).decode()
         if not check_str_is_base58_compatible(hexEncodedUuidIdentifier):
             break
 
@@ -72,7 +73,9 @@ def testSendGetNymFailsIfDestIsPassedInHexFormat(
 
     be(trusteeCli)
     do('send GET_NYM dest={dest}',
-       mapper=parameters, expect="should not contain the following chars", within=2)
+       mapper=parameters,
+       expect="should not contain the following chars",
+       within=2)
 
 
 def testSendGetNymFailsIfDestIsInvalid(

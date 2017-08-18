@@ -18,7 +18,8 @@ class ClientTxnLog(PClientTxnLog):
         txns = []
         for val in self.transactionLog.iterator(include_key=False,
                                                 include_value=True):
-            txn = self.serializer.deserialize(val, fields=self.txnFieldOrdering)
+            txn = self.serializer.deserialize(
+                val, fields=self.txnFieldOrdering)
             if txn.get(TXN_TYPE) == txnType:
                 txns.append(txn)
         return txns

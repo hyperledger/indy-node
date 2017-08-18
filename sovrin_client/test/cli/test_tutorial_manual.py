@@ -32,6 +32,7 @@ concerningLogLevels = [logging.WARNING,
 
 whitelist = ["is not connected - message will not be sent immediately.If this problem does not resolve itself - check your firewall settings"]
 
+
 class TestWalletedAgent(WalletedAgent, RunnableAgent):
     pass
 
@@ -63,7 +64,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     _, stewardSeed = poolTxnStewardData
     be(philCli)
     do('new wallet Steward', expect=['New wallet Steward created',
-                                      'Active wallet set to "Steward"'])
+                                     'Active wallet set to "Steward"'])
 
     mapper = {'seed': stewardSeed.decode()}
     do('new key with seed {seed}', expect=['Key created in wallet Steward'],
@@ -89,18 +90,16 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     acmePk = 'C5eqjU7NMVMGGfGfx2ubvX5H9X346bQt5qeziVAo3naQ'
     thriftPk = 'AGBjYvyM3SFnoiDGAEzkSLHvqyzVkXeMZfKDvdpEsC2x'
     for nym, verkey, ha, pk in [(faberId, faberVerkey, faberHa, faberPk),
-                    (acmeId, acmeVerkey, acmeHa, acmePk),
-                    (thriftId, thriftVerkey, thriftHa, thriftPk)]:
-        m = {'remote': nym, 'remote-verkey': verkey, 'endpoint': json.dumps({ENDPOINT:
-                                                                            {'ha': ha, PUBKEY: pk}})}
-        do('send NYM dest={{remote}} role={role}'.format(role=Roles.TRUST_ANCHOR.name),
-            within=5,
-            expect=nymAddedOut, mapper=m)
+                                (acmeId, acmeVerkey, acmeHa, acmePk),
+                                (thriftId, thriftVerkey, thriftHa, thriftPk)]:
+        m = {'remote': nym, 'remote-verkey': verkey,
+             'endpoint': json.dumps({ENDPOINT: {'ha': ha, PUBKEY: pk}})}
+        do('send NYM dest={{remote}} role={role}'.format(
+            role=Roles.TRUST_ANCHOR.name), within=5, expect=nymAddedOut, mapper=m)
         do('send ATTRIB dest={remote} raw={endpoint}', within=5,
            expect=attrAddedOut, mapper=m)
-        do('send NYM dest={{remote}} role={role} verkey={{remote-verkey}}'.format(role=Roles.TRUST_ANCHOR.name),
-           within=5,
-           expect=nymAddedOut, mapper=m)
+        do('send NYM dest={{remote}} role={role} verkey={{remote-verkey}}'.format(
+            role=Roles.TRUST_ANCHOR.name), within=5, expect=nymAddedOut, mapper=m)
 
     # Start Faber Agent and Acme Agent
 
@@ -120,7 +119,8 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     for create_agent_fuc, agentName, agentPort, buildAgentWalletFunc, bootstrap_func in agentParams:
         agent = create_agent_fuc(name=agentName, wallet=buildAgentWalletFunc(),
                                  base_dir_path=tdir, port=agentPort)
-        RunnableAgent.run_agent(agent, bootstrap=bootstrap_func(agent), looper=philCli.looper)
+        RunnableAgent.run_agent(
+            agent, bootstrap=bootstrap_func(agent), looper=philCli.looper)
 
     for p in philCli.looper.prodables:
         if p.name == 'Faber College':
@@ -157,11 +157,23 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     philCli.looper.run(eventually(checkJobCertWritten, timeout=timeout))
 
     # Defining inner method for closures
-    def executeGstFlow(name, userCLI, userMap, be, connectedToTest, do, fMap,
-                       aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
-                       reqClaimOut1, syncConnectionOutWithEndpoint,
-                       syncedInviteAcceptedOutWithoutClaims, tMap,
-                       transcriptClaimMap):
+    def executeGstFlow(
+            name,
+            userCLI,
+            userMap,
+            be,
+            connectedToTest,
+            do,
+            fMap,
+            aMap,
+            jobCertificateClaimMap,
+            newKeyringOut,
+            reqClaimOut,
+            reqClaimOut1,
+            syncConnectionOutWithEndpoint,
+            syncedInviteAcceptedOutWithoutClaims,
+            tMap,
+            transcriptClaimMap):
 
         async def getPublicKey(wallet, schemaId):
             return await wallet.getPublicKey(schemaId)
@@ -239,7 +251,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
         try:
             bankKYCProofSent(be, do, userCLI, tMap, None)
             passed = True
-        except:
+        except BaseException:
             thriftFaberIssuerPublicKey = userCLI.looper.run(getPublicKey(
                 thriftAgent.issuer.wallet, faberSchemaId))
             assert faberIssuerPublicKey == thriftFaberIssuerPublicKey

@@ -36,7 +36,8 @@ def _ensureReqCompleted(reqKey, client, clbk):
 def _getData(result, error):
     data = result.get(DATA) if result.get(DATA) else {}
     # TODO: we have an old txn in the live pool where DATA is stored a json string.
-    # We can get rid of the code above once we create a versioning support in txns
+    # We can get rid of the code above once we create a versioning support in
+    # txns
     if isinstance(data, str):
         data = json.loads(data)
     seqNo = result.get(F.seqNo.name)
@@ -111,7 +112,7 @@ class SovrinPublicRepo(PublicRepo):
         return pk
 
     async def getPublicKeyRevocation(self, id: ID,
-                                     signatureType = 'CL') -> Optional[RevocationPublicKey]:
+                                     signatureType='CL') -> Optional[RevocationPublicKey]:
         op = {
             TXN_TYPE: GET_CLAIM_DEF,
             REF: id.schemaId,
@@ -159,7 +160,7 @@ class SovrinPublicRepo(PublicRepo):
                                id: ID,
                                pk: PublicKey,
                                pkR: RevocationPublicKey = None,
-                               signatureType = 'CL') -> \
+                               signatureType='CL') -> \
             (PublicKey, RevocationPublicKey):
 
         data = {}

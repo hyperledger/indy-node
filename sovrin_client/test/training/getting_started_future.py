@@ -32,15 +32,21 @@ from sovrin_client.agent.walleted_agent import WalletedAgent
 # noinspection PyUnresolvedReferences
 from sovrin_client.client.wallet.wallet import Wallet
 # noinspection PyUnresolvedReferences
-from tempfile import TemporaryDirectory
 
 from logging import Formatter
 from stp_core.common.log import Logger
 from plenum.config import logFormat
 
-ignored_files = ['node.py', 'stacked.py', 'zstack.py', 'network_interface.py', 'primary_elector.py',
-                 'replica.py', 'propagator.py', 'upgrader.py',
-                 'plugin_loader.py']
+ignored_files = [
+    'node.py',
+    'stacked.py',
+    'zstack.py',
+    'network_interface.py',
+    'primary_elector.py',
+    'replica.py',
+    'propagator.py',
+    'upgrader.py',
+    'plugin_loader.py']
 
 log_msg = []
 
@@ -59,19 +65,24 @@ def demo_setup_logging(base_dir):
 
 
 def demo_start_agents(pool, looper, base_dir):
-    demo_start_agent(base_dir, create_faber, bootstrap_faber, pool.create_client(5500), looper, pool.steward_agent())
+    demo_start_agent(base_dir, create_faber, bootstrap_faber,
+                     pool.create_client(5500), looper, pool.steward_agent())
 
-    demo_start_agent(base_dir, create_acme, bootstrap_acme, pool.create_client(5501), looper, pool.steward_agent())
+    demo_start_agent(base_dir, create_acme, bootstrap_acme,
+                     pool.create_client(5501), looper, pool.steward_agent())
 
-    demo_start_agent(base_dir, create_thrift, bootstrap_thrift, pool.create_client(5502), looper, pool.steward_agent())
+    demo_start_agent(base_dir, create_thrift, bootstrap_thrift,
+                     pool.create_client(5502), looper, pool.steward_agent())
 
 
-def demo_start_agent(base_dir, create_func, bootstrap_func, client, looper, steward):
+def demo_start_agent(base_dir, create_func, bootstrap_func,
+                     client, looper, steward):
     looper.runFor(2)
     agent = create_func(base_dir_path=base_dir, client=client)
 
     steward.publish_trust_anchor(Identity(identifier=agent.wallet.defaultId,
-                                          verkey=agent.wallet.getVerkey(agent.wallet.defaultId),
+                                          verkey=agent.wallet.getVerkey(
+                                              agent.wallet.defaultId),
                                           role=TRUST_ANCHOR))
     looper.runFor(4)
 
@@ -159,7 +170,8 @@ def demo_wait_for_accept(looper, link):
 
 
 def _wait_for(looper, func, *args, retry_wait=.1, timeout=20):
-    return looper.run(eventually(func, *args, retryWait=retry_wait, timeout=timeout))
+    return looper.run(eventually(
+        func, *args, retryWait=retry_wait, timeout=timeout))
 
 
 FABER_INVITE = """
