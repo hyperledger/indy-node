@@ -63,12 +63,14 @@ def parseArgs():
                         dest="numberOfRequests",
                         help="number of clients to use")
 
-    parser.add_argument("-t", "--request_type",
-                        action="store",
-                        type=str,
-                        default="NYM",
-                        dest="requestType",
-                        help="type of requests to send, supported = NYM, GET_NYM, ATTRIB")
+    parser.add_argument(
+        "-t",
+        "--request_type",
+        action="store",
+        type=str,
+        default="NYM",
+        dest="requestType",
+        help="type of requests to send, supported = NYM, GET_NYM, ATTRIB")
 
     parser.add_argument("--at-once",
                         action='store_true',
@@ -231,9 +233,18 @@ class ClientPoll:
         return createClientAndWalletWithSeed(name, seed, address)
 
 
-resultsRowFieldNames = ['signerName', 'signerId', 'dest', 'reqId', 'transactionType',
-                        'sentAt', 'quorumAt', 'latency', 'ackNodes',
-                        'nackNodes', 'replyNodes']
+resultsRowFieldNames = [
+    'signerName',
+    'signerId',
+    'dest',
+    'reqId',
+    'transactionType',
+    'sentAt',
+    'quorumAt',
+    'latency',
+    'ackNodes',
+    'nackNodes',
+    'replyNodes']
 ResultRow = namedtuple('ResultRow', resultsRowFieldNames)
 
 

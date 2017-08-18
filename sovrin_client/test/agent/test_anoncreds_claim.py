@@ -4,8 +4,13 @@ from anoncreds.protocol.types import SchemaKey, ID
 from sovrin_client.test.agent.messages import get_claim_libsovrin_msg
 
 
-def test_claim_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAcceptedAcme,
-                                    acmeAgent, emptyLooper, faberAgent):
+def test_claim_from_libsovrin_works(
+        aliceAgent,
+        aliceAcceptedFaber,
+        aliceAcceptedAcme,
+        acmeAgent,
+        emptyLooper,
+        faberAgent):
     faberLink = aliceAgent.wallet.getConnection('Faber College')
     name, version, origin = faberLink.availableClaims[0]
     schemaKey = SchemaKey(name, version, origin)

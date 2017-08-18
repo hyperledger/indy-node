@@ -92,16 +92,14 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     for nym, verkey, ha, pk in [(faberId, faberVerkey, faberHa, faberPk),
                                 (acmeId, acmeVerkey, acmeHa, acmePk),
                                 (thriftId, thriftVerkey, thriftHa, thriftPk)]:
-        m = {'remote': nym, 'remote-verkey': verkey, 'endpoint': json.dumps({ENDPOINT:
-                                                                             {'ha': ha, PUBKEY: pk}})}
-        do('send NYM dest={{remote}} role={role}'.format(role=Roles.TRUST_ANCHOR.name),
-            within=5,
-            expect=nymAddedOut, mapper=m)
+        m = {'remote': nym, 'remote-verkey': verkey,
+             'endpoint': json.dumps({ENDPOINT: {'ha': ha, PUBKEY: pk}})}
+        do('send NYM dest={{remote}} role={role}'.format(
+            role=Roles.TRUST_ANCHOR.name), within=5, expect=nymAddedOut, mapper=m)
         do('send ATTRIB dest={remote} raw={endpoint}', within=5,
            expect=attrAddedOut, mapper=m)
-        do('send NYM dest={{remote}} role={role} verkey={{remote-verkey}}'.format(role=Roles.TRUST_ANCHOR.name),
-           within=5,
-           expect=nymAddedOut, mapper=m)
+        do('send NYM dest={{remote}} role={role} verkey={{remote-verkey}}'.format(
+            role=Roles.TRUST_ANCHOR.name), within=5, expect=nymAddedOut, mapper=m)
 
     # Start Faber Agent and Acme Agent
 
@@ -159,11 +157,23 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     philCli.looper.run(eventually(checkJobCertWritten, timeout=timeout))
 
     # Defining inner method for closures
-    def executeGstFlow(name, userCLI, userMap, be, connectedToTest, do, fMap,
-                       aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
-                       reqClaimOut1, syncConnectionOutWithEndpoint,
-                       syncedInviteAcceptedOutWithoutClaims, tMap,
-                       transcriptClaimMap):
+    def executeGstFlow(
+            name,
+            userCLI,
+            userMap,
+            be,
+            connectedToTest,
+            do,
+            fMap,
+            aMap,
+            jobCertificateClaimMap,
+            newKeyringOut,
+            reqClaimOut,
+            reqClaimOut1,
+            syncConnectionOutWithEndpoint,
+            syncedInviteAcceptedOutWithoutClaims,
+            tMap,
+            transcriptClaimMap):
 
         async def getPublicKey(wallet, schemaId):
             return await wallet.getPublicKey(schemaId)

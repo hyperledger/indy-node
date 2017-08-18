@@ -54,8 +54,11 @@ Logger.setLogLevel(logging.NOTSET)
 def warnfilters(client_warnfilters):
     def _():
         client_warnfilters()
-        warnings.filterwarnings('ignore', category=DeprecationWarning,
-                                module='sovrin_common\.persistence\.identity_graph', message="The 'warn' method is deprecated")
+        warnings.filterwarnings(
+            'ignore',
+            category=DeprecationWarning,
+            module='sovrin_common\.persistence\.identity_graph',
+            message="The 'warn' method is deprecated")
         warnings.filterwarnings(
             'ignore', category=ResourceWarning, message='unclosed transport')
     return _

@@ -74,8 +74,16 @@ def addRole(looper, creatorClient, creatorWallet, name,
     return wallet
 
 
-def submitPoolUpgrade(looper, senderClient, senderWallet, name, action, version,
-                      schedule, timeout, sha256):
+def submitPoolUpgrade(
+        looper,
+        senderClient,
+        senderWallet,
+        name,
+        action,
+        version,
+        schedule,
+        timeout,
+        sha256):
     upgrade = Upgrade(name, action, schedule, version, sha256, timeout,
                       senderWallet.defaultId)
     senderWallet.doPoolUpgrade(upgrade)
@@ -107,8 +115,8 @@ def checkErrorMsg(typ, client, reqId, contains='', nodeCount=4):
             x[f.REQ_ID.nm] == reqId]
     for r in reqs:
         assert f.REASON.nm in r
-        assert contains in r[f.REASON.nm], '{} not in {}'.format(contains,
-                                                                 r[f.REASON.nm])
+        assert contains in r[f.REASON.nm], '{} not in {}'.format(
+            contains, r[f.REASON.nm])
     assert len(reqs) == nodeCount
 
 
@@ -127,8 +135,14 @@ def checkAccpets(client, reqId, nodeCount=4):
                   nodeCount=nodeCount)
 
 
-def submitAndCheckRejects(looper, client, wallet, op, identifier,
-                          contains='UnauthorizedClientRequest', check_func=checkRejects):
+def submitAndCheckRejects(
+        looper,
+        client,
+        wallet,
+        op,
+        identifier,
+        contains='UnauthorizedClientRequest',
+        check_func=checkRejects):
 
     reqId = submit(wallet, op, identifier, client)
     timeout = waits.expectedReqNAckQuorumTime()
@@ -278,10 +292,18 @@ class ScriptRunner:
         Router = namedtuple('Router', 'pattern, ends_output, handler')
 
         self.routers = [
-            Router(re.compile(r'\s*#(.*)'), False, self._handleComment),
-            Router(re.compile(r'\s*(\S*)?\s*>\s*(.*?)\s*(?:<--(.*?))?\s*'),
-                   True, self._handleCommand),
-            Router(re.compile(r'\s*~\s*(be|start)\s+(.*)'), True, self._handleBe)]
+            Router(
+                re.compile(r'\s*#(.*)'),
+                False,
+                self._handleComment),
+            Router(
+                re.compile(r'\s*(\S*)?\s*>\s*(.*?)\s*(?:<--(.*?))?\s*'),
+                True,
+                self._handleCommand),
+            Router(
+                re.compile(r'\s*~\s*(be|start)\s+(.*)'),
+                True,
+                self._handleBe)]
 
     # noinspection PyAttributeOutsideInit
 

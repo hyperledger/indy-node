@@ -6,10 +6,16 @@ from sovrin_node.test.conftest import nodeThetaAdded
 from sovrin_node.test.helper import TestNode
 
 
-def test_requests_post_multiple_new_nodes(looper, tdirWithPoolTxns,
-                                          tdirWithDomainTxnsUpdated, nodeSet,
-                                          tconf, trustee, trusteeWallet,
-                                          allPluginsPath, some_transactions_done):
+def test_requests_post_multiple_new_nodes(
+        looper,
+        tdirWithPoolTxns,
+        tdirWithDomainTxnsUpdated,
+        nodeSet,
+        tconf,
+        trustee,
+        trusteeWallet,
+        allPluginsPath,
+        some_transactions_done):
     new_nodes = []
     for node_name in ('Zeta', 'Eta'):
         new_steward, new_steward_wallet, new_node = nodeThetaAdded(looper,

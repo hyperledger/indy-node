@@ -65,9 +65,8 @@ def trustAnchorAdded(be, do, trusteeCli, nymAddedOut):
     v['remote'] = vals['newTrustAnchorIdr'][0]
     v['remote_verkey'] = DidSigner(seed=vals['newTrustAnchorIdr'][1]).verkey
     be(trusteeCli)
-    do('send NYM dest={{remote}} role={role} verkey={{remote_verkey}}'.format(role=Roles.TRUST_ANCHOR.name),
-       within=5,
-       expect=nymAddedOut, mapper=v)
+    do('send NYM dest={{remote}} role={role} verkey={{remote_verkey}}'.format(
+        role=Roles.TRUST_ANCHOR.name), within=5, expect=nymAddedOut, mapper=v)
     return v
 
 

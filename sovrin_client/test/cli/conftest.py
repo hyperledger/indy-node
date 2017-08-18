@@ -91,8 +91,12 @@ def newKeyPairCreated(cli):
 @pytest.fixture(scope="module")
 def CliBuilder(tdir, tdirWithPoolTxns,
                tdirWithDomainTxnsUpdated, tconf, cliTempLogger):
-    return getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
-                         logFileName=cliTempLogger)
+    return getCliBuilder(
+        tdir,
+        tconf,
+        tdirWithPoolTxns,
+        tdirWithDomainTxnsUpdated,
+        logFileName=cliTempLogger)
 
 
 def getDefaultUserMap(name):
@@ -138,8 +142,7 @@ def faberMap(agentIpAddress, faberAgentPort):
             "claims": "Transcript",
             "claim-to-show": "Transcript",
             "proof-req-to-match": "Transcript",
-            'wallet-name': 'Faber'
-            }
+            'wallet-name': 'Faber'}
 
 
 @pytest.fixture(scope="module")
@@ -168,8 +171,7 @@ def acmeMap(agentIpAddress, acmeAgentPort):
             'send-proof-target': 'Alice',
             'pr-name': 'Job-Application',
             'pr-schema-version': '0.2',
-            'wallet-name': 'Acme'
-            }
+            'wallet-name': 'Acme'}
 
 
 @pytest.fixture(scope="module")
@@ -191,8 +193,7 @@ def thriftMap(agentIpAddress, thriftAgentPort):
             "rcvd-claim-job-certificate-version": "0.2",
             "rcvd-claim-job-certificate-provider": "Acme Corp",
             "claim-ver-req-to-show": "0.1",
-            'wallet-name': 'Thrift'
-            }
+            'wallet-name': 'Thrift'}
 
 
 @pytest.fixture(scope="module")
@@ -779,25 +780,28 @@ def showConnectionWithAvailableClaimsOut():
 
 
 @pytest.fixture(scope="module")
-def showAcceptedConnectionWithClaimReqsOut(showAcceptedConnectionOut,
-                                           showConnectionWithProofRequestsOut,
-                                           showConnectionWithAvailableClaimsOut,
-                                           showConnectionSuggestion):
+def showAcceptedConnectionWithClaimReqsOut(
+        showAcceptedConnectionOut,
+        showConnectionWithProofRequestsOut,
+        showConnectionWithAvailableClaimsOut,
+        showConnectionSuggestion):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
         showConnectionWithAvailableClaimsOut + \
         showConnectionSuggestion
 
 
 @pytest.fixture(scope="module")
-def showAcceptedConnectionWithoutAvailableClaimsOut(showAcceptedConnectionOut,
-                                                    showConnectionWithProofRequestsOut):
+def showAcceptedConnectionWithoutAvailableClaimsOut(
+        showAcceptedConnectionOut,
+        showConnectionWithProofRequestsOut):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut
 
 
 @pytest.fixture(scope="module")
-def showAcceptedConnectionWithAvailableClaimsOut(showAcceptedConnectionOut,
-                                                 showConnectionWithProofRequestsOut,
-                                                 showConnectionWithAvailableClaimsOut):
+def showAcceptedConnectionWithAvailableClaimsOut(
+        showAcceptedConnectionOut,
+        showConnectionWithProofRequestsOut,
+        showConnectionWithAvailableClaimsOut):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
         showConnectionWithAvailableClaimsOut
 
@@ -1164,16 +1168,16 @@ def faberIsRunningWithoutNymAdded(emptyLooper, tdirWithPoolTxns, faberWallet,
 @pytest.fixture(scope="module")
 def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
                    faberAddedByPhil, faberAgent, faberBootstrap):
-    faber, faberWallet = runningFaber(emptyLooper, tdirWithPoolTxns,
-                                      faberWallet, faberAgent, faberAddedByPhil, faberBootstrap)
+    faber, faberWallet = runningFaber(
+        emptyLooper, tdirWithPoolTxns, faberWallet, faberAgent, faberAddedByPhil, faberBootstrap)
     return faber, faberWallet
 
 
 @pytest.fixture(scope="module")
 def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet,
                   acmeAddedByPhil, acmeAgent, acmeBootstrap):
-    acme, acmeWallet = runningAcme(emptyLooper, tdirWithPoolTxns,
-                                   acmeWallet, acmeAgent, acmeAddedByPhil, acmeBootstrap)
+    acme, acmeWallet = runningAcme(
+        emptyLooper, tdirWithPoolTxns, acmeWallet, acmeAgent, acmeAddedByPhil, acmeBootstrap)
 
     return acme, acmeWallet
 
@@ -1461,10 +1465,12 @@ def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
                                   philCli.activeClient,
                                   timeout=timeout))
 
-    poolNodesStarted.looper.run(eventually(checkNodeConnected,
-                                           list(
-                                               poolNodesStarted.nodes.values()),
-                                           timeout=timeout))
+    poolNodesStarted.looper.run(
+        eventually(
+            checkNodeConnected,
+            list(
+                poolNodesStarted.nodes.values()),
+            timeout=timeout))
     return newNodeVals
 
 

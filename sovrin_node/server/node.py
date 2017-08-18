@@ -80,9 +80,11 @@ class Node(PlenumNode, HasPoolManager):
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
 
         self.configLedger = self.getConfigLedger()
-        self.ledgerManager.addLedger(CONFIG_LEDGER_ID, self.configLedger,
-                                     postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
-                                     postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
+        self.ledgerManager.addLedger(
+            CONFIG_LEDGER_ID,
+            self.configLedger,
+            postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
+            postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
         self.on_new_ledger_added(CONFIG_LEDGER_ID)
         self.states[CONFIG_LEDGER_ID] = self.loadConfigState()
         self.upgrader = self.getUpgrader()
@@ -105,13 +107,15 @@ class Node(PlenumNode, HasPoolManager):
         This is usually an implementation of Ledger
         """
         if self.config.primaryStorage is None:
-            genesis_txn_initiator = GenesisTxnInitiatorFromFile(self.basedirpath,
-                                                                self.config.domainTransactionsFile)
-            return Ledger(CompactMerkleTree(hashStore=self.getHashStore('domain')),
-                          dataDir=self.dataLocation,
-                          fileName=self.config.domainTransactionsFile,
-                          ensureDurability=self.config.EnsureLedgerDurability,
-                          genesis_txn_initiator=genesis_txn_initiator)
+            genesis_txn_initiator = GenesisTxnInitiatorFromFile(
+                self.basedirpath, self.config.domainTransactionsFile)
+            return Ledger(
+                CompactMerkleTree(
+                    hashStore=self.getHashStore('domain')),
+                dataDir=self.dataLocation,
+                fileName=self.config.domainTransactionsFile,
+                ensureDurability=self.config.EnsureLedgerDurability,
+                genesis_txn_initiator=genesis_txn_initiator)
         else:
             return initStorage(self.config.primaryStorage,
                                name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
@@ -391,8 +395,10 @@ class Node(PlenumNode, HasPoolManager):
                     POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
             else:
-                raise InvalidClientRequest(request.identifier, request.reqId,
-                                           'Pool is in readonly mode, try again in 60 seconds')
+                raise InvalidClientRequest(
+                    request.identifier,
+                    request.reqId,
+                    'Pool is in readonly mode, try again in 60 seconds')
 
     @classmethod
     def ledgerId(cls, txnType: str):

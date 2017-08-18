@@ -38,8 +38,13 @@ from plenum.test import waits as plenumWaits
 
 
 @pf
-def didAddedWithoutVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWallet,
-                          wallet, noKeyIdr):
+def didAddedWithoutVerkey(
+        addedTrustAnchor,
+        looper,
+        trustAnchor,
+        trustAnchorWallet,
+        wallet,
+        noKeyIdr):
     """{ type: NYM, dest: <id1> }"""
     createNym(looper, noKeyIdr, trustAnchor, trustAnchorWallet)
     return wallet
@@ -63,8 +68,8 @@ def verkeyFetched(didUpdatedWithVerkey, looper, trustAnchor, trustAnchorWallet,
     trustAnchor.submitReqs(req)
 
     def chk():
-        assert trustAnchorWallet.getIdentity(noKeyIdr).verkey == wallet.getVerkey(
-            noKeyIdr)
+        assert trustAnchorWallet.getIdentity(
+            noKeyIdr).verkey == wallet.getVerkey(noKeyIdr)
 
     timeout = plenumWaits.expectedReqAckQuorumTime()
     looper.run(eventually(chk, retryWait=1, timeout=timeout))

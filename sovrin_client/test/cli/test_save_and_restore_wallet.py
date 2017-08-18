@@ -159,8 +159,9 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
                         '"mykr0" conflicts with an existing wallet',
                         'Please choose a new name.'])
 
-    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedWalletsBaseDir(),
-                                 cliForMultiNodePools.walletFileName)
+    filePath = getWalletFilePath(
+        cliForMultiNodePools.getContextBasedWalletsBaseDir(),
+        cliForMultiNodePools.walletFileName)
     switchEnv("pool1", do, cliForMultiNodePools, checkIfWalletRestored=True,
               restoredWalletKeyName="mykr1", restoredIdentifiers=1)
     useKeyring(filePath, do, expectedName="mykr0",
@@ -173,7 +174,8 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
     exitFromCli(do)
 
     # different tests for restoring saved wallet
-    filePath = getWalletFilePath(cliForMultiNodePools.getContextBasedWalletsBaseDir(),
-                                 cliForMultiNodePools.walletFileName)
+    filePath = getWalletFilePath(
+        cliForMultiNodePools.getContextBasedWalletsBaseDir(),
+        cliForMultiNodePools.walletFileName)
     restartCli(aliceMultiNodePools, be, do, "mykr1", 1)
     restartCliWithCorruptedWalletFile(earlMultiNodePools, be, do, filePath)

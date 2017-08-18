@@ -123,8 +123,13 @@ def addNyms():
             # Sending requests
             print("Creating nym for seed {}".format(seed))
             try:
-                createNym(looper=looper, nym=nym, creatorClient=client,
-                          creatorWallet=wallet, verkey=verkey, role=TRUST_ANCHOR)
+                createNym(
+                    looper=looper,
+                    nym=nym,
+                    creatorClient=client,
+                    creatorWallet=wallet,
+                    verkey=verkey,
+                    role=TRUST_ANCHOR)
                 print("Successfully created nym for {}".format(seed))
             except Exception as ex:
                 bad.append(seed)

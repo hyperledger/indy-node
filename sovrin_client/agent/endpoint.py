@@ -59,7 +59,12 @@ class ZEndpoint(SimpleZStack, EndpointCore):
             stackParams["basedirpath"] = basedirpath
 
         seed = seed or randomSeed()
-        SimpleZStack.__init__(self, stackParams, self.tracedMsgHandler,
-                              seed=seed, onlyListener=onlyListener, msgRejectHandler=msgRejectHandler)
+        SimpleZStack.__init__(
+            self,
+            stackParams,
+            self.tracedMsgHandler,
+            seed=seed,
+            onlyListener=onlyListener,
+            msgRejectHandler=msgRejectHandler)
 
         self.msgHandler = msgHandler

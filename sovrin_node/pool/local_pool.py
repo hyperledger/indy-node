@@ -113,11 +113,12 @@ class LocalPool(Pool, Looper):
                                                envName='test')
         pl_lines = self._add_and_stop(pool_txns, pl)
 
-        dl = TestNetworkSetup.init_domain_ledger(appendToLedgers=False,
-                                                 baseDir=self.base_dir,
-                                                 config=self.config,
-                                                 envName='test',
-                                                 domainTxnFieldOrder=getTxnOrderedFields())
+        dl = TestNetworkSetup.init_domain_ledger(
+            appendToLedgers=False,
+            baseDir=self.base_dir,
+            config=self.config,
+            envName='test',
+            domainTxnFieldOrder=getTxnOrderedFields())
         dl_lines = self._add_and_stop(domain_txns, dl)
 
         return adict(pool=adict(lines=pl_lines,

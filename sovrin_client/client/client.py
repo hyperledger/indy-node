@@ -62,8 +62,8 @@ class Client(PlenumClient):
 
             self.peerMsgRoutes = []
             self.peerMsgRouter = Router(*self.peerMsgRoutes)
-            self.peerStack = self.peerStackClass(stackargs,
-                                                 msgHandler=self.handlePeerMessage)
+            self.peerStack = self.peerStackClass(
+                stackargs, msgHandler=self.handlePeerMessage)
             self.peerStack.sign = self.sign
             self.peerInbox = deque()
         self._observers = {}  # type Dict[str, Callable]

@@ -54,8 +54,13 @@ def test_send_get_claim_def_succeeds(be, do, poolNodesStarted,
        expect=CLAIM_DEF_FOUND, within=5)
 
 
-def test_send_get_claim_def_as_alice_fails(be, do, poolNodesStarted, trusteeCli,
-                                           create_schema_and_claim_def, aliceCli):
+def test_send_get_claim_def_as_alice_fails(
+        be,
+        do,
+        poolNodesStarted,
+        trusteeCli,
+        create_schema_and_claim_def,
+        aliceCli):
 
     be(aliceCli)
     RefNo = create_schema_and_claim_def
@@ -71,8 +76,8 @@ def test_send_get_claim_def_with_invalid_ref_fails(be, do, poolNodesStarted,
        expect=CLAIM_DEF_NOT_FOUND, within=5)
 
 
-def test_send_get_claim_def_with_invalid_signature_fails(be, do, poolNodesStarted,
-                                                         trusteeCli, create_schema_and_claim_def):
+def test_send_get_claim_def_with_invalid_signature_fails(
+        be, do, poolNodesStarted, trusteeCli, create_schema_and_claim_def):
 
     be(trusteeCli)
     RefNo = create_schema_and_claim_def

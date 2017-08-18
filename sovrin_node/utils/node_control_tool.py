@@ -30,12 +30,17 @@ PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'
 class NodeControlTool:
     MAX_LINE_SIZE = 1024
 
-    def __init__(self, timeout: int = TIMEOUT, base_dir: str = BASE_DIR, backup_format: str = BACKUP_FORMAT,
-                 test_mode: bool = False, deps: List[str] = DEPS,
-                 files_to_preserve: List[str] = FILES_TO_PRESERVE,
-                 backup_name_prefix: str = BACKUP_NAME_PREFIX,
-                 backup_num: int = BACKUP_NUM,
-                 hold_ext: str = ''):
+    def __init__(
+            self,
+            timeout: int = TIMEOUT,
+            base_dir: str = BASE_DIR,
+            backup_format: str = BACKUP_FORMAT,
+            test_mode: bool = False,
+            deps: List[str] = DEPS,
+            files_to_preserve: List[str] = FILES_TO_PRESERVE,
+            backup_name_prefix: str = BACKUP_NAME_PREFIX,
+            backup_num: int = BACKUP_NUM,
+            hold_ext: str = ''):
         self.test_mode = test_mode
         self.timeout = timeout
         self.base_dir = base_dir
@@ -71,8 +76,17 @@ class NodeControlTool:
 
     @classmethod
     def _get_info_from_package_manager(cls, package):
-        ret = subprocess.run(cls._compose_cmd(['apt-cache', 'show', package]), shell=True, check=True,
-                             universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+        ret = subprocess.run(
+            cls._compose_cmd(
+                [
+                    'apt-cache',
+                    'show',
+                    package]),
+            shell=True,
+            check=True,
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            timeout=TIMEOUT)
 
         if ret.returncode != 0:
             msg = 'Upgrade failed: _get_deps_list returned {}'.format(
@@ -84,8 +98,16 @@ class NodeControlTool:
 
     @classmethod
     def _update_package_cache(cls):
-        ret = subprocess.run(cls._compose_cmd(['apt', 'update']), shell=True, check=True,
-                             universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+        ret = subprocess.run(
+            cls._compose_cmd(
+                [
+                    'apt',
+                    'update']),
+            shell=True,
+            check=True,
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            timeout=TIMEOUT)
 
         if ret.returncode != 0:
             msg = 'Upgrade failed: _get_deps_list returned {}'.format(
@@ -96,8 +118,17 @@ class NodeControlTool:
         return ret.stdout.strip()
 
     def _hold_packages(self):
-        ret = subprocess.run(self._compose_cmd(['apt-mark', 'hold', self.packages_to_hold]), shell=True, check=True,
-                             universal_newlines=True, stdout=subprocess.PIPE, timeout=TIMEOUT)
+        ret = subprocess.run(
+            self._compose_cmd(
+                [
+                    'apt-mark',
+                    'hold',
+                    self.packages_to_hold]),
+            shell=True,
+            check=True,
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+            timeout=TIMEOUT)
 
         if ret.returncode != 0:
             msg = 'Holding {} packages failed: _hold_packages returned {}'.format(
@@ -117,7 +148,8 @@ class NodeControlTool:
         for dep in self.deps:
             if dep in package_info:
                 match = re.search(
-                    '.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep), package_info)
+                    '.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep),
+                    package_info)
                 if match:
                     dep_version = match.group(1)
                     dep_package = '{}={}'.format(dep, dep_version)
@@ -225,8 +257,9 @@ class NodeControlTool:
                 self._do_migration(current_version, new_version)
             self._call_restart_node_script()
         except Exception as e:
-            logger.error("Unexpected error in _upgrade {}, trying to rollback to the previous version {}".format(
-                e, current_version))
+            logger.error(
+                "Unexpected error in _upgrade {}, trying to rollback to the previous version {}".format(
+                    e, current_version))
             if rollback:
                 self._upgrade(current_version, rollback=False)
 
@@ -262,16 +295,17 @@ class NodeControlTool:
                     # A "readable" server socket is ready to accept a
                     # connection
                     connection, client_address = s.accept()
-                    logger.debug('New connection from {} on fd {}'.format(client_address,
-                                                                          connection.fileno()))
+                    logger.debug(
+                        'New connection from {} on fd {}'.format(
+                            client_address, connection.fileno()))
                     connection.setblocking(0)
                     readers.append(connection)
                 else:
                     data = s.recv(8192)
                     if data:
-                        logger.debug('Received "{}" from {} on fd {}'.format(data,
-                                                                             s.getpeername(),
-                                                                             s.fileno()))
+                        logger.debug(
+                            'Received "{}" from {} on fd {}'.format(
+                                data, s.getpeername(), s.fileno()))
                         self._process_data(data)
                     else:
                         logger.debug(

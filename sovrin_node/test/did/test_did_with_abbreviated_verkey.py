@@ -26,8 +26,13 @@ from sovrin_client.test.helper import createNym
 
 
 @pf
-def didAddedWithAbbrvVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWallet,
-                            wallet, abbrevIdr):
+def didAddedWithAbbrvVerkey(
+        addedTrustAnchor,
+        looper,
+        trustAnchor,
+        trustAnchorWallet,
+        wallet,
+        abbrevIdr):
     """{ type: NYM, dest: <id1> }"""
     createNym(looper, abbrevIdr, trustAnchor, trustAnchorWallet,
               verkey=wallet.getVerkey(abbrevIdr))
@@ -62,8 +67,13 @@ def didUpdatedWithFullVerkey(didAddedWithAbbrvVerkey, looper, trustAnchor,
 
 
 @pf
-def newVerkeyFetched(didAddedWithAbbrvVerkey, looper, trustAnchor, trustAnchorWallet,
-                     abbrevIdr, wallet):
+def newVerkeyFetched(
+        didAddedWithAbbrvVerkey,
+        looper,
+        trustAnchor,
+        trustAnchorWallet,
+        abbrevIdr,
+        wallet):
     """{ type: GET_NYM, dest: <id1> }"""
     fetchFullVerkeyFromSovrin(looper, trustAnchorWallet, trustAnchor, wallet,
                               abbrevIdr)

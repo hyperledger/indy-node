@@ -67,15 +67,21 @@ def _get_relevant_migrations(migration_scripts, current_version, new_version):
             if Upgrader.compareVersions(
                     migration_new_version, migration_original_version) > 0:
                 continue
-            if Upgrader.compareVersions(migration_original_version, current_version) <= 0 and \
-                    Upgrader.compareVersions(migration_new_version, new_version) >= 0:
+            if Upgrader.compareVersions(
+                    migration_original_version,
+                    current_version) <= 0 and Upgrader.compareVersions(
+                    migration_new_version,
+                    new_version) >= 0:
                 relevant_migrations.append(migration)
         else:
             if Upgrader.compareVersions(
                     migration_original_version, migration_new_version) > 0:
                 continue
-            if Upgrader.compareVersions(migration_original_version, current_version) >= 0 and \
-                    Upgrader.compareVersions(migration_new_version, new_version) <= 0:
+            if Upgrader.compareVersions(
+                    migration_original_version,
+                    current_version) >= 0 and Upgrader.compareVersions(
+                    migration_new_version,
+                    new_version) <= 0:
                 relevant_migrations.append(migration)
         relevant_migrations = sorted(
             relevant_migrations, key=cmp_to_key(_compare_migration_scripts))

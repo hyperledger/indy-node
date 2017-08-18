@@ -27,8 +27,11 @@ def read_args():
 
     parser.add_argument('--type', required=True,
                         help='Ledger type (pool, domain, config)')
-    parser.add_argument('--frm', required=False, default=None,
-                        help="read all transactions starting from (beginning by default)")
+    parser.add_argument(
+        '--frm',
+        required=False,
+        default=None,
+        help="read all transactions starting from (beginning by default)")
     parser.add_argument('--to', required=False, default=100,
                         help="read all transactions till (100 by default)")
     parser.add_argument('--seq_no', required=False,

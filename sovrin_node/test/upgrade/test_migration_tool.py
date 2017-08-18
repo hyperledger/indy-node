@@ -5,8 +5,13 @@ import pytest
 from timeout_decorator import TimeoutError
 
 
-TEST_MIGRATION_SCRIPTS = ['0_3_100_to_0_3_104', '10_2_1_to_10_0_2', '0_9_2_to_0_9_10', '0_3_100_to_0_3_101',
-                          '0_1_10_to_0_9_10', '0_3_4_invalid']
+TEST_MIGRATION_SCRIPTS = [
+    '0_3_100_to_0_3_104',
+    '10_2_1_to_10_0_2',
+    '0_9_2_to_0_9_10',
+    '0_3_100_to_0_3_101',
+    '0_1_10_to_0_9_10',
+    '0_3_4_invalid']
 TEST_VERSION = '0.3.100'
 TEST_NEW_VERSION = '0.10.105'
 TEST_TIMEOUT = 1

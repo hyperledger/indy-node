@@ -83,8 +83,7 @@ def updatedPoolTxnData(poolTxnData):
         ROLE: TRUSTEE,
         TYPE: NYM,
         ALIAS: "Trustee1",
-        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"
-    }
+        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"}
     data["seeds"]["Trustee1"] = trusteeSeed
     data["txns"].insert(0, t)
     return data
@@ -96,7 +95,8 @@ def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
     for name in poolTxnTrusteeNames:
         seed = updatedPoolTxnData["seeds"][name]
         txn = next(
-            (txn for txn in updatedPoolTxnData["txns"] if txn[ALIAS] == name), None)
+            (txn for txn in updatedPoolTxnData["txns"] if txn[ALIAS] == name),
+            None)
         ret.append((name, seed.encode(), txn))
     return ret
 
@@ -135,15 +135,12 @@ def steward(nodeSet, looper, tdir, stewardWallet):
 @pytest.fixture(scope="module")
 def genesisTxns(stewardWallet: Wallet, trusteeWallet: Wallet):
     nym = stewardWallet.defaultId
-    return [
-        {
-            TXN_TYPE: NYM,
-            TARGET_NYM: nym,
-            TXN_ID: "9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
-            ROLE: STEWARD,
-            VERKEY: stewardWallet.getVerkey()
-        },
-    ]
+    return [{TXN_TYPE: NYM,
+             TARGET_NYM: nym,
+             TXN_ID: "9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+             ROLE: STEWARD,
+             VERKEY: stewardWallet.getVerkey()},
+            ]
 
 
 @pytest.fixture(scope="module")
@@ -301,10 +298,8 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
                    testClientClass, tdir):
     newStewardName = "testClientSteward" + randomString(3)
     newNodeName = "Theta"
-    newSteward, newStewardWallet = getClientAddedWithRole(nodeSet, tdir,
-                                                          looper, steward,
-                                                          stewardWallet,
-                                                          newStewardName, STEWARD)
+    newSteward, newStewardWallet = getClientAddedWithRole(
+        nodeSet, tdir, looper, steward, stewardWallet, newStewardName, STEWARD)
 
     sigseed = randomString(32).encode()
     nodeSigner = DidSigner(seed=sigseed)

@@ -25,8 +25,13 @@ from sovrin_client.test.helper import createNym
 
 
 @pf
-def didAddedWithFullVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWallet,
-                           wallet, fullKeyIdr):
+def didAddedWithFullVerkey(
+        addedTrustAnchor,
+        looper,
+        trustAnchor,
+        trustAnchorWallet,
+        wallet,
+        fullKeyIdr):
     """{ type: NYM, dest: <id1> }"""
     createNym(looper, fullKeyIdr, trustAnchor, trustAnchorWallet,
               verkey=wallet.getVerkey(fullKeyIdr))

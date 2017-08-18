@@ -38,9 +38,16 @@ from logging import Formatter
 from stp_core.common.log import Logger
 from plenum.config import logFormat
 
-ignored_files = ['node.py', 'stacked.py', 'zstack.py', 'network_interface.py', 'primary_elector.py',
-                 'replica.py', 'propagator.py', 'upgrader.py',
-                 'plugin_loader.py']
+ignored_files = [
+    'node.py',
+    'stacked.py',
+    'zstack.py',
+    'network_interface.py',
+    'primary_elector.py',
+    'replica.py',
+    'propagator.py',
+    'upgrader.py',
+    'plugin_loader.py']
 
 log_msg = []
 

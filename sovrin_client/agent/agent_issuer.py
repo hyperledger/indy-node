@@ -47,8 +47,10 @@ class AgentIssuer:
         claimReq = ClaimRequest.from_str_dict(
             claimReqDetails[CLAIM_REQ_FIELD], public_key.N)
 
-        self._add_attribute(schemaKey=schema.getKey(), proverId=claimReq.userId,
-                            link=link)
+        self._add_attribute(
+            schemaKey=schema.getKey(),
+            proverId=claimReq.userId,
+            link=link)
 
         claim_signature, claim_attributes = await self.issuer.issueClaim(schemaId, claimReq)
 

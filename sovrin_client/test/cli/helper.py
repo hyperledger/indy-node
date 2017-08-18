@@ -235,10 +235,17 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
                 conf.ENVS[pool.name].domainLedger
             )
     from sovrin_node.test.helper import TestNode
-    new_cli = newPlenumCLI(looper, tempDir, cliClass=cliClass,
-                           nodeClass=TestNode, clientClass=TestClient, config=conf,
-                           unique_name=unique_name, logFileName=logFileName,
-                           name=name, agentCreator=True)
+    new_cli = newPlenumCLI(
+        looper,
+        tempDir,
+        cliClass=cliClass,
+        nodeClass=TestNode,
+        clientClass=TestClient,
+        config=conf,
+        unique_name=unique_name,
+        logFileName=logFileName,
+        name=name,
+        agentCreator=True)
     if isinstance(new_cli, SovrinCli) and agent is not None:
         new_cli.agent = agent
     return new_cli

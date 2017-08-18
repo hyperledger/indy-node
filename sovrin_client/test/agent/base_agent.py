@@ -57,7 +57,8 @@ class BaseAgent(TestWalletedAgent):
         config = getConfig()
         path = expanduser('{}'.format(config.baseDir))
         return '{}/{}.log'.format(path,
-                                  (name or self.name).replace(" ", "-").lower())
+                                  (name or self.name).replace(" ",
+                                                              "-").lower())
 
     def getClaimVersionFileName(self):
         return self.name.replace(" ", "-").lower() + "-schema-version.txt"
@@ -74,8 +75,9 @@ class BaseAgent(TestWalletedAgent):
                     file.write(str(self.claimVersionNumber))
                     file.truncate()
             except OSError as e:
-                self.logger.warning('Error occurred while reading version file: '
-                                    'error:{}'.format(e))
+                self.logger.warning(
+                    'Error occurred while reading version file: '
+                    'error:{}'.format(e))
                 raise e
             except ValueError as e:
                 self.logger.warning('Invalid version number')
@@ -149,7 +151,9 @@ class BaseAgent(TestWalletedAgent):
         for nonce, schemaNames in self.getSchemaKeysForClaimsAvailableToSpecificNonce().items():
             for schemaName in schemaNames:
                 schemaKeys = list(
-                    filter(lambda sk: sk.name == schemaName, self.getSchemaKeysToBeGenerated()))
+                    filter(
+                        lambda sk: sk.name == schemaName,
+                        self.getSchemaKeysToBeGenerated()))
                 assert len(schemaKeys) == 1, \
                     "no such schema name found in generated schema keys"
                 schema = await getSchema(schemaKeys[0])
@@ -186,7 +190,8 @@ class BaseAgent(TestWalletedAgent):
                     await self.issuer.issueAccumulator(schemaId=schemaId, iA='110', L=5)
             else:
                 self.logger.info(
-                    "schema is already loaded in wallet: {}".format(str(schemaKey)))
+                    "schema is already loaded in wallet: {}".format(
+                        str(schemaKey)))
         await self.initAvailableClaimList()
 
     async def bootstrap(self):

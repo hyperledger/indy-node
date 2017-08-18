@@ -106,8 +106,8 @@ class Wallet(PWallet, TrustAnchoring):
         for k, li in self._connections.items():
             for cpr in li.proofRequests:
                 if Wallet._isMatchingName(claimReqName, cpr.name):
-                    if connectionName is None or Wallet._isMatchingName(connectionName,
-                                                                        li.name):
+                    if connectionName is None or Wallet._isMatchingName(
+                            connectionName, li.name):
                         matches.append((li, cpr))
         return matches
 
@@ -117,8 +117,8 @@ class Wallet(PWallet, TrustAnchoring):
         for k, li in self._connections.items():
             for cpr in li.proofRequests:
                 if Wallet._isMatchingName(proofReqName, cpr.name):
-                    if connectionName is None or Wallet._isMatchingName(connectionName,
-                                                                        li.name):
+                    if connectionName is None or Wallet._isMatchingName(
+                            connectionName, li.name):
                         matchingConnectionAndProofReq.append((li, cpr))
         return matchingConnectionAndProofReq
 

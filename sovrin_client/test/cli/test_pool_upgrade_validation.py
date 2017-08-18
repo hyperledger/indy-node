@@ -11,9 +11,12 @@ def testPoolUpgradeHasInvalidSyntaxIfJustificationIsEmpty(
     validUpgrade[JUSTIFICATION] = ''
 
     be(trusteeCli)
-    do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} schedule={schedule} timeout={timeout} justification={justification}',
-       mapper=validUpgrade, expect=INVALID_SYNTAX, within=10)
+    do(
+        'send POOL_UPGRADE name={name} version={version} sha256={sha256} '
+        'action={action} schedule={schedule} timeout={timeout} justification={justification}',
+        mapper=validUpgrade,
+        expect=INVALID_SYNTAX,
+        within=10)
 
 
 def testPoolUpgradeHasInvalidSyntaxIfJustificationIsVeryLong(
@@ -21,6 +24,9 @@ def testPoolUpgradeHasInvalidSyntaxIfJustificationIsVeryLong(
     validUpgrade[JUSTIFICATION] = randomString(JUSTIFICATION_MAX_SIZE + 1)
 
     be(trusteeCli)
-    do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} schedule={schedule} timeout={timeout} justification={justification}',
-       mapper=validUpgrade, expect=INVALID_SYNTAX, within=10)
+    do(
+        'send POOL_UPGRADE name={name} version={version} sha256={sha256} '
+        'action={action} schedule={schedule} timeout={timeout} justification={justification}',
+        mapper=validUpgrade,
+        expect=INVALID_SYNTAX,
+        within=10)

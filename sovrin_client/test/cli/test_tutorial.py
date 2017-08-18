@@ -286,10 +286,13 @@ def testSyncFaberWhenNotConnected(be, do, aliceCli, faberMap,
        mapper=faberMap)
 
 
-def testAcceptUnSyncedFaberInviteWhenNotConnected(be, do, aliceCli,
-                                                  faberInviteLoadedByAlice,
-                                                  acceptUnSyncedWhenNotConnected,
-                                                  faberMap):
+def testAcceptUnSyncedFaberInviteWhenNotConnected(
+        be,
+        do,
+        aliceCli,
+        faberInviteLoadedByAlice,
+        acceptUnSyncedWhenNotConnected,
+        faberMap):
     be(aliceCli)
     do('accept request from {inviter}',
        expect=acceptUnSyncedWhenNotConnected,
@@ -333,9 +336,14 @@ def testSyncFaberInviteWithoutEndpoint(faberInviteSyncedWithoutEndpoint):
     pass
 
 
-def testShowSyncedFaberInvite(be, do, aliceCli, faberMap, connectionNotYetSynced,
-                              faberInviteSyncedWithoutEndpoint,
-                              showSyncedConnectionWithoutEndpointOut):
+def testShowSyncedFaberInvite(
+        be,
+        do,
+        aliceCli,
+        faberMap,
+        connectionNotYetSynced,
+        faberInviteSyncedWithoutEndpoint,
+        showSyncedConnectionWithoutEndpointOut):
 
     be(aliceCli)
 
@@ -452,9 +460,13 @@ def testPingFaber(be, do, aliceCli, faberMap,
        mapper=faberMap)
 
 
-def test_alice_accept_faber_request_again(be, do, aliceCli, faberMap,
-                                          unsyced_already_accepted_request_accepted_out,
-                                          alice_accepted_faber_request):
+def test_alice_accept_faber_request_again(
+        be,
+        do,
+        aliceCli,
+        faberMap,
+        unsyced_already_accepted_request_accepted_out,
+        alice_accepted_faber_request):
     li = aliceCli.activeWallet.getConnectionBy(remote=faberMap['remote'])
     li.connection_status = None
     be(aliceCli)
@@ -566,8 +578,14 @@ def testLoadAcmeInvite(acmeInviteLoadedByAlice):
     pass
 
 
-def testShowAcmeConnection(be, do, aliceCli, acmeInviteLoadedByAlice,
-                           showUnSyncedConnectionOut, showConnectionWithProofRequestsOut, acmeMap):
+def testShowAcmeConnection(
+        be,
+        do,
+        aliceCli,
+        acmeInviteLoadedByAlice,
+        showUnSyncedConnectionOut,
+        showConnectionWithProofRequestsOut,
+        acmeMap):
     showUnSyncedConnectionWithClaimReqs = \
         showUnSyncedConnectionOut + showConnectionWithProofRequestsOut
     be(aliceCli)
@@ -603,12 +621,17 @@ def testSetAttrWithoutContext(be, do, aliceCli):
         "set the context"])
 
 
-def testShowAcmeConnectionAfterInviteAccept(be, do, aliceCli, acmeMap,
-                                            aliceAcceptedAcmeJobInvitation,
-                                            showAcceptedConnectionWithoutAvailableClaimsOut):
+def testShowAcmeConnectionAfterInviteAccept(
+        be,
+        do,
+        aliceCli,
+        acmeMap,
+        aliceAcceptedAcmeJobInvitation,
+        showAcceptedConnectionWithoutAvailableClaimsOut):
     be(aliceCli)
 
-    do("show connection {inviter}", expect=showAcceptedConnectionWithoutAvailableClaimsOut,
+    do("show connection {inviter}",
+       expect=showAcceptedConnectionWithoutAvailableClaimsOut,
        not_expect="Connection (not yet accepted)",
        mapper=acmeMap)
 
@@ -795,16 +818,21 @@ def testAliceSendClaimProofToAcme(jobApplicationProofSent):
 # test works correctly all the time and also we start supporting
 # building and sending proofs from more than one claim
 
-def testShowAcmeConnectionAfterClaimSent(be, do, aliceCli, acmeMap,
-                                         jobApplicationProofSent,
-                                         showAcceptedConnectionWithAvailableClaimsOut):
+def testShowAcmeConnectionAfterClaimSent(
+        be,
+        do,
+        aliceCli,
+        acmeMap,
+        jobApplicationProofSent,
+        showAcceptedConnectionWithAvailableClaimsOut):
     be(aliceCli)
     mapping = {}
     mapping.update(acmeMap)
     mapping["claims"] = "Job-Certificate"
 
     acmeMap.update(acmeMap)
-    do("show connection {inviter}", expect=showAcceptedConnectionWithAvailableClaimsOut,
+    do("show connection {inviter}",
+       expect=showAcceptedConnectionWithAvailableClaimsOut,
        mapper=mapping)
 
 

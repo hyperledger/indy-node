@@ -29,11 +29,21 @@ def testScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
 
     # An upgrade for higher version scheduled, it should pass
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr2)
-    looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr2[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(
+        eventually(
+            checkUpgradeScheduled,
+            nodeSet,
+            upgr2[VERSION],
+            retryWait=1,
+            timeout=waits.expectedUpgradeScheduled()))
 
     # An upgrade for lower version scheduled, the transaction should pass and
     # the upgrade should be scheduled
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
-    looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(
+        eventually(
+            checkUpgradeScheduled,
+            nodeSet,
+            upgr1[VERSION],
+            retryWait=1,
+            timeout=waits.expectedUpgradeScheduled()))

@@ -16,20 +16,26 @@ poolConfigName = SovrinTransactions.POOL_CONFIG.name
 changeKeyName = SovrinTransactions.CHANGE_KEY.name
 
 sendNymCmd = Command(
-    id="send {nym}".format(nym=nymName),
+    id="send {nym}".format(
+        nym=nymName),
     title="Adds given DID to sovrin",
     usage="send {nym} dest=<target DID> role=<role> [verkey=<ver-key>]".format(
         nym=nymName),
     examples=[
-        "send {nym} dest=BiCMHDqC5EjheFHumZX9nuAoVEp8xyuBgiRi5JcY5whi role={role}".format(nym=nymName,
-                                                                                          role=Roles.TRUST_ANCHOR.name),
-        "send {nym} dest=33A18XMqWqTzDpLHXLR5nT verkey=~Fem61Q5SnYhGVVHByQNxHj".format(nym=nymName)])
+        "send {nym} dest=BiCMHDqC5EjheFHumZX9nuAoVEp8xyuBgiRi5JcY5whi role={role}".format(
+            nym=nymName,
+            role=Roles.TRUST_ANCHOR.name),
+        "send {nym} dest=33A18XMqWqTzDpLHXLR5nT verkey=~Fem61Q5SnYhGVVHByQNxHj".format(
+            nym=nymName)])
 
 sendGetNymCmd = Command(
-    id="send {getNym}".format(getNym=getNymName),
+    id="send {getNym}".format(
+        getNym=getNymName),
     title="Get NYM from sovrin",
-    usage="send {getNym} dest=<target DID>".format(getNym=getNymName),
-    examples="send {getNym} dest=33A18XMqWqTzDpLHXLR5nT".format(getNym=getNymName))
+    usage="send {getNym} dest=<target DID>".format(
+        getNym=getNymName),
+    examples="send {getNym} dest=33A18XMqWqTzDpLHXLR5nT".format(
+        getNym=getNymName))
 
 sendAttribCmd = Command(
     id="send {attrib}".format(attrib=attribName),
@@ -39,11 +45,13 @@ sendAttribCmd = Command(
     examples='send {attrib} dest=33A18XMqWqTzDpLHXLR5nT raw={{"endpoint": "127.0.0.1:5555"}}'.format(attrib=attribName))
 
 sendGetAttrCmd = Command(
-    id="send {getAttr}".format(getAttr=getAttrName),
+    id="send {getAttr}".format(
+        getAttr=getAttrName),
     title="Get ATTR from sovrin",
     usage="send {getAttr} dest=<target DID> raw=<name>".format(
         getAttr=getAttrName),
-    examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT raw=endpoint".format(getAttr=getAttrName))
+    examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT raw=endpoint".format(
+        getAttr=getAttrName))
 
 
 sendNodeCmd = Command(
@@ -75,18 +83,22 @@ sendPoolUpgCmd = Command(
              "reinstall=False".format(poolUpgrade=poolUpgradeName))
 
 sendSchemaCmd = Command(
-    id="send {schema}".format(schema=schemaName),
+    id="send {schema}".format(
+        schema=schemaName),
     title="Adds schema to sovrin",
     usage="send {schema} name=<schema-name> version=<version> keys=<comma separated attributes>".format(
         schema=schemaName),
-    examples="send {schema} name=Degree version=1.0 keys=undergrad,last_name,first_name,birth_date,postgrad,expiry_date".format(schema=schemaName))
+    examples="send {schema} name=Degree version=1.0 keys=undergrad,last_name,first_name,birth_date,postgrad,expiry_date".format(
+        schema=schemaName))
 
 sendGetSchemaCmd = Command(
-    id="send {getSchema}".format(getSchema=getSchemaName),
+    id="send {getSchema}".format(
+        getSchema=getSchemaName),
     title="Gets schema from sovrin",
     usage="send {getSchema} dest=<target DID> name=<schema-name> version=<version>".format(
         getSchema=getSchemaName),
-    examples="send {getSchema} dest=33A18XMqWqTzDpLHXLR5nT name=Degree version=1.0".format(getSchema=getSchemaName))
+    examples="send {getSchema} dest=33A18XMqWqTzDpLHXLR5nT name=Degree version=1.0".format(
+        getSchema=getSchemaName))
 
 
 sendClaimDefCmd = Command(
@@ -97,11 +109,13 @@ sendClaimDefCmd = Command(
     examples="send {claimDef} ref=10 signature_type=CL".format(claimDef=claimDefName))
 
 sendGetClaimDefCmd = Command(
-    id="send {getClaimDef}".format(getClaimDef=getClaimDefName),
+    id="send {getClaimDef}".format(
+        getClaimDef=getClaimDefName),
     title="Gets claim definition from sovrin",
     usage="send {getClaimDef} ref=<ref-no-of-SCHEMA-txn> signature_type=<type>".format(
         getClaimDef=getClaimDefName),
-    examples="send {getClaimDef} ref=10 signature_type=CL".format(getClaimDef=getClaimDefName))
+    examples="send {getClaimDef} ref=10 signature_type=CL".format(
+        getClaimDef=getClaimDefName))
 
 sendProofRequestCmd = Command(
     id="send proof request",

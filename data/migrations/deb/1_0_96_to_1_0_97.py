@@ -122,9 +122,11 @@ def migrate_all_ledgers_for_node(node_data_directory):
     __migrate_ledger(node_data_directory,
                      config.poolTransactionsFile, config.poolTransactionsFile,
                      serializer=JsonSerializer())
-    __migrate_ledger(node_data_directory,
-                     config.configTransactionsFile, config.configTransactionsFile,
-                     serializer=JsonSerializer())
+    __migrate_ledger(
+        node_data_directory,
+        config.configTransactionsFile,
+        config.configTransactionsFile,
+        serializer=JsonSerializer())
 
     # domain ledger uses custom CompactSerializer and old file name
     fields = getTxnOrderedFields()

@@ -4,8 +4,13 @@ from anoncreds.protocol.types import SchemaKey, ID, ProofRequest
 from sovrin_client.test.agent.messages import get_proof_libsovrin_msg
 
 
-def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAcceptedAcme,
-                                    acmeAgent, emptyLooper, faberAgent):
+def test_proof_from_libsovrin_works(
+        aliceAgent,
+        aliceAcceptedFaber,
+        aliceAcceptedAcme,
+        acmeAgent,
+        emptyLooper,
+        faberAgent):
     # 1. request Claims from Faber
     faberLink = aliceAgent.wallet.getConnection('Faber College')
     name, version, origin = faberLink.availableClaims[0]
@@ -27,7 +32,9 @@ def test_proof_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
         "Job-Application", "Acme Corp")[0]
 
     async def create_proof():
-        proofRequest = ProofRequest("proof1", "1.0", int(acme_proof_req.nonce),
+        proofRequest = ProofRequest("proof1",
+                                    "1.0",
+                                    int(acme_proof_req.nonce),
                                     verifiableAttributes=acme_proof_req.verifiableAttributes,
                                     predicates=acme_proof_req.predicates)
 

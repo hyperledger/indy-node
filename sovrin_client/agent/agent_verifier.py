@@ -36,10 +36,10 @@ class AgentVerifier(Verifier):
             pk = await self.verifier.wallet.getPublicKey(ID(schemaKey=schema.getKey()))
             proofs[key] = ProofInfo.from_str_dict(p, str(pk.N))
 
-        proof = FullProof(proofs,
-                          AggregatedProof.from_str_dict(
-                              proof['aggregated_proof']),
-                          RequestedProof.from_str_dict(proof['requested_proof']))
+        proof = FullProof(
+            proofs, AggregatedProof.from_str_dict(
+                proof['aggregated_proof']), RequestedProof.from_str_dict(
+                proof['requested_proof']))
 
         result = await self.verifier.verify(proofRequest, proof)
 
@@ -59,8 +59,10 @@ class AgentVerifier(Verifier):
         if result:
             for uuid, attribute in proofRequest.verifiableAttributes.items():
                 # Log attributes that were verified
-                self.logger.info('verified {}: {}'.
-                                 format(attribute.name, proof.requestedProof.revealed_attrs[uuid][1]))
+                self.logger.info(
+                    'verified {}: {}'. format(
+                        attribute.name,
+                        proof.requestedProof.revealed_attrs[uuid][1]))
             self.logger.info('Verified that proof "{}" contains attributes '
                              'from claim(s) issued by: {}'.format(
                                  proofName, ", ".join(

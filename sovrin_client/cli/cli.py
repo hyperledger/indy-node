@@ -225,7 +225,7 @@ class SovrinCli(PlenumCli):
     def actions(self):
         actions = super().actions
         # Add more actions to base class for sovrin CLI
-        if not self._sendNymAction in actions:
+        if self._sendNymAction not in actions:
             actions.extend([self._sendNymAction,
                             self._sendGetNymAction,
                             self._sendAttribAction,
@@ -426,8 +426,9 @@ class SovrinCli(PlenumCli):
 
     def deregisterAgentListeners(self, agent):
         agent.deregisterEventListener(EVENT_NOTIFY_MSG, self._printMsg)
-        agent.deregisterEventListener(EVENT_POST_ACCEPT_INVITE,
-                                      self._printSuggestionPostAcceptConnection)
+        agent.deregisterEventListener(
+            EVENT_POST_ACCEPT_INVITE,
+            self._printSuggestionPostAcceptConnection)
         agent.deregisterEventListener(EVENT_NOT_CONNECTED_TO_ANY_ENV,
                                       self._handleNotConnectedToAnyEnv)
 
@@ -435,12 +436,13 @@ class SovrinCli(PlenumCli):
     def agent(self) -> WalletedAgent:
         if self._agent is None:
             _, port = genHa()
-            agent = WalletedAgent(name=randomString(6),
-                                  basedirpath=self.basedirpath,
-                                  client=self.activeClient if self.activeEnv else None,
-                                  wallet=self.activeWallet,
-                                  loop=self.looper.loop,
-                                  port=port)
+            agent = WalletedAgent(
+                name=randomString(6),
+                basedirpath=self.basedirpath,
+                client=self.activeClient if self.activeEnv else None,
+                wallet=self.activeWallet,
+                loop=self.looper.loop,
+                port=port)
             self.agent = agent
         return self._agent
 
@@ -537,8 +539,9 @@ class SovrinCli(PlenumCli):
                             self.print("No active verkey found for the DID {}".
                                        format(nym), Token.BoldBlue)
                         else:
-                            self.print("Current verkey for NYM {} is {}".
-                                       format(nym, data[VERKEY]), Token.BoldBlue)
+                            self.print(
+                                "Current verkey for NYM {} is {}". format(
+                                    nym, data[VERKEY]), Token.BoldBlue)
                 else:
                     self.print("NYM {} not found".format(nym), Token.BoldBlue)
             except BaseException as e:
@@ -573,8 +576,11 @@ class SovrinCli(PlenumCli):
                 self.print("Nym {} added".format(reply[TARGET_NYM]),
                            Token.BoldBlue)
 
-        self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, custom_clb or out)
+        self.looper.loop.call_later(.2,
+                                    self._ensureReqCompleted,
+                                    req.key,
+                                    self.activeClient,
+                                    custom_clb or out)
         return True
 
     def _addAttribToNym(self, nym, raw, enc, hsh):
@@ -694,17 +700,36 @@ class SovrinCli(PlenumCli):
                 self.print("Node request failed with error: {}".format(
                     error), Token.BoldOrange)
             else:
-                self.print("Node request completed {}".format(reply[TARGET_NYM]),
-                           Token.BoldBlue)
+                self.print(
+                    "Node request completed {}".format(
+                        reply[TARGET_NYM]),
+                    Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
                                     req.key, self.activeClient, out)
 
-    def _sendPoolUpgTxn(self, name, version, action, sha256, schedule=None,
-                        justification=None, timeout=None, force=False, reinstall=False):
-        upgrade = Upgrade(name, version, action, sha256, schedule=schedule,
-                          trustee=self.activeDID, timeout=timeout,
-                          justification=justification, force=force, reinstall=reinstall)
+    def _sendPoolUpgTxn(
+            self,
+            name,
+            version,
+            action,
+            sha256,
+            schedule=None,
+            justification=None,
+            timeout=None,
+            force=False,
+            reinstall=False):
+        upgrade = Upgrade(
+            name,
+            version,
+            action,
+            sha256,
+            schedule=schedule,
+            trustee=self.activeDID,
+            timeout=timeout,
+            justification=justification,
+            force=force,
+            reinstall=reinstall)
         self.activeWallet.doPoolUpgrade(upgrade)
         reqs = self.activeWallet.preparePending()
         req = self.activeClient.submitReqs(*reqs)[0][0]
@@ -915,8 +940,9 @@ class SovrinCli(PlenumCli):
 
     def _sendClaimDefAction(self, matchedVars):
         if matchedVars.get('send_claim_def') == sendClaimDefCmd.id:
-            self.agent.loop.call_soon(asyncio.ensure_future,
-                                      self._sendClaimDefActionAsync(matchedVars))
+            self.agent.loop.call_soon(
+                asyncio.ensure_future,
+                self._sendClaimDefActionAsync(matchedVars))
             return True
 
     async def _sendClaimDefActionAsync(self, matchedVars):
@@ -1033,8 +1059,13 @@ class SovrinCli(PlenumCli):
             "likelyMatched": likelyMatched
         }
 
-    def _syncConnectionPostEndPointRetrieval(self, postSync,
-                                             connection: Connection, reply, err, **kwargs):
+    def _syncConnectionPostEndPointRetrieval(
+            self,
+            postSync,
+            connection: Connection,
+            reply,
+            err,
+            **kwargs):
         if err:
             self.print('    {}'.format(err))
             return True
@@ -1070,8 +1101,8 @@ class SovrinCli(PlenumCli):
             return None
 
         if totalFound > 1:
-            self._printMoreThanOneConnectionFoundMsg(connectionName, exactlyMatchedConnections,
-                                                     likelyMatchedConnections)
+            self._printMoreThanOneConnectionFoundMsg(
+                connectionName, exactlyMatchedConnections, likelyMatchedConnections)
             return None
         li = self._getOneConnection(
             exactlyMatchedConnections, likelyMatchedConnections)
@@ -1211,8 +1242,11 @@ class SovrinCli(PlenumCli):
             li = list(likelyMatchedConnections.values())[0][0]
         return li
 
-    def _printMoreThanOneConnectionFoundMsg(self, connectionName, exactlyMatchedConnections,
-                                            likelyMatchedConnections):
+    def _printMoreThanOneConnectionFoundMsg(
+            self,
+            connectionName,
+            exactlyMatchedConnections,
+            likelyMatchedConnections):
         self.print(
             'More than one connection matches "{}"'.format(connectionName))
         exactlyMatchedConnections.update(likelyMatchedConnections)
@@ -1249,9 +1283,8 @@ class SovrinCli(PlenumCli):
                 else:
                     self._printSyncAndAcceptUsage(li.name)
             else:
-                self._printMoreThanOneConnectionFoundMsg(connectionName,
-                                                         exactlyMatchedConnections,
-                                                         likelyMatchedConnections)
+                self._printMoreThanOneConnectionFoundMsg(
+                    connectionName, exactlyMatchedConnections, likelyMatchedConnections)
 
             return True
 
@@ -1288,11 +1321,12 @@ class SovrinCli(PlenumCli):
         for li, cl in connectionAndClaimNames:
             self.print("{} in {}".format(li, cl))
 
-    def _findProofRequest(self, claimReqName: str, connectionName: str=None) -> \
-            (Connection, ProofRequest):
-        matchingConnectionWithClaimReq = self.activeWallet. \
-            findAllProofRequests(
-                claimReqName, connectionName)  # TODO rename claimReqName -> proofRequestName
+    def _findProofRequest(self,
+                          claimReqName: str,
+                          connectionName: str=None) -> (Connection,
+                                                        ProofRequest):
+        matchingConnectionWithClaimReq = self.activeWallet. findAllProofRequests(
+            claimReqName, connectionName)  # TODO rename claimReqName -> proofRequestName
 
         if len(matchingConnectionWithClaimReq) == 0:
             self._printNoProofReqFoundMsg()
@@ -1307,8 +1341,8 @@ class SovrinCli(PlenumCli):
 
         return matchingConnectionWithClaimReq[0]
 
-    def _getOneConnectionAndAvailableClaim(self, claimName, printMsgs: bool = True) -> \
-            (Connection, Schema):
+    def _getOneConnectionAndAvailableClaim(
+            self, claimName, printMsgs: bool = True) -> (Connection, Schema):
         matchingConnectionsWithAvailableClaim = self.activeWallet. \
             getMatchingConnectionsWithAvailableClaim(claimName)
 
@@ -1551,12 +1585,12 @@ class SovrinCli(PlenumCli):
             showClaimNumber = attrClaimIndex > -1 and \
                 len(matchingConnectionAndReceivedClaim) > 1
 
-            formatted += ('    '
-                          + ('[{}] '.format(attrClaimIndex + 1)
-                             if showClaimNumber else '')
-                          + str(k)
-                          + (' (V)' if k in verifiableAttributes else '')
-                          + ': ' + str(v) + '\n')
+            formatted += ('    ' +
+                          ('[{}] '.format(attrClaimIndex + 1)
+                           if showClaimNumber else '') +
+                          str(k) +
+                          (' (V)' if k in verifiableAttributes else '') +
+                          ': ' + str(v) + '\n')
 
         return formatted
 
@@ -1576,11 +1610,11 @@ class SovrinCli(PlenumCli):
             for k, v in issuedAttrs.items():
                 toPrint += ('        {}'.format(
                     '* ' if k in proofRequestAttrs and
-                            k not in alreadyFulfilledAttrs else '  ')
-                            + k + ': ' +
+                            k not in alreadyFulfilledAttrs else '  ') +
+                            k + ': ' +
                             '{}\n'.format('None' if v is None else v)
                             )
-                if not k in alreadyFulfilledAttrs:
+                if k not in alreadyFulfilledAttrs:
                     alreadyFulfilledAttrs[k] = True
 
             claimNumber += 1
@@ -1634,11 +1668,14 @@ class SovrinCli(PlenumCli):
             return False
 
     async def _showProofWithMatchingClaims(self, c: Context):
-        self.print(c.proofRequest.fixedInfo + self._formatProofRequestAttribute(
-            c.proofRequest.attributes,
-            [v.name for k, v in c.proofRequest.verifiableAttributes.items()],
-            c.proofRequest.fulfilledByClaims
-        ))
+        self.print(
+            c.proofRequest.fixedInfo +
+            self._formatProofRequestAttribute(
+                c.proofRequest.attributes,
+                [
+                    v.name for k,
+                    v in c.proofRequest.verifiableAttributes.items()],
+                c.proofRequest.fulfilledByClaims))
 
         self.print(self._printClaimsUsedInProofConstruction(
             c.proofRequest.fulfilledByClaims, c.proofRequest.attributes))
@@ -1666,8 +1703,9 @@ class SovrinCli(PlenumCli):
         if matchedVars.get('show_claim') == showClaimCmd.id:
             claimName = SovrinCli.removeSpecialChars(
                 matchedVars.get('claim_name'))
-            self.agent.loop.call_soon(asyncio.ensure_future,
-                                      self._showReceivedOrAvailableClaim(claimName))
+            self.agent.loop.call_soon(
+                asyncio.ensure_future,
+                self._showReceivedOrAvailableClaim(claimName))
 
             return True
 
@@ -1714,8 +1752,11 @@ class SovrinCli(PlenumCli):
             return "Already connected to {}".format(envName)
         if envName not in self.envs:
             return "Unknown environment {}".format(envName)
-        if not os.path.exists(os.path.join(self.basedirpath,
-                                           genesis_txn_file(self.envs[envName].poolLedger))):
+        if not os.path.exists(
+            os.path.join(
+                self.basedirpath,
+                genesis_txn_file(
+                self.envs[envName].poolLedger))):
             return "Do not have information to connect to {}".format(envName)
 
     def _disconnect(self, matchedVars):
@@ -1979,8 +2020,9 @@ class SovrinCli(PlenumCli):
             self.printUsage(self._getShowFileUsage("<request filename>"))
 
         def showConnectionHelper():
-            self.print("Shows connection info in case of one matching connection, "
-                       "otherwise shows all the matching connections")
+            self.print(
+                "Shows connection info in case of one matching connection, "
+                "otherwise shows all the matching connections")
             self.printUsage(self._getShowConnectionUsage())
 
         def connectHelper():

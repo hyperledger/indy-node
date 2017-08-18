@@ -92,28 +92,20 @@ def test_end_to_end(tconf):
         # this allows calling asynchronous functions from a synchronous context
         run_async = network.run
 
-        bank_attribute_definition = \
-            anoncreds.protocol.types.AttribDef('basic',
-                                               [anoncreds.protocol.types.AttribType('title', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'first_name', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'last_name', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'address_1', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'address_2', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'address_3', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'postcode_zip', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'date_of_birth', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'account_type', encode=True),
-                                                anoncreds.protocol.types.AttribType(
-                                                    'year_opened', encode=True),
-                                                anoncreds.protocol.types.AttribType('account_status', encode=True)])
+        bank_attribute_definition = anoncreds.protocol.types.AttribDef(
+            'basic', [
+                anoncreds.protocol.types.AttribType(
+                    'title', encode=True), anoncreds.protocol.types.AttribType(
+                    'first_name', encode=True), anoncreds.protocol.types.AttribType(
+                    'last_name', encode=True), anoncreds.protocol.types.AttribType(
+                        'address_1', encode=True), anoncreds.protocol.types.AttribType(
+                            'address_2', encode=True), anoncreds.protocol.types.AttribType(
+                                'address_3', encode=True), anoncreds.protocol.types.AttribType(
+                                    'postcode_zip', encode=True), anoncreds.protocol.types.AttribType(
+                                        'date_of_birth', encode=True), anoncreds.protocol.types.AttribType(
+                                            'account_type', encode=True), anoncreds.protocol.types.AttribType(
+                                                'year_opened', encode=True), anoncreds.protocol.types.AttribType(
+                                                    'account_status', encode=True)])
 
         bank_agent.add_attribute_definition(bank_attribute_definition)
 

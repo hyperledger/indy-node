@@ -369,15 +369,20 @@ def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
     return reply
 
 
-def getAttribute(looper, trustAnchor, trustAnchorWallet, userIdA, attributeName,
-                 attributeValue):
+def getAttribute(
+        looper,
+        trustAnchor,
+        trustAnchorWallet,
+        userIdA,
+        attributeName,
+        attributeValue):
     # Should be renamed to get_attribute_and_check
     attrib = Attribute(name=attributeName,
                        value=None,
                        dest=userIdA,
                        ledgerStore=LedgerStore.RAW)
-    req = trustAnchorWallet.requestAttribute(attrib,
-                                             sender=trustAnchorWallet.defaultId)
+    req = trustAnchorWallet.requestAttribute(
+        attrib, sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
     timeout = waits.expectedTransactionExecutionTime(len(trustAnchor.nodeReg))
     return looper.run(eventually(checkGetAttr, req.key, trustAnchor,

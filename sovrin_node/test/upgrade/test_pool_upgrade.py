@@ -32,8 +32,13 @@ def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
 
     looper.run(checkNodesConnected(nodeSet))
     ensureElectionsDone(looper=looper, nodes=nodeSet, retryWait=1)
-    looper.run(eventually(checkUpgradeScheduled, nodeSet, validUpgrade[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(
+        eventually(
+            checkUpgradeScheduled,
+            nodeSet,
+            validUpgrade[VERSION],
+            retryWait=1,
+            timeout=waits.expectedUpgradeScheduled()))
 
 
 def testNodeSchedulesUpgradeExpForceFalse(upgradeScheduledExpForceFalse):

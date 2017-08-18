@@ -157,9 +157,13 @@ def test_non_steward_cannot_create_trust_anchor(
         op = add_nym_operation(
             seed=b'a secret trust anchor seed......', role=TRUST_ANCHOR)
 
-        submitAndCheckRejects(looper=looper, client=client1, wallet=non_permission, op=op,
-                              identifier=non_permission.defaultId,
-                              contains="UnauthorizedClientRequest")
+        submitAndCheckRejects(
+            looper=looper,
+            client=client1,
+            wallet=non_permission,
+            op=op,
+            identifier=non_permission.defaultId,
+            contains="UnauthorizedClientRequest")
 
 
 def testStewardCreatesATrustAnchor(steward, addedTrustAnchor):
@@ -168,8 +172,12 @@ def testStewardCreatesATrustAnchor(steward, addedTrustAnchor):
 
 @pytest.mark.skip(
     reason="SOV-560. Cannot create another sponsor with same nym")
-def testStewardCreatesAnotherTrustAnchor(nodeSet, steward, stewardWallet, looper,
-                                         trustAnchorWallet):
+def testStewardCreatesAnotherTrustAnchor(
+        nodeSet,
+        steward,
+        stewardWallet,
+        looper,
+        trustAnchorWallet):
     createNym(looper, trustAnchorWallet.defaultId, steward, stewardWallet,
               TRUST_ANCHOR)
     return trustAnchorWallet
@@ -191,9 +199,13 @@ def test_non_trust_anchor_cannot_create_user(
 
         op = add_nym_operation(seed=b'a secret trust anchor seed......')
 
-        submitAndCheckRejects(looper=looper, client=client1, wallet=non_trust_anchor, op=op,
-                              identifier=non_trust_anchor.defaultId,
-                              contains="UnauthorizedClientRequest")
+        submitAndCheckRejects(
+            looper=looper,
+            client=client1,
+            wallet=non_trust_anchor,
+            op=op,
+            identifier=non_trust_anchor.defaultId,
+            contains="UnauthorizedClientRequest")
 
 
 def testTrustAnchorCreatesAUser(steward, userWalletA):
@@ -205,13 +217,14 @@ def test_nym_addition_fails_with_empty_verkey(looper, addedTrustAnchor,
 
     op = add_nym_operation(seed=b'a secret trust anchor seed......')
     op[VERKEY] = ''
-    submitAndCheckRejects(looper=looper,
-                          client=trustAnchor,
-                          wallet=trustAnchorWallet,
-                          op=op,
-                          identifier=trustAnchorWallet.defaultId,
-                          contains='validation error [ClientNYMOperation]: b58 decoded value length 0 should be one of [32]',
-                          check_func=checkNacks)
+    submitAndCheckRejects(
+        looper=looper,
+        client=trustAnchor,
+        wallet=trustAnchorWallet,
+        op=op,
+        identifier=trustAnchorWallet.defaultId,
+        contains='validation error [ClientNYMOperation]: b58 decoded value length 0 should be one of [32]',
+        check_func=checkNacks)
 
 
 @pytest.fixture(scope="module")
@@ -252,12 +265,16 @@ def testTrustAnchorAddsAttributeForUser(addedRawAttribute):
     pass
 
 
-def testClientGetsResponseWithoutConsensusForUsedReqId(nodeSet, looper, steward,
-                                                       addedTrustAnchor, trustAnchor,
-                                                       userWalletA,
-                                                       attributeName,
-                                                       attributeData,
-                                                       addedRawAttribute):
+def testClientGetsResponseWithoutConsensusForUsedReqId(
+        nodeSet,
+        looper,
+        steward,
+        addedTrustAnchor,
+        trustAnchor,
+        userWalletA,
+        attributeName,
+        attributeData,
+        addedRawAttribute):
     lastReqId = None
     replies = {}
     for msg, sender in reversed(trustAnchor.inBox):
@@ -307,8 +324,14 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(nodeSet, looper, steward,
 
 
 @pytest.fixture(scope="module")
-def checkAddAttribute(userWalletA, trustAnchor, trustAnchorWallet, attributeName,
-                      attributeValue, addedRawAttribute, looper):
+def checkAddAttribute(
+        userWalletA,
+        trustAnchor,
+        trustAnchorWallet,
+        attributeName,
+        attributeValue,
+        addedRawAttribute,
+        looper):
     getAttribute(looper=looper,
                  trustAnchor=trustAnchor,
                  trustAnchorWallet=trustAnchorWallet,
@@ -321,8 +344,14 @@ def testTrustAnchorGetAttrsForUser(checkAddAttribute):
     pass
 
 
-def test_non_trust_anchor_cannot_add_attribute_for_user(nodeSet, nonTrustAnchor, trustAnchor, addedTrustAnchor, userIdA,
-                                                        looper, attributeData):
+def test_non_trust_anchor_cannot_add_attribute_for_user(
+        nodeSet,
+        nonTrustAnchor,
+        trustAnchor,
+        addedTrustAnchor,
+        userIdA,
+        looper,
+        attributeData):
     with whitelistextras('UnauthorizedClientRequest'):
         client, wallet = nonTrustAnchor
 
@@ -340,17 +369,25 @@ def test_non_trust_anchor_cannot_add_attribute_for_user(nodeSet, nonTrustAnchor,
                            ledgerStore=LedgerStore.RAW)
         reqs = makeAttribRequest(client, wallet, attrib)
         timeout = waits.expectedTransactionExecutionTime(len(nodeSet))
-        looper.run(eventually(checkRejects,
-                              client,
-                              reqs[0].reqId,
-                              "UnauthorizedClientRequest('Only identity "
-                              "owner/guardian can add attribute for that identity'",
-                              retryWait=1, timeout=timeout))
+        looper.run(
+            eventually(
+                checkRejects,
+                client,
+                reqs[0].reqId,
+                "UnauthorizedClientRequest('Only identity "
+                "owner/guardian can add attribute for that identity'",
+                retryWait=1,
+                timeout=timeout))
 
 
-def testOnlyUsersTrustAnchorCanAddAttribute(nodeSet, looper,
-                                            steward, stewardWallet,
-                                            attributeData, anotherTrustAnchor, userIdA):
+def testOnlyUsersTrustAnchorCanAddAttribute(
+        nodeSet,
+        looper,
+        steward,
+        stewardWallet,
+        attributeData,
+        anotherTrustAnchor,
+        userIdA):
     with whitelistextras("UnauthorizedClientRequest"):
         client, wallet = anotherTrustAnchor
         attrib = Attribute(name='test2 attribute',
@@ -360,12 +397,15 @@ def testOnlyUsersTrustAnchorCanAddAttribute(nodeSet, looper,
                            ledgerStore=LedgerStore.RAW)
         reqs = makeAttribRequest(client, wallet, attrib)
         timeout = waits.expectedReqNAckQuorumTime()
-        looper.run(eventually(checkRejects,
-                              client,
-                              reqs[0].reqId,
-                              "UnauthorizedClientRequest('Only identity "
-                              "owner/guardian can add attribute for that identity'",
-                              retryWait=1, timeout=timeout))
+        looper.run(
+            eventually(
+                checkRejects,
+                client,
+                reqs[0].reqId,
+                "UnauthorizedClientRequest('Only identity "
+                "owner/guardian can add attribute for that identity'",
+                retryWait=1,
+                timeout=timeout))
 
 
 def testStewardCannotAddUsersAttribute(nodeSet, looper, steward,
@@ -378,11 +418,14 @@ def testStewardCannotAddUsersAttribute(nodeSet, looper, steward,
                            ledgerStore=LedgerStore.RAW)
         reqs = makeAttribRequest(steward, stewardWallet, attrib)
         timeout = waits.expectedReqNAckQuorumTime()
-        looper.run(eventually(checkRejects,
-                              steward,
-                              reqs[0].reqId,
-                              "UnauthorizedClientRequest('Only identity owner/guardian can add attribute for that identity'",
-                              retryWait=1, timeout=timeout))
+        looper.run(
+            eventually(
+                checkRejects,
+                steward,
+                reqs[0].reqId,
+                "UnauthorizedClientRequest('Only identity owner/guardian can add attribute for that identity'",
+                retryWait=1,
+                timeout=timeout))
 
 
 @pytest.mark.skip(reason="SOV-560. Attribute encryption is done in client")
@@ -391,9 +434,13 @@ def testTrustAnchorAddedAttributeIsEncrypted(addedEncryptedAttribute):
 
 
 @pytest.mark.skip(reason="SOV-560. Attribute Disclosure is not done for now")
-def testTrustAnchorDisclosesEncryptedAttribute(addedEncryptedAttribute, symEncData,
-                                               looper, userSignerA, trustAnchorSigner,
-                                               trustAnchor):
+def testTrustAnchorDisclosesEncryptedAttribute(
+        addedEncryptedAttribute,
+        symEncData,
+        looper,
+        userSignerA,
+        trustAnchorSigner,
+        trustAnchor):
     box = libnacl.public.Box(trustAnchorSigner.naclSigner.keyraw,
                              userSignerA.naclSigner.verraw)
 
@@ -418,16 +465,27 @@ def testTrustAnchorAddedAttributeCanBeChanged(addedRawAttribute):
     raise NotImplementedError
 
 
-def testGetAttribute(nodeSet, addedTrustAnchor, trustAnchorWallet: Wallet, trustAnchor,
-                     userIdA, addedRawAttribute, attributeData):
+def testGetAttribute(
+        nodeSet,
+        addedTrustAnchor,
+        trustAnchorWallet: Wallet,
+        trustAnchor,
+        userIdA,
+        addedRawAttribute,
+        attributeData):
     assert attributeData in [
         a.value for a in trustAnchorWallet.getAttributesForNym(userIdA)]
 
 
 # TODO: Ask Jason, if getting the latest attribute makes sense since in case
 # of encrypted and hashed attributes, there is no name.
-def testLatestAttrIsReceived(nodeSet, addedTrustAnchor, trustAnchorWallet, looper,
-                             trustAnchor, userIdA):
+def testLatestAttrIsReceived(
+        nodeSet,
+        addedTrustAnchor,
+        trustAnchorWallet,
+        looper,
+        trustAnchor,
+        userIdA):
 
     attr1 = json.dumps({'name': 'Mario'})
     attrib = Attribute(name='name',
@@ -496,8 +554,15 @@ def testNonTrustAnchoredNymCanDoGetNym(nodeSet, addedTrustAnchor,
                           retryWait=1, timeout=timeout))
 
 
-def test_user_add_attrs_for_herself(nodeSet, looper, userClientA, userWalletA,
-                                    userIdA, trustAnchor, addedTrustAnchor, attributeData):
+def test_user_add_attrs_for_herself(
+        nodeSet,
+        looper,
+        userClientA,
+        userWalletA,
+        userIdA,
+        trustAnchor,
+        addedTrustAnchor,
+        attributeData):
     createNym(looper,
               userWalletA.defaultId,
               trustAnchor,

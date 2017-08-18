@@ -53,10 +53,12 @@ def testAnonCredsPrimaryOnly(
         await prover.processClaim(schemaId, claim_attributes, claim_signature)
 
         # 6. proof Claims
-        proofRequest = ProofRequest("proof1", "1.0", verifier.generateNonce(),
-                                    verifiableAttributes={
-                                        'attr_uuid': AttributeInfo('name', schema.seqId)},
-                                    predicates={'predicate_uuid': PredicateGE('age', 18)})
+        proofRequest = ProofRequest(
+            "proof1", "1.0", verifier.generateNonce(), verifiableAttributes={
+                'attr_uuid': AttributeInfo(
+                    'name', schema.seqId)}, predicates={
+                'predicate_uuid': PredicateGE(
+                    'age', 18)})
 
         proof = await prover.presentProof(proofRequest)
         assert proof.requestedProof.revealed_attrs['attr_uuid'][1] == 'Alex'

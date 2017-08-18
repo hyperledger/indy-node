@@ -138,8 +138,9 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         raise NotImplementedError
 
     def is_claim_available(self, link, claim_name):
-        return any(ac[NAME] == claim_name
-                   for ac in self._get_available_claim_list_by_internal_id(link.internalId))
+        return any(
+            ac[NAME] == claim_name for ac in self._get_available_claim_list_by_internal_id(
+                link.internalId))
 
     async def _postProofVerif(self, claimName, link, frm):
         link.verifiedClaimProofs.append(claimName)
@@ -506,9 +507,8 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         if li:
             rcvdAvailableClaims = body[DATA][CLAIMS_LIST_FIELD]
             if len(rcvdAvailableClaims) > 0:
-                self.notifyMsgListener("    Available Claim(s): {}".
-                                       format(",".join(
-                                           [rc.get(NAME) for rc in rcvdAvailableClaims])))
+                self.notifyMsgListener("    Available Claim(s): {}". format(
+                    ",".join([rc.get(NAME) for rc in rcvdAvailableClaims])))
             else:
                 self.notifyMsgListener("    Available Claim(s): "
                                        "No available claims found")
@@ -533,12 +533,11 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                     li, rcvdAvailableClaims)
                 if newAvailableClaims:
                     li.availableClaims.extend(newAvailableClaims)
-                    self.notifyMsgListener("    Available Claim(s): {}".
-                                           format(",".join(
-                                               [rc.get(NAME) for rc in rcvdAvailableClaims])))
+                    self.notifyMsgListener("    Available Claim(s): {}". format(
+                        ",".join([rc.get(NAME) for rc in rcvdAvailableClaims])))
                 try:
-                    self._checkIfLinkIdentifierWrittenToSovrin(li,
-                                                               newAvailableClaims)
+                    self._checkIfLinkIdentifierWrittenToSovrin(
+                        li, newAvailableClaims)
                 except NotConnectedToAny:
                     self.notifyEventListeners(
                         EVENT_NOT_CONNECTED_TO_ANY_ENV,
@@ -805,9 +804,12 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         if proofRequestsJson:
             for cr in proofRequestsJson:
                 proofRequests.append(
-                    ProofRequest(cr[NAME], cr[VERSION], getNonceForProof(linkNonce), cr[ATTRIBUTES],
-                                 cr[VERIFIABLE_ATTRIBUTES] if VERIFIABLE_ATTRIBUTES in cr else [
-                    ],
+                    ProofRequest(
+                        cr[NAME],
+                        cr[VERSION],
+                        getNonceForProof(linkNonce),
+                        cr[ATTRIBUTES],
+                        cr[VERIFIABLE_ATTRIBUTES] if VERIFIABLE_ATTRIBUTES in cr else [],
                         cr[PREDICATES] if PREDICATES in cr else []))
 
         self.notifyMsgListener("1 connection request found for {}.".
@@ -867,17 +869,18 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                         **matchedProofRequest.attributes,
                         **icr[ATTRIBUTES]
                     }
-                    matchedProofRequest.verifiableAttributes = dict(matchedProofRequest.verifiableAttributes,
-                                                                    **icr[VERIFIABLE_ATTRIBUTES])
+                    matchedProofRequest.verifiableAttributes = dict(
+                        matchedProofRequest.verifiableAttributes, **icr[VERIFIABLE_ATTRIBUTES])
 
                 else:
                     # otherwise append proof request to link
                     link.proofRequests.append(
                         ProofRequest(
-                            icr[NAME], icr[VERSION], getNonceForProof(nonce), attributes=icr[ATTRIBUTES],
-                            verifiableAttributes=icr[VERIFIABLE_ATTRIBUTES]
-                        )
-                    )
+                            icr[NAME],
+                            icr[VERSION],
+                            getNonceForProof(nonce),
+                            attributes=icr[ATTRIBUTES],
+                            verifiableAttributes=icr[VERIFIABLE_ATTRIBUTES]))
 
             return link
         else:
@@ -889,8 +892,10 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         elif isinstance(link, Connection):
             pass
         else:
-            raise TypeError("Type of connection must be either string or Link but "
-                            "provided {}".format(type(link)))
+            raise TypeError(
+                "Type of connection must be either string or Link but "
+                "provided {}".format(
+                    type(link)))
         # TODO should move to wallet in a method like accept(link)
         if not link.localIdentifier:
             self.create_identifier_for_link(link)
@@ -1015,9 +1020,9 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                                 checkIfLinkExists, clbk, *args):
 
         if isMaxCheckTimeExpired(startTime, maxCheckForMillis):
-            clbk(None, "No response received within specified time ({} mills). "
-                       "Retry the command and see if that works.\n".
-                 format(maxCheckForMillis))
+            clbk(
+                None, "No response received within specified time ({} mills). "
+                "Retry the command and see if that works.\n". format(maxCheckForMillis))
         else:
             found = False
             rcvdResponses = self.rcvdMsgStore.get(reqId)

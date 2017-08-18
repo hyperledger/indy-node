@@ -21,11 +21,13 @@ class ThriftAgent(WalletedAgent):
 
     async def postProofVerif(self, claimName, link, frm):
         if claimName == "Loan-Application-Basic":
-            self.notifyToRemoteCaller(EVENT_NOTIFY_MSG,
-                                      "    Loan eligibility criteria satisfied,"
-                                      " please send another claim "
-                                      "'Loan-Application-KYC'\n",
-                                      self.wallet.defaultId, frm)
+            self.notifyToRemoteCaller(
+                EVENT_NOTIFY_MSG,
+                "    Loan eligibility criteria satisfied,"
+                " please send another claim "
+                "'Loan-Application-KYC'\n",
+                self.wallet.defaultId,
+                frm)
 
 
 def create_thrift(name=None, wallet=None, base_dir_path=None,

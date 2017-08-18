@@ -71,8 +71,9 @@ class DomainReqHandler(PHandler):
     def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
         nym = msg.get(TARGET_NYM)
         if self.hasNym(nym, isCommitted=False):
-            if not self.idrCache.hasTrustee(identifier, isCommitted=False) and \
-                    self.idrCache.getOwnerFor(nym, isCommitted=False) != identifier:
+            if not self.idrCache.hasTrustee(
+                    identifier, isCommitted=False) and self.idrCache.getOwnerFor(
+                    nym, isCommitted=False) != identifier:
                 reason = '{} is neither Trustee nor owner of {}'\
                     .format(identifier, nym)
                 return False, reason
@@ -180,10 +181,8 @@ class DomainReqHandler(PHandler):
                                                    isActorOwnerOfSubject=isOwner)
                     if not r:
                         raise UnauthorizedClientRequest(
-                            req.identifier,
-                            req.reqId,
-                            "{} cannot update {}".format(Roles.nameFromValue(originRole),
-                                                         key))
+                            req.identifier, req.reqId, "{} cannot update {}".format(
+                                Roles.nameFromValue(originRole), key))
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier

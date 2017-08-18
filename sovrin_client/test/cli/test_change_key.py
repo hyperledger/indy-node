@@ -26,16 +26,16 @@ def test_change_key(be, do, susanCLI, connectedToTest, newStewardCli):
        "Current verkey for NYM {} is {}".format(id, verk)])
 
     # change key
-    do('change current key', within=3,
-       expect=["Adding nym {}".format(id), "Key changed for {}".format(id), "New verification key is"])
+    do('change current key', within=3, expect=["Adding nym {}".format(
+        id), "Key changed for {}".format(id), "New verification key is"])
 
     # check new key
     assert id == susanCLI.activeDID
     assert verk != susanCLI.activeWallet.getVerkey(id)
     do('send NYM dest={}'.format(id), within=3,
        expect=["Nym {} added".format(id)])
-    do('send GET_NYM dest={}'.format(id), within=3,
-       expect=["Current verkey for NYM {} is {}".format(id, susanCLI.activeWallet.getVerkey(id))])
+    do('send GET_NYM dest={}'.format(id), within=3, expect=[
+       "Current verkey for NYM {} is {}".format(id, susanCLI.activeWallet.getVerkey(id))])
 
 
 def test_change_key_with_seed(be, do, philCli, connectedToTest, newStewardCli):
@@ -64,13 +64,16 @@ def test_change_key_with_seed(be, do, philCli, connectedToTest, newStewardCli):
 
     # change key
     seed = "8" * 32
-    do('change current key with seed {}'.format(seed), within=3,
-       expect=["Adding nym {}".format(id), "Key changed for {}".format(id), "New verification key is"])
+    do('change current key with seed {}'.format(seed),
+       within=3,
+       expect=["Adding nym {}".format(id),
+               "Key changed for {}".format(id),
+               "New verification key is"])
 
     # check new key
     assert id == philCli.activeDID
     assert verk != philCli.activeWallet.getVerkey(id)
     do('send NYM dest={}'.format(id), within=3,
        expect=["Nym {} added".format(id)])
-    do('send GET_NYM dest={}'.format(id), within=3,
-       expect=["Current verkey for NYM {} is {}".format(id, philCli.activeWallet.getVerkey(id))])
+    do('send GET_NYM dest={}'.format(id), within=3, expect=[
+       "Current verkey for NYM {} is {}".format(id, philCli.activeWallet.getVerkey(id))])

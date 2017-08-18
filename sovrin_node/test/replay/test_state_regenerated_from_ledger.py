@@ -53,9 +53,13 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
 
     shutil.rmtree(state_db_path)
 
-    restarted_node = TestNode(node_to_stop.name, basedirpath=tdirWithPoolTxns,
-                              config=tconf, pluginPaths=allPluginsPath,
-                              ha=node_to_stop.nodestack.ha, cliha=node_to_stop.clientstack.ha)
+    restarted_node = TestNode(
+        node_to_stop.name,
+        basedirpath=tdirWithPoolTxns,
+        config=tconf,
+        pluginPaths=allPluginsPath,
+        ha=node_to_stop.nodestack.ha,
+        cliha=node_to_stop.clientstack.ha)
     looper.add(restarted_node)
     nodeSet[-1] = restarted_node
 

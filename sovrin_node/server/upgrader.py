@@ -121,8 +121,9 @@ class Upgrader(HasActionQueue):
         (event_type, when, version, upgrade_id) = self.lastUpgradeEventInfo
 
         if event_type != UpgradeLog.UPGRADE_STARTED:
-            logger.debug('Upgrade for node {} was not scheduled. Last event is {}:{}:{}:{}'
-                         .format(self.nodeName, event_type, when, version, upgrade_id))
+            logger.debug(
+                'Upgrade for node {} was not scheduled. Last event is {}:{}:{}:{}' .format(
+                    self.nodeName, event_type, when, version, upgrade_id))
             return
 
         if not self.didLastExecutedUpgradeSucceeded:
@@ -150,12 +151,14 @@ class Upgrader(HasActionQueue):
         return last_node_upgrade_txn and last_node_upgrade_txn[TXN_TYPE] == NODE_UPGRADE \
             and last_node_upgrade_txn[DATA] and last_node_upgrade_txn[DATA][ACTION] == IN_PROGRESS \
             and self.lastUpgradeEventInfo \
-            and (self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_SUCCEEDED
-                 or self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_FAILED)
+            and (self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_SUCCEEDED or
+                 self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_FAILED)
 
     def get_last_node_upgrade_txn(self, start_no: int = None):
-        return self.get_upgrade_txn(lambda txn: txn[TXN_TYPE] == NODE_UPGRADE and txn[IDENTIFIER] == self.nodeId,
-                                    start_no=start_no, reverse=True)
+        return self.get_upgrade_txn(
+            lambda txn: txn[TXN_TYPE] == NODE_UPGRADE and txn[IDENTIFIER] == self.nodeId,
+            start_no=start_no,
+            reverse=True)
 
     def get_upgrade_txn(self, predicate: Callable = None, start_no: int = None,
                         reverse: bool = False) -> Optional[Dict]:
@@ -303,9 +306,10 @@ class Upgrader(HasActionQueue):
 
                 last_event = self.lastUpgradeEventInfo
                 if last_event and last_event[3] == upgrade_id and last_event[0] in FINALIZING_EVENT_TYPES:
-                    logger.debug("Node '{}' has already performed an upgrade with upgrade_id {}. "
-                                 "Last recorded event is {}".
-                                 format(self.nodeName, upgrade_id, last_event))
+                    logger.debug(
+                        "Node '{}' has already performed an upgrade with upgrade_id {}. "
+                        "Last recorded event is {}". format(
+                            self.nodeName, upgrade_id, last_event))
                     return
 
                 when = txn[SCHEDULE][self.nodeId]
@@ -317,8 +321,9 @@ class Upgrader(HasActionQueue):
                         self.nodeName, version))
 
                     if self.scheduledUpgrade:
-                        logger.info("Node '{}' cancels previous upgrade and schedules a new one to {}".
-                                    format(self.nodeName, version))
+                        logger.info(
+                            "Node '{}' cancels previous upgrade and schedules a new one to {}". format(
+                                self.nodeName, version))
                         self._cancelScheduledUpgrade(justification)
 
                     self._scheduleUpgrade(
@@ -333,8 +338,9 @@ class Upgrader(HasActionQueue):
                         self.nodeName, version))
                 return
 
-            logger.error("Got {} transaction with unsupported action {}".format(
-                POOL_UPGRADE, action))
+            logger.error(
+                "Got {} transaction with unsupported action {}".format(
+                    POOL_UPGRADE, action))
 
     def _scheduleUpgrade(self,
                          version,

@@ -112,8 +112,8 @@ class Connection:
         if isinstance(remoteEndPoint, tuple):
             remoteEndPoint = "{}:{}".format(*remoteEndPoint)
         connectionStatus = 'not verified, remote verkey unknown'
-        connection_last_synced = prettyDateDifference(self.connection_last_synced) or \
-            constant.CONNECTION_NOT_SYNCHRONIZED
+        connection_last_synced = prettyDateDifference(
+            self.connection_last_synced) or constant.CONNECTION_NOT_SYNCHRONIZED
 
         if connection_last_synced != constant.CONNECTION_NOT_SYNCHRONIZED and \
                 remoteEndPoint == constant.UNKNOWN_WAITING_FOR_SYNC:
@@ -160,8 +160,8 @@ class Connection:
             optional_connection_items += self.avail_claims_str()
 
         if self.connection_last_sync_no:
-            optional_connection_items += 'Last sync seq no: ' + self.connection_last_sync_no \
-                + '\n'
+            optional_connection_items += 'Last sync seq no: ' + \
+                self.connection_last_sync_no + '\n'
 
         fixedEndingLines = 'Last synced: ' + connection_last_synced
 
@@ -182,7 +182,8 @@ class Connection:
         def checkIfFieldPresent(msg, searchInName, fieldName):
             if not msg.get(fieldName):
                 raise InvalidConnectionException(
-                    "Field not found in {}: {}".format(searchInName, fieldName))
+                    "Field not found in {}: {}".format(
+                        searchInName, fieldName))
 
         checkIfFieldPresent(request_data, 'given input', 'sig')
         checkIfFieldPresent(request_data, 'given input', 'connection-request')

@@ -41,9 +41,32 @@ REVOCATION = "revocation"
 
 WRITES = "writes"
 
-allOpKeys = (TXN_TYPE, TARGET_NYM, VERKEY, ORIGIN, ROLE, DATA, NONCE, REF, RAW,
-             ENC, HASH, ALIAS, ACTION, SCHEDULE, TIMEOUT, SHA256, START, CANCEL,
-             NAME, VERSION, JUSTIFICATION, SIGNATURE_TYPE, FORCE, WRITES, REINSTALL)
+allOpKeys = (
+    TXN_TYPE,
+    TARGET_NYM,
+    VERKEY,
+    ORIGIN,
+    ROLE,
+    DATA,
+    NONCE,
+    REF,
+    RAW,
+    ENC,
+    HASH,
+    ALIAS,
+    ACTION,
+    SCHEDULE,
+    TIMEOUT,
+    SHA256,
+    START,
+    CANCEL,
+    NAME,
+    VERSION,
+    JUSTIFICATION,
+    SIGNATURE_TYPE,
+    FORCE,
+    WRITES,
+    REINSTALL)
 
 reqOpKeys = (TXN_TYPE,)
 
