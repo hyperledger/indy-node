@@ -80,7 +80,8 @@ def send_force_false_upgrade_cmd(do, expect, upgrade_data):
        expect=expect, mapper=upgrade_data)
 
 
-def test_force_false_upgrade(be, do, trusteeCli, poolNodesStarted, validUpgradeExpForceFalse):
+def test_force_false_upgrade(
+        be, do, trusteeCli, poolNodesStarted, validUpgradeExpForceFalse):
     be(trusteeCli)
     send_force_false_upgrade_cmd(
         do, ['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'], validUpgradeExpForceFalse)
@@ -96,7 +97,8 @@ def send_force_true_upgrade_cmd(do, expect, upgrade_data):
        expect=expect, mapper=upgrade_data)
 
 
-def test_force_upgrade(be, do, trusteeCli, poolNodesStarted, validUpgradeExpForceTrue):
+def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
+                       validUpgradeExpForceTrue):
     nodes = poolNodesStarted.nodes.values()
     for node in nodes:
         if node.name in ["Delta", "Gamma"]:

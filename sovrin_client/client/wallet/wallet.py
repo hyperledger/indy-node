@@ -35,7 +35,8 @@ ENCODING = "utf-8"
 logger = getlogger()
 
 
-# TODO: Maybe we should have a thinner wallet which should not have ProverWallet
+# TODO: Maybe we should have a thinner wallet which should not have
+# ProverWallet
 class Wallet(PWallet, TrustAnchoring):
     clientNotPresentMsg = "The wallet does not have a client associated with it"
 
@@ -110,7 +111,8 @@ class Wallet(PWallet, TrustAnchoring):
                         matches.append((li, cpr))
         return matches
 
-    def getMatchingConnectionsWithProofReq(self, proofReqName, connectionName=None):
+    def getMatchingConnectionsWithProofReq(
+            self, proofReqName, connectionName=None):
         matchingConnectionAndProofReq = []
         for k, li in self._connections.items():
             for cpr in li.proofRequests:

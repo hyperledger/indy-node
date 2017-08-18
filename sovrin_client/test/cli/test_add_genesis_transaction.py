@@ -31,7 +31,8 @@ def executeAndCheckGenTxn(cli, cmd, typ, nym, role=None, data=None):
     assert "Genesis transaction added" in cli.lastCmdOutput
 
 
-def prepareCmdAndCheckGenTxn(cli, typ: SovrinTransactions, nym, role=None, data=None):
+def prepareCmdAndCheckGenTxn(
+        cli, typ: SovrinTransactions, nym, role=None, data=None):
     cmd = "add genesis transaction {} dest={}".format(typ.name, nym)
     if role:
         cmd += " role={}".format(role)

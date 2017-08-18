@@ -113,7 +113,8 @@ def getNoVerkeyEverAssignedMsgs(idr):
     return ["No verkey ever assigned to the DID {}".format(idr)]
 
 
-def testGetDIDWithoutVerkey(be, do, philCli, didAdded, trust_anchor_did_signer):
+def testGetDIDWithoutVerkey(be, do, philCli, didAdded,
+                            trust_anchor_did_signer):
     getNym(be, do, philCli, trust_anchor_did_signer.identifier,
            getNoVerkeyEverAssignedMsgs(trust_anchor_did_signer.identifier))
 
@@ -122,7 +123,8 @@ def getVerkeyIsSameAsIdentifierMsgs(idr):
     return ["Current verkey is same as DID {}".format(idr)]
 
 
-def testGetCIDWithoutVerkey(be, do, philCli, cidAdded, trust_anchor_cid_signer):
+def testGetCIDWithoutVerkey(be, do, philCli, cidAdded,
+                            trust_anchor_cid_signer):
     getNym(be, do, philCli, trust_anchor_cid_signer.identifier,
            getVerkeyIsSameAsIdentifierMsgs(trust_anchor_cid_signer.identifier))
 
@@ -181,20 +183,23 @@ def addAttribToNym(be, do, userCli, idr, raw):
 
 
 @pytest.mark.skip("INDY- This should not have worked")
-def testSendAttribForDID(be, do, verkeyAddedToDID, trust_anchor_did_signer, aliceCli):
+def testSendAttribForDID(be, do, verkeyAddedToDID,
+                         trust_anchor_did_signer, aliceCli):
     raw = '{"name": "Alice"}'
     addAttribToNym(be, do, aliceCli, trust_anchor_did_signer.identifier, raw)
 
 
 @pytest.mark.skip("INDY- This should not have worked")
-def testSendAttribForCID(be, do, verkeyAddedToCID, trust_anchor_cid_signer, trustAnchorCli):
+def testSendAttribForCID(be, do, verkeyAddedToCID,
+                         trust_anchor_cid_signer, trustAnchorCli):
     raw = '{"name": "Earl"}'
     addAttribToNym(be, do, trustAnchorCli,
                    trust_anchor_cid_signer.identifier, raw)
 
 
 @pytest.fixture(scope="module")
-def verkeyRemovedFromExistingDID(be, do, verkeyAddedToDID, abbrevIdr, aliceCli):
+def verkeyRemovedFromExistingDID(
+        be, do, verkeyAddedToDID, abbrevIdr, aliceCli):
     be(aliceCli)
     addNym(be, do, aliceCli, abbrevIdr, '')
     getNym(be, do, aliceCli, abbrevIdr, getNoActiveVerkeyFoundMsgs(abbrevIdr))
@@ -290,7 +295,8 @@ def test_send_same_nyms_only_first_gets_written(
         'verkey': abbrevVerkey
     }
 
-    # check that second request didn't write to ledger and first verkey is written
+    # check that second request didn't write to ledger and first verkey is
+    # written
     do('send GET_NYM dest={dest}',
         mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
 

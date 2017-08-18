@@ -43,7 +43,8 @@ def testNonTrustyCannotCancelUpgrade(looper, validUpgradeSent,
                           'cannot do'))
 
 
-def test_accept_then_reject_upgrade(looper, trustee, trusteeWallet, validUpgradeSent, validUpgrade):
+def test_accept_then_reject_upgrade(
+        looper, trustee, trusteeWallet, validUpgradeSent, validUpgrade):
     upgrade_name = validUpgrade[NAME]
     error_msg = "InvalidClientRequest(\"Upgrade '{}' is already scheduled\"".format(
         upgrade_name)
@@ -57,7 +58,8 @@ def test_accept_then_reject_upgrade(looper, trustee, trusteeWallet, validUpgrade
                           error_msg, retryWait=1, timeout=timeout))
 
 
-def testOnlyTrusteeCanSendPoolUpgradeForceTrue(looper, steward, validUpgradeExpForceTrue):
+def testOnlyTrusteeCanSendPoolUpgradeForceTrue(
+        looper, steward, validUpgradeExpForceTrue):
     stClient, stWallet = steward
     _, req = sendUpgrade(stClient, stWallet, validUpgradeExpForceTrue)
     timeout = plenumWaits.expectedReqNAckQuorumTime()

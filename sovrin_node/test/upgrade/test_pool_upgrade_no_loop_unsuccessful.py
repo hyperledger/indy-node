@@ -25,5 +25,6 @@ def test_upgrade_does_not_get_into_loop_if_failed(looper, tconf, nodeSet,
     looper.run(eventually(checkUpgradeScheduled, nodeSet, upgr1[VERSION],
                           retryWait=1, timeout=waits.expectedUpgradeScheduled()))
 
-    # we have not patched sovrin_node version so nodes think the upgrade had failed
+    # we have not patched sovrin_node version so nodes think the upgrade had
+    # failed
     check_no_loop(nodeSet, UpgradeLog.UPGRADE_FAILED)

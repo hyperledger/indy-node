@@ -30,7 +30,8 @@ class DomainReqHandler(PHandler):
     LAST_SEQ_NO = "lsn"
     VALUE = "val"
 
-    def __init__(self, ledger, state, requestProcessor, idrCache, attributeStore):
+    def __init__(self, ledger, state, requestProcessor,
+                 idrCache, attributeStore):
         super().__init__(ledger, state, requestProcessor)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
@@ -138,7 +139,7 @@ class DomainReqHandler(PHandler):
         try:
             originRole = self.idrCache.getRole(
                 origin, isCommitted=False) or None
-        except:
+        except BaseException:
             raise UnknownIdentifier(
                 req.identifier,
                 req.reqId)

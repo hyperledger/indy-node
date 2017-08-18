@@ -42,7 +42,8 @@ def demo_start_agents(pool, looper, b_dir):
                      pool.create_client(5502), looper, pool.steward_agent())
 
 
-def demo_start_agent(b_dir, create_func, bootstrap_func, client, looper, steward):
+def demo_start_agent(b_dir, create_func, bootstrap_func,
+                     client, looper, steward):
     looper.runFor(2)
     agent = create_func(base_dir_path=b_dir, client=client)
 

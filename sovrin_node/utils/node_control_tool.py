@@ -156,7 +156,8 @@ class NodeControlTool:
             raise Exception(msg)
 
     def _backup_name(self, version):
-        return os.path.join(self.base_dir, '{}{}'.format(self.backup_name_prefix, version))
+        return os.path.join(self.base_dir, '{}{}'.format(
+            self.backup_name_prefix, version))
 
     def _backup_name_ext(self, version):
         return '{}.{}'.format(self._backup_name(version), self.backup_format)
@@ -258,7 +259,8 @@ class NodeControlTool:
                 readers, writers, errs)
             for s in readable:
                 if s is self.server:
-                    # A "readable" server socket is ready to accept a connection
+                    # A "readable" server socket is ready to accept a
+                    # connection
                     connection, client_address = s.accept()
                     logger.debug('New connection from {} on fd {}'.format(client_address,
                                                                           connection.fileno()))

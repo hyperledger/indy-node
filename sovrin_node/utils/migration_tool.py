@@ -51,7 +51,8 @@ def _get_migration_scripts(current_platform):
     # Data folder is published as a separate 'data' python package
     migrations = importlib.import_module(
         '.'.join([SCRIPT_PREFIX, PLATFORM_PREFIX[current_platform]]))
-    return [name for module_finder, name, ispkg in pkgutil.iter_modules(migrations.__path__)]
+    return [name for module_finder, name,
+            ispkg in pkgutil.iter_modules(migrations.__path__)]
 
 
 def _get_relevant_migrations(migration_scripts, current_version, new_version):
@@ -63,13 +64,15 @@ def _get_relevant_migrations(migration_scripts, current_version, new_version):
             continue
 
         if Upgrader.compareVersions(current_version, new_version) >= 0:
-            if Upgrader.compareVersions(migration_new_version, migration_original_version) > 0:
+            if Upgrader.compareVersions(
+                    migration_new_version, migration_original_version) > 0:
                 continue
             if Upgrader.compareVersions(migration_original_version, current_version) <= 0 and \
                     Upgrader.compareVersions(migration_new_version, new_version) >= 0:
                 relevant_migrations.append(migration)
         else:
-            if Upgrader.compareVersions(migration_original_version, migration_new_version) > 0:
+            if Upgrader.compareVersions(
+                    migration_original_version, migration_new_version) > 0:
                 continue
             if Upgrader.compareVersions(migration_original_version, current_version) >= 0 and \
                     Upgrader.compareVersions(migration_new_version, new_version) <= 0:
@@ -93,9 +96,12 @@ def _compare_migration_scripts(migration1, migration2):
         migration1)
     migration_original_version2, migration_new_version2 = _get_migration_versions(
         migration2)
-    if Upgrader.compareVersions(migration_original_version2, migration_original_version1) == 0:
-        return Upgrader.compareVersions(migration_new_version2, migration_new_version1)
-    return Upgrader.compareVersions(migration_original_version2, migration_original_version1)
+    if Upgrader.compareVersions(
+            migration_original_version2, migration_original_version1) == 0:
+        return Upgrader.compareVersions(
+            migration_new_version2, migration_new_version1)
+    return Upgrader.compareVersions(
+        migration_original_version2, migration_original_version1)
 
 
 def _get_current_platform():

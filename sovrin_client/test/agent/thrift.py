@@ -28,7 +28,8 @@ class ThriftAgent(WalletedAgent):
                                       self.wallet.defaultId, frm)
 
 
-def create_thrift(name=None, wallet=None, base_dir_path=None, port=7777, client=None):
+def create_thrift(name=None, wallet=None, base_dir_path=None,
+                  port=7777, client=None):
 
     endpoint_args = {'onlyListener': True}
     if wallet:

@@ -21,7 +21,8 @@ class strict_types:
 
     def is_complex_type(self, type_):
         complex_types = [type(typing.Union), type(typing.Tuple)]
-        return any(type(type_) is complex_type for complex_type in complex_types)
+        return any(isinstance(type_, complex_type)
+                   for complex_type in complex_types)
 
     def is_subtype(self, type_a, type_b):
         # This wouldn't work for nested Types (from typing package)

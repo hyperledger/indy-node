@@ -44,7 +44,8 @@ def testNodeSchedulesUpgradeExpForceTrue(upgradeScheduledExpForceTrue):
     pass
 
 
-def testForcedUpgradeNoConsensusOnSingleNode(validUpgradeExpForceTrue, looper, nodeSet, trustee, trusteeWallet):
+def testForcedUpgradeNoConsensusOnSingleNode(
+        validUpgradeExpForceTrue, looper, nodeSet, trustee, trusteeWallet):
     nup = validUpgradeExpForceTrue.copy()
     nup.update({VERSION: bumpVersion(validUpgradeExpForceTrue[VERSION])})
     for node in nodeSet:

@@ -47,7 +47,8 @@ def getAgentCmdLineParams():
 
 
 def buildFaberWallet():
-    return buildAgentWallet("FaberCollege", b'Faber000000000000000000000000000')
+    return buildAgentWallet(
+        "FaberCollege", b'Faber000000000000000000000000000')
 
 
 def buildAcmeWallet():

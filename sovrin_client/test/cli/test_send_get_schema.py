@@ -34,13 +34,15 @@ def send_schema(be, do, poolNodesStarted, trusteeCli):
        expect=SCHEMA_ADDED, within=5)
 
 
-def test_send_get_schema_succeeds(be, do, poolNodesStarted, trusteeCli, send_schema):
+def test_send_get_schema_succeeds(
+        be, do, poolNodesStarted, trusteeCli, send_schema):
 
     do('send GET_SCHEMA dest={} name=Degree version=1.0'.format(trusteeCli.activeDID),
        expect=SCHEMA_FOUND, within=5)
 
 
-def test_send_get_schema_as_alice(be, do, poolNodesStarted, trusteeCli, send_schema, aliceCli):
+def test_send_get_schema_as_alice(
+        be, do, poolNodesStarted, trusteeCli, send_schema, aliceCli):
 
     be(aliceCli)
     do('send GET_SCHEMA dest={} name=Degree version=1.0'.format(trusteeCli.activeDID),

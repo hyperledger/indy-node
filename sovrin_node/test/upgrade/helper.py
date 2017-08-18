@@ -145,7 +145,8 @@ def check_node_set_acknowledges_upgrade(looper, node_set, node_ids, allowed_acti
                                             len(node_set)), retryWait=1, timeout=timeout))
 
 
-def check_ledger_after_upgrade(node_set, allowed_actions, ledger_size, node_ids=None, allowed_txn_types=[NODE_UPGRADE]):
+def check_ledger_after_upgrade(
+        node_set, allowed_actions, ledger_size, node_ids=None, allowed_txn_types=[NODE_UPGRADE]):
     for node in node_set:
         print(len(node.configLedger))
         assert len(node.configLedger) == ledger_size

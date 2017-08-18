@@ -56,7 +56,8 @@ class BaseAgent(TestWalletedAgent):
     def getLoggerFilePath(self, name=None):
         config = getConfig()
         path = expanduser('{}'.format(config.baseDir))
-        return '{}/{}.log'.format(path, (name or self.name).replace(" ", "-").lower())
+        return '{}/{}.log'.format(path,
+                                  (name or self.name).replace(" ", "-").lower())
 
     def getClaimVersionFileName(self):
         return self.name.replace(" ", "-").lower() + "-schema-version.txt"

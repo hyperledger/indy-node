@@ -267,7 +267,7 @@ class Node(PlenumNode, HasPoolManager):
                 self.nodeAuthNr.authenticate(request.operation[DATA],
                                              request.identifier,
                                              request.operation[f.SIG.nm])
-            except:
+            except BaseException:
                 # TODO: Do something here
                 return
         if not self.isProcessingReq(*request.key):
@@ -381,11 +381,14 @@ class Node(PlenumNode, HasPoolManager):
             super().processRequest(request, frm)
         else:
             # forced request should be processed before consensus
-            if (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
+            if (request.operation[TXN_TYPE] in [
+                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
-            # here we should have write transactions that should be processed only on writable pool
-            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]):
+            # here we should have write transactions that should be processed
+            # only on writable pool
+            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
+                    POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
             else:
                 raise InvalidClientRequest(request.identifier, request.reqId,
@@ -422,7 +425,7 @@ class Node(PlenumNode, HasPoolManager):
         Execute the REQUEST sent to this Node
 
         :param ppTime: the time at which PRE-PREPARE was sent
-        :param req: the client REQUEST  
+        :param req: the client REQUEST
         """
         return self.commitAndSendReplies(self.reqHandler, ppTime, reqs,
                                          stateRoot, txnRoot)

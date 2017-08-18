@@ -69,7 +69,8 @@ def create_local_pool(base_dir, node_size=4):
 
 
 class LocalPool(Pool, Looper):
-    def __init__(self, genesis_txns, base_dir, config=None, loop=None, steward: Steward=None):
+    def __init__(self, genesis_txns, base_dir, config=None,
+                 loop=None, steward: Steward=None):
         super().__init__(loop=loop)
         self.base_dir = base_dir
         self.genesis_txns = genesis_txns

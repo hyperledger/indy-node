@@ -548,7 +548,8 @@ class SovrinCli(PlenumCli):
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
                                     req.key, self.activeClient, getNymReply)
 
-    def _addNym(self, nym, role, newVerKey=None, otherClientName=None, custom_clb=None):
+    def _addNym(self, nym, role, newVerKey=None,
+                otherClientName=None, custom_clb=None):
         idy = Identity(nym, verkey=newVerKey, role=role)
         try:
             self.activeWallet.addTrustAnchoredIdentity(idy)
@@ -653,7 +654,7 @@ class SovrinCli(PlenumCli):
                         .format(reply[DATA]))
                 else:
                     self.print("Schema not found")
-            except:
+            except BaseException:
                 self.print('"data" must be in proper format', Token.Error)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
@@ -673,7 +674,7 @@ class SovrinCli(PlenumCli):
                         .format(reply[DATA]))
                 else:
                     self.print("Claim def not found")
-            except:
+            except BaseException:
                 self.print('"data" must be in proper format', Token.Error)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
@@ -728,7 +729,9 @@ class SovrinCli(PlenumCli):
         self.activeWallet.doPoolConfig(poolConfig)
         reqs = self.activeWallet.preparePending()
         req = self.activeClient.submitReqs(*reqs)[0][0]
-        self.print("Sending pool config writes={} force={}".format(writes, force))
+        self.print(
+            "Sending pool config writes={} force={}".format(
+                writes, force))
 
         def out(reply, error, *args, **kwargs):
             if error:
@@ -833,7 +836,7 @@ class SovrinCli(PlenumCli):
             try:
                 data = ast.literal_eval(data)
                 self._sendNodeTxn(nym, data)
-            except:
+            except BaseException:
                 self.print('"data" must be in proper format', Token.Error)
             return True
 
@@ -864,7 +867,7 @@ class SovrinCli(PlenumCli):
             try:
                 if schedule:
                     schedule = ast.literal_eval(schedule.strip())
-            except:
+            except BaseException:
                 self.print('"schedule" must be in proper format', Token.Error)
                 return True
             if timeout:
@@ -1134,7 +1137,8 @@ class SovrinCli(PlenumCli):
         self.printSuggestion(msgs)
 
     def _printConnectionAlreadyExcepted(self, connectionName):
-        self.print("Connection {} is already accepted\n".format(connectionName))
+        self.print(
+            "Connection {} is already accepted\n".format(connectionName))
 
     def _printShowAndAcceptConnectionUsage(self, connectionName=None):
         msgs = self._getShowConnectionUsage(connectionName) + \
@@ -1158,7 +1162,8 @@ class SovrinCli(PlenumCli):
             self.activeClient.hasSufficientConnections
 
     def _accept_request_connection(self, matchedVars):
-        if matchedVars.get('accept_connection_request') == acceptConnectionCmd.id:
+        if matchedVars.get(
+                'accept_connection_request') == acceptConnectionCmd.id:
             connectionName = SovrinCli.removeSpecialChars(
                 matchedVars.get('connection_name'))
             self._accept_connection_request(connectionName)
@@ -1197,7 +1202,8 @@ class SovrinCli(PlenumCli):
         return totalFound, exactlyMatchedConnections, likelyMatchedConnections
 
     @staticmethod
-    def _getOneConnection(exactlyMatchedConnections, likelyMatchedConnections) -> Connection:
+    def _getOneConnection(exactlyMatchedConnections,
+                          likelyMatchedConnections) -> Connection:
         li = None
         if len(exactlyMatchedConnections) == 1:
             li = list(exactlyMatchedConnections.values())[0][0]
@@ -1207,7 +1213,8 @@ class SovrinCli(PlenumCli):
 
     def _printMoreThanOneConnectionFoundMsg(self, connectionName, exactlyMatchedConnections,
                                             likelyMatchedConnections):
-        self.print('More than one connection matches "{}"'.format(connectionName))
+        self.print(
+            'More than one connection matches "{}"'.format(connectionName))
         exactlyMatchedConnections.update(likelyMatchedConnections)
         for k, v in exactlyMatchedConnections.items():
             for li in v:
@@ -1258,8 +1265,10 @@ class SovrinCli(PlenumCli):
         self.print("No matching Claims found in "
                    "any connections in current wallet\n")
 
-    def _printMoreThanOneConnectionFoundForRequest(self, requestedName, connectionNames):
-        self.print('More than one connection matches "{}"'.format(requestedName))
+    def _printMoreThanOneConnectionFoundForRequest(
+            self, requestedName, connectionNames):
+        self.print(
+            'More than one connection matches "{}"'.format(requestedName))
         for li in connectionNames:
             self.print("{}".format(li))
             # TODO: Any suggestion in more than one connection?
@@ -1273,7 +1282,8 @@ class SovrinCli(PlenumCli):
             msg += "Extra info: {}".format(extra)
         self.print(msg)
 
-    def _printMoreThanOneClaimFoundForRequest(self, claimName, connectionAndClaimNames):
+    def _printMoreThanOneClaimFoundForRequest(
+            self, claimName, connectionAndClaimNames):
         self.print('More than one match for "{}"'.format(claimName))
         for li, cl in connectionAndClaimNames:
             self.print("{} in {}".format(li, cl))
@@ -1740,7 +1750,8 @@ class SovrinCli(PlenumCli):
 
     def printWarningIfActiveWalletIsIncompatible(self):
         if self._activeWallet:
-            if not self.checkIfWalletBelongsToCurrentContext(self._activeWallet):
+            if not self.checkIfWalletBelongsToCurrentContext(
+                    self._activeWallet):
                 self.print(self.getWalletContextMistmatchMsg, Token.BoldOrange)
                 self.print("Any changes made to this wallet won't "
                            "be persisted.", Token.BoldOrange)

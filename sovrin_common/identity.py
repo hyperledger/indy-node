@@ -96,4 +96,5 @@ class Identity(GeneratesRequest):
 
     def getRequest(self, requestAuthor: Identifier):
         if not self.seqNo:
-            return Request(identifier=requestAuthor, operation=self._opForGet())
+            return Request(identifier=requestAuthor,
+                           operation=self._opForGet())

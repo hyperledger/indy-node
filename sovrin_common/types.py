@@ -216,7 +216,8 @@ class ClientOperationField(PClientOperationField):
         POOL_CONFIG: ClientPoolConfigOperation(),
     }
 
-    # TODO: it is a workaround because INDY-338, `operations` must be a class constant
+    # TODO: it is a workaround because INDY-338, `operations` must be a class
+    # constant
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.operations.update(self._specific_operations)

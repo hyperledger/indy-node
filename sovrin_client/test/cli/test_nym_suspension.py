@@ -94,7 +94,8 @@ def anotherTrusteeCLI(CliBuilder):
 
 
 @pytest.fixture(scope="module")
-def anotherTrusteeCli(anotherTrusteeCLI, be, do, connectedToTest, anotherTrusteeAdded):
+def anotherTrusteeCli(anotherTrusteeCLI, be, do,
+                      connectedToTest, anotherTrusteeAdded):
     be(anotherTrusteeCLI)
     do('new wallet TS1', expect=['New wallet TS1 created',
                                  'Active wallet set to "TS1"'])
@@ -132,7 +133,8 @@ def testTrusteeSuspendingTrustee(be, do, trusteeCli, anotherTrusteeAdded,
        expect=[errorMsg], mapper=stewardAdded)
 
 
-def testTrusteeSuspendingSteward(be, do, trusteeCli, stewardAdded, nymAddedOut):
+def testTrusteeSuspendingSteward(
+        be, do, trusteeCli, stewardAdded, nymAddedOut):
     be(trusteeCli)
     do('send NYM dest={remote} role=',
        within=5,

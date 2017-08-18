@@ -28,7 +28,8 @@ def verifier(userClientB, userWalletB):
     return SovrinVerifier(userClientB, userWalletB)
 
 
-def testAnonCredsPrimaryOnly(issuer, prover, verifier, attrRepo, primes1, looper):
+def testAnonCredsPrimaryOnly(
+        issuer, prover, verifier, attrRepo, primes1, looper):
     async def doTestAnonCredsPrimaryOnly():
         # 1. Create a Schema
         schema = await issuer.genSchema('GVT', '1.0', GVT.attribNames())

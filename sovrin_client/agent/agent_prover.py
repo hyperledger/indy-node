@@ -58,7 +58,8 @@ class AgentProver:
             proverId=link.request_nonce,
             reqNonRevoc=False)
 
-        # It has served its purpose by this point. Claim Requests do not need a nonce.
+        # It has served its purpose by this point. Claim Requests do not need a
+        # nonce.
         schema = await self.prover.wallet.getSchema(ID(schema_key))
 
         claimRequestDetails = {

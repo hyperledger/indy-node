@@ -63,7 +63,8 @@ def __migrate_ledger(data_directory,
     old_ledger.stop()
     new_ledger.stop()
 
-    # now that everything succeeded, remove the new files and move the old files into place
+    # now that everything succeeded, remove the new files and move the old
+    # files into place
     shutil.rmtree(
         os.path.join(data_directory, new_ledger_file))
     os.rename(
@@ -71,7 +72,8 @@ def __migrate_ledger(data_directory,
         os.path.join(data_directory, old_ledger_file))
 
 
-def __open_old_ledger(data_directory, old_ledger_file, hash_store_name, serializer):
+def __open_old_ledger(data_directory, old_ledger_file,
+                      hash_store_name, serializer):
     # open old Ledger with leveldb hash store (to re-init it)
     old_txn_log_store = ChunkedFileStore(data_directory,
                                          old_ledger_file,

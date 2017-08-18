@@ -139,7 +139,8 @@ def add_nym_operation(signer=None, seed=None, role=None):
     return op
 
 
-def test_non_steward_cannot_create_trust_anchor(nodeSet, trustAnchor, addedTrustAnchor, client1, looper):
+def test_non_steward_cannot_create_trust_anchor(
+        nodeSet, trustAnchor, addedTrustAnchor, client1, looper):
 
     with whitelistextras("UnknownIdentifier"):
         non_permission = Wallet()
@@ -165,7 +166,8 @@ def testStewardCreatesATrustAnchor(steward, addedTrustAnchor):
     pass
 
 
-@pytest.mark.skip(reason="SOV-560. Cannot create another sponsor with same nym")
+@pytest.mark.skip(
+    reason="SOV-560. Cannot create another sponsor with same nym")
 def testStewardCreatesAnotherTrustAnchor(nodeSet, steward, stewardWallet, looper,
                                          trustAnchorWallet):
     createNym(looper, trustAnchorWallet.defaultId, steward, stewardWallet,
@@ -173,7 +175,8 @@ def testStewardCreatesAnotherTrustAnchor(nodeSet, steward, stewardWallet, looper
     return trustAnchorWallet
 
 
-def test_non_trust_anchor_cannot_create_user(nodeSet, looper, trustAnchor, addedTrustAnchor, client1):
+def test_non_trust_anchor_cannot_create_user(
+        nodeSet, looper, trustAnchor, addedTrustAnchor, client1):
     with whitelistextras("UnknownIdentifier"):
         non_trust_anchor = Wallet()
         signer = DidSigner()
@@ -459,7 +462,8 @@ def testGetTxnsNoSeqNo():
 
 @pytest.mark.skip(reason="SOV-560. Come back to it later since "
                          "requestPendingTxns move to wallet")
-def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdir, trustAnchorWallet, looper):
+def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdir,
+                     trustAnchorWallet, looper):
     """
     Test GET_TXNS from client and provide seqNo to fetch from
     """

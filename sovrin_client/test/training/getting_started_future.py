@@ -69,7 +69,8 @@ def demo_start_agents(pool, looper, base_dir):
                      pool.create_client(5502), looper, pool.steward_agent())
 
 
-def demo_start_agent(base_dir, create_func, bootstrap_func, client, looper, steward):
+def demo_start_agent(base_dir, create_func, bootstrap_func,
+                     client, looper, steward):
     looper.runFor(2)
     agent = create_func(base_dir_path=base_dir, client=client)
 
@@ -163,7 +164,8 @@ def demo_wait_for_accept(looper, link):
 
 
 def _wait_for(looper, func, *args, retry_wait=.1, timeout=20):
-    return looper.run(eventually(func, *args, retryWait=retry_wait, timeout=timeout))
+    return looper.run(eventually(
+        func, *args, retryWait=retry_wait, timeout=timeout))
 
 
 FABER_INVITE = """

@@ -248,7 +248,8 @@ class Upgrader(HasActionQueue):
         :return: whether schedule valid
         """
 
-        # flag "force=True" ignore basic checks! only datetime format is checked
+        # flag "force=True" ignore basic checks! only datetime format is
+        # checked
         times = []
         if not force and set(schedule.keys()) != nodeIds:
             return False, 'Schedule should contain id of all nodes'
@@ -310,7 +311,8 @@ class Upgrader(HasActionQueue):
                 when = txn[SCHEDULE][self.nodeId]
                 failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
-                if self.is_version_upgradable(currentVersion, version, reinstall):
+                if self.is_version_upgradable(
+                        currentVersion, version, reinstall):
                     logger.info("Node '{}' schedules upgrade to {}".format(
                         self.nodeName, version))
 
@@ -399,7 +401,8 @@ class Upgrader(HasActionQueue):
         self.aqStash = deque()
         self.scheduledUpgrade = None
 
-    def _callUpgradeAgent(self, when, version, failTimeout, upgrade_id) -> None:
+    def _callUpgradeAgent(self, when, version, failTimeout,
+                          upgrade_id) -> None:
         """
         Callback which is called when upgrade time come.
         Writes upgrade record to upgrade log and asks

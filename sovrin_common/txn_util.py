@@ -57,7 +57,7 @@ def getGenesisTxns():
             TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4d", TXN_TYPE: NYM, ROLE: STEWARD},
         {ALIAS: "Steward4", TARGET_NYM: "3znAGhp6Tk4kmebhXnk9K3jaTMffu82PJfEG91AeRkq2",
             TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4e", TXN_TYPE: NYM, ROLE: STEWARD},
-        {ALIAS: "Steward5",  TARGET_NYM: "4AdS22kC7xzb4bcqg9JATuCfAMNcQYcZa1u5eWzs6cSJ",
+        {ALIAS: "Steward5", TARGET_NYM: "4AdS22kC7xzb4bcqg9JATuCfAMNcQYcZa1u5eWzs6cSJ",
             TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4f", TXN_TYPE: NYM, ROLE: STEWARD},
         {ALIAS: "Steward6", TARGET_NYM: "4Yk9HoDSfJv9QcmJbLcXdWVgS7nfvdUqiVcvbSu8VBru",
             TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b50", TXN_TYPE: NYM, ROLE: STEWARD},

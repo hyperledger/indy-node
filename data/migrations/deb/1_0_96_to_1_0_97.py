@@ -63,7 +63,8 @@ def __migrate_ledger(data_directory,
     old_ledger.stop()
     new_ledger.stop()
 
-    # now that everything succeeded, remove the old files and move the new files into place
+    # now that everything succeeded, remove the old files and move the new
+    # files into place
     shutil.rmtree(
         os.path.join(data_directory, old_ledger_file))
     os.rename(

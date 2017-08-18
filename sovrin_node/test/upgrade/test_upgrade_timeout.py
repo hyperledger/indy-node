@@ -17,7 +17,8 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch):
 
     # patch get_timeout not to wait one whole minute
     monkeypatch.setattr(Upgrader, 'get_timeout', lambda self, timeout: timeout)
-    # patch _open_connection_and_send to make node think it sent upgrade successfully
+    # patch _open_connection_and_send to make node think it sent upgrade
+    # successfully
     monkeypatch.setattr(Upgrader, '_open_connection_and_send', mock)
     pending = {node.name for node in nodeSet}
     when = 0

@@ -241,7 +241,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
         try:
             bankKYCProofSent(be, do, userCLI, tMap, None)
             passed = True
-        except:
+        except BaseException:
             thriftFaberIssuerPublicKey = userCLI.looper.run(getPublicKey(
                 thriftAgent.issuer.wallet, faberSchemaId))
             assert faberIssuerPublicKey == thriftFaberIssuerPublicKey

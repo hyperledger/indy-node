@@ -38,7 +38,8 @@ class AcmeAgent(WalletedAgent):
                     self.sendNewAvailableClaimsData(claims, frm, link)
 
 
-def create_acme(name=None, wallet=None, base_dir_path=None, port=6666, client=None):
+def create_acme(name=None, wallet=None, base_dir_path=None,
+                port=6666, client=None):
     if client is None:
         client = create_client(base_dir_path=None, client_class=TestClient)
 

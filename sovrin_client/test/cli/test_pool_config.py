@@ -46,7 +46,8 @@ def testPoolConfigWritableFalseCanRead(be, do, trusteeCli):
        expect="Current verkey is same as DID", within=10)
 
 
-def testPoolUpgradeOnReadonlyPool(poolNodesStarted, be, do, trusteeCli, validUpgrade):
+def testPoolUpgradeOnReadonlyPool(
+        poolNodesStarted, be, do, trusteeCli, validUpgrade):
     be(trusteeCli)
     do('send POOL_CONFIG writes=False force=False',
        expect="Pool config successful", within=10)

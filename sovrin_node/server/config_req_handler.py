@@ -16,7 +16,8 @@ from sovrin_node.server.pool_config import PoolConfig
 
 
 class ConfigReqHandler(RequestHandler):
-    def __init__(self, ledger, state, idrCache: IdrCache, upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
+    def __init__(self, ledger, state, idrCache: IdrCache,
+                 upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
@@ -61,7 +62,7 @@ class ConfigReqHandler(RequestHandler):
         origin = req.identifier
         try:
             originRole = self.idrCache.getRole(origin, isCommitted=False)
-        except:
+        except BaseException:
             raise UnauthorizedClientRequest(req.identifier, req.reqId,
                                             "Nym {} not added to the ledger yet".format(origin))
         if typ == POOL_UPGRADE:

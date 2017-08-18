@@ -89,7 +89,8 @@ def newKeyPairCreated(cli):
 
 
 @pytest.fixture(scope="module")
-def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf, cliTempLogger):
+def CliBuilder(tdir, tdirWithPoolTxns,
+               tdirWithDomainTxnsUpdated, tconf, cliTempLogger):
     return getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
                          logFileName=cliTempLogger)
 
@@ -519,7 +520,8 @@ def syncConnectionOutWithoutEndpoint(syncConnectionOutStartsWith):
 
 
 @pytest.fixture(scope="module")
-def showSyncedConnectionWithEndpointOut(acceptedConnectionHeading, showConnectionOut):
+def showSyncedConnectionWithEndpointOut(
+        acceptedConnectionHeading, showConnectionOut):
     return acceptedConnectionHeading + showConnectionOut + \
         ["Last synced: "]
 
@@ -1064,7 +1066,8 @@ def inc_bookmark(get_bookmark, set_bookmark):
 @pytest.fixture(scope="module")
 def expect(current_cli, get_bookmark, inc_bookmark):
 
-    def _expect(expected, mapper=None, line_no=None, within=None, ignore_extra_lines=None):
+    def _expect(expected, mapper=None, line_no=None,
+                within=None, ignore_extra_lines=None):
         cur_cli = current_cli()
 
         def _():
@@ -1081,7 +1084,7 @@ def expect(current_cli, get_bookmark, inc_bookmark):
                 assert isinstance(e, str)
                 a = actual[i]
                 assert isinstance(a, str)
-                is_p = type(e) == P
+                is_p = isinstance(e, P)
                 if (not is_p and a != e) or (is_p and not e.match(a)):
                     if ignore_extra_lines:
                         continue
@@ -1093,7 +1096,7 @@ def expect(current_cli, get_bookmark, inc_bookmark):
             if len(expected_) > len(actual):
                 for e in expected_:
                     try:
-                        p = re.compile(e) if type(e) == P else None
+                        p = re.compile(e) if isinstance(e, P) else None
                     except Exception as err:
                         explanation += "ERROR COMPILING REGEX for {}: {}\n".\
                             format(e, err)
@@ -1106,7 +1109,7 @@ def expect(current_cli, get_bookmark, inc_bookmark):
             if len(expected_) < len(actual) and ignore_extra_lines is None:
                 for a in actual:
                     for e in expected_:
-                        p = re.compile(e) if type(e) == P else None
+                        p = re.compile(e) if isinstance(e, P) else None
                         if (p and p.fullmatch(a)) or a == e:
                             break
                     else:

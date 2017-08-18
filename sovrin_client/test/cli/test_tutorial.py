@@ -253,7 +253,8 @@ def testLoadFaberInvite(faberInviteLoadedByAlice):
     pass
 
 
-def testShowConnectionNotExists(be, do, aliceCli, connectionNotExists, faberMap):
+def testShowConnectionNotExists(
+        be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
     do('show connection {inviter-not-exists}',
        expect=connectionNotExists,
@@ -270,7 +271,8 @@ def testShowFaberConnection(be, do, aliceCli, faberInviteLoadedByAlice,
        expect=showUnSyncedConnectionOut, mapper=cp)
 
 
-def testSyncConnectionNotExists(be, do, aliceCli, connectionNotExists, faberMap):
+def testSyncConnectionNotExists(
+        be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
     do('sync {inviter-not-exists}',
        expect=connectionNotExists, mapper=faberMap)
@@ -393,7 +395,8 @@ def testPingBeforeAccept(be, do, aliceCli, faberMap, connectedToTest,
        mapper=faberMap)
 
 
-def testAcceptNotExistsConnection(be, do, aliceCli, connectionNotExists, faberMap):
+def testAcceptNotExistsConnection(
+        be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
     do('accept request from {inviter-not-exists}',
        expect=connectionNotExists, mapper=faberMap)

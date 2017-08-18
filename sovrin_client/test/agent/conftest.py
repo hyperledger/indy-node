@@ -181,7 +181,8 @@ def faberAdded(nodeSet,
 @pytest.fixture(scope="module")
 def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
                    faberAgent, faberAdded, faberBootstrap):
-    return startAgent(emptyLooper, faberAgent, faberWallet, bootstrap=faberBootstrap)
+    return startAgent(emptyLooper, faberAgent, faberWallet,
+                      bootstrap=faberBootstrap)
 
 
 @pytest.fixture(scope="module")
@@ -203,7 +204,8 @@ def acmeAdded(nodeSet,
 @pytest.fixture(scope="module")
 def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet, acmeAgent,
                   acmeAdded, acmeBootstrap):
-    return startAgent(emptyLooper, acmeAgent, acmeWallet, bootstrap=acmeBootstrap)
+    return startAgent(emptyLooper, acmeAgent, acmeWallet,
+                      bootstrap=acmeBootstrap)
 
 
 @pytest.fixture(scope="module")
@@ -374,7 +376,8 @@ def addAgent(looper, agent, steward, stewardWallet):
     # 2. add client to the loop
     looper.add(agent.client)
 
-    # 3. add attribute to the Agent's NYM with endpoint information (by Agent's client)
+    # 3. add attribute to the Agent's NYM with endpoint information (by
+    # Agent's client)
     ep = '127.0.0.1:{}'.format(agent.port)
     attributeData = json.dumps({ENDPOINT: {'ha': ep}})
 

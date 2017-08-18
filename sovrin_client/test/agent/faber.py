@@ -21,7 +21,8 @@ FABER_ID = FABER_SIGNER.identifier
 FABER_VERKEY = FABER_SIGNER.verkey
 
 
-def create_faber(name=None, wallet=None, base_dir_path=None, port=5555, client=None):
+def create_faber(name=None, wallet=None, base_dir_path=None,
+                 port=5555, client=None):
 
     if client is None:
         client = create_client(base_dir_path=None, client_class=TestClient)

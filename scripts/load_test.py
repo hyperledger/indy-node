@@ -220,7 +220,8 @@ class ClientPoll:
     def _readCredentials(self):
         with open(self.__filePath, "r") as file:
             creds = [line.strip().split(":") for i, line in enumerate(file)]
-            return map(lambda x: (x[0], str.encode(x[1])), creds[self.__skip:self.__skip + self.__limit])
+            return map(lambda x: (x[0], str.encode(x[1])),
+                       creds[self.__skip:self.__skip + self.__limit])
 
     def _spawnClient(self, name, seed, host='0.0.0.0'):
         self.__startPort += randint(100, 1000)
@@ -271,7 +272,9 @@ async def checkReply(client, requestId, identifier):
     except KeyError:
         logger.info("No replies for {}:{} yet".format(identifier, requestId))
     except Exception as e:
-        logger.warn("Error occured during checking replies: {}".format(repr(e)))
+        logger.warn(
+            "Error occured during checking replies: {}".format(
+                repr(e)))
     finally:
         return hasConsensus, (hasConsensus, acks, nacks, replies)
 
@@ -398,10 +401,10 @@ def main(args):
 
         requestType = args.requestType
         sendRequests = {
-            "NYM":     clientPoll.submitNym,
+            "NYM": clientPoll.submitNym,
             "GET_NYM": clientPoll.submitGetNym,
-            "ATTRIB":  clientPoll.submitSetAttr,
-            "ATTR":    clientPoll.submitSetAttr
+            "ATTRIB": clientPoll.submitSetAttr,
+            "ATTR": clientPoll.submitSetAttr
         }.get(requestType)
 
         if sendRequests is None:

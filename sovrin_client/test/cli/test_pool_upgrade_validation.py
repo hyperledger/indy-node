@@ -6,7 +6,8 @@ from plenum.common.util import randomString
 from sovrin_common.constants import JUSTIFICATION, JUSTIFICATION_MAX_SIZE
 
 
-def testPoolUpgradeHasInvalidSyntaxIfJustificationIsEmpty(be, do, validUpgrade, trusteeCli):
+def testPoolUpgradeHasInvalidSyntaxIfJustificationIsEmpty(
+        be, do, validUpgrade, trusteeCli):
     validUpgrade[JUSTIFICATION] = ''
 
     be(trusteeCli)
@@ -15,7 +16,8 @@ def testPoolUpgradeHasInvalidSyntaxIfJustificationIsEmpty(be, do, validUpgrade, 
        mapper=validUpgrade, expect=INVALID_SYNTAX, within=10)
 
 
-def testPoolUpgradeHasInvalidSyntaxIfJustificationIsVeryLong(be, do, validUpgrade, trusteeCli):
+def testPoolUpgradeHasInvalidSyntaxIfJustificationIsVeryLong(
+        be, do, validUpgrade, trusteeCli):
     validUpgrade[JUSTIFICATION] = randomString(JUSTIFICATION_MAX_SIZE + 1)
 
     be(trusteeCli)

@@ -244,13 +244,15 @@ def addedTrustAnchor(nodeSet, steward, stewardWallet, looper,
 
 
 @pytest.fixture(scope="module")
-def userWalletA(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, trustAnchor):
+def userWalletA(nodeSet, addedTrustAnchor,
+                trustAnchorWallet, looper, trustAnchor):
     return addRole(looper, trustAnchor, trustAnchorWallet, 'userA',
                    addVerkey=False)
 
 
 @pytest.fixture(scope="module")
-def userWalletB(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, trustAnchor):
+def userWalletB(nodeSet, addedTrustAnchor,
+                trustAnchorWallet, looper, trustAnchor):
     return addRole(looper, trustAnchor, trustAnchorWallet, 'userB',
                    addVerkey=False)
 
