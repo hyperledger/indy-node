@@ -64,20 +64,32 @@ def testUpgradeLatestUncancelledVersion(looper,
     upgr4[ACTION] = CANCEL
 
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
-    looper.run(eventually(checkUpgradeScheduled, nodeSet[:-1], upgr1[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(eventually(checkUpgradeScheduled,
+                          nodeSet[:-1],
+                          upgr1[VERSION],
+                          retryWait=1,
+                          timeout=waits.expectedUpgradeScheduled()))
 
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr2)
-    looper.run(eventually(checkUpgradeScheduled, nodeSet[:-1], upgr2[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(eventually(checkUpgradeScheduled,
+                          nodeSet[:-1],
+                          upgr2[VERSION],
+                          retryWait=1,
+                          timeout=waits.expectedUpgradeScheduled()))
 
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr3)
-    looper.run(eventually(checkUpgradeScheduled, nodeSet[:-1], upgr3[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(eventually(checkUpgradeScheduled,
+                          nodeSet[:-1],
+                          upgr3[VERSION],
+                          retryWait=1,
+                          timeout=waits.expectedUpgradeScheduled()))
 
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr4)
-    looper.run(eventually(checkUpgradeScheduled, nodeSet[:-1], upgr2[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(eventually(checkUpgradeScheduled,
+                          nodeSet[:-1],
+                          upgr2[VERSION],
+                          retryWait=1,
+                          timeout=waits.expectedUpgradeScheduled()))
 
     trustee.stopRetrying()
 
@@ -90,5 +102,3 @@ def testUpgradeLatestUncancelledVersion(looper,
 
     looper.run(eventually(checkUpgradeScheduled, [newNode, ], upgr2[VERSION],
                           retryWait=1, timeout=waits.expectedUpgradeScheduled()))
-
-

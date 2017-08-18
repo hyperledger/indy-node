@@ -46,7 +46,8 @@ def agentStarted(emptyLooper, tdirWithPoolTxns):
 def testCreateAgentDoesNotAllocatePort(tdirWithPoolTxns):
     for i in range(2):
         checkPortAvailable(HA("0.0.0.0", agentPort))
-        agent = getNewAgent("Agent0", tdirWithPoolTxns, agentPort, agentWallet())
+        agent = getNewAgent("Agent0", tdirWithPoolTxns,
+                            agentPort, agentWallet())
         checkPortAvailable(HA("0.0.0.0", agentPort))
         agent.stop()
 

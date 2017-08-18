@@ -3,7 +3,8 @@ from stp_core.loop.eventually import eventually
 from sovrin_node.server.upgrader import Upgrader
 import functools
 
-whitelist = ['Upgrade to version {} scheduled on {} failed because timeout exceeded']
+whitelist = [
+    'Upgrade to version {} scheduled on {} failed because timeout exceeded']
 
 
 def testTimeoutWorks(nodeSet, looper, monkeypatch):
@@ -16,7 +17,8 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch):
 
     # patch get_timeout not to wait one whole minute
     monkeypatch.setattr(Upgrader, 'get_timeout', lambda self, timeout: timeout)
-    # patch _open_connection_and_send to make node think it sent upgrade successfully
+    # patch _open_connection_and_send to make node think it sent upgrade
+    # successfully
     monkeypatch.setattr(Upgrader, '_open_connection_and_send', mock)
     pending = {node.name for node in nodeSet}
     when = 0
@@ -32,8 +34,12 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch):
         pending.remove(nodeName)
 
     for node in nodeSet:
-        monkeypatch.setattr(node.upgrader, '_upgradeFailedCallback',
-                            functools.partial(upgrade_failed_callback_test, node.name))
+        monkeypatch.setattr(
+            node.upgrader,
+            '_upgradeFailedCallback',
+            functools.partial(
+                upgrade_failed_callback_test,
+                node.name))
         looper.run(node.upgrader._sendUpdateRequest(when, version, timeout))
 
     looper.run(eventually(chk))

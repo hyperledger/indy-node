@@ -3,7 +3,6 @@ from hashlib import sha256
 
 from plenum.common.exceptions import UnknownIdentifier
 from plenum.common.types import OPERATION
-from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH
 from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH, VERKEY
 from plenum.server.client_authn import NaclAuthNr
 
@@ -16,6 +15,7 @@ class TxnBasedAuthNr(NaclAuthNr):
     """
     Transaction-based client authenticator.
     """
+
     def __init__(self, cache: IdrCache):
         self.cache = cache
 
@@ -41,4 +41,3 @@ class TxnBasedAuthNr(NaclAuthNr):
         except KeyError:
             return None
         return verkey
-

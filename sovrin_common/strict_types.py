@@ -1,3 +1,7 @@
+import inspect
+
+import typing
+
 """
 Thanks to Ilya Peterov for the base code from
 https://github.com/ipeterov/strict_types.
@@ -5,10 +9,6 @@ https://github.com/ipeterov/strict_types.
 
 if 'defaultShouldCheck' not in globals():
     defaultShouldCheck = False
-
-import inspect
-
-import typing
 
 
 class strict_types:
@@ -21,7 +21,8 @@ class strict_types:
 
     def is_complex_type(self, type_):
         complex_types = [type(typing.Union), type(typing.Tuple)]
-        return any(type(type_) is complex_type for complex_type in complex_types)
+        return any(isinstance(type_, complex_type)
+                   for complex_type in complex_types)
 
     def is_subtype(self, type_a, type_b):
         # This wouldn't work for nested Types (from typing package)
@@ -30,7 +31,7 @@ class strict_types:
 
         if self.is_complex_type(type_b):
             type_b = tuple(
-                getattr(type_b, '__args__', None) or \
+                getattr(type_b, '__args__', None) or
                 getattr(type_b, '__union_set_params__', None)
             )
 
@@ -88,5 +89,3 @@ def decClassMethods(decorator):
             setattr(cls, name, decorator(m))
         return cls
     return decClass
-
-

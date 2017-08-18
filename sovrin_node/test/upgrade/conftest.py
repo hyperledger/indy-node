@@ -56,9 +56,15 @@ def validUpgradeSent(looper, nodeSet, tdir, trustee, trusteeWallet,
 
 
 @pytest.fixture(scope="module")
-def validUpgradeSentExpForceFalse(looper, nodeSet, tdir, trustee, trusteeWallet,
-                                  validUpgradeExpForceFalse):
-    ensureUpgradeSent(looper, trustee, trusteeWallet, validUpgradeExpForceFalse)
+def validUpgradeSentExpForceFalse(
+        looper,
+        nodeSet,
+        tdir,
+        trustee,
+        trusteeWallet,
+        validUpgradeExpForceFalse):
+    ensureUpgradeSent(looper, trustee, trusteeWallet,
+                      validUpgradeExpForceFalse)
 
 
 @pytest.fixture(scope="module")
@@ -69,8 +75,13 @@ def validUpgradeSentExpForceTrue(looper, nodeSet, tdir, trustee, trusteeWallet,
 
 @pytest.fixture(scope="module")
 def upgradeScheduled(validUpgradeSent, looper, nodeSet, validUpgrade):
-    looper.run(eventually(checkUpgradeScheduled, nodeSet, validUpgrade[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(
+        eventually(
+            checkUpgradeScheduled,
+            nodeSet,
+            validUpgrade[VERSION],
+            retryWait=1,
+            timeout=waits.expectedUpgradeScheduled()))
 
 
 @pytest.fixture(scope="module")
@@ -107,5 +118,11 @@ def invalidUpgrade(nodeIds, tconf):
 
 @pytest.fixture(scope="module")
 def steward(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newSteward', STEWARD)
+    return getClientAddedWithRole(
+        nodeSet,
+        tdir,
+        looper,
+        trustee,
+        trusteeWallet,
+        'newSteward',
+        STEWARD)

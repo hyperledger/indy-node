@@ -34,7 +34,6 @@ from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from sovrin_node.server.pool_config import PoolConfig
 from stp_core.common.log import getlogger
-import os
 
 
 logger = getlogger()
@@ -80,9 +79,11 @@ class Node(PlenumNode, HasPoolManager):
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
 
         self.configLedger = self.getConfigLedger()
-        self.ledgerManager.addLedger(CONFIG_LEDGER_ID, self.configLedger,
-                                     postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
-                                     postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
+        self.ledgerManager.addLedger(
+            CONFIG_LEDGER_ID,
+            self.configLedger,
+            postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
+            postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
         self.on_new_ledger_added(CONFIG_LEDGER_ID)
         self.states[CONFIG_LEDGER_ID] = self.loadConfigState()
         self.upgrader = self.getUpgrader()
@@ -105,13 +106,15 @@ class Node(PlenumNode, HasPoolManager):
         This is usually an implementation of Ledger
         """
         if self.config.primaryStorage is None:
-            genesis_txn_initiator = GenesisTxnInitiatorFromFile(self.basedirpath,
-                                                                self.config.domainTransactionsFile)
-            return Ledger(CompactMerkleTree(hashStore=self.getHashStore('domain')),
-                          dataDir=self.dataLocation,
-                          fileName=self.config.domainTransactionsFile,
-                          ensureDurability=self.config.EnsureLedgerDurability,
-                          genesis_txn_initiator=genesis_txn_initiator)
+            genesis_txn_initiator = GenesisTxnInitiatorFromFile(
+                self.basedirpath, self.config.domainTransactionsFile)
+            return Ledger(
+                CompactMerkleTree(
+                    hashStore=self.getHashStore('domain')),
+                dataDir=self.dataLocation,
+                fileName=self.config.domainTransactionsFile,
+                ensureDurability=self.config.EnsureLedgerDurability,
+                genesis_txn_initiator=genesis_txn_initiator)
         else:
             return initStorage(self.config.primaryStorage,
                                name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
@@ -157,11 +160,12 @@ class Node(PlenumNode, HasPoolManager):
         )
 
     def getConfigLedger(self):
-        hashStore = LevelDbHashStore(dataDir=self.dataLocation, fileNamePrefix='config')
+        hashStore = LevelDbHashStore(
+            dataDir=self.dataLocation, fileNamePrefix='config')
         return Ledger(CompactMerkleTree(hashStore=hashStore),
-            dataDir=self.dataLocation,
-            fileName=self.config.configTransactionsFile,
-            ensureDurability=self.config.EnsureLedgerDurability)
+                      dataDir=self.dataLocation,
+                      fileName=self.config.configTransactionsFile,
+                      ensureDurability=self.config.EnsureLedgerDurability)
 
     def loadConfigState(self):
         return PruningState(
@@ -245,7 +249,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def notify_upgrade_start(self):
         logger.info('{} is about to be upgraded, '
-                     'sending NODE_UPGRADE'.format(self))
+                    'sending NODE_UPGRADE'.format(self))
         scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
         action = IN_PROGRESS
         op = {
@@ -266,7 +270,7 @@ class Node(PlenumNode, HasPoolManager):
                 self.nodeAuthNr.authenticate(request.operation[DATA],
                                              request.identifier,
                                              request.operation[f.SIG.nm])
-            except:
+            except BaseException:
                 # TODO: Do something here
                 return
         if not self.isProcessingReq(*request.key):
@@ -380,15 +384,20 @@ class Node(PlenumNode, HasPoolManager):
             super().processRequest(request, frm)
         else:
             # forced request should be processed before consensus
-            if (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
+            if (request.operation[TXN_TYPE] in [
+                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
-            #here we should have write transactions that should be processed only on writable pool
-            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]):
+            # here we should have write transactions that should be processed
+            # only on writable pool
+            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
+                    POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
             else:
-                raise InvalidClientRequest(request.identifier, request.reqId,
-                                           'Pool is in readonly mode, try again in 60 seconds')
+                raise InvalidClientRequest(
+                    request.identifier,
+                    request.reqId,
+                    'Pool is in readonly mode, try again in 60 seconds')
 
     @classmethod
     def ledgerId(cls, txnType: str):
@@ -421,7 +430,7 @@ class Node(PlenumNode, HasPoolManager):
         Execute the REQUEST sent to this Node
 
         :param ppTime: the time at which PRE-PREPARE was sent
-        :param req: the client REQUEST  
+        :param req: the client REQUEST
         """
         return self.commitAndSendReplies(self.reqHandler, ppTime, reqs,
                                          stateRoot, txnRoot)

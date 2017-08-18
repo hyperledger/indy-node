@@ -12,7 +12,7 @@ from sovrin_client.test.agent.acme import create_acme as createAcmeAgent, AcmeAg
 from sovrin_client.test.agent.helper import buildAcmeWallet as agentWallet
 from sovrin_client.test.cli.conftest \
     import acmeAddedByPhil as agentAddedBySponsor
-from sovrin_client.test.cli.helper import  compareAgentIssuerWallet
+from sovrin_client.test.cli.helper import compareAgentIssuerWallet
 from sovrin_client.test.client.TestClient import TestClient
 from stp_core.network.port_dispenser import genHa
 
@@ -35,6 +35,7 @@ def _startAgent(looper, base_dir, port, name):
     agent, wallet = runAgent(looper, base_dir, port, name)
     return agent, wallet
 
+
 @pytest.fixture(scope="module")
 def agentStarted(emptyLooper, tdirWithPoolTxns):
     return _startAgent(emptyLooper, tdirWithPoolTxns, agentPort, "Agent0")
@@ -50,8 +51,10 @@ def changeAndPersistWallet(agent, emptyLooper):
     agent.stop()
     emptyLooper.runFor(.5)
     assert os.path.isfile(expectedFilePath)
-    assert stat.S_IMODE(os.stat(agent.getContextDir()).st_mode) == agent.config.WALLET_DIR_MODE
-    assert stat.S_IMODE(os.stat(expectedFilePath).st_mode) == agent.config.WALLET_FILE_MODE
+    assert stat.S_IMODE(os.stat(agent.getContextDir()
+                                ).st_mode) == agent.config.WALLET_DIR_MODE
+    assert stat.S_IMODE(
+        os.stat(expectedFilePath).st_mode) == agent.config.WALLET_FILE_MODE
     return walletToBePersisted
 
 
@@ -67,6 +70,7 @@ def testAgentPersistsWalletWhenStopped(poolNodesStarted, emptyLooper,
     agent, _ = agentStarted
     changePersistAndRestoreWallet(agent, emptyLooper)
 
+
 def testAgentUsesRestoredWalletIfItHas(
         poolNodesStarted, emptyLooper, tdirWithPoolTxns,
         agentAddedBySponsor, agentStarted):
@@ -74,7 +78,7 @@ def testAgentUsesRestoredWalletIfItHas(
     changeAndPersistWallet(agent, emptyLooper)
 
     newAgent = getNewAgent(agent.name, tdirWithPoolTxns, agentPort,
-                        agentWallet())
+                           agentWallet())
     assert newAgent._wallet.idsToSigners == {}
 
 
@@ -86,7 +90,7 @@ def testAgentCreatesWalletIfItDoesntHaveOne(tdirWithPoolTxns):
 
 
 def testAgentWalletRestoration(poolNodesStarted, tdirWithPoolTxns, emptyLooper,
-                  agentAddedBySponsor, agentStarted):
+                               agentAddedBySponsor, agentStarted):
     agent, wallet = agentStarted
     unpersistedIssuerWallet = agent.issuer.wallet
     agent.stop()

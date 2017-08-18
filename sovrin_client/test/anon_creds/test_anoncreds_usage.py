@@ -28,7 +28,8 @@ def verifier(userClientB, userWalletB):
     return SovrinVerifier(userClientB, userWalletB)
 
 
-def testAnonCredsPrimaryOnly(issuer, prover, verifier, attrRepo, primes1, looper):
+def testAnonCredsPrimaryOnly(
+        issuer, prover, verifier, attrRepo, primes1, looper):
     async def doTestAnonCredsPrimaryOnly():
         # 1. Create a Schema
         schema = await issuer.genSchema('GVT', '1.0', GVT.attribNames())
@@ -38,8 +39,8 @@ def testAnonCredsPrimaryOnly(issuer, prover, verifier, attrRepo, primes1, looper
         await issuer.genKeys(schemaId, **primes1)
 
         # 3. Issue accumulator
-        #TODO: Not implemented yet
-        #await issuer.issueAccumulator(schemaId=schemaId, iA='110', L=5)
+        # TODO: Not implemented yet
+        # await issuer.issueAccumulator(schemaId=schemaId, iA='110', L=5)
 
         # 4. set attributes for user1
         attrs = GVT.attribs(name='Alex', age=28, height=175, sex='male')
@@ -52,9 +53,12 @@ def testAnonCredsPrimaryOnly(issuer, prover, verifier, attrRepo, primes1, looper
         await prover.processClaim(schemaId, claim_attributes, claim_signature)
 
         # 6. proof Claims
-        proofRequest = ProofRequest("proof1", "1.0", verifier.generateNonce(),
-                                    verifiableAttributes={'attr_uuid': AttributeInfo('name', schema.seqId)},
-                                    predicates={'predicate_uuid': PredicateGE('age', 18)})
+        proofRequest = ProofRequest(
+            "proof1", "1.0", verifier.generateNonce(), verifiableAttributes={
+                'attr_uuid': AttributeInfo(
+                    'name', schema.seqId)}, predicates={
+                'predicate_uuid': PredicateGE(
+                    'age', 18)})
 
         proof = await prover.presentProof(proofRequest)
         assert proof.requestedProof.revealed_attrs['attr_uuid'][1] == 'Alex'

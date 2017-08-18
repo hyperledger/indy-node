@@ -39,7 +39,8 @@ def updateWalletIdrWithFullVerkeySigner(wallet, idr, signer):
     checkFullVerkeySize(wallet.getVerkey(idr))
 
 
-def updateSovrinIdrWithVerkey(looper, senderWallet, senderClient, idr, fullKey):
+def updateSovrinIdrWithVerkey(
+        looper, senderWallet, senderClient, idr, fullKey):
     idy = Identity(identifier=idr, verkey=fullKey)
     senderWallet.updateTrustAnchoredIdentity(idy)
     # TODO: What if the request fails, there must be some rollback mechanism
