@@ -39,7 +39,8 @@ def testSendNymVerkey(grammar):
 
     # Test with verkey
     matchedVars = getMatchedVariables(
-        grammar, "send NYM dest={} role={} verkey={}".format(dest, role, verkey))
+        grammar, "send NYM dest={} role={} verkey={}".format(
+            dest, role, verkey))
     assertCliTokens(matchedVars, {
         "send_nym": "send NYM", "dest_id": dest,
         "role": role, "new_ver_key": verkey
@@ -75,17 +76,20 @@ def testSendSchema(grammar):
     matchedVars = getMatchedVariables(grammar,
                                       'send SCHEMA name={} version={} keys={}'
                                       .format(name, version, keys))
-    assertCliTokens(matchedVars, {
-        "send_schema": "send SCHEMA", NAME: name, VERSION: version, KEYS: keys})
+    assertCliTokens(matchedVars,
+                    {"send_schema": "send SCHEMA",
+                     NAME: name,
+                     VERSION: version,
+                     KEYS: keys})
 
 
 def test_send_get_schema(grammar):
     dest = "LNAyBZUjvLF7duhrNtOWgdAKs18nHdbJUxJLT39iEGU="
     name = "Degree"
     version = "1.0"
-    matchedVars = getMatchedVariables(grammar,
-                                      'send GET_SCHEMA dest={} name={} version={}'
-                                      .format(dest, name, version))
+    matchedVars = getMatchedVariables(
+        grammar, 'send GET_SCHEMA dest={} name={} version={}' .format(
+            dest, name, version))
     assertCliTokens(matchedVars, {
         "send_get_schema": "send GET_SCHEMA", NAME: name, VERSION: version})
 
@@ -94,8 +98,9 @@ def testSendAttribRegEx(grammar):
     dest = "LNAyBZUjvLF7duhrNtOWgdAKs18nHdbJUxJLT39iEGU="
     raw = '{"legal org": "BRIGHAM YOUNG UNIVERSITY, PROVO, UT", ' \
           '"email": "mail@byu.edu"}'
-    matchedVars = getMatchedVariables(grammar,
-                                      'send ATTRIB dest={} raw={}'.format(dest, raw))
+    matchedVars = getMatchedVariables(
+        grammar, 'send ATTRIB dest={} raw={}'.format(
+            dest, raw))
     assertCliTokens(matchedVars, {
         "send_attrib": "send ATTRIB", "dest_id": dest, "raw": raw})
 
@@ -103,8 +108,9 @@ def testSendAttribRegEx(grammar):
 def test_send_get_attrib_regex(grammar):
     dest = "LNAyBZUjvLF7duhrNtOWgdAKs18nHdbJUxJLT39iEGU="
     raw = 'legal'
-    matchedVars = getMatchedVariables(grammar,
-                                      'send GET_ATTR dest={} raw={}'.format(dest, raw))
+    matchedVars = getMatchedVariables(
+        grammar, 'send GET_ATTR dest={} raw={}'.format(
+            dest, raw))
     assertCliTokens(matchedVars, {
         "send_get_attr": "send GET_ATTR", "dest_id": dest, "raw": raw})
 
@@ -116,19 +122,22 @@ def testAddAttrRegEx(grammar):
 
 
 def testAddAttrProverRegEx(grammar):
-    getMatchedVariables(grammar,
-                        "attribute known to BYU first_name=Tyler, last_name=Ruff, birth_date=12/17/1991, undergrad=True, postgrad=True, expiry_date=12/31/2101")
+    getMatchedVariables(
+        grammar,
+        "attribute known to BYU first_name=Tyler, last_name=Ruff, birth_date=12/17/1991, undergrad=True, postgrad=True, expiry_date=12/31/2101")
 
 
 def testSendClaimDefRegEx(grammar):
-    matchedVars = getMatchedVariables(grammar, "send CLAIM_DEF ref=15 signature_type=CL")
+    matchedVars = getMatchedVariables(
+        grammar, "send CLAIM_DEF ref=15 signature_type=CL")
     from sovrin_common.constants import SIGNATURE_TYPE
     assertCliTokens(matchedVars, {
         "send_claim_def": "send CLAIM_DEF", REF: "15", SIGNATURE_TYPE: "CL"})
 
 
 def test_send_get_claim_def_regex(grammar):
-    matchedVars = getMatchedVariables(grammar, "send GET_CLAIM_DEF ref=15 signature_type=CL")
+    matchedVars = getMatchedVariables(
+        grammar, "send GET_CLAIM_DEF ref=15 signature_type=CL")
     from sovrin_common.constants import SIGNATURE_TYPE
     assertCliTokens(matchedVars, {
         "send_get_claim_def": "send GET_CLAIM_DEF", REF: "15", SIGNATURE_TYPE: "CL"})
@@ -167,7 +176,8 @@ def testShowLinkRegEx(grammar):
     assertCliTokens(matchedVars, {"show_connection": "show connection",
                                   "connection_name": "faber college"})
 
-    matchedVars = getMatchedVariables(grammar, "show connection faber college ")
+    matchedVars = getMatchedVariables(
+        grammar, "show connection faber college ")
     assertCliTokens(matchedVars, {"show_connection": "show connection",
                                   "connection_name": "faber college "})
 
@@ -180,13 +190,17 @@ def testConnectRegEx(grammar):
 
 def testSyncLinkRegEx(grammar):
     matchedVars = getMatchedVariables(grammar, "sync faber")
-    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": "faber"})
+    assertCliTokens(
+        matchedVars, {"sync_connection": "sync", "connection_name": "faber"})
 
     matchedVars = getMatchedVariables(grammar, 'sync "faber"')
-    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": '"faber"'})
+    assertCliTokens(
+        matchedVars, {"sync_connection": "sync", "connection_name": '"faber"'})
 
     matchedVars = getMatchedVariables(grammar, 'sync "faber" ')
-    assertCliTokens(matchedVars, {"sync_connection": "sync", "connection_name": '"faber" '})
+    assertCliTokens(matchedVars,
+                    {"sync_connection": "sync",
+                     "connection_name": '"faber" '})
 
 
 def testPingTargetRegEx(grammar):
@@ -196,16 +210,19 @@ def testPingTargetRegEx(grammar):
 
 def testAcceptInvitationLinkRegEx(grammar):
     matchedVars = getMatchedVariables(grammar, "accept request from faber")
-    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
-                                  "connection_name": "faber"})
+    assertCliTokens(matchedVars,
+                    {"accept_connection_request": "accept request from",
+                     "connection_name": "faber"})
 
     matchedVars = getMatchedVariables(grammar, 'accept request from "faber"')
-    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
-                                  "connection_name": '"faber"'})
+    assertCliTokens(matchedVars,
+                    {"accept_connection_request": "accept request from",
+                     "connection_name": '"faber"'})
 
     matchedVars = getMatchedVariables(grammar, 'accept request from "faber" ')
-    assertCliTokens(matchedVars, {"accept_connection_request": "accept request from",
-                                  "connection_name": '"faber" '})
+    assertCliTokens(matchedVars,
+                    {"accept_connection_request": "accept request from",
+                     "connection_name": '"faber" '})
 
 
 def testShowClaimRegEx(grammar):
@@ -261,25 +278,26 @@ def testSendProof(grammar):
 
 def testSendPoolUpgrade(grammar):
     # Testing for start
-    getMatchedVariables(grammar, "send POOL_UPGRADE name=upgrade-13 "
-                                 "version=0.0.6 sha256=f284bdc3c1c9e24a494e285cb387c69510f28de51c15bb93179d9c7f28705398 action=start "
-                                 "schedule={'AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3': "
-                                 "'2017-01-25T12:49:05.258870+00:00', "
-                                 "'4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2': "
-                                 "'2017-01-25T12:33:53.258870+00:00', "
-                                 "'JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ': "
-                                 "'2017-01-25T12:44:01.258870+00:00', "
-                                 "'DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2': "
-                                 "'2017-01-25T12:38:57.258870+00:00'} "
-                                 "timeout=10 "
-                                 "force=True "
-                                 "reinstall=True"
-                        )
+    getMatchedVariables(
+        grammar, "send POOL_UPGRADE name=upgrade-13 "
+        "version=0.0.6 sha256=f284bdc3c1c9e24a494e285cb387c69510f28de51c15bb93179d9c7f28705398 action=start "
+        "schedule={'AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3': "
+        "'2017-01-25T12:49:05.258870+00:00', "
+        "'4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2': "
+        "'2017-01-25T12:33:53.258870+00:00', "
+        "'JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ': "
+        "'2017-01-25T12:44:01.258870+00:00', "
+        "'DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2': "
+        "'2017-01-25T12:38:57.258870+00:00'} "
+        "timeout=10 "
+        "force=True "
+        "reinstall=True")
 
     # Testing for cancel
-    getMatchedVariables(grammar, 'send POOL_UPGRADE name=upgrade-13 version=0.0.6 '
-                                 'sha256=aad1242 action=cancel '
-                                 'justification="not gonna give you"')
+    getMatchedVariables(
+        grammar, 'send POOL_UPGRADE name=upgrade-13 version=0.0.6 '
+        'sha256=aad1242 action=cancel '
+        'justification="not gonna give you"')
 
 
 def testDisconnect(grammar):
@@ -317,27 +335,40 @@ def testNewIdentifier(grammar):
 
 
 def testAddGenTxnRegEx(grammar):
-    matchedVars = getMatchedVariables(grammar,
-                                      "add genesis transaction NYM dest=2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML")
-    assertCliTokens(matchedVars, {"add_genesis": "add genesis transaction NYM", "dest": "dest=",
-                                  "dest_id": "2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML", "role": None,
-                                  "ver_key": None})
+    matchedVars = getMatchedVariables(
+        grammar,
+        "add genesis transaction NYM dest=2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML")
+    assertCliTokens(matchedVars,
+                    {"add_genesis": "add genesis transaction NYM",
+                     "dest": "dest=",
+                     "dest_id": "2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML",
+                     "role": None,
+                     "ver_key": None})
 
-    matchedVars = getMatchedVariables(grammar,
-                                      "add genesis transaction NYM dest=2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML role={role}".format(
-                                          role=Roles.STEWARD.name))
-    assertCliTokens(matchedVars, {"add_genesis": "add genesis transaction NYM", "dest": "dest=",
-                                  "dest_id": "2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML", "role": Roles.STEWARD.name,
-                                  "ver_key": None})
+    matchedVars = getMatchedVariables(
+        grammar,
+        "add genesis transaction NYM dest=2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML role={role}".format(
+            role=Roles.STEWARD.name))
+    assertCliTokens(matchedVars,
+                    {"add_genesis": "add genesis transaction NYM",
+                     "dest": "dest=",
+                     "dest_id": "2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML",
+                     "role": Roles.STEWARD.name,
+                     "ver_key": None})
 
-    matchedVars = getMatchedVariables(grammar,
-                                      'add genesis transaction NODE for 2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML '
-                                      'by FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW with data '
-                                      '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}')
-    assertCliTokens(matchedVars, {"add_gen_txn": "add genesis transaction", "type": "NODE",
-                                  "dest": "2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML",
-                                  "identifier": "FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW", "role": None,
-                                  "data": '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}'})
+    matchedVars = getMatchedVariables(
+        grammar, 'add genesis transaction NODE for 2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML '
+        'by FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW with data '
+        '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}')
+    assertCliTokens(
+        matchedVars,
+        {
+            "add_gen_txn": "add genesis transaction",
+            "type": "NODE",
+            "dest": "2ru5PcgeQzxF7QZYwQgDkG2K13PRqyigVw99zMYg8eML",
+            "identifier": "FvDi9xQZd1CZitbK15BNKFbA7izCdXZjvxf91u3rQVzW",
+            "role": None,
+            "data": '{"node_ip": "localhost", "node_port": "9701", "client_ip": "localhost", "client_port": "9702", "alias": "AliceNode"}'})
 
 
 def testReqAvailClaims(grammar):

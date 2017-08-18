@@ -5,11 +5,6 @@ from sovrin_client.client.wallet.pool_config import PoolConfig as WPoolConfig
 from sovrin_node.server.pool_config import PoolConfig as SPoolConfig
 from sovrin_node.utils.node_control_tool import NodeControlTool
 from sovrin_common.config_util import getConfig
-import subprocess
-import os
-import multiprocessing
-import socket
-import json
 
 
 config = getConfig()

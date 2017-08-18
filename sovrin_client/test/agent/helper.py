@@ -18,6 +18,7 @@ def connectAgents(agent1, agent2):
 
 def ensureAgentConnected(looper, agent, link):
     linkHa = link.getRemoteEndpoint(required=True)
+
     def _checkConnected():
         assert agent.endpoint.isConnectedTo(ha=linkHa)
 
@@ -46,7 +47,8 @@ def getAgentCmdLineParams():
 
 
 def buildFaberWallet():
-    return buildAgentWallet("FaberCollege", b'Faber000000000000000000000000000')
+    return buildAgentWallet(
+        "FaberCollege", b'Faber000000000000000000000000000')
 
 
 def buildAcmeWallet():

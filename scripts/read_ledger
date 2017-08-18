@@ -25,11 +25,17 @@ def read_args():
     parser = argparse.ArgumentParser(
         description="Read ledger transactions")
 
-    parser.add_argument('--type', required=True, help='Ledger type (pool, domain, config)')
-    parser.add_argument('--frm', required=False, default=None,
-                        help="read all transactions starting from (beginning by default)")
-    parser.add_argument('--to', required=False, default=100, help="read all transactions till (100 by default)")
-    parser.add_argument('--seq_no', required=False, help="read a particular transaction")
+    parser.add_argument('--type', required=True,
+                        help='Ledger type (pool, domain, config)')
+    parser.add_argument(
+        '--frm',
+        required=False,
+        default=None,
+        help="read all transactions starting from (beginning by default)")
+    parser.add_argument('--to', required=False, default=100,
+                        help="read all transactions till (100 by default)")
+    parser.add_argument('--seq_no', required=False,
+                        help="read a particular transaction")
     parser.add_argument('--count', required=False, action='store_true',
                         help="returns the number of txns in the given ledger")
     parser.add_argument('--node_name', required=False, help="Node's name")
@@ -53,7 +59,8 @@ def get_ledger_dir(node_name, client_name):
         # TODO: find a better way
         ledger_data_dir = os.path.join('/home/sovrin/.sovrin', data_dir)
     if not os.path.exists(ledger_data_dir):
-        logger.error("Can not find the directory with the ledger: {}".format(ledger_data_dir))
+        logger.error(
+            "Can not find the directory with the ledger: {}".format(ledger_data_dir))
         exit()
 
     if client_name:
@@ -66,7 +73,8 @@ def get_ledger_dir(node_name, client_name):
     if target_dir:
         ledger_data_dir = os.path.join(ledger_data_dir, target_dir)
         if not os.path.isdir(ledger_data_dir):
-            print("Specified Node or Client folder not found: {}".format(ledger_data_dir))
+            print("Specified Node or Client folder not found: {}".format(
+                ledger_data_dir))
             exit()
         return ledger_data_dir
 

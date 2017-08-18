@@ -203,7 +203,7 @@ class Organization:
             raise ValueError("No wallet exists for this user id")
 
     def addTxnsForCompletedRequestsInWallet(self, reqs: Iterable, wallet:
-    Wallet):
+                                            Wallet):
         for req in reqs:
             reply, status = self.client.getReply(req.reqId)
             if status == "CONFIRMED":
@@ -365,19 +365,24 @@ def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
-           (data is not None and data.get(attrName) == attrValue)
+        (data is not None and data.get(attrName) == attrValue)
     return reply
 
 
-def getAttribute(looper, trustAnchor, trustAnchorWallet, userIdA, attributeName,
-                 attributeValue):
+def getAttribute(
+        looper,
+        trustAnchor,
+        trustAnchorWallet,
+        userIdA,
+        attributeName,
+        attributeValue):
     # Should be renamed to get_attribute_and_check
     attrib = Attribute(name=attributeName,
                        value=None,
                        dest=userIdA,
                        ledgerStore=LedgerStore.RAW)
-    req = trustAnchorWallet.requestAttribute(attrib,
-                                             sender=trustAnchorWallet.defaultId)
+    req = trustAnchorWallet.requestAttribute(
+        attrib, sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
     timeout = waits.expectedTransactionExecutionTime(len(trustAnchor.nodeReg))
     return looper.run(eventually(checkGetAttr, req.key, trustAnchor,

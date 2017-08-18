@@ -44,7 +44,8 @@ def getCurrentDirAndFiles(baseDir):
 
 def testResetClient(tconf, aliceCLI):
     newDirs, newFiels = createRandomDirsAndFiles(tconf.baseDir)
-    beforeCleanupDirs, beforeCleanupFiles = getCurrentDirAndFiles(tconf.baseDir)
+    beforeCleanupDirs, beforeCleanupFiles = getCurrentDirAndFiles(
+        tconf.baseDir)
     backupDir = performSovrinBaseDirCleanup(tconf.baseDir)
     afterCleanupDirs, afterCleanupFiles = getCurrentDirAndFiles(tconf.baseDir)
     backedupDirs, backedupFiles = getCurrentDirAndFiles(backupDir)
@@ -56,4 +57,3 @@ def testResetClient(tconf, aliceCLI):
 
     assert beforeCleanupDirs == backedupDirs
     assert beforeCleanupFiles == backedupFiles
-

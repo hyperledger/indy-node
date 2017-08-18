@@ -16,6 +16,7 @@ async def _createServer(host, port):
     :return: reference to server and future for request
     """
     indicator = asyncio.Future()
+
     async def _handle(reader, writer):
         raw = await reader.readline()
         request = raw.decode("utf-8")
@@ -72,7 +73,8 @@ def testScheduleNodeUpgrade(nodeSet):
                         dataDir=node.dataLocation,
                         config=config,
                         ledger=None)
-    upgrader._callUpgradeAgent(time.time(), "1.2", failTimeout=1000, upgrade_id=None)
+    upgrader._callUpgradeAgent(
+        time.time(), "1.2", failTimeout=1000, upgrade_id=None)
 
     result = loop.run_until_complete(eventuallySoon(_checkFuture(indicator)))
     expectedResult = UpgradeMessage(version)

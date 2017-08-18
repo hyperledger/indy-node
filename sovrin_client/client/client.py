@@ -1,5 +1,4 @@
 import json
-import traceback
 import uuid
 from collections import deque
 from typing import Dict, Union, Tuple, Optional, Callable
@@ -14,7 +13,7 @@ from plenum.common.startable import Status
 
 from plenum.common.constants import REPLY, NAME, VERSION, REQACK, REQNACK, \
     TXN_ID, TARGET_NYM, NONCE, STEWARD, OP_FIELD_NAME, REJECT
-from plenum.common.types import f, HA
+from plenum.common.types import f
 from plenum.common.util import libnacl
 from plenum.server.router import Router
 from stp_core.network.auth_mode import AuthMode
@@ -62,8 +61,8 @@ class Client(PlenumClient):
 
             self.peerMsgRoutes = []
             self.peerMsgRouter = Router(*self.peerMsgRoutes)
-            self.peerStack = self.peerStackClass(stackargs,
-                                          msgHandler=self.handlePeerMessage)
+            self.peerStack = self.peerStackClass(
+                stackargs, msgHandler=self.handlePeerMessage)
             self.peerStack.sign = self.sign
             self.peerInbox = deque()
         self._observers = {}  # type Dict[str, Callable]
@@ -99,7 +98,7 @@ class Client(PlenumClient):
         excludeReply = msg.get(OP_FIELD_NAME) == REPLY
         excludeReject = msg.get(OP_FIELD_NAME) == REJECT
         excludeFromCli = excludeFromCli or excludeReqAcks or excludeReqNacks \
-                         or excludeReply or excludeReject
+            or excludeReply or excludeReject
         super().handleOneNodeMsg(wrappedMsg, excludeFromCli)
         if OP_FIELD_NAME not in msg:
             logger.error("Op absent in message {}".format(msg))

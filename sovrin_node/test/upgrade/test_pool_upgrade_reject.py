@@ -13,7 +13,7 @@ whitelist = ['Failed to upgrade node']
 
 
 def testNodeRejectsPoolUpgrade(looper, nodeSet, tdir, trustee,
-                                      trusteeWallet, invalidUpgrade):
+                               trusteeWallet, invalidUpgrade):
     _, req = sendUpgrade(trustee, trusteeWallet, invalidUpgrade)
     timeout = plenumWaits.expectedReqNAckQuorumTime()
     looper.run(eventually(checkNacks, trustee, req.reqId,
@@ -42,9 +42,12 @@ def testNonTrustyCannotCancelUpgrade(looper, validUpgradeSent,
     looper.run(eventually(checkRejects, stClient, req.reqId,
                           'cannot do'))
 
-def test_accept_then_reject_upgrade(looper, trustee, trusteeWallet, validUpgradeSent, validUpgrade):
+
+def test_accept_then_reject_upgrade(
+        looper, trustee, trusteeWallet, validUpgradeSent, validUpgrade):
     upgrade_name = validUpgrade[NAME]
-    error_msg = "InvalidClientRequest(\"Upgrade '{}' is already scheduled\"".format(upgrade_name)
+    error_msg = "InvalidClientRequest(\"Upgrade '{}' is already scheduled\"".format(
+        upgrade_name)
 
     validUpgrade2 = deepcopy(validUpgrade)
 
@@ -54,7 +57,9 @@ def test_accept_then_reject_upgrade(looper, trustee, trusteeWallet, validUpgrade
     looper.run(eventually(checkRejects, trustee, req.reqId,
                           error_msg, retryWait=1, timeout=timeout))
 
-def testOnlyTrusteeCanSendPoolUpgradeForceTrue(looper, steward, validUpgradeExpForceTrue):
+
+def testOnlyTrusteeCanSendPoolUpgradeForceTrue(
+        looper, steward, validUpgradeExpForceTrue):
     stClient, stWallet = steward
     _, req = sendUpgrade(stClient, stWallet, validUpgradeExpForceTrue)
     timeout = plenumWaits.expectedReqNAckQuorumTime()

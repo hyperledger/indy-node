@@ -108,8 +108,10 @@ def testGetSchema(submittedSchemaDefGvt, publicRepo, looper):
     schema = looper.run(publicRepo.getSchema(ID(schemaKey=key)))
     assert schema == submittedSchemaDefGvt
 
+
 def testGetSchemaBySeqNo(submittedSchemaDefGvt, publicRepo, looper):
-    schema = looper.run(publicRepo.getSchema(ID(schemaId=submittedSchemaDefGvt.seqId)))
+    schema = looper.run(publicRepo.getSchema(
+        ID(schemaId=submittedSchemaDefGvt.seqId)))
     assert schema == submittedSchemaDefGvt
 
 
@@ -121,9 +123,10 @@ def testGetSchemaByInvalidSeqNo(submittedSchemaDefGvt, publicRepo, looper):
 
 def testGetSchemaNonExistent(submittedSchemaDefGvt, publicRepo, looper):
     key = submittedSchemaDefGvt.getKey()
-    key = key._replace(name=key.name+randomString(5))
+    key = key._replace(name=key.name + randomString(5))
     with pytest.raises(SchemaNotFoundError):
         looper.run(publicRepo.getSchema(ID(schemaKey=key)))
+
 
 def testSubmitPublicKey(submittedPublicKeys):
     assert submittedPublicKeys
@@ -142,10 +145,12 @@ def testGetPrimaryPublicKey(submittedSchemaDefGvtID, submittedPublicKey,
 
 
 def testGetPrimaryPublicKeyNonExistent(submittedSchemaDefGvtID,
-                            publicRepo, looper):
-    schemaId = submittedSchemaDefGvtID._replace(schemaId=random.randint(100, 300))
+                                       publicRepo, looper):
+    schemaId = submittedSchemaDefGvtID._replace(
+        schemaId=random.randint(100, 300))
     with pytest.raises(ValueError):
         looper.run(publicRepo.getPublicKey(id=schemaId, signatureType='CL'))
+
 
 def testGetRevocationPublicKey(submittedSchemaDefGvtID,
                                submittedPublicRevocationKey,
@@ -163,9 +168,11 @@ def testGetRevocationPublicKey(submittedSchemaDefGvtID,
     else:
         assert pk == submittedPublicRevocationKey
 
+
 def testGetRevocationPublicKeyNonExistent(submittedSchemaDefGvtID,
-                               publicRepo, looper):
-    schemaId = submittedSchemaDefGvtID._replace(schemaId=random.randint(100, 300))
+                                          publicRepo, looper):
+    schemaId = submittedSchemaDefGvtID._replace(
+        schemaId=random.randint(100, 300))
     with pytest.raises(ValueError):
         looper.run(publicRepo.getPublicKeyRevocation(id=schemaId,
                                                      signatureType='CL'))

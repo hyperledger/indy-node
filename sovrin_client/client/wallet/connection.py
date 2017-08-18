@@ -1,4 +1,3 @@
-from typing import List
 
 from plenum.common.constants import NAME, NONCE
 from plenum.common.signer_did import DidIdentity
@@ -88,7 +87,7 @@ class Connection:
     @property
     def isRemoteEndpointAvailable(self):
         return self.remoteEndPoint and self.remoteEndPoint != \
-                                       constant.NOT_AVAILABLE
+            constant.NOT_AVAILABLE
 
     @property
     def isAccepted(self):
@@ -108,15 +107,15 @@ class Connection:
             remoteVerKey = constant.UNKNOWN_WAITING_FOR_SYNC
 
         remoteEndPoint = self.remoteEndPoint or \
-                         constant.UNKNOWN_WAITING_FOR_SYNC
+            constant.UNKNOWN_WAITING_FOR_SYNC
         if isinstance(remoteEndPoint, tuple):
             remoteEndPoint = "{}:{}".format(*remoteEndPoint)
         connectionStatus = 'not verified, remote verkey unknown'
-        connection_last_synced = prettyDateDifference(self.connection_last_synced) or \
-                         constant.CONNECTION_NOT_SYNCHRONIZED
+        connection_last_synced = prettyDateDifference(
+            self.connection_last_synced) or constant.CONNECTION_NOT_SYNCHRONIZED
 
         if connection_last_synced != constant.CONNECTION_NOT_SYNCHRONIZED and \
-                        remoteEndPoint == constant.UNKNOWN_WAITING_FOR_SYNC:
+                remoteEndPoint == constant.UNKNOWN_WAITING_FOR_SYNC:
             remoteEndPoint = constant.NOT_AVAILABLE
 
         if self.isAccepted:
@@ -153,19 +152,20 @@ class Connection:
         optional_connection_items = ""
         if len(self.proofRequests) > 0:
             optional_connection_items += "Proof Request(s): {}". \
-                                     format(", ".join([cr.name for cr in self.proofRequests])) \
-                                 + '\n'
+                format(", ".join([cr.name for cr in self.proofRequests])) \
+                + '\n'
 
         if self.availableClaims:
             optional_connection_items += self.avail_claims_str()
 
         if self.connection_last_sync_no:
-            optional_connection_items += 'Last sync seq no: ' + self.connection_last_sync_no \
-                                 + '\n'
+            optional_connection_items += 'Last sync seq no: ' + \
+                self.connection_last_sync_no + '\n'
 
         fixedEndingLines = 'Last synced: ' + connection_last_synced
 
-        connection_items = fixed_connection_items + optional_connection_items + fixedEndingLines
+        connection_items = fixed_connection_items + \
+            optional_connection_items + fixedEndingLines
         indented_connection_items = constant.CONNECTION_ITEM_PREFIX.join(
             connection_items.splitlines())
         return fixed_connection_heading + indented_connection_items
@@ -173,7 +173,7 @@ class Connection:
     def avail_claims_str(self):
         claim_names = [name for name, _, _ in self.availableClaims]
         return "Available Claim(s): {}".\
-                   format(", ".join(claim_names)) + '\n'
+            format(", ".join(claim_names)) + '\n'
 
     @staticmethod
     def validate(request_data):
@@ -181,7 +181,8 @@ class Connection:
         def checkIfFieldPresent(msg, searchInName, fieldName):
             if not msg.get(fieldName):
                 raise InvalidConnectionException(
-                    "Field not found in {}: {}".format(searchInName, fieldName))
+                    "Field not found in {}: {}".format(
+                        searchInName, fieldName))
 
         checkIfFieldPresent(request_data, 'given input', 'sig')
         checkIfFieldPresent(request_data, 'given input', 'connection-request')
