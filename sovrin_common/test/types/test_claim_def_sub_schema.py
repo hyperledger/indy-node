@@ -1,5 +1,5 @@
 import pytest
-from sovrin_common.types import ClientClaimDefSubmitOperation
+from sovrin_common.types import ClientClaimDefSubmitOperation, ClaimDefField
 from collections import OrderedDict
 from plenum.common.messages.fields import ConstantField, NonEmptyStringField, TxnSeqNoField
 
@@ -7,13 +7,14 @@ from plenum.common.messages.fields import ConstantField, NonEmptyStringField, Tx
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
     ("ref", TxnSeqNoField),
-    ("data", NonEmptyStringField),
+    ("data", ClaimDefField),
     ('signature_type', NonEmptyStringField),
 ])
 
 
 def test_has_expected_fields():
-    actual_field_names = OrderedDict(ClientClaimDefSubmitOperation.schema).keys()
+    actual_field_names = OrderedDict(
+        ClientClaimDefSubmitOperation.schema).keys()
     assert actual_field_names == EXPECTED_ORDERED_FIELDS.keys()
 
 

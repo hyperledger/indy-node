@@ -1,9 +1,8 @@
 from typing import Iterable, Any, List
 
 from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.serializers.compact_serializer import CompactSerializer
-from ledger.serializers.json_serializer import JsonSerializer
-from ledger.stores.file_hash_store import FileHashStore
+from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
+from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, \
@@ -19,7 +18,8 @@ from plenum.server.node import Node as PlenumNode
 from sovrin_common.config_util import getConfig
 from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
+    IN_PROGRESS
 from sovrin_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from sovrin_common.txn_util import getTxnOrderedFields
@@ -34,11 +34,9 @@ from sovrin_node.server.pool_manager import HasPoolManager
 from sovrin_node.server.upgrader import Upgrader
 from sovrin_node.server.pool_config import PoolConfig
 from stp_core.common.log import getlogger
-import os
 
 
 logger = getlogger()
-jsonSerz = JsonSerializer()
 
 
 class Node(PlenumNode, HasPoolManager):
@@ -81,9 +79,11 @@ class Node(PlenumNode, HasPoolManager):
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
 
         self.configLedger = self.getConfigLedger()
-        self.ledgerManager.addLedger(CONFIG_LEDGER_ID, self.configLedger,
-                                     postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
-                                     postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
+        self.ledgerManager.addLedger(
+            CONFIG_LEDGER_ID,
+            self.configLedger,
+            postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
+            postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
         self.on_new_ledger_added(CONFIG_LEDGER_ID)
         self.states[CONFIG_LEDGER_ID] = self.loadConfigState()
         self.upgrader = self.getUpgrader()
@@ -106,22 +106,15 @@ class Node(PlenumNode, HasPoolManager):
         This is usually an implementation of Ledger
         """
         if self.config.primaryStorage is None:
-            fields = getTxnOrderedFields()
-
-            defaultTxnFile = os.path.join(self.basedirpath,
-                                          self.config.domainTransactionsFile)
-            if not os.path.exists(defaultTxnFile):
-                logger.debug("Not using default initialization file for "
-                             "domain ledger, since it does not exist: {}"
-                             .format(defaultTxnFile))
-                defaultTxnFile = None
-
-            return Ledger(CompactMerkleTree(hashStore=self.hashStore),
-                          dataDir=self.dataLocation,
-                          serializer=CompactSerializer(fields=fields),
-                          fileName=self.config.domainTransactionsFile,
-                          ensureDurability=self.config.EnsureLedgerDurability,
-                          defaultFile=defaultTxnFile)
+            genesis_txn_initiator = GenesisTxnInitiatorFromFile(
+                self.basedirpath, self.config.domainTransactionsFile)
+            return Ledger(
+                CompactMerkleTree(
+                    hashStore=self.getHashStore('domain')),
+                dataDir=self.dataLocation,
+                fileName=self.config.domainTransactionsFile,
+                ensureDurability=self.config.EnsureLedgerDurability,
+                genesis_txn_initiator=genesis_txn_initiator)
         else:
             return initStorage(self.config.primaryStorage,
                                name=self.name + NODE_PRIMARY_STORAGE_SUFFIX,
@@ -142,7 +135,8 @@ class Node(PlenumNode, HasPoolManager):
                         self.dataLocation,
                         self.config,
                         self.configLedger,
-                        upgradeFailedCallback=self.postConfigLedgerCaughtUp)
+                        upgradeFailedCallback=self.postConfigLedgerCaughtUp,
+                        upgrade_start_callback=self.notify_upgrade_start)
 
     def getDomainReqHandler(self):
         if self.idrCache is None:
@@ -166,11 +160,12 @@ class Node(PlenumNode, HasPoolManager):
         )
 
     def getConfigLedger(self):
-        return Ledger(CompactMerkleTree(hashStore=FileHashStore(
-            fileNamePrefix='config', dataDir=self.dataLocation)),
-            dataDir=self.dataLocation,
-            fileName=self.config.configTransactionsFile,
-            ensureDurability=self.config.EnsureLedgerDurability)
+        hashStore = LevelDbHashStore(
+            dataDir=self.dataLocation, fileNamePrefix='config')
+        return Ledger(CompactMerkleTree(hashStore=hashStore),
+                      dataDir=self.dataLocation,
+                      fileName=self.config.configTransactionsFile,
+                      ensureDurability=self.config.EnsureLedgerDurability)
 
     def loadConfigState(self):
         return PruningState(
@@ -197,10 +192,6 @@ class Node(PlenumNode, HasPoolManager):
     def initConfigState(self):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
                                  self.configLedger, self.configReqHandler)
-
-    def postDomainLedgerCaughtUp(self, **kwargs):
-        super().postDomainLedgerCaughtUp(**kwargs)
-        self.acknowledge_upgrade()
 
     def start_config_ledger_sync(self):
         self._sync_ledger(CONFIG_LEDGER_ID)
@@ -236,12 +227,13 @@ class Node(PlenumNode, HasPoolManager):
         self.poolCfg.processLedger()
         self.upgrader.processLedger()
         self.start_domain_ledger_sync()
+        self.acknowledge_upgrade()
 
     def acknowledge_upgrade(self):
-        if self.upgrader.isItFirstRunAfterUpgrade:
-            logger.debug('{} found the first run after upgrade, will '
-                         'send NODE_UPGRADE'.format(self))
-            lastUpgradeVersion = self.upgrader.lastExecutedUpgradeInfo[1]
+        if self.upgrader.should_notify_about_upgrade_result():
+            logger.debug('{} found the first run after upgrade, '
+                         'sending NODE_UPGRADE'.format(self))
+            lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
             action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
             op = {
                 TXN_TYPE: NODE_UPGRADE,
@@ -255,13 +247,30 @@ class Node(PlenumNode, HasPoolManager):
             self.startedProcessingReq(*request.key, self.nodestack.name)
             self.send(request)
 
+    def notify_upgrade_start(self):
+        logger.info('{} is about to be upgraded, '
+                    'sending NODE_UPGRADE'.format(self))
+        scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
+        action = IN_PROGRESS
+        op = {
+            TXN_TYPE: NODE_UPGRADE,
+            DATA: {
+                ACTION: action,
+                VERSION: scheduled_upgrade_version
+            }
+        }
+        op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
+        request = self.wallet.signOp(op)
+        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.send(request)
+
     def processNodeRequest(self, request: Request, frm: str):
         if request.operation[TXN_TYPE] == NODE_UPGRADE:
             try:
                 self.nodeAuthNr.authenticate(request.operation[DATA],
                                              request.identifier,
                                              request.operation[f.SIG.nm])
-            except:
+            except BaseException:
                 # TODO: Do something here
                 return
         if not self.isProcessingReq(*request.key):
@@ -375,15 +384,20 @@ class Node(PlenumNode, HasPoolManager):
             super().processRequest(request, frm)
         else:
             # forced request should be processed before consensus
-            if (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
+            if (request.operation[TXN_TYPE] in [
+                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
-            #here we should have write transactions that should be processed only on writable pool
-            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [POOL_UPGRADE, POOL_CONFIG]):
+            # here we should have write transactions that should be processed
+            # only on writable pool
+            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
+                    POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
             else:
-                raise InvalidClientRequest(request.identifier, request.reqId,
-                                           'Pool is in readonly mode, try again in 60 seconds')
+                raise InvalidClientRequest(
+                    request.identifier,
+                    request.reqId,
+                    'Pool is in readonly mode, try again in 60 seconds')
 
     @classmethod
     def ledgerId(cls, txnType: str):
@@ -394,6 +408,12 @@ class Node(PlenumNode, HasPoolManager):
             return DOMAIN_LEDGER_ID
         if txnType in CONFIG_TXN_TYPES:
             return CONFIG_LEDGER_ID
+
+    @property
+    def ledgers(self):
+        ledgers = super().ledgers
+        ledgers.append(self.configLedger)
+        return ledgers
 
     def applyReq(self, request: Request, cons_time):
         """
@@ -410,7 +430,7 @@ class Node(PlenumNode, HasPoolManager):
         Execute the REQUEST sent to this Node
 
         :param ppTime: the time at which PRE-PREPARE was sent
-        :param req: the client REQUEST  
+        :param req: the client REQUEST
         """
         return self.commitAndSendReplies(self.reqHandler, ppTime, reqs,
                                          stateRoot, txnRoot)

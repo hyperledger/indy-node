@@ -36,7 +36,8 @@ class RunnableAgent:
         return args
 
     @classmethod
-    def run_agent(cls, agent: Agent, looper=None, bootstrap=None, with_cli=False):
+    def run_agent(cls, agent: Agent, looper=None,
+                  bootstrap=None, with_cli=False):
         try:
             config = getConfig()
             if with_cli:

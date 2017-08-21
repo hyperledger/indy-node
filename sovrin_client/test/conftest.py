@@ -29,7 +29,7 @@ from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYP
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.constants import NYM, TRUST_ANCHOR
 from sovrin_common.constants import TXN_TYPE, TARGET_NYM, ROLE
-from sovrin_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToFile
+from sovrin_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToGenesisFile
 from sovrin_node.test.helper import makePendingTxnsRequest, buildStewardClient, \
     TestNode
 from sovrin_client.test.helper import addRole, \
@@ -50,11 +50,13 @@ from sovrin_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
 
 Logger.setLogLevel(logging.DEBUG)
 
+
 @pytest.fixture(scope="session")
 def warnfilters(plenum_warnfilters):
     def _():
         plenum_warnfilters()
-        warnings.filterwarnings('ignore', category=ResourceWarning, message='unclosed file')
+        warnings.filterwarnings(
+            'ignore', category=ResourceWarning, message='unclosed file')
     return _
 
 
@@ -81,8 +83,7 @@ def updatedPoolTxnData(poolTxnData):
         ROLE: TRUSTEE,
         TYPE: NYM,
         ALIAS: "Trustee1",
-        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"
-    }
+        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"}
     data["seeds"]["Trustee1"] = trusteeSeed
     data["txns"].insert(0, t)
     return data
@@ -93,7 +94,9 @@ def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
     ret = []
     for name in poolTxnTrusteeNames:
         seed = updatedPoolTxnData["seeds"][name]
-        txn = next((txn for txn in updatedPoolTxnData["txns"] if txn[ALIAS] == name), None)
+        txn = next(
+            (txn for txn in updatedPoolTxnData["txns"] if txn[ALIAS] == name),
+            None)
         ret.append((name, seed.encode(), txn))
     return ret
 
@@ -110,7 +113,7 @@ def trusteeWallet(trusteeData):
 # TODO: This fixture is present in sovrin_node too, it should be
 # sovrin_common's conftest.
 @pytest.fixture(scope="module")
-#TODO devin
+# TODO devin
 def trustee(nodeSet, looper, tdir, up, trusteeWallet):
     return buildStewardClient(looper, tdir, trusteeWallet)
 
@@ -132,15 +135,12 @@ def steward(nodeSet, looper, tdir, stewardWallet):
 @pytest.fixture(scope="module")
 def genesisTxns(stewardWallet: Wallet, trusteeWallet: Wallet):
     nym = stewardWallet.defaultId
-    return [
-        {
-            TXN_TYPE: NYM,
-            TARGET_NYM: nym,
-            TXN_ID: "9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
-            ROLE: STEWARD,
-            VERKEY: stewardWallet.getVerkey()
-        },
-    ]
+    return [{TXN_TYPE: NYM,
+             TARGET_NYM: nym,
+             TXN_ID: "9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+             ROLE: STEWARD,
+             VERKEY: stewardWallet.getVerkey()},
+            ]
 
 
 @pytest.fixture(scope="module")
@@ -164,7 +164,8 @@ def tdirWithDomainTxnsUpdated(tdirWithDomainTxns, poolTxnTrusteeNames,
 @pytest.fixture(scope="module")
 def updatedDomainTxnFile(tdir, tdirWithDomainTxnsUpdated, genesisTxns,
                          domainTxnOrderedFields, tconf):
-    addTxnToFile(tdir, tconf.domainTransactionsFile, genesisTxns, domainTxnOrderedFields)
+    addTxnToGenesisFile(tdir, tconf.domainTransactionsFile,
+                        genesisTxns, domainTxnOrderedFields)
 
 
 @pytest.fixture(scope="module")
@@ -229,7 +230,7 @@ def trustAnchor(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, tdir):
 
 @pytest.fixture(scope="module")
 def addedTrustAnchor(nodeSet, steward, stewardWallet, looper,
-                 trustAnchorWallet):
+                     trustAnchorWallet):
     createNym(looper,
               trustAnchorWallet.defaultId,
               steward,
@@ -240,13 +241,15 @@ def addedTrustAnchor(nodeSet, steward, stewardWallet, looper,
 
 
 @pytest.fixture(scope="module")
-def userWalletA(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, trustAnchor):
+def userWalletA(nodeSet, addedTrustAnchor,
+                trustAnchorWallet, looper, trustAnchor):
     return addRole(looper, trustAnchor, trustAnchorWallet, 'userA',
                    addVerkey=False)
 
 
 @pytest.fixture(scope="module")
-def userWalletB(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, trustAnchor):
+def userWalletB(nodeSet, addedTrustAnchor,
+                trustAnchorWallet, looper, trustAnchor):
     return addRole(looper, trustAnchor, trustAnchorWallet, 'userB',
                    addVerkey=False)
 
@@ -295,10 +298,8 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
                    testClientClass, tdir):
     newStewardName = "testClientSteward" + randomString(3)
     newNodeName = "Theta"
-    newSteward, newStewardWallet = getClientAddedWithRole(nodeSet, tdir,
-                                                          looper, steward,
-                                                          stewardWallet,
-                                                          newStewardName, STEWARD)
+    newSteward, newStewardWallet = getClientAddedWithRole(
+        nodeSet, tdir, looper, steward, stewardWallet, newStewardName, STEWARD)
 
     sigseed = randomString(32).encode()
     nodeSigner = DidSigner(seed=sigseed)
@@ -317,7 +318,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     node = Node(nodeSigner.identifier, data, newStewardWallet.defaultId)
     newStewardWallet.addNode(node)
     reqs = newStewardWallet.preparePending()
-    req, = newSteward.submitReqs(*reqs)
+    req = newSteward.submitReqs(*reqs)[0][0]
 
     waitForSufficientRepliesForRequests(looper, newSteward, requests=[req])
 
@@ -330,7 +331,8 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
 
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
-                            ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),
+                            ha=(nodeIp, nodePort), cliha=(
+                                clientIp, clientPort),
                             pluginPaths=allPluginsPath)
 
     nodeSet.append(newNode)

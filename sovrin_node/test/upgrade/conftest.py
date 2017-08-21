@@ -3,13 +3,12 @@ from datetime import datetime, timedelta
 import dateutil.tz
 import pytest
 from plenum.common.constants import VERSION, STEWARD
-from plenum.common.util import randomString
 from sovrin_client.test.helper import getClientAddedWithRole
 
 from sovrin_common.constants import START, FORCE
 from sovrin_node.test import waits
 from sovrin_node.test.upgrade.helper import bumpedVersion, ensureUpgradeSent, \
-    checkUpgradeScheduled, bumpVersion, get_valid_code_hash
+    checkUpgradeScheduled, bumpVersion
 from stp_core.loop.eventually import eventually
 
 
@@ -22,7 +21,7 @@ def nodeIds(nodeSet):
 def validUpgrade(nodeIds, tconf):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=30)
+    startAt = unow + timedelta(seconds=100)
     acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
@@ -57,9 +56,15 @@ def validUpgradeSent(looper, nodeSet, tdir, trustee, trusteeWallet,
 
 
 @pytest.fixture(scope="module")
-def validUpgradeSentExpForceFalse(looper, nodeSet, tdir, trustee, trusteeWallet,
-                                  validUpgradeExpForceFalse):
-    ensureUpgradeSent(looper, trustee, trusteeWallet, validUpgradeExpForceFalse)
+def validUpgradeSentExpForceFalse(
+        looper,
+        nodeSet,
+        tdir,
+        trustee,
+        trusteeWallet,
+        validUpgradeExpForceFalse):
+    ensureUpgradeSent(looper, trustee, trusteeWallet,
+                      validUpgradeExpForceFalse)
 
 
 @pytest.fixture(scope="module")
@@ -70,8 +75,13 @@ def validUpgradeSentExpForceTrue(looper, nodeSet, tdir, trustee, trusteeWallet,
 
 @pytest.fixture(scope="module")
 def upgradeScheduled(validUpgradeSent, looper, nodeSet, validUpgrade):
-    looper.run(eventually(checkUpgradeScheduled, nodeSet, validUpgrade[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(
+        eventually(
+            checkUpgradeScheduled,
+            nodeSet,
+            validUpgrade[VERSION],
+            retryWait=1,
+            timeout=waits.expectedUpgradeScheduled()))
 
 
 @pytest.fixture(scope="module")
@@ -108,5 +118,11 @@ def invalidUpgrade(nodeIds, tconf):
 
 @pytest.fixture(scope="module")
 def steward(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
-                                  trustee, trusteeWallet, 'newSteward', STEWARD)
+    return getClientAddedWithRole(
+        nodeSet,
+        tdir,
+        looper,
+        trustee,
+        trusteeWallet,
+        'newSteward',
+        STEWARD)

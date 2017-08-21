@@ -13,8 +13,8 @@ def ensurePoolIsOperable(be, do, cli):
     addAgent(be, do, cli, randomNymMapper)
 
 
-#this test messes with other tests so it goes in its own module
-def testStewardCanDemoteNode(
+# this test messes with other tests so it goes in its own module
+def test_steward_can_promote_and_demote_own_node(
         be, do, poolNodesStarted, newStewardCli, trusteeCli, newNodeVals):
 
     ensurePoolIsOperable(be, do, newStewardCli)
@@ -36,3 +36,13 @@ def testStewardCanDemoteNode(
         txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
         assert txn[TARGET_NYM] == newNodeVals['newNodeIdr']
         assert SERVICES in txn[DATA] and txn[DATA][SERVICES] == []
+
+    newNodeVals['newNodeData'][SERVICES] = [VALIDATOR]
+
+    do('send NODE dest={newNodeIdr} data={newNodeData}',
+       mapper=newNodeVals, expect=NODE_REQUEST_COMPLETED, within=8)
+
+    for node in poolNodesStarted.nodes.values():
+        txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
+        assert txn[TARGET_NYM] == newNodeVals['newNodeIdr']
+        assert SERVICES in txn[DATA] and txn[DATA][SERVICES] == [VALIDATOR]

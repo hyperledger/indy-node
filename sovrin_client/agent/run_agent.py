@@ -9,6 +9,7 @@ from stp_core.loop.looper import Looper
 
 logger = getlogger()
 
+
 async def runBootstrap(bootstrapFunc):
     try:
         await bootstrapFunc
@@ -41,7 +42,8 @@ def runAgentCli(agent, config, looper=None, bootstrap=None):
     def run(looper):
         agent.loop = looper.loop
         logger.info("Running {} now (port: {})".format(agent.name, agent.port))
-        agentCli = bootstrapAgentCli(agent.name, agent, looper, bootstrap, config)
+        agentCli = bootstrapAgentCli(
+            agent.name, agent, looper, bootstrap, config)
         commands = sys.argv[1:]
         looper.run(agentCli.shell(*commands))
 

@@ -25,5 +25,7 @@ class SovrinTransactions(Enum):
 
     POOL_CONFIG = "111"
 
+    CHANGE_KEY = "112"
+
     def __str__(self):
         return self.name

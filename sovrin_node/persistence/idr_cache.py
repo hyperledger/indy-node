@@ -1,9 +1,10 @@
 from collections import OrderedDict
 import rlp
-from plenum.common.constants import VERKEY, TRUSTEE, STEWARD
+from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX
 from plenum.common.types import f
+from storage.kv_store import KeyValueStorage
+
 from sovrin_common.constants import ROLE, TGB, TRUST_ANCHOR
-from state.kv.kv_store import KeyValueStorage
 from stp_core.common.log import getlogger
 
 logger = getlogger()
@@ -28,7 +29,7 @@ class IdrCache:
         # second item is a dictionary similar to cache which can be queried
         # like the database, i.e `self._db`. Keys (state roots are purged)
         # when they get committed or reverted.
-        self.unCommitted = [] # type: List[Tuple[bytes, OrderedDict]]
+        self.unCommitted = []  # type: List[Tuple[bytes, OrderedDict]]
 
         # Relevant NYMs operation done in current batch, in order
         self.currentBatchOps = []   # type: List[Tuple]
@@ -73,10 +74,12 @@ class IdrCache:
         else:
             # Looking for uncommitted values, iterating over `currentBatchOps and unCommitted`
             # in reverse to get the latest value
-            for _, cache in reversed(self.currentBatchOps):
-                if idr in cache:
-                    value = cache[idr]
-                    break;
+            for key, cache in reversed(self.currentBatchOps):
+                if key == idr.decode():
+                    value = cache
+                    ta, iv, r = self.unpackIdrValue(value)
+                    return ta, iv, r
+
             for _, cache in reversed(self.unCommitted):
                 if idr in cache:
                     value = cache[idr]
@@ -109,17 +112,18 @@ class IdrCache:
         # Commit an already created batch
         if self.unCommitted:
             assert self.unCommitted[0][0] == stateRoot, 'The first created batch has ' \
-                                                     'not been committed or ' \
-                                                     'reverted and yet another ' \
-                                                     'batch is trying to be ' \
-                                                     'committed, {} {}'.format(
+                'not been committed or ' \
+                'reverted and yet another ' \
+                'batch is trying to be ' \
+                'committed, {} {}'.format(
                 self.unCommitted[0][0], stateRoot)
             self._keyValueStorage.setBatch([(idr, val) for idr, val in
                                             self.unCommitted[0][1].items()])
             self.unCommitted = self.unCommitted[1:]
         else:
-            logger.warning('{} is trying to commit a batch with state root {} '
-                           'but no uncommitted found'.format(self, stateRoot))
+            logger.warning('{}{} is trying to commit a batch with state root'
+                           ' {} but no uncommitted found'
+                           .format(THREE_PC_PREFIX, self, stateRoot))
 
     def setVerkey(self, idr, verkey):
         # This method acts as if guardianship is being terminated.

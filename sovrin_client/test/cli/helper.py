@@ -4,11 +4,13 @@ import re
 from _sha256 import sha256
 from typing import Dict
 
+from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from libnacl import randombytes
 
 from plenum.common import util
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import rawToFriendly
+from plenum.config import pool_transactions_file_base, domain_transactions_file_base
 
 from plenum.test import waits
 from stp_core.loop.eventually import eventually
@@ -34,7 +36,6 @@ from sovrin_client.test.client.TestClient import TestClient
 from sovrin_common.txn_util import getTxnOrderedFields
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
-from ledger.serializers.compact_serializer import CompactSerializer
 from sovrin_common.roles import Roles
 
 logger = getlogger()
@@ -58,7 +59,7 @@ def sendNym(cli, nym, role):
 
 def checkGetNym(cli, nym):
     printeds = ["Getting nym {}".format(nym), "Sequence number for NYM {} is "
-        .format(nym)]
+                .format(nym)]
     checks = [x in cli.lastCmdOutput for x in printeds]
     assert all(checks)
     # TODO: These give NameError, don't know why
@@ -78,7 +79,6 @@ def chkNymAddedOutput(cli, nym):
 def checkConnectedToEnv(cli):
     # TODO: Improve this
     assert "now connected to" in cli.lastCmdOutput
-
 
 
 def ensureConnectedToTestEnv(be, do, cli):
@@ -101,7 +101,8 @@ def ensureNymAdded(be, do, cli, nym, role=None):
 
     timeout = waits.expectedTransactionExecutionTime(len(cli.nodeReg))
     cli.enterCmd("send GET_NYM {dest}={nym}".format(dest=TARGET_NYM, nym=nym))
-    cli.looper.run(eventually(checkGetNym, cli, nym, retryWait=1, timeout=timeout))
+    cli.looper.run(eventually(checkGetNym, cli, nym,
+                              retryWait=1, timeout=timeout))
 
     cli.enterCmd('send ATTRIB {dest}={nym} raw={raw}'.
                  format(dest=TARGET_NYM, nym=nym,
@@ -141,19 +142,20 @@ def get_connection_request(name, wallet) -> Connection:
 
 
 def getPoolTxnData(poolId, newPoolTxnNodeNames):
-    data={}
-    data["seeds"]={}
-    data["txns"]=[]
+    data = {}
+    data["seeds"] = {}
+    data["txns"] = []
     for index, n in enumerate(newPoolTxnNodeNames, start=1):
         newStewardAlias = poolId + "Steward" + str(index)
-        stewardSeed = (newStewardAlias + "0" * (32 - len(newStewardAlias))).encode()
+        stewardSeed = (newStewardAlias + "0" *
+                       (32 - len(newStewardAlias))).encode()
         data["seeds"][newStewardAlias] = stewardSeed
         stewardSigner = SimpleSigner(seed=stewardSeed)
         data["txns"].append({
-                TARGET_NYM: stewardSigner.verkey,
-                ROLE: STEWARD, TXN_TYPE: NYM,
-                ALIAS: poolId + "Steward" + str(index),
-                TXN_ID: sha256("{}".format(stewardSigner.verkey).encode()).hexdigest()
+            TARGET_NYM: stewardSigner.verkey,
+            ROLE: STEWARD, TXN_TYPE: NYM,
+            ALIAS: poolId + "Steward" + str(index),
+            TXN_ID: sha256("{}".format(stewardSigner.verkey).encode()).hexdigest()
         })
 
         newNodeAlias = n
@@ -161,18 +163,18 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
         data["seeds"][newNodeAlias] = nodeSeed
         nodeSigner = SimpleSigner(seed=nodeSeed)
         data["txns"].append({
-                TARGET_NYM: nodeSigner.verkey,
-                TXN_TYPE: NODE,
-                f.IDENTIFIER.nm: stewardSigner.verkey,
-                DATA: {
-                    CLIENT_IP: "127.0.0.1",
-                    ALIAS: newNodeAlias,
-                    NODE_IP: "127.0.0.1",
-                    NODE_PORT: genHa()[1],
-                    CLIENT_PORT: genHa()[1],
-                    SERVICES: [VALIDATOR],
-                },
-                TXN_ID: sha256("{}".format(nodeSigner.verkey).encode()).hexdigest()
+            TARGET_NYM: nodeSigner.verkey,
+            TXN_TYPE: NODE,
+            f.IDENTIFIER.nm: stewardSigner.verkey,
+            DATA: {
+                CLIENT_IP: "127.0.0.1",
+                ALIAS: newNodeAlias,
+                NODE_IP: "127.0.0.1",
+                NODE_PORT: genHa()[1],
+                CLIENT_PORT: genHa()[1],
+                SERVICES: [VALIDATOR],
+            },
+            TXN_ID: sha256("{}".format(nodeSigner.verkey).encode()).hexdigest()
         })
     return data
 
@@ -181,15 +183,12 @@ def prompt_is(prompt):
     def x(cli):
         assert cli.currPromptText == prompt, \
             "expected prompt: {}, actual prompt: {}".\
-                format(prompt, cli.currPromptText)
+            format(prompt, cli.currPromptText)
     return x
 
 
-def addTxnToFile(dir, file, txns, fields=getTxnOrderedFields()):
-    ledger = Ledger(CompactMerkleTree(),
-                    dataDir=dir,
-                    serializer=CompactSerializer(fields=fields),
-                    fileName=file)
+def addTxnToGenesisFile(dir, file, txns, fields=getTxnOrderedFields()):
+    ledger = create_genesis_txn_init_ledger(dir, file)
     for txn in txns:
         ledger.add(txn)
     ledger.stop()
@@ -198,15 +197,17 @@ def addTxnToFile(dir, file, txns, fields=getTxnOrderedFields()):
 def addTrusteeTxnsToGenesis(trusteeList, trusteeData, txnDir, txnFileName):
     added = 0
     if trusteeList and len(trusteeList) and trusteeData:
-        txns=[]
+        txns = []
         for trusteeToAdd in trusteeList:
             try:
-                trusteeData = next((data for data in trusteeData if data[0] == trusteeToAdd))
+                trusteeData = next(
+                    (data for data in trusteeData if data[0] == trusteeToAdd))
                 name, seed, txn = trusteeData
                 txns.append(txn)
             except StopIteration as e:
-                logger.debug('{} not found in trusteeData'.format(trusteeToAdd))
-        addTxnToFile(txnDir, txnFileName, txns)
+                logger.debug(
+                    '{} not found in trusteeData'.format(trusteeToAdd))
+        addTxnToGenesisFile(txnDir, txnFileName, txns)
     return added
 
 
@@ -220,19 +221,31 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
     if multiPoolNodes:
         conf.ENVS = {}
         for pool in multiPoolNodes:
-            conf.poolTransactionsFile = "pool_transactions_{}".format(pool.name)
-            conf.domainTransactionsFile = "transactions_{}".format(pool.name)
             conf.ENVS[pool.name] = \
-                Environment("pool_transactions_{}".format(pool.name),
-                                "transactions_{}".format(pool.name))
+                Environment("{}_{}".format(pool_transactions_file_base, pool.name),
+                            "{}_{}".format(domain_transactions_file_base, pool.name))
+            # conf.poolTransactionsFile = conf.ENVS[pool.name].poolLedger
+            # conf.domainTransactionsFile = conf.ENVS[pool.name].domainLedger
             initDirWithGenesisTxns(
-                tempDir, conf, os.path.join(pool.tdirWithPoolTxns, pool.name),
-                os.path.join(pool.tdirWithDomainTxns, pool.name))
+                tempDir,
+                conf,
+                os.path.join(pool.tdirWithPoolTxns, pool.name),
+                os.path.join(pool.tdirWithDomainTxns, pool.name),
+                conf.ENVS[pool.name].poolLedger,
+                conf.ENVS[pool.name].domainLedger
+            )
     from sovrin_node.test.helper import TestNode
-    new_cli = newPlenumCLI(looper, tempDir, cliClass=cliClass,
-                           nodeClass=TestNode, clientClass=TestClient, config=conf,
-                           unique_name=unique_name, logFileName=logFileName,
-                           name=name, agentCreator=True)
+    new_cli = newPlenumCLI(
+        looper,
+        tempDir,
+        cliClass=cliClass,
+        nodeClass=TestNode,
+        clientClass=TestClient,
+        config=conf,
+        unique_name=unique_name,
+        logFileName=logFileName,
+        name=name,
+        agentCreator=True)
     if isinstance(new_cli, SovrinCli) and agent is not None:
         new_cli.agent = agent
     return new_cli
@@ -281,7 +294,8 @@ def check_wallet(cli,
     async def check():
         actualLinks = len(cli.activeWallet._connections)
         assert (totalLinks is None or (totalLinks == actualLinks)),\
-            'connections expected to be {} but is {}'.format(totalLinks, actualLinks)
+            'connections expected to be {} but is {}'.format(
+                totalLinks, actualLinks)
 
         tac = 0
         for li in cli.activeWallet._connections.values():
@@ -290,7 +304,7 @@ def check_wallet(cli,
         assert (totalAvailableClaims is None or
                 totalAvailableClaims == tac), \
             'available claims {} must be equal to {}'.\
-                format(tac, totalAvailableClaims)
+            format(tac, totalAvailableClaims)
 
         if cli.agent.prover is None:
             assert (totalSchemas + totalClaimsRcvd) == 0
@@ -300,7 +314,7 @@ def check_wallet(cli,
             assert (totalSchemas is None or
                     totalSchemas == actualSchemas),\
                 'schemas expected to be {} but is {}'.\
-                    format(totalSchemas, actualSchemas)
+                format(totalSchemas, actualSchemas)
 
             assert (totalClaimsRcvd is None or
                     totalClaimsRcvd == len((await w.getAllClaimsSignatures()).keys()))
@@ -441,10 +455,14 @@ def compareAgentIssuerWallet(unpersistedWallet, restoredWallet):
         (unpersistedWallet._repo.wallet.name, restoredWallet._repo.wallet.name),
 
         # from sovrin-issuer-wallet-in-memory
-        (unpersistedWallet.availableClaimsToAll, restoredWallet.availableClaimsToAll),
-        (unpersistedWallet.availableClaimsByNonce, restoredWallet.availableClaimsByNonce),
-        (unpersistedWallet.availableClaimsByIdentifier, restoredWallet.availableClaimsByIdentifier),
-        (unpersistedWallet._proofRequestsSchema, restoredWallet._proofRequestsSchema),
+        (unpersistedWallet.availableClaimsToAll,
+         restoredWallet.availableClaimsToAll),
+        (unpersistedWallet.availableClaimsByNonce,
+         restoredWallet.availableClaimsByNonce),
+        (unpersistedWallet.availableClaimsByIdentifier,
+         restoredWallet.availableClaimsByIdentifier),
+        (unpersistedWallet._proofRequestsSchema,
+         restoredWallet._proofRequestsSchema),
 
         # from anoncreds issuer-wallet-in-memory
         (unpersistedWallet._sks, restoredWallet._sks),
@@ -468,3 +486,11 @@ def compareAgentIssuerWallet(unpersistedWallet, restoredWallet):
     assert restoredWallet._repo.client is not None
     for oldDict, newDict in compareList:
         compare(oldDict, newDict)
+
+
+def getSeqNoFromCliOutput(cli):
+    seqPat = re.compile("Sequence number is ([0-9]+)")
+    m = seqPat.search(cli.lastCmdOutput)
+    assert m
+    seqNo, = m.groups()
+    return int(seqNo)

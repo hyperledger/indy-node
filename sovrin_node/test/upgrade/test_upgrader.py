@@ -2,13 +2,18 @@
 from sovrin_node.server.upgrader import Upgrader
 
 
+def comparator_test(lower_versrion, higher_version):
+    assert Upgrader.compareVersions(lower_versrion, higher_version) == 1
+    assert Upgrader.compareVersions(higher_version, lower_versrion) == -1
+    assert Upgrader.compareVersions(higher_version, higher_version) == 0
+    assert not Upgrader.is_version_upgradable(higher_version, higher_version)
+    assert Upgrader.is_version_upgradable(
+        higher_version, higher_version, reinstall=True)
+    assert Upgrader.is_version_upgradable(lower_versrion, higher_version)
+    assert Upgrader.is_version_upgradable(higher_version, lower_versrion)
+
+
 def testVersions():
-    assert Upgrader.isVersionHigher('0.0.5', '0.0.6')
-    assert not Upgrader.isVersionHigher('0.0.9', '0.0.8')
-    assert Upgrader.isVersionHigher('0.0.9', '0.1.0')
-    assert Upgrader.isVersionHigher('0.20.30', '1.0.0')
-    assert Upgrader.isVersionHigher('1.3.19', '1.3.20')
-    versions = ['0.0.1', '0.10.11', '0.0.10', '0.0.2',
-                '1.9.0', '9.10.0', '9.1.0']
-    assert Upgrader.versionsDescOrder(versions) == \
-           ['9.10.0', '9.1.0', '1.9.0', '0.10.11', '0.0.10', '0.0.2', '0.0.1']
+    comparator_test('0.0.5', '0.0.6')
+    comparator_test('0.1.2', '0.2.6')
+    comparator_test('1.10.2', '2.0.6')

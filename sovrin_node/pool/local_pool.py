@@ -39,10 +39,10 @@ def create_local_pool(base_dir, node_size=4):
 
         stewards.append(s)
 
-        n_config = adict(name='Node'+str(i+1),
+        n_config = adict(name='Node' + str(i + 1),
                          basedirpath=pool_dir,
-                         ha=('127.0.0.1', 9700+(i * 2)),
-                         cliha=('127.0.0.1', 9700+(i * 2)+1))
+                         ha=('127.0.0.1', 9700 + (i * 2)),
+                         cliha=('127.0.0.1', 9700 + (i * 2) + 1))
 
         n_verkey = initialize_node_environment(name=n_config.name,
                                                base_dir=n_config.basedirpath,
@@ -69,7 +69,8 @@ def create_local_pool(base_dir, node_size=4):
 
 
 class LocalPool(Pool, Looper):
-    def __init__(self, genesis_txns, base_dir, config=None, loop=None, steward: Steward=None):
+    def __init__(self, genesis_txns, base_dir, config=None,
+                 loop=None, steward: Steward=None):
         super().__init__(loop=loop)
         self.base_dir = base_dir
         self.genesis_txns = genesis_txns
@@ -80,7 +81,8 @@ class LocalPool(Pool, Looper):
         if steward is not None:
             self._steward_agent = WalletedAgent(name="steward1",
                                                 basedirpath=self.base_dir,
-                                                client=self.create_client(5005),
+                                                client=self.create_client(
+                                                    5005),
                                                 wallet=steward.wallet,
                                                 port=8781)
             self.add(self._steward_agent)
@@ -111,11 +113,12 @@ class LocalPool(Pool, Looper):
                                                envName='test')
         pl_lines = self._add_and_stop(pool_txns, pl)
 
-        dl = TestNetworkSetup.init_domain_ledger(appendToLedgers=False,
-                                                 baseDir=self.base_dir,
-                                                 config=self.config,
-                                                 envName='test',
-                                                 domainTxnFieldOrder=getTxnOrderedFields())
+        dl = TestNetworkSetup.init_domain_ledger(
+            appendToLedgers=False,
+            baseDir=self.base_dir,
+            config=self.config,
+            envName='test',
+            domainTxnFieldOrder=getTxnOrderedFields())
         dl_lines = self._add_and_stop(domain_txns, dl)
 
         return adict(pool=adict(lines=pl_lines,
@@ -146,5 +149,5 @@ class LocalPool(Pool, Looper):
             pass
         finally:
             ledger.stop()
-        with open(ledger._transactionLog.dbPath) as f:
+        with open(ledger._transactionLog.db_path) as f:
             return f.readlines()

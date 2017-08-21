@@ -1,3 +1,4 @@
+from anoncreds.protocol.exceptions import SchemaNotFoundError
 from plenum.common.signer_did import DidSigner
 from sovrin_client.agent.helper import bootstrap_schema, buildAgentWallet
 from sovrin_client.client.wallet.wallet import Wallet
@@ -20,7 +21,8 @@ FABER_ID = FABER_SIGNER.identifier
 FABER_VERKEY = FABER_SIGNER.verkey
 
 
-def create_faber(name=None, wallet=None, base_dir_path=None, port=5555, client=None):
+def create_faber(name=None, wallet=None, base_dir_path=None,
+                 port=5555, client=None):
 
     if client is None:
         client = create_client(base_dir_path=None, client_class=TestClient)
@@ -48,11 +50,11 @@ def create_faber(name=None, wallet=None, base_dir_path=None, port=5555, client=N
     }
 
     transcript_def = AttribDef('Transcript',
-                              [AttribType('student_name', encode=True),
-                               AttribType('ssn', encode=True),
-                               AttribType('degree', encode=True),
-                               AttribType('year', encode=True),
-                               AttribType('status', encode=True)])
+                               [AttribType('student_name', encode=True),
+                                AttribType('ssn', encode=True),
+                                AttribType('degree', encode=True),
+                                AttribType('year', encode=True),
+                                AttribType('status', encode=True)])
 
     agent.add_attribute_definition(transcript_def)
 
@@ -90,18 +92,20 @@ def create_faber(name=None, wallet=None, base_dir_path=None, port=5555, client=N
 
     return agent
 
+
 async def bootstrap_faber(agent):
-    schema_id = ID(SchemaKey("Transcript", "1.2","FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB"))
+    schema_id = ID(SchemaKey("Transcript", "1.2",
+                             "FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB"))
 
     try:
         schema = await agent.issuer.wallet.getSchema(schema_id)
-    except ValueError:
+    except SchemaNotFoundError:
         schema_id = await bootstrap_schema(agent,
-                                     'Transcript',
-                                     'Transcript',
-                                     '1.2',
-                                     primes["prime1"][0],
-                                     primes["prime1"][1])
+                                           'Transcript',
+                                           'Transcript',
+                                           '1.2',
+                                           primes["prime1"][0],
+                                           primes["prime1"][1])
 
     await agent._set_available_claim_by_internal_id(1, schema_id)
     await agent._set_available_claim_by_internal_id(2, schema_id)
@@ -116,6 +120,7 @@ if __name__ == "__main__":
     if port is None:
         port = 5555
     with_cli = args.withcli
-    agent = create_faber(name=name, wallet=buildAgentWallet(name, FABER_SEED), base_dir_path=None, port=port)
-    RunnableAgent.run_agent(agent, bootstrap=bootstrap_faber(agent), with_cli=with_cli)
-
+    agent = create_faber(name=name, wallet=buildAgentWallet(
+        name, FABER_SEED), base_dir_path=None, port=port)
+    RunnableAgent.run_agent(
+        agent, bootstrap=bootstrap_faber(agent), with_cli=with_cli)

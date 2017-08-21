@@ -54,8 +54,13 @@ Logger.setLogLevel(logging.NOTSET)
 def warnfilters(client_warnfilters):
     def _():
         client_warnfilters()
-        warnings.filterwarnings('ignore', category=DeprecationWarning, module='sovrin_common\.persistence\.identity_graph', message="The 'warn' method is deprecated")
-        warnings.filterwarnings('ignore', category=ResourceWarning, message='unclosed transport')
+        warnings.filterwarnings(
+            'ignore',
+            category=DeprecationWarning,
+            module='sovrin_common\.persistence\.identity_graph',
+            message="The 'warn' method is deprecated")
+        warnings.filterwarnings(
+            'ignore', category=ResourceWarning, message='unclosed transport')
     return _
 
 
@@ -89,7 +94,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     newStewardWallet.addNode(node)
     reqs = newStewardWallet.preparePending()
-    req, = newSteward.submitReqs(*reqs)
+    req = newSteward.submitReqs(*reqs)[0][0]
 
     waitForSufficientRepliesForRequests(looper, newSteward, requests=[req])
 
@@ -99,10 +104,12 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
-    initNodeKeysForBothStacks(newNodeName, tdirWithPoolTxns, sigseed, override=True)
+    initNodeKeysForBothStacks(
+        newNodeName, tdirWithPoolTxns, sigseed, override=True)
 
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
-                            ha=(nodeIp, nodePort), cliha=(clientIp, clientPort),
+                            ha=(nodeIp, nodePort), cliha=(
+                                clientIp, clientPort),
                             pluginPaths=allPluginsPath)
 
     nodeSet.append(newNode)

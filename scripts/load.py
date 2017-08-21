@@ -1,4 +1,5 @@
 import logging
+from time import perf_counter
 
 from plenum.common.signer_did import DidSigner
 from sovrin_client.client.client import Client
@@ -8,7 +9,6 @@ from stp_core.common.log import getlogger, Logger
 from stp_core.network.port_dispenser import genHa, HA
 from stp_core.loop.looper import Looper
 from plenum.test.helper import waitForSufficientRepliesForRequests
-from time import *
 
 numReqs = 100
 splits = 1
@@ -25,7 +25,7 @@ def sendRandomRequests(wallet: Wallet, client: Client, count: int):
                        verkey=signer.verkey)
         wallet.addTrustAnchoredIdentity(idy)
     reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)
+    return client.submitReqs(*reqs)[0]
 
 
 def put_load():

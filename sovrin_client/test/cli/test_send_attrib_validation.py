@@ -844,8 +844,7 @@ def testSendAttribSucceedsForHexHashWithLettersInBothCases(
 
     parameters = {
         'dest': uuidIdentifier,
-        'hash': '6d4a333838d0ef96756cccC680AF2531075C512502Fb68c5503c63d93de859b3'
-    }
+        'hash': '6d4a333838d0ef96756cccC680AF2531075C512502Fb68c5503c63d93de859b3'}
 
     be(trusteeCli)
     do('send ATTRIB dest={dest} hash={hash}',

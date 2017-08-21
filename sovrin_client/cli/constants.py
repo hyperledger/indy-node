@@ -39,29 +39,31 @@ NEW_ID_REG_EX = "(\s* (?P<new_id>new\s+DID)" \
 
 GET_NYM_REG_EX = "(\s* (?P<send_get_nym>send\s+{getNym}) " \
                  "\s+ (?P<dest>dest=)\s*(?P<dest_id>[A-Za-z0-9+=/]+) \s*) ".format(
-    getNym=SovrinTransactions.GET_NYM.name)
+                     getNym=SovrinTransactions.GET_NYM.name)
 
 GET_ATTR_REG_EX = \
     "(\s* (?P<send_get_attr>send\s+{attrib}) " \
     "\s+ dest=\s*(?P<dest_id>[A-Za-z0-9+=/]+) " \
-    "\s+ raw=(?P<raw>[A-Za-z0-9+=/]+) \s*) ".format(attrib=SovrinTransactions.GET_ATTR.name)
+    "\s+ raw=(?P<raw>[A-Za-z0-9+=/]+) \s*) ".format(
+        attrib=SovrinTransactions.GET_ATTR.name)
 
 ADD_ATTRIB_REG_EX = \
     "(\s* (?P<send_attrib>send\s+{attrib}) " \
     "\s+ dest=\s*(?P<dest_id>[A-Za-z0-9+=/]+) " \
-    "\s+ raw=(?P<raw>\{{\s*.*\}}) \s*) ".format(attrib=SovrinTransactions.ATTRIB.name)
+    "\s+ raw=(?P<raw>\{{\s*.*\}}) \s*) ".format(
+        attrib=SovrinTransactions.ATTRIB.name)
 
 SEND_SCHEMA_REG_EX = "(\s*(?P<send_schema>send\s+{schema})" \
                      "\s+(?P<name_key>name=)\s*(?P<name>[A-Za-z0-9-_]+)" \
                      "\s*(?P<version_key>version=)\s*(?P<version>[0-9.]+)" \
                      "\s+(?P<keys_key>keys=)\s*(?P<keys>[0-9a-zA-Z-_,\s]+)\s*)".format(
-    schema=SovrinTransactions.SCHEMA.name)
+                         schema=SovrinTransactions.SCHEMA.name)
 
 GET_SCHEMA_REG_EX = "(\s*(?P<send_get_schema>send\s+{getSchema})" \
-                     "\s+(?P<dest>dest=) \s* (?P<dest_id>[A-Za-z0-9+=/]*)" \
-                     "\s+(?P<name_key>name=)\s*(?P<name>[A-Za-z0-9-_]+)" \
-                     "\s*(?P<version_key>version=)\s*(?P<version>[0-9.]+)\s*)".format(
-    getSchema=SovrinTransactions.GET_SCHEMA.name)
+    "\s+(?P<dest>dest=) \s* (?P<dest_id>[A-Za-z0-9+=/]*)" \
+    "\s+(?P<name_key>name=)\s*(?P<name>[A-Za-z0-9-_]+)" \
+    "\s*(?P<version_key>version=)\s*(?P<version>[0-9.]+)\s*)".format(
+        getSchema=SovrinTransactions.GET_SCHEMA.name)
 
 
 SEND_CLAIM_DEF_REG_EX = "(\s*(?P<send_claim_def>send\s+{issKey})" \
@@ -140,12 +142,13 @@ SEND_PROOF_REG_EX = '(\s*(?P<send_proof>send \s+ proof) ' \
                     '\s+ to \s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
 SEND_PROOF_REQ_REG_EX = '(\s*(?P<send_proof_request>send \s+ proof-request) ' \
-                    '\s+ (?P<proof_request_name>[A-Za-z0-9-." ]+) ' \
-                    '\s+ to (?P<target>[A-Za-z0-9-." ]+) \s*)'
+    '\s+ (?P<proof_request_name>[A-Za-z0-9-." ]+) ' \
+    '\s+ to (?P<target>[A-Za-z0-9-." ]+) \s*)'
 
 SEND_NODE_REG_EX = "(\s* (?P<send_node>send\s+{node}) " \
                    "\s+ dest=\s*(?P<dest_id>[A-Za-z0-9+/]+) " \
-                   "\s+ data=(?P<data>\{{\s*.*\}}) \s*) ".format(node=SovrinTransactions.NODE.name)
+                   "\s+ data=(?P<data>\{{\s*.*\}}) \s*) ".format(
+                       node=SovrinTransactions.NODE.name)
 
 SEND_POOL_UPG_REG_EX = "(\s*(?P<send_pool_upg>send\s+{poolUpgrade})" \
                        "\s+(?P<name_key>name=)\s*(?P<name>[A-Za-z0-9-_]+)" \
@@ -156,16 +159,21 @@ SEND_POOL_UPG_REG_EX = "(\s*(?P<send_pool_upg>send\s+{poolUpgrade})" \
                        "(\s+ (?P<schedule_key>schedule=)\s*(?P<schedule>\{{\s*.*\}}) \s*)? " \
                        "(\s+ (?P<timeout_key>timeout=)\s*(?P<timeout>[0-9+]+))?)" \
                        "(\s+ (?P<force_key>force=)\s*(?P<force>True|False))?" \
-                       "(\s+ (?P<reinstall_key>reinstall=)\s*(?P<reinstall>True|False))?".format(poolUpgrade=SovrinTransactions.POOL_UPGRADE.name)
+                       "(\s+ (?P<reinstall_key>reinstall=)\s*(?P<reinstall>True|False))?".format(
+                           poolUpgrade=SovrinTransactions.POOL_UPGRADE.name)
 
 
 REQ_AVAIL_CLAIMS_REG_EX = '(\s*(?P<request_avail_claims>request \s+ available \s+ claims \s+ from) ' \
                           '\s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
-  
+
 SEND_POOL_CONFIG_REG_EX = "(\s*(?P<send_pool_config>send\s+{poolConfig})" \
                           "\s+(?P<writes_key>writes=)\s*(?P<writes>True|False))" \
-                          "(\s+(?P<force_key>force=)\s*(?P<force>True|False))?".format(poolConfig=SovrinTransactions.POOL_CONFIG.name)
+                          "(\s+(?P<force_key>force=)\s*(?P<force>True|False))?".format(
+                              poolConfig=SovrinTransactions.POOL_CONFIG.name)
+
+CHANGE_CURENT_KEY_REG_EX = "(\s*(?P<change_ckey>change\s+current\s+key))" \
+                           "(\s? with\s+seed\s+(?P<seed>[a-zA-Z0-9]+))?"
 
 
 SEND_NYM_FORMATTED_REG_EX = getPipedRegEx(SEND_NYM_REG_EX)
@@ -202,3 +210,4 @@ SEND_POOL_UPG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_UPG_REG_EX)
 SEND_POOL_CONFIG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_CONFIG_REG_EX)
 REQ_AVAIL_CLAIMS_FORMATTED_REG_EX = getPipedRegEx(REQ_AVAIL_CLAIMS_REG_EX)
 NEW_ID_FORMATTED_REG_EX = getPipedRegEx(NEW_ID_REG_EX)
+CHANGE_CURENT_KEY_FORMATTED_REG_EX = getPipedRegEx(CHANGE_CURENT_KEY_REG_EX)

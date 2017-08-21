@@ -27,10 +27,10 @@ def testAnonCreds(aliceAgent, aliceAcceptedFaber, aliceAcceptedAcme,
 
     # 4. check that proof is verified by Acme
     def chkProof():
-        internalId = acmeAgent.get_internal_id_by_nonce(acme_link.request_nonce)
+        internalId = acmeAgent.get_internal_id_by_nonce(
+            acme_link.request_nonce)
         link = acmeAgent.wallet.getConnectionBy(internalId=internalId)
         assert "Job-Application" in link.verifiedClaimProofs
 
     timeout = waits.expectedClaimsReceived()
     emptyLooper.run(eventually(chkProof, timeout=timeout))
-

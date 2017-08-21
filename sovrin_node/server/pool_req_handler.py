@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from ledger.serializers.json_serializer import JsonSerializer
+from common.serializers.serialization import pool_state_serializer
 from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES
 
 from plenum.common.ledger import Ledger
@@ -15,7 +15,7 @@ class PoolRequestHandler(PHandler):
     def __init__(self, ledger: Ledger, state: State,
                  domainState: State, idrCache: IdrCache):
         super().__init__(ledger, state, domainState)
-        self.stateSerializer = JsonSerializer()
+        self.stateSerializer = pool_state_serializer
         self.idrCache = idrCache
 
     def isSteward(self, nym, isCommitted: bool=True):
@@ -37,7 +37,8 @@ class PoolRequestHandler(PHandler):
         if error:
             return error
 
-        isStewardOfNode = self.isStewardOfNode(origin, nodeNym, isCommitted=False)
+        isStewardOfNode = self.isStewardOfNode(
+            origin, nodeNym, isCommitted=False)
 
         actorRole = self.idrCache.getRole(origin, isCommitted=False)
         nodeInfo = self.getNodeData(nodeNym, isCommitted=False)

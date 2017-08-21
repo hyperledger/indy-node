@@ -1,4 +1,3 @@
-from typing import Dict
 
 from sovrin_common.identity import Identity
 from stp_core.types import Identifier

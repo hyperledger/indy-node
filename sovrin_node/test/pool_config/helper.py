@@ -5,11 +5,6 @@ from sovrin_client.client.wallet.pool_config import PoolConfig as WPoolConfig
 from sovrin_node.server.pool_config import PoolConfig as SPoolConfig
 from sovrin_node.utils.node_control_tool import NodeControlTool
 from sovrin_common.config_util import getConfig
-import subprocess
-import os
-import multiprocessing
-import socket
-import json
 
 
 config = getConfig()
@@ -19,7 +14,7 @@ def sendPoolConfig(client, wallet, poolConfigData):
     poolCfg = WPoolConfig(trustee=wallet.defaultId, **poolConfigData)
     wallet.doPoolConfig(poolCfg)
     reqs = wallet.preparePending()
-    req, = client.submitReqs(*reqs)
+    req = client.submitReqs(*reqs)[0][0]
     return poolCfg, req
 
 

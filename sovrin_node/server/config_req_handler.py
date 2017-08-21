@@ -16,7 +16,8 @@ from sovrin_node.server.pool_config import PoolConfig
 
 
 class ConfigReqHandler(RequestHandler):
-    def __init__(self, ledger, state, idrCache: IdrCache, upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
+    def __init__(self, ledger, state, idrCache: IdrCache,
+                 upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
@@ -42,9 +43,8 @@ class ConfigReqHandler(RequestHandler):
             schedule = operation.get(SCHEDULE, {})
             force = operation.get(FORCE)
             force = str(force) == 'True'
-            isValid, msg = self.upgrader.isScheduleValid(schedule,
-                                                         self.poolManager.nodeIds,
-                                                         force)
+            isValid, msg = self.upgrader.isScheduleValid(
+                schedule, self.poolManager.nodeIds, force)
             if not isValid:
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} not a valid schedule since {}".
@@ -53,6 +53,7 @@ class ConfigReqHandler(RequestHandler):
         # TODO: Check if cancel is submitted before start
 
     def validate(self, req: Request, config=None):
+        status = None
         operation = req.operation
         typ = operation.get(TXN_TYPE)
         if typ not in [POOL_UPGRADE, POOL_CONFIG]:
@@ -60,27 +61,43 @@ class ConfigReqHandler(RequestHandler):
         origin = req.identifier
         try:
             originRole = self.idrCache.getRole(origin, isCommitted=False)
-        except:
-            raise UnauthorizedClientRequest(req.identifier, req.reqId,
-                                            "Nym {} not added to the ledger yet".format(origin))
+        except BaseException:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "Nym {} not added to the ledger yet".format(origin))
         if typ == POOL_UPGRADE:
             trname = SovrinTransactions.POOL_UPGRADE.name
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version
             # present
-            status = self.upgrader.statusInLedger(req.operation.get(NAME), req.operation.get(VERSION))
+            txn = self.upgrader.get_upgrade_txn(
+                lambda txn: txn.get(
+                    NAME,
+                    None) == req.operation.get(
+                    NAME,
+                    None) and txn.get(VERSION) == req.operation.get(VERSION),
+                reverse=True)
+            if txn:
+                status = txn.get(ACTION, None)
+
             if status == START and action == START:
-                raise InvalidClientRequest(req.identifier, req.reqId,
-                                           "Upgrade '{}' is already scheduled".format(req.operation.get(NAME)))
+                raise InvalidClientRequest(
+                    req.identifier,
+                    req.reqId,
+                    "Upgrade '{}' is already scheduled".format(
+                        req.operation.get(NAME)))
         elif typ == POOL_CONFIG:
             trname = SovrinTransactions.POOL_CONFIG.name
             action = None
             status = None
 
-        r, msg = Authoriser.authorised(typ, ACTION, originRole, oldVal=status, newVal=action)
+        r, msg = Authoriser.authorised(
+            typ, ACTION, originRole, oldVal=status, newVal=action)
         if not r:
-            raise UnauthorizedClientRequest(req.identifier, req.reqId,
-                                            "{} cannot do {}".format(Roles.nameFromValue(originRole), trname))
+            raise UnauthorizedClientRequest(
+                req.identifier, req.reqId, "{} cannot do {}".format(
+                    Roles.nameFromValue(originRole), trname))
 
     def apply(self, req: Request, cons_time):
         txn = reqToTxn(req, cons_time)

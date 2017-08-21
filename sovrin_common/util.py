@@ -1,10 +1,11 @@
 import datetime
+import os
 import random
 from typing import Tuple, Union, TypeVar, List, Callable
 
 import libnacl.secret
 from base58 import b58decode
-from plenum.common.signing import serializeMsg
+from common.serializers.serialization import serialize_msg_for_signing
 from plenum.common.types import f
 from plenum.common.util import isHex, error, cryptonymToHex
 from stp_core.crypto.nacl_wrappers import Verifier
@@ -21,7 +22,7 @@ def getMsgWithoutSig(msg, sigFieldName=f.SIG.nm):
 def verifySig(identifier, signature, msg) -> bool:
     key = cryptonymToHex(identifier) if not isHex(
         identifier) else identifier
-    ser = serializeMsg(msg)
+    ser = serialize_msg_for_signing(msg)
     b64sig = signature.encode('utf-8')
     sig = b58decode(b64sig)
     vr = Verifier(key)
@@ -77,8 +78,14 @@ def getNonce(length=32):
 
 
 # TODO: Should have a timeout, should not have kwargs
-def ensureReqCompleted(loop, reqKey, client, clbk=None, pargs=None, kwargs=None,
-                       cond=None):
+def ensureReqCompleted(
+        loop,
+        reqKey,
+        client,
+        clbk=None,
+        pargs=None,
+        kwargs=None,
+        cond=None):
     reply, err = client.replyIfConsensus(*reqKey)
     if err is None and reply is None and (cond is None or not cond()):
         loop.call_later(.2, ensureReqCompleted, loop,
@@ -116,3 +123,9 @@ def getIndex(predicateFn: Callable[[T], bool], items: List[T]) -> int:
         return next(i for i, v in enumerate(items) if predicateFn(v))
     except StopIteration:
         return -1
+
+
+def compose_cmd(cmd):
+    if os.name != 'nt':
+        cmd = ' '.join(cmd)
+    return cmd

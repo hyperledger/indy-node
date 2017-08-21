@@ -32,8 +32,13 @@ def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
 
     looper.run(checkNodesConnected(nodeSet))
     ensureElectionsDone(looper=looper, nodes=nodeSet, retryWait=1)
-    looper.run(eventually(checkUpgradeScheduled, nodeSet, validUpgrade[VERSION],
-                          retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(
+        eventually(
+            checkUpgradeScheduled,
+            nodeSet,
+            validUpgrade[VERSION],
+            retryWait=1,
+            timeout=waits.expectedUpgradeScheduled()))
 
 
 def testNodeSchedulesUpgradeExpForceFalse(upgradeScheduledExpForceFalse):
@@ -44,7 +49,8 @@ def testNodeSchedulesUpgradeExpForceTrue(upgradeScheduledExpForceTrue):
     pass
 
 
-def testForcedUpgradeNoConsensusOnSingleNode(validUpgradeExpForceTrue, looper, nodeSet, trustee, trusteeWallet):
+def testForcedUpgradeNoConsensusOnSingleNode(
+        validUpgradeExpForceTrue, looper, nodeSet, trustee, trusteeWallet):
     nup = validUpgradeExpForceTrue.copy()
     nup.update({VERSION: bumpVersion(validUpgradeExpForceTrue[VERSION])})
     for node in nodeSet:
@@ -62,4 +68,5 @@ def testForcedUpgradeNoConsensusOnSingleNode(validUpgradeExpForceTrue, looper, n
                 assert node.upgrader.scheduledUpgrade
                 assert node.upgrader.scheduledUpgrade[0] == nup[VERSION]
 
-    looper.run(eventually(testsched, retryWait=1, timeout=waits.expectedUpgradeScheduled()))
+    looper.run(eventually(testsched, retryWait=1,
+                          timeout=waits.expectedUpgradeScheduled()))

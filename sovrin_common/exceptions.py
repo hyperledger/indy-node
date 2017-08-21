@@ -20,10 +20,6 @@ class VerkeyNotFound(NotFound):
     pass
 
 
-class SchemaNotFound(NotFound):
-    pass
-
-
 class RemoteEndpointNotFound(NotFound):
     pass
 
@@ -40,7 +36,6 @@ class LinkNotReady(RuntimeError):
     """
     Some operation is attempted on a link that is not ready for that operation
     """
-    pass
 
 
 class NotConnectedToNetwork(RuntimeError):
