@@ -73,8 +73,9 @@ def _get_migration_scripts(current_platform):
     # Data folder is published as a separate 'data' python package
     migrations = importlib.import_module(
         '.'.join([SCRIPT_PREFIX, PLATFORM_PREFIX[current_platform]]))
-    return [name for module_finder, name,
-                     ispkg in pkgutil.iter_modules(migrations.__path__)]
+    return [name
+            for module_finder, name, ispkg
+            in pkgutil.iter_modules(migrations.__path__)]
 
 
 def _get_relevant_migrations(migration_scripts, current_version, new_version):
@@ -89,21 +90,15 @@ def _get_relevant_migrations(migration_scripts, current_version, new_version):
             if Upgrader.compareVersions(
                     migration_new_version, migration_original_version) > 0:
                 continue
-            if Upgrader.compareVersions(
-                    migration_original_version,
-                    current_version) <= 0 and Upgrader.compareVersions(
-                migration_new_version,
-                new_version) >= 0:
+            if Upgrader.compareVersions(migration_original_version, current_version) <= 0 \
+                    and Upgrader.compareVersions(migration_new_version, new_version) >= 0:
                 relevant_migrations.append(migration)
         else:
             if Upgrader.compareVersions(
                     migration_original_version, migration_new_version) > 0:
                 continue
-            if Upgrader.compareVersions(
-                    migration_original_version,
-                    current_version) >= 0 and Upgrader.compareVersions(
-                migration_new_version,
-                new_version) <= 0:
+            if Upgrader.compareVersions(migration_original_version, current_version) >= 0 \
+                    and Upgrader.compareVersions(migration_new_version, new_version) <= 0:
                 relevant_migrations.append(migration)
         relevant_migrations = sorted(
             relevant_migrations, key=cmp_to_key(_compare_migration_scripts))
