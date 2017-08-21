@@ -1,19 +1,21 @@
 #!/usr/bin/python3
 
-import select
-import socket
 import os
-import subprocess
-import shutil
 import re
+import select
+import shutil
+import socket
+import subprocess
 from typing import List
-from sovrin_node.utils.migration_tool import migrate
+
 from stp_core.common.log import getlogger
-from sovrin_node.server.upgrader import Upgrader
+
 from sovrin_common.config_util import getConfig
+from sovrin_common.util import compose_cmd
+from sovrin_node.server.upgrader import Upgrader
+from sovrin_node.utils.migration_tool import migrate
 
 logger = getlogger()
-
 
 TIMEOUT = 300
 BASE_DIR = '/home/sovrin/'
@@ -68,20 +70,15 @@ class NodeControlTool:
         # Listen for incoming connections
         self.server.listen(1)
 
-    @staticmethod
-    def _compose_cmd(cmd):
-        if os.name != 'nt':
-            cmd = ' '.join(cmd)
-        return cmd
-
     @classmethod
     def _get_info_from_package_manager(cls, package):
         ret = subprocess.run(
-            cls._compose_cmd(
+            compose_cmd(
                 [
                     'apt-cache',
                     'show',
-                    package]),
+                    package
+                ]),
             shell=True,
             check=True,
             universal_newlines=True,
@@ -99,10 +96,11 @@ class NodeControlTool:
     @classmethod
     def _update_package_cache(cls):
         ret = subprocess.run(
-            cls._compose_cmd(
+            compose_cmd(
                 [
                     'apt',
-                    'update']),
+                    'update'
+                ]),
             shell=True,
             check=True,
             universal_newlines=True,
@@ -119,11 +117,12 @@ class NodeControlTool:
 
     def _hold_packages(self):
         ret = subprocess.run(
-            self._compose_cmd(
+            compose_cmd(
                 [
                     'apt-mark',
                     'hold',
-                    self.packages_to_hold]),
+                    self.packages_to_hold
+                ]),
             shell=True,
             check=True,
             universal_newlines=True,
@@ -169,8 +168,10 @@ class NodeControlTool:
         cmd_file = 'upgrade_sovrin_node'
         if self.test_mode:
             cmd_file = 'upgrade_sovrin_node_test'
-        ret = subprocess.run(self._compose_cmd(
-            [cmd_file, deps]), shell=True, timeout=self.timeout)
+        ret = subprocess.run(
+            compose_cmd([cmd_file, deps]),
+            shell=True,
+            timeout=self.timeout)
 
         if ret.returncode != 0:
             msg = 'Upgrade failed: _upgrade script returned {}'.format(
@@ -180,8 +181,10 @@ class NodeControlTool:
 
     def _call_restart_node_script(self):
         logger.info('Restarting sovrin')
-        ret = subprocess.run(self._compose_cmd(
-            ['restart_sovrin_node']), shell=True, timeout=self.timeout)
+        ret = subprocess.run(
+            compose_cmd(['restart_sovrin_node']),
+            shell=True,
+            timeout=self.timeout)
         if ret.returncode != 0:
             msg = 'Restart failed: script returned {}'.format(ret.returncode)
             logger.error(msg)

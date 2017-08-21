@@ -1,4 +1,5 @@
 import datetime
+import os
 import random
 from typing import Tuple, Union, TypeVar, List, Callable
 
@@ -122,3 +123,9 @@ def getIndex(predicateFn: Callable[[T], bool], items: List[T]) -> int:
         return next(i for i, v in enumerate(items) if predicateFn(v))
     except StopIteration:
         return -1
+
+
+def compose_cmd(cmd):
+    if os.name != 'nt':
+        cmd = ' '.join(cmd)
+    return cmd

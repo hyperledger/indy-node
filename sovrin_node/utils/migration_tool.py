@@ -1,17 +1,19 @@
 #!/usr/bin/python3
 
 import importlib
+import os
 import pkgutil
 import platform
+import subprocess
 import time
 from functools import cmp_to_key
 
-import timeout_decorator
 from stp_core.common.log import getlogger
 
+from sovrin_common.util import compose_cmd
 from sovrin_node.server.upgrader import Upgrader
 
-SCRIPT_PREFIX = 'data.migrations'
+SCRIPT_PREFIX = os.path.join('data', 'migrations')
 PLATFORM_PREFIX = {
     'Ubuntu': 'deb'
 }
@@ -19,13 +21,31 @@ PLATFORM_PREFIX = {
 logger = getlogger()
 
 
+def _call_migration_script(migration_script, current_platform, timeout):
+    migration_script_path = \
+        os.path.normpath(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                '..',
+                '..',
+                SCRIPT_PREFIX,
+                PLATFORM_PREFIX[current_platform],
+                migration_script + '.py'))
+    logger.info('script path {}'.format(migration_script_path))
+    ret = subprocess.run(
+        compose_cmd(
+            ['python3 {}'.format(migration_script_path)]
+        ),
+        shell=True,
+        timeout=timeout)
+    if ret.returncode != 0:
+        msg = 'Migration failed: script returned {}'.format(ret.returncode)
+        logger.error(msg)
+        raise Exception(msg)
+
+
 # Returns number of performed migrations
 def migrate(current_version, new_version, timeout):
-    @timeout_decorator.timeout(timeout)
-    def _call_migration_script(migration_script, current_platform):
-        importlib.import_module(
-            '.'.join([SCRIPT_PREFIX, PLATFORM_PREFIX[current_platform], migration_script]))
-
     current_platform = _get_current_platform()
     logger.info('Migrating from {} to {} on {}'.format(
         current_version, new_version, current_platform))
@@ -41,7 +61,7 @@ def migrate(current_version, new_version, timeout):
     for migration in migration_scripts:
         logger.info('Applying migration {}'.format(migration))
         start_time = time.time()
-        _call_migration_script(migration, current_platform)
+        _call_migration_script(migration, current_platform, timeout)
         logger.info('Migration {} applied in {} seconds'.format(
             migration, time.time() - start_time))
     return len(migration_scripts)
@@ -51,8 +71,9 @@ def _get_migration_scripts(current_platform):
     # Data folder is published as a separate 'data' python package
     migrations = importlib.import_module(
         '.'.join([SCRIPT_PREFIX, PLATFORM_PREFIX[current_platform]]))
-    return [name for module_finder, name,
-            ispkg in pkgutil.iter_modules(migrations.__path__)]
+    return [name
+            for module_finder, name, ispkg
+            in pkgutil.iter_modules(migrations.__path__)]
 
 
 def _get_relevant_migrations(migration_scripts, current_version, new_version):
@@ -67,21 +88,15 @@ def _get_relevant_migrations(migration_scripts, current_version, new_version):
             if Upgrader.compareVersions(
                     migration_new_version, migration_original_version) > 0:
                 continue
-            if Upgrader.compareVersions(
-                    migration_original_version,
-                    current_version) <= 0 and Upgrader.compareVersions(
-                    migration_new_version,
-                    new_version) >= 0:
+            if Upgrader.compareVersions(migration_original_version, current_version) <= 0 \
+                    and Upgrader.compareVersions(migration_new_version, new_version) >= 0:
                 relevant_migrations.append(migration)
         else:
             if Upgrader.compareVersions(
                     migration_original_version, migration_new_version) > 0:
                 continue
-            if Upgrader.compareVersions(
-                    migration_original_version,
-                    current_version) >= 0 and Upgrader.compareVersions(
-                    migration_new_version,
-                    new_version) <= 0:
+            if Upgrader.compareVersions(migration_original_version, current_version) >= 0 \
+                    and Upgrader.compareVersions(migration_new_version, new_version) <= 0:
                 relevant_migrations.append(migration)
         relevant_migrations = sorted(
             relevant_migrations, key=cmp_to_key(_compare_migration_scripts))
