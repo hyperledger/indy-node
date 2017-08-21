@@ -4,6 +4,7 @@ import subprocess
 
 from stp_core.common.log import getlogger
 
+from sovrin_common.util import compose_cmd
 from sovrin_node.utils.node_control_tool import NodeControlTool, TIMEOUT
 
 logger = getlogger()
@@ -16,7 +17,7 @@ migration_script_path = \
 
 logger.info('script path {}'.format(migration_script_path))
 ret = subprocess.run(
-    NodeControlTool.compose_cmd(
+    compose_cmd(
         ['python3 {}'.format(migration_script_path)]
     ),
     shell=True,

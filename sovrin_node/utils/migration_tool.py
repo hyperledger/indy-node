@@ -10,8 +10,8 @@ from functools import cmp_to_key
 
 from stp_core.common.log import getlogger
 
+from sovrin_common.util import compose_cmd
 from sovrin_node.server.upgrader import Upgrader
-from sovrin_node.utils.node_control_tool import NodeControlTool
 
 SCRIPT_PREFIX = os.path.join('data', 'migrations')
 PLATFORM_PREFIX = {
@@ -21,33 +21,31 @@ PLATFORM_PREFIX = {
 logger = getlogger()
 
 
+def _call_migration_script(migration_script, current_platform, timeout):
+    migration_script_path = \
+        os.path.normpath(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                '..',
+                '..',
+                SCRIPT_PREFIX,
+                PLATFORM_PREFIX[current_platform],
+                migration_script + '.py'))
+    logger.info('script path {}'.format(migration_script_path))
+    ret = subprocess.run(
+        compose_cmd(
+            ['python3 {}'.format(migration_script_path)]
+        ),
+        shell=True,
+        timeout=timeout)
+    if ret.returncode != 0:
+        msg = 'Migration failed: script returned {}'.format(ret.returncode)
+        logger.error(msg)
+        raise Exception(msg)
+
+
 # Returns number of performed migrations
 def migrate(current_version, new_version, timeout):
-    def _call_migration_script(migration_script, current_platform):
-        migration_script_path = \
-            os.path.normpath(
-                os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)),
-                    '..',
-                    '..',
-                    SCRIPT_PREFIX,
-                    PLATFORM_PREFIX[current_platform],
-                    migration_script + '.py'))
-        logger.info('script path {}'.format(migration_script_path))
-        ret = subprocess.run(
-            NodeControlTool.compose_cmd(
-                ['python3 {}'.format(migration_script_path)]
-            ),
-            shell=True,
-            timeout=timeout)
-        if ret.returncode != 0:
-            msg = 'Migration failed: script returned {}'.format(ret.returncode)
-            logger.error(msg)
-            raise Exception(msg)
-
-        importlib.import_module(
-            '.'.join([SCRIPT_PREFIX, PLATFORM_PREFIX[current_platform], migration_script]))
-
     current_platform = _get_current_platform()
     logger.info('Migrating from {} to {} on {}'.format(
         current_version, new_version, current_platform))
@@ -63,7 +61,7 @@ def migrate(current_version, new_version, timeout):
     for migration in migration_scripts:
         logger.info('Applying migration {}'.format(migration))
         start_time = time.time()
-        _call_migration_script(migration, current_platform)
+        _call_migration_script(migration, current_platform, timeout)
         logger.info('Migration {} applied in {} seconds'.format(
             migration, time.time() - start_time))
     return len(migration_scripts)

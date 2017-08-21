@@ -1,5 +1,4 @@
 import sovrin_node.utils.migration_tool as migration_tool
-import importlib
 import time
 import pytest
 from timeout_decorator import TimeoutError
@@ -28,7 +27,8 @@ def testGetRelevantMigrations():
 def testMigrate(monkeypatch):
     testList = []
 
-    monkeypatch.setattr(importlib, 'import_module', testList.append)
+    monkeypatch.setattr(migration_tool, '_call_migration_script',
+                        lambda *x: testList.append(x[0]))
     monkeypatch.setattr(migration_tool, '_get_migration_scripts',
                         lambda *x: TEST_MIGRATION_SCRIPTS)
 
@@ -38,8 +38,8 @@ def testMigrate(monkeypatch):
 
 
 def testMigrateTimesOut(monkeypatch):
-    monkeypatch.setattr(importlib, 'import_module',
-                        lambda *x: time.sleep(TEST_TIMEOUT * 2))
+    monkeypatch.setattr(migration_tool, '_call_migration_script',
+                        lambda *x: exec('raise(TimeoutError())'))
     monkeypatch.setattr(migration_tool, '_get_migration_scripts',
                         lambda *x: TEST_MIGRATION_SCRIPTS)
 
