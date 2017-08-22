@@ -16,7 +16,8 @@ class TempStorage:
         r = set()
         for f in proc.open_files():
             if os.path.dirname(f.path) == dirPath:
-                logger.debug('Going to close before deleting: {}'.format(f.path))
+                logger.debug(
+                    'Going to close before deleting: {}'.format(f.path))
                 r.add(f.fd)
         return r
 
@@ -35,7 +36,8 @@ class TempStorage:
             # TempStorage.closeFdsUnder(dirPath)
             shutil.rmtree(dirPath)
         except Exception as ex:
-            logger.debug("Error while removing temporary directory {}".format(ex))
+            logger.debug(
+                "Error while removing temporary directory {}".format(ex))
 
     def cleanupDataLocation(self):
         self.cleanupDirectory(self.dataLocation)

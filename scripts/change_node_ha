@@ -58,4 +58,3 @@ if __name__ == '__main__':
         f = getMaxFailures(len(client.nodeReg))
         looper.run(eventually(checkSufficientRepliesRecvd, client.inBox,
                               req.reqId, f, retryWait=1, timeout=8))
-

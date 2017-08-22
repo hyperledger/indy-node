@@ -86,10 +86,12 @@ def testStewardSuspensionByTrustee(looper, anotherTrustee, anotherSteward):
     _, stWallet = anotherSteward
     suspendRole(looper, trClient, trWallet, stWallet.defaultId)
     with pytest.raises(AssertionError):
-        addRole(looper, *anotherSteward, name=randomString(), role=TRUST_ANCHOR)
+        addRole(looper, *anotherSteward,
+                name=randomString(), role=TRUST_ANCHOR)
 
 
-def testTrustAnchorSuspensionByTrustee(looper, anotherTrustee, anotherTrustAnchor):
+def testTrustAnchorSuspensionByTrustee(
+        looper, anotherTrustee, anotherTrustAnchor):
     trClient, trWallet = anotherTrustee
     _, spWallet = anotherTrustAnchor
     suspendRole(looper, trClient, trWallet, spWallet.defaultId)

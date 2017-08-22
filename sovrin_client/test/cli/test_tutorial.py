@@ -15,6 +15,7 @@ from sovrin_client.test.cli.helper import getFileLines, prompt_is, doubleBraces,
     getTotalConnections, getTotalSchemas, getTotalClaimsRcvd, getTotalAvailableClaims, \
     newKey, ensureConnectedToTestEnv
 
+
 def getSampleConnectionInvitation():
     return {
         "connection-request": {
@@ -59,7 +60,7 @@ def checkIfValidEndpointIsAccepted(do, map, attribAdded):
         validEndpoints.append("127.0.0.1:{}".format(validPort))
 
     for validEndpoint in validEndpoints:
-        endpoint = json.dumps({ENDPOINT: {'ha':validEndpoint}})
+        endpoint = json.dumps({ENDPOINT: {'ha': validEndpoint}})
         map["validEndpointAttr"] = endpoint
         do("send ATTRIB dest={remote} raw={validEndpointAttr}",
            within=5,
@@ -176,6 +177,7 @@ def bobCli(preRequisite, be, do, bobCLI, newKeyringOut, bobMap):
     setPromptAndKeyring(do, "Bob", newKeyringOut, bobMap)
     return bobCLI
 
+
 @pytest.fixture(scope="module")
 def faberCli(be, do, faberCLI, newKeyringOut, faberMap):
     be(faberCLI)
@@ -183,6 +185,7 @@ def faberCli(be, do, faberCLI, newKeyringOut, faberMap):
     newKey(be, do, faberCLI, seed=faberMap['seed'])
 
     return faberCLI
+
 
 @pytest.fixture(scope="module")
 def acmeCli(be, do, acmeCLI, newKeyringOut, acmeMap):
@@ -200,6 +203,7 @@ def thriftCli(be, do, thriftCLI, newKeyringOut, thriftMap):
     newKey(be, do, thriftCLI, seed=thriftMap['seed'])
 
     return thriftCLI
+
 
 def testNotConnected(be, do, aliceCli, notConnectedStatus):
     be(aliceCli)
@@ -249,7 +253,8 @@ def testLoadFaberInvite(faberInviteLoadedByAlice):
     pass
 
 
-def testShowConnectionNotExists(be, do, aliceCli, connectionNotExists, faberMap):
+def testShowConnectionNotExists(
+        be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
     do('show connection {inviter-not-exists}',
        expect=connectionNotExists,
@@ -262,12 +267,15 @@ def testShowFaberConnection(be, do, aliceCli, faberInviteLoadedByAlice,
     cp = faberMap.copy()
     cp.update(endpoint='<unknown, waiting for sync>',
               last_synced='<this connection has not yet been synchronized>')
-    do('show connection {inviter}', expect=showUnSyncedConnectionOut, mapper=cp)
+    do('show connection {inviter}',
+       expect=showUnSyncedConnectionOut, mapper=cp)
 
 
-def testSyncConnectionNotExists(be, do, aliceCli, connectionNotExists, faberMap):
+def testSyncConnectionNotExists(
+        be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
-    do('sync {inviter-not-exists}', expect=connectionNotExists, mapper=faberMap)
+    do('sync {inviter-not-exists}',
+       expect=connectionNotExists, mapper=faberMap)
 
 
 def testSyncFaberWhenNotConnected(be, do, aliceCli, faberMap,
@@ -278,10 +286,13 @@ def testSyncFaberWhenNotConnected(be, do, aliceCli, faberMap,
        mapper=faberMap)
 
 
-def testAcceptUnSyncedFaberInviteWhenNotConnected(be, do, aliceCli,
-                                                  faberInviteLoadedByAlice,
-                                                  acceptUnSyncedWhenNotConnected,
-                                                  faberMap):
+def testAcceptUnSyncedFaberInviteWhenNotConnected(
+        be,
+        do,
+        aliceCli,
+        faberInviteLoadedByAlice,
+        acceptUnSyncedWhenNotConnected,
+        faberMap):
     be(aliceCli)
     do('accept request from {inviter}',
        expect=acceptUnSyncedWhenNotConnected,
@@ -325,9 +336,14 @@ def testSyncFaberInviteWithoutEndpoint(faberInviteSyncedWithoutEndpoint):
     pass
 
 
-def testShowSyncedFaberInvite(be, do, aliceCli, faberMap, connectionNotYetSynced,
-                              faberInviteSyncedWithoutEndpoint,
-                              showSyncedConnectionWithoutEndpointOut):
+def testShowSyncedFaberInvite(
+        be,
+        do,
+        aliceCli,
+        faberMap,
+        connectionNotYetSynced,
+        faberInviteSyncedWithoutEndpoint,
+        showSyncedConnectionWithoutEndpointOut):
 
     be(aliceCli)
 
@@ -370,7 +386,8 @@ def testShowSyncedFaberInviteWithEndpoint(be, do, aliceCLI, faberMap,
     be(aliceCLI)
     cp = faberMap.copy()
     cp.update(last_synced='just now')
-    do('show connection {inviter}', expect=showSyncedConnectionWithEndpointOut, mapper=cp, within=3)
+    do('show connection {inviter}',
+       expect=showSyncedConnectionWithEndpointOut, mapper=cp, within=3)
 
 
 def testPingBeforeAccept(be, do, aliceCli, faberMap, connectedToTest,
@@ -386,7 +403,8 @@ def testPingBeforeAccept(be, do, aliceCli, faberMap, connectedToTest,
        mapper=faberMap)
 
 
-def testAcceptNotExistsConnection(be, do, aliceCli, connectionNotExists, faberMap):
+def testAcceptNotExistsConnection(
+        be, do, aliceCli, connectionNotExists, faberMap):
     be(aliceCli)
     do('accept request from {inviter-not-exists}',
        expect=connectionNotExists, mapper=faberMap)
@@ -421,7 +439,7 @@ def alice_accepted_faber_request(be, do, aliceCli, faberMap,
                                  faberInviteSyncedWithEndpoint):
     accept_request(be, do, aliceCli, faberMap,
                    syncedInviteAcceptedWithClaimsOut)
-    do("list connections", within = 10,
+    do("list connections", within=10,
        mapper=faberMap,
        expect="Faber College")
     return aliceCli
@@ -442,9 +460,13 @@ def testPingFaber(be, do, aliceCli, faberMap,
        mapper=faberMap)
 
 
-def test_alice_accept_faber_request_again(be, do, aliceCli, faberMap,
-                                          unsyced_already_accepted_request_accepted_out,
-                                          alice_accepted_faber_request):
+def test_alice_accept_faber_request_again(
+        be,
+        do,
+        aliceCli,
+        faberMap,
+        unsyced_already_accepted_request_accepted_out,
+        alice_accepted_faber_request):
     li = aliceCli.activeWallet.getConnectionBy(remote=faberMap['remote'])
     li.connection_status = None
     be(aliceCli)
@@ -467,7 +489,7 @@ def testShowFaberConnectionAfterInviteAccept(be, do, aliceCli, faberMap,
 
 
 def testShowClaimNotExists(be, do, aliceCli, faberMap, showClaimNotFoundOut,
-                                    alice_accepted_faber_request):
+                           alice_accepted_faber_request):
     be(aliceCli)
 
     do("show claim claim-to-show-not-exists",
@@ -499,7 +521,7 @@ def testReqClaimNotExists(be, do, aliceCli, faberMap, showClaimNotFoundOut,
 
 @pytest.fixture(scope="module")
 def aliceRequestedTranscriptClaim(be, do, aliceCli, transcriptClaimMap,
-                                       reqClaimOut, preRequisite,
+                                  reqClaimOut, preRequisite,
                                   alice_accepted_faber_request):
     be(aliceCli)
     totalClaimsRcvdBefore = getTotalClaimsRcvd(aliceCli)
@@ -545,7 +567,8 @@ def acmeInviteLoadedByAlice(be, do, aliceCli, loadInviteOut, acmeMap):
     totalConnectionsBefore = getTotalConnections(aliceCli)
     be(aliceCli)
     do('load {invite}', expect=loadInviteOut, mapper=acmeMap)
-    connection = aliceCli.activeWallet.getConnectionInvitation(acmeMap.get("inviter"))
+    connection = aliceCli.activeWallet.getConnectionInvitation(
+        acmeMap.get("inviter"))
     connection.remoteEndPoint = acmeMap.get(ENDPOINT)
     assert totalConnectionsBefore + 1 == getTotalConnections(aliceCli)
     return aliceCli
@@ -555,15 +578,22 @@ def testLoadAcmeInvite(acmeInviteLoadedByAlice):
     pass
 
 
-def testShowAcmeConnection(be, do, aliceCli, acmeInviteLoadedByAlice,
-                           showUnSyncedConnectionOut, showConnectionWithProofRequestsOut, acmeMap):
+def testShowAcmeConnection(
+        be,
+        do,
+        aliceCli,
+        acmeInviteLoadedByAlice,
+        showUnSyncedConnectionOut,
+        showConnectionWithProofRequestsOut,
+        acmeMap):
     showUnSyncedConnectionWithClaimReqs = \
         showUnSyncedConnectionOut + showConnectionWithProofRequestsOut
     be(aliceCli)
 
     cp = acmeMap.copy()
     cp.update(last_synced='<this connection has not yet been synchronized>')
-    do('show connection {inviter}', expect=showUnSyncedConnectionWithClaimReqs, mapper=cp)
+    do('show connection {inviter}',
+       expect=showUnSyncedConnectionWithClaimReqs, mapper=cp)
 
 
 @pytest.fixture(scope="module")
@@ -591,12 +621,17 @@ def testSetAttrWithoutContext(be, do, aliceCli):
         "set the context"])
 
 
-def testShowAcmeConnectionAfterInviteAccept(be, do, aliceCli, acmeMap,
-                                            aliceAcceptedAcmeJobInvitation,
-                                            showAcceptedConnectionWithoutAvailableClaimsOut):
+def testShowAcmeConnectionAfterInviteAccept(
+        be,
+        do,
+        aliceCli,
+        acmeMap,
+        aliceAcceptedAcmeJobInvitation,
+        showAcceptedConnectionWithoutAvailableClaimsOut):
     be(aliceCli)
 
-    do("show connection {inviter}", expect=showAcceptedConnectionWithoutAvailableClaimsOut,
+    do("show connection {inviter}",
+       expect=showAcceptedConnectionWithoutAvailableClaimsOut,
        not_expect="Connection (not yet accepted)",
        mapper=acmeMap)
 
@@ -783,16 +818,21 @@ def testAliceSendClaimProofToAcme(jobApplicationProofSent):
 # test works correctly all the time and also we start supporting
 # building and sending proofs from more than one claim
 
-def testShowAcmeConnectionAfterClaimSent(be, do, aliceCli, acmeMap,
-                                         jobApplicationProofSent,
-                                         showAcceptedConnectionWithAvailableClaimsOut):
+def testShowAcmeConnectionAfterClaimSent(
+        be,
+        do,
+        aliceCli,
+        acmeMap,
+        jobApplicationProofSent,
+        showAcceptedConnectionWithAvailableClaimsOut):
     be(aliceCli)
     mapping = {}
     mapping.update(acmeMap)
     mapping["claims"] = "Job-Certificate"
 
     acmeMap.update(acmeMap)
-    do("show connection {inviter}", expect=showAcceptedConnectionWithAvailableClaimsOut,
+    do("show connection {inviter}",
+       expect=showAcceptedConnectionWithAvailableClaimsOut,
        mapper=mapping)
 
 
@@ -810,8 +850,8 @@ def testShowJobCertClaim(be, do, aliceCli, jobCertificateClaimMap,
 
 @pytest.fixture(scope="module")
 def jobCertClaimRequested(be, do, aliceCli, preRequisite,
-                        jobCertificateClaimMap, reqClaimOut1,
-                        jobApplicationProofSent):
+                          jobCertificateClaimMap, reqClaimOut1,
+                          jobApplicationProofSent):
 
     def removeSchema():
         inviter = jobCertificateClaimMap["inviter"]
@@ -819,7 +859,7 @@ def jobCertClaimRequested(be, do, aliceCli, preRequisite,
         assert len(connections) == 1
         faberId = connections[0].remoteIdentifier
         name, version = jobCertificateClaimMap["name"], \
-                        jobCertificateClaimMap["version"]
+            jobCertificateClaimMap["version"]
         aliceCli.activeWallet._schemas.pop((name, version, faberId))
 
     # Removing schema to check if it fetches the schema again or not
@@ -1009,8 +1049,8 @@ def testBobReqAvailClaimsFromAgents(
     # When new user/cli requests available claims from Faber,
     # Transcript claim should be send as available claims
     bob_faber_map = dict(faberMap)
-    bob_faber_map.update({'invite':'sample/faber-bob-connection-request.sovrin',
-                         'nonce': '710b78be79f29fc81335abaa4ee1c5e8'})
+    bob_faber_map.update({'invite': 'sample/faber-bob-connection-request.sovrin',
+                          'nonce': '710b78be79f29fc81335abaa4ee1c5e8'})
     assertReqAvailClaims(be, do, userCli, bob_faber_map, connectedToTest,
                          loadInviteOut, syncedInviteAcceptedWithClaimsOut)
 
@@ -1020,7 +1060,7 @@ def testBobReqAvailClaimsFromAgents(
     # proof request and it is verified.
     bob_acme_map = dict(acmeMap)
     bob_acme_map.update({"claims": "No available claims found",
-                         'invite':'sample/acme-bob-connection-request.sovrin',
+                         'invite': 'sample/acme-bob-connection-request.sovrin',
                          'nonce': '810b78be79f29fc81335abaa4ee1c5e8'})
     assertReqAvailClaims(be, do, userCli, bob_acme_map, connectedToTest,
                          loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)
@@ -1029,7 +1069,7 @@ def testBobReqAvailClaimsFromAgents(
     # No claims should be sent as available claims.
     bob_thrift_map = dict(thriftMap)
     bob_thrift_map.update({"claims": "No available claims found",
-                         'invite':'sample/thrift-bob-connection-request.sovrin',
-                         'nonce': 'ousezru20ic4yz3j074trcgthwlsnfsef'})
+                           'invite': 'sample/thrift-bob-connection-request.sovrin',
+                           'nonce': 'ousezru20ic4yz3j074trcgthwlsnfsef'})
     assertReqAvailClaims(be, do, userCli, bob_thrift_map, connectedToTest,
-                          loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)
+                         loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)

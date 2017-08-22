@@ -1,4 +1,5 @@
 import datetime
+import os
 import random
 from typing import Tuple, Union, TypeVar, List, Callable
 
@@ -77,8 +78,14 @@ def getNonce(length=32):
 
 
 # TODO: Should have a timeout, should not have kwargs
-def ensureReqCompleted(loop, reqKey, client, clbk=None, pargs=None, kwargs=None,
-                       cond=None):
+def ensureReqCompleted(
+        loop,
+        reqKey,
+        client,
+        clbk=None,
+        pargs=None,
+        kwargs=None,
+        cond=None):
     reply, err = client.replyIfConsensus(*reqKey)
     if err is None and reply is None and (cond is None or not cond()):
         loop.call_later(.2, ensureReqCompleted, loop,
@@ -116,3 +123,9 @@ def getIndex(predicateFn: Callable[[T], bool], items: List[T]) -> int:
         return next(i for i, v in enumerate(items) if predicateFn(v))
     except StopIteration:
         return -1
+
+
+def compose_cmd(cmd):
+    if os.name != 'nt':
+        cmd = ' '.join(cmd)
+    return cmd

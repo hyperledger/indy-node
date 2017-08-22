@@ -13,7 +13,7 @@ def ensurePoolIsOperable(be, do, cli):
     addAgent(be, do, cli, randomNymMapper)
 
 
-#this test messes with other tests so it goes in its own module
+# this test messes with other tests so it goes in its own module
 def test_steward_can_promote_and_demote_own_node(
         be, do, poolNodesStarted, newStewardCli, trusteeCli, newNodeVals):
 
