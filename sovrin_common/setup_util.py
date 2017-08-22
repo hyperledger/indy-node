@@ -49,7 +49,8 @@ class Setup:
             sourceFilePath = os.path.join(dataDir, fileName)
             if not os.path.exists(sourceFilePath):
                 continue
-            destFilePath = os.path.join(self.base_dir, genesis_txn_file(fileName))
+            destFilePath = os.path.join(
+                self.base_dir, genesis_txn_file(fileName))
             if os.path.exists(destFilePath) and not force:
                 continue
             copyfile(sourceFilePath, destFilePath)

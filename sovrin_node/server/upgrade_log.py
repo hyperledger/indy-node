@@ -1,6 +1,6 @@
 import csv
 from datetime import datetime
-from dateutil.parser import parse as parseDate
+from dateutil.parser import parse as parse_date
 from os import path
 
 
@@ -27,9 +27,9 @@ class UpgradeLog:
             with open(self.__filePath, mode="r", newline="") as file:
                 reader = csv.reader(file, delimiter=self.__delimiter)
                 for item in reader:
-                    record_date = parseDate(item[0])
+                    record_date = parse_date(item[0])
                     event = item[1]
-                    when = parseDate(item[2])
+                    when = parse_date(item[2])
                     version = item[3]
                     upgrade_id = None  # default parameter required for backward compatibility
                     if len(item) > 4:

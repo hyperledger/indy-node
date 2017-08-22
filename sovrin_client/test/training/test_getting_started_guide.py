@@ -97,7 +97,8 @@ def getting_started(base_dir=None):
 
     print(link_to_acme)
 
-    job_application_request = link_to_acme.find_proof_request(name='Job-Application')
+    job_application_request = link_to_acme.find_proof_request(
+        name='Job-Application')
 
     print(job_application_request)
 
@@ -147,7 +148,8 @@ def getting_started(base_dir=None):
     #  Proof to Thrift
     ####################################
 
-    load_basic_request = link_to_thrift.find_proof_request(name='Loan-Application-Basic')
+    load_basic_request = link_to_thrift.find_proof_request(
+        name='Loan-Application-Basic')
 
     print(load_basic_request)
 
@@ -157,13 +159,15 @@ def getting_started(base_dir=None):
 
     #######
 
-    load_kyc_request = link_to_thrift.find_proof_request(name='Loan-Application-KYC')
+    load_kyc_request = link_to_thrift.find_proof_request(
+        name='Loan-Application-KYC')
 
     print(load_kyc_request)
 
     alice_agent.sendProof(link_to_thrift, load_kyc_request)
 
     demo_wait_for_proof(pool, load_kyc_request)
+
 
 if __name__ == "__main__":
     getting_started()

@@ -2,7 +2,6 @@ import json
 import os
 import re
 import tempfile
-from copy import copy
 from typing import List
 
 import pytest
@@ -89,15 +88,21 @@ def newKeyPairCreated(cli):
 
 
 @pytest.fixture(scope="module")
-def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf, cliTempLogger):
-    return getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
-                         logFileName=cliTempLogger)
+def CliBuilder(tdir, tdirWithPoolTxns,
+               tdirWithDomainTxnsUpdated, tconf, cliTempLogger):
+    return getCliBuilder(
+        tdir,
+        tconf,
+        tdirWithPoolTxns,
+        tdirWithDomainTxnsUpdated,
+        logFileName=cliTempLogger)
 
 
 def getDefaultUserMap(name):
     return {
         'wallet-name': name,
     }
+
 
 @pytest.fixture(scope="module")
 def aliceMap():
@@ -136,8 +141,7 @@ def faberMap(agentIpAddress, faberAgentPort):
             "claims": "Transcript",
             "claim-to-show": "Transcript",
             "proof-req-to-match": "Transcript",
-            'wallet-name': 'Faber'
-            }
+            'wallet-name': 'Faber'}
 
 
 @pytest.fixture(scope="module")
@@ -166,8 +170,7 @@ def acmeMap(agentIpAddress, acmeAgentPort):
             'send-proof-target': 'Alice',
             'pr-name': 'Job-Application',
             'pr-schema-version': '0.2',
-            'wallet-name': 'Acme'
-            }
+            'wallet-name': 'Acme'}
 
 
 @pytest.fixture(scope="module")
@@ -189,8 +192,7 @@ def thriftMap(agentIpAddress, thriftAgentPort):
             "rcvd-claim-job-certificate-version": "0.2",
             "rcvd-claim-job-certificate-provider": "Acme Corp",
             "claim-ver-req-to-show": "0.1",
-            'wallet-name': 'Thrift'
-            }
+            'wallet-name': 'Thrift'}
 
 
 @pytest.fixture(scope="module")
@@ -198,8 +200,8 @@ def loadInviteOut(nextCommandsToTryUsageLine):
     return ["1 connection request found for {inviter}.",
             "Creating connection for {inviter}.",
             ''] + \
-           nextCommandsToTryUsageLine + \
-           ['    show connection "{inviter}"',
+        nextCommandsToTryUsageLine + \
+        ['    show connection "{inviter}"',
             '    accept request from "{inviter}"',
             '',
             '']
@@ -239,7 +241,7 @@ def acceptWhenNotConnected(canNotAcceptMsg, connectUsage):
 def acceptUnSyncedWithoutEndpointWhenConnected(
         common_accept_request_msgs, syncedInviteAcceptedOutWithoutClaims):
     return common_accept_request_msgs + \
-           syncedInviteAcceptedOutWithoutClaims
+        syncedInviteAcceptedOutWithoutClaims
 
 
 @pytest.fixture(scope="module")
@@ -253,8 +255,8 @@ def common_accept_requests_msgs():
 def acceptUnSyncedWhenNotConnected(common_accept_requests_msgs,
                                    canNotSyncMsg, connectUsage):
     return common_accept_requests_msgs + \
-           ["Request acceptance aborted."] + \
-           canNotSyncMsg + connectUsage
+        ["Request acceptance aborted."] + \
+        canNotSyncMsg + connectUsage
 
 
 @pytest.fixture(scope="module")
@@ -275,8 +277,8 @@ def connectUsage(usageLine):
 @pytest.fixture(scope="module")
 def notConnectedStatus(connectUsage):
     return ['Not connected to Sovrin network. Please connect first.', ''] +\
-            connectUsage +\
-            ['', '']
+        connectUsage +\
+        ['', '']
 
 
 @pytest.fixture(scope="module")
@@ -344,7 +346,7 @@ def unsycedAcceptedInviteWithoutClaimOut(syncedInviteAcceptedOutWithoutClaims):
         "Attempting to sync...",
         "Synchronizing...",
     ] + syncedInviteAcceptedOutWithoutClaims + \
-           ["Confirmed DID written to Sovrin."]
+        ["Confirmed DID written to Sovrin."]
 
 
 @pytest.fixture(scope="module")
@@ -383,6 +385,7 @@ def showJobCertificateClaimInProofOut():
         "  experience: {attr-experience}",
         "  salary_bracket: {attr-salary_bracket}"
     ]
+
 
 @pytest.fixture(scope="module")
 def proofConstructedMsg():
@@ -517,9 +520,10 @@ def syncConnectionOutWithoutEndpoint(syncConnectionOutStartsWith):
 
 
 @pytest.fixture(scope="module")
-def showSyncedConnectionWithEndpointOut(acceptedConnectionHeading, showConnectionOut):
+def showSyncedConnectionWithEndpointOut(
+        acceptedConnectionHeading, showConnectionOut):
     return acceptedConnectionHeading + showConnectionOut + \
-           ["Last synced: "]
+        ["Last synced: "]
 
 
 @pytest.fixture(scope="module")
@@ -573,6 +577,7 @@ def transcriptClaimValueMap(transcriptClaimAttrValueMap):
     }
     basic.update(transcriptClaimAttrValueMap)
     return basic
+
 
 @pytest.fixture(scope="module")
 def bankingRelationshipClaimAttrValueMap():
@@ -671,7 +676,7 @@ def rcvdTranscriptClaimOut():
             "degree: {attr-degree}",
             "year: {attr-year}",
             "status: {attr-status}"
-    ]
+            ]
 
 
 @pytest.fixture(scope="module")
@@ -706,7 +711,7 @@ def rcvdJobCertClaimOut():
             "employee_status: {attr-employee_status}",
             "experience: {attr-experience}",
             "salary_bracket: {attr-salary_bracket}"
-    ]
+            ]
 
 
 @pytest.fixture(scope="module")
@@ -722,7 +727,7 @@ def showTranscriptClaimOut(nextCommandsToTryUsageLine):
             "year",
             "status"
             ] + nextCommandsToTryUsageLine + \
-           ['request claim "{name}"']
+        ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -738,7 +743,7 @@ def showJobCertClaimOut(nextCommandsToTryUsageLine):
             "experience",
             "salary_bracket"
             ] + nextCommandsToTryUsageLine + \
-           ['request claim "{name}"']
+        ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -760,7 +765,7 @@ def showBankingRelationshipClaimOut(nextCommandsToTryUsageLine):
             "year_opened",
             "account_status"
             ] + nextCommandsToTryUsageLine + \
-           ['request claim "{name}"']
+        ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -774,66 +779,69 @@ def showConnectionWithAvailableClaimsOut():
 
 
 @pytest.fixture(scope="module")
-def showAcceptedConnectionWithClaimReqsOut(showAcceptedConnectionOut,
-                                           showConnectionWithProofRequestsOut,
-                                           showConnectionWithAvailableClaimsOut,
-                                           showConnectionSuggestion):
+def showAcceptedConnectionWithClaimReqsOut(
+        showAcceptedConnectionOut,
+        showConnectionWithProofRequestsOut,
+        showConnectionWithAvailableClaimsOut,
+        showConnectionSuggestion):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
-           showConnectionWithAvailableClaimsOut + \
-           showConnectionSuggestion
+        showConnectionWithAvailableClaimsOut + \
+        showConnectionSuggestion
 
 
 @pytest.fixture(scope="module")
-def showAcceptedConnectionWithoutAvailableClaimsOut(showAcceptedConnectionOut,
-                                                    showConnectionWithProofRequestsOut):
+def showAcceptedConnectionWithoutAvailableClaimsOut(
+        showAcceptedConnectionOut,
+        showConnectionWithProofRequestsOut):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut
 
 
 @pytest.fixture(scope="module")
-def showAcceptedConnectionWithAvailableClaimsOut(showAcceptedConnectionOut,
-                                                 showConnectionWithProofRequestsOut,
-                                                 showConnectionWithAvailableClaimsOut):
+def showAcceptedConnectionWithAvailableClaimsOut(
+        showAcceptedConnectionOut,
+        showConnectionWithProofRequestsOut,
+        showConnectionWithAvailableClaimsOut):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
-           showConnectionWithAvailableClaimsOut
+        showConnectionWithAvailableClaimsOut
 
 
 @pytest.fixture(scope="module")
 def showConnectionSuggestion(nextCommandsToTryUsageLine):
     return nextCommandsToTryUsageLine + \
-    ['show claim "{claims}"',
-     'request claim "{claims}"']
+        ['show claim "{claims}"',
+         'request claim "{claims}"']
 
 
 @pytest.fixture(scope="module")
 def showAcceptedConnectionOut():
     return [
-            "Connection",
-            "Name: {inviter}",
-            "DID: {DID}",
-            "Verification key: {verkey}",
-            "Remote: {remote}",
-            "Remote Verification key: {remote-verkey}",
-            "Trust anchor: {inviter} (confirmed)",
-            "Request nonce: {nonce}",
-            "Request status: Accepted"]
+        "Connection",
+        "Name: {inviter}",
+        "DID: {DID}",
+        "Verification key: {verkey}",
+        "Remote: {remote}",
+        "Remote Verification key: {remote-verkey}",
+        "Trust anchor: {inviter} (confirmed)",
+        "Request nonce: {nonce}",
+        "Request status: Accepted"]
 
 
 @pytest.fixture(scope="module")
 def showConnectionOut(nextCommandsToTryUsageLine, connectionNotYetSynced):
     return [
-            "    Name: {inviter}",
-            "    DID: not yet assigned",
-            "    Trust anchor: {inviter} (not yet written to Sovrin)",
-            "    Verification key: <empty>",
-            "    Signing key: <hidden>",
-            "    Remote: {remote}",
-            "    Remote endpoint: {endpoint}",
-            "    Request nonce: {nonce}",
-            "    Request status: not verified, remote verkey unknown",
-            "    Last synced: {last_synced}"] + \
-           [""] + \
-           nextCommandsToTryUsageLine + \
-           ['    sync "{inviter}"',
+        "    Name: {inviter}",
+        "    DID: not yet assigned",
+        "    Trust anchor: {inviter} (not yet written to Sovrin)",
+        "    Verification key: <empty>",
+        "    Signing key: <hidden>",
+        "    Remote: {remote}",
+        "    Remote endpoint: {endpoint}",
+        "    Request nonce: {nonce}",
+        "    Request status: not verified, remote verkey unknown",
+        "    Last synced: {last_synced}"] + \
+        [""] + \
+        nextCommandsToTryUsageLine + \
+        ['    sync "{inviter}"',
             '    accept request from "{inviter}"',
             '',
             '']
@@ -842,19 +850,19 @@ def showConnectionOut(nextCommandsToTryUsageLine, connectionNotYetSynced):
 @pytest.fixture(scope="module")
 def showAcceptedSyncedConnectionOut(nextCommandsToTryUsageLine):
     return [
-            "Connection",
-            "Name: {inviter}",
-            "Trust anchor: {inviter} (confirmed)",
-            "Verification key: ~",
-            "Signing key: <hidden>",
-            "Remote: {remote}",
-            "Remote Verification key: <same as Remote>",
-            "Request nonce: {nonce}",
-            "Request status: Accepted",
-            "Proof Request(s): {proof-requests}",
-            "Available Claim(s): {claims}"] + \
-           nextCommandsToTryUsageLine + \
-           ['show claim "{claim-to-show}"',
+        "Connection",
+        "Name: {inviter}",
+        "Trust anchor: {inviter} (confirmed)",
+        "Verification key: ~",
+        "Signing key: <hidden>",
+        "Remote: {remote}",
+        "Remote Verification key: <same as Remote>",
+        "Request nonce: {nonce}",
+        "Request status: Accepted",
+        "Proof Request(s): {proof-requests}",
+        "Available Claim(s): {claims}"] + \
+        nextCommandsToTryUsageLine + \
+        ['show claim "{claim-to-show}"',
             'send proof "{proof-requests}"']
 
 
@@ -866,6 +874,7 @@ def poolCLI_baby(CliBuilder):
 @pytest.yield_fixture(scope="module")
 def aliceCLI(CliBuilder):
     yield from CliBuilder("alice")
+
 
 @pytest.yield_fixture(scope="module")
 def devinCLI(CliBuilder):
@@ -901,18 +910,18 @@ def faberCLI(CliBuilder):
 def acmeCLI(CliBuilder):
     yield from CliBuilder("acme")
 
+
 @pytest.yield_fixture(scope="module")
 def thriftCLI(CliBuilder):
     yield from CliBuilder("thrift")
-
 
 
 @pytest.fixture(scope="module")
 def poolCLI(poolCLI_baby, poolTxnData, poolTxnNodeNames, conf):
     seeds = poolTxnData["seeds"]
     for nName in poolTxnNodeNames:
-       initNodeKeysForBothStacks(nName, poolCLI_baby.basedirpath,
-                                      seeds[nName], override=True)
+        initNodeKeysForBothStacks(nName, poolCLI_baby.basedirpath,
+                                  seeds[nName], override=True)
     return poolCLI_baby
 
 
@@ -942,7 +951,7 @@ def multiPoolNodesCreated(request, tconf, looper, tdir,
     oldPoolTxnFile = tconf.poolTransactionsFile
     oldDomainTxnFile = tconf.domainTransactionsFile
 
-    multiNodes=[]
+    multiNodes = []
     for poolName in namesOfPools:
         newPoolTxnNodeNames = [poolName + n for n
                                in ("Alpha", "Beta", "Gamma", "Delta")]
@@ -1060,7 +1069,8 @@ def inc_bookmark(get_bookmark, set_bookmark):
 @pytest.fixture(scope="module")
 def expect(current_cli, get_bookmark, inc_bookmark):
 
-    def _expect(expected, mapper=None, line_no=None, within=None, ignore_extra_lines=None):
+    def _expect(expected, mapper=None, line_no=None,
+                within=None, ignore_extra_lines=None):
         cur_cli = current_cli()
 
         def _():
@@ -1077,7 +1087,7 @@ def expect(current_cli, get_bookmark, inc_bookmark):
                 assert isinstance(e, str)
                 a = actual[i]
                 assert isinstance(a, str)
-                is_p = type(e) == P
+                is_p = isinstance(e, P)
                 if (not is_p and a != e) or (is_p and not e.match(a)):
                     if ignore_extra_lines:
                         continue
@@ -1089,7 +1099,7 @@ def expect(current_cli, get_bookmark, inc_bookmark):
             if len(expected_) > len(actual):
                 for e in expected_:
                     try:
-                        p = re.compile(e) if type(e) == P else None
+                        p = re.compile(e) if isinstance(e, P) else None
                     except Exception as err:
                         explanation += "ERROR COMPILING REGEX for {}: {}\n".\
                             format(e, err)
@@ -1102,7 +1112,7 @@ def expect(current_cli, get_bookmark, inc_bookmark):
             if len(expected_) < len(actual) and ignore_extra_lines is None:
                 for a in actual:
                     for e in expected_:
-                        p = re.compile(e) if type(e) == P else None
+                        p = re.compile(e) if isinstance(e, P) else None
                         if (p and p.fullmatch(a)) or a == e:
                             break
                     else:
@@ -1116,7 +1126,8 @@ def expect(current_cli, get_bookmark, inc_bookmark):
                 for x in actual:
                     explanation += "  > {}\n".format(x)
                 if line_no:
-                    explanation += "section ends line number: {}\n".format(line_no)
+                    explanation += "section ends line number: {}\n".format(
+                        line_no)
                 pytest.fail(''.join(explanation))
             else:
                 inc_bookmark(len(actual))
@@ -1135,11 +1146,11 @@ def steward(poolNodesCreated, looper, tdir, stewardWallet):
 
 @pytest.fixture(scope="module")
 def faberAdded(poolNodesCreated,
-             looper,
-             aliceCLI,
-             faberInviteLoaded,
-             aliceConnected,
-            steward, stewardWallet):
+               looper,
+               aliceCLI,
+               faberInviteLoaded,
+               aliceConnected,
+               steward, stewardWallet):
     li = get_connection_request("Faber", aliceCLI.activeWallet)
     createNym(looper, li.remoteIdentifier, steward, stewardWallet,
               role=TRUST_ANCHOR)
@@ -1156,16 +1167,16 @@ def faberIsRunningWithoutNymAdded(emptyLooper, tdirWithPoolTxns, faberWallet,
 @pytest.fixture(scope="module")
 def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
                    faberAddedByPhil, faberAgent, faberBootstrap):
-    faber, faberWallet = runningFaber(emptyLooper, tdirWithPoolTxns,
-                                      faberWallet, faberAgent, faberAddedByPhil, faberBootstrap)
+    faber, faberWallet = runningFaber(
+        emptyLooper, tdirWithPoolTxns, faberWallet, faberAgent, faberAddedByPhil, faberBootstrap)
     return faber, faberWallet
 
 
 @pytest.fixture(scope="module")
 def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet,
-                   acmeAddedByPhil, acmeAgent, acmeBootstrap):
-    acme, acmeWallet = runningAcme(emptyLooper, tdirWithPoolTxns,
-                                   acmeWallet, acmeAgent, acmeAddedByPhil, acmeBootstrap)
+                  acmeAddedByPhil, acmeAgent, acmeBootstrap):
+    acme, acmeWallet = runningAcme(
+        emptyLooper, tdirWithPoolTxns, acmeWallet, acmeAgent, acmeAddedByPhil, acmeBootstrap)
 
     return acme, acmeWallet
 
@@ -1178,7 +1189,6 @@ def thriftIsRunning(emptyLooper, tdirWithPoolTxns, thriftWallet,
                                          thriftAddedByPhil)
 
     return thrift, thriftWallet
-
 
 
 @pytest.fixture(scope='module')
@@ -1278,7 +1288,7 @@ def trusteeCli(be, do, trusteeMap, poolNodesStarted,
 def poolNodesStarted(be, do, poolCLI):
     be(poolCLI)
 
-    connectedExpect=[
+    connectedExpect = [
         'Alpha now connected to Beta',
         'Alpha now connected to Gamma',
         'Alpha now connected to Delta',
@@ -1316,7 +1326,7 @@ def philCli(be, do, philCLI, trusteeCli, poolTxnData):
     do('prompt Phil', expect=prompt_is('Phil'))
 
     do('new wallet Phil', expect=['New wallet Phil created',
-                                   'Active wallet set to "Phil"'])
+                                  'Active wallet set to "Phil"'])
     phil_seed = poolTxnData['seeds']['Steward1']
     phil_signer = DidSigner(seed=phil_seed.encode())
 
@@ -1454,10 +1464,12 @@ def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
                                   philCli.activeClient,
                                   timeout=timeout))
 
-    poolNodesStarted.looper.run(eventually(checkNodeConnected,
-                                           list(
-                                               poolNodesStarted.nodes.values()),
-                                           timeout=timeout))
+    poolNodesStarted.looper.run(
+        eventually(
+            checkNodeConnected,
+            list(
+                poolNodesStarted.nodes.values()),
+            timeout=timeout))
     return newNodeVals
 
 

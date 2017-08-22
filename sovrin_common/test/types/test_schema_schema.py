@@ -20,6 +20,7 @@ def test_has_expected_validators_s():
     for field, validator in EXPECTED_ORDERED_FIELDS_SCHEMA.items():
         assert isinstance(schema[field], validator)
 
+
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
     ("data", SchemaField),

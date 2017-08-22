@@ -36,6 +36,7 @@ def main():
     edir = getDirInPath('evernym')
     print('evernym directory: {}'.format(edir))
 
+
 if __name__ == '__main__':
     main()
 
