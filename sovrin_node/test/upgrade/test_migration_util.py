@@ -119,3 +119,22 @@ def test_relevant_migration_script_multiple_scripts():
                                          ['1_0_96_to_1_0_97',
                                           '1_0_97_to_1_0_102',
                                           '1_0_102_to_1_0_104'])
+
+
+def test_relevant_migration_reinstall():
+    comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
+                                         '1.0.96',
+                                         '1.0.96',
+                                         [])
+    comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
+                                         '1.0.97',
+                                         '1.0.97',
+                                         [])
+    comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
+                                         '1.0.100',
+                                         '1.0.100',
+                                         [])
+    comparator_relevant_migration_script(['1_0_96_to_1_0_97'],
+                                         '1.0.95',
+                                         '1.0.95',
+                                         [])
