@@ -6,8 +6,10 @@ from collections import deque
 from typing import List
 from typing import Optional
 
+from jsonpickle import tags
+
 from ledger.util import F
-from plenum.client.wallet import Wallet as PWallet
+from plenum.client.wallet import Wallet as PWallet, getClassVersionKey
 from plenum.common.did_method import DidMethods
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
@@ -38,7 +40,81 @@ logger = getlogger()
 # TODO: Maybe we should have a thinner wallet which should not have
 # ProverWallet
 class Wallet(PWallet, TrustAnchoring):
+
+    # Increment the class version each time when the structure
+    # of this class object is changed or the structure of objects being used
+    # in this class object graph is changed. Note that the structure related to
+    # inherited classes must be versioned by themselves using the same
+    # mechanism, so modification of inherited classes structure does not require
+    # increment of this class version.
+    # For each version increment a method must be introduced that performs
+    # a conversion of a raw representation (nested dictionaries/lists structure)
+    # to this version (including adding/update of the class version entry).
+    # The method performing conversion to the current version must be called
+    # if necessary from makeRawCompatible method.
+    # Internally the method performing conversion to the version X must
+    # call if necessary the method performing conversion to the version X - 1.
+    CLASS_VERSION = 1
+
     clientNotPresentMsg = "The wallet does not have a client associated with it"
+
+    @staticmethod
+    def makeRawCompatible(raw):
+        """
+        Converts a raw representation of a wallet from any previous version
+        to the current version. If the raw representation of the wallet is
+        of the current version then this method does nothing.
+
+        :param raw: the wallet's raw representation of any version
+        :return: the wallet's raw representation of the current version
+        """
+
+        # At first, call makeRawCompatible method of base class(es)
+        # if it contains such the method
+
+        rawClassVersion = raw.get(getClassVersionKey(Wallet), 0)
+        if rawClassVersion < 1:
+            Wallet.convertRawToVersion1(raw)
+
+    @staticmethod
+    def convertRawToVersion1(raw):
+
+        fieldRenamings = {
+            'linkStatus': 'connection_status',
+            'linkLastSynced': 'connection_last_synced',
+            'linkLastSyncNo': 'connection_last_sync_no',
+            'invitationNonce': 'request_nonce'
+        }
+
+        def renameConnectionFields(connection):
+            for key in connection:
+                if key in fieldRenamings:
+                    connection[fieldRenamings[key]] = connection.pop(key)
+
+        def processDict(d):
+            if d.get(tags.OBJECT) == 'sovrin_client.client.wallet.link.Link':
+                d[tags.OBJECT] = \
+                    'sovrin_client.client.wallet.connection.Connection'
+                renameConnectionFields(d)
+            for key in d:
+                processValue(d[key])
+
+        def processList(l):
+            for item in l:
+                processValue(item)
+
+        def processValue(v):
+            if isinstance(v, dict):
+                processDict(v)
+            elif isinstance(v, list):
+                processList(v)
+
+        if '_links' in raw:
+            raw['_connections'] = raw.pop('_links')
+        processValue(raw)
+
+        # Add/update the class version entry
+        raw[getClassVersionKey(Wallet)] = 1
 
     def __init__(self,
                  name: str=None,
@@ -47,6 +123,11 @@ class Wallet(PWallet, TrustAnchoring):
                          name,
                          supportedDidMethods or DefaultDidMethods)
         TrustAnchoring.__init__(self)
+
+        # Copy the class version to the instance for the version
+        # to be serialized when the wallet is persisted
+        setattr(self, getClassVersionKey(Wallet), Wallet.CLASS_VERSION)
+
         self._attributes = {}  # type: Dict[(str, Identifier,
         # Optional[Identifier]), Attribute]
 
