@@ -68,6 +68,10 @@ class Wallet(PWallet, TrustAnchoring):
         :param raw: the wallet's raw representation of any version
         :return: the wallet's raw representation of the current version
         """
+
+        # At first, call makeRawCompatible method of base class(es)
+        # if it contains such the method
+
         rawClassVersion = raw.get(getClassVersionKey(Wallet), 0)
         if rawClassVersion < 1:
             Wallet.convertRawToVersion1(raw)
