@@ -121,7 +121,7 @@ class Upgrader(HasActionQueue):
         (event_type, when, version, upgrade_id) = self.lastUpgradeEventInfo
 
         if event_type != UpgradeLog.UPGRADE_STARTED:
-            logger.debug(
+            logger.warning(
                 'Upgrade for node {} was not scheduled. Last event is {}:{}:{}:{}' .format(
                     self.nodeName, event_type, when, version, upgrade_id))
             return
@@ -137,8 +137,8 @@ class Upgrader(HasActionQueue):
             return
 
         self._upgradeLog.appendSucceeded(when, version, upgrade_id)
-        logger.debug("Node '{}' successfully upgraded to version {}"
-                     .format(self.nodeName, version))
+        logger.info("Node '{}' successfully upgraded to version {}"
+                    .format(self.nodeName, version))
         self._notifier.sendMessageUponNodeUpgradeComplete(
             "Upgrade of node '{}' to version {} scheduled on {} "
             " with upgrade_id {} completed successfully"
@@ -146,8 +146,8 @@ class Upgrader(HasActionQueue):
 
     def should_notify_about_upgrade_result(self):
         last_node_upgrade_txn = self.get_last_node_upgrade_txn()
-        logger.debug("Node's '{}' last upgrade txn is {}"
-                     .format(self.nodeName, last_node_upgrade_txn))
+        logger.info("Node's '{}' last upgrade txn is {}"
+                    .format(self.nodeName, last_node_upgrade_txn))
         return last_node_upgrade_txn and last_node_upgrade_txn[TXN_TYPE] == NODE_UPGRADE \
             and last_node_upgrade_txn[DATA] and last_node_upgrade_txn[DATA][ACTION] == IN_PROGRESS \
             and self.lastUpgradeEventInfo \
@@ -210,7 +210,7 @@ class Upgrader(HasActionQueue):
         last_pool_upgrade_txn_start = self.get_upgrade_txn(
             lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == START, reverse=True)
         if last_pool_upgrade_txn_start:
-            logger.debug('{} found upgrade START txn {}'.format(
+            logger.info('{} found upgrade START txn {}'.format(
                 self, last_pool_upgrade_txn_start))
             last_pool_upgrade_txn_seq_no = last_pool_upgrade_txn_start[F.seqNo.name]
 
@@ -220,7 +220,7 @@ class Upgrader(HasActionQueue):
                 txn[VERSION] == current_version,
                 start_no=last_pool_upgrade_txn_seq_no)
             if last_pool_upgrade_txn_cancel:
-                logger.debug('{} found upgrade CANCEL txn {}'.format(
+                logger.info('{} found upgrade CANCEL txn {}'.format(
                     self, last_pool_upgrade_txn_cancel))
                 return
 
@@ -288,7 +288,7 @@ class Upgrader(HasActionQueue):
             UpgradeLog.UPGRADE_SUCCEEDED, UpgradeLog.UPGRADE_FAILED]
 
         if txn[TXN_TYPE] == POOL_UPGRADE:
-            logger.debug("Node '{}' handles upgrade txn {}".format(
+            logger.info("Node '{}' handles upgrade txn {}".format(
                 self.nodeName, txn))
             action = txn[ACTION]
             version = txn[VERSION]
@@ -300,13 +300,13 @@ class Upgrader(HasActionQueue):
             if action == START:
                 # forced txn could have partial schedule list
                 if self.nodeId not in txn[SCHEDULE]:
-                    logger.debug("Node '{}' disregards upgrade txn {}".format(
+                    logger.info("Node '{}' disregards upgrade txn {}".format(
                         self.nodeName, txn))
                     return
 
                 last_event = self.lastUpgradeEventInfo
                 if last_event and last_event[3] == upgrade_id and last_event[0] in FINALIZING_EVENT_TYPES:
-                    logger.debug(
+                    logger.info(
                         "Node '{}' has already performed an upgrade with upgrade_id {}. "
                         "Last recorded event is {}". format(
                             self.nodeName, upgrade_id, last_event))
@@ -334,7 +334,7 @@ class Upgrader(HasActionQueue):
                 if self.scheduledUpgrade and \
                         self.scheduledUpgrade[0] == version:
                     self._cancelScheduledUpgrade(justification)
-                    logger.debug("Node '{}' cancels upgrade to {}".format(
+                    logger.info("Node '{}' cancels upgrade to {}".format(
                         self.nodeName, version))
                 return
 
@@ -385,9 +385,9 @@ class Upgrader(HasActionQueue):
         if self.scheduledUpgrade:
             why = justification if justification else "some reason"
             (version, when, upgrade_id) = self.scheduledUpgrade
-            logger.debug("Cancelling upgrade of node '{}' "
-                         "to version {} due to {}"
-                         .format(self.nodeName, version, why))
+            logger.info("Cancelling upgrade of node '{}' "
+                        "to version {} due to {}"
+                        .format(self.nodeName, version, why))
             self._unscheduleUpgrade()
             self._upgradeLog.appendCancelled(when, version, upgrade_id)
             self._notifier.sendMessageUponPoolUpgradeCancel(
@@ -430,11 +430,11 @@ class Upgrader(HasActionQueue):
         while retryLimit:
             try:
                 msg = UpgradeMessage(version=version).toJson()
-                logger.debug("Sending message to control tool: {}".format(msg))
+                logger.info("Sending message to control tool: {}".format(msg))
                 await self._open_connection_and_send(msg)
                 break
             except Exception as ex:
-                logger.debug(
+                logger.warning(
                     "Failed to communicate to control tool: {}".format(ex))
                 asyncio.sleep(self.retry_timeout)
                 retryLimit -= 1
@@ -448,7 +448,7 @@ class Upgrader(HasActionQueue):
             self._unscheduleUpgrade()
             self._upgradeFailedCallback()
         else:
-            logger.debug(
+            logger.info(
                 "Waiting {} minutes for upgrade to be performed".format(failTimeout))
             timesUp = partial(self._declareTimeoutExceeded, when, version)
             self._schedule(timesUp, self.get_timeout(failTimeout))
@@ -469,7 +469,7 @@ class Upgrader(HasActionQueue):
         This function is called when time for upgrade is up
         """
 
-        logger.debug("Timeout exceeded for {}:{}".format(when, version))
+        logger.info("Timeout exceeded for {}:{}".format(when, version))
         last = self._upgradeLog.lastEvent
         if last and last[1:-1] == (UpgradeLog.UPGRADE_FAILED, when, version):
             return None
