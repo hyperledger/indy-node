@@ -270,8 +270,9 @@ class Node(PlenumNode, HasPoolManager):
                 self.nodeAuthNr.authenticate(request.operation[DATA],
                                              request.identifier,
                                              request.operation[f.SIG.nm])
-            except BaseException:
-                # TODO: Do something here
+            except BaseException as ex:
+                logger.warning('The request {} failed to authenticate {}'
+                               .format(request, repr(ex)))
                 return
         if not self.isProcessingReq(*request.key):
             self.startedProcessingReq(*request.key, frm)
