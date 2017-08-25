@@ -83,7 +83,10 @@ class Wallet(PWallet, TrustAnchoring):
             'linkStatus': 'connection_status',
             'linkLastSynced': 'connection_last_synced',
             'linkLastSyncNo': 'connection_last_sync_no',
-            'invitationNonce': 'request_nonce'
+            'invitationNonce': 'request_nonce',
+
+            # rule for the intermediate renaming state
+            'connectionLastSynced': 'connection_last_synced'
         }
 
         def renameConnectionFields(connection):
