@@ -56,12 +56,15 @@ def changeVerkey(looper, actingClient, actingWallet, idr, verkey,
     if not nAckReasonContains:
         checkIdentityRequestSucceed(looper, actingClient, actingWallet, idr)
     else:
-        checkIdentityRequestFailed(looper, actingClient, reqs[0], nAckReasonContains)
+        checkIdentityRequestFailed(
+            looper, actingClient, reqs[0], nAckReasonContains)
 
 
-def suspendRole(looper, actingClient, actingWallet, idr, nAckReasonContains=None):
+def suspendRole(looper, actingClient, actingWallet,
+                idr, nAckReasonContains=None):
     reqs = sendSuspendRole(actingClient, actingWallet, idr)
     if not nAckReasonContains:
         checkIdentityRequestSucceed(looper, actingClient, actingWallet, idr)
     else:
-        checkIdentityRequestFailed(looper, actingClient, reqs[0], nAckReasonContains)
+        checkIdentityRequestFailed(
+            looper, actingClient, reqs[0], nAckReasonContains)

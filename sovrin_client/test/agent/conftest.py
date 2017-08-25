@@ -108,6 +108,7 @@ def aliceAgent(aliceWallet, agentBuilder):
     agent = agentBuilder(aliceWallet)
     return agent
 
+
 @pytest.fixture(scope="module")
 def aliceAdded(nodeSet, steward, stewardWallet,
                emptyLooper, aliceAgent):
@@ -180,14 +181,15 @@ def faberAdded(nodeSet,
 @pytest.fixture(scope="module")
 def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
                    faberAgent, faberAdded, faberBootstrap):
-    return startAgent(emptyLooper, faberAgent, faberWallet, bootstrap=faberBootstrap)
+    return startAgent(emptyLooper, faberAgent, faberWallet,
+                      bootstrap=faberBootstrap)
 
 
 @pytest.fixture(scope="module")
 def acmeAgent(tdirWithPoolTxns, acmeAgentPort, acmeWallet):
     return create_acme(acmeWallet.name, acmeWallet,
-                      base_dir_path=tdirWithPoolTxns,
-                      port=acmeAgentPort)
+                       base_dir_path=tdirWithPoolTxns,
+                       port=acmeAgentPort)
 
 
 @pytest.fixture(scope="module")
@@ -202,22 +204,23 @@ def acmeAdded(nodeSet,
 @pytest.fixture(scope="module")
 def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet, acmeAgent,
                   acmeAdded, acmeBootstrap):
-    return startAgent(emptyLooper, acmeAgent, acmeWallet, bootstrap=acmeBootstrap)
+    return startAgent(emptyLooper, acmeAgent, acmeWallet,
+                      bootstrap=acmeBootstrap)
 
 
 @pytest.fixture(scope="module")
 def thriftAgent(tdirWithPoolTxns, thriftAgentPort, thriftWallet):
     return create_thrift(thriftWallet.name, thriftWallet,
-                        base_dir_path=tdirWithPoolTxns,
-                        port=thriftAgentPort)
+                         base_dir_path=tdirWithPoolTxns,
+                         port=thriftAgentPort)
 
 
 @pytest.fixture(scope="module")
 def thfiftAdded(nodeSet,
-              steward,
-              stewardWallet,
-              emptyLooper,
-              thriftAgent):
+                steward,
+                stewardWallet,
+                emptyLooper,
+                thriftAgent):
     return addAgent(emptyLooper, thriftAgent, steward, stewardWallet)
 
 
@@ -373,7 +376,8 @@ def addAgent(looper, agent, steward, stewardWallet):
     # 2. add client to the loop
     looper.add(agent.client)
 
-    # 3. add attribute to the Agent's NYM with endpoint information (by Agent's client)
+    # 3. add attribute to the Agent's NYM with endpoint information (by
+    # Agent's client)
     ep = '127.0.0.1:{}'.format(agent.port)
     attributeData = json.dumps({ENDPOINT: {'ha': ep}})
 

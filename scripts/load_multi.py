@@ -21,7 +21,8 @@ def soft_blow(num_tasks=100, use_processes=False):
 
 # Defining at module level so it can be pickled
 def _task_for_proc(num_threads, num_tasks):
-    print('Executing {} tasks for a process with {} threads'.format(num_tasks, num_threads))
+    print('Executing {} tasks for a process with {} threads'.format(
+        num_tasks, num_threads))
     futrs = []
     with ThreadPoolExecutor(max_workers=num_threads) as te:
         for _ in range(num_tasks):
@@ -36,13 +37,13 @@ def hard_blow():
     # if the values of `num_tasks`, `num_threads` are chosen such that they
     # are not multiples of `num_procs`
 
-    #TODO: WIP
+    # TODO: WIP
 
     num_tasks = 10000
     num_procs = 4
     threads_per_proc = 10
 
-    tasks_per_proc = int(math.ceil(num_tasks/num_procs))
+    tasks_per_proc = int(math.ceil(num_tasks / num_procs))
 
     futrs = []
     with ProcessPoolExecutor(max_workers=num_procs) as pe:

@@ -31,7 +31,8 @@ if SETUP_DIRNAME != '':
 SETUP_DIRNAME = os.path.abspath(SETUP_DIRNAME)
 
 METADATA = os.path.join(SETUP_DIRNAME, 'sovrin_node', '__metadata__.py')
-# Load the metadata using exec() so we don't trigger an import of ioflo.__init__
+# Load the metadata using exec() so we don't trigger an import of
+# ioflo.__init__
 exec(compile(open(METADATA).read(), METADATA, 'exec'))
 
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".sovrin")
@@ -66,6 +67,7 @@ class EnhancedInstallDev(develop):
     def run(self):
         develop.run(self)
         post_install()
+
 
 setup(
     name='indy-node',
@@ -111,7 +113,9 @@ setup(
              'scripts/delete_sovrin_node.bat',
              'scripts/restart_upgrade_agent.bat',
              'scripts/install_nssm.bat',
-             'scripts/read_ledger'],
+             'scripts/read_ledger',
+             'scripts/test_some_write_keys_others_read_them',
+             'scripts/test_users_write_and_read_own_keys'],
     cmdclass={
         'install': EnhancedInstall,
         'develop': EnhancedInstallDev

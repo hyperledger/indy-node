@@ -3,11 +3,13 @@ import json
 import operator
 from collections import OrderedDict
 from collections import deque
-from typing import Dict, List
+from typing import List
 from typing import Optional
 
+from jsonpickle import tags
+
 from ledger.util import F
-from plenum.client.wallet import Wallet as PWallet
+from plenum.client.wallet import Wallet as PWallet, getClassVersionKey
 from plenum.common.did_method import DidMethods
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
@@ -35,9 +37,87 @@ ENCODING = "utf-8"
 logger = getlogger()
 
 
-# TODO: Maybe we should have a thinner wallet which should not have ProverWallet
+# TODO: Maybe we should have a thinner wallet which should not have
+# ProverWallet
 class Wallet(PWallet, TrustAnchoring):
+
+    # Increment the class version each time when the structure
+    # of this class object is changed or the structure of objects being used
+    # in this class object graph is changed. Note that the structure related to
+    # inherited classes must be versioned by themselves using the same
+    # mechanism, so modification of inherited classes structure does not require
+    # increment of this class version.
+    # For each version increment a method must be introduced that performs
+    # a conversion of a raw representation (nested dictionaries/lists structure)
+    # to this version (including adding/update of the class version entry).
+    # The method performing conversion to the current version must be called
+    # if necessary from makeRawCompatible method.
+    # Internally the method performing conversion to the version X must
+    # call if necessary the method performing conversion to the version X - 1.
+    CLASS_VERSION = 1
+
     clientNotPresentMsg = "The wallet does not have a client associated with it"
+
+    @staticmethod
+    def makeRawCompatible(raw):
+        """
+        Converts a raw representation of a wallet from any previous version
+        to the current version. If the raw representation of the wallet is
+        of the current version then this method does nothing.
+
+        :param raw: the wallet's raw representation of any version
+        :return: the wallet's raw representation of the current version
+        """
+
+        # At first, call makeRawCompatible method of base class(es)
+        # if it contains such the method
+
+        rawClassVersion = raw.get(getClassVersionKey(Wallet), 0)
+        if rawClassVersion < 1:
+            Wallet.convertRawToVersion1(raw)
+
+    @staticmethod
+    def convertRawToVersion1(raw):
+
+        fieldRenamings = {
+            'linkStatus': 'connection_status',
+            'linkLastSynced': 'connection_last_synced',
+            'linkLastSyncNo': 'connection_last_sync_no',
+            'invitationNonce': 'request_nonce',
+
+            # rule for the intermediate renaming state
+            'connectionLastSynced': 'connection_last_synced'
+        }
+
+        def renameConnectionFields(connection):
+            for key in connection:
+                if key in fieldRenamings:
+                    connection[fieldRenamings[key]] = connection.pop(key)
+
+        def processDict(d):
+            if d.get(tags.OBJECT) == 'sovrin_client.client.wallet.link.Link':
+                d[tags.OBJECT] = \
+                    'sovrin_client.client.wallet.connection.Connection'
+                renameConnectionFields(d)
+            for key in d:
+                processValue(d[key])
+
+        def processList(l):
+            for item in l:
+                processValue(item)
+
+        def processValue(v):
+            if isinstance(v, dict):
+                processDict(v)
+            elif isinstance(v, list):
+                processList(v)
+
+        if '_links' in raw:
+            raw['_connections'] = raw.pop('_links')
+        processValue(raw)
+
+        # Add/update the class version entry
+        raw[getClassVersionKey(Wallet)] = 1
 
     def __init__(self,
                  name: str=None,
@@ -46,6 +126,11 @@ class Wallet(PWallet, TrustAnchoring):
                          name,
                          supportedDidMethods or DefaultDidMethods)
         TrustAnchoring.__init__(self)
+
+        # Copy the class version to the instance for the version
+        # to be serialized when the wallet is persisted
+        setattr(self, getClassVersionKey(Wallet), Wallet.CLASS_VERSION)
+
         self._attributes = {}  # type: Dict[(str, Identifier,
         # Optional[Identifier]), Attribute]
 
@@ -105,18 +190,19 @@ class Wallet(PWallet, TrustAnchoring):
         for k, li in self._connections.items():
             for cpr in li.proofRequests:
                 if Wallet._isMatchingName(claimReqName, cpr.name):
-                    if connectionName is None or Wallet._isMatchingName(connectionName,
-                                                                        li.name):
+                    if connectionName is None or Wallet._isMatchingName(
+                            connectionName, li.name):
                         matches.append((li, cpr))
         return matches
 
-    def getMatchingConnectionsWithProofReq(self, proofReqName, connectionName=None):
+    def getMatchingConnectionsWithProofReq(
+            self, proofReqName, connectionName=None):
         matchingConnectionAndProofReq = []
         for k, li in self._connections.items():
             for cpr in li.proofRequests:
                 if Wallet._isMatchingName(proofReqName, cpr.name):
-                    if connectionName is None or Wallet._isMatchingName(connectionName,
-                                                                        li.name):
+                    if connectionName is None or Wallet._isMatchingName(
+                            connectionName, li.name):
                         matchingConnectionAndProofReq.append((li, cpr))
         return matchingConnectionAndProofReq
 
@@ -263,7 +349,8 @@ class Wallet(PWallet, TrustAnchoring):
         if idy:
             idy.seqNo = result[F.seqNo.name]
         else:
-            logger.warning("Target {} not found in trust anchored".format(target))
+            logger.warning(
+                "Target {} not found in trust anchored".format(target))
 
     def _nodeReply(self, result, preparedReq):
         _, nodeKey = preparedReq
@@ -331,11 +418,11 @@ class Wallet(PWallet, TrustAnchoring):
         :param version: version of schema
         :return: req object
         """
-        operation = { TARGET_NYM: nym,
-                      TXN_TYPE: GET_SCHEMA,
-                      DATA: {NAME : name,
-                             VERSION: version}
-        }
+        operation = {TARGET_NYM: nym,
+                     TXN_TYPE: GET_SCHEMA,
+                     DATA: {NAME: name,
+                            VERSION: version}
+                     }
 
         req = Request(sender, operation=operation)
         return self.prepReq(req)
@@ -347,15 +434,14 @@ class Wallet(PWallet, TrustAnchoring):
         :param signature: CL is only supported option currently
         :return: req object
         """
-        operation = { TXN_TYPE: GET_CLAIM_DEF,
-                      ORIGIN: sender,
-                      REF : seqNo,
-                      SIGNATURE_TYPE : signature
-                    }
+        operation = {TXN_TYPE: GET_CLAIM_DEF,
+                     ORIGIN: sender,
+                     REF: seqNo,
+                     SIGNATURE_TYPE: signature
+                     }
 
         req = Request(sender, operation=operation)
         return self.prepReq(req)
-
 
     # TODO: sender by default should be `self.defaultId`
     def requestIdentity(self, identity: Identity, sender):
@@ -400,16 +486,17 @@ class Wallet(PWallet, TrustAnchoring):
     def build_attrib(self, nym, raw=None, enc=None, hsh=None):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1
         if raw:
-            l = LedgerStore.RAW
+            # l = LedgerStore.RAW
             data = raw
         elif enc:
-            l = LedgerStore.ENC
+            # l = LedgerStore.ENC
             data = enc
         elif hsh:
-            l = LedgerStore.HASH
+            # l = LedgerStore.HASH
             data = hsh
         else:
             raise RuntimeError('One of raw, enc, or hash are required.')
 
+        # TODO looks like a possible error why we do not use `l` (see above)?
         return Attribute(randomString(5), data, self.defaultId,
-                           dest=nym, ledgerStore=LedgerStore.RAW)
+                         dest=nym, ledgerStore=LedgerStore.RAW)

@@ -29,7 +29,7 @@ class IdrCache:
         # second item is a dictionary similar to cache which can be queried
         # like the database, i.e `self._db`. Keys (state roots are purged)
         # when they get committed or reverted.
-        self.unCommitted = [] # type: List[Tuple[bytes, OrderedDict]]
+        self.unCommitted = []  # type: List[Tuple[bytes, OrderedDict]]
 
         # Relevant NYMs operation done in current batch, in order
         self.currentBatchOps = []   # type: List[Tuple]
@@ -112,10 +112,10 @@ class IdrCache:
         # Commit an already created batch
         if self.unCommitted:
             assert self.unCommitted[0][0] == stateRoot, 'The first created batch has ' \
-                                                     'not been committed or ' \
-                                                     'reverted and yet another ' \
-                                                     'batch is trying to be ' \
-                                                     'committed, {} {}'.format(
+                'not been committed or ' \
+                'reverted and yet another ' \
+                'batch is trying to be ' \
+                'committed, {} {}'.format(
                 self.unCommitted[0][0], stateRoot)
             self._keyValueStorage.setBatch([(idr, val) for idr, val in
                                             self.unCommitted[0][1].items()])

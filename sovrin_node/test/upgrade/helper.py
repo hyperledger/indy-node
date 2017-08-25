@@ -21,7 +21,6 @@ import json
 import functools
 
 
-
 config = getConfig()
 
 
@@ -73,12 +72,12 @@ def bumpedVersion():
 
 
 class NodeControlToolExecutor:
-    def __init__(self, transform = lambda tool: None):
+    def __init__(self, transform=lambda tool: None):
         self.tool = NodeControlTool()
         transform(self.tool)
-        self.p = multiprocessing.Process(target = self.tool.start)
+        self.p = multiprocessing.Process(target=self.tool.start)
         self.p.start()
-    
+
     def stop(self):
         self.p.terminate()
         self.tool.server.close()
@@ -89,7 +88,8 @@ def composeUpgradeMessage(version):
 
 
 def sendUpgradeMessage(version):
-    sock = socket.create_connection((config.controlServiceHost, config.controlServicePort))
+    sock = socket.create_connection(
+        (config.controlServiceHost, config.controlServicePort))
     sock.sendall(composeUpgradeMessage(version))
     sock.close()
 
@@ -113,8 +113,8 @@ def get_valid_code_hash():
     return randomString(64)
 
 
-def populate_log_with_upgrade_events(tdir_with_pool_txns, pool_txn_node_names, tconf,
-                                      version: Tuple[str, str, str]):
+def populate_log_with_upgrade_events(
+        tdir_with_pool_txns, pool_txn_node_names, tconf, version: Tuple[str, str, str]):
     for nm in pool_txn_node_names:
         path = os.path.join(tdir_with_pool_txns, tconf.nodeDataDir, nm)
         os.makedirs(path)
@@ -124,9 +124,13 @@ def populate_log_with_upgrade_events(tdir_with_pool_txns, pool_txn_node_names, t
         log.appendStarted(when, version, randomString(10))
 
 
-def check_node_set_acknowledges_upgrade(looper, node_set, node_ids, allowed_actions: List,
-                                        version: Tuple[str, str, str]):
-    check = functools.partial(check_ledger_after_upgrade, node_set, allowed_actions, node_ids=node_ids)
+def check_node_set_acknowledges_upgrade(
+        looper, node_set, node_ids, allowed_actions: List, version: Tuple[str, str, str]):
+    check = functools.partial(
+        check_ledger_after_upgrade,
+        node_set,
+        allowed_actions,
+        node_ids=node_ids)
 
     for node in node_set:
         node.upgrader.scheduledUpgrade = (version, 0, randomString(10))
@@ -134,15 +138,28 @@ def check_node_set_acknowledges_upgrade(looper, node_set, node_ids, allowed_acti
         node.upgrader.scheduledUpgrade = None
 
     timeout = plenumWaits.expectedTransactionExecutionTime(len(node_set))
-    looper.run(eventually(functools.partial(check, ledger_size=len(node_set)), retryWait=1, timeout=timeout))
+    looper.run(eventually(functools.partial(
+        check, ledger_size=len(node_set)), retryWait=1, timeout=timeout))
 
     for node in node_set:
         node.acknowledge_upgrade()
 
-    looper.run(eventually(functools.partial(check, ledger_size=2 * len(node_set)), retryWait=1, timeout=timeout))
+    looper.run(
+        eventually(
+            functools.partial(
+                check,
+                ledger_size=2 *
+                len(node_set)),
+            retryWait=1,
+            timeout=timeout))
 
 
-def check_ledger_after_upgrade(node_set, allowed_actions, ledger_size, node_ids=None, allowed_txn_types=[NODE_UPGRADE]):
+def check_ledger_after_upgrade(
+        node_set,
+        allowed_actions,
+        ledger_size,
+        node_ids=None,
+        allowed_txn_types=[NODE_UPGRADE]):
     for node in node_set:
         print(len(node.configLedger))
         assert len(node.configLedger) == ledger_size
@@ -164,7 +181,8 @@ def check_ledger_after_upgrade(node_set, allowed_actions, ledger_size, node_ids=
 def check_no_loop(nodeSet, event):
     for node in nodeSet:
         # mimicking upgrade start
-        node.upgrader._upgradeLog.appendStarted(0, node.upgrader.scheduledUpgrade[0], node.upgrader.scheduledUpgrade[2])
+        node.upgrader._upgradeLog.appendStarted(
+            0, node.upgrader.scheduledUpgrade[0], node.upgrader.scheduledUpgrade[2])
         node.notify_upgrade_start()
         # mimicking upgrader's initialization after restart
         node.upgrader.check_upgrade_succeeded()
