@@ -65,8 +65,7 @@ class Wallet(PWallet, TrustAnchoring):
         to the current version. If the raw representation of the wallet is
         of the current version then this method does nothing.
 
-        :param raw: the wallet's raw representation of any version
-        :return: the wallet's raw representation of the current version
+        :param raw: the wallet's raw representation to convert
         """
 
         # At first, call makeRawCompatible method of base class(es)
