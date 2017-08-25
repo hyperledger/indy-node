@@ -5,5 +5,3 @@ GVT = AttribDef('gvt',
                  AttribType('age', encode=False),
                  AttribType('height', encode=False),
                  AttribType('sex', encode=True)])
-
-

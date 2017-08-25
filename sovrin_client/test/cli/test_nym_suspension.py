@@ -65,9 +65,8 @@ def trustAnchorAdded(be, do, trusteeCli, nymAddedOut):
     v['remote'] = vals['newTrustAnchorIdr'][0]
     v['remote_verkey'] = DidSigner(seed=vals['newTrustAnchorIdr'][1]).verkey
     be(trusteeCli)
-    do('send NYM dest={{remote}} role={role} verkey={{remote_verkey}}'.format(role=Roles.TRUST_ANCHOR.name),
-       within=5,
-       expect=nymAddedOut, mapper=v)
+    do('send NYM dest={{remote}} role={role} verkey={{remote_verkey}}'.format(
+        role=Roles.TRUST_ANCHOR.name), within=5, expect=nymAddedOut, mapper=v)
     return v
 
 
@@ -80,7 +79,7 @@ def trustAnchorCLI(CliBuilder):
 def trustAnchorCli(trustAnchorCLI, be, do, connectedToTest, trustAnchorAdded):
     be(trustAnchorCLI)
     do('new wallet TS', expect=['New wallet TS created',
-                                   'Active wallet set to "TS"'])
+                                'Active wallet set to "TS"'])
     seed = hexlify(vals['newTrustAnchorIdr'][1]).decode()
     do('new key with seed {seed}', expect=['Key created in wallet TS'],
        mapper={'seed': seed})
@@ -94,10 +93,11 @@ def anotherTrusteeCLI(CliBuilder):
 
 
 @pytest.fixture(scope="module")
-def anotherTrusteeCli(anotherTrusteeCLI, be, do, connectedToTest, anotherTrusteeAdded):
+def anotherTrusteeCli(anotherTrusteeCLI, be, do,
+                      connectedToTest, anotherTrusteeAdded):
     be(anotherTrusteeCLI)
     do('new wallet TS1', expect=['New wallet TS1 created',
-                                   'Active wallet set to "TS1"'])
+                                 'Active wallet set to "TS1"'])
     seed = hexlify(vals['newTrusteeIdr'][1]).decode()
     do('new key with seed {seed}', expect=['Key created in wallet TS1'],
        mapper={'seed': seed})
@@ -132,7 +132,8 @@ def testTrusteeSuspendingTrustee(be, do, trusteeCli, anotherTrusteeAdded,
        expect=[errorMsg], mapper=stewardAdded)
 
 
-def testTrusteeSuspendingSteward(be, do, trusteeCli, stewardAdded, nymAddedOut):
+def testTrusteeSuspendingSteward(
+        be, do, trusteeCli, stewardAdded, nymAddedOut):
     be(trusteeCli)
     do('send NYM dest={remote} role=',
        within=5,
@@ -144,4 +145,3 @@ def testTrusteeSuspendingTGB(be, do, trusteeCli, tbgAdded, nymAddedOut):
     do('send NYM dest={remote} role=',
        within=5,
        expect=nymAddedOut, mapper=tbgAdded)
-

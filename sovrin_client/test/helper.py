@@ -74,8 +74,16 @@ def addRole(looper, creatorClient, creatorWallet, name,
     return wallet
 
 
-def submitPoolUpgrade(looper, senderClient, senderWallet, name, action, version,
-                      schedule, timeout, sha256):
+def submitPoolUpgrade(
+        looper,
+        senderClient,
+        senderWallet,
+        name,
+        action,
+        version,
+        schedule,
+        timeout,
+        sha256):
     upgrade = Upgrade(name, action, schedule, version, sha256, timeout,
                       senderWallet.defaultId)
     senderWallet.doPoolUpgrade(upgrade)
@@ -107,13 +115,14 @@ def checkErrorMsg(typ, client, reqId, contains='', nodeCount=4):
             x[f.REQ_ID.nm] == reqId]
     for r in reqs:
         assert f.REASON.nm in r
-        assert contains in r[f.REASON.nm], '{} not in {}'.format(contains,
-                                                                 r[f.REASON.nm])
+        assert contains in r[f.REASON.nm], '{} not in {}'.format(
+            contains, r[f.REASON.nm])
     assert len(reqs) == nodeCount
 
 
 def checkNacks(client, reqId, contains='', nodeCount=4):
-    checkErrorMsg(REQNACK, client, reqId, contains=contains, nodeCount=nodeCount)
+    checkErrorMsg(REQNACK, client, reqId,
+                  contains=contains, nodeCount=nodeCount)
 
 
 def checkRejects(client, reqId, contains='', nodeCount=4):
@@ -126,8 +135,14 @@ def checkAccpets(client, reqId, nodeCount=4):
                   nodeCount=nodeCount)
 
 
-def submitAndCheckRejects(looper, client, wallet, op, identifier,
-                          contains='UnauthorizedClientRequest', check_func=checkRejects):
+def submitAndCheckRejects(
+        looper,
+        client,
+        wallet,
+        op,
+        identifier,
+        contains='UnauthorizedClientRequest',
+        check_func=checkRejects):
 
     reqId = submit(wallet, op, identifier, client)
     timeout = waits.expectedReqNAckQuorumTime()
@@ -137,6 +152,7 @@ def submitAndCheckRejects(looper, client, wallet, op, identifier,
                           contains,
                           retryWait=1,
                           timeout=timeout))
+
 
 def submitAndCheckAccepts(looper, client, wallet, op, identifier):
 
@@ -158,7 +174,7 @@ def submit(wallet, op, identifier, client):
     return req.reqId
 
 
-def genTestClient(nodes = None,
+def genTestClient(nodes=None,
                   nodeReg=None,
                   tmpdir=None,
                   identifier: Identifier = None,
@@ -181,7 +197,7 @@ def genTestClient(nodes = None,
 
 
 def genConnectedTestClient(looper,
-                           nodes = None,
+                           nodes=None,
                            nodeReg=None,
                            tmpdir=None,
                            identifier: Identifier = None,
@@ -194,7 +210,7 @@ def genConnectedTestClient(looper,
     return c, w
 
 
-def genTestClientProvider(nodes = None,
+def genTestClientProvider(nodes=None,
                           nodeReg=None,
                           tmpdir=None,
                           clientGnr=genTestClient):
@@ -239,6 +255,7 @@ def _within_hint(match, ctx):
 def _ignore_extra_lines(match, ctx):
     ctx.ignore_extra_lines = True
 
+
 CommandHints = namedtuple('CommandHints', 'pattern, callback')
 command_hints = [
     CommandHints(r'\s*within\s*:\s*(\d*\.?\d*)', _within_hint),
@@ -275,9 +292,18 @@ class ScriptRunner:
         Router = namedtuple('Router', 'pattern, ends_output, handler')
 
         self.routers = [
-            Router(re.compile(r'\s*#(.*)'), False, self._handleComment),
-            Router(re.compile(r'\s*(\S*)?\s*>\s*(.*?)\s*(?:<--(.*?))?\s*'), True, self._handleCommand),
-            Router(re.compile(r'\s*~\s*(be|start)\s+(.*)'), True, self._handleBe)]
+            Router(
+                re.compile(r'\s*#(.*)'),
+                False,
+                self._handleComment),
+            Router(
+                re.compile(r'\s*(\S*)?\s*>\s*(.*?)\s*(?:<--(.*?))?\s*'),
+                True,
+                self._handleCommand),
+            Router(
+                re.compile(r'\s*~\s*(be|start)\s+(.*)'),
+                True,
+                self._handleBe)]
 
     # noinspection PyAttributeOutsideInit
 
@@ -317,7 +343,7 @@ class ScriptRunner:
                 self._cli_builder(cli_str,
                                   looper=self._looper,
                                   unique_name=cli_str + '-' +
-                                              self._cur_context_name))
+                                  self._cur_context_name))
         self._be(self.cur_ctx().clis[cli_str])
 
     def _handleBe(self, match):

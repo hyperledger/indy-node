@@ -3,7 +3,7 @@ import os
 from sovrin_common.config_util import getConfig
 
 
-def writeAnonCredPlugin(baseDir, reloadTestModules:bool=False):
+def writeAnonCredPlugin(baseDir, reloadTestModules: bool=False):
     config = getConfig()
     pluginsPath = os.path.expanduser(os.path.join(baseDir, config.PluginsDir))
 

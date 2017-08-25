@@ -17,4 +17,3 @@ if __name__ == "__main__":
     else:
         self_name = sys.argv[1]
         run_node(config, self_name, int(sys.argv[2]), int(sys.argv[3]))
-

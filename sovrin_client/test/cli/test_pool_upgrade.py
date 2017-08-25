@@ -1,4 +1,4 @@
-from copy import copy, deepcopy
+from copy import copy
 
 import pytest
 
@@ -21,7 +21,9 @@ def send_upgrade_cmd(do, expect, upgrade_data):
 @pytest.fixture(scope="module")
 def poolUpgradeSubmitted(be, do, trusteeCli, validUpgrade):
     be(trusteeCli)
-    send_upgrade_cmd(do, ['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'],
+    send_upgrade_cmd(do,
+                     ['Sending pool upgrade',
+                      'Pool Upgrade Transaction Scheduled'],
                      validUpgrade)
 
 
@@ -80,12 +82,20 @@ def send_force_false_upgrade_cmd(do, expect, upgrade_data):
        expect=expect, mapper=upgrade_data)
 
 
-def test_force_false_upgrade(be, do, trusteeCli, poolNodesStarted, validUpgradeExpForceFalse):
+def test_force_false_upgrade(
+        be, do, trusteeCli, poolNodesStarted, validUpgradeExpForceFalse):
     be(trusteeCli)
-    send_force_false_upgrade_cmd(do, ['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'], validUpgradeExpForceFalse)
+    send_force_false_upgrade_cmd(do,
+                                 ['Sending pool upgrade',
+                                  'Pool Upgrade Transaction Scheduled'],
+                                 validUpgradeExpForceFalse)
     poolNodesStarted.looper.run(
-        eventually(checkUpgradeScheduled, poolNodesStarted.nodes.values(),
-                   validUpgradeExpForceFalse[VERSION], retryWait=1, timeout=10))
+        eventually(
+            checkUpgradeScheduled,
+            poolNodesStarted.nodes.values(),
+            validUpgradeExpForceFalse[VERSION],
+            retryWait=1,
+            timeout=10))
 
 
 def send_force_true_upgrade_cmd(do, expect, upgrade_data):
@@ -95,14 +105,16 @@ def send_force_true_upgrade_cmd(do, expect, upgrade_data):
        expect=expect, mapper=upgrade_data)
 
 
-def test_force_upgrade(be, do, trusteeCli, poolNodesStarted, validUpgradeExpForceTrue):
+def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
+                       validUpgradeExpForceTrue):
     nodes = poolNodesStarted.nodes.values()
     for node in nodes:
         if node.name in ["Delta", "Gamma"]:
             node.stop()
             poolNodesStarted.looper.removeProdable(node)
     be(trusteeCli)
-    send_force_true_upgrade_cmd(do, ['Sending pool upgrade'], validUpgradeExpForceTrue)
+    send_force_true_upgrade_cmd(
+        do, ['Sending pool upgrade'], validUpgradeExpForceTrue)
 
     def checksched():
         for node in nodes:
@@ -110,7 +122,8 @@ def test_force_upgrade(be, do, trusteeCli, poolNodesStarted, validUpgradeExpForc
                 assert node.upgrader.scheduledUpgrade
                 assert node.upgrader.scheduledUpgrade[0] == validUpgradeExpForceTrue[VERSION]
 
-    poolNodesStarted.looper.run(eventually(checksched, retryWait=1, timeout=10))
+    poolNodesStarted.looper.run(eventually(
+        checksched, retryWait=1, timeout=10))
 
 
 def send_reinstall_true_upgrade_cmd(do, expect, upgrade_data):

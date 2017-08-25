@@ -38,8 +38,3 @@ def test_has_expected_validators():
     schema = dict(ClientGetSchemaOperation.schema)
     for field, validator in EXPECTED_ORDERED_FIELDS.items():
         assert isinstance(schema[field], validator)
-
-
-
-
-

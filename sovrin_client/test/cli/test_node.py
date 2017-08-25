@@ -15,7 +15,7 @@ def testConsecutiveAddSameNodeWithoutAnyChange(be, do, newStewardCli,
                                                newNodeVals, newNodeAdded):
     be(newStewardCli)
     doSendNodeCmd(do, newNodeVals,
-              expMsgs=['node already has the same data as requested'])
+                  expMsgs=['node already has the same data as requested'])
     exitFromCli(do)
 
 
@@ -29,7 +29,7 @@ def testConsecutiveAddSameNodeWithNodeAndClientPortSame(be, do, newStewardCli,
     newNodeVals['newNodeData'][CLIENT_IP] = nodeIp
     newNodeVals['newNodeData'][CLIENT_PORT] = nodePort
     doSendNodeCmd(do, newNodeVals,
-              expMsgs=["node and client ha cannot be same"])
+                  expMsgs=["node and client ha cannot be same"])
     exitFromCli(do)
 
 
@@ -52,5 +52,5 @@ def testConsecutiveAddSameNodeWithOnlyAliasChange(be, do,
     be(newStewardCli)
     newNodeVals['newNodeData'][ALIAS] = randomString(6)
     doSendNodeCmd(do, newNodeVals,
-              expMsgs=['existing data has conflicts with request data'])
+                  expMsgs=['existing data has conflicts with request data'])
     exitFromCli(do)
