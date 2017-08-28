@@ -12,8 +12,10 @@ def testPing(aliceAcceptedFaber, faberIsRunning, aliceAgent, emptyLooper):
 
     faber_log = SpyLog()
     alice_log = SpyLog()
-    faberAgent.msgHandlers[PING] = spy(faberAgent._handlePing, False, True, spy_log=faber_log)
-    aliceAgent.msgHandlers[PONG] = spy(aliceAgent._handlePong, False, True, spy_log=alice_log)
+    faberAgent.msgHandlers[PING] = spy(
+        faberAgent._handlePing, False, True, spy_log=faber_log)
+    aliceAgent.msgHandlers[PONG] = spy(
+        aliceAgent._handlePong, False, True, spy_log=alice_log)
 
     recvd_pings = 0
     recvd_pongs = 0
@@ -27,5 +29,3 @@ def testPing(aliceAcceptedFaber, faberIsRunning, aliceAgent, emptyLooper):
 
     timeout = waits.expectedAgentPing()
     emptyLooper.run(eventually(chk, retryWait=1, timeout=timeout))
-
-

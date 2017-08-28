@@ -484,7 +484,7 @@ def testSendNodeFailsIfServicesContainsUnknownValue(
 def testSendNodeFailsIfServicesIsValidatorValue(
         be, do, poolNodesStarted, newStewardCli, newNodeVals):
 
-    newNodeVals['newNodeData'][SERVICES] = VALIDATOR # just string, not array
+    newNodeVals['newNodeData'][SERVICES] = VALIDATOR  # just string, not array
 
     be(newStewardCli)
     do('send NODE dest={newNodeIdr} data={newNodeData}',

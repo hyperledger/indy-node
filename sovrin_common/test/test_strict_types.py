@@ -19,6 +19,7 @@ def takesUnion(s: typing.Union[str, None]) -> int:
     except ValueError:
         pass
 
+
 def testInvalidArgumentType():
     with pytest.raises(TypeError):
         takesStr(1)
@@ -32,8 +33,10 @@ def testInvalidReturnType():
 def testValidInputAndReturn():
     takesStr('1')
 
+
 def testWorksWithComplexTypes():
     takesUnion('1')
+
 
 @decClassMethods(strict_types())
 class TestClass:

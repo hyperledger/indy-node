@@ -51,5 +51,3 @@ class SovrinIssuerWalletInMemory(IssuerWalletInMemory):
         self.availableClaimsByIdentifier = {}
 
         self._proofRequestsSchema = {}  # Dict[str, Dict[str, any]]
-
-

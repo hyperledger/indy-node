@@ -14,12 +14,13 @@ def test_merge_invitation():
     walleted_agent.wallet = wallet1
     connection = walleted_agent._wallet.getConnection('connection1')
     assert len(connection.proofRequests) == 0
-    request_data = {'connection-request': {NAME: 'connection1', NONCE: nonce},
+    request_data = {'connection-request': {NAME: 'connection1',
+                                           NONCE: nonce},
                     'proof-requests': [{NAME: 'proof1',
                                         VERSION: '1',
-                                        ATTRIBUTES: {'att_key1': 'att_value1', 'att_key2': 'att_value2'},
-                                        VERIFIABLE_ATTRIBUTES: {'ver_att_key1': 'ver_att_value1'}}]
-                    }
+                                        ATTRIBUTES: {'att_key1': 'att_value1',
+                                                     'att_key2': 'att_value2'},
+                                        VERIFIABLE_ATTRIBUTES: {'ver_att_key1': 'ver_att_value1'}}]}
 
     # test that a proof request with attributes can be merged into a connection
     # that already exists but has no proof requests.
@@ -28,14 +29,16 @@ def test_merge_invitation():
     assert len(connection.proofRequests[0].attributes.keys()) == 2
     assert connection.proofRequests[0].attributes['att_key1'] == 'att_value1'
 
-    request_data2 = {'connection-request': {NAME: 'connection1', NONCE: nonce},
-                     'proof-requests': [{NAME: 'proof1', VERSION: '1',
-                                         ATTRIBUTES: {'att_key1': 'att_value1', 'att_key2': 'att_value2',
+    request_data2 = {'connection-request': {NAME: 'connection1',
+                                            NONCE: nonce},
+                     'proof-requests': [{NAME: 'proof1',
+                                         VERSION: '1',
+                                         ATTRIBUTES: {'att_key1': 'att_value1',
+                                                      'att_key2': 'att_value2',
                                                       'att_key3': 'att_value3'},
                                          VERIFIABLE_ATTRIBUTES: {'ver_att_key1': 'ver_att_value1',
                                                                  'ver_att_key2': 'ver_att_value2'},
-                                         }]
-                     }
+                                         }]}
 
     # test that additional attributes and verifiable attributes can be
     # merged into an already existing proof request
@@ -45,14 +48,16 @@ def test_merge_invitation():
     assert connection.proofRequests[0].attributes['att_key3'] == 'att_value3'
     assert len(connection.proofRequests[0].verifiableAttributes.keys()) == 2
 
-    request_data3 = {'connection-request': {NAME: 'connection1', NONCE: nonce},
-                     'proof-requests': [{NAME: 'proof2', VERSION: '1',
-                                         ATTRIBUTES: {'att_key1': 'att_value1', 'att_key2': 'att_value2',
+    request_data3 = {'connection-request': {NAME: 'connection1',
+                                            NONCE: nonce},
+                     'proof-requests': [{NAME: 'proof2',
+                                         VERSION: '1',
+                                         ATTRIBUTES: {'att_key1': 'att_value1',
+                                                      'att_key2': 'att_value2',
                                                       'att_key3': 'att_value3'},
                                          VERIFIABLE_ATTRIBUTES: {'ver_att_key1': 'ver_att_value1',
                                                                  'ver_att_key2': 'ver_att_value2'},
-                                         }]
-                     }
+                                         }]}
 
     # test that a second proof from the same connection can be merged
     walleted_agent._merge_request(request_data3)

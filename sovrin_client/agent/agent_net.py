@@ -6,6 +6,7 @@ class AgentNet:
     Mixin for Agents to encapsulate the network interface to communicate with
     other agents.
     """
+
     def __init__(self, name, port, msgHandler, config, basedirpath=None,
                  endpoint_args=None):
         if port:

@@ -14,6 +14,7 @@ NYM_ADDED = 'Nym {dest} added'
 CURRENT_VERKEY_FOR_NYM = 'Current verkey for NYM {dest} is {verkey}'
 NOT_OWNER = 'is neither Trustee nor owner of'
 
+
 @pytest.fixture("module")
 def trust_anchor_did_signer():
     return DidSigner(seed=TRUST_ANCHOR_SEED)
@@ -46,7 +47,7 @@ def aliceCli(be, do, poolNodesStarted, aliceCLI, connectedToTest, wallet):
 
 @pytest.fixture(scope="module")
 def trustAnchorCli(be, do, poolNodesStarted, earlCLI, connectedToTest,
-               trustAnchorWallet):
+                   trustAnchorWallet):
     be(earlCLI)
     do('prompt Earl', expect=prompt_is('Earl'))
     addAndActivateCLIWallet(earlCLI, trustAnchorWallet)
@@ -99,7 +100,8 @@ def testAddDID(didAdded):
 
 @pytest.fixture(scope="module")
 def cidAdded(be, do, philCli, trust_anchor_cid_signer):
-    addNym(be, do, philCli, trust_anchor_cid_signer.identifier, role=Roles.TRUST_ANCHOR.name)
+    addNym(be, do, philCli, trust_anchor_cid_signer.identifier,
+           role=Roles.TRUST_ANCHOR.name)
     return philCli
 
 
@@ -111,7 +113,8 @@ def getNoVerkeyEverAssignedMsgs(idr):
     return ["No verkey ever assigned to the DID {}".format(idr)]
 
 
-def testGetDIDWithoutVerkey(be, do, philCli, didAdded, trust_anchor_did_signer):
+def testGetDIDWithoutVerkey(be, do, philCli, didAdded,
+                            trust_anchor_did_signer):
     getNym(be, do, philCli, trust_anchor_did_signer.identifier,
            getNoVerkeyEverAssignedMsgs(trust_anchor_did_signer.identifier))
 
@@ -120,7 +123,8 @@ def getVerkeyIsSameAsIdentifierMsgs(idr):
     return ["Current verkey is same as DID {}".format(idr)]
 
 
-def testGetCIDWithoutVerkey(be, do, philCli, cidAdded, trust_anchor_cid_signer):
+def testGetCIDWithoutVerkey(be, do, philCli, cidAdded,
+                            trust_anchor_cid_signer):
     getNym(be, do, philCli, trust_anchor_cid_signer.identifier,
            getVerkeyIsSameAsIdentifierMsgs(trust_anchor_cid_signer.identifier))
 
@@ -140,7 +144,8 @@ def verkeyAddedToCID(be, do, philCli, cidAdded, trust_anchor_cid_signer):
     # newSigner = SimpleSigner(identifier=trust_anchor_cid_signer.identifier)
     # new_verkey = newSigner.verkey
 
-    addNym(be, do, philCli, trust_anchor_cid_signer.identifier, verkey=trust_anchor_cid_signer.verkey)
+    addNym(be, do, philCli, trust_anchor_cid_signer.identifier,
+           verkey=trust_anchor_cid_signer.verkey)
     return trust_anchor_cid_signer
 
 
@@ -176,19 +181,25 @@ def addAttribToNym(be, do, userCli, idr, raw):
        within=5,
        expect=["Attribute added for nym {}".format(idr)])
 
+
 @pytest.mark.skip("INDY- This should not have worked")
-def testSendAttribForDID(be, do, verkeyAddedToDID, trust_anchor_did_signer, aliceCli):
+def testSendAttribForDID(be, do, verkeyAddedToDID,
+                         trust_anchor_did_signer, aliceCli):
     raw = '{"name": "Alice"}'
     addAttribToNym(be, do, aliceCli, trust_anchor_did_signer.identifier, raw)
 
+
 @pytest.mark.skip("INDY- This should not have worked")
-def testSendAttribForCID(be, do, verkeyAddedToCID, trust_anchor_cid_signer, trustAnchorCli):
+def testSendAttribForCID(be, do, verkeyAddedToCID,
+                         trust_anchor_cid_signer, trustAnchorCli):
     raw = '{"name": "Earl"}'
-    addAttribToNym(be, do, trustAnchorCli, trust_anchor_cid_signer.identifier, raw)
+    addAttribToNym(be, do, trustAnchorCli,
+                   trust_anchor_cid_signer.identifier, raw)
 
 
 @pytest.fixture(scope="module")
-def verkeyRemovedFromExistingDID(be, do, verkeyAddedToDID, abbrevIdr, aliceCli):
+def verkeyRemovedFromExistingDID(
+        be, do, verkeyAddedToDID, abbrevIdr, aliceCli):
     be(aliceCli)
     addNym(be, do, aliceCli, abbrevIdr, '')
     getNym(be, do, aliceCli, abbrevIdr, getNoActiveVerkeyFoundMsgs(abbrevIdr))
@@ -200,8 +211,13 @@ def testRemoveVerkeyFromDID(verkeyRemovedFromExistingDID):
 
 
 @pytest.fixture(scope="module")
-def verkeyRemovedFromExistingCID(be, do, verkeyAddedToCID,
-                                 trustAnchorSigner, trustAnchorCli, trustAnchorWallet):
+def verkeyRemovedFromExistingCID(
+        be,
+        do,
+        verkeyAddedToCID,
+        trustAnchorSigner,
+        trustAnchorCli,
+        trustAnchorWallet):
     be(trustAnchorCli)
     addNym(be, do, trustAnchorCli, trustAnchorSigner.identifier, '')
     getNym(be, do, trustAnchorCli, trustAnchorSigner.identifier,
@@ -213,9 +229,10 @@ def testRemoveVerkeyFromCID(verkeyRemovedFromExistingCID):
     pass
 
 
-@pytest.mark.skip(reason="SOV-568. Obsolete assumption, if an identity has set "
-                         "its verkey to blank, no-one including "
-                         "itself can change it")
+@pytest.mark.skip(
+    reason="SOV-568. Obsolete assumption, if an identity has set "
+    "its verkey to blank, no-one including "
+    "itself can change it")
 def testNewverkeyAddedToDID(be, do, philCli, abbrevIdr,
                             verkeyRemovedFromExistingDID):
     newSigner = DidSigner()
@@ -224,15 +241,22 @@ def testNewverkeyAddedToDID(be, do, philCli, abbrevIdr,
            getCurrentVerkeyIsgMsgs(abbrevIdr, newSigner.verkey))
 
 
-@pytest.mark.skip(reason="SOV-568. Obsolete assumption, if an identity has set "
-                         "its verkey to blank, no-one including "
-                         "itself can change it")
+@pytest.mark.skip(
+    reason="SOV-568. Obsolete assumption, if an identity has set "
+    "its verkey to blank, no-one including "
+    "itself can change it")
 def testNewverkeyAddedToCID(be, do, philCli, trustAnchorSigner,
                             verkeyRemovedFromExistingCID):
     newSigner = DidSigner()
     addNym(be, do, philCli, trustAnchorSigner.identifier, newSigner.verkey)
-    getNym(be, do, philCli, trustAnchorSigner.identifier,
-           getCurrentVerkeyIsgMsgs(trustAnchorSigner.identifier, newSigner.verkey))
+    getNym(
+        be,
+        do,
+        philCli,
+        trustAnchorSigner.identifier,
+        getCurrentVerkeyIsgMsgs(
+            trustAnchorSigner.identifier,
+            newSigner.verkey))
 
 
 def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted, poolTxnData,
@@ -264,8 +288,11 @@ def test_send_same_nyms_only_first_gets_written(
     _, anotherAbbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
 
     # request 1
-    newStewardCli.enterCmd("send NYM {dest}={nym} verkey={verkey}".
-            format(dest=TARGET_NYM, nym=halfKeyIdentifier, verkey=abbrevVerkey))
+    newStewardCli.enterCmd(
+        "send NYM {dest}={nym} verkey={verkey}". format(
+            dest=TARGET_NYM,
+            nym=halfKeyIdentifier,
+            verkey=abbrevVerkey))
 
     parameters = {
         'dest': halfKeyIdentifier,
@@ -284,9 +311,11 @@ def test_send_same_nyms_only_first_gets_written(
         'verkey': abbrevVerkey
     }
 
-    # check that second request didn't write to ledger and first verkey is written
+    # check that second request didn't write to ledger and first verkey is
+    # written
     do('send GET_NYM dest={dest}',
         mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
+
 
 def test_send_different_nyms_succeeds_when_batched(
         be, do, poolNodesStarted, newStewardCli):
@@ -302,7 +331,9 @@ def test_send_different_nyms_succeeds_when_batched(
     }
 
     # request 1
-    newStewardCli.enterCmd("send NYM dest={dest} verkey={verkey}".format(dest=idr_1, verkey=verkey_1))
+    newStewardCli.enterCmd(
+        "send NYM dest={dest} verkey={verkey}".format(
+            dest=idr_1, verkey=verkey_1))
 
     parameters = {
         'dest': idr_2,
@@ -329,4 +360,3 @@ def test_send_different_nyms_succeeds_when_batched(
 
     do('send GET_NYM dest={dest}',
         mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
-

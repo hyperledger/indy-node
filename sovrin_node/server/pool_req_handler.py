@@ -37,7 +37,8 @@ class PoolRequestHandler(PHandler):
         if error:
             return error
 
-        isStewardOfNode = self.isStewardOfNode(origin, nodeNym, isCommitted=False)
+        isStewardOfNode = self.isStewardOfNode(
+            origin, nodeNym, isCommitted=False)
 
         actorRole = self.idrCache.getRole(origin, isCommitted=False)
         nodeInfo = self.getNodeData(nodeNym, isCommitted=False)

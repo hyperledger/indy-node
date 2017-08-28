@@ -8,5 +8,3 @@ def test_connect():
     the owner's identifiers.
     """
     raise NotImplementedError
-
-
