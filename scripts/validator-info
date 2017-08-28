@@ -1,27 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
 import argparse
-import os
-import datetime
-import time
-import curses
-
-import json
-import pprint
-
-from collections import OrderedDict
-
 import asyncio
 import concurrent.futures
+import curses
+import datetime
+import json
+import os
+import sys
+import time
+import subprocess
+from collections import OrderedDict
 from glob import glob
 
 from sovrin_common.config_util import getConfig
-from stp_core.common.log import getlogger
-
 from stp_core.common.log import Logger
-
+from stp_core.common.log import getlogger
 
 config = getConfig()
 
@@ -125,11 +120,6 @@ class ValidatorStats(BaseStats):
         # TODO moving parts to other classes seems reasonable but
         # will drop visibility of output
 
-        def format_state(state):
-            return "is {} {}".format(
-                "currently" if state == "running" else "", state
-            )
-
         def format_port(port, protocol, ip):
             return "{}{}".format(
                 port,
@@ -150,8 +140,8 @@ class ValidatorStats(BaseStats):
             return ", ".join(parts) if parts else '0 seconds'
 
         lines = [
-            "Validator {} {}".format(
-                self['alias'], format_state(self['state'])),
+            "Validator {} is {}".format(
+                self['alias'], self['state']),
             "#Current time:     {}".format(
                 datetime.datetime.fromtimestamp(
                     self['timestamp']).strftime(
@@ -256,8 +246,32 @@ def get_stats_from_file(fpath, verbose, _json):
 
     logger.debug("Data {}".format(stats))
     vstats = ValidatorStats(stats, verbose)
+    vstats.update(state=get_process_state())
+    vstats.update(enabled=get_enabled_state())
 
     return (json.dumps(vstats, indent=2) if _json else vstats)
+
+
+def get_process_state():
+    ret = subprocess.check_output('systemctl is-failed sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
+    ret = ret.decode().strip()
+    if ret == 'inactive':
+        return 'stopped'
+    elif ret == 'active':
+        return 'running'
+    else:
+        return ret
+
+
+def get_enabled_state():
+    ret = subprocess.check_output('systemctl is-enabled sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
+    ret = ret.decode().strip()
+    if ret == 'enabled' or ret == 'static':
+        return True
+    elif ret == 'disabled':
+        return False
+    else:
+        return ret
 
 
 def watch(fpath, verbose, _json):
