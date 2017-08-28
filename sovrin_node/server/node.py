@@ -3,7 +3,7 @@ from typing import Iterable, Any, List
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
-from server.validator_info_tool import ValidatorNodeInfoTool
+from sovrin_node.server.validator_info_tool import ValidatorNodeInfoTool
 from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, \
