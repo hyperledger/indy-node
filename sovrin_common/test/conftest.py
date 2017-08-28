@@ -10,7 +10,7 @@ from stp_core.common.log import getlogger
 strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import txnPoolNodesLooper
+from plenum.test.conftest import txnPoolNodesLooper  # noqa
 
 
 @pytest.fixture(scope="module")
@@ -30,7 +30,7 @@ def poolTxnTrusteeNames():
     return "Trustee1",
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module")  # noqa
 def looper(txnPoolNodesLooper):
     return txnPoolNodesLooper
 

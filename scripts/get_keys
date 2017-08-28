@@ -15,9 +15,10 @@ def breakIt(message):
     print(message)
     sys.exit(1)
 
+
 if len(sys.argv) > 2:
     breakIt('provide only one parameter which specifies node or client'
-                    ' name')
+            ' name')
 if len(sys.argv) < 2:
     breakIt('provide the parameter which specifies node or client name')
 
@@ -54,6 +55,3 @@ verifkey = signer.verhex.decode()
 
 print("Public key is : {}".format(pubkey))
 print("Verification key is : {}".format(verifkey))
-
-
-

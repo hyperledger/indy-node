@@ -38,15 +38,21 @@ from plenum.test import waits as plenumWaits
 
 
 @pf
-def didAddedWithoutVerkey(addedTrustAnchor, looper, trustAnchor, trustAnchorWallet,
-                          wallet, noKeyIdr):
+def didAddedWithoutVerkey(
+        addedTrustAnchor,
+        looper,
+        trustAnchor,
+        trustAnchorWallet,
+        wallet,
+        noKeyIdr):
     """{ type: NYM, dest: <id1> }"""
     createNym(looper, noKeyIdr, trustAnchor, trustAnchorWallet)
     return wallet
 
+
 @pf
 def didUpdatedWithVerkey(didAddedWithoutVerkey, looper, trustAnchor,
-                            trustAnchorWallet, noKeyIdr, wallet):
+                         trustAnchorWallet, noKeyIdr, wallet):
     """{ type: NYM, dest: <id1>, verkey: <vk1> }"""
     updateSovrinIdrWithVerkey(looper, trustAnchorWallet, trustAnchor,
                               noKeyIdr, wallet.getVerkey(noKeyIdr))
@@ -58,12 +64,12 @@ def verkeyFetched(didUpdatedWithVerkey, looper, trustAnchor, trustAnchorWallet,
     """{ type: GET_NYM, dest: <id1> }"""
     identity = Identity(identifier=noKeyIdr)
     req = trustAnchorWallet.requestIdentity(identity,
-                                        sender=trustAnchorWallet.defaultId)
+                                            sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
 
     def chk():
-        assert trustAnchorWallet.getIdentity(noKeyIdr).verkey == wallet.getVerkey(
-            noKeyIdr)
+        assert trustAnchorWallet.getIdentity(
+            noKeyIdr).verkey == wallet.getVerkey(noKeyIdr)
 
     timeout = plenumWaits.expectedReqAckQuorumTime()
     looper.run(eventually(chk, retryWait=1, timeout=timeout))

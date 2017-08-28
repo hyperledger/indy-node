@@ -11,7 +11,7 @@ def checkWalletState(cli, totalIds, isAbbr, isCrypto):
         if isAbbr:
             assert activeSigner.verkey.startswith("~"), \
                 "verkey {} doesn't look like abbreviated verkey".\
-                    format(activeSigner.verkey)
+                format(activeSigner.verkey)
 
             assert cli._activeWallet.defaultId != activeSigner.verkey, \
                 "new DID should not be equal to abbreviated verkey"
@@ -19,7 +19,7 @@ def checkWalletState(cli, totalIds, isAbbr, isCrypto):
         if isCrypto:
             assert not activeSigner.verkey.startswith("~"), \
                 "verkey {} doesn't look like cryptographic verkey". \
-                    format(activeSigner.verkey)
+                format(activeSigner.verkey)
 
             assert cli._activeWallet.defaultId == activeSigner.verkey, \
                 "new DID should be equal to verkey"
@@ -51,7 +51,7 @@ def testNewIdWithIncorrectSeed(be, do, aliceCLI):
     do("new DID with seed "
        "2af3d062450c942be50ee766ce2571a6c75c0aca0de322293e7e9f116959c9c3",
        expect=["Current DID set to"])
-    checkWalletState(aliceCLI, totalIds=totalIds+1, isAbbr=False,
+    checkWalletState(aliceCLI, totalIds=totalIds + 1, isAbbr=False,
                      isCrypto=False)
 
 
@@ -59,7 +59,8 @@ def testNewIdIsNotInvalidCommand(be, do, aliceCLI):
     totalIds = getTotalIds(aliceCLI)
     be(aliceCLI)
     do("new DID", not_expect=["Invalid command"])
-    checkWalletState(aliceCLI, totalIds=totalIds+1, isAbbr=False, isCrypto=False)
+    checkWalletState(aliceCLI, totalIds=totalIds +
+                     1, isAbbr=False, isCrypto=False)
 
 
 def testNewId(be, do, aliceCLI):
@@ -67,6 +68,5 @@ def testNewId(be, do, aliceCLI):
     be(aliceCLI)
     do("new DID",
        expect=["Current DID set to"])
-    checkWalletState(aliceCLI, totalIds=totalIds+1, isAbbr=False, isCrypto=False)
-
-
+    checkWalletState(aliceCLI, totalIds=totalIds +
+                     1, isAbbr=False, isCrypto=False)

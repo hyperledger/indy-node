@@ -4,8 +4,13 @@ from anoncreds.protocol.types import SchemaKey, ID
 from sovrin_client.test.agent.messages import get_claim_libsovrin_msg
 
 
-def test_claim_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAcceptedAcme,
-                                    acmeAgent, emptyLooper, faberAgent):
+def test_claim_from_libsovrin_works(
+        aliceAgent,
+        aliceAcceptedFaber,
+        aliceAcceptedAcme,
+        acmeAgent,
+        emptyLooper,
+        faberAgent):
     faberLink = aliceAgent.wallet.getConnection('Faber College')
     name, version, origin = faberLink.availableClaims[0]
     schemaKey = SchemaKey(name, version, origin)
@@ -31,7 +36,8 @@ def test_claim_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
 
         await aliceAgent.handleReqClaimResponse(msg)
 
-    emptyLooper.run(eventually(create_claim_and_send_to_prover, timeout=timeout))
+    emptyLooper.run(eventually(
+        create_claim_and_send_to_prover, timeout=timeout))
 
     # 2. check that claim is received from Faber
     async def chkClaims():
@@ -47,7 +53,8 @@ def test_claim_from_libsovrin_works(aliceAgent, aliceAcceptedFaber, aliceAccepte
 
     # 4. check that proof is verified by Acme
     def chkProof():
-        internalId = acmeAgent.get_internal_id_by_nonce(acme_link.request_nonce)
+        internalId = acmeAgent.get_internal_id_by_nonce(
+            acme_link.request_nonce)
         link = acmeAgent.wallet.getConnectionBy(internalId=internalId)
         assert "Job-Application" in link.verifiedClaimProofs
 

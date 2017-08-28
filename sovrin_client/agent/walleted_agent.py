@@ -2,7 +2,8 @@ import errno
 import os
 
 from plenum.client.wallet import WalletStorageHelper
-from plenum.common.util import normalizedWalletFileName, getLastSavedWalletFileName, getWalletFilePath
+from plenum.common.util import normalizedWalletFileName, getLastSavedWalletFileName, getWalletFilePath, \
+    updateWalletsBaseDirNameIfOutdated
 from sovrin_client.agent.agent import Agent
 from sovrin_client.agent.caching import Caching
 from sovrin_client.agent.walleted import Walleted
@@ -35,6 +36,8 @@ class WalletedAgent(Walleted, Agent, Caching):
 
         self._wallet = None
         self._walletSaver = None
+
+        updateWalletsBaseDirNameIfOutdated(self.config)
 
         # restore any active wallet belonging to this agent
         self._restoreWallet()
@@ -75,9 +78,9 @@ class WalletedAgent(Walleted, Agent, Caching):
     def walletSaver(self):
         if self._walletSaver is None:
             self._walletSaver = WalletStorageHelper(
-                    self.getWalletsBaseDir(),
-                    dmode=self.config.WALLET_DIR_MODE,
-                    fmode=self.config.WALLET_FILE_MODE)
+                self.getWalletsBaseDir(),
+                dmode=self.config.WALLET_DIR_MODE,
+                fmode=self.config.WALLET_FILE_MODE)
         return self._walletSaver
 
     @Agent.client.setter
@@ -114,8 +117,10 @@ class WalletedAgent(Walleted, Agent, Caching):
     def _saveIssuerWallet(self):
         if self.issuer:
             self.issuer.prepareForWalletPersistence()
-            self._saveWallet(self.issuer.wallet, self._getIssuerWalletContextDir(),
-                     walletName="issuer")
+            self._saveWallet(
+                self.issuer.wallet,
+                self._getIssuerWalletContextDir(),
+                walletName="issuer")
 
     def _saveWallet(self, wallet: Wallet, contextDir, walletName=None):
         try:
@@ -145,7 +150,7 @@ class WalletedAgent(Walleted, Agent, Caching):
             if restoredWallet:
                 self.issuer.restorePersistedWallet(restoredWallet)
                 self.logger.info('Saved wallet "issuer" restored ({})'.
-                             format(walletFilePath))
+                                 format(walletFilePath))
 
     def _restoreLastActiveWallet(self, contextDir):
         walletFilePath = None
@@ -161,11 +166,11 @@ class WalletedAgent(Walleted, Agent, Caching):
         except (ValueError, AttributeError) as e:
             self.logger.info(
                 "error occurred while restoring wallet {}: {}".
-                    format(walletFilePath, e))
+                format(walletFilePath, e))
         except IOError as exc:
             if exc.errno == errno.ENOENT:
                 self.logger.debug("no such wallet file exists ({})".
-                              format(walletFilePath))
+                                  format(walletFilePath))
             else:
                 raise exc
         return None, None

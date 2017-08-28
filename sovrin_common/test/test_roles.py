@@ -23,6 +23,7 @@ def testRolesEnumEncoded():
     assert Roles.TGB.value == "100"
     assert Roles.TRUST_ANCHOR.value == "101"
 
+
 def testNameFromValue():
     assert Roles.nameFromValue("2") == "STEWARD"
     assert Roles.nameFromValue("0") == "TRUSTEE"
