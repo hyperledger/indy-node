@@ -2,7 +2,8 @@ import errno
 import os
 
 from plenum.client.wallet import WalletStorageHelper
-from plenum.common.util import normalizedWalletFileName, getLastSavedWalletFileName, getWalletFilePath
+from plenum.common.util import normalizedWalletFileName, getLastSavedWalletFileName, getWalletFilePath, \
+    updateWalletsBaseDirNameIfOutdated
 from sovrin_client.agent.agent import Agent
 from sovrin_client.agent.caching import Caching
 from sovrin_client.agent.walleted import Walleted
@@ -35,6 +36,8 @@ class WalletedAgent(Walleted, Agent, Caching):
 
         self._wallet = None
         self._walletSaver = None
+
+        updateWalletsBaseDirNameIfOutdated(self.config)
 
         # restore any active wallet belonging to this agent
         self._restoreWallet()
