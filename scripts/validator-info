@@ -15,9 +15,10 @@ from collections import OrderedDict
 
 import asyncio
 import concurrent.futures
+from glob import glob
 
+from sovrin_common.config_util import getConfig
 from stp_core.common.log import getlogger
-from plenum.common.config_util import getConfig
 
 from stp_core.common.log import Logger
 
@@ -313,31 +314,32 @@ def main():
     )
 
     statfile_group.add_argument(
-        "--statfile", metavar="PATH",
-        default=os.path.join(config.baseDir, "stats.json"),
-        help=("Path to stats file")
+        "--basedir", metavar="PATH",
+        default=config.baseDir,
+        help=("Path to stats files")
     )
     #statfile_group.add_argument(
     #    "--watch", action="store_true", help="Watch for stats file updates"
     #)
 
-    socket_group = parser.add_argument_group(
-        "socket", "settings for exploring validator stats from socket"
-    )
-
-    socket_group.add_argument(
-        "--listen", action="store_true",
-        help="Listen socket for stats (ignores --statfile)"
-    )
-
-    socket_group.add_argument(
-        "-i", "--ip", metavar="IP", default=config.STATS_SERVER_IP,
-        help="Server IP"
-    )
-    socket_group.add_argument(
-        "-p", "--port", metavar="PORT", default=config.STATS_SERVER_PORT,
-        type=check_unsigned, help="Server port"
-    )
+    # socket group is disabled for now due the feature is unsupported
+    # socket_group = parser.add_argument_group(
+    #     "socket", "settings for exploring validator stats from socket"
+    # )
+    #
+    # socket_group.add_argument(
+    #     "--listen", action="store_true",
+    #     help="Listen socket for stats (ignores --statfile)"
+    # )
+    #
+    # socket_group.add_argument(
+    #     "-i", "--ip", metavar="IP", default=config.STATS_SERVER_IP,
+    #     help="Server IP"
+    # )
+    # socket_group.add_argument(
+    #     "-p", "--port", metavar="PORT", default=config.STATS_SERVER_PORT,
+    #     type=check_unsigned, help="Server port"
+    # )
 
     other_group = parser.add_argument_group(
         "other", "other settings"
@@ -357,36 +359,43 @@ def main():
 
     logger.debug("Cmd line arguments: {}".format(args))
 
-    if args.listen:
-        logger.info("Starting server on {}:{} ...".format(args.ip, args.port))
-        print("Starting server on {}:{} ...".format(args.ip, args.port))
-
-        loop = asyncio.get_event_loop()
-        coro = asyncio.start_server(accept_client,
-                                    args.ip, args.port, loop=loop)
-        server = loop.run_until_complete(coro)
-
-        logger.info("Serving on {}:{} ...".format(args.ip, args.port))
-        print('Serving on {} ...'.format(server.sockets[0].getsockname()))
-
-        # Serve requests until Ctrl+C is pressed
-        try:
-            loop.run_forever()
-        except KeyboardInterrupt:
-            pass
-
-        logger.info("Stopping server ...")
-        print("Stopping server ...")
-
-        # Close the server
-        server.close()
-        for task in clients.keys():
-            task.cancel()
-        loop.run_until_complete(server.wait_closed())
-        loop.close()
-    else:
-        logger.info("Reading file {} ...".format(args.statfile))
-        print(get_stats_from_file(args.statfile, args.verbose, args.json))
+    # is not supported for now
+    # if args.listen:
+    #     logger.info("Starting server on {}:{} ...".format(args.ip, args.port))
+    #     print("Starting server on {}:{} ...".format(args.ip, args.port))
+    #
+    #     loop = asyncio.get_event_loop()
+    #     coro = asyncio.start_server(accept_client,
+    #                                 args.ip, args.port, loop=loop)
+    #     server = loop.run_until_complete(coro)
+    #
+    #     logger.info("Serving on {}:{} ...".format(args.ip, args.port))
+    #     print('Serving on {} ...'.format(server.sockets[0].getsockname()))
+    #
+    #     # Serve requests until Ctrl+C is pressed
+    #     try:
+    #         loop.run_forever()
+    #     except KeyboardInterrupt:
+    #         pass
+    #
+    #     logger.info("Stopping server ...")
+    #     print("Stopping server ...")
+    #
+    #     # Close the server
+    #     server.close()
+    #     for task in clients.keys():
+    #         task.cancel()
+    #     loop.run_until_complete(server.wait_closed())
+    #     loop.close()
+    # else:
+    paths = glob(os.path.join(args.basedir, "*_info.json"))
+    if not paths:
+        print('There are no info files in {}'.format(args.basedir))
+        return
+    for file_path in paths:
+        logger.info("Reading file {} ...".format(file_path))
+        print(get_stats_from_file(file_path, args.verbose, args.json))
+        print('\n')
 
     logger.info("Done")
 
