@@ -44,6 +44,10 @@ class NewEncoder(json.JSONEncoder):
             return super().default(o)
 
 
+class FloatUnknown(BaseUnknown):
+    def _str(self):
+        return "{:.2f}".format(self.val)
+
 
 class TimestampUnknown(BaseUnknown):
     def _str(self):
@@ -140,8 +144,8 @@ class TransactionsStats(BaseStats):
 
 class AverageStats(BaseStats):
     shema = [
-        ("read-transactions", BaseUnknown),
-        ("write-transactions", BaseUnknown)
+        ("read-transactions", FloatUnknown),
+        ("write-transactions", FloatUnknown)
     ]
 
 
