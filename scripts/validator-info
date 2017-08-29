@@ -24,6 +24,61 @@ logger = None  # to make flake8 happy
 clients = {}   # task -> (reader, writer)
 
 
+class BaseUnknown:
+    def __init__(self, val):
+        self.val = val
+
+    def _str(self):
+        return str(self.val)
+
+    def __str__(self):
+        return self._str() if self.val is not None else "unknown"
+
+
+class NewEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, BaseUnknown):
+            return o.val
+        else:
+            return super().default(o)
+
+
+
+class TimestampUnknown(BaseUnknown):
+    def _str(self):
+        return "{}".format(
+            datetime.datetime.fromtimestamp(self.val).strftime(
+                    "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
+                        '#' if os.name == 'nt' else '-'))
+        )
+
+class UptimeUnknown(BaseUnknown):
+    def _str(self):
+        days, remainder = divmod(self.val, 86400)
+        hours, remainder = divmod(remainder, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        parts = []
+
+        for s, v in zip(['day', 'hour', 'minute', 'second'],
+                        [days, hours, minutes, seconds]):
+            if v or len(parts):
+                parts.append("{} {}{}".format(v, s, '' if v == 1 else 's'))
+
+        return ", ".join(parts) if parts else '0 seconds'
+
+
+class NodesListUnknown(BaseUnknown):
+    def __init__(self, val):
+        super().__init__([] if val is None else val)
+
+    def _str(self):
+        return "\n".join("#  {}".format(alias) for alias in self.val)
+
+    def __iter__(self):
+        return iter(self.val)
+
+
+
 class BaseStats(OrderedDict):
     shema = []
 
@@ -31,7 +86,10 @@ class BaseStats(OrderedDict):
         for k, cls in self.shema:
             # TODO improve defaults processing
             try:
-                self[k] = cls(stats.get(k))
+                if issubclass(cls, BaseStats):
+                    self[k] = cls(stats.get(k), verbose=verbose)
+                else:
+                    self[k] = cls(stats.get(k))
             except Exception as e:
                 logger.warning(
                     "{} Failed to parse attribute '{}': {}".format(
@@ -43,10 +101,17 @@ class BaseStats(OrderedDict):
 
 class ConnectionStats(BaseStats):
     shema = [
-        ("ip", str),
-        ("port", int),
-        ("protocol", str)
+        ("ip", BaseUnknown),
+        ("port", BaseUnknown),
+        ("protocol", BaseUnknown)
     ]
+
+    def __str__(self):
+        return "{}{}".format(
+            self['port'],
+            "/{} on {}".format(self['protocol'], self['ip'])
+            if self._verbose else ""
+        )
 
 
 class BindingsStats(BaseStats):
@@ -58,22 +123,22 @@ class BindingsStats(BaseStats):
 
 class TransactionsStats(BaseStats):
     shema = [
-        ("config", int),
-        ("ledger", int),
-        ("pool", int)
+        ("config", BaseUnknown),
+        ("ledger", BaseUnknown),
+        ("pool", BaseUnknown)
     ]
 
 
 class AverageStats(BaseStats):
     shema = [
-        ("read-transactions", int),
-        ("write-transactions", int)
+        ("read-transactions", BaseUnknown),
+        ("write-transactions", BaseUnknown)
     ]
 
 
 class MetricsStats(BaseStats):
     shema = [
-        ("uptime", int),
+        ("uptime", UptimeUnknown),
         ("transaction-count", TransactionsStats),
         ("average-per-second", AverageStats)
     ]
@@ -81,14 +146,14 @@ class MetricsStats(BaseStats):
 
 class NodesListStats(BaseStats):
     shema = [
-        ("count", int),
-        ("list", list)
+        ("count", BaseUnknown),
+        ("list", NodesListUnknown)
     ]
 
 
 class PoolStats(BaseStats):
     shema = [
-        ("total-count", int),
+        ("total-count", BaseUnknown),
         ("reachable", NodesListStats),
         ("unreachable", NodesListStats)
     ]
@@ -96,42 +161,20 @@ class PoolStats(BaseStats):
 
 class SoftwareStats(BaseStats):
     shema = [
-        ("indy-node", str),
-        ("sovrin", str)
+        ("indy-node", BaseUnknown),
+        ("sovrin", BaseUnknown)
     ]
-
-
-class Timestamp:
-    def __init__(self, ts):
-        self.ts = ts
-
-    def __str__(self):
-        return "{}".format(
-            datetime.datetime.fromtimestamp(self.ts).strftime(
-                    "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
-                        '#' if os.name == 'nt' else '-'))
-            if self.ts is not None else 'unknown'
-        )
-
-
-
-class NewEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, Timestamp):
-            return o.ts
-        else:
-            return super().default(o)
 
 
 class ValidatorStats(BaseStats):
     shema = [
-        ("response-version", str),
-        ("timestamp", Timestamp),
-        ("alias", str),
-        ("state", str),
-        ("enabled", str),
-        ("did", str),
-        ("verkey", str),
+        ("response-version", BaseUnknown),
+        ("timestamp", TimestampUnknown),
+        ("alias", BaseUnknown),
+        ("state", BaseUnknown),
+        ("enabled", BaseUnknown),
+        ("did", BaseUnknown),
+        ("verkey", BaseUnknown),
         ("bindings", BindingsStats),
         ("metrics", MetricsStats),
         ("pool", PoolStats),
@@ -142,45 +185,15 @@ class ValidatorStats(BaseStats):
         # TODO moving parts to other classes seems reasonable but
         # will drop visibility of output
 
-        def format_port(port, protocol, ip):
-            return "{}{}".format(
-                port,
-                "/{} on {}".format(protocol, ip) if self._verbose else ""
-            )
-
-        def format_uptime(secs):
-            days, remainder = divmod(secs, 86400)
-            hours, remainder = divmod(remainder, 3600)
-            minutes, seconds = divmod(remainder, 60)
-            parts = []
-
-            for s, v in zip(['day', 'hour', 'minute', 'second'],
-                            [days, hours, minutes, seconds]):
-                if v or len(parts):
-                    parts.append("{} {}{}".format(v, s, '' if v == 1 else 's'))
-
-            return ", ".join(parts) if parts else '0 seconds'
-
         lines = [
-            "Validator {} is {}".format(
-                self['alias'], self['state']),
+            "Validator {} is {}".format(self['alias'], self['state']),
             "#Current time:     {}".format(self['timestamp']),
             "Validator DID:    {}".format(self['did']),
             "Verification Key: {}".format(self['verkey']),
-            "Node Port:        {}".format(
-                format_port(
-                    self['bindings']['node']['port'],
-                    self['bindings']['node']['protocol'],
-                    self['bindings']['node']['ip'])
-            ),
-            "Client Port:      {}".format(
-                format_port(
-                    self['bindings']['client']['port'],
-                    self['bindings']['client']['protocol'],
-                    self['bindings']['client']['ip'])
-            ),
+            "Node Port:        {}".format(self['bindings']['node']),
+            "Client Port:      {}".format(self['bindings']['client']),
             "Metrics:",
-            "  Uptime: {}".format(format_uptime(self['metrics']['uptime'])),
+            "  Uptime: {}".format(self['metrics']['uptime']),
             "#  Total Config Transactions:  {}".format(
                 self['metrics']['transaction-count']['config']),
             "  Total Ledger Transactions:  {}".format(
