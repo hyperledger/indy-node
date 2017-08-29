@@ -101,10 +101,32 @@ class SoftwareStats(BaseStats):
     ]
 
 
+class Timestamp:
+    def __init__(self, ts):
+        self.ts = ts
+
+    def __str__(self):
+        return "{}".format(
+            datetime.datetime.fromtimestamp(self.ts).strftime(
+                    "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
+                        '#' if os.name == 'nt' else '-'))
+            if self.ts is not None else 'unknown'
+        )
+
+
+
+class NewEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Timestamp):
+            return o.ts
+        else:
+            return super().default(o)
+
+
 class ValidatorStats(BaseStats):
     shema = [
         ("response-version", str),
-        ("timestamp", int),
+        ("timestamp", Timestamp),
         ("alias", str),
         ("state", str),
         ("enabled", str),
@@ -142,12 +164,7 @@ class ValidatorStats(BaseStats):
         lines = [
             "Validator {} is {}".format(
                 self['alias'], self['state']),
-            "#Current time:     {}".format(
-                datetime.datetime.fromtimestamp(
-                    self['timestamp']).strftime(
-                        "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
-                            '#' if os.name == 'nt' else '-'))
-            ),
+            "#Current time:     {}".format(self['timestamp']),
             "Validator DID:    {}".format(self['did']),
             "Verification Key: {}".format(self['verkey']),
             "Node Port:        {}".format(
@@ -223,7 +240,7 @@ async def handle_client(client_reader, client_writer):
             else:
                 logger.debug("Received data: {}".format(data))
                 stats = json.loads(data.decode())
-                print(json.dumps(stats, indent=2))
+                print(json.dumps(stats, indent=2, cls=NewEncoder))
 
 
 def accept_client(client_reader, client_writer):
@@ -249,7 +266,7 @@ def get_stats_from_file(fpath, verbose, _json):
     vstats.update(state=get_process_state())
     vstats.update(enabled=get_enabled_state())
 
-    return (json.dumps(vstats, indent=2) if _json else vstats)
+    return (json.dumps(vstats, indent=2, cls=NewEncoder) if _json else vstats)
 
 
 def get_process_state():
