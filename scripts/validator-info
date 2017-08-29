@@ -283,9 +283,10 @@ class ValidatorStats(BaseStats):
             "#  {}".format(alias)
             for alias in self['pool']['unreachable']['list']
         ] + [
-            "#Software Versions:",
-            "#  indy-node: {}".format(self['software']['indy-node']),
-            "#  sovrin:    {}".format(self['software']['sovrin'])
+            "#Software Versions:"
+        ] + [
+            "#  {}: {}".format(pkgName, self['software'][pkgName])
+            for pkgName in self['software'].keys()
         ]
 
         # skip lines with started with '#' if not verbose
