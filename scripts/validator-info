@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import importlib
 import argparse
 import asyncio
 import concurrent.futures
@@ -83,13 +84,17 @@ class BaseStats(OrderedDict):
     shema = []
 
     def __init__(self, stats, verbose=False):
+        if stats is None:
+            logger.debug(
+                "{} no stats found".format(type(self).__name__))
+
         for k, cls in self.shema:
-            # TODO improve defaults processing
+            val = None if stats is None else stats.get(k)
             try:
                 if issubclass(cls, BaseStats):
-                    self[k] = cls(stats.get(k), verbose=verbose)
+                    self[k] = cls(val, verbose=verbose)
                 else:
-                    self[k] = cls(stats.get(k))
+                    self[k] = cls(val)
             except Exception as e:
                 logger.warning(
                     "{} Failed to parse attribute '{}': {}".format(
@@ -166,6 +171,32 @@ class SoftwareStats(BaseStats):
     ]
 
 
+    @staticmethod
+    def pkgVersion(pkgName):
+        try:
+            pkg = importlib.import_module(pkgName)
+        except ImportError as e:
+            logger.warning("Failed to import {}: {}".format(pkgName, e))
+        else:
+            try:
+                return pkg.__version__
+            except AttributeError as e:
+                logger.warning("Failed to get version of {}: {}".format(pkgName, e))
+                return None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # TODO should be fixed after packages renamings
+        pkgMappings = {
+            'indy-node': 'sovrin_node'
+        }
+
+        for pkgName, obj in self.items():
+            if obj is None or obj.val is None:
+                self[pkgName] = BaseUnknown(self.pkgVersion(pkgMappings.get(pkgName, pkgName)))
+
+
 class ValidatorStats(BaseStats):
     shema = [
         ("response-version", BaseUnknown),
@@ -180,6 +211,39 @@ class ValidatorStats(BaseStats):
         ("pool", PoolStats),
         ("software", SoftwareStats)
     ]
+
+    @staticmethod
+    def get_process_state():
+        ret = subprocess.check_output('systemctl is-failed sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
+        ret = ret.decode().strip()
+        if ret == 'inactive':
+            return 'stopped'
+        elif ret == 'active':
+            return 'running'
+        else:
+            return ret
+
+
+    @staticmethod
+    def get_enabled_state():
+        ret = subprocess.check_output('systemctl is-enabled sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
+        ret = ret.decode().strip()
+        if ret == 'enabled' or ret == 'static':
+            return True
+        elif ret == 'disabled':
+            return False
+        else:
+            return ret
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # TODO move that to classes too
+
+        if self['state'].val is None:
+            self['state'].val = self.get_process_state()
+
+        if self['enabled'].val is None:
+            self['enabled'].val = self.get_enabled_state()
 
     def __str__(self):
         # TODO moving parts to other classes seems reasonable but
@@ -220,8 +284,8 @@ class ValidatorStats(BaseStats):
             for alias in self['pool']['unreachable']['list']
         ] + [
             "#Software Versions:",
-            "#  indy-node: 1.0.28".format(self['software']['indy-node']),
-            "#  sovrin:    1.0.3".format(self['software']['sovrin'])
+            "#  indy-node: {}".format(self['software']['indy-node']),
+            "#  sovrin:    {}".format(self['software']['sovrin'])
         ]
 
         # skip lines with started with '#' if not verbose
@@ -276,32 +340,9 @@ def get_stats_from_file(fpath, verbose, _json):
 
     logger.debug("Data {}".format(stats))
     vstats = ValidatorStats(stats, verbose)
-    vstats.update(state=get_process_state())
-    vstats.update(enabled=get_enabled_state())
 
     return (json.dumps(vstats, indent=2, cls=NewEncoder) if _json else vstats)
 
-
-def get_process_state():
-    ret = subprocess.check_output('systemctl is-failed sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
-    ret = ret.decode().strip()
-    if ret == 'inactive':
-        return 'stopped'
-    elif ret == 'active':
-        return 'running'
-    else:
-        return ret
-
-
-def get_enabled_state():
-    ret = subprocess.check_output('systemctl is-enabled sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
-    ret = ret.decode().strip()
-    if ret == 'enabled' or ret == 'static':
-        return True
-    elif ret == 'disabled':
-        return False
-    else:
-        return ret
 
 
 def watch(fpath, verbose, _json):
