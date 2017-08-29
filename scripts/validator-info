@@ -359,17 +359,21 @@ def main():
         "other", "other settings"
     )
 
+    other_group.add_argument(
+            "--log", metavar="FILE",
+            default=os.path.join(config.baseDir,
+                os.path.basename(sys.argv[0] + ".log")),
+            help="Path to log file")
+    
     other_group.add_argument("--stdlog", action="store_true",
                              help="Enable logging to stdout")
 
     args = parser.parse_args()
 
     config.enableStdOutLogging = args.stdlog
-    logFileName = os.path.join(config.baseDir,
-                               os.path.basename(sys.argv[0] + ".log"))
 
     logger = getlogger()
-    Logger().enableFileLogging(logFileName)
+    Logger().enableFileLogging(args.log)
 
     logger.debug("Cmd line arguments: {}".format(args))
 
