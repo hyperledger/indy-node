@@ -67,6 +67,10 @@ class UptimeUnknown(BaseUnknown):
 
         return ", ".join(parts) if parts else '0 seconds'
 
+class StateUnknown(BaseUnknown):
+    def __str__(self):
+        return self.val if self.val is not None else 'in unknown state'
+
 
 class NodesListUnknown(BaseUnknown):
     def __init__(self, val):
@@ -202,7 +206,7 @@ class ValidatorStats(BaseStats):
         ("response-version", BaseUnknown),
         ("timestamp", TimestampUnknown),
         ("alias", BaseUnknown),
-        ("state", BaseUnknown),
+        ("state", StateUnknown),
         ("enabled", BaseUnknown),
         ("did", BaseUnknown),
         ("verkey", BaseUnknown),
@@ -221,19 +225,27 @@ class ValidatorStats(BaseStats):
         elif ret == 'active':
             return 'running'
         else:
-            return ret
+            logger.info(
+                "Non-expected output for sovrin-node "
+                "is-failed state: {}".format(ret)
+            )
+            return None
 
 
     @staticmethod
     def get_enabled_state():
         ret = subprocess.check_output('systemctl is-enabled sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
         ret = ret.decode().strip()
-        if ret == 'enabled' or ret == 'static':
+        if ret in ('enabled', 'static'):
             return True
         elif ret == 'disabled':
             return False
         else:
-            return ret
+            logger.info(
+                "Non-expected output for sovrin-node "
+                "is-enabled state: {}".format(ret)
+            )
+            return None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
