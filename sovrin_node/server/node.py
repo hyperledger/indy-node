@@ -3,6 +3,7 @@ from typing import Iterable, Any, List
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
+from sovrin_node.server.validator_info_tool import ValidatorNodeInfoTool
 from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, \
@@ -42,6 +43,7 @@ logger = getlogger()
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
     _client_request_class = SafeRequest
+    _info_tool_class = ValidatorNodeInfoTool
     ledger_ids = PlenumNode.ledger_ids + [CONFIG_LEDGER_ID]
 
     def __init__(self,
