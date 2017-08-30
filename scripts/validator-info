@@ -14,6 +14,7 @@ import time
 import subprocess
 from collections import OrderedDict
 from glob import glob
+import re
 
 from sovrin_common.config_util import getConfig
 from stp_core.common.log import Logger
@@ -27,19 +28,28 @@ clients = {}   # task -> (reader, writer)
 
 class BaseUnknown:
     def __init__(self, val):
-        self.val = val
+        self._val = val
 
     def _str(self):
-        return str(self.val)
+        return str(self._val)
 
     def __str__(self):
-        return self._str() if self.val is not None else "unknown"
+        return self._str() if not self.is_unknown() else "unknown"
+
+    def is_unknown(self):
+        return self._val is None
+
+    @property
+    def val(self):
+        return self._val
 
 
 class NewEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, BaseUnknown):
             return o.val
+        elif isinstance(o, ConnectionStatsOut):
+            return o.bindings
         else:
             return super().default(o)
 
@@ -73,7 +83,7 @@ class UptimeUnknown(BaseUnknown):
 
 class StateUnknown(BaseUnknown):
     def __str__(self):
-        return self.val if self.val is not None else 'in unknown state'
+        return self.val if not self.is_unknown() else 'in unknown state'
 
 
 class NodesListUnknown(BaseUnknown):
@@ -119,12 +129,28 @@ class ConnectionStats(BaseStats):
         ("protocol", BaseUnknown)
     ]
 
+
+class ConnectionStatsOut:
+
+    def __init__(self, bindings, verbose):
+        self.bindings = bindings
+        self._verbose = verbose
+
     def __str__(self):
-        return "{}{}".format(
-            self['port'],
-            "/{} on {}".format(self['protocol'], self['ip'])
-            if self._verbose else ""
-        )
+        if not self._verbose:
+            data = ["{}".format(b['port']) for b in self.bindings]
+        else:
+            data = [
+                "{}{}".format(
+                    b['port'],
+                    "/{} on {}".format(b['protocol'], b['ip'])
+                ) for b in self.bindings
+            ]
+
+        data = list(set(data))
+
+        return ", ".join(data)
+
 
 
 class BindingsStats(BaseStats):
@@ -132,6 +158,104 @@ class BindingsStats(BaseStats):
         ("node", ConnectionStats),
         ("client", ConnectionStats)
     ]
+
+    @staticmethod
+    def explore_bindings(port):
+        ANYADDR_IPV4 = '*'
+
+        def shell_cmd(command):
+            res = None
+            try:
+                ret = subprocess.check_output(command,
+                        stderr=subprocess.STDOUT, shell=True)
+            except subprocess.CalledProcessError as e:
+                logger.warning(
+                    "Shell command '{}' failed, "
+                    "return code {}, stderr: {}".format(
+                        command, e.returncode, e.stderr)
+                )
+            except Exception as e:
+                logger.warning(
+                    "Failed to process shell command: '{}', "
+                    "unexpected error: {}".format(command, e)
+                )
+            else:
+                logger.debug("command '{}': stdout '{}'".format(command, ret))
+                res = ret.decode().strip()
+
+            return res
+
+        if port is None:
+            return None
+
+        # TODO
+        # 1. need to filter more (e.g. by pid) for such cases as:
+        #   - SO_REUSEPORT or SO_REUSEADDR
+        #   - tcp + udp
+        # 2. procss ipv6 as well
+        #
+        # parse listening ip using 'ss' tool
+        command = "ss -ln4 | sort -u | grep ':{}\s'".format(port)
+        ret = shell_cmd(command)
+
+        if ret is None:
+            return None
+
+        ips = []
+        ips_with_netmasks = {}
+        for line in ret.split('\n'):
+            try:
+                parts = re.compile("\s+").split(line)
+                # format:
+                # Netid State Recv-Q Send-Q Local Address:Port Peer Address:Port
+                protocol, ip = parts[0], parts[5].split(":")[0]
+            except Exception as e:
+                logger.warning(
+                    "Failed to parse protocol, ip from '{}', error: {}".format(line, e)
+                )
+            else:
+                if ip == ANYADDR_IPV4:
+                    # TODO mask here seems not necessary, but requested in INDY-715
+                    ip = "0.0.0.0/0"
+                else:
+                    if ip not in ips_with_netmasks:
+                        # parse mask using 'ip' tool
+                        # TODO more filtering by 'ip' tool itself if possible
+                        command = "ip a | grep 'inet {}'".format(ip)
+                        ret = shell_cmd(command)
+
+                        try:
+                            ip_with_netmask = re.match("^inet\s([^\s]+)", ret).group(1)
+                        except Exception as e:
+                            logger.debug(
+                                "Failed to parse ip with mask: command {}, "
+                                "stdout: {}, error {}".format(command, ret, e))
+                            ip = "{}/unknown".format(ip)
+
+                        ips_with_netmasks[ip] = ip_with_netmask
+
+                    ip = ips_with_netmasks[ip]
+
+                ips.append((protocol, ip))
+
+        return list(set(ips))
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for target, data in self.items():
+            # change schema: ignoring any data received except port,
+            # resolve it ourselves (requested in original task INDY-715)
+            # TODO refactor
+
+            bindings = self.explore_bindings(data['port'].val)
+            logger.info("Found the folloiwng bindings for target {} "
+                    "with port {}: {}".format(target, data['port'], bindings))
+            self[target] = ConnectionStatsOut([] if bindings is None else [
+                dict(port=data['port'], protocol=protocol, ip=ip)
+                for protocol, ip in bindings
+            ], self._verbose)
 
 
 class TransactionsStats(BaseStats):
@@ -201,7 +325,7 @@ class SoftwareStats(BaseStats):
         }
 
         for pkgName, obj in self.items():
-            if obj is None or obj.val is None:
+            if obj is None or obj.is_unknown():
                 self[pkgName] = BaseUnknown(self.pkgVersion(pkgMappings.get(pkgName, pkgName)))
 
 
@@ -255,11 +379,11 @@ class ValidatorStats(BaseStats):
         super().__init__(*args, **kwargs)
         # TODO move that to classes too
 
-        if self['state'].val is None:
-            self['state'].val = self.get_process_state()
+        if self['state'].is_unknown():
+            self['state'] = StateUnknown(self.get_process_state())
 
-        if self['enabled'].val is None:
-            self['enabled'].val = self.get_enabled_state()
+        if self['enabled'].is_unknown():
+            self['enabled'] = BaseUnknown(self.get_enabled_state())
 
     def __str__(self):
         # TODO moving parts to other classes seems reasonable but
