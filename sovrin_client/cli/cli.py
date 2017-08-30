@@ -13,7 +13,8 @@ from typing import Dict, Any, Tuple, Callable, NamedTuple
 import asyncio
 
 import base58
-from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file
+from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file, \
+    update_genesis_txn_file_name_if_outdated
 from libnacl import randombytes
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
@@ -1754,6 +1755,8 @@ class SovrinCli(PlenumCli):
             return "Already connected to {}".format(envName)
         if envName not in self.envs:
             return "Unknown environment {}".format(envName)
+        update_genesis_txn_file_name_if_outdated(self.basedirpath,
+                                                 self.envs[envName].poolLedger)
         if not os.path.exists(
             os.path.join(
                 self.basedirpath,
