@@ -63,9 +63,10 @@ class TimestampUnknown(BaseUnknown):
     def _str(self):
         return "{}".format(
             datetime.datetime.fromtimestamp(self.val).strftime(
-                    "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
-                        '#' if os.name == 'nt' else '-'))
+                "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
+                    '#' if os.name == 'nt' else '-'))
         )
+
 
 class UptimeUnknown(BaseUnknown):
     def _str(self):
@@ -81,6 +82,7 @@ class UptimeUnknown(BaseUnknown):
 
         return ", ".join(parts) if parts else '0 seconds'
 
+
 class StateUnknown(BaseUnknown):
     def __str__(self):
         return self.val if not self.is_unknown() else 'in unknown state'
@@ -95,7 +97,6 @@ class NodesListUnknown(BaseUnknown):
 
     def __iter__(self):
         return iter(self.val)
-
 
 
 class BaseStats(OrderedDict):
@@ -152,7 +153,6 @@ class ConnectionStatsOut:
         return ", ".join(data)
 
 
-
 class BindingsStats(BaseStats):
     shema = [
         ("node", ConnectionStats),
@@ -166,8 +166,8 @@ class BindingsStats(BaseStats):
         def shell_cmd(command):
             res = None
             try:
-                ret = subprocess.check_output(command,
-                        stderr=subprocess.STDOUT, shell=True)
+                ret = subprocess.check_output(
+                    command, stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError as e:
                 logger.warning(
                     "Shell command '{}' failed, "
@@ -211,11 +211,13 @@ class BindingsStats(BaseStats):
                 protocol, ip = parts[0], parts[5].split(":")[0]
             except Exception as e:
                 logger.warning(
-                    "Failed to parse protocol, ip from '{}', error: {}".format(line, e)
+                    "Failed to parse protocol, ip from '{}', "
+                    "error: {}".format(line, e)
                 )
             else:
                 if ip == ANYADDR_IPV4:
-                    # TODO mask here seems not necessary, but requested in INDY-715
+                    # TODO mask here seems not necessary,
+                    # but requested in INDY-715
                     ip = "0.0.0.0/0"
                 else:
                     if ip not in ips_with_netmasks:
@@ -225,7 +227,8 @@ class BindingsStats(BaseStats):
                         ret = shell_cmd(command)
 
                         try:
-                            ip_with_netmask = re.match("^inet\s([^\s]+)", ret).group(1)
+                            ip_with_netmask = re.match(
+                                "^inet\s([^\s]+)", ret).group(1)
                         except Exception as e:
                             logger.debug(
                                 "Failed to parse ip with mask: command {}, "
@@ -240,7 +243,6 @@ class BindingsStats(BaseStats):
 
         return list(set(ips))
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -250,8 +252,10 @@ class BindingsStats(BaseStats):
             # TODO refactor
 
             bindings = self.explore_bindings(data['port'].val)
-            logger.info("Found the folloiwng bindings for target {} "
-                    "with port {}: {}".format(target, data['port'], bindings))
+            logger.info(
+                "Found the folloiwng bindings for target {} "
+                "with port {}: {}".format(target, data['port'], bindings)
+            )
             self[target] = ConnectionStatsOut([] if bindings is None else [
                 dict(port=data['port'], protocol=protocol, ip=ip)
                 for protocol, ip in bindings
@@ -302,7 +306,6 @@ class SoftwareStats(BaseStats):
         ("sovrin", BaseUnknown)
     ]
 
-
     @staticmethod
     def pkgVersion(pkgName):
         try:
@@ -313,7 +316,8 @@ class SoftwareStats(BaseStats):
             try:
                 return pkg.__version__
             except AttributeError as e:
-                logger.warning("Failed to get version of {}: {}".format(pkgName, e))
+                logger.warning(
+                    "Failed to get version of {}: {}".format(pkgName, e))
                 return None
 
     def __init__(self, *args, **kwargs):
@@ -326,7 +330,8 @@ class SoftwareStats(BaseStats):
 
         for pkgName, obj in self.items():
             if obj is None or obj.is_unknown():
-                self[pkgName] = BaseUnknown(self.pkgVersion(pkgMappings.get(pkgName, pkgName)))
+                self[pkgName] = BaseUnknown(
+                    self.pkgVersion(pkgMappings.get(pkgName, pkgName)))
 
 
 class ValidatorStats(BaseStats):
@@ -346,7 +351,10 @@ class ValidatorStats(BaseStats):
 
     @staticmethod
     def get_process_state():
-        ret = subprocess.check_output('systemctl is-failed sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
+        ret = subprocess.check_output(
+            'systemctl is-failed sovrin-node; exit 0',
+            stderr=subprocess.STDOUT, shell=True
+        )
         ret = ret.decode().strip()
         if ret == 'inactive':
             return 'stopped'
@@ -359,10 +367,12 @@ class ValidatorStats(BaseStats):
             )
             return None
 
-
     @staticmethod
     def get_enabled_state():
-        ret = subprocess.check_output('systemctl is-enabled sovrin-node; exit 0', stderr=subprocess.STDOUT, shell=True)
+        ret = subprocess.check_output(
+            'systemctl is-enabled sovrin-node; exit 0',
+            stderr=subprocess.STDOUT, shell=True
+        )
         ret = ret.decode().strip()
         if ret in ('enabled', 'static'):
             return True
@@ -446,7 +456,7 @@ async def handle_client(client_reader, client_writer):
             logger.warning("task has been cancelled")
             return
         except Exception as e:
-            logger.exception("failed to readline")
+            logger.exception("failed to readline: {}".format(e))
             return
         else:
             if data is None:
@@ -485,7 +495,6 @@ def get_stats_from_file(fpath, verbose, _json):
     return (json.dumps(vstats, indent=2, cls=NewEncoder) if _json else vstats)
 
 
-
 def watch(fpath, verbose, _json):
 
     def _watch(stdscr):
@@ -496,13 +505,16 @@ def watch(fpath, verbose, _json):
 
             if stats is not None:
                 time.sleep(3)
-            stdscr.addstr(0, 0, str(get_stats_from_file(fpath, verbose, _json)))
+            stdscr.addstr(
+                0, 0, str(get_stats_from_file(fpath, verbose, _json))
+            )
             stdscr.refresh()
 
     try:
         curses.wrapper(_watch)
     except KeyboardInterrupt:
         pass
+
 
 def main():
     global logger
@@ -544,9 +556,9 @@ def main():
         default=config.baseDir,
         help=("Path to stats files")
     )
-    #statfile_group.add_argument(
-    #    "--watch", action="store_true", help="Watch for stats file updates"
-    #)
+    # statfile_group.add_argument(
+    #     "--watch", action="store_true", help="Watch for stats file updates"
+    # )
 
     # socket group is disabled for now due the feature is unsupported
     # socket_group = parser.add_argument_group(
@@ -572,11 +584,13 @@ def main():
     )
 
     other_group.add_argument(
-            "--log", metavar="FILE",
-            default=os.path.join(config.baseDir,
-                os.path.basename(sys.argv[0] + ".log")),
-            help="Path to log file")
-    
+        "--log", metavar="FILE",
+        default=os.path.join(
+            config.baseDir,
+            os.path.basename(sys.argv[0] + ".log")
+        ),
+        help="Path to log file")
+
     other_group.add_argument("--stdlog", action="store_true",
                              help="Enable logging to stdout")
 
@@ -591,7 +605,8 @@ def main():
 
     # is not supported for now
     # if args.listen:
-    #     logger.info("Starting server on {}:{} ...".format(args.ip, args.port))
+    #     logger.info("Starting server on {}:{} ...".format(
+    #       args.ip, args.port))
     #     print("Starting server on {}:{} ...".format(args.ip, args.port))
     #
     #     loop = asyncio.get_event_loop()
