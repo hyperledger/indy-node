@@ -208,7 +208,7 @@ class BindingsStats(BaseStats):
                 parts = re.compile("\s+").split(line)
                 # format:
                 # Netid State Recv-Q Send-Q Local Address:Port Peer Address:Port
-                protocol, ip = parts[0], parts[5].split(":")[0]
+                protocol, ip = parts[0], parts[4].split(":")[0]
             except Exception as e:
                 logger.warning(
                     "Failed to parse protocol, ip from '{}', "
