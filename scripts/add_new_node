@@ -10,7 +10,7 @@ from sovrin_common.config_util import getConfig
 # TODO: This code is obsolete, moreover we have a CLI command for this.
 
 
-looper = Looper(debug=True)
+looper = Looper(debug=getConfig().LOOPER_DEBUG)
 
 config = getConfig()
 basedirpath = config.baseDir
