@@ -6,6 +6,7 @@ import pkgutil
 import platform
 import subprocess
 import time
+from pathlib import Path
 from functools import cmp_to_key
 
 from stp_core.common.log import getlogger
@@ -13,7 +14,7 @@ from stp_core.common.log import getlogger
 from sovrin_common.util import compose_cmd
 from sovrin_node.server.upgrader import Upgrader
 
-SCRIPT_PREFIX = os.path.join('data', 'migrations')
+SCRIPT_PREFIX = Path('data', 'migrations')
 PLATFORM_PREFIX = {
     'Ubuntu': 'deb'
 }
@@ -28,7 +29,7 @@ def _call_migration_script(migration_script, current_platform, timeout):
                 os.path.dirname(os.path.abspath(__file__)),
                 '..',
                 '..',
-                SCRIPT_PREFIX,
+                str(SCRIPT_PREFIX),
                 PLATFORM_PREFIX[current_platform],
                 migration_script + '.py'))
     logger.info('script path {}'.format(migration_script_path))
@@ -70,7 +71,8 @@ def migrate(current_version, new_version, timeout):
 def _get_migration_scripts(current_platform):
     # Data folder is published as a separate 'data' python package
     migrations = importlib.import_module(
-        '.'.join([SCRIPT_PREFIX, PLATFORM_PREFIX[current_platform]]))
+        '.'.join(SCRIPT_PREFIX.parts + (PLATFORM_PREFIX[current_platform],))
+    )
     return [name
             for module_finder, name, ispkg
             in pkgutil.iter_modules(migrations.__path__)]
