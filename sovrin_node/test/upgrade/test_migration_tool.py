@@ -45,3 +45,12 @@ def testMigrateTimesOut(monkeypatch):
 
     with pytest.raises(TimeoutError):
         migration_tool.migrate(TEST_VERSION, TEST_NEW_VERSION, TEST_TIMEOUT)
+
+def testGetMigrationScripts():
+    try:
+        res = migration_tool._get_migration_scripts(migration_tool._get_current_platform())
+    except Exception as e:
+        pytest.fail("Unexpected error: {}".format(e))
+    else:
+        assert type(res) is list
+        assert res
