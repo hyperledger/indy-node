@@ -2,6 +2,8 @@ import os
 from time import sleep
 
 import pytest
+import shutil
+
 from plenum.cli.cli import Exit, Cli
 from plenum.cli.constants import NO_ENV
 from plenum.common.util import createDirIfNotExists, normalizedWalletFileName, \
@@ -116,7 +118,6 @@ def useKeyring(name, do, expectedName=None, expectedMsgs=None):
 
 
 def testRestoreWalletFile(aliceCLI):
-    import shutil
     fileName = "tmp_wallet_restore_issue"
     curPath = os.path.dirname(os.path.realpath(__file__))
     walletFilePath = os.path.join(curPath, fileName)
