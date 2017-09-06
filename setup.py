@@ -87,7 +87,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum==1.1.24',
+    install_requires=['indy-plenum==1.1.25',
                       'indy-anoncreds==1.0.10',
                       'python-dateutil',
                       'timeout-decorator'],
@@ -115,7 +115,8 @@ setup(
              'scripts/install_nssm.bat',
              'scripts/read_ledger',
              'scripts/test_some_write_keys_others_read_them',
-             'scripts/test_users_write_and_read_own_keys'],
+             'scripts/test_users_write_and_read_own_keys',
+             'scripts/validator-info'],
     cmdclass={
         'install': EnhancedInstall,
         'develop': EnhancedInstallDev
