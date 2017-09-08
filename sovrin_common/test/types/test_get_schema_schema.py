@@ -1,8 +1,7 @@
 import pytest
 from sovrin_common.types import SchemaField, ClientGetSchemaOperation, GetSchemaField
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, IdentifierField, VersionField,\
-    LimitedLengthStringField
+from plenum.common.messages.fields import ConstantField, IdentifierField, VersionField, LimitedLengthStringField
 
 
 EXPECTED_ORDERED_FIELDS_SCHEMA = OrderedDict([
