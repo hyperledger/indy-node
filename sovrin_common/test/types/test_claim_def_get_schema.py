@@ -1,14 +1,14 @@
 import pytest
 from sovrin_common.types import ClientClaimDefGetOperation
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, NonEmptyStringField, TxnSeqNoField
+from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, TxnSeqNoField
 
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
     ("ref", TxnSeqNoField),
-    ("origin", NonEmptyStringField),
-    ('signature_type', NonEmptyStringField),
+    ("origin", LimitedLengthStringField),
+    ('signature_type', LimitedLengthStringField),
 ])
 
 
