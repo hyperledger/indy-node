@@ -1,13 +1,13 @@
 import pytest
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
-    IDENTIFIER
+    IDENTIFIER, NAME, VERSION
 from plenum.common.types import f
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 
 from sovrin_common.constants import \
     ATTRIB, STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, REF, \
-    SIGNATURE_TYPE, CLAIM_DEF
+    SIGNATURE_TYPE, CLAIM_DEF, SCHEMA
 from sovrin_common.types import Request
 from sovrin_node.persistence.attribute_store import AttributeStore
 from sovrin_node.persistence.idr_cache import IdrCache
@@ -121,6 +121,55 @@ def test_state_proofs_for_get_claim_def():
     # Verifying signed state proof
     path = req_handler._makeClaimDefPath(nym, schema_seqno, signature_type)
     encoded_value = req_handler._encodeValue(key_components,
+                                             seq_no)
+    verified = req_handler.state.verify_state_proof(
+        proof[ROOT_HASH],
+        path,
+        encoded_value,
+        proof[PROOF_NODES]
+    )
+    assert verified
+
+
+def test_state_proofs_for_get_schema():
+    # Creating required structures
+    req_handler = make_request_handler()
+
+    # Adding claim def
+    nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
+
+    seq_no = 0
+
+    schema_name = "schema_a"
+    schema_version = "1.0"
+    # data = '{"name": "schema_a", "version": "1.0"}'
+    schema_key = {NAME: schema_name, VERSION: schema_version}
+    data = {**schema_key, "Some_Attr": "Attr1"}
+    txn = {
+        TXN_TYPE: SCHEMA,
+        IDENTIFIER: nym,
+        f.SEQ_NO.nm: seq_no,
+        DATA: data
+    }
+
+    req_handler._addSchema(txn)
+    req_handler.state.commit()
+
+    # Getting claim def
+    request = Request(
+        operation={
+            TARGET_NYM: nym,
+            DATA: schema_key
+        }
+    )
+
+    result = req_handler.handleGetSchemaReq(request, 'Sender')
+    proof = extract_proof(result)
+    assert result[DATA] == {**data, ORIGIN: nym}
+
+    # Verifying signed state proof
+    path = req_handler._makeSchemaPath(nym, schema_name, schema_version)
+    encoded_value = req_handler._encodeValue(data,
                                              seq_no)
     verified = req_handler.state.verify_state_proof(
         proof[ROOT_HASH],
