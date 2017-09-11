@@ -14,7 +14,7 @@ from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    SIGNATURE_TYPE
+    SIGNATURE_TYPE,STATE_PROOF,ROOT_HASH,MULTI_SIGNATURE,PROOF_NODES
 from sovrin_common.roles import Roles
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
@@ -220,7 +220,7 @@ class DomainReqHandler(PHandler):
 
     def handleGetSchemaReq(self, request: Request, frm: str):
         authorDid = request.operation[TARGET_NYM]
-        schema, lastSeqNo = self.getSchema(
+        schema, lastSeqNo, proof = self.getSchema(
             author=authorDid,
             schemaName=(request.operation[DATA][NAME]),
             schemaVersion=(request.operation[DATA][VERSION])
@@ -232,13 +232,14 @@ class DomainReqHandler(PHandler):
             DATA: schema,
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
-            f.SEQ_NO.nm: lastSeqNo
+            f.SEQ_NO.nm: lastSeqNo,
+            STATE_PROOF: proof
         }}
         return result
 
     def handleGetClaimDefReq(self, request: Request, frm: str):
         signatureType = request.operation[SIGNATURE_TYPE]
-        keys, lastSeqNo = self.getClaimDef(
+        keys, lastSeqNo, proof = self.getClaimDef(
             author=request.operation[ORIGIN],
             schemaSeqNo=request.operation[REF],
             signatureType=signatureType
@@ -248,7 +249,8 @@ class DomainReqHandler(PHandler):
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
             SIGNATURE_TYPE: signatureType,
-            f.SEQ_NO.nm: lastSeqNo
+            f.SEQ_NO.nm: lastSeqNo,
+            STATE_PROOF: proof
         }}
         return result
 
@@ -267,7 +269,7 @@ class DomainReqHandler(PHandler):
         else:
             attr_key = request.operation[HASH]
 
-        value, lastSeqNo = \
+        value, lastSeqNo, proof = \
             self.getAttr(did=nym, key=attr_key)
         attr = None
         if value is not None:
@@ -275,14 +277,26 @@ class DomainReqHandler(PHandler):
                 attr = attr_key
             else:
                 attr = value
-
         result = {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
             DATA: attr,
-            f.SEQ_NO.nm: lastSeqNo
+            f.SEQ_NO.nm: lastSeqNo,
+            STATE_PROOF: proof
         }}
+
         return result
+
+    def make_proof(self, path):
+        proof = self.state.generate_state_proof(path)
+        root_hash = self.state.committedHeadHash
+        # TODO: add multi. sig. here
+        multi_sig = None
+        return {
+            ROOT_HASH: root_hash,
+            MULTI_SIGNATURE: multi_sig, # [["participants"], ["signatures"]]
+            PROOF_NODES: proof
+        }
 
     def lookup(self, path, isCommitted=True) -> (str, int):
         """
@@ -298,7 +312,8 @@ class DomainReqHandler(PHandler):
         decoded = self.stateSerializer.deserialize(encoded)
         value = decoded.get(self.VALUE)
         lastSeqNo = decoded.get(self.LAST_SEQ_NO)
-        return value, lastSeqNo
+        proof = self.make_proof(path)
+        return value, lastSeqNo, proof
 
     def _addAttr(self, txn) -> None:
         """
@@ -370,54 +385,54 @@ class DomainReqHandler(PHandler):
     def getAttr(self,
                 did: str,
                 key: str,
-                isCommitted=True) -> (str, int):
+                isCommitted=True) -> (str, int, list):
         assert did is not None
         assert key is not None
         path = self._makeAttrPath(did, key)
         try:
-            hashed_val, lastSeqNo = self.lookup(path, isCommitted)
+            hashed_val, lastSeqNo, proof = self.lookup(path, isCommitted)
         except KeyError:
-            return None, None
+            return None, None, None
         if hashed_val == '':
             # Its a HASH attribute
-            return hashed_val, lastSeqNo
+            return hashed_val, lastSeqNo, proof
         else:
             try:
                 value = self.attributeStore.get(hashed_val)
             except KeyError:
                 logger.error('Could not get value from attribute store for {}'
                              .format(hashed_val))
-                return None, None
-        return value, lastSeqNo
+                return None, None, None
+        return value, lastSeqNo, proof
 
     def getSchema(self,
                   author: str,
                   schemaName: str,
                   schemaVersion: str,
-                  isCommitted=True) -> (str, int):
+                  isCommitted=True) -> (str, int, list):
         assert author is not None
         assert schemaName is not None
         assert schemaVersion is not None
         path = self._makeSchemaPath(author, schemaName, schemaVersion)
         try:
-            keys, seqno = self.lookup(path, isCommitted)
-            return keys, seqno
+            keys, seqno, proof = self.lookup(path, isCommitted)
+            return keys, seqno, proof
         except KeyError:
-            return None, None
+            return None, None, None
 
     def getClaimDef(self,
                     author: str,
                     schemaSeqNo: str,
                     signatureType='CL',
-                    isCommitted=True) -> (str, int):
+                    isCommitted=True) -> (str, int, list):
         assert author is not None
         assert schemaSeqNo is not None
         path = self._makeClaimDefPath(author, schemaSeqNo, signatureType)
         try:
-            keys, seqno = self.lookup(path, isCommitted)
-            return keys, seqno
+            keys, seqno, proof = self.lookup(path, isCommitted)
+            return keys, seqno, proof
         except KeyError:
-            return None, None
+            return None, None, None
 
     @staticmethod
     def _hashOf(text) -> str:
