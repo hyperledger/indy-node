@@ -31,8 +31,8 @@ class DomainReqHandler(PHandler):
     VALUE = "val"
 
     def __init__(self, ledger, state, requestProcessor,
-                 idrCache, attributeStore):
-        super().__init__(ledger, state, requestProcessor)
+                 idrCache, attributeStore, bls_store):
+        super().__init__(ledger, state, requestProcessor, bls_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
 
@@ -219,8 +219,6 @@ class DomainReqHandler(PHandler):
                   DATA: data,
                   STATE_PROOF: proof}
         result.update(request.operation)
-
-
         return result
 
     def handleGetSchemaReq(self, request: Request, frm: str):
@@ -293,9 +291,8 @@ class DomainReqHandler(PHandler):
         proof = self.state.generate_state_proof(path, serialize=True)
         proof = base58.b58encode(proof)
         root_hash = self.state.committedHeadHash
+        multi_sig = self.bls_store.get(root_hash)
         root_hash = base58.b58encode(bytes(root_hash))
-        # TODO: add multi. sig. here
-        multi_sig = None
         return {
             ROOT_HASH: root_hash,
             MULTI_SIGNATURE: multi_sig, # [["participants"], ["signatures"]]
