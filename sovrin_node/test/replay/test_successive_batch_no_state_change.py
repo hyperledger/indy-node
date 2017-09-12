@@ -32,7 +32,7 @@ def tconf(tconf, request):
 def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
                                              tdirWithDomainTxnsUpdated,
                                              tconf, nodeSet,
-                                             trustee, trusteeWallet):
+                                             trustee, trusteeWallet, monkeypatch):
     """
     Send 2 NYM txns in different batches such that the second batch does not
     change state so that state root remains same, but keep the identifier
@@ -111,9 +111,12 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     pp_seq_no_to_delay = 4
     for node in other_nodes:
         node.nodeIbStasher.delay(specific_pre_prepare)
+        # disable requesting missing 3 phase messages. Otherwise PP delay won't work
+        for rpl in node.replicas:
+            monkeypatch.setattr(rpl, '_request_missing_three_phase_messages', lambda *x, **y: None)
 
     # Setting the verkey to `x`, then `y` and then back to `x` but in different
-    # batches with different with different request ids. The idea is to change
+    # batches with different request ids. The idea is to change
     # state root to `t` then `t'` and then back to `t` and observe that no
     # errors are encountered
 
@@ -139,8 +142,9 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     looper.run(eventually(check_uncommitted, 0))
 
     check_verkey(new_idr, verkey)
+    monkeypatch.undo()
 
-    # Dleay COMMITs so that IdrCache can be checked for correct
+    # Delay COMMITs so that IdrCache can be checked for correct
     # number of entries
 
     uncommitteds = {}
