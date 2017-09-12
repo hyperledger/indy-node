@@ -293,8 +293,10 @@ class DomainReqHandler(PHandler):
         return result
 
     def make_proof(self, path):
-        proof = self.state.generate_state_proof(path)
+        proof = self.state.generate_state_proof(path, serialize=True)
+        proof = base58.b58encode(proof)
         root_hash = self.state.committedHeadHash
+        root_hash = base58.b58encode(root_hash)
         # TODO: add multi. sig. here
         multi_sig = None
         return {

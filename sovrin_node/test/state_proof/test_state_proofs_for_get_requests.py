@@ -12,6 +12,7 @@ from sovrin_common.types import Request
 from sovrin_node.persistence.attribute_store import AttributeStore
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.server.domain_req_handler import DomainReqHandler
+import base58
 
 
 def make_request_handler():
@@ -63,6 +64,7 @@ def test_state_proofs_for_get_attr():
         }
     )
     result = req_handler.handleGetAttrsReq(get_request, 'Sender')
+
     proof = extract_proof(result)
     attr_value = result[DATA]
     assert attr_value == raw_attribute
@@ -71,11 +73,15 @@ def test_state_proofs_for_get_attr():
     path = req_handler._makeAttrPath(nym, attr_key)
     encoded_value = req_handler._encodeValue(req_handler._hashOf(attr_value),
                                              seq_no)
+
+    proof_nodes = base58.b58decode(proof[PROOF_NODES])
+    root_hash = base58.b58decode(proof[ROOT_HASH])
     verified = req_handler.state.verify_state_proof(
-        proof[ROOT_HASH],
+        root_hash,
         path,
         encoded_value,
-        proof[PROOF_NODES]
+        proof_nodes,
+        serialized=True
     )
     assert verified
 
@@ -122,11 +128,14 @@ def test_state_proofs_for_get_claim_def():
     path = req_handler._makeClaimDefPath(nym, schema_seqno, signature_type)
     encoded_value = req_handler._encodeValue(key_components,
                                              seq_no)
+    proof_nodes = base58.b58decode(proof[PROOF_NODES])
+    root_hash = base58.b58decode(proof[ROOT_HASH])
     verified = req_handler.state.verify_state_proof(
-        proof[ROOT_HASH],
+        root_hash,
         path,
         encoded_value,
-        proof[PROOF_NODES]
+        proof_nodes,
+        serialized=True
     )
     assert verified
 
@@ -171,11 +180,14 @@ def test_state_proofs_for_get_schema():
     path = req_handler._makeSchemaPath(nym, schema_name, schema_version)
     encoded_value = req_handler._encodeValue(data,
                                              seq_no)
+    proof_nodes = base58.b58decode(proof[PROOF_NODES])
+    root_hash = base58.b58decode(proof[ROOT_HASH])
     verified = req_handler.state.verify_state_proof(
-        proof[ROOT_HASH],
+        root_hash,
         path,
         encoded_value,
-        proof[PROOF_NODES]
+        proof_nodes,
+        serialized=True
     )
     assert verified
 
@@ -206,10 +218,13 @@ def test_state_proofs_for_get_nym():
     # Verifying signed state proof
     path = req_handler.nym_to_state_key(nym)
     encoded_value = req_handler.stateSerializer.serialize(data)
+    proof_nodes = base58.b58decode(proof[PROOF_NODES])
+    root_hash = base58.b58decode(proof[ROOT_HASH])
     verified = req_handler.state.verify_state_proof(
-        proof[ROOT_HASH],
+        root_hash,
         path,
         encoded_value,
-        proof[PROOF_NODES]
+        proof_nodes,
+        serialized=True
     )
     assert verified
