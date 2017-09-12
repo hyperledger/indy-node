@@ -1,13 +1,13 @@
 import pytest
 from sovrin_common.types import ClientDiscloOperation
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, NonEmptyStringField, IdentifierField
+from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, IdentifierField
 
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
-    ("data", NonEmptyStringField),
-    ('nonce', NonEmptyStringField),
+    ("data", LimitedLengthStringField),
+    ('nonce', LimitedLengthStringField),
     ("dest", IdentifierField),
 ])
 
