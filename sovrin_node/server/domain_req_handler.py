@@ -230,9 +230,6 @@ class DomainReqHandler(PHandler):
             schemaName=(request.operation[DATA][NAME]),
             schemaVersion=(request.operation[DATA][VERSION])
         )
-
-        if schema is not None:
-            schema.update({ORIGIN: authorDid})
         result = {**request.operation, **{
             DATA: schema,
             f.IDENTIFIER.nm: request.identifier,
