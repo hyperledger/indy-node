@@ -2,11 +2,9 @@
 
 ## Overview
 
-Currently, out of the box, the Getting started tutorial uses externally running nodes and assumes that these are all up and running.  However, being test nodes, sometimes they aren’t, or sometimes you just want to see everything flowing through in a local environment.
+Currently, out of the box, the [Getting Started](https://github.com/hyperledger/indy-node/blob/master/getting-started.md) tutorial uses externally running nodes and assumes that these are all up and running.  However, being test nodes, sometimes they aren’t, or sometimes you just want to see everything flowing through in a local environment.
 
-This guide describes the process of setting up a local 4 node cluster, attaching an agent to the cluster (Faber in this case), and running a client (Alice).
-
-It (currently) supports the GettingStarted tutorial up to to point of accepting Fabers claim however adding the Acme and ThriftBank agents is pretty trivial).
+This guide describes the process of setting up a local 4 node cluster and attaching the 3 Agents required [use the Sovrin CLI](https://github.com/hyperledger/indy-node/blob/master/getting-started.md#using-the-sovrin-cli) and impersonate Alice.
 
 Note - I'm still trying to get my head around the details of Sovrin so there may be a few things I'm doing wrong or haven't yet understood! However this process is working nicely so far.
  
@@ -98,9 +96,9 @@ send ATTRIB dest=H2aKRiDeq8aLZSydQMDbtf raw={"endpoint": {"ha": "127.0.0.1:7777"
 At this point we can start the Agents as follows, using separate sessions/windows (using [screen](https://www.gnu.org/software/screen/) for instance).
 
 ```
-/bin/python3.5 /usr/lib/python3.5/site-packages/sovrin_client/test/agent/faber.py --port 5555
-/bin/python3.5 /usr/lib/python3.5/site-packages/sovrin_client/test/agent/acme.py --port 6666
-/bin/python3.5 /usr/lib/python3.5/site-packages/sovrin_client/test/agent/thrift.py --port 7777
+python /usr/lib/python3.5/site-packages/sovrin_client/test/agent/faber.py --port 5555
+python /usr/lib/python3.5/site-packages/sovrin_client/test/agent/acme.py --port 6666
+python /usr/lib/python3.5/site-packages/sovrin_client/test/agent/thrift.py --port 7777
 ```
 REM: you may have to change the path to your Python interpreter and the libraries according to your environment (i. e.: ```/bin/python3.5 ~/.virtualenvs/sovrin/lib/python3.5/site-packages/sovrin_client/test/agent/...```).
 
@@ -108,8 +106,9 @@ Each Agent should then start up, connect to our test Sovrin cluster, handshake a
 
 ## Run Getting Started guide
 
-At this point, you can follow the [Getting Started](https://github.com/hyperledger/indy-node/blob/master/getting-started.md) guide up to the point of Applying for a Job.
+At this point, you can follow the Getting Started guide from [Using Sovrin CLI](https://github.com/hyperledger/indy-node/blob/master/getting-started.md#using-the-sovrin-cli).
 I recommend you use a seperate Sovrin CLI instance for this.
+
 Here are the resulting commands ready to copy/paste:
 
 ```
