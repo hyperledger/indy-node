@@ -13,16 +13,18 @@ from plenum.common.messages.node_messages import NonEmptyStringField, \
     LedgerInfoField as PLedgerInfoField, NonNegativeNumberField, \
     LedgerIdField as PLedgerIdField
 from plenum.common.messages.fields import ConstantField, IdentifierField, LimitedLengthStringField, TxnSeqNoField, \
-    Sha256HexField, JsonField, MapField, BooleanField, VersionField
+    Sha256HexField, JsonField, MapField, BooleanField, VersionField, ChooseField
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
+from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, NONCE_FIELD_LIMIT, ORIGIN_FIELD_LIMIT, \
+    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, HASH_FIELD_LIMIT
 
 from sovrin_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
     IN_PROGRESS, DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
-    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY
+    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY, START, CANCEL
 
 
 class Request(PRequest):
@@ -52,25 +54,25 @@ class ClientGetNymOperation(MessageValidator):
 class ClientDiscloOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(DISCLO)),
-        (DATA, NonEmptyStringField()),
-        (NONCE, NonEmptyStringField()),
+        (DATA, LimitedLengthStringField(max_length=DATA_FIELD_LIMIT)),
+        (NONCE, LimitedLengthStringField(max_length=NONCE_FIELD_LIMIT)),
         (TARGET_NYM, IdentifierField(optional=True)),
     )
 
 
 class GetSchemaField(MessageValidator):
     schema = (
-        (NAME, NonEmptyStringField()),
+        (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (VERSION, VersionField(components_number=(2, 3,))),
-        (ORIGIN, NonEmptyStringField(optional=True)),
+        (ORIGIN, LimitedLengthStringField(max_length=ORIGIN_FIELD_LIMIT, optional=True)),
     )
 
 
 class SchemaField(MessageValidator):
     schema = (
-        (NAME, NonEmptyStringField()),
+        (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (VERSION, VersionField(components_number=(2, 3,))),
-        (ATTR_NAMES, IterableField(NonEmptyStringField())),
+        (ATTR_NAMES, IterableField(LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))),
     )
 
 
@@ -100,9 +102,9 @@ class ClientAttribOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(ATTRIB)),
         (TARGET_NYM, IdentifierField(optional=True)),
-        (RAW, JsonField(optional=True)),
-        (ENC, NonEmptyStringField(optional=True)),
-        (HASH, NonEmptyStringField(optional=True)),
+        (RAW, JsonField(max_length=JSON_FIELD_LIMIT, optional=True)),
+        (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
+        (HASH, LimitedLengthStringField(max_length=HASH_FIELD_LIMIT, optional=True)),
     )
 
     def _validate_message(self, msg):
@@ -158,7 +160,7 @@ class ClientGetAttribOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_ATTR)),
         (TARGET_NYM, IdentifierField(optional=True)),
-        (RAW, NonEmptyStringField()),
+        (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT)),
     )
 
 
@@ -167,7 +169,7 @@ class ClientClaimDefSubmitOperation(MessageValidator):
         (TXN_TYPE, ConstantField(CLAIM_DEF)),
         (REF, TxnSeqNoField()),
         (DATA, ClaimDefField()),
-        (SIGNATURE_TYPE, NonEmptyStringField()),
+        (SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
     )
 
 
@@ -175,24 +177,23 @@ class ClientClaimDefGetOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_CLAIM_DEF)),
         (REF, TxnSeqNoField()),
-        (ORIGIN, NonEmptyStringField()),
-        (SIGNATURE_TYPE, NonEmptyStringField()),
+        (ORIGIN, LimitedLengthStringField(max_length=ORIGIN_FIELD_LIMIT)),
+        (SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
     )
 
 
 class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),
-        (ACTION, NonEmptyStringField()),  # TODO check actual value set
+        (ACTION, ChooseField(values=(START, CANCEL,))),
         (VERSION, VersionField(components_number=(2, 3,))),
         # TODO replace actual checks (idr, datetime)
-        (SCHEDULE, MapField(NonEmptyStringField(),
+        (SCHEDULE, MapField(IdentifierField(),
                             NonEmptyStringField(), optional=True)),
         (SHA256, Sha256HexField()),
         (TIMEOUT, NonNegativeNumberField(optional=True)),
-        (JUSTIFICATION, LimitedLengthStringField(
-            max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
-        (NAME, NonEmptyStringField(optional=True)),
+        (JUSTIFICATION, LimitedLengthStringField(max_length=JUSTIFICATION_MAX_SIZE, optional=True, nullable=True)),
+        (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (FORCE, BooleanField(optional=True)),
         (REINSTALL, BooleanField(optional=True)),
     )
