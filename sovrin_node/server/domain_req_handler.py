@@ -296,7 +296,7 @@ class DomainReqHandler(PHandler):
         proof = self.state.generate_state_proof(path, serialize=True)
         proof = base58.b58encode(proof)
         root_hash = self.state.committedHeadHash
-        root_hash = base58.b58encode(root_hash)
+        root_hash = base58.b58encode(bytes(root_hash))
         # TODO: add multi. sig. here
         multi_sig = None
         return {
