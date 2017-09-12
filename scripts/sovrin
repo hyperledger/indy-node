@@ -44,7 +44,7 @@ def run_cli():
 
     withNode = True if '--with-node' in commands else False
 
-    with Looper(debug=False) as looper:
+    with Looper(debug=config.LOOPER_DEBUG) as looper:
         curDir = os.getcwd()
         logFilePath = os.path.join(curDir, config.logFilePath)
         cli = SovrinCli(looper=looper,
