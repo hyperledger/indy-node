@@ -1,6 +1,6 @@
 import pytest
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
-    IDENTIFIER, NAME, VERSION
+    IDENTIFIER, NAME, VERSION, ROLE, VERKEY
 from plenum.common.types import f
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
@@ -135,7 +135,7 @@ def test_state_proofs_for_get_schema():
     # Creating required structures
     req_handler = make_request_handler()
 
-    # Adding claim def
+    # Adding schema
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
 
     seq_no = 0
@@ -155,7 +155,7 @@ def test_state_proofs_for_get_schema():
     req_handler._addSchema(txn)
     req_handler.state.commit()
 
-    # Getting claim def
+    # Getting schema
     request = Request(
         operation={
             TARGET_NYM: nym,
@@ -171,6 +171,41 @@ def test_state_proofs_for_get_schema():
     path = req_handler._makeSchemaPath(nym, schema_name, schema_version)
     encoded_value = req_handler._encodeValue(data,
                                              seq_no)
+    verified = req_handler.state.verify_state_proof(
+        proof[ROOT_HASH],
+        path,
+        encoded_value,
+        proof[PROOF_NODES]
+    )
+    assert verified
+
+
+def test_state_proofs_for_get_nym():
+    # Creating required structures
+    req_handler = make_request_handler()
+    nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
+    role = "2"
+    verkey = "~7TYfekw4GUagBnBVCqPjiC"
+    # Adding nym
+    data = {
+        f.IDENTIFIER.nm: nym,
+        ROLE: role,
+        VERKEY: verkey,
+        "seqNo": 0
+    }
+    req_handler.updateNym(nym, data)
+    req_handler.state.commit()
+    # Getting nym
+    request = Request(
+        operation={
+            TARGET_NYM: nym
+        }
+    )
+    result = req_handler.handleGetNymReq(request, "Sender")
+    proof = extract_proof(result)
+    # Verifying signed state proof
+    path = req_handler.nym_to_state_key(nym)
+    encoded_value = req_handler.stateSerializer.serialize(data)
     verified = req_handler.state.verify_state_proof(
         proof[ROOT_HASH],
         path,

@@ -213,9 +213,14 @@ class DomainReqHandler(PHandler):
             data = self.stateSerializer.serialize(nymData)
         else:
             data = None
+        proof = self.make_proof(self.nym_to_state_key(nym))
         result = {f.IDENTIFIER.nm: request.identifier,
-                  f.REQ_ID.nm: request.reqId, DATA: data}
+                  f.REQ_ID.nm: request.reqId,
+                  DATA: data,
+                  STATE_PROOF: proof}
         result.update(request.operation)
+
+
         return result
 
     def handleGetSchemaReq(self, request: Request, frm: str):
