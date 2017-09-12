@@ -13,7 +13,7 @@ Note - I'm still trying to get my head around the details of Sovrin so there may
 
 ## Requirements
 
-I’m assuming that you have Sovrin-node installed (I recommend installing this in an Ubuntu Virtual Machine if possible) – If not follow the instructions at: https://github.com/sovrin-foundation/sovrin-node/blob/master/setup.md
+I’m assuming that you have Sovrin-node installed (I recommend installing this in an Ubuntu Virtual Machine if possible) – If not follow the [setup](https://github.com/hyperledger/indy-node/blob/master/setup.md) instructions.
 
 Finally make sure that `pytest` module is installed (it is required to run test-related functionality like Faber, Acme and ThriftBank test agents): 
 
@@ -98,7 +98,7 @@ The Faber agent should then start up, connect to our test Sovrin cluster, handsh
 
 ## Run Getting Started guide
 
-At this point, you can follow the Getting Started guide at https://github.com/sovrin-foundation/sovrin/blob/master/getting-started.md up to the point of Applying for a Job.
+At this point, you can follow the [Getting Started](https://github.com/hyperledger/indy-node/blob/master/getting-started.md) guide up to the point of Applying for a Job.
 I recommend you use a seperate Sovrin CLI instance for this.
 
 If you wish to add the Acme and ThriftBank agents, follow the steps for attaching the Faber agent using the following infomation:
