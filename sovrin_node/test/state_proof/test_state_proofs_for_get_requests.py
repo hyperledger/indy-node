@@ -1,6 +1,6 @@
 import pytest
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
-    IDENTIFIER, NAME, VERSION, ROLE, VERKEY
+    IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType
 from plenum.common.types import f
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
@@ -13,17 +13,22 @@ from sovrin_node.persistence.attribute_store import AttributeStore
 from sovrin_node.persistence.idr_cache import IdrCache
 from sovrin_node.server.domain_req_handler import DomainReqHandler
 import base58
+from plenum.bls.bls_store import BlsStore
 
 
 def make_request_handler():
     state = PruningState(KeyValueStorageInMemory())
     cache = IdrCache('Cache', KeyValueStorageInMemory())
     attr_store = AttributeStore(KeyValueStorageInMemory())
+    bls_store = BlsStore(keyValueType=KeyValueStorageType.Memory,
+                         dataLocation=None,
+                         keyValueStorageName="BlsInMemoryStore")
     return DomainReqHandler(ledger=None,
                             state=state,
                             requestProcessor=None,
                             idrCache=cache,
-                            attributeStore=attr_store)
+                            attributeStore=attr_store,
+                            bls_store=bls_store)
 
 
 def extract_proof(result):
