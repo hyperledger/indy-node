@@ -4,6 +4,7 @@ import sys
 from plenum.common.exceptions import NoConsensusYet
 from stp_core.common.log import getlogger
 from sovrin_client.agent.agent_cli import AgentCli
+from sovrin_common.config_util import getConfig
 
 from stp_core.loop.looper import Looper
 
@@ -50,7 +51,7 @@ def runAgentCli(agent, config, looper=None, bootstrap=None):
     if looper:
         run(looper)
     else:
-        with Looper(debug=False) as looper:
+        with Looper(debug=config.LOOPER_DEBUG) as looper:
             run(looper)
 
 
@@ -67,7 +68,7 @@ def runAgent(agent, looper=None, bootstrap=None):
     if looper:
         do_run(looper)
     else:
-        with Looper(debug=True, loop=agent.loop) as looper:
+        with Looper(debug=getConfig().LOOPER_DEBUG, loop=agent.loop) as looper:
             do_run(looper)
             looper.run()
 

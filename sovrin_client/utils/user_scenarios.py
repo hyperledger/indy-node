@@ -16,6 +16,7 @@ from plenum.common.signer_simple import SimpleSigner
 from sovrin_client.client.client import Client
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_common.constants import NYM, GET_NYM
+from sovrin_common.config_util import getConfig
 
 logger = getlogger()
 
@@ -54,7 +55,7 @@ class UserScenario(metaclass=ABCMeta):
         try:
             self._createClientAndWallet()
 
-            self._looper = Looper(debug=True)
+            self._looper = Looper(debug=getConfig().LOOPER_DEBUG)
             try:
                 self._startClient()
                 self.do()
