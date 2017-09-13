@@ -3,7 +3,7 @@
 import argparse
 import os.path
 
-from plenum.common.keygen_utils import initLocalKeys
+from plenum.common.keygen_utils import initLocalKeys, init_bls_keys
 from plenum.common.constants import CLIENT_STACK_SUFFIX
 from plenum.common.util import randomString
 
@@ -34,6 +34,7 @@ if __name__ == "__main__":
         print("Generating a random seed for the keypair {}".format(args.seed))
     try:
         initLocalKeys(args.name, keepDir, args.seed, args.force, config=config)
+        bls_key = init_bls_keys(config.baseDir, args.name, args.seed)
     except Exception as ex:
         print(ex)
         exit()
