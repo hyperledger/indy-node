@@ -22,7 +22,7 @@ def run_node(config, name, node_port, client_port):
 
     from stp_core.loop.looper import Looper
     from sovrin_node.server.node import Node
-    with Looper(debug=True) as looper:
+    with Looper(debug=config.LOOPER_DEBUG) as looper:
         node = Node(name, nodeRegistry=None, basedirpath=config.baseDir,
                     ha=node_ha, cliha=client_ha)
         looper.add(node)
