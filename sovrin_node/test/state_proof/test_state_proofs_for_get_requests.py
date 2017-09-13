@@ -1,13 +1,13 @@
 import pytest
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
-    IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType
+    IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
+    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES
 from plenum.common.types import f
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 
 from sovrin_common.constants import \
-    ATTRIB, STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, REF, \
-    SIGNATURE_TYPE, CLAIM_DEF, SCHEMA
+    ATTRIB, REF, SIGNATURE_TYPE, CLAIM_DEF, SCHEMA
 from sovrin_common.types import Request
 from sovrin_node.persistence.attribute_store import AttributeStore
 from sovrin_node.persistence.idr_cache import IdrCache

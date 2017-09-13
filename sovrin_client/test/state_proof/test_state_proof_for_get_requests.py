@@ -1,8 +1,8 @@
 import pytest
 
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA
-from sovrin_common.constants import GET_ATTR, STATE_PROOF, ROOT_HASH, \
-    MULTI_SIGNATURE, PROOF_NODES
+from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
+    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES
+from sovrin_common.constants import GET_ATTR
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     getRepliesFromClientInbox
 

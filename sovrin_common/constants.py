@@ -27,12 +27,6 @@ JUSTIFICATION = 'justification'
 REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 
-# State proof
-STATE_PROOF = 'state_proof'
-ROOT_HASH = "root_hash"
-MULTI_SIGNATURE = "multi_signature"
-PROOF_NODES = "proof_nodes"
-
 NULL = 'null'
 OWNER = '<owner>'
 

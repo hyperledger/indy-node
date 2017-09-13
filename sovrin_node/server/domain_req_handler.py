@@ -9,12 +9,13 @@ import base58
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
-    VERKEY, DATA, NAME, VERSION, ORIGIN
+    VERKEY, DATA, NAME, VERSION, ORIGIN, \
+    STATE_PROOF,ROOT_HASH,MULTI_SIGNATURE,PROOF_NODES
 from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    SIGNATURE_TYPE,STATE_PROOF,ROOT_HASH,MULTI_SIGNATURE,PROOF_NODES
+    SIGNATURE_TYPE
 from sovrin_common.roles import Roles
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
