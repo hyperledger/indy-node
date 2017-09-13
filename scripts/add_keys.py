@@ -100,7 +100,7 @@ async def ensureConnectedToNodes(client):
 
 
 def addNyms():
-    with Looper(debug=True) as looper:
+    with Looper(debug=getConfig().LOOPER_DEBUG) as looper:
 
         from sovrin_client.test.helper import createNym
 
