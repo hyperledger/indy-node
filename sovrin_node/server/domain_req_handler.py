@@ -47,7 +47,10 @@ class DomainReqHandler(PHandler):
         typ = txn.get(TXN_TYPE)
         nym = txn.get(TARGET_NYM)
         if typ == NYM:
-            data = {f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm)}
+            data = {
+                f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm),
+                f.SEQ_NO.nm: txn.get(f.SEQ_NO.nm)
+            }
             if ROLE in txn:
                 data[ROLE] = txn.get(ROLE)
             if VERKEY in txn:
