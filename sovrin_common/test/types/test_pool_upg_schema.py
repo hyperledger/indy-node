@@ -1,19 +1,19 @@
 import pytest
 from sovrin_common.types import ClientPoolUpgradeOperation
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, NonEmptyStringField, VersionField, MapField, Sha256HexField, \
+from plenum.common.messages.fields import ConstantField, ChooseField, VersionField, MapField, Sha256HexField, \
     NonNegativeNumberField, LimitedLengthStringField, BooleanField
 
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
-    ('action', NonEmptyStringField),
+    ('action', ChooseField),
     ("version", VersionField),
     ('schedule', MapField),
     ('sha256', Sha256HexField),
     ('timeout', NonNegativeNumberField),
     ('justification', LimitedLengthStringField),
-    ("name", NonEmptyStringField),
+    ("name", LimitedLengthStringField),
     ("force", BooleanField),
     ("reinstall", BooleanField),
 ])

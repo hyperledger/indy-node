@@ -45,7 +45,7 @@ def getHA(s):
 if __name__ == '__main__':
     args = parseArgs()
     config = getConfig()
-    with Looper(debug=True) as looper:
+    with Looper(debug=config.LOOPER_DEBUG) as looper:
         client, req = changeHA(looper,
                                config,
                                args.nodeName,
