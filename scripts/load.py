@@ -9,6 +9,7 @@ from stp_core.common.log import getlogger, Logger
 from stp_core.network.port_dispenser import genHa, HA
 from stp_core.loop.looper import Looper
 from plenum.test.helper import waitForSufficientRepliesForRequests
+from sovrin_common.config_util import getConfig
 
 numReqs = 100
 splits = 1
@@ -36,7 +37,7 @@ def put_load():
     wallet.addIdentifier(
         signer=DidSigner(seed=b'000000000000000000000000Steward1'))
     client = Client(name, ha=ha)
-    with Looper(debug=True) as looper:
+    with Looper(debug=getConfig().LOOPER_DEBUG) as looper:
         looper.add(client)
         print('Will send {} reqs in all'.format(numReqs))
         requests = sendRandomRequests(wallet, client, numReqs)

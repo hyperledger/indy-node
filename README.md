@@ -21,10 +21,10 @@ Use project name `INDY`.
 Join us on [Jira's Rocket.Chat](chat.hyperledger.org) at `#indy` to discuss.
 
 Today, documentation for Indy is sparse. Most materials that exist were written for Sovrin. Therefore,
-we recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/sovrin-foundation/sovrin-client/blob/master/getting-started.md) to learn about Indy Node basics. In the future, documentation
+we recommend that developers should explore Sovrin's [Getting Started Guide](getting-started.md) to learn about Indy Node basics. In the future, documentation
 will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
 
-Have a look at [Setup Instructions](https://github.com/sovrin-foundation/sovrin-client/blob/master/setup.md)
+Have a look at [Setup Instructions](setup.md)
 to understand how to work with the code. Note that setup instructions may change often.
 
 ## Contributions

@@ -185,7 +185,7 @@ on what type of development environment you have. In particular, we
 think you will have a bumpy ride on windows. We are working on improving
 these instructions.
 
-Developers should explore the [Getting Started Guide](https://github.com/sovrin-foundation/sovrin-client/blob/master/getting-started.md) to learn how Sovrin works.
+Developers should explore the [Getting Started Guide](getting-started.md) to learn how Sovrin works.
 
 The Sovrin codebase makes extensive use of coroutines and the async/await keywords in
 Python, and as such, requires Python version 3.5.0 or later. Plenum also

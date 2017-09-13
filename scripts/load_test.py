@@ -392,7 +392,7 @@ def main(args):
     clientPoll = ClientPoll(args.clientsListFilePath,
                             args.numberOfClients, args.numberOfClientsToSkip)
 
-    with Looper(debug=True) as looper:
+    with Looper() as looper:
 
         # connect
 
