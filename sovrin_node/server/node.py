@@ -367,6 +367,7 @@ class Node(PlenumNode, HasPoolManager):
             self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetNymReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+            self.total_read_request_number += 1
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
             self.send_ack_to_client(request.key, frm)
             # TODO: `handleGetSchemaReq` should be changed to
@@ -375,14 +376,17 @@ class Node(PlenumNode, HasPoolManager):
             # Similar reasoning follows for other methods below
             result = self.reqHandler.handleGetSchemaReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+            self.total_read_request_number += 1
         elif request.operation[TXN_TYPE] == GET_ATTR:
             self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetAttrsReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+            self.total_read_request_number += 1
         elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
             self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetClaimDefReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+            self.total_read_request_number += 1
         elif request.operation[TXN_TYPE] == GET_TXNS:
             super().processRequest(request, frm)
         else:

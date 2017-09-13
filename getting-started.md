@@ -813,7 +813,7 @@ Response from Thrift Bank (69.9 ms):
 ```
 ## Explore the Code
 
-Now that you've had a chance to see how Sovrin works from the outside, perhaps you'd like to see how it works underneath, from code? If so, please navigate to [Simulating Getting Started in an Event Loop](https://github.com/sovrin-foundation/sovrin-client/blob/master/sovrin_client/test/training/test_getting_started_guide.py).
+Now that you've had a chance to see how Sovrin works from the outside, perhaps you'd like to see how it works underneath, from code? If so, please navigate to [Simulating Getting Started in an Event Loop](sovrin_client/test/training/test_getting_started_guide.py).
 You may need to be signed into Github to view this link.
 
 # Appendix
