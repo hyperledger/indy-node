@@ -289,14 +289,14 @@ class DomainReqHandler(PHandler):
 
     def make_proof(self, path):
         proof = self.state.generate_state_proof(path, serialize=True)
-        proof = base58.b58encode(proof)
         root_hash = self.state.committedHeadHash
-        multi_sig = self.bls_store.get(root_hash)
-        root_hash = base58.b58encode(bytes(root_hash))
+        proof_base58 = base58.b58encode(proof)
+        root_hash_base58 = base58.b58encode(bytes(root_hash))
+        multi_sig = self.bls_store.get(root_hash_base58)
         return {
-            ROOT_HASH: root_hash,
+            ROOT_HASH: root_hash_base58,
             MULTI_SIGNATURE: multi_sig, # [["participants"], ["signatures"]]
-            PROOF_NODES: proof
+            PROOF_NODES: proof_base58
         }
 
     def lookup(self, path, isCommitted=True) -> (str, int):
