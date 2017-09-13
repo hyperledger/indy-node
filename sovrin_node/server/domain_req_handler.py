@@ -221,6 +221,7 @@ class DomainReqHandler(PHandler):
         result = {f.IDENTIFIER.nm: request.identifier,
                   f.REQ_ID.nm: request.reqId,
                   DATA: data,
+                  f.SEQ_NO.nm: data.get(f.SEQ_NO.nm),
                   STATE_PROOF: proof}
         result.update(request.operation)
         return result
