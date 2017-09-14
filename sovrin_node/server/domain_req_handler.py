@@ -459,7 +459,7 @@ class DomainReqHandler(PHandler):
 
     @staticmethod
     def _makeSchemaPath(did, schemaName, schemaVersion) -> bytes:
-        return "{DID}:{MARKER}:{SCHEMA_NAME}{SCHEMA_VERSION}" \
+        return "{DID}:{MARKER}:{SCHEMA_NAME}:{SCHEMA_VERSION}" \
             .format(DID=did,
                     MARKER=DomainReqHandler.MARKER_SCHEMA,
                     SCHEMA_NAME=schemaName,
