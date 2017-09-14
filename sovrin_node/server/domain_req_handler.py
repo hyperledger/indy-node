@@ -201,7 +201,8 @@ class DomainReqHandler(PHandler):
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
-        self.idrCache.set(nym, ta=updatedData.get(f.IDENTIFIER.nm),
+        self.idrCache.set(nym,
+                          ta=updatedData.get(f.IDENTIFIER.nm),
                           verkey=updatedData.get(VERKEY),
                           role=updatedData.get(ROLE),
                           isCommitted=isCommitted)
