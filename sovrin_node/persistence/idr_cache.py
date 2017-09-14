@@ -157,9 +157,9 @@ class IdrCache:
         if role and role != r:
             return None
         return {
-            ROLE: r,
-            VERKEY: verkey,
-            f.IDENTIFIER.nm: ta if ta else None
+            ROLE: r or None,
+            VERKEY: verkey or None,
+            f.IDENTIFIER.nm: ta or None,
         }
 
     def getTrustee(self, nym, isCommitted=True):
