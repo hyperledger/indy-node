@@ -179,7 +179,7 @@ def test_state_proofs_for_get_schema():
 
     result = req_handler.handleGetSchemaReq(request, 'Sender')
     proof = extract_proof(result)
-    assert result[DATA] == {**data, ORIGIN: nym}
+    assert result[DATA] == data
 
     # Verifying signed state proof
     path = req_handler._makeSchemaPath(nym, schema_name, schema_version)
@@ -208,7 +208,7 @@ def test_state_proofs_for_get_nym():
         f.IDENTIFIER.nm: nym,
         ROLE: role,
         VERKEY: verkey,
-        "seqNo": 0
+        f.SEQ_NO.nm: 0
     }
     req_handler.updateNym(nym, data)
     req_handler.state.commit()
