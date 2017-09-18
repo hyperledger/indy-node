@@ -18,7 +18,7 @@ with a different network, using whatever conventions a community chooses.
 Bugs, stories, and backlog for this codebase are managed in [Hyperledger's Jira](https://jira.hyperledger.org).
 Use project name `INDY`.
 
-Join us on [Jira's Rocket.Chat](chat.hyperledger.org) at `#indy` to discuss.
+Join us on [Jira's Rocket.Chat](https://chat.hyperledger.org/channel/indy) at `#indy` to discuss.
 
 Today, documentation for Indy is sparse. Most materials that exist were written for Sovrin. Therefore,
 we recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/sovrin-foundation/sovrin-client/blob/master/getting-started.md) to learn about Indy Node basics. In the future, documentation
