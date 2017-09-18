@@ -149,6 +149,7 @@ class IdrCache:
             ROLE: actual_role or None,
             VERKEY: verkey or None,
             f.IDENTIFIER.nm: ta or None,
+            f.SEQ_NO.nm: seqNo,
         }
 
     def getTrustee(self, nym, isCommitted=True):

@@ -19,7 +19,7 @@ from sovrin_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
 from sovrin_common.roles import Roles
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
-
+from sovrin_node.persistence.idr_cache import IdrCache
 
 logger = getlogger()
 
@@ -34,7 +34,7 @@ class DomainReqHandler(PHandler):
     def __init__(self, ledger, state, requestProcessor,
                  idrCache, attributeStore, bls_store):
         super().__init__(ledger, state, requestProcessor, bls_store)
-        self.idrCache = idrCache
+        self.idrCache = idrCache  # type: IdrCache
         self.attributeStore = attributeStore
 
     def onBatchCreated(self, stateRoot):
@@ -202,9 +202,10 @@ class DomainReqHandler(PHandler):
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
         self.idrCache.set(nym,
+                          seqNo=data[f.SEQ_NO.nm],
                           ta=updatedData.get(f.IDENTIFIER.nm),
-                          verkey=updatedData.get(VERKEY),
                           role=updatedData.get(ROLE),
+                          verkey=updatedData.get(VERKEY),
                           isCommitted=isCommitted)
 
     def hasNym(self, nym, isCommitted: bool = True):
@@ -222,7 +223,7 @@ class DomainReqHandler(PHandler):
         result = {f.IDENTIFIER.nm: request.identifier,
                   f.REQ_ID.nm: request.reqId,
                   DATA: data,
-                  f.SEQ_NO.nm: nymData.get(f.SEQ_NO.nm),
+                  f.SEQ_NO.nm: nymData[f.SEQ_NO.nm],
                   STATE_PROOF: proof}
         result.update(request.operation)
         return result
