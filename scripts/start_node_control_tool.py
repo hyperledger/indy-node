@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
-from sovrin_node.utils.node_control_tool import NodeControlTool
+from indy_node.utils.node_control_tool import NodeControlTool
 
 
 # Parse command line arguments

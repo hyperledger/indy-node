@@ -23,16 +23,16 @@ RUN echo "deb https://repo.evernym.com/deb xenial master" >> /etc/apt/sources.li
 RUN apt-get update -y
 RUN apt-get install -y \ 
 	python3-charm-crypto
-RUN useradd -ms /bin/bash -u $uid sovrin
-USER sovrin
-RUN virtualenv -p python3.5 /home/sovrin/test
-RUN cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/sovrin/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
-RUN cp -r /usr/local/lib/python3.5/dist-packages/charm /home/sovrin/test/lib/python3.5/site-packages/charm
-RUN mkdir /home/sovrin/.sovrin
+RUN useradd -ms /bin/bash -u $uid indy
+USER indy
+RUN virtualenv -p python3.5 /home/indy/test
+RUN cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/indy/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
+RUN cp -r /usr/local/lib/python3.5/dist-packages/charm /home/indy/test/lib/python3.5/site-packages/charm
+RUN mkdir /home/indy/.indy
 USER root
-RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
-RUN ln -sf /home/sovrin/test/bin/pip /usr/local/bin/pip
-USER sovrin
+RUN ln -sf /home/indy/test/bin/python /usr/local/bin/python
+RUN ln -sf /home/indy/test/bin/pip /usr/local/bin/pip
+USER indy
 # TODO: Automate dependency collection
 RUN pip install jsonpickle \
 	ujson \
@@ -56,5 +56,5 @@ RUN pip install jsonpickle \
 	psutil \
 	intervaltree \
 	pytest-xdist
-ENV PYTHONPATH $PYTHONPATH:/home/sovrin/test/bin
-WORKDIR /home/sovrin
+ENV PYTHONPATH $PYTHONPATH:/home/indy/test/bin
+WORKDIR /home/indy

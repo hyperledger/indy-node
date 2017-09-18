@@ -1,16 +1,16 @@
-# Sovrin -- identity for all
+# Indy -- identity for all
 
-Sovrin Identity Network public/permissioned distributed ledger
+Indy Identity Network public/permissioned distributed ledger
 
 ### Setup Instructions
 
 #### Run common setup instructions
-Follow instructions mentioned here [Common Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
+Follow instructions mentioned here [Common Setup Instructions](https://github.com/hyperledger-archives/indy-common/blob/master/setup.md)
 
 ### Run tests [Optional]
 
-As sovrin-node tests needs sovrin-client which depends on Charm-Crypto, we need to install it.
-Follow instructions mentioned here [Charm-Crypto Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
+As indy-node tests needs indy-client which depends on Charm-Crypto, we need to install it.
+Follow instructions mentioned here [Charm-Crypto Setup Instructions](https://github.com/hyperledger-archives/indy-common/blob/master/setup.md)
 
 To run the tests, download the source by cloning this repo. 
 Navigate to the root directory of the source and install required packages by
@@ -24,10 +24,10 @@ Run test by
 python setup.py pytest
 ```
 
-### Installing Sovrin node
-Sovrin node can be installed using pip by
+### Installing Indy node
+Indy node can be installed using pip by
 ```
-pip install -U --no-cache-dir sovrin-node
+pip install -U --no-cache-dir indy-node
 ```
 
 ### Start Nodes
@@ -35,49 +35,49 @@ pip install -U --no-cache-dir sovrin-node
 #### Initializing Keep
 To run a node you need to generate its keys. The keys are stored on a disk in files in the location called `keep`. 
 The  following generates keys for a node named `Alpha` in the keep. 
-The keep for node `Alpha` is located at `~/.sovrin/Alpha`. 
+The keep for node `Alpha` is located at `~/.indy/Alpha`.
 ```
-init_sovrin_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
+init_indy_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
 ```
 
 
 #### Running Node
 
 ```
-start_sovrin_node Alpha 9701 9702
+start_indy_node Alpha 9701 9702
 ```
 The node uses a separate UDP channels for communicating with nodes and clients. 
 The first port number is for the node-to-node communication channel and the second is for node-to-client communication channel.
 
 
-#### Running a Sovrin test cluster.
-If you want to try out a Sovrin cluster of a few nodes with the nodes running on your local machine or different remote machines, 
-then you can use the script called, `generate_sovrin_pool_transactions`. Eg. If you want to run 4 nodes on you local machine and have 
+#### Running a Indy test cluster.
+If you want to try out a Indy cluster of a few nodes with the nodes running on your local machine or different remote machines,
+then you can use the script called, `generate_indy_pool_transactions`. Eg. If you want to run 4 nodes on you local machine and have
 5 clients bootstrapped so they can make write requests to the nodes, this is what you do.
 
 ```
-~$ generate_sovrin_pool_transactions --nodes 4 --clients 5 --nodeNum 1
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1
 This node with name Node1 will use ports 9701 and 9702 for nodestack and clientstack respectively
-~$ generate_sovrin_pool_transactions --nodes 4 --clients 5 --nodeNum 2
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 2
 This node with name Node2 will use ports 9703 and 9704 for nodestack and clientstack respectively
-~$ generate_sovrin_pool_transactions --nodes 4 --clients 5 --nodeNum 3
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 3
 This node with name Node3 will use ports 9705 and 9706 for nodestack and clientstack respectively
-~$ generate_sovrin_pool_transactions --nodes 4 --clients 5 --nodeNum 4
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 4
 his node with name Node4 will use ports 9707 and 9708 for nodestack and clientstack respectively
 ```
 
 Now you can run the 4 nodes as 
 ```
-start_sovrin_node Node1 9701 9702
+start_indy_node Node1 9701 9702
 ```
 ```
-start_sovrin_node Node2 9703 9704
+start_indy_node Node2 9703 9704
 ```
 ```
-start_sovrin_node Node3 9705 9706
+start_indy_node Node3 9705 9706
 ```
 ```
-start_sovrin_node Node4 9707 9708
+start_indy_node Node4 9707 9708
 ```
 
 These 4 commands created keys for 4 nodes `Node1`, `Node2`, `Node3` and `Node4`,
@@ -94,42 +94,42 @@ Now lets say you want to run 4 nodes on 4 different machines as
 For this
 On machine with IP 191.177.76.26 you will run
 ```
-~$ generate_sovrin_pool_transactions --nodes 4 --clients 5 --nodeNum 1 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
 This node with name Node1 will use ports 9701 and 9702 for nodestack and clientstack respectively
 ```
 
 On machine with IP 22.185.194.102 you will run
 ```
-~$ generate_sovrin_pool_transactions --nodes 4 --clients 5 --nodeNum 2 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 2 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
 This node with name Node2 will use ports 9703 and 9704 for nodestack and clientstack respectively
 ```
 
 On machine with IP 247.81.153.79 you will run
 ```
-~$ generate_sovrin_pool_transactions --nodes 4 --clients 5 --nodeNum 3 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 3 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
 This node with name Node3 will use ports 9705 and 9706 for nodestack and clientstack respectively
 ```
 
 On machine with IP 93.125.199.45 you will run
 ```
-~$ generate_sovrin_pool_transactions --nodes 4 --clients 5 --nodeNum 4 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 4 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
 This node with name Node4 will use ports 9707 and 9708 for nodestack and clientstack respectively
 ```
 
-# Sovrin Client
+# Indy Client
 
-Sovrin Client to interact with Sovrin Network (public/permissioned distributed ledger)
+Indy Client to interact with Indy Network (public/permissioned distributed ledger)
 
 ### Setup Instructions
 
 #### Run common setup instructions
-Follow instructions mentioned here [Common Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
+Follow instructions mentioned here [Common Setup Instructions](https://github.com/hyperledger-archives/indy-common/blob/master/setup.md)
 
-Follow instructions mentioned here [Charm-Crypto Setup Instructions](https://github.com/sovrin-foundation/sovrin-common/blob/master/setup.md)
+Follow instructions mentioned here [Charm-Crypto Setup Instructions](https://github.com/hyperledger-archives/indy-common/blob/master/setup.md)
 
 ### Run tests [Optional]
 
-Note: The tests create Sovrin nodes (dont worry, all nodes are created in the same process) . 
+Note: The tests create Indy nodes (dont worry, all nodes are created in the same process) .
 
 To run the tests, download the source by cloning this repo. 
 Navigate to the root directory of the source and install required packages by
@@ -143,41 +143,41 @@ python setup.py pytest
 ```
 
 
-### Installing Sovrin client
+### Installing Indy client
 ```
-pip install -U --no-cache-dir sovrin-client
+pip install -U --no-cache-dir indy-client
 ```
 
-Note. The tests create Sovrin nodes (dont worry, all nodes are created in the same process).
+Note. The tests create Indy nodes (dont worry, all nodes are created in the same process).
 
 #### Configuration
 
 
-### Start Sovrin client CLI (command line interface)
-Once installed, you can play with the command-line interface by running Sovrin from a terminal.
+### Start Indy client CLI (command line interface)
+Once installed, you can play with the command-line interface by running Indy from a terminal.
 
 Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [conemu](https://conemu.github.io/).
 ```
-sovrin
+indy
 ```
 
 
 
-# Sovrin Common
+# Indy Common
 
-Common utility functions for other Sovrin repos (like sovrin-client, sovrin-node etc)
+Common utility functions for other Indy repos (like indy-client, indy-node etc)
 
 
 
 ### Charm-Crypto Setup Instructions
 
-Sovrin-client requires anonymous credentials library which requires a cryptographic library.
+Indy-client requires anonymous credentials library which requires a cryptographic library.
 The default configuration includes an example that uses Charm-Crypto framework.
-The steps to install charm-crypto are mentioned in our [Anonymous Credentials](https://github.com/evernym/anoncreds) repository. 
+The steps to install charm-crypto are mentioned in our [Anonymous Credentials](https://github.com/hyperledger/indy-anoncreds) repository.
 You just have to run `setup-charm.sh` script. It will require sudo privileges on the system.
 
 
-### Common Setup Instructions (sovrin-client or sovrin-node) 
+### Common Setup Instructions (indy-client or indy-node)
 
 As of Oct 3, these setup instructions are validated at a beta level.
 We are aware of a few cases where you might hit roadblocks, depending
@@ -185,9 +185,9 @@ on what type of development environment you have. In particular, we
 think you will have a bumpy ride on windows. We are working on improving
 these instructions.
 
-Developers should explore the [Getting Started Guide](getting-started.md) to learn how Sovrin works.
+Developers should explore the [Getting Started Guide](getting-started.md) to learn how Indy works.
 
-The Sovrin codebase makes extensive use of coroutines and the async/await keywords in
+The Indy codebase makes extensive use of coroutines and the async/await keywords in
 Python, and as such, requires Python version 3.5.0 or later. Plenum also
 depends on libsodium, an awesome crypto library. These need to be installed
 separately. Read below to see how.
