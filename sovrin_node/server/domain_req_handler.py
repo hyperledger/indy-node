@@ -5,6 +5,7 @@ from hashlib import sha256
 from copy import deepcopy
 
 import base58
+import base64
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
@@ -297,13 +298,13 @@ class DomainReqHandler(PHandler):
     def make_proof(self, path):
         proof = self.state.generate_state_proof(path, serialize=True)
         root_hash = self.state.committedHeadHash
-        proof_base58 = base58.b58encode(proof)
-        root_hash_base58 = base58.b58encode(bytes(root_hash))
-        multi_sig = self.bls_store.get(root_hash_base58)
+        encoded_proof = base64.b64encode(proof)
+        encoded_root_hash = base58.b58encode(bytes(root_hash))
+        multi_sig = self.bls_store.get(encoded_root_hash)
         return {
-            ROOT_HASH: root_hash_base58,
-            MULTI_SIGNATURE: multi_sig, # [["participants"], ["signatures"]]
-            PROOF_NODES: proof_base58
+            ROOT_HASH: encoded_root_hash,
+            MULTI_SIGNATURE: multi_sig,  # [["participants"], ["signatures"]]
+            PROOF_NODES: encoded_proof
         }
 
     def lookup(self, path, isCommitted=True) -> (str, int):
