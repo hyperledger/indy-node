@@ -10,6 +10,7 @@ from stp_core.common.log import getlogger
 logger = getlogger()
 
 
+# TODO: consider removing IdrCache in favour of some wrapper over state
 class IdrCache:
     """
     A cache to store a role and verkey of an identifier, the db is only used to
@@ -121,15 +122,6 @@ class IdrCache:
         self._keyValueStorage.setBatch([(idr, val) for idr, val in
                                         self.unCommitted[0][1].items()])
         self.unCommitted = self.unCommitted[1:]
-
-    def setVerkey(self, idr, verkey):
-        # This method acts as if guardianship is being terminated.
-        _, _, role = self.get(idr)
-        self.set(idr, ta=None, verkey=verkey, role=role)
-
-    def setRole(self, idr, role):
-        ta, v, _ = self.get(idr)
-        self.set(idr, ta=ta, verkey=v, role=role)
 
     def getVerkey(self, idr, isCommitted=True):
         seqNo, ta, role, verkey = self.get(idr, isCommitted=isCommitted)
