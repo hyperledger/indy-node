@@ -541,7 +541,7 @@ class SovrinCli(PlenumCli):
                                        format(nym), Token.BoldBlue)
                         else:
                             if data[ROLE] is not None and data[ROLE] != '':
-                                self.print( "Current verkey for NYM {} is {} with role {}"
+                                self.print("Current verkey for NYM {} is {} with role {}"
                                             .format(nym, data[VERKEY],
                                                     Roles.nameFromValue(data[ROLE]),
                                                     Token.BoldBlue))
