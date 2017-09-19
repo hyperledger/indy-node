@@ -6,9 +6,11 @@ from plenum.common.util import friendlyToRaw
 from indy_client.test.cli.constants import INVALID_SYNTAX
 from indy_client.test.cli.helper import createUuidIdentifier, addNym, \
     createHalfKeyIdentifierAndAbbrevVerkey, createCryptonym
+from indy_common.roles import Roles
 from indy_node.test.helper import check_str_is_base58_compatible
 
 CURRENT_VERKEY_FOR_NYM = 'Current verkey for NYM {dest} is {verkey}'
+CURRENT_VERKEY_FOR_NYM_WITH_ROLE = 'Current verkey for NYM {dest} is {verkey} with role {role}'
 CURRENT_VERKEY_IS_SAME_AS_IDENTIFIER = \
     'Current verkey is same as identifier {dest}'
 NYM_NOT_FOUND = 'NYM {dest} not found'
@@ -40,6 +42,30 @@ def testSendGetNymFailsForNotExistingUuidDest(
     be(trusteeCli)
     do('send GET_NYM dest={dest}',
        mapper=parameters, expect=NYM_NOT_FOUND, within=2)
+
+
+def test_get_nym_returns_role(
+        be, do, poolNodesStarted, trusteeCli):
+    current_role = Roles.TRUST_ANCHOR
+    uuidIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
+    addNym(be, do, trusteeCli, idr=uuidIdentifier, verkey=abbrevVerkey, role=current_role)
+
+    parameters = {
+        'dest': uuidIdentifier,
+        'verkey':abbrevVerkey,
+        'role':current_role
+    }
+
+    do('send GET_NYM dest={dest}',
+       mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM_WITH_ROLE, within=2)
+    print("XXXXX")
+    print(trusteeCli.lastCmdOutput)
+    new_role = ''
+    addNym(be, do, trusteeCli, idr=uuidIdentifier, verkey=abbrevVerkey, role=new_role)
+    do('send GET_NYM dest={dest}',
+       mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
+    print("XXXXX")
+    print(trusteeCli.lastCmdOutput)
 
 
 def testSendGetNymFailsIfCryptonymIsPassedAsDest(
