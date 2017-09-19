@@ -250,7 +250,7 @@ class NodeControlTool:
         finally:
             self._remove_old_backups()
 
-    def cd_upgrade(self, new_version, migrate=True, rollback=True):
+    def _upgrade(self, new_version, migrate=True, rollback=True):
         try:
             current_version = Upgrader.getVersion()
             logger.info('Trying to upgrade from {} to {}'.format(
