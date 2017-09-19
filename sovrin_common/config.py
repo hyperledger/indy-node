@@ -21,7 +21,15 @@ cliNodeReg = OrderedDict([
     ('DeltaC', ('127.0.0.1', 9708))
 ])
 
-baseDir = "~/.sovrin"
+baseDir = '~/.sovrin/'
+NODE_BASE_DATA_DIR = '/var/indy'
+LOG_DIR = '/var/log/indy/'
+GENERAL_CONFIG_DIR = '/etc/indy/'
+BACKUP_DIR = '/var/backup/indy'
+
+GENERAL_CONFIG_FILE = 'indy_config.py'
+NETWORK_CONFIG_FILE = 'indy_config.py'
+USER_CONFIG_FILE = 'indy_config.py'
 
 ENVS = {
     "test": Environment(pool_transactions_file_base + "_sandbox",

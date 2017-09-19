@@ -11,9 +11,8 @@ config = getConfig()
 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
-        print("Provide name and 2 port numbers for running the node "
-              "and client stacks")
-        exit()
-    else:
-        self_name = sys.argv[1]
-        run_node(config, self_name, int(sys.argv[2]), int(sys.argv[3]))
+        raise Exception("Provide name and 2 port numbers for running the node "
+                        "and client stacks")
+    
+    self_name = sys.argv[1]
+    run_node(config, self_name, int(sys.argv[2]), int(sys.argv[3]))
