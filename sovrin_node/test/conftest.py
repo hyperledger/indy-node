@@ -21,7 +21,7 @@ strict_types.defaultShouldCheck = True
 import pytest
 
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.keygen_utils import initNodeKeysForBothStacks
+from plenum.common.keygen_utils import initNodeKeysForBothStacks, init_bls_keys
 from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
     ALIAS, SERVICES, VALIDATOR, STEWARD
 
@@ -106,6 +106,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     initNodeKeysForBothStacks(
         newNodeName, tdirWithPoolTxns, sigseed, override=True)
+    init_bls_keys(baseDir=tdirWithPoolTxns, node_name=newNodeName, seed=sigseed)
 
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(

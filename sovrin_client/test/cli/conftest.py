@@ -32,7 +32,7 @@ from sovrin_common.constants import ENDPOINT, TRUST_ANCHOR
 from sovrin_common.roles import Roles
 from sovrin_common.test.conftest import poolTxnTrusteeNames
 from sovrin_common.test.conftest import domainTxnOrderedFields
-from plenum.common.keygen_utils import initNodeKeysForBothStacks
+from plenum.common.keygen_utils import initNodeKeysForBothStacks, init_bls_keys
 
 # plenum.common.util.loggingConfigured = False
 
@@ -920,8 +920,11 @@ def thriftCLI(CliBuilder):
 def poolCLI(poolCLI_baby, poolTxnData, poolTxnNodeNames, conf):
     seeds = poolTxnData["seeds"]
     for nName in poolTxnNodeNames:
+        seed = seeds[nName]
         initNodeKeysForBothStacks(nName, poolCLI_baby.basedirpath,
-                                  seeds[nName], override=True)
+                                  seed, override=True)
+        if nName in poolTxnData['nodesWithBls']:
+            init_bls_keys(poolCLI_baby.basedirpath, nName, seed)
     return poolCLI_baby
 
 
