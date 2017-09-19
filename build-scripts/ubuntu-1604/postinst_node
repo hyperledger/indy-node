@@ -7,13 +7,25 @@ if [ -f /home/sovrin/.sovrin ]; then
     rm /home/sovrin/.sovrin
 fi
 mkdir -p /home/sovrin/.sovrin
-
-# create sovrin config if not exists
-if [ ! -f /home/sovrin/.sovrin/sovrin_config.py ]; then
-    touch /home/sovrin/.sovrin/sovrin_config.py
-fi
-
 chown -R sovrin:sovrin /home/sovrin/.sovrin
+
+# create indy config folder if does not exist
+mkdir -p /etc/indy
+
+# create indy config if does not exist
+if [ ! -f /etc/indy/indy_config.py ]; then
+    touch /etc/indy/indy_config.py
+fi
+chown -R sovrin:sovrin /etc/indy/
+
+# create indy log folder if does not exist
+mkdir -p /var/log/indy
+chown -R sovrin:sovrin /var/log/indy
+
+# change permissions for plenum folders
+chown -R sovrin:sovrin /var/plenum/
+chown -R sovrin:sovrin /var/log/plenum
+chown -R sovrin:sovrin /etc/plenum
 
 # init_sovrin_node script
 cat <<EOF > /usr/local/bin/init_sovrin_node
@@ -30,9 +42,9 @@ if [ \$# -lt 3 ]; then
     exit 1;
 fi
 
-echo "NODE_NAME=\$1" > /home/sovrin/.sovrin/sovrin.env
-echo "NODE_PORT=\$2" >> /home/sovrin/.sovrin/sovrin.env
-echo "NODE_CLIENT_PORT=\$3" >> /home/sovrin/.sovrin/sovrin.env
+echo "NODE_NAME=\$1" > /etc/indy/sovrin.env
+echo "NODE_PORT=\$2" >> /etc/indy/sovrin.env
+echo "NODE_CLIENT_PORT=\$3" >> /etc/indy/sovrin.env
 
 if [ -z \$4 ]; then
     init_sovrin_keys --name \$1
@@ -50,7 +62,7 @@ Description=Sovrin Node
 Requires=sovrin-node-control.service
 
 [Service]
-EnvironmentFile=/home/sovrin/.sovrin/sovrin.env
+EnvironmentFile=/etc/indy/sovrin.env
 ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_sovrin_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
 User=sovrin
 Group=sovrin
@@ -74,7 +86,7 @@ After=network.target
 
 [Service]
 Type=simple
-EnvironmentFile=/etc/sovrin/node_control.conf
+EnvironmentFile=/etc/indy/node_control.conf
 ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool.py \$TEST_MODE --hold-ext \$HOLD_EXT
 Restart=on-failure
 RestartSec=10
@@ -86,11 +98,9 @@ TimeoutSec=300
 WantedBy=multi-user.target
 EOF
 
-mkdir -p /etc/sovrin
-
-HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/sovrin/node_control.conf)
-if [ ! -f /etc/sovrin/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
-    cat <<EOF > /etc/sovrin/node_control.conf
+HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/indy/node_control.conf)
+if [ ! -f /etc/indy/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
+    cat <<EOF > /etc/indy/node_control.conf
 # Uncomment this to run agent in test mode:
 #TEST_MODE=--test
 
@@ -110,8 +120,8 @@ chmod +x /usr/local/bin/start_node_control_tool.py
 
 rm -f /usr/local/bin/delete_sovrin_node.bat /usr/local/bin/upgrade_sovrin_node_test.bat /usr/local/bin/restart_sovrin_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_sovrin_node.bat /usr/local/bin/install_sovrin_node.bat
 
-# disable stdout logging
-echo "enableStdOutLogging=False" >> /home/sovrin/.sovrin/sovrin_config.py
+# Prefill NETWORK_NAME
+echo "NETWORK_NAME=None" >> /etc/indy/indy_config.py
 
 
 # Automatically added from template:
