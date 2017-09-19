@@ -2,6 +2,7 @@
 FROM ubuntu:16.04
 
 ARG uid=1000
+ARG user=indy
 
 # Install environment
 RUN apt-get update -y
@@ -23,16 +24,16 @@ RUN echo "deb https://repo.evernym.com/deb xenial master" >> /etc/apt/sources.li
 RUN apt-get update -y
 RUN apt-get install -y \ 
 	python3-charm-crypto
-RUN useradd -ms /bin/bash -u $uid indy
-USER indy
-RUN virtualenv -p python3.5 /home/indy/test
-RUN cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/indy/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
-RUN cp -r /usr/local/lib/python3.5/dist-packages/charm /home/indy/test/lib/python3.5/site-packages/charm
-RUN mkdir /home/indy/.indy
+RUN useradd -ms /bin/bash -u $uid $user
+USER $user
+RUN virtualenv -p python3.5 /home/$user/test
+RUN cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/$user/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
+RUN cp -r /usr/local/lib/python3.5/dist-packages/charm /home/$user/test/lib/python3.5/site-packages/charm
+RUN mkdir /home/$user/.$user
 USER root
-RUN ln -sf /home/indy/test/bin/python /usr/local/bin/python
-RUN ln -sf /home/indy/test/bin/pip /usr/local/bin/pip
-USER indy
+RUN ln -sf /home/$user/test/bin/python /usr/local/bin/python
+RUN ln -sf /home/$user/test/bin/pip /usr/local/bin/pip
+USER $user
 # TODO: Automate dependency collection
 RUN pip install jsonpickle \
 	ujson \
@@ -56,5 +57,5 @@ RUN pip install jsonpickle \
 	psutil \
 	intervaltree \
 	pytest-xdist
-ENV PYTHONPATH $PYTHONPATH:/home/indy/test/bin
-WORKDIR /home/indy
+ENV PYTHONPATH $PYTHONPATH:/home/$user/test/bin
+WORKDIR /home/$user

@@ -4,7 +4,7 @@ import os
 from os import path
 
 
-tmpDir = "/tmp/sovrin/"
+tmpDir = "/tmp/indy/"
 tmpFileName = "upgrade_log_test_file"
 
 

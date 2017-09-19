@@ -99,10 +99,10 @@ def nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout):
     ret.returncode = 0
     ret.stdout = stdout
     tool.base_dir = tdir
-    tool.sovrin_dir = os.path.join(tool.base_dir, '.sovrin')
-    tool.tmp_dir = os.path.join(tool.base_dir, '.sovrin_tmp')
-    if not os.path.exists(tool.sovrin_dir):
-        os.mkdir(tool.sovrin_dir)
+    tool.indy_dir = os.path.join(tool.base_dir, '.indy')
+    tool.tmp_dir = os.path.join(tool.base_dir, '.indy_tmp')
+    if not os.path.exists(tool.indy_dir):
+        os.mkdir(tool.indy_dir)
     if not os.path.exists(tool.tmp_dir):
         os.mkdir(tool.tmp_dir)
     monkeypatch.setattr(subprocess, 'run', lambda *x, **y: ret)

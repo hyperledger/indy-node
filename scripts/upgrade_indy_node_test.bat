@@ -7,15 +7,15 @@ IF NOT DEFINED VERS (
 )
 
 echo "Stopping node"
-nssm stop SovrinNode
+nssm stop IndyNode
 
-echo "Run sovrin upgrade to version %VERS%"
-pip install --upgrade --no-cache-dir sovrin-node%SOVRIN_NODE_PACKAGE_POSTFIX%=="%VERS%"
+echo "Run indy upgrade to version %VERS%"
+pip install --upgrade --no-cache-dir indy-node%INDY_NODE_PACKAGE_POSTFIX%=="%VERS%"
 SET RET=%ERRORLEVEL%
 IF NOT "%RET%"=="0" (
   echo "Upgrade to version %VERS% failed %RET%"
 )
 
 echo "Restarting node and agent"
-nssm start SovrinNode
-schtasks /run /TN "RestartSovrinNodeUpgradeAgent"
+nssm start IndyNode
+schtasks /run /TN "RestartIndyNodeUpgradeAgent"

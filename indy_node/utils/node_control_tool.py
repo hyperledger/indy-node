@@ -18,13 +18,13 @@ from indy_node.utils.migration_tool import migrate
 logger = getlogger()
 
 TIMEOUT = 300
-BASE_DIR = '/home/sovrin/'
+BASE_DIR = '/home/indy/'
 BACKUP_FORMAT = 'zip'
 DEPS = ['indy-plenum', 'indy-anoncreds']
 CONFIG = getConfig()
 FILES_TO_PRESERVE = [CONFIG.lastRunVersionFile, CONFIG.nextVersionFile,
                      CONFIG.upgradeLogFile, CONFIG.lastVersionFilePath]
-BACKUP_NAME_PREFIX = 'sovrin_backup_'
+BACKUP_NAME_PREFIX = 'indy_backup_'
 BACKUP_NUM = 10
 PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'
 
@@ -46,8 +46,8 @@ class NodeControlTool:
         self.test_mode = test_mode
         self.timeout = timeout
         self.base_dir = base_dir
-        self.sovrin_dir = os.path.join(self.base_dir, '.sovrin')
-        self.tmp_dir = os.path.join(self.base_dir, '.sovrin_tmp')
+        self.indy_dir = os.path.join(self.base_dir, '.indy')
+        self.tmp_dir = os.path.join(self.base_dir, '.indy_tmp')
         self.backup_format = backup_format
         self.deps = deps
         self.files_to_preserve = files_to_preserve
@@ -159,15 +159,15 @@ class NodeControlTool:
         return ret
 
     def _call_upgrade_script(self, version):
-        logger.info('Upgrading sovrin node to version {}, test_mode {}'.format(
+        logger.info('Upgrading indy node to version {}, test_mode {}'.format(
             version, int(self.test_mode)))
 
         deps = self._get_deps_list('indy-node={}'.format(version))
         deps = '"{}"'.format(deps)
 
-        cmd_file = 'upgrade_sovrin_node'
+        cmd_file = 'upgrade_indy_node'
         if self.test_mode:
-            cmd_file = 'upgrade_sovrin_node_test'
+            cmd_file = 'upgrade_indy_node_test'
         ret = subprocess.run(
             compose_cmd([cmd_file, deps]),
             shell=True,
@@ -180,9 +180,9 @@ class NodeControlTool:
             raise Exception(msg)
 
     def _call_restart_node_script(self):
-        logger.info('Restarting sovrin')
+        logger.info('Restarting indy')
         ret = subprocess.run(
-            compose_cmd(['restart_sovrin_node']),
+            compose_cmd(['restart_indy_node']),
             shell=True,
             timeout=self.timeout)
         if ret.returncode != 0:
@@ -200,23 +200,23 @@ class NodeControlTool:
     def _create_backup(self, version):
         logger.debug('Creating backup for {}'.format(version))
         shutil.make_archive(self._backup_name(version),
-                            self.backup_format, self.sovrin_dir)
+                            self.backup_format, self.indy_dir)
 
     def _restore_from_backup(self, version):
         logger.debug('Restoring from backup for {}'.format(version))
         for file_path in self.files_to_preserve:
             try:
-                shutil.copy2(os.path.join(self.sovrin_dir, file_path),
+                shutil.copy2(os.path.join(self.indy_dir, file_path),
                              os.path.join(self.tmp_dir, file_path))
             except IOError as e:
                 logger.warning(
                     'Copying {} failed due to {}'.format(file_path, e))
         shutil.unpack_archive(self._backup_name_ext(
-            version), self.sovrin_dir, self.backup_format)
+            version), self.indy_dir, self.backup_format)
         for file_path in self.files_to_preserve:
             try:
                 shutil.copy2(os.path.join(self.tmp_dir, file_path),
-                             os.path.join(self.sovrin_dir, file_path))
+                             os.path.join(self.indy_dir, file_path))
             except IOError as e:
                 logger.warning(
                     'Copying {} failed due to {}'.format(file_path, e))

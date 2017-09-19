@@ -172,7 +172,7 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
 
     def mockMigrate(tool, *args):
         monkeypatch.setattr(tool, '_migrate', lambda *args: None)
-        with open(os.path.join(tool.sovrin_dir, testFile), 'w') as f:
+        with open(os.path.join(tool.indy_dir, testFile), 'w') as f:
             f.write(new_text)
         raise Exception('test')
 
@@ -189,11 +189,11 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
 
     nct = NCT(transform=transform)
     try:
-        with open(os.path.join(nct.tool.sovrin_dir, testFile), 'w') as f:
+        with open(os.path.join(nct.tool.indy_dir, testFile), 'w') as f:
             f.write(original_text)
         sendUpgradeMessage(msg)
         looper.run(eventually(checkBackupRestored, nct.tool))
-        with open(os.path.join(nct.tool.sovrin_dir, testFile)) as f:
+        with open(os.path.join(nct.tool.indy_dir, testFile)) as f:
             assert original_text == f.read()
     finally:
         clean_dir(nct.tool.base_dir)

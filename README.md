@@ -2,8 +2,6 @@
 
 ## Indy Node
 
-[![Build Status](https://jenkins.evernym.com/buildStatus/icon?job=Sovrin%20Node/master)](https://jenkins.evernym.com/view/Core/job/Sovrin%20Node/job/master/)    
-
 This codebase embodies all the functionality to run nodes--validators and/or observers
 that provide a [self-sovereign identity ecosystem](https://sovrin.org) on top of a
 distributed ledger. It is the core project for Indy; over time, all other indy-\* projects may
