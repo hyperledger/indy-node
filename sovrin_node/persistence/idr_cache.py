@@ -10,6 +10,7 @@ from stp_core.common.log import getlogger
 logger = getlogger()
 
 
+# TODO: consider removing IdrCache in favour of some wrapper over state
 class IdrCache:
     """
     A cache to store a role and verkey of an identifier, the db is only used to
@@ -41,56 +42,53 @@ class IdrCache:
     def encodeVerkey(verkey):
         if verkey is None:
             return IdrCache.unsetVerkey
-        else:
-            if isinstance(verkey, str):
-                return verkey.encode()
-            return verkey
+        if isinstance(verkey, str):
+            return verkey.encode()
+        return verkey
 
     @staticmethod
     def decodeVerkey(verkey):
-        if verkey == IdrCache.unsetVerkey:
-            return None
-        else:
+        if verkey != IdrCache.unsetVerkey:
             return verkey.decode()
 
     @staticmethod
-    def packIdrValue(ta=None, role=None, verkey=None):
+    def packIdrValue(seqNo, ta, role, verkey):
+        if seqNo is None:
+            raise ValueError("seqNo should not be None!")
+        seqNo = str(seqNo)
         if ta is None:
             ta = b''
         if role is None:
             role = b''
         verkey = IdrCache.encodeVerkey(verkey)
-        return rlp.encode([ta, verkey, role])
+        return rlp.encode([seqNo, ta, role, verkey])
 
     @staticmethod
     def unpackIdrValue(value):
-        ta, verkey, role = rlp.decode(value)
-        return ta.decode(), IdrCache.decodeVerkey(verkey), role.decode()
+        if value is None:
+            return None
+        seqNo, ta, role, verkey = rlp.decode(value)
+        seqNo, ta, role = int(seqNo.decode()), ta.decode(), role.decode()
+        verkey = IdrCache.decodeVerkey(verkey)
+        return seqNo, ta, role, verkey
 
     def get(self, idr, isCommitted=True):
-        idr = idr.encode()
-        if isCommitted:
-            value = self._keyValueStorage.get(idr)
-        else:
-            # Looking for uncommitted values, iterating over `currentBatchOps and unCommitted`
+        encoded_idr = idr.encode()
+        if not isCommitted:
+            # Looking for uncommitted values,
+            # iterating over `currentBatchOps and unCommitted`
             # in reverse to get the latest value
             for key, cache in reversed(self.currentBatchOps):
-                if key == idr.decode():
-                    value = cache
-                    ta, iv, r = self.unpackIdrValue(value)
-                    return ta, iv, r
-
+                if key == idr:
+                    return self.unpackIdrValue(cache)
             for _, cache in reversed(self.unCommitted):
-                if idr in cache:
-                    value = cache[idr]
-                    break
-            else:
-                value = self._keyValueStorage.get(idr)
-        ta, iv, r = self.unpackIdrValue(value)
-        return ta, iv, r
+                if encoded_idr in cache:
+                    return self.unpackIdrValue(cache[encoded_idr])
+        value = self._keyValueStorage.get(encoded_idr)
+        return self.unpackIdrValue(value)
 
-    def set(self, idr, ta=None, verkey=None, role=None, isCommitted=True):
-        val = self.packIdrValue(ta, role, verkey)
+    def set(self, idr, seqNo, ta=None, role=None, verkey=None, isCommitted=True):
+        val = self.packIdrValue(seqNo, ta, role, verkey)
         if isCommitted:
             self._keyValueStorage.put(idr, val)
         else:
@@ -110,36 +108,27 @@ class IdrCache:
 
     def onBatchCommitted(self, stateRoot):
         # Commit an already created batch
-        if self.unCommitted:
-            assert self.unCommitted[0][0] == stateRoot, 'The first created batch has ' \
-                'not been committed or ' \
-                'reverted and yet another ' \
-                'batch is trying to be ' \
-                'committed, {} {}'.format(
-                self.unCommitted[0][0], stateRoot)
-            self._keyValueStorage.setBatch([(idr, val) for idr, val in
-                                            self.unCommitted[0][1].items()])
-            self.unCommitted = self.unCommitted[1:]
-        else:
+        if not self.unCommitted:
             logger.warning('{}{} is trying to commit a batch with state root'
                            ' {} but no uncommitted found'
                            .format(THREE_PC_PREFIX, self, stateRoot))
-
-    def setVerkey(self, idr, verkey):
-        # This method acts as if guardianship is being terminated.
-        _, _, role = self.get(idr)
-        self.set(idr, ta=None, verkey=verkey, role=role)
-
-    def setRole(self, idr, role):
-        ta, v, _ = self.get(idr)
-        self.set(idr, ta=ta, verkey=v, role=role)
+        assert self.unCommitted[0][0] == stateRoot, \
+            'The first created batch has ' \
+            'not been committed or ' \
+            'reverted and yet another ' \
+            'batch is trying to be ' \
+            'committed, {} {}'\
+            .format(self.unCommitted[0][0], stateRoot)
+        self._keyValueStorage.setBatch([(idr, val) for idr, val in
+                                        self.unCommitted[0][1].items()])
+        self.unCommitted = self.unCommitted[1:]
 
     def getVerkey(self, idr, isCommitted=True):
-        _, v, _ = self.get(idr, isCommitted=isCommitted)
-        return v
+        seqNo, ta, role, verkey = self.get(idr, isCommitted=isCommitted)
+        return verkey
 
     def getRole(self, idr, isCommitted=True):
-        _, _, role = self.get(idr, isCommitted=isCommitted)
+        seqNo, ta, role, verkey = self.get(idr, isCommitted=isCommitted)
         return role
 
     def getNym(self, nym, role=None, isCommitted=True):
@@ -151,15 +140,16 @@ class IdrCache:
         :return:
         """
         try:
-            ta, verkey, r = self.get(nym, isCommitted)
+            seqNo, ta, actual_role, verkey = self.get(nym, isCommitted)
         except KeyError:
             return None
-        if role and role != r:
+        if role and role != actual_role:
             return None
         return {
-            ROLE: r,
-            VERKEY: verkey,
-            f.IDENTIFIER.nm: ta if ta else None
+            ROLE: actual_role or None,
+            VERKEY: verkey or None,
+            f.IDENTIFIER.nm: ta or None,
+            f.SEQ_NO.nm: seqNo,
         }
 
     def getTrustee(self, nym, isCommitted=True):
@@ -194,6 +184,5 @@ class IdrCache:
         if nymData:
             if nymData.get(VERKEY) is None:
                 return nymData[f.IDENTIFIER.nm]
-            else:
-                return nym
+            return nym
         logger.error('Nym {} not found'.format(nym))
