@@ -81,13 +81,16 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     (nodeIp, nodePort), (clientIp, clientPort) = genHa(2)
 
+    #bls_key = init_bls_keys(baseDir=tdirWithPoolTxns, node_name=newNodeName, seed=sigseed)
+
     data = {
         NODE_IP: nodeIp,
         NODE_PORT: nodePort,
         CLIENT_IP: clientIp,
         CLIENT_PORT: clientPort,
         ALIAS: newNodeName,
-        SERVICES: [VALIDATOR, ]
+        SERVICES: [VALIDATOR, ],
+        #BLS_KEY: bls_key
     }
 
     node = Node(nodeSigner.identifier, data, newStewardWallet.defaultId)
@@ -106,7 +109,6 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     initNodeKeysForBothStacks(
         newNodeName, tdirWithPoolTxns, sigseed, override=True)
-    init_bls_keys(baseDir=tdirWithPoolTxns, node_name=newNodeName, seed=sigseed)
 
     newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(
