@@ -44,7 +44,7 @@ def testSendGetNymFailsForNotExistingUuidDest(
        mapper=parameters, expect=NYM_NOT_FOUND, within=2)
 
 
-def testGetNymReturnsRole(
+def test_get_nym_returns_role(
         be, do, poolNodesStarted, trusteeCli):
     current_role = Roles.TRUST_ANCHOR
     uuidIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
