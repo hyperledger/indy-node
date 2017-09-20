@@ -17,6 +17,6 @@ def getConfig(user_config_dir=None):
         config.__dict__.update(sovrinConfig.__dict__)
 
         extend_with_default_external_config(config, user_config_dir)
-        
+
         CONFIG = config
     return CONFIG
