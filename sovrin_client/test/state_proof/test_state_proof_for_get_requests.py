@@ -3,7 +3,7 @@ from common.serializers.serialization import domain_state_serializer
 
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
     STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, ROLE, VERKEY, \
-    TXN_TIME
+    TXN_TIME, NYM
 from plenum.common.types import f
 
 from sovrin_common.constants import GET_ATTR, GET_NYM
@@ -40,7 +40,6 @@ def test_state_proof_returned_for_get_attr(looper,
     replies = getRepliesFromClientInbox(client.inBox, get_attr_request.reqId)
     expected_data = attributeData
     for reply in replies:
-        print(reply)
         result = reply['result']
         assert DATA in result
         assert result[DATA] == expected_data
@@ -68,6 +67,15 @@ def test_state_proof_returned_for_get_nym(looper,
     client = trustAnchor
     dest = userWalletA.defaultId
 
+    nym = {
+        TARGET_NYM: dest,
+        TXN_TYPE: NYM
+    }
+    nym_request = trustAnchorWallet.signOp(nym)
+    trustAnchorWallet.pendRequest(nym_request)
+    pending = trustAnchorWallet.preparePending()
+    client.submitReqs(*pending)
+
     get_nym_operation = {
         TARGET_NYM: dest,
         TXN_TYPE: GET_NYM
@@ -81,7 +89,6 @@ def test_state_proof_returned_for_get_nym(looper,
     replies = getRepliesFromClientInbox(client.inBox, get_nym_request.reqId)
 
     for reply in replies:
-        print(reply)
         result = reply['result']
         assert DATA in result
         assert result[DATA]
