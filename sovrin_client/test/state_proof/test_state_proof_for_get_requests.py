@@ -96,7 +96,7 @@ def test_state_proof_returned_for_get_nym(looper,
         assert ROLE in data
         assert VERKEY in data
         assert f.IDENTIFIER.nm in data
-        # assert result[TXN_TIME]
+        assert result[TXN_TIME]
         state_proof = result[STATE_PROOF]
         assert ROOT_HASH in state_proof
         assert state_proof[ROOT_HASH]

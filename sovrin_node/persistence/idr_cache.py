@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import rlp
-from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX
+from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX, \
+    TXN_TIME
 from plenum.common.types import f
 from storage.kv_store import KeyValueStorage
 
@@ -52,25 +53,30 @@ class IdrCache:
             return verkey.decode()
 
     @staticmethod
-    def packIdrValue(seqNo, ta, role, verkey):
+    def packIdrValue(seqNo, txnTime, ta, role, verkey):
         if seqNo is None:
             raise ValueError("seqNo should not be None!")
         seqNo = str(seqNo)
+        txnTime = b'' if txnTime is None else str(txnTime)
         if ta is None:
             ta = b''
         if role is None:
             role = b''
         verkey = IdrCache.encodeVerkey(verkey)
-        return rlp.encode([seqNo, ta, role, verkey])
+        return rlp.encode([seqNo, txnTime, ta, role, verkey])
 
     @staticmethod
     def unpackIdrValue(value):
         if value is None:
             return None
-        seqNo, ta, role, verkey = rlp.decode(value)
-        seqNo, ta, role = int(seqNo.decode()), ta.decode(), role.decode()
+        seqNo, txnTime, ta, role, verkey = rlp.decode(value)
+        seqNo = int(seqNo.decode())
+        txnTime = txnTime.decode()
+        txnTime = int(txnTime) if txnTime else None
+        ta = ta.decode()
+        role = role.decode()
         verkey = IdrCache.decodeVerkey(verkey)
-        return seqNo, ta, role, verkey
+        return seqNo, txnTime, ta, role, verkey
 
     def get(self, idr, isCommitted=True):
         encoded_idr = idr.encode()
@@ -87,8 +93,8 @@ class IdrCache:
         value = self._keyValueStorage.get(encoded_idr)
         return self.unpackIdrValue(value)
 
-    def set(self, idr, seqNo, ta=None, role=None, verkey=None, isCommitted=True):
-        val = self.packIdrValue(seqNo, ta, role, verkey)
+    def set(self, idr, seqNo, txnTime, ta=None, role=None, verkey=None, isCommitted=True):
+        val = self.packIdrValue(seqNo, txnTime, ta, role, verkey)
         if isCommitted:
             self._keyValueStorage.put(idr, val)
         else:
@@ -124,11 +130,11 @@ class IdrCache:
         self.unCommitted = self.unCommitted[1:]
 
     def getVerkey(self, idr, isCommitted=True):
-        seqNo, ta, role, verkey = self.get(idr, isCommitted=isCommitted)
+        seqNo, txnTime, ta, role, verkey = self.get(idr, isCommitted=isCommitted)
         return verkey
 
     def getRole(self, idr, isCommitted=True):
-        seqNo, ta, role, verkey = self.get(idr, isCommitted=isCommitted)
+        seqNo, txnTime, ta, role, verkey = self.get(idr, isCommitted=isCommitted)
         return role
 
     def getNym(self, nym, role=None, isCommitted=True):
@@ -140,7 +146,7 @@ class IdrCache:
         :return:
         """
         try:
-            seqNo, ta, actual_role, verkey = self.get(nym, isCommitted)
+            seqNo, txnTime, ta, actual_role, verkey = self.get(nym, isCommitted)
         except KeyError:
             return None
         if role and role != actual_role:
@@ -149,7 +155,8 @@ class IdrCache:
             ROLE: actual_role or None,
             VERKEY: verkey or None,
             f.IDENTIFIER.nm: ta or None,
-            f.SEQ_NO.nm: seqNo,
+            f.SEQ_NO.nm: seqNo or None,
+            TXN_TIME: txnTime or None,
         }
 
     def getTrustee(self, nym, isCommitted=True):

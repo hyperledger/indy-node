@@ -51,7 +51,8 @@ class DomainReqHandler(PHandler):
         if typ == NYM:
             data = {
                 f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm),
-                f.SEQ_NO.nm: txn.get(f.SEQ_NO.nm)
+                f.SEQ_NO.nm: txn.get(f.SEQ_NO.nm),
+                TXN_TIME: txn.get(TXN_TIME)
             }
             if ROLE in txn:
                 data[ROLE] = txn.get(ROLE)
@@ -203,8 +204,10 @@ class DomainReqHandler(PHandler):
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
+        txn_time = data.get(TXN_TIME)
         self.idrCache.set(nym,
                           seqNo=data[f.SEQ_NO.nm],
+                          txnTime=txn_time,
                           ta=updatedData.get(f.IDENTIFIER.nm),
                           role=updatedData.get(ROLE),
                           verkey=updatedData.get(VERKEY),
@@ -220,17 +223,19 @@ class DomainReqHandler(PHandler):
             nymData[TARGET_NYM] = nym
             data = self.stateSerializer.serialize(nymData)
             seq_no = nymData[f.SEQ_NO.nm]
+            update_time = nymData[TXN_TIME]
             proof = self.make_proof(self.nym_to_state_key(nym))
         else:
             data = None
             seq_no = None
             proof = None
+            update_time = None
 
         # TODO: add update time here!
         result = self.make_result(request=request,
                                   data=data,
                                   last_seq_no=seq_no,
-                                  update_time=None,
+                                  update_time=update_time,
                                   proof=proof)
 
         result.update(request.operation)
