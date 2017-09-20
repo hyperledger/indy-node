@@ -17,7 +17,7 @@ from stp_core.network.port_dispenser import genHa
 import plenum
 from plenum.common import util
 from plenum.common.constants import ALIAS, NODE_IP, NODE_PORT, CLIENT_IP, \
-    CLIENT_PORT, SERVICES, VALIDATOR
+    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY
 from plenum.common.constants import CLIENT_STACK_SUFFIX
 from plenum.common.exceptions import BlowUp
 from plenum.common.signer_simple import SimpleSigner
@@ -1390,7 +1390,8 @@ def newNodeVals():
         CLIENT_IP: clientIp,
         CLIENT_PORT: clientPort,
         ALIAS: randomString(6),
-        SERVICES: [VALIDATOR]
+        SERVICES: [VALIDATOR],
+        BLS_KEY: '0' * 32
     }
 
     return {
