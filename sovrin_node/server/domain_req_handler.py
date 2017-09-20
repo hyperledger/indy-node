@@ -218,13 +218,17 @@ class DomainReqHandler(PHandler):
         if nymData:
             nymData[TARGET_NYM] = nym
             data = self.stateSerializer.serialize(nymData)
+            seq_no = nymData[f.SEQ_NO.nm]
+            proof = self.make_proof(self.nym_to_state_key(nym))
         else:
             data = None
-        proof = self.make_proof(self.nym_to_state_key(nym))
+            seq_no = None
+            proof = None
+
         result = {f.IDENTIFIER.nm: request.identifier,
                   f.REQ_ID.nm: request.reqId,
                   DATA: data,
-                  f.SEQ_NO.nm: nymData[f.SEQ_NO.nm],
+                  f.SEQ_NO.nm: seq_no,
                   STATE_PROOF: proof}
         result.update(request.operation)
         return result
