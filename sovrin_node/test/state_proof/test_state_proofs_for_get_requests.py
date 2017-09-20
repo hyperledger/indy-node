@@ -1,7 +1,9 @@
 import pytest
+import time
+from common.serializers import serialization
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
     IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
-    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES
+    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME
 from plenum.common.types import f
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
@@ -21,9 +23,10 @@ def make_request_handler():
     state = PruningState(KeyValueStorageInMemory())
     cache = IdrCache('Cache', KeyValueStorageInMemory())
     attr_store = AttributeStore(KeyValueStorageInMemory())
-    bls_store = BlsStore(keyValueType=KeyValueStorageType.Memory,
-                         dataLocation=None,
-                         keyValueStorageName="BlsInMemoryStore")
+    bls_store = BlsStore(key_value_type=KeyValueStorageType.Memory,
+                         data_location=None,
+                         key_value_storage_name="BlsInMemoryStore",
+                         serializer=serialization.multi_sig_store_serializer)
     return DomainReqHandler(ledger=None,
                             state=state,
                             requestProcessor=None,
@@ -53,11 +56,13 @@ def test_state_proofs_for_get_attr():
     attr_key = 'last_name'
     raw_attribute = '{"last_name": "Anderson"}'
     seq_no = 0
+    txn_time = int(time.time())
     txn = {
         TXN_TYPE: ATTRIB,
         TARGET_NYM: nym,
         RAW: raw_attribute,
         f.SEQ_NO.nm: seq_no,
+        TXN_TIME:  txn_time,
     }
     req_handler._addAttr(txn)
     req_handler.state.commit()
@@ -78,7 +83,8 @@ def test_state_proofs_for_get_attr():
     # Verifying signed state proof
     path = req_handler._makeAttrPath(nym, attr_key)
     encoded_value = req_handler._encodeValue(req_handler._hashOf(attr_value),
-                                             seq_no)
+                                             seq_no,
+                                             txn_time)
 
     proof_nodes = base64.b64decode(proof[PROOF_NODES])
     root_hash = base58.b58decode(proof[ROOT_HASH])
@@ -100,6 +106,8 @@ def test_state_proofs_for_get_claim_def():
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
 
     seq_no = 0
+    txn_time = int(time.time())
+
     schema_seqno = 0
     signature_type = 'CL'
     key_components = '{"key_components": []}'
@@ -110,7 +118,8 @@ def test_state_proofs_for_get_claim_def():
         TARGET_NYM: nym,
         REF: schema_seqno,
         f.SEQ_NO.nm: seq_no,
-        DATA: key_components
+        DATA: key_components,
+        TXN_TIME: txn_time,
     }
 
     req_handler._addClaimDef(txn)
@@ -133,7 +142,8 @@ def test_state_proofs_for_get_claim_def():
     # Verifying signed state proof
     path = req_handler._makeClaimDefPath(nym, schema_seqno, signature_type)
     encoded_value = req_handler._encodeValue(key_components,
-                                             seq_no)
+                                             seq_no,
+                                             txn_time)
     proof_nodes = base64.b64decode(proof[PROOF_NODES])
     root_hash = base58.b58decode(proof[ROOT_HASH])
     verified = req_handler.state.verify_state_proof(
@@ -154,6 +164,7 @@ def test_state_proofs_for_get_schema():
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
 
     seq_no = 0
+    txn_time = int(time.time())
 
     schema_name = "schema_a"
     schema_version = "1.0"
@@ -164,7 +175,8 @@ def test_state_proofs_for_get_schema():
         TXN_TYPE: SCHEMA,
         IDENTIFIER: nym,
         f.SEQ_NO.nm: seq_no,
-        DATA: data
+        DATA: data,
+        TXN_TIME: txn_time,
     }
 
     req_handler._addSchema(txn)
@@ -185,7 +197,8 @@ def test_state_proofs_for_get_schema():
     # Verifying signed state proof
     path = req_handler._makeSchemaPath(nym, schema_name, schema_version)
     encoded_value = req_handler._encodeValue(data,
-                                             seq_no)
+                                             seq_no,
+                                             txn_time)
     proof_nodes = base64.b64decode(proof[PROOF_NODES])
     root_hash = base58.b58decode(proof[ROOT_HASH])
     verified = req_handler.state.verify_state_proof(
@@ -204,12 +217,14 @@ def test_state_proofs_for_get_nym():
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
     role = "2"
     verkey = "~7TYfekw4GUagBnBVCqPjiC"
+    txn_time = int(time.time())
     # Adding nym
     data = {
         f.IDENTIFIER.nm: nym,
         ROLE: role,
         VERKEY: verkey,
-        f.SEQ_NO.nm: 0
+        f.SEQ_NO.nm: 0,
+        TXN_TIME: txn_time,
     }
     req_handler.updateNym(nym, data)
     req_handler.state.commit()
