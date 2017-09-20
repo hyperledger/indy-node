@@ -21,7 +21,7 @@ strict_types.defaultShouldCheck = True
 import pytest
 
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.keygen_utils import initNodeKeysForBothStacks
+from plenum.common.keygen_utils import initNodeKeysForBothStacks, init_bls_keys
 from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
     ALIAS, SERVICES, VALIDATOR, STEWARD
 
@@ -81,13 +81,16 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     (nodeIp, nodePort), (clientIp, clientPort) = genHa(2)
 
+    #bls_key = init_bls_keys(baseDir=tdirWithPoolTxns, node_name=newNodeName, seed=sigseed)
+
     data = {
         NODE_IP: nodeIp,
         NODE_PORT: nodePort,
         CLIENT_IP: clientIp,
         CLIENT_PORT: clientPort,
         ALIAS: newNodeName,
-        SERVICES: [VALIDATOR, ]
+        SERVICES: [VALIDATOR, ],
+        #BLS_KEY: bls_key
     }
 
     node = Node(nodeSigner.identifier, data, newStewardWallet.defaultId)

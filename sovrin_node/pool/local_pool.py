@@ -44,13 +44,13 @@ def create_local_pool(base_dir, node_size=4):
                          ha=('127.0.0.1', 9700 + (i * 2)),
                          cliha=('127.0.0.1', 9700 + (i * 2) + 1))
 
-        n_verkey = initialize_node_environment(name=n_config.name,
+        n_verkey, n_bls_key = initialize_node_environment(name=n_config.name,
                                                base_dir=n_config.basedirpath,
                                                override_keep=True,
                                                config=conf,
                                                sigseed=randomSeed())
 
-        s.set_node(n_config, verkey=n_verkey)
+        s.set_node(n_config, verkey=n_verkey, blskey=n_bls_key)
 
         node_conf.append(n_config)
 
