@@ -544,7 +544,7 @@ class SovrinCli(PlenumCli):
                                 self.print("Current verkey for NYM {} is {} with role {}"
                                            .format(nym, data[VERKEY],
                                                    Roles.nameFromValue(data[ROLE])),
-                                                   Token.BoldBlue)
+                                           Token.BoldBlue)
                             else:
                                 self.print("Current verkey for NYM {} is {}"
                                            .format(nym, data[VERKEY]), Token.BoldBlue)
