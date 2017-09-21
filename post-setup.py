@@ -3,6 +3,7 @@ import shutil
 
 from sovrin_common.setup_util import Setup
 
+# TODO: Urgent! Fix it for networks
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".sovrin")
 Setup(BASE_DIR).setupCommon()
 Setup(BASE_DIR).setupNode()
