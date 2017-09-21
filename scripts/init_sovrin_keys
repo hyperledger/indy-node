@@ -3,7 +3,7 @@
 import argparse
 import os.path
 
-from plenum.common.keygen_utils import initLocalKeys, init_bls_keys
+from plenum.common.keygen_utils import initNodeKeysForBothStacks
 from plenum.common.constants import CLIENT_STACK_SUFFIX
 from plenum.common.util import randomString
 
@@ -27,22 +27,11 @@ if __name__ == "__main__":
                         help='seed for keypair')
     parser.add_argument('--force', help='overrides keys', action='store_true')
     args = parser.parse_args()
-    # Initialize node stack
-    print("For node stack, stack name is", args.name)
-    if not args.seed:
-        args.seed = randomString(32)
-        print("Generating a random seed for the keypair {}".format(args.seed))
+
+    print("Node-stack name is", args.name)
+    print("Client-stack name is", args.name + CLIENT_STACK_SUFFIX)
     try:
-        initLocalKeys(args.name, keepDir, args.seed, args.force, config=config)
-        bls_key = init_bls_keys(config.baseDir, args.name, args.seed)
-    except Exception as ex:
-        print(ex)
-        exit()
-    # Initialize client stack
-    print("For client stack, stack name is", args.name + CLIENT_STACK_SUFFIX)
-    try:
-        initLocalKeys(args.name + CLIENT_STACK_SUFFIX,
-                      keepDir, args.seed, args.force)
+        initNodeKeysForBothStacks(args.name, keepDir, args.seed, override=args.force)
     except Exception as ex:
         print(ex)
         exit()
