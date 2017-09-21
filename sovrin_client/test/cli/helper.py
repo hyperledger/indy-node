@@ -6,9 +6,8 @@ from typing import Dict
 
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from libnacl import randombytes
-from plenum.bls.bls import create_default_bls_factory
+from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 
-from plenum.common import util
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import rawToFriendly
 from plenum.config import pool_transactions_file_base, domain_transactions_file_base
@@ -35,8 +34,6 @@ from stp_core.network.port_dispenser import genHa
 from sovrin_common.constants import NYM
 from sovrin_client.test.client.TestClient import TestClient
 from sovrin_common.txn_util import getTxnOrderedFields
-from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.ledger import Ledger
 from sovrin_common.roles import Roles
 
 logger = getlogger()
@@ -179,7 +176,7 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
             TXN_ID: sha256("{}".format(nodeSigner.verkey).encode()).hexdigest()
         }
 
-        _, bls_key = create_default_bls_factory().generate_bls_keys(
+        _, bls_key = create_default_bls_crypto_factory().generate_bls_keys(
             seed=data['seeds'][n])
         node_txn[DATA][BLS_KEY] = bls_key
         data['nodesWithBls'][n] = True
