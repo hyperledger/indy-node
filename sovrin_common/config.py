@@ -109,3 +109,5 @@ agentLoggingLevel = logging.INFO
 default logging level for node
 '''
 logLevel = logging.INFO
+
+NETWORK_NAME = 'default'
