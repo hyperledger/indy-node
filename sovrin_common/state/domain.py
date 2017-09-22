@@ -1,9 +1,13 @@
 from hashlib import sha256
+from common.serializers.serialization import domain_state_serializer
 
 
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
 MARKER_CLAIM_DEF = "\03"
+LAST_SEQ_NO = "lsn"
+VALUE = "val"
+LAST_UPDATE_TIME = "lut"
 
 
 def make_state_path_for_nym(did) -> bytes:
@@ -34,3 +38,12 @@ def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type) ->
                 MARKER=MARKER_CLAIM_DEF,
                 SIGNATURE_TYPE=signature_type,
                 SCHEMA_SEQ_NO=schema_seq_no).encode()
+
+
+def make_state_value(value, seqNo, txnTime):
+    return domain_state_serializer.serialize({
+        LAST_SEQ_NO: seqNo,
+        LAST_UPDATE_TIME: txnTime,
+        VALUE: value
+    })
+

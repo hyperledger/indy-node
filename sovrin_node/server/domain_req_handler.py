@@ -5,7 +5,6 @@ from hashlib import sha256
 from copy import deepcopy
 
 import base58
-import base64
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
@@ -28,10 +27,6 @@ logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-
-    LAST_SEQ_NO = "lsn"
-    VALUE = "val"
-    LAST_UPDATE_TIME = "lut"
 
     def __init__(self, ledger, state, requestProcessor,
                  idrCache, attributeStore, bls_store):
@@ -343,7 +338,7 @@ class DomainReqHandler(PHandler):
         hashedVal = self._hashOf(value) if value else ''
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
-        valueBytes = self._encodeValue(hashedVal, seqNo, txnTime)
+        valueBytes = domain.make_state_value(hashedVal, seqNo, txnTime)
         path = domain.make_state_path_for_attr(nym, attr_key)
         self.state.set(path, valueBytes)
         self.attributeStore.set(hashedVal, value)
@@ -359,7 +354,7 @@ class DomainReqHandler(PHandler):
 
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
-        valueBytes = self._encodeValue(data, seqNo, txnTime)
+        valueBytes = domain.make_state_value(data, seqNo, txnTime)
         self.state.set(path, valueBytes)
 
     def _addClaimDef(self, txn) -> None:
@@ -380,7 +375,7 @@ class DomainReqHandler(PHandler):
         path = domain.make_state_path_for_claim_def(origin, schemaSeqNo, signatureType)
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
-        valueBytes = self._encodeValue(data, seqNo, txnTime)
+        valueBytes = domain.make_state_value(data, seqNo, txnTime)
         self.state.set(path, valueBytes)
 
     def getAttr(self,
@@ -443,13 +438,6 @@ class DomainReqHandler(PHandler):
         if not isinstance(text, bytes):
             text = text.encode()
         return sha256(text).hexdigest()
-
-    def _encodeValue(self, value, seqNo, txnTime):
-        return self.stateSerializer.serialize({
-            DomainReqHandler.LAST_SEQ_NO: seqNo,
-            DomainReqHandler.LAST_UPDATE_TIME: txnTime,
-            DomainReqHandler.VALUE: value
-        })
 
     @staticmethod
     def transform_txn_for_ledger(txn):
