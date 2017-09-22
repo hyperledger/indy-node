@@ -39,7 +39,7 @@ def buildDocker(imageName, dockerfile) {
 }
 
 
-def install(options) {
+def install(options=[:]) {
    options.pip = options.pip ?: 'pip'
    options.isVEnv = options.isVEnv ?: false
    options.deps = options.deps ?: []
@@ -76,7 +76,7 @@ def withTestEnv(body) {
 }
 
 
-def test(options) {
+def test(options=[:]) {
     options.resFile = options.resFile ?: 'test-result.txt'
     options.testDir = options.testDir ?: '.'
     options.python = options.python ?: 'python'
