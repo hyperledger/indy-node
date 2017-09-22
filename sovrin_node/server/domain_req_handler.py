@@ -111,10 +111,7 @@ class DomainReqHandler(PHandler):
     @staticmethod
     def _validate_attrib_keys(operation):
         dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
-        if len(dataKeys) != 1:
-            return False
-        else:
-            return True
+        return len(dataKeys) == 1
 
     def _doStaticValidationAttrib(self, identifier, reqId, operation):
         if not self._validate_attrib_keys(operation):
