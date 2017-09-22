@@ -297,18 +297,6 @@ class DomainReqHandler(PHandler):
                                 update_time=lastUpdateTime,
                                 proof=proof)
 
-    def make_proof(self, path):
-        proof = self.state.generate_state_proof(path, serialize=True)
-        root_hash = self.state.committedHeadHash
-        encoded_proof = base64.b64encode(proof)
-        encoded_root_hash = base58.b58encode(bytes(root_hash))
-        multi_sig = self.bls_store.get(encoded_root_hash)
-        return {
-            ROOT_HASH: encoded_root_hash,
-            MULTI_SIGNATURE: multi_sig,  # [["participants"], ["signatures"]]
-            PROOF_NODES: encoded_proof
-        }
-
     def lookup(self, path, isCommitted=True) -> (str, int):
         """
         Queries state for data on specified path
