@@ -5,10 +5,10 @@ import subprocess
 from indy_common.util import compose_cmd
 
 
-def rename_nested_app_dir_if_exists(base_dir):
-    if os.path.exists(os.path.join(base_dir, '.sovrin')):
-        os.rename(os.path.join(base_dir, '.sovrin'),
-                  os.path.join(base_dir, '.indy'))
+def rename_if_exists(dir, old_name, new_name):
+    if os.path.exists(os.path.join(dir, old_name)):
+        os.rename(os.path.join(dir, old_name),
+                  os.path.join(dir, new_name))
 
 
 def rename_request_files(requests_dir):
@@ -24,7 +24,9 @@ def migrate():
     shutil.rmtree(target_dir)
     shutil.copytree(source_dir, target_dir)
 
-    rename_nested_app_dir_if_exists(target_dir)
+    rename_if_exists(target_dir, '.sovrin', '.indy')
+    rename_if_exists(target_dir, 'sovrin.env', 'indy.env')
+    rename_if_exists(target_dir, 'sovrin_config.py', 'indy_config.py')
 
     if os.path.isdir(os.path.join(target_dir, 'sample')):
         rename_request_files(os.path.join(target_dir, 'sample'))
