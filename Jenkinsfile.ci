@@ -39,7 +39,15 @@ def buildDocker(imageName, dockerfile) {
 }
 
 
-def install(options=[pip: 'pip', isVEnv: false]) {
+def install(options) {
+   options.pip = options.pip ?: 'pip'
+   options.isVEnv = options.isVEnv ?: false
+   options.deps = options.deps ?: []
+
+   for (def dep : options.deps) {
+        sh "$options.pip install " + (options.isVEnv ? "-U" : "") + " $dep"
+    }
+
     sh "$options.pip install " + (options.isVEnv ? "--ignore-installed" : "") + " pytest"
     sh "$options.pip install ."
 }
@@ -53,7 +61,7 @@ def withTestEnv(body) {
         echo 'Test: Build docker image'
         buildDocker("$name-test", "ci/ubuntu.dockerfile ci").inside {
             echo 'Test: Install dependencies'
-            install(pip: 'pip')
+            install()
             body.call('python')
         }
     } else { // windows expected
@@ -68,12 +76,12 @@ def withTestEnv(body) {
 }
 
 
-def test(options=[
-        resFile: 'test-result.txt',
-        testDir: '.',
-        python: 'python',
-        useRunner: false,
-        testOnlySlice: '1/1']) {
+def test(options) {
+    options.resFile = options.resFile ?: 'test-result.txt'
+    options.testDir = options.testDir ?: '.'
+    options.python = options.python ?: 'python'
+    options.useRunner = options.useRunner ?: false
+    options.testOnlySlice = options.testOnlySlice ?: '1/1'
 
     try {
         if (options.useRunner) {
@@ -116,26 +124,26 @@ def staticCodeValidation() {
 
 def tests = [
     common: { python ->
-        test([
+        test(
             resFile: "test-result-common.${NODE_NAME}.xml",
             testDir: 'sovrin_common',
-            python: python]
+            python: python
         )
     },
     client: { python ->
-        test([
+        test(
             resFile: "test-result-client.${NODE_NAME}.txt",
             testDir: 'sovrin_client',
             python: python,
-            useRunner: true]
+            useRunner: true
         )
     },
     node: { python ->
-        test([
+        test(
             resFile: "test-result-node.${NODE_NAME}.txt",
             testDir: 'sovrin_node',
             python: python,
-            useRunner: true]
+            useRunner: true
         )
     },
 ].collect {k, v -> [k, v]}
