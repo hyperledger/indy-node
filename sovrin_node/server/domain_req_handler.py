@@ -301,12 +301,9 @@ class DomainReqHandler(PHandler):
         encoded = self.state.get(path, isCommitted)
         if encoded is None:
             raise KeyError
-        decoded = self.stateSerializer.deserialize(encoded)
-        value = decoded.get(self.VALUE)
-        lastSeqNo = decoded.get(self.LAST_SEQ_NO)
-        lastUpdateTime = decoded.get(self.LAST_UPDATE_TIME)
+        value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
         proof = self.make_proof(path)
-        return value, lastSeqNo, lastUpdateTime, proof
+        return value, last_seq_no, last_update_time, proof
 
     def _addAttr(self, txn) -> None:
         """
@@ -338,7 +335,7 @@ class DomainReqHandler(PHandler):
         hashedVal = self._hashOf(value) if value else ''
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
-        valueBytes = domain.make_state_value(hashedVal, seqNo, txnTime)
+        valueBytes = domain.encode_state_value(hashedVal, seqNo, txnTime)
         path = domain.make_state_path_for_attr(nym, attr_key)
         self.state.set(path, valueBytes)
         self.attributeStore.set(hashedVal, value)
@@ -354,7 +351,7 @@ class DomainReqHandler(PHandler):
 
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
-        valueBytes = domain.make_state_value(data, seqNo, txnTime)
+        valueBytes = domain.encode_state_value(data, seqNo, txnTime)
         self.state.set(path, valueBytes)
 
     def _addClaimDef(self, txn) -> None:
@@ -375,7 +372,7 @@ class DomainReqHandler(PHandler):
         path = domain.make_state_path_for_claim_def(origin, schemaSeqNo, signatureType)
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
-        valueBytes = domain.make_state_value(data, seqNo, txnTime)
+        valueBytes = domain.encode_state_value(data, seqNo, txnTime)
         self.state.set(path, valueBytes)
 
     def getAttr(self,
