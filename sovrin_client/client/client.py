@@ -165,9 +165,6 @@ class Client(PlenumClient):
                          "request of type {}"
                          .format(request_type))
 
-    def getTxnsByNym(self, nym: str):
-        raise NotImplementedError
-
     def getTxnsByType(self, txnType):
         return self.txnLog.getTxnsByType(txnType)
 
