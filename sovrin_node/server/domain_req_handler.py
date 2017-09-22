@@ -320,17 +320,8 @@ class DomainReqHandler(PHandler):
 
     def _addSchema(self, txn) -> None:
         assert txn[TXN_TYPE] == SCHEMA
-        origin = txn.get(f.IDENTIFIER.nm)
-
-        data = txn.get(DATA)
-        schemaName = data[NAME]
-        schemaVersion = data[VERSION]
-        path = domain.make_state_path_for_schema(origin, schemaName, schemaVersion)
-
-        seqNo = txn[f.SEQ_NO.nm]
-        txnTime = txn[TXN_TIME]
-        valueBytes = domain.encode_state_value(data, seqNo, txnTime)
-        self.state.set(path, valueBytes)
+        path, value_bytes = domain.prepare_schema_for_state(txn)
+        self.state.set(path, value_bytes)
 
     def _addClaimDef(self, txn) -> None:
         assert txn[TXN_TYPE] == CLAIM_DEF

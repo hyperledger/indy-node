@@ -1,7 +1,7 @@
 import json
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
-from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA
+from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA, NAME, VERSION
 from plenum.common.types import f
 
 from sovrin_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
@@ -89,6 +89,18 @@ def prepare_claim_def_for_state(txn):
                          .format(DATA))
     signature_type = txn.get(SIGNATURE_TYPE, 'CL')
     path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    value_bytes = encode_state_value(data, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_schema_for_state(txn):
+    origin = txn.get(f.IDENTIFIER.nm)
+    data = txn.get(DATA)
+    schema_name = data[NAME]
+    schema_version = data[VERSION]
+    path = make_state_path_for_schema(origin, schema_name, schema_version)
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     value_bytes = encode_state_value(data, seq_no, txn_time)

@@ -137,9 +137,7 @@ class Client(PlenumClient):
         if request_type == GET_CLAIM_DEF:
             return domain.prepare_claim_def_for_state(result)
         if request_type == GET_SCHEMA:
-            schemaName = data[NAME]
-            schemaVersion = data[VERSION]
-            return domain.make_state_path_for_schema(did, schemaName, schemaVersion)
+            return domain.prepare_schema_for_state(result)
         raise ValueError("Cannot make state key for "
                          "request of type {}"
                          .format(request_type))
