@@ -1,10 +1,10 @@
 import json
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
-from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM
+from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA
 from plenum.common.types import f
 
-from sovrin_common.constants import ATTRIB, GET_ATTR
+from sovrin_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
 
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
@@ -74,6 +74,26 @@ def prepare_attr_for_state(txn):
     value_bytes = encode_state_value(hashed_value, seq_no, txn_time)
     path = make_state_path_for_attr(nym, attr_key)
     return path, value, hashed_value, value_bytes
+
+
+def prepare_claim_def_for_state(txn):
+    origin = txn.get(f.IDENTIFIER.nm)
+    schema_seq_no = txn.get(REF)
+    if schema_seq_no is None:
+        raise ValueError("'{}' field is absent, "
+                         "but it must contain schema seq no".format(REF))
+    data = txn.get(DATA)
+    if data is None:
+        raise ValueError("'{}' field is absent, "
+                         "but it must contain components of keys"
+                         .format(DATA))
+    signature_type = txn.get(SIGNATURE_TYPE, 'CL')
+    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    value_bytes = encode_state_value(data, seq_no, txn_time)
+    return path, value_bytes
+
 
 def encode_state_value(value, seqNo, txnTime):
     return domain_state_serializer.serialize({

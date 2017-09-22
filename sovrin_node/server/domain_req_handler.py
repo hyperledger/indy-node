@@ -334,24 +334,8 @@ class DomainReqHandler(PHandler):
 
     def _addClaimDef(self, txn) -> None:
         assert txn[TXN_TYPE] == CLAIM_DEF
-        origin = txn.get(f.IDENTIFIER.nm)
-
-        schemaSeqNo = txn.get(REF)
-        if schemaSeqNo is None:
-            raise ValueError("'{}' field is absent, "
-                             "but it must contain schema seq no".format(REF))
-        data = txn.get(DATA)
-        if data is None:
-            raise ValueError("'{}' field is absent, "
-                             "but it must contain components of keys"
-                             .format(DATA))
-
-        signatureType = txn.get(SIGNATURE_TYPE, 'CL')
-        path = domain.make_state_path_for_claim_def(origin, schemaSeqNo, signatureType)
-        seqNo = txn[f.SEQ_NO.nm]
-        txnTime = txn[TXN_TIME]
-        valueBytes = domain.encode_state_value(data, seqNo, txnTime)
-        self.state.set(path, valueBytes)
+        path, value_bytes  = domain.prepare_claim_def_for_state(txn)
+        self.state.set(path, value_bytes)
 
     def getAttr(self,
                 did: str,

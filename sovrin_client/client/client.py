@@ -125,8 +125,7 @@ class Client(PlenumClient):
     def hasConsensus(self, identifier: str, reqId: int) -> Optional[str]:
         return super().hasConsensus(identifier, reqId)
 
-    def prepare_for_state(self, reply):
-        result = reply[f.RESULT.nm]
+    def prepare_for_state(self, result):
         request_type = result[TYPE]
         did = result[f.IDENTIFIER.nm]  # TARGET_NYM
         data = result[DATA]
@@ -136,9 +135,7 @@ class Client(PlenumClient):
             path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(result)
             return path, value_bytes
         if request_type == GET_CLAIM_DEF:
-            schemaSeqNo = result.get(REF)
-            signatureType = result.get(SIGNATURE_TYPE, 'CL')
-            return domain.make_state_path_for_claim_def(did, schemaSeqNo, signatureType)
+            return domain.prepare_claim_def_for_state(result)
         if request_type == GET_SCHEMA:
             schemaName = data[NAME]
             schemaVersion = data[VERSION]
