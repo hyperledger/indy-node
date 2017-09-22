@@ -21,14 +21,14 @@ from sovrin_common.roles import Roles
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
 from sovrin_node.persistence.idr_cache import IdrCache
+from sovrin_common.state import domain
+
 
 logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-    MARKER_ATTR = "\01"
-    MARKER_SCHEMA = "\02"
-    MARKER_CLAIM_DEF = "\03"
+
     LAST_SEQ_NO = "lsn"
     VALUE = "val"
     LAST_UPDATE_TIME = "lut"
@@ -221,7 +221,8 @@ class DomainReqHandler(PHandler):
             data = self.stateSerializer.serialize(nymData)
             seq_no = nymData[f.SEQ_NO.nm]
             update_time = nymData[TXN_TIME]
-            proof = self.make_proof(self.nym_to_state_key(nym))
+            path = domain.make_state_path_for_nym(nym)
+            proof = self.make_proof(path)
         else:
             data = None
             seq_no = None
@@ -343,7 +344,7 @@ class DomainReqHandler(PHandler):
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
         valueBytes = self._encodeValue(hashedVal, seqNo, txnTime)
-        path = self._makeAttrPath(nym, attr_key)
+        path = domain.make_state_path_for_attr(nym, attr_key)
         self.state.set(path, valueBytes)
         self.attributeStore.set(hashedVal, value)
 
@@ -354,7 +355,7 @@ class DomainReqHandler(PHandler):
         data = txn.get(DATA)
         schemaName = data[NAME]
         schemaVersion = data[VERSION]
-        path = self._makeSchemaPath(origin, schemaName, schemaVersion)
+        path = domain.make_state_path_for_schema(origin, schemaName, schemaVersion)
 
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
@@ -376,7 +377,7 @@ class DomainReqHandler(PHandler):
                              .format(DATA))
 
         signatureType = txn.get(SIGNATURE_TYPE, 'CL')
-        path = self._makeClaimDefPath(origin, schemaSeqNo, signatureType)
+        path = domain.make_state_path_for_claim_def(origin, schemaSeqNo, signatureType)
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
         valueBytes = self._encodeValue(data, seqNo, txnTime)
@@ -388,7 +389,7 @@ class DomainReqHandler(PHandler):
                 isCommitted=True) -> (str, int, list):
         assert did is not None
         assert key is not None
-        path = self._makeAttrPath(did, key)
+        path = domain.make_state_path_for_attr(did, key)
         try:
             hashed_val, lastSeqNo, lastUpdateTime, proof = \
                 self.lookup(path, isCommitted)
@@ -414,7 +415,7 @@ class DomainReqHandler(PHandler):
         assert author is not None
         assert schemaName is not None
         assert schemaVersion is not None
-        path = self._makeSchemaPath(author, schemaName, schemaVersion)
+        path = domain.make_state_path_for_schema(author, schemaName, schemaVersion)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof
@@ -428,7 +429,7 @@ class DomainReqHandler(PHandler):
                     isCommitted=True) -> (str, int, list):
         assert author is not None
         assert schemaSeqNo is not None
-        path = self._makeClaimDefPath(author, schemaSeqNo, signatureType)
+        path = domain.make_state_path_for_claim_def(author, schemaSeqNo, signatureType)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof
@@ -442,32 +443,6 @@ class DomainReqHandler(PHandler):
         if not isinstance(text, bytes):
             text = text.encode()
         return sha256(text).hexdigest()
-
-    @staticmethod
-    def _makeAttrPath(did, attrName) -> bytes:
-        nameHash = DomainReqHandler._hashOf(attrName)
-        return "{DID}:{MARKER}:{ATTR_NAME}" \
-            .format(DID=did,
-                    MARKER=DomainReqHandler.MARKER_ATTR,
-                    ATTR_NAME=nameHash).encode()
-
-    @staticmethod
-    def _makeSchemaPath(did, schemaName, schemaVersion) -> bytes:
-        return "{DID}:{MARKER}:{SCHEMA_NAME}:{SCHEMA_VERSION}" \
-            .format(DID=did,
-                    MARKER=DomainReqHandler.MARKER_SCHEMA,
-                    SCHEMA_NAME=schemaName,
-                    SCHEMA_VERSION=schemaVersion) \
-            .encode()
-
-    @staticmethod
-    def _makeClaimDefPath(did, schemaSeqNo, signatureType) -> bytes:
-        return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}" \
-            .format(DID=did,
-                    MARKER=DomainReqHandler.MARKER_CLAIM_DEF,
-                    SIGNATURE_TYPE=signatureType,
-                    SCHEMA_SEQ_NO=schemaSeqNo)\
-            .encode()
 
     def _encodeValue(self, value, seqNo, txnTime):
         return self.stateSerializer.serialize({

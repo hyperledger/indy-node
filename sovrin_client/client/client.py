@@ -28,7 +28,7 @@ from sovrin_client.persistence.client_req_rep_store_file import ClientReqRepStor
 from sovrin_client.persistence.client_txn_log import ClientTxnLog
 from sovrin_common.config_util import getConfig
 from stp_core.types import HA
-from sovrin_node.server.domain_req_handler import DomainReqHandler
+from sovrin_common.state import domain
 
 logger = getlogger()
 
@@ -131,21 +131,19 @@ class Client(PlenumClient):
         did = result[f.IDENTIFIER.nm]  # TARGET_NYM
         data = result[DATA]
         if request_type == GET_NYM:
-            return DomainReqHandler.nym_to_state_key(did)
+            return domain.make_state_path_for_nym(did)
         if request_type == GET_ATTR:
             # TODO: update it
             attr_key = data
-            return DomainReqHandler._makeAttrPath(did, attr_key)
+            return domain.make_state_path_for_attr(did, attr_key)
         if request_type == GET_CLAIM_DEF:
             schemaSeqNo = result.get(REF)
             signatureType = result.get(SIGNATURE_TYPE, 'CL')
-            return DomainReqHandler._makeClaimDefPath(did,
-                                                      schemaSeqNo,
-                                                      signatureType)
+            return domain.make_state_path_for_claim_def(did, schemaSeqNo, signatureType)
         if request_type == GET_SCHEMA:
             schemaName = data[NAME]
             schemaVersion = data[VERSION]
-            return DomainReqHandler._makeSchemaPath(did, schemaName, schemaVersion)
+            return domain.make_state_path_for_schema(did, schemaName, schemaVersion)
         raise ValueError("Cannot make state key for "
                          "request of type {}"
                          .format(request_type))
