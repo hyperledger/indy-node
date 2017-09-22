@@ -125,7 +125,7 @@ class Client(PlenumClient):
     def hasConsensus(self, identifier: str, reqId: int) -> Optional[str]:
         return super().hasConsensus(identifier, reqId)
 
-    def make_state_key(self, reply):
+    def prepare_for_state(self, reply):
         result = reply[f.RESULT.nm]
         request_type = result[TYPE]
         did = result[f.IDENTIFIER.nm]  # TARGET_NYM
@@ -133,9 +133,8 @@ class Client(PlenumClient):
         if request_type == GET_NYM:
             return domain.make_state_path_for_nym(did)
         if request_type == GET_ATTR:
-            # TODO: update it
-            attr_key = data
-            return domain.make_state_path_for_attr(did, attr_key)
+            path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(result)
+            return path, value_bytes
         if request_type == GET_CLAIM_DEF:
             schemaSeqNo = result.get(REF)
             signatureType = result.get(SIGNATURE_TYPE, 'CL')
@@ -145,21 +144,6 @@ class Client(PlenumClient):
             schemaVersion = data[VERSION]
             return domain.make_state_path_for_schema(did, schemaName, schemaVersion)
         raise ValueError("Cannot make state key for "
-                         "request of type {}"
-                         .format(request_type))
-
-    def make_state_value(self, reply):
-        result = reply[f.RESULT.nm]
-        request_type = result[TYPE]
-        if request_type == GET_NYM:
-            return None
-        if request_type == GET_ATTR:
-            return None
-        if request_type == GET_CLAIM_DEF:
-            return None
-        if request_type == GET_SCHEMA:
-            return None
-        raise ValueError("Cannot make state value for "
                          "request of type {}"
                          .format(request_type))
 

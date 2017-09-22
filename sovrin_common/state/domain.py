@@ -1,6 +1,10 @@
+import json
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
+from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM
+from plenum.common.types import f
 
+from sovrin_common.constants import ATTRIB, GET_ATTR
 
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
@@ -40,6 +44,37 @@ def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type) ->
                 SCHEMA_SEQ_NO=schema_seq_no).encode()
 
 
+def prepare_attr_for_state(txn):
+    """
+    Make key(path)-value pair for state from ATTRIB or GET_ATTR
+    :return: state path, state value, value for attribute store
+    """
+    assert txn[TXN_TYPE] in {ATTRIB, GET_ATTR}
+    nym = txn.get(TARGET_NYM)
+
+    def parse(txn):
+        raw = txn.get(RAW)
+        if raw:
+            data = json.loads(raw)
+            key, _ = data.popitem()
+            return key, raw
+        enc = txn.get(ENC)
+        if enc:
+            return hash_of(enc), enc
+        hsh = txn.get(HASH)
+        if hsh:
+            return hsh, None
+        raise ValueError("One of 'raw', 'enc', 'hash' "
+                         "fields of ATTR must present")
+
+    attr_key, value = parse(txn)
+    hashed_value = hash_of(value) if value else ''
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    value_bytes = encode_state_value(hashed_value, seq_no, txn_time)
+    path = make_state_path_for_attr(nym, attr_key)
+    return path, value, hashed_value, value_bytes
+
 def encode_state_value(value, seqNo, txnTime):
     return domain_state_serializer.serialize({
         LAST_SEQ_NO: seqNo,
@@ -54,3 +89,12 @@ def decode_state_value(ecnoded_value):
     last_seq_no = decoded.get(LAST_SEQ_NO)
     last_update_time = decoded.get(LAST_UPDATE_TIME)
     return value, last_seq_no, last_update_time
+
+
+def hash_of(text) -> str:
+    if not isinstance(text, (str, bytes)):
+        text = domain_state_serializer.serialize(text)
+    if not isinstance(text, bytes):
+        text = text.encode()
+    return sha256(text).hexdigest()
+

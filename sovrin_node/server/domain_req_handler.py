@@ -314,31 +314,9 @@ class DomainReqHandler(PHandler):
         the trie stores a blank value for the key did+hash
         """
         assert txn[TXN_TYPE] == ATTRIB
-        nym = txn.get(TARGET_NYM)
-
-        def parse(txn):
-            raw = txn.get(RAW)
-            if raw:
-                data = json.loads(raw)
-                key, _ = data.popitem()
-                return key, raw
-            enc = txn.get(ENC)
-            if enc:
-                return self._hashOf(enc), enc
-            hsh = txn.get(HASH)
-            if hsh:
-                return hsh, None
-            raise ValueError("One of 'raw', 'enc', 'hash' "
-                             "fields of ATTR must present")
-
-        attr_key, value = parse(txn)
-        hashedVal = self._hashOf(value) if value else ''
-        seqNo = txn[f.SEQ_NO.nm]
-        txnTime = txn[TXN_TIME]
-        valueBytes = domain.encode_state_value(hashedVal, seqNo, txnTime)
-        path = domain.make_state_path_for_attr(nym, attr_key)
-        self.state.set(path, valueBytes)
-        self.attributeStore.set(hashedVal, value)
+        path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
+        self.state.set(path, value_bytes)
+        self.attributeStore.set(hashed_value, value)
 
     def _addSchema(self, txn) -> None:
         assert txn[TXN_TYPE] == SCHEMA
