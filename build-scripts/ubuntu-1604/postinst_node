@@ -108,6 +108,14 @@ chmod +x /usr/local/bin/upgrade_indy_node_test
 chmod +x /usr/local/bin/restart_indy_node
 chmod +x /usr/local/bin/start_node_control_tool.py
 
+# If the user "sovrin" exists then this installation may be performed in scope of rebranding upgrade and in such a case additional scripts are needed to complete it
+if id -u sovrin > /dev/null 2>&1; then
+    mv -f /usr/local/bin/restart_sovrin_node_ubuntu1604.sh /usr/local/bin/restart_sovrin_node
+    mv -f /usr/local/bin/complete_rebranding_upgrade_ubuntu1604.sh /usr/local/bin/complete_rebranding_upgrade
+    chmod +x /usr/local/bin/restart_sovrin_node
+    chmod +x /usr/local/bin/complete_rebranding_upgrade
+fi
+
 rm -f /usr/local/bin/delete_indy_node.bat /usr/local/bin/upgrade_indy_node_test.bat /usr/local/bin/restart_indy_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_indy_node.bat /usr/local/bin/install_indy_node.bat
 
 # disable stdout logging
