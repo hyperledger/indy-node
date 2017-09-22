@@ -12,9 +12,10 @@ def rename_if_exists(dir, old_name, new_name):
 
 
 def rename_request_files(requests_dir):
-    for path in os.listdir(requests_dir):
-        if os.path.isfile(path) and path.endswith('.sovrin'):
-            os.rename(path, path[:-len('.sovrin')] + '.indy')
+    for relative_name in os.listdir(requests_dir):
+        absolute_name = os.path.join(requests_dir, relative_name)
+        if os.path.isfile(absolute_name) and absolute_name.endswith('.sovrin'):
+            os.rename(absolute_name, absolute_name[:-len('.sovrin')] + '.indy')
 
 
 def migrate():
