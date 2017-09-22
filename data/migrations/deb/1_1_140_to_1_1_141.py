@@ -18,8 +18,8 @@ def rename_request_files(requests_dir):
 
 
 def migrate():
-    source_dir = os.path.expanduser('~/.sovrin').replace('/indy/', '/sovrin/')
-    target_dir = os.path.expanduser('~/.indy')
+    source_dir = os.path.expanduser('/home/sovrin/.sovrin')
+    target_dir = os.path.expanduser('/home/indy/.indy')
 
     shutil.rmtree(target_dir)
     shutil.copytree(source_dir, target_dir)
