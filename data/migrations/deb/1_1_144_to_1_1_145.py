@@ -32,6 +32,8 @@ def migrate_all_states(node_data_directory):
         os.path.join(node_data_directory, 'domain_state'))
     shutil.rmtree(
         os.path.join(node_data_directory, 'config_state'))
+    shutil.rmtree(
+        os.path.join(node_data_directory, 'idr_cache_db'))
 
 
 def migrate_all():

@@ -7,6 +7,7 @@ from copy import deepcopy
 import base58
 import base64
 
+from common.serializers.serialization import state_roots_serializer
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
@@ -300,12 +301,13 @@ class DomainReqHandler(PHandler):
     def make_proof(self, path):
         proof = self.state.generate_state_proof(path, serialize=True)
         root_hash = self.state.committedHeadHash
+        # TODO: move to serialization.py
         encoded_proof = base64.b64encode(proof)
-        encoded_root_hash = base58.b58encode(bytes(root_hash))
+        encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
         multi_sig = self.bls_store.get(encoded_root_hash)
         return {
             ROOT_HASH: encoded_root_hash,
-            MULTI_SIGNATURE: multi_sig,  # [["participants"], ["signatures"]]
+            MULTI_SIGNATURE: multi_sig,  # [["participants"], "signature", "encoded_pool_root_hash" ]
             PROOF_NODES: encoded_proof
         }
 
@@ -400,7 +402,7 @@ class DomainReqHandler(PHandler):
     def getAttr(self,
                 did: str,
                 key: str,
-                isCommitted=True) -> (str, int, list):
+                isCommitted=True) -> (str, int, int, list):
         assert did is not None
         assert key is not None
         path = self._makeAttrPath(did, key)
@@ -425,7 +427,7 @@ class DomainReqHandler(PHandler):
                   author: str,
                   schemaName: str,
                   schemaVersion: str,
-                  isCommitted=True) -> (str, int, list):
+                  isCommitted=True) -> (str, int, int, list):
         assert author is not None
         assert schemaName is not None
         assert schemaVersion is not None
@@ -440,7 +442,7 @@ class DomainReqHandler(PHandler):
                     author: str,
                     schemaSeqNo: str,
                     signatureType='CL',
-                    isCommitted=True) -> (str, int, list):
+                    isCommitted=True) -> (str, int, int, list):
         assert author is not None
         assert schemaSeqNo is not None
         path = self._makeClaimDefPath(author, schemaSeqNo, signatureType)
