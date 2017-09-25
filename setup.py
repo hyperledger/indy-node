@@ -109,6 +109,8 @@ setup(
              'scripts/upgrade_indy_node_test.bat',
              'scripts/restart_indy_node_ubuntu1604.sh',
              'scripts/restart_indy_node.bat',
+             'scripts/restart_sovrin_node_ubuntu1604.sh',
+             'scripts/complete_rebranding_upgrade_ubuntu1604.sh',
              'scripts/install_indy_node.bat',
              'scripts/delete_indy_node.bat',
              'scripts/restart_upgrade_agent.bat',
