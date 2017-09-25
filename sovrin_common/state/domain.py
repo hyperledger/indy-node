@@ -15,9 +15,8 @@ LAST_UPDATE_TIME = "lut"
 
 
 def make_state_path_for_nym(did) -> bytes:
-    from plenum.server.domain_req_handler import DomainRequestHandler
-    return DomainRequestHandler.nym_to_state_key(did)
-    # return sha256(did.encode()).digest()
+    # TODO: This is duplicated in plenum.DimainRequestHandler
+    return sha256(did.encode()).digest()
 
 
 def make_state_path_for_attr(did, attr_name) -> bytes:
@@ -42,6 +41,15 @@ def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type) ->
                 MARKER=MARKER_CLAIM_DEF,
                 SIGNATURE_TYPE=signature_type,
                 SCHEMA_SEQ_NO=schema_seq_no).encode()
+
+
+def prepare_nym_for_state(txn):
+    # TODO: this is semi-duplicated in plenum.DomainRequestHandler
+    data = txn.get(DATA)
+    nym = txn[TARGET_NYM]
+    value = domain_state_serializer.serialize(data)
+    key = make_state_path_for_nym(nym)
+    return key, value
 
 
 def prepare_attr_for_state(txn):
