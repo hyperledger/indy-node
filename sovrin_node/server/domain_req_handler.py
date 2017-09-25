@@ -5,11 +5,14 @@ from hashlib import sha256
 from copy import deepcopy
 
 import base58
+import base64
 
+from common.serializers.serialization import state_roots_serializer
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
-    VERKEY, DATA, NAME, VERSION, ORIGIN
+    VERKEY, DATA, NAME, VERSION, ORIGIN, \
+    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME
 from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from sovrin_common.auth import Authoriser
@@ -18,7 +21,7 @@ from sovrin_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
 from sovrin_common.roles import Roles
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
-
+from sovrin_node.persistence.idr_cache import IdrCache
 
 logger = getlogger()
 
@@ -29,11 +32,12 @@ class DomainReqHandler(PHandler):
     MARKER_CLAIM_DEF = "\03"
     LAST_SEQ_NO = "lsn"
     VALUE = "val"
+    LAST_UPDATE_TIME = "lut"
 
     def __init__(self, ledger, state, requestProcessor,
-                 idrCache, attributeStore):
-        super().__init__(ledger, state, requestProcessor)
-        self.idrCache = idrCache
+                 idrCache, attributeStore, bls_store):
+        super().__init__(ledger, state, requestProcessor, bls_store)
+        self.idrCache = idrCache  # type: IdrCache
         self.attributeStore = attributeStore
 
     def onBatchCreated(self, stateRoot):
@@ -46,7 +50,11 @@ class DomainReqHandler(PHandler):
         typ = txn.get(TXN_TYPE)
         nym = txn.get(TARGET_NYM)
         if typ == NYM:
-            data = {f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm)}
+            data = {
+                f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm),
+                f.SEQ_NO.nm: txn.get(f.SEQ_NO.nm),
+                TXN_TIME: txn.get(TXN_TIME)
+            }
             if ROLE in txn:
                 data[ROLE] = txn.get(ROLE)
             if VERKEY in txn:
@@ -197,9 +205,13 @@ class DomainReqHandler(PHandler):
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
-        self.idrCache.set(nym, ta=updatedData.get(f.IDENTIFIER.nm),
-                          verkey=updatedData.get(VERKEY),
+        txn_time = data.get(TXN_TIME)
+        self.idrCache.set(nym,
+                          seqNo=data[f.SEQ_NO.nm],
+                          txnTime=txn_time,
+                          ta=updatedData.get(f.IDENTIFIER.nm),
                           role=updatedData.get(ROLE),
+                          verkey=updatedData.get(VERKEY),
                           isCommitted=isCommitted)
 
     def hasNym(self, nym, isCommitted: bool = True):
@@ -211,45 +223,51 @@ class DomainReqHandler(PHandler):
         if nymData:
             nymData[TARGET_NYM] = nym
             data = self.stateSerializer.serialize(nymData)
+            seq_no = nymData[f.SEQ_NO.nm]
+            update_time = nymData[TXN_TIME]
+            proof = self.make_proof(self.nym_to_state_key(nym))
         else:
             data = None
-        result = {f.IDENTIFIER.nm: request.identifier,
-                  f.REQ_ID.nm: request.reqId, DATA: data}
+            seq_no = None
+            proof = None
+            update_time = None
+
+        # TODO: add update time here!
+        result = self.make_result(request=request,
+                                  data=data,
+                                  last_seq_no=seq_no,
+                                  update_time=update_time,
+                                  proof=proof)
+
         result.update(request.operation)
         return result
 
     def handleGetSchemaReq(self, request: Request, frm: str):
         authorDid = request.operation[TARGET_NYM]
-        schema, lastSeqNo = self.getSchema(
+        schema, lastSeqNo, lastUpdateTime, proof = self.getSchema(
             author=authorDid,
             schemaName=(request.operation[DATA][NAME]),
             schemaVersion=(request.operation[DATA][VERSION])
         )
-
-        if schema is not None:
-            schema.update({ORIGIN: authorDid})
-        result = {**request.operation, **{
-            DATA: schema,
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            f.SEQ_NO.nm: lastSeqNo
-        }}
-        return result
+        return self.make_result(request=request,
+                                data=schema,
+                                last_seq_no=lastSeqNo,
+                                update_time=lastUpdateTime,
+                                proof=proof)
 
     def handleGetClaimDefReq(self, request: Request, frm: str):
         signatureType = request.operation[SIGNATURE_TYPE]
-        keys, lastSeqNo = self.getClaimDef(
+        keys, lastSeqNo, lastUpdateTime, proof = self.getClaimDef(
             author=request.operation[ORIGIN],
             schemaSeqNo=request.operation[REF],
             signatureType=signatureType
         )
-        result = {**request.operation, **{
-            DATA: keys,
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            SIGNATURE_TYPE: signatureType,
-            f.SEQ_NO.nm: lastSeqNo
-        }}
+        result = self.make_result(request=request,
+                                  data=keys,
+                                  last_seq_no=lastSeqNo,
+                                  update_time=lastUpdateTime,
+                                  proof=proof)
+        result[SIGNATURE_TYPE] = signatureType
         return result
 
     def handleGetAttrsReq(self, request: Request, frm: str):
@@ -266,8 +284,7 @@ class DomainReqHandler(PHandler):
             attr_key = request.operation[ENC]
         else:
             attr_key = request.operation[HASH]
-
-        value, lastSeqNo = \
+        value, lastSeqNo, lastUpdateTime, proof = \
             self.getAttr(did=nym, key=attr_key)
         attr = None
         if value is not None:
@@ -275,14 +292,24 @@ class DomainReqHandler(PHandler):
                 attr = attr_key
             else:
                 attr = value
+        return self.make_result(request=request,
+                                data=attr,
+                                last_seq_no=lastSeqNo,
+                                update_time=lastUpdateTime,
+                                proof=proof)
 
-        result = {**request.operation, **{
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            DATA: attr,
-            f.SEQ_NO.nm: lastSeqNo
-        }}
-        return result
+    def make_proof(self, path):
+        proof = self.state.generate_state_proof(path, serialize=True)
+        root_hash = self.state.committedHeadHash
+        # TODO: move to serialization.py
+        encoded_proof = base64.b64encode(proof)
+        encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
+        multi_sig = self.bls_store.get(encoded_root_hash)
+        return {
+            ROOT_HASH: encoded_root_hash,
+            MULTI_SIGNATURE: multi_sig,  # [["participants"], "signature", "encoded_pool_root_hash" ]
+            PROOF_NODES: encoded_proof
+        }
 
     def lookup(self, path, isCommitted=True) -> (str, int):
         """
@@ -298,7 +325,9 @@ class DomainReqHandler(PHandler):
         decoded = self.stateSerializer.deserialize(encoded)
         value = decoded.get(self.VALUE)
         lastSeqNo = decoded.get(self.LAST_SEQ_NO)
-        return value, lastSeqNo
+        lastUpdateTime = decoded.get(self.LAST_UPDATE_TIME)
+        proof = self.make_proof(path)
+        return value, lastSeqNo, lastUpdateTime, proof
 
     def _addAttr(self, txn) -> None:
         """
@@ -329,7 +358,8 @@ class DomainReqHandler(PHandler):
         attr_key, value = parse(txn)
         hashedVal = self._hashOf(value) if value else ''
         seqNo = txn[f.SEQ_NO.nm]
-        valueBytes = self._encodeValue(hashedVal, seqNo)
+        txnTime = txn[TXN_TIME]
+        valueBytes = self._encodeValue(hashedVal, seqNo, txnTime)
         path = self._makeAttrPath(nym, attr_key)
         self.state.set(path, valueBytes)
         self.attributeStore.set(hashedVal, value)
@@ -344,7 +374,8 @@ class DomainReqHandler(PHandler):
         path = self._makeSchemaPath(origin, schemaName, schemaVersion)
 
         seqNo = txn[f.SEQ_NO.nm]
-        valueBytes = self._encodeValue(data, seqNo)
+        txnTime = txn[TXN_TIME]
+        valueBytes = self._encodeValue(data, seqNo, txnTime)
         self.state.set(path, valueBytes)
 
     def _addClaimDef(self, txn) -> None:
@@ -364,60 +395,62 @@ class DomainReqHandler(PHandler):
         signatureType = txn.get(SIGNATURE_TYPE, 'CL')
         path = self._makeClaimDefPath(origin, schemaSeqNo, signatureType)
         seqNo = txn[f.SEQ_NO.nm]
-        valueBytes = self._encodeValue(data, seqNo)
+        txnTime = txn[TXN_TIME]
+        valueBytes = self._encodeValue(data, seqNo, txnTime)
         self.state.set(path, valueBytes)
 
     def getAttr(self,
                 did: str,
                 key: str,
-                isCommitted=True) -> (str, int):
+                isCommitted=True) -> (str, int, int, list):
         assert did is not None
         assert key is not None
         path = self._makeAttrPath(did, key)
         try:
-            hashed_val, lastSeqNo = self.lookup(path, isCommitted)
+            hashed_val, lastSeqNo, lastUpdateTime, proof = \
+                self.lookup(path, isCommitted)
         except KeyError:
-            return None, None
+            return None, None, None, None
         if hashed_val == '':
             # Its a HASH attribute
-            return hashed_val, lastSeqNo
+            return hashed_val, lastSeqNo, lastUpdateTime, proof
         else:
             try:
                 value = self.attributeStore.get(hashed_val)
             except KeyError:
                 logger.error('Could not get value from attribute store for {}'
                              .format(hashed_val))
-                return None, None
-        return value, lastSeqNo
+                return None, None, None, None
+        return value, lastSeqNo, lastUpdateTime, proof
 
     def getSchema(self,
                   author: str,
                   schemaName: str,
                   schemaVersion: str,
-                  isCommitted=True) -> (str, int):
+                  isCommitted=True) -> (str, int, int, list):
         assert author is not None
         assert schemaName is not None
         assert schemaVersion is not None
         path = self._makeSchemaPath(author, schemaName, schemaVersion)
         try:
-            keys, seqno = self.lookup(path, isCommitted)
-            return keys, seqno
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            return keys, seqno, lastUpdateTime, proof
         except KeyError:
-            return None, None
+            return None, None, None, None
 
     def getClaimDef(self,
                     author: str,
                     schemaSeqNo: str,
                     signatureType='CL',
-                    isCommitted=True) -> (str, int):
+                    isCommitted=True) -> (str, int, int, list):
         assert author is not None
         assert schemaSeqNo is not None
         path = self._makeClaimDefPath(author, schemaSeqNo, signatureType)
         try:
-            keys, seqno = self.lookup(path, isCommitted)
-            return keys, seqno
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            return keys, seqno, lastUpdateTime, proof
         except KeyError:
-            return None, None
+            return None, None, None, None
 
     @staticmethod
     def _hashOf(text) -> str:
@@ -437,7 +470,7 @@ class DomainReqHandler(PHandler):
 
     @staticmethod
     def _makeSchemaPath(did, schemaName, schemaVersion) -> bytes:
-        return "{DID}:{MARKER}:{SCHEMA_NAME}{SCHEMA_VERSION}" \
+        return "{DID}:{MARKER}:{SCHEMA_NAME}:{SCHEMA_VERSION}" \
             .format(DID=did,
                     MARKER=DomainReqHandler.MARKER_SCHEMA,
                     SCHEMA_NAME=schemaName,
@@ -453,9 +486,10 @@ class DomainReqHandler(PHandler):
                     SCHEMA_SEQ_NO=schemaSeqNo)\
             .encode()
 
-    def _encodeValue(self, value, seqNo):
+    def _encodeValue(self, value, seqNo, txnTime):
         return self.stateSerializer.serialize({
             DomainReqHandler.LAST_SEQ_NO: seqNo,
+            DomainReqHandler.LAST_UPDATE_TIME: txnTime,
             DomainReqHandler.VALUE: value
         })
 
@@ -484,3 +518,16 @@ class DomainReqHandler(PHandler):
         elif HASH in txn:
             txn[HASH] = txn[HASH]
         return txn
+
+    @staticmethod
+    def make_result(request, data, last_seq_no, update_time, proof):
+        result = {**request.operation, **{
+            DATA: data,
+            f.IDENTIFIER.nm: request.identifier,
+            f.REQ_ID.nm: request.reqId,
+            f.SEQ_NO.nm: last_seq_no,
+            TXN_TIME: update_time,
+            STATE_PROOF: proof
+        }}
+        # Do not inline please, it makes debugging easier
+        return result
