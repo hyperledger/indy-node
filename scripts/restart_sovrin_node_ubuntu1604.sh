@@ -2,4 +2,4 @@
 
 # This script is intended to be used by rebranding upgrade
 
-batch -f /usr/local/bin/complete_rebranding_upgrade
+at -f complete_rebranding_upgrade now
