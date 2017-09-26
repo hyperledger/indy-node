@@ -363,6 +363,12 @@ class DomainReqHandler(PHandler):
         path = self._makeAttrPath(nym, attr_key)
         self.state.set(path, valueBytes)
         self.attributeStore.set(hashedVal, value)
+        logger.info("===ATTR==DEBUG==INFO===")
+        logger.info("Saved attrib {}".format(txn))
+        logger.info("Key {}".format(attr_key))
+        logger.info("Value {}".format(value))
+        logger.info("Hashed value {}".format(hashedVal))
+        logger.info("Value  bytes {}".format(valueBytes))
 
     def _addSchema(self, txn) -> None:
         assert txn[TXN_TYPE] == SCHEMA
