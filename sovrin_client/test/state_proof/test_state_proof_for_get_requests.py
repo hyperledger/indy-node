@@ -11,6 +11,7 @@ from plenum.test.helper import waitForSufficientRepliesForRequests, \
     getRepliesFromClientInbox
 
 # Fixtures, do not remove
+from sovrin_common.serialization import attrib_raw_data_serializer
 from sovrin_node.test.helper import addAttributeAndCheck
 from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
 from sovrin_client.test.test_nym_attrib import \
@@ -38,11 +39,12 @@ def test_state_proof_returned_for_get_attr(looper,
     client.submitReqs(*pending)
     waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
     replies = getRepliesFromClientInbox(client.inBox, get_attr_request.reqId)
-    expected_data = attributeData
+    expected_data = attrib_raw_data_serializer.deserialize(attributeData)
     for reply in replies:
         result = reply['result']
         assert DATA in result
-        assert result[DATA] == expected_data
+        data = attrib_raw_data_serializer.deserialize(result[DATA])
+        assert data == expected_data
         assert result[TXN_TIME]
         assert STATE_PROOF in result
         state_proof = result[STATE_PROOF]
