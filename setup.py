@@ -36,12 +36,10 @@ METADATA = os.path.join(SETUP_DIRNAME, 'sovrin_node', '__metadata__.py')
 exec(compile(open(METADATA).read(), METADATA, 'exec'))
 
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".sovrin")
-BASE_DATA_DIR = '/var/indy'
-LOG_DIR = '/var/log/indy'
-GENERAL_CONFIG_DIR = '/etc/indy'
-CONFIG_FILE = os.path.join(GENERAL_CONFIG_DIR, "indy_config.py")
+LOG_DIR = os.path.join(BASE_DIR, "log")
+CONFIG_FILE = os.path.join(BASE_DIR, "indy_config.py")
 
-for path in [BASE_DIR, BASE_DATA_DIR, LOG_DIR, GENERAL_CONFIG_DIR]:
+for path in [BASE_DIR, LOG_DIR]:
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -61,14 +59,16 @@ def post_install():
 
 class EnhancedInstall(install):
     def run(self):
-        install.run(self)
-        post_install()
+        pass
+        # install.run(self)
+        # post_install()
 
 
 class EnhancedInstallDev(develop):
     def run(self):
-        develop.run(self)
-        post_install()
+        pass
+        # develop.run(self)
+        # post_install()
 
 
 setup(
