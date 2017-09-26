@@ -4,12 +4,12 @@
 
 systemctl stop sovrin-node-control
 
-NODE_SERVICE_WAS_ENABLED=systemctl -q is-enabled sovrin-node.service;
+NODE_SERVICE_ENABLEMENT_STATUS=$(systemctl is-enabled sovrin-node.service)
 
 systemctl disable sovrin-node.service
 rm /etc/systemd/system/sovrin-node.service
 
-# Just in case disable the service (it might be enabled accidentally)
+# Just in case disable sovrin-node-control service (it might be enabled accidentally)
 # Normally it was a dependency of sovrin-node service which was the only one enabled
 systemctl disable sovrin-node-control.service
 
@@ -22,7 +22,7 @@ echo "Starting indy-node"
 systemctl start indy-node
 # indy-node-control is also started because indy-node requires it
 
-if $NODE_SERVICE_WAS_ENABLED then
+if [ $NODE_SERVICE_ENABLEMENT_STATUS != "disabled" ]; then
     echo "Enable indy-node.service"
     systemctl enable indy-node.service
 fi
