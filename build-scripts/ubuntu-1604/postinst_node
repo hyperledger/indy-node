@@ -75,7 +75,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=/etc/indy/node_control.conf
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool.py \$TEST_MODE --hold-ext \$HOLD_EXT
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \$HOLD_EXT
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
@@ -102,13 +102,18 @@ fi
 mv /usr/local/bin/upgrade_indy_node_ubuntu1604.sh /usr/local/bin/upgrade_indy_node
 mv /usr/local/bin/upgrade_indy_node_ubuntu1604_test.sh /usr/local/bin/upgrade_indy_node_test
 mv /usr/local/bin/restart_indy_node_ubuntu1604.sh /usr/local/bin/restart_indy_node
+mv /usr/local/bin/restart_sovrin_node_ubuntu1604.sh /usr/local/bin/restart_sovrin_node
+mv /usr/local/bin/complete_rebranding_upgrade_ubuntu1604.sh /usr/local/bin/complete_rebranding_upgrade
 
 chmod +x /usr/local/bin/upgrade_indy_node
 chmod +x /usr/local/bin/upgrade_indy_node_test
 chmod +x /usr/local/bin/restart_indy_node
-chmod +x /usr/local/bin/start_node_control_tool.py
+chmod +x /usr/local/bin/restart_sovrin_node
+chmod +x /usr/local/bin/complete_rebranding_upgrade
 
-rm -f /usr/local/bin/delete_indy_node.bat /usr/local/bin/upgrade_indy_node_test.bat /usr/local/bin/restart_indy_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_indy_node.bat /usr/local/bin/install_indy_node.bat
+rm -f /usr/local/bin/delete_indy_node.bat /usr/local/bin/upgrade_indy_node_test.bat \
+    /usr/local/bin/restart_indy_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_indy_node.bat \
+    /usr/local/bin/install_indy_node.bat /usr/local/bin/restart_upgrade_agent.bat
 
 # disable stdout logging
 echo "enableStdOutLogging=False" >> /home/indy/.indy/indy_config.py
