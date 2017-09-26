@@ -85,7 +85,7 @@ def test_state_proofs_for_get_attr(request_handler):
     # Adding attribute
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
     attr_key = 'last_name'
-    raw_attribute = '{"last_name": "Anderson"}'
+    raw_attribute = '{"last_name":"Anderson"}'
     seq_no = 0
     txn_time = int(time.time())
     txn = {
