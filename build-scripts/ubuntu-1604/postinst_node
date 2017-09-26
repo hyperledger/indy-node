@@ -75,7 +75,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=/etc/indy/node_control.conf
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool.py \$TEST_MODE --hold-ext \$HOLD_EXT
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \$HOLD_EXT
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
@@ -108,7 +108,6 @@ mv /usr/local/bin/complete_rebranding_upgrade_ubuntu1604.sh /usr/local/bin/compl
 chmod +x /usr/local/bin/upgrade_indy_node
 chmod +x /usr/local/bin/upgrade_indy_node_test
 chmod +x /usr/local/bin/restart_indy_node
-chmod +x /usr/local/bin/start_node_control_tool.py
 chmod +x /usr/local/bin/restart_sovrin_node
 chmod +x /usr/local/bin/complete_rebranding_upgrade
 

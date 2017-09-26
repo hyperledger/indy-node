@@ -91,7 +91,6 @@ Node control utils options
 '''
 controlServiceHost = "127.0.0.1"
 controlServicePort = "30003"
-controlServiceLogFile = "node_control.log"
 
 
 '''

@@ -98,7 +98,7 @@ setup(
              'scripts/add_new_node',
              'scripts/reset_client',
              'scripts/start_indy_node',
-             'scripts/start_node_control_tool.py',
+             'scripts/start_node_control_tool',
              'scripts/clear_node.py',
              'scripts/get_keys',
              'scripts/generate_indy_pool_transactions',
