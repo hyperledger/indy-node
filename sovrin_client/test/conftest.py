@@ -330,7 +330,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
 
-    newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
+    newNode = testNodeClass(newNodeName, basedirpath=tdir, base_data_dir=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(
                                 clientIp, clientPort),
                             pluginPaths=allPluginsPath)
