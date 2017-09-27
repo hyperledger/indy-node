@@ -12,6 +12,7 @@ logger = getlogger()
 
 old_base_dir = '~/.indy'
 
+
 def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
     for suffix in ('sandbox', 'live'):
         new_txn_dir = os.path.join(new_base_txn_dir, suffix)
@@ -32,7 +33,7 @@ def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
             shutil.move(old_pool_genesis, new_pool_genesis)
 
 
-def migrate_keys(old_base_keys_dir, new_base_keys_dir)
+def migrate_keys(old_base_keys_dir, new_base_keys_dir):
     for prefix in ('private', 'public', 'sig', 'verif'):
         old_keys_dir = os.path.join(old_base_keys_dir, '{}_keys'.format(prefix))
         if os.path.exists(old_keys_dir) and os.path.isdir(old_keys_dir):
@@ -89,7 +90,7 @@ def migrate_all():
 
     # Build network-related paths
     new_log_dir = os.path.join(config.LOG_DIR, network_name)
-    new_node_base_dir = os.path.join(base_dir , network_name)
+    new_node_base_dir = os.path.join(base_dir, network_name)
     new_node_base_data_dir = os.path.join(config.NODE_BASE_DATA_DIR, network_name)
 
     # Move genesis transactions
