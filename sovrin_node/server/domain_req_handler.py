@@ -19,6 +19,7 @@ from sovrin_common.auth import Authoriser
 from sovrin_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     SIGNATURE_TYPE
 from sovrin_common.roles import Roles
+from sovrin_common.serialization import attrib_raw_data_serializer
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
 from sovrin_node.persistence.idr_cache import IdrCache
@@ -339,23 +340,7 @@ class DomainReqHandler(PHandler):
         """
         assert txn[TXN_TYPE] == ATTRIB
         nym = txn.get(TARGET_NYM)
-
-        def parse(txn):
-            raw = txn.get(RAW)
-            if raw:
-                data = json.loads(raw)
-                key, _ = data.popitem()
-                return key, raw
-            enc = txn.get(ENC)
-            if enc:
-                return self._hashOf(enc), enc
-            hsh = txn.get(HASH)
-            if hsh:
-                return hsh, None
-            raise ValueError("One of 'raw', 'enc', 'hash' "
-                             "fields of ATTR must present")
-
-        attr_key, value = parse(txn)
+        attr_key, value = self._parse_attr(txn)
         hashedVal = self._hashOf(value) if value else ''
         seqNo = txn[f.SEQ_NO.nm]
         txnTime = txn[TXN_TIME]
@@ -510,11 +495,14 @@ class DomainReqHandler(PHandler):
         # replaced by their hashes. We do not insert actual attribute data
         # in the ledger but only the hash of it.
         txn = deepcopy(txn)
+
+        attr_key, value = DomainReqHandler._parse_attr(txn)
+        hashedVal = DomainReqHandler._hashOf(value) if value else ''
+
         if RAW in txn:
-            txn[RAW] = sha256(txn[RAW].encode()).hexdigest()
-            # TODO: add checking for a number of keys in json
+            txn[RAW] = hashedVal
         elif ENC in txn:
-            txn[ENC] = sha256(txn[ENC].encode()).hexdigest()
+            txn[ENC] = hashedVal
         elif HASH in txn:
             txn[HASH] = txn[HASH]
         return txn
@@ -531,3 +519,22 @@ class DomainReqHandler(PHandler):
         }}
         # Do not inline please, it makes debugging easier
         return result
+
+    @staticmethod
+    def _parse_attr(txn):
+        raw = txn.get(RAW)
+        if raw:
+            data = attrib_raw_data_serializer.deserialize(raw)
+            # To exclude user-side formatting issues
+            re_raw = attrib_raw_data_serializer.serialize(data,
+                                                          toBytes=False)
+            key, _ = data.popitem()
+            return key, re_raw
+        enc = txn.get(ENC)
+        if enc:
+            return DomainReqHandler._hashOf(enc), enc
+        hsh = txn.get(HASH)
+        if hsh:
+            return hsh, None
+        raise ValueError("One of 'raw', 'enc', 'hash' "
+                         "fields of ATTR must present")
