@@ -23,7 +23,7 @@ DEPS = ['indy-plenum', 'indy-anoncreds']
 CONFIG = getConfig()
 FILES_TO_PRESERVE = [CONFIG.lastRunVersionFile, CONFIG.nextVersionFile,
                      CONFIG.upgradeLogFile, CONFIG.lastVersionFilePath]
-BACKUP_TARGET = os.path.join(os.path.expanduser(CONFIG.BASE_DIR), CONFIG.NETWORK_NAME)
+BACKUP_TARGET = os.path.join(os.path.expanduser(CONFIG.baseDir), CONFIG.NETWORK_NAME)
 BACKUP_NAME_PREFIX = '{}_backup_'.format(CONFIG.NETWORK_NAME)
 BACKUP_NUM = 10
 PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'

@@ -151,8 +151,8 @@ class Node(PlenumNode, HasPoolManager):
                                 self.states[DOMAIN_LEDGER_ID],
                                 self.reqProcessors,
                                 self.idrCache,
-                                self.attributeStore
-                                )
+                                self.attributeStore,
+                                self.bls_store)
 
     def getIdrCache(self):
         return IdrCache(

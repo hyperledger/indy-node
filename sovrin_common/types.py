@@ -3,14 +3,13 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, VERSION, ORIGIN, FORCE
-from plenum.common.messages.fields import AnyField, IterableField, AnyMapField
+from plenum.common.messages.fields import AnyField, IterableField, AnyMapField, NonEmptyStringField
 from plenum.common.messages.node_message_factory import node_message_factory
 
 from plenum.common.messages.message_base import MessageValidator, MessageBase
 from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
-from plenum.common.messages.node_messages import NonEmptyStringField, \
-    LedgerInfoField as PLedgerInfoField, NonNegativeNumberField, \
+from plenum.common.messages.node_messages import LedgerInfoField as PLedgerInfoField, NonNegativeNumberField, \
     LedgerIdField as PLedgerIdField
 from plenum.common.messages.fields import ConstantField, IdentifierField, LimitedLengthStringField, TxnSeqNoField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, ChooseField

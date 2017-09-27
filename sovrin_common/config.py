@@ -22,10 +22,10 @@ cliNodeReg = OrderedDict([
 ])
 
 baseDir = '~/.sovrin/'
-NODE_BASE_DATA_DIR = '/var/indy'
-LOG_DIR = '/var/log/indy/'
+NODE_BASE_DATA_DIR = baseDir
+LOG_DIR = os.path.join(baseDir, "log")
 GENERAL_CONFIG_DIR = '/etc/indy/'
-BACKUP_DIR = '/var/backup/indy'
+BACKUP_DIR = os.path.join(baseDir, "backup")
 
 GENERAL_CONFIG_FILE = 'indy_config.py'
 NETWORK_CONFIG_FILE = 'indy_config.py'
@@ -109,5 +109,3 @@ agentLoggingLevel = logging.INFO
 default logging level for node
 '''
 logLevel = logging.INFO
-
-NETWORK_NAME = 'default'

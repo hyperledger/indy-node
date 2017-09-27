@@ -21,9 +21,9 @@ strict_types.defaultShouldCheck = True
 import pytest
 
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.keygen_utils import initNodeKeysForBothStacks
+from plenum.common.keygen_utils import initNodeKeysForBothStacks, init_bls_keys
 from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, \
-    ALIAS, SERVICES, VALIDATOR, STEWARD
+    ALIAS, SERVICES, VALIDATOR, STEWARD, BLS_KEY
 
 from sovrin_client.test.helper import getClientAddedWithRole
 
@@ -81,13 +81,17 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     (nodeIp, nodePort), (clientIp, clientPort) = genHa(2)
 
+    _, _, bls_key = initNodeKeysForBothStacks(
+        newNodeName, tdirWithPoolTxns, sigseed, override=True)
+
     data = {
         NODE_IP: nodeIp,
         NODE_PORT: nodePort,
         CLIENT_IP: clientIp,
         CLIENT_PORT: clientPort,
         ALIAS: newNodeName,
-        SERVICES: [VALIDATOR, ]
+        SERVICES: [VALIDATOR, ],
+        BLS_KEY: bls_key
     }
 
     node = Node(nodeSigner.identifier, data, newStewardWallet.defaultId)
@@ -104,10 +108,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
-    initNodeKeysForBothStacks(
-        newNodeName, tdirWithPoolTxns, sigseed, override=True)
-
-    newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
+    newNode = testNodeClass(newNodeName, basedirpath=tdir, base_data_dir=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(
                                 clientIp, clientPort),
                             pluginPaths=allPluginsPath)
