@@ -139,9 +139,6 @@ class WalletRawUpdaterToVersion2:
 
     @classmethod
     def update(cls, raw):
-        if 'didMethods' in raw:
-            cls._processDidMethods(raw['didMethods'])
-
         cls._traverseDict(raw)
 
         del raw[getClassVersionKeyBeforeRebranding(Wallet)]
