@@ -234,7 +234,7 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
             # conf.poolTransactionsFile = conf.ENVS[pool.name].poolLedger
             # conf.domainTransactionsFile = conf.ENVS[pool.name].domainLedger
             initDirWithGenesisTxns(
-                tempDir,
+                tdir,
                 conf,
                 os.path.join(pool.tdirWithPoolTxns, pool.name),
                 os.path.join(pool.tdirWithDomainTxns, pool.name),
@@ -244,7 +244,7 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
     from sovrin_node.test.helper import TestNode
     new_cli = newPlenumCLI(
         looper,
-        tempDir,
+        tdir,
         cliClass=cliClass,
         nodeClass=TestNode,
         clientClass=TestClient,
