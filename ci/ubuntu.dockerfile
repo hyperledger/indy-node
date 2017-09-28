@@ -25,7 +25,7 @@ RUN echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.lis
 RUN apt-get update -y
 RUN apt-get install -y \ 
 	python3-charm-crypto
-RUN apt-get install -y libindy-crypto
+RUN apt-get install -y libindy-crypto=0.1.6
 RUN useradd -ms /bin/bash -u $uid sovrin
 USER sovrin
 RUN virtualenv -p python3.5 /home/sovrin/test
