@@ -56,7 +56,7 @@ class WalletRawUpdaterToVersion1:
     @classmethod
     def _processLink(cls, link):
         link[tags.OBJECT] = \
-            'sovrin_client.client.wallet.link.Connection'
+            'sovrin_client.client.wallet.connection.Connection'
         for key in link:
             if key in cls._LINK_FIELD_RENAMINGS:
                 link[cls._LINK_FIELD_RENAMINGS[key]] = link.pop(key)
