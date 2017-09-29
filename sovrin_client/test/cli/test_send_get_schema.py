@@ -1,6 +1,6 @@
 import pytest
 from sovrin_client.test.cli.constants import INVALID_SYNTAX, SCHEMA_ADDED
-from sovrin_client.test.cli.helper import createUuidIdentifier
+from sovrin_client.test.cli.helper import createUuidIdentifier, connect_and_check_output
 from sovrin_node.test.did.conftest import wallet
 
 
@@ -10,12 +10,12 @@ SCHEMA_NOT_FOUND = 'Schema not found'
 
 
 @pytest.fixture(scope="module")
-def aliceCli(be, do, poolNodesStarted, aliceCLI, connectedToTest, wallet):
+def aliceCli(be, do, poolNodesStarted, aliceCLI, wallet):
     keyseed = 'a' * 32
 
     be(aliceCLI)
     addAndActivateCLIWallet(aliceCLI, wallet)
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, aliceCLI.txn_dir)
     do('new key with seed {}'.format(keyseed))
 
     return aliceCLI
