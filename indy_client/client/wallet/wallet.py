@@ -102,10 +102,10 @@ class WalletRawUpdaterToVersion2:
 
     @classmethod
     def _processDidMethod(cls, didMethod):
-        if 'name' in didMethod:
+        if 'name' in didMethod and isinstance(didMethod['name'], str):
             didMethod['name'] = \
                 didMethod['name'].replace('sovrin', 'indy')
-        if 'pattern' in didMethod:
+        if 'pattern' in didMethod and isinstance(didMethod['pattern'], str):
             didMethod['pattern'] = \
                 didMethod['pattern'].replace('sovrin', 'indy')
 
@@ -117,10 +117,11 @@ class WalletRawUpdaterToVersion2:
             if d.get(tags.OBJECT) == 'plenum.common.did_method.DidMethod':
                 cls._processDidMethod(d)
 
-            d[tags.OBJECT] = \
-                d[tags.OBJECT].replace('sovrin_common', 'indy_common')
-            d[tags.OBJECT] = \
-                d[tags.OBJECT].replace('sovrin_client', 'indy_client')
+            if isinstance(d[tags.OBJECT], str):
+                d[tags.OBJECT] = \
+                    d[tags.OBJECT].replace('sovrin_common', 'indy_common')
+                d[tags.OBJECT] = \
+                    d[tags.OBJECT].replace('sovrin_client', 'indy_client')
 
         for key in d:
             cls._traverseObject(d[key])
@@ -141,7 +142,7 @@ class WalletRawUpdaterToVersion2:
     def update(cls, raw):
         cls._traverseDict(raw)
 
-        del raw[getClassVersionKeyBeforeRebranding(Wallet)]
+        raw.pop(getClassVersionKeyBeforeRebranding(Wallet), None)
         raw[getClassVersionKey(Wallet)] = 2
 
 
