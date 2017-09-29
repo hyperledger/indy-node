@@ -37,6 +37,115 @@ ENCODING = "utf-8"
 logger = getlogger()
 
 
+def getClassVersionKeyBeforeRebranding(cls):
+    return getClassVersionKey(cls).replace('indy_client', 'sovrin_client')
+
+
+class WalletRawUpdaterToVersion1:
+
+    _LINK_FIELD_RENAMINGS = {
+        'linkStatus': 'connection_status',
+        'linkLastSynced': 'connection_last_synced',
+        'linkLastSyncNo': 'connection_last_sync_no',
+        'invitationNonce': 'request_nonce',
+
+        # rule for the intermediate renaming state (MGL version)
+        'connectionLastSynced': 'connection_last_synced'
+    }
+
+    @classmethod
+    def _processLink(cls, link):
+        link[tags.OBJECT] = \
+            'sovrin_client.client.wallet.connection.Connection'
+        for key in link:
+            if key in cls._LINK_FIELD_RENAMINGS:
+                link[cls._LINK_FIELD_RENAMINGS[key]] = link.pop(key)
+
+    @classmethod
+    def _traverseDict(cls, d):
+        if d.get(tags.OBJECT) == 'sovrin_client.client.wallet.link.Link':
+            cls._processLink(d)
+
+        for key in d:
+            cls._traverseObject(d[key])
+
+    @classmethod
+    def _traverseList(cls, l):
+        for item in l:
+            cls._traverseObject(item)
+
+    @classmethod
+    def _traverseObject(cls, v):
+        if isinstance(v, dict):
+            cls._traverseDict(v)
+        elif isinstance(v, list):
+            cls._traverseList(v)
+
+    @classmethod
+    def update(cls, raw):
+        if '_links' in raw:
+            raw['_connections'] = raw.pop('_links')
+
+        cls._traverseDict(raw)
+
+        raw[getClassVersionKeyBeforeRebranding(Wallet)] = 1
+
+
+class WalletRawUpdaterToVersion2:
+
+    @classmethod
+    def _processDidMethods(cls, didMethods):
+        if 'd' in didMethods:
+            d = didMethods['d']
+            if isinstance(d, dict) and 'sovrin' in d:
+                d['indy'] = d.pop('sovrin')
+
+    @classmethod
+    def _processDidMethod(cls, didMethod):
+        if 'name' in didMethod and isinstance(didMethod['name'], str):
+            didMethod['name'] = \
+                didMethod['name'].replace('sovrin', 'indy')
+        if 'pattern' in didMethod and isinstance(didMethod['pattern'], str):
+            didMethod['pattern'] = \
+                didMethod['pattern'].replace('sovrin', 'indy')
+
+    @classmethod
+    def _traverseDict(cls, d):
+        if tags.OBJECT in d:
+            if d[tags.OBJECT] == 'plenum.common.did_method.DidMethods':
+                cls._processDidMethods(d)
+            if d[tags.OBJECT] == 'plenum.common.did_method.DidMethod':
+                cls._processDidMethod(d)
+
+            if isinstance(d[tags.OBJECT], str):
+                d[tags.OBJECT] = \
+                    d[tags.OBJECT].replace('sovrin_common', 'indy_common')
+                d[tags.OBJECT] = \
+                    d[tags.OBJECT].replace('sovrin_client', 'indy_client')
+
+        for key in d:
+            cls._traverseObject(d[key])
+
+    @classmethod
+    def _traverseList(cls, l):
+        for item in l:
+            cls._traverseObject(item)
+
+    @classmethod
+    def _traverseObject(cls, v):
+        if isinstance(v, dict):
+            cls._traverseDict(v)
+        elif isinstance(v, list):
+            cls._traverseList(v)
+
+    @classmethod
+    def update(cls, raw):
+        cls._traverseDict(raw)
+
+        raw.pop(getClassVersionKeyBeforeRebranding(Wallet), None)
+        raw[getClassVersionKey(Wallet)] = 2
+
+
 # TODO: Maybe we should have a thinner wallet which should not have
 # ProverWallet
 class Wallet(PWallet, TrustAnchoring):
@@ -47,76 +156,35 @@ class Wallet(PWallet, TrustAnchoring):
     # inherited classes must be versioned by themselves using the same
     # mechanism, so modification of inherited classes structure does not require
     # increment of this class version.
-    # For each version increment a method must be introduced that performs
-    # a conversion of a raw representation (nested dictionaries/lists structure)
-    # to this version (including adding/update of the class version entry).
-    # The method performing conversion to the current version must be called
-    # if necessary from makeRawCompatible method.
-    # Internally the method performing conversion to the version X must
-    # call if necessary the method performing conversion to the version X - 1.
-    CLASS_VERSION = 1
+    CLASS_VERSION = 2
+
+    RAW_UPDATERS = {
+        1: WalletRawUpdaterToVersion1.update,
+        2: WalletRawUpdaterToVersion2.update
+    }
 
     clientNotPresentMsg = "The wallet does not have a client associated with it"
 
     @staticmethod
     def makeRawCompatible(raw):
         """
-        Converts a raw representation of a wallet from any previous version
+        Updates a raw representation of a wallet from any previous version
         to the current version. If the raw representation of the wallet is
-        of the current version then this method does nothing.
+        of the current version or higher then this method does nothing.
 
-        :param raw: the wallet's raw representation to convert
+        :param raw: the wallet's raw representation to update
         """
 
         # At first, call makeRawCompatible method of base class(es)
         # if it contains such the method
 
-        rawClassVersion = raw.get(getClassVersionKey(Wallet), 0)
-        if rawClassVersion < 1:
-            Wallet.convertRawToVersion1(raw)
+        rawClassVersion = raw.get(getClassVersionKey(Wallet))
+        if rawClassVersion is None:
+            rawClassVersion = \
+                raw.get(getClassVersionKeyBeforeRebranding(Wallet), 0)
 
-    @staticmethod
-    def convertRawToVersion1(raw):
-
-        fieldRenamings = {
-            'linkStatus': 'connection_status',
-            'linkLastSynced': 'connection_last_synced',
-            'linkLastSyncNo': 'connection_last_sync_no',
-            'invitationNonce': 'request_nonce',
-
-            # rule for the intermediate renaming state
-            'connectionLastSynced': 'connection_last_synced'
-        }
-
-        def renameConnectionFields(connection):
-            for key in connection:
-                if key in fieldRenamings:
-                    connection[fieldRenamings[key]] = connection.pop(key)
-
-        def processDict(d):
-            if d.get(tags.OBJECT) == 'indy_client.client.wallet.link.Link':
-                d[tags.OBJECT] = \
-                    'indy_client.client.wallet.connection.Connection'
-                renameConnectionFields(d)
-            for key in d:
-                processValue(d[key])
-
-        def processList(l):
-            for item in l:
-                processValue(item)
-
-        def processValue(v):
-            if isinstance(v, dict):
-                processDict(v)
-            elif isinstance(v, list):
-                processList(v)
-
-        if '_links' in raw:
-            raw['_connections'] = raw.pop('_links')
-        processValue(raw)
-
-        # Add/update the class version entry
-        raw[getClassVersionKey(Wallet)] = 1
+        for version in range(rawClassVersion, Wallet.CLASS_VERSION):
+            Wallet.RAW_UPDATERS[version + 1](raw)
 
     def __init__(self,
                  name: str=None,
