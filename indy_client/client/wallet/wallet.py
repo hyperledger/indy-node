@@ -112,9 +112,9 @@ class WalletRawUpdaterToVersion2:
     @classmethod
     def _traverseDict(cls, d):
         if tags.OBJECT in d:
-            if d.get(tags.OBJECT) == 'plenum.common.did_method.DidMethods':
+            if d[tags.OBJECT] == 'plenum.common.did_method.DidMethods':
                 cls._processDidMethods(d)
-            if d.get(tags.OBJECT) == 'plenum.common.did_method.DidMethod':
+            if d[tags.OBJECT] == 'plenum.common.did_method.DidMethod':
                 cls._processDidMethod(d)
 
             if isinstance(d[tags.OBJECT], str):
