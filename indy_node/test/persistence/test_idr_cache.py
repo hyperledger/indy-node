@@ -1,7 +1,7 @@
 import pytest
 from plenum.common.util import get_utc_epoch
 from storage.kv_in_memory import KeyValueStorageInMemory
-from sovrin_node.persistence.idr_cache import IdrCache
+from indy_node.persistence.idr_cache import IdrCache
 
 identifier = "fake_identifier"
 committed_items = (0, # seq_no

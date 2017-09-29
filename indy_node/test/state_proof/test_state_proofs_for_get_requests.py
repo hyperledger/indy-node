@@ -11,12 +11,12 @@ from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
     IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
     STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME
 from plenum.common.types import f
-from sovrin_common.constants import \
+from indy_common.constants import \
     ATTRIB, REF, SIGNATURE_TYPE, CLAIM_DEF, SCHEMA
-from sovrin_common.types import Request
-from sovrin_node.persistence.attribute_store import AttributeStore
-from sovrin_node.persistence.idr_cache import IdrCache
-from sovrin_node.server.domain_req_handler import DomainReqHandler
+from indy_common.types import Request
+from indy_node.persistence.attribute_store import AttributeStore
+from indy_node.persistence.idr_cache import IdrCache
+from indy_node.server.domain_req_handler import DomainReqHandler
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 

@@ -6,15 +6,15 @@ from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
     TXN_TIME, NYM
 from plenum.common.types import f
 
-from sovrin_common.constants import GET_ATTR, GET_NYM
+from indy_common.constants import GET_ATTR, GET_NYM
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     getRepliesFromClientInbox
 
 # Fixtures, do not remove
-from sovrin_common.serialization import attrib_raw_data_serializer
-from sovrin_node.test.helper import addAttributeAndCheck
-from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
-from sovrin_client.test.test_nym_attrib import \
+from indy_common.serialization import attrib_raw_data_serializer
+from indy_node.test.helper import addAttributeAndCheck
+from indy_client.client.wallet.attribute import Attribute, LedgerStore
+from indy_client.test.test_nym_attrib import \
     addedRawAttribute, attributeName, attributeValue, attributeData
 
 
