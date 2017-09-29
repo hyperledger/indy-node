@@ -28,9 +28,12 @@ logger.propagate = False
 logger.disabled = True
 
 config = getConfig()
-baseDir = config.baseDir
+baseDir = os.path.expanduser(config.CLI_BASE_DIR)
+network_dir = os.path.expanduser(config.CLI_NETWORK_DIR)
 if not os.path.exists(baseDir):
     os.makedirs(baseDir)
+if not os.path.exists(network_dir):
+    os.makedirs(network_dir)
 loadPlugins(baseDir)
 
 # NOTE: Put all regular imports below (not related to loadplugin)
@@ -45,10 +48,10 @@ def run_cli():
     withNode = True if '--with-node' in commands else False
 
     with Looper(debug=config.LOOPER_DEBUG) as looper:
-        curDir = os.getcwd()
-        logFilePath = os.path.join(curDir, config.logFilePath)
+        logFilePath = os.path.expanduser(os.path.join(config.CLI_BASE_DIR, config.logFilePath))
         cli = SovrinCli(looper=looper,
                         basedirpath=baseDir,
+                        ledger_base_dir=network_dir,
                         logFileName=logFilePath,
                         withNode=withNode
                         )

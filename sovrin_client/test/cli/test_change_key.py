@@ -1,10 +1,11 @@
 import pytest
+from sovrin_client.test.cli.helper import connect_and_check_output
 
 
-def test_change_key(be, do, susanCLI, connectedToTest, newStewardCli):
+def test_change_key(be, do, susanCLI, newStewardCli):
     # Generate new key in the wallet
     be(susanCLI)
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, susanCLI.txn_dir)
     do('new key', within=3, expect=["Key created in wallet"])
 
     # check that id cannot be used for the time
@@ -38,10 +39,10 @@ def test_change_key(be, do, susanCLI, connectedToTest, newStewardCli):
        "Current verkey for NYM {} is {}".format(id, susanCLI.activeWallet.getVerkey(id))])
 
 
-def test_change_key_with_seed(be, do, philCli, connectedToTest, newStewardCli):
+def test_change_key_with_seed(be, do, philCli, newStewardCli):
     # Generate new key in the wallet
     be(philCli)
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, philCli.txn_dir)
     do('new key', within=3, expect=["Key created in wallet"])
 
     # check that id cannot be used for the time

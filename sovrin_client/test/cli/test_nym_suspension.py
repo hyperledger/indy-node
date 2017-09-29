@@ -6,6 +6,7 @@ from plenum.common.signer_did import DidSigner
 
 from plenum.common.signer_simple import SimpleSigner
 from sovrin_client.test.cli.conftest import nymAddedOut
+from sovrin_client.test.cli.helper import connect_and_check_output
 from sovrin_common.roles import Roles
 
 
@@ -76,14 +77,14 @@ def trustAnchorCLI(CliBuilder):
 
 
 @pytest.fixture(scope="module")
-def trustAnchorCli(trustAnchorCLI, be, do, connectedToTest, trustAnchorAdded):
+def trustAnchorCli(trustAnchorCLI, be, do, trustAnchorAdded):
     be(trustAnchorCLI)
     do('new wallet TS', expect=['New wallet TS created',
                                 'Active wallet set to "TS"'])
     seed = hexlify(vals['newTrustAnchorIdr'][1]).decode()
     do('new key with seed {seed}', expect=['Key created in wallet TS'],
        mapper={'seed': seed})
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, trustAnchorCLI.txn_dir)
     return trustAnchorCLI
 
 
@@ -94,14 +95,14 @@ def anotherTrusteeCLI(CliBuilder):
 
 @pytest.fixture(scope="module")
 def anotherTrusteeCli(anotherTrusteeCLI, be, do,
-                      connectedToTest, anotherTrusteeAdded):
+                      anotherTrusteeAdded):
     be(anotherTrusteeCLI)
     do('new wallet TS1', expect=['New wallet TS1 created',
                                  'Active wallet set to "TS1"'])
     seed = hexlify(vals['newTrusteeIdr'][1]).decode()
     do('new key with seed {seed}', expect=['Key created in wallet TS1'],
        mapper={'seed': seed})
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, anotherTrusteeCLI.txn_dir)
     return anotherTrusteeCLI
 
 

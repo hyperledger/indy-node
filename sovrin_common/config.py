@@ -27,20 +27,13 @@ LOG_DIR = os.path.join(baseDir, "log")
 GENERAL_CONFIG_DIR = '/etc/indy/'
 BACKUP_DIR = os.path.join(baseDir, "backup")
 
+CLI_BASE_DIR = '~/.indy-cli/'
+CLI_NETWORK_DIR = os.path.join(CLI_BASE_DIR, 'networks')
+
 GENERAL_CONFIG_FILE = 'indy_config.py'
 NETWORK_CONFIG_FILE = 'indy_config.py'
 USER_CONFIG_FILE = 'indy_config.py'
 
-ENVS = {
-    "test": Environment(pool_transactions_file_base + "_sandbox",
-                        domain_transactions_file_base + "_sandbox"),
-    "live": Environment(pool_transactions_file_base + "_live",
-                        domain_transactions_file_base + "_live")
-}
-
-current_env = "test"
-domainTransactionsFile = ENVS[current_env].domainLedger
-poolTransactionsFile = ENVS[current_env].poolLedger
 configTransactionsFile = "config_transactions"
 
 logFilePath = "cli.log"

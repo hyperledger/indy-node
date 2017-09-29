@@ -14,6 +14,8 @@ old_base_dir = '~/.indy'
 
 
 def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
+    logger.info('Move genesis transactions {} -> {}'.format(
+        old_base_txn_dir, new_base_txn_dir))
     for suffix in ('sandbox', 'live'):
         new_txn_dir = os.path.join(new_base_txn_dir, suffix)
         os.mkdir(new_txn_dir)
@@ -31,6 +33,8 @@ def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
             shutil.move(old_domain_genesis, new_domain_genesis)
         if os.path.exists(old_pool_genesis):
             shutil.move(old_pool_genesis, new_pool_genesis)
+
+    logger.info('done')
 
 
 def migrate_keys(old_base_keys_dir, new_base_keys_dir):
@@ -52,6 +56,8 @@ def get_network_name():
 
 
 def migrate_general_config(old_general_config, new_general_config, network_name):
+    logger.info('Migrate general config file {} -> {} for network {}'.format(
+        old_general_config, new_general_config, network_name))
     f = open(old_general_config, "r")
     lines = f.readlines()
     f.close()
@@ -63,6 +69,20 @@ def migrate_general_config(old_general_config, new_general_config, network_name)
     line = 'NETWORK_NAME = ' + network_name + '\n'
     f.write(line)
     f.close()
+
+
+def migrate_cli(old_dir, new_dir, new_txn_dir):
+    if not os.path.exists(new_dir):
+        os.makedirs(new_dir)
+
+    # Move wallets directory
+    logger.info('Move wallets directory {} -> {}'.format(
+        old_dir, new_dir))
+    shutil.move(old_dir, new_dir)
+    logger.info('done')
+
+    # Move txns for CLI
+    migrate_genesis_txn(old_dir, new_txn_dir)
 
 
 def migrate_all():
@@ -84,9 +104,7 @@ def migrate_all():
     logger.info('Network name is {}'.format(network_name))
 
     # Migrate general config file
-    logger.info('Migrate general config file...')
     migrate_general_config(old_general_config, new_general_config, network_name)
-    logger.info('done')
 
     # Build network-related paths
     new_log_dir = os.path.join(config.LOG_DIR, network_name)
@@ -94,9 +112,7 @@ def migrate_all():
     new_node_base_data_dir = os.path.join(config.NODE_BASE_DATA_DIR, network_name)
 
     # Move genesis transactions
-    logger.info('Move genesis transactions...')
     migrate_genesis_txn(old_base_dir, new_node_base_dir)
-    logger.info('done')
 
     for node_name in os.listdir(old_nodes_data_dir):
         # Move logs
@@ -115,26 +131,25 @@ def migrate_all():
         logger.info('done')
 
     # Move nodes data directory
-    logger.info('Move nodes data directory...')
+    logger.info('Move nodes data directory {} -> {}'.format(
+        old_nodes_data_dir, new_node_base_data_dir))
     shutil.move(old_nodes_data_dir, new_node_base_data_dir)
     logger.info('done')
 
-    # Move wallets directory
-    logger.info('Move wallets directory...')
-    shutil.move(old_wallets_dir, new_node_base_dir)
-    logger.info('done')
-
     # Move daemon config
-    logger.info('Move wallets directory...')
+    logger.info('Move daemon config {} -> {}'.format(
+        old_daemon_config, config.GENERAL_CONFIG_DIR))
     shutil.move(old_daemon_config, config.GENERAL_CONFIG_DIR)
     logger.info('done')
+
+    migrate_cli(old_wallets_dir, config.CLI_BASE_DIR, config.CLI_NETWORK_DIR)
 
     logger.info('Finish migration of directories/files.')
 
 
-if os.path.exists(old_base_dir):
-    migrate_all()
-else:
+if not os.path.exists(old_base_dir):
     msg = 'Can not find old base directory \'{}\', abort migration.'.format(old_base_dir)
     logger.error(msg)
     raise Exception(msg)
+
+migrate_all()

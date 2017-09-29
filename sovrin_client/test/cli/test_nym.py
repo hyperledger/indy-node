@@ -3,7 +3,7 @@ from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
 from sovrin_client.client.wallet.wallet import Wallet
 from sovrin_client.test.cli.helper import prompt_is, addNym, ensureConnectedToTestEnv, createUuidIdentifier, \
-    createHalfKeyIdentifierAndAbbrevVerkey
+    createHalfKeyIdentifierAndAbbrevVerkey, connect_and_check_output
 from sovrin_common.roles import Roles
 from plenum.common.constants import TARGET_NYM
 from sovrin_node.test.did.conftest import wallet, abbrevVerkey
@@ -37,21 +37,21 @@ def testPoolNodesStarted(poolNodesStarted):
 
 
 @pytest.fixture(scope="module")
-def aliceCli(be, do, poolNodesStarted, aliceCLI, connectedToTest, wallet):
+def aliceCli(be, do, poolNodesStarted, aliceCLI, wallet):
     be(aliceCLI)
     do('prompt Alice', expect=prompt_is('Alice'))
     addAndActivateCLIWallet(aliceCLI, wallet)
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, aliceCLI.txn_dir)
     return aliceCLI
 
 
 @pytest.fixture(scope="module")
-def trustAnchorCli(be, do, poolNodesStarted, earlCLI, connectedToTest,
+def trustAnchorCli(be, do, poolNodesStarted, earlCLI,
                    trustAnchorWallet):
     be(earlCLI)
     do('prompt Earl', expect=prompt_is('Earl'))
     addAndActivateCLIWallet(earlCLI, trustAnchorWallet)
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, earlCLI.txn_dir)
     return earlCLI
 
 
@@ -260,14 +260,14 @@ def testNewverkeyAddedToCID(be, do, philCli, trustAnchorSigner,
 
 
 def testNewKeyChangesWalletsDefaultId(be, do, poolNodesStarted, poolTxnData,
-                                      susanCLI, connectedToTest):
+                                      susanCLI):
     mywallet = Wallet('my wallet')
     keyseed = 'a' * 32
     idr, _ = mywallet.addIdentifier(seed=keyseed.encode("utf-8"))
 
     be(susanCLI)
 
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, susanCLI.txn_dir)
 
     do('new key with seed {}'.format(keyseed))
 
