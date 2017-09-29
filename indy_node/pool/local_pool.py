@@ -1,23 +1,20 @@
 import os
+import shutil
 from collections import deque
 
-import shutil
+from plenum.common.constants import TYPE, NODE, NYM
 from plenum.common.member.steward import Steward
 from plenum.common.test_network_setup import TestNetworkSetup
-from plenum.common.constants import TYPE, NODE, NYM
 from plenum.common.util import adict, randomString
-
 from indy_client.agent.walleted_agent import WalletedAgent
 from indy_client.client.client import Client
-from indy_node.server.node import Node
 from indy_client.client.wallet.wallet import Wallet
-
 from indy_common.config_util import getConfig
 from indy_common.init_util import initialize_node_environment
 from indy_common.pool.pool import Pool
 from indy_common.txn_util import getTxnOrderedFields
+from indy_node.server.node import Node
 from stp_core.crypto.util import randomSeed
-
 from stp_core.loop.looper import Looper
 
 
@@ -44,13 +41,13 @@ def create_local_pool(base_dir, node_size=4):
                          ha=('127.0.0.1', 9700 + (i * 2)),
                          cliha=('127.0.0.1', 9700 + (i * 2) + 1))
 
-        n_verkey = initialize_node_environment(name=n_config.name,
-                                               base_dir=n_config.basedirpath,
-                                               override_keep=True,
-                                               config=conf,
-                                               sigseed=randomSeed())
+        n_verkey, n_bls_key = initialize_node_environment(name=n_config.name,
+                                                          base_dir=n_config.basedirpath,
+                                                          override_keep=True,
+                                                          config=conf,
+                                                          sigseed=randomSeed())
 
-        s.set_node(n_config, verkey=n_verkey)
+        s.set_node(n_config, verkey=n_verkey, blskey=n_bls_key)
 
         node_conf.append(n_config)
 
@@ -70,7 +67,7 @@ def create_local_pool(base_dir, node_size=4):
 
 class LocalPool(Pool, Looper):
     def __init__(self, genesis_txns, base_dir, config=None,
-                 loop=None, steward: Steward=None):
+                 loop=None, steward: Steward = None):
         super().__init__(loop=loop)
         self.base_dir = base_dir
         self.genesis_txns = genesis_txns

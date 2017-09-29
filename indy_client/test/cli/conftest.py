@@ -17,7 +17,7 @@ from stp_core.network.port_dispenser import genHa
 import plenum
 from plenum.common import util
 from plenum.common.constants import ALIAS, NODE_IP, NODE_PORT, CLIENT_IP, \
-    CLIENT_PORT, SERVICES, VALIDATOR
+    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY
 from plenum.common.constants import CLIENT_STACK_SUFFIX
 from plenum.common.exceptions import BlowUp
 from plenum.common.signer_simple import SimpleSigner
@@ -32,7 +32,7 @@ from indy_common.constants import ENDPOINT, TRUST_ANCHOR
 from indy_common.roles import Roles
 from indy_common.test.conftest import poolTxnTrusteeNames
 from indy_common.test.conftest import domainTxnOrderedFields
-from plenum.common.keygen_utils import initNodeKeysForBothStacks
+from plenum.common.keygen_utils import initNodeKeysForBothStacks, init_bls_keys
 
 # plenum.common.util.loggingConfigured = False
 
@@ -920,8 +920,10 @@ def thriftCLI(CliBuilder):
 def poolCLI(poolCLI_baby, poolTxnData, poolTxnNodeNames, conf):
     seeds = poolTxnData["seeds"]
     for nName in poolTxnNodeNames:
+        seed = seeds[nName]
+        use_bls = nName in poolTxnData['nodesWithBls']
         initNodeKeysForBothStacks(nName, poolCLI_baby.basedirpath,
-                                  seeds[nName], override=True)
+                                  seed, override=True, use_bls=use_bls)
     return poolCLI_baby
 
 
@@ -1387,7 +1389,8 @@ def newNodeVals():
         CLIENT_IP: clientIp,
         CLIENT_PORT: clientPort,
         ALIAS: randomString(6),
-        SERVICES: [VALIDATOR]
+        SERVICES: [VALIDATOR],
+        BLS_KEY: '0' * 32
     }
 
     return {

@@ -9,6 +9,6 @@ def initialize_node_environment(name, base_dir, sigseed=None,
     config = config or getConfig()
     base_dir = base_dir or config.baseDir
     cleanup_environment(name, base_dir)
-    vk = p_initialize_node_environment(name, base_dir, sigseed, override_keep)
+    vk, bls_key = p_initialize_node_environment(name, base_dir, sigseed, override_keep)
 
-    return vk
+    return vk, bls_key

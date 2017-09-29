@@ -7,6 +7,14 @@ Indy Identity Network public/permissioned distributed ledger
 #### Run common setup instructions
 Follow instructions mentioned here [Common Setup Instructions](https://github.com/hyperledger-archives/indy-common/blob/master/setup.md)
 
+As indy-node depends on [indy-crypto](https://github.com/hyperledger/indy-crypto), it also needs to be installed:
+
+```
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
+apt-get update -y && apt-get install -y libindy-crypto
+```
+
 ### Run tests [Optional]
 
 As indy-node tests needs indy-client which depends on Charm-Crypto, we need to install it.
@@ -126,6 +134,14 @@ Indy Client to interact with Indy Network (public/permissioned distributed ledge
 Follow instructions mentioned here [Common Setup Instructions](https://github.com/hyperledger-archives/indy-common/blob/master/setup.md)
 
 Follow instructions mentioned here [Charm-Crypto Setup Instructions](https://github.com/hyperledger-archives/indy-common/blob/master/setup.md)
+
+As indy-node depends on [indy-crypto](https://github.com/hyperledger/indy-crypto), it also needs to be installed:
+
+```
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
+apt-get update -y && apt-get install -y libindy-crypto
+```
 
 ### Run tests [Optional]
 

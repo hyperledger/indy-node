@@ -58,14 +58,10 @@ def test_get_nym_returns_role(
 
     do('send GET_NYM dest={dest}',
        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM_WITH_ROLE, within=2)
-    print("XXXXX")
-    print(trusteeCli.lastCmdOutput)
     new_role = ''
     addNym(be, do, trusteeCli, idr=uuidIdentifier, verkey=abbrevVerkey, role=new_role)
     do('send GET_NYM dest={dest}',
        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
-    print("XXXXX")
-    print(trusteeCli.lastCmdOutput)
 
 
 def testSendGetNymFailsIfCryptonymIsPassedAsDest(

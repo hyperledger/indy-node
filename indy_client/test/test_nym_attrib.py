@@ -39,12 +39,15 @@ def whitelist():
 
 @pytest.fixture(scope="module")
 def attributeName():
-    return 'name'
+    return 'endpoint'
 
 
 @pytest.fixture(scope="module")
 def attributeValue():
-    return 'Mario'
+    return {
+        "ha": "127.0.0.1:9700",
+        "verkey": "F46i9NmUN72QMbbm5qWetB6CmfT7hiU8BM1qrtTGLKsc"
+    }
 
 
 @pytest.fixture(scope="module")

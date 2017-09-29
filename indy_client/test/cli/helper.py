@@ -6,8 +6,8 @@ from typing import Dict
 
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from libnacl import randombytes
+from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 
-from plenum.common import util
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import rawToFriendly
 from plenum.config import pool_transactions_file_base, domain_transactions_file_base
@@ -21,7 +21,7 @@ from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import TARGET_NYM, ROLE, NODE, TXN_TYPE, DATA, \
     CLIENT_PORT, NODE_PORT, NODE_IP, ALIAS, CLIENT_IP, TXN_ID, SERVICES, \
-    VALIDATOR, STEWARD
+    VALIDATOR, STEWARD, BLS_KEY
 from plenum.common.types import f
 from plenum.test.cli.helper import TestCliCore, assertAllNodesCreated, \
     waitAllNodesStarted, newCLI as newPlenumCLI
@@ -34,8 +34,6 @@ from stp_core.network.port_dispenser import genHa
 from indy_common.constants import NYM
 from indy_client.test.client.TestClient import TestClient
 from indy_common.txn_util import getTxnOrderedFields
-from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.ledger import Ledger
 from indy_common.roles import Roles
 
 logger = getlogger()
@@ -145,6 +143,7 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
     data = {}
     data["seeds"] = {}
     data["txns"] = []
+    data['nodesWithBls'] = {}
     for index, n in enumerate(newPoolTxnNodeNames, start=1):
         newStewardAlias = poolId + "Steward" + str(index)
         stewardSeed = (newStewardAlias + "0" *
@@ -162,7 +161,7 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
         nodeSeed = (newNodeAlias + "0" * (32 - len(newNodeAlias))).encode()
         data["seeds"][newNodeAlias] = nodeSeed
         nodeSigner = SimpleSigner(seed=nodeSeed)
-        data["txns"].append({
+        node_txn = {
             TARGET_NYM: nodeSigner.verkey,
             TXN_TYPE: NODE,
             f.IDENTIFIER.nm: stewardSigner.verkey,
@@ -175,7 +174,15 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
                 SERVICES: [VALIDATOR],
             },
             TXN_ID: sha256("{}".format(nodeSigner.verkey).encode()).hexdigest()
-        })
+        }
+
+        _, bls_key = create_default_bls_crypto_factory().generate_bls_keys(
+            seed=data['seeds'][n])
+        node_txn[DATA][BLS_KEY] = bls_key
+        data['nodesWithBls'][n] = True
+
+        data["txns"].append(node_txn)
+
     return data
 
 

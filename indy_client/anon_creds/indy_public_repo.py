@@ -61,9 +61,11 @@ class IndyPublicRepo(PublicRepo):
 
     async def getSchema(self, id: ID) -> Optional[Schema]:
         data = None
+        issuer_id = None
         if id.schemaKey:
+            issuer_id = id.schemaKey.issuerId
             op = {
-                TARGET_NYM: id.schemaKey.issuerId,
+                TARGET_NYM: issuer_id,
                 TXN_TYPE: GET_SCHEMA,
                 DATA: {
                     NAME: id.schemaKey.name,
@@ -79,8 +81,8 @@ class IndyPublicRepo(PublicRepo):
             }
             res, seqNo = await self._sendGetReq(op)
             if res and res[TXN_TYPE] == SCHEMA:
+                issuer_id = res[IDENTIFIER]
                 data = res[DATA]
-                data[ORIGIN] = res[IDENTIFIER]
 
         if not data:
             raise SchemaNotFoundError(
@@ -91,7 +93,7 @@ class IndyPublicRepo(PublicRepo):
         return Schema(name=data[NAME],
                       version=data[VERSION],
                       attrNames=data[ATTR_NAMES],
-                      issuerId=data[ORIGIN],
+                      issuerId=issuer_id,
                       seqId=seqNo)
 
     async def getPublicKey(self, id: ID = None, signatureType='CL') -> Optional[PublicKey]:
