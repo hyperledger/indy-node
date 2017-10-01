@@ -3,7 +3,7 @@ from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA, NAME, VERSION
 from plenum.common.types import f
-
+from sovrin_common.serialization import attrib_raw_data_serializer
 from sovrin_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
 
 MARKER_ATTR = "\01"
@@ -51,23 +51,7 @@ def prepare_attr_for_state(txn):
     """
     assert txn[TXN_TYPE] in {ATTRIB, GET_ATTR}
     nym = txn.get(TARGET_NYM)
-
-    def parse(txn):
-        raw = txn.get(RAW)
-        if raw:
-            data = json.loads(raw)
-            key, _ = data.popitem()
-            return key, raw
-        enc = txn.get(ENC)
-        if enc:
-            return hash_of(enc), enc
-        hsh = txn.get(HASH)
-        if hsh:
-            return hsh, None
-        raise ValueError("One of 'raw', 'enc', 'hash' "
-                         "fields of ATTR must present")
-
-    attr_key, value = parse(txn)
+    attr_key, value = parse_attr_txn(txn)
     hashed_value = hash_of(value) if value else ''
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
@@ -130,3 +114,21 @@ def hash_of(text) -> str:
         text = text.encode()
     return sha256(text).hexdigest()
 
+
+def parse_attr_txn(txn):
+    raw = txn.get(RAW)
+    if raw:
+        data = attrib_raw_data_serializer.deserialize(raw)
+        # To exclude user-side formatting issues
+        re_raw = attrib_raw_data_serializer.serialize(data,
+                                                      toBytes=False)
+        key, _ = data.popitem()
+        return key, re_raw
+    enc = txn.get(ENC)
+    if enc:
+        return hash_of(enc), enc
+    hsh = txn.get(HASH)
+    if hsh:
+        return hsh, None
+    raise ValueError("One of 'raw', 'enc', 'hash' "
+                     "fields of ATTR must present")

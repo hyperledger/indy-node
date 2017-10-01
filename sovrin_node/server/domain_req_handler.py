@@ -30,7 +30,6 @@ logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-    LAST_UPDATE_TIME = "lut"
 
     def __init__(self, ledger, state, requestProcessor,
                  idrCache, attributeStore, bls_store):
@@ -386,14 +385,6 @@ class DomainReqHandler(PHandler):
             return None, None, None, None
 
     @staticmethod
-    def _hashOf(text) -> str:
-        if not isinstance(text, (str, bytes)):
-            text = DomainReqHandler.stateSerializer.serialize(text)
-        if not isinstance(text, bytes):
-            text = text.encode()
-        return sha256(text).hexdigest()
-
-    @staticmethod
     def transform_txn_for_ledger(txn):
         """
         Some transactions need to be transformed before they can be stored in the
@@ -401,23 +392,24 @@ class DomainReqHandler(PHandler):
         hash in the ledger
         """
         if txn[TXN_TYPE] == ATTRIB:
-            txn = DomainReqHandler.hash_attrib_txn(txn)
+            txn = DomainReqHandler.transform_attrib_for_ledger(txn)
         return txn
 
     @staticmethod
-    def hash_attrib_txn(txn):
-        # Creating copy of result so that `RAW`, `ENC` or `HASH` can be
-        # replaced by their hashes. We do not insert actual attribute data
-        # in the ledger but only the hash of it.
+    def transform_attrib_for_ledger(txn):
+        """
+        Creating copy of result so that `RAW`, `ENC` or `HASH` can be
+        replaced by their hashes. We do not insert actual attribute data
+        in the ledger but only the hash of it.
+        """
         txn = deepcopy(txn)
-
-        attr_key, value = DomainReqHandler._parse_attr(txn)
-        hashedVal = DomainReqHandler._hashOf(value) if value else ''
+        attr_key, value = domain.parse_attr_txn(txn)
+        hashed_val = domain.hash_of(value) if value else ''
 
         if RAW in txn:
-            txn[RAW] = hashedVal
+            txn[RAW] = hashed_val
         elif ENC in txn:
-            txn[ENC] = hashedVal
+            txn[ENC] = hashed_val
         elif HASH in txn:
             txn[HASH] = txn[HASH]
         return txn
@@ -447,22 +439,3 @@ class DomainReqHandler(PHandler):
         }}
         # Do not inline please, it makes debugging easier
         return result
-
-    @staticmethod
-    def _parse_attr(txn):
-        raw = txn.get(RAW)
-        if raw:
-            data = attrib_raw_data_serializer.deserialize(raw)
-            # To exclude user-side formatting issues
-            re_raw = attrib_raw_data_serializer.serialize(data,
-                                                          toBytes=False)
-            key, _ = data.popitem()
-            return key, re_raw
-        enc = txn.get(ENC)
-        if enc:
-            return DomainReqHandler._hashOf(enc), enc
-        hsh = txn.get(HASH)
-        if hsh:
-            return hsh, None
-        raise ValueError("One of 'raw', 'enc', 'hash' "
-                         "fields of ATTR must present")
