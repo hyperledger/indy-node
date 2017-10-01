@@ -921,10 +921,9 @@ def poolCLI(poolCLI_baby, poolTxnData, poolTxnNodeNames, conf):
     seeds = poolTxnData["seeds"]
     for nName in poolTxnNodeNames:
         seed = seeds[nName]
+        use_bls = nName in poolTxnData['nodesWithBls']
         initNodeKeysForBothStacks(nName, poolCLI_baby.basedirpath,
-                                  seed, override=True)
-        if nName in poolTxnData['nodesWithBls']:
-            init_bls_keys(poolCLI_baby.basedirpath, nName, seed)
+                                  seed, override=True, use_bls=use_bls)
     return poolCLI_baby
 
 
