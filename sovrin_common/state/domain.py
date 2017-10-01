@@ -140,3 +140,15 @@ def parse_attr_txn(txn):
         return hsh, None
     raise ValueError("One of 'raw', 'enc', 'hash' "
                      "fields of ATTR must present")
+
+
+def prepare_get_attr_for_state(txn):
+    keys = [RAW, ENC, HASH]
+    for key in keys:
+        if txn[key]:
+            txn = txn.copy()
+            data = txn.pop(DATA)
+            txn[key] = data
+            return prepare_attr_for_state(txn)
+    raise ValueError("There is no any of {} in txn {}"
+                     .format(keys, txn))
