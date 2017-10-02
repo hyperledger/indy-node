@@ -2,14 +2,14 @@ import logging
 from time import perf_counter
 
 from plenum.common.signer_did import DidSigner
-from sovrin_client.client.client import Client
-from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.identity import Identity
+from indy_client.client.client import Client
+from indy_client.client.wallet.wallet import Wallet
+from indy_common.identity import Identity
 from stp_core.common.log import getlogger, Logger
 from stp_core.network.port_dispenser import genHa, HA
 from stp_core.loop.looper import Looper
 from plenum.test.helper import waitForSufficientRepliesForRequests
-from sovrin_common.config_util import getConfig
+from indy_common.config_util import getConfig
 
 numReqs = 100
 splits = 1

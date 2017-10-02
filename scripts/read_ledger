@@ -13,7 +13,7 @@ from ledger.compact_merkle_tree import CompactMerkleTree
 from plenum.common.ledger import Ledger
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 
-from sovrin_common.config_util import getConfig
+from indy_common.config_util import getConfig
 
 logging.root.handlers = []
 logger = logging.getLogger()
@@ -57,7 +57,7 @@ def get_ledger_dir(node_name, client_name):
     ledger_data_dir = os.path.join(base_dir, data_dir)
     if not os.path.exists(ledger_data_dir):
         # TODO: find a better way
-        ledger_data_dir = os.path.join('/home/sovrin/.sovrin', data_dir)
+        ledger_data_dir = os.path.join('/home/indy/.indy', data_dir)
     if not os.path.exists(ledger_data_dir):
         logger.error(
             "Can not find the directory with the ledger: {}".format(ledger_data_dir))

@@ -2,8 +2,6 @@
 
 ## Indy Node
 
-[![Build Status](https://jenkins.evernym.com/buildStatus/icon?job=Sovrin%20Node/master)](https://jenkins.evernym.com/view/Core/job/Sovrin%20Node/job/master/)    
-
 This codebase embodies all the functionality to run nodes--validators and/or observers
 that provide a [self-sovereign identity ecosystem](https://sovrin.org) on top of a
 distributed ledger. It is the core project for Indy; over time, all other indy-\* projects may
@@ -11,7 +9,7 @@ collapse into this one, except for [indy-sdk](https://github.com/hyperledger/ind
 
 This code is independent from but commonly associated with [Sovrin](https://sovrin.org). Sovrin is a public utility
 for identity, built on top of this codebase. People who install sovrin packages (e.g., with
-`sudo apt install sovrin-node`) get prepackaged genesis transactions that integrate a
+`sudo apt install sovrin`) get prepackaged genesis transactions that integrate
 with an Indy validator pool using [Sovrin's governance and trust framework](https://sovrin.org/wp-content/uploads/2017/06/SovrinProvisionalTrustFramework2017-03-22.pdf). However, it is possible to use Indy Node
 with a different network, using whatever conventions a community chooses.
 

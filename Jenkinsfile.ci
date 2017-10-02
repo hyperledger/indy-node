@@ -126,14 +126,14 @@ def tests = [
     common: { python ->
         test(
             resFile: "test-result-common.${NODE_NAME}.xml",
-            testDir: 'sovrin_common',
+            testDir: 'indy_common',
             python: python
         )
     },
     client: { python ->
         test(
             resFile: "test-result-client.${NODE_NAME}.txt",
-            testDir: 'sovrin_client',
+            testDir: 'indy_client',
             python: python,
             useRunner: true
         )
@@ -141,7 +141,7 @@ def tests = [
     node: { python ->
         test(
             resFile: "test-result-node.${NODE_NAME}.txt",
-            testDir: 'sovrin_node',
+            testDir: 'indy_node',
             python: python,
             useRunner: true
         )

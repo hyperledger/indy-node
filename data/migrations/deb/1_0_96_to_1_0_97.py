@@ -4,8 +4,8 @@ import subprocess
 
 from stp_core.common.log import getlogger
 
-from sovrin_common.util import compose_cmd
-from sovrin_node.utils.node_control_tool import NodeControlTool, TIMEOUT
+from indy_common.util import compose_cmd
+from indy_node.utils.node_control_tool import NodeControlTool, TIMEOUT
 
 logger = getlogger()
 

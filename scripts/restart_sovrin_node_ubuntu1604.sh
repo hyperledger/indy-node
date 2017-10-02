@@ -1,9 +1,6 @@
 #!/bin/bash -x
-# Upgrade may change service files
-systemctl daemon-reload
 
-echo "Starting sovrin-node"
-systemctl start sovrin-node
+# This script is intended to be used by rebranding upgrade
 
-echo "Restarting agent"
-systemctl restart sovrin-node-control
+systemctl start atd
+at -f /usr/local/bin/complete_rebranding_upgrade now
