@@ -67,7 +67,7 @@ EOF
 
 cat <<EOF > /etc/systemd/system/indy-node-control.service
 [Unit]
-Description=Service for upgrade existing Indy and another operations
+Description=Service for upgrade of existing Indy Node and other operations
 #Requires=indy.service
 #After=indy.service
 After=network.target
