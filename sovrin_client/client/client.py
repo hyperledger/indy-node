@@ -12,7 +12,7 @@ from stp_core.common.log import getlogger
 from plenum.common.startable import Status
 
 from plenum.common.constants import REPLY, NAME, VERSION, REQACK, REQNACK, \
-    TXN_ID, TARGET_NYM, NONCE, STEWARD, OP_FIELD_NAME, REJECT
+    TXN_ID, TARGET_NYM, NONCE, STEWARD, OP_FIELD_NAME, REJECT, TYPE
 from plenum.common.types import f
 from plenum.common.util import libnacl
 from plenum.server.router import Router
@@ -21,13 +21,14 @@ from stp_raet.rstack import SimpleRStack
 from stp_zmq.simple_zstack import SimpleZStack
 
 from sovrin_common.constants import TXN_TYPE, ATTRIB, DATA, GET_NYM, ROLE, \
-    NYM, GET_TXNS, LAST_TXN, TXNS, SCHEMA, CLAIM_DEF, SKEY, DISCLO,\
-    GET_ATTR, TRUST_ANCHOR
+    NYM, GET_TXNS, LAST_TXN, TXNS, SCHEMA, CLAIM_DEF, SKEY, DISCLO, \
+    GET_ATTR, TRUST_ANCHOR, GET_CLAIM_DEF, GET_SCHEMA, SIGNATURE_TYPE, REF
 
 from sovrin_client.persistence.client_req_rep_store_file import ClientReqRepStoreFile
 from sovrin_client.persistence.client_txn_log import ClientTxnLog
 from sovrin_common.config_util import getConfig
 from stp_core.types import HA
+from sovrin_common.state import domain
 
 logger = getlogger()
 
@@ -124,8 +125,21 @@ class Client(PlenumClient):
     def hasConsensus(self, identifier: str, reqId: int) -> Optional[str]:
         return super().hasConsensus(identifier, reqId)
 
-    def getTxnsByNym(self, nym: str):
-        raise NotImplementedError
+    def prepare_for_state(self, result):
+        request_type = result[TYPE]
+        if request_type == GET_NYM:
+            return domain.prepare_nym_for_state(result)
+        if request_type == GET_ATTR:
+            path, value, hashed_value, value_bytes = \
+                domain.prepare_get_attr_for_state(result)
+            return path, value_bytes
+        if request_type == GET_CLAIM_DEF:
+            return domain.prepare_claim_def_for_state(result)
+        if request_type == GET_SCHEMA:
+            return domain.prepare_schema_for_state(result)
+        raise ValueError("Cannot make state key for "
+                         "request of type {}"
+                         .format(request_type))
 
     def getTxnsByType(self, txnType):
         return self.txnLog.getTxnsByType(txnType)
