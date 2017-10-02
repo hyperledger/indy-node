@@ -19,6 +19,7 @@ from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.domain_req_handler import DomainReqHandler
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
+from sovrin_common.state import domain
 
 
 @pytest.fixture()
@@ -65,10 +66,7 @@ def save_multi_sig(request_handler):
 def is_proof_verified(request_handler,
                       proof, path,
                       value, seq_no, txn_time, ):
-    encoded_value = request_handler._encodeValue(value,
-                                                 seq_no,
-                                                 txn_time)
-
+    encoded_value = domain.encode_state_value(value, seq_no, txn_time)
     proof_nodes = base64.b64decode(proof[PROOF_NODES])
     root_hash = base58.b58decode(proof[ROOT_HASH])
     verified = request_handler.state.verify_state_proof(
@@ -113,10 +111,10 @@ def test_state_proofs_for_get_attr(request_handler):
     assert attr_value == raw_attribute
 
     # Verifying signed state proof
-    path = request_handler._makeAttrPath(nym, attr_key)
+    path = domain.make_state_path_for_attr(nym, attr_key)
     assert is_proof_verified(request_handler,
                              proof, path,
-                             request_handler._hashOf(attr_value), seq_no, txn_time)
+                             domain.hash_of(attr_value), seq_no, txn_time)
 
 
 def test_state_proofs_for_get_claim_def(request_handler):
@@ -159,7 +157,7 @@ def test_state_proofs_for_get_claim_def(request_handler):
     assert result[DATA] == key_components
 
     # Verifying signed state proof
-    path = request_handler._makeClaimDefPath(nym, schema_seqno, signature_type)
+    path = domain.make_state_path_for_claim_def(nym, schema_seqno, signature_type)
     assert is_proof_verified(request_handler,
                              proof, path,
                              key_components, seq_no, txn_time)
@@ -202,7 +200,7 @@ def test_state_proofs_for_get_schema(request_handler):
     assert result[DATA] == data
 
     # Verifying signed state proof
-    path = request_handler._makeSchemaPath(nym, schema_name, schema_version)
+    path = domain.make_state_path_for_schema(nym, schema_name, schema_version)
     assert is_proof_verified(request_handler,
                              proof, path,
                              data, seq_no, txn_time)
