@@ -24,7 +24,7 @@ from datetime import datetime
 
 from stp_core.common.log import getlogger
 
-from sovrin_client.utils.user_scenarios import generateNymsData, \
+from indy_client.utils.user_scenarios import generateNymsData, \
     NymsCreationScenario, KeyRotationAndReadScenario
 
 STEWARD1_SEED = b"000000000000000000000000Steward1"

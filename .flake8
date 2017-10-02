@@ -6,8 +6,8 @@ exclude =
     # have to skip because the file should be fixed
     setup.py,
     # lots unused import because of fixtures
-    sovrin_client/test,
-    sovrin_node/test,
+    indy_client/test,
+    indy_node/test,
     # config file
-    docker-files/sovrin_config.py
+    docker-files/indy_config.py
 max-complexity = 10
