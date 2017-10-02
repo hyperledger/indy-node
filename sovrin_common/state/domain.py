@@ -47,9 +47,8 @@ def prepare_nym_for_state(txn):
     # TODO: this is semi-duplicated in plenum.DomainRequestHandler
     data = txn.get(DATA)
     nym = txn[TARGET_NYM]
-    value = domain_state_serializer.serialize(data)
     key = make_state_path_for_nym(nym)
-    return key, value
+    return key, data
 
 
 def prepare_attr_for_state(txn):
