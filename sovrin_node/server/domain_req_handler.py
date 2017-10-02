@@ -215,7 +215,7 @@ class DomainReqHandler(PHandler):
         nym = request.operation[TARGET_NYM]
         nymData = self.idrCache.getNym(nym, isCommitted=True)
         if nymData:
-            # nymData[TARGET_NYM] = nym
+            nymData[TARGET_NYM] = nym
             data = self.stateSerializer.serialize(nymData)
             seq_no = nymData[f.SEQ_NO.nm]
             update_time = nymData[TXN_TIME]

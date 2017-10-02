@@ -46,9 +46,12 @@ def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type) ->
 def prepare_nym_for_state(txn):
     # TODO: this is semi-duplicated in plenum.DomainRequestHandler
     data = txn.get(DATA)
+    parsed = domain_state_serializer.deserialize(data)
+    parsed.pop(TARGET_NYM, None)
+    value = domain_state_serializer.serialize(parsed)
     nym = txn[TARGET_NYM]
     key = make_state_path_for_nym(nym)
-    return key, data
+    return key, value
 
 
 def prepare_attr_for_state(txn):
