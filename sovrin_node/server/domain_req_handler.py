@@ -23,17 +23,13 @@ from sovrin_common.serialization import attrib_raw_data_serializer
 from sovrin_common.types import Request
 from stp_core.common.log import getlogger
 from sovrin_node.persistence.idr_cache import IdrCache
+from sovrin_common.state import domain
+
 
 logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-    MARKER_ATTR = "\01"
-    MARKER_SCHEMA = "\02"
-    MARKER_CLAIM_DEF = "\03"
-    LAST_SEQ_NO = "lsn"
-    VALUE = "val"
-    LAST_UPDATE_TIME = "lut"
 
     def __init__(self, ledger, state, requestProcessor,
                  idrCache, attributeStore, bls_store):
@@ -113,10 +109,7 @@ class DomainReqHandler(PHandler):
     @staticmethod
     def _validate_attrib_keys(operation):
         dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
-        if len(dataKeys) != 1:
-            return False
-        else:
-            return True
+        return len(dataKeys) == 1
 
     def _doStaticValidationAttrib(self, identifier, reqId, operation):
         if not self._validate_attrib_keys(operation):
@@ -226,7 +219,8 @@ class DomainReqHandler(PHandler):
             data = self.stateSerializer.serialize(nymData)
             seq_no = nymData[f.SEQ_NO.nm]
             update_time = nymData[TXN_TIME]
-            proof = self.make_proof(self.nym_to_state_key(nym))
+            path = domain.make_state_path_for_nym(nym)
+            proof = self.make_proof(path)
         else:
             data = None
             seq_no = None
@@ -299,19 +293,6 @@ class DomainReqHandler(PHandler):
                                 update_time=lastUpdateTime,
                                 proof=proof)
 
-    def make_proof(self, path):
-        proof = self.state.generate_state_proof(path, serialize=True)
-        root_hash = self.state.committedHeadHash
-        # TODO: move to serialization.py
-        encoded_proof = base64.b64encode(proof)
-        encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
-        multi_sig = self.bls_store.get(encoded_root_hash)
-        return {
-            ROOT_HASH: encoded_root_hash,
-            MULTI_SIGNATURE: multi_sig,  # [["participants"], "signature", "encoded_pool_root_hash" ]
-            PROOF_NODES: encoded_proof
-        }
-
     def lookup(self, path, isCommitted=True) -> (str, int):
         """
         Queries state for data on specified path
@@ -323,12 +304,9 @@ class DomainReqHandler(PHandler):
         encoded = self.state.get(path, isCommitted)
         if encoded is None:
             raise KeyError
-        decoded = self.stateSerializer.deserialize(encoded)
-        value = decoded.get(self.VALUE)
-        lastSeqNo = decoded.get(self.LAST_SEQ_NO)
-        lastUpdateTime = decoded.get(self.LAST_UPDATE_TIME)
+        value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
         proof = self.make_proof(path)
-        return value, lastSeqNo, lastUpdateTime, proof
+        return value, last_seq_no, last_update_time, proof
 
     def _addAttr(self, txn) -> None:
         """
@@ -339,50 +317,19 @@ class DomainReqHandler(PHandler):
         the trie stores a blank value for the key did+hash
         """
         assert txn[TXN_TYPE] == ATTRIB
-        nym = txn.get(TARGET_NYM)
-        attr_key, value = self._parse_attr(txn)
-        hashedVal = self._hashOf(value) if value else ''
-        seqNo = txn[f.SEQ_NO.nm]
-        txnTime = txn[TXN_TIME]
-        valueBytes = self._encodeValue(hashedVal, seqNo, txnTime)
-        path = self._makeAttrPath(nym, attr_key)
-        self.state.set(path, valueBytes)
-        self.attributeStore.set(hashedVal, value)
+        path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
+        self.state.set(path, value_bytes)
+        self.attributeStore.set(hashed_value, value)
 
     def _addSchema(self, txn) -> None:
         assert txn[TXN_TYPE] == SCHEMA
-        origin = txn.get(f.IDENTIFIER.nm)
-
-        data = txn.get(DATA)
-        schemaName = data[NAME]
-        schemaVersion = data[VERSION]
-        path = self._makeSchemaPath(origin, schemaName, schemaVersion)
-
-        seqNo = txn[f.SEQ_NO.nm]
-        txnTime = txn[TXN_TIME]
-        valueBytes = self._encodeValue(data, seqNo, txnTime)
-        self.state.set(path, valueBytes)
+        path, value_bytes = domain.prepare_schema_for_state(txn)
+        self.state.set(path, value_bytes)
 
     def _addClaimDef(self, txn) -> None:
         assert txn[TXN_TYPE] == CLAIM_DEF
-        origin = txn.get(f.IDENTIFIER.nm)
-
-        schemaSeqNo = txn.get(REF)
-        if schemaSeqNo is None:
-            raise ValueError("'{}' field is absent, "
-                             "but it must contain schema seq no".format(REF))
-        data = txn.get(DATA)
-        if data is None:
-            raise ValueError("'{}' field is absent, "
-                             "but it must contain components of keys"
-                             .format(DATA))
-
-        signatureType = txn.get(SIGNATURE_TYPE, 'CL')
-        path = self._makeClaimDefPath(origin, schemaSeqNo, signatureType)
-        seqNo = txn[f.SEQ_NO.nm]
-        txnTime = txn[TXN_TIME]
-        valueBytes = self._encodeValue(data, seqNo, txnTime)
-        self.state.set(path, valueBytes)
+        path, value_bytes = domain.prepare_claim_def_for_state(txn)
+        self.state.set(path, value_bytes)
 
     def getAttr(self,
                 did: str,
@@ -390,7 +337,7 @@ class DomainReqHandler(PHandler):
                 isCommitted=True) -> (str, int, int, list):
         assert did is not None
         assert key is not None
-        path = self._makeAttrPath(did, key)
+        path = domain.make_state_path_for_attr(did, key)
         try:
             hashed_val, lastSeqNo, lastUpdateTime, proof = \
                 self.lookup(path, isCommitted)
@@ -416,7 +363,7 @@ class DomainReqHandler(PHandler):
         assert author is not None
         assert schemaName is not None
         assert schemaVersion is not None
-        path = self._makeSchemaPath(author, schemaName, schemaVersion)
+        path = domain.make_state_path_for_schema(author, schemaName, schemaVersion)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof
@@ -430,53 +377,12 @@ class DomainReqHandler(PHandler):
                     isCommitted=True) -> (str, int, int, list):
         assert author is not None
         assert schemaSeqNo is not None
-        path = self._makeClaimDefPath(author, schemaSeqNo, signatureType)
+        path = domain.make_state_path_for_claim_def(author, schemaSeqNo, signatureType)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
-
-    @staticmethod
-    def _hashOf(text) -> str:
-        if not isinstance(text, (str, bytes)):
-            text = DomainReqHandler.stateSerializer.serialize(text)
-        if not isinstance(text, bytes):
-            text = text.encode()
-        return sha256(text).hexdigest()
-
-    @staticmethod
-    def _makeAttrPath(did, attrName) -> bytes:
-        nameHash = DomainReqHandler._hashOf(attrName)
-        return "{DID}:{MARKER}:{ATTR_NAME}" \
-            .format(DID=did,
-                    MARKER=DomainReqHandler.MARKER_ATTR,
-                    ATTR_NAME=nameHash).encode()
-
-    @staticmethod
-    def _makeSchemaPath(did, schemaName, schemaVersion) -> bytes:
-        return "{DID}:{MARKER}:{SCHEMA_NAME}:{SCHEMA_VERSION}" \
-            .format(DID=did,
-                    MARKER=DomainReqHandler.MARKER_SCHEMA,
-                    SCHEMA_NAME=schemaName,
-                    SCHEMA_VERSION=schemaVersion) \
-            .encode()
-
-    @staticmethod
-    def _makeClaimDefPath(did, schemaSeqNo, signatureType) -> bytes:
-        return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}" \
-            .format(DID=did,
-                    MARKER=DomainReqHandler.MARKER_CLAIM_DEF,
-                    SIGNATURE_TYPE=signatureType,
-                    SCHEMA_SEQ_NO=schemaSeqNo)\
-            .encode()
-
-    def _encodeValue(self, value, seqNo, txnTime):
-        return self.stateSerializer.serialize({
-            DomainReqHandler.LAST_SEQ_NO: seqNo,
-            DomainReqHandler.LAST_UPDATE_TIME: txnTime,
-            DomainReqHandler.VALUE: value
-        })
 
     @staticmethod
     def transform_txn_for_ledger(txn):
@@ -486,23 +392,24 @@ class DomainReqHandler(PHandler):
         hash in the ledger
         """
         if txn[TXN_TYPE] == ATTRIB:
-            txn = DomainReqHandler.hash_attrib_txn(txn)
+            txn = DomainReqHandler.transform_attrib_for_ledger(txn)
         return txn
 
     @staticmethod
-    def hash_attrib_txn(txn):
-        # Creating copy of result so that `RAW`, `ENC` or `HASH` can be
-        # replaced by their hashes. We do not insert actual attribute data
-        # in the ledger but only the hash of it.
+    def transform_attrib_for_ledger(txn):
+        """
+        Creating copy of result so that `RAW`, `ENC` or `HASH` can be
+        replaced by their hashes. We do not insert actual attribute data
+        in the ledger but only the hash of it.
+        """
         txn = deepcopy(txn)
-
-        attr_key, value = DomainReqHandler._parse_attr(txn)
-        hashedVal = DomainReqHandler._hashOf(value) if value else ''
+        attr_key, value = domain.parse_attr_txn(txn)
+        hashed_val = domain.hash_of(value) if value else ''
 
         if RAW in txn:
-            txn[RAW] = hashedVal
+            txn[RAW] = hashed_val
         elif ENC in txn:
-            txn[ENC] = hashedVal
+            txn[ENC] = hashed_val
         elif HASH in txn:
             txn[HASH] = txn[HASH]
         return txn
@@ -519,22 +426,3 @@ class DomainReqHandler(PHandler):
         }}
         # Do not inline please, it makes debugging easier
         return result
-
-    @staticmethod
-    def _parse_attr(txn):
-        raw = txn.get(RAW)
-        if raw:
-            data = attrib_raw_data_serializer.deserialize(raw)
-            # To exclude user-side formatting issues
-            re_raw = attrib_raw_data_serializer.serialize(data,
-                                                          toBytes=False)
-            key, _ = data.popitem()
-            return key, re_raw
-        enc = txn.get(ENC)
-        if enc:
-            return DomainReqHandler._hashOf(enc), enc
-        hsh = txn.get(HASH)
-        if hsh:
-            return hsh, None
-        raise ValueError("One of 'raw', 'enc', 'hash' "
-                         "fields of ATTR must present")
