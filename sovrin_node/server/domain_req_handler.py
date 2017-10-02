@@ -328,7 +328,7 @@ class DomainReqHandler(PHandler):
 
     def _addClaimDef(self, txn) -> None:
         assert txn[TXN_TYPE] == CLAIM_DEF
-        path, value_bytes  = domain.prepare_claim_def_for_state(txn)
+        path, value_bytes = domain.prepare_claim_def_for_state(txn)
         self.state.set(path, value_bytes)
 
     def getAttr(self,
@@ -413,19 +413,6 @@ class DomainReqHandler(PHandler):
         elif HASH in txn:
             txn[HASH] = txn[HASH]
         return txn
-
-    @staticmethod
-    def make_result(request, data, last_seq_no, update_time, proof):
-        result = {**request.operation, **{
-            DATA: data,
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            f.SEQ_NO.nm: last_seq_no,
-            TXN_TIME: update_time,
-            STATE_PROOF: proof
-        }}
-        # Do not inline please, it makes debugging easier
-        return result
 
     @staticmethod
     def make_result(request, data, last_seq_no, update_time, proof):
