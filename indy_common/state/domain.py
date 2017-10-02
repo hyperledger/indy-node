@@ -3,8 +3,8 @@ from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA, NAME, VERSION
 from plenum.common.types import f
-from sovrin_common.serialization import attrib_raw_data_serializer
-from sovrin_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
+from indy_common.serialization import attrib_raw_data_serializer
+from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
 
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"

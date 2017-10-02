@@ -28,7 +28,7 @@ from indy_client.persistence.client_req_rep_store_file import ClientReqRepStoreF
 from indy_client.persistence.client_txn_log import ClientTxnLog
 from indy_common.config_util import getConfig
 from stp_core.types import HA
-from sovrin_common.state import domain
+from indy_common.state import domain
 
 logger = getlogger()
 

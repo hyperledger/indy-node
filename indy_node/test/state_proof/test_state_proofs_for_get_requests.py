@@ -19,7 +19,7 @@ from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.domain_req_handler import DomainReqHandler
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
-from sovrin_common.state import domain
+from indy_common.state import domain
 
 
 @pytest.fixture()
