@@ -27,6 +27,11 @@ chown -R sovrin:sovrin /var/plenum/
 chown -R sovrin:sovrin /var/log/plenum
 chown -R sovrin:sovrin /etc/plenum
 
+# create indy cli folder if does not exist
+mkdir -p /home/sovrin/indy-cli
+mkdir -p /home/sovrin/indy-cli/networks
+chown -R sovrin:sovrin /home/sovrin/indy-cli
+
 # init_sovrin_node script
 cat <<EOF > /usr/local/bin/init_sovrin_node
 #!/bin/bash
