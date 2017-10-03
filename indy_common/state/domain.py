@@ -13,6 +13,8 @@ LAST_SEQ_NO = "lsn"
 VALUE = "val"
 LAST_UPDATE_TIME = "lut"
 
+ALL_ATR_KEYS = [RAW, ENC, HASH]
+
 
 def make_state_path_for_nym(did) -> bytes:
     # TODO: This is duplicated in plenum.DimainRequestHandler
@@ -126,31 +128,45 @@ def hash_of(text) -> str:
 
 
 def parse_attr_txn(txn):
-    raw = txn.get(RAW)
-    if raw:
-        data = attrib_raw_data_serializer.deserialize(raw)
+    attr_type, attr = _extract_attr_typed_value(txn)
+
+    if attr_type == RAW:
+        data = attrib_raw_data_serializer.deserialize(attr)
         # To exclude user-side formatting issues
         re_raw = attrib_raw_data_serializer.serialize(data,
                                                       toBytes=False)
         key, _ = data.popitem()
         return key, re_raw
-    enc = txn.get(ENC)
-    if enc:
-        return hash_of(enc), enc
-    hsh = txn.get(HASH)
-    if hsh:
-        return hsh, None
-    raise ValueError("One of 'raw', 'enc', 'hash' "
-                     "fields of ATTR must present")
-
+    if attr_type == ENC:
+        return hash_of(attr), attr
+    if attr_type == HASH:
+        return attr, None
 
 def prepare_get_attr_for_state(txn):
-    keys = [RAW, ENC, HASH]
-    for key in keys:
-        if txn[key]:
-            txn = txn.copy()
-            data = txn.pop(DATA)
-            txn[key] = data
-            return prepare_attr_for_state(txn)
-    raise ValueError("There is no any of {} in txn {}"
-                     .format(keys, txn))
+    attr_type, attr_key = _extract_attr_typed_value(txn)
+    data = txn.get(DATA)
+    if data:
+        txn = txn.copy()
+        data = txn.pop(DATA)
+        txn[attr_type] = data
+        return prepare_attr_for_state(txn)
+    if attr_type == ENC:
+        return hash_of(attr_key), None
+    return attr_key, None
+
+
+def _extract_attr_typed_value(txn):
+    """
+    ATTR and GET_ATTR can have one of 'raw', 'enc' and 'hash' fields.
+    This method checks which of them presents and return it's name
+    and value in it.
+    """
+    existing_keys = [key for key in ALL_ATR_KEYS if key in txn]
+    if len(existing_keys) == 0:
+        raise ValueError("ATTR should have one of the following fields: {}"
+                         .format(ALL_ATR_KEYS))
+    if len(existing_keys) > 1:
+        raise ValueError("ATTR should have only one of the following fields: {}"
+                         .format(ALL_ATR_KEYS))
+    existing_key = existing_keys[0]
+    return existing_key, txn[existing_key]
