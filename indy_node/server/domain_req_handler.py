@@ -302,11 +302,11 @@ class DomainReqHandler(PHandler):
         """
         assert path is not None
         encoded = self.state.get(path, isCommitted)
-        if encoded is None:
-            raise KeyError
-        value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
         proof = self.make_proof(path)
-        return value, last_seq_no, last_update_time, proof
+        if encoded is not None:
+            value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
+            return value, last_seq_no, last_update_time, proof
+        return None, None, None, proof
 
     def _addAttr(self, txn) -> None:
         """
@@ -343,7 +343,7 @@ class DomainReqHandler(PHandler):
                 self.lookup(path, isCommitted)
         except KeyError:
             return None, None, None, None
-        if hashed_val == '':
+        if not hashed_val:
             # Its a HASH attribute
             return hashed_val, lastSeqNo, lastUpdateTime, proof
         else:
