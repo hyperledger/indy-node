@@ -1,5 +1,5 @@
 import pytest
-from sovrin_client.test.cli.helper import connect_and_check_output
+from indy_client.test.cli.helper import connect_and_check_output
 
 
 def test_change_key(be, do, susanCLI, newStewardCli):

@@ -64,7 +64,7 @@ def testConnectEnv(poolNodesCreated, looper, notConnectedStatus):
     looper.run(eventually(checkConnectedToEnv, poolCLI, retryWait=1,
                           timeout=timeout))
     poolCLI.enterCmd("status")
-    assert "Connected to test Indy network" == poolCLI.lastCmdOutput
+    assert "Connected to pool Indy network" == poolCLI.lastCmdOutput
 
 
 def testCreateMultiPoolNodes(multiPoolNodesCreated):

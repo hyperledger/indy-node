@@ -13,8 +13,8 @@ def getConfig(user_config_dir=None):
     global CONFIG
     if not CONFIG:
         config = PlenumConfig(user_config_dir)
-        sovrinConfig = import_module("sovrin_common.config")
-        config.__dict__.update(sovrinConfig.__dict__)
+        indyConfig = import_module("indy_common.config")
+        config.__dict__.update(indyConfig.__dict__)
 
         extend_with_default_external_config(config, user_config_dir)
 

@@ -16,7 +16,7 @@ mkdir -p /etc/indy
 if [ ! -f /etc/indy/indy_config.py ]; then
     touch /etc/indy/indy_config.py
 fi
-chown -R sovrin:sovrin /etc/indy/
+chown -R indy:indy /etc/indy/
 
 # create indy log folder if does not exist
 mkdir -p /var/log/indy

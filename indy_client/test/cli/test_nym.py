@@ -7,6 +7,7 @@ from indy_client.test.cli.helper import prompt_is, addNym, ensureConnectedToTest
 from indy_common.roles import Roles
 from plenum.common.constants import TARGET_NYM
 from indy_node.test.did.conftest import wallet, abbrevVerkey
+from indy_client.test.cli.helper import connect_and_check_output
 
 TRUST_ANCHOR_SEED = b'TRUST0NO0ONE00000000000000000000'
 

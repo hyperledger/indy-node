@@ -2,6 +2,7 @@ import pytest
 from indy_client.test.cli.constants import INVALID_SYNTAX, SCHEMA_ADDED
 from indy_client.test.cli.helper import createUuidIdentifier
 from indy_node.test.did.conftest import wallet
+from indy_client.test.cli.helper import connect_and_check_output
 
 
 SCHEMA_FOUND = ['Found schema', 'Degree',

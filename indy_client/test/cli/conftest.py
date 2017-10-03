@@ -48,6 +48,7 @@ from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
     faberWallet, acmeWallet, thriftWallet, agentIpAddress, \
     faberAgentPort, acmeAgentPort, thriftAgentPort, faberAgent, acmeAgent, \
     thriftAgent, faberBootstrap, acmeBootstrap
+from indy_client.test.cli.helper import connect_and_check_output
 
 
 config = getConfig()
