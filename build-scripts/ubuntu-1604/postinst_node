@@ -2,12 +2,12 @@
 
 # it should be fixed
 
-# workaround when .sovrin become regular file
-if [ -f /home/sovrin/.sovrin ]; then
-    rm /home/sovrin/.sovrin
+# workaround when .indy become regular file
+if [ -f /home/indy/.indy ]; then
+    rm /home/indy/.indy
 fi
-mkdir -p /home/sovrin/.sovrin
-chown -R sovrin:sovrin /home/sovrin/.sovrin
+mkdir -p /home/indy/.indy
+chown -R indy:indy /home/indy/.indy
 
 # create indy config folder if does not exist
 mkdir -p /etc/indy
@@ -20,20 +20,20 @@ chown -R sovrin:sovrin /etc/indy/
 
 # create indy log folder if does not exist
 mkdir -p /var/log/indy
-chown -R sovrin:sovrin /var/log/indy
+chown -R indy:indy /var/log/indy
 
 # change permissions for plenum folders
-chown -R sovrin:sovrin /var/plenum/
-chown -R sovrin:sovrin /var/log/plenum
-chown -R sovrin:sovrin /etc/plenum
+chown -R indy:indy /var/plenum/
+chown -R indy:indy /var/log/plenum
+chown -R indy:indy /etc/plenum
 
 # create indy cli folder if does not exist
-mkdir -p /home/sovrin/indy-cli
-mkdir -p /home/sovrin/indy-cli/networks
-chown -R sovrin:sovrin /home/sovrin/indy-cli
+mkdir -p /home/indy/indy-cli
+mkdir -p /home/indy/indy-cli/networks
+chown -R indy:indy /home/indy/indy-cli
 
-# init_sovrin_node script
-cat <<EOF > /usr/local/bin/init_sovrin_node
+# init_indy_node script
+cat <<EOF > /usr/local/bin/init_indy_node
 #!/bin/bash
 
 if [ \$# -lt 3 ]; then
@@ -47,30 +47,30 @@ if [ \$# -lt 3 ]; then
     exit 1;
 fi
 
-echo "NODE_NAME=\$1" > /etc/indy/sovrin.env
-echo "NODE_PORT=\$2" >> /etc/indy/sovrin.env
-echo "NODE_CLIENT_PORT=\$3" >> /etc/indy/sovrin.env
+echo "NODE_NAME=\$1" > /home/indy/.indy/indy.env
+echo "NODE_PORT=\$2" >> /home/indy/.indy/indy.env
+echo "NODE_CLIENT_PORT=\$3" >> /home/indy/.indy/indy.env
 
 if [ -z \$4 ]; then
-    init_sovrin_keys --name \$1
+    init_indy_keys --name \$1
 else
-    init_sovrin_keys --name \$1 --seed \$4
+    init_indy_keys --name \$1 --seed \$4
 fi
 EOF
 
-chmod +x /usr/local/bin/init_sovrin_node
+chmod +x /usr/local/bin/init_indy_node
 
 # add systemd script
-cat <<EOF > /etc/systemd/system/sovrin-node.service
+cat <<EOF > /etc/systemd/system/indy-node.service
 [Unit]
-Description=Sovrin Node
-Requires=sovrin-node-control.service
+Description=Indy Node
+Requires=indy-node-control.service
 
 [Service]
-EnvironmentFile=/etc/indy/sovrin.env
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_sovrin_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
-User=sovrin
-Group=sovrin
+EnvironmentFile=/etc/indy/indy.env
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_indy_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
+User=indy
+Group=indy
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
@@ -82,17 +82,17 @@ WantedBy=multi-user.target
 EOF
 
 
-cat <<EOF > /etc/systemd/system/sovrin-node-control.service
+cat <<EOF > /etc/systemd/system/indy-node-control.service
 [Unit]
-Description=Service for upgrade existing Sovrin and another operations
-#Requires=sovrin.service
-#After=sovrin.service
+Description=Service for upgrade of existing Indy Node and other operations
+#Requires=indy.service
+#After=indy.service
 After=network.target
 
 [Service]
 Type=simple
 EnvironmentFile=/etc/indy/node_control.conf
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool.py \$TEST_MODE --hold-ext \$HOLD_EXT
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \$HOLD_EXT
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
@@ -114,19 +114,26 @@ HOLD_EXT=\"\"
 EOF
 fi
 
-mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604.sh /usr/local/bin/upgrade_sovrin_node
-mv /usr/local/bin/upgrade_sovrin_node_ubuntu1604_test.sh /usr/local/bin/upgrade_sovrin_node_test
+mv /usr/local/bin/upgrade_indy_node_ubuntu1604.sh /usr/local/bin/upgrade_indy_node
+mv /usr/local/bin/upgrade_indy_node_ubuntu1604_test.sh /usr/local/bin/upgrade_indy_node_test
+mv /usr/local/bin/restart_indy_node_ubuntu1604.sh /usr/local/bin/restart_indy_node
 mv /usr/local/bin/restart_sovrin_node_ubuntu1604.sh /usr/local/bin/restart_sovrin_node
+mv /usr/local/bin/complete_rebranding_upgrade_ubuntu1604.sh /usr/local/bin/complete_rebranding_upgrade
 
-chmod +x /usr/local/bin/upgrade_sovrin_node
-chmod +x /usr/local/bin/upgrade_sovrin_node_test
+chmod +x /usr/local/bin/upgrade_indy_node
+chmod +x /usr/local/bin/upgrade_indy_node_test
+chmod +x /usr/local/bin/restart_indy_node
 chmod +x /usr/local/bin/restart_sovrin_node
-chmod +x /usr/local/bin/start_node_control_tool.py
+chmod +x /usr/local/bin/complete_rebranding_upgrade
 
-rm -f /usr/local/bin/delete_sovrin_node.bat /usr/local/bin/upgrade_sovrin_node_test.bat /usr/local/bin/restart_sovrin_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_sovrin_node.bat /usr/local/bin/install_sovrin_node.bat
+rm -f /usr/local/bin/delete_indy_node.bat /usr/local/bin/upgrade_indy_node_test.bat \
+    /usr/local/bin/restart_indy_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_indy_node.bat \
+    /usr/local/bin/install_indy_node.bat /usr/local/bin/restart_upgrade_agent.bat
 
 # Prefill NETWORK_NAME
 echo "NETWORK_NAME=None" >> /etc/indy/indy_config.py
+# disable stdout logging
+echo "enableStdOutLogging=False" >> /etc/indy/indy_config.py
 
 
 # Automatically added from template:

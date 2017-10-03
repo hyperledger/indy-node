@@ -1,7 +1,7 @@
 import os
 import shutil
 
-from sovrin_common.config_util import getConfig
+from indy_common.config_util import getConfig
 from stp_core.common.log import getlogger
 
 config = getConfig()

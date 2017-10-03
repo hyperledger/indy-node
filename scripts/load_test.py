@@ -28,13 +28,13 @@ from plenum.test.helper import eventually
 from plenum.test.test_client import \
     getAcksFromInbox, getNacksFromInbox, getRepliesFromInbox
 
-from sovrin_common.constants import ATTRIB, GET_ATTR
-from sovrin_common.config_util import getConfig
-from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
-from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_client.client.client import Client
-from sovrin_common.identity import Identity
-from sovrin_common.constants import GET_NYM
+from indy_common.constants import ATTRIB, GET_ATTR
+from indy_common.config_util import getConfig
+from indy_client.client.wallet.attribute import Attribute, LedgerStore
+from indy_client.client.wallet.wallet import Wallet
+from indy_client.client.client import Client
+from indy_common.identity import Identity
+from indy_common.constants import GET_NYM
 
 
 logger = getlogger()

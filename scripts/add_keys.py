@@ -15,10 +15,10 @@ from plenum.common.types import HA
 from stp_core.common.log import getlogger
 from plenum.test.helper import eventually, eventuallyAll
 
-from sovrin_common.config_util import getConfig
-from sovrin_common.constants import TRUST_ANCHOR
-from sovrin_client.client.client import Client
-from sovrin_client.client.wallet.wallet import Wallet
+from indy_common.config_util import getConfig
+from indy_common.constants import TRUST_ANCHOR
+from indy_client.client.client import Client
+from indy_client.client.wallet.wallet import Wallet
 
 
 logger = getlogger()
@@ -102,7 +102,7 @@ async def ensureConnectedToNodes(client):
 def addNyms():
     with Looper(debug=getConfig().LOOPER_DEBUG) as looper:
 
-        from sovrin_client.test.helper import createNym
+        from indy_client.test.helper import createNym
 
         # Starting clients
         print("Spawning client")
