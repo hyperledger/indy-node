@@ -102,3 +102,5 @@ agentLoggingLevel = logging.INFO
 default logging level for node
 '''
 logLevel = logging.INFO
+
+USER_CONFIG_DIR = "none"
