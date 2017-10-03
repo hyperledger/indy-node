@@ -62,7 +62,7 @@ def prepare_attr_for_state(txn):
     :return: state path, state value, value for attribute store
     """
     assert txn[TXN_TYPE] in {ATTRIB, GET_ATTR}
-    nym = txn.get(TARGET_NYM)
+    nym = txn[TARGET_NYM]
     attr_key, value = parse_attr_txn(txn)
     hashed_value = hash_of(value) if value else ''
     seq_no = txn[f.SEQ_NO.nm]
@@ -142,7 +142,9 @@ def parse_attr_txn(txn):
     if attr_type == HASH:
         return attr, None
 
+
 def prepare_get_attr_for_state(txn):
+    nym = txn[TARGET_NYM]
     attr_type, attr_key = _extract_attr_typed_value(txn)
     data = txn.get(DATA)
     if data:
@@ -150,9 +152,12 @@ def prepare_get_attr_for_state(txn):
         data = txn.pop(DATA)
         txn[attr_type] = data
         return prepare_attr_for_state(txn)
+
     if attr_type == ENC:
-        return hash_of(attr_key), None
-    return attr_key, None
+        attr_key = hash_of(attr_key)
+
+    path = make_state_path_for_attr(nym, attr_key)
+    return path, None, None, None
 
 
 def _extract_attr_typed_value(txn):
