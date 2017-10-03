@@ -1,22 +1,29 @@
 #!/bin/bash
 
 # it should be fixed
-USER_CONFIG_DIR = '/etc/indy'
-GENERAL_DATA_DIR = '/var/lib/indy'
-GENERAL_LOG_DIR = '/var/log/indy'
-INSTALL_DIR = '/usr/local/lib/python3.5/dist-packages'
+USER_CONFIG_DIR="/etc/indy"
+GENERAL_DATA_DIR="/var/lib/indy"
+GENERAL_LOG_DIR="/var/log/indy"
 
-# workaround when .sovrin become regular file
-if [ -f /home/indy/.indy ]; then
-    rm /home/indy/.indy
+CLI_BASE_DIR="/home/indy/.indy-cli"
+CLI_NETWORKS_DIR="$CLI_BASE_DIR/networks"
+CLI_WALLETS_DIR="$CLI_BASE_DIR/wallets"
+
+INSTALL_DIR="/usr/local/lib/python3.5/dist-packages"
+
+# workaround when .indy become regular file
+if [ -f $CLI_BASE_DIR ]; then
+    rm $CLI_BASE_DIR
 fi
-mkdir -p /home/indy/.indy
-chown -R indy:indy /home/indy/.indy
+mkdir -p $CLI_BASE_DIR $CLI_NETWORKS_DIR $CLI_WALLETS_DIR
+cp $INSTALL_DIR/sovrin_client/user_config/indy_config.py $CLI_BASE_DIR
+chown -R indy:indy $CLI_BASE_DIR
+
 
 # create indy config folder if does not exist
 mkdir -p $USER_CONFIG_DIR
 
-# create indy config if does not exist
+# create indy node config if does not exist
 if [ ! -f $USER_CONFIG_DIR/indy_config.py ]; then
     cp $INSTALL_DIR/sovrin_node/user_config/indy_config.py $USER_CONFIG_DIR
 fi
@@ -130,7 +137,7 @@ rm -f /usr/local/bin/delete_sovrin_node.bat /usr/local/bin/upgrade_sovrin_node_t
 
 # Automatically added from template:
 if which py3compile >/dev/null 2>&1; then
-	py3compile -O -p indy-node /usr/local/lib/python3.5/dist-packages/
+	py3compile -O -p indy-node $INSTALL_DIR
 fi
 
 # End automatically added section
