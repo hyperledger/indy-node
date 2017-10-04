@@ -113,12 +113,26 @@ def prepare_get_claim_def_for_state(txn):
 def prepare_schema_for_state(txn):
     origin = txn.get(f.IDENTIFIER.nm)
     data = txn.get(DATA)
-    schema_name = data[NAME]
-    schema_version = data[VERSION]
+    schema_name = data.pop(NAME)
+    schema_version = data.pop(VERSION)
     path = make_state_path_for_schema(origin, schema_name, schema_version)
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     value_bytes = encode_state_value(data, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_get_schema_for_state(txn):
+    origin = txn.get(f.IDENTIFIER.nm)
+    data = txn[DATA]
+    schema_name = data.pop(NAME)
+    schema_version = data.pop(VERSION)
+    path = make_state_path_for_schema(origin, schema_name, schema_version)
+    value_bytes = None
+    if len(data) != 0:
+        seq_no = txn[f.SEQ_NO.nm]
+        txn_time = txn[TXN_TIME]
+        value_bytes = encode_state_value(data, seq_no, txn_time)
     return path, value_bytes
 
 

@@ -366,6 +366,12 @@ class DomainReqHandler(PHandler):
         path = domain.make_state_path_for_schema(author, schemaName, schemaVersion)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            if keys is None:
+                keys = {}
+            keys.update({
+                NAME: schemaName,
+                VERSION: schemaVersion
+            })
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None

@@ -1,6 +1,7 @@
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, NAME, VERSION, ORIGIN
 from plenum.test.helper import waitForSufficientRepliesForRequests, getRepliesFromClientInbox
-from sovrin_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, REVOCATION, GET_CLAIM_DEF, REF, SIGNATURE_TYPE
+from sovrin_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, REVOCATION, GET_CLAIM_DEF, REF, SIGNATURE_TYPE, \
+    ATTR_NAMES
 from sovrin_client.test.state_proof.helper import check_valid_proof
 
 # fixtures, do not remove
@@ -62,34 +63,34 @@ def test_state_proof_returned_for_missing_nym(looper,
         check_valid_proof(result)
 
 
-# def test_state_proof_returned_for_missing_schema(looper,
-#                                                  trustAnchor,
-#                                                  trustAnchorWallet):
-#     """
-#     Tests that state proof is returned in the reply for GET_NYM transactions
-#     """
-#     client = trustAnchor
-#     dest = trustAnchorWallet.defaultId
-#     schema_name = "test_schema"
-#     schema_version = "1.0"
-#     get_schema_operation = {
-#         TARGET_NYM: dest,
-#         TXN_TYPE: GET_SCHEMA,
-#         DATA: {
-#             NAME: schema_name,
-#             VERSION: schema_version,
-#         }
-#     }
-#     get_schema_request = trustAnchorWallet.signOp(get_schema_operation)
-#     trustAnchorWallet.pendRequest(get_schema_request)
-#     pending = trustAnchorWallet.preparePending()
-#     client.submitReqs(*pending)
-#     waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
-#     replies = getRepliesFromClientInbox(client.inBox, get_schema_request.reqId)
-#     for reply in replies:
-#         result = reply['result']
-#         assert DATA not in result or result[DATA] is None
-#         check_valid_proof(result)
+def test_state_proof_returned_for_missing_schema(looper,
+                                                 trustAnchor,
+                                                 trustAnchorWallet):
+    """
+    Tests that state proof is returned in the reply for GET_NYM transactions
+    """
+    client = trustAnchor
+    dest = trustAnchorWallet.defaultId
+    schema_name = "test_schema"
+    schema_version = "1.0"
+    get_schema_operation = {
+        TARGET_NYM: dest,
+        TXN_TYPE: GET_SCHEMA,
+        DATA: {
+            NAME: schema_name,
+            VERSION: schema_version,
+        }
+    }
+    get_schema_request = trustAnchorWallet.signOp(get_schema_operation)
+    trustAnchorWallet.pendRequest(get_schema_request)
+    pending = trustAnchorWallet.preparePending()
+    client.submitReqs(*pending)
+    waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
+    replies = getRepliesFromClientInbox(client.inBox, get_schema_request.reqId)
+    for reply in replies:
+        result = reply['result']
+        assert ATTR_NAMES not in result[DATA]
+        check_valid_proof(result)
 
 
 def test_state_proof_returned_for_missing_claim_def(looper,
