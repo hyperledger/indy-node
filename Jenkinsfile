@@ -78,7 +78,7 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 	sh "docker volume rm $volumeName"
     }
     dir('build-scripts/ubuntu-1604') {
-        sh "./build-$name-docker.sh $sourcePath $releaseVersion"
+        sh "./build-$name-docker.sh \"$sourcePath\" \"$releaseVersion\""
         sh "./build-3rd-parties-docker.sh"
     }
     return "$volumeName"
