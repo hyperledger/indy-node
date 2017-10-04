@@ -1,11 +1,9 @@
 import pytest
 from common.serializers.serialization import domain_state_serializer
-
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
-    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, ROLE, VERKEY, \
-    TXN_TIME, NYM
+    ROLE, VERKEY, TXN_TIME, NYM
 from plenum.common.types import f
-
+from sovrin_client.test.state_proof.helper import check_valid_proof
 from indy_common.constants import GET_ATTR, GET_NYM
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     getRepliesFromClientInbox
@@ -46,17 +44,7 @@ def test_state_proof_returned_for_get_attr(looper,
         data = attrib_raw_data_serializer.deserialize(result[DATA])
         assert data == expected_data
         assert result[TXN_TIME]
-        assert STATE_PROOF in result
-        state_proof = result[STATE_PROOF]
-        assert ROOT_HASH in state_proof
-        assert state_proof[ROOT_HASH]
-        assert MULTI_SIGNATURE in state_proof
-        assert state_proof[MULTI_SIGNATURE]
-        assert state_proof[MULTI_SIGNATURE]["participants"]
-        assert state_proof[MULTI_SIGNATURE]["pool_state_root"]
-        assert state_proof[MULTI_SIGNATURE]["signature"]
-        assert PROOF_NODES in state_proof
-        assert state_proof[PROOF_NODES]
+        check_valid_proof(result)
 
 
 def test_state_proof_returned_for_get_nym(looper,
@@ -99,13 +87,4 @@ def test_state_proof_returned_for_get_nym(looper,
         assert VERKEY in data
         assert f.IDENTIFIER.nm in data
         assert result[TXN_TIME]
-        state_proof = result[STATE_PROOF]
-        assert ROOT_HASH in state_proof
-        assert state_proof[ROOT_HASH]
-        assert MULTI_SIGNATURE in state_proof
-        assert state_proof[MULTI_SIGNATURE]
-        assert state_proof[MULTI_SIGNATURE]["participants"]
-        assert state_proof[MULTI_SIGNATURE]["pool_state_root"]
-        assert state_proof[MULTI_SIGNATURE]["signature"]
-        assert PROOF_NODES in state_proof
-        assert state_proof[PROOF_NODES]
+        check_valid_proof(result)

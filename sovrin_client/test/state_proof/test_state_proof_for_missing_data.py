@@ -1,31 +1,10 @@
-from common.serializers.serialization import domain_state_serializer
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, \
-    PROOF_NODES, NYM, ROLE, VERKEY, TXN_TIME
-from plenum.common.types import f
+from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA
 from plenum.test.helper import waitForSufficientRepliesForRequests, getRepliesFromClientInbox
-from sovrin_common.serialization import attrib_raw_data_serializer
-
 from sovrin_common.constants import GET_ATTR, GET_NYM
+from sovrin_client.test.state_proof.helper import check_valid_proof
 
 # fixtures, do not remove
 from sovrin_client.test.test_nym_attrib import attributeName
-
-
-def check_valid_proof(replies):
-    for reply in replies:
-        result = reply['result']
-        assert DATA not in result or result[DATA] is None
-        assert STATE_PROOF in result
-        state_proof = result[STATE_PROOF]
-        assert ROOT_HASH in state_proof
-        assert state_proof[ROOT_HASH]
-        assert MULTI_SIGNATURE in state_proof
-        assert state_proof[MULTI_SIGNATURE]
-        assert state_proof[MULTI_SIGNATURE]["participants"]
-        assert state_proof[MULTI_SIGNATURE]["pool_state_root"]
-        assert state_proof[MULTI_SIGNATURE]["signature"]
-        assert PROOF_NODES in state_proof
-        assert state_proof[PROOF_NODES]
 
 
 def test_state_proof_returned_for_missing_attr(looper,
@@ -47,7 +26,10 @@ def test_state_proof_returned_for_missing_attr(looper,
     client.submitReqs(*pending)
     waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
     replies = getRepliesFromClientInbox(client.inBox, get_attr_request.reqId)
-    check_valid_proof(replies)
+    for reply in replies:
+        result = reply['result']
+        assert DATA not in result or result[DATA] is None
+        check_valid_proof(reply)
 
 
 def test_state_proof_returned_for_missing_nym(looper,
@@ -74,4 +56,7 @@ def test_state_proof_returned_for_missing_nym(looper,
     client.submitReqs(*pending)
     waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
     replies = getRepliesFromClientInbox(client.inBox, get_nym_request.reqId)
-    check_valid_proof(replies)
+    for reply in replies:
+        result = reply['result']
+        assert DATA not in result or result[DATA] is None
+        check_valid_proof(reply)
