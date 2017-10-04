@@ -91,6 +91,25 @@ def prepare_claim_def_for_state(txn):
     return path, value_bytes
 
 
+def prepare_get_claim_def_for_state(txn):
+    origin = txn.get(f.IDENTIFIER.nm)
+    schema_seq_no = txn.get(REF)
+    if schema_seq_no is None:
+        raise ValueError("'{}' field is absent, "
+                         "but it must contain schema seq no".format(REF))
+
+    signature_type = txn.get(SIGNATURE_TYPE, 'CL')
+    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
+    seq_no = txn[f.SEQ_NO.nm]
+
+    value_bytes = None
+    data = txn.get(DATA)
+    if data is not None:
+        txn_time = txn[TXN_TIME]
+        value_bytes = encode_state_value(data, seq_no, txn_time)
+    return path, value_bytes
+
+
 def prepare_schema_for_state(txn):
     origin = txn.get(f.IDENTIFIER.nm)
     data = txn.get(DATA)
