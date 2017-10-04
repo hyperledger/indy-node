@@ -95,5 +95,5 @@ options.skip([
     StagesEnum.PYPI_RELEASE,
     StagesEnum.GITHUB_RELEASE
 ])
-options.setReleaseVersion("0.0.4")
+options.setReleaseVersion("0.0.5")
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
