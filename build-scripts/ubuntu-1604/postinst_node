@@ -9,6 +9,9 @@ fi
 mkdir -p /home/indy/.indy
 chown -R indy:indy /home/indy/.indy
 
+mkdir -p /var/lib/indy/
+chown -R indy:indy /var/lib/indy/
+
 # create indy config folder if does not exist
 mkdir -p /etc/indy
 
@@ -139,9 +142,9 @@ echo "baseDir = '~/.indy'" >> /etc/indy/indy_config.py
 echo "NODE_BASE_DATA_DIR = baseDir" >> /etc/indy/indy_config.py
 echo "LOG_DIR = '/var/log/indy'" >> /etc/indy/indy_config.py
 echo "BACKUP_DIR = '/var/lib/indy/backup'" >> /etc/indy/indy_config.py
-echo "CLI_BASE_DIR = '~/.indy-cli/' >> /etc/indy/indy_config.py
-echo "CLI_NETWORK_DIR = os.path.join(CLI_BASE_DIR, 'networks') >> /etc/indy/indy_config.py
-echo "NODE_BASE_DATA_DIR = baseDir >> /etc/indy/indy_config.py
+echo "CLI_BASE_DIR = '~/.indy-cli/'" >> /etc/indy/indy_config.py
+echo "CLI_NETWORK_DIR = os.path.join(CLI_BASE_DIR, 'networks')" >> /etc/indy/indy_config.py
+echo "NODE_BASE_DATA_DIR = baseDir" >> /etc/indy/indy_config.py
 
 
 # Automatically added from template:
