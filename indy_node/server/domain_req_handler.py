@@ -214,17 +214,17 @@ class DomainReqHandler(PHandler):
     def handleGetNymReq(self, request: Request, frm: str):
         nym = request.operation[TARGET_NYM]
         nymData = self.idrCache.getNym(nym, isCommitted=True)
+        path = domain.make_state_path_for_nym(nym)
         if nymData:
             nymData[TARGET_NYM] = nym
             data = self.stateSerializer.serialize(nymData)
             seq_no = nymData[f.SEQ_NO.nm]
             update_time = nymData[TXN_TIME]
-            path = domain.make_state_path_for_nym(nym)
             proof = self.make_proof(path)
         else:
             data = None
             seq_no = None
-            proof = None
+            proof = self.make_proof(path)
             update_time = None
 
         # TODO: add update time here!

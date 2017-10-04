@@ -56,6 +56,18 @@ def prepare_nym_for_state(txn):
     return key, value
 
 
+def prepare_get_nym_for_state(txn):
+    data = txn.get(DATA)
+    value = None
+    if data is not None:
+        parsed = domain_state_serializer.deserialize(data)
+        parsed.pop(TARGET_NYM, None)
+        value = domain_state_serializer.serialize(parsed)
+    nym = txn[TARGET_NYM]
+    key = make_state_path_for_nym(nym)
+    return key, value
+
+
 def prepare_attr_for_state(txn):
     """
     Make key(path)-value pair for state from ATTRIB or GET_ATTR

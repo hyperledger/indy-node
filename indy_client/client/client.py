@@ -128,7 +128,7 @@ class Client(PlenumClient):
     def prepare_for_state(self, result):
         request_type = result[TYPE]
         if request_type == GET_NYM:
-            return domain.prepare_nym_for_state(result)
+            return domain.prepare_get_nym_for_state(result)
         if request_type == GET_ATTR:
             path, value, hashed_value, value_bytes = \
                 domain.prepare_get_attr_for_state(result)
