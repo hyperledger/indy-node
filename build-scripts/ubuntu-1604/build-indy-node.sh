@@ -1,21 +1,21 @@
 #!/bin/bash -xe
 
-INPUT_PATH=$1
-VERSION=$2
-OUTPUT_PATH=${3:-.}
+INPUT_PATH="$1"
+VERSION="$2"
+OUTPUT_PATH="${3:-.}"
 
 PACKAGE_NAME=indy-node
 
 # copy the sources to a temporary folder
-TMP_DIR=$(mktemp -d)
-cp -r ${INPUT_PATH}/. ${TMP_DIR}
+TMP_DIR="$(mktemp -d)"
+cp -r "${INPUT_PATH}/." "${TMP_DIR}"
 
 # prepare the sources
-cd ${TMP_DIR}/build-scripts/ubuntu-1604
-./prepare-package.sh ${TMP_DIR} ${VERSION}
+cd "${TMP_DIR}/build-scripts/ubuntu-1604"
+./prepare-package.sh "${TMP_DIR}" "${VERSION}"
 
 
-sed -i 's/{package_name}/'${PACKAGE_NAME}'/' "prerm"
+sed -i "s/{package_name}/${PACKAGE_NAME}/" "prerm"
 
 fpm --input-type "python" \
     --output-type "deb" \
@@ -30,8 +30,8 @@ fpm --input-type "python" \
     --before-install "preinst_node" \
     --after-install "postinst_node" \
     --before-remove "prerm" \
-    --name ${PACKAGE_NAME} \
-    --package ${OUTPUT_PATH} \
-    ${TMP_DIR}
+    --name "${PACKAGE_NAME}" \
+    --package "${OUTPUT_PATH}" \
+    "${TMP_DIR}"
 
-rm -rf ${TMP_DIR}
+rm -rf "${TMP_DIR}"
