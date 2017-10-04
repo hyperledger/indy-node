@@ -5,7 +5,7 @@ import glob
 from importlib.util import module_from_spec, spec_from_file_location
 
 from stp_core.common.log import getlogger
-from sovrin_common.config_util import getConfig
+from indy_common.config_util import getConfig
 
 config = getConfig()
 logger = getlogger()

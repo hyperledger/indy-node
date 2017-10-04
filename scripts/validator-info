@@ -16,7 +16,7 @@ from collections import OrderedDict
 from glob import glob
 import re
 
-from sovrin_common.config_util import getConfig
+from indy_common.config_util import getConfig
 from stp_core.common.log import Logger
 from stp_core.common.log import getlogger
 
@@ -323,9 +323,8 @@ class SoftwareStats(BaseStats):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # TODO should be fixed after packages renamings
         pkgMappings = {
-            'indy-node': 'sovrin_node'
+            'indy-node': 'indy_node'
         }
 
         for pkgName, obj in self.items():
@@ -352,7 +351,7 @@ class ValidatorStats(BaseStats):
     @staticmethod
     def get_process_state():
         ret = subprocess.check_output(
-            'systemctl is-failed sovrin-node; exit 0',
+            'systemctl is-failed indy-node; exit 0',
             stderr=subprocess.STDOUT, shell=True
         )
         ret = ret.decode().strip()
@@ -362,7 +361,7 @@ class ValidatorStats(BaseStats):
             return 'running'
         else:
             logger.info(
-                "Non-expected output for sovrin-node "
+                "Non-expected output for indy-node "
                 "is-failed state: {}".format(ret)
             )
             return None
@@ -370,7 +369,7 @@ class ValidatorStats(BaseStats):
     @staticmethod
     def get_enabled_state():
         ret = subprocess.check_output(
-            'systemctl is-enabled sovrin-node; exit 0',
+            'systemctl is-enabled indy-node; exit 0',
             stderr=subprocess.STDOUT, shell=True
         )
         ret = ret.decode().strip()
@@ -380,7 +379,7 @@ class ValidatorStats(BaseStats):
             return False
         else:
             logger.info(
-                "Non-expected output for sovrin-node "
+                "Non-expected output for indy-node "
                 "is-enabled state: {}".format(ret)
             )
             return None

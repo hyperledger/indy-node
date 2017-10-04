@@ -1,0 +1,25 @@
+#! /usr/bin/env python3
+
+
+# Sends requests to Indy Client REST wrapper running on 127.0.0.1:4300
+
+import os
+import sys
+from random import random
+from time import sleep
+
+from plenum.common.signer_simple import SimpleSigner
+
+if len(sys.argv) == 2:
+    count = int(sys.argv[1])
+else:
+    count = 40
+
+i = 0
+while i < count:
+    nym = SimpleSigner().verstr
+    os.system('curl --data "dest={}&type=NYM" http://127.0.0.1:4300/txn'
+              .format(nym))
+    si = random()
+    sleep(si / 8)
+    i += 1
