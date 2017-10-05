@@ -21,4 +21,4 @@ docker run \
     --rm \
     -v "${OUTPUT_VOLUME_NAME}:/output" \
     "${IMAGE_NAME}" \
-    "$CMD"
+    $CMD
