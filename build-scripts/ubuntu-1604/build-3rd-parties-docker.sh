@@ -14,7 +14,7 @@ IMAGE_NAME="${PKG_NAME}-build-u1604"
 OUTPUT_VOLUME_NAME="${PKG_NAME}-deb-u1604"
 
 docker build -t "${PKG_NAME}-build-u1604" -f Dockerfile .
-docker volume create --name $"{OUTPUT_VOLUME_NAME}"
+docker volume create --name "${OUTPUT_VOLUME_NAME}"
 
 docker run \
     -i \
