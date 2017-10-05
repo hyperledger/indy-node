@@ -8,7 +8,7 @@ from plenum.common.util import getMaxFailures
 from stp_core.loop.eventually import eventually
 from plenum.test.helper import checkSufficientRepliesRecvd
 
-from sovrin_common.config_util import getConfig
+from indy_common.config_util import getConfig
 
 
 # Below is an example script command line parameters to be passed to test it.

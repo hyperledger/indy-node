@@ -33,8 +33,8 @@ def main():
     print('repo: {}'.format(repo))
     remote = repo.remotes['origin']
     remote
-    edir = getDirInPath('evernym')
-    print('evernym directory: {}'.format(edir))
+    edir = getDirInPath('indy-node')
+    print('indy-node directory: {}'.format(edir))
 
 
 if __name__ == '__main__':
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
 # GACTION=pull
 #
-# pushd ../sovrin-priv
+# pushd ../indy-priv
 # pwd
 # git $GACTION
 #

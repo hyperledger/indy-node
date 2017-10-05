@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # set -e
 
-dirs=( "sovrin-common" "sovrin-client" "sovrin-node" "plenum" "anoncreds" "ledger" )
+dirs=( "indy-common" "indy-client" "indy-node" "plenum" "anoncreds" "ledger" )
 
 # quiet pushd
 pushd() {

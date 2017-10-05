@@ -12,8 +12,8 @@ from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from storage import store_utils
 from storage.chunked_file_store import ChunkedFileStore
 
-from sovrin_common.config_util import getConfig
-from sovrin_common.txn_util import getTxnOrderedFields
+from indy_common.config_util import getConfig
+from indy_common.txn_util import getTxnOrderedFields
 from stp_core.common.log import getlogger
 
 config = getConfig()
