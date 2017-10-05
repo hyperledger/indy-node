@@ -3,8 +3,8 @@ from multiprocessing import Process
 
 import sys
 
-from sovrin_common.config_util import getConfig
-from sovrin_node.utils.node_runner import run_node
+from indy_common.config_util import getConfig
+from indy_node.utils.node_runner import run_node
 
 config = getConfig()
 

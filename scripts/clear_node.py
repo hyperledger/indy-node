@@ -11,7 +11,7 @@ def pathList(*paths):
 
 
 TARGET_DIRS = pathList(
-    "~/.sovrin",
+    "~/.indy",
     "~/.plenum"
 )
 
@@ -24,9 +24,9 @@ PATHS_TO_CLEAR = (
 )
 
 WHITE_LIST = pathList(
-    "~/.sovrin/sovrin_config.py",
+    "~/.indy/indy_config.py",
     "~/.plenum/plenum_config.py",
-    "~/.sovrin/.*log"
+    "~/.indy/.*log"
 ).union(pathList(*{d + p for d in TARGET_DIRS for p in PATHS_TO_CLEAR}))
 
 
