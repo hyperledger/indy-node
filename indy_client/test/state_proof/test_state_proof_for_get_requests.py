@@ -1,20 +1,14 @@
-import pytest
-from common.serializers.serialization import domain_state_serializer
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
     ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION, ORIGIN
 from plenum.common.types import f
-from sovrin_client.test.state_proof.helper import check_valid_proof
-from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, ATTR_NAMES, REF, SIGNATURE_TYPE, CLAIM_DEF, \
-    REVOCATION, GET_CLAIM_DEF
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
     getRepliesFromClientInbox
 
+from indy_client.test.state_proof.helper import check_valid_proof
+from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, ATTR_NAMES, REF, SIGNATURE_TYPE, CLAIM_DEF, \
+    REVOCATION, GET_CLAIM_DEF
 # Fixtures, do not remove
 from indy_common.serialization import attrib_raw_data_serializer
-from indy_node.test.helper import addAttributeAndCheck
-from indy_client.client.wallet.attribute import Attribute, LedgerStore
-from indy_client.test.test_nym_attrib import \
-    addedRawAttribute, attributeName, attributeValue, attributeData
 
 
 def test_state_proof_returned_for_get_attr(looper,

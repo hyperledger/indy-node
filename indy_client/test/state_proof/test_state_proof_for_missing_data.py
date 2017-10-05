@@ -1,11 +1,12 @@
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, NAME, VERSION, ORIGIN
 from plenum.test.helper import waitForSufficientRepliesForRequests, getRepliesFromClientInbox
-from sovrin_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, REVOCATION, GET_CLAIM_DEF, REF, SIGNATURE_TYPE, \
+
+from indy_client.test.state_proof.helper import check_valid_proof
+from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE, \
     ATTR_NAMES
-from sovrin_client.test.state_proof.helper import check_valid_proof
+
 
 # fixtures, do not remove
-from sovrin_client.test.test_nym_attrib import attributeName
 
 
 def test_state_proof_returned_for_missing_attr(looper,
