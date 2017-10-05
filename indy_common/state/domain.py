@@ -136,7 +136,7 @@ def prepare_schema_for_state(txn):
 
 def prepare_get_schema_for_state(txn):
     origin = txn.get(f.IDENTIFIER.nm)
-    data = txn[DATA]
+    data = txn[DATA].copy()
     schema_name = data.pop(NAME)
     schema_version = data.pop(VERSION)
     path = make_state_path_for_schema(origin, schema_name, schema_version)

@@ -30,7 +30,7 @@ def test_state_proof_returned_for_missing_attr(looper,
     for reply in replies:
         result = reply['result']
         assert DATA not in result or result[DATA] is None
-        check_valid_proof(result)
+        check_valid_proof(reply, client)
 
 
 def test_state_proof_returned_for_missing_nym(looper,
@@ -60,7 +60,7 @@ def test_state_proof_returned_for_missing_nym(looper,
     for reply in replies:
         result = reply['result']
         assert DATA not in result or result[DATA] is None
-        check_valid_proof(result)
+        check_valid_proof(reply, client)
 
 
 def test_state_proof_returned_for_missing_schema(looper,
@@ -90,7 +90,7 @@ def test_state_proof_returned_for_missing_schema(looper,
     for reply in replies:
         result = reply['result']
         assert ATTR_NAMES not in result[DATA]
-        check_valid_proof(result)
+        check_valid_proof(reply, client)
 
 
 def test_state_proof_returned_for_missing_claim_def(looper,
@@ -116,4 +116,4 @@ def test_state_proof_returned_for_missing_claim_def(looper,
     for reply in replies:
         result = reply['result']
         assert DATA not in result or result[DATA] is None
-        check_valid_proof(result)
+        check_valid_proof(reply, client)

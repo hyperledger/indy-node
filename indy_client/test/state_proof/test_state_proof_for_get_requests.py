@@ -45,7 +45,7 @@ def test_state_proof_returned_for_get_attr(looper,
         data = attrib_raw_data_serializer.deserialize(result[DATA])
         assert data == expected_data
         assert result[TXN_TIME]
-        check_valid_proof(result)
+        check_valid_proof(reply, client)
 
 
 def test_state_proof_returned_for_get_nym(looper,
@@ -88,7 +88,7 @@ def test_state_proof_returned_for_get_nym(looper,
         assert VERKEY in data
         assert f.IDENTIFIER.nm in data
         assert result[TXN_TIME]
-        check_valid_proof(result)
+        check_valid_proof(reply, client)
 
 
 def test_state_proof_returned_for_get_schema(looper,
@@ -140,7 +140,7 @@ def test_state_proof_returned_for_get_schema(looper,
         assert NAME in data
         assert VERSION in data
         assert result[TXN_TIME]
-        check_valid_proof(result)
+        check_valid_proof(reply, client)
 
 
 def test_state_proof_returned_for_get_claim_def(looper,
@@ -183,4 +183,4 @@ def test_state_proof_returned_for_get_claim_def(looper,
         assert data
         assert data == expected_data
         assert result[TXN_TIME]
-        check_valid_proof(result)
+        check_valid_proof(reply, client)
