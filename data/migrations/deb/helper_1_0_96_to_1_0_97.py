@@ -219,7 +219,6 @@ def migrate_all():
         migrate_all_states(node_data_dir)
 
     migrate_genesis_txn(base_dir)
-    subprocess.run(['chown', '-R', 'sovrin:sovrin', '/home/sovrin/.sovrin'])
 
 
 migrate_all()
