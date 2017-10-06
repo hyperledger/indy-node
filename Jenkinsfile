@@ -84,4 +84,16 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 
 options = new TestAndPublishOptions()
 options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
+options.setPublishableBranches(['file-struct']) //REMOVE IT BEFORE MERGE
+options.setPostfixes([master: 'file-struct']) //REMOVE IT BEFORE MERGE
+options.skip([
+    StagesEnum.IS_TESTED,
+    StagesEnum.STATIC_CODE_VALIDATION,
+    StagesEnum.TEST,
+    StagesEnum.AUTOMERGE,
+    StagesEnum.GET_RELEASE_VERSION,
+    StagesEnum.PYPI_RELEASE,
+    StagesEnum.GITHUB_RELEASE
+])
+options.setReleaseVersion("0.0.8")
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])

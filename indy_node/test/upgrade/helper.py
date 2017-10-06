@@ -72,8 +72,8 @@ def bumpedVersion():
 
 
 class NodeControlToolExecutor:
-    def __init__(self, transform=lambda tool: None):
-        self.tool = NodeControlTool()
+    def __init__(self, backup_dir, backup_target, transform=lambda tool: None):
+        self.tool = NodeControlTool(backup_dir=backup_dir, backup_target=backup_target)
         transform(self.tool)
         self.p = multiprocessing.Process(target=self.tool.start)
         self.p.start()

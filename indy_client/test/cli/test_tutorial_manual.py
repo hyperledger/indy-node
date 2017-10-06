@@ -20,7 +20,7 @@ from indy_client.test.agent.helper import buildFaberWallet, buildAcmeWallet, \
 from indy_client.test.agent.thrift import create_thrift, bootstrap_thrift, THRIFT_ID, THRIFT_VERKEY
 from indy_client.test.cli.conftest import faberMap, acmeMap, \
     thriftMap
-from indy_client.test.cli.helper import newCLI
+from indy_client.test.cli.helper import newCLI, connect_and_check_output
 from indy_client.test.cli.test_tutorial import syncInvite, accept_request, \
     aliceRequestedTranscriptClaim, jobApplicationProofSent, \
     jobCertClaimRequested, bankBasicProofSent, bankKYCProofSent, \
@@ -47,13 +47,13 @@ def newGuyCLI(looper, tdir, tconf):
 @pytest.mark.skip("SOV-569. Not yet implemented")
 def testGettingStartedTutorialAgainstSandbox(newGuyCLI, be, do):
     be(newGuyCLI)
-    do('connect test', within=3, expect="Connected to test")
+    connect_and_check_output(newGuyCLI.txn_dir)
     # TODO finish the entire set of steps
 
 
 @pytest.mark.skipif('sys.platform == "win32"', reason='SOV-384')
 def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
-               connectedToTest, nymAddedOut, attrAddedOut,
+               nymAddedOut, attrAddedOut,
                aliceCLI, newKeyringOut, aliceMap,
                tdir, syncConnectionOutWithEndpoint, jobCertificateClaimMap,
                syncedInviteAcceptedOutWithoutClaims, transcriptClaimMap,
@@ -69,7 +69,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     mapper = {'seed': stewardSeed.decode()}
     do('new key with seed {seed}', expect=['Key created in wallet Steward'],
        mapper=mapper)
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, philCli.txn_dir)
 
     # Add nym and endpoint for Faber, Acme and Thrift
     agentIpAddress = "127.0.0.1"
@@ -162,7 +162,6 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
             userCLI,
             userMap,
             be,
-            connectedToTest,
             do,
             fMap,
             aMap,
@@ -185,7 +184,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
 
         be(userCLI)
         setPromptAndKeyring(do, name, newKeyringOut, userMap)
-        do('connect test', within=3, expect=connectedToTest)
+        connect_and_check_output(do, philCli.txn_dir)
         # Accept faber
         do('load sample/faber-request.indy')
         syncInvite(be, do, userCLI, syncConnectionOutWithEndpoint, fMap)
@@ -257,7 +256,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
             assert faberIssuerPublicKey == thriftFaberIssuerPublicKey
         assert passed
 
-    executeGstFlow("Alice", aliceCLI, aliceMap, be, connectedToTest, do, fMap,
+    executeGstFlow("Alice", aliceCLI, aliceMap, be, do, fMap,
                    aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
                    reqClaimOut1, syncConnectionOutWithEndpoint,
                    syncedInviteAcceptedOutWithoutClaims, tMap,
@@ -268,7 +267,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
     # Same flow is executed by different cli
     # What is the purpose of this test? This should not work because its a different person
     # with different data or it is the same person but from a different state
-    # executeGstFlow("Susan", susanCLI, susanMap, be, connectedToTest, do, fMap,
+    # executeGstFlow("Susan", susanCLI, susanMap, be, do, fMap,
     #                aMap, jobCertificateClaimMap, newKeyringOut, reqClaimOut,
     #                reqClaimOut1, syncConnectionOutWithEndpoint,
     #                syncedInviteAcceptedOutWithoutClaims, tMap,

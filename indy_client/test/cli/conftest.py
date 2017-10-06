@@ -48,6 +48,7 @@ from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
     faberWallet, acmeWallet, thriftWallet, agentIpAddress, \
     faberAgentPort, acmeAgentPort, thriftAgentPort, faberAgent, acmeAgent, \
     thriftAgent, faberBootstrap, acmeBootstrap
+from indy_client.test.cli.helper import connect_and_check_output
 
 
 config = getConfig()
@@ -213,11 +214,6 @@ def fileNotExists():
 
 
 @pytest.fixture(scope="module")
-def connectedToTest():
-    return ["Connected to test"]
-
-
-@pytest.fixture(scope="module")
 def canNotSyncMsg():
     return ["Cannot sync because not connected"]
 
@@ -271,7 +267,7 @@ def nextCommandsToTryUsageLine():
 
 @pytest.fixture(scope="module")
 def connectUsage(usageLine):
-    return usageLine + ["    connect <test|live>"]
+    return usageLine + ["    connect"]
 
 
 @pytest.fixture(scope="module")
@@ -949,15 +945,12 @@ class TestMultiNode:
 @pytest.yield_fixture(scope="module")
 def multiPoolNodesCreated(request, tconf, looper, tdir,
                           cliTempLogger, namesOfPools=("pool1", "pool2")):
-    oldENVS = tconf.ENVS
-    oldPoolTxnFile = tconf.poolTransactionsFile
-    oldDomainTxnFile = tconf.domainTransactionsFile
 
     multiNodes = []
     for poolName in namesOfPools:
         newPoolTxnNodeNames = [poolName + n for n
                                in ("Alpha", "Beta", "Gamma", "Delta")]
-        newTdir = os.path.join(tdir, poolName + "basedir")
+        newTdir = os.path.join(tdir, poolName)
         newPoolTxnData = getPoolTxnData(poolName, newPoolTxnNodeNames)
         newTdirWithPoolTxns = tdirWithPoolTxns(newPoolTxnData, newTdir, tconf)
         newTdirWithDomainTxns = tdirWithDomainTxns(
@@ -976,12 +969,6 @@ def multiPoolNodesCreated(request, tconf, looper, tdir,
         multiNodes.append(testPoolNode)
         ensureNodesCreated(poolCli, newPoolTxnNodeNames)
 
-    def reset():
-        tconf.ENVS = oldENVS
-        tconf.poolTransactionsFile = oldPoolTxnFile
-        tconf.domainTransactionsFile = oldDomainTxnFile
-
-    request.addfinalizer(reset)
     return multiNodes
 
 
@@ -1203,57 +1190,24 @@ def savedKeyringRestored():
 def cliForMultiNodePools(request, multiPoolNodesCreated, tdir,
                          tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
                          cliTempLogger):
-    oldENVS = tconf.ENVS
-    oldPoolTxnFile = tconf.poolTransactionsFile
-    oldDomainTxnFile = tconf.domainTransactionsFile
-
     yield from getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
                              cliTempLogger, multiPoolNodesCreated)("susan")
-
-    def reset():
-        tconf.ENVS = oldENVS
-        tconf.poolTransactionsFile = oldPoolTxnFile
-        tconf.domainTransactionsFile = oldDomainTxnFile
-
-    request.addfinalizer(reset)
 
 
 @pytest.yield_fixture(scope="module")
 def aliceMultiNodePools(request, multiPoolNodesCreated, tdir,
                         tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
                         cliTempLogger):
-    oldENVS = tconf.ENVS
-    oldPoolTxnFile = tconf.poolTransactionsFile
-    oldDomainTxnFile = tconf.domainTransactionsFile
-
     yield from getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
                              cliTempLogger, multiPoolNodesCreated)("alice")
-
-    def reset():
-        tconf.ENVS = oldENVS
-        tconf.poolTransactionsFile = oldPoolTxnFile
-        tconf.domainTransactionsFile = oldDomainTxnFile
-
-    request.addfinalizer(reset)
 
 
 @pytest.yield_fixture(scope="module")
 def earlMultiNodePools(request, multiPoolNodesCreated, tdir,
                        tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
                        cliTempLogger):
-    oldENVS = tconf.ENVS
-    oldPoolTxnFile = tconf.poolTransactionsFile
-    oldDomainTxnFile = tconf.domainTransactionsFile
-
     yield from getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
                              cliTempLogger, multiPoolNodesCreated)("earl")
-
-    def reset():
-        tconf.ENVS = oldENVS
-        tconf.poolTransactionsFile = oldPoolTxnFile
-        tconf.domainTransactionsFile = oldDomainTxnFile
-
-    request.addfinalizer(reset)
 
 
 @pytest.yield_fixture(scope="module")
@@ -1271,8 +1225,7 @@ def trusteeMap(trusteeWallet):
 
 
 @pytest.fixture(scope="module")
-def trusteeCli(be, do, trusteeMap, poolNodesStarted,
-               connectedToTest, nymAddedOut, trusteeCLI):
+def trusteeCli(be, do, trusteeMap, poolNodesStarted, nymAddedOut, trusteeCLI):
     be(trusteeCLI)
     do('new key with seed {trusteeSeed}', expect=[
         'DID for key is {trusteeIdr}',
@@ -1280,8 +1233,7 @@ def trusteeCli(be, do, trusteeMap, poolNodesStarted,
        mapper=trusteeMap)
 
     if not trusteeCLI._isConnectedToAnyEnv():
-        do('connect test', within=3,
-           expect=connectedToTest)
+        connect_and_check_output(do, trusteeCLI.txn_dir)
 
     return trusteeCLI
 
@@ -1349,19 +1301,19 @@ def philCli(be, do, philCLI, trusteeCli, poolTxnData):
 
 
 @pytest.fixture(scope="module")
-def faberAddedByPhil(be, do, poolNodesStarted, philCli, connectedToTest,
+def faberAddedByPhil(be, do, poolNodesStarted, philCli,
                      nymAddedOut, faberMap):
     return addAgent(be, do, philCli, faberMap)
 
 
 @pytest.fixture(scope="module")
-def acmeAddedByPhil(be, do, poolNodesStarted, philCli, connectedToTest,
+def acmeAddedByPhil(be, do, poolNodesStarted, philCli,
                     nymAddedOut, acmeMap):
     return addAgent(be, do, philCli, acmeMap)
 
 
 @pytest.fixture(scope="module")
-def thriftAddedByPhil(be, do, poolNodesStarted, philCli, connectedToTest,
+def thriftAddedByPhil(be, do, poolNodesStarted, philCli,
                       nymAddedOut, thriftMap):
     return addAgent(be, do, philCli, thriftMap)
 
@@ -1406,12 +1358,11 @@ def cliWithNewStewardName(CliBuilder):
 
 
 @pytest.fixture(scope='module')
-def newStewardCli(be, do, poolNodesStarted, trusteeCli, connectedToTest,
+def newStewardCli(be, do, poolNodesStarted, trusteeCli,
                   cliWithNewStewardName, newStewardVals):
     be(trusteeCli)
     if not trusteeCli._isConnectedToAnyEnv():
-        do('connect test', within=3,
-           expect=connectedToTest)
+        connect_and_check_output(do, trusteeCli.txn_dir)
 
     do('send NYM dest={{newStewardIdr}} role={role} verkey={{newStewardVerkey}}'
        .format(role=Roles.STEWARD.name),
@@ -1427,20 +1378,18 @@ def newStewardCli(be, do, poolNodesStarted, trusteeCli, connectedToTest,
        mapper=newStewardVals)
 
     if not cliWithNewStewardName._isConnectedToAnyEnv():
-        do('connect test', within=3,
-           expect=connectedToTest)
+        connect_and_check_output(do, cliWithNewStewardName.txn_dir)
 
     return cliWithNewStewardName
 
 
 @pytest.fixture(scope="module")
 def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
-                 connectedToTest, newNodeVals):
+                 newNodeVals):
     be(philCli)
 
     if not philCli._isConnectedToAnyEnv():
-        do('connect test', within=3,
-           expect=connectedToTest)
+        connect_and_check_output(do, philCli.txn_dir)
 
     be(newStewardCli)
     doSendNodeCmd(do, newNodeVals)

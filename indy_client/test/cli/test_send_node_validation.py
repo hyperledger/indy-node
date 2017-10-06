@@ -9,8 +9,7 @@ from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import cryptonymToHex, randomString
 from indy_client.test.cli.conftest import newStewardCli as getNewStewardCli, \
     newStewardVals as getNewStewardVals, newNodeVals as getNewNodeVals
-from indy_client.test.cli.constants import CONNECTED_TO_TEST, \
-    NODE_REQUEST_COMPLETED, NODE_REQUEST_FAILED, INVALID_SYNTAX
+from indy_client.test.cli.constants import NODE_REQUEST_COMPLETED, NODE_REQUEST_FAILED, INVALID_SYNTAX
 from indy_client.test.cli.helper import addAgent
 
 NYM_ADDED = "Nym {remote} added"
@@ -35,8 +34,7 @@ def newNodeVals():
 def newStewardCli(be, do, poolNodesStarted, trusteeCli,
                   cliWithRandomName, newStewardVals):
     return getNewStewardCli(be, do, poolNodesStarted, trusteeCli,
-                            CONNECTED_TO_TEST, cliWithRandomName,
-                            newStewardVals)
+                            cliWithRandomName, newStewardVals)
 
 
 def ensurePoolIsOperable(be, do, cli):
