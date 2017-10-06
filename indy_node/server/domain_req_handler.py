@@ -425,7 +425,7 @@ class DomainReqHandler(PHandler):
             TXN_TIME: update_time
         }}
         if request.protocolVersion and \
-                        request.protocolVersion >= PlenumProtocolVersion.STATE_PROOF_SUPPORT.value:
+                request.protocolVersion >= PlenumProtocolVersion.STATE_PROOF_SUPPORT.value:
             result[STATE_PROOF] = proof
 
         # Do not inline please, it makes debugging easier
