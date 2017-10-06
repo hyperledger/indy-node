@@ -26,7 +26,7 @@ if len(sys.argv) < 2:
 NODE_OR_CLIENT_NAME = sys.argv.pop(1)
 CURRENT_LOGGED_IN_USER = getLoggedInUser()
 
-path = "/home/{}/.sovrin/{}/role/local/role.json".\
+path = "/home/{}/.indy/{}/role/local/role.json".\
     format(CURRENT_LOGGED_IN_USER, NODE_OR_CLIENT_NAME)
 
 

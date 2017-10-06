@@ -2,6 +2,7 @@
 FROM ubuntu:16.04
 
 ARG uid=1000
+ARG user=indy
 
 # Install environment
 RUN apt-get update -y
@@ -20,19 +21,22 @@ RUN pip3 install -U \
 	virtualenv
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
 RUN echo "deb https://repo.evernym.com/deb xenial master" >> /etc/apt/sources.list
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+RUN echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list
 RUN apt-get update -y
 RUN apt-get install -y \ 
-	python3-charm-crypto
-RUN useradd -ms /bin/bash -u $uid sovrin
-USER sovrin
-RUN virtualenv -p python3.5 /home/sovrin/test
-RUN cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/sovrin/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
-RUN cp -r /usr/local/lib/python3.5/dist-packages/charm /home/sovrin/test/lib/python3.5/site-packages/charm
-RUN mkdir /home/sovrin/.sovrin
+	python3-charm-crypto \
+	libindy-crypto=0.1.6
+RUN useradd -ms /bin/bash -u $uid $user
+USER $user
+RUN virtualenv -p python3.5 /home/$user/test
+RUN cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info /home/$user/test/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
+RUN cp -r /usr/local/lib/python3.5/dist-packages/charm /home/$user/test/lib/python3.5/site-packages/charm
+RUN mkdir /home/$user/.$user
 USER root
-RUN ln -sf /home/sovrin/test/bin/python /usr/local/bin/python
-RUN ln -sf /home/sovrin/test/bin/pip /usr/local/bin/pip
-USER sovrin
+RUN ln -sf /home/$user/test/bin/python /usr/local/bin/python
+RUN ln -sf /home/$user/test/bin/pip /usr/local/bin/pip
+USER $user
 # TODO: Automate dependency collection
 RUN pip install jsonpickle \
 	ujson \
@@ -56,5 +60,5 @@ RUN pip install jsonpickle \
 	psutil \
 	intervaltree \
 	pytest-xdist
-ENV PYTHONPATH $PYTHONPATH:/home/sovrin/test/bin
-WORKDIR /home/sovrin
+ENV PYTHONPATH $PYTHONPATH:/home/$user/test/bin
+WORKDIR /home/$user
