@@ -2,7 +2,7 @@
 
 ## A Developer Guide from the Indy Foundation
 
-![image alt text](banner.png)
+![logo](collateral/logos/indy-logo.png)
 
 * [Getting Started with Indy](#getting-started-with-indy)
   * [What Indy Is, and Why it Matters](#what-indy-is-and-why-it-matters)
