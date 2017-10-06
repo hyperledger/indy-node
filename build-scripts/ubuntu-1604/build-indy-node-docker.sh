@@ -7,7 +7,7 @@ IMAGE_NAME="${PKG_NAME}-build-u1604"
 OUTPUT_VOLUME_NAME="$3"
 
 if [[ (-z "${PKG_SOURCE_PATH}") || (-z "${VERSION}") ]]; then
-    echo "Usage: $0 <path-to-package-sources> <version>"
+    echo "Usage: $0 <path-to-package-sources> <version> <volume>"
     exit 1;
 fi
 
