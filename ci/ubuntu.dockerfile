@@ -5,8 +5,7 @@ ARG uid=1000
 ARG user=indy
 
 # Install environment
-RUN apt-get update -y
-RUN apt-get install -y \ 
+RUN apt-get update -y && apt-get install -y \
 	git \
 	wget \
 	python3.5 \
@@ -23,8 +22,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
 RUN echo "deb https://repo.evernym.com/deb xenial master" >> /etc/apt/sources.list
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
 RUN echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list
-RUN apt-get update -y
-RUN apt-get install -y \ 
+RUN apt-get update -y && apt-get install -y \
 	python3-charm-crypto \
 	libindy-crypto=0.1.6
 RUN useradd -ms /bin/bash -u $uid $user
