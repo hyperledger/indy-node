@@ -53,24 +53,6 @@ if not os.path.exists(CONFIG_FILE):
         f.write(msg)
 
 
-def post_install():
-    subprocess.run(['python post-setup.py'], shell=True)
-
-
-class EnhancedInstall(install):
-    def run(self):
-        pass
-        # install.run(self)
-        # post_install()
-
-
-class EnhancedInstallDev(develop):
-    def run(self):
-        pass
-        # develop.run(self)
-        # post_install()
-
-
 setup(
     name='indy-node-dev',
     version=__version__,
@@ -89,7 +71,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==0.0.7',
+    install_requires=['indy-plenum-dev==0.0.8',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator'],
@@ -120,9 +102,5 @@ setup(
              'scripts/read_ledger',
              'scripts/test_some_write_keys_others_read_them',
              'scripts/test_users_write_and_read_own_keys',
-             'scripts/validator-info'],
-    cmdclass={
-        'install': EnhancedInstall,
-        'develop': EnhancedInstallDev
-    }
+             'scripts/validator-info']
 )
