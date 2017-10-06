@@ -1,7 +1,7 @@
 #!/bin/bash -xe
 
 INPUT_PATH=$1
-VERSION="1.1.37"
+VERSION=$2
 OUTPUT_PATH=${3:-.}
 
 PACKAGE_NAME=indy-node
