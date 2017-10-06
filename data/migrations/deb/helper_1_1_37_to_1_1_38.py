@@ -44,11 +44,7 @@ def __migrate_ledger(data_directory,
                         fileName=new_ledger_file_backup)
 
     # add all txns into the new ledger
-    i = 1
     for _, txn in old_ledger.getAllTxn():
-        if i > 15:
-            break
-        i = i + 1
         if txn[TXN_TYPE] == SCHEMA:
             if DATA in txn:
                 txn[DATA] = json.loads(txn[DATA])
@@ -78,7 +74,7 @@ def __migrate_ledger(data_directory,
 
 
 def __prepare_old_txn(txn):
-    return {k: v for k, v in txn.items() if v != None}
+    return {k: v for k, v in txn.items() if v is not None}
 
 
 def __open_new_ledger(data_directory, new_ledger_file, hash_store_name):
@@ -140,6 +136,7 @@ def __get_domain_ledger_file_names():
         old_name = config.domainTransactionsFile.replace('domain_', '')
         new_name = 'domain_' + config.domainTransactionsFile
     return old_name, new_name
+
 
 def migrate_domain_ledger_for_node(node_data_directory):
     old_name, new_name = __get_domain_ledger_file_names()
