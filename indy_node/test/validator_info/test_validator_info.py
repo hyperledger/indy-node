@@ -6,7 +6,7 @@ from stp_core.loop.eventually import eventually
 
 from plenum.common.constants import TARGET_NYM, RAW, NAME, VERSION, ORIGIN
 from plenum.test import waits
-from plenum.test.helper import checkSufficientRepliesReceived
+from plenum.test.helper import check_sufficient_replies_received
 
 
 # noinspection PyUnresolvedReferences
@@ -172,8 +172,8 @@ def read_txn_and_get_latest_info(txnPoolNodesLooper, patched_dump_info_period,
         timeout = waits.expectedTransactionExecutionTime(
             len(client.inBox))
         txnPoolNodesLooper.run(
-            eventually(checkSufficientRepliesReceived, client.inBox,
-                       reqs[0].reqId, 1,
+            eventually(check_sufficient_replies_received,
+                       client, reqs[0].identifier, reqs[0].reqId,
                        retryWait=1, timeout=timeout))
         txnPoolNodesLooper.runFor(patched_dump_info_period)
         return load_info(info_path)
