@@ -13,6 +13,7 @@ from plenum.common.exceptions import InvalidClientRequest, \
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     VERKEY, DATA, NAME, VERSION, ORIGIN, \
     STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME
+from plenum.common.plenum_protocol_version import PlenumProtocolVersion
 from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from indy_common.auth import Authoriser
@@ -427,8 +428,11 @@ class DomainReqHandler(PHandler):
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
             f.SEQ_NO.nm: last_seq_no,
-            TXN_TIME: update_time,
-            STATE_PROOF: proof
+            TXN_TIME: update_time
         }}
+        if request.protocolVersion and \
+                request.protocolVersion >= PlenumProtocolVersion.STATE_PROOF_SUPPORT.value:
+            result[STATE_PROOF] = proof
+
         # Do not inline please, it makes debugging easier
         return result
