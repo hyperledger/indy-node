@@ -1,6 +1,6 @@
 # Getting Started with Indy
 
-## A Developer Guide from the Indy Foundation
+## A Developer Guide for an Implementation of the Indy Code Base
 
 ![image alt text](banner.png)
 
@@ -21,7 +21,7 @@
 
 ## What Indy is, and Why it Matters
 
-Indy is a software ecosystem for private, secure, and powerful identity. It puts people — not the organizations that traditionally centralize identity — in charge of decisions about their own privacy and disclosure. This enables all kinds of rich innovation: connection contracts, revocation, novel payment workflows, asset and document management features, creative forms of escrow, curated reputation, integrations with other cool technologies, and so on.
+The Indy code base (Indy) is a software ecosystem for private, secure, and powerful identity. Once it is implemented, it puts people — not the organizations that traditionally centralize identity — in charge of decisions about their own privacy and disclosure. This enables all kinds of rich innovation: connection contracts, revocation, novel payment workflows, asset and document management features, creative forms of escrow, curated reputation, integrations with other cool technologies, and so on.
 
 Indy uses open-source, distributed ledger technology. These ledgers are a form of database that is provided cooperatively by a pool of participants, instead of by a giant database with a central admin. Data lives redundantly in many places, and it accrues in transactions orchestrated by many machines. Strong, industry-standard cryptography protects it. Best practices in key management and cybersecurity pervade its design. The result is a reliable, public source of truth under no single entity’s control, robust to system failure, resilient to hacking, and highly immune to subversion by hostile entities.
 
@@ -41,20 +41,20 @@ Ready?
 
 As a graduate of Faber College, Alice receives an alumni newsletter where she learns that her alma mater is offering digital transcripts. She logs in to the college alumni website and requests her transcript by clicking **Get Transcript**.  (Other ways to initiate this request might include scanning a QR code, downloading a transcript package from a published URL, etc.)
 
-Faber College has done some prep work to offer this service to Alice. It has the role of **trust anchor** on Indy. A trust anchor is a person or organization that Indy already knows about, that is able to help bootstrap others. (It is *not* the same as what cybersecurity experts call a "trusted third party"; think of it more like a facilitator). Becoming a trust anchor is beyond the scope of this guide; for now, we’ll just assume that Faber College has jumped through some hoops and has the status.
+Faber College has done some prep work to offer this service to Alice. It has the role of **trust anchor** on the ledger. (The ledger is created when the Indy code base is implemented.) A trust anchor is a person or organization that the ledger already knows about, that is able to help bootstrap others. (It is *not* the same as what cybersecurity experts call a "trusted third party"; think of it more like a facilitator). Becoming a trust anchor is beyond the scope of this guide; for now, we’ll just assume that Faber College has jumped through some hoops and has the status.
 
-Alice doesn’t realize it yet, but in order to use this digital transcript she will need a new type of identity -- not the traditional identity that Faber College has built for her in its on-campus database, but a new and portable one that belongs to her, independent of all past and future relationships, that nobody can revoke or co-opt or correlate without her permission. This is a **_self-sovereign identity_** and it is the core feature for which Indy was named.
+Alice doesn’t realize it yet, but in order to use this digital transcript she will need a new type of identity -- not the traditional identity that Faber College has built for her in its on-campus database, but a new and portable one that belongs to her, independent of all past and future relationships, that nobody can revoke or co-opt or correlate without her permission. This is a **_self-sovereign identity_** and it is the core feature of the ledger.
 
-In normal contexts, managing a self - sovereign identity will require a tool such as a desktop or mobile application. It might be a standalone app, or it might leverage a third party service provider that Indy calls an **agency**. The Indy Foundation publishes reference versions of such tools. Faber College will have studied these requirements and will recommend a **_Indy app_** to Alice if she doesn’t already have one; this app will install as part of the workflow from the **Get Transcript** button.
+In normal contexts, managing a self-sovereign identity will require a tool such as a desktop or mobile application. It might be a standalone app, or it might leverage a third party service provider that the ledger calls an **agency**. For example, leaders in this technology such as the Sovrin Foundation and companies like Evernym, publish reference versions of such tools. Faber College will have studied these requirements and will recommend a **_Indy app_** to Alice if she doesn’t already have one; this app will install as part of the workflow from the **Get Transcript** button.
 
-When Alice clicks **Get Transcript**, she will download a file that holds a Indy **connection request**. This connection request file, having a .indy extension and associated with her Indy app, will allow her to establish a secure channel of communication with another party in the Indy ecosystem -- Faber College.
+When Alice clicks **Get Transcript**, she will download a file that holds an Indy **connection request**. This connection request file, having a .indy extension and associated with her Indy app, will allow her to establish a secure channel of communication with another party in the ledger ecosystem -- Faber College.
 
 So when Alice clicks **Get Transcript**, she will normally end up installing an app (if needed), launching it, and then being asked by the app whether she wants to accept a request to connect with Faber.
 
-For this guide, however, we’ll be using a command - line interface instead of an app, so we can see what happens behind the scenes. We will pretend to be a particularly curious and technically adventurous Alice…
+For this guide, however, we’ll be using a command-line interface instead of an app, so we can see what happens behind the scenes. We will pretend to be a particularly curious and technically adventurous Alice…
 
 ## Install Indy
-You can install a Indy test network in one of several ways:
+You can install a test network in one of several ways:
 
  - **Automated VM Creation** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/master/vagrant/training/vb-multi-vm/TestSovrinClusterSetup.md) using VirtualBox and Vagrant.
 
@@ -62,10 +62,10 @@ You can install a Indy test network in one of several ways:
 
  - **Also coming soon:** Create virtual machines in AWS.
 
-To proceed past this point, you should have a test Indy Validator cluster running, either in separate nodes (VMs), or in simulation. You should also have Agent nodes (or a simulation) running with the "Faber College", "Acme Corp", and "Thrift Bank" Agents.  You should also have a CLI client which gives you a command - line interface(CLI) to Indy. We are going to use that CLI to explore what Indy can do. (Indy also has a programmatic API, but it is not yet fully formalized, and this version of the guide doesn’t document it.
+To proceed past this point, you should have a test Indy Validator cluster running, either in separate nodes (VMs), or in simulation. You should also have Agent nodes (or a simulation) running with the "Faber College", "Acme Corp", and "Thrift Bank" Agents.  You should also have a CLI client which gives you a command-line interface(CLI) to Indy. We are going to use that CLI to explore what Indy can do. (Indy also has a programmatic API, but it is not yet fully formalized, and this version of the guide doesn’t document it.)
 
 ## Using the Indy CLI
-After completing the preceding, you should have a terminal with a Indy client CLI prompt:
+After completing the preceding, you should have a terminal with an Indy client CLI prompt:
 
 ```
 indy>
@@ -99,7 +99,7 @@ Alice might also try the 'help' command to see a list of the other commands that
 
 ## Evaluate a Connection Request
 
-To make this guide more convenient, the indy CLI package installs a sample Faber College invitation request in a file at /<CLI_ROOT>/sample/faber-request.indy. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Indy app would be doing a lot of these steps automatically.)
+To make this guide more convenient, the Indy CLI package installs a sample Faber College invitation request in a file at /<CLI_ROOT>/sample/faber-request.indy. We’re going to use this file as if it had been downloaded from Faber. (In normal usage, Alice’s Indy app would be doing a lot of these steps automatically.)
 
 ```
 ALICE> show sample/faber-request.indy
@@ -116,7 +116,7 @@ Try Next:
     load sample/faber-request.indy
 ```
 
-Alice sees a bunch of data that looks interesting but mysterious. She wants Indy to tell her if the connection request file is well formed and has something useful in it, so she uses the 'load' command:
+Alice sees a bunch of data that looks interesting but mysterious. She wants to know if the connection request file is well formed and has something useful in it, so she uses the 'load' command:
 
 ```
 ALICE> load sample/faber-request.indy
@@ -170,14 +170,14 @@ This is a friendly name for the connection that Alice has been invited to accept
 DID: not yet assigned
 ```
 
-**DID** (**distributed identifier**) is an opaque, unique sequences of bits, (like UUIDs or GUIDs) that get generated when a user tries to accept the connection request. - That DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
- Each connection request on Indy establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within Indy.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
+**DID** (**distributed identifier**) is an opaque, unique sequences of bits, (like UUIDs or GUIDs) that get generated when a user tries to accept the connection request. That DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
+ Each connection request on Indy establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within the Indy code base.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
 
 ```
 Trust anchor: Faber College(not yet written to Indy)
 ```
 
-This gives Alice a friendly name for the entity that will bootstrap the new pairwise relationship onto the Indy ecosystem. **Trust anchors** provide a way for DIDs to be added to Indy. They are generally organizations but can be persons as well. Faber College is a trust anchor, and if its connection request is accepted, will write Alice’s DID to Indy.
+This gives Alice a friendly name for the entity that will bootstrap the new pairwise relationship onto the ledger. **Trust anchors** provide a way for DIDs to be added to to the ledger. They are generally organizations but can be persons as well. Faber College is a trust anchor, and if its connection request is accepted, will write Alice’s DID to the ledger.
 
 It is important to understand that this DID for Alice is not, in and of itself, the same thing as Alice’s self-sovereign identity. Rather, Alice’s identity will -- for her -- be the sum total of **_all_** of the pairwise relationships she has, and **_all_** the attributes knowable about those manifestations of her identity, across the full network.
 
@@ -187,27 +187,27 @@ If Alice accepts this connection request, she will have a self-sovereign identit
 Verification key: <empty>
 ```
 
-Alice’s **verification key** allows Indy and Faber College to trust, in cryptographic operations, that interactions with Alice are authentically bound to her as sender or receiver. It is an [ asymmetric public key](https://en.wikipedia.org/wiki/Public-key_cryptography), in cryptographic terms, and the Indy CLI generated this value randomly when it loaded the connection request.
+Alice’s **verification key** allows the ledger, the network, and Faber College to trust, in cryptographic operations, that interactions with Alice are authentically bound to her as sender or receiver. It is an [ asymmetric public key](https://en.wikipedia.org/wiki/Public-key_cryptography), in cryptographic terms, and the Indy CLI generated this value randomly when it loaded the connection request.
 
-The verification key is a 32 byte Ed25519 verification key. Ed25519 is a particular [elliptic curve](https://en.wikipedia.org/wiki/Elliptic_curve_cryptography), and is the default signature scheme for Indy.
+The verification key is a 32 byte Ed25519 verification key. Ed25519 is a particular [elliptic curve](https://en.wikipedia.org/wiki/Elliptic_curve_cryptography), and is the default signature scheme for the Indy code base.
 
 The verification key has a subtle relationship with the DID value a couple lines above it in the CLI output.
 
-There are three options possible for verification key associated with a DID:
+There are three options possible for a verification key associated with a DID:
 - **Empty.** There is no verkey (verification key) associated with a DID, and the DID is a **NCID** (non-cryptographic identifier).
-In this case, the creator of the Indy identity record (the trust anchor) controls the DID, and no independent proof-of-existence is possible until either an Abbreviated or Full verkey is created.
+In this case, the creator of the identity record (the trust anchor) controls the DID, and no independent proof-of-existence is possible until either an Abbreviated or Full verkey is created.
 - **Abbreviated.** In this case, there is a verkey starting with a tilde '~' followed by 22 or 23 characters. The tilde indicates that the DID itself represents the first 16 bytes of the verkey and the string following the tilde represents the second 16 bytes of the verkey, both using base58Check encoding.
 - **Full.** In this case, there is a full 44 character verkey, representing a base58Check encoding of all 32 bytes of a Ed25519 verification key.
 
 In this guide, an Abbreviated key will be created and used by Alice (you'll notice the `~` prefix for the verification key later in the guide).
 
-The key that Alice uses to interact with Faber can change if she revokes or rotates it, so accepting this connection request and activating this connection doesn’t lock Alice into permanent use of this key. [Key management events](https://en.wikipedia.org/wiki/Key_management) are discoverable in the Indy ledger by parties such as Faber College; we’ll touch on that later in the guide.
+The key that Alice uses to interact with Faber can change if she revokes or rotates it, so accepting this connection request and activating this connection doesn’t lock Alice into permanent use of this key. [Key management events](https://en.wikipedia.org/wiki/Key_management) are discoverable in the ledger by parties such as Faber College; we’ll touch on that later in the guide.
 
 ```
 Signing key: < hidden >
 ```
 
-A different **signing key** is used by Alice to interact with each party on Indy (Faber College in this case). A signing key is an asymmetric private key, in cryptographic terms, and the Indy CLI also generated this value when it loaded the connection request. Alice will sign her messages to Faber College with this key, but she will never transmit the signing key anywhere. Because she signs with this key, Faber College can use the associated verification key and know it’s really dealing with Alice.
+A different **signing key** is used by Alice to interact with each party on the ledger (Faber College in this case). A signing key is an asymmetric private key, in cryptographic terms, and the Indy CLI also generated this value when it loaded the connection request. Alice will sign her messages to Faber College with this key, but she will never transmit the signing key anywhere. Because she signs with this key, Faber College can use the associated verification key and know it’s really dealing with Alice.
 
 It’s important that _this signing key is kept secret,_ as someone with this key can impersonate Alice. If this key is ever compromised, Alice can replace it with a new one using several methods not covered here.
 
@@ -215,15 +215,15 @@ It’s important that _this signing key is kept secret,_ as someone with this ke
 Remote: FuN98eH2eZybECWkofW6A9BKJxxnTatBCopfUiNxo6ZB
 ```
 
-**Remote** is the unique DID Alice uses to reference Faber College. Faber College provided this value in the connection request. Alice can use it to look up Faber College’s verification key in the Indy Ledger to ensure interactions with Faber College are authentic.
+**Remote** is the unique DID Alice uses to reference Faber College. Faber College provided this value in the connection request. Alice can use it to look up Faber College’s verification key on the ledger to ensure interactions with Faber College are authentic.
 
 ```
 Remote Verification key: < unknown, waiting for sync >
 ```
 
-Communication from the remote can’t be confirmed unless we know its verification key. To know the true verification key of an DID, we have to query Indy.
+Communication from the remote can’t be confirmed unless we know its verification key. To know the true verification key of an DID, we have to query the ledger.
 
-Different use cases require different levels of assurance as to how recently we’ve queried Indy for any key replacements. In this case we might be comfortable if we know that the key was synchronized in the last hour. But we can see that we’ve never synchronized this connection, so we don’t know what the verification key is at all. Until Alice connects to Indy, she won’t be able to trust communication from Faber College.
+Different use cases require different levels of assurance as to how recently we’ve queried the ledger for any key replacements. In this case we might be comfortable if we know that the key was synchronized in the last hour. But we can see that we’ve never synchronized this connection, so we don’t know what the verification key is at all. Until Alice connects to the ledger, she won’t be able to trust communication from Faber College.
 ```
 Remote endpoint: < unknown, waiting for sync >
 ```
@@ -242,7 +242,7 @@ Requests are signed by the remote. We have a signature, but we don’t yet know 
 ```
 Last synced: < this connection has not yet been synchronized >
 ```
-A connection stores when it was last synchronized with the Indy network, so we can tell how stale some of the information might be. Ultimately, values will be proved current when a transaction is committed to the ledger, so staleness isn’t dangerous -- but it makes Indy more efficient when identity owners work with up-to-date data.
+A connection stores when it was last synchronized with the Indy network, so we can tell how stale some of the information might be. Ultimately, values will be proved current when a transaction is committed to the ledger, so staleness isn’t dangerous -- but it makes the ledger more efficient when identity owners work with up-to-date data.
 
 ## Accept a Connection Request
 
@@ -260,7 +260,7 @@ Usage:
     connect <test|live>
 ```
 
-In order to accept a connection request, its origin must be proved. Just because a connection request says the sender is "Faber College" doesn’t make it so; the ease of forging email headers is a reminder of why we can’t just trust what a sender says. Syncing the connection with Indy will allow us to prove the association between Faber College’s identity and public key, but the CLI must be connected to the Indy network to sync -- and we haven’t connected yet.
+In order to accept a connection request, its origin must be proved. Just because a connection request says the sender is "Faber College" doesn’t make it so; the ease of forging email headers is a reminder of why we can’t just trust what a sender says. Syncing the connection with the ledger will allow us to prove the association between Faber College’s identity and public key, but the CLI must be connected to the ledger to sync -- and we haven’t connected yet.
 
 There are two Indy networks we might connect to. One is a test network, and the other is live (production). We’ll use the test network for the demo.
 
@@ -304,7 +304,7 @@ Try Next:
     show claim "Transcript"
     request claim "Transcript"
 ```
-Accepting a connection request takes the nonce that Faber College provided, and signs it with the Alice’s signing key. It then securely transmits the signed data along with the DID and verification key to Faber College’s endpoint, which is discovered when the connection is synchronized. Faber College matches the provided nonce to the record of the nonce it sent to Alice, verifies the signature, then records Alice’s new pairwise DID in the Indy ledger.
+Accepting a connection request takes the nonce that Faber College provided, and signs it with the Alice’s signing key. It then securely transmits the signed data along with the DID and verification key to Faber College’s endpoint, which is discovered when the connection is synchronized. Faber College matches the provided nonce to the record of the nonce it sent to Alice, verifies the signature, then records Alice’s new pairwise DID into the ledger.
 
 Once the connection is accepted and synchronized, Alice inspects it again.
 
@@ -332,7 +332,7 @@ Try Next:
 
 Notice now that the Last synced line is updated.
 
-Alice can see now that the remote verification key and remote endpoint, as well as DID and verification key are updated, which allows her to communicate with Faber College. She can also see that the identity of the trust anchor was confirmed (from the Indy network), and that her connection request has been accepted.
+Alice can see now that the remote verification key and remote endpoint, as well as DID and verification key are updated, which allows her to communicate with Faber College. She can also see that the identity of the trust anchor was confirmed (from the ledger), and that her connection request has been accepted.
 
 ## Test Secure Interaction
 
@@ -361,13 +361,13 @@ Alice receives a successful response from Faber College. Here’s what happens b
 
 6. Alice uses the verification key in the Faber College Connection to verify the Faber College digital signature.
 
-She can trust the response from Faber College because (1) she connects to the current endpoint, (2) no replay - attack is possible, due to her random challenge, (3) she knows the verification key used to verify Faber College’s digital signature is the correct one because she just confirmed it on Indy.
+She can trust the response from Faber College because (1) she connects to the current endpoint, (2) no replay - attack is possible, due to her random challenge, (3) she knows the verification key used to verify Faber College’s digital signature is the correct one because she just confirmed it on the ledger.
 
 ## Inspect the Claim
 
 Notice that when Alice last showed the Faber connection, there was a new line: ```Available Claim(s): Transcript```. A **claim** is a piece of information about an identity -- a name, an age, a credit score… It is information claimed to be true. In this case, the claim is named, "Transcript".
 
-Claims are offered by an **issuer**. An issuer may be any identity owner known to Indy and any issuer may issue a claim about any identity owner it can identify. The usefulness and reliability of a claim are tied to the reputation of the issuer with respect to the claim at hand. For Alice to self-issue a claim that she likes chocolate ice cream may be perfectly reasonable, but for her to self-issue a claim that she graduated from Faber College should not impress anyone. The value of this transcript is that it is provably issued by Faber College. Alice wants to use that claim. She asks for more information:
+Claims are offered by an **issuer**. An issuer may be any identity owner known to the ledger and any issuer may issue a claim about any identity owner it can identify. The usefulness and reliability of a claim are tied to the reputation of the issuer with respect to the claim at hand. For Alice to self-issue a claim that she likes chocolate ice cream may be perfectly reasonable, but for her to self-issue a claim that she graduated from Faber College should not impress anyone. The value of this transcript is that it is provably issued by Faber College. Alice wants to use that claim. She asks for more information:
 
 ```
 ALICE@test> show claim Transcript
@@ -418,7 +418,7 @@ Attributes:
 
 ## Apply for a Job
 
-At some time in the future, Alice would like to work for Acme Corp. Normally she would browse to their website, where she would click on a hyperlink to apply for a job. Her browser would download a connection request which her Indy app would open; this would trigger a prompt to Alice, asking her to accept the connection with Acme Corp. Because we’re using a CLI, the interface is different, but the steps are the same. We do approximately the same things that we did when Alice was accepting Faber College’s connection request:
+At some time in the future, Alice would like to work for the fictional company, Acme Corp. Normally she would browse to their website, where she would click on a hyperlink to apply for a job. Her browser would download a connection request which her Indy app would open; this would trigger a prompt to Alice, asking her to accept the connection with Acme Corp. Because we’re using a CLI, the interface is different, but the steps are the same. We do approximately the same things that we did when Alice was accepting Faber College’s connection request:
 
 ```
 ALICE@test> show sample/acme-job-application.indy
@@ -451,9 +451,9 @@ Try Next:
 
 Notice that this connection request contains a **proof request**. A proof request is a request made by the party who needs verifiable proof of certain attributes  that can be provided by other verified claims. (Some attributes can be marked so that they must be verified by other proven claims -- like a SSN -- and some attributes can be self-attested to -- like a nickname.)
 
-In this case, Acme Corp is requesting that Alice provide a Job Application. The Job Application is a rich document type that has a schema defined on the Indy ledger; its particulars are outside the scope of this guide, but it will require a name, SSN, and degree, so it overlaps with the transcript we’ve already looked at. This becomes important below.
+In this case, Acme Corp is requesting that Alice provide a Job Application. The Job Application is a rich document type that has a schema defined on the ledger; its particulars are outside the scope of this guide, but it will require a name, SSN, and degree, so it overlaps with the transcript we’ve already looked at. This becomes important below.
 
-Notice that the connection request also identifies an endpoint. This is different from our previous case, where an identity owner’s endpoint was discovered through lookup on the Indy ledger. Here, Acme has decided to short-circuit Indy and just directly publish its job application acceptor endpoint with each request. Indy supports this.  Alice quickly works through the sequence of commands that establishes a new pairwise connection with Acme:
+Notice that the connection request also identifies an endpoint. This is different from our previous case, where an identity owner’s endpoint was discovered through lookup on the ledger. Here, Acme has decided to short-circuit the ledger and just directly publish its job application acceptor endpoint with each request. The Indy code base supports this.  Alice quickly works through the sequence of commands that establishes a new pairwise connection with Acme:
 ```
 ALICE@test> load sample/acme-job-application.indy
 1 connection request found for Acme Corp.
@@ -813,8 +813,8 @@ Response from Thrift Bank (69.9 ms):
 ```
 ## Explore the Code
 
-Now that you've had a chance to see how Indy works from the outside, perhaps you'd like to see how it works underneath, from code? If so, please navigate to [Simulating Getting Started in an Event Loop](indy_client/test/training/test_getting_started_guide.py).
-You may need to be signed into Github to view this link.
+Now that you've had a chance to see how the Indy implementation works from the outside, perhaps you'd like to see how it works underneath, from code? If so, please navigate to [Simulating Getting Started in an Event Loop](indy_client/test/training/test_getting_started_guide.py).
+You may need to be signed into GitHub to view this link.
 
 # Appendix
 
