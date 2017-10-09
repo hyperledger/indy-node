@@ -355,7 +355,7 @@ def addRawAttribute(looper, client, wallet, name, value, dest=None,
     attrib = Attribute(name=localName,
                        origin=wallet.defaultId,
                        value=attrData,
-                       dest=dest,
+                       dest=wallet.defaultId,
                        ledgerStore=LedgerStore.RAW)
     addAttributeAndCheck(looper, client, wallet, attrib)
 

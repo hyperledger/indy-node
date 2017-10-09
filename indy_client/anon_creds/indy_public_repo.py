@@ -84,7 +84,7 @@ class IndyPublicRepo(PublicRepo):
                 issuer_id = res[IDENTIFIER]
                 data = res[DATA]
 
-        if not data:
+        if not data or ATTR_NAMES not in data:
             raise SchemaNotFoundError(
                 'No schema with ID={} and key={}'.format(
                     id.schemaId,
