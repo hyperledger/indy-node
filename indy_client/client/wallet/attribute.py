@@ -1,7 +1,7 @@
 from enum import unique, IntEnum
 from typing import Optional, TypeVar
 
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ORIGIN
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ORIGIN, CURRENT_PROTOCOL_VERSION
 from indy_common.generates_request import GeneratesRequest
 from indy_common.constants import ATTRIB, GET_ATTR
 from indy_common.types import Request
@@ -84,7 +84,9 @@ class Attribute(AttributeKey, GeneratesRequest):
     def ledgerRequest(self):
         if self.ledgerStore.isWriting and not self.seqNo:
             assert self.origin is not None
-            return Request(identifier=self.origin, operation=self._op())
+            return Request(identifier=self.origin,
+                           operation=self._op(),
+                           protocolVersion=CURRENT_PROTOCOL_VERSION)
 
     def _opForGet(self):
         op = {
@@ -99,4 +101,5 @@ class Attribute(AttributeKey, GeneratesRequest):
     def getRequest(self, requestAuthor: Identifier):
         if not self.seqNo:
             return Request(identifier=requestAuthor,
-                           operation=self._opForGet())
+                           operation=self._opForGet(),
+                           protocolVersion=CURRENT_PROTOCOL_VERSION)

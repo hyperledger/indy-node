@@ -47,12 +47,12 @@ def check_make_result(request, should_have_proof):
         assert STATE_PROOF not in result
 
 
-def test_make_result_current_protocol_version(operation):
+def test_make_result_no_protocol_version_by_default(operation):
     request = SafeRequest(identifier="1" * 16,
                           reqId=1,
                           operation=operation,
                           signature="signature")
-    check_make_result(request, should_have_proof=True)
+    check_make_result(request, should_have_proof=False)
 
 
 def test_make_result_protocol_version_state_proof(operation):

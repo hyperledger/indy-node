@@ -1,5 +1,5 @@
 from stp_core.types import Identifier
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, CURRENT_PROTOCOL_VERSION
 from indy_common.generates_request import GeneratesRequest
 from indy_common.constants import POOL_UPGRADE, ACTION, SCHEDULE, \
     SHA256, TIMEOUT, START, JUSTIFICATION, REINSTALL
@@ -47,4 +47,6 @@ class Upgrade(GeneratesRequest):
 
     def ledgerRequest(self):
         if not self.seqNo:
-            return Request(identifier=self.trustee, operation=self._op())
+            return Request(identifier=self.trustee,
+                           operation=self._op(),
+                           protocolVersion=CURRENT_PROTOCOL_VERSION)
