@@ -20,8 +20,7 @@ logger = getlogger()
 
 
 def __migrate_ledger(data_directory,
-                     old_ledger_file, new_ledger_file,
-                     serializer: MappingSerializer = None):
+                     old_ledger_file, new_ledger_file):
     """
     Test for the directory, open old and new ledger, migrate data, rename directories
     """
@@ -89,41 +88,34 @@ def __open_new_ledger(data_directory, new_ledger_file, hash_store_name):
     new_ledger.stop()
 
 
-def migrate_all_hash_stores(node_data_directory):
+def migrate_domain_hash_stores(node_data_directory):
     # the new hash store (merkle tree) will be recovered from the new transaction log after re-start
     # just delete the current hash store
     old_merkle_nodes = os.path.join(node_data_directory, '_merkleNodes')
     old_merkle_leaves = os.path.join(node_data_directory, '_merkleLeaves')
-    old_merkle_nodes_bin = os.path.join(
-        node_data_directory, '_merkleNodes.bin')
-    old_merkle_leaves_bin = os.path.join(
-        node_data_directory, '_merkleLeaves.bin')
-    old_merkle_nodes_config_bin = os.path.join(
-        node_data_directory, 'config_merkleNodes.bin')
-    old_merkle_leaves_config_bin = os.path.join(
-        node_data_directory, 'config_merkleLeaves.bin')
+    new_merkle_leaves_domain = os.path.join(
+        node_data_directory, 'domain_merkleLeaves')
+    new_merkle_nodes_domain = os.path.join(
+        node_data_directory, 'domain_merkleNodes')
 
     if os.path.exists(old_merkle_nodes):
+        logger.info('removed {}'.format(old_merkle_nodes))
         shutil.rmtree(old_merkle_nodes)
     if os.path.exists(old_merkle_leaves):
+        logger.info('removed {}'.format(old_merkle_leaves))
         shutil.rmtree(old_merkle_leaves)
-    if os.path.exists(old_merkle_nodes_bin):
-        os.remove(old_merkle_nodes_bin)
-    if os.path.exists(old_merkle_leaves_bin):
-        os.remove(old_merkle_leaves_bin)
-    if os.path.exists(old_merkle_nodes_config_bin):
-        os.remove(old_merkle_nodes_config_bin)
-    if os.path.exists(old_merkle_leaves_config_bin):
-        os.remove(old_merkle_leaves_config_bin)
+    if os.path.exists(new_merkle_leaves_domain):
+        logger.info('removed {}'.format(new_merkle_leaves_domain))
+        shutil.rmtree(new_merkle_leaves_domain)
+    if os.path.exists(new_merkle_nodes_domain):
+        shutil.rmtree(new_merkle_nodes_domain)
+        logger.info('removed {}'.format(new_merkle_nodes_domain))
 
     # open new Ledgers
     config = getConfig()
-    __open_new_ledger(node_data_directory, config.poolTransactionsFile, 'pool')
     _, new_domain_ledger_name = __get_domain_ledger_file_names()
     __open_new_ledger(node_data_directory,
                       new_domain_ledger_name, 'domain')
-    __open_new_ledger(node_data_directory,
-                      config.configTransactionsFile, 'config')
 
 
 def __get_domain_ledger_file_names():
@@ -135,6 +127,7 @@ def __get_domain_ledger_file_names():
         # domain ledger uses old file name
         old_name = config.domainTransactionsFile.replace('domain_', '')
         new_name = 'domain_' + config.domainTransactionsFile
+        # new_name = old_name
     return old_name, new_name
 
 
@@ -142,8 +135,7 @@ def migrate_domain_ledger_for_node(node_data_directory):
     old_name, new_name = __get_domain_ledger_file_names()
     __migrate_ledger(node_data_directory,
                      old_name,
-                     new_name,
-                     serializer=JsonSerializer())
+                     new_name)
 
 
 def migrate_all_states(node_data_directory):
@@ -197,7 +189,7 @@ def migrate_all():
         migrate_custom_config(config_file)
 
         migrate_domain_ledger_for_node(node_data_dir)
-        migrate_all_hash_stores(node_data_dir)
+        migrate_domain_hash_stores(node_data_dir)
         migrate_all_states(node_data_dir)
 
         # subprocess.run(['chown', '-R', 'sovrin:sovrin', '/home/sovrin/.sovrin'])
