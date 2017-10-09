@@ -197,6 +197,8 @@ def test_state_proofs_for_get_schema(request_handler):
 
     result = request_handler.handleGetSchemaReq(request, 'Sender')
     proof = extract_proof(result, multi_sig)
+    result[DATA].pop(NAME)
+    result[DATA].pop(VERSION)
     assert result[DATA] == data
 
     # Verifying signed state proof
