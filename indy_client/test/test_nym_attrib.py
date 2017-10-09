@@ -582,6 +582,7 @@ def test_user_add_attrs_for_herself(
     addAttributeAndCheck(looper, userClientA, userWalletA, attrib)
 
 
+@pytest.mark.skip(reason="INDY-896 ATTR cannot be added without dest")
 def test_attr_with_no_dest_added(nodeSet, tdir, looper,
                                  trustAnchor, addedTrustAnchor, attributeData):
     user_wallet = Wallet()

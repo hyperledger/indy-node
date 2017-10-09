@@ -63,7 +63,7 @@ from indy_common.exceptions import InvalidConnectionException, ConnectionAlready
 from indy_common.identity import Identity
 from indy_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, GET_SCHEMA, \
-    START, JUSTIFICATION, NULL, WRITES, REINSTALL
+    START, JUSTIFICATION, NULL, WRITES, REINSTALL, ATTR_NAMES
 
 from stp_core.crypto.signer import Signer
 from stp_core.crypto.util import cleanSeed
@@ -668,7 +668,7 @@ class IndyCli(PlenumCli):
 
         def getSchema(reply, err, *args):
             try:
-                if reply and reply[DATA]:
+                if reply and reply[DATA] and ATTR_NAMES in reply[DATA]:
                     self.print(
                         "Found schema {}"
                         .format(reply[DATA]))
