@@ -18,7 +18,7 @@ migration_script_path = \
 logger.info('script path {}'.format(migration_script_path))
 ret = subprocess.run(
     compose_cmd(
-        ['python3 {}'.format(migration_script_path)]
+        ["su -c 'python3 {}' sovrin".format(migration_script_path)]
     ),
     shell=True,
     timeout=TIMEOUT)
