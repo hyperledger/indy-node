@@ -1,5 +1,5 @@
 from stp_core.types import Identifier
-from plenum.common.constants import TXN_TYPE, FORCE
+from plenum.common.constants import TXN_TYPE, FORCE, CURRENT_PROTOCOL_VERSION
 from indy_common.generates_request import GeneratesRequest
 from indy_common.constants import POOL_CONFIG, WRITES
 from indy_common.types import Request
@@ -26,4 +26,6 @@ class PoolConfig(GeneratesRequest):
 
     def ledgerRequest(self):
         if not self.seqNo:
-            return Request(identifier=self.trustee, operation=self._op())
+            return Request(identifier=self.trustee,
+                           operation=self._op(),
+                           protocolVersion=CURRENT_PROTOCOL_VERSION)
