@@ -9,7 +9,7 @@ from crypto.bls.bls_multi_signature import MultiSignature
 from plenum.bls.bls_store import BlsStore
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
     IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
-    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME
+    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION
 from plenum.common.types import f
 from indy_common.constants import \
     ATTRIB, REF, SIGNATURE_TYPE, CLAIM_DEF, SCHEMA
@@ -102,7 +102,8 @@ def test_state_proofs_for_get_attr(request_handler):
         operation={
             TARGET_NYM: nym,
             RAW: 'last_name'
-        }
+        },
+        protocolVersion=CURRENT_PROTOCOL_VERSION
     )
     result = request_handler.handleGetAttrsReq(get_request, 'Sender')
 
@@ -149,7 +150,8 @@ def test_state_proofs_for_get_claim_def(request_handler):
             ORIGIN: nym,
             REF: schema_seqno,
             SIGNATURE_TYPE: signature_type
-        }
+        },
+        protocolVersion=CURRENT_PROTOCOL_VERSION
     )
 
     result = request_handler.handleGetClaimDefReq(request, 'Sender')
@@ -192,7 +194,8 @@ def test_state_proofs_for_get_schema(request_handler):
         operation={
             TARGET_NYM: nym,
             DATA: schema_key
-        }
+        },
+        protocolVersion=CURRENT_PROTOCOL_VERSION
     )
 
     result = request_handler.handleGetSchemaReq(request, 'Sender')
@@ -230,7 +233,8 @@ def test_state_proofs_for_get_nym(request_handler):
     request = Request(
         operation={
             TARGET_NYM: nym
-        }
+        },
+        protocolVersion=CURRENT_PROTOCOL_VERSION
     )
     result = request_handler.handleGetNymReq(request, "Sender")
     proof = extract_proof(result, multi_sig)
@@ -248,3 +252,31 @@ def test_state_proofs_for_get_nym(request_handler):
         serialized=True
     )
     assert verified
+
+
+def test_no_state_proofs_if_protocol_version_less(request_handler):
+    nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
+    role = "2"
+    verkey = "~7TYfekw4GUagBnBVCqPjiC"
+    seq_no = 0
+    txn_time = int(time.time())
+    # Adding nym
+    data = {
+        f.IDENTIFIER.nm: nym,
+        ROLE: role,
+        VERKEY: verkey,
+        f.SEQ_NO.nm: seq_no,
+        TXN_TIME: txn_time,
+    }
+    request_handler.updateNym(nym, data)
+    request_handler.state.commit()
+    multi_sig = save_multi_sig(request_handler)
+
+    # Getting nym
+    request = Request(
+        operation={
+            TARGET_NYM: nym
+        }
+    )
+    result = request_handler.handleGetNymReq(request, "Sender")
+    assert STATE_PROOF not in result
