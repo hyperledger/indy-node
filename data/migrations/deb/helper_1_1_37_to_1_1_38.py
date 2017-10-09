@@ -112,7 +112,6 @@ def migrate_domain_hash_stores(node_data_directory):
         logger.info('removed {}'.format(new_merkle_nodes_domain))
 
     # open new Ledgers
-    config = getConfig()
     _, new_domain_ledger_name = __get_domain_ledger_file_names()
     __open_new_ledger(node_data_directory,
                       new_domain_ledger_name, 'domain')
