@@ -14,7 +14,7 @@ from plenum.common.did_method import DidMethods
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, DATA, \
-    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN
+    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN, CURRENT_PROTOCOL_VERSION
 from plenum.common.types import f
 
 from indy_client.client.wallet.attribute import Attribute, AttributeKey, \
@@ -491,7 +491,9 @@ class Wallet(PWallet, TrustAnchoring):
                             VERSION: version}
                      }
 
-        req = Request(sender, operation=operation)
+        req = Request(sender,
+                      operation=operation,
+                      protocolVersion=CURRENT_PROTOCOL_VERSION)
         return self.prepReq(req)
 
     def requestClaimDef(self, seqNo, signature, sender):
@@ -507,7 +509,9 @@ class Wallet(PWallet, TrustAnchoring):
                      SIGNATURE_TYPE: signature
                      }
 
-        req = Request(sender, operation=operation)
+        req = Request(sender,
+                      operation=operation,
+                      protocolVersion=CURRENT_PROTOCOL_VERSION)
         return self.prepReq(req)
 
     # TODO: sender by default should be `self.defaultId`

@@ -1,4 +1,4 @@
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, NODE, DATA
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, NODE, DATA, CURRENT_PROTOCOL_VERSION
 from indy_common.generates_request import GeneratesRequest
 from indy_common.types import Request
 from stp_core.types import Identifier
@@ -22,4 +22,6 @@ class Node(GeneratesRequest):
     def ledgerRequest(self):
         if not self.seqNo:
             assert self.id is not None
-            return Request(identifier=self.steward, operation=self._op())
+            return Request(identifier=self.steward,
+                           operation=self._op(),
+                           protocolVersion=CURRENT_PROTOCOL_VERSION)
