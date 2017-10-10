@@ -13,6 +13,7 @@ from plenum.common.exceptions import InvalidClientRequest, \
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     VERKEY, DATA, NAME, VERSION, ORIGIN, \
     STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME
+from plenum.common.plenum_protocol_version import PlenumProtocolVersion
 from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from indy_common.auth import Authoriser
@@ -214,17 +215,17 @@ class DomainReqHandler(PHandler):
     def handleGetNymReq(self, request: Request, frm: str):
         nym = request.operation[TARGET_NYM]
         nymData = self.idrCache.getNym(nym, isCommitted=True)
+        path = domain.make_state_path_for_nym(nym)
         if nymData:
             nymData[TARGET_NYM] = nym
             data = self.stateSerializer.serialize(nymData)
             seq_no = nymData[f.SEQ_NO.nm]
             update_time = nymData[TXN_TIME]
-            path = domain.make_state_path_for_nym(nym)
             proof = self.make_proof(path)
         else:
             data = None
             seq_no = None
-            proof = None
+            proof = self.make_proof(path)
             update_time = None
 
         # TODO: add update time here!
@@ -302,11 +303,11 @@ class DomainReqHandler(PHandler):
         """
         assert path is not None
         encoded = self.state.get(path, isCommitted)
-        if encoded is None:
-            raise KeyError
-        value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
         proof = self.make_proof(path)
-        return value, last_seq_no, last_update_time, proof
+        if encoded is not None:
+            value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
+            return value, last_seq_no, last_update_time, proof
+        return None, None, None, proof
 
     def _addAttr(self, txn) -> None:
         """
@@ -343,7 +344,7 @@ class DomainReqHandler(PHandler):
                 self.lookup(path, isCommitted)
         except KeyError:
             return None, None, None, None
-        if hashed_val == '':
+        if not hashed_val:
             # Its a HASH attribute
             return hashed_val, lastSeqNo, lastUpdateTime, proof
         else:
@@ -366,6 +367,12 @@ class DomainReqHandler(PHandler):
         path = domain.make_state_path_for_schema(author, schemaName, schemaVersion)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            if keys is None:
+                keys = {}
+            keys.update({
+                NAME: schemaName,
+                VERSION: schemaVersion
+            })
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
@@ -421,8 +428,11 @@ class DomainReqHandler(PHandler):
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
             f.SEQ_NO.nm: last_seq_no,
-            TXN_TIME: update_time,
-            STATE_PROOF: proof
+            TXN_TIME: update_time
         }}
+        if request.protocolVersion and \
+                request.protocolVersion >= PlenumProtocolVersion.STATE_PROOF_SUPPORT.value:
+            result[STATE_PROOF] = proof
+
         # Do not inline please, it makes debugging easier
         return result

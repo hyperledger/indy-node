@@ -370,7 +370,7 @@ class Upgrader(HasActionQueue):
                             version, failTimeout, upgrade_id)
         delay = 0
         if now < when:
-            delay = (when - now).seconds
+            delay = (when - now).total_seconds()
         self.scheduledUpgrade = (version, delay, upgrade_id)
         self._schedule(callAgent, delay)
 

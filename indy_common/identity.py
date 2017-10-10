@@ -1,4 +1,4 @@
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, NYM, ROLE, VERKEY
+from plenum.common.constants import TARGET_NYM, TXN_TYPE, NYM, ROLE, VERKEY, CURRENT_PROTOCOL_VERSION
 from plenum.common.signer_did import DidIdentity
 from stp_core.types import Identifier
 from indy_common.auth import Authoriser
@@ -86,7 +86,9 @@ class Identity(GeneratesRequest):
     def ledgerRequest(self):
         if not self.seqNo:
             assert self.identity.identifier is not None
-            return Request(identifier=self.trustAnchor, operation=self._op())
+            return Request(identifier=self.trustAnchor,
+                           operation=self._op(),
+                           protocolVersion=CURRENT_PROTOCOL_VERSION)
 
     def _opForGet(self):
         return {
@@ -97,4 +99,5 @@ class Identity(GeneratesRequest):
     def getRequest(self, requestAuthor: Identifier):
         if not self.seqNo:
             return Request(identifier=requestAuthor,
-                           operation=self._opForGet())
+                           operation=self._opForGet(),
+                           protocolVersion=CURRENT_PROTOCOL_VERSION)
