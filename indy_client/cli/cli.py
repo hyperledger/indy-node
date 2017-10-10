@@ -1898,7 +1898,7 @@ class IndyCli(PlenumCli):
 
             self.ensureClientConnected()
 
-            if not self.nodeReg:
+            if not self.activeClient or not self.activeClient.nodeReg:
                 msg = '\nThe information required to connect this client to the nodes cannot be found. ' \
                       '\nThis is an error. To correct the error, get the file containing genesis transactions ' \
                       '\n(the file name is `{}`) from the github repository and place ' \
