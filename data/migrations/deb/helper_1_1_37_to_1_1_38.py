@@ -156,14 +156,10 @@ def migrate_custom_config(config_file):
     logger.info("Migrating custom config file : {}".format(config_file))
 
     for line in fileinput.input(config_file, inplace=1):
-        if 'poolTransactionsFile' in line:
-            continue
         if 'domainTransactionsFile' in line:
+            sys.stdout.write("domainTransactionsFile = 'domain_transactions_live'\n")
             continue
         sys.stdout.write(line)
-
-    with open(config_file, "a") as myfile:
-        myfile.write('current_env = "live"')
 
 
 def migrate_all():
