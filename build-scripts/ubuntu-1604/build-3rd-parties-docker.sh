@@ -11,7 +11,7 @@ fi
 
 PKG_NAME=indy-node
 IMAGE_NAME="${PKG_NAME}-build-u1604"
-OUTPUT_VOLUME_NAME="$1"
+OUTPUT_VOLUME_NAME="${1:-"${PKG_NAME}-deb-u1604"}"
 
 docker build -t "${PKG_NAME}-build-u1604" -f Dockerfile .
 docker volume create --name "${OUTPUT_VOLUME_NAME}"
