@@ -8,7 +8,7 @@ from stp_core.loop.eventually import eventually
 from plenum.common.exceptions import NoConsensusYet, OperationError
 from stp_core.common.log import getlogger
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, DATA, NAME, \
-    VERSION, TYPE, ORIGIN, IDENTIFIER
+    VERSION, TYPE, ORIGIN, IDENTIFIER, CURRENT_PROTOCOL_VERSION
 
 from indy_common.constants import GET_SCHEMA, SCHEMA, ATTR_NAMES, \
     GET_CLAIM_DEF, REF, CLAIM_DEF, PRIMARY, REVOCATION, GET_TXNS
@@ -84,7 +84,7 @@ class IndyPublicRepo(PublicRepo):
                 issuer_id = res[IDENTIFIER]
                 data = res[DATA]
 
-        if not data:
+        if not data or ATTR_NAMES not in data:
             raise SchemaNotFoundError(
                 'No schema with ID={} and key={}'.format(
                     id.schemaId,
@@ -203,7 +203,9 @@ class IndyPublicRepo(PublicRepo):
         return await self._sendReq(op, _getData)
 
     async def _sendReq(self, op, clbk):
-        req = Request(identifier=self.wallet.defaultId, operation=op)
+        req = Request(identifier=self.wallet.defaultId,
+                      operation=op,
+                      protocolVersion=CURRENT_PROTOCOL_VERSION)
         req = self.wallet.prepReq(req)
         self.client.submitReqs(req)
         try:

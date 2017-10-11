@@ -13,6 +13,8 @@ LAST_SEQ_NO = "lsn"
 VALUE = "val"
 LAST_UPDATE_TIME = "lut"
 
+ALL_ATR_KEYS = [RAW, ENC, HASH]
+
 
 def make_state_path_for_nym(did) -> bytes:
     # TODO: This is duplicated in plenum.DimainRequestHandler
@@ -54,13 +56,25 @@ def prepare_nym_for_state(txn):
     return key, value
 
 
+def prepare_get_nym_for_state(txn):
+    data = txn.get(DATA)
+    value = None
+    if data is not None:
+        parsed = domain_state_serializer.deserialize(data)
+        parsed.pop(TARGET_NYM, None)
+        value = domain_state_serializer.serialize(parsed)
+    nym = txn[TARGET_NYM]
+    key = make_state_path_for_nym(nym)
+    return key, value
+
+
 def prepare_attr_for_state(txn):
     """
     Make key(path)-value pair for state from ATTRIB or GET_ATTR
     :return: state path, state value, value for attribute store
     """
     assert txn[TXN_TYPE] in {ATTRIB, GET_ATTR}
-    nym = txn.get(TARGET_NYM)
+    nym = txn[TARGET_NYM]
     attr_key, value = parse_attr_txn(txn)
     hashed_value = hash_of(value) if value else ''
     seq_no = txn[f.SEQ_NO.nm]
@@ -89,15 +103,48 @@ def prepare_claim_def_for_state(txn):
     return path, value_bytes
 
 
+def prepare_get_claim_def_for_state(txn):
+    origin = txn.get(f.IDENTIFIER.nm)
+    schema_seq_no = txn.get(REF)
+    if schema_seq_no is None:
+        raise ValueError("'{}' field is absent, "
+                         "but it must contain schema seq no".format(REF))
+
+    signature_type = txn.get(SIGNATURE_TYPE, 'CL')
+    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
+    seq_no = txn[f.SEQ_NO.nm]
+
+    value_bytes = None
+    data = txn.get(DATA)
+    if data is not None:
+        txn_time = txn[TXN_TIME]
+        value_bytes = encode_state_value(data, seq_no, txn_time)
+    return path, value_bytes
+
+
 def prepare_schema_for_state(txn):
     origin = txn.get(f.IDENTIFIER.nm)
     data = txn.get(DATA)
-    schema_name = data[NAME]
-    schema_version = data[VERSION]
+    schema_name = data.pop(NAME)
+    schema_version = data.pop(VERSION)
     path = make_state_path_for_schema(origin, schema_name, schema_version)
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     value_bytes = encode_state_value(data, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_get_schema_for_state(txn):
+    origin = txn.get(f.IDENTIFIER.nm)
+    data = txn[DATA].copy()
+    schema_name = data.pop(NAME)
+    schema_version = data.pop(VERSION)
+    path = make_state_path_for_schema(origin, schema_name, schema_version)
+    value_bytes = None
+    if len(data) != 0:
+        seq_no = txn[f.SEQ_NO.nm]
+        txn_time = txn[TXN_TIME]
+        value_bytes = encode_state_value(data, seq_no, txn_time)
     return path, value_bytes
 
 
@@ -126,31 +173,50 @@ def hash_of(text) -> str:
 
 
 def parse_attr_txn(txn):
-    raw = txn.get(RAW)
-    if raw:
-        data = attrib_raw_data_serializer.deserialize(raw)
+    attr_type, attr = _extract_attr_typed_value(txn)
+
+    if attr_type == RAW:
+        data = attrib_raw_data_serializer.deserialize(attr)
         # To exclude user-side formatting issues
         re_raw = attrib_raw_data_serializer.serialize(data,
                                                       toBytes=False)
         key, _ = data.popitem()
         return key, re_raw
-    enc = txn.get(ENC)
-    if enc:
-        return hash_of(enc), enc
-    hsh = txn.get(HASH)
-    if hsh:
-        return hsh, None
-    raise ValueError("One of 'raw', 'enc', 'hash' "
-                     "fields of ATTR must present")
+    if attr_type == ENC:
+        return hash_of(attr), attr
+    if attr_type == HASH:
+        return attr, None
 
 
 def prepare_get_attr_for_state(txn):
-    keys = [RAW, ENC, HASH]
-    for key in keys:
-        if txn[key]:
-            txn = txn.copy()
-            data = txn.pop(DATA)
-            txn[key] = data
-            return prepare_attr_for_state(txn)
-    raise ValueError("There is no any of {} in txn {}"
-                     .format(keys, txn))
+    nym = txn[TARGET_NYM]
+    attr_type, attr_key = _extract_attr_typed_value(txn)
+    data = txn.get(DATA)
+    if data:
+        txn = txn.copy()
+        data = txn.pop(DATA)
+        txn[attr_type] = data
+        return prepare_attr_for_state(txn)
+
+    if attr_type == ENC:
+        attr_key = hash_of(attr_key)
+
+    path = make_state_path_for_attr(nym, attr_key)
+    return path, None, None, None
+
+
+def _extract_attr_typed_value(txn):
+    """
+    ATTR and GET_ATTR can have one of 'raw', 'enc' and 'hash' fields.
+    This method checks which of them presents and return it's name
+    and value in it.
+    """
+    existing_keys = [key for key in ALL_ATR_KEYS if key in txn]
+    if len(existing_keys) == 0:
+        raise ValueError("ATTR should have one of the following fields: {}"
+                         .format(ALL_ATR_KEYS))
+    if len(existing_keys) > 1:
+        raise ValueError("ATTR should have only one of the following fields: {}"
+                         .format(ALL_ATR_KEYS))
+    existing_key = existing_keys[0]
+    return existing_key, txn[existing_key]

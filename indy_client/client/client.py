@@ -128,15 +128,15 @@ class Client(PlenumClient):
     def prepare_for_state(self, result):
         request_type = result[TYPE]
         if request_type == GET_NYM:
-            return domain.prepare_nym_for_state(result)
+            return domain.prepare_get_nym_for_state(result)
         if request_type == GET_ATTR:
             path, value, hashed_value, value_bytes = \
                 domain.prepare_get_attr_for_state(result)
             return path, value_bytes
         if request_type == GET_CLAIM_DEF:
-            return domain.prepare_claim_def_for_state(result)
+            return domain.prepare_get_claim_def_for_state(result)
         if request_type == GET_SCHEMA:
-            return domain.prepare_schema_for_state(result)
+            return domain.prepare_get_schema_for_state(result)
         raise ValueError("Cannot make state key for "
                          "request of type {}"
                          .format(request_type))
