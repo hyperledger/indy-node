@@ -75,10 +75,10 @@ def commonTestUbuntu = {
 def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
     def volumeName = "$name-deb-u1604"
     if (env.BRANCH_NAME != '' && env.BRANCH_NAME != 'master') {
-    	volumeName = "${volumeName}.${BRANCH_NAME}"
+        volumeName = "${volumeName}.${BRANCH_NAME}"
     }
     if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
-	sh "docker volume rm $volumeName"
+        sh "docker volume rm $volumeName"
     }
     dir('build-scripts/ubuntu-1604') {
         sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName"
