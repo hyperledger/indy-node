@@ -85,7 +85,8 @@ def get_reply_if_confirmed(client, identifier, request_id: int):
         client.reqRepStore.getAllReplies(identifier, request_id)
     if not errors:
         return None, None
-    return reply, errors[0]
+    sender, error_reason = errors.popitem()
+    return reply, error_reason
 
 
 # TODO: Should have a timeout, should not have kwargs
