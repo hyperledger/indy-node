@@ -98,7 +98,7 @@ def ensureReqCompleted(
         kwargs=None,
         cond=None):
 
-    reply, err = get_reply_if_confirmed(*reqKey)
+    reply, err = get_reply_if_confirmed(client, *reqKey)
 
     if err is None and reply is None and (cond is None or not cond()):
         loop.call_later(.2, ensureReqCompleted, loop,
