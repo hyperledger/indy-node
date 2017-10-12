@@ -19,11 +19,11 @@ from anoncreds.protocol.types import Schema, ID, PublicKey, \
     Accumulator, Tails, TimestampType
 from indy_common.types import Request
 from indy_common.constants import SIGNATURE_TYPE
+from indy_common.util import get_reply_if_confirmed
 
 
 def _ensureReqCompleted(reqKey, client, clbk):
-    reply, err = client.replyIfConsensus(*reqKey)
-
+    reply, err = get_reply_if_confirmed(client, *reqKey)
     if err:
         raise OperationError(err)
 

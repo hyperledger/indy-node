@@ -77,6 +77,16 @@ def getNonce(length=32):
     return "".join([random.choice(hexChars) for i in range(length)])
 
 
+def get_reply_if_confirmed(client, identifier, request_id: int):
+    reply, status = client.getReply(identifier, request_id)
+    if status == 'CONFIRMED':
+        return reply, None
+    _, errors = \
+        client.reqRepStore.getAllReplies(identifier, request_id)
+    if not errors:
+        return None, None
+    return reply, errors[0]
+
 # TODO: Should have a timeout, should not have kwargs
 def ensureReqCompleted(
         loop,
@@ -87,17 +97,7 @@ def ensureReqCompleted(
         kwargs=None,
         cond=None):
 
-    def replyIfConsensus(identifier, reqId: int):
-        reply, status = client.getReply(*reqKey)
-        if status == 'CONFIRMED':
-            return reply, None
-        _, errors = \
-            client.reqRepStore.getAllReplies(identifier, reqId)
-        if not errors:
-            return None, None
-        return reply, errors[0]
-
-    reply, err = replyIfConsensus(*reqKey)
+    reply, err = get_reply_if_confirmed(*reqKey)
 
     if err is None and reply is None and (cond is None or not cond()):
         loop.call_later(.2, ensureReqCompleted, loop,
