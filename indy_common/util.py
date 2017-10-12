@@ -87,6 +87,7 @@ def get_reply_if_confirmed(client, identifier, request_id: int):
         return None, None
     return reply, errors[0]
 
+
 # TODO: Should have a timeout, should not have kwargs
 def ensureReqCompleted(
         loop,
