@@ -89,11 +89,13 @@ def ensureReqCompleted(
 
     def replyIfConsensus(identifier, reqId: int):
         reply, status = client.getReply(*reqKey)
-        if status != 'CONFIRMED':
-            replies, errors = \
-                client.reqRepStore.getAllReplies(identifier, reqId)
-            return replies, errors
-        return reply, None
+        if status == 'CONFIRMED':
+            return reply, None
+        _, errors = \
+            client.reqRepStore.getAllReplies(identifier, reqId)
+        if not errors:
+            return None, None
+        return reply, errors[0]
 
     reply, err = replyIfConsensus(*reqKey)
 
