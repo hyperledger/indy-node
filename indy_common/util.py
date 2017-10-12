@@ -86,7 +86,17 @@ def ensureReqCompleted(
         pargs=None,
         kwargs=None,
         cond=None):
-    reply, err = client.replyIfConsensus(*reqKey)
+
+    def replyIfConsensus(identifier, reqId: int):
+        reply, status = client.getReply(*reqKey)
+        if status != 'CONFIRMED':
+            replies, errors = \
+                client.reqRepStore.getAllReplies(identifier, reqId)
+            return replies, errors
+        return reply, None
+
+    reply, err = replyIfConsensus(*reqKey)
+
     if err is None and reply is None and (cond is None or not cond()):
         loop.call_later(.2, ensureReqCompleted, loop,
                         reqKey, client, clbk, pargs, kwargs, cond)
