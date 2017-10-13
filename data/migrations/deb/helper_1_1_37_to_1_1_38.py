@@ -140,12 +140,21 @@ def migrate_domain_ledger_for_node(node_data_directory):
 def migrate_all_states(node_data_directory):
     # the states will be recovered from the ledger during the start-up.
     # just delete the current ones
-    shutil.rmtree(
-        os.path.join(node_data_directory, 'pool_state'))
-    shutil.rmtree(
-        os.path.join(node_data_directory, 'domain_state'))
-    shutil.rmtree(
-        os.path.join(node_data_directory, 'config_state'))
+    pool_state_path = os.path.join(node_data_directory, 'pool_state')
+    domain_state_path = os.path.join(node_data_directory, 'domain_state')
+    config_state_path = os.path.join(node_data_directory, 'config_state')
+
+    if os.path.exists(pool_state_path):
+        shutil.rmtree(pool_state_path)
+        logger.info('removed {}'.format(pool_state_path))
+
+    if os.path.exists(domain_state_path):
+        shutil.rmtree(domain_state_path)
+        logger.info('removed {}'.format(domain_state_path))
+
+    if os.path.exists(config_state_path):
+        shutil.rmtree(config_state_path)
+        logger.info('removed {}'.format(config_state_path))
 
 
 def migrate_custom_config(config_file):
