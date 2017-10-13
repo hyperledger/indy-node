@@ -3,6 +3,7 @@ from typing import Iterable, Any, List
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
+from sovrin_node.server.validator_info_tool import ValidatorNodeInfoTool
 from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, \
@@ -42,6 +43,7 @@ logger = getlogger()
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_sovrin_keys"
     _client_request_class = SafeRequest
+    _info_tool_class = ValidatorNodeInfoTool
     ledger_ids = PlenumNode.ledger_ids + [CONFIG_LEDGER_ID]
 
     def __init__(self,
@@ -365,6 +367,7 @@ class Node(PlenumNode, HasPoolManager):
             self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetNymReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+            self.total_read_request_number += 1
         elif request.operation[TXN_TYPE] == GET_SCHEMA:
             self.send_ack_to_client(request.key, frm)
             # TODO: `handleGetSchemaReq` should be changed to
@@ -373,14 +376,17 @@ class Node(PlenumNode, HasPoolManager):
             # Similar reasoning follows for other methods below
             result = self.reqHandler.handleGetSchemaReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+            self.total_read_request_number += 1
         elif request.operation[TXN_TYPE] == GET_ATTR:
             self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetAttrsReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+            self.total_read_request_number += 1
         elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
             self.send_ack_to_client(request.key, frm)
             result = self.reqHandler.handleGetClaimDefReq(request, frm)
             self.transmitToClient(Reply(result), frm)
+            self.total_read_request_number += 1
         elif request.operation[TXN_TYPE] == GET_TXNS:
             super().processRequest(request, frm)
         else:

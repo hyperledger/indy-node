@@ -1,15 +1,15 @@
 import pytest
 from sovrin_common.types import ClientAttribOperation
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, NonEmptyStringField, IdentifierField, JsonField
+from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, IdentifierField, JsonField
 
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
     ("dest", IdentifierField),
     ("raw", JsonField),
-    ('enc', NonEmptyStringField),
-    ('hash', NonEmptyStringField),
+    ('enc', LimitedLengthStringField),
+    ('hash', LimitedLengthStringField),
 ])
 
 
