@@ -20,14 +20,14 @@ apt-get update -y && apt-get install -y libindy-crypto
 As indy-node tests needs indy-client which depends on Charm-Crypto, we need to install it.
 Follow instructions mentioned here [Charm-Crypto Setup Instructions](https://github.com/hyperledger-archives/indy-common/blob/master/setup.md)
 
-To run the tests, download the source by cloning this repo. 
+To run the tests, download the source by cloning this repo.
 Navigate to the root directory of the source and install required packages by
 
 ```
 pip install -e .
 ```
 
-Run test by 
+Run test by
 ```
 python setup.py pytest
 ```
@@ -41,8 +41,8 @@ pip install -U --no-cache-dir indy-node
 ### Start Nodes
 
 #### Initializing Keep
-To run a node you need to generate its keys. The keys are stored on a disk in files in the location called `keep`. 
-The  following generates keys for a node named `Alpha` in the keep. 
+To run a node you need to generate its keys. The keys are stored on a disk in files in the location called `keep`.
+The  following generates keys for a node named `Alpha` in the keep.
 The keep for node `Alpha` is located at `~/.indy/Alpha`.
 ```
 init_indy_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
@@ -54,7 +54,7 @@ init_indy_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
 ```
 start_indy_node Alpha 9701 9702
 ```
-The node uses a separate UDP channels for communicating with nodes and clients. 
+The node uses a separate UDP channels for communicating with nodes and clients.
 The first port number is for the node-to-node communication channel and the second is for node-to-client communication channel.
 
 
@@ -74,7 +74,7 @@ This node with name Node3 will use ports 9705 and 9706 for nodestack and clients
 his node with name Node4 will use ports 9707 and 9708 for nodestack and clientstack respectively
 ```
 
-Now you can run the 4 nodes as 
+Now you can run the 4 nodes as
 ```
 start_indy_node Node1 9701 9702
 ```
@@ -89,10 +89,10 @@ start_indy_node Node4 9707 9708
 ```
 
 These 4 commands created keys for 4 nodes `Node1`, `Node2`, `Node3` and `Node4`,
-The `nodes` argument specifies the number of nodes and the `clients` argument specifies the number of client. 
-The `nodeNum` argument specifies the node number for which you intend to create the private keys locally. 
+The `nodes` argument specifies the number of nodes and the `clients` argument specifies the number of client.
+The `nodeNum` argument specifies the node number for which you intend to create the private keys locally.
 Since you run on the machine where you run this command. Since you are running all 4 nodes on same machine you create private keys for all nodes locally.
- 
+
 Now lets say you want to run 4 nodes on 4 different machines as
 1. Node1 running on 191.177.76.26
 2. Node2 running on 22.185.194.102
@@ -147,13 +147,13 @@ apt-get update -y && apt-get install -y libindy-crypto
 
 Note: The tests create Indy nodes (dont worry, all nodes are created in the same process) .
 
-To run the tests, download the source by cloning this repo. 
+To run the tests, download the source by cloning this repo.
 Navigate to the root directory of the source and install required packages by
 ```
 pip install -e .
 ```
 
-Run test by 
+Run test by
 ```
 python setup.py pytest
 ```
@@ -201,7 +201,7 @@ on what type of development environment you have. In particular, we
 think you will have a bumpy ride on windows. We are working on improving
 these instructions.
 
-Developers should explore the [Getting Started Guide](getting-started.md) to learn how Indy works.
+Developers should explore the [Getting Started Guide](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) to learn how Indy works.
 
 The Indy codebase makes extensive use of coroutines and the async/await keywords in
 Python, and as such, requires Python version 3.5.0 or later. Plenum also
@@ -238,7 +238,7 @@ deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main
 ```
 
 Now run
- 
+
 ```
 sudo apt-get update
 sudo apt-get install libsodium13
@@ -267,8 +267,8 @@ sudo apt-get update
 sudo apt-get install libsodium13
 ```
 
-8. If you still get the error ```E: Unable to locate package libsodium13``` then add ```deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main``` and ```deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main``` to your ```/etc/apt/sources.list```. 
-Now run ```sudo apt-get update``` and then ```sudo apt-get install libsodium13``` 
+8. If you still get the error ```E: Unable to locate package libsodium13``` then add ```deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main``` and ```deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main``` to your ```/etc/apt/sources.list```.
+Now run ```sudo apt-get update``` and then ```sudo apt-get install libsodium13```
 
 **CentOS/Redhat:**
 
