@@ -5,20 +5,26 @@ import glob
 from importlib.util import module_from_spec, spec_from_file_location
 
 from stp_core.common.log import getlogger
-from indy_common.config_util import getConfig
 
-config = getConfig()
+baseDir = '/var/lib/indy'
+GENERAL_CONFIG_DIR = '/etc/indy'
+GENERAL_CONFIG_FILE = 'indy_config.py'
+LOG_DIR = '/var/log/indy'
+NODE_BASE_DATA_DIR = baseDir
+CLI_BASE_DIR = '/home/indy/.indy-cli'
+CLI_NETWORK_DIR = '/home/indy/.indy-cli/networks'
+
 logger = getlogger()
 
-old_base_dir = '~/.indy'
+old_base_dir = '/home/indy/.indy'
 
 
 def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
     logger.info('Move genesis transactions {} -> {}'.format(
         old_base_txn_dir, new_base_txn_dir))
-    for suffix in ('sandbox', 'live'):
+    for suffix in ('sandbox', 'live', 'local'):
         new_txn_dir = os.path.join(new_base_txn_dir, suffix)
-        os.mkdir(new_txn_dir)
+        os.makedirs(new_txn_dir, exist_ok=True)
 
         old_domain_genesis = os.path.join(
             old_base_txn_dir, 'domain_transactions_{}_genesis'.format(suffix))
@@ -86,7 +92,7 @@ def migrate_cli(old_dir, new_dir, new_txn_dir):
 
 
 def migrate_all():
-    base_dir = config.baseDir
+    base_dir = baseDir
 
     old_node_base_data_dir = os.path.join(old_base_dir, 'data')
     old_nodes_data_dir = os.path.join(old_node_base_data_dir, 'nodes')
@@ -95,7 +101,7 @@ def migrate_all():
     old_daemon_config_base_dir = '/home/indy/.indy'
     old_daemon_config = os.path.join(old_daemon_config_base_dir, 'indy.env')
 
-    new_general_config = os.path.join(config.GENERAL_CONFIG_DIR, config.GENERAL_CONFIG_FILE)
+    new_general_config = os.path.join(GENERAL_CONFIG_DIR, GENERAL_CONFIG_FILE)
 
     logger.info('Start migration of directories/files.')
 
@@ -107,14 +113,20 @@ def migrate_all():
     migrate_general_config(old_general_config, new_general_config, network_name)
 
     # Build network-related paths
-    new_log_dir = os.path.join(config.LOG_DIR, network_name)
+    new_log_dir = os.path.join(LOG_DIR, network_name)
+    os.makedirs(new_log_dir, exist_ok=True)
     new_node_base_dir = os.path.join(base_dir, network_name)
-    new_node_base_data_dir = os.path.join(config.NODE_BASE_DATA_DIR, network_name)
+    new_node_base_data_dir = os.path.join(NODE_BASE_DATA_DIR, network_name)
 
     # Move genesis transactions
-    migrate_genesis_txn(old_base_dir, new_node_base_dir)
+    migrate_genesis_txn(old_base_dir, NODE_BASE_DATA_DIR)
 
-    for node_name in os.listdir(old_nodes_data_dir):
+    try:
+        visit_dirs = os.listdir(old_nodes_data_dir)
+    except FileNotFoundError:
+        visit_dirs = []
+
+    for node_name in visit_dirs:
         # Move logs
         logger.info('Move logs for node \'{}\'...'.format(node_name))
         old_node_logs_exp = os.path.join(old_base_dir, '{}.log*'.format(node_name))
@@ -126,7 +138,7 @@ def migrate_all():
         logger.info('Move keys for node \'{}\'...'.format(node_name))
         old_keys_dir = os.path.join(old_base_dir, node_name)
         new_keys_dir = os.path.join(new_node_base_dir, node_name)
-        os.mkdir(new_keys_dir)
+        os.makedirs(new_keys_dir, exist_ok=True)
         migrate_keys(old_keys_dir, new_keys_dir)
         logger.info('done')
 
@@ -138,11 +150,11 @@ def migrate_all():
 
     # Move daemon config
     logger.info('Move daemon config {} -> {}'.format(
-        old_daemon_config, config.GENERAL_CONFIG_DIR))
-    shutil.move(old_daemon_config, config.GENERAL_CONFIG_DIR)
+        old_daemon_config, GENERAL_CONFIG_DIR))
+    shutil.move(old_daemon_config, GENERAL_CONFIG_DIR)
     logger.info('done')
 
-    migrate_cli(old_wallets_dir, config.CLI_BASE_DIR, config.CLI_NETWORK_DIR)
+    migrate_cli(old_wallets_dir, CLI_BASE_DIR, CLI_NETWORK_DIR)
 
     logger.info('Finish migration of directories/files.')
 

@@ -102,5 +102,6 @@ setup(
              'scripts/read_ledger',
              'scripts/test_some_write_keys_others_read_them',
              'scripts/test_users_write_and_read_own_keys',
-             'scripts/validator-info']
+             'scripts/validator-info',
+             'scripts/init_bls_keys'],
 )
