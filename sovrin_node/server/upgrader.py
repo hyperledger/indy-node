@@ -217,12 +217,24 @@ class Upgrader(HasActionQueue):
             # searching for CANCEL for this upgrade submitted after START txn
             last_pool_upgrade_txn_cancel = self.get_upgrade_txn(
                 lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == CANCEL and
-                txn[VERSION] == current_version,
-                start_no=last_pool_upgrade_txn_seq_no)
+                txn[VERSION] == last_pool_upgrade_txn_start[VERSION],
+                start_no=last_pool_upgrade_txn_seq_no + 1)
             if last_pool_upgrade_txn_cancel:
                 logger.info('{} found upgrade CANCEL txn {}'.format(
                     self, last_pool_upgrade_txn_cancel))
                 return
+
+            if self.compareVersions(current_version, last_pool_upgrade_txn_start[VERSION]) < 0:
+                # current_version > last_pool_upgrade_txn_start[VERSION]
+                uprgade_txn_to_cur_ver = self.get_upgrade_txn(
+                    lambda txn: txn[TXN_TYPE] == POOL_UPGRADE
+                                and txn[ACTION] == START
+                                and txn[VERSION] == current_version)
+                if not uprgade_txn_to_cur_ver:
+                    # The current version was installed not via POOL_UPGRADE
+                    # transaction. So don't process POOL_UPGRADE to a lower
+                    # version gotten during the catch-up.
+                    return
 
             self.handleUpgradeTxn(last_pool_upgrade_txn_start)
 
