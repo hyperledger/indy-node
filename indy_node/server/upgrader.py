@@ -32,7 +32,8 @@ class Upgrader(HasActionQueue):
 
     @staticmethod
     def is_version_upgradable(old, new, reinstall: bool = False):
-        return reinstall or (Upgrader.compareVersions(old, new) != 0)
+        return (Upgrader.compareVersions(old, new) > 0) \
+               or (Upgrader.compareVersions(old, new) == 0) and reinstall
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -223,18 +224,6 @@ class Upgrader(HasActionQueue):
                 logger.info('{} found upgrade CANCEL txn {}'.format(
                     self, last_pool_upgrade_txn_cancel))
                 return
-
-            if self.compareVersions(current_version, last_pool_upgrade_txn_start[VERSION]) < 0:
-                # current_version > last_pool_upgrade_txn_start[VERSION]
-                uprgade_txn_to_cur_ver = self.get_upgrade_txn(
-                    lambda txn: txn[TXN_TYPE] == POOL_UPGRADE
-                                and txn[ACTION] == START
-                                and txn[VERSION] == current_version)
-                if not uprgade_txn_to_cur_ver:
-                    # The current version was installed not via POOL_UPGRADE
-                    # transaction. So don't process POOL_UPGRADE to a lower
-                    # version gotten during the catch-up.
-                    return
 
             self.handleUpgradeTxn(last_pool_upgrade_txn_start)
 
