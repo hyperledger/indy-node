@@ -17,6 +17,7 @@ from indy_client.client.client import Client
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.constants import NYM, GET_NYM
 from indy_common.config_util import getConfig
+from indy_common.util import get_reply_if_confirmed
 
 logger = getlogger()
 
@@ -78,7 +79,7 @@ class UserScenario(metaclass=ABCMeta):
         self._client.submitReqs(req)
 
         def getRequestResult(reqKey):
-            reply, error = self._client.replyIfConsensus(*reqKey)
+            reply, error = get_reply_if_confirmed(self._client, *reqKey)
             if reply is None and error is None:
                 raise Exception("Request has not been completed yet")
             else:
