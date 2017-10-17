@@ -56,6 +56,15 @@ def test_update_ports_and_ips(be, do, newStewardCli,
     exitFromCli(do)
 
 
+def testConsecutiveAddSameNodeWithOnlyBlsChange(be, do,
+                                                newStewardCli, newNodeVals,
+                                                newNodeAdded):
+    be(newStewardCli)
+    newNodeVals['newNodeData'][BLS_KEY] = randomString(32)
+    doSendNodeCmd(do, newNodeVals)
+    exitFromCli(do)
+
+
 def test_update_bls(be, do, newStewardCli,
                     newNodeVals, newNodeAdded,
                     nodeValsEmptyData):
