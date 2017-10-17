@@ -1,5 +1,5 @@
 from plenum.common.constants import NODE_IP, CLIENT_IP, CLIENT_PORT, NODE_PORT, \
-    ALIAS
+    ALIAS, BLS_KEY
 from plenum.common.util import randomString
 from plenum.test.cli.helper import exitFromCli
 from stp_core.network.port_dispenser import genHa
@@ -42,6 +42,15 @@ def testConsecutiveAddSameNodeWithNonAliasChange(be, do, newStewardCli,
     newNodeVals['newNodeData'][NODE_PORT] = nodePort
     newNodeVals['newNodeData'][CLIENT_IP] = nodeIp
     newNodeVals['newNodeData'][CLIENT_PORT] = clientPort
+    doSendNodeCmd(do, newNodeVals)
+    exitFromCli(do)
+
+
+def testConsecutiveAddSameNodeWithOnlyBlsChange(be, do,
+                                                newStewardCli, newNodeVals,
+                                                newNodeAdded):
+    be(newStewardCli)
+    newNodeVals['newNodeData'][BLS_KEY] = randomString(32)
     doSendNodeCmd(do, newNodeVals)
     exitFromCli(do)
 
