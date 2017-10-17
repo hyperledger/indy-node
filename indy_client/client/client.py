@@ -69,6 +69,12 @@ class Client(PlenumClient):
         self._observers = {}  # type Dict[str, Callable]
         self._observerSet = set()  # makes it easier to guard against duplicates
 
+        # To let client send this transactions to just one node
+        self._read_only_requests = {GET_NYM,
+                                    GET_ATTR,
+                                    GET_CLAIM_DEF,
+                                    GET_SCHEMA}
+
     @property
     def peerStackClass(self):
         if config.UseZStack:
