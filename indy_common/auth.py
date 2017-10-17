@@ -5,7 +5,8 @@ from indy_common.roles import Roles
 
 logger = getlogger()
 
-
+# TODO: make this class the only point of authorization and checking permissions!
+# There are some duplicates of this logic in *_req_handler classes
 class Authoriser:
     ValidRoles = (TRUSTEE, TGB, STEWARD, TRUST_ANCHOR, None)
 
