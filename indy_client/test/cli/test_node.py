@@ -52,16 +52,8 @@ def test_update_ports_and_ips(be, do, newStewardCli,
     node_vals['newNodeData'][CLIENT_IP] = clientIp
     node_vals['newNodeData'][CLIENT_PORT] = clientPort
 
-    doSendNodeCmd(do, node_vals)
-    exitFromCli(do)
-
-
-def testConsecutiveAddSameNodeWithOnlyBlsChange(be, do,
-                                                newStewardCli, newNodeVals,
-                                                newNodeAdded):
-    be(newStewardCli)
-    newNodeVals['newNodeData'][BLS_KEY] = randomString(32)
-    doSendNodeCmd(do, newNodeVals)
+    doSendNodeCmd(do, node_vals,
+                  expMsgs=['Node request completed'])
     exitFromCli(do)
 
 
@@ -72,9 +64,10 @@ def test_update_bls(be, do, newStewardCli,
 
     node_vals = nodeValsEmptyData
     node_vals['newNodeData'][ALIAS] = newNodeVals['newNodeData'][ALIAS]
-    node_vals['newNodeData'][BLS_KEY] = '5' * 32
+    node_vals['newNodeData'][BLS_KEY] = randomString(32)
 
-    doSendNodeCmd(do, node_vals)
+    doSendNodeCmd(do, node_vals,
+                  expMsgs=['Node request completed'])
     exitFromCli(do)
 
 
