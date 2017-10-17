@@ -45,6 +45,8 @@ class Authoriser:
             {STEWARD: [OWNER, ]},
         '{}_client_port_<any>_<any>'.format(NODE):
             {STEWARD: [OWNER, ]},
+        '{}_blskey_<any>_<any>'.format(NODE):
+            {STEWARD: [OWNER, ]},
         '{}_action__start'.format(POOL_UPGRADE):
             {TRUSTEE: [], TGB: []},
         '{}_action_start_cancel'.format(POOL_UPGRADE):
