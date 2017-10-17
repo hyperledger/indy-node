@@ -33,7 +33,7 @@ class Upgrader(HasActionQueue):
     @staticmethod
     def is_version_upgradable(old, new, reinstall: bool = False):
         return (Upgrader.compareVersions(old, new) > 0) \
-               or (Upgrader.compareVersions(old, new) == 0) and reinstall
+            or (Upgrader.compareVersions(old, new) == 0) and reinstall
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -207,7 +207,6 @@ class Upgrader(HasActionQueue):
         """
         logger.debug(
             '{} processing config ledger for any upgrades'.format(self))
-        current_version = self.getVersion()
         last_pool_upgrade_txn_start = self.get_upgrade_txn(
             lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == START, reverse=True)
         if last_pool_upgrade_txn_start:
