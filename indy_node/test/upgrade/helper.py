@@ -66,9 +66,25 @@ def bumpVersion(v):
     return '.'.join(parts[:-1] + [str(int(parts[-1]) + 1)])
 
 
+def lowerVersion(v):
+    parts = v.split('.')
+    for i in reversed(range(len(parts))):
+        if int(parts[i]) > 0:
+            parts[i] = str(int(parts[i]) - 1)
+            break
+    else:
+        raise ValueError('Version {} cannot be lowered'.format(v))
+    return '.'.join(parts)
+
+
 def bumpedVersion():
     v = codeVersion()
     return bumpVersion(v)
+
+
+def loweredVersion():
+    v = codeVersion()
+    return lowerVersion(v)
 
 
 class NodeControlToolExecutor:

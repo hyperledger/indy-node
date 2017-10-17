@@ -1,20 +1,16 @@
 from copy import deepcopy
 
-import pytest
-
+from indy_common.constants import SHA256
 from indy_node.test import waits
-from stp_core.loop.eventually import eventually
-from plenum.common.constants import VERSION, NAME
-from plenum.common.util import randomString
-
-from indy_common.constants import SHA256, ACTION, CANCEL
 from indy_node.test.upgrade.helper import bumpVersion, checkUpgradeScheduled, \
     ensureUpgradeSent
+from plenum.common.constants import VERSION, NAME
+from plenum.common.util import randomString
+from stp_core.loop.eventually import eventually
 
 
-def testScheduleUpgradeForALowerVersion(looper, tconf, nodeSet,
-                                        validUpgrade, trustee,
-                                        trusteeWallet):
+def testRescheduleUpgradeToLowerVersionThanPreviouslyScheduled(
+        looper, tconf, nodeSet, validUpgrade, trustee, trusteeWallet):
     """
     A node starts at version 1.2 running has scheduled upgrade for version 1.5
     but get a txn for upgrade 1.4, it will schedule it and cancel upgrade to 1.5.
