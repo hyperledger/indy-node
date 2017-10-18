@@ -56,13 +56,13 @@ For this guide, however, we’ll be using a command-line interface instead of an
 ## Install Indy
 You can install a test network in one of several ways:
 
- - **Automated VM Creation** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/master/vagrant/training/vb-multi-vm/TestSovrinClusterSetup.md) using VirtualBox and Vagrant.
+ - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/master/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
 
  - **Coming soon:** Use client side docker images to make it easy for you to play with Indy.
 
  - **Also coming soon:** Create virtual machines in AWS.
 
-To proceed past this point, you should have a test Indy Validator cluster running, either in separate nodes (VMs), or in simulation. You should also have Agent nodes (or a simulation) running with the "Faber College", "Acme Corp", and "Thrift Bank" Agents.  You should also have a CLI client which gives you a command-line interface(CLI) to Indy. We are going to use that CLI to explore what Indy can do. (Indy also has a programmatic API, but it is not yet fully formalized, and this version of the guide doesn’t document it.)
+To proceed past this point, you should have a test Indy Validator cluster running, either in separate nodes (VMs), or in simulation. You should also have Agent nodes (or a simulation) running with the "Faber College", "Acme Corp", and "Thrift Bank" Agents in separate terminals.  You should also have a CLI client which gives you a command-line interface(CLI) to Indy. We are going to use that CLI to explore what Indy can do. (Indy also has a programmatic API, but it is not yet fully formalized, and this version of the guide doesn’t document it.)
 
 ## Using the Indy CLI
 After completing the preceding, you should have a terminal with an Indy client CLI prompt:
