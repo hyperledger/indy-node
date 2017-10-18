@@ -1399,6 +1399,12 @@ def newNodeVals():
         'newNodeData': newNodeData
     }
 
+@pytest.fixture(scope='module')
+def nodeValsEmptyData(newNodeVals):
+    node_vals = {}
+    node_vals['newNodeData'] = {}
+    node_vals['newNodeIdr'] = newNodeVals['newNodeIdr']
+    return node_vals
 
 @pytest.yield_fixture(scope="module")
 def cliWithNewStewardName(CliBuilder):
