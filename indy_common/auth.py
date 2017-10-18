@@ -1,10 +1,14 @@
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
+
 from indy_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM, POOL_CONFIG
 from indy_common.roles import Roles
 
 logger = getlogger()
 
+
+# TODO: make this class the only point of authorization and checking permissions!
+# There are some duplicates of this logic in *_req_handler classes
 
 class Authoriser:
     ValidRoles = (TRUSTEE, TGB, STEWARD, TRUST_ANCHOR, None)
@@ -44,6 +48,8 @@ class Authoriser:
         '{}_client_ip_<any>_<any>'.format(NODE):
             {STEWARD: [OWNER, ]},
         '{}_client_port_<any>_<any>'.format(NODE):
+            {STEWARD: [OWNER, ]},
+        '{}_blskey_<any>_<any>'.format(NODE):
             {STEWARD: [OWNER, ]},
         '{}_action__start'.format(POOL_UPGRADE):
             {TRUSTEE: [], TGB: []},
