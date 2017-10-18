@@ -8,11 +8,17 @@ from indy_client.test.cli.helper import doSendNodeCmd
 
 
 def test_add_new_node(newNodeAdded):
+    '''
+    Checks adding of a new Nodes with all parameters (including BLS keys)
+    '''
     pass
 
 
 def test_add_same_node_without_any_change(be, do, newStewardCli,
                                           newNodeVals, newNodeAdded):
+    '''
+    Checks that it's not possible to add the same node twice
+    '''
     be(newStewardCli)
     doSendNodeCmd(do, newNodeVals,
                   expMsgs=['node already has the same data as requested'])
@@ -23,6 +29,9 @@ def test_update_node_and_client_port_same(be, do, newStewardCli,
                                           newNodeVals,
                                           newNodeAdded,
                                           nodeValsEmptyData):
+    '''
+    Checks that it's not possible to have node and client ports same
+    '''
     be(newStewardCli)
     nodeIp, nodePort = genHa()
 
@@ -41,6 +50,10 @@ def test_update_node_and_client_port_same(be, do, newStewardCli,
 def test_update_ports_and_ips(be, do, newStewardCli,
                               newNodeVals, newNodeAdded,
                               nodeValsEmptyData):
+    '''
+    Checks that it's possible to update node and client ports and IPs
+    (just alias and ports/IPs are required)
+    '''
     be(newStewardCli)
     nodeIp, nodePort = genHa()
     clientIp, clientPort = genHa()
@@ -60,6 +73,9 @@ def test_update_ports_and_ips(be, do, newStewardCli,
 def test_update_bls(be, do, newStewardCli,
                     newNodeVals, newNodeAdded,
                     nodeValsEmptyData):
+    '''
+    Checks that it's possible to update BLS keys (just alias and new key are required)
+    '''
     be(newStewardCli)
 
     node_vals = nodeValsEmptyData
@@ -74,6 +90,9 @@ def test_update_bls(be, do, newStewardCli,
 def test_add_same_data_alias_changed(be, do,
                                      newStewardCli, newNodeVals,
                                      newNodeAdded):
+    '''
+    Checks that it's not possible to add a new Node with the same alias
+    '''
     be(newStewardCli)
     newNodeVals['newNodeData'][ALIAS] = randomString(6)
     doSendNodeCmd(do, newNodeVals,
@@ -85,6 +104,9 @@ def test_update_alias(be, do,
                       newStewardCli,
                       newNodeAdded,
                       nodeValsEmptyData):
+    '''
+    Checks that it's not possible to change alias of existing node
+    '''
     be(newStewardCli)
 
     node_vals = nodeValsEmptyData
