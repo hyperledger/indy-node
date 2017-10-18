@@ -30,7 +30,7 @@ logger = getlogger()
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate BLS keys for a node "
-                    "by taking the node's name and a seed "
+                    "by taking the node's name and seeds "
                     "and send NODE txn with the BLS key specified")
 
     parser.add_argument('--name', required=True, help='node name')
