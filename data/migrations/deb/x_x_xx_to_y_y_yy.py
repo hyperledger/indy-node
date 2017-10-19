@@ -72,7 +72,7 @@ def migrate_general_config(old_general_config, new_general_config, network_name)
     for line in lines:
         if not line.startswith('current_env'):
             f.write(line)
-    line = 'NETWORK_NAME = ' + network_name + '\n'
+    line = "NETWORK_NAME = '{}'\n".format(network_name)
     f.write(line)
     f.close()
 
@@ -116,7 +116,9 @@ def migrate_all():
     new_log_dir = os.path.join(LOG_DIR, network_name)
     os.makedirs(new_log_dir, exist_ok=True)
     new_node_base_dir = os.path.join(base_dir, network_name)
+
     new_node_base_data_dir = os.path.join(NODE_BASE_DATA_DIR, network_name)
+    new_node_base_data_dir = os.path.join(new_node_base_data_dir, "data")
 
     # Move genesis transactions
     migrate_genesis_txn(old_base_dir, NODE_BASE_DATA_DIR)
@@ -137,7 +139,8 @@ def migrate_all():
         # Move keys
         logger.info('Move keys for node \'{}\'...'.format(node_name))
         old_keys_dir = os.path.join(old_base_dir, node_name)
-        new_keys_dir = os.path.join(new_node_base_dir, node_name)
+        new_keys_dir = os.path.join(new_node_base_dir, "keys")
+        new_keys_dir = os.path.join(new_keys_dir, node_name)
         os.makedirs(new_keys_dir, exist_ok=True)
         migrate_keys(old_keys_dir, new_keys_dir)
         logger.info('done')
@@ -145,16 +148,18 @@ def migrate_all():
     # Move nodes data directory
     logger.info('Move nodes data directory {} -> {}'.format(
         old_nodes_data_dir, new_node_base_data_dir))
-    shutil.move(old_nodes_data_dir, new_node_base_data_dir)
+    if os.path.exists(old_nodes_data_dir):
+        shutil.move(old_nodes_data_dir, new_node_base_data_dir)
     logger.info('done')
 
     # Move daemon config
     logger.info('Move daemon config {} -> {}'.format(
         old_daemon_config, GENERAL_CONFIG_DIR))
-    shutil.move(old_daemon_config, GENERAL_CONFIG_DIR)
+    if os.path.exists(old_daemon_config):
+        shutil.move(old_daemon_config, GENERAL_CONFIG_DIR)
     logger.info('done')
 
-    migrate_cli(old_wallets_dir, CLI_BASE_DIR, CLI_NETWORK_DIR)
+    #migrate_cli(old_wallets_dir, CLI_BASE_DIR, CLI_NETWORK_DIR)
 
     logger.info('Finish migration of directories/files.')
 
