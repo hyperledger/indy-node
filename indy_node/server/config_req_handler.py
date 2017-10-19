@@ -67,6 +67,15 @@ class ConfigReqHandler(RequestHandler):
                 req.reqId,
                 "Nym {} not added to the ledger yet".format(origin))
         if typ == POOL_UPGRADE:
+            currentVersion = Upgrader.getVersion()
+            targetVersion = req.operation[VERSION]
+            if Upgrader.compareVersions(currentVersion, targetVersion) < 0:
+                # currentVersion > targetVersion
+                raise InvalidClientRequest(
+                    req.identifier,
+                    req.reqId,
+                    "Upgrade to lower version is not allowed")
+
             trname = IndyTransactions.POOL_UPGRADE.name
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version
