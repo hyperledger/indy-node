@@ -13,7 +13,7 @@ migration_script_path = \
     os.path.normpath(
         os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            'helper_1_0_96_to_1_0_97.py'))
+            'helper_1_0_28_to_1_0_29.py'))
 
 logger.info('script path {}'.format(migration_script_path))
 ret = subprocess.run(

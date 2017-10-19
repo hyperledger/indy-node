@@ -1,20 +1,15 @@
 #!/usr/bin/python3.5
 import fileinput
-import json
 import os
 import shutil
 import sys
 
-from common.serializers.json_serializer import JsonSerializer
-from common.serializers.mapping_serializer import MappingSerializer
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.ledger import Ledger
-from plenum.common.constants import TXN_TYPE, DATA
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from stp_core.common.log import getlogger
 
 from sovrin_common.config_util import getConfig
-from sovrin_common.constants import SCHEMA, CLAIM_DEF
 
 logger = getlogger()
 
@@ -44,12 +39,6 @@ def __migrate_ledger(data_directory,
 
     # add all txns into the new ledger
     for _, txn in old_ledger.getAllTxn():
-        if txn[TXN_TYPE] == SCHEMA:
-            if DATA in txn:
-                txn[DATA] = json.loads(txn[DATA])
-        if txn[TXN_TYPE] == CLAIM_DEF:
-            if DATA in txn:
-                txn[DATA] = json.loads(txn[DATA])
         # remove all NULL values from there!
         txn = __prepare_old_txn(txn)
         print(txn)
