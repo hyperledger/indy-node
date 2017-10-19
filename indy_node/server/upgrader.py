@@ -371,7 +371,7 @@ class Upgrader(HasActionQueue):
         delay = 0
         if now < when:
             delay = (when - now).total_seconds()
-        self.scheduledUpgrade = (version, delay, upgrade_id)
+        self.scheduledUpgrade = (version, when, upgrade_id)
         self._schedule(callAgent, delay)
 
     def _cancelScheduledUpgrade(self, justification=None) -> None:
