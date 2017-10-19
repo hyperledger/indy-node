@@ -1,6 +1,6 @@
 import dateutil
 import pytest
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from indy_client.test.cli.test_pool_upgrade import poolUpgradeSubmitted
 from indy_client.test.cli.test_pool_upgrade import poolUpgradeScheduled
@@ -22,5 +22,6 @@ def validUpgrade(_validUpgrade):
 def testPoolUpgradeScheduledOnProperDate(poolNodesStarted,
                                          poolUpgradeScheduled):
     # Verify that the upgrade is scheduled in approximately 5 days for each node
+    now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     for node in poolNodesStarted.nodes.values():
-        assert round(node.upgrader.scheduledUpgrade[1] / 24 / 60 / 60) == 5
+        assert (node.upgrader.scheduledUpgrade[1] - now).days == 5
