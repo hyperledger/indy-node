@@ -10,10 +10,10 @@ def comparator_test(lower_versrion, higher_version):
     assert Upgrader.is_version_upgradable(
         higher_version, higher_version, reinstall=True)
     assert Upgrader.is_version_upgradable(lower_versrion, higher_version)
-    assert Upgrader.is_version_upgradable(higher_version, lower_versrion)
+    assert not Upgrader.is_version_upgradable(higher_version, lower_versrion)
 
 
-def testVersions():
+def test_versions():
     comparator_test('0.0.5', '0.0.6')
     comparator_test('0.1.2', '0.2.6')
     comparator_test('1.10.2', '2.0.6')
