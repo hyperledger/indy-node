@@ -32,7 +32,8 @@ class Upgrader(HasActionQueue):
 
     @staticmethod
     def is_version_upgradable(old, new, reinstall: bool = False):
-        return reinstall or (Upgrader.compareVersions(old, new) != 0)
+        return (Upgrader.compareVersions(old, new) > 0) \
+            or (Upgrader.compareVersions(old, new) == 0) and reinstall
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -206,7 +207,6 @@ class Upgrader(HasActionQueue):
         """
         logger.debug(
             '{} processing config ledger for any upgrades'.format(self))
-        current_version = self.getVersion()
         last_pool_upgrade_txn_start = self.get_upgrade_txn(
             lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == START, reverse=True)
         if last_pool_upgrade_txn_start:
@@ -217,8 +217,8 @@ class Upgrader(HasActionQueue):
             # searching for CANCEL for this upgrade submitted after START txn
             last_pool_upgrade_txn_cancel = self.get_upgrade_txn(
                 lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == CANCEL and
-                txn[VERSION] == current_version,
-                start_no=last_pool_upgrade_txn_seq_no)
+                txn[VERSION] == last_pool_upgrade_txn_start[VERSION],
+                start_no=last_pool_upgrade_txn_seq_no + 1)
             if last_pool_upgrade_txn_cancel:
                 logger.info('{} found upgrade CANCEL txn {}'.format(
                     self, last_pool_upgrade_txn_cancel))

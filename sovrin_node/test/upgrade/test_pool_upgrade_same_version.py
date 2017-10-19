@@ -16,7 +16,7 @@ def test_do_not_upgrade_to_the_same_version(looper, tconf, nodeSet,
     upgr1 = deepcopy(validUpgrade)
     upgr1[VERSION] = codeVersion()
 
-    # An upgrade scheduled, it should pass
+    # An upgrade is not scheduled
     ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
     with pytest.raises(AssertionError):
         looper.run(
