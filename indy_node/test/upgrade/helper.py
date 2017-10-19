@@ -133,7 +133,9 @@ def check_node_set_acknowledges_upgrade(
         node_ids=node_ids)
 
     for node in node_set:
-        node.upgrader.scheduledUpgrade = (version, 0, randomString(10))
+        node.upgrader.scheduledUpgrade = (version,
+                                          datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc()),
+                                          randomString(10))
         node.notify_upgrade_start()
         node.upgrader.scheduledUpgrade = None
 
@@ -181,8 +183,9 @@ def check_ledger_after_upgrade(
 def check_no_loop(nodeSet, event):
     for node in nodeSet:
         # mimicking upgrade start
-        node.upgrader._upgradeLog.appendStarted(
-            0, node.upgrader.scheduledUpgrade[0], node.upgrader.scheduledUpgrade[2])
+        node.upgrader._upgradeLog.appendStarted(datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc()),
+                                                node.upgrader.scheduledUpgrade[0],
+                                                node.upgrader.scheduledUpgrade[2])
         node.notify_upgrade_start()
         # mimicking upgrader's initialization after restart
         node.upgrader.check_upgrade_succeeded()
