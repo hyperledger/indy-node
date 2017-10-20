@@ -224,10 +224,10 @@ class NodeControlTool:
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
     def _get_backups(self):
-        files = [os.path.join(self.backup_dir, file)
-                 for file in os.listdir(self.backup_dir)]
-        files = [file for file in files if os.path.isfile(
-            file) and self.backup_name_prefix in file]
+        files = [os.path.join(self.backup_dir, bk_file)
+                 for bk_file in os.listdir(self.backup_dir)]
+        files = [bk_file for bk_file in files if os.path.isfile(
+            bk_file) and self.backup_name_prefix in bk_file]
         return sorted(files, key=os.path.getmtime, reverse=True)
 
     def _remove_old_backups(self):

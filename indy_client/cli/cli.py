@@ -1918,9 +1918,9 @@ class IndyCli(PlenumCli):
         return env
 
     def get_available_networks(self):
-        return [dir for dir in os.listdir(self.ledger_base_dir)
+        return [check_dir for check_dir in os.listdir(self.ledger_base_dir)
                 if os.path.isdir(
-                    os.path.join(self.ledger_base_dir, dir))]
+                    os.path.join(self.ledger_base_dir, check_dir))]
 
     def getAllSubDirNamesForKeyrings(self):
         lst = self.get_available_networks()

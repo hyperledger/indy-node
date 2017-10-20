@@ -44,7 +44,7 @@ def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
 
 
 def migrate_keys(old_base_keys_dir, new_base_keys_dir):
-    for prefix in ('private', 'public', 'sig', 'verif'):
+    for prefix in ('private', 'public', 'sig', 'verif', 'bls'):
         old_keys_dir = os.path.join(old_base_keys_dir, '{}_keys'.format(prefix))
         if os.path.exists(old_keys_dir) and os.path.isdir(old_keys_dir):
             shutil.move(old_keys_dir, new_base_keys_dir)
