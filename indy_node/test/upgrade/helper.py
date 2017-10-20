@@ -46,7 +46,7 @@ def ensureUpgradeSent(looper, trustee, trusteeWallet, upgradeData):
 
 def checkUpgradeScheduled(nodes, version):
     for node in nodes:
-        assert len(node.upgrader.aqStash) > 0
+        assert len(node.upgrader.aqStash) == 1
         assert node.upgrader.scheduledUpgrade
         assert node.upgrader.scheduledUpgrade[0] == version
 
