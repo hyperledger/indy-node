@@ -1,3 +1,5 @@
+import dateutil
+
 from indy_node.server.upgrade_log import UpgradeLog
 from datetime import datetime
 import os
@@ -23,7 +25,7 @@ def test_update_log():
     log = UpgradeLog(tmpFilePath)
     assert log.lastEvent is None
 
-    now = datetime.utcnow()
+    now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     version = "1.2.3"
     upgrade_id = '1'
 

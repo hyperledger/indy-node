@@ -39,15 +39,15 @@ def poolUpgradeScheduled(poolUpgradeSubmitted, poolNodesStarted, validUpgrade):
 @pytest.fixture(scope="module")
 def poolUpgradeCancelled(poolUpgradeScheduled, be, do, trusteeCli,
                          validUpgrade):
-    validUpgrade = copy(validUpgrade)
-    validUpgrade[ACTION] = CANCEL
-    validUpgrade[JUSTIFICATION] = '"not gonna give you one"'
+    cancelUpgrade = copy(validUpgrade)
+    cancelUpgrade[ACTION] = CANCEL
+    cancelUpgrade[JUSTIFICATION] = '"not gonna give you one"'
     be(trusteeCli)
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
        'action={action} justification={justification}',
        within=10,
        expect=['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'],
-       mapper=validUpgrade)
+       mapper=cancelUpgrade)
 
 
 def test_pool_upgrade_rejected(be, do, newStewardCli, validUpgrade):
