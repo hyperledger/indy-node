@@ -69,15 +69,6 @@ def looper():
         yield l
 
 
-# TODO: Probably need to remove
-@pytest.fixture("module")
-def nodesCli(looper, tdir, nodeNames):
-    cli = newCLI(looper, tdir)
-    cli.enterCmd("new node all")
-    waitAllNodesStarted(cli, *nodeNames)
-    return cli
-
-
 @pytest.fixture("module")
 def cli(looper, tdir):
     return newCLI(looper, tdir)
