@@ -19,10 +19,9 @@ class HasPoolManager(PHasPoolManager):
 
 class TxnPoolManager(PTxnPoolManager):
     def __init__(self, node, ha=None, cliname=None, cliha=None):
-        self.idrCache = node.reqHandler.idrCache
         super().__init__(node=node, ha=ha, cliname=cliname, cliha=cliha)
 
     def getPoolReqHandler(self):
         return PoolRequestHandler(self.ledger, self.state,
                                   self.node.states[DOMAIN_LEDGER_ID],
-                                  self.idrCache)
+                                  self.node.getIdrCache())
