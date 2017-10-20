@@ -19,7 +19,7 @@ def validUpgrade(_validUpgrade):
     return _validUpgrade
 
 
-def testPoolUpgradeScheduledOnProperDate(poolNodesStarted,
+def testNodeUpgradeScheduledOnProperDate(poolNodesStarted,
                                          poolUpgradeScheduled):
     # Verify that the upgrade is scheduled in approximately 5 days for each node
     now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())

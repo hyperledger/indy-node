@@ -1,0 +1,2 @@
+def testNodeSchedulesUpgrade(upgradeScheduled):
+    pass

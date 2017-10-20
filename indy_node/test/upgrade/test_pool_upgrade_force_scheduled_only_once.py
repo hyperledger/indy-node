@@ -1,7 +1,7 @@
 from indy_node.server.upgrade_log import UpgradeLog
 
 
-def testPoolUpgradeForceNotScheduledTwice(upgradeScheduledExpForceTrue,
+def testPoolUpgradeForceScheduledOnlyOnce(upgradeScheduledExpForceTrue,
                                           nodeSet):
     for node in nodeSet:
         assert len(list(node.upgrader._upgradeLog)) == 1
