@@ -25,6 +25,32 @@ def test_add_same_node_without_any_change(be, do, newStewardCli,
     exitFromCli(do)
 
 
+def test_add_same_node_without_any_change_by_trustee(be, do, trusteeCli,
+                                                     newNodeVals, newNodeAdded,
+                                                     nodeValsEmptyData):
+    '''
+    Checks that it's possible to update BLS keys (just alias and new key are required)
+    '''
+    be(trusteeCli)
+    doSendNodeCmd(do, newNodeVals,
+                  expMsgs=["node already has the same data as requested"])
+    exitFromCli(do)
+
+
+def test_add_same_node_with_changed_bls_by_trustee(be, do, trusteeCli,
+                                                   newNodeVals, newNodeAdded,
+                                                   nodeValsEmptyData):
+    '''
+    Checks that it's possible to update BLS keys (just alias and new key are required)
+    '''
+    be(trusteeCli)
+    node_vals = newNodeVals
+    node_vals['newNodeData'][BLS_KEY] = randomString(32)
+    doSendNodeCmd(do, node_vals,
+                  expMsgs=["TRUSTEE not in allowed roles ['STEWARD']"])
+    exitFromCli(do)
+
+
 def test_update_node_and_client_port_same(be, do, newStewardCli,
                                           newNodeVals,
                                           newNodeAdded,
@@ -84,6 +110,23 @@ def test_update_bls(be, do, newStewardCli,
 
     doSendNodeCmd(do, node_vals,
                   expMsgs=['Node request completed'])
+    exitFromCli(do)
+
+
+def test_update_bls_by_trustee(be, do, trusteeCli,
+                               newNodeVals, newNodeAdded,
+                               nodeValsEmptyData):
+    '''
+    Checks that it's possible to update BLS keys (just alias and new key are required)
+    '''
+    be(trusteeCli)
+
+    node_vals = nodeValsEmptyData
+    node_vals['newNodeData'][ALIAS] = newNodeVals['newNodeData'][ALIAS]
+    node_vals['newNodeData'][BLS_KEY] = randomString(32)
+
+    doSendNodeCmd(do, node_vals,
+                  expMsgs=["TRUSTEE not in allowed roles ['STEWARD']"])
     exitFromCli(do)
 
 
