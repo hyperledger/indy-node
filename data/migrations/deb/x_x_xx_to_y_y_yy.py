@@ -50,13 +50,25 @@ def migrate_keys(old_base_keys_dir, new_base_keys_dir):
             shutil.move(old_keys_dir, new_base_keys_dir)
 
 
+def _get_network_from_txn_file_name(file_name: str):
+    name_split = file_name.split("_")
+    ret_name = "sandbox"
+    if name_split and name_split[-1] in ["live", "sandbox"]:
+        ret_name = name_split[-1]
+    return ret_name
+
+
 def get_network_name():
     network_name = 'sandbox'
     old_general_config = os.path.join(old_base_dir, 'indy_config.py')
     spec = spec_from_file_location('old_general_config', old_general_config)
     old_cfg = module_from_spec(spec)
     spec.loader.exec_module(old_cfg)
-    if hasattr(old_cfg, 'current_env') and old_cfg.current_env != 'test':
+    if hasattr(old_cfg, 'poolTransactionsFile'):
+        network_name = _get_network_from_txn_file_name(old_cfg.poolTransactionsFile)
+    elif hasattr(old_cfg, 'domainTransactionsFile'):
+        network_name = _get_network_from_txn_file_name(old_cfg.domainTransactionsFile)
+    elif hasattr(old_cfg, 'current_env') and old_cfg.current_env != 'test':
         network_name = old_cfg.current_env
     return network_name
 
@@ -70,7 +82,8 @@ def migrate_general_config(old_general_config, new_general_config, network_name)
 
     f = open(new_general_config, "w")
     for line in lines:
-        if not line.startswith('current_env'):
+        if not line.startswith('current_env') and not line.startswith('poolTransactionsFile') and\
+                not line.startswith('domainTransactionsFile'):
             f.write(line)
     line = "NETWORK_NAME = '{}'\n".format(network_name)
     f.write(line)
