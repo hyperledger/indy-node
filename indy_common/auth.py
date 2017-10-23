@@ -100,7 +100,8 @@ class Authoriser:
                 key = anyKey
         roles = Authoriser.AuthMap[key]
         if actorRole not in roles:
-            return False, '{} not in allowed roles {}'.format(actorRole, roles)
+            roles_as_str = [Roles.nameFromValue(role) for role in roles.keys()]
+            return False, '{} not in allowed roles {}'.format(Roles.nameFromValue(actorRole), roles_as_str)
         roleDetails = roles[actorRole]
         if len(roleDetails) == 0:
             return True, ''
