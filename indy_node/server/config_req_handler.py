@@ -2,7 +2,7 @@ from typing import List
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
-from plenum.common.txn_util import reqToTxn
+from plenum.common.txn_util import reqToTxn, isTxnForced
 from plenum.server.req_handler import RequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.auth import Authoriser
@@ -116,11 +116,13 @@ class ConfigReqHandler(RequestHandler):
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         committedTxns = super().commit(txnCount, stateRoot, txnRoot)
         for txn in committedTxns:
-            # TODO: for now pool_upgrade will not be scheduled twice
-            # because of version check
-            # make sure it will be the same in future
-            self.upgrader.handleUpgradeTxn(txn)
-            self.poolCfg.handleConfigTxn(txn)
+            # Handle POOL_UPGRADE or POOL_CONFIG transaction here
+            # only in case it is not forced.
+            # If it is forced then it was handled earlier
+            # in applyForced method.
+            if not isTxnForced(txn):
+                self.upgrader.handleUpgradeTxn(txn)
+                self.poolCfg.handleConfigTxn(txn)
         return committedTxns
 
     def applyForced(self, req: Request):
