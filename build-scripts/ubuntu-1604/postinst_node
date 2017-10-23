@@ -7,13 +7,33 @@ if [ -f /home/indy/.indy ]; then
     rm /home/indy/.indy
 fi
 mkdir -p /home/indy/.indy
-
-# create indy config if not exists
-if [ ! -f /home/indy/.indy/indy_config.py ]; then
-    touch /home/indy/.indy/indy_config.py
-fi
-
 chown -R indy:indy /home/indy/.indy
+
+mkdir -p /var/lib/indy/
+chown -R indy:indy /var/lib/indy/
+
+# create indy config folder if does not exist
+mkdir -p /etc/indy
+
+# create indy config if does not exist
+if [ ! -f /etc/indy/indy_config.py ]; then
+    touch /etc/indy/indy_config.py
+fi
+chown -R indy:indy /etc/indy/
+
+# create indy log folder if does not exist
+mkdir -p /var/log/indy
+chown -R indy:indy /var/log/indy
+
+# change permissions for plenum folders
+#chown -R indy:indy /var/plenum/
+#chown -R indy:indy /var/log/plenum
+#chown -R indy:indy /etc/plenum
+
+# create indy cli folder if does not exist
+mkdir -p /home/indy/indy-cli
+mkdir -p /home/indy/indy-cli/networks
+chown -R indy:indy /home/indy/indy-cli
 
 # init_indy_node script
 cat <<EOF > /usr/local/bin/init_indy_node
@@ -30,9 +50,9 @@ if [ \$# -lt 3 ]; then
     exit 1;
 fi
 
-echo "NODE_NAME=\$1" > /home/indy/.indy/indy.env
-echo "NODE_PORT=\$2" >> /home/indy/.indy/indy.env
-echo "NODE_CLIENT_PORT=\$3" >> /home/indy/.indy/indy.env
+echo "NODE_NAME=\$1" > /etc/indy/indy.env
+echo "NODE_PORT=\$2" >> /etc/indy/indy.env
+echo "NODE_CLIENT_PORT=\$3" >> /etc/indy/indy.env
 
 if [ -z \$4 ]; then
     init_indy_keys --name \$1
@@ -50,7 +70,7 @@ Description=Indy Node
 Requires=indy-node-control.service
 
 [Service]
-EnvironmentFile=/home/indy/.indy/indy.env
+EnvironmentFile=/etc/indy/indy.env
 ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_indy_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
 User=indy
 Group=indy
@@ -86,8 +106,6 @@ TimeoutSec=300
 WantedBy=multi-user.target
 EOF
 
-mkdir -p /etc/indy
-
 HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/indy/node_control.conf)
 if [ ! -f /etc/indy/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
     cat <<EOF > /etc/indy/node_control.conf
@@ -115,8 +133,14 @@ rm -f /usr/local/bin/delete_indy_node.bat /usr/local/bin/upgrade_indy_node_test.
     /usr/local/bin/restart_indy_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_indy_node.bat \
     /usr/local/bin/install_indy_node.bat /usr/local/bin/restart_upgrade_agent.bat
 
-# disable stdout logging
-echo "enableStdOutLogging=False" >> /home/indy/.indy/indy_config.py
+echo "enableStdOutLogging=False" >> /etc/indy/indy_config.py
+echo "baseDir = '/var/lib/indy'" >> /etc/indy/indy_config.py
+echo "NODE_BASE_DATA_DIR = baseDir" >> /etc/indy/indy_config.py
+echo "LOG_DIR = '/var/log/indy'" >> /etc/indy/indy_config.py
+echo "BACKUP_DIR = '/var/lib/indy/backup'" >> /etc/indy/indy_config.py
+echo "CLI_BASE_DIR = '~/.indy-cli/'" >> /etc/indy/indy_config.py
+echo "CLI_NETWORK_DIR = '~/.indy-cli/networks'" >> /etc/indy/indy_config.py
+echo "NODE_BASE_DATA_DIR = baseDir" >> /etc/indy/indy_config.py
 
 
 # Automatically added from template:

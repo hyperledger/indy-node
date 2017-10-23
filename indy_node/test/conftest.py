@@ -108,7 +108,7 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
-    newNode = testNodeClass(newNodeName, basedirpath=tdir, config=tconf,
+    newNode = testNodeClass(newNodeName, basedirpath=tdir, base_data_dir=tdir, config=tconf,
                             ha=(nodeIp, nodePort), cliha=(
                                 clientIp, clientPort),
                             pluginPaths=allPluginsPath)

@@ -22,9 +22,11 @@ DEPS = ['indy-plenum', 'indy-anoncreds']
 CONFIG = getConfig()
 FILES_TO_PRESERVE = [CONFIG.lastRunVersionFile, CONFIG.nextVersionFile,
                      CONFIG.upgradeLogFile, CONFIG.lastVersionFilePath]
-BACKUP_NAME_PREFIX = 'indy_backup_'
+BACKUP_TARGET = os.path.join(os.path.expanduser(CONFIG.baseDir), CONFIG.NETWORK_NAME)
+BACKUP_NAME_PREFIX = '{}_backup_'.format(CONFIG.NETWORK_NAME)
 BACKUP_NUM = 10
 PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'
+TMP_DIR = '/tmp/.indy_tmp'
 
 
 class NodeControlTool:
@@ -33,19 +35,20 @@ class NodeControlTool:
     def __init__(
             self,
             timeout: int = TIMEOUT,
-            base_dir: str = BASE_DIR,
             backup_format: str = BACKUP_FORMAT,
             test_mode: bool = False,
             deps: List[str] = DEPS,
+            backup_target: str = BACKUP_TARGET,
             files_to_preserve: List[str] = FILES_TO_PRESERVE,
+            backup_dir: str = CONFIG.BACKUP_DIR,
             backup_name_prefix: str = BACKUP_NAME_PREFIX,
             backup_num: int = BACKUP_NUM,
             hold_ext: str = ''):
         self.test_mode = test_mode
         self.timeout = timeout
-        self.base_dir = base_dir
-        self.indy_dir = os.path.join(self.base_dir, '.indy')
-        self.tmp_dir = os.path.join(self.base_dir, '.indy_tmp')
+        self.backup_dir = backup_dir
+        self.backup_target = backup_target
+        self.tmp_dir = TMP_DIR
         self.backup_format = backup_format
         self.deps = deps
         self.files_to_preserve = files_to_preserve
@@ -189,7 +192,7 @@ class NodeControlTool:
             raise Exception(msg)
 
     def _backup_name(self, version):
-        return os.path.join(self.base_dir, '{}{}'.format(
+        return os.path.join(self.backup_dir, '{}{}'.format(
             self.backup_name_prefix, version))
 
     def _backup_name_ext(self, version):
@@ -198,33 +201,33 @@ class NodeControlTool:
     def _create_backup(self, version):
         logger.debug('Creating backup for {}'.format(version))
         shutil.make_archive(self._backup_name(version),
-                            self.backup_format, self.indy_dir)
+                            self.backup_format, self.backup_target)
 
     def _restore_from_backup(self, version):
         logger.debug('Restoring from backup for {}'.format(version))
         for file_path in self.files_to_preserve:
             try:
-                shutil.copy2(os.path.join(self.indy_dir, file_path),
+                shutil.copy2(os.path.join(self.backup_target, file_path),
                              os.path.join(self.tmp_dir, file_path))
             except IOError as e:
                 logger.warning(
                     'Copying {} failed due to {}'.format(file_path, e))
         shutil.unpack_archive(self._backup_name_ext(
-            version), self.indy_dir, self.backup_format)
+            version), self.backup_target, self.backup_format)
         for file_path in self.files_to_preserve:
             try:
                 shutil.copy2(os.path.join(self.tmp_dir, file_path),
-                             os.path.join(self.indy_dir, file_path))
+                             os.path.join(self.backup_target, file_path))
             except IOError as e:
                 logger.warning(
                     'Copying {} failed due to {}'.format(file_path, e))
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
     def _get_backups(self):
-        files = [os.path.join(self.base_dir, file)
-                 for file in os.listdir(self.base_dir)]
-        files = [file for file in files if os.path.isfile(
-            file) and self.backup_name_prefix in file]
+        files = [os.path.join(self.backup_dir, bk_file)
+                 for bk_file in os.listdir(self.backup_dir)]
+        files = [bk_file for bk_file in files if os.path.isfile(
+            bk_file) and self.backup_name_prefix in bk_file]
         return sorted(files, key=os.path.getmtime, reverse=True)
 
     def _remove_old_backups(self):

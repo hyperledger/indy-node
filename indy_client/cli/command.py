@@ -144,9 +144,9 @@ showConnectionCmd = Command(
 
 connectToCmd = Command(
     id="connect",
-    title="Lets you connect to the respective environment (test/live)",
-    usage="connect test|live",
-    examples=["connect test", "connect live"])
+    title="Lets you connect to the respective environment",
+    usage="connect sandbox|live",
+    examples=["connect sandbox", "connect live"])
 
 disconnectCmd = Command(
     id="disconnect",

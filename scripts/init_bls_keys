@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import os
 import argparse
 
 from plenum.common.config_util import getConfig
@@ -7,6 +8,8 @@ from plenum.common.keygen_utils import init_bls_keys
 from plenum.common.script_helper import buildKeepDirIfNotExists
 
 config = getConfig()
+
+key_dir = os.path.join(os.path.expanduser(config.baseDir), config.NETWORK_NAME, "keys")
 
 
 def parse_args():
@@ -25,13 +28,13 @@ def parse_args():
 
 def generate_and_store_bls_keys(node_name, seed):
     try:
-        init_bls_keys(baseDir=config.baseDir, node_name=node_name, seed=seed)
+        init_bls_keys(baseDir=key_dir, node_name=node_name, seed=seed)
     except Exception as ex:
         print(ex)
         exit()
 
 
 if __name__ == "__main__":
-    buildKeepDirIfNotExists(config.baseDir)
+    buildKeepDirIfNotExists(key_dir)
     node_name, seed = parse_args()
-    init_bls_keys(config.baseDir, node_name, seed)
+    init_bls_keys(key_dir, node_name, seed)
