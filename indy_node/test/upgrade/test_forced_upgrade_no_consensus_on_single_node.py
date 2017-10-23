@@ -4,7 +4,7 @@ from plenum.common.constants import VERSION
 from stp_core.loop.eventually import eventually
 
 
-def testForcedUpgradeNoConsensusOnSingleNode(
+def test_forced_upgrade_no_consensus_on_single_node(
         validUpgradeExpForceTrue, looper, nodeSet, trustee, trusteeWallet):
     nup = validUpgradeExpForceTrue.copy()
     nup.update({VERSION: bumpVersion(validUpgradeExpForceTrue[VERSION])})
