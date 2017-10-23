@@ -143,25 +143,23 @@ class Node(PlenumNode, HasPoolManager):
                         upgrade_start_callback=self.notify_upgrade_start)
 
     def getDomainReqHandler(self):
-        if self.idrCache is None:
-            self.idrCache = self.getIdrCache()
         if self.attributeStore is None:
             self.attributeStore = self.loadAttributeStore()
         return DomainReqHandler(self.domainLedger,
                                 self.states[DOMAIN_LEDGER_ID],
                                 self.reqProcessors,
-                                self.idrCache,
+                                self.getIdrCache(),
                                 self.attributeStore,
-                                self.bls_store)
+                                self.bls_bft.bls_store)
 
     def getIdrCache(self):
-        return IdrCache(
-            self.name,
-            initKeyValueStorage(
-                self.config.idrCacheStorage,
-                self.dataLocation,
-                self.config.idrCacheDbName)
-        )
+        if self.idrCache is None:
+            self.idrCache = IdrCache(self.name,
+                                     initKeyValueStorage(self.config.idrCacheStorage,
+                                                         self.dataLocation,
+                                                         self.config.idrCacheDbName)
+                                     )
+        return self.idrCache
 
     def getConfigLedger(self):
         hashStore = LevelDbHashStore(
@@ -190,8 +188,10 @@ class Node(PlenumNode, HasPoolManager):
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,
                                 self.states[CONFIG_LEDGER_ID],
-                                self.idrCache, self.upgrader,
-                                self.poolManager, self.poolCfg)
+                                self.getIdrCache(),
+                                self.upgrader,
+                                self.poolManager,
+                                self.poolCfg)
 
     def initConfigState(self):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
