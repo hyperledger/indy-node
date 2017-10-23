@@ -71,8 +71,5 @@ class UpgradeLog:
         self.__items.append(event)
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
         for item in self.__items:
             yield item
