@@ -6,10 +6,10 @@ stty sane
 rm -rf ~/.indy
 
 # Create nodes and generate initial transactions
-generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1
-generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 2
-generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 3
-generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 4
+generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 --network local
+generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 2 --network local
+generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 3 --network local
+generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 4 --network local
 
 echo Environment setup complete
 echo

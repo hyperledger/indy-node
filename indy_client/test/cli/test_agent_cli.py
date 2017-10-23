@@ -84,11 +84,11 @@ def getProofRequestsCount(userCli, target):
 @pytest.fixture(scope='module')
 def aliceAcceptedAcmeInvitationNoProofReq(
         acmeAgentCliRunning, be, do, aliceCLI, acmeMap, loadInviteOut,
-        unsycedAcceptedInviteWithoutClaimOut, connectedToTest,
+        unsycedAcceptedInviteWithoutClaimOut,
         syncConnectionOutWithEndpoint, newKeyringOut):
     def _(invitationFile, wallet):
         be(aliceCLI)
-        connectIfNotAlreadyConnected(do, connectedToTest, aliceCLI, acmeMap)
+        connectIfNotAlreadyConnected(do, aliceCLI, acmeMap)
         walletMapper = {
             'wallet-name': wallet
         }

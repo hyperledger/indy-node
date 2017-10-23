@@ -29,7 +29,6 @@ from plenum.test.test_client import \
     getAcksFromInbox, getNacksFromInbox, getRepliesFromInbox
 
 from indy_common.constants import ATTRIB, GET_ATTR
-from indy_common.config_util import getConfig
 from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.client.client import Client
@@ -38,7 +37,6 @@ from indy_common.constants import GET_NYM
 
 
 logger = getlogger()
-config = getConfig()
 
 TTL = 120.0  # 60.0
 CONNECTION_TTL = 30.0
@@ -111,7 +109,6 @@ def createClientAndWalletWithSeed(name, seed, ha=None):
     if isinstance(seed, str):
         seed = seed.encode()
     if not ha:
-        # if not ha and not isLocalKeepSetup(name, config.baseDir):
         port = genHa()[1]
         ha = HA('0.0.0.0', port)
     wallet = Wallet(name)

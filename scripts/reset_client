@@ -6,7 +6,7 @@ from indy_client.script_helper import performIndyBaseDirCleanup
 from indy_common.config_util import getConfig
 
 config = getConfig()
-baseDir = os.path.expanduser(config.baseDir)
+baseDir = os.path.expanduser(config.CLI_BASE_DIR)
 
 print("\nIMPORTANT: This will clean up indy base directory: {}".format(baseDir))
 userAnswer = "no"
