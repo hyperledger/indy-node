@@ -13,7 +13,7 @@ def test_node_not_allowed_role_error():
                                                  isActorOwnerOfSubject=False)[1]
 
 
-def test_node_not_allowed_role_error():
+def test_node_only_owner_error():
     expected_msg = "Only owner is allowed"
     assert expected_msg == Authoriser.authorised(typ=NODE,
                                                  field=BLS_KEY,
