@@ -1,37 +1,28 @@
-import json
-from typing import List
-from hashlib import sha256
-
 from copy import deepcopy
+from typing import List
 
 import base58
-import base64
-
-from common.serializers.serialization import state_roots_serializer
-from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     VERKEY, DATA, NAME, VERSION, ORIGIN, \
-    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME
-from plenum.common.plenum_protocol_version import PlenumProtocolVersion
+    TXN_TIME
+from plenum.common.exceptions import InvalidClientRequest, \
+    UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
+from stp_core.common.log import getlogger
+
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     SIGNATURE_TYPE
 from indy_common.roles import Roles
-from indy_common.serialization import attrib_raw_data_serializer
-from indy_common.types import Request
-from stp_core.common.log import getlogger
-from indy_node.persistence.idr_cache import IdrCache
 from indy_common.state import domain
-
+from indy_common.types import Request
+from indy_node.persistence.idr_cache import IdrCache
 
 logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-
     def __init__(self, ledger, state, requestProcessor,
                  idrCache, attributeStore, bls_store):
         super().__init__(ledger, state, requestProcessor, bls_store)
@@ -77,10 +68,9 @@ class DomainReqHandler(PHandler):
     def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
         nym = msg.get(TARGET_NYM)
         if self.hasNym(nym, isCommitted=False):
-            if not self.idrCache.hasTrustee(
-                    identifier, isCommitted=False) and self.idrCache.getOwnerFor(
-                    nym, isCommitted=False) != identifier:
-                reason = '{} is neither Trustee nor owner of {}'\
+            if not self.idrCache.hasTrustee(identifier, isCommitted=False) \
+                    and self.idrCache.getOwnerFor(nym, isCommitted=False) != identifier:
+                reason = '{} is neither Trustee nor owner of {}' \
                     .format(identifier, nym)
                 return False, reason
         return True, ''
@@ -420,19 +410,3 @@ class DomainReqHandler(PHandler):
         elif HASH in txn:
             txn[HASH] = txn[HASH]
         return txn
-
-    @staticmethod
-    def make_result(request, data, last_seq_no, update_time, proof):
-        result = {**request.operation, **{
-            DATA: data,
-            f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            f.SEQ_NO.nm: last_seq_no,
-            TXN_TIME: update_time
-        }}
-        if request.protocolVersion and \
-                request.protocolVersion >= PlenumProtocolVersion.STATE_PROOF_SUPPORT.value:
-            result[STATE_PROOF] = proof
-
-        # Do not inline please, it makes debugging easier
-        return result
