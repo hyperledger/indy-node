@@ -189,7 +189,7 @@ for (i = 0; i < _labels.size(); i++) {
 try {
     stage('Static code validation') {
         if (config.codeValidation) {
-            node(labels[linux]) {
+            node(labels.linux) {
                 staticCodeValidation()
             }
         }
