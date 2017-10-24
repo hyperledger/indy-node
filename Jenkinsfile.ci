@@ -154,7 +154,7 @@ def tests = [
 
 
 def builds = [:]
-def _labels = labels.collect {v -> [k, v]}
+def _labels = labels.collect {k, v -> v}
 println _labels
 
 for (i = 0; i < _labels.size(); i++) {
