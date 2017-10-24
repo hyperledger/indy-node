@@ -60,7 +60,7 @@ def save_multi_sig(request_handler):
     key = state_roots_serializer.serialize(
         bytes(request_handler.state.committedHeadHash))
     request_handler.bls_store.put(key, multi_sig)
-    return multi_sig
+    return multi_sig.as_dict()
 
 
 def is_proof_verified(request_handler,
