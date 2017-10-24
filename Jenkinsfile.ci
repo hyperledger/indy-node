@@ -27,6 +27,8 @@ def config = [
 
 def labels = [env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'] // TODO enable windows
 
+println labels
+
 if (env.INDY_AGENT_WINDOWS_LABEL) {
     labels += env.INDY_AGENT_WINDOWS_LABEL
 }
