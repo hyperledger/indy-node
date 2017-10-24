@@ -5,8 +5,9 @@
  *
  * Environment requirements:
  *  - environment variable:
- *      - INDY_AGENT_LINUX_LABEL: label for linux agent
- *      - (optional) INDY_AGENT_WINDOWS_LABEL: label for windows agent
+ *      - INDY_AGENT_LINUX_DOCKER_LABEL: label for agents with ability
+ *          to run linux docker containers
+ *      - (optional) INDY_AGENT_WINDOWS_LABEL: label for windows agents
  *  - agents:
  *      - linux:
  *          - docker
@@ -17,7 +18,6 @@
 
 name = 'indy-node'
 
-
 def config = [
     codeValidation: true,
     runTests: true,
@@ -26,11 +26,13 @@ def config = [
 ]
 
 
-env.INDY_AGENT_LINUX_LABEL = env.INDY_AGENT_LINUX_LABEL || 'linux'
-def labels = [env.INDY_AGENT_LINUX_LABEL] // TODO enable windows
+// TODO enable windows
+def labels = [
+    linux: env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
+]
 
 if (env.INDY_AGENT_WINDOWS_LABEL) {
-    labels += env.INDY_AGENT_WINDOWS_LABEL
+    labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
 }
 
 def buildDocker(imageName, dockerfile) {
@@ -150,8 +152,9 @@ def tests = [
 
 
 def builds = [:]
-for (i = 0; i < labels.size(); i++) {
-    def label = labels[i]
+def _labels = labels.collect {k, v -> v}
+for (i = 0; i < _labels.size(); i++) {
+    def label = _labels[i]
     def descr = "${label}Test"
 
     for(j = 0; j < tests.size(); j++) {
@@ -182,7 +185,7 @@ for (i = 0; i < labels.size(); i++) {
 try {
     stage('Static code validation') {
         if (config.codeValidation) {
-            node(env.INDY_AGENT_LINUX_LABEL) {
+            node(labels.linux) {
                 staticCodeValidation()
             }
         }
