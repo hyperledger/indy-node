@@ -2,18 +2,18 @@
 
 ## Overview
 
-Currently, out of the box, the [Getting Started](https://github.com/hyperledger/indy-node/blob/master/getting-started.md) tutorial uses externally running nodes and assumes that these are all up and running.  However, being test nodes, sometimes they aren’t, or sometimes you just want to see everything flowing through in a local environment.
+Currently, out of the box, the [Getting Started](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) tutorial uses externally running nodes and assumes that these are all up and running.  However, being test nodes, sometimes they aren’t, or sometimes you just want to see everything flowing through in a local environment.
 
 This guide describes the process of setting up a local 4 node cluster and attaching the 3 Agents required [use the Indy CLI](https://github.com/hyperledger/indy-node/blob/master/getting-started.md#using-the-indy-cli) and impersonate Alice.
 
 Note - I'm still trying to get my head around the details of Indy so there may be a few things I'm doing wrong or haven't yet understood! However this process is working nicely so far.
- 
+
 
 ## Requirements
 
-I’m assuming that you have Indy-node installed (I recommend installing this in an Ubuntu Virtual Machine if possible) – If not follow the [setup](https://github.com/hyperledger/indy-node/blob/master/setup.md) instructions.
+I’m assuming that you have Indy-node installed (I recommend installing this in an Ubuntu Virtual Machine if possible) – If not follow the [setup](https://github.com/hyperledger/indy-node/blob/stable/setup.md) instructions.
 
-Finally make sure that `pytest` module is installed (it is required to run test-related functionality like Faber, Acme and ThriftBank test agents): 
+Finally make sure that `pytest` module is installed (it is required to run test-related functionality like Faber, Acme and ThriftBank test agents):
 
 ```
 pip install pytest
