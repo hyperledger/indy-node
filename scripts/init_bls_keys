@@ -3,9 +3,10 @@
 import os
 import argparse
 
-from plenum.common.config_util import getConfig
 from plenum.common.keygen_utils import init_bls_keys
 from plenum.common.script_helper import buildKeepDirIfNotExists
+
+from indy_common.config_util import getConfig
 
 config = getConfig()
 
