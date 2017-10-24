@@ -35,8 +35,6 @@ if (env.INDY_AGENT_WINDOWS_LABEL) {
     labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
 }
 
-println labels
-
 def buildDocker(imageName, dockerfile) {
     def uid = sh(returnStdout: true, script: 'id -u').trim()
     return docker.build("$imageName", "--build-arg uid=$uid -f $dockerfile")
@@ -155,8 +153,6 @@ def tests = [
 
 def builds = [:]
 def _labels = labels.collect {k, v -> v}
-println _labels
-
 for (i = 0; i < _labels.size(); i++) {
     def label = _labels[i]
     def descr = "${label}Test"
