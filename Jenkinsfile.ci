@@ -5,8 +5,9 @@
  *
  * Environment requirements:
  *  - environment variable:
- *      - INDY_AGENT_LINUX_LABEL: label for linux agent
- *      - (optional) INDY_AGENT_WINDOWS_LABEL: label for windows agent
+ *      - INDY_AGENT_LINUX_DOCKER_LABEL: label for agents with ability
+ *          to run linux docker containers
+ *      - (optional) INDY_AGENT_WINDOWS_LABEL: label for windows agents
  *  - agents:
  *      - linux:
  *          - docker
@@ -26,8 +27,7 @@ def config = [
 ]
 
 
-env.INDY_AGENT_LINUX_LABEL = env.INDY_AGENT_LINUX_LABEL || 'linux'
-def labels = [env.INDY_AGENT_LINUX_LABEL] // TODO enable windows
+def labels = [env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'] // TODO enable windows
 
 if (env.INDY_AGENT_WINDOWS_LABEL) {
     labels += env.INDY_AGENT_WINDOWS_LABEL
@@ -182,7 +182,7 @@ for (i = 0; i < labels.size(); i++) {
 try {
     stage('Static code validation') {
         if (config.codeValidation) {
-            node(env.INDY_AGENT_LINUX_LABEL) {
+            node(env.INDY_AGENT_LINUX_DOCKER_LABEL) {
                 staticCodeValidation()
             }
         }
