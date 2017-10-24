@@ -10,7 +10,7 @@ from indy_common.config_util import getConfig
 
 config = getConfig()
 
-key_dir = os.path.join(os.path.expanduser(config.baseDir), config.NETWORK_NAME, "keys")
+key_dir = os.path.join(os.path.expanduser(config.baseDir), config.NETWORK_NAME)
 
 
 def parse_args():
