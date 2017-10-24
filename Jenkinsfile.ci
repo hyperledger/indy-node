@@ -25,13 +25,17 @@ def config = [
     sendNotif: true
 ]
 
-def labels = [env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'] // TODO enable windows
 
-println labels
+// TODO enable windows
+def labels = [
+    linux: env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
+]
 
 if (env.INDY_AGENT_WINDOWS_LABEL) {
-    labels += env.INDY_AGENT_WINDOWS_LABEL
+    labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
 }
+
+println labels
 
 def buildDocker(imageName, dockerfile) {
     def uid = sh(returnStdout: true, script: 'id -u').trim()
@@ -150,8 +154,11 @@ def tests = [
 
 
 def builds = [:]
-for (i = 0; i < labels.size(); i++) {
-    def label = labels[i]
+def _labels = labels.collect {v -> [k, v]}
+println _labels
+
+for (i = 0; i < _labels.size(); i++) {
+    def label = _labels[i]
     def descr = "${label}Test"
 
     for(j = 0; j < tests.size(); j++) {
@@ -182,7 +189,7 @@ for (i = 0; i < labels.size(); i++) {
 try {
     stage('Static code validation') {
         if (config.codeValidation) {
-            node(env.INDY_AGENT_LINUX_DOCKER_LABEL) {
+            node(labels[linux]) {
                 staticCodeValidation()
             }
         }
