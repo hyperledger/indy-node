@@ -169,10 +169,10 @@ class Upgrader(HasActionQueue):
         def traverse_end_condition(seq_no):
             if reverse:
                 return seq_no > 0
-            return seq_no < len(self.ledger)
+            return seq_no <= len(self.ledger)
 
         inc = 1
-        init_start_no = 0
+        init_start_no = 1
         if reverse:
             inc = -1
             init_start_no = len(self.ledger)
