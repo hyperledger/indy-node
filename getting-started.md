@@ -2,6 +2,8 @@
 
 ## A Developer Guide for an Implementation of the Indy Code Base
 
+**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](https://github.com/TechWritingWhiz/sovrin-environments/blob/stable/vagrant/sandbox/DevelopmentEnvironment/Vagrantfile) instead.
+
 ![logo](collateral/logos/indy-logo.png)
 
 * [Getting Started with Indy](#getting-started-with-indy)
