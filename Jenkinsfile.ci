@@ -183,21 +183,24 @@ for (i = 0; i < _labels.size(); i++) {
 // PIPELINE
 
 try {
-    stage('Static code validation') {
-        if (config.codeValidation) {
-            node(labels.linux) {
-                staticCodeValidation()
+    timeout(60) {
+        stage('Static code validation') {
+            if (config.codeValidation) {
+                node(labels.linux) {
+                    staticCodeValidation()
+                }
             }
         }
-    }
-    stage('Build / Test') {
-        if (config.runTests) {
-            builds.failFast = config.failFast
-            parallel builds
+        stage('Build / Test') {
+            if (config.runTests) {
+                builds.failFast = config.failFast
+                parallel builds
+            }
         }
+        currentBuild.result = 'SUCCESS'
     }
-    currentBuild.result = 'SUCCESS'
 } catch (Exception err) {
+    println(err.toString())
     currentBuild.result = 'FAILURE'
 } finally {
     stage('Build result notification') {
