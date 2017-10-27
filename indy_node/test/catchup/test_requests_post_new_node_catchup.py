@@ -120,6 +120,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
     new_node = TestNode(
         new_node.name,
         basedirpath=tdirWithPoolTxns,
+        base_data_dir=tdirWithPoolTxns,
         config=tconf,
         pluginPaths=allPluginsPath,
         ha=new_node.nodestack.ha,

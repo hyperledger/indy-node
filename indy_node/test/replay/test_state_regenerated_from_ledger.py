@@ -56,6 +56,7 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     restarted_node = TestNode(
         node_to_stop.name,
         basedirpath=tdirWithPoolTxns,
+        base_data_dir=tdirWithPoolTxns,
         config=tconf,
         pluginPaths=allPluginsPath,
         ha=node_to_stop.nodestack.ha,

@@ -57,7 +57,6 @@ from indy_client.client.wallet.upgrade import Upgrade
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.client.wallet.pool_config import PoolConfig
 from indy_common.auth import Authoriser
-from indy_common.config import ENVS
 from indy_common.config_util import getConfig
 from indy_common.exceptions import InvalidConnectionException, ConnectionAlreadyExists, \
     ConnectionNotFound, NotConnectedToNetwork
@@ -115,11 +114,14 @@ class IndyCli(PlenumCli):
         self.trustAnchors = set()
         self.users = set()
         self._agent = None
-        super().__init__(*args, **kwargs)
-        # Available environments
-        self.envs = self.config.ENVS
+
         # This specifies which environment the cli is connected to test or live
         self.activeEnv = None
+
+        super().__init__(*args, **kwargs)
+
+        # Load available environments
+        self.envs = self.get_available_networks()
 
         # TODO bad code smell
         self.curContext = Context(None, None, {})  # type: Context
@@ -127,6 +129,12 @@ class IndyCli(PlenumCli):
     @staticmethod
     def getCliVersion():
         return __version__
+
+    @property
+    def pool_ledger_dir(self):
+        if not self.activeEnv:
+            return self.ledger_base_dir
+        return os.path.join(self.ledger_base_dir, self.activeEnv)
 
     @property
     def lexers(self):
@@ -195,7 +203,7 @@ class IndyCli(PlenumCli):
             showConnectionCmd.id)
         completers["conn"] = WordCompleter([connectToCmd.id])
         completers["disconn"] = WordCompleter([disconnectCmd.id])
-        completers["env_name"] = WordCompleter(list(self.config.ENVS.keys()))
+        completers["env_name"] = WordCompleter(self.get_available_networks())
         completers["sync_connection"] = WordCompleter([syncConnectionCmd.id])
         completers["ping_target"] = WordCompleter([pingTargetCmd.id])
         completers["show_claim"] = PhraseWordCompleter(showClaimCmd.id)
@@ -331,7 +339,7 @@ class IndyCli(PlenumCli):
 
     @property
     def allEnvNames(self):
-        return "|".join(sorted(self.envs.keys(), reverse=True))
+        return "|".join(sorted(self.envs, reverse=True))
 
     def _getConnectUsage(self):
         return ["{} <{}>".format(
@@ -1760,13 +1768,12 @@ class IndyCli(PlenumCli):
             return "Already connected to {}".format(envName)
         if envName not in self.envs:
             return "Unknown environment {}".format(envName)
-        update_genesis_txn_file_name_if_outdated(self.basedirpath,
-                                                 self.envs[envName].poolLedger)
-        if not os.path.exists(
-            os.path.join(
-                self.basedirpath,
-                genesis_txn_file(
-                self.envs[envName].poolLedger))):
+
+        new_base_path = os.path.join(self.ledger_base_dir, envName)
+        update_genesis_txn_file_name_if_outdated(new_base_path, self.config.poolTransactionsFile)
+
+        if not os.path.exists(os.path.join(new_base_path,
+                              genesis_txn_file(self.config.poolTransactionsFile))):
             return "Do not have information to connect to {}".format(envName)
 
     def _disconnect(self, matchedVars):
@@ -1788,8 +1795,6 @@ class IndyCli(PlenumCli):
         self._activeWallet = None
         self._activeClient = None
         self.activeEnv = None
-        self.config.poolTransactionsFile = None
-        self.config.domainTransactionsFile = None
         self._setPrompt(self.currPromptText.replace("{}{}".format(
             PROMPT_ENV_SEPARATOR, oldEnv), ""))
 
@@ -1858,51 +1863,51 @@ class IndyCli(PlenumCli):
         if matchedVars.get('conn') == connectToCmd.id:
             envName = matchedVars.get('env_name')
             envError = self.canConnectToEnv(envName)
+
             if envError:
                 self.print(envError, token=Token.Error)
                 self._printConnectUsage()
-            else:
-                if self.nodeReg:
-                    oldEnv = self.activeEnv
+                return False
 
-                    self._saveActiveWallet()
+            oldEnv = self.activeEnv
 
-                    if not oldEnv:
-                        self.moveActiveWalletToNewContext(envName)
+            self._saveActiveWallet()
 
-                    isAnyWalletExistsForNewEnv = \
-                        self.isAnyWalletFileExistsForGivenEnv(envName)
+            if not oldEnv:
+                self.moveActiveWalletToNewContext(envName)
 
-                    if oldEnv or isAnyWalletExistsForNewEnv:
-                        self._disconnectFromCurrentEnv(envName)
+            isAnyWalletExistsForNewEnv = \
+                self.isAnyWalletFileExistsForGivenEnv(envName)
 
-                    self.config.poolTransactionsFile = self.envs[envName].poolLedger
-                    self.config.domainTransactionsFile = self.envs[envName].domainLedger
-                    # Prompt has to be changed, so it show the environment too
-                    self.activeEnv = envName
-                    self._setPrompt(self.currPromptText.replace("{}{}".format(
-                        PROMPT_ENV_SEPARATOR, oldEnv), ""))
+            if oldEnv or isAnyWalletExistsForNewEnv:
+                self._disconnectFromCurrentEnv(envName)
 
-                    if isAnyWalletExistsForNewEnv:
-                        self.restoreLastActiveWallet()
+            # Prompt has to be changed, so it show the environment too
+            self.activeEnv = envName
+            self._setPrompt(self.currPromptText.replace("{}{}".format(
+                PROMPT_ENV_SEPARATOR, oldEnv), ""))
 
-                    self.printWarningIfActiveWalletIsIncompatible()
+            if isAnyWalletExistsForNewEnv:
+                self.restoreLastActiveWallet()
 
-                    self._buildClientIfNotExists(self.config)
-                    self.print("Connecting to {}...".format(
-                        envName), Token.BoldGreen)
+            self.printWarningIfActiveWalletIsIncompatible()
 
-                    self.ensureClientConnected()
+            self._buildClientIfNotExists(self.config)
+            self.print("Connecting to {}...".format(
+                envName), Token.BoldGreen)
 
-                else:
-                    msg = '\nThe information required to connect this client to the nodes cannot be found. ' \
-                          '\nThis is an error. To correct the error, get the file containing genesis transactions ' \
-                          '\n(the file name is `{}`) from the github repository and place ' \
-                          '\nit in directory `{}`.\n' \
-                          '\nThe github url is {}.\n'.format(genesis_txn_file(self.config.poolTransactionsFile),
-                                                             self.config.baseDir,
-                                                             self.githubUrl)
-                    self.print(msg)
+            self.ensureClientConnected()
+
+            if not self.activeClient or not self.activeClient.nodeReg:
+                msg = '\nThe information required to connect this client to the nodes cannot be found. ' \
+                      '\nThis is an error. To correct the error, get the file containing genesis transactions ' \
+                      '\n(the file name is `{}`) from the github repository and place ' \
+                      '\nit in directory `{}`.\n' \
+                      '\nThe github url is {}.\n'.format(genesis_txn_file(self.config.poolTransactionsFile),
+                                                         self.ledger_base_dir,
+                                                         self.githubUrl)
+                self.print(msg)
+                return False
 
             return True
 
@@ -1912,8 +1917,13 @@ class IndyCli(PlenumCli):
                                                 self.currPromptText)
         return env
 
+    def get_available_networks(self):
+        return [check_dir for check_dir in os.listdir(self.ledger_base_dir)
+                if os.path.isdir(
+                    os.path.join(self.ledger_base_dir, check_dir))]
+
     def getAllSubDirNamesForKeyrings(self):
-        lst = list(ENVS.keys())
+        lst = self.get_available_networks()
         lst.append(NO_ENV)
         return lst
 
