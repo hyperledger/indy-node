@@ -24,9 +24,9 @@ def pureLocalCli(CliBuilder):
 
 @pytest.fixture(scope='function')
 def localTrusteeCli(be, do, trusteeMap, poolNodesStarted,
-                    connectedToTest, nymAddedOut, pureLocalCli):
+                    nymAddedOut, pureLocalCli):
     return trusteeCli(be, do, trusteeMap, poolNodesStarted,
-                      connectedToTest, nymAddedOut, pureLocalCli)
+                      nymAddedOut, pureLocalCli)
 
 
 def testSendAttribSucceedsForExistingUuidDest(
