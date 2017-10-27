@@ -74,26 +74,20 @@ def commonTestUbuntu = {
 
 def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
     def volumeName = "$name-deb-u1604"
-    sh "docker volume rm -f $volumeName"
+    if (env.BRANCH_NAME != '' && env.BRANCH_NAME != 'master') {
+        volumeName = "${volumeName}.${BRANCH_NAME}"
+    }
+    if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
+        sh "docker volume rm $volumeName"
+    }
     dir('build-scripts/ubuntu-1604') {
-        sh "./build-$name-docker.sh $sourcePath $releaseVersion"
-        sh "./build-3rd-parties-docker.sh"
+        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName"
+        sh "./build-3rd-parties-docker.sh $volumeName"
     }
     return "$volumeName"
 }
 
 options = new TestAndPublishOptions()
-options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
-options.setPublishableBranches(['file-struct']) //REMOVE IT BEFORE MERGE
-options.setPostfixes([master: 'file-struct']) //REMOVE IT BEFORE MERGE
-options.skip([
-    StagesEnum.IS_TESTED,
-    StagesEnum.STATIC_CODE_VALIDATION,
-    StagesEnum.TEST,
-    StagesEnum.AUTOMERGE,
-    StagesEnum.GET_RELEASE_VERSION,
-    StagesEnum.PYPI_RELEASE,
-    StagesEnum.GITHUB_RELEASE
-])
-options.setReleaseVersion("0.0.9")
+options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
+options.setCopyWithDeps(true)
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
