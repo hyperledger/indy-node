@@ -109,7 +109,7 @@ def migrate_all():
 
     old_node_base_data_dir = os.path.join(old_base_dir, 'data')
     old_nodes_data_dir = os.path.join(old_node_base_data_dir, 'nodes')
-    old_wallets_dir = os.path.join(old_base_dir, 'wallets')
+    # old_wallets_dir = os.path.join(old_base_dir, 'wallets')
     old_general_config = os.path.join(old_base_dir, 'indy_config.py')
     old_daemon_config_base_dir = '/home/indy/.indy'
     old_daemon_config = os.path.join(old_daemon_config_base_dir, 'indy.env')
@@ -172,7 +172,7 @@ def migrate_all():
         shutil.move(old_daemon_config, GENERAL_CONFIG_DIR)
     logger.info('done')
 
-    #migrate_cli(old_wallets_dir, CLI_BASE_DIR, CLI_NETWORK_DIR)
+    # migrate_cli(old_wallets_dir, CLI_BASE_DIR, CLI_NETWORK_DIR)
 
     logger.info('Finish migration of directories/files.')
 
