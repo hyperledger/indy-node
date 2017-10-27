@@ -117,7 +117,7 @@ class IndyCli(PlenumCli):
 
         # This specifies which environment the cli is connected to test or live
         self.activeEnv = None
-        
+
         super().__init__(*args, **kwargs)
 
         # Load available environments
