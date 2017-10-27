@@ -13,6 +13,10 @@ from typing import Dict, Any, Tuple, Callable, NamedTuple
 import asyncio
 
 import base58
+import shutil
+
+from prompt_toolkit import prompt
+
 from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file, \
     update_genesis_txn_file_name_if_outdated
 from libnacl import randombytes
@@ -111,6 +115,8 @@ class IndyCli(PlenumCli):
     override_file_path = None
 
     def __init__(self, *args, **kwargs):
+        self.ask_to_migrate_legacy_base_dir_if_just_upgraded()
+
         self.aliases = {}  # type: Dict[str, Signer]
         self.trustAnchors = set()
         self.users = set()
@@ -123,6 +129,82 @@ class IndyCli(PlenumCli):
 
         # TODO bad code smell
         self.curContext = Context(None, None, {})  # type: Context
+
+    def get_disributed_client_filenames(self):
+        return ['.indy',
+                '__pycache__',
+                'plugins',
+                'sample',
+                'indy_config.py',
+                'pool_transactions_local_genesis',
+                'pool_transactions_sandbox_genesis',
+                'pool_transactions_live_genesis']
+
+    def is_base_dir_untouched(self):
+        base_dir = os.path.expanduser(getConfig().baseDir)
+
+        if not os.path.exists(base_dir):
+            return True
+
+        distributed_filenames = self.get_disributed_client_filenames()
+        for filename in os.listdir(base_dir):
+            if filename not in distributed_filenames:
+                return False
+
+        return True
+
+    def rename_if_exists(self, dir, old_name, new_name):
+        if os.path.exists(os.path.join(dir, old_name)):
+            os.rename(os.path.join(dir, old_name),
+                      os.path.join(dir, new_name))
+
+    def rename_request_files(self, requests_dir):
+        for relative_name in os.listdir(requests_dir):
+            absolute_name = os.path.join(requests_dir, relative_name)
+            if os.path.isfile(absolute_name) \
+                    and absolute_name.endswith('.sovrin'):
+                os.rename(absolute_name,
+                          absolute_name[:-len('.sovrin')] + '.indy')
+
+    def migrate_legacy_base_dir(self):
+        source_dir = os.path.expanduser('~/.sovrin')
+        target_dir = os.path.expanduser('~/.indy')
+
+        shutil.rmtree(target_dir)
+        shutil.copytree(source_dir, target_dir)
+
+        self.rename_if_exists(target_dir, '.sovrin', '.indy')
+        self.rename_if_exists(target_dir, 'sovrin_config.py', 'indy_config.py')
+
+        if os.path.isdir(os.path.join(target_dir, 'sample')):
+            self.rename_request_files(os.path.join(target_dir, 'sample'))
+
+    def ask_to_migrate_legacy_base_dir_if_just_upgraded(self):
+        legacy_base_dir = os.path.expanduser('~/.sovrin')
+
+        if self.is_base_dir_untouched() and os.path.isdir(legacy_base_dir):
+            print('Application data from previous Indy version has been found')
+            answer = prompt('Do you want to migrate it? [Y/n] ')
+
+            if not answer or answer.upper().startswith('Y'):
+                self.migrate_legacy_base_dir()
+                # Invalidate config cache to pick up
+                # overridden config parameters from migrated application data
+                self.invalidate_config_cache()
+                print('Application data has been migrated')
+            else:
+                print('Application data was not migrated')
+
+    def invalidate_config_cache(self):
+        import stp_core.common.config.util
+        import plenum.common.config_util
+        import indy_common.config_util
+
+        # All 3 variables must be nullified because all they reference
+        # the same object due to specific logic of getConfig methods
+        stp_core.common.config.util.CONFIG = None
+        plenum.common.config_util.CONFIG = None
+        indy_common.config_util.CONFIG = None
 
     @staticmethod
     def getCliVersion():
