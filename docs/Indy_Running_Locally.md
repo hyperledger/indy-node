@@ -2,7 +2,8 @@
 
 ## Overview
 
-Currently, out of the box, the [Getting Started](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) tutorial uses externally running nodes and assumes that these are all up and running.  However, being test nodes, sometimes they aren’t, or sometimes you just want to see everything flowing through in a local environment.
+Currently, out of the box, the [Getting Started](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) tutorial uses externally running nodes and assumes that these are all up and running.
+However, being test nodes, sometimes they aren’t, or sometimes you just want to see everything flowing through in a local environment.
 
 This guide describes the process of setting up a local 4 node cluster and attaching the 3 Agents required [use the Indy CLI](https://github.com/hyperledger/indy-node/blob/master/getting-started.md#using-the-indy-cli) and impersonate Alice.
 
