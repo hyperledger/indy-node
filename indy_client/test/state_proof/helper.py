@@ -1,4 +1,16 @@
-from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES
+from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, \
+    PROOF_NODES
+from plenum.test.helper import getRepliesFromClientInbox, \
+    waitForSufficientRepliesForRequests
+
+
+def submit_operation_and_get_replies(looper, wallet, client, operation):
+    request = wallet.signOp(operation)
+    wallet.pendRequest(request)
+    pending = wallet.preparePending()
+    client.submitReqs(*pending)
+    waitForSufficientRepliesForRequests(looper, client, requests=pending)
+    return getRepliesFromClientInbox(client.inBox, request.reqId)
 
 
 def check_valid_proof(reply, client):
