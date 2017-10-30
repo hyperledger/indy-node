@@ -2,6 +2,17 @@ from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PRO
     MULTI_SIGNATURE_PARTICIPANTS, MULTI_SIGNATURE_VALUE, MULTI_SIGNATURE_VALUE_LEDGER_ID, \
     MULTI_SIGNATURE_VALUE_STATE_ROOT, MULTI_SIGNATURE_VALUE_TXN_ROOT, MULTI_SIGNATURE_VALUE_POOL_STATE_ROOT, \
     MULTI_SIGNATURE_VALUE_TIMESTAMP
+from plenum.test.helper import getRepliesFromClientInbox, \
+    waitForSufficientRepliesForRequests
+
+
+def submit_operation_and_get_replies(looper, wallet, client, operation):
+    request = wallet.signOp(operation)
+    wallet.pendRequest(request)
+    pending = wallet.preparePending()
+    client.submitReqs(*pending)
+    waitForSufficientRepliesForRequests(looper, client, requests=pending)
+    return getRepliesFromClientInbox(client.inBox, request.reqId)
 
 
 def check_valid_proof(reply, client):

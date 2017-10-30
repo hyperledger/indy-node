@@ -1,16 +1,26 @@
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, NAME, VERSION, ORIGIN
-from plenum.test.helper import waitForSufficientRepliesForRequests, getRepliesFromClientInbox
+from plenum.common.types import f
 
-from indy_client.test.state_proof.helper import check_valid_proof
-from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE, \
-    ATTR_NAMES
+from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, NAME, \
+    VERSION, ORIGIN
+from plenum.test.helper import waitForSufficientRepliesForRequests, \
+    getRepliesFromClientInbox
+
+from indy_client.test.state_proof.helper import check_valid_proof, \
+    submit_operation_and_get_replies
+from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF,\
+    REF, SIGNATURE_TYPE, ATTR_NAMES
 
 
 # fixtures, do not remove
-from indy_node.test.helper import addAttributeAndCheck
-from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.test.test_nym_attrib import \
     addedRawAttribute, attributeName, attributeValue, attributeData
+
+
+def check_no_data_and_valid_proof(client, replies):
+    for reply in replies:
+        result = reply[f.RESULT.nm]
+        assert result.get(DATA) is None
+        check_valid_proof(reply, client)
 
 
 def test_state_proof_returned_for_missing_attr(looper,
@@ -26,16 +36,9 @@ def test_state_proof_returned_for_missing_attr(looper,
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }
-    get_attr_request = trustAnchorWallet.signOp(get_attr_operation)
-    trustAnchorWallet.pendRequest(get_attr_request)
-    pending = trustAnchorWallet.preparePending()
-    client.submitReqs(*pending)
-    waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
-    replies = getRepliesFromClientInbox(client.inBox, get_attr_request.reqId)
-    for reply in replies:
-        result = reply['result']
-        assert DATA not in result or result[DATA] is None
-        check_valid_proof(reply, client)
+    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
+                                               trustAnchor, get_attr_operation)
+    check_no_data_and_valid_proof(client, replies)
 
 
 def test_state_proof_returned_for_missing_nym(looper,
@@ -56,23 +59,16 @@ def test_state_proof_returned_for_missing_nym(looper,
         TXN_TYPE: GET_NYM
     }
 
-    get_nym_request = trustAnchorWallet.signOp(get_nym_operation)
-    trustAnchorWallet.pendRequest(get_nym_request)
-    pending = trustAnchorWallet.preparePending()
-    client.submitReqs(*pending)
-    waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
-    replies = getRepliesFromClientInbox(client.inBox, get_nym_request.reqId)
-    for reply in replies:
-        result = reply['result']
-        assert DATA not in result or result[DATA] is None
-        check_valid_proof(reply, client)
+    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
+                                               trustAnchor, get_nym_operation)
+    check_no_data_and_valid_proof(client, replies)
 
 
 def test_state_proof_returned_for_missing_schema(looper,
                                                  trustAnchor,
                                                  trustAnchorWallet):
     """
-    Tests that state proof is returned in the reply for GET_NYM transactions
+    Tests that state proof is returned in the reply for GET_SCHEMA transactions
     """
     client = trustAnchor
     dest = trustAnchorWallet.defaultId
@@ -86,14 +82,10 @@ def test_state_proof_returned_for_missing_schema(looper,
             VERSION: schema_version,
         }
     }
-    get_schema_request = trustAnchorWallet.signOp(get_schema_operation)
-    trustAnchorWallet.pendRequest(get_schema_request)
-    pending = trustAnchorWallet.preparePending()
-    client.submitReqs(*pending)
-    waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
-    replies = getRepliesFromClientInbox(client.inBox, get_schema_request.reqId)
+    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
+                                               trustAnchor, get_schema_operation)
     for reply in replies:
-        result = reply['result']
+        result = reply[f.RESULT.nm]
         assert ATTR_NAMES not in result[DATA]
         check_valid_proof(reply, client)
 
@@ -102,7 +94,7 @@ def test_state_proof_returned_for_missing_claim_def(looper,
                                                     trustAnchor,
                                                     trustAnchorWallet):
     """
-    Tests that state proof is returned in the reply for GET_NYM transactions
+    Tests that state proof is returned in the reply for GET_CLAIM_DEF transactions
     """
     client = trustAnchor
     dest = trustAnchorWallet.defaultId
@@ -112,13 +104,6 @@ def test_state_proof_returned_for_missing_claim_def(looper,
         REF: 12,
         SIGNATURE_TYPE: 'CL'
     }
-    get_schema_request = trustAnchorWallet.signOp(get_claim_def_operation)
-    trustAnchorWallet.pendRequest(get_schema_request)
-    pending = trustAnchorWallet.preparePending()
-    client.submitReqs(*pending)
-    waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
-    replies = getRepliesFromClientInbox(client.inBox, get_schema_request.reqId)
-    for reply in replies:
-        result = reply['result']
-        assert DATA not in result or result[DATA] is None
-        check_valid_proof(reply, client)
+    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
+                                               trustAnchor, get_claim_def_operation)
+    check_no_data_and_valid_proof(client, replies)
