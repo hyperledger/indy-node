@@ -52,9 +52,9 @@ def get_ledger_dir(node_name, client_name):
         exit()
 
     config = getConfig()
-    base_dir = config.baseDir
+    base_dir = config.baseDir if node_name else config.CLI_BASE_DIR
     data_dir = config.clientDataDir if client_name else config.nodeDataDir
-    ledger_data_dir = os.path.join(base_dir, data_dir)
+    ledger_data_dir = os.path.join(base_dir, config.NETWORK_NAME, data_dir)
     if not os.path.exists(ledger_data_dir):
         # TODO: find a better way
         ledger_data_dir = os.path.join('/home/indy/.indy', data_dir)

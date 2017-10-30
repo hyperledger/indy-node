@@ -28,7 +28,7 @@ def testNodeControlReceivesMessages(monkeypatch, looper, tdir):
         assert len(received) == 1
         assert received[0] == composeUpgradeMessage(msg)
 
-    nct = NCT(transform=transform)
+    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
         sendUpgradeMessage(msg)
         looper.run(eventually(checkMessage))
@@ -88,7 +88,7 @@ def testNodeControlPerformsMigrations(monkeypatch, tdir, looper):
         with open(os.path.join(tdir, migrationFile)) as f:
             assert f.read() == migrationText
 
-    nct = NCT(transform=transform)
+    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
         sendUpgradeMessage(msg)
         looper.run(eventually(checkMigration))
@@ -109,7 +109,7 @@ def testNodeControlCreatesBackups(monkeypatch, tdir, looper):
         assert os.path.isfile('{}.{}'.format(
             tool._backup_name(currentVersion), tool.backup_format))
 
-    nct = NCT(transform=transform)
+    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
         sendUpgradeMessage(msg)
         looper.run(eventually(checkBackup, nct.tool))
@@ -138,7 +138,7 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper):
     def checkOldBackupsRemoved():
         assert backupsWereRemoved.value
 
-    nct = NCT(transform=transform)
+    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
         assert len(nct.tool._get_backups()) == 0
         for i in range(nct.tool.backup_num):
@@ -187,7 +187,7 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
     def checkBackupRestored(tool):
         assert backupWasRestored.value
 
-    nct = NCT(transform=transform)
+    nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
         with open(os.path.join(nct.tool.indy_dir, testFile), 'w') as f:
             f.write(original_text)

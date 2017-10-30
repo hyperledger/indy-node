@@ -13,7 +13,7 @@ from plenum.common.signer_did import DidSigner
 from indy_client.client.wallet.connection import Connection, constant
 from indy_client.test.cli.helper import getFileLines, prompt_is, doubleBraces, \
     getTotalConnections, getTotalSchemas, getTotalClaimsRcvd, getTotalAvailableClaims, \
-    newKey, ensureConnectedToTestEnv
+    newKey, ensureConnectedToTestEnv, connect_and_check_output
 
 
 def getSampleConnectionInvitation():
@@ -125,12 +125,10 @@ def thriftWithEndpointAdded(be, do, thriftCli, thriftAddedByPhil,
     agentWithEndpointAdded(be, do, thriftCli, thriftMap, attrAddedOut)
 
 
-def connectIfNotAlreadyConnected(do, expectMsgs, userCli, userMap):
+def connectIfNotAlreadyConnected(do, userCli, userMap, expectMsgs=None):
     # TODO: Shouldn't this be testing the cli command `status`?
     if not userCli._isConnectedToAnyEnv():
-        do('connect test', within=3,
-           expect=expectMsgs,
-           mapper=userMap)
+        connect_and_check_output(do, userCli.txn_dir, expect=expectMsgs, mapper=userMap)
 
 
 def setPromptAndKeyring(do, name, newKeyringOut, userMap):
@@ -147,11 +145,11 @@ def preRequisite(poolNodesStarted,
 
 
 @pytest.fixture(scope="module")
-def walletCreatedForTestEnv(preRequisite, be, do, earlCLI, connectedToTest):
+def walletCreatedForTestEnv(preRequisite, be, do, earlCLI):
     be(earlCLI)
     createAndAssertNewKeyringCreation(do, "default1")
     createAndAssertNewKeyringCreation(do, "default2")
-    connectIfNotAlreadyConnected(do, connectedToTest, earlCLI, {})
+    connectIfNotAlreadyConnected(do, earlCLI, {})
     createAndAssertNewKeyringCreation(do, "test2")
     exitFromCli(do)
 
@@ -302,9 +300,9 @@ def testAcceptUnSyncedFaberInviteWhenNotConnected(
 # def testAcceptUnSyncedFaberInvite(be, do, aliceCli, preRequisite,
 #                                   faberInviteLoadedByAlice,
 #                                   acceptUnSyncedWithoutEndpointWhenConnected,
-#                                   faberMap, connectedToTest):
+#                                   faberMap):
 #     be(aliceCli)
-#     connectIfNotAlreadyConnected(do, connectedToTest, aliceCli, faberMap)
+#     connectIfNotAlreadyConnected(do, aliceCli, faberMap)
 #
 #     checkWalletStates(aliceCli, totalLinks=1, totalAvailableClaims=0,
 #                       totalSchemas=0, totalClaimsRcvd=0)
@@ -320,11 +318,10 @@ def testAcceptUnSyncedFaberInviteWhenNotConnected(
 def faberInviteSyncedWithoutEndpoint(be, do, aliceCli, faberMap,
                                      preRequisite,
                                      faberInviteLoadedByAlice,
-                                     connectedToTest,
                                      connectionNotYetSynced,
                                      syncConnectionOutWithoutEndpoint):
     be(aliceCli)
-    connectIfNotAlreadyConnected(do, connectedToTest, aliceCli, faberMap)
+    connectIfNotAlreadyConnected(do, aliceCli, faberMap)
 
     do('sync {inviter}', within=2,
        expect=syncConnectionOutWithoutEndpoint,
@@ -390,10 +387,10 @@ def testShowSyncedFaberInviteWithEndpoint(be, do, aliceCLI, faberMap,
        expect=showSyncedConnectionWithEndpointOut, mapper=cp, within=3)
 
 
-def testPingBeforeAccept(be, do, aliceCli, faberMap, connectedToTest,
+def testPingBeforeAccept(be, do, aliceCli, faberMap,
                          faberInviteSyncedWithEndpoint):
     be(aliceCli)
-    connectIfNotAlreadyConnected(do, connectedToTest, aliceCli, faberMap)
+    connectIfNotAlreadyConnected(do, aliceCli, faberMap)
     do('ping {inviter}',
        within=3,
        expect=[
@@ -914,12 +911,11 @@ def testPingThriftBeforeSync(be, do, aliceCli, thriftMap,
 
 @pytest.fixture(scope="module")
 def aliceAcceptedThriftLoanApplication(be, do, aliceCli, thriftMap,
-                                       connectedToTest,
                                        preRequisite,
                                        thriftInviteLoadedByAlice,
                                        syncedInviteAcceptedOutWithoutClaims):
 
-    connectIfNotAlreadyConnected(do, connectedToTest, aliceCli, thriftMap)
+    connectIfNotAlreadyConnected(do, aliceCli, thriftMap)
     accept_request(be, do, aliceCli, thriftMap,
                    syncedInviteAcceptedOutWithoutClaims)
     return aliceCli
@@ -973,9 +969,9 @@ def bankKYCProofSent(be, do, aliceCli, thriftMap,
     sendProof(be, do, aliceCli, mapping, None)
 
 
-def restartCliAndTestWalletRestoration(be, do, cli, connectedToTest):
+def restartCliAndTestWalletRestoration(be, do, cli):
     be(cli)
-    connectIfNotAlreadyConnected(do, connectedToTest, cli, {})
+    connectIfNotAlreadyConnected(do, cli, {})
     do(None, expect=[
         'Saved wallet ',
         'Active wallet set to '
@@ -985,11 +981,10 @@ def restartCliAndTestWalletRestoration(be, do, cli, connectedToTest):
     # assert len(cli._activeWallet.identifiers) == 4
 
 
-def testAliceSendBankKYCClaim(be, do, aliceCli, susanCli, bankKYCProofSent,
-                              connectedToTest):
+def testAliceSendBankKYCClaim(be, do, aliceCli, susanCli, bankKYCProofSent):
     be(aliceCli)
     exitFromCli(do)
-    restartCliAndTestWalletRestoration(be, do, susanCli, connectedToTest)
+    restartCliAndTestWalletRestoration(be, do, susanCli)
 
 
 def testAliceReqAvailClaimsFromNonExistentConnection(
@@ -1027,10 +1022,11 @@ def testAliceReqAvailClaimsFromThrift(
 
 
 def assertReqAvailClaims(be, do, userCli, agentMap,
-                         connectedToTestExpMsgs, inviteLoadedExpMsgs,
-                         invitedAcceptedExpMsgs):
+                         inviteLoadedExpMsgs,
+                         invitedAcceptedExpMsgs,
+                         connectedToTestExpMsgs=None):
     be(userCli)
-    connectIfNotAlreadyConnected(do, connectedToTestExpMsgs, userCli, agentMap)
+    connectIfNotAlreadyConnected(do, userCli, agentMap, expectMsgs=connectedToTestExpMsgs)
     do('load {invite}', expect=inviteLoadedExpMsgs, mapper=agentMap)
     accept_request(be, do, userCli, agentMap,
                    invitedAcceptedExpMsgs)
@@ -1042,7 +1038,7 @@ def assertReqAvailClaims(be, do, userCli, agentMap,
 
 def testBobReqAvailClaimsFromAgents(
         be, do, bobCli, loadInviteOut, faberMap, acmeMap, thriftMap,
-        connectedToTest, syncedInviteAcceptedWithClaimsOut,
+        syncedInviteAcceptedWithClaimsOut,
         unsycedAcceptedInviteWithoutClaimOut):
     userCli = bobCli
 
@@ -1051,7 +1047,7 @@ def testBobReqAvailClaimsFromAgents(
     bob_faber_map = dict(faberMap)
     bob_faber_map.update({'invite': 'sample/faber-bob-connection-request.indy',
                           'nonce': '710b78be79f29fc81335abaa4ee1c5e8'})
-    assertReqAvailClaims(be, do, userCli, bob_faber_map, connectedToTest,
+    assertReqAvailClaims(be, do, userCli, bob_faber_map,
                          loadInviteOut, syncedInviteAcceptedWithClaimsOut)
 
     # When new user/cli requests available claims from Acme,
@@ -1062,7 +1058,7 @@ def testBobReqAvailClaimsFromAgents(
     bob_acme_map.update({"claims": "No available claims found",
                          'invite': 'sample/acme-bob-connection-request.indy',
                          'nonce': '810b78be79f29fc81335abaa4ee1c5e8'})
-    assertReqAvailClaims(be, do, userCli, bob_acme_map, connectedToTest,
+    assertReqAvailClaims(be, do, userCli, bob_acme_map,
                          loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)
 
     # When new user/cli requests available claims from Thrift,
@@ -1071,5 +1067,5 @@ def testBobReqAvailClaimsFromAgents(
     bob_thrift_map.update({"claims": "No available claims found",
                            'invite': 'sample/thrift-bob-connection-request.indy',
                            'nonce': 'ousezru20ic4yz3j074trcgthwlsnfsef'})
-    assertReqAvailClaims(be, do, userCli, bob_thrift_map, connectedToTest,
+    assertReqAvailClaims(be, do, userCli, bob_thrift_map,
                          loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)
