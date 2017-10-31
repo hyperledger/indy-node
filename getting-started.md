@@ -60,7 +60,7 @@ You can install a test network in one of several ways:
 
  - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/master/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
  
- - **Running locally** [Running pool locally](#docs/Indy_Running_Locally.md)
+ - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
 
  - **Coming soon:** Use client side docker images to make it easy for you to play with Indy.
 

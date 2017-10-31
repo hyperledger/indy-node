@@ -7,6 +7,7 @@
 * [How to Contribute](#how-to-contribute)
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
+# [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
 * [Continues integration and delivery](#continues-integration-and-delivery)
 * [How to send a PR](#how-to-send-a-pr)
 * [How to Understand the Code](#how-to-understand-the-code)
@@ -73,7 +74,7 @@ Indy Node repo consists of the following parts:
 
 - Bugs, stories, and backlog for this codebase are managed in [Hyperledger's Jira](https://jira.hyperledger.org).
 Use project name `INDY`.
-- Join us on [Jira's Rocket.Chat](https://chat.hyperledger.org/channel/indy) at `#indy` to discuss.
+- Join us on [Jira's Rocket.Chat](https://chat.hyperledger.org/channel/indy) at `#indy` and/or `#indy-node` channels to discuss.
 
 
 ## How to Contribute
@@ -84,7 +85,7 @@ Use project name `INDY`.
 
 ## How to Install a Test Network 
 
-You can also have a look at [Start Nodes](#docs/start-nodes.md) 
+You can have a look at [Start Nodes](docs/start-nodes.md) 
 to understand what needs to be done to create a Network, initialize and start Nodes, and what scripts are provided for this.
 
 The described process is automated in one of the ways below (it allow to install a test Network):
@@ -93,18 +94,28 @@ The described process is automated in one of the ways below (it allow to install
 
  - **Docker** [Start Pool and Client with Docker](https://github.com/evernym/sovrin-environments/tree/master/docker)
  
- - **Running locally** [Running pool locally](#docs/Indy_Running_Locally.md)
+ - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
 
  - **Also coming soon:** Create virtual machines in AWS.
 
 
 ## How to Start Working with the Code
 
-Please have a look at [Dev Setup](#docs/setup-dev.md)
+Please have a look at [Dev Setup](docs/setup-dev.md)
+
+
+## How to Start Indy Client CLI
+Once installed, you can play with the command-line interface by running Indy from a terminal.
+
+Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [conemu](https://conemu.github.io/).
+```
+indy
+```
+
 
 ## Continues Integration and Delivery
 
-Please have a look at [Continues integration/delivery](#docs/ci-cd.md)
+Please have a look at [Continues integration/delivery](docs/ci-cd.md)
 
 ## How to send a PR
 
