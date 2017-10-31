@@ -1,7 +1,7 @@
 # Dev Setup
 
 There are scripts that can help in setting up environment and project for developers.
-The scripts are in [dev-setup](dev-setup) folder.
+The scripts are in [dev-setup](..dev-setup) folder.
 
 **Note**: as of now, we provide scripts for Ubuntu only. It's not guaranteed that the code is working on Windows.
 
