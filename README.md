@@ -7,7 +7,7 @@
 * [How to Contribute](#how-to-contribute)
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
-* [Continues integration/delivery](#continues-integration/delivery)
+* [Continues integration and delivery](#continues-integration-and-delivery)
 * [How to send a PR](#how-to-send-a-pr)
 * [How to Understand the Code](#how-to-understand-the-code)
 
@@ -54,7 +54,7 @@ Indy Node repo consists of the following parts:
     - Most probably you will need to make changes in Plenum if you want to contribute to Indy.
       So, if you want to work with Indy Node, you will need to have the Plenum code as well in most of the cases
       and work with two projects at the same time 
-      (see How to work with the code below).
+      (see [How to Start Working with the Code](#how-to-start-working-with-the-code) below).
 - [indy-anoncreds](https://github.com/hyperledger/indy-anoncreds) 
     - A python implementation of the anonymous credentials ideas developed by IBM Research.
     - This is quite independent from indy-node/plenum. So, in most cases you don't need this code to contribute to Indy-Node.
@@ -66,6 +66,8 @@ Indy Node repo consists of the following parts:
     - It will replace indy-client and indy-anoncreds parsts soon.
 - [indy-crypto](https://github.com/hyperledger/indy-crypto)
     - A shared crypto library 
+    - It's based on [AMCL](https://github.com/milagro-crypto/amcl)
+    - In particular, it contains BLS multi-signature crypto needed for state proofs support in Indy.
 
 ## Contact us
 
@@ -100,7 +102,7 @@ The described process is automated in one of the ways below (it allow to install
 
 Please have a look at [Dev Setup](#docs/setup-dev.md)
 
-## Continues integration/delivery
+## Continues Integration and Delivery
 
 Please have a look at [Continues integration/delivery](#docs/ci-cd.md)
 
