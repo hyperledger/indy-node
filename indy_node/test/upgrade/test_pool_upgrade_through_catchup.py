@@ -93,7 +93,7 @@ def testUpgradeLatestUncancelledVersion(looper,
 
     trustee.stopRetrying()
 
-    newNode = TestNode(newNode.name, basedirpath=tdirWithPoolTxns,
+    newNode = TestNode(newNode.name, basedirpath=tdirWithPoolTxns, base_data_dir=tdirWithPoolTxns,
                        config=tconf, pluginPaths=allPluginsPath,
                        ha=newNode.nodestack.ha, cliha=newNode.clientstack.ha)
     looper.add(newNode)

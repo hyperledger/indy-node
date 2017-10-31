@@ -1,19 +1,20 @@
 import pytest
 
+from indy_client.test.cli.helper import connect_and_check_output
 from indy_client.test.cli.test_tutorial import prompt_is
 from stp_core.loop.eventually import eventually
 from plenum.cli.cli import Exit
 
 
 def testCliExitCommand(be, do, poolNodesStarted, aliceCLI, CliBuilder,
-                       aliceMap, newKeyringOut, connectedToTest,
+                       aliceMap, newKeyringOut,
                        savedKeyringRestored, aliceKeyringMap):
     within = 3
     name = 'Alice'
     be(aliceCLI)
     do('prompt {}'.format(name), expect=prompt_is(name))
     do('new wallet {}'.format(name), expect=newKeyringOut, mapper=aliceMap)
-    do('connect test', within=within, expect=connectedToTest)
+    connect_and_check_output(do, aliceCLI.txn_dir)
     with pytest.raises(Exit):
         do('exit')
 
@@ -22,8 +23,7 @@ def testCliExitCommand(be, do, poolNodesStarted, aliceCLI, CliBuilder,
         aliceCliNew = yield from CliBuilder(name)
         # check message of saved wallet alice restored
         be(aliceCliNew)
-        do('connect test', within=within, expect=savedKeyringRestored,
-           mapper=aliceKeyringMap)
+        connect_and_check_output(do, aliceCliNew.txn_dir, expect=savedKeyringRestored, mapper=aliceKeyringMap)
 
     # check wallet restore
     aliceCLI.looper.run(eventually(checkWalletRestore, timeout=within))
