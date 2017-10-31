@@ -28,7 +28,7 @@ In order to run your own Network, you need to do the following for each Node:
             - The file must be name `domain_transactions_file_{network_name}_genesis`
             - The file contains initial NYM transactions (for example, Trustees, Stewards, etc.)
     - set Network name in config file
-        - the location of the config depends on how a Node was installed
+        - the location of the config depends on how a Node was installed. It's usually inside `/etc/indy` for Ubuntu.
         - the following needs to be added: `NETWORK_NAME={network_name}` where {network_name} matches the one in genesis transaction files above
 
 ## Scripts for Initialization

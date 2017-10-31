@@ -84,9 +84,9 @@ Use project name `INDY`.
 ## How to Install a Test Network 
 
 You can also have a look at [Start Nodes](#docs/start-nodes.md) 
-to understand what needs to be done 
+to understand what needs to be done to create a Network, initialize and start Nodes, and what scripts are provided for this.
 
-You can install a test network in one of several ways:
+The described process is automated in one of the ways below (it allow to install a test Network):
 
  - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/master/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
 
@@ -96,10 +96,6 @@ You can install a test network in one of several ways:
 
  - **Also coming soon:** Create virtual machines in AWS.
 
-The guides above provide a full and ready to use 
-
- 
-
 
 ## How to Start Working with the Code
 
@@ -107,15 +103,20 @@ Please have a look at [Dev Setup](#docs/setup-dev.md)
 
 ## Continues integration/delivery
 
-Please have a look at [ontinues integration/delivery](#docs/ci-cd.md)
+Please have a look at [Continues integration/delivery](#docs/ci-cd.md)
 
 ## How to send a PR
 
 If you made changes in both indy-plenum and indy-node, you need to do the following
-- Raise a PR to indy-plenum's master, and wait until code is reviewed and merged. So, a new build of indy-plenum is created 
+- Raise a PR to indy-plenum's master
+    - Make sure that all your commits have a DCO sign-off from the author
+    - Put the link to the PR to `#indy-pr-review` channel in Rocket.Chat
+    - A reviewer needs to review the code, approve it, start your tests (`test this please` comment to the PR), and merge a PR (we usually use Squash) after all the tests pass.
+    - So, a new build of indy-plenum is created 
 - Note a just built version of indy-plenum: X.Y.Z (you can check it either on tags/releases page, pypi or on CI server).
 - Change indy-plenum's dependency version to the new one in indy-node's [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py).
-- Raise PR to indy-node's master and wait until code is reviewed and merged. So, a new build of indy-node is created 
+- Raise PR to indy-node's master and wait until code is reviewed and merged (the same as described above).
+    - So, a new build of indy-node is created 
 
 
 ## How to Understand the Code
