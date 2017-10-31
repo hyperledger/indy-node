@@ -2,6 +2,7 @@ import pytest
 from indy_client.test.cli.constants import INVALID_SYNTAX, SCHEMA_ADDED
 from indy_client.test.cli.helper import createUuidIdentifier
 from indy_node.test.did.conftest import wallet
+from indy_client.test.cli.helper import connect_and_check_output
 
 
 SCHEMA_FOUND = ['Found schema', 'Degree',
@@ -10,12 +11,12 @@ SCHEMA_NOT_FOUND = 'Schema not found'
 
 
 @pytest.fixture(scope="module")
-def aliceCli(be, do, poolNodesStarted, aliceCLI, connectedToTest, wallet):
+def aliceCli(be, do, poolNodesStarted, aliceCLI, wallet):
     keyseed = 'a' * 32
 
     be(aliceCLI)
     addAndActivateCLIWallet(aliceCLI, wallet)
-    do('connect test', within=3, expect=connectedToTest)
+    connect_and_check_output(do, aliceCLI.txn_dir)
     do('new key with seed {}'.format(keyseed))
 
     return aliceCLI

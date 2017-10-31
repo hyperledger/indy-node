@@ -36,10 +36,10 @@ METADATA = os.path.join(SETUP_DIRNAME, 'indy_node', '__metadata__.py')
 exec(compile(open(METADATA).read(), METADATA, 'exec'))
 
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
-SAMPLE_DIR = os.path.join(BASE_DIR, ".indy")
+LOG_DIR = os.path.join(BASE_DIR, "log")
 CONFIG_FILE = os.path.join(BASE_DIR, "indy_config.py")
 
-for path in [BASE_DIR, SAMPLE_DIR]:
+for path in [BASE_DIR, LOG_DIR]:
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -51,22 +51,6 @@ if not os.path.exists(CONFIG_FILE):
               "# Any entry you add here would override that from config " \
               "example\n"
         f.write(msg)
-
-
-def post_install():
-    subprocess.run(['python post-setup.py'], shell=True)
-
-
-class EnhancedInstall(install):
-    def run(self):
-        install.run(self)
-        post_install()
-
-
-class EnhancedInstallDev(develop):
-    def run(self):
-        develop.run(self)
-        post_install()
 
 
 setup(
@@ -87,7 +71,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.2.156',
+    install_requires=['indy-plenum-dev==1.2.157',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator'],
@@ -120,9 +104,5 @@ setup(
              'scripts/test_users_write_and_read_own_keys',
              'scripts/validator-info',
              'scripts/init_bls_keys',
-             'scripts/enable_bls'],
-    cmdclass={
-        'install': EnhancedInstall,
-        'develop': EnhancedInstallDev
-    }
+             'scripts/enable_bls']
 )
