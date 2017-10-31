@@ -1,16 +1,15 @@
 ![logo](collateral/logos/indy-logo.png)
 
 * [About Indy Node](#about-indy-node)
-* [Indy Node Repository Structure](#Indy Node Repository Structure)
-* [Dependent Projects](#Dependent Projects)
-* [Contact us](#Contact us)
-* [How to Contribute](#How to Contribute)
-* [How to Install a Test Network](#How to Install a Test Network)
-* [How to Start Working with the Code](#How to Start Working with the Code)
-* [Continues integration/delivery](#Continues integration/delivery)
-* [How to send a PR](#How to send a PR)
-* [How to Create a Stable Release](#How to Create a Stable Release)
-* [How to Understand the Code](#How to Understand the Code)
+* [Indy Node Repository Structure](#indy-node-repository-structure)
+* [Dependent Projects](#dependent-projects)
+* [Contact us](#contact-us)
+* [How to Contribute](#how-to-contribute)
+* [How to Install a Test Network](#how-to-install-a-test-network)
+* [How to Start Working with the Code](#how-to-start-working-with-the-code)
+* [Continues integration/delivery](#continues-integration/delivery)
+* [How to send a PR](#how-to-send-a-pr)
+* [How to Understand the Code](#how-to-understand-the-code)
 
 ## About Indy Node
 
