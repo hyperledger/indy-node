@@ -46,7 +46,9 @@ Indy Node repo consists of the following parts:
     - Contains client and CLI code
     - Will be deprecated soon in favor of [indy-sdk](https://github.com/hyperledger/indy-sdk), so please use indy-sdk for your own applications dealing with Indy ecosystem.
 - indy-common
-    - Common code for both indy-node and indy-client parts.
+    - Common code for both indy-node and indy-client parts
+- scripts
+    - Some scripts that can be run for installed Node (in particular, scripts to start Nodes, generate keys, prepare test Network, etc.)
 
 ## Dependent Projects
 
