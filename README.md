@@ -7,12 +7,12 @@
 * [How to Contribute](#how-to-contribute)
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
-# [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
+* [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
 * [Continues integration and delivery](#continues-integration-and-delivery)
 * [How to send a PR](#how-to-send-a-pr)
 * [How to Understand the Code](#how-to-understand-the-code)
 
-## About Indy Node
+### About Indy Node
 
 This codebase embodies all the functionality to run nodes (validators and/or observers)
 that provide a [self-sovereign identity ecosystem](https://sovrin.org) on top of a
@@ -36,7 +36,7 @@ will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
 
 - If you haven't done so already, please visit the main resource for all things "Indy" to get acquainted with the code base, helpful resources, and up-to-date information: [Hyperledger Wiki-Indy](https://wiki.hyperledger.org/projects/indy).
 
-## Indy Node Repository Structure
+### Indy Node Repository Structure
 
 Indy Node repo consists of the following parts:
 - indy-node: 
@@ -48,7 +48,7 @@ Indy Node repo consists of the following parts:
 - indy-common
     - Common code for both indy-node and indy-client parts.
 
-## Dependent Projects
+### Dependent Projects
 
 - [indy-plenum](https://github.com/hyperledger/indy-plenum)
     - The heart of the distributed ledger technology inside Hyperledger Indy.
@@ -70,20 +70,20 @@ Indy Node repo consists of the following parts:
     - It's based on [AMCL](https://github.com/milagro-crypto/amcl)
     - In particular, it contains BLS multi-signature crypto needed for state proofs support in Indy.
 
-## Contact us
+### Contact us
 
 - Bugs, stories, and backlog for this codebase are managed in [Hyperledger's Jira](https://jira.hyperledger.org).
 Use project name `INDY`.
 - Join us on [Jira's Rocket.Chat](https://chat.hyperledger.org/channel/indy) at `#indy` and/or `#indy-node` channels to discuss.
 
 
-## How to Contribute
+### How to Contribute
 
 - We'd love your help; see these [instructions on how to contribute](http://bit.ly/2ugd0bq).
 - You may also want to read this info about [maintainers](MAINTAINERS.md).
 
 
-## How to Install a Test Network 
+### How to Install a Test Network 
 
 You can have a look at [Start Nodes](docs/start-nodes.md) 
 to understand what needs to be done to create a Network, initialize and start Nodes, and what scripts are provided for this.
@@ -99,12 +99,12 @@ The described process is automated in one of the ways below (it allow to install
  - **Also coming soon:** Create virtual machines in AWS.
 
 
-## How to Start Working with the Code
+### How to Start Working with the Code
 
 Please have a look at [Dev Setup](docs/setup-dev.md)
 
 
-## How to Start Indy Client CLI
+### How to Start Indy Client CLI
 Once installed, you can play with the command-line interface by running Indy from a terminal.
 
 Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [conemu](https://conemu.github.io/).
@@ -112,11 +112,11 @@ Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [co
 indy
 ```
 
-## Continues Integration and Delivery
+### Continues Integration and Delivery
 
 Please have a look at [Continues integration/delivery](docs/ci-cd.md)
 
-## How to send a PR
+### How to send a PR
 
 If you made changes in both indy-plenum and indy-node, you need to do the following:
 - Raise a PR to indy-plenum's master
@@ -130,7 +130,7 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
     - So, a new build of indy-node is created 
 
 
-## How to Understand the Code
+### How to Understand the Code
 
 TBD
 
