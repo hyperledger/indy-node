@@ -134,9 +134,9 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 
 ## How to Understand the Code
 
-TBD
-
-
+- Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
+- [Indy Transaction Types](https://docs.google.com/spreadsheets/d/1ELPxVjYwmjTc4BGb9VzabguZtocfsR74cLlSdTlO6-I/edit#gid=657206024)
+- More TBD
 
 
 
