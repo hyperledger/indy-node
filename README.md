@@ -123,6 +123,8 @@ Please have a look at [Continues integration/delivery](docs/ci-cd.md)
 If you made changes in both indy-plenum and indy-node, you need to do the following:
 - Raise a PR to indy-plenum's master
     - Make sure that all your commits have a DCO sign-off from the author
+    - Make sure that static code validation passed 
+    (you can run `flake8 .` on the project root to check it; you can install flake8 from pypi: `pip install flake8`)
     - Put the link to the PR to `#indy-pr-review` channel in Rocket.Chat
     - A reviewer needs to review the code, approve it, start your tests (add `test this please` comment to the PR), and merge a PR (we usually use Squash) after all the tests pass.
     - So, a new build of indy-plenum is created 

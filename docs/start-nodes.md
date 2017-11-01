@@ -13,6 +13,9 @@ In order to run your own Network, you need to do the following for each Node:
         - master version: `pip install indy-node-dev`
         - stable version: `pip install indy-node`
 2. Initialize Node to be included into the Network
+    - set Network name in config file
+        - the location of the config depends on how a Node was installed. It's usually inside `/etc/indy` for Ubuntu.
+        - the following needs to be added: `NETWORK_NAME={network_name}` where {network_name} matches the one in genesis transaction files above
     - generate keys
         - ed25519 transport keys (used by ZMQ for Node-to-Node and Node-to-Client communication)
         - BLS keys for BLS multi-signature and state proofs support
@@ -26,9 +29,6 @@ In order to run your own Network, you need to do the following for each Node:
         - domain transactions genesis file:
             - The file must be named as `domain_transactions_file_{network_name}_genesis`
             - The file contains initial NYM transactions (for example, Trustees, Stewards, etc.)
-    - set Network name in config file
-        - the location of the config depends on how a Node was installed. It's usually inside `/etc/indy` for Ubuntu.
-        - the following needs to be added: `NETWORK_NAME={network_name}` where {network_name} matches the one in genesis transaction files above
 
 ## Scripts for Initialization
 
@@ -41,6 +41,8 @@ The following script can generate both ed25519 and BLS keys for a node named `Al
 init_indy_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
 ```
 Note: Seed can be any randomly chosen 32 byte value. It does not have to be in the format 11..<name of the node>
+
+Please not that this script must be called *after* CURRENT_NETWORK is set in config (see above).
 
 #### Running Node
 

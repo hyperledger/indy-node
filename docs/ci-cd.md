@@ -61,6 +61,15 @@ is one and the only official stable release that can be used for production.
         - different versions of indy-plenum dependency
     - different versions in migrations scripts  
 
+#### Static Code Validation
+
+- We use flake8 for static code validation.
+- It's run against every PR. PR fails if there are some static code validation errors.
+- Not all checks are enabled (have a look at `.flake8` file at the project root)
+- You can run static code validation locally:
+    - Install flake8: `pip install flake8`
+    - Run validation on the root folder of the project: `flake8 .` 
+
 ## How to Create a Stable Release
 
 - Create a new branch based on `stable` in indy-plenum
