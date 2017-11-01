@@ -12,7 +12,7 @@ echo 'Added repositories and keys'
 
 
 echo 'Installing libsodium...'
-sudo apt-get install libsodium13
+sudo apt-get install libsodium18
 echo 'Installed libsodium'
 
 

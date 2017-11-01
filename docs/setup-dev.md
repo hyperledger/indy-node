@@ -24,7 +24,6 @@ You can also have a look at the scripts mentioned below to follow them and perfo
 1. Run `init-dev-project.sh <github-name> <new-virtualenv-name>` to clone indy-plenum and indy-node projects and
 create a virtualenv to work in.
 1. Activate new virtualenv `workon <new-virtualenv-name>`
-1. Now you can run tests by `python setup.py pytest`
 1. [Optionally] Install Pycharm
 1. [Optionally] Open and configure projects in Pycharm:
     - Open both indy-plenum and indy-node in one window
@@ -182,7 +181,8 @@ pip install -e .
 If you are working with both indy-plenum and indy-node, then please make sure that both projects are installed with -e option,
 and not from pypi (have a look at the sequence at `init-dev-project.sh`) 
 
-Run tests by
+Go to the folder with tests (either `indy-plenum`, `indy-node/indy_node`, `indy-node/indy_client` or `indy-node/indy_common`)
+and run tests
 ```
-python setup.py pytest
+pytest .
 ```
