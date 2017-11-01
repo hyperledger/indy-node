@@ -56,7 +56,7 @@ For this guide, however, we’ll be using a command - line interface instead of 
 ## Install Sovrin
 You can install a Sovrin test network in one of several ways:
 
- - **Automated VM Creation** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/master/vagrant/training/vb-multi-vm/TestSovrinClusterSetup.md) using VirtualBox and Vagrant.
+ - **Automated VM Creation** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/training/vb-multi-vm/TestSovrinClusterSetup.md) using VirtualBox and Vagrant.
 
  - **Coming soon:** Use client side docker images to make it easy for you to play with Sovrin.
 
