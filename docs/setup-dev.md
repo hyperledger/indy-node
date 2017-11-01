@@ -17,6 +17,7 @@ You can also have a look at the scripts mentioned below to follow them and perfo
 
 1. Get scripts from [dev-setup-ubuntu](https://github.com/hyperledger/indy-node/tree/master/dev-setup/ubuntu)
 1. Run `setup_dev_python.sh` to setup Python3.5, pip and virtualenv
+1. Run `source ~/.bashrc` to apply virtual environment wrapper installation
 1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (charm-crypto, libindy-crypto, libsodium)
 1. Fork [indy-plenum](https://github.com/hyperledger/indy-plenum) and [indy-node](https://github.com/hyperledger/indy-node)
 1. Go to the destination folder for the project.
@@ -90,14 +91,6 @@ The default configuration includes an example that uses Charm-Crypto framework.
 You can install it as described in [Anonymous Credentials](https://github.com/evernym/anoncreds) repository 
 (in particular, running `setup-charm.sh`).
 
-As an alternative, there is a prepared deb packages which can be installed on Ubuntu:
-```
-sudo echo "deb http://us.archive.ubuntu.com/ubuntu xenial main universe" >> /etc/apt/sources.list
-sudo echo "deb https://repo.sovrin.org/deb xenial stable" >> /etc/apt/sources.list
-sudo apt-get update
-sudo apt-get install python3-charm-crypto
-```   
-
 ### Setup Libsodium
 
 Indy also depends on libsodium, an awesome crypto library. These need to be installed separately.
@@ -160,6 +153,23 @@ And activate it by:
 ```
 source <name of virtual environment>/bin/activate
 ```
+
+Optionally you can install virtual environment wrapper as follows:
+```
+pip3 install virtualenvwrapper
+echo '' >> ~/.bashrc
+echo '# Python virtual environment wrapper' >> ~/.bashrc
+echo 'export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3' >> ~/.bashrc
+echo 'export WORKON_HOME=$HOME/.virtualenvs' >> ~/.bashrc
+echo 'source /usr/local/bin/virtualenvwrapper.sh' >> ~/.bashrc
+source ~/.bashrc
+```
+It allows to create a new virtual environment and activate it by using
+```
+mkvirtualenv -p python3.5 <env_name>
+workon <env_name>
+```
+
 
 ### Installing code and running tests
 

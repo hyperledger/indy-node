@@ -1,10 +1,10 @@
 #!/bin/bash
 
 echo 'Adding repositories and keys...'
-sudo echo "deb http://us.archive.ubuntu.com/ubuntu xenial main universe" >> /etc/apt/sources.list
+echo "deb http://us.archive.ubuntu.com/ubuntu xenial main universe" | sudo tee -a /etc/apt/sources.list
 
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
-sudo echo "deb https://repo.sovrin.org/deb xenial stable" >> /etc/apt/sources.list
+echo "deb https://repo.sovrin.org/deb xenial stable" | sudo tee -a /etc/apt/sources.list
 
 sudo apt-get update
 

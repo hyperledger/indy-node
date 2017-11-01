@@ -19,6 +19,9 @@ mkvirtualenv -p python3.5 ${virtualenv_name}
 workon ${virtualenv_name}
 echo "Created virtual environment"
 
+cp -r /usr/local/lib/python3.5/dist-packages/Charm_Crypto-0.0.0.egg-info ~/.virtualenvs/${virtualenv_name}/lib/python3.5/site-packages/Charm_Crypto-0.0.0.egg-info
+cp -r /usr/local/lib/python3.5/dist-packages/charm ~/.virtualenvs/${virtualenv_name}/lib/python3.5/site-packages/charm
+
 echo "Installing indy-node..."
 pushd indy-node
 pip install -e .

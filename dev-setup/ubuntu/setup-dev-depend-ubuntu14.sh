@@ -3,11 +3,11 @@
 echo 'Adding repositories and keys...'
 
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys B9316A7BC7917B12
-sudo echo "deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" >> /etc/apt/sources.list
-sudo echo "deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" >> /etc/apt/sources.list
+echo "deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list
+echo "deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" | sudo tee -a /etc/apt/sources.list
 
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
-sudo echo "deb https://repo.sovrin.org/deb xenial stable" >> /etc/apt/sources.list
+echo "deb https://repo.sovrin.org/deb xenial stable" | sudo tee -a /etc/apt/sources.list
 
 sudo apt-get update
 
