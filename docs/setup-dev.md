@@ -59,7 +59,7 @@ and virtualenvironment on Ubuntu, or follow the detailed instructions below.
 
 ##### Ubuntu
 
-1. Run ```sudo add-apt-repository ppa:fkrull/deadsnakes```
+1. Run ```sudo add-apt-repository ppa:deadsnakes/ppa```
 
 2. Run ```sudo apt-get update```
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo 'Installing python 3.5 and pip...'
-sudo add-apt-repository ppa:fkrull/deadsnakes
+sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt-get update
 sudo apt-get install python3.5
 sudo apt-get install python3-pip python3.5-dev
