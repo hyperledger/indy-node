@@ -83,8 +83,14 @@ def ensureConnectedToTestEnv(be, do, cli):
     be(cli)
     if not cli._isConnectedToAnyEnv():
         timeout = waits.expectedClientToPoolConnectionTimeout(len(cli.nodeReg))
-        do('connect test', within=timeout,
-           expect=['Connected to test'])
+        connect_and_check_output(do, cli.txn_dir, timeout)
+
+
+def connect_and_check_output(do, netwotk, timeout=3, expect=None, mapper=None):
+    if expect is None:
+        expect = 'Connected to {}'.format(netwotk)
+    do('connect {}'.format(netwotk), within=timeout,
+       expect=expect, mapper=mapper)
 
 
 def ensureNymAdded(be, do, cli, nym, role=None):
@@ -226,25 +232,18 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
         initDirWithGenesisTxns(tempDir, conf, poolDir, domainDir)
 
     if multiPoolNodes:
-        conf.ENVS = {}
         for pool in multiPoolNodes:
-            conf.ENVS[pool.name] = \
-                Environment("{}_{}".format(pool_transactions_file_base, pool.name),
-                            "{}_{}".format(domain_transactions_file_base, pool.name))
-            # conf.poolTransactionsFile = conf.ENVS[pool.name].poolLedger
-            # conf.domainTransactionsFile = conf.ENVS[pool.name].domainLedger
             initDirWithGenesisTxns(
-                tempDir,
+                tdir,
                 conf,
                 os.path.join(pool.tdirWithPoolTxns, pool.name),
-                os.path.join(pool.tdirWithDomainTxns, pool.name),
-                conf.ENVS[pool.name].poolLedger,
-                conf.ENVS[pool.name].domainLedger
+                os.path.join(pool.tdirWithDomainTxns, pool.name)
             )
     from indy_node.test.helper import TestNode
     new_cli = newPlenumCLI(
         looper,
-        tempDir,
+        tdir,
+        tdir,
         cliClass=cliClass,
         nodeClass=TestNode,
         clientClass=TestClient,
@@ -255,6 +254,7 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
         agentCreator=True)
     if isinstance(new_cli, IndyCli) and agent is not None:
         new_cli.agent = agent
+    new_cli.txn_dir = subDirectory
     return new_cli
 
 

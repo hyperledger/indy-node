@@ -10,7 +10,7 @@ from plenum.common.util import randomString
 from indy_common.config_util import getConfig
 
 config = getConfig()
-keepDir = config.baseDir
+keepDir = os.path.join(config.baseDir, config.NETWORK_NAME)
 
 
 if __name__ == "__main__":

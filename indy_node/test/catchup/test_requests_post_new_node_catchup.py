@@ -120,6 +120,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
     new_node = TestNode(
         new_node.name,
         basedirpath=tdirWithPoolTxns,
+        base_data_dir=tdirWithPoolTxns,
         config=tconf,
         pluginPaths=allPluginsPath,
         ha=new_node.nodestack.ha,
@@ -135,6 +136,9 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
     check_sizes([new_node])
 
     for i, (tc, tw) in enumerate(trust_anchors):
+        # To prevent sending of 'get_attr' to just one node
+        tc._read_only_requests = set()
+
         reply = getAttribute(looper, tc, tw, tw.defaultId, *attributes[i])
         all_replies = tc.getRepliesFromAllNodes(reply[f.IDENTIFIER.nm],
                                                 reply[f.REQ_ID.nm])
