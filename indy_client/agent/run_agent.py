@@ -60,11 +60,9 @@ def runAgent(agent, looper=None, bootstrap=None):
 
     def is_connected(agent):
         client = agent.client
-        from plenum.common.startable import Mode
-        if client.mode != Mode.discovered:
-            raise Exception("Client hasn't finished catch-up with Pool Ledger yet")
-        if not client.hasSufficientConnections:
-            raise Exception("Client doesn't have sufficient number of connections to send write requests")
+        if not client.can_send_write_requests():
+            raise Exception("Client hasn't finished catch-up with Pool Ledger yet or "
+                            "doesn't have sufficient number of connections")
 
     async def wait_until_connected(agent):
         from stp_core.loop.eventually import eventually
