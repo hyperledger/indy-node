@@ -146,6 +146,16 @@ class WalletRawUpdaterToVersion2:
         raw[getClassVersionKey(Wallet)] = 2
 
 
+class WalletRawUpdaterToVersion3:
+
+    @classmethod
+    def update(cls, raw):
+        if raw.get('env') == 'test':
+            raw['env'] = 'sandbox'
+
+        raw[getClassVersionKey(Wallet)] = 3
+
+
 # TODO: Maybe we should have a thinner wallet which should not have
 # ProverWallet
 class Wallet(PWallet, TrustAnchoring):
@@ -156,11 +166,12 @@ class Wallet(PWallet, TrustAnchoring):
     # inherited classes must be versioned by themselves using the same
     # mechanism, so modification of inherited classes structure does not require
     # increment of this class version.
-    CLASS_VERSION = 2
+    CLASS_VERSION = 3
 
     RAW_UPDATERS = {
         1: WalletRawUpdaterToVersion1.update,
-        2: WalletRawUpdaterToVersion2.update
+        2: WalletRawUpdaterToVersion2.update,
+        3: WalletRawUpdaterToVersion3.update
     }
 
     clientNotPresentMsg = "The wallet does not have a client associated with it"
