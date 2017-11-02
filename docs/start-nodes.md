@@ -44,15 +44,6 @@ Note: Seed can be any randomly chosen 32 byte value. It does not have to be in t
 
 Please not that this script must be called *after* CURRENT_NETWORK is set in config (see above).
 
-#### Running Node
-
-The following script will start a Node process which can communicate with other Nodes and Clients
-```
-start_indy_node Alpha 9701 9702
-```
-The node uses a separate TCP channels for communicating with nodes and clients.
-The first port number is for the node-to-node communication channel and the second is for node-to-client communication channel.
-
 
 #### Generating keys and test genesis transaction files for a test network
 

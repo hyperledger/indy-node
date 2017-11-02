@@ -24,6 +24,7 @@ What artifacts are produced after each push
         - indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)
     - indy-node:
         - indy-node-dev in [pypi](https://pypi.python.org/pypi/indy-node-dev)
+        - indy-node deb package in [https://repo.sovrin.org/deb xenial master-latest](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
         - indy-node deb package in [https://repo.sovrin.org/deb xenial master](https://repo.sovrin.org/lib/apt/xenial/master/)
         - indy-plenum deb package in [https://repo.sovrin.org/deb xenial master](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from master-latest)
         - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
@@ -34,6 +35,7 @@ What artifacts are produced after each push
         - indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)
     - indy-node:
         - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
+        - indy-node deb package in [https://repo.sovrin.org/deb xenial rc-latest](https://repo.sovrin.org/lib/apt/xenial/rc-latest/)
         - indy-node deb package in [https://repo.sovrin.org/deb xenial rc](https://repo.sovrin.org/lib/apt/xenial/rc/)
         - indy-plenum deb package in [https://repo.sovrin.org/deb xenial rc](https://repo.sovrin.org/lib/apt/xenial/rc/) (copied from rc-latest)
         - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
@@ -49,9 +51,9 @@ is one and the only official stable release that can be used for production.
 
 #### Versioning
 
-- Please note, that we are using semver approach for versioning (major, minor, patch) for each of the components. 
-- Major and minor parts are set in the code (see [__metadata__.py](https://github.com/hyperledger/indy-node/blob/master/indy_node/__metadata__.py)). They must be incremented for new releases manually from code if needed.
-- Patch part is equal to build number and 
+- Please note, that we are using semver-like approach for versioning (major, minor, build) for each of the components. 
+- Major and minor parts are set in the code (see [\_\_metadata\_\_.py](https://github.com/hyperledger/indy-node/blob/master/indy_node/__metadata__.py)). They must be incremented for new releases manually from code if needed.
+- Build part is incremented with each build on Jenkins (so it always increases, but may be not sequentially)  
 - Each dependency (including indy-plenum and indy-anoncreds) has a strict version (see [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py))
 - If you install indy-node (either from pypi, or from deb package), the specified in setup.py version of indy-plenum is installed.
 - Master and Stable builds usually have different versions.

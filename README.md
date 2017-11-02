@@ -137,7 +137,8 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 ## How to Understand the Code
 
 - Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
-- [Indy Transaction Types](https://docs.google.com/spreadsheets/d/1ELPxVjYwmjTc4BGb9VzabguZtocfsR74cLlSdTlO6-I/edit#gid=657206024)
+- [Indy Transaction Types](https://docs.google.com/spreadsheets/d/19A3u4Ba3OjDSHeJdLjtoGWLWHTSBk3Y15u13-67TIX4/edit#gid=657206024)
+- [Network roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)
 - More TBD
 
 
