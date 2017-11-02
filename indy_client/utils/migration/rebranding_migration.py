@@ -79,6 +79,7 @@ def migrate():
             shutil.rmtree(_BASE_DIR)
         if os.path.exists(_BACKUP_DIR):
             os.rename(_BACKUP_DIR, _BASE_DIR)
+        _rename_if_exists(_HOME_DIR, '.indy-cli-history', '.sovrin-cli-history')
         raise e
 
     if os.path.exists(_BACKUP_DIR):
