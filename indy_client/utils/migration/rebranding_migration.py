@@ -2,6 +2,7 @@ import os
 
 import shutil
 
+_HOME_DIR = os.path.expanduser('~')
 _LEGACY_DIR = os.path.expanduser('~/.sovrin')
 _BASE_DIR = os.path.expanduser('~/.indy')
 _BACKUP_DIR = os.path.expanduser('~/.indy-backup')
@@ -59,8 +60,10 @@ def _migrate_legacy_base_dir():
     if os.path.isdir(os.path.join(_BASE_DIR, 'sample')):
         _rename_request_files(os.path.join(_BASE_DIR, 'sample'))
 
+    _rename_if_exists(_HOME_DIR, '.sovrin-cli-history', '.indy-cli-history')
 
-def migrate_legacy_app_data():
+
+def migrate():
     if os.path.isdir(_BACKUP_DIR):
         shutil.rmtree(_BACKUP_DIR)
     elif os.path.isfile(_BACKUP_DIR):

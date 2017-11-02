@@ -22,7 +22,7 @@ old_base_dir = '/home/indy/.indy'
 def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
     logger.info('Move genesis transactions {} -> {}'.format(
         old_base_txn_dir, new_base_txn_dir))
-    for suffix in ('sandbox', 'live', 'local'):
+    for suffix in ('live', 'local', 'sandbox'):
         new_txn_dir = os.path.join(new_base_txn_dir, suffix)
         os.makedirs(new_txn_dir, exist_ok=True)
 
@@ -53,7 +53,7 @@ def migrate_keys(old_base_keys_dir, new_base_keys_dir):
 def _get_network_from_txn_file_name(file_name: str):
     name_split = file_name.split("_")
     ret_name = "sandbox"
-    if name_split and name_split[-1] in ["live", "sandbox"]:
+    if name_split and name_split[-1] in ["live", "local", "sandbox"]:
         ret_name = name_split[-1]
     return ret_name
 
