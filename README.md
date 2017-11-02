@@ -49,6 +49,10 @@ Indy Node repo consists of the following parts:
     - Common code for both indy-node and indy-client parts
 - scripts
     - Some scripts that can be run for installed Node (in particular, scripts to start Nodes, generate keys, prepare test Network, etc.)
+- doc
+    - a folder with documentation
+- dev-setup
+    - a folder with scripts helping to configure development environment (python, dependencies, projects, virtual environment)
 
 ## Dependent Projects
 
