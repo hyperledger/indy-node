@@ -20,34 +20,32 @@ What artifacts are produced after each push
 - to `master` branch:
     - indy-plenum:
         - indy-plenum-dev in [pypi](https://pypi.python.org/pypi/indy-plenum-dev) 
-        - indy-plenum deb package in [https://repo.sovrin.org/deb xenial master-latest](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
         - indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)
     - indy-node:
         - indy-node-dev in [pypi](https://pypi.python.org/pypi/indy-node-dev)
-        - indy-node deb package in [https://repo.sovrin.org/deb xenial master-latest](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
-        - indy-node deb package in [https://repo.sovrin.org/deb xenial master](https://repo.sovrin.org/lib/apt/xenial/master/)
-        - indy-plenum deb package in [https://repo.sovrin.org/deb xenial master](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from master-latest)
+        - indy-node deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/)
+        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from master-latest)
         - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
 - to `stable` branch:
     - indy-plenum:
         - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum) 
-        - indy-plenum deb package in [https://repo.sovrin.org/deb xenial rc-latest](https://repo.sovrin.org/lib/apt/xenial/rc-latest/)
         - indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)
     - indy-node:
         - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
-        - indy-node deb package in [https://repo.sovrin.org/deb xenial rc-latest](https://repo.sovrin.org/lib/apt/xenial/rc-latest/)
-        - indy-node deb package in [https://repo.sovrin.org/deb xenial rc](https://repo.sovrin.org/lib/apt/xenial/rc/)
-        - indy-plenum deb package in [https://repo.sovrin.org/deb xenial rc](https://repo.sovrin.org/lib/apt/xenial/rc/) (copied from rc-latest)
+        - indy-node deb package in [`https://repo.sovrin.org/deb xenial rc`](https://repo.sovrin.org/lib/apt/xenial/rc/)
+        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial rc`](https://repo.sovrin.org/lib/apt/xenial/rc/) (copied from rc-latest)
         - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
         - after build is tested and approved:
-            - indy-node deb package in [https://repo.sovrin.org/deb xenial stable](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from rc)
-            - indy-plenum deb package in [https://repo.sovrin.org/deb xenial stable](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from rc)
+            - indy-node deb package in [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from rc)
+            - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from rc)
 
 Use cases for artifacts
 - Pypi artifacts can be used for dev experiments, but not intended to be used for production.
 - Using deb packages is recommended way to be used for a test/production pool on Ubuntu.
-- indy-node deb package from [https://repo.sovrin.org/deb xenial stable](https://repo.sovrin.org/lib/apt/xenial/stable/) 
-is one and the only official stable release that can be used for production. 
+    - indy-node deb package from [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) 
+    is one and the only official stable release that can be used for production (stable version).
+    - indy-node deb package from [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) 
+    contains the latest changes (from master branch). It's not guaranteed that that this code is stable enough.
 
 #### Versioning
 
