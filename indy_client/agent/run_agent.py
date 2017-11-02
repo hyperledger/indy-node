@@ -58,11 +58,25 @@ def runAgentCli(agent, config, looper=None, bootstrap=None):
 def runAgent(agent, looper=None, bootstrap=None):
     assert agent
 
+    def is_connected(agent):
+        client = agent.client
+        from plenum.common.startable import Mode
+        if client.mode != Mode.discovered:
+            raise Exception("Client hasn't finished catch-up with Pool Ledger yet")
+        if not client.hasSufficientConnections:
+            raise Exception("Client doesn't have sufficient number of connections to send write requests")
+
+    async def wait_until_connected(agent):
+        from stp_core.loop.eventually import eventually
+        await eventually(is_connected, agent,
+                         timeout=120, retryWait=2)
+
     def do_run(looper):
         agent.loop = looper.loop
         looper.add(agent)
         logger.info("Running {} now (port: {})".format(agent.name, agent.port))
         if bootstrap:
+            looper.run(wait_until_connected(agent))
             looper.run(runBootstrap(bootstrap))
 
     if looper:
@@ -71,7 +85,6 @@ def runAgent(agent, looper=None, bootstrap=None):
         with Looper(debug=getConfig().LOOPER_DEBUG, loop=agent.loop) as looper:
             do_run(looper)
             looper.run()
-
 
 # Note: Commented it as didn't find any usage of this method
 # def run_agent(looper, wallet, agent):
