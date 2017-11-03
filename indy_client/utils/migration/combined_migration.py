@@ -68,7 +68,7 @@ def migrate():
         raise e
 
     finally:
-        # We must restore .sovrin to its initial state anyway to preserve
+        # We restore .sovrin from backup anyway to preserve
         # untouched pre-migration data because the ancient migration
         # makes changes right in .sovrin
         if os.path.exists(_LEGACY_BASE_BACKUP_DIR):
@@ -78,6 +78,5 @@ def migrate():
         # We should remove the transitional base directory (.indy) anyway
         _try_remove_path(_TRANS_BASE_DIR)
 
-    # Since the migration has succeeded, we remove the backup directories
-    _try_remove_path(_LEGACY_BASE_BACKUP_DIR)
+    # Since the migration has succeeded, we remove .indy-cli.backup
     _try_remove_path(_CLI_BASE_BACKUP_DIR)
