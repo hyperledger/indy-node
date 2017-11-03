@@ -7,7 +7,10 @@ from indy_node.server.upgrade_log import UpgradeLog
 
 
 INVALID_VERSION = bumpedVersion()
-whitelist = ['unable to send message', 'Failed to upgrade node']
+whitelist = ['unable to send message',
+             'failed upgrade',
+             'This problem may have external reasons, check syslog for more information']
+
 # TODO: Implement a client in node
 
 
