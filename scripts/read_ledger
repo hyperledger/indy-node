@@ -42,19 +42,22 @@ def read_args():
     parser.add_argument('--client_name', required=False, help="Client's name")
     parser.add_argument('--serializer', required=False, default='json',
                         help="How to represent the data (json by default)")
+    parser.add_argument('--network', required=False, type=str,
+                        help="Network name to read ledger from")
 
     return parser.parse_args()
 
 
-def get_ledger_dir(node_name, client_name):
+def get_ledger_dir(node_name, client_name, network):
     if node_name and client_name:
         print("Either 'node_name' or 'client_name' can be specified")
         exit()
 
     config = getConfig()
+    _network = network if network else config.NETWORK_NAME
     base_dir = config.CLI_BASE_DIR if client_name else config.baseDir
     data_dir = config.clientDataDir if client_name else config.nodeDataDir
-    ledger_data_dir = os.path.join(base_dir, config.NETWORK_NAME, data_dir)
+    ledger_data_dir = os.path.join(base_dir, _network, data_dir)
     if not os.path.exists(ledger_data_dir):
         logger.error("Can not find the directory with the ledger: {}".format(ledger_data_dir))
         exit()
@@ -154,7 +157,7 @@ if __name__ == '__main__':
     args = read_args()
 
     # TODO: works well only for small ledgers,
-    ledger_data_dir = get_ledger_dir(args.node_name, args.client_name)
+    ledger_data_dir = get_ledger_dir(args.node_name, args.client_name, args.network)
     read_copy_ledger_data_dir = None
     try:
         read_copy_ledger_data_dir = make_copy_of_ledger(ledger_data_dir)
