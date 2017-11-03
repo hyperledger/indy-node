@@ -487,20 +487,19 @@ class Upgrader(HasActionQueue):
                         external_reason=False):
         if reason is None:
             reason = "unknown reason"
-
-        logger.error("Failed to upgrade node '{}' to version {} due to {}}"
-                     .format(self.nodeName,
-                             version,
-                             reason))
+        error_message = "Node {node} failed upgrade {upgrade_id} to " \
+                        "version {version} scheduled on {scheduled_on}" \
+                        "because of {reason}"\
+                        .format(node=self.nodeName,
+                                upgrade_id=upgrade_id,
+                                version=version,
+                                scheduled_on=scheduled_on,
+                                reason=reason)
+        logger.error(error_message)
         if external_reason:
             logger.error("This problem may have external reasons, "
                          "check syslog for more information")
-
-
-        self._notifier.sendMessageUponNodeUpgradeFail(
-            "Upgrade of node '{}' to version {} failed "
-            "because if exceeded timeout"
-            .format(self.nodeName, version))
+        self._notifier.sendMessageUponNodeUpgradeFail(error_message)
 
 
 class UpgradeMessage:
