@@ -381,11 +381,25 @@ class Upgrader(HasActionQueue):
         """
 
         if self.scheduledUpgrade:
-            why = justification if justification else "some reason"
+            why_prefix = ": "
+            why = justification
+            if justification is None:
+                why_prefix = ", "
+                why = "cancellation reason not specified"
+
             (version, when, upgrade_id) = self.scheduledUpgrade
-            logger.info("Cancelling upgrade of node '{}' "
-                        "to version {} due to {}"
-                        .format(self.nodeName, version, why))
+            logger.info("Cancelling upgrade {upgrade_id}"
+                        " of node {node}"
+                        " to version {version}"
+                        " scheduled on {when}"
+                        "{why_prefix}{why}"
+                        .format(upgrade_id=upgrade_id,
+                                node=self.nodeName,
+                                version=version,
+                                when=when,
+                                why_prefix=why_prefix,
+                                why=why))
+
             self._unscheduleUpgrade()
             self._upgradeLog.appendCancelled(when, version, upgrade_id)
             self._notifier.sendMessageUponPoolUpgradeCancel(
