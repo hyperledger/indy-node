@@ -253,7 +253,7 @@ class NodeControlTool:
                 self._do_migration(current_version, new_version)
             self._call_restart_node_script()
         except Exception as ex:
-            self._declate_upgrade_failed(from_version=current_version,
+            self._declare_upgrade_failed(from_version=current_version,
                                          to_version=new_version,
                                          reason=str(ex))
             logger.error("Trying to rollback to the previous version {}"
@@ -273,7 +273,7 @@ class NodeControlTool:
         except Exception as e:
             logger.error("Unexpected error in process_data {}".format(e))
 
-    def _declate_upgrade_failed(self, *,
+    def _declare_upgrade_failed(self, *,
                                 from_version,
                                 to_version,
                                 reason):
