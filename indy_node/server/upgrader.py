@@ -502,7 +502,7 @@ class Upgrader(HasActionQueue):
         if reason is None:
             reason = "unknown reason"
         error_message = "Node {node} failed upgrade {upgrade_id} to " \
-                        "version {version} scheduled on {scheduled_on}" \
+                        "version {version} scheduled on {scheduled_on} " \
                         "because of {reason}"\
                         .format(node=self.nodeName,
                                 upgrade_id=upgrade_id,
