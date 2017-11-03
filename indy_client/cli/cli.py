@@ -41,11 +41,9 @@ from indy_client.client.wallet.node import Node
 from indy_client.client.wallet.pool_config import PoolConfig
 from indy_client.client.wallet.upgrade import Upgrade
 from indy_client.client.wallet.wallet import Wallet
-from indy_client.utils.migration import ancient_migration
-from indy_client.utils.migration import multinetworks_migration
-from indy_client.utils.migration import rebranding_migration
-from indy_client.utils.migration.migration_util import is_base_dir_untouched, \
-    legacy_base_dir_exists
+from indy_client.utils.migration import combined_migration
+from indy_client.utils.migration.combined_migration import \
+    is_cli_base_dir_untouched, legacy_base_dir_exists
 from indy_common.auth import Authoriser
 from indy_common.config_util import getConfig
 from indy_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
@@ -129,15 +127,13 @@ class IndyCli(PlenumCli):
 
     @staticmethod
     def _migrate_legacy_app_data_if_just_upgraded_and_user_agrees():
-        if is_base_dir_untouched() and legacy_base_dir_exists():
+        if is_cli_base_dir_untouched() and legacy_base_dir_exists():
             print('Application data from previous Indy version has been found')
             answer = prompt('Do you want to migrate it? [Y/n] ')
 
             if not answer or answer.upper().startswith('Y'):
                 try:
-                    ancient_migration.migrate()
-                    rebranding_migration.migrate()
-                    multinetworks_migration.migrate()
+                    combined_migration.migrate()
                     # Invalidate config caches to pick up overridden config
                     # parameters from migrated application data
                     invalidate_config_caches()

@@ -5,35 +5,7 @@ import shutil
 _HOME_DIR = os.path.expanduser('~')
 _LEGACY_DIR = os.path.expanduser('~/.sovrin')
 _BASE_DIR = os.path.expanduser('~/.indy')
-_BACKUP_DIR = os.path.expanduser('~/.indy-backup')
-
-_DISTRIBUTED_FILE_NAMES = ['.indy',
-                           '__pycache__',
-                           'plugins',
-                           'sample',
-                           'indy_config.py',
-                           'pool_transactions_local_genesis',
-                           'pool_transactions_sandbox_genesis',
-                           'pool_transactions_live_genesis']
-
-
-def is_base_dir_untouched():
-    if not os.path.exists(_BASE_DIR):
-        return True
-
-    if not os.path.isdir(_BASE_DIR):
-        # In this abnormal case we believe that base directory has been modified
-        return False
-
-    for file_name in os.listdir(_BASE_DIR):
-        if file_name not in _DISTRIBUTED_FILE_NAMES:
-            return False
-
-    return True
-
-
-def legacy_base_dir_exists():
-    return os.path.isdir(_LEGACY_DIR)
+_BACKUP_DIR = os.path.expanduser('~/.indy.backup')
 
 
 def _rename_if_exists(dir, old_name, new_name):
