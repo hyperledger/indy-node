@@ -52,29 +52,21 @@ def get_ledger_dir(node_name, client_name):
         exit()
 
     config = getConfig()
-    base_dir = config.baseDir if node_name else config.CLI_BASE_DIR
+    base_dir = config.CLI_BASE_DIR if client_name else config.baseDir
     data_dir = config.clientDataDir if client_name else config.nodeDataDir
     ledger_data_dir = os.path.join(base_dir, config.NETWORK_NAME, data_dir)
     if not os.path.exists(ledger_data_dir):
-        # TODO: find a better way
-        ledger_data_dir = os.path.join('/home/indy/.indy', data_dir)
-    if not os.path.exists(ledger_data_dir):
-        logger.error(
-            "Can not find the directory with the ledger: {}".format(ledger_data_dir))
+        logger.error("Can not find the directory with the ledger: {}".format(ledger_data_dir))
         exit()
 
+    target_dir = node_name
     if client_name:
         target_dir = client_name
-    elif node_name:
-        target_dir = node_name
-    else:
-        target_dir = None
 
     if target_dir:
         ledger_data_dir = os.path.join(ledger_data_dir, target_dir)
         if not os.path.isdir(ledger_data_dir):
-            print("Specified Node or Client folder not found: {}".format(
-                ledger_data_dir))
+            print("Specified Node or Client folder not found: {}".format(ledger_data_dir))
             exit()
         return ledger_data_dir
 
@@ -88,28 +80,19 @@ def get_ledger_dir(node_name, client_name):
 def get_ledger(type_, ledger_data_dir):
     config = getConfig()
 
-    hash_store_name = None
     ledger_name = None
     if type_ == 'pool':
-        hash_store_name = 'pool'
         ledger_name = config.poolTransactionsFile
     elif type_ == 'domain':
-        hash_store_name = 'domain'
         ledger_name = config.domainTransactionsFile
     elif type_ == 'config':
-        hash_store_name = 'config'
         ledger_name = config.configTransactionsFile
     else:
         print("Unknown ledger type: {}".format(type_))
         exit()
 
-    hash_store = LevelDbHashStore(
-        dataDir=read_copy_ledger_data_dir,
-        fileNamePrefix=hash_store_name)
-    return Ledger(
-        CompactMerkleTree(hashStore=hash_store),
-        dataDir=ledger_data_dir,
-        fileName=ledger_name)
+    hash_store = LevelDbHashStore(dataDir=ledger_data_dir, fileNamePrefix=type_)
+    return Ledger(CompactMerkleTree(hashStore=hash_store), dataDir=ledger_data_dir, fileName=ledger_name)
 
 
 def print_txns(ledger, args):
