@@ -129,12 +129,9 @@ class Upgrader(HasActionQueue):
 
         if not self.didLastExecutedUpgradeSucceeded:
             self._upgradeLog.appendFailed(when, version, upgrade_id)
-            logger.error("Failed to upgrade node '{}' to version {}"
-                         .format(self.nodeName, version))
-            self._notifier.sendMessageUponNodeUpgradeFail(
-                "Upgrade of node '{}' to version {} "
-                "scheduled on {} with upgrade_id {} failed"
-                .format(self.nodeName, version, when, upgrade_id))
+            self._upgrade_failed(version=version,
+                                 scheduled_on=when,
+                                 upgrade_id=upgrade_id)
             return
 
         self._upgradeLog.appendSucceeded(when, version, upgrade_id)
@@ -439,17 +436,16 @@ class Upgrader(HasActionQueue):
                 asyncio.sleep(self.retry_timeout)
                 retryLimit -= 1
         if not retryLimit:
-            logger.error("Failed to send update request!")
-            self._notifier.sendMessageUponNodeUpgradeFail(
-                "Upgrade of node '{}' to version {} failed "
-                "because of problems in communication with "
-                "node control service"
-                .format(self.nodeName, version))
+            self._upgrade_failed(version=version,
+                                 scheduled_on=when,
+                                 upgrade_id=None,
+                                 reason="problems in communication with "
+                                        "node control service")
             self._unscheduleUpgrade()
             self._upgradeFailedCallback()
         else:
-            logger.info(
-                "Waiting {} minutes for upgrade to be performed".format(failTimeout))
+            logger.info("Waiting {} minutes for upgrade to be performed"
+                        .format(failTimeout))
             timesUp = partial(self._declareTimeoutExceeded, when, version)
             self._schedule(timesUp, self.get_timeout(failTimeout))
 
@@ -474,14 +470,26 @@ class Upgrader(HasActionQueue):
         if last and last[1:-1] == (UpgradeLog.UPGRADE_FAILED, when, version):
             return None
 
-        logger.error("Upgrade to version {} scheduled on {} "
-                     "failed because timeout exceeded")
+        self._upgrade_failed(version=version,
+                             scheduled_on=when,
+                             upgrade_id=None,
+                             reason="exceeded upgrade timeout")
+
+        self._unscheduleUpgrade()
+        self._upgradeFailedCallback()
+
+    def _upgrade_failed(self, *, version, scheduled_on, upgrade_id, reason=None):
+        if reason is None:
+            reason = "unknown reason"
+
+        logger.error("Failed to upgrade node '{}' to version {} due to {}}"
+                     .format(self.nodeName,
+                             version,
+                             reason))
         self._notifier.sendMessageUponNodeUpgradeFail(
             "Upgrade of node '{}' to version {} failed "
             "because if exceeded timeout"
             .format(self.nodeName, version))
-        self._unscheduleUpgrade()
-        self._upgradeFailedCallback()
 
 
 class UpgradeMessage:
