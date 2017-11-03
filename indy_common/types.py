@@ -78,7 +78,7 @@ class SchemaField(MessageValidator):
 class ClaimDefField(MessageValidator):
     schema = (
         (PRIMARY, AnyMapField()),
-        (REVOCATION, AnyMapField()),
+        (REVOCATION, AnyMapField(optional=True)),
     )
 
 

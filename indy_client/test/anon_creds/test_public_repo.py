@@ -15,7 +15,6 @@ from indy_client.anon_creds.indy_public_repo import IndyPublicRepo
 from indy_client.test.anon_creds.conftest import GVT
 from random import randint
 
-
 logger = getlogger()
 
 
@@ -40,8 +39,22 @@ def schemaDefGvt(stewardWallet):
 
 
 @pytest.fixture(scope="module")
+def schemaDefGvt2(stewardWallet):
+    return Schema(name='GVT',
+                  version='2.0',
+                  attrNames=GVT.attribNames(),
+                  issuerId=stewardWallet.defaultId,
+                  seqId=None)
+
+
+@pytest.fixture(scope="module")
 def submittedSchemaDefGvt(publicRepo, schemaDefGvt, looper):
     return looper.run(publicRepo.submitSchema(schemaDefGvt))
+
+
+@pytest.fixture(scope="module")
+def submittedSchemaDefGvt2(publicRepo, schemaDefGvt2, looper):
+    return looper.run(publicRepo.submitSchema(schemaDefGvt2))
 
 
 @pytest.fixture(scope="module")
@@ -51,9 +64,21 @@ def submittedSchemaDefGvtID(submittedSchemaDefGvt):
 
 
 @pytest.fixture(scope="module")
+def submittedSchemaDefGvtID2(submittedSchemaDefGvt2):
+    return ID(schemaKey=submittedSchemaDefGvt2.getKey(),
+              schemaId=submittedSchemaDefGvt2.seqId)
+
+
+@pytest.fixture(scope="module")
 def publicSecretKey(submittedSchemaDefGvtID, issuerGvt, primes1, looper):
     return looper.run(
         issuerGvt._primaryIssuer.genKeys(submittedSchemaDefGvtID, **primes1))
+
+
+@pytest.fixture(scope="module")
+def publicSecretKey2(submittedSchemaDefGvtID2, issuerGvt, primes2, looper):
+    return looper.run(
+        issuerGvt._primaryIssuer.genKeys(submittedSchemaDefGvtID2, **primes2))
 
 
 @pytest.fixture(scope="module")
@@ -64,6 +89,11 @@ def publicSecretRevocationKey(issuerGvt, looper):
 @pytest.fixture(scope="module")
 def publicKey(publicSecretKey):
     return publicSecretKey[0]
+
+
+@pytest.fixture(scope="module")
+def publicKey2(publicSecretKey2):
+    return publicSecretKey2[0]
 
 
 @pytest.fixture(scope="module")
@@ -80,6 +110,20 @@ def submittedPublicKeys(submittedSchemaDefGvtID, publicRepo, publicSecretKey,
                                                   pk=pk,
                                                   pkR=pkR,
                                                   signatureType='CL'))
+
+
+@pytest.fixture(scope="module")
+def submittedPublicKeysNoRevocation(submittedSchemaDefGvtID2, publicRepo, publicKey2,
+                                    looper):
+    return looper.run(publicRepo.submitPublicKeys(id=submittedSchemaDefGvtID2,
+                                                  pk=publicKey2,
+                                                  pkR=None,
+                                                  signatureType='CL'))
+
+
+@pytest.fixture(scope="module")
+def submittedPublicKeyNoRevocation(submittedPublicKeysNoRevocation):
+    return submittedPublicKeysNoRevocation[0]
 
 
 @pytest.fixture(scope="module")
@@ -128,6 +172,35 @@ def testGetSchemaNonExistent(submittedSchemaDefGvt, publicRepo, looper):
         looper.run(publicRepo.getSchema(ID(schemaKey=key)))
 
 
+def test_submit_public_key_no_revocation(submittedPublicKeysNoRevocation):
+    assert submittedPublicKeysNoRevocation
+
+
+def test_get_primary_public_key_no_revocation(submittedSchemaDefGvtID2,
+                                              submittedPublicKeyNoRevocation,
+                                              publicRepo, looper):
+    pk = looper.run(publicRepo.getPublicKey(id=submittedSchemaDefGvtID2,
+                                            signatureType='CL'))
+    assert pk == submittedPublicKeyNoRevocation
+
+
+def test_get_primary_public_key_not_existent_no_revocation(submittedSchemaDefGvtID2,
+                                                           submittedPublicKeysNoRevocation,
+                                                           publicRepo, looper):
+    schemaId = submittedSchemaDefGvtID2._replace(
+        schemaId=random.randint(100, 300))
+    with pytest.raises(ValueError):
+        looper.run(publicRepo.getPublicKey(id=schemaId, signatureType='CL'))
+
+
+def test_get_revocation_public_key_no_revocation(submittedSchemaDefGvtID2,
+                                                 submittedPublicKeysNoRevocation,
+                                                 publicRepo, looper):
+    pk_revoc = looper.run(publicRepo.getPublicKeyRevocation(id=submittedSchemaDefGvtID2,
+                                                            signatureType='CL'))
+    assert pk_revoc is None
+
+
 def testSubmitPublicKey(submittedPublicKeys):
     assert submittedPublicKeys
 
@@ -137,11 +210,6 @@ def testGetPrimaryPublicKey(submittedSchemaDefGvtID, submittedPublicKey,
     pk = looper.run(publicRepo.getPublicKey(id=submittedSchemaDefGvtID,
                                             signatureType='CL'))
     assert pk == submittedPublicKey
-    submittedSchemaDefGvtID = submittedSchemaDefGvtID._replace(
-        schemaId=random.randint(100, 300))
-    with pytest.raises(ValueError):
-        looper.run(publicRepo.getPublicKey(
-            id=submittedSchemaDefGvtID, signatureType='CL'))
 
 
 def testGetPrimaryPublicKeyNonExistent(submittedSchemaDefGvtID,
