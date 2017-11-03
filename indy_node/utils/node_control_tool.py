@@ -73,63 +73,33 @@ class NodeControlTool:
 
     @classmethod
     def _get_info_from_package_manager(cls, package):
-        ret = subprocess.run(
-            compose_cmd(
-                [
-                    'apt-cache',
-                    'show',
-                    package
-                ]),
-            shell=True,
-            check=True,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            timeout=TIMEOUT)
-
+        cmd = compose_cmd(['apt-cache', 'show', package])
+        ret = cls._run_shell_command(cmd)
         if ret.returncode != 0:
-            raise Exception('_get_deps_list returned {}'
-                            .format(ret.returncode))
-
+            raise Exception('cannot get package info since {} returned {}'
+                            .format(cmd, ret.returncode))
         return ret.stdout.strip()
 
     @classmethod
     def _update_package_cache(cls):
-        ret = subprocess.run(
-            compose_cmd(
-                [
-                    'apt',
-                    'update'
-                ]),
-            shell=True,
-            check=True,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            timeout=TIMEOUT)
-
+        cmd = compose_cmd(['apt', 'update'])
+        ret = cls._run_shell_command(cmd)
         if ret.returncode != 0:
-            raise Exception('_get_deps_list returned {}'
-                            .format(ret.returncode))
+            raise Exception('cannot update package cache since {} returned {}'
+                            .format(cmd,
+                                    ret.returncode))
 
         return ret.stdout.strip()
 
     def _hold_packages(self):
-        ret = subprocess.run(
-            compose_cmd(
-                [
-                    'apt-mark',
-                    'hold',
-                    self.packages_to_hold
-                ]),
-            shell=True,
-            check=True,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            timeout=TIMEOUT)
-
+        cmd = compose_cmd(['apt-mark', 'hold', self.packages_to_hold])
+        ret = self._run_shell_command(cmd)
         if ret.returncode != 0:
-            raise Exception('holding {} packages failed: _'
-                            'hold_packages returned {}'
-                            .format(self.packages_to_hold, ret.returncode))
+            raise Exception('cannot mark {} packages for hold '
+                            'since {} returned {}'
+                            .format(self.packages_to_hold,
+                                    cmd,
+                                    ret.returncode))
 
         logger.info('Successfully put {} packages on hold'.format(
             self.packages_to_hold))
@@ -164,21 +134,17 @@ class NodeControlTool:
         cmd_file = 'upgrade_indy_node'
         if self.test_mode:
             cmd_file = 'upgrade_indy_node_test'
-        ret = subprocess.run(
-            compose_cmd([cmd_file, deps]),
-            shell=True,
-            timeout=self.timeout)
 
+        cmd = compose_cmd([cmd_file, deps])
+        ret = self._run_shell_script(cmd, self.timeout)
         if ret.returncode != 0:
-            raise Exception('_upgrade script returned {}'
+            raise Exception('upgrade script failed, exit code is {}'
                             .format(ret.returncode))
 
     def _call_restart_node_script(self):
         logger.info('Restarting indy')
-        ret = subprocess.run(
-            compose_cmd(['restart_indy_node']),
-            shell=True,
-            timeout=self.timeout)
+        cmd = compose_cmd(['restart_indy_node'])
+        ret = self._run_shell_script(cmd, self.timeout)
         if ret.returncode != 0:
             raise Exception('restart failed: script returned {}'
                             .format(ret.returncode))
@@ -282,6 +248,21 @@ class NodeControlTool:
                       to_version=to_version,
                       reason=reason)
         logger.error(msg)
+
+    @classmethod
+    def _run_shell_command(cls, command):
+        return subprocess.run(command,
+                              shell=True,
+                              check=True,
+                              universal_newlines=True,
+                              stdout=subprocess.PIPE,
+                              timeout=TIMEOUT)
+
+    @classmethod
+    def _run_shell_script(cls, command, timeout):
+        return subprocess.run(command,
+                              shell=True,
+                              timeout=timeout)
 
     def start(self):
         self._hold_packages()
