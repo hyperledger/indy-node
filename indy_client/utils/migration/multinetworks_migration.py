@@ -5,7 +5,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 
 _OLD_BASE_DIR = os.path.expanduser('~/.indy')
 _CLI_BASE_DIR = os.path.expanduser('~/.indy-cli')
-_BACKUP_DIR = os.path.expanduser('~/.indy-cli-backup')
+_BACKUP_DIR = os.path.expanduser('~/.indy-cli.backup')
 _CONFIG = 'indy_config.py'
 _WALLETS = 'wallets'
 _NETWORKS = 'networks'
