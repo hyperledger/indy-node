@@ -73,68 +73,33 @@ class NodeControlTool:
 
     @classmethod
     def _get_info_from_package_manager(cls, package):
-        ret = subprocess.run(
-            compose_cmd(
-                [
-                    'apt-cache',
-                    'show',
-                    package
-                ]),
-            shell=True,
-            check=True,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            timeout=TIMEOUT)
-
+        cmd = compose_cmd(['apt-cache', 'show', package])
+        ret = cls._run_shell_command(cmd)
         if ret.returncode != 0:
-            msg = 'Upgrade failed: _get_deps_list returned {}'.format(
-                ret.returncode)
-            logger.error(msg)
-            raise Exception(msg)
-
+            raise Exception('cannot get package info since {} returned {}'
+                            .format(cmd, ret.returncode))
         return ret.stdout.strip()
 
     @classmethod
     def _update_package_cache(cls):
-        ret = subprocess.run(
-            compose_cmd(
-                [
-                    'apt',
-                    'update'
-                ]),
-            shell=True,
-            check=True,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            timeout=TIMEOUT)
-
+        cmd = compose_cmd(['apt', 'update'])
+        ret = cls._run_shell_command(cmd)
         if ret.returncode != 0:
-            msg = 'Upgrade failed: _get_deps_list returned {}'.format(
-                ret.returncode)
-            logger.error(msg)
-            raise Exception(msg)
+            raise Exception('cannot update package cache since {} returned {}'
+                            .format(cmd,
+                                    ret.returncode))
 
         return ret.stdout.strip()
 
     def _hold_packages(self):
-        ret = subprocess.run(
-            compose_cmd(
-                [
-                    'apt-mark',
-                    'hold',
-                    self.packages_to_hold
-                ]),
-            shell=True,
-            check=True,
-            universal_newlines=True,
-            stdout=subprocess.PIPE,
-            timeout=TIMEOUT)
-
+        cmd = compose_cmd(['apt-mark', 'hold', self.packages_to_hold])
+        ret = self._run_shell_command(cmd)
         if ret.returncode != 0:
-            msg = 'Holding {} packages failed: _hold_packages returned {}'.format(
-                self.packages_to_hold, ret.returncode)
-            logger.error(msg)
-            raise Exception(msg)
+            raise Exception('cannot mark {} packages for hold '
+                            'since {} returned {}'
+                            .format(self.packages_to_hold,
+                                    cmd,
+                                    ret.returncode))
 
         logger.info('Successfully put {} packages on hold'.format(
             self.packages_to_hold))
@@ -169,27 +134,20 @@ class NodeControlTool:
         cmd_file = 'upgrade_indy_node'
         if self.test_mode:
             cmd_file = 'upgrade_indy_node_test'
-        ret = subprocess.run(
-            compose_cmd([cmd_file, deps]),
-            shell=True,
-            timeout=self.timeout)
 
+        cmd = compose_cmd([cmd_file, deps])
+        ret = self._run_shell_script(cmd, self.timeout)
         if ret.returncode != 0:
-            msg = 'Upgrade failed: _upgrade script returned {}'.format(
-                ret.returncode)
-            logger.error(msg)
-            raise Exception(msg)
+            raise Exception('upgrade script failed, exit code is {}'
+                            .format(ret.returncode))
 
     def _call_restart_node_script(self):
         logger.info('Restarting indy')
-        ret = subprocess.run(
-            compose_cmd(['restart_indy_node']),
-            shell=True,
-            timeout=self.timeout)
+        cmd = compose_cmd(['restart_indy_node'])
+        ret = self._run_shell_script(cmd, self.timeout)
         if ret.returncode != 0:
-            msg = 'Restart failed: script returned {}'.format(ret.returncode)
-            logger.error(msg)
-            raise Exception(msg)
+            raise Exception('restart failed: script returned {}'
+                            .format(ret.returncode))
 
     def _backup_name(self, version):
         return os.path.join(self.backup_dir, '{}{}'.format(
@@ -210,8 +168,8 @@ class NodeControlTool:
                 shutil.copy2(os.path.join(self.backup_target, file_path),
                              os.path.join(self.tmp_dir, file_path))
             except IOError as e:
-                logger.warning(
-                    'Copying {} failed due to {}'.format(file_path, e))
+                logger.warning('Copying {} failed due to {}'
+                               .format(file_path, e))
         shutil.unpack_archive(self._backup_name_ext(
             version), self.backup_target, self.backup_format)
         for file_path in self.files_to_preserve:
@@ -219,8 +177,8 @@ class NodeControlTool:
                 shutil.copy2(os.path.join(self.tmp_dir, file_path),
                              os.path.join(self.backup_target, file_path))
             except IOError as e:
-                logger.warning(
-                    'Copying {} failed due to {}'.format(file_path, e))
+                logger.warning('Copying {} failed due to {}'
+                               .format(file_path, e))
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
     def _get_backups(self):
@@ -252,18 +210,20 @@ class NodeControlTool:
             self._remove_old_backups()
 
     def _upgrade(self, new_version, migrate=True, rollback=True):
+        current_version = Upgrader.getVersion()
         try:
-            current_version = Upgrader.getVersion()
-            logger.info('Trying to upgrade from {} to {}'.format(
-                current_version, new_version))
+            logger.info('Trying to upgrade from {} to {}'
+                        .format(current_version, new_version))
             self._call_upgrade_script(new_version)
             if migrate:
                 self._do_migration(current_version, new_version)
             self._call_restart_node_script()
-        except Exception as e:
-            logger.error(
-                "Unexpected error in _upgrade {}, trying to rollback to the previous version {}".format(
-                    e, current_version))
+        except Exception as ex:
+            self._declare_upgrade_failed(from_version=current_version,
+                                         to_version=new_version,
+                                         reason=str(ex))
+            logger.error("Trying to rollback to the previous version {}"
+                         .format(ex, current_version))
             if rollback:
                 self._upgrade(current_version, rollback=False)
 
@@ -278,6 +238,31 @@ class NodeControlTool:
             logger.error("JSON decoding failed: {}".format(e))
         except Exception as e:
             logger.error("Unexpected error in process_data {}".format(e))
+
+    def _declare_upgrade_failed(self, *,
+                                from_version,
+                                to_version,
+                                reason):
+        msg = 'Upgrade from {from_version} to {to_version} failed: {reason}'\
+              .format(from_version=from_version,
+                      to_version=to_version,
+                      reason=reason)
+        logger.error(msg)
+
+    @classmethod
+    def _run_shell_command(cls, command):
+        return subprocess.run(command,
+                              shell=True,
+                              check=True,
+                              universal_newlines=True,
+                              stdout=subprocess.PIPE,
+                              timeout=TIMEOUT)
+
+    @classmethod
+    def _run_shell_script(cls, command, timeout):
+        return subprocess.run(command,
+                              shell=True,
+                              timeout=timeout)
 
     def start(self):
         self._hold_packages()
@@ -299,20 +284,19 @@ class NodeControlTool:
                     # A "readable" server socket is ready to accept a
                     # connection
                     connection, client_address = s.accept()
-                    logger.debug(
-                        'New connection from {} on fd {}'.format(
-                            client_address, connection.fileno()))
+                    logger.debug('New connection from {} on fd {}'
+                                 .format(client_address, connection.fileno()))
                     connection.setblocking(0)
                     readers.append(connection)
                 else:
                     data = s.recv(8192)
                     if data:
                         logger.debug(
-                            'Received "{}" from {} on fd {}'.format(
-                                data, s.getpeername(), s.fileno()))
+                            'Received "{}" from {} on fd {}'
+                            .format(data, s.getpeername(), s.fileno()))
                         self._process_data(data)
                     else:
-                        logger.debug(
-                            'Closing socket with fd {}'.format(s.fileno()))
+                        logger.debug('Closing socket with fd {}'
+                                     .format(s.fileno()))
                         readers.remove(s)
                         s.close()
