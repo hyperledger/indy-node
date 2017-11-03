@@ -19,8 +19,8 @@ fi
 # create indy cli folder if does not exist
 mkdir -p /home/indy/.indy-cli
 mkdir -p /home/indy/.indy-cli/networks
-chown -R indy:indy /home/indy/indy-cli
-chmod -R ug+rwx /home/indy/indy-cli
+chown -R indy:indy /home/indy/.indy-cli
+chmod -R ug+rwx /home/indy/.indy-cli
 
 # init_indy_node script
 cat <<EOF > /usr/local/bin/init_indy_node
