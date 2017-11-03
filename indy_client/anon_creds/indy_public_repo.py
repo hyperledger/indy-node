@@ -126,7 +126,7 @@ class IndyPublicRepo(PublicRepo):
             raise ValueError(
                 'No CLAIM_DEF for schema with ID={} and key={}'.format(
                     id.schemaId, id.schemaKey))
-        if not REVOCATION in data:
+        if REVOCATION not in data:
             return None
         data = data[REVOCATION]
         pkR = RevocationPublicKey.fromStrDict(data)._replace(seqId=seqNo)
