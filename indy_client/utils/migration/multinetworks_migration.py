@@ -5,7 +5,6 @@ from importlib.util import module_from_spec, spec_from_file_location
 
 _OLD_BASE_DIR = os.path.expanduser('~/.indy')
 _CLI_BASE_DIR = os.path.expanduser('~/.indy-cli')
-_BACKUP_DIR = os.path.expanduser('~/.indy-cli.backup')
 _CONFIG = 'indy_config.py'
 _WALLETS = 'wallets'
 _NETWORKS = 'networks'
@@ -109,7 +108,7 @@ def _migrate_data(network):
                         shutil.rmtree(specific_pool_txn_dir)
 
 
-def _migrate_old_base_dir():
+def migrate():
     os.makedirs(_CLI_BASE_DIR)
 
     network = _get_used_network_name()
@@ -119,25 +118,3 @@ def _migrate_old_base_dir():
     _migrate_wallets()
     _migrate_keys(network)
     _migrate_data(network)
-
-
-def migrate():
-    if os.path.isdir(_BACKUP_DIR):
-        shutil.rmtree(_BACKUP_DIR)
-    elif os.path.isfile(_BACKUP_DIR):
-        os.remove(_BACKUP_DIR)
-
-    if os.path.exists(_CLI_BASE_DIR):
-        os.rename(_CLI_BASE_DIR, _BACKUP_DIR)
-
-    try:
-        _migrate_old_base_dir()
-    except Exception as e:
-        if os.path.exists(_CLI_BASE_DIR):
-            shutil.rmtree(_CLI_BASE_DIR)
-        if os.path.exists(_BACKUP_DIR):
-            os.rename(_BACKUP_DIR, _CLI_BASE_DIR)
-        raise e
-
-    if os.path.exists(_BACKUP_DIR):
-        shutil.rmtree(_BACKUP_DIR, ignore_errors=True)
