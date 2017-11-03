@@ -131,7 +131,8 @@ class Upgrader(HasActionQueue):
             self._upgradeLog.appendFailed(when, version, upgrade_id)
             self._upgrade_failed(version=version,
                                  scheduled_on=when,
-                                 upgrade_id=upgrade_id)
+                                 upgrade_id=upgrade_id,
+                                 external_reason=True)
             return
 
         self._upgradeLog.appendSucceeded(when, version, upgrade_id)
@@ -420,9 +421,9 @@ class Upgrader(HasActionQueue):
         self._upgrade_start_callback()
         self.scheduledUpgrade = None
         asyncio.ensure_future(
-            self._sendUpdateRequest(when, version, failTimeout))
+            self._sendUpdateRequest(when, version, upgrade_id, failTimeout))
 
-    async def _sendUpdateRequest(self, when, version, failTimeout):
+    async def _sendUpdateRequest(self, when, version, upgrade_id, failTimeout):
         retryLimit = self.retry_limit
         while retryLimit:
             try:
@@ -431,14 +432,14 @@ class Upgrader(HasActionQueue):
                 await self._open_connection_and_send(msg)
                 break
             except Exception as ex:
-                logger.warning(
-                    "Failed to communicate to control tool: {}".format(ex))
+                logger.warning("Failed to communicate to control tool: {}"
+                               .format(ex))
                 asyncio.sleep(self.retry_timeout)
                 retryLimit -= 1
         if not retryLimit:
             self._upgrade_failed(version=version,
                                  scheduled_on=when,
-                                 upgrade_id=None,
+                                 upgrade_id=upgrade_id,
                                  reason="problems in communication with "
                                         "node control service")
             self._unscheduleUpgrade()
@@ -446,7 +447,7 @@ class Upgrader(HasActionQueue):
         else:
             logger.info("Waiting {} minutes for upgrade to be performed"
                         .format(failTimeout))
-            timesUp = partial(self._declareTimeoutExceeded, when, version)
+            timesUp = partial(self._declareTimeoutExceeded, when, version, upgrade_id)
             self._schedule(timesUp, self.get_timeout(failTimeout))
 
     async def _open_connection_and_send(self, message: str):
@@ -460,7 +461,7 @@ class Upgrader(HasActionQueue):
         writer.write(msgBytes)
         writer.close()
 
-    def _declareTimeoutExceeded(self, when, version):
+    def _declareTimeoutExceeded(self, when, version, upgrade_id):
         """
         This function is called when time for upgrade is up
         """
@@ -472,13 +473,18 @@ class Upgrader(HasActionQueue):
 
         self._upgrade_failed(version=version,
                              scheduled_on=when,
-                             upgrade_id=None,
+                             upgrade_id=upgrade_id,
                              reason="exceeded upgrade timeout")
 
         self._unscheduleUpgrade()
         self._upgradeFailedCallback()
 
-    def _upgrade_failed(self, *, version, scheduled_on, upgrade_id, reason=None):
+    def _upgrade_failed(self, *,
+                        version,
+                        scheduled_on,
+                        upgrade_id,
+                        reason=None,
+                        external_reason=False):
         if reason is None:
             reason = "unknown reason"
 
@@ -486,6 +492,11 @@ class Upgrader(HasActionQueue):
                      .format(self.nodeName,
                              version,
                              reason))
+        if external_reason:
+            logger.error("This problem may have external reasons, "
+                         "check syslog for more information")
+
+
         self._notifier.sendMessageUponNodeUpgradeFail(
             "Upgrade of node '{}' to version {} failed "
             "because if exceeded timeout"
