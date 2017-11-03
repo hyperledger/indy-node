@@ -107,7 +107,7 @@ class IndyPublicRepo(PublicRepo):
         data, seqNo = await self._sendGetReq(op)
         if not data:
             raise ValueError(
-                'No value for schema with ID={} and key={}'.format(
+                'No CLAIM_DEF for schema with ID={} and key={}'.format(
                     id.schemaId, id.schemaKey))
         data = data[PRIMARY]
         pk = PublicKey.from_str_dict(data)._replace(seqId=seqNo)
@@ -124,8 +124,10 @@ class IndyPublicRepo(PublicRepo):
         data, seqNo = await self._sendGetReq(op)
         if not data:
             raise ValueError(
-                'No value for schema with ID={} and key={}'.format(
+                'No CLAIM_DEF for schema with ID={} and key={}'.format(
                     id.schemaId, id.schemaKey))
+        if REVOCATION not in data:
+            return None
         data = data[REVOCATION]
         pkR = RevocationPublicKey.fromStrDict(data)._replace(seqId=seqNo)
         return pkR
