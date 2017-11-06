@@ -3,7 +3,7 @@ import os
 import shutil
 
 from indy_client.utils.migration import ancient_migration
-from indy_client.utils.migration import multinetworks_migration
+from indy_client.utils.migration import multi_network_migration
 from indy_client.utils.migration import rebranding_migration
 
 _HOME_DIR = os.path.expanduser('~')
@@ -54,7 +54,7 @@ def migrate():
 
         ancient_migration.migrate()
         rebranding_migration.migrate()
-        multinetworks_migration.migrate()
+        multi_network_migration.migrate()
 
     except Exception as e:
         if os.path.exists(_CLI_BASE_BACKUP_DIR):
