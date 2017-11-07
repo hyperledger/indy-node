@@ -3,10 +3,7 @@
 import sys
 import os
 
-import subprocess
 from setuptools import setup, find_packages, __version__
-from setuptools.command.develop import develop
-from setuptools.command.install import install
 
 v = sys.version_info
 if sys.version_info < (3, 5):
@@ -57,7 +54,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.2.165',
+    install_requires=['indy-plenum-dev==1.2.167',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator'],
