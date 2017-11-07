@@ -143,3 +143,15 @@ def compose_cmd(cmd):
     if os.name != 'nt':
         cmd = ' '.join(cmd)
     return cmd
+
+
+def invalidate_config_caches():
+    import stp_core.common.config.util
+    import plenum.common.config_util
+    import indy_common.config_util
+
+    # All 3 references must be nullified because all they reference
+    # the same object due to specific logic of getConfig methods
+    stp_core.common.config.util.CONFIG = None
+    plenum.common.config_util.CONFIG = None
+    indy_common.config_util.CONFIG = None
