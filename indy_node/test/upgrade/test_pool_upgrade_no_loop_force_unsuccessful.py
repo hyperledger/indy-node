@@ -11,7 +11,9 @@ from indy_node.test.upgrade.helper import bumpedVersion, checkUpgradeScheduled, 
     ensureUpgradeSent, check_no_loop
 from indy_node.server.upgrade_log import UpgradeLog
 
-whitelist = ['Failed to upgrade node']
+whitelist = ['Failed to upgrade node',
+             'failed upgrade',
+             'This problem may have external reasons, check syslog for more information']
 
 
 def test_upgrade_does_not_get_into_loop_force_if_failed(

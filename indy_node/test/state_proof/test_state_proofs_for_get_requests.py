@@ -5,11 +5,11 @@ import base58
 import pytest
 from common.serializers import serialization
 from common.serializers.serialization import state_roots_serializer
-from crypto.bls.bls_multi_signature import MultiSignature
+from crypto.bls.bls_multi_signature import MultiSignature, MultiSignatureValue
 from plenum.bls.bls_store import BlsStore
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
     IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
-    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION
+    STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID
 from plenum.common.types import f
 from indy_common.constants import \
     ATTRIB, REF, SIGNATURE_TYPE, CLAIM_DEF, SCHEMA
@@ -17,6 +17,7 @@ from indy_common.types import Request
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.domain_req_handler import DomainReqHandler
+from plenum.common.util import get_utc_epoch
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_common.state import domain
@@ -46,20 +47,23 @@ def request_handler(bls_store):
 def extract_proof(result, expected_multi_sig):
     proof = result[STATE_PROOF]
     assert proof
-    root_hash = proof[ROOT_HASH]
-    assert root_hash
+    assert proof[ROOT_HASH]
     assert proof[PROOF_NODES]
-    multi_sign = result[STATE_PROOF][MULTI_SIGNATURE]
+    multi_sign = proof[MULTI_SIGNATURE]
     assert multi_sign
     assert multi_sign == expected_multi_sig
     return proof
 
 
 def save_multi_sig(request_handler):
-    multi_sig = MultiSignature('0' * 32, ['Alpha', 'Beta', 'Gamma'], '1' * 32)
-    key = state_roots_serializer.serialize(
-        bytes(request_handler.state.committedHeadHash))
-    request_handler.bls_store.put(key, multi_sig)
+    multi_sig_value = MultiSignatureValue(ledger_id=DOMAIN_LEDGER_ID,
+                                          state_root_hash=state_roots_serializer.serialize(
+                                              bytes(request_handler.state.committedHeadHash)),
+                                          txn_root_hash='2' * 32,
+                                          pool_state_root_hash='1' * 32,
+                                          timestamp=get_utc_epoch())
+    multi_sig = MultiSignature('0' * 32, ['Alpha', 'Beta', 'Gamma'], multi_sig_value)
+    request_handler.bls_store.put(multi_sig)
     return multi_sig.as_dict()
 
 

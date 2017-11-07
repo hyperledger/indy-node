@@ -7,7 +7,7 @@ One way to run through the [Indy Getting Started Guide](https://github.com/hyper
 $ pip install -U --no-cache-dir indy-client
 ```
 
-If you get any error, check out the info about [prerequisites](https://docs.google.com/document/d/1CyggP4nNPyx4SELNZEc2FOeln6G0F22B37cAVtB_FBM/edit); there are a few dominoes you might have to line up.
+If you get any error, check out the info about [prerequisites](setup-dev.md); there are a few dominoes you might have to line up.
 
 
 The install puts some python modules on your system. Most importantly, it gives you a command - line interface(CLI) to Indy. We are going to use that CLI to explore what Indy can do. (Indy also has a programmatic API, but it is not yet fully formalized, and this version of the guide doesn’t document it. See the [Indy roadmap](https://github.com/hyperledger/indy/wiki/Roadmap).)
