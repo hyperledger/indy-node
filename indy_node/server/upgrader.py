@@ -129,12 +129,10 @@ class Upgrader(HasActionQueue):
 
         if not self.didLastExecutedUpgradeSucceeded:
             self._upgradeLog.appendFailed(when, version, upgrade_id)
-            logger.error("Failed to upgrade node '{}' to version {}"
-                         .format(self.nodeName, version))
-            self._notifier.sendMessageUponNodeUpgradeFail(
-                "Upgrade of node '{}' to version {} "
-                "scheduled on {} with upgrade_id {} failed"
-                .format(self.nodeName, version, when, upgrade_id))
+            self._upgrade_failed(version=version,
+                                 scheduled_on=when,
+                                 upgrade_id=upgrade_id,
+                                 external_reason=True)
             return
 
         self._upgradeLog.appendSucceeded(when, version, upgrade_id)
@@ -383,11 +381,25 @@ class Upgrader(HasActionQueue):
         """
 
         if self.scheduledUpgrade:
-            why = justification if justification else "some reason"
+            why_prefix = ": "
+            why = justification
+            if justification is None:
+                why_prefix = ", "
+                why = "cancellation reason not specified"
+
             (version, when, upgrade_id) = self.scheduledUpgrade
-            logger.info("Cancelling upgrade of node '{}' "
-                        "to version {} due to {}"
-                        .format(self.nodeName, version, why))
+            logger.info("Cancelling upgrade {upgrade_id}"
+                        " of node {node}"
+                        " to version {version}"
+                        " scheduled on {when}"
+                        "{why_prefix}{why}"
+                        .format(upgrade_id=upgrade_id,
+                                node=self.nodeName,
+                                version=version,
+                                when=when,
+                                why_prefix=why_prefix,
+                                why=why))
+
             self._unscheduleUpgrade()
             self._upgradeLog.appendCancelled(when, version, upgrade_id)
             self._notifier.sendMessageUponPoolUpgradeCancel(
@@ -423,9 +435,9 @@ class Upgrader(HasActionQueue):
         self._upgrade_start_callback()
         self.scheduledUpgrade = None
         asyncio.ensure_future(
-            self._sendUpdateRequest(when, version, failTimeout))
+            self._sendUpdateRequest(when, version, upgrade_id, failTimeout))
 
-    async def _sendUpdateRequest(self, when, version, failTimeout):
+    async def _sendUpdateRequest(self, when, version, upgrade_id, failTimeout):
         retryLimit = self.retry_limit
         while retryLimit:
             try:
@@ -434,23 +446,22 @@ class Upgrader(HasActionQueue):
                 await self._open_connection_and_send(msg)
                 break
             except Exception as ex:
-                logger.warning(
-                    "Failed to communicate to control tool: {}".format(ex))
+                logger.warning("Failed to communicate to control tool: {}"
+                               .format(ex))
                 asyncio.sleep(self.retry_timeout)
                 retryLimit -= 1
         if not retryLimit:
-            logger.error("Failed to send update request!")
-            self._notifier.sendMessageUponNodeUpgradeFail(
-                "Upgrade of node '{}' to version {} failed "
-                "because of problems in communication with "
-                "node control service"
-                .format(self.nodeName, version))
+            self._upgrade_failed(version=version,
+                                 scheduled_on=when,
+                                 upgrade_id=upgrade_id,
+                                 reason="problems in communication with "
+                                        "node control service")
             self._unscheduleUpgrade()
             self._upgradeFailedCallback()
         else:
-            logger.info(
-                "Waiting {} minutes for upgrade to be performed".format(failTimeout))
-            timesUp = partial(self._declareTimeoutExceeded, when, version)
+            logger.info("Waiting {} minutes for upgrade to be performed"
+                        .format(failTimeout))
+            timesUp = partial(self._declareTimeoutExceeded, when, version, upgrade_id)
             self._schedule(timesUp, self.get_timeout(failTimeout))
 
     async def _open_connection_and_send(self, message: str):
@@ -464,7 +475,7 @@ class Upgrader(HasActionQueue):
         writer.write(msgBytes)
         writer.close()
 
-    def _declareTimeoutExceeded(self, when, version):
+    def _declareTimeoutExceeded(self, when, version, upgrade_id):
         """
         This function is called when time for upgrade is up
         """
@@ -474,14 +485,35 @@ class Upgrader(HasActionQueue):
         if last and last[1:-1] == (UpgradeLog.UPGRADE_FAILED, when, version):
             return None
 
-        logger.error("Upgrade to version {} scheduled on {} "
-                     "failed because timeout exceeded")
-        self._notifier.sendMessageUponNodeUpgradeFail(
-            "Upgrade of node '{}' to version {} failed "
-            "because if exceeded timeout"
-            .format(self.nodeName, version))
+        self._upgrade_failed(version=version,
+                             scheduled_on=when,
+                             upgrade_id=upgrade_id,
+                             reason="exceeded upgrade timeout")
+
         self._unscheduleUpgrade()
         self._upgradeFailedCallback()
+
+    def _upgrade_failed(self, *,
+                        version,
+                        scheduled_on,
+                        upgrade_id,
+                        reason=None,
+                        external_reason=False):
+        if reason is None:
+            reason = "unknown reason"
+        error_message = "Node {node} failed upgrade {upgrade_id} to " \
+                        "version {version} scheduled on {scheduled_on} " \
+                        "because of {reason}"\
+                        .format(node=self.nodeName,
+                                upgrade_id=upgrade_id,
+                                version=version,
+                                scheduled_on=scheduled_on,
+                                reason=reason)
+        logger.error(error_message)
+        if external_reason:
+            logger.error("This problem may have external reasons, "
+                         "check syslog for more information")
+        self._notifier.sendMessageUponNodeUpgradeFail(error_message)
 
 
 class UpgradeMessage:

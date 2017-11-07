@@ -1,6 +1,9 @@
 import pytest
+
+from indy_client.test.state_proof.helper import submit_operation_and_get_replies
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW
-from plenum.test.helper import waitForSufficientRepliesForRequests, getRepliesFromClientInbox
+from plenum.test.helper import waitForSufficientRepliesForRequests, \
+    getRepliesFromClientInbox
 from indy_common.constants import GET_ATTR
 from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.test.test_nym_attrib import \
@@ -39,12 +42,9 @@ def test_state_proof_returned_for_get_attr(looper,
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }
-    get_attr_request = trustAnchorWallet.signOp(get_attr_operation)
-    trustAnchorWallet.pendRequest(get_attr_request)
-    pending = trustAnchorWallet.preparePending()
-    client.submitReqs(*pending)
-
     # Get reply and verify that the only one received
-    waitForSufficientRepliesForRequests(looper, trustAnchor, requests=pending)
-    replies = getRepliesFromClientInbox(client.inBox, get_attr_request.reqId)
+    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
+                                               client,
+                                               get_attr_operation)
+
     assert len(replies) == 1
