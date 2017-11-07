@@ -88,7 +88,6 @@ def migrate_general_config(old_general_config, new_general_config, network_name)
 
 
 def remove_network_from_dir_name(root_dir):
-    logger.error("remove_network_from_dir_name {}".format(root_dir))
     try:
         visit_dirs = os.listdir(root_dir)
     except FileNotFoundError:
