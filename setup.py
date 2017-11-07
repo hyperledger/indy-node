@@ -57,7 +57,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.2.165',
+    install_requires=['indy-plenum-dev==1.2.169',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator'],
@@ -90,5 +90,6 @@ setup(
              'scripts/test_users_write_and_read_own_keys',
              'scripts/validator-info',
              'scripts/init_bls_keys',
-             'scripts/enable_bls']
+             'scripts/enable_bls',
+             'scripts/create_dirs.sh']
 )

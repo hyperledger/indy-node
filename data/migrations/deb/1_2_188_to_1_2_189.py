@@ -1,7 +1,9 @@
 #!/usr/bin/python3.5
+import pwd
+import grp
 import os
+import stat
 import shutil
-import glob
 from importlib.util import module_from_spec, spec_from_file_location
 
 from stp_core.common.log import getlogger
@@ -19,35 +21,28 @@ logger = getlogger()
 old_base_dir = '/home/indy/.indy'
 
 
+def ext_copytree(src, dst):
+    if not os.path.isdir(dst):
+        shutil.copytree(src, dst)
+
+
 def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
-    logger.info('Move genesis transactions {} -> {}'.format(
-        old_base_txn_dir, new_base_txn_dir))
+    logger.info('Move genesis transactions {} -> {}'.format(old_base_txn_dir, new_base_txn_dir))
     for suffix in ('sandbox', 'live', 'local'):
         new_txn_dir = os.path.join(new_base_txn_dir, suffix)
         os.makedirs(new_txn_dir, exist_ok=True)
 
-        old_domain_genesis = os.path.join(
-            old_base_txn_dir, 'domain_transactions_{}_genesis'.format(suffix))
-        old_pool_genesis = os.path.join(
-            old_base_txn_dir, 'pool_transactions_{}_genesis'.format(suffix))
-        new_domain_genesis = os.path.join(
-            new_txn_dir, 'domain_transactions_genesis')
-        new_pool_genesis = os.path.join(
-            new_txn_dir, 'pool_transactions_genesis')
+        old_domain_genesis = os.path.join(old_base_txn_dir, 'domain_transactions_{}_genesis'.format(suffix))
+        old_pool_genesis = os.path.join(old_base_txn_dir, 'pool_transactions_{}_genesis'.format(suffix))
+        new_domain_genesis = os.path.join(new_txn_dir, 'domain_transactions_genesis')
+        new_pool_genesis = os.path.join(new_txn_dir, 'pool_transactions_genesis')
 
         if os.path.exists(old_domain_genesis):
-            shutil.move(old_domain_genesis, new_domain_genesis)
+            shutil.copy2(old_domain_genesis, new_domain_genesis)
         if os.path.exists(old_pool_genesis):
-            shutil.move(old_pool_genesis, new_pool_genesis)
+            shutil.copy2(old_pool_genesis, new_pool_genesis)
 
     logger.info('done')
-
-
-def migrate_keys(old_base_keys_dir, new_base_keys_dir):
-    for prefix in ('private', 'public', 'sig', 'verif', 'bls'):
-        old_keys_dir = os.path.join(old_base_keys_dir, '{}_keys'.format(prefix))
-        if os.path.exists(old_keys_dir) and os.path.isdir(old_keys_dir):
-            shutil.move(old_keys_dir, new_base_keys_dir)
 
 
 def _get_network_from_txn_file_name(file_name: str):
@@ -76,11 +71,12 @@ def get_network_name():
 def migrate_general_config(old_general_config, new_general_config, network_name):
     logger.info('Migrate general config file {} -> {} for network {}'.format(
         old_general_config, new_general_config, network_name))
+
     f = open(old_general_config, "r")
     lines = f.readlines()
     f.close()
 
-    f = open(new_general_config, "w")
+    f = open(new_general_config, "a+")
     for line in lines:
         if not line.startswith('current_env') and not line.startswith('poolTransactionsFile') and\
                 not line.startswith('domainTransactionsFile'):
@@ -88,98 +84,104 @@ def migrate_general_config(old_general_config, new_general_config, network_name)
     line = "NETWORK_NAME = '{}'\n".format(network_name)
     f.write(line)
     f.close()
+    # os.remove(old_general_config)
 
 
-def migrate_cli(old_dir, new_dir, new_txn_dir):
-    if not os.path.exists(new_dir):
-        os.makedirs(new_dir)
+def remove_network_from_dir_name(root_dir):
+    logger.error("remove_network_from_dir_name {}".format(root_dir))
+    try:
+        visit_dirs = os.listdir(root_dir)
+    except FileNotFoundError:
+        visit_dirs = []
+    for dname in visit_dirs:
+        _dname = dname
+        _dname = _dname.replace("_sandbox", "")
+        _dname = _dname.replace("_live", "")
+        _dname = _dname.replace("_local", "")
+        if _dname != dname:
+            os.rename(os.path.join(root_dir, dname), os.path.join(root_dir, _dname))
 
-    # Move wallets directory
-    logger.info('Move wallets directory {} -> {}'.format(
-        old_dir, new_dir))
-    shutil.move(old_dir, new_dir)
-    logger.info('done')
 
-    # Move txns for CLI
-    migrate_genesis_txn(old_dir, new_txn_dir)
+def set_own_perm(usr, dir_list):
+    uid = pwd.getpwnam(usr).pw_uid
+    gid = grp.getgrnam(usr).gr_gid
+    perm_mask_rw = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP
+    perm_mask_rwx = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
+
+    for cdir in dir_list:
+        os.chown(cdir, uid, gid)
+        os.chmod(cdir, perm_mask_rwx)
+        for croot, sub_dirs, cfiles in os.walk(cdir):
+            for fs_name in sub_dirs:
+                os.chown(os.path.join(croot, fs_name), uid, gid)
+                os.chmod(os.path.join(croot, fs_name), perm_mask_rwx)
+            for fs_name in cfiles:
+                os.chown(os.path.join(croot, fs_name), uid, gid)
+                os.chmod(os.path.join(croot, fs_name), perm_mask_rw)
 
 
 def migrate_all():
-    base_dir = baseDir
-
-    old_node_base_data_dir = os.path.join(old_base_dir, 'data')
-    old_nodes_data_dir = os.path.join(old_node_base_data_dir, 'nodes')
-    # old_wallets_dir = os.path.join(old_base_dir, 'wallets')
-    old_general_config = os.path.join(old_base_dir, 'indy_config.py')
-    old_daemon_config_base_dir = '/home/indy/.indy'
-    old_daemon_config = os.path.join(old_daemon_config_base_dir, 'indy.env')
-
-    new_general_config = os.path.join(GENERAL_CONFIG_DIR, GENERAL_CONFIG_FILE)
-
-    logger.info('Start migration of directories/files.')
-
     # Check which network name should we use
     network_name = get_network_name()
     logger.info('Network name is {}'.format(network_name))
+    base_dir = baseDir
+
+    logger.info('Start migration of directories/files.')
 
     # Migrate general config file
+    old_general_config = os.path.join(old_base_dir, 'indy_config.py')
+    new_general_config = os.path.join(GENERAL_CONFIG_DIR, GENERAL_CONFIG_FILE)
+    os.makedirs(GENERAL_CONFIG_DIR, exist_ok=True)
     migrate_general_config(old_general_config, new_general_config, network_name)
-
-    # Build network-related paths
-    new_log_dir = os.path.join(LOG_DIR, network_name)
-    os.makedirs(new_log_dir, exist_ok=True)
-    new_node_base_dir = os.path.join(base_dir, network_name)
-
-    new_node_base_data_dir = os.path.join(NODE_BASE_DATA_DIR, network_name)
-    new_node_base_data_dir = os.path.join(new_node_base_data_dir, "data")
+    old_srv_cfg = os.path.join(old_base_dir, 'indy.env')
+    new_srv_cfg = os.path.join(GENERAL_CONFIG_DIR, 'indy.env')
+    shutil.copy2(old_srv_cfg, new_srv_cfg)
 
     # Move genesis transactions
     migrate_genesis_txn(old_base_dir, NODE_BASE_DATA_DIR)
 
+    # Move data
+    old_nodes_data_dir = os.path.join(old_base_dir, 'data', 'nodes')
+    new_node_data_dir = os.path.join(NODE_BASE_DATA_DIR, network_name, 'data', 'nodes')
     try:
         visit_dirs = os.listdir(old_nodes_data_dir)
     except FileNotFoundError:
         visit_dirs = []
-
     for node_name in visit_dirs:
-        # Move logs
-        logger.info('Move logs for node \'{}\'...'.format(node_name))
-        old_node_logs_exp = os.path.join(old_base_dir, '{}.log*'.format(node_name))
-        for node_log in glob.glob(old_node_logs_exp):
-            shutil.move(node_log, new_log_dir)
-        logger.info('done')
+        move_path = os.path.join(old_nodes_data_dir, node_name)
+        to_path = os.path.join(new_node_data_dir, node_name)
+        ext_copytree(move_path, to_path)
+        remove_network_from_dir_name(to_path)
+    # shutil.rmtree(os.path.join(old_base_dir, 'data', 'nodes'))
 
-        # Move keys
-        logger.info('Move keys for node \'{}\'...'.format(node_name))
-        old_keys_dir = os.path.join(old_base_dir, node_name)
-        new_keys_dir = os.path.join(new_node_base_dir, "keys")
-        new_keys_dir = os.path.join(new_keys_dir, node_name)
-        os.makedirs(new_keys_dir, exist_ok=True)
-        migrate_keys(old_keys_dir, new_keys_dir)
-        logger.info('done')
+    # Move *_info* files and logs; delete system __pycache__; move key folder
+    new_log_dir = os.path.join(LOG_DIR, network_name)
+    os.makedirs(new_log_dir, exist_ok=True)
+    new_key_dir = os.path.join(base_dir, network_name, 'keys')
+    os.makedirs(new_key_dir, exist_ok=True)
+    try:
+        visit_dirs = os.listdir(old_base_dir)
+    except FileNotFoundError:
+        visit_dirs = []
+    for fs_name in visit_dirs:
+        full_path = os.path.join(old_base_dir, fs_name)
+        if "_info" in fs_name:
+            shutil.copy2(full_path, os.path.join(base_dir, network_name))
+        elif ".log" in fs_name:
+            shutil.copy2(full_path, new_log_dir)
+        elif os.path.isdir(full_path) and fs_name not in ['data', '__pycache__', 'wallets', 'sample', 'plugins']:
+            ext_copytree(full_path, os.path.join(new_key_dir, fs_name))
 
-    # Move nodes data directory
-    logger.info('Move nodes data directory {} -> {}'.format(
-        old_nodes_data_dir, new_node_base_data_dir))
-    if os.path.exists(old_nodes_data_dir):
-        shutil.move(old_nodes_data_dir, new_node_base_data_dir)
-    logger.info('done')
-
-    # Move daemon config
-    logger.info('Move daemon config {} -> {}'.format(
-        old_daemon_config, GENERAL_CONFIG_DIR))
-    if os.path.exists(old_daemon_config):
-        shutil.move(old_daemon_config, GENERAL_CONFIG_DIR)
-    logger.info('done')
-
-    # migrate_cli(old_wallets_dir, CLI_BASE_DIR, CLI_NETWORK_DIR)
+    # Remove old dir
+    # os.removedirs(old_base_dir)
 
     logger.info('Finish migration of directories/files.')
 
 
 if not os.path.exists(old_base_dir):
-    msg = 'Can not find old base directory \'{}\', abort migration.'.format(old_base_dir)
-    logger.error(msg)
-    raise Exception(msg)
+    msg = 'Can not find old base directory \'{}\'. Nothing to migrate.'.format(old_base_dir)
+    logger.warning(msg)
+
 
 migrate_all()
+set_own_perm("indy", ["/etc/indy", "/var/lib/indy", "/var/log/indy"])
