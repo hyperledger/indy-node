@@ -3,8 +3,9 @@ from stp_core.loop.eventually import eventually
 from indy_node.server.upgrader import Upgrader
 import functools
 
-whitelist = [
-    'Upgrade to version {} scheduled on {} failed because timeout exceeded']
+whitelist = ['Failed to upgrade node',
+             'failed upgrade',
+             'This problem may have external reasons, check syslog for more information']
 
 
 def testTimeoutWorks(nodeSet, looper, monkeypatch):
@@ -40,6 +41,6 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch):
             functools.partial(
                 upgrade_failed_callback_test,
                 node.name))
-        looper.run(node.upgrader._sendUpdateRequest(when, version, timeout))
+        looper.run(node.upgrader._sendUpdateRequest(when, version, None, timeout))
 
     looper.run(eventually(chk))
