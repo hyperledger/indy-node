@@ -1,6 +1,7 @@
 import os
 import sys
 
+from indy_common.exceptions import NotConnectedToNetwork
 from plenum.common.exceptions import NoConsensusYet
 from stp_core.common.log import getlogger
 from indy_client.agent.agent_cli import AgentCli
@@ -55,14 +56,29 @@ def runAgentCli(agent, config, looper=None, bootstrap=None):
             run(looper)
 
 
+CONNECTION_TIMEOUT = 120
+
+
 def runAgent(agent, looper=None, bootstrap=None):
     assert agent
+
+    def is_connected(agent):
+        client = agent.client
+        if not client.can_send_write_requests():
+            raise NotConnectedToNetwork("Client hasn't finished catch-up with Pool Ledger yet or "
+                                        "doesn't have sufficient number of connections")
+
+    async def wait_until_connected(agent):
+        from stp_core.loop.eventually import eventually
+        await eventually(is_connected, agent,
+                         timeout=CONNECTION_TIMEOUT, retryWait=2)
 
     def do_run(looper):
         agent.loop = looper.loop
         looper.add(agent)
         logger.info("Running {} now (port: {})".format(agent.name, agent.port))
         if bootstrap:
+            looper.run(wait_until_connected(agent))
             looper.run(runBootstrap(bootstrap))
 
     if looper:
@@ -71,7 +87,6 @@ def runAgent(agent, looper=None, bootstrap=None):
         with Looper(debug=getConfig().LOOPER_DEBUG, loop=agent.loop) as looper:
             do_run(looper)
             looper.run()
-
 
 # Note: Commented it as didn't find any usage of this method
 # def run_agent(looper, wallet, agent):

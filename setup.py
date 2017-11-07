@@ -3,10 +3,7 @@
 import sys
 import os
 
-import subprocess
 from setuptools import setup, find_packages, __version__
-from setuptools.command.develop import develop
-from setuptools.command.install import install
 
 v = sys.version_info
 if sys.version_info < (3, 5):

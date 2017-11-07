@@ -48,7 +48,7 @@ def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
 def _get_network_from_txn_file_name(file_name: str):
     name_split = file_name.split("_")
     ret_name = "sandbox"
-    if name_split and name_split[-1] in ["live", "sandbox"]:
+    if name_split and name_split[-1] in ["live", "local", "sandbox"]:
         ret_name = name_split[-1]
     return ret_name
 
