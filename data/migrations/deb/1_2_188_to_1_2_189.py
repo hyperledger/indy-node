@@ -77,6 +77,7 @@ def migrate_general_config(old_general_config, new_general_config, network_name)
     f.close()
 
     f = open(new_general_config, "a+")
+    f.write("\n")
     for line in lines:
         if not line.startswith('current_env') and not line.startswith('poolTransactionsFile') and\
                 not line.startswith('domainTransactionsFile'):
