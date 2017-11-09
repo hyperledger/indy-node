@@ -21,6 +21,7 @@ def conf(tdir):
 @pytest.fixture(scope="module")
 def tconf(conf, tdir):
     conf.baseDir = tdir
+    conf.CLI_BASE_DIR = tdir
     conf.MinSepBetweenNodeUpgrades = 5
     return conf
 

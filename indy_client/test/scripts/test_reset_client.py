@@ -43,13 +43,13 @@ def getCurrentDirAndFiles(baseDir):
 
 
 def testResetClient(tconf, aliceCLI):
-    newDirs, newFiels = createRandomDirsAndFiles(tconf.baseDir)
+    newDirs, newFiels = createRandomDirsAndFiles(tconf.CLI_BASE_DIR)
     beforeCleanupDirs, beforeCleanupFiles = getCurrentDirAndFiles(
-        tconf.baseDir)
-    backupDir = performIndyBaseDirCleanup(tconf.baseDir)
-    afterCleanupDirs, afterCleanupFiles = getCurrentDirAndFiles(tconf.baseDir)
+        tconf.CLI_BASE_DIR)
+    backupDir = performIndyBaseDirCleanup(tconf.CLI_BASE_DIR)
+    afterCleanupDirs, afterCleanupFiles = getCurrentDirAndFiles(tconf.CLI_BASE_DIR)
     backedupDirs, backedupFiles = getCurrentDirAndFiles(backupDir)
-    for name in os.listdir(tconf.baseDir):
+    for name in os.listdir(tconf.CLI_BASE_DIR):
         assert name in keepFilesInClientReset
 
     assert newDirs not in afterCleanupDirs
