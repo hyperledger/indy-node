@@ -95,8 +95,7 @@ class WalletedAgent(Walleted, Agent, Caching):
         super().stop(*args, **kwargs)
 
     def getWalletsBaseDir(self):
-        return os.path.expanduser(os.path.join(
-            self.config.baseDir, self.config.walletsDir))
+        return os.path.expanduser(os.path.join(self.config.CLI_BASE_DIR, self.config.walletsDir))
 
     def getContextDir(self):
         return os.path.join(

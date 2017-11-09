@@ -45,7 +45,7 @@ def updateAndGetNextClaimVersionNumber(basedirpath, fileName):
 
 def build_wallet_core(wallet_name, seed_file):
     config = getConfig()
-    baseDir = os.path.expanduser(config.baseDir)
+    baseDir = os.path.expanduser(config.CLI_BASE_DIR)
 
     seedFilePath = '{}/{}'.format(baseDir, seed_file)
     seed = wallet_name + '0' * (32 - len(wallet_name))
