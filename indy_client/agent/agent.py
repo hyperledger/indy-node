@@ -48,7 +48,7 @@ class Agent(Motor, AgentNet):
 
         self.config = config or getConfig()
         self.basedirpath = basedirpath or os.path.expanduser(
-            self.config.baseDir)
+            self.config.CLI_BASE_DIR)
         self.endpointArgs = endpointArgs
 
         # Client used to connect to Indy and forward on owner's txns
@@ -188,7 +188,7 @@ def createAgent(agentClass, name, wallet=None, basedirpath=None, port=None,
         wallet.addIdentifier(signer=DidSigner(
             seed=randomString(32).encode('utf-8')))
     if not basedirpath:
-        basedirpath = config.baseDir
+        basedirpath = config.CLI_BASE_DIR
     if not port:
         _, port = genHa()
 
@@ -205,7 +205,7 @@ def create_client(base_dir_path=None, client_class=Client):
     config = getConfig()
 
     if not base_dir_path:
-        base_dir_path = config.baseDir
+        base_dir_path = config.CLI_BASE_DIR
 
     _, clientPort = genHa()
     client = client_class(randomString(6),

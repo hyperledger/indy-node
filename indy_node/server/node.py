@@ -27,7 +27,7 @@ from indy_common.txn_util import getTxnOrderedFields
 from indy_common.types import Request, SafeRequest
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
-from indy_node.server.client_authn import TxnBasedAuthNr
+from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.node_authn import NodeAuthNr
@@ -354,7 +354,7 @@ class Node(PlenumNode, HasPoolManager):
             super().doDynamicValidation(request)
 
     def defaultAuthNr(self):
-        return TxnBasedAuthNr(self.idrCache)
+        return LedgerBasedAuthNr(self.idrCache)
 
     def defaultNodeAuthNr(self):
         return NodeAuthNr(self.poolLedger)

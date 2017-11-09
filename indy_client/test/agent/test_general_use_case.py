@@ -52,7 +52,7 @@ class RefAgent(WalletedAgent):
 
 
 def test_end_to_end(tconf):
-    base_dir = tconf.baseDir
+    base_dir = tconf.CLI_BASE_DIR
 
     print('*' * 20)
     print(base_dir)

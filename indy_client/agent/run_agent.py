@@ -27,7 +27,7 @@ def bootstrapAgentCli(name, agent, looper, bootstrap, config):
     cli = AgentCli(name='{}-Agent'.format(name).lower().replace(" ", "-"),
                    agentCreator=True,
                    agent=agent,
-                   basedirpath=config.baseDir,
+                   basedirpath=config.CLI_BASE_DIR,
                    logFileName=logFilePath,
                    looper=looper)
     if bootstrap:
