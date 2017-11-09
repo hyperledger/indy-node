@@ -22,7 +22,8 @@ def migrate():
     source_dir = os.path.expanduser('/home/sovrin/.sovrin')
     target_dir = os.path.expanduser('/home/indy/.indy')
 
-    shutil.rmtree(target_dir)
+    if os.path.isdir(target_dir):
+        shutil.rmtree(target_dir)
     shutil.copytree(source_dir, target_dir)
 
     rename_if_exists(target_dir, '.sovrin', '.indy')

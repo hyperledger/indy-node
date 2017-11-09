@@ -33,7 +33,7 @@ class BaseAgent(TestWalletedAgent):
                  endpointArgs=None):
 
         config = config or getConfig()
-        basedirpath = basedirpath or os.path.expanduser(config.baseDir)
+        basedirpath = basedirpath or os.path.expanduser(config.CLI_BASE_DIR)
 
         portParam, _ = self.getPassedArgs()
 
@@ -55,7 +55,7 @@ class BaseAgent(TestWalletedAgent):
 
     def getLoggerFilePath(self, name=None):
         config = getConfig()
-        path = expanduser('{}'.format(config.baseDir))
+        path = expanduser('{}'.format(config.CLI_BASE_DIR))
         return '{}/{}.log'.format(path,
                                   (name or self.name).replace(" ",
                                                               "-").lower())
