@@ -64,7 +64,7 @@ def runAgent(agent, looper=None, bootstrap=None):
 
     def is_connected(agent):
         client = agent.client
-        if not client.can_send_write_requests():
+        if (client.mode is None) or (not client.can_send_write_requests()):
             raise NotConnectedToNetwork("Client hasn't finished catch-up with Pool Ledger yet or "
                                         "doesn't have sufficient number of connections")
 
