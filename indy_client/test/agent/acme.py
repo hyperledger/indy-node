@@ -1,3 +1,6 @@
+import os
+
+from indy_common.config_util import getConfig
 from plenum.common.signer_did import DidSigner
 from indy_client.agent.helper import bootstrap_schema
 from indy_client.client.wallet.wallet import Wallet
@@ -41,7 +44,7 @@ class AcmeAgent(WalletedAgent):
 def create_acme(name=None, wallet=None, base_dir_path=None,
                 port=6666, client=None):
     if client is None:
-        client = create_client(base_dir_path=None, client_class=TestClient)
+        client = create_client(base_dir_path=base_dir_path, client_class=TestClient)
 
     endpoint_args = {'onlyListener': True}
     if wallet:
@@ -169,8 +172,16 @@ if __name__ == "__main__":
     port = args.port
     if port is None:
         port = 6666
+    network = args.network or 'sandbox'
     with_cli = args.withcli
+
+    config = getConfig()
+    base_dir_path = os.path.expanduser(
+        os.path.join(
+            config.CLI_NETWORK_DIR, network
+        ))
+
     agent = create_acme(name=name, wallet=buildAcmeWallet(),
-                        base_dir_path=None, port=port)
+                        base_dir_path=base_dir_path, port=port)
     RunnableAgent.run_agent(agent, bootstrap=bootstrap_acme(agent),
                             with_cli=with_cli)
