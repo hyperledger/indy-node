@@ -18,7 +18,7 @@ def test_restore_agent_wallets_from_minimal_go_live(tdirWithPoolTxns):
         source_dir, 'issuer_wallet_from_minimal_go_live')
 
     config = getConfig(tdirWithPoolTxns)
-    agent_wallets_dir = os.path.join(config.baseDir, config.walletsDir,
+    agent_wallets_dir = os.path.join(config.CLI_BASE_DIR, config.walletsDir,
                                      'agents', 'test-agent')
     issuer_wallet_dir = os.path.join(agent_wallets_dir, 'issuer')
 
