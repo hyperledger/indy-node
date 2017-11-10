@@ -2,8 +2,6 @@ from common.serializers.serialization import domain_state_serializer
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
     ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION, ORIGIN
 from plenum.common.types import f
-from plenum.test.helper import waitForSufficientRepliesForRequests, \
-    getRepliesFromClientInbox
 
 from indy_client.test.state_proof.helper import check_valid_proof, \
     submit_operation_and_get_replies

@@ -16,8 +16,10 @@ from plenum.common.messages.fields import ConstantField, IdentifierField, Limite
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
-from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, NONCE_FIELD_LIMIT, ORIGIN_FIELD_LIMIT, \
-    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, HASH_FIELD_LIMIT, VERSION_FIELD_LIMIT
+from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
+    NONCE_FIELD_LIMIT, ORIGIN_FIELD_LIMIT, \
+    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
+    HASH_FIELD_LIMIT, VERSION_FIELD_LIMIT
 
 from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
@@ -27,20 +29,19 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
 
 
 class Request(PRequest):
-    @property
-    def signingState(self):
+    def signingState(self, identifier=None):
         """
         Special signing state where the the data for an attribute is hashed
         before signing
         :return: state to be used when signing
         """
         if self.operation.get(TXN_TYPE) == ATTRIB:
-            d = deepcopy(super().signingState)
+            d = deepcopy(super().signingState(identifier=identifier))
             op = d[OPERATION]
             keyName = {RAW, ENC, HASH}.intersection(set(op.keys())).pop()
             op[keyName] = sha256(op[keyName].encode()).hexdigest()
             return d
-        return super().signingState
+        return super().signingState(identifier=identifier)
 
 
 class ClientGetNymOperation(MessageValidator):
@@ -257,5 +258,7 @@ node_message_factory.update_schemas_by_field_type(
 class SafeRequest(Request, ClientMessageValidator):
 
     def __init__(self, **kwargs):
+        ClientMessageValidator.__init__(self, operation_schema_is_strict=False,
+                                        schema_is_strict=False)
         self.validate(kwargs)
-        super().__init__(**kwargs)
+        Request.__init__(self, **kwargs)

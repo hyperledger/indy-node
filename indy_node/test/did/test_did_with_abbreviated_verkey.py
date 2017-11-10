@@ -13,15 +13,14 @@ Abbreviated verkey tests
 """
 from plenum.common.signer_did import DidSigner
 from stp_core.loop.eventually import eventually
-from plenum.test.helper import assertLength, assertEquality
+from plenum.test.helper import assertEquality
 from plenum.test import waits as plenumWaits
 
 from indy_common.identity import Identity
 from indy_node.test.did.conftest import pf
 from indy_node.test.did.helper import chkVerifyForRetrievedIdentity, \
-    updateWalletIdrWithFullKeySigner, updateIndyIdrWithVerkey, \
-    fetchFullVerkeyFromIndy, checkAbbrVerkeySize, checkDidSize, \
-    updateWalletIdrWithFullVerkeySigner
+    updateIndyIdrWithVerkey, fetchFullVerkeyFromIndy, checkAbbrVerkeySize, \
+    checkDidSize, updateWalletIdrWithFullVerkeySigner
 from indy_client.test.helper import createNym
 
 

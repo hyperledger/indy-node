@@ -66,8 +66,6 @@ class Client(PlenumClient):
                 stackargs, msgHandler=self.handlePeerMessage)
             self.peerStack.sign = self.sign
             self.peerInbox = deque()
-        self._observers = {}  # type Dict[str, Callable]
-        self._observerSet = set()  # makes it easier to guard against duplicates
 
         # To let client send this transactions to just one node
         self._read_only_requests = {GET_NYM,
@@ -109,21 +107,6 @@ class Client(PlenumClient):
         super().handleOneNodeMsg(wrappedMsg, excludeFromCli)
         if OP_FIELD_NAME not in msg:
             logger.error("Op absent in message {}".format(msg))
-
-    def postReplyRecvd(self, identifier, reqId, frm, result, numReplies):
-        reply = super().postReplyRecvd(identifier, reqId, frm, result, numReplies)
-        if reply:
-            for name in self._observers:
-                try:
-                    self._observers[name](name, reqId, frm, result, numReplies)
-                except Exception as ex:
-                    # TODO: All errors should not be shown on CLI, or maybe we
-                    # show errors with different color according to the
-                    # severity. Like an error occurring due to node sending
-                    # a malformed message should not result in an error message
-                    # being shown on the cli since the clients would anyway
-                    # collect enough replies from other nodes.
-                    logger.debug("Observer threw an exception", exc_info=ex)
 
     def requestConfirmed(self, identifier: str, reqId: int) -> bool:
         return self.txnLog.hasTxnWithReqId(identifier, reqId)
@@ -201,20 +184,3 @@ class Client(PlenumClient):
             return s + await self.peerStack.service(limit)
         else:
             return s
-
-    def registerObserver(self, observer: Callable, name=None):
-        if not name:
-            name = uuid.uuid4()
-        if name in self._observers or observer in self._observerSet:
-            raise RuntimeError("Observer {} already registered".format(name))
-        self._observers[name] = observer
-        self._observerSet.add(observer)
-
-    def deregisterObserver(self, name):
-        if name not in self._observers:
-            raise RuntimeError("Observer {} not registered".format(name))
-        self._observerSet.remove(self._observers[name])
-        del self._observers[name]
-
-    def hasObserver(self, name):
-        return name in self._observerSet

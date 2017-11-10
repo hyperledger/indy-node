@@ -9,7 +9,6 @@ from plenum.common.constants import ENC, REPLY, TXN_TIME, TXN_ID, \
     OP_FIELD_NAME, NYM, TARGET_NYM, \
     TXN_TYPE, ROLE, NONCE, VERKEY
 from plenum.common.signer_did import DidSigner
-from plenum.common.signer_simple import SimpleSigner
 from plenum.common.types import f
 from plenum.common.util import adict
 from plenum.test import waits
@@ -17,7 +16,7 @@ from indy_client.client.client import Client
 from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.test.helper import checkNacks, submitAndCheckRejects, \
-    genTestClient, createNym, checkRejects, addRole, submit, submitAndCheckAccepts, makePendingTxnsRequest
+    genTestClient, createNym, checkRejects, makePendingTxnsRequest
 from indy_common.constants import SKEY
 from indy_common.identity import Identity
 from indy_common.txn_util import ATTRIB, TRUST_ANCHOR
@@ -300,8 +299,9 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(
     _, key = trustAnchorWallet._prepared.pop((req.identifier, req.reqId))
     req.reqId = lastReqId
 
-    req.signature = trustAnchorWallet.signMsg(msg=req.signingState,
-                                              identifier=req.identifier)
+    req.signature = trustAnchorWallet.signMsg(
+        msg=req.signingState(identifier=req.identifier),
+        identifier=req.identifier)
     trustAnchorWallet._prepared[req.identifier, req.reqId] = req, key
     trustAnchor.submitReqs(req)
 
@@ -313,14 +313,11 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(
             result = last.result
             assert result is not None
 
-            # TODO: Time is not equal as some precision is lost while storing
-            # in oientdb, using seconds may be an option, need to think of a
-            # use cases where time in milliseconds is required
             replies[node.clientstack.name][f.RESULT.nm].pop(TXN_TIME, None)
             result.result.pop(TXN_TIME, None)
 
-            assert replies[node.clientstack.name][f.RESULT.nm] == \
-                {k: v for k, v in result.result.items() if v is not None}
+            assert {k: v for k, v in result.result.items() if v is not None}.items() <=\
+                   replies[node.clientstack.name][f.RESULT.nm].items()
 
     timeout = waits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
@@ -426,7 +423,8 @@ def testStewardCannotAddUsersAttribute(nodeSet, looper, steward,
                 checkRejects,
                 steward,
                 reqs[0].reqId,
-                "UnauthorizedClientRequest('Only identity owner/guardian can add attribute for that identity'",
+                "UnauthorizedClientRequest('Only identity owner/guardian can "
+                "add attribute for that identity'",
                 retryWait=1,
                 timeout=timeout))
 
