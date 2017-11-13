@@ -92,7 +92,8 @@ class Node(PlenumNode, HasPoolManager):
         self.poolCfg = self.getPoolConfig()
         self.configReqHandler = self.getConfigReqHandler()
         self.initConfigState()
-        self.requestExecuter[CONFIG_LEDGER_ID] = self.executeConfigTxns
+        self.register_req_handler(CONFIG_LEDGER_ID, self.configReqHandler)
+        self.register_executer(CONFIG_LEDGER_ID, self.executeConfigTxns)
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()

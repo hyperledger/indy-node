@@ -6,7 +6,7 @@ from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH
 from plenum.server.client_authn import NaclAuthNr, CoreAuthNr, CoreAuthMixin
 
 from indy_common.constants import ATTRIB, POOL_UPGRADE, SCHEMA, CLAIM_DEF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, POOL_CONFIG
 from indy_node.persistence.idr_cache import IdrCache
 
 
@@ -16,7 +16,7 @@ class LedgerBasedAuthNr(CoreAuthMixin, NaclAuthNr):
     """
 
     write_types = CoreAuthMixin.write_types.union({ATTRIB, SCHEMA, CLAIM_DEF,
-                                                   POOL_UPGRADE})
+                                                   POOL_CONFIG, POOL_UPGRADE})
     query_types = CoreAuthMixin.query_types.union({GET_NYM, GET_ATTR, GET_SCHEMA,
                                                    GET_CLAIM_DEF})
 
