@@ -13,6 +13,7 @@ In order to run your own Network, you need to do the following for each Node:
         - master version: `pip install indy-node-dev`
         - stable version: `pip install indy-node`
 2. Initialize Node to be included into the Network
+    - if ```indy-node``` were installed from pypi basic directory structure should created manually with the command ```sudo create_dirs.sh```
     - set Network name in config file
         - the location of the config depends on how a Node was installed. It's usually inside `/etc/indy` for Ubuntu.
         - the following needs to be added: `NETWORK_NAME={network_name}` where {network_name} matches the one in genesis transaction files above
@@ -21,14 +22,16 @@ In order to run your own Network, you need to do the following for each Node:
         - BLS keys for BLS multi-signature and state proofs support
     - provide genesis transactions files which will be a basis of initial Pool.
         - pool transactions genesis file:
-            - The file must be named as `pool_transactions_file_{network_name}_genesis`
+            - The file must be named as `pool_transactions_genesis`
             - The file contains initial set of Nodes a Pool is started from (initial set of NODE transactions in the Ledger)
             - New Nodes will be added by sending new NODE txn to be written into the Ledger
             - All new Nodes and Clients will use genesis transaction file to connect to initial set of Nodes,
             and then catch-up all other NODE transactions to get up-to-date Ledger.
+            - File must be located in ```/var/lib/indy/{network_name}``` folder
         - domain transactions genesis file:
-            - The file must be named as `domain_transactions_file_{network_name}_genesis`
+            - The file must be named as `domain_transactions_genesis`
             - The file contains initial NYM transactions (for example, Trustees, Stewards, etc.)
+            - File must be located in ```/var/lib/indy/{network_name}``` folder
 
 ## Scripts for Initialization
 
@@ -75,14 +78,11 @@ The first port number is for the node-to-node communication channel and the seco
 If you want to try out an Indy cluster of 4 nodes with the nodes running on your local machine, then you can do the following:
 
 ```
-~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1
-This node with name Node1 will use ports 9701 and 9702 for nodestack and clientstack respectively
-~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 2
-This node with name Node2 will use ports 9703 and 9704 for nodestack and clientstack respectively
-~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 3
-This node with name Node3 will use ports 9705 and 9706 for nodestack and clientstack respectively
-~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 4
-his node with name Node4 will use ports 9707 and 9708 for nodestack and clientstack respectively
+~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 2 3 4
+By default node with the name Node1 will use ports 9701 and 9702 for nodestack and clientstack respectively
+Node2 will use ports 9703 and 9704 for nodestack and clientstack respectively
+Node3 will use ports 9705 and 9706 for nodestack and clientstack respectively
+Node4 will use ports 9707 and 9708 for nodestack and clientstack respectively
 ```
 
 Now you can run the 4 nodes as

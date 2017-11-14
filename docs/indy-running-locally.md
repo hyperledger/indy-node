@@ -21,7 +21,19 @@ pip install pytest
 ## Initial setup
 In your home folder, create an Indy folder. In here we are going to put the scripts we will use to setup the environment. Then change into this folder.
 
-So first, we need to create our nodes.
+First of all we need to create basic folder structure. It could be done with the following command
+
+```
+sudo create_dirs.sh
+```
+Please note, this script should be run with ```root``` privileges. It will create directories and grant current user full access rights
+```
+/etc/indy - main config directory
+/var/lib/indy - main data directory
+/var/log/indy - main log directory
+```
+
+Now we are ready to create our nodes.
 
 Create a script ```setupEnvironment.sh``` containing:
 
@@ -29,11 +41,10 @@ Create a script ```setupEnvironment.sh``` containing:
 # Remove .indy folder
 rm -rf ~/.indy
 
+
 # Create nodes and generate initial transactions
-generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1
-generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 2
-generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 3
-generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 4
+generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 2 3 4
+
 
 echo Environment setup complete
 ```
@@ -155,7 +166,7 @@ send proof Loan-Application-KYC to Thrift Bank
 
 # Resetting the Indy environment
 
-If you wish to reset your Indy environment and recreate it again, you can remove your ```~/.indy``` folder.
+If you wish to reset your Indy environment and recreate it again, you can run ```clear_node.py --full```.
 
 Then, when you want to re-create your environment from scratch, ensure that all the nodes and agents are stopped and just run the setupEnvironment.sh script.
 Then you can restart the Nodes, attach the agents and away you go again.
