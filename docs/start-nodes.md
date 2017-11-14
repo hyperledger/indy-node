@@ -13,7 +13,7 @@ In order to run your own Network, you need to do the following for each Node:
         - master version: `pip install indy-node-dev`
         - stable version: `pip install indy-node`
 2. Initialize Node to be included into the Network
-    - if ```indy-node``` were installed from pypi basic directory structure should created manually with the command ```sudo create_dirs.sh```
+    - if ```indy-node``` were installed from pypi basic directory structure should created manually with the command ```create_dirs.sh```
     - set Network name in config file
         - the location of the config depends on how a Node was installed. It's usually inside `/etc/indy` for Ubuntu.
         - the following needs to be added: `NETWORK_NAME={network_name}` where {network_name} matches the one in genesis transaction files above
