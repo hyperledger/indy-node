@@ -10,7 +10,12 @@ This guide describes the process of setting up a local 4 node cluster and attach
 
 ## Requirements
 
-I’m assuming that you have Indy-node installed (I recommend installing this in an Ubuntu Virtual Machine if possible) – If not follow the [setup-dev](https://github.com/hyperledger/indy-node/blob/master/docs/setup-dev.md) instructions.
+It's recommended to use an Ubuntu Virtual Machine and virtual environment if possible. 
+Please follow the [setup-dev](https://github.com/hyperledger/indy-node/blob/master/docs/setup-dev.md) instruction for pre-requisites and dependencies.
+As for installation of indy-node, it's recommended to create a separate virtual environment and install indy-node there as
+```
+pip install indy-node-dev
+```
 
 Finally make sure that `pytest` module is installed (it is required to run test-related functionality like Faber, Acme and ThriftBank test agents):
 
@@ -24,9 +29,9 @@ In your home folder, create an Indy folder. In here we are going to put the scri
 First of all we need to create basic folder structure. It could be done with the following command
 
 ```
-sudo create_dirs.sh
+create_dirs.sh
 ```
-Please note, this script should be run with ```root``` privileges. It will create directories and grant current user full access rights
+Please note, that you need ```root``` privileges to run the script. the script will create directories and grant current user full access rights
 ```
 /etc/indy - main config directory
 /var/lib/indy - main data directory
