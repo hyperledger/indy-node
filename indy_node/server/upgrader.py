@@ -101,12 +101,7 @@ class Upgrader(HasActionQueue):
         self.retry_timeout = 5
         self.retry_limit = 3
 
-        # whether upgrade was started before the Node restarted,
-        # that is whether Upgrade Log contains STARTED event
-        self._upgrade_started = self._is_upgrade_started()
-        if self._upgrade_started:
-            # append SUCCESS or FAIL to the Upgrade Lof
-            self._update_upgrade_log_for_started_upgrade()
+        self.process_upgrade_log_for_first_run()
 
         HasActionQueue.__init__(self)
 
@@ -116,6 +111,14 @@ class Upgrader(HasActionQueue):
 
     def service(self):
         return self._serviceActions()
+
+    def process_upgrade_log_for_first_run(self):
+        # whether upgrade was started before the Node restarted,
+        # that is whether Upgrade Log contains STARTED event
+        self._upgrade_started = self._is_upgrade_started()
+        if self._upgrade_started:
+            # append SUCCESS or FAIL to the Upgrade Lof
+            self._update_upgrade_log_for_started_upgrade()
 
     def _is_upgrade_started(self):
         if not self.lastUpgradeEventInfo:
