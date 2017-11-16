@@ -1,3 +1,18 @@
+#   Copyright 2017 Sovrin Foundation
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+
 from plenum.common.util import randomString
 from stp_core.loop.eventually import eventually
 from plenum.test.helper import waitForSufficientRepliesForRequests
@@ -19,10 +34,10 @@ import multiprocessing
 import socket
 import json
 import functools
-
+from stp_core.common.log import getlogger
 
 config = getConfig()
-
+logger = getlogger()
 
 def sendUpgrade(client, wallet, upgradeData):
     upgrade = Upgrade(**upgradeData, trustee=wallet.defaultId)
@@ -96,10 +111,20 @@ class NodeControlToolExecutor:
         transform(self.tool)
         self.p = multiprocessing.Process(target=self.tool.start)
         self.p.start()
+        logger.debug("NCTProcess was started with pid: {}". format(self.p.pid))
 
     def stop(self):
-        self.p.terminate()
+        logger.debug("Send stop to NCTProcess with pid: {}". format(self.p.pid))
         self.tool.server.close()
+        self.p.terminate()
+        # check that process with NetControlTool.start function really stop.
+        # process.terminate() just send SIGTERM and is not guarantee that process stops
+        while self.p.is_alive():
+            logger.debug("NCTProcess still alive, with pid: {}". format(self.p.pid))
+            # while process is still alive, join with main process and wait
+            self.p.join(3)
+        logger.debug("NCTProcess must be stopped, with pid: {}". format(self.p.pid))
+
 
 
 def composeUpgradeMessage(version):
