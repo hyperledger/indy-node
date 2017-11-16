@@ -1,0 +1,1195 @@
+{
+	"_trustAnchored": {
+		
+	},
+	"defaultId": "EqwgnuqynKnRRQ6q5Lzov8",
+	"_prepared": {
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503393560772137]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503393560772137,
+					"signature": "2V7Wn6ttVs2duQdwk3PQcy7QWepsEJP5JfvCYBueMrFtvzxdPfFVu6FDT7rbryWrBxELqudnDp4fgvaYVKFGk1rA",
+					"digest": "a9e2ee0f09931317a70d66d9c4b7ec60239207ce761c2110d61960401c940aac",
+					"operation": {
+						"type": "105",
+						"dest": "ULtgFQJe6bjiFbs7ke3NJD"
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503393560775165]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503393560775165,
+					"signature": "5e3bm44RSwmCfY1YxdcP9RYnqk6x87rrnqBYBK3hcZpinR5CwcSsWipjoJmgApfDVaNLQ9MPuPrRyLSMd5LZeiWB",
+					"digest": "00bdd941ab3aba82db9823088400bf1cf5f9bfa7fe32ea41b440a864e2cd02c6",
+					"operation": {
+						"raw": "endpoint",
+						"type": "104",
+						"dest": "ULtgFQJe6bjiFbs7ke3NJD"
+					}
+				}
+			},
+			{
+				"py/tuple": ["endpoint",
+				null,
+				"ULtgFQJe6bjiFbs7ke3NJD"]
+			}]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503394271312644]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503394271312644,
+					"signature": "4gswnonQKmTMBgEPHkoJcV7PSoQaBZmGE9AbEvxEXhDyvNCUCXiv68MndpSnLqPLTdVeqgX83xEKzeqCdH8B8rv7",
+					"digest": "12bbf4070b7947ff04a7c8fcd14d49a5c9fb155fbe57f2a07bfab83d776cf07f",
+					"operation": {
+						"type": "105",
+						"dest": "H2aKRiDeq8aLZSydQMDbtf"
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503394162422414]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503394162422414,
+					"signature": "5zjYPBSXPARb2SafWMPWo7gtxZ4HaFHJ4FLZ6phSdbRFEvXetSpYyeqjMZfDtL9czsh8tKiHbyA2Y6Qhkbvypymu",
+					"digest": "bb97a580530e3c6e12d905c71f03355eeaa7702858c38d1912db02afeaa18782",
+					"operation": {
+						"signature_type": "CL",
+						"origin": "CzkavE58zgX7rUMrzSinLr",
+						"ref": 25,
+						"type": "108"
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503393863127405]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503393863127405,
+					"signature": "ytjpREq53xGrQ6BrKWA1waHCUx9szFxTcKLtdikjJimBiFLDE9vAkPw8WqX86xqiQJCEUM2ovBLcPAbEZGRGK4L",
+					"digest": "1963349fd52a613ed6144a7e06c26bc11112ed0dd8dafa115c9f5d6a788e16b3",
+					"operation": {
+						"type": "107",
+						"dest": "ULtgFQJe6bjiFbs7ke3NJD",
+						"data": {
+							"version": "1.2",
+							"name": "Transcript"
+						}
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503393880969848]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503393880969848,
+					"signature": "3rrEpTStmVjn3Xvbdpr43TUo2TKynjK9V9DrvCphgfm4dkpn8qHtkP3NvBXVvp7ACfBYRMZnjLZnhEafb3csqs9v",
+					"digest": "e33da6465da0ac0e5282bee3723f6aff9a9f78e77537394e5e3e1248919b2340",
+					"operation": {
+						"signature_type": "CL",
+						"origin": "ULtgFQJe6bjiFbs7ke3NJD",
+						"ref": 23,
+						"type": "108"
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503393964832777]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503393964832777,
+					"signature": "48Di1kbwoptkT94K5fioucDbGrityYieHXimQMeFdokVE9MJt9SPRmFjvpYGANwneZ9nr2Tz88PXygF9kfmvHfwk",
+					"digest": "114fa090c927acb2457a3725a455e4b371b2a89775efa0eaba1f7ad8b429c236",
+					"operation": {
+						"raw": "endpoint",
+						"type": "104",
+						"dest": "CzkavE58zgX7rUMrzSinLr"
+					}
+				}
+			},
+			{
+				"py/tuple": ["endpoint",
+				null,
+				"CzkavE58zgX7rUMrzSinLr"]
+			}]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503393966193786]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503393966193786,
+					"signature": "HVANkfC1eBJWciFLbFR2UbrAtfx2hefLiMsnDDRecsENZ2qFWYhrJTc2EEtxsMiQpsg6fmhVk89Fgywbqj34eNs",
+					"digest": "2c7739b9745fdacc4c1b1f52ac357ca71ff0c31fad357070a6fc4d7c16349bc5",
+					"operation": {
+						"type": "105",
+						"dest": "CkQZNWaAQSLyY5iqw6KTx"
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503393562115741]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503393562115741,
+					"signature": "22PH7P298PC5BokAKrGHPrFGTnMAVB5ktZnER7hKo93g9HcucVpwiERpFRFb5HPT5eyoK1bbDxN4gtBnqpQ3nTmR",
+					"digest": "4cde0c80da76289617c5bb0a1780713e6367f90076f4027dda172796323abf09",
+					"operation": {
+						"type": "105",
+						"dest": "BpbaEBJ16MoXpv7GU4y9u1"
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503393964831448]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503393964831448,
+					"signature": "2Z1tTLCvBQcNvpv6UysYjr3VRWPoyP6bNG9ou1kPjFxhJzsDSNhuwTXzQfnuGedfwSoE2QaWsrowdFfZxSTmDtvu",
+					"digest": "2d2ec6bcc0cfcd3080622ec01fe7e11c37cd3352bb7dd6d8f3559e4b2f12d091",
+					"operation": {
+						"type": "105",
+						"dest": "CzkavE58zgX7rUMrzSinLr"
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503394272580665]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503394272580665,
+					"signature": "4eXTotvTstApaasdjaY7jxWytSrEd6WK1Sd7cmx7KmtPTubboPP84TXN3BS1c8HGn7ZkgNfj6hbMKCDPVYpZoS1p",
+					"digest": "071ca10cac748707babdff1554610db1b78b018b30f3d70f84fde3df3dfbd903",
+					"operation": {
+						"type": "105",
+						"dest": "6KYi5Pb7rcvJb8ZwKb2nvm"
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503394135766499]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503394135766499,
+					"signature": "4D63kic9Yktbk9ETeNCaRRptCoBb7ULR6Qak4vWpCeFX3RSW3V8odA3idxqHipupuez8iCvYS4rbfrnAjTMwaZm3",
+					"digest": "610d3a81fff0444906a729662386396f22307f3270b012a48264b8a3e04d6783",
+					"operation": {
+						"type": "107",
+						"dest": "CzkavE58zgX7rUMrzSinLr",
+						"data": {
+							"version": "0.2",
+							"name": "Job-Certificate"
+						}
+					}
+				}
+			},
+			null]
+		},
+		"json://{\"py/tuple\": [\"EqwgnuqynKnRRQ6q5Lzov8\", 1503394271313999]}": {
+			"py/tuple": [{
+				"py/object": "sovrin_common.types.Request",
+				"py/state": {
+					"identifier": "EqwgnuqynKnRRQ6q5Lzov8",
+					"reqId": 1503394271313999,
+					"signature": "GH5bFtcozc7mXX1QxmhE3BLnGrfyVk9GPUvCpNHwQzg3yd3YbL7p17PiYJjx3U6JtjFPiNhSnTb53JRDePpfo45",
+					"digest": "e6a5dcd5794ef39b40aaca7e7084dbbf7123a5a0b9fb2a7f8b1d7598733d2f0a",
+					"operation": {
+						"raw": "endpoint",
+						"type": "104",
+						"dest": "H2aKRiDeq8aLZSydQMDbtf"
+					}
+				}
+			},
+			{
+				"py/tuple": ["endpoint",
+				null,
+				"H2aKRiDeq8aLZSydQMDbtf"]
+			}]
+		}
+	},
+	"knownIds": {
+		"CkQZNWaAQSLyY5iqw6KTx": {
+			"last_synced": {
+				"__reduce__": [{
+					"py/type": "datetime.datetime"
+				},
+				["B+EIFgkaBgS9vQ=="]],
+				"py/object": "datetime.datetime"
+			},
+			"identity": {
+				"_verkey": "EbzRNZFQKP5jsXrKXrLWkC",
+				"py/object": "plenum.common.signer_did.DidIdentity",
+				"abbreviated": true,
+				"_identifier": "CkQZNWaAQSLyY5iqw6KTx"
+			},
+			"trustAnchor": "CzkavE58zgX7rUMrzSinLr",
+			"_role": null,
+			"seqNo": null,
+			"py/object": "sovrin_common.identity.Identity"
+		},
+		"6KYi5Pb7rcvJb8ZwKb2nvm": {
+			"last_synced": {
+				"__reduce__": [{
+					"py/type": "datetime.datetime"
+				},
+				["B+EIFgkfDAqr5Q=="]],
+				"py/object": "datetime.datetime"
+			},
+			"identity": {
+				"_verkey": "6BFmCCvvtJBjYtYLCDVj37",
+				"py/object": "plenum.common.signer_did.DidIdentity",
+				"abbreviated": true,
+				"_identifier": "6KYi5Pb7rcvJb8ZwKb2nvm"
+			},
+			"trustAnchor": "H2aKRiDeq8aLZSydQMDbtf",
+			"_role": null,
+			"seqNo": null,
+			"py/object": "sovrin_common.identity.Identity"
+		},
+		"BpbaEBJ16MoXpv7GU4y9u1": {
+			"last_synced": {
+				"__reduce__": [{
+					"py/type": "datetime.datetime"
+				},
+				["B+EIFgkTFgPa5g=="]],
+				"py/object": "datetime.datetime"
+			},
+			"identity": {
+				"_verkey": "JkkV9B3Z2vsKWwThFLG2cN",
+				"py/object": "plenum.common.signer_did.DidIdentity",
+				"abbreviated": true,
+				"_identifier": "BpbaEBJ16MoXpv7GU4y9u1"
+			},
+			"trustAnchor": "ULtgFQJe6bjiFbs7ke3NJD",
+			"_role": null,
+			"seqNo": null,
+			"py/object": "sovrin_common.identity.Identity"
+		},
+		"ULtgFQJe6bjiFbs7ke3NJD": {
+			"last_synced": {
+				"__reduce__": [{
+					"py/type": "datetime.datetime"
+				},
+				["B+EIFgkTFA2q1Q=="]],
+				"py/object": "datetime.datetime"
+			},
+			"identity": {
+				"_verkey": "5kh3FB4H3NKq7tUDqeqHc1",
+				"py/object": "plenum.common.signer_did.DidIdentity",
+				"abbreviated": true,
+				"_identifier": "ULtgFQJe6bjiFbs7ke3NJD"
+			},
+			"trustAnchor": "Th7MpTaRZVRYnPiabds81Y",
+			"_role": "101",
+			"seqNo": null,
+			"py/object": "sovrin_common.identity.Identity"
+		},
+		"H2aKRiDeq8aLZSydQMDbtf": {
+			"last_synced": {
+				"__reduce__": [{
+					"py/type": "datetime.datetime"
+				},
+				["B+EIFgkfCwejBQ=="]],
+				"py/object": "datetime.datetime"
+			},
+			"identity": {
+				"_verkey": "3sphzTb2itL2mwSeJ1Ji28",
+				"py/object": "plenum.common.signer_did.DidIdentity",
+				"abbreviated": true,
+				"_identifier": "H2aKRiDeq8aLZSydQMDbtf"
+			},
+			"trustAnchor": "Th7MpTaRZVRYnPiabds81Y",
+			"_role": "101",
+			"seqNo": null,
+			"py/object": "sovrin_common.identity.Identity"
+		},
+		"CzkavE58zgX7rUMrzSinLr": {
+			"last_synced": {
+				"__reduce__": [{
+					"py/type": "datetime.datetime"
+				},
+				["B+EIFgkaBA622w=="]],
+				"py/object": "datetime.datetime"
+			},
+			"identity": {
+				"_verkey": "WjXEvZ9xj4Tz9sLtzf7HVP",
+				"py/object": "plenum.common.signer_did.DidIdentity",
+				"abbreviated": true,
+				"_identifier": "CzkavE58zgX7rUMrzSinLr"
+			},
+			"trustAnchor": "Th7MpTaRZVRYnPiabds81Y",
+			"_role": "101",
+			"seqNo": null,
+			"py/object": "sovrin_common.identity.Identity"
+		}
+	},
+	"idsToSigners": {
+		"BpbaEBJ16MoXpv7GU4y9u1": {
+			"seed": {
+				"py/b64": "snguqTspwh7eX5XiHoFcJsO3fwWNFMo8+0UP3Z8XtI4=\n"
+			},
+			"sk": {
+				"py/id": 77
+			},
+			"naclSigner": {
+				"keyhex": {
+					"py/b64": "YjI3ODJlYTkzYjI5YzIxZWRlNWY5NWUyMWU4MTVjMjZjM2I3N2YwNThkMTRjYTNjZmI0NTBmZGQ5\nZjE3YjQ4ZQ==\n"
+				},
+				"keyraw": {
+					"py/b64": "snguqTspwh7eX5XiHoFcJsO3fwWNFMo8+0UP3Z8XtI4=\n"
+				},
+				"verhex": {
+					"py/b64": "NTdhMGE2NmMwNzU0MDA0M2NlMjUwZjA2YmUxMDFjNzg4ZmM3MjM1NWUyMWViOThjY2ZiMzUzZjRh\nMTYzZGY2Zg==\n"
+				},
+				"key": {
+					"_signing_key": {
+						"py/b64": "snguqTspwh7eX5XiHoFcJsO3fwWNFMo8+0UP3Z8XtI5XoKZsB1QAQ84lDwa+EBx4j8cjVeIeuYzP\ns1P0oWPfbw==\n"
+					},
+					"verify_key": {
+						"_key": {
+							"py/b64": "V6CmbAdUAEPOJQ8GvhAceI/HI1XiHrmMz7NT9KFj328=\n"
+						},
+						"py/object": "stp_core.crypto.nacl_wrappers.VerifyKey"
+					},
+					"py/object": "stp_core.crypto.nacl_wrappers.SigningKey",
+					"_seed": {
+						"py/b64": "snguqTspwh7eX5XiHoFcJsO3fwWNFMo8+0UP3Z8XtI4=\n"
+					}
+				},
+				"py/object": "stp_core.crypto.nacl_wrappers.Signer",
+				"verraw": {
+					"py/b64": "V6CmbAdUAEPOJQ8GvhAceI/HI1XiHrmMz7NT9KFj328=\n"
+				}
+			},
+			"_alias": null,
+			"py/object": "plenum.common.signer_did.DidSigner",
+			"_verkey": "JkkV9B3Z2vsKWwThFLG2cN",
+			"abbreviated": true,
+			"_identifier": "BpbaEBJ16MoXpv7GU4y9u1"
+		},
+		"EqwgnuqynKnRRQ6q5Lzov8": {
+			"py/id": 67
+		},
+		"6KYi5Pb7rcvJb8ZwKb2nvm": {
+			"seed": {
+				"py/b64": "2JWwi9rB6gKH3tZ+zhBy1YBED1ex5vvLxx4N8y0z1g4=\n"
+			},
+			"sk": {
+				"py/id": 73
+			},
+			"naclSigner": {
+				"keyhex": {
+					"py/b64": "ZDg5NWIwOGJkYWMxZWEwMjg3ZGVkNjdlY2UxMDcyZDU4MDQ0MGY1N2IxZTZmYmNiYzcxZTBkZjMy\nZDMzZDYwZQ==\n"
+				},
+				"keyraw": {
+					"py/b64": "2JWwi9rB6gKH3tZ+zhBy1YBED1ex5vvLxx4N8y0z1g4=\n"
+				},
+				"verhex": {
+					"py/b64": "MmIxNDlmM2Q5M2NhYTMxMzE2ZTZiYzYyNGI5NjhmOGEyOWVjM2E3NmQ4OTI5Nzc4OGQzY2ZjMDRm\nOTczNmNhMg==\n"
+				},
+				"key": {
+					"_signing_key": {
+						"py/b64": "2JWwi9rB6gKH3tZ+zhBy1YBED1ex5vvLxx4N8y0z1g4rFJ89k8qjExbmvGJLlo+KKew6dtiSl3iN\nPPwE+XNsog==\n"
+					},
+					"verify_key": {
+						"_key": {
+							"py/b64": "KxSfPZPKoxMW5rxiS5aPiinsOnbYkpd4jTz8BPlzbKI=\n"
+						},
+						"py/object": "stp_core.crypto.nacl_wrappers.VerifyKey"
+					},
+					"py/object": "stp_core.crypto.nacl_wrappers.SigningKey",
+					"_seed": {
+						"py/b64": "2JWwi9rB6gKH3tZ+zhBy1YBED1ex5vvLxx4N8y0z1g4=\n"
+					}
+				},
+				"py/object": "stp_core.crypto.nacl_wrappers.Signer",
+				"verraw": {
+					"py/b64": "KxSfPZPKoxMW5rxiS5aPiinsOnbYkpd4jTz8BPlzbKI=\n"
+				}
+			},
+			"_alias": null,
+			"py/object": "plenum.common.signer_did.DidSigner",
+			"_verkey": "6BFmCCvvtJBjYtYLCDVj37",
+			"abbreviated": true,
+			"_identifier": "6KYi5Pb7rcvJb8ZwKb2nvm"
+		},
+		"CkQZNWaAQSLyY5iqw6KTx": {
+			"seed": {
+				"py/b64": "bSVU7UUzWzTjQc66W2+rz/GOf7bjdzzfbxbPtjAuR/w=\n"
+			},
+			"sk": {
+				"py/id": 81
+			},
+			"naclSigner": {
+				"keyhex": {
+					"py/b64": "NmQyNTU0ZWQ0NTMzNWIzNGUzNDFjZWJhNWI2ZmFiY2ZmMThlN2ZiNmUzNzczY2RmNmYxNmNmYjYz\nMDJlNDdmYw==\n"
+				},
+				"keyraw": {
+					"py/b64": "bSVU7UUzWzTjQc66W2+rz/GOf7bjdzzfbxbPtjAuR/w=\n"
+				},
+				"verhex": {
+					"py/b64": "MDFhM2VlNzUyY2QyYTczMDViODFlNTFmY2E4NjQyMGI2ZTI5N2EyYWQzZDMzN2I0NDUyMDVmNTQw\nMDg0NmRhNQ==\n"
+				},
+				"key": {
+					"_signing_key": {
+						"py/b64": "bSVU7UUzWzTjQc66W2+rz/GOf7bjdzzfbxbPtjAuR/wBo+51LNKnMFuB5R/KhkILbil6KtPTN7RF\nIF9UAIRtpQ==\n"
+					},
+					"verify_key": {
+						"_key": {
+							"py/b64": "AaPudSzSpzBbgeUfyoZCC24peirT0ze0RSBfVACEbaU=\n"
+						},
+						"py/object": "stp_core.crypto.nacl_wrappers.VerifyKey"
+					},
+					"py/object": "stp_core.crypto.nacl_wrappers.SigningKey",
+					"_seed": {
+						"py/b64": "bSVU7UUzWzTjQc66W2+rz/GOf7bjdzzfbxbPtjAuR/w=\n"
+					}
+				},
+				"py/object": "stp_core.crypto.nacl_wrappers.Signer",
+				"verraw": {
+					"py/b64": "AaPudSzSpzBbgeUfyoZCC24peirT0ze0RSBfVACEbaU=\n"
+				}
+			},
+			"_alias": null,
+			"py/object": "plenum.common.signer_did.DidSigner",
+			"_verkey": "EbzRNZFQKP5jsXrKXrLWkC",
+			"abbreviated": true,
+			"_identifier": "CkQZNWaAQSLyY5iqw6KTx"
+		}
+	},
+	"_attributes": {
+		"json://{\"py/tuple\": [\"endpoint\", null, \"H2aKRiDeq8aLZSydQMDbtf\"]}": {
+			"value": "{\"endpoint\": {\"ha\": \"10.0.0.4:7777\", \"pubkey\": \"AGBjYvyM3SFnoiDGAEzkSLHvqyzVkXeMZfKDvdpEsC2x\"}}",
+			"origin": null,
+			"seqNo": 22,
+			"encKey": null,
+			"name": "endpoint",
+			"dest": "H2aKRiDeq8aLZSydQMDbtf",
+			"py/object": "sovrin_client.client.wallet.attribute.Attribute",
+			"ledgerStore": {
+				"py/id": 2
+			}
+		},
+		"json://{\"py/tuple\": [\"endpoint\", null, \"CzkavE58zgX7rUMrzSinLr\"]}": {
+			"value": "{\"endpoint\": {\"ha\": \"10.0.0.3:6666\", \"pubkey\": \"C5eqjU7NMVMGGfGfx2ubvX5H9X346bQt5qeziVAo3naQ\"}}",
+			"origin": null,
+			"seqNo": 19,
+			"encKey": null,
+			"name": "endpoint",
+			"dest": "CzkavE58zgX7rUMrzSinLr",
+			"py/object": "sovrin_client.client.wallet.attribute.Attribute",
+			"ledgerStore": {
+				"py/object": "sovrin_client.client.wallet.attribute.LedgerStore",
+				"py/enumvalue": 4
+			}
+		},
+		"json://{\"py/tuple\": [\"endpoint\", null, \"ULtgFQJe6bjiFbs7ke3NJD\"]}": {
+			"value": "{\"endpoint\": {\"ha\": \"10.0.0.2:5555\", \"pubkey\": \"5hmMA64DDQz5NzGJNVtRzNwpkZxktNQds21q3Wxxa62z\"}}",
+			"origin": null,
+			"seqNo": 17,
+			"encKey": null,
+			"name": "endpoint",
+			"dest": "ULtgFQJe6bjiFbs7ke3NJD",
+			"py/object": "sovrin_client.client.wallet.attribute.Attribute",
+			"ledgerStore": {
+				"py/id": 2
+			}
+		}
+	},
+	"aliasesToIds": {
+		
+	},
+	"_upgrades": {
+		
+	},
+	"env": "test",
+	"replyHandler": {
+		
+	},
+	"_name": "Default",
+	"didMethods": {
+		"default": {
+			"py/id": 65
+		},
+		"py/object": "plenum.common.did_method.DidMethods",
+		"d": {
+			"sovrin": {
+				"signerConstructor": {
+					"py/type": "plenum.common.signer_did.DidSigner"
+				},
+				"pattern": "did:sovrin:",
+				"py/object": "plenum.common.did_method.DidMethod",
+				"name": "sovrin"
+			}
+		}
+	},
+	"_pending": {
+		"py/reduce": [{
+			"py/type": "collections.deque"
+		},
+		{
+			"py/tuple": [[]]
+		},
+		null,
+		null,
+		null]
+	},
+	"py/object": "sovrin_client.client.wallet.wallet.Wallet",
+	"_pconfigs": {
+		
+	},
+	"_nodes": {
+		
+	},
+	"lastKnownSeqs": {
+		
+	},
+	"_connections": {
+		"py/reduce": [{
+			"py/type": "collections.OrderedDict"
+		},
+		{
+			"py/tuple": []
+		},
+		null,
+		null,
+		{
+			"py/tuple": [{
+				"py/tuple": ["Faber College",
+				{
+					"remotePubkey": "5hmMA64DDQz5NzGJNVtRzNwpkZxktNQds21q3Wxxa62z",
+					"remoteIdentifier": "ULtgFQJe6bjiFbs7ke3NJD",
+					"linkStatus": "Accepted",
+					"localIdentifier": "BpbaEBJ16MoXpv7GU4y9u1",
+					"trustAnchor": "Faber College",
+					"linkLastSyncNo": null,
+					"verifiedClaimProofs": [],
+					"name": "Faber College",
+					"internalId": null,
+					"availableClaims": [{
+						"py/seq": ["Transcript",
+						"1.2",
+						"ULtgFQJe6bjiFbs7ke3NJD"],
+						"py/object": "anoncreds.protocol.types.AvailableClaim",
+						"py/newargs": {
+							"py/tuple": ["Transcript",
+							"1.2",
+							"ULtgFQJe6bjiFbs7ke3NJD"]
+						}
+					}],
+					"connectionLastSynced": {
+						"__reduce__": [{
+							"py/type": "datetime.datetime"
+						},
+						["B+EIFgwTFA8NmQ=="]],
+						"py/object": "datetime.datetime"
+					},
+					"invitationNonce": "b1134a647eb818069c089e7694f63e6d",
+					"localVerkey": "~JkkV9B3Z2vsKWwThFLG2cN",
+					"_remoteVerkey": "~5kh3FB4H3NKq7tUDqeqHc1",
+					"proofRequests": [],
+					"remoteEndPoint": {
+						"py/tuple": ["10.0.0.2",
+						5555]
+					},
+					"py/object": "sovrin_client.client.wallet.link.Link"
+				}]
+			},
+			{
+				"py/tuple": ["Acme Corp",
+				{
+					"remotePubkey": "C5eqjU7NMVMGGfGfx2ubvX5H9X346bQt5qeziVAo3naQ",
+					"remoteIdentifier": "CzkavE58zgX7rUMrzSinLr",
+					"linkStatus": "Accepted",
+					"localIdentifier": "CkQZNWaAQSLyY5iqw6KTx",
+					"trustAnchor": "Acme Corp",
+					"linkLastSyncNo": null,
+					"verifiedClaimProofs": [],
+					"name": "Acme Corp",
+					"internalId": null,
+					"availableClaims": [{
+						"py/seq": ["Job-Certificate",
+						"0.2",
+						"CzkavE58zgX7rUMrzSinLr"],
+						"py/object": "anoncreds.protocol.types.AvailableClaim",
+						"py/newargs": {
+							"py/tuple": ["Job-Certificate",
+							"0.2",
+							"CzkavE58zgX7rUMrzSinLr"]
+						}
+					}],
+					"connectionLastSynced": {
+						"__reduce__": [{
+							"py/type": "datetime.datetime"
+						},
+						["B+EIFgwaBQDmfw=="]],
+						"py/object": "datetime.datetime"
+					},
+					"invitationNonce": "57fbf9dc8c8e6acde33de98c6d747b28c",
+					"localVerkey": "~EbzRNZFQKP5jsXrKXrLWkC",
+					"_remoteVerkey": "~WjXEvZ9xj4Tz9sLtzf7HVP",
+					"proofRequests": [{
+						"ts": null,
+						"attributes": {
+							"py/reduce": [{
+								"py/type": "collections.OrderedDict"
+							},
+							{
+								"py/tuple": []
+							},
+							null,
+							null,
+							{
+								"py/tuple": [{
+									"py/tuple": ["first_name",
+									"Alice"]
+								},
+								{
+									"py/tuple": ["last_name",
+									"Garcia"]
+								},
+								{
+									"py/tuple": ["phone_number",
+									"123-45-6789"]
+								},
+								{
+									"py/tuple": ["degree",
+									"Bachelor of Science, Marketing"]
+								},
+								{
+									"py/tuple": ["status",
+									"graduated"]
+								},
+								{
+									"py/tuple": ["ssn",
+									"123-45-6789"]
+								}]
+							}]
+						},
+						"verifiableAttributes": {
+							"10a7586a-42ce-4a6b-b94f-185be4cddcaf": {
+								"py/seq": ["status",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["status",
+									null,
+									null]
+								}
+							},
+							"7f1eec2c-2fbb-43f3-9daa-249b4682d364": {
+								"py/seq": ["ssn",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["ssn",
+									null,
+									null]
+								}
+							},
+							"aa241ad1-b3cc-476e-9ad4-01b91f9d4441": {
+								"py/seq": ["degree",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["degree",
+									null,
+									null]
+								}
+							}
+						},
+						"selfAttestedAttrs": {
+							"first_name": "Alice",
+							"last_name": "Garcia",
+							"phone_number": "123-45-6789"
+						},
+						"name": "Job-Application",
+						"fulfilledByClaims": [{
+							"py/tuple": [{
+								"py/id": 6
+							},
+							{
+								"py/id": 8
+							},
+							{
+								"py/reduce": [{
+									"py/type": "collections.OrderedDict"
+								},
+								{
+									"py/tuple": []
+								},
+								null,
+								null,
+								{
+									"py/tuple": [{
+										"py/tuple": ["student_name",
+										"Alice Garcia"]
+									},
+									{
+										"py/tuple": ["ssn",
+										"123-45-6789"]
+									},
+									{
+										"py/tuple": ["degree",
+										"Bachelor of Science, Marketing"]
+									},
+									{
+										"py/tuple": ["year",
+										"2015"]
+									},
+									{
+										"py/tuple": ["status",
+										"graduated"]
+									}]
+								}]
+							}]
+						}],
+						"nonce": 1871218719015472932666560146158750511756,
+						"predicates": {
+							
+						},
+						"version": "0.2",
+						"py/object": "anoncreds.protocol.types.ProofRequest",
+						"seqNo": null
+					}],
+					"remoteEndPoint": {
+						"py/tuple": ["10.0.0.3",
+						6666]
+					},
+					"py/object": "sovrin_client.client.wallet.link.Link"
+				}]
+			},
+			{
+				"py/tuple": ["Thrift Bank",
+				{
+					"remotePubkey": "AGBjYvyM3SFnoiDGAEzkSLHvqyzVkXeMZfKDvdpEsC2x",
+					"remoteIdentifier": "H2aKRiDeq8aLZSydQMDbtf",
+					"linkStatus": "Accepted",
+					"localIdentifier": "6KYi5Pb7rcvJb8ZwKb2nvm",
+					"trustAnchor": "Thrift Bank",
+					"linkLastSyncNo": null,
+					"verifiedClaimProofs": [],
+					"name": "Thrift Bank",
+					"internalId": null,
+					"availableClaims": [],
+					"connectionLastSynced": {
+						"__reduce__": [{
+							"py/type": "datetime.datetime"
+						},
+						["B+EIFgwfCwgQDg=="]],
+						"py/object": "datetime.datetime"
+					},
+					"invitationNonce": "77fbf9dc8c8e6acde33de98c6d747b28c",
+					"localVerkey": "~6BFmCCvvtJBjYtYLCDVj37",
+					"_remoteVerkey": "~3sphzTb2itL2mwSeJ1Ji28",
+					"proofRequests": [{
+						"ts": null,
+						"attributes": {
+							"py/reduce": [{
+								"py/type": "collections.OrderedDict"
+							},
+							{
+								"py/tuple": []
+							},
+							null,
+							null,
+							{
+								"py/tuple": [{
+									"py/tuple": ["salary_bracket",
+									"between $50,000 to $100,000"]
+								},
+								{
+									"py/tuple": ["employee_status",
+									"Permanent"]
+								}]
+							}]
+						},
+						"verifiableAttributes": {
+							"a702a318-07ed-4d6e-a60f-57677d8fcb84": {
+								"py/seq": ["salary_bracket",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["salary_bracket",
+									null,
+									null]
+								}
+							},
+							"d980fcb4-5d02-4081-a67b-d301f55d27d9": {
+								"py/seq": ["employee_status",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["employee_status",
+									null,
+									null]
+								}
+							}
+						},
+						"selfAttestedAttrs": {
+							
+						},
+						"name": "Loan-Application-Basic",
+						"fulfilledByClaims": [{
+							"py/tuple": [{
+								"py/id": 12
+							},
+							{
+								"py/id": 14
+							},
+							{
+								"py/reduce": [{
+									"py/type": "collections.OrderedDict"
+								},
+								{
+									"py/tuple": []
+								},
+								null,
+								null,
+								{
+									"py/tuple": [{
+										"py/tuple": ["first_name",
+										"Alice"]
+									},
+									{
+										"py/tuple": ["last_name",
+										"Garcia"]
+									},
+									{
+										"py/tuple": ["employee_status",
+										"Permanent"]
+									},
+									{
+										"py/tuple": ["experience",
+										"3 years"]
+									},
+									{
+										"py/tuple": ["salary_bracket",
+										"between $50,000 to $100,000"]
+									}]
+								}]
+							}]
+						}],
+						"nonce": 2551783452857349859593309361022286934668,
+						"predicates": {
+							
+						},
+						"version": "0.1",
+						"py/object": "anoncreds.protocol.types.ProofRequest",
+						"seqNo": null
+					},
+					{
+						"ts": null,
+						"attributes": {
+							"py/reduce": [{
+								"py/type": "collections.OrderedDict"
+							},
+							{
+								"py/tuple": []
+							},
+							null,
+							null,
+							{
+								"py/tuple": [{
+									"py/tuple": ["first_name",
+									"Alice"]
+								},
+								{
+									"py/tuple": ["last_name",
+									"Garcia"]
+								},
+								{
+									"py/tuple": ["ssn",
+									"123-45-6789"]
+								}]
+							}]
+						},
+						"verifiableAttributes": {
+							"5fabdc0c-012e-45b4-b76a-d0992e9a32d8": {
+								"py/seq": ["ssn",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["ssn",
+									null,
+									null]
+								}
+							},
+							"3d41a82b-a2cf-413e-a3e1-18df836750a5": {
+								"py/seq": ["first_name",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["first_name",
+									null,
+									null]
+								}
+							},
+							"dbe499d2-9cce-488c-8d8c-83e233c538ed": {
+								"py/seq": ["last_name",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["last_name",
+									null,
+									null]
+								}
+							}
+						},
+						"selfAttestedAttrs": {
+							
+						},
+						"name": "Loan-Application-KYC",
+						"fulfilledByClaims": [{
+							"py/tuple": [{
+								"py/id": 6
+							},
+							{
+								"py/id": 8
+							},
+							{
+								"py/reduce": [{
+									"py/type": "collections.OrderedDict"
+								},
+								{
+									"py/tuple": []
+								},
+								null,
+								null,
+								{
+									"py/tuple": [{
+										"py/tuple": ["student_name",
+										"Alice Garcia"]
+									},
+									{
+										"py/tuple": ["ssn",
+										"123-45-6789"]
+									},
+									{
+										"py/tuple": ["degree",
+										"Bachelor of Science, Marketing"]
+									},
+									{
+										"py/tuple": ["year",
+										"2015"]
+									},
+									{
+										"py/tuple": ["status",
+										"graduated"]
+									}]
+								}]
+							}]
+						},
+						{
+							"py/tuple": [{
+								"py/id": 12
+							},
+							{
+								"py/id": 14
+							},
+							{
+								"py/reduce": [{
+									"py/type": "collections.OrderedDict"
+								},
+								{
+									"py/tuple": []
+								},
+								null,
+								null,
+								{
+									"py/tuple": [{
+										"py/tuple": ["first_name",
+										"Alice"]
+									},
+									{
+										"py/tuple": ["last_name",
+										"Garcia"]
+									},
+									{
+										"py/tuple": ["employee_status",
+										"Permanent"]
+									},
+									{
+										"py/tuple": ["experience",
+										"3 years"]
+									},
+									{
+										"py/tuple": ["salary_bracket",
+										"between $50,000 to $100,000"]
+									}]
+								}]
+							}]
+						}],
+						"nonce": 2551783452857349859593309361022286934668,
+						"predicates": {
+							
+						},
+						"version": "0.1",
+						"py/object": "anoncreds.protocol.types.ProofRequest",
+						"seqNo": null
+					},
+					{
+						"ts": null,
+						"attributes": {
+							"py/reduce": [{
+								"py/type": "collections.OrderedDict"
+							},
+							{
+								"py/tuple": []
+							},
+							null,
+							null,
+							{
+								"py/tuple": [{
+									"py/tuple": ["first_name",
+									"string"]
+								},
+								{
+									"py/tuple": ["last_name",
+									"string"]
+								}]
+							}]
+						},
+						"verifiableAttributes": {
+							"f2510aa7-6274-431d-8a57-69d8307f7c11": {
+								"py/seq": ["first_name",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["first_name",
+									null,
+									null]
+								}
+							},
+							"d6ddc5f2-e272-47d9-96d5-777b4d89e835": {
+								"py/seq": ["last_name",
+								null,
+								null],
+								"py/object": "anoncreds.protocol.types.AttributeInfo",
+								"py/newargs": {
+									"py/tuple": ["last_name",
+									null,
+									null]
+								}
+							}
+						},
+						"selfAttestedAttrs": {
+							
+						},
+						"name": "Name-Proof",
+						"fulfilledByClaims": [],
+						"nonce": 2551783452857349859593309361022286934668,
+						"predicates": {
+							
+						},
+						"version": "0.1",
+						"py/object": "anoncreds.protocol.types.ProofRequest",
+						"seqNo": null
+					}],
+					"remoteEndPoint": {
+						"py/tuple": ["10.0.0.4",
+						7777]
+					},
+					"py/object": "sovrin_client.client.wallet.link.Link"
+				}]
+			}]
+		}]
+	},
+	"ids": {
+		"EqwgnuqynKnRRQ6q5Lzov8": {
+			"py/seq": [{
+				"py/id": 67
+			},
+			1503394272580665],
+			"py/object": "plenum.client.wallet.IdData",
+			"py/newargs": {
+				"py/tuple": [{
+					"seed": {
+						"py/b64": "wAoEN+cjMPjdPkUuvI378QXO16jC1ZUUHll95hICJ1U=\n"
+					},
+					"sk": {
+						"py/id": 69
+					},
+					"naclSigner": {
+						"keyhex": {
+							"py/b64": "YzAwYTA0MzdlNzIzMzBmOGRkM2U0NTJlYmM4ZGZiZjEwNWNlZDdhOGMyZDU5NTE0MWU1OTdkZTYx\nMjAyMjc1NQ==\n"
+						},
+						"keyraw": {
+							"py/b64": "wAoEN+cjMPjdPkUuvI378QXO16jC1ZUUHll95hICJ1U=\n"
+						},
+						"verhex": {
+							"py/b64": "NzAxYzM0N2M1ZTk1ZGFjNmU1MDAyYjkxNTQ0OWQ5OTk5ZjAyOGJkZGFlMzljZmMxMGY5MGMyODM5\nYmFiYTU2ZQ==\n"
+						},
+						"key": {
+							"_signing_key": {
+								"py/b64": "wAoEN+cjMPjdPkUuvI378QXO16jC1ZUUHll95hICJ1VwHDR8XpXaxuUAK5FUSdmZnwKL3a45z8EP\nkMKDm6ulbg==\n"
+							},
+							"verify_key": {
+								"_key": {
+									"py/b64": "cBw0fF6V2sblACuRVEnZmZ8Ci92uOc/BD5DCg5urpW4=\n"
+								},
+								"py/object": "stp_core.crypto.nacl_wrappers.VerifyKey"
+							},
+							"py/object": "stp_core.crypto.nacl_wrappers.SigningKey",
+							"_seed": {
+								"py/b64": "wAoEN+cjMPjdPkUuvI378QXO16jC1ZUUHll95hICJ1U=\n"
+							}
+						},
+						"py/object": "stp_core.crypto.nacl_wrappers.Signer",
+						"verraw": {
+							"py/b64": "cBw0fF6V2sblACuRVEnZmZ8Ci92uOc/BD5DCg5urpW4=\n"
+						}
+					},
+					"_alias": null,
+					"py/object": "plenum.common.signer_did.DidSigner",
+					"_verkey": "LdquEm7MuXuUCeT9vC58P7",
+					"abbreviated": true,
+					"_identifier": "EqwgnuqynKnRRQ6q5Lzov8"
+				},
+				1503394272580665]
+			}
+		}
+	}
+}
