@@ -144,14 +144,11 @@ class Upgrader(HasActionQueue):
             .format(self.nodeName, version, when, upgrade_id))
 
     def should_notify_about_upgrade_result(self):
-        last_node_upgrade_txn = self.get_last_node_upgrade_txn()
-        logger.info("Node's '{}' last upgrade txn is {}"
-                    .format(self.nodeName, last_node_upgrade_txn))
-        return last_node_upgrade_txn and last_node_upgrade_txn[TXN_TYPE] == NODE_UPGRADE \
-            and last_node_upgrade_txn[DATA] and last_node_upgrade_txn[DATA][ACTION] == IN_PROGRESS \
-            and self.lastUpgradeEventInfo \
-            and (self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_SUCCEEDED or
-                 self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_FAILED)
+        # do not rely on NODE_UPGRADE txn in config ledger, since in some cases (for example, when
+        # we run POOL_UPGRADE with force=true), we may not have IN_PROGRESS NODE_UPGRADE in the ledger.
+        return self.lastUpgradeEventInfo \
+               and (self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_SUCCEEDED or
+                    self.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_FAILED)
 
     def get_last_node_upgrade_txn(self, start_no: int = None):
         return self.get_upgrade_txn(
@@ -285,60 +282,62 @@ class Upgrader(HasActionQueue):
         FINALIZING_EVENT_TYPES = [
             UpgradeLog.UPGRADE_SUCCEEDED, UpgradeLog.UPGRADE_FAILED]
 
-        if txn[TXN_TYPE] == POOL_UPGRADE:
-            logger.info("Node '{}' handles upgrade txn {}".format(
-                self.nodeName, txn))
-            action = txn[ACTION]
-            version = txn[VERSION]
-            justification = txn.get(JUSTIFICATION)
-            reinstall = txn.get(REINSTALL, False)
-            currentVersion = self.getVersion()
-            upgrade_id = self.get_upgrade_id(txn)
+        if txn[TXN_TYPE] != POOL_UPGRADE:
+            return
 
-            if action == START:
-                # forced txn could have partial schedule list
-                if self.nodeId not in txn[SCHEDULE]:
-                    logger.info("Node '{}' disregards upgrade txn {}".format(
-                        self.nodeName, txn))
-                    return
+        logger.info("Node '{}' handles upgrade txn {}".format(
+            self.nodeName, txn))
+        action = txn[ACTION]
+        version = txn[VERSION]
+        justification = txn.get(JUSTIFICATION)
+        reinstall = txn.get(REINSTALL, False)
+        currentVersion = self.getVersion()
+        upgrade_id = self.get_upgrade_id(txn)
 
-                last_event = self.lastUpgradeEventInfo
-                if last_event and last_event[3] == upgrade_id and last_event[0] in FINALIZING_EVENT_TYPES:
+        if action == START:
+            # forced txn could have partial schedule list
+            if self.nodeId not in txn[SCHEDULE]:
+                logger.info("Node '{}' disregards upgrade txn {}".format(
+                    self.nodeName, txn))
+                return
+
+            last_event = self.lastUpgradeEventInfo
+            if last_event and last_event[3] == upgrade_id and last_event[0] in FINALIZING_EVENT_TYPES:
+                logger.info(
+                    "Node '{}' has already performed an upgrade with upgrade_id {}. "
+                    "Last recorded event is {}". format(
+                        self.nodeName, upgrade_id, last_event))
+                return
+
+            when = txn[SCHEDULE][self.nodeId]
+            failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
+
+            if self.is_version_upgradable(
+                    currentVersion, version, reinstall):
+                logger.info("Node '{}' schedules upgrade to {}".format(
+                    self.nodeName, version))
+
+                if self.scheduledUpgrade:
                     logger.info(
-                        "Node '{}' has already performed an upgrade with upgrade_id {}. "
-                        "Last recorded event is {}". format(
-                            self.nodeName, upgrade_id, last_event))
-                    return
-
-                when = txn[SCHEDULE][self.nodeId]
-                failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
-
-                if self.is_version_upgradable(
-                        currentVersion, version, reinstall):
-                    logger.info("Node '{}' schedules upgrade to {}".format(
-                        self.nodeName, version))
-
-                    if self.scheduledUpgrade:
-                        logger.info(
-                            "Node '{}' cancels previous upgrade and schedules a new one to {}". format(
-                                self.nodeName, version))
-                        self._cancelScheduledUpgrade(justification)
-
-                    self._scheduleUpgrade(
-                        version, when, failTimeout, upgrade_id)
-                return
-
-            if action == CANCEL:
-                if self.scheduledUpgrade and \
-                        self.scheduledUpgrade[0] == version:
+                        "Node '{}' cancels previous upgrade and schedules a new one to {}". format(
+                            self.nodeName, version))
                     self._cancelScheduledUpgrade(justification)
-                    logger.info("Node '{}' cancels upgrade to {}".format(
-                        self.nodeName, version))
-                return
 
-            logger.error(
-                "Got {} transaction with unsupported action {}".format(
-                    POOL_UPGRADE, action))
+                self._scheduleUpgrade(
+                    version, when, failTimeout, upgrade_id)
+            return
+
+        if action == CANCEL:
+            if self.scheduledUpgrade and \
+                    self.scheduledUpgrade[0] == version:
+                self._cancelScheduledUpgrade(justification)
+                logger.info("Node '{}' cancels upgrade to {}".format(
+                    self.nodeName, version))
+            return
+
+        logger.error(
+            "Got {} transaction with unsupported action {}".format(
+                POOL_UPGRADE, action))
 
     def _scheduleUpgrade(self,
                          version,

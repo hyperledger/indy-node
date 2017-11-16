@@ -3,7 +3,7 @@ from stp_core.loop.eventually import eventually
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test import waits as plenumWaits
 from plenum.common.types import f
-from plenum.common.constants import TXN_TYPE, DATA
+from plenum.common.constants import TXN_TYPE, DATA, VERSION
 from indy_common.constants import NODE_UPGRADE, ACTION
 from indy_client.client.wallet.upgrade import Upgrade
 from indy_node.server.upgrader import Upgrader
@@ -143,34 +143,23 @@ def populate_log_with_upgrade_events(
         log.appendStarted(when, version, randomString(10))
 
 
-def check_node_set_acknowledges_upgrade(
-        looper, node_set, node_ids, allowed_actions: List, version: Tuple[str, str, str]):
+def check_node_sent_acknowledges_upgrade(
+        looper, node_set, node_ids, allowed_actions: List, ledger_size, expected_version):
+    '''
+    Check that each node has sent NODE_UPGRADE txn with the specified actions
+    '''
     check = functools.partial(
         check_ledger_after_upgrade,
         node_set,
         allowed_actions,
+        ledger_size,
+        expected_version,
         node_ids=node_ids)
 
-    for node in node_set:
-        node.upgrader.scheduledUpgrade = (version,
-                                          datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc()),
-                                          randomString(10))
-        node.notify_upgrade_start()
-        node.upgrader.scheduledUpgrade = None
-
     timeout = plenumWaits.expectedTransactionExecutionTime(len(node_set))
-    looper.run(eventually(functools.partial(
-        check, ledger_size=len(node_set)), retryWait=1, timeout=timeout))
-
-    for node in node_set:
-        node.acknowledge_upgrade()
-
     looper.run(
         eventually(
-            functools.partial(
-                check,
-                ledger_size=2 *
-                len(node_set)),
+            check,
             retryWait=1,
             timeout=timeout))
 
@@ -179,8 +168,10 @@ def check_ledger_after_upgrade(
         node_set,
         allowed_actions,
         ledger_size,
-        node_ids=None,
-        allowed_txn_types=[NODE_UPGRADE]):
+        expected_version,
+        allowed_txn_types=[NODE_UPGRADE],
+        node_ids=None):
+    versions = set()
     for node in node_set:
         print(len(node.configLedger))
         assert len(node.configLedger) == ledger_size
@@ -191,12 +182,19 @@ def check_ledger_after_upgrade(
             data = txn
             if type == NODE_UPGRADE:
                 data = txn[DATA]
+
+            assert data[ACTION]
             assert data[ACTION] in allowed_actions
             ids.add(txn[f.IDENTIFIER.nm])
+
+            assert data[VERSION]
+            versions.add(data[VERSION])
         ids.add(node.id)
 
         if node_ids:
             assert ids == set(node_ids)
+    assert len(versions) == 1
+    assert list(versions)[0] == expected_version
 
 
 def check_no_loop(nodeSet, event):
