@@ -4,9 +4,9 @@ BACK="$(tput cub1)"
 
 echo -e "\nWhich repos:"
 echo -e "  0. All following repos"
-echo -e "  1. sovrin-common"
-echo -e "  2. sovrin-client"
-echo -e "  3. sovrin-node"
+echo -e "  1. indy-common"
+echo -e "  2. indy-client"
+echo -e "  3. indy-node"
 echo -e "  4. plenum"
 echo -e "  5. ledger"
 echo -e "  6. anoncreds"
@@ -58,11 +58,11 @@ do
 
     repoName=""
     if [ $repo -eq "1" ]; then
-        repoName="sovrin-common"
+        repoName="indy-common"
     elif [ $repo -eq "2" ]; then
-        repoName="sovrin-client"
+        repoName="indy-client"
     elif [ $repo -eq "3" ]; then
-        repoName="sovrin-node"
+        repoName="indy-node"
     elif [ $repo -eq "4" ]; then
         repoName="plenum"
     elif [ $repo -eq 5 ]; then
