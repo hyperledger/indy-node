@@ -163,6 +163,15 @@ def check_node_sent_acknowledges_upgrade(
             retryWait=1,
             timeout=timeout))
 
+def check_node_do_not_sent_acknowledges_upgrade(
+        looper, node_set, node_ids, allowed_actions: List, ledger_size, expected_version):
+    '''
+    Check that each node has sent NODE_UPGRADE txn with the specified actions
+    '''
+    looper.runFor(5)
+    check_ledger_after_upgrade(node_set, allowed_actions,
+                               ledger_size, expected_version,
+                               node_ids)
 
 def check_ledger_after_upgrade(
         node_set,

@@ -5,14 +5,14 @@ from indy_node.server.upgrade_log import UpgradeLog
 from stp_core.loop.eventually import eventually
 from indy_common.constants import IN_PROGRESS, COMPLETE
 from indy_node.test.upgrade.helper import populate_log_with_upgrade_events, \
-    check_node_sent_acknowledges_upgrade
+    check_node_sent_acknowledges_upgrade, check_ledger_after_upgrade, check_node_do_not_sent_acknowledges_upgrade
 from plenum.test import waits as plenumWaits
-
 
 whitelist = ['unable to send message']
 # TODO: Implement a client in node
 
 version = indy_node.__metadata__.__version__
+
 
 @pytest.fixture(scope="module")
 def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tconf):
@@ -46,3 +46,18 @@ def test_node_sent_upgrade_successful(looper, nodeSet, nodeIds):
                                          allowed_actions=[COMPLETE],
                                          ledger_size=len(nodeSet),
                                          expected_version=version)
+
+
+def test_node_sent_upgrade_successful_once(looper, nodeSet, nodeIds):
+    '''
+    Test that each node sends NODE_UPGRADE Success event only once,
+    so that if we restart the node it's not sent again
+    '''
+    # emulate restart
+    for node in nodeSet:
+        node.acknowledge_upgrade()
+
+    check_node_do_not_sent_acknowledges_upgrade(looper, nodeSet, nodeIds,
+                                                allowed_actions=[COMPLETE],
+                                                ledger_size=len(nodeSet),
+                                                expected_version=version)
