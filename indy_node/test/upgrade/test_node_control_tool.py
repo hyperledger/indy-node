@@ -156,7 +156,7 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper):
         clean_dir(nct.tool.base_dir)
         nct.stop()
 
-
+@pytest.mark.skip("INDY-940")
 def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
     msg = 'test'
     stdout = 'teststdout'
