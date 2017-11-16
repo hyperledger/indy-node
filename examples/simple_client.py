@@ -14,8 +14,8 @@ from collections import OrderedDict
 from stp_core.loop.looper import Looper
 from plenum.common.signer_simple import SimpleSigner
 
-from sovrin_client.client.client import Client
-from sovrin_common.constants import TXN_TYPE, NYM
+from indy_client.client.client import Client
+from indy_common.constants import TXN_TYPE, NYM
 
 
 def run_node():
@@ -45,7 +45,7 @@ def run_node():
 
         client_address = ('0.0.0.0', 8000)
 
-        tmpdir = os.path.join(tempfile.gettempdir(), "sovrin_clients",
+        tmpdir = os.path.join(tempfile.gettempdir(), "indy_clients",
                               clientName)
         client = Client(clientName,
                         cliNodeReg,
