@@ -1,4 +1,4 @@
-# Migrations for sovrin-node
+# Migrations for indy-node / sovrin-node
 
 All migrations are python scripts with names satisfying the following rule:
 ```

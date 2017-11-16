@@ -15,9 +15,9 @@ from storage import store_utils
 from storage.chunked_file_store import ChunkedFileStore
 from stp_core.common.log import getlogger
 
-from sovrin_common.config_util import getConfig
-from sovrin_common.constants import SCHEMA, CLAIM_DEF
-from sovrin_common.txn_util import getTxnOrderedFields
+from indy_common.config_util import getConfig
+from indy_common.constants import SCHEMA, CLAIM_DEF
+from indy_common.txn_util import getTxnOrderedFields
 
 config = getConfig()
 logger = getlogger()
@@ -219,7 +219,6 @@ def migrate_all():
         migrate_all_states(node_data_dir)
 
     migrate_genesis_txn(base_dir)
-    subprocess.run(['chown', '-R', 'sovrin:sovrin', '/home/sovrin/.sovrin'])
 
 
 migrate_all()
