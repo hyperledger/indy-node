@@ -163,6 +163,13 @@ def check_node_sent_acknowledges_upgrade(
             retryWait=1,
             timeout=timeout))
 
+
+def emulate_restart_pool_for_upgrade(nodes):
+    for node in nodes:
+        node.upgrader = node.getUpgrader()
+        node.acknowledge_upgrade()
+
+
 def check_node_do_not_sent_acknowledges_upgrade(
         looper, node_set, node_ids, allowed_actions: List, ledger_size, expected_version):
     '''
@@ -171,7 +178,7 @@ def check_node_do_not_sent_acknowledges_upgrade(
     looper.runFor(5)
     check_ledger_after_upgrade(node_set, allowed_actions,
                                ledger_size, expected_version,
-                               node_ids)
+                               node_ids=node_ids)
 
 def check_ledger_after_upgrade(
         node_set,
@@ -182,7 +189,7 @@ def check_ledger_after_upgrade(
         node_ids=None):
     versions = set()
     for node in node_set:
-        print(len(node.configLedger))
+        # print(len(node.configLedger))
         assert len(node.configLedger) == ledger_size
         ids = set()
         for _, txn in node.configLedger.getAllTxn():

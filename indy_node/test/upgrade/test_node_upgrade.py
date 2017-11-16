@@ -5,7 +5,8 @@ from indy_node.server.upgrade_log import UpgradeLog
 from stp_core.loop.eventually import eventually
 from indy_common.constants import IN_PROGRESS, COMPLETE
 from indy_node.test.upgrade.helper import populate_log_with_upgrade_events, \
-    check_node_sent_acknowledges_upgrade, check_ledger_after_upgrade, check_node_do_not_sent_acknowledges_upgrade
+    check_node_sent_acknowledges_upgrade, check_ledger_after_upgrade, check_node_do_not_sent_acknowledges_upgrade, \
+    emulate_restart_pool_for_upgrade
 from plenum.test import waits as plenumWaits
 
 whitelist = ['unable to send message']
@@ -54,9 +55,9 @@ def test_node_sent_upgrade_successful_once(looper, nodeSet, nodeIds):
     so that if we restart the node it's not sent again
     '''
     # emulate restart
-    for node in nodeSet:
-        node.acknowledge_upgrade()
+    emulate_restart_pool_for_upgrade(nodeSet)
 
+    # check that config ledger didn't changed (no new txns were sent)
     check_node_do_not_sent_acknowledges_upgrade(looper, nodeSet, nodeIds,
                                                 allowed_actions=[COMPLETE],
                                                 ledger_size=len(nodeSet),
