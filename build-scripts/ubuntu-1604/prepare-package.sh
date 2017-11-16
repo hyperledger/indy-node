@@ -52,12 +52,12 @@ echo -e $manifest >$manifest_file
 
 echo "Preparing config files"
 # Define user config directory
-sed -i "s/^\(USER_CONFIG_DIR\s*=\s*\).*\$/\1\"$USER_CONFIG_DIR\"/" "$repo/sovrin_common/config.py"
+sed -i "s/^\(USER_CONFIG_DIR\s*=\s*\).*\$/\1\"$USER_CONFIG_DIR\"/" "$repo/indy_common/config.py"
 # Create user config
-cp $repo/sovrin_node/user_config/user_config.py $repo/sovrin_node/user_config/indy_config.py
-cat $repo/sovrin_node/user_config/ubuntu_platform_config.py >> $repo/sovrin_node/user_config/indy_config.py
-rm -f $repo/sovrin_node/user_config/user_config.py
-rm -f $repo/sovrin_node/user_config/ubuntu_platform_config.py
-rm -f $repo/sovrin_node/user_config/windows_platform_config.py
+cp $repo/indy_node/user_config/user_config.py $repo/indy_node/user_config/indy_config.py
+cat $repo/indy_node/user_config/ubuntu_platform_config.py >> $repo/indy_node/user_config/indy_config.py
+rm -f $repo/indy_node/user_config/user_config.py
+rm -f $repo/indy_node/user_config/ubuntu_platform_config.py
+rm -f $repo/indy_node/user_config/windows_platform_config.py
 
 echo -e "Finished preparing $repo for publishing\n"

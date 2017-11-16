@@ -25,6 +25,7 @@ from indy_common.constants import openTxns, \
     validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
 from indy_common.txn_util import getTxnOrderedFields
 from indy_common.types import Request, SafeRequest
+from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.client_authn import TxnBasedAuthNr
@@ -53,13 +54,22 @@ class Node(PlenumNode, HasPoolManager):
                  ha=None,
                  cliname=None,
                  cliha=None,
-                 basedirpath=None,
-                 base_data_dir=None,
+                 ledger_dir: str = None,
+                 keys_dir: str = None,
+                 genesis_dir: str = None,
+                 plugins_dir: str = None,
                  primaryDecider=None,
                  pluginPaths: Iterable[str] = None,
                  storage=None,
                  config=None):
         self.config = config or getConfig()
+
+        config_helper = NodeConfigHelper(self.name, self.config)
+
+        self.ledger_dir = ledger_dir or config_helper.ledger_dir
+        self.keys_dir = keys_dir or config_helper.keys_dir
+        self.genesis_dir = genesis_dir or config_helper.genesis_dir
+        self.plugins_dir = plugins_dir or config_helper.plugins_dir
 
         # TODO: 3 ugly lines ahead, don't know how to avoid
         # self.stateTreeStore = None
@@ -72,8 +82,10 @@ class Node(PlenumNode, HasPoolManager):
                          ha=ha,
                          cliname=cliname,
                          cliha=cliha,
-                         basedirpath=basedirpath,
-                         base_data_dir=base_data_dir,
+                         ledger_dir=self.ledger_dir,
+                         keys_dir=self.keys_dir,
+                         genesis_dir=self.genesis_dir,
+                         plugins_dir=self.plugins_dir,
                          primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          storage=storage,
@@ -111,7 +123,7 @@ class Node(PlenumNode, HasPoolManager):
         """
         if self.config.primaryStorage is None:
             genesis_txn_initiator = GenesisTxnInitiatorFromFile(
-                self.basedirpath, self.config.domainTransactionsFile)
+                self.genesis_dir, self.config.domainTransactionsFile)
             return Ledger(
                 CompactMerkleTree(
                     hashStore=self.getHashStore('domain')),

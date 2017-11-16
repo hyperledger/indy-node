@@ -1,39 +1,35 @@
 import os
 
-class NodeConfigHelper():
-    def __init__(self, name: str, config, network_name: str=None):
-        assert name is not None
-        assert config is not None
-        self.name = name
-        self.config = config
-        self.network_name = network_name or config.CURRENT_NETWORK
+from plenum.common.config_helper import PConfigHelper
 
-    @property
-    def ledger_dir(self):
-        return os.path.join(self.config.LEDGER_DIR, self.network_name, 'data', self.name)
+
+class ConfigHelper(PConfigHelper):
 
     @property
     def log_dir(self):
-        return os.path.join(self.config.LOG_DIR, self.network_name)
-
-    @property
-    def keys_dir(self):
-        return os.path.join(self.config.KEYS_DIR, self.network_name, 'keys', self.name)
+        return self.chroot_if_needed(
+            os.path.join(self.config.LOG_DIR, self.config.NETWORK_NAME))
 
     @property
     def genesis_dir(self):
-        return os.path.join(self.config.GENESIS_DIR, self.network_name)
+        return self.chroot_if_needed(
+            os.path.join(self.config.GENESIS_DIR, self.config.NETWORK_NAME))
 
     @property
-    def plugins_dir(self):
-        return self.config.PLUGINS_DIR
+    def keys_dir(self):
+        return self.chroot_if_needed(
+            os.path.join(self.config.KEYS_DIR, self.config.NETWORK_NAME, 'keys'))
 
 
-class ClientConfigHelper(NodeConfigHelper):
+
+class NodeConfigHelper(ConfigHelper):
+
+    def __init__(self, name: str, config, *, chroot='/'):
+        assert name is not None
+        super().__init__(config, chroot=chroot)
+        self.name = name
+
     @property
-    def log_dir(self):
-        return self.config.LOG_DIR
-
-    @property
-    def wallet_dir(self):
-        return os.path.join(self.config.WALLET_DIR, self.network_name)
+    def ledger_dir(self):
+        return self.chroot_if_needed(
+            os.path.join(self.config.LEDGER_DIR, self.config.NETWORK_NAME, 'data', self.name))

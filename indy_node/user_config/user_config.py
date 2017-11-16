@@ -1,3 +1,3 @@
 # Current network
-CURRENT_NETWORK = 'none'
+NETWORK_NAME = None
 

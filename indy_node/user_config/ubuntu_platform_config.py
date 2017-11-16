@@ -11,4 +11,7 @@ KEYS_DIR = '/var/lib/indy'
 GENESIS_DIR = '/var/lib/indy'
 
 # Directory to store backups.
-BACKUP_DIR = '/var/lib/indy'
+BACKUP_DIR = '/var/lib/indy/backup'
+
+# Directory to store plugins.
+PLUGINS_DIR = '/var/lib/indy/plugins'
