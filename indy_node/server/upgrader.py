@@ -32,7 +32,7 @@ class Upgrader(HasActionQueue):
     @staticmethod
     def is_version_upgradable(old, new, reinstall: bool = False):
         return (Upgrader.compareVersions(old, new) > 0) \
-               or (Upgrader.compareVersions(old, new) == 0) and reinstall
+            or (Upgrader.compareVersions(old, new) == 0) and reinstall
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -150,7 +150,7 @@ class Upgrader(HasActionQueue):
         self._notifier.sendMessageUponNodeUpgradeComplete(
             "Upgrade of node '{}' to version {} scheduled on {} "
             " with upgrade_id {} completed successfully"
-                .format(self.nodeName, version, when, upgrade_id))
+            .format(self.nodeName, version, when, upgrade_id))
 
     def should_notify_about_upgrade_result(self):
         # do not rely on NODE_UPGRADE txn in config ledger, since in some cases (for example, when
@@ -220,8 +220,9 @@ class Upgrader(HasActionQueue):
 
             # searching for CANCEL for this upgrade submitted after START txn
             last_pool_upgrade_txn_cancel = self.get_upgrade_txn(
-                lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == CANCEL and
-                            txn[VERSION] == last_pool_upgrade_txn_start[VERSION],
+                lambda txn:
+                txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == CANCEL and
+                txn[VERSION] == last_pool_upgrade_txn_start[VERSION],
                 start_no=last_pool_upgrade_txn_seq_no + 1)
             if last_pool_upgrade_txn_cancel:
                 logger.info('{} found upgrade CANCEL txn {}'.format(
@@ -337,8 +338,7 @@ class Upgrader(HasActionQueue):
             return
 
         if action == CANCEL:
-            if self.scheduledUpgrade and \
-                            self.scheduledUpgrade[0] == version:
+            if self.scheduledUpgrade and self.scheduledUpgrade[0] == version:
                 self._cancelScheduledUpgrade(justification)
                 logger.info("Node '{}' cancels upgrade to {}".format(
                     self.nodeName, version))
@@ -368,8 +368,8 @@ class Upgrader(HasActionQueue):
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
 
         self._notifier.sendMessageUponNodeUpgradeScheduled(
-            "Upgrade of node '{}' to version {} has been scheduled on {}"
-                .format(self.nodeName, version, when))
+            "Upgrade of node '{}' to version {} has been scheduled on {}".format(
+                self.nodeName, version, when))
         self._upgradeLog.appendScheduled(when, version, upgrade_id)
 
         callAgent = partial(self._callUpgradeAgent, when,
@@ -412,8 +412,8 @@ class Upgrader(HasActionQueue):
             self._upgradeLog.appendCancelled(when, version, upgrade_id)
             self._notifier.sendMessageUponPoolUpgradeCancel(
                 "Upgrade of node '{}' to version {} "
-                "has been cancelled due to {}"
-                    .format(self.nodeName, version, why))
+                "has been cancelled due to {}".format(
+                    self.nodeName, version, why))
 
     def _unscheduleUpgrade(self):
         """
