@@ -1,0 +1,18 @@
+[95m
+Precondition 
+[0m
+[95m
+	 Step1.  Create Ledger
+[0m
+[95m
+	 Step2.  Open pool ledger
+[0m
+[91mFailed due to the Bug IS-332[0m
+[4mhttps://jira.hyperledger.org/browse/IS-332[0m
+[95m
+	 Step4. Restore the pool_transactions_sandbox_genesis file
+[0m
+
+Test result================================================[0m
+Step 2: [91mfailed[0m
+Step 3: [91mfailed[0m

@@ -20,6 +20,7 @@ def generate_random_string(prefix="", suffix="", size=20):
     random_str = ""
     if left_size > 0:
         random_str = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(left_size))
-    print("Warning: Length of prefix and suffix more than %s chars", str(size))
+    else:
+        print("Warning: Length of prefix and suffix more than %s chars" % str(size))
     result = str(prefix) + random_str + str(suffix)
     return result

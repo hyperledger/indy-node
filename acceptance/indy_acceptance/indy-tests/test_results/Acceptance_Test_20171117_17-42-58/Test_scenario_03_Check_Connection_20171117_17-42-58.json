@@ -1,0 +1,53 @@
+{
+  "testcase": "Test_scenario_03_Check_Connection",
+  "result": "Passed",
+  "starttime": "20171117_17-42-58",
+  "duration": 148,
+  "run": [
+    {
+      "step": "Step01. Create pool ledger",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step02. Create wallet",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step02. Create wallet",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step03. Create DID",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step04. Connect to pool",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step05. Disconnect form pool",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step06. Reconnect to pool",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step07. Close pool ledger and wallet",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step08. Delete pool ledger and wallet",
+      "status": "Passed",
+      "message": null
+    }
+  ]
+}

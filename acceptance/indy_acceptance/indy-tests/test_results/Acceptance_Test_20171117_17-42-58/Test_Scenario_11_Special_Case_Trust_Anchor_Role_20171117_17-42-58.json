@@ -1,0 +1,98 @@
+{
+  "testcase": "Test_Scenario_11_Special_Case_Trust_Anchor_Role",
+  "result": "Passed",
+  "starttime": "20171117_17-42-58",
+  "duration": 581,
+  "run": [
+    {
+      "step": "Step01. Create and open pool Ledger",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step02. Create DIDs",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step03. Use default Trustee to create a Trustee",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step04. Verify get nym for Trustee",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step05. Verify get nym for Trustee",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step06. Verify get nym for Trustee",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step07. Use TrustAnchor1 to create a Trustee",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step08. Verify get NYM for new trustee",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step09. Verify a trustee cannot create a new Steward",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step10. Use TrustAnchor to blacklist a Trustee",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step11. Verify Trustee was not blacklisted by creating another Trustee",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step12. Use TrustAnchor1 to create a Steward2",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step13. Add Steward1 for the test",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step14. Run the test to blacklist Steward1",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step15. Verify TrustAnchor1 cannot create a TrustAnchor3",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step16. Verify TrustAnchor1 cannot blacklist TrustAnchor2",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step17. Close and delete the wallet and the pool ledger...",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step18. Delete the wallet and pool ledger...",
+      "status": "Passed",
+      "message": null
+    }
+  ]
+}

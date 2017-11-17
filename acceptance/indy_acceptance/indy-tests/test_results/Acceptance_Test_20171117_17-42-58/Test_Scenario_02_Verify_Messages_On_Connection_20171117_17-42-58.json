@@ -1,0 +1,23 @@
+{
+  "testcase": "Test_Scenario_02_Verify_Messages_On_Connection",
+  "result": "Failed",
+  "starttime": "20171117_17-42-58",
+  "duration": 37,
+  "run": [
+    {
+      "step": "Step1.  Create Ledger",
+      "status": "Passed",
+      "message": null
+    },
+    {
+      "step": "Step2.  Open pool ledger",
+      "status": "Failed",
+      "message": "Failed due to the Bug IS-332 https://jira.hyperledger.org/browse/IS-332"
+    },
+    {
+      "step": "Step4. Restore the pool_transactions_sandbox_genesis file",
+      "status": "Passed",
+      "message": null
+    }
+  ]
+}
