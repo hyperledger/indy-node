@@ -162,6 +162,9 @@ class Upgrader(HasActionQueue):
         # send NODE_UPGRADE txn only if we were in Upgrade Started state at the very beginning (after Node restarted)
         return self._upgrade_started
 
+    def notified_about_upgrade_result(self):
+        self._upgrade_started = False
+
     def get_last_node_upgrade_txn(self, start_no: int = None):
         return self.get_upgrade_txn(
             lambda txn: txn[TXN_TYPE] == NODE_UPGRADE and txn[IDENTIFIER] == self.nodeId,
@@ -325,19 +328,27 @@ class Upgrader(HasActionQueue):
             when = txn[SCHEDULE][self.nodeId]
             failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
-            if self.is_version_upgradable(
+            if not self.is_version_upgradable(
                     currentVersion, version, reinstall):
-                logger.info("Node '{}' schedules upgrade to {}".format(
+                return
+
+            if self.scheduledUpgrade and self.scheduledUpgrade == (version, when, upgrade_id):
+                logger.debug("Node {} already scheduled upgrade to version '{}' ".format(
                     self.nodeName, version))
+                return
 
-                if self.scheduledUpgrade:
-                    logger.info(
-                        "Node '{}' cancels previous upgrade and schedules a new one to {}".format(
-                            self.nodeName, version))
-                    self._cancelScheduledUpgrade(justification)
 
-                self._scheduleUpgrade(
-                    version, when, failTimeout, upgrade_id)
+            logger.info("Node '{}' schedules upgrade to {}".format(
+                self.nodeName, version))
+
+            if self.scheduledUpgrade:
+                logger.info(
+                    "Node '{}' cancels previous upgrade and schedules a new one to {}".format(
+                        self.nodeName, version))
+                self._cancelScheduledUpgrade(justification)
+
+            self._scheduleUpgrade(
+                version, when, failTimeout, upgrade_id)
             return
 
         if action == CANCEL:

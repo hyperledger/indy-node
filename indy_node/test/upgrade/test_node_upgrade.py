@@ -2,12 +2,10 @@ import pytest
 
 import indy_node
 from indy_node.server.upgrade_log import UpgradeLog
-from stp_core.loop.eventually import eventually
-from indy_common.constants import IN_PROGRESS, COMPLETE
+from indy_common.constants import COMPLETE
 from indy_node.test.upgrade.helper import populate_log_with_upgrade_events, \
-    check_node_sent_acknowledges_upgrade, check_ledger_after_upgrade, check_node_do_not_sent_acknowledges_upgrade, \
-    emulate_restart_pool_for_upgrade
-from plenum.test import waits as plenumWaits
+    check_node_sent_acknowledges_upgrade, check_node_do_not_sent_acknowledges_upgrade, \
+    emulate_restart_pool_for_upgrade, emulate_view_change_pool_for_upgrade
 
 whitelist = ['unable to send message']
 # TODO: Implement a client in node
@@ -49,13 +47,30 @@ def test_node_sent_upgrade_successful(looper, nodeSet, nodeIds):
                                          expected_version=version)
 
 
-def test_node_sent_upgrade_successful_once(looper, nodeSet, nodeIds):
+def test_node_sent_upgrade_successful_once_restart(looper, nodeSet, nodeIds):
     '''
-    Test that each node sends NODE_UPGRADE Success event only once,
+    Test that each node sends NODE_UPGRADE Success event only once after restart,
     so that if we restart the node it's not sent again
     '''
     # emulate restart
     emulate_restart_pool_for_upgrade(nodeSet)
+
+    # check that config ledger didn't changed (no new txns were sent)
+    check_node_do_not_sent_acknowledges_upgrade(looper, nodeSet, nodeIds,
+                                                allowed_actions=[COMPLETE],
+                                                ledger_size=len(nodeSet),
+                                                expected_version=version)
+
+
+def test_node_sent_upgrade_successful_once_view_change(looper, nodeSet, nodeIds):
+    '''
+    Test that each node sends NODE_UPGRADE Success event only once after each view change
+    '''
+    # emulate view changes 1-4
+    emulate_view_change_pool_for_upgrade(nodeSet)
+    emulate_view_change_pool_for_upgrade(nodeSet)
+    emulate_view_change_pool_for_upgrade(nodeSet)
+    emulate_view_change_pool_for_upgrade(nodeSet)
 
     # check that config ledger didn't changed (no new txns were sent)
     check_node_do_not_sent_acknowledges_upgrade(looper, nodeSet, nodeIds,

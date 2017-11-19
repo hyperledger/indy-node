@@ -180,6 +180,12 @@ def emulate_restart_pool_for_upgrade(nodes):
         node.acknowledge_upgrade()
 
 
+def emulate_view_change_pool_for_upgrade(nodes):
+    for node in nodes:
+        node.upgrader.processLedger()
+        node.acknowledge_upgrade()
+
+
 def check_node_do_not_sent_acknowledges_upgrade(
         looper, node_set, node_ids, allowed_actions: List, ledger_size, expected_version):
     '''
