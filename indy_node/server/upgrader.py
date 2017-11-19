@@ -339,7 +339,6 @@ class Upgrader(HasActionQueue):
                     self.nodeName, version))
                 return
 
-
             logger.info("Node '{}' schedules upgrade to {}".format(
                 self.nodeName, version))
 
