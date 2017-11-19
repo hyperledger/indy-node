@@ -47,21 +47,6 @@ def test_node_sent_upgrade_successful(looper, nodeSet, nodeIds):
                                          expected_version=version)
 
 
-def test_node_sent_upgrade_successful_once_restart(looper, nodeSet, nodeIds):
-    '''
-    Test that each node sends NODE_UPGRADE Success event only once after restart,
-    so that if we restart the node it's not sent again
-    '''
-    # emulate restart
-    emulate_restart_pool_for_upgrade(nodeSet)
-
-    # check that config ledger didn't changed (no new txns were sent)
-    check_node_do_not_sent_acknowledges_upgrade(looper, nodeSet, nodeIds,
-                                                allowed_actions=[COMPLETE],
-                                                ledger_size=len(nodeSet),
-                                                expected_version=version)
-
-
 def test_node_sent_upgrade_successful_once_view_change(looper, nodeSet, nodeIds):
     '''
     Test that each node sends NODE_UPGRADE Success event only once after each view change
@@ -71,6 +56,21 @@ def test_node_sent_upgrade_successful_once_view_change(looper, nodeSet, nodeIds)
     emulate_view_change_pool_for_upgrade(nodeSet)
     emulate_view_change_pool_for_upgrade(nodeSet)
     emulate_view_change_pool_for_upgrade(nodeSet)
+
+    # check that config ledger didn't changed (no new txns were sent)
+    check_node_do_not_sent_acknowledges_upgrade(looper, nodeSet, nodeIds,
+                                                allowed_actions=[COMPLETE],
+                                                ledger_size=len(nodeSet),
+                                                expected_version=version)
+
+
+def test_node_sent_upgrade_successful_once_restart(looper, nodeSet, nodeIds):
+    '''
+    Test that each node sends NODE_UPGRADE Success event only once after restart,
+    so that if we restart the node it's not sent again
+    '''
+    # emulate restart
+    emulate_restart_pool_for_upgrade(nodeSet)
 
     # check that config ledger didn't changed (no new txns were sent)
     check_node_do_not_sent_acknowledges_upgrade(looper, nodeSet, nodeIds,
