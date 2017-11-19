@@ -234,28 +234,34 @@ class Node(PlenumNode, HasPoolManager):
         self.acknowledge_upgrade()
 
     def acknowledge_upgrade(self):
-        if self.upgrader.should_notify_about_upgrade_result():
-            logger.debug('{} found the first run after upgrade, '
-                         'sending NODE_UPGRADE'.format(self))
-            lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
-            action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
-            op = {
-                TXN_TYPE: NODE_UPGRADE,
-                DATA: {
-                    ACTION: action,
-                    VERSION: lastUpgradeVersion
-                }
+        if not self.upgrader.should_notify_about_upgrade_result():
+            return
+        lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
+        action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
+        logger.info('{} found the first run after upgrade, '
+                     'sending NODE_UPGRADE {} to version {}'.format(self, action, lastUpgradeVersion))
+        op = {
+            TXN_TYPE: NODE_UPGRADE,
+            DATA: {
+                ACTION: action,
+                VERSION: lastUpgradeVersion
             }
-            op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
-            request = self.wallet.signOp(op)
-            self.startedProcessingReq(*request.key, self.nodestack.name)
-            self.send(request)
+        }
+        op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
+
+        # do not send protocol version before all Nodes support it after Upgrade
+        request = self.wallet.signRequest(
+            Request(operation=op, protocolVersion=None))
+
+        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.send(request)
+        self.upgrader.notified_about_upgrade_result()
 
     def notify_upgrade_start(self):
-        logger.info('{} is about to be upgraded, '
-                    'sending NODE_UPGRADE'.format(self))
         scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
         action = IN_PROGRESS
+        logger.info('{} is about to be upgraded, '
+                    'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))
         op = {
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
@@ -264,7 +270,11 @@ class Node(PlenumNode, HasPoolManager):
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
-        request = self.wallet.signOp(op)
+
+        # do not send protocol version before all Nodes support it after Upgrade
+        request = self.wallet.signRequest(
+            Request(operation=op, protocolVersion=None))
+
         self.startedProcessingReq(*request.key, self.nodestack.name)
         self.send(request)
 
