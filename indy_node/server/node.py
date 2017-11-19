@@ -238,8 +238,8 @@ class Node(PlenumNode, HasPoolManager):
             return
         lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
-        logger.info('{} found the first run after upgrade, '
-                     'sending NODE_UPGRADE {} to version {}'.format(self, action, lastUpgradeVersion))
+        logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
+            self, action, lastUpgradeVersion))
         op = {
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
