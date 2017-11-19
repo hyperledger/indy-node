@@ -332,6 +332,8 @@ class Upgrader(HasActionQueue):
                     currentVersion, version, reinstall):
                 return
 
+            if isinstance(when, str):
+                when = dateutil.parser.parse(when)
             if self.scheduledUpgrade and self.scheduledUpgrade == (version, when, upgrade_id):
                 logger.debug("Node {} already scheduled upgrade to version '{}' ".format(
                     self.nodeName, version))
