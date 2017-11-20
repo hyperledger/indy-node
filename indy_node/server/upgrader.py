@@ -117,7 +117,7 @@ class Upgrader(HasActionQueue):
         # that is whether Upgrade Log contains STARTED event
         self._upgrade_started = self._is_upgrade_started()
         if self._upgrade_started:
-            # append SUCCESS or FAIL to the Upgrade Lof
+            # append SUCCESS or FAIL to the Upgrade Log
             self._update_upgrade_log_for_started_upgrade()
 
     def _is_upgrade_started(self):
@@ -161,6 +161,9 @@ class Upgrader(HasActionQueue):
 
         # send NODE_UPGRADE txn only if we were in Upgrade Started state at the very beginning (after Node restarted)
         return self._upgrade_started
+
+    def notified_about_upgrade_result(self):
+        self._upgrade_started = False
 
     def get_last_node_upgrade_txn(self, start_no: int = None):
         return self.get_upgrade_txn(
@@ -325,19 +328,28 @@ class Upgrader(HasActionQueue):
             when = txn[SCHEDULE][self.nodeId]
             failTimeout = txn.get(TIMEOUT, self.defaultUpgradeTimeout)
 
-            if self.is_version_upgradable(
+            if not self.is_version_upgradable(
                     currentVersion, version, reinstall):
-                logger.info("Node '{}' schedules upgrade to {}".format(
-                    self.nodeName, version))
+                return
 
-                if self.scheduledUpgrade:
+            if self.scheduledUpgrade:
+                if isinstance(when, str):
+                    when = dateutil.parser.parse(when)
+                if self.scheduledUpgrade == (version, when, upgrade_id):
+                    logger.debug("Node {} already scheduled upgrade to version '{}' ".format(
+                        self.nodeName, version))
+                    return
+                else:
                     logger.info(
                         "Node '{}' cancels previous upgrade and schedules a new one to {}".format(
                             self.nodeName, version))
                     self._cancelScheduledUpgrade(justification)
 
-                self._scheduleUpgrade(
-                    version, when, failTimeout, upgrade_id)
+            logger.info("Node '{}' schedules upgrade to {}".format(
+                self.nodeName, version))
+
+            self._scheduleUpgrade(
+                version, when, failTimeout, upgrade_id)
             return
 
         if action == CANCEL:
