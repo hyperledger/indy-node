@@ -2,6 +2,7 @@ import pytest
 
 # it is fixture - do not remove
 from indy_client.test.cli.conftest import acmeAddedByPhil as agentAddedBySponsor
+from indy_common.exceptions import NotConnectedToNetwork
 
 from plenum.common.exceptions import OperationError, NoConsensusYet
 
@@ -15,7 +16,6 @@ from indy_client.test.agent.conftest import startAgent
 from indy_client.test.agent.acme import create_acme as createAgent
 from indy_client.test.agent.acme import bootstrap_acme as bootstrap_agent
 from indy_client.test.agent.helper import buildAcmeWallet as agentWallet
-
 
 agentPort = genHa()[1]
 
@@ -53,8 +53,10 @@ def testCreateAgentDoesNotAllocatePort(tdirWithPoolTxns):
 
 
 def testAgentStartedWithoutPoolStarted(emptyLooper, tdirWithPoolTxns):
+    import indy_client.agent.run_agent
+    indy_client.agent.run_agent.CONNECTION_TIMEOUT = 10
     newAgentName = "Agent2"
-    with pytest.raises(NoConsensusYet):
+    with pytest.raises(NotConnectedToNetwork):
         runAgent(emptyLooper, tdirWithPoolTxns, agentPort,
                  name=newAgentName)
     stopAgent(emptyLooper, newAgentName)
@@ -63,7 +65,6 @@ def testAgentStartedWithoutPoolStarted(emptyLooper, tdirWithPoolTxns):
 def testStartNewAgentOnUsedPort(poolNodesStarted, tdirWithPoolTxns,
                                 emptyLooper, agentAddedBySponsor,
                                 agentStarted):
-
     with pytest.raises(PortNotAvailable):
         runAgent(emptyLooper, tdirWithPoolTxns, agentPort, name='Agent4')
 

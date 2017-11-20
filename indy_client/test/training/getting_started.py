@@ -67,7 +67,7 @@ def demo_start_agent(b_dir, create_func, bootstrap_func,
 
 
 def main():
-    base_dir = config.baseDir
+    base_dir = config.CLI_BASE_DIR
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
     loadPlugins(base_dir)
