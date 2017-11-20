@@ -117,7 +117,7 @@ class Upgrader(HasActionQueue):
         # that is whether Upgrade Log contains STARTED event
         self._upgrade_started = self._is_upgrade_started()
         if self._upgrade_started:
-            # append SUCCESS or FAIL to the Upgrade Lof
+            # append SUCCESS or FAIL to the Upgrade Log
             self._update_upgrade_log_for_started_upgrade()
 
     def _is_upgrade_started(self):
@@ -332,21 +332,21 @@ class Upgrader(HasActionQueue):
                     currentVersion, version, reinstall):
                 return
 
-            if isinstance(when, str):
-                when = dateutil.parser.parse(when)
-            if self.scheduledUpgrade and self.scheduledUpgrade == (version, when, upgrade_id):
-                logger.debug("Node {} already scheduled upgrade to version '{}' ".format(
-                    self.nodeName, version))
-                return
+            if self.scheduledUpgrade:
+                if isinstance(when, str):
+                    when = dateutil.parser.parse(when)
+                if self.scheduledUpgrade == (version, when, upgrade_id):
+                    logger.debug("Node {} already scheduled upgrade to version '{}' ".format(
+                        self.nodeName, version))
+                    return
+                else:
+                    logger.info(
+                        "Node '{}' cancels previous upgrade and schedules a new one to {}".format(
+                            self.nodeName, version))
+                    self._cancelScheduledUpgrade(justification)
 
             logger.info("Node '{}' schedules upgrade to {}".format(
                 self.nodeName, version))
-
-            if self.scheduledUpgrade:
-                logger.info(
-                    "Node '{}' cancels previous upgrade and schedules a new one to {}".format(
-                        self.nodeName, version))
-                self._cancelScheduledUpgrade(justification)
 
             self._scheduleUpgrade(
                 version, when, failTimeout, upgrade_id)
