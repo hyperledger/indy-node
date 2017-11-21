@@ -100,6 +100,8 @@ def remove_network_from_dir_name(root_dir):
         _dname = _dname.replace("_local", "")
         if _dname != dname:
             os.rename(os.path.join(root_dir, dname), os.path.join(root_dir, _dname))
+        if _dname in ['pool_state', 'domain_state', 'config_state', 'idr_cache_db']:
+            shutil.rmtree(os.path.join(root_dir, _dname))
 
 
 def set_own_perm(usr, dir_list):
