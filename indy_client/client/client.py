@@ -37,10 +37,13 @@ from indy_client.client.wallet.migration import migrate_indy_wallet_raw
 from indy_common.plugin_helper import writeAnonCredPlugin
 from plenum.client.wallet import WALLET_RAW_MIGRATORS
 
+
 logger = getlogger()
+
 
 class Client(PlenumClient):
     anoncredsAreSetUp = False
+
     def __init__(self,
                  name: str=None,
                  nodeReg: Dict[str, HA]=None,

@@ -21,7 +21,6 @@ class ConfigHelper(PConfigHelper):
             os.path.join(self.config.KEYS_DIR, self.config.NETWORK_NAME, 'keys'))
 
 
-
 class NodeConfigHelper(ConfigHelper):
 
     def __init__(self, name: str, config, *, chroot='/'):
