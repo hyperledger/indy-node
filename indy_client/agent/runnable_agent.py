@@ -31,6 +31,9 @@ class RunnableAgent:
                             help='if given, agent will start in cli mode',
                             action='store_true')
 
+        parser.add_argument('--network', required=False,
+                            help='network connect to (sandbox by default)')
+
         args = parser.parse_args(args=args)
         # port = int(args.port) if args.port else None
         return args

@@ -7,31 +7,30 @@ from indy_client.test.state_proof.helper import check_valid_proof, \
     submit_operation_and_get_replies
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
     ATTR_NAMES, REF, SIGNATURE_TYPE, CLAIM_DEF, REVOCATION, GET_CLAIM_DEF
-
 from indy_common.serialization import attrib_raw_data_serializer
+
 
 # Fixtures, do not remove
 from indy_client.test.test_nym_attrib import \
     addedRawAttribute, attributeName, attributeValue, attributeData
 
-
 def test_state_proof_returned_for_get_attr(looper,
                                            addedRawAttribute,
                                            attributeName,
                                            attributeData,
-                                           trustAnchor,
-                                           trustAnchorWallet):
+                                           client1, wallet1):
     """
-    Tests that state proof is returned in the reply for GET_ATTR transactions
+    Tests that state proof is returned in the reply for GET_ATTR transactions.
+    Use different submitter and reader!
     """
-    client = trustAnchor
     get_attr_operation = {
         TARGET_NYM: addedRawAttribute.dest,
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }
-    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor, get_attr_operation)
+    replies = submit_operation_and_get_replies(looper,
+                                               wallet1, client1,
+                                               get_attr_operation)
     expected_data = attrib_raw_data_serializer.deserialize(attributeData)
     for reply in replies:
         result = reply['result']
@@ -39,17 +38,18 @@ def test_state_proof_returned_for_get_attr(looper,
         data = attrib_raw_data_serializer.deserialize(result[DATA])
         assert data == expected_data
         assert result[TXN_TIME]
-        check_valid_proof(reply, client)
+        check_valid_proof(reply, client1)
 
 
 def test_state_proof_returned_for_get_nym(looper,
                                           trustAnchor,
                                           trustAnchorWallet,
-                                          userWalletA):
+                                          userWalletA,
+                                          client1, wallet1):
     """
-    Tests that state proof is returned in the reply for GET_NYM transactions
+    Tests that state proof is returned in the reply for GET_NYM transactions.
+    Use different submitter and reader!
     """
-    client = trustAnchor
     dest = userWalletA.defaultId
 
     nym_operation = {
@@ -57,7 +57,8 @@ def test_state_proof_returned_for_get_nym(looper,
         TXN_TYPE: NYM
     }
 
-    submit_operation_and_get_replies(looper, trustAnchorWallet, client,
+    submit_operation_and_get_replies(looper,
+                                     trustAnchorWallet, trustAnchor,
                                      nym_operation)
 
     get_nym_operation = {
@@ -65,8 +66,9 @@ def test_state_proof_returned_for_get_nym(looper,
         TXN_TYPE: GET_NYM
     }
 
-    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor, get_nym_operation)
+    replies = submit_operation_and_get_replies(looper,
+                                               wallet1, client1,
+                                               get_nym_operation)
     for reply in replies:
         result = reply['result']
         assert DATA in result
@@ -76,16 +78,17 @@ def test_state_proof_returned_for_get_nym(looper,
         assert VERKEY in data
         assert f.IDENTIFIER.nm in data
         assert result[TXN_TIME]
-        check_valid_proof(reply, client)
+        check_valid_proof(reply, client1)
 
 
 def test_state_proof_returned_for_get_schema(looper,
                                              trustAnchor,
-                                             trustAnchorWallet):
+                                             trustAnchorWallet,
+                                             client1, wallet1):
     """
-    Tests that state proof is returned in the reply for GET_SCHEMA transactions
+    Tests that state proof is returned in the reply for GET_SCHEMA transactions.
+    Use different submitter and reader!
     """
-    client = trustAnchor
     dest = trustAnchorWallet.defaultId
     schema_name = "test_schema"
     schema_version = "1.0"
@@ -99,7 +102,8 @@ def test_state_proof_returned_for_get_schema(looper,
         TXN_TYPE: SCHEMA,
         DATA: data
     }
-    submit_operation_and_get_replies(looper, trustAnchorWallet, client,
+    submit_operation_and_get_replies(looper,
+                                     trustAnchorWallet, trustAnchor,
                                      schema_operation)
 
     get_schema_operation = {
@@ -110,8 +114,8 @@ def test_state_proof_returned_for_get_schema(looper,
             VERSION: schema_version,
         }
     }
-    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor,
+    replies = submit_operation_and_get_replies(looper,
+                                               wallet1, client1,
                                                get_schema_operation)
     for reply in replies:
         result = reply['result']
@@ -123,17 +127,18 @@ def test_state_proof_returned_for_get_schema(looper,
         assert NAME in data
         assert VERSION in data
         assert result[TXN_TIME]
-        check_valid_proof(reply, client)
+        check_valid_proof(reply, client1)
 
 
 def test_state_proof_returned_for_get_claim_def(looper,
                                                 trustAnchor,
-                                                trustAnchorWallet):
+                                                trustAnchorWallet,
+                                                client1, wallet1):
     """
     Tests that state proof is returned in the reply for GET_CLAIM_DEF
-    transactions
+    transactions.
+    Use different submitter and reader!
     """
-    client = trustAnchor
     dest = trustAnchorWallet.defaultId
     data = {"primary": {'N': '123'}, REVOCATION: {'h0': '456'}}
     claim_def_operation = {
@@ -142,7 +147,8 @@ def test_state_proof_returned_for_get_claim_def(looper,
         DATA: data,
         SIGNATURE_TYPE: 'CL'
     }
-    submit_operation_and_get_replies(looper, trustAnchorWallet, client,
+    submit_operation_and_get_replies(looper,
+                                     trustAnchorWallet, trustAnchor,
                                      claim_def_operation)
     get_claim_def_operation = {
         ORIGIN: dest,
@@ -150,8 +156,8 @@ def test_state_proof_returned_for_get_claim_def(looper,
         REF: 12,
         SIGNATURE_TYPE: 'CL'
     }
-    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor,
+    replies = submit_operation_and_get_replies(looper,
+                                               wallet1, client1,
                                                get_claim_def_operation)
     expected_data = data
     for reply in replies:
@@ -161,4 +167,4 @@ def test_state_proof_returned_for_get_claim_def(looper,
         assert data
         assert data == expected_data
         assert result[TXN_TIME]
-        check_valid_proof(reply, client)
+        check_valid_proof(reply, client1)

@@ -1,7 +1,8 @@
 import csv
 from datetime import datetime
-from dateutil.parser import parse as parse_date
 from os import path
+
+from dateutil.parser import parse as parse_date
 
 
 class UpgradeLog:
@@ -73,3 +74,6 @@ class UpgradeLog:
     def __iter__(self):
         for item in self.__items:
             yield item
+
+    def __len__(self):
+        return len(self.__items)
