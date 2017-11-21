@@ -15,7 +15,8 @@ RUN apt-get update -y && apt-get install -y \
 
 # sovrin repo
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88 && \
-    echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list
+    echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list \
+    echo "deb https://repo.sovrin.org/sdk/deb xenial master" >> /etc/apt/sources.list
 
 # python
 RUN apt-get update -y && apt-get install -y \

@@ -10,6 +10,7 @@ RUN apt-get update -y && apt-get install -y \
     libindy-crypto=0.1.6
 
 RUN indy_ci_add_user $uid $user $venv && \
+    indy_ci_libindy $user && \
     indy_ci_charm_crypto $user $venv
 
 RUN indy_image_clean
