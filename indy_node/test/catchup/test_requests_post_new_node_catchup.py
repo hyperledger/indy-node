@@ -10,11 +10,12 @@ from indy_client.test.helper import getClientAddedWithRole
 from indy_common.constants import TRUST_ANCHOR
 from indy_node.test.conftest import nodeThetaAdded
 from indy_node.test.helper import TestNode, addRawAttribute, getAttribute
+from indy_common.config_helper import NodeConfigHelper
 
 
-def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
+def test_new_node_catchup_update_projection(looper, tdirWithClientPoolTxns,
                                             tdirWithDomainTxnsUpdated,
-                                            nodeSet, tconf,
+                                            nodeSet, tconf, tdir,
                                             trustee, trusteeWallet,
                                             allPluginsPath,
                                             some_transactions_done
@@ -30,13 +31,14 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
 
     new_steward, new_steward_wallet, new_node = nodeThetaAdded(looper,
                                                                nodeSet,
-                                                               tdirWithPoolTxns,
+                                                               tdirWithClientPoolTxns,
                                                                tconf, trustee,
                                                                trusteeWallet,
                                                                allPluginsPath,
                                                                TestNode,
                                                                TestClient,
-                                                               tdirWithPoolTxns)
+                                                               NodeConfigHelper,
+                                                               tdir)
 
     waitNodeDataEquality(looper, new_node, *nodeSet[:-1])
     ta_count = 2
@@ -89,7 +91,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
         trust_anchors.append(
             getClientAddedWithRole(
                 other_nodes,
-                tdirWithPoolTxns,
+                tdirWithClientPoolTxns,
                 looper,
                 trustee,
                 trusteeWallet,
@@ -104,7 +106,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
         non_privileged.append(
             getClientAddedWithRole(
                 other_nodes,
-                tdirWithPoolTxns,
+                tdirWithClientPoolTxns,
                 looper,
                 trustee,
                 trusteeWallet,
@@ -117,10 +119,10 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
     # The size difference should be same as number of new NYM txns
     check_sizes(other_nodes)
 
+    config_helper = NodeConfigHelper(new_node.name, tconf, chroot=tdir)
     new_node = TestNode(
         new_node.name,
-        basedirpath=tdirWithPoolTxns,
-        base_data_dir=tdirWithPoolTxns,
+        config_helper=config_helper,
         config=tconf,
         pluginPaths=allPluginsPath,
         ha=new_node.nodestack.ha,
@@ -153,7 +155,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithPoolTxns,
     for tc, tw in trust_anchors:
         for i in range(more_nyms_count):
             non_privileged.append(getClientAddedWithRole(other_nodes,
-                                                         tdirWithPoolTxns,
+                                                         tdirWithClientPoolTxns,
                                                          looper,
                                                          tc, tw,
                                                          'NP1' + str(i)))

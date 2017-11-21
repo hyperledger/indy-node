@@ -54,6 +54,7 @@ class Node(PlenumNode, HasPoolManager):
                  ha=None,
                  cliname=None,
                  cliha=None,
+                 config_helper=None,
                  ledger_dir: str = None,
                  keys_dir: str = None,
                  genesis_dir: str = None,
@@ -62,14 +63,14 @@ class Node(PlenumNode, HasPoolManager):
                  pluginPaths: Iterable[str] = None,
                  storage=None,
                  config=None):
-        self.config = config or getConfig()
+        config = config or getConfig()
 
-        config_helper = NodeConfigHelper(self.name, self.config)
+        config_helper = config_helper or NodeConfigHelper(name, config)
 
-        self.ledger_dir = ledger_dir or config_helper.ledger_dir
-        self.keys_dir = keys_dir or config_helper.keys_dir
-        self.genesis_dir = genesis_dir or config_helper.genesis_dir
-        self.plugins_dir = plugins_dir or config_helper.plugins_dir
+        ledger_dir = ledger_dir or config_helper.ledger_dir
+        keys_dir = keys_dir or config_helper.keys_dir
+        genesis_dir = genesis_dir or config_helper.genesis_dir
+        plugins_dir = plugins_dir or config_helper.plugins_dir
 
         # TODO: 3 ugly lines ahead, don't know how to avoid
         # self.stateTreeStore = None
@@ -82,14 +83,15 @@ class Node(PlenumNode, HasPoolManager):
                          ha=ha,
                          cliname=cliname,
                          cliha=cliha,
-                         ledger_dir=self.ledger_dir,
-                         keys_dir=self.keys_dir,
-                         genesis_dir=self.genesis_dir,
-                         plugins_dir=self.plugins_dir,
+                         config_helper=config_helper,
+                         ledger_dir=ledger_dir,
+                         keys_dir=keys_dir,
+                         genesis_dir=genesis_dir,
+                         plugins_dir=plugins_dir,
                          primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          storage=storage,
-                         config=self.config)
+                         config=config)
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()

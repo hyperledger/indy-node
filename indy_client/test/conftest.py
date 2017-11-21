@@ -1,3 +1,4 @@
+import os
 import logging
 
 import base58
@@ -36,17 +37,17 @@ from indy_client.test.helper import addRole, \
     genTestClient, TestClient, createNym
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, nodeReg, up, ready, \
+from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
     whitelist, concerningLogLevels, logcapture, keySharedNodes, \
     startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
-    txnPoolNodesLooper, patchPluginManager, \
+    txnPoolNodesLooper, patchPluginManager, tdirWithClientPoolTxns, \
     warncheck, warnfilters as plenum_warnfilters, setResourceLimits
 
 # noinspection PyUnresolvedReferences
-from indy_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
-    domainTxnOrderedFields, looper
+from indy_common.test.conftest import tconf, poolTxnTrusteeNames, \
+    domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
 Logger.setLogLevel(logging.DEBUG)
 
@@ -114,8 +115,8 @@ def trusteeWallet(trusteeData):
 # indy_common's conftest.
 @pytest.fixture(scope="module")
 # TODO devin
-def trustee(nodeSet, looper, tdir, up, trusteeWallet):
-    return buildStewardClient(looper, tdir, trusteeWallet)
+def trustee(nodeSet, looper, tdirWithClientPoolTxns, up, trusteeWallet):
+    return buildStewardClient(looper, tdirWithClientPoolTxns, trusteeWallet)
 
 
 @pytest.fixture(scope="module")
@@ -128,8 +129,8 @@ def stewardWallet(poolTxnStewardData):
 
 
 @pytest.fixture(scope="module")
-def steward(nodeSet, looper, tdir, stewardWallet):
-    return buildStewardClient(looper, tdir, stewardWallet)
+def steward(nodeSet, looper, tdirWithClientPoolTxns, stewardWallet):
+    return buildStewardClient(looper, tdirWithClientPoolTxns, stewardWallet)
 
 
 @pytest.fixture(scope="module")
@@ -162,9 +163,9 @@ def tdirWithDomainTxnsUpdated(tdirWithDomainTxns, poolTxnTrusteeNames,
 
 
 @pytest.fixture(scope="module")
-def updatedDomainTxnFile(tdir, tdirWithDomainTxnsUpdated, genesisTxns,
+def updatedDomainTxnFile(tdirWithDomainTxnsUpdated, genesisTxns,
                          domainTxnOrderedFields, tconf):
-    addTxnToGenesisFile(tdir, tconf.domainTransactionsFile,
+    addTxnToGenesisFile(tdirWithDomainTxnsUpdated, tconf.domainTransactionsFile,
                         genesisTxns, domainTxnOrderedFields)
 
 
@@ -190,8 +191,8 @@ def trustAnchorCli(looper, tdir):
 
 
 @pytest.fixture(scope="module")
-def clientAndWallet1(client1Signer, looper, nodeSet, tdir, up):
-    client, wallet = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+def clientAndWallet1(client1Signer, looper, nodeSet, tdirWithClientPoolTxns, up):
+    client, wallet = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     wallet = Wallet(client.name)
     wallet.addIdentifier(signer=client1Signer)
     return client, wallet
@@ -219,8 +220,8 @@ def trustAnchorWallet():
 
 
 @pytest.fixture(scope="module")
-def trustAnchor(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, tdir):
-    s, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+def trustAnchor(nodeSet, addedTrustAnchor, trustAnchorWallet, looper, tdirWithClientPoolTxns):
+    s, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     s.registerObserver(trustAnchorWallet.handleIncomingReply)
     looper.add(s)
     looper.run(s.ensureConnectedToNodes())
@@ -265,8 +266,8 @@ def userIdB(userWalletB):
 
 
 @pytest.fixture(scope="module")
-def userClientA(nodeSet, userWalletA, looper, tdir):
-    u, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+def userClientA(nodeSet, userWalletA, looper, tdirWithClientPoolTxns):
+    u, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     u.registerObserver(userWalletA.handleIncomingReply)
     looper.add(u)
     looper.run(u.ensureConnectedToNodes())
@@ -275,13 +276,18 @@ def userClientA(nodeSet, userWalletA, looper, tdir):
 
 
 @pytest.fixture(scope="module")
-def userClientB(nodeSet, userWalletB, looper, tdir):
-    u, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+def userClientB(nodeSet, userWalletB, looper, tdirWithClientPoolTxns):
+    u, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     u.registerObserver(userWalletB.handleIncomingReply)
     looper.add(u)
     looper.run(u.ensureConnectedToNodes())
     makePendingTxnsRequest(u, userWalletB)
     return u
+
+
+@pytest.fixture(scope="module")
+def client_ledger_dir(client_tdir, tconf):
+    return os.path.join(client_tdir, 'networks', tconf.NETWORK_NAME)
 
 
 def pytest_assertrepr_compare(op, left, right):

@@ -29,7 +29,7 @@ def tconf(tconf, request):
     return tconf
 
 
-def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
+def test_successive_batch_do_no_change_state(looper,
                                              tdirWithDomainTxnsUpdated,
                                              tconf, nodeSet,
                                              trustee, trusteeWallet, monkeypatch):
