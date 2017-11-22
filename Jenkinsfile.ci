@@ -37,7 +37,6 @@ if (env.INDY_AGENT_WINDOWS_LABEL) {
 
 def buildDocker(imageName, dockerfile) {
     def uid = sh(returnStdout: true, script: 'id -u').trim()
-    sh "make -C docker-files/Makefile"
     return docker.build("$imageName", "--build-arg uid=$uid -f $dockerfile")
 }
 
@@ -62,6 +61,10 @@ def withTestEnv(body) {
 
     if (isUnix()) {
         echo 'Test: Build docker image'
+
+        // TODO should be removed once base images are pushed to dockerhub
+        sh "ci/build_base_image.sh"
+
         buildDocker("hyperledger/indy-node-ci", "ci/ubuntu.dockerfile ci").inside {
             echo 'Test: Install dependencies'
             install()

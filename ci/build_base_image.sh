@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# TODO should be deprected once the image is published onto dockerhub
+# TODO should be deprecated once base images are pushed to dockerhub
 
 # should be called from the root of the repo
 
