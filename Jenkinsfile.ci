@@ -42,16 +42,15 @@ def buildDocker(imageName, dockerfile) {
 
 
 def install(options=[:]) {
-   options.pip = options.pip ?: 'pip'
-   options.isVEnv = options.isVEnv ?: false
-   options.deps = options.deps ?: []
+    options.pip = options.pip ?: 'pip'
+    options.isVEnv = options.isVEnv ?: false
+    options.deps = options.deps ?: []
 
-   for (def dep : options.deps) {
+    for (def dep : options.deps) {
         sh "$options.pip install " + (options.isVEnv ? "-U" : "") + " $dep"
     }
 
-    sh "$options.pip install " + (options.isVEnv ? "--ignore-installed" : "") + " pytest"
-    sh "$options.pip install ."
+    sh "$options.pip install " + (options.isVEnv ? "--ignore-installed" : "") + " .[tests]"
 }
 
 
