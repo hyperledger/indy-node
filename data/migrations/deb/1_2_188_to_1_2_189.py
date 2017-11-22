@@ -26,21 +26,27 @@ def ext_copytree(src, dst):
         shutil.copytree(src, dst)
 
 
-def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir):
+def migrate_genesis_txn(old_base_txn_dir, new_base_txn_dir, new_cli_net_base_dir):
     logger.info('Move genesis transactions {} -> {}'.format(old_base_txn_dir, new_base_txn_dir))
     for suffix in ('sandbox', 'live', 'local'):
         new_txn_dir = os.path.join(new_base_txn_dir, suffix)
+        new_cli_network_dir = os.path.join(new_cli_net_base_dir, suffix)
         os.makedirs(new_txn_dir, exist_ok=True)
+        os.makedirs(new_cli_network_dir, exist_ok=True)
 
         old_domain_genesis = os.path.join(old_base_txn_dir, 'domain_transactions_{}_genesis'.format(suffix))
         old_pool_genesis = os.path.join(old_base_txn_dir, 'pool_transactions_{}_genesis'.format(suffix))
         new_domain_genesis = os.path.join(new_txn_dir, 'domain_transactions_genesis')
         new_pool_genesis = os.path.join(new_txn_dir, 'pool_transactions_genesis')
+        new_cli_domain_genesis = os.path.join(new_cli_network_dir, 'domain_transactions_genesis')
+        new_cli_pool_genesis = os.path.join(new_cli_network_dir, 'pool_transactions_genesis')
 
         if os.path.exists(old_domain_genesis):
             shutil.copy2(old_domain_genesis, new_domain_genesis)
+            shutil.copy2(old_domain_genesis, new_cli_domain_genesis)
         if os.path.exists(old_pool_genesis):
             shutil.copy2(old_pool_genesis, new_pool_genesis)
+            shutil.copy2(old_pool_genesis, new_cli_pool_genesis)
 
     logger.info('done')
 
@@ -139,8 +145,11 @@ def migrate_all():
     new_srv_cfg = os.path.join(GENERAL_CONFIG_DIR, 'indy.env')
     shutil.copy2(old_srv_cfg, new_srv_cfg)
 
+    # Create indy cli folder
+    os.makedirs(CLI_NETWORK_DIR, exist_ok=True)
+
     # Move genesis transactions
-    migrate_genesis_txn(old_base_dir, NODE_BASE_DATA_DIR)
+    migrate_genesis_txn(old_base_dir, NODE_BASE_DATA_DIR, CLI_NETWORK_DIR)
 
     # Move data
     old_nodes_data_dir = os.path.join(old_base_dir, 'data', 'nodes')
@@ -186,4 +195,4 @@ if not os.path.exists(old_base_dir):
 
 
 migrate_all()
-set_own_perm("indy", ["/etc/indy", "/var/lib/indy", "/var/log/indy"])
+set_own_perm("indy", ["/etc/indy", "/var/lib/indy", "/var/log/indy", "/home/indy/.indy-cli"])
