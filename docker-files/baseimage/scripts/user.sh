@@ -9,5 +9,8 @@ useradd -ms /bin/bash -u "$USERID" "$USERNAME"
 
 USERHOME=$(eval echo "~$USERNAME")
 VENVNAME="$USERHOME/$3"
-su "$USERNAME" - -c "virtualenv -p python3.5 $VENVNAME"
-echo "source $VENVNAME/bin/activate" >>"$USERHOME/.bashrc"
+su -c "virtualenv -p python3.5 $VENVNAME" - "$USERNAME"
+
+# need virtualenv activation for different shells
+# (intractive/non-interactive login and non-login)
+echo "source $VENVNAME/bin/activate" | tee -a "$USERHOME"/{.bashrc,.profile} >/dev/null
