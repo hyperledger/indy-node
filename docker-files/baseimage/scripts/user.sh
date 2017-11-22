@@ -8,9 +8,14 @@ USERNAME="$2"
 useradd -ms /bin/bash -u "$USERID" "$USERNAME"
 
 USERHOME=$(eval echo "~$USERNAME")
-VENVNAME="$USERHOME/$3"
-su -c "virtualenv -p python3.5 $VENVNAME" - "$USERNAME"
+VENVPATH="$USERHOME/$3"
+su -c "virtualenv -p python3.5 \"$VENVPATH\"" - "$USERNAME"
 
-# need virtualenv activation for different shells
-# (intractive/non-interactive login and non-login)
-echo "source $VENVNAME/bin/activate" | tee -a "$USERHOME"/{.bashrc,.profile} >/dev/null
+# TODO virtualenv activation seems as better approach
+# but it's more tricky (failed to find out how) to automate
+# that for all cases (e.g. non interactive docker run/exec)
+USER_PYTHON=$(su -c "which python" - "$USERNAME")
+USER_PIP=$(su -c "which pip" - "$USERNAME")
+
+ln -sf "${VENVPATH}/bin/python" "$USER_PYTHON"
+ln -sf "${VENVPATH}/bin/pip" "$USER_PIP"
