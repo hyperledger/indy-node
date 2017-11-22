@@ -1,4 +1,4 @@
-FROM hyperledger/indy-baseci
+FROM hyperledger/indy-core-baseci
 LABEL maintainer="Andrey Kononykhin andkononykhin@gmail.com"
 
 ARG uid=1000
