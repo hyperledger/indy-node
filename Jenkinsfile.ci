@@ -50,6 +50,8 @@ def install(options=[:]) {
         sh "$options.pip install " + (options.isVEnv ? "-U" : "") + " $dep"
     }
 
+    // TODO check that `--ignore-installed` case works when windows is enabled
+    // (makes sense only for virtual envs with `--system-site-packages`)
     sh "$options.pip install " + (options.isVEnv ? "--ignore-installed" : "") + " .[tests]"
 }
 
