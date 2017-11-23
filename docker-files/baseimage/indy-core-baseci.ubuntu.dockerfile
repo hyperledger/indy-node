@@ -7,6 +7,5 @@ RUN echo "deb https://repo.sovrin.org/sdk/deb xenial master" >> /etc/apt/sources
 
 # set highest priority for indy sdk packages in core repo
 COPY indy-core-repo.preferences /etc/apt/preferences.d/indy-core-repo
-RUN chmod 755 /usr/local/bin/indy_ci_libindy
 
 RUN indy_image_clean
