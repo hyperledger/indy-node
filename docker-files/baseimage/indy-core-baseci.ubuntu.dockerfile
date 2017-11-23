@@ -1,5 +1,5 @@
 FROM hyperledger/indy-baseci
-LABEL maintainer="Andrey Kononykhin andkononykhin@gmail.com"
+LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 # sovrin repos
 RUN echo "deb https://repo.sovrin.org/sdk/deb xenial master" >> /etc/apt/sources.list && \

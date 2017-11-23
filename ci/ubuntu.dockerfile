@@ -1,5 +1,5 @@
 FROM hyperledger/indy-core-baseci
-LABEL maintainer="Andrey Kononykhin andkononykhin@gmail.com"
+LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 ARG uid=1000
 ARG user=indy

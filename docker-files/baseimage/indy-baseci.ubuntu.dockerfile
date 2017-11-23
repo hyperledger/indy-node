@@ -1,5 +1,5 @@
 FROM hyperledger/indy-baseimage
-LABEL maintainer="Andrey Kononykhin andkononykhin@gmail.com"
+LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 # sovrin repos
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88 && \

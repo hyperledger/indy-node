@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-LABEL maintainer="Andrey Kononykhin andkononykhin@gmail.com"
+LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 # TODO enable for dockerhub publishing
 #RUN apt-get update && apt-get dist-upgrade -y
