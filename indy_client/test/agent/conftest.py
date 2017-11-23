@@ -84,9 +84,9 @@ def thriftWallet():
 
 
 @pytest.fixture(scope="module")
-def agentBuilder(tdirWithPoolTxns):
+def agentBuilder(tdirWithClientPoolTxns):
     def _(wallet, basedir=None):
-        basedir = basedir or tdirWithPoolTxns
+        basedir = basedir or tdirWithClientPoolTxns
         _, port = genHa()
         _, clientPort = genHa()
         client = TestClient(randomString(6),
@@ -153,9 +153,9 @@ def thriftAgentPort():
 
 
 @pytest.fixture(scope="module")
-def faberAgent(tdirWithPoolTxns, faberAgentPort, faberWallet):
+def faberAgent(tdirWithClientPoolTxns, faberAgentPort, faberWallet):
     return create_faber(faberWallet.name, faberWallet,
-                        base_dir_path=tdirWithPoolTxns,
+                        base_dir_path=tdirWithClientPoolTxns,
                         port=faberAgentPort)
 
 
@@ -186,9 +186,9 @@ def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
 
 
 @pytest.fixture(scope="module")
-def acmeAgent(tdirWithPoolTxns, acmeAgentPort, acmeWallet):
+def acmeAgent(tdirWithClientPoolTxns, acmeAgentPort, acmeWallet):
     return create_acme(acmeWallet.name, acmeWallet,
-                       base_dir_path=tdirWithPoolTxns,
+                       base_dir_path=tdirWithClientPoolTxns,
                        port=acmeAgentPort)
 
 
@@ -209,9 +209,9 @@ def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet, acmeAgent,
 
 
 @pytest.fixture(scope="module")
-def thriftAgent(tdirWithPoolTxns, thriftAgentPort, thriftWallet):
+def thriftAgent(tdirWithClientPoolTxns, thriftAgentPort, thriftWallet):
     return create_thrift(thriftWallet.name, thriftWallet,
-                         base_dir_path=tdirWithPoolTxns,
+                         base_dir_path=tdirWithClientPoolTxns,
                          port=thriftAgentPort)
 
 

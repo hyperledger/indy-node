@@ -20,6 +20,10 @@ class ConfigHelper(PConfigHelper):
         return self.chroot_if_needed(
             os.path.join(self.config.KEYS_DIR, self.config.NETWORK_NAME, 'keys'))
 
+    @property
+    def ledger_base_dir(self):
+        return self.chroot_if_needed(self.config.LEDGER_DIR)
+
 
 class NodeConfigHelper(ConfigHelper):
 

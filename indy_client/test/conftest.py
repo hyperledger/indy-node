@@ -46,7 +46,7 @@ from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
     warncheck, warnfilters as plenum_warnfilters, setResourceLimits
 
 # noinspection PyUnresolvedReferences
-from indy_common.test.conftest import tconf, poolTxnTrusteeNames, \
+from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
 Logger.setLogLevel(logging.DEBUG)

@@ -58,8 +58,8 @@ class Client(PlenumClient):
                          nodeReg,
                          ha,
                          basedirpath,
-                         config,
-                         sighex)
+                         config=config,
+                         sighex=sighex)
         self.autoDiscloseAttributes = False
         self.requestedPendingTxns = False
         self.hasAnonCreds = bool(peerHA)

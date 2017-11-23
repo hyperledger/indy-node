@@ -13,17 +13,14 @@ from indy_common.config_util import getConfig
 from indy_common.init_util import initialize_node_environment
 from indy_common.pool.pool import Pool
 from indy_common.txn_util import getTxnOrderedFields
+from indy_common.config_helper import NodeConfigHelper
 from indy_node.server.node import Node
 from stp_core.crypto.util import randomSeed
 from stp_core.loop.looper import Looper
 
 
-def create_local_pool(base_dir, node_size=4):
-    conf = getConfig(base_dir)
-    pool_dir = os.path.join(base_dir, "pool")
-
-    # TODO: Need to come back to this why we need this cleanup
-    shutil.rmtree(pool_dir, ignore_errors=True)
+def create_local_pool(node_base_dir, cli_base_dir, config=None, node_size=4):
+    conf = config or getConfig()
 
     stewards = []
     node_conf = []
@@ -36,15 +33,15 @@ def create_local_pool(base_dir, node_size=4):
 
         stewards.append(s)
 
+        node_config_helper = NodeConfigHelper(n_config.name, conf, chroot=node_base_dir)
         n_config = adict(name='Node' + str(i + 1),
                          basedirpath=pool_dir,
                          ha=('127.0.0.1', 9700 + (i * 2)),
                          cliha=('127.0.0.1', 9700 + (i * 2) + 1))
 
         n_verkey, n_bls_key = initialize_node_environment(name=n_config.name,
-                                                          base_dir=n_config.basedirpath,
+                                                          node_config_helper=node_config_helper,
                                                           override_keep=True,
-                                                          config=conf,
                                                           sigseed=randomSeed())
 
         s.set_node(n_config, verkey=n_verkey, blskey=n_bls_key)
