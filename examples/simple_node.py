@@ -36,7 +36,7 @@ def run_node():
 
     # the first argument should be the node name
     try:
-        nodeName = sys.argv[1]
+        nodeName = "Alpha"
     except IndexError:
         names = list(nodeReg.keys())
         print("Please supply a node name (one of {}) as the first argument.".
@@ -50,7 +50,8 @@ def run_node():
         # using an ephemeral temporary directory when proving a concept is a
         # nice way to keep things tidy.
         with TemporaryDirectory() as tmpdir:
-            node = Node(nodeName, nodeReg, basedirpath=tmpdir)
+            # node = Node(nodeName, nodeReg, basedirpath=None)
+            node = Node(nodeName, nodeReg)
             node.addGenesisTxns(genesisTxns)
             looper.add(node)
             node.startKeySharing()

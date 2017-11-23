@@ -60,7 +60,7 @@ class Node(PlenumNode, HasPoolManager):
                  storage=None,
                  config=None):
         self.config = config or getConfig()
-
+        logger.info(basedirpath)
         # TODO: 3 ugly lines ahead, don't know how to avoid
         # self.stateTreeStore = None
         self.idrCache = None
