@@ -1,7 +1,7 @@
 import json
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
-from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA, NAME, VERSION
+from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA, NAME, VERSION, ORIGIN
 from plenum.common.types import f
 from indy_common.serialization import attrib_raw_data_serializer
 from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
@@ -104,7 +104,7 @@ def prepare_claim_def_for_state(txn):
 
 
 def prepare_get_claim_def_for_state(txn):
-    origin = txn.get(f.IDENTIFIER.nm)
+    origin = txn.get(ORIGIN)
     schema_seq_no = txn.get(REF)
     if schema_seq_no is None:
         raise ValueError("'{}' field is absent, "
@@ -135,7 +135,7 @@ def prepare_schema_for_state(txn):
 
 
 def prepare_get_schema_for_state(txn):
-    origin = txn.get(f.IDENTIFIER.nm)
+    origin = txn.get(TARGET_NYM)
     data = txn[DATA].copy()
     schema_name = data.pop(NAME)
     schema_version = data.pop(VERSION)
