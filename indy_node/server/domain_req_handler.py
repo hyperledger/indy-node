@@ -11,20 +11,18 @@ from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    SIGNATURE_TYPE, GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
 from stp_core.common.log import getlogger
-from indy_node.persistence.idr_cache import IdrCache
 
 
 logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-    valid_txn_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF,
-                       GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
+    write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF}
     query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
 
     def __init__(self, ledger, state, config, requestProcessor,
