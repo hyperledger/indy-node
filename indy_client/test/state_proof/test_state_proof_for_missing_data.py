@@ -1,15 +1,11 @@
 from plenum.common.types import f
-
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, NAME, \
     VERSION, ORIGIN
-from plenum.test.helper import waitForSufficientRepliesForRequests, \
-    getRepliesFromClientInbox
 
 from indy_client.test.state_proof.helper import check_valid_proof, \
     submit_operation_and_get_replies
 from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF,\
     REF, SIGNATURE_TYPE, ATTR_NAMES
-
 
 # fixtures, do not remove
 from indy_client.test.test_nym_attrib import \
@@ -83,7 +79,8 @@ def test_state_proof_returned_for_missing_schema(looper,
         }
     }
     replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor, get_schema_operation)
+                                               trustAnchor,
+                                               get_schema_operation)
     for reply in replies:
         result = reply[f.RESULT.nm]
         assert ATTR_NAMES not in result[DATA]
@@ -94,7 +91,8 @@ def test_state_proof_returned_for_missing_claim_def(looper,
                                                     trustAnchor,
                                                     trustAnchorWallet):
     """
-    Tests that state proof is returned in the reply for GET_CLAIM_DEF transactions
+    Tests that state proof is returned in the reply for GET_CLAIM_DEF
+    transactions
     """
     client = trustAnchor
     dest = trustAnchorWallet.defaultId
@@ -105,5 +103,6 @@ def test_state_proof_returned_for_missing_claim_def(looper,
         SIGNATURE_TYPE: 'CL'
     }
     replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor, get_claim_def_operation)
+                                               trustAnchor,
+                                               get_claim_def_operation)
     check_no_data_and_valid_proof(client, replies)

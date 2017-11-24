@@ -47,6 +47,7 @@ def test_validator_info_file_software_sovrin_valid(info):
     else:
         assert info['software']['sovrin'] == pkg.__version__
 
+
 @pytest.fixture()
 def node_with_broken_info_tool(node):
     node_bk = node._info_tool._node
@@ -99,7 +100,7 @@ def test_validator_info_file_get_claim_def(info,
     assert latest_info['metrics']['average-per-second']['read-transactions'] > 0
 
 
-@pytest.fixture
+@pytest.fixture()
 def client_and_wallet(steward, stewardWallet):
     return steward, stewardWallet
 
@@ -183,4 +184,3 @@ def read_txn_and_get_latest_info(txnPoolNodesLooper, patched_dump_info_period,
 @pytest.fixture
 def reset_node_total_read_request_number(node):
     node.total_read_request_number = 0
-

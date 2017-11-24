@@ -9,25 +9,35 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
-from stp_core.common.log import getlogger
-
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    SIGNATURE_TYPE
+    SIGNATURE_TYPE, GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
+from stp_core.common.log import getlogger
 from indy_node.persistence.idr_cache import IdrCache
+
 
 logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-    def __init__(self, ledger, state, requestProcessor,
+    valid_txn_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF,
+                       GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
+    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
+
+    def __init__(self, ledger, state, config, requestProcessor,
                  idrCache, attributeStore, bls_store):
-        super().__init__(ledger, state, requestProcessor, bls_store)
-        self.idrCache = idrCache  # type: IdrCache
+        super().__init__(ledger, state, config, requestProcessor, bls_store)
+        self.idrCache = idrCache
         self.attributeStore = attributeStore
+        self.query_handlers = {
+            GET_NYM: self.handleGetNymReq,
+            GET_ATTR: self.handleGetAttrsReq,
+            GET_SCHEMA: self.handleGetSchemaReq,
+            GET_CLAIM_DEF: self.handleGetClaimDefReq,
+        }
 
     def onBatchCreated(self, stateRoot):
         self.idrCache.currentBatchCreated(stateRoot)
@@ -75,11 +85,12 @@ class DomainReqHandler(PHandler):
                 return False, reason
         return True, ''
 
-    def doStaticValidation(self, identifier, reqId, operation):
+    def doStaticValidation(self, request: Request):
+        identifier, req_id, operation = request.identifier, request.reqId, request.operation
         if operation[TXN_TYPE] == NYM:
-            self._doStaticValidationNym(identifier, reqId, operation)
+            self._doStaticValidationNym(identifier, req_id, operation)
         if operation[TXN_TYPE] == ATTRIB:
-            self._doStaticValidationAttrib(identifier, reqId, operation)
+            self._doStaticValidationAttrib(identifier, req_id, operation)
 
     def _doStaticValidationNym(self, identifier, reqId, operation):
         role = operation.get(ROLE)
@@ -169,19 +180,19 @@ class DomainReqHandler(PHandler):
                 oldVal = nymData.get(key)
                 if oldVal != newVal:
                     r, msg = Authoriser.authorised(NYM, key, originRole,
-                                                   oldVal=oldVal,
-                                                   newVal=newVal,
+                                                   oldVal=oldVal, newVal=newVal,
                                                    isActorOwnerOfSubject=isOwner)
                     if not r:
                         raise UnauthorizedClientRequest(
-                            req.identifier, req.reqId, "{} cannot update {}".format(
-                                Roles.nameFromValue(originRole), key))
+                            req.identifier, req.reqId, "{} cannot update {}".
+                            format(Roles.nameFromValue(originRole), key))
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier
         op = req.operation
         if op.get(TARGET_NYM) and op[TARGET_NYM] != req.identifier and \
-                not self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False) == origin:
+                not self.idrCache.getOwnerFor(op[TARGET_NYM],
+                                              isCommitted=False) == origin:
             raise UnauthorizedClientRequest(
                 req.identifier,
                 req.reqId,
@@ -202,7 +213,7 @@ class DomainReqHandler(PHandler):
     def hasNym(self, nym, isCommitted: bool = True):
         return self.idrCache.hasNym(nym, isCommitted=isCommitted)
 
-    def handleGetNymReq(self, request: Request, frm: str):
+    def handleGetNymReq(self, request: Request):
         nym = request.operation[TARGET_NYM]
         nymData = self.idrCache.getNym(nym, isCommitted=True)
         path = domain.make_state_path_for_nym(nym)
@@ -228,7 +239,7 @@ class DomainReqHandler(PHandler):
         result.update(request.operation)
         return result
 
-    def handleGetSchemaReq(self, request: Request, frm: str):
+    def handleGetSchemaReq(self, request: Request):
         authorDid = request.operation[TARGET_NYM]
         schema, lastSeqNo, lastUpdateTime, proof = self.getSchema(
             author=authorDid,
@@ -241,7 +252,7 @@ class DomainReqHandler(PHandler):
                                 update_time=lastUpdateTime,
                                 proof=proof)
 
-    def handleGetClaimDefReq(self, request: Request, frm: str):
+    def handleGetClaimDefReq(self, request: Request):
         signatureType = request.operation[SIGNATURE_TYPE]
         keys, lastSeqNo, lastUpdateTime, proof = self.getClaimDef(
             author=request.operation[ORIGIN],
@@ -256,7 +267,7 @@ class DomainReqHandler(PHandler):
         result[SIGNATURE_TYPE] = signatureType
         return result
 
-    def handleGetAttrsReq(self, request: Request, frm: str):
+    def handleGetAttrsReq(self, request: Request):
         if not self._validate_attrib_keys(request.operation):
             raise InvalidClientRequest(request.identifier, request.reqId,
                                        '{} should have one and only one of '
@@ -380,6 +391,9 @@ class DomainReqHandler(PHandler):
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
+
+    def get_query_response(self, request: Request):
+        return self.query_handlers[request.operation[TXN_TYPE]](request)
 
     @staticmethod
     def transform_txn_for_ledger(txn):

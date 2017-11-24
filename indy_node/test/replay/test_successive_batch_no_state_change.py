@@ -78,12 +78,12 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
 
     def check_verkey(i, vk):
         for node in nodeSet:
-            data = node.reqHandler.idrCache.getNym(i, isCommitted=True)
+            data = node.idrCache.getNym(i, isCommitted=True)
             assert data[VERKEY] == vk
 
     def check_uncommitted(count):
         for node in nodeSet:
-            assert len(node.reqHandler.idrCache.unCommitted) == count
+            assert len(node.idrCache.un_committed) == count
 
     for node in other_nodes:
         node.nodeIbStasher.delay(specific_pre_prepare)
@@ -152,7 +152,7 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     for node in nodeSet:
         node.nodeIbStasher.delay(delay_commits)
 
-        cache = node.reqHandler.idrCache
+        cache = node.idrCache
         uncommitteds[cache._name] = []
 
         cre = cache.currentBatchCreated
@@ -210,12 +210,12 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
 
     # Check batch reject
     for node in nodeSet:
-        cache = node.reqHandler.idrCache
-        initial = cache.unCommitted
+        cache = node.idrCache
+        initial = cache.un_committed
         cache.batchRejected()
         # After reject, last entry is removed
-        assert cache.unCommitted == initial[:-1]
-        root = cache.unCommitted[0][0]
+        assert cache.un_committed == initial[:-1]
+        root = cache.un_committed[0][0]
         cache.onBatchCommitted(root)
         # Calling commit with same root results in Assertion error
         with pytest.raises(AssertionError):
