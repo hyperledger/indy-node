@@ -28,14 +28,6 @@ class IdrCache(OptimisticKVStore):
         self._keyValueStorage = keyValueStorage
         super().__init__(self._keyValueStorage)
         self._name = name
-        # List of Tuples where first items is the state root after batch and
-        # second item is a dictionary similar to cache which can be queried
-        # like the database, i.e `self._db`. Keys (state roots are purged)
-        # when they get committed or reverted.
-        # self.unCommitted = []  # type: List[Tuple[bytes, OrderedDict]]
-        #
-        # # Relevant NYMs operation done in current batch, in order
-        # self.currentBatchOps = []   # type: List[Tuple]
 
     def __repr__(self):
         return self._name
@@ -82,78 +74,44 @@ class IdrCache(OptimisticKVStore):
     def get(self, idr, isCommitted=True):
         idr = idr.encode()
         value = super().get(idr, is_committed=isCommitted)
-        # if isCommitted:
-        #     value = self._keyValueStorage.get(idr)
-        # else:
-        #     # Looking for uncommitted values, iterating over `currentBatchOps and unCommitted`
-        #     # in reverse to get the latest value
-        #     for key, cache in reversed(self.currentBatchOps):
-        #         if key == idr.decode():
-        #             value = cache
-        #             ta, iv, r = self.unpackIdrValue(value)
-        #             return ta, iv, r
-        #
-        #     for _, cache in reversed(self.unCommitted):
-        #         if idr in cache:
-        #             value = cache[idr]
-        #             break
-        #     else:
-        #         value = self._keyValueStorage.get(idr)
         return self.unpackIdrValue(value)
 
     def set(self, idr, seqNo, txnTime,
             ta=None, role=None, verkey=None, isCommitted=True):
         idr = idr.encode()
         val = self.packIdrValue(seqNo, txnTime, ta, role, verkey)
-        # if isCommitted:
-        #     self._keyValueStorage.put(idr, val)
-        # else:
-        #     self.currentBatchOps.append((idr, val))
         super().set(idr, val, is_committed=isCommitted)
 
     def close(self):
         self._keyValueStorage.close()
 
     def currentBatchCreated(self, stateRoot):
-        # self.unCommitted.append((stateRoot, OrderedDict(self.currentBatchOps)))
-        # self.currentBatchOps = []
         super().create_batch_from_current(stateRoot)
 
     def batchRejected(self):
-        # Batches are always rejected from end of `self.unCommitted`
-        # self.currentBatchOps = []
-        # self.unCommitted = self.unCommitted[:-1]
         super().reject_batch()
 
     def onBatchCommitted(self, stateRoot):
         # Commit an already created batch
-        try:
-            assert super().first_batch_idr == stateRoot, 'The first created ' \
-                                                         'batch has not been ' \
-                                                         'committed or reverted ' \
-                                                         'and yet another batch ' \
-                                                         'is trying to be ' \
-                                                         'committed, {} {}'.\
-                format(self.unCommitted[0][0], stateRoot)
-            super().commit_batch()
-        except Exception:
+        batch_idr = super().first_batch_idr
+        if batch_idr is None:
             logger.warning('{}{} is trying to commit a batch with state root'
                            ' {} but no uncommitted found'
                            .format(THREE_PC_PREFIX, self, stateRoot))
-        # if self.unCommitted:
-        #     assert self.unCommitted[0][0] == stateRoot, 'The first created batch has ' \
-        #         'not been committed or ' \
-        #         'reverted and yet another ' \
-        #         'batch is trying to be ' \
-        #         'committed, {} {}'.format(
-        #         self.unCommitted[0][0], stateRoot)
-        #     self._keyValueStorage.setBatch([(idr, val) for idr, val in
-        #                                     self.unCommitted[0][1].items()])
-        #     self.unCommitted = self.unCommitted[1:]
-        # else:
-        #     logger.warning('{}{} is trying to commit a batch with state root'
-        #                    ' {} but no uncommitted found'
-        #                    .format(THREE_PC_PREFIX, self, stateRoot))
+            return
+        if batch_idr != stateRoot:
+            logger.warning('{}{}: The first created batch has not been '
+                           'committed or reverted and yet another batch is '
+                           'trying to be committed, {} {}'.
+                           format(THREE_PC_PREFIX, self,
+                                  self.unCommitted[0][0], stateRoot))
+            return
+
+        try:
+            super().commit_batch()
+        except ValueError:
+            logger.warning('{}{} found no uncommitted batch'.
+                           format(THREE_PC_PREFIX, self))
 
     def getVerkey(self, idr, isCommitted=True):
         seqNo, txnTime, ta, role, verkey = self.get(idr, isCommitted=isCommitted)
