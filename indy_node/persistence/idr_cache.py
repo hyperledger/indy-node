@@ -118,6 +118,7 @@ class IdrCache:
             logger.warning('{}{} is trying to commit a batch with state root'
                            ' {} but no uncommitted found'
                            .format(THREE_PC_PREFIX, self, stateRoot))
+            return
         assert self.unCommitted[0][0] == stateRoot, \
             'The first created batch has ' \
             'not been committed or ' \
