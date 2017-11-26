@@ -16,7 +16,6 @@ keepDir = os.path.join(config.baseDir, config.NETWORK_NAME)
 if __name__ == "__main__":
     if not os.path.exists(keepDir):
         os.makedirs(keepDir, exist_ok=True)
-
     parser = argparse.ArgumentParser(
         description="Generate keys for a node's stacks "
                     "by taking the node's name and 2 "
