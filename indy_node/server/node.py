@@ -19,8 +19,8 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
     IN_PROGRESS
-from indy_common.constants import openTxns, \
-    validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
+from indy_common.constants import validTxnTypes, IDENTITY_TXN_TYPES, \
+    CONFIG_TXN_TYPES
 from indy_common.txn_util import getTxnOrderedFields
 from indy_common.types import Request, SafeRequest
 from indy_node.persistence.attribute_store import AttributeStore
