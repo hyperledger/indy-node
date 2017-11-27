@@ -19,8 +19,9 @@ def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
         del node
 
     for nm in names:
-        node = testNodeClass(nm, basedirpath=tdirWithPoolTxns, base_data_dir=tdirWithPoolTxns,
-                             config=tconf, pluginPaths=allPluginsPath)
+        node = testNodeClass(nm, basedirpath=tdirWithPoolTxns,
+                             base_data_dir=tdirWithPoolTxns, config=tconf,
+                             pluginPaths=allPluginsPath)
         looper.add(node)
         nodeSet.append(node)
 
