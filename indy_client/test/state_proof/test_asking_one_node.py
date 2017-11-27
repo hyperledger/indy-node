@@ -2,10 +2,7 @@ import pytest
 
 from indy_client.test.state_proof.helper import submit_operation_and_get_replies
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW
-from plenum.test.helper import waitForSufficientRepliesForRequests, \
-    getRepliesFromClientInbox
 from indy_common.constants import GET_ATTR
-from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.test.test_nym_attrib import \
     addedRawAttribute, attributeName, attributeValue, attributeData
 
