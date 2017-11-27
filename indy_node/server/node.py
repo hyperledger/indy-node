@@ -196,6 +196,12 @@ class Node(PlenumNode, HasPoolManager):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
                                  self.configLedger, self.configReqHandler)
 
+    @property
+    def ledgers(self):
+        ledgers = super().ledgers
+        ledgers.append(self.configLedger)
+        return ledgers
+
     def start_config_ledger_sync(self):
         self._sync_ledger(CONFIG_LEDGER_ID)
         self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
