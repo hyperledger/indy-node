@@ -97,8 +97,8 @@ controlServicePort = "30003"
 '''
 logging level for agents
 '''
-agentLoggingLevel = logging.NOTSET
+agentLoggingLevel = logging.INFO
 '''
 default logging level for node
 '''
-logLevel = logging.NOTSET
+logLevel = logging.INFO
