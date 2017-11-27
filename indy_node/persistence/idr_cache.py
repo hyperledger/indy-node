@@ -1,4 +1,3 @@
-from collections import OrderedDict
 import rlp
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX, \
     TXN_TIME
@@ -104,7 +103,7 @@ class IdrCache(OptimisticKVStore):
                            'committed or reverted and yet another batch is '
                            'trying to be committed, {} {}'.
                            format(THREE_PC_PREFIX, self,
-                                  self.unCommitted[0][0], stateRoot))
+                                  self.un_committed[0][0], stateRoot))
             return
 
         try:
