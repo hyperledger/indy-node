@@ -1,4 +1,5 @@
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, NYM, ROLE, VERKEY, CURRENT_PROTOCOL_VERSION
+from plenum.common.constants import TARGET_NYM, TXN_TYPE, NYM, ROLE, VERKEY, \
+    CURRENT_PROTOCOL_VERSION
 from plenum.common.signer_did import DidIdentity
 from stp_core.types import Identifier
 from indy_common.auth import Authoriser

@@ -2,25 +2,29 @@ import types
 
 import pytest
 
+from indy_client.test.helper import genTestClient
 from plenum.common.constants import VERKEY
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.messages.node_messages import PrePrepare, Commit
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import randomString
-from plenum.test.delayers import cDelay
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import waitNodeDataEquality
 from plenum.test.test_node import getPrimaryReplica
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.identity import Identity
+from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
+
+
+logger = getlogger()
 
 
 @pytest.fixture(scope="module")
 def tconf(tconf, request):
     # Delaying performance checks since delaying 3PC messages in the test
     old_freq = tconf.PerfCheckFreq
-    tconf.PerfCheckFreq = 40
+    tconf.PerfCheckFreq = 50
 
     def reset():
         tconf.PerfCheckFreq = old_freq
@@ -31,8 +35,8 @@ def tconf(tconf, request):
 
 def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
                                              tdirWithDomainTxnsUpdated,
-                                             tconf, nodeSet,
-                                             trustee, trusteeWallet, monkeypatch):
+                                             tconf, nodeSet, trustee,
+                                             trusteeWallet, monkeypatch):
     """
     Send 2 NYM txns in different batches such that the second batch does not
     change state so that state root remains same, but keep the identifier
@@ -42,7 +46,6 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     :return:
     """
     prim_node = getPrimaryReplica(nodeSet, 0).node
-    other_nodes = [n for n in nodeSet if n != prim_node]
     all_reqs = []
 
     # Delay only first PRE-PREPARE
@@ -50,18 +53,10 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     delay_pp_duration = 5
     delay_cm_duration = 10
 
-    def specific_pre_prepare(wrappedMsg):
-        nonlocal pp_seq_no_to_delay
-        msg, sender = wrappedMsg
-        if isinstance(msg, PrePrepare) and \
-                msg.instId == 0 and \
-                msg.ppSeqNo == pp_seq_no_to_delay:
-            return delay_pp_duration
-
     def delay_commits(wrappedMsg):
         msg, sender = wrappedMsg
         if isinstance(msg, Commit) and msg.instId == 0:
-            return 10
+            return delay_cm_duration
 
     def new_identity():
         wallet = Wallet(randomString(5))
@@ -81,10 +76,12 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
         reqs = wallet.preparePending()
         all_reqs.extend(reqs)
         client.submitReqs(*reqs)
+        return reqs
 
     def submit_id_req_and_wait(idy, wallet=None, client=None):
-        submit_id_req(idy, wallet=wallet, client=client)
+        reqs = submit_id_req(idy, wallet=wallet, client=client)
         looper.runFor(.2)
+        return reqs
 
     def check_verkey(i, vk):
         for node in nodeSet:
@@ -95,10 +92,7 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
         for node in nodeSet:
             assert len(node.idrCache.un_committed) == count
 
-    # for node in other_nodes:
-    #     node.nodeIbStasher.delay(specific_pre_prepare)
     for node in nodeSet:
-        node.nodeIbStasher.delay(delay_commits)
         for rpl in node.replicas:
             monkeypatch.setattr(rpl, '_request_missing_three_phase_messages',
                                 lambda *x, **y: None)
@@ -107,17 +101,29 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     new_idr = idy.identifier
     verkey = idy.verkey
 
-    # Setting the same verkey thrice but in different batches with different
-    #  request ids
     submit_id_req(idy)
     waitForSufficientRepliesForRequests(looper, trustee, requests=all_reqs[-1:],
                                         add_delay_to_timeout=delay_cm_duration)
-    for _ in range(3):
-        submit_id_req_and_wait(idy, new_wallet)
-        # submit_id_req(idy)
-        # looper.runFor(.2)
 
-    waitForSufficientRepliesForRequests(looper, trustee, requests=all_reqs,
+    for node in nodeSet:
+        node.nodeIbStasher.delay(delay_commits)
+
+    new_client, _ = genTestClient(nodeSet, tmpdir=tdirWithPoolTxns,
+                                  usePoolLedger=True)
+    looper.add(new_client)
+    looper.run(new_client.ensureConnectedToNodes(count=len(nodeSet)))
+    new_client.registerObserver(new_wallet.handleIncomingReply, name='temp')
+    idy.seqNo = None
+
+    # Setting the same verkey thrice but in different batches with different
+    #  request ids
+    for _ in range(3):
+        req, = submit_id_req_and_wait(idy, wallet=new_wallet, client=new_client)
+        logger.debug('{} sent request {} to change verkey'.
+                     format(new_client, req))
+
+    waitForSufficientRepliesForRequests(looper, new_client,
+                                        requests=all_reqs[-3:],
                                         add_delay_to_timeout=delay_cm_duration)
 
     # Number of uncommitted entries is 0
@@ -126,17 +132,8 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     check_verkey(new_idr, verkey)
 
     pp_seq_no_to_delay = 4
-    # for node in other_nodes:
-    #     node.nodeIbStasher.delay(specific_pre_prepare)
-    #     # disable requesting missing 3 phase messages. Otherwise PP delay won't work
-    #     for rpl in node.replicas:
-    #         monkeypatch.setattr(rpl, '_request_missing_three_phase_messages',
-    #                             lambda *x, **y: None)
-    for node in nodeSet:
-        node.nodeIbStasher.delay(delay_commits)
-        for rpl in node.replicas:
-            monkeypatch.setattr(rpl, '_request_missing_three_phase_messages',
-                                lambda *x, **y: None)
+
+    new_client.deregisterObserver(name='temp')
 
     # Setting the verkey to `x`, then `y` and then back to `x` but in different
     # batches with different request ids. The idea is to change
@@ -144,30 +141,35 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     # errors are encountered
 
     idy, new_wallet = new_identity()
-    new_idr = idy.identifier
-    verkey = idy.verkey
-    submit_id_req_and_wait(idy)
-    # submit_id_req(idy)
-    # looper.runFor(.2)
+    submit_id_req(idy)
+    waitForSufficientRepliesForRequests(looper, trustee, requests=all_reqs[-1:],
+                                        add_delay_to_timeout=delay_cm_duration)
 
-    # new_verkey = SimpleSigner().verkey
-    # idy.verkey = new_verkey
-    # submit_id_req(idy)
-    # looper.runFor(.2)
-    old_signer = new_wallet.idsToSigners[idy.identifier]
-    new_signer = SimpleSigner(identifier=idy.identifier)
-    new_wallet.updateSigner(idy.identifier, new_signer)
-    idy.verkey = new_wallet.getVerkey(idy.identifier)
-    submit_id_req_and_wait(idy, new_wallet)
+    new_client.registerObserver(new_wallet.handleIncomingReply)
 
-    # idy.verkey = verkey
-    # submit_id_req(idy)
-    # looper.runFor(.2)
-    new_wallet.updateSigner(idy.identifier, old_signer)
-    idy.verkey = new_wallet.getVerkey(idy.identifier)
-    submit_id_req_and_wait(idy, new_wallet)
+    idy.seqNo = None
+    x_signer = SimpleSigner(identifier=idy.identifier)
+    idy.verkey = x_signer.verkey
+    req, = submit_id_req_and_wait(idy, wallet=new_wallet, client=new_client)
+    new_wallet.updateSigner(idy.identifier, x_signer)
+    logger.debug('{} sent request {} to change verkey'.
+                 format(new_client, req))
 
-    waitForSufficientRepliesForRequests(looper, trustee, requests=all_reqs,
+    y_signer = SimpleSigner(identifier=idy.identifier)
+    idy.verkey = y_signer.verkey
+    req, = submit_id_req_and_wait(idy, wallet=new_wallet, client=new_client)
+    new_wallet.updateSigner(idy.identifier, y_signer)
+    logger.debug('{} sent request {} to change verkey'.
+                 format(new_client, req))
+
+    idy.verkey = x_signer.verkey
+    req, = submit_id_req_and_wait(idy, wallet=new_wallet, client=new_client)
+    new_wallet.updateSigner(idy.identifier, x_signer)
+    logger.debug('{} sent request {} to change verkey'.
+                 format(new_client, req))
+
+    waitForSufficientRepliesForRequests(looper, new_client,
+                                        requests=all_reqs[-3:],
                                         add_delay_to_timeout=delay_cm_duration)
 
     # Number of uncommitted entries is 0
@@ -182,8 +184,6 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     uncommitteds = {}
     methods = {}
     for node in nodeSet:
-        node.nodeIbStasher.delay(delay_commits)
-
         cache = node.idrCache
         uncommitteds[cache._name] = []
 
@@ -218,7 +218,8 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     # Correct number of uncommitted entries
     looper.run(eventually(check_uncommitted, more, retryWait=1))
 
-    waitForSufficientRepliesForRequests(looper, trustee, requests=all_reqs,
+    waitForSufficientRepliesForRequests(looper, trustee,
+                                        requests=all_reqs[-more:],
                                         add_delay_to_timeout=delay_cm_duration)
 
     # Number of uncommitted entries is 0

@@ -117,7 +117,6 @@ class DomainReqHandler(PHandler):
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
-
         # TODO: This is not static validation as it involves state
         if not (not operation.get(TARGET_NYM) or
                 self.hasNym(operation[TARGET_NYM], isCommitted=False)):

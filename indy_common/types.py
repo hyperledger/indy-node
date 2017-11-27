@@ -259,7 +259,7 @@ node_message_factory.update_schemas_by_field_type(
 class SafeRequest(Request, ClientMessageValidator):
 
     def __init__(self, **kwargs):
-        ClientMessageValidator.__init__(self, operation_schema_is_strict=False,
+        ClientMessageValidator.__init__(self, operation_schema_is_strict=True,
                                         schema_is_strict=False)
         self.validate(kwargs)
         Request.__init__(self, **kwargs)
