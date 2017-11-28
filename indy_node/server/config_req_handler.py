@@ -16,7 +16,7 @@ from indy_node.server.pool_config import PoolConfig
 
 
 class ConfigReqHandler(RequestHandler):
-    valid_txn_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
+    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig):

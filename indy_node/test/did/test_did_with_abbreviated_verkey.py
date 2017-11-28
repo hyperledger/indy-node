@@ -106,6 +106,7 @@ def testRetrieveAbbrvVerkey(didAddedWithAbbrvVerkey, looper, trustAnchor,
         retrievedVerkey = trustAnchorWallet.getIdentity(abbrevIdr).verkey
         assertEquality(retrievedVerkey, wallet.getVerkey(abbrevIdr))
         checkAbbrVerkeySize(retrievedVerkey)
+
     timeout = plenumWaits.expectedReqAckQuorumTime()
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
     chkVerifyForRetrievedIdentity(wallet, trustAnchorWallet, abbrevIdr)

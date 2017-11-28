@@ -3,10 +3,11 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, VERSION, ORIGIN, FORCE
-from plenum.common.messages.fields import AnyField, IterableField, AnyMapField, NonEmptyStringField
+from plenum.common.messages.fields import IterableField, AnyMapField, \
+    NonEmptyStringField
 from plenum.common.messages.node_message_factory import node_message_factory
 
-from plenum.common.messages.message_base import MessageValidator, MessageBase
+from plenum.common.messages.message_base import MessageValidator
 from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
 from plenum.common.messages.node_messages import NonNegativeNumberField
@@ -258,7 +259,7 @@ class ClientMessageValidator(PClientMessageValidator):
 class SafeRequest(Request, ClientMessageValidator):
 
     def __init__(self, **kwargs):
-        ClientMessageValidator.__init__(self, operation_schema_is_strict=False,
+        ClientMessageValidator.__init__(self, operation_schema_is_strict=True,
                                         schema_is_strict=False)
         self.validate(kwargs)
         Request.__init__(self, **kwargs)

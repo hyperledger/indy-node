@@ -19,8 +19,8 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
     IN_PROGRESS
-from indy_common.constants import openTxns, \
-    validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
+from indy_common.constants import validTxnTypes, IDENTITY_TXN_TYPES, \
+    CONFIG_TXN_TYPES
 from indy_common.txn_util import getTxnOrderedFields
 from indy_common.types import Request, SafeRequest
 from indy_node.persistence.attribute_store import AttributeStore
@@ -53,13 +53,12 @@ class Node(PlenumNode, HasPoolManager):
                  basedirpath=None,
                  base_data_dir=None,
                  primaryDecider=None,
-                 pluginPaths: Iterable[str] = None,
+                 pluginPaths: Iterable[str]=None,
                  storage=None,
                  config=None):
         self.config = config or getConfig()
 
-        # TODO: 5 ugly lines ahead, don't know how to avoid
-        # self.stateTreeStore = None
+        # TODO: 4 ugly lines ahead, don't know how to avoid
         self.idrCache = None
         self.attributeStore = None
         self.upgrader = None
@@ -254,9 +253,6 @@ class Node(PlenumNode, HasPoolManager):
             return self.nodeAuthNr
         else:
             return super().authNr(req)
-
-    # def defaultAuthNr(self):
-    #     return LedgerBasedAuthNr(self.idrCache)
 
     def init_core_authenticator(self):
         return LedgerBasedAuthNr(self.idrCache)
