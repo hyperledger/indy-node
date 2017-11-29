@@ -652,18 +652,18 @@ class IndyCli(PlenumCli):
     def _getAttr(self, nym, raw, enc, hsh):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1
         if raw:
-            l = LedgerStore.RAW
+            led_store = LedgerStore.RAW
             data = raw
         elif enc:
-            l = LedgerStore.ENC
+            led_store = LedgerStore.ENC
             data = enc
         elif hsh:
-            l = LedgerStore.HASH
+            led_store = LedgerStore.HASH
             data = hsh
         else:
             raise RuntimeError('One of raw, enc, or hash are required.')
 
-        attrib = Attribute(data, dest=nym, ledgerStore=l)
+        attrib = Attribute(data, dest=nym, ledgerStore=led_store)
         req = self.activeWallet.requestAttribute(
             attrib, sender=self.activeWallet.defaultId)
         self.activeClient.submitReqs(req)
