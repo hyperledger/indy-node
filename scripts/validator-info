@@ -552,7 +552,7 @@ def main():
 
     statfile_group.add_argument(
         "--basedir", metavar="PATH",
-        default=config.baseDir,
+        default=os.path.join(config.baseDir, config.NETWORK_NAME),
         help=("Path to stats files")
     )
     # statfile_group.add_argument(
