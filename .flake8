@@ -1,5 +1,5 @@
 [flake8]
-ignore = N801, N802, N803, N806, N813, C901, E501, F401
+ignore = N801, N802, N803, N806, N813, C901, E501, F401, E741
 exclude =
     # common places
     .git,__pycache__,docs/source/conf.py,old,build,dist,
