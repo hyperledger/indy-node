@@ -1,4 +1,4 @@
-FROM hyperledger/indy-baseimage
+FROM __NS__/indy-baseimage:0.0.1
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 # sovrin repos
@@ -9,5 +9,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88 && \
 COPY scripts/user.sh /usr/local/bin/indy_ci_add_user
 COPY scripts/charm_crypto.sh /usr/local/bin/indy_ci_charm_crypto
 RUN bash -c "chmod 755 /usr/local/bin/indy_ci_{add_user,charm_crypto}"
+
+COPY __VERSION_FILE__ /
 
 RUN indy_image_clean

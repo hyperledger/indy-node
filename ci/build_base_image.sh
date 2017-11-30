@@ -5,6 +5,6 @@ set -e
 
 # should be called from the root of the repo
 
-BASE_IMAGE=hyperledger/indy-core-baseci
+BASE_IMAGE=hyperledger/indy-core-baseci:0.0.1
 
 docker pull "$BASE_IMAGE" || make -C docker-files/baseimage clean all

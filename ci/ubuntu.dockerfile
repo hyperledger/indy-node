@@ -1,4 +1,4 @@
-FROM hyperledger/indy-core-baseci
+FROM hyperledger/indy-core-baseci:0.0.1
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 ARG uid=1000
