@@ -33,9 +33,9 @@ def create_local_pool(node_base_dir, cli_base_dir, config=None, node_size=4):
 
         stewards.append(s)
 
-        node_config_helper = NodeConfigHelper(n_config.name, conf, chroot=node_base_dir)
+        node_config_helper = NodeConfigHelper(conf.name, conf, chroot=node_base_dir)
         n_config = adict(name='Node' + str(i + 1),
-                         basedirpath=pool_dir,
+                         basedirpath=node_config_helper.ledger_dir,
                          ha=('127.0.0.1', 9700 + (i * 2)),
                          cliha=('127.0.0.1', 9700 + (i * 2) + 1))
 
@@ -50,7 +50,7 @@ def create_local_pool(node_base_dir, cli_base_dir, config=None, node_size=4):
 
         genesis_txns += s.generate_genesis_txns()
 
-    pool = LocalPool(genesis_txns, pool_dir, steward=stewards[0])
+    pool = None  # LocalPool(genesis_txns, pool_dir, steward=stewards[0])
 
     for c in node_conf:
         n = Node(**c)
