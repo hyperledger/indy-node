@@ -10,7 +10,8 @@ version_dotted="$2"
 METADATA_FNAME="__metadata__.py"
 MANIFEST_FNAME="manifest.txt"
 
-USER_CONFIG_DIR="\/etc\/indy"
+GENERAL_CONFIG_DIR="\/etc\/indy"
+REPO_GENERAL_CONFIG_DIR="$repo/indy_node/general_config"
 
 echo -e "\n\nAbout to start updating package $repo to version $version_dotted info from cur dir: $(pwd)"
 
@@ -52,12 +53,12 @@ echo -e $manifest >$manifest_file
 
 echo "Preparing config files"
 # Define user config directory
-sed -i "s/^\(USER_CONFIG_DIR\s*=\s*\).*\$/\1\"$USER_CONFIG_DIR\"/" "$repo/indy_common/config.py"
+sed -i "s/^\(GENERAL_CONFIG_DIR\s*=\s*\).*\$/\1\"$GENERAL_CONFIG_DIR\"/" "$repo/indy_common/config.py"
 # Create user config
-cp $repo/indy_node/user_config/user_config.py $repo/indy_node/user_config/indy_config.py
-cat $repo/indy_node/user_config/ubuntu_platform_config.py >> $repo/indy_node/user_config/indy_config.py
-rm -f $repo/indy_node/user_config/user_config.py
-rm -f $repo/indy_node/user_config/ubuntu_platform_config.py
-rm -f $repo/indy_node/user_config/windows_platform_config.py
+cp $REPO_GENERAL_CONFIG_DIR/general_config.py $REPO_GENERAL_CONFIG_DIR/indy_config.py
+cat $REPO_GENERAL_CONFIG_DIR/ubuntu_platform_config.py >> $REPO_GENERAL_CONFIG_DIR/indy_config.py
+rm -f $REPO_GENERAL_CONFIG_DIR/general_config.py
+rm -f $REPO_GENERAL_CONFIG_DIR/ubuntu_platform_config.py
+rm -f $REPO_GENERAL_CONFIG_DIR/windows_platform_config.py
 
 echo -e "Finished preparing $repo for publishing\n"

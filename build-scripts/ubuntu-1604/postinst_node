@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # it should be fixed
-USER_CONFIG_DIR="/etc/indy"
+GENERAL_CONFIG_DIR="/etc/indy"
 GENERAL_DATA_DIR="/var/lib/indy"
 GENERAL_LOG_DIR="/var/log/indy"
 
@@ -16,8 +16,8 @@ if [ -f $CLI_BASE_DIR ]; then
     rm $CLI_BASE_DIR
 fi
 
-# create indy config folder if does not exist
-mkdir -p $USER_CONFIG_DIR
+# create general indy config folder if does not exist
+mkdir -p $GENERAL_CONFIG_DIR
 # create general indy data folder if does not exist
 mkdir -p $GENERAL_DATA_DIR
 # create general indy log folder if does not exist
@@ -37,11 +37,11 @@ mkdir -p $GENERAL_LOG_DIR
 #fi
 
 # create indy node config if does not exist
-if [ ! -f $USER_CONFIG_DIR/indy_config.py ]; then
-    cp $INSTALL_DIR/indy_node/user_config/indy_config.py $USER_CONFIG_DIR
+if [ ! -f $GENERAL_CONFIG_DIR/indy_config.py ]; then
+    cp $INSTALL_DIR/indy_node/general_config/indy_config.py $GENERAL_CONFIG_DIR
 fi
 
-chmod -R ug+rwx $USER_CONFIG_DIR
+chmod -R ug+rwx $GENERAL_CONFIG_DIR
 chmod -R ug+rwx $GENERAL_DATA_DIR
 chmod -R ug+rwx $GENERAL_LOG_DIR
 
@@ -68,9 +68,9 @@ if [ \$# -lt 3 ]; then
     exit 1;
 fi
 
-echo "NODE_NAME=\$1" > $USER_CONFIG_DIR/indy.env
-echo "NODE_PORT=\$2" >> $USER_CONFIG_DIR/indy.env
-echo "NODE_CLIENT_PORT=\$3" >> $USER_CONFIG_DIR/indy.env
+echo "NODE_NAME=\$1" > $GENERAL_CONFIG_DIR/indy.env
+echo "NODE_PORT=\$2" >> $GENERAL_CONFIG_DIR/indy.env
+echo "NODE_CLIENT_PORT=\$3" >> $GENERAL_CONFIG_DIR/indy.env
 
 if [ -z \$4 ]; then
     init_indy_keys --name \$1
@@ -88,7 +88,7 @@ Description=Indy Node
 Requires=indy-node-control.service
 
 [Service]
-EnvironmentFile=$USER_CONFIG_DIR/indy.env
+EnvironmentFile=$GENERAL_CONFIG_DIR/indy.env
 ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_indy_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
 User=indy
 Group=indy
@@ -112,7 +112,7 @@ After=network.target
 
 [Service]
 Type=simple
-EnvironmentFile=$USER_CONFIG_DIR/node_control.conf
+EnvironmentFile=$GENERAL_CONFIG_DIR/node_control.conf
 ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \$HOLD_EXT
 Restart=on-failure
 RestartSec=10
@@ -125,8 +125,8 @@ WantedBy=multi-user.target
 EOF
 
 HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/indy/node_control.conf)
-if [ ! -f $USER_CONFIG_DIR/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
-    cat <<EOF > $USER_CONFIG_DIR/node_control.conf
+if [ ! -f $GENERAL_CONFIG_DIR/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
+    cat <<EOF > $GENERAL_CONFIG_DIR/node_control.conf
 # Uncomment this to run agent in test mode:
 #TEST_MODE=--test
 
@@ -151,10 +151,10 @@ rm -f /usr/local/bin/delete_indy_node.bat /usr/local/bin/upgrade_indy_node_test.
     /usr/local/bin/restart_indy_node.bat /usr/local/bin/install_nssm.bat /usr/local/bin/upgrade_indy_node.bat \
     /usr/local/bin/install_indy_node.bat /usr/local/bin/restart_upgrade_agent.bat
 
-chown -R indy:indy $USER_CONFIG_DIR
+chown -R indy:indy $GENERAL_CONFIG_DIR
 chown -R indy:indy $GENERAL_DATA_DIR
 chown -R indy:indy $GENERAL_LOG_DIR
-chmod -R ug+rw $USER_CONFIG_DIR
+chmod -R ug+rw $GENERAL_CONFIG_DIR
 chmod -R ug+rw $GENERAL_DATA_DIR
 chmod -R ug+rw $GENERAL_LOG_DIR
 

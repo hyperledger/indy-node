@@ -8,8 +8,8 @@ from indy_common.txn_util import getTxnOrderedFields
 from stp_core.common.log import getlogger
 from indy_common.config import GENERAL_CONFIG_FILE
 from indy_common.config_helper import ConfigHelper, NodeConfigHelper
-import indy_node.user_config.user_config as user_config
-import indy_node.user_config.ubuntu_platform_config as platform_config
+import indy_node.general_config.general_config as general_config
+import indy_node.general_config.ubuntu_platform_config as platform_config
 
 # typecheck during tests
 strict_types.defaultShouldCheck = True
@@ -37,7 +37,7 @@ def _general_conf_tdir(tmp_dir):
     os.makedirs(general_config_dir)
     general_config_path = os.path.join(general_config_dir, GENERAL_CONFIG_FILE)
 
-    general_config_file = open(user_config.__file__, 'r')
+    general_config_file = open(general_config.__file__, 'r')
     platform_config_file = open(platform_config.__file__, 'r')
 
     general_config_result_file = open(general_config_path, 'w')
@@ -45,7 +45,7 @@ def _general_conf_tdir(tmp_dir):
     lines = general_config_file.readlines()
     for line in lines:
         if line.startswith('NETWORK_NAME'):
-            line = 'NETWORK_NAME = \'sandbox\''
+            line = 'NETWORK_NAME = \'sandbox\'\n'
         general_config_result_file.write(line)
     general_config_result_file.write(platform_config_file.read())
 
