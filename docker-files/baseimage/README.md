@@ -29,7 +29,10 @@ Adds [Indy Core apt repository](https://repo.sovrin.org/deb) to apt sources.list
  - `indy_ci_charm_crypto` installs Charm Crypto
 
 ### indy-core-baseci
-Base image for images that provide CI testing environment for Indy core projects (indy-anoncreds, indy-plenum, indy-node).
+Base image for images that provide CI testing environment for Indy core projects
+([indy-anoncreds](https://github.com/hyperledger/indy-anoncreds),
+[indy-plenum](https://github.com/hyperledger/indy-plenum),
+[indy-node](https://github.com/hyperledger/indy-node)).
 Based on  [indy-baseci](#indy-baseci).
 Adds [Indy SDK apt repository](https://repo.sovrin.org/sdk/deb) to apt sources.list and configures apt preferences to make indy sdk packages from Indy Core apt repo more prioritized than from Indy SDK repo.
 
@@ -40,7 +43,7 @@ Adds [Indy SDK apt repository](https://repo.sovrin.org/sdk/deb) to apt sources.l
 
 `make`
 
-Builds all three base images tagged accoring to version from `*.version` files.
+Builds all three base images tagged according to version from `*.version` files.
 
 
 ### Publish
@@ -52,8 +55,8 @@ Before making push to Docker Hub the one should keep in mind:
 
 Thus, the following release workflow is expected:
 
- 1. update dockerfile(s) and/or related sources
- 2. bump version(s) in `*.version` and base images tags in `*.dockerfile` accordingly. **Note**: each update in one of base images leads to version update for the child images as well
+ 1. update dockerfile(s) and/or related resources
+ 2. bump versions in `*.version` and base images tags in `*.dockerfile` accordingly. **Note**: each update in one of base images leads to version update for the child images as well
  3. create PR to [master](https://github.com/hyperledger/indy-node/tree/master/)
  4. pull [master](https://github.com/hyperledger/indy-node/tree/master/) locally once it is merged
  5. do `make publish`
