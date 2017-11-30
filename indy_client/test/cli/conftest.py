@@ -54,6 +54,7 @@ from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
     thriftAgent, faberBootstrap, acmeBootstrap
 from indy_client.test.cli.helper import connect_and_check_output
 from indy_common.config_helper import ConfigHelper
+from stp_core.crypto.util import randomSeed
 
 
 @pytest.fixture("module")
@@ -65,7 +66,7 @@ def ledger_base_dir(tconf):
 def cliTempLogger():
     file_name = "indy_cli_test.log"
     file_path = os.path.join(tempfile.tempdir, file_name)
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w'):
         pass
     return file_path
 
@@ -144,7 +145,7 @@ def faberMap(agentIpAddress, faberAgentPort):
             'wallet-name': 'Faber'}
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def acmeMap(agentIpAddress, acmeAgentPort):
     ha = "{}:{}".format(agentIpAddress, acmeAgentPort)
     return {'inviter': 'Acme Corp',
@@ -173,7 +174,7 @@ def acmeMap(agentIpAddress, acmeAgentPort):
             'wallet-name': 'Acme'}
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def thriftMap(agentIpAddress, thriftAgentPort):
     ha = "{}:{}".format(agentIpAddress, thriftAgentPort)
     return {'inviter': 'Thrift Bank',
@@ -1186,7 +1187,7 @@ def faberAdded(poolNodesCreated,
               role=TRUST_ANCHOR)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def faberIsRunningWithoutNymAdded(emptyLooper, tdirWithPoolTxns, faberWallet,
                                   faberAgent):
     faber, faberWallet = runningFaber(emptyLooper, tdirWithPoolTxns,
@@ -1194,7 +1195,7 @@ def faberIsRunningWithoutNymAdded(emptyLooper, tdirWithPoolTxns, faberWallet,
     return faber, faberWallet
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
                    faberAddedByPhil, faberAgent, faberBootstrap):
     faber, faberWallet = runningFaber(
@@ -1202,7 +1203,7 @@ def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
     return faber, faberWallet
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet,
                   acmeAddedByPhil, acmeAgent, acmeBootstrap):
     acme, acmeWallet = runningAcme(
@@ -1211,7 +1212,7 @@ def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet,
     return acme, acmeWallet
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def thriftIsRunning(emptyLooper, tdirWithPoolTxns, thriftWallet,
                     thriftAddedByPhil, thriftAgent):
     thrift, thriftWallet = runningThrift(emptyLooper, tdirWithPoolTxns,
@@ -1254,7 +1255,7 @@ def earlMultiNodePools(request, multiPoolNodesCreated, tdir,
                              cliTempLogger, multiPoolNodesCreated)("earl")
 
 
-@pytest.yield_fixture(scope="module")
+@pytest.yield_fixture(scope="module")   # noqa
 def trusteeCLI(CliBuilder, poolTxnTrusteeNames):
     yield from CliBuilder(poolTxnTrusteeNames[0])
 
@@ -1297,11 +1298,12 @@ def philCli(be, do, philCLI, trusteeCli, poolTxnData):
 
     do('new wallet Phil', expect=['New wallet Phil created',
                                   'Active wallet set to "Phil"'])
-    phil_seed = poolTxnData['seeds']['Steward1']
-    phil_signer = DidSigner(seed=phil_seed.encode())
+
+    phil_seed = randomSeed()
+    phil_signer = DidSigner(seed=phil_seed)
 
     mapper = {
-        'seed': phil_seed,
+        'seed': phil_seed.decode(),
         'idr': phil_signer.identifier}
     do('new key with seed {seed}', expect=['Key created in wallet Phil',
                                            'DID for key is {idr}',

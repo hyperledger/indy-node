@@ -1,9 +1,7 @@
-from enum import Enum
-
-from plenum.common.transactions import PlenumTransactions
+from plenum.common.transactions import Transactions, PlenumTransactions
 
 
-class IndyTransactions(Enum):
+class IndyTransactions(Transactions):
     #  These numeric constants CANNOT be changed once they have been used,
     #  because that would break backwards compatibility with the ledger
     #  Also the numeric constants CANNOT collide with transactions in plenum
@@ -26,6 +24,3 @@ class IndyTransactions(Enum):
     POOL_CONFIG = "111"
 
     CHANGE_KEY = "112"
-
-    def __str__(self):
-        return self.name

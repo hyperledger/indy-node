@@ -52,8 +52,8 @@ def test_get_nym_returns_role(
 
     parameters = {
         'dest': uuidIdentifier,
-        'verkey':abbrevVerkey,
-        'role':current_role
+        'verkey': abbrevVerkey,
+        'role': current_role
     }
 
     do('send GET_NYM dest={dest}',
