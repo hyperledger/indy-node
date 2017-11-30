@@ -1,8 +1,7 @@
 FROM ubuntu:16.04
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
-# TODO enable for dockerhub publishing
-#RUN apt-get update && apt-get dist-upgrade -y
+RUN apt-get update && apt-get dist-upgrade -y
 
 # very common packages
 RUN apt-get update && apt-get install -y \
@@ -27,4 +26,7 @@ RUN pip3 install -U \
 
 COPY scripts/clean.sh /usr/local/bin/indy_image_clean
 RUN chmod 755 /usr/local/bin/indy_image_clean
+
+COPY __VERSION_FILE__ /
+
 RUN indy_image_clean
