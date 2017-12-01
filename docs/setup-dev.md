@@ -18,7 +18,7 @@ You can also have a look at the scripts mentioned below to follow them and perfo
 1. Get scripts from [dev-setup-ubuntu](https://github.com/hyperledger/indy-node/tree/master/dev-setup/ubuntu)
 1. Run `setup_dev_python.sh` to setup Python3.5, pip and virtualenv
 1. Run `source ~/.bashrc` to apply virtual environment wrapper installation
-1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (charm-crypto, libindy-crypto, libsodium)
+1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (charm-crypto, libindy, libindy-crypto, libsodium)
 1. Fork [indy-plenum](https://github.com/hyperledger/indy-plenum) and [indy-node](https://github.com/hyperledger/indy-node)
 1. Go to the destination folder for the project.
 1. Run `init-dev-project.sh <github-name> <new-virtualenv-name>` to clone indy-plenum and indy-node projects and
@@ -127,13 +127,29 @@ Indy depends on [Indy-Crypto](https://github.com/hyperledger/indy-crypto).
 
 There is a deb package of libindy-crypto that can be used on Ubuntu:
 ```
-sudo echo "deb http://us.archive.ubuntu.com/ubuntu xenial main universe" >> /etc/apt/sources.list
-sudo echo "deb https://repo.sovrin.org/deb xenial stable" >> /etc/apt/sources.list
+sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
 sudo apt-get update
 sudo apt-get install libindy-crypto
 ```
 
 See [Indy-Crypto](https://github.com/hyperledger/indy-crypto) on how it can be installed on other platforms.
+
+### Setup Libindy
+
+Indy needs [Libindy](https://github.com/hyperledger/indy-sdk) as a test dependency.
+
+There is a deb package of libindy that can be used on Ubuntu:
+```
+sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial master"
+sudo apt-get update
+sudo apt-get install -y libindy
+```
+
+See [Libindy](https://github.com/hyperledger/indy-sdk) on how it can be installed on other platforms.
+
 
 ### Using a virtual environment (recommended)
 
@@ -176,7 +192,7 @@ Activate the virtual environment.
 
 Navigate to the root directory of the source (for each project) and install required packages by
 ```
-pip install -e .
+pip install -e .[tests]
 ```
 If you are working with both indy-plenum and indy-node, then please make sure that both projects are installed with -e option,
 and not from pypi (have a look at the sequence at `init-dev-project.sh`) 
