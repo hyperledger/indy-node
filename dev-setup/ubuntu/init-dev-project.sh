@@ -26,20 +26,16 @@ echo "Installed Charm Crypto..."
 
 echo "Installing indy-node..."
 pushd indy-node
-pip install -e .
+pip install -e .[tests]
 popd
 echo "Installed indy-node..."
 
 echo "Installing indy-plenum..."
 pushd indy-plenum
 pip uninstall -y indy-plenum-dev
-pip install -e .
+pip install -e .[tests]
 popd
 echo "Installed indy-plenum..."
-
-echo "Installing pytest..."
-pip install pytest pytest-asyncio pytest-xdist
-echo "Installed pytest"
 
 echo "Installing flake8..."
 pip install flake8
