@@ -245,7 +245,7 @@ def newCLI(looper, client_tdir, network='sandbox', conf=None, poolDir=None,
     from indy_node.test.helper import TestNode
     new_cli = newPlenumCLI(
         looper,
-        ledger_base_dir,
+        client_tdir,
         ledger_base_dir,
         cliClass=cliClass,
         nodeClass=TestNode,

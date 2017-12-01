@@ -54,6 +54,8 @@ class Client(PlenumClient):
                  sighex: str=None):
         self.config = config or getConfig()
         self.setupAnoncreds()
+
+        basedirpath = basedirpath or os.path.join(self.config.CLI_NETWORK_DIR, self.config.NETWORK_NAME)
         super().__init__(name,
                          nodeReg,
                          ha,
