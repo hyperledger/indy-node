@@ -24,6 +24,15 @@ class ConfigHelper(PConfigHelper):
     def ledger_base_dir(self):
         return self.chroot_if_needed(self.config.LEDGER_DIR)
 
+    @property
+    def ledger_data_dir(self):
+        return self.chroot_if_needed(
+            os.path.join(self.config.LEDGER_DIR, self.config.NETWORK_NAME, 'data'))
+
+    @property
+    def log_base_dir(self):
+        return self.chroot_if_needed(self.config.LOG_DIR)
+
 
 class NodeConfigHelper(ConfigHelper):
 
