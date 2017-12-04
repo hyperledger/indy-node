@@ -174,9 +174,29 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
     # exit from current cli so that active wallet gets saved
     exitFromCli(do)
 
+    alice_wallets_dir = os.path.join(aliceMultiNodePools.getWalletsBaseDir(), "pool1")
+    earl_wallets_dir = os.path.join(earlMultiNodePools.getWalletsBaseDir(), "pool1")
+
+    os.makedirs(alice_wallets_dir, exist_ok=True)
+    os.makedirs(earl_wallets_dir, exist_ok=True)
+
+    alice_wallet_path = os.path.join(alice_wallets_dir, cliForMultiNodePools.walletFileName)
+    earl_wallet_path = os.path.join(earl_wallets_dir, cliForMultiNodePools.walletFileName)
+
     # different tests for restoring saved wallet
     filePath = getWalletFilePath(
         cliForMultiNodePools.getContextBasedWalletsBaseDir(),
+        "default.wallet")
+
+    shutil.copy(filePath, alice_wallets_dir)
+    shutil.copy(filePath, earl_wallets_dir)
+
+    filePath = getWalletFilePath(
+        cliForMultiNodePools.getContextBasedWalletsBaseDir(),
         cliForMultiNodePools.walletFileName)
+
+    shutil.copy(filePath, alice_wallet_path)
+    shutil.copy(filePath, earl_wallet_path)
+
     restartCli(aliceMultiNodePools, be, do, "mykr1", 1)
-    restartCliWithCorruptedWalletFile(earlMultiNodePools, be, do, filePath)
+    restartCliWithCorruptedWalletFile(earlMultiNodePools, be, do, earl_wallet_path)
