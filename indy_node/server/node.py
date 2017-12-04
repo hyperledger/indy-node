@@ -2,12 +2,10 @@ from typing import Iterable, Any, List
 
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
-from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
-from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID, LedgerState
+    ENC, RAW, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.types import f, \
@@ -15,13 +13,9 @@ from plenum.common.types import f, \
 from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.server.node import Node as PlenumNode
 from indy_common.config_util import getConfig
-from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
-    DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
     IN_PROGRESS
-from indy_common.constants import validTxnTypes, IDENTITY_TXN_TYPES, \
-    CONFIG_TXN_TYPES
-from indy_common.txn_util import getTxnOrderedFields
 from indy_common.types import Request, SafeRequest
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache

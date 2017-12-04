@@ -106,11 +106,6 @@ class DomainReqHandler(PHandler):
         if not s:
             raise InvalidClientRequest(identifier, reqId, reason)
 
-    @staticmethod
-    def _validate_attrib_keys(operation):
-        dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
-        return len(dataKeys) == 1
-
     def _doStaticValidationAttrib(self, identifier, reqId, operation):
         if not self._validate_attrib_keys(operation):
             raise InvalidClientRequest(identifier, reqId,
@@ -133,6 +128,11 @@ class DomainReqHandler(PHandler):
             self._validateNym(req)
         elif typ == ATTRIB:
             self._validateAttrib(req)
+
+    @staticmethod
+    def _validate_attrib_keys(operation):
+        dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
+        return len(dataKeys) == 1
 
     def _validateNym(self, req: Request):
         origin = req.identifier
