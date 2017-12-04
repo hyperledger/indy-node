@@ -9,6 +9,7 @@ from typing import List
 from stp_core.common.log import getlogger
 
 from indy_common.config_util import getConfig
+from indy_common.config_helper import ConfigHelper
 from indy_common.util import compose_cmd
 from indy_node.server.upgrader import Upgrader
 from indy_node.utils.migration_tool import migrate
@@ -16,7 +17,6 @@ from indy_node.utils.migration_tool import migrate
 logger = getlogger()
 
 TIMEOUT = 300
-BASE_DIR = '/home/indy/'
 BACKUP_FORMAT = 'zip'
 DEPS = ['indy-plenum', 'indy-anoncreds']
 BACKUP_NUM = 10
@@ -46,9 +46,8 @@ class NodeControlTool:
 
         self.backup_dir = backup_dir or self.config.BACKUP_DIR
 
-        _backup_target = os.path.join(os.path.expanduser(self.config.baseDir),
-                                      self.config.NETWORK_NAME)
-        self.backup_target = backup_target or _backup_target
+        config_helper = ConfigHelper(config)
+        self.backup_target = backup_target or config_helper.genesis_dir
 
         self.tmp_dir = TMP_DIR
         self.backup_format = backup_format
