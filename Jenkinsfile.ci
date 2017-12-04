@@ -63,9 +63,6 @@ def withTestEnv(body) {
     if (isUnix()) {
         echo 'Test: Build docker image'
 
-        // TODO should be removed once base images are pushed to dockerhub
-        sh "ci/build_base_image.sh"
-
         buildDocker("hyperledger/indy-node-ci", "ci/ubuntu.dockerfile ci").inside {
             echo 'Test: Install dependencies'
             install()
