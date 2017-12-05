@@ -9,8 +9,8 @@ from indy_common.txn_util import getTxnOrderedFields
 
 
 class ClientReqRepStoreFile(PClientReqRepStoreFile):
-    def __init__(self, name, baseDir):
-        super().__init__(name, baseDir)
+    def __init__(self, dataLocation):
+        super().__init__(dataLocation)
         self.lastTxnsFileName = "last_txn_for_id"
 
     @property

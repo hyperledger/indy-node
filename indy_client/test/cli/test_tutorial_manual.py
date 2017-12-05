@@ -41,10 +41,10 @@ class TestWalletedAgent(WalletedAgent, RunnableAgent):
 
 
 @pytest.fixture(scope="module")
-def newGuyCLI(looper, tdir, tconf):
+def newGuyCLI(looper, client_tdir, tconf):
     # FIXME: rework logic of setup because Setup.setupAll does not exist anymore
     # Setup(tdir).setupAll()
-    return newCLI(looper, tdir, subDirectory='newguy', conf=tconf)
+    return newCLI(looper, client_tdir, conf=tconf)
 
 
 @pytest.mark.skip("SOV-569. Not yet implemented")
@@ -58,7 +58,7 @@ def testGettingStartedTutorialAgainstSandbox(newGuyCLI, be, do):
 def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
                nymAddedOut, attrAddedOut,
                aliceCLI, newKeyringOut, aliceMap,
-               tdir, syncConnectionOutWithEndpoint, jobCertificateClaimMap,
+               tdir, tdirWithClientPoolTxns, syncConnectionOutWithEndpoint, jobCertificateClaimMap,
                syncedInviteAcceptedOutWithoutClaims, transcriptClaimMap,
                reqClaimOut, reqClaimOut1, susanCLI, susanMap):
     eventually.slowFactor = 3
@@ -121,7 +121,7 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
 
     for create_agent_fuc, agentName, agentPort, buildAgentWalletFunc, bootstrap_func in agentParams:
         agent = create_agent_fuc(name=agentName, wallet=buildAgentWalletFunc(),
-                                 base_dir_path=tdir, port=agentPort)
+                                 base_dir_path=tdirWithClientPoolTxns, port=agentPort)
         RunnableAgent.run_agent(
             agent, bootstrap=bootstrap_func(agent), looper=philCli.looper)
 

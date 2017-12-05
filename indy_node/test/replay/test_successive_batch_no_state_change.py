@@ -33,8 +33,9 @@ def tconf(tconf, request):
     return tconf
 
 
-def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
+def test_successive_batch_do_no_change_state(looper,
                                              tdirWithDomainTxnsUpdated,
+                                             tdirWithClientPoolTxns,
                                              tconf, nodeSet, trustee,
                                              trusteeWallet, monkeypatch):
     """
@@ -108,7 +109,7 @@ def test_successive_batch_do_no_change_state(looper, tdirWithPoolTxns,
     for node in nodeSet:
         node.nodeIbStasher.delay(delay_commits)
 
-    new_client, _ = genTestClient(nodeSet, tmpdir=tdirWithPoolTxns,
+    new_client, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns,
                                   usePoolLedger=True)
     looper.add(new_client)
     looper.run(new_client.ensureConnectedToNodes(count=len(nodeSet)))
