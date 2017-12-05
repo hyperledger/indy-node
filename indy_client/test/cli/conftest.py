@@ -991,6 +991,7 @@ def multiPoolNodesCreated(request, tconf, looper, tdir,
         poolCLIBaby = next(poolCLIBabyGen(poolName))
 
         # Ugly hack to build several networks
+        network_bak = tconf.NETWORK_NAME
         tconf.NETWORK_NAME = poolName
         tdirWithNodeKeepInited(tdir, tconf, NodeConfigHelper, newPoolTxnData, newPoolTxnNodeNames)
 
@@ -1004,13 +1005,13 @@ def multiPoolNodesCreated(request, tconf, looper, tdir,
             looper.add(node)
             nodes.append(node)
         looper.run(checkNodesConnected(nodes))
-        ensureElectionsDone(looper=looper, nodes=nodes,
-                            customTimeout=tconf.VIEW_CHANGE_TIMEOUT)
+        ensureElectionsDone(looper=looper, nodes=nodes)
 
         poolCli = poolCLI(tdir, tconf, poolCLIBaby, newPoolTxnData,
                           newPoolTxnNodeNames, nodes)
         testPoolNode.poolCli = poolCli
         multiNodes.append(testPoolNode)
+        tconf.NETWORK_NAME = network_bak
 
     return multiNodes
 
