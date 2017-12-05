@@ -199,8 +199,12 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
     shutil.copy(filePath, alice_wallet_path)
     shutil.copy(filePath, earl_wallet_path)
 
-    cliForMultiNodePools.looper.run(eventually(os.path.exists, alice_wallet_path))
-    cliForMultiNodePools.looper.run(eventually(os.path.exists, earl_wallet_path))
+    def _f(path):
+        if not os.path.exists(path):
+            raise FileNotFoundError("{}".format(path))
+
+    cliForMultiNodePools.looper.run(eventually(_f, alice_wallet_path))
+    cliForMultiNodePools.looper.run(eventually(_f, earl_wallet_path))
 
     restartCli(aliceMultiNodePools, be, do, "mykr1", 1)
     restartCliWithCorruptedWalletFile(earlMultiNodePools, be, do, earl_wallet_path)
