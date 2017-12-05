@@ -3,12 +3,12 @@ from indy_node.test.upgrade.helper import checkUpgradeScheduled
 from plenum.common.constants import VERSION
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 from stp_core.loop.eventually import eventually
+from indy_common.config_helper import NodeConfigHelper
 
 
 def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
                                          validUpgrade, testNodeClass,
-                                         tdirWithPoolTxns, tconf,
-                                         allPluginsPath):
+                                         tdir, tconf, allPluginsPath):
     names = []
     while nodeSet:
         node = nodeSet.pop()
@@ -19,9 +19,9 @@ def testNodeSchedulesUpgradeAfterRestart(upgradeScheduled, looper, nodeSet,
         del node
 
     for nm in names:
-        node = testNodeClass(nm, basedirpath=tdirWithPoolTxns,
-                             base_data_dir=tdirWithPoolTxns, config=tconf,
-                             pluginPaths=allPluginsPath)
+        config_helper = NodeConfigHelper(nm, tconf, chroot=tdir)
+        node = testNodeClass(nm, config_helper=config_helper,
+                             config=tconf, pluginPaths=allPluginsPath)
         looper.add(node)
         nodeSet.append(node)
 

@@ -27,6 +27,7 @@ from indy_node.test.helper import submitAndCheck, \
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
+
 logger = getlogger()
 
 whitelistArray = []
@@ -85,10 +86,10 @@ def addedEncryptedAttribute(userIdA, trustAnchor, trustAnchorWallet, looper,
 
 
 @pytest.fixture(scope="module")
-def nonTrustAnchor(looper, nodeSet, tdir):
+def nonTrustAnchor(looper, nodeSet, tdirWithClientPoolTxns):
     sseed = b'a secret trust anchor seed......'
     signer = DidSigner(seed=sseed)
-    c, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    c, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     w = Wallet(c.name)
     w.addIdentifier(signer=signer)
     c.registerObserver(w.handleIncomingReply)
@@ -98,10 +99,10 @@ def nonTrustAnchor(looper, nodeSet, tdir):
 
 
 @pytest.fixture(scope="module")
-def anotherTrustAnchor(nodeSet, steward, stewardWallet, tdir, looper):
+def anotherTrustAnchor(nodeSet, steward, stewardWallet, tdirWithClientPoolTxns, looper):
     sseed = b'1 secret trust anchor seed......'
     signer = DidSigner(seed=sseed)
-    c, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    c, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     w = Wallet(c.name)
     w.addIdentifier(signer=signer)
     c.registerObserver(w.handleIncomingReply)
@@ -520,12 +521,12 @@ def testGetTxnsNoSeqNo():
 
 @pytest.mark.skip(reason="SOV-560. Come back to it later since "
                          "requestPendingTxns move to wallet")
-def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdir,
+def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdirWithClientPoolTxns,
                      trustAnchorWallet, looper):
     """
     Test GET_TXNS from client and provide seqNo to fetch from
     """
-    trustAnchor = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    trustAnchor = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
 
     looper.add(trustAnchor)
     looper.run(trustAnchor.ensureConnectedToNodes())
@@ -539,9 +540,9 @@ def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdir,
 
 
 def testNonTrustAnchoredNymCanDoGetNym(nodeSet, addedTrustAnchor,
-                                       trustAnchorWallet, tdir, looper):
+                                       trustAnchorWallet, tdirWithClientPoolTxns, looper):
     signer = DidSigner()
-    someClient, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    someClient, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     wallet = Wallet(someClient.name)
     wallet.addIdentifier(signer=signer)
     someClient.registerObserver(wallet.handleIncomingReply)
@@ -580,13 +581,13 @@ def test_user_add_attrs_for_herself(
 
 
 @pytest.mark.skip(reason="INDY-896 ATTR cannot be added without dest")
-def test_attr_with_no_dest_added(nodeSet, tdir, looper,
+def test_attr_with_no_dest_added(nodeSet, tdirWithClientPoolTxns, looper,
                                  trustAnchor, addedTrustAnchor, attributeData):
     user_wallet = Wallet()
     signer = DidSigner()
     user_wallet.addIdentifier(signer=signer)
 
-    client, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    client, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     client.registerObserver(user_wallet.handleIncomingReply)
     looper.add(client)
     looper.run(client.ensureConnectedToNodes())

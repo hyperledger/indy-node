@@ -117,7 +117,7 @@ def ensureNymAdded(be, do, cli, nym, role=None):
 
 
 def ensureNodesCreated(cli, nodeNames):
-    cli.enterCmd("new node all")
+    #cli.enterCmd("new node all")
     # TODO: Why 2 different interfaces one with list and one with varags
     assertAllNodesCreated(cli, nodeNames)
     waitAllNodesStarted(cli, *nodeNames)
@@ -224,26 +224,29 @@ def addTrusteeTxnsToGenesis(trusteeList, trusteeData, txnDir, txnFileName):
     return added
 
 
-def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
+def newCLI(looper, client_tdir, network='sandbox', conf=None, poolDir=None,
            domainDir=None, multiPoolNodes=None, unique_name=None,
-           logFileName=None, cliClass=TestCLI, name=None, agent=None):
-    tempDir = os.path.join(tdir, subDirectory) if subDirectory else tdir
+           logFileName=None, cliClass=TestCLI, name=None, agent=None,
+           nodes_chroot: str = None):
+    ledger_base_dir = os.path.join(client_tdir, 'networks')
+    tempDir = os.path.join(ledger_base_dir, network)
+    os.makedirs(tempDir, exist_ok=True)
     if poolDir or domainDir:
         initDirWithGenesisTxns(tempDir, conf, poolDir, domainDir)
 
     if multiPoolNodes:
         for pool in multiPoolNodes:
             initDirWithGenesisTxns(
-                tdir,
+                os.path.join(ledger_base_dir, pool.name),
                 conf,
-                os.path.join(pool.tdirWithPoolTxns, pool.name),
-                os.path.join(pool.tdirWithDomainTxns, pool.name)
+                pool.tdirWithPoolTxns,
+                pool.tdirWithDomainTxns
             )
     from indy_node.test.helper import TestNode
     new_cli = newPlenumCLI(
         looper,
-        tdir,
-        tdir,
+        client_tdir,
+        ledger_base_dir,
         cliClass=cliClass,
         nodeClass=TestNode,
         clientClass=TestClient,
@@ -251,23 +254,24 @@ def newCLI(looper, tdir, subDirectory=None, conf=None, poolDir=None,
         unique_name=unique_name,
         logFileName=logFileName,
         name=name,
-        agentCreator=True)
+        agentCreator=True,
+        nodes_chroot=nodes_chroot)
     if isinstance(new_cli, IndyCli) and agent is not None:
         new_cli.agent = agent
-    new_cli.txn_dir = subDirectory
+    new_cli.txn_dir = network
     return new_cli
 
 
 def getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxns,
                   logFileName=None, multiPoolNodes=None, cliClass=TestCLI,
-                  name=None, agent=None):
+                  name=None, agent=None, def_looper=None):
     def _(space,
           looper=None,
           unique_name=None):
         def new():
+            client_tdir = os.path.join(tdir, 'home', space)
             c = newCLI(looper,
-                       tdir,
-                       subDirectory=space,
+                       client_tdir,
                        conf=tconf,
                        poolDir=tdirWithPoolTxns,
                        domainDir=tdirWithDomainTxns,
@@ -276,8 +280,11 @@ def getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxns,
                        logFileName=logFileName,
                        cliClass=cliClass,
                        name=name,
-                       agent=agent)
+                       agent=agent,
+                       nodes_chroot=tdir)
             return c
+        if not looper:
+            looper = def_looper
         if looper:
             yield new()
         else:

@@ -9,6 +9,7 @@ from typing import List
 from stp_core.common.log import getlogger
 
 from indy_common.config_util import getConfig
+from indy_common.config_helper import ConfigHelper
 from indy_common.util import compose_cmd
 from indy_node.server.upgrader import Upgrader
 from indy_node.utils.migration_tool import migrate
@@ -16,14 +17,8 @@ from indy_node.utils.migration_tool import migrate
 logger = getlogger()
 
 TIMEOUT = 300
-BASE_DIR = '/home/indy/'
 BACKUP_FORMAT = 'zip'
 DEPS = ['indy-plenum', 'indy-anoncreds']
-CONFIG = getConfig()
-FILES_TO_PRESERVE = [CONFIG.lastRunVersionFile, CONFIG.nextVersionFile,
-                     CONFIG.upgradeLogFile, CONFIG.lastVersionFilePath]
-BACKUP_TARGET = os.path.join(os.path.expanduser(CONFIG.baseDir), CONFIG.NETWORK_NAME)
-BACKUP_NAME_PREFIX = '{}_backup_'.format(CONFIG.NETWORK_NAME)
 BACKUP_NUM = 10
 PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'
 TMP_DIR = '/tmp/.indy_tmp'
@@ -38,22 +33,35 @@ class NodeControlTool:
             backup_format: str = BACKUP_FORMAT,
             test_mode: bool = False,
             deps: List[str] = DEPS,
-            backup_target: str = BACKUP_TARGET,
-            files_to_preserve: List[str] = FILES_TO_PRESERVE,
-            backup_dir: str = CONFIG.BACKUP_DIR,
-            backup_name_prefix: str = BACKUP_NAME_PREFIX,
+            backup_target: str = None,
+            files_to_preserve: List[str] = None,
+            backup_dir: str = None,
+            backup_name_prefix: str = None,
             backup_num: int = BACKUP_NUM,
-            hold_ext: str = ''):
+            hold_ext: str = '',
+            config=None):
+        self.config = config or getConfig()
         self.test_mode = test_mode
-        self.timeout = timeout
-        self.backup_dir = backup_dir
-        self.backup_target = backup_target
+        self.timeout = timeout or TIMEOUT
+
+        self.backup_dir = backup_dir or self.config.BACKUP_DIR
+
+        config_helper = ConfigHelper(self.config)
+        self.backup_target = backup_target or config_helper.genesis_dir
+
         self.tmp_dir = TMP_DIR
         self.backup_format = backup_format
         self.deps = deps
-        self.files_to_preserve = files_to_preserve
+
+        _files_to_preserve = [self.config.lastRunVersionFile, self.config.nextVersionFile,
+                              self.config.upgradeLogFile, self.config.lastVersionFilePath]
+
+        self.files_to_preserve = files_to_preserve or _files_to_preserve
         self.backup_num = backup_num
-        self.backup_name_prefix = backup_name_prefix
+
+        _backup_name_prefix = '{}_backup_'.format(self.config.NETWORK_NAME)
+
+        self.backup_name_prefix = backup_name_prefix or _backup_name_prefix
         self.packages_to_hold = ' '.join([PACKAGES_TO_HOLD, hold_ext])
 
         # Create a TCP/IP socket

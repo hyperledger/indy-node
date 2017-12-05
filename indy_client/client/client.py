@@ -1,3 +1,4 @@
+import os
 import json
 import uuid
 from collections import deque
@@ -30,10 +31,19 @@ from indy_common.config_util import getConfig
 from stp_core.types import HA
 from indy_common.state import domain
 
+from indy_client.agent.jsonpickle_util import setUpJsonpickle
+from indy_client.client.wallet.migration import migrate_indy_wallet_raw
+
+from indy_common.plugin_helper import writeAnonCredPlugin
+from plenum.client.wallet import WALLET_RAW_MIGRATORS
+
+
 logger = getlogger()
 
 
 class Client(PlenumClient):
+    anoncredsAreSetUp = False
+
     def __init__(self,
                  name: str=None,
                  nodeReg: Dict[str, HA]=None,
@@ -42,13 +52,16 @@ class Client(PlenumClient):
                  basedirpath: str=None,
                  config=None,
                  sighex: str=None):
-        config = config or getConfig()
+        self.config = config or getConfig()
+        self.setupAnoncreds()
+
+        basedirpath = basedirpath or os.path.join(self.config.CLI_NETWORK_DIR, self.config.NETWORK_NAME)
         super().__init__(name,
                          nodeReg,
                          ha,
                          basedirpath,
-                         config,
-                         sighex)
+                         config=config,
+                         sighex=sighex)
         self.autoDiscloseAttributes = False
         self.requestedPendingTxns = False
         self.hasAnonCreds = bool(peerHA)
@@ -79,6 +92,15 @@ class Client(PlenumClient):
             return SimpleZStack
         return SimpleRStack
 
+    def setupAnoncreds(self):
+        if self.anoncredsAreSetUp is False:
+            writeAnonCredPlugin(os.path.expanduser(self.config.CLI_BASE_DIR))
+            # This is to setup anoncreds wallet related custom jsonpickle handlers to
+            # serialize/deserialize it properly
+            setUpJsonpickle()
+            WALLET_RAW_MIGRATORS.append(migrate_indy_wallet_raw)
+            self.anoncredsAreSetUp = True
+
     def handlePeerMessage(self, msg):
         """
         Use the peerMsgRouter to pass the messages to the correct
@@ -89,10 +111,10 @@ class Client(PlenumClient):
         return self.peerMsgRouter.handle(msg)
 
     def getReqRepStore(self):
-        return ClientReqRepStoreFile(self.name, self.basedirpath)
+        return ClientReqRepStoreFile(self.ledger_dir)
 
     def getTxnLogStore(self):
-        return ClientTxnLog(self.name, self.basedirpath)
+        return ClientTxnLog(self.ledger_dir)
 
     def handleOneNodeMsg(self, wrappedMsg, excludeFromCli=None) -> None:
         msg, sender = wrappedMsg

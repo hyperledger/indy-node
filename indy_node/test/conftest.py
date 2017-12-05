@@ -30,22 +30,22 @@ from indy_client.test.helper import getClientAddedWithRole
 # noinspection PyUnresolvedReferences
 from indy_client.test.conftest import trustAnchorWallet, \
     trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, \
-    stewardWallet, steward, genesisTxns, testClientClass, \
+    stewardWallet, steward, genesisTxns, testClientClass, client_ledger_dir, \
     addedTrustAnchor, userWalletB, nodeSet, testNodeClass, updatedPoolTxnData, \
     trusteeData, trusteeWallet, trustee, warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, nodeReg, up, ready, \
+from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
     whitelist, concerningLogLevels, logcapture, keySharedNodes, \
-    startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
-    poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
+    startedNodes, tdirWithPoolTxns, tdirWithDomainTxns, tdirWithClientPoolTxns, txnPoolNodeSet, \
+    poolTxnData, dirName, poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     patchPluginManager, txnPoolNodesLooper, warncheck, \
     warnfilters as plenum_warnfilters
 
 # noinspection PyUnresolvedReferences
-from indy_common.test.conftest import conf, tconf, poolTxnTrusteeNames, \
-    domainTxnOrderedFields, looper, setTestLogLevel
+from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNames, \
+    domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
 
 Logger.setLogLevel(logging.NOTSET)
 
@@ -65,12 +65,13 @@ def warnfilters(client_warnfilters):
 
 
 @pytest.fixture("module")
-def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
-                   stewardWallet, allPluginsPath, testNodeClass,
-                   testClientClass, tdir, node_name='Theta'):
+def nodeThetaAdded(looper, nodeSet, tdirWithClientPoolTxns,
+                   tconf, steward, stewardWallet, allPluginsPath, testNodeClass,
+                   testClientClass, node_config_helper_class, tdir, node_name='Theta'):
     newStewardName = "testClientSteward" + randomString(3)
     newNodeName = node_name
-    newSteward, newStewardWallet = getClientAddedWithRole(nodeSet, tdir,
+    newSteward, newStewardWallet = getClientAddedWithRole(nodeSet,
+                                                          tdirWithClientPoolTxns,
                                                           looper, steward,
                                                           stewardWallet,
                                                           newStewardName,
@@ -81,8 +82,10 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
 
     (nodeIp, nodePort), (clientIp, clientPort) = genHa(2)
 
+    config_helper = node_config_helper_class(newNodeName, tconf, chroot=tdir)
+
     _, _, bls_key = initNodeKeysForBothStacks(
-        newNodeName, tdirWithPoolTxns, sigseed, override=True)
+        newNodeName, config_helper.keys_dir, sigseed, override=True)
 
     data = {
         NODE_IP: nodeIp,
@@ -108,7 +111,9 @@ def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
     timeout = plenumWaits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
-    newNode = testNodeClass(newNodeName, basedirpath=tdir, base_data_dir=tdir, config=tconf,
+    newNode = testNodeClass(newNodeName,
+                            config_helper=config_helper,
+                            config=tconf,
                             ha=(nodeIp, nodePort), cliha=(
                                 clientIp, clientPort),
                             pluginPaths=allPluginsPath)

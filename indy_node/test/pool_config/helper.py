@@ -2,12 +2,6 @@ from stp_core.loop.eventually import eventually
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test import waits as plenumWaits
 from indy_client.client.wallet.pool_config import PoolConfig as WPoolConfig
-from indy_node.server.pool_config import PoolConfig as SPoolConfig
-from indy_node.utils.node_control_tool import NodeControlTool
-from indy_common.config_util import getConfig
-
-
-config = getConfig()
 
 
 def sendPoolConfig(client, wallet, poolConfigData):
