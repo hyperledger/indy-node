@@ -11,6 +11,7 @@ from plenum.common.util import createDirIfNotExists, normalizedWalletFileName, \
 from plenum.test.cli.helper import checkWalletFilePersisted, checkWalletRestored, \
     createAndAssertNewCreation, createAndAssertNewKeyringCreation, \
     useAndAssertKeyring, exitFromCli, restartCliAndAssert
+from stp_core.loop.eventually import eventually
 
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.test.cli.helper import prompt_is
@@ -197,6 +198,9 @@ def testSaveAndRestoreWallet(do, be, cliForMultiNodePools,
 
     shutil.copy(filePath, alice_wallet_path)
     shutil.copy(filePath, earl_wallet_path)
+
+    cliForMultiNodePools.looper.run(eventually(os.path.exists, alice_wallet_path))
+    cliForMultiNodePools.looper.run(eventually(os.path.exists, earl_wallet_path))
 
     restartCli(aliceMultiNodePools, be, do, "mykr1", 1)
     restartCliWithCorruptedWalletFile(earlMultiNodePools, be, do, earl_wallet_path)
