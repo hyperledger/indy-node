@@ -46,7 +46,7 @@ class NodeControlTool:
 
         self.backup_dir = backup_dir or self.config.BACKUP_DIR
 
-        config_helper = ConfigHelper(config)
+        config_helper = ConfigHelper(self.config)
         self.backup_target = backup_target or config_helper.genesis_dir
 
         self.tmp_dir = TMP_DIR
