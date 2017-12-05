@@ -1004,7 +1004,8 @@ def multiPoolNodesCreated(request, tconf, looper, tdir,
             looper.add(node)
             nodes.append(node)
         looper.run(checkNodesConnected(nodes))
-        ensureElectionsDone(looper=looper, nodes=nodes)
+        ensureElectionsDone(looper=looper, nodes=nodes,
+                            customTimeout=tconf.VIEW_CHANGE_TIMEOUT)
 
         poolCli = poolCLI(tdir, tconf, poolCLIBaby, newPoolTxnData,
                           newPoolTxnNodeNames, nodes)
