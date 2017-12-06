@@ -147,7 +147,7 @@ class HTMLReporter:
                     margin-bottom: 10px;
                     border-collapse: collapse;
                     empty-cells: show
-                }   
+                }
 
                 th, td {
                     border: 1px solid #009;
@@ -225,7 +225,7 @@ class HTMLReporter:
             <tbody>
             <tr>
                 <th>Run machine</th>
-                <td>host_name</td>            
+                <td>host_name</td>
             </tr>
             <tr>
                 <th>OS</th>
@@ -233,19 +233,19 @@ class HTMLReporter:
             </tr>
             <tr>
                 <th>indy - plenum</th>
-                <td>v_plenum</td>            
+                <td>v_plenum</td>
             </tr>
              <tr>
                 <th>indy - anoncreds</th>
-                <td>v_anoncreds</td>            
+                <td>v_anoncreds</td>
             </tr>
             <tr>
                 <th>indy - node</th>
-                <td>v_indynode</td>            
+                <td>v_indynode</td>
             </tr>
             <tr>
                 <th>sovrin</th>
-                <td>v_sovrin</td>            
+                <td>v_sovrin</td>
             </tr>
             </tbody>
         </table>"""
@@ -254,14 +254,14 @@ class HTMLReporter:
             <tbody>
             <tr>
                 <th>Test Plan</th>
-                <th># Passed</th>       
+                <th># Passed</th>
                 <th># Failed</th>
                 <th>Time (ms)</th>
             </tr>
             <tr>
                 <td>plan_name</td>
                 <td class="num">passed_num</td>
-                <td class="num">failed_num</td>            
+                <td class="num">failed_num</td>
                 <td class="num">total_time</td>
             </tr>
             </tbody>
@@ -294,7 +294,7 @@ class HTMLReporter:
 
     __go_to_summary = """<a href = #summary>Back to summary.</a>"""
 
-    __begin_summary_content = """ 
+    __begin_summary_content = """
             <tbody>
             <tr>
                 <th colspan="4"></th>
@@ -317,7 +317,7 @@ class HTMLReporter:
 
     __passed_test_log = """
             <tr>
-                <td><font color="green">step_num : step_name :: step_status</font></td>       
+                <td><font color="green">step_num : step_name :: step_status</font></td>
             </tr>"""
 
     __failed_test_log = """
@@ -325,7 +325,7 @@ class HTMLReporter:
                 <td><font color="red">step_num : step_name :: step_status
                 <br>Traceback: error_message</br>
                 </font>
-                </td>            
+                </td>
             </tr>
             """
 

@@ -69,7 +69,6 @@ class Logger:
         if test_status == Status.PASSED and Logger.__KEEP_LOG_FLAG not in sys.argv:
             if os.path.isfile(self.__log_file_path):
                 os.remove(self.__log_file_path)
-                print(Colors.OKBLUE + "\nLog file has been removed\n" + Colors.ENDC)
                 return
 
         if os.path.isfile(self.__log_file_path):

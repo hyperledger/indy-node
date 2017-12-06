@@ -6,16 +6,13 @@ Created on Nov 8, 2017
 Containing test scripts of test scenario 11: special case for TrustAnchor role.
 """
 
-# /usr/bin/env python3.6
-import sys
+# !/usr/bin/env python3.6
 import json
-import os
 from indy import ledger, signus
 from indy.error import IndyError
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from libraries.constant import Constant, Colors, Roles
 from libraries.common import Common
-from libraries.utils import *
+from libraries.utils import perform, generate_random_string, exit_if_exception, perform_with_expected_code
 from test_scripts.test_scenario_base import TestScenarioBase
 
 
@@ -42,13 +39,13 @@ class TestScenario11(TestScenarioBase):
             returned_code = await perform(self.steps, Common.prepare_pool_and_wallet, self.pool_name,
                                           self.wallet_name, self.pool_genesis_txn_file)
 
-            self.pool_handle, self.wallet_handle = raise_if_exception(returned_code)
+            self.pool_handle, self.wallet_handle = exit_if_exception(returned_code)
 
             # 2. Create DIDs ----------------------------------------------------
             self.steps.add_step("Create DIDs")
             returned_code = await perform(self.steps, signus.create_and_store_my_did,
                                           self.wallet_handle, json.dumps({"seed": Constant.seed_default_trustee}))
-            (default_trustee_did, default_trustee_verkey) = returned_code if len(returned_code) == 2 else (None, None)
+            default_trustee_did = returned_code[0] if len(returned_code) == 2 else (None, None)
 
             returned_code = await perform(self.steps, signus.create_and_store_my_did,
                                           self.wallet_handle, json.dumps({"seed": seed_trustee1}))
@@ -159,6 +156,7 @@ class TestScenario11(TestScenarioBase):
             await perform_with_expected_code(self.steps, Common.build_and_send_nym_request, self.pool_handle,
                                              self.wallet_handle, trustanchor1_did, trustanchor2_did,
                                              trustanchor2_verkey, None, Roles.NONE, expected_code=304)
+
         except IndyError as e:
             print(Colors.FAIL + "Stop due to IndyError: " + str(e) + Colors.ENDC)
         except Exception as ex:

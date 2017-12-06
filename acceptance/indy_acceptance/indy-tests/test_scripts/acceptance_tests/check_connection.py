@@ -7,12 +7,9 @@ Containing test script of test scenario 03: check connection.
 """
 
 import json
-import sys
-import os
 from indy import pool, signus, wallet
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 from libraries.constant import Constant, Colors
-from libraries.utils import *
+from libraries.utils import perform
 from test_scripts.test_scenario_base import TestScenarioBase
 
 

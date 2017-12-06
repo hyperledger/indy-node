@@ -9,8 +9,7 @@ Containing all functions that is common among test scenarios.
 import asyncio
 import json
 from indy import wallet, pool, ledger
-from indy.error import IndyError
-from .constant import Colors, Constant
+from .constant import Colors, Constant, Message
 
 
 class Common:
@@ -55,7 +54,6 @@ class Common:
         """
         import os
         import shutil
-        print(Colors.HEADER + "\n\tCheck if the wallet and pool for this test already exist and delete them...\n" + Colors.ENDC)
         work_dir = Constant.work_dir
 
         if os.path.exists(work_dir + "/pool/" + pool_name):
@@ -85,14 +83,11 @@ class Common:
         :param role: Role of a user NYM record.
         :raise Exception if the method has error.
         """
-        try:
-            nym_txn_req = await ledger.build_nym_request(submitter_did, target_did, target_verkey, alias, role)
-            await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, nym_txn_req)
-        except IndyError as E:
-            print(Colors.FAIL + str(E) + Colors.ENDC)
-            raise
+        nym_txn_req = await ledger.build_nym_request(submitter_did, target_did, target_verkey, alias, role)
+        await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, nym_txn_req)
 
-    async def create_and_open_pool(self, pool_name, pool_genesis_txn_file):
+    @staticmethod
+    async def create_and_open_pool(pool_name, pool_genesis_txn_file):
         """
         Creates a new local pool ledger configuration.
         Then open that pool and return the pool handle that can be used later to connect pool nodes.
@@ -101,6 +96,11 @@ class Common:
         :param pool_genesis_txn_file: Pool configuration json. if NULL, then default config will be used.
         :return: The pool handle was created.
         """
+        import os
+        if os.path.exists(pool_genesis_txn_file) is not True:
+            error_message = Colors.FAIL + "\n{}\n".format(Message.ERR_PATH_DOES_NOT_EXIST.format(Constant.pool_genesis_txn_file)) + Colors.ENDC
+            raise ValueError(error_message)
+
         print(Colors.HEADER + "\nCreate Ledger\n" + Colors.ENDC)
         pool_config = json.dumps({"genesis_txn": str(pool_genesis_txn_file)})
         await pool.create_pool_ledger_config(pool_name, pool_config)
@@ -109,7 +109,8 @@ class Common:
         pool_handle = await pool.open_pool_ledger(pool_name, None)
         return pool_handle
 
-    async def create_and_open_wallet(self, pool_name, wallet_name):
+    @staticmethod
+    async def create_and_open_wallet(pool_name, wallet_name):
         """
         Creates a new secure wallet with the given unique name.
         Then open that wallet and get the wallet handle that can
@@ -126,7 +127,8 @@ class Common:
         wallet_handle = await wallet.open_wallet(wallet_name, None, None)
         return wallet_handle
 
-    async def close_pool_and_wallet(self, pool_handle, wallet_handle):
+    @staticmethod
+    async def close_pool_and_wallet(pool_handle, wallet_handle):
         """
         Close the pool and wallet with the pool and wallet handle.
 
@@ -140,7 +142,8 @@ class Common:
         print(Colors.HEADER + "\nClose wallet\n" + Colors.ENDC)
         await wallet.close_wallet(wallet_handle)
 
-    async def delete_pool_and_wallet(self, pool_name, wallet_name):
+    @staticmethod
+    async def delete_pool_and_wallet(pool_name, wallet_name):
         """
         Delete the pool and wallet with the pool and wallet name.
 

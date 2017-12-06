@@ -7,14 +7,11 @@ Containing test script of test scenario 02: verify messages on connection.
 """
 
 import json
-import os.path
-import sys
+import os
 from indy import pool
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from libraries.constant import Constant, Colors, Roles
+from libraries.constant import Constant, Colors
 from libraries.result import Status
-from libraries.common import Common
-from libraries.utils import *
+from libraries.utils import perform
 from test_scripts.test_scenario_base import TestScenarioBase
 
 """ cmds """

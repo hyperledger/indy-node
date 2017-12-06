@@ -36,7 +36,7 @@ class Steps:
         """
         from libraries.constant import Colors
         step_id = len(self.__steps)
-        print(Colors.HEADER + "\n{0}. {1}\n".format(step_id, name) + Colors.ENDC)
+        print(Colors.HEADER + "\n{0}. {1}\n".format(step_id + 1, name) + Colors.ENDC)
         new_step = Step(step_id + 1, name)
         self.__steps.append(new_step)
 
