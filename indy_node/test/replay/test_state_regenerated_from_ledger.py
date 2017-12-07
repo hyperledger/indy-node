@@ -7,15 +7,16 @@ from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data, \
 from plenum.test.test_node import checkNodesConnected, ensure_node_disconnected
 from indy_client.test.helper import getClientAddedWithRole
 from indy_common.constants import TRUST_ANCHOR
+from indy_common.config_helper import NodeConfigHelper
 from indy_node.test.helper import addRawAttribute, TestNode
 
 
 TestRunningTimeLimitSec = 200
 
 
-def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
+def test_state_regenerated_from_ledger(looper, tdirWithClientPoolTxns,
                                        tdirWithDomainTxnsUpdated,
-                                       nodeSet, tconf,
+                                       nodeSet, tconf, tdir,
                                        trustee, trusteeWallet,
                                        allPluginsPath):
     """
@@ -25,7 +26,7 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     trust_anchors = []
     for i in range(5):
         trust_anchors.append(getClientAddedWithRole(nodeSet,
-                                                    tdirWithPoolTxns, looper,
+                                                    tdirWithClientPoolTxns, looper,
                                                     trustee, trusteeWallet,
                                                     'TA' + str(i),
                                                     role=TRUST_ANCHOR))
@@ -35,7 +36,7 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     for tc, tw in trust_anchors:
         for i in range(3):
             getClientAddedWithRole(nodeSet,
-                                   tdirWithPoolTxns,
+                                   tdirWithClientPoolTxns,
                                    looper,
                                    tc, tw,
                                    'NP1' + str(i))
@@ -53,10 +54,10 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
 
     shutil.rmtree(state_db_path)
 
+    config_helper = NodeConfigHelper(node_to_stop.name, tconf, chroot=tdir)
     restarted_node = TestNode(
         node_to_stop.name,
-        basedirpath=tdirWithPoolTxns,
-        base_data_dir=tdirWithPoolTxns,
+        config_helper=config_helper,
         config=tconf,
         pluginPaths=allPluginsPath,
         ha=node_to_stop.nodestack.ha,
@@ -72,7 +73,7 @@ def test_state_regenerated_from_ledger(looper, tdirWithPoolTxns,
     # Pool is still functional
     for tc, tw in trust_anchors:
         getClientAddedWithRole(nodeSet,
-                               tdirWithPoolTxns,
+                               tdirWithClientPoolTxns,
                                looper,
                                tc, tw,
                                'NP--{}'.format(tc.name))

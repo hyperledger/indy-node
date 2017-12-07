@@ -37,8 +37,8 @@ def _startAgent(looper, base_dir, port, name):
 
 
 @pytest.fixture(scope="module")
-def agentStarted(emptyLooper, tdirWithPoolTxns):
-    return _startAgent(emptyLooper, tdirWithPoolTxns, agentPort, "Agent0")
+def agentStarted(emptyLooper, tdirWithClientPoolTxns):
+    return _startAgent(emptyLooper, tdirWithClientPoolTxns, agentPort, "Agent0")
 
 
 def changeAndPersistWallet(agent, emptyLooper):
@@ -72,30 +72,30 @@ def testAgentPersistsWalletWhenStopped(poolNodesStarted, emptyLooper,
 
 
 def testAgentUsesRestoredWalletIfItHas(
-        poolNodesStarted, emptyLooper, tdirWithPoolTxns,
+        poolNodesStarted, emptyLooper, tdirWithClientPoolTxns,
         agentAddedBySponsor, agentStarted):
     agent, wallet = agentStarted
     changeAndPersistWallet(agent, emptyLooper)
 
-    newAgent = getNewAgent(agent.name, tdirWithPoolTxns, agentPort,
+    newAgent = getNewAgent(agent.name, tdirWithClientPoolTxns, agentPort,
                            agentWallet())
     assert newAgent._wallet.idsToSigners == {}
 
 
-def testAgentCreatesWalletIfItDoesntHaveOne(tdirWithPoolTxns):
+def testAgentCreatesWalletIfItDoesntHaveOne(tdirWithClientPoolTxns):
     agent = createAgent(AcmeAgent, "Acme Corp",
-                        wallet=None, basedirpath=tdirWithPoolTxns,
+                        wallet=None, basedirpath=tdirWithClientPoolTxns,
                         port=genHa()[1], clientClass=TestClient)
     assert agent._wallet is not None
 
 
-def testAgentWalletRestoration(poolNodesStarted, tdirWithPoolTxns, emptyLooper,
+def testAgentWalletRestoration(poolNodesStarted, tdirWithClientPoolTxns, emptyLooper,
                                agentAddedBySponsor, agentStarted):
     agent, wallet = agentStarted
     unpersistedIssuerWallet = agent.issuer.wallet
     agent.stop()
     emptyLooper.removeProdable(agent)
-    newAgent, newWallet = _startAgent(emptyLooper, tdirWithPoolTxns,
+    newAgent, newWallet = _startAgent(emptyLooper, tdirWithClientPoolTxns,
                                       agentPort, "Agent0")
     restoredIssuerWallet = newAgent.issuer.wallet
     compareAgentIssuerWallet(unpersistedIssuerWallet, restoredIssuerWallet)

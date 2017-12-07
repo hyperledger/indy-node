@@ -1,3 +1,4 @@
+import os
 import json
 import uuid
 from collections import deque
@@ -30,10 +31,19 @@ from indy_common.config_util import getConfig
 from stp_core.types import HA
 from indy_common.state import domain
 
+from indy_client.agent.jsonpickle_util import setUpJsonpickle
+from indy_client.client.wallet.migration import migrate_indy_wallet_raw
+
+from indy_common.plugin_helper import writeAnonCredPlugin
+from plenum.client.wallet import WALLET_RAW_MIGRATORS
+
+
 logger = getlogger()
 
 
 class Client(PlenumClient):
+    anoncredsAreSetUp = False
+
     def __init__(self,
                  name: str=None,
                  nodeReg: Dict[str, HA]=None,
@@ -42,13 +52,16 @@ class Client(PlenumClient):
                  basedirpath: str=None,
                  config=None,
                  sighex: str=None):
-        config = config or getConfig()
+        self.config = config or getConfig()
+        self.setupAnoncreds()
+
+        basedirpath = basedirpath or os.path.join(self.config.CLI_NETWORK_DIR, self.config.NETWORK_NAME)
         super().__init__(name,
                          nodeReg,
                          ha,
                          basedirpath,
-                         config,
-                         sighex)
+                         config=config,
+                         sighex=sighex)
         self.autoDiscloseAttributes = False
         self.requestedPendingTxns = False
         self.hasAnonCreds = bool(peerHA)
@@ -66,8 +79,6 @@ class Client(PlenumClient):
                 stackargs, msgHandler=self.handlePeerMessage)
             self.peerStack.sign = self.sign
             self.peerInbox = deque()
-        self._observers = {}  # type Dict[str, Callable]
-        self._observerSet = set()  # makes it easier to guard against duplicates
 
         # To let client send this transactions to just one node
         self._read_only_requests = {GET_NYM,
@@ -81,6 +92,15 @@ class Client(PlenumClient):
             return SimpleZStack
         return SimpleRStack
 
+    def setupAnoncreds(self):
+        if self.anoncredsAreSetUp is False:
+            writeAnonCredPlugin(os.path.expanduser(self.config.CLI_BASE_DIR))
+            # This is to setup anoncreds wallet related custom jsonpickle handlers to
+            # serialize/deserialize it properly
+            setUpJsonpickle()
+            WALLET_RAW_MIGRATORS.append(migrate_indy_wallet_raw)
+            self.anoncredsAreSetUp = True
+
     def handlePeerMessage(self, msg):
         """
         Use the peerMsgRouter to pass the messages to the correct
@@ -91,10 +111,10 @@ class Client(PlenumClient):
         return self.peerMsgRouter.handle(msg)
 
     def getReqRepStore(self):
-        return ClientReqRepStoreFile(self.name, self.basedirpath)
+        return ClientReqRepStoreFile(self.ledger_dir)
 
     def getTxnLogStore(self):
-        return ClientTxnLog(self.name, self.basedirpath)
+        return ClientTxnLog(self.ledger_dir)
 
     def handleOneNodeMsg(self, wrappedMsg, excludeFromCli=None) -> None:
         msg, sender = wrappedMsg
@@ -109,21 +129,6 @@ class Client(PlenumClient):
         super().handleOneNodeMsg(wrappedMsg, excludeFromCli)
         if OP_FIELD_NAME not in msg:
             logger.error("Op absent in message {}".format(msg))
-
-    def postReplyRecvd(self, identifier, reqId, frm, result, numReplies):
-        reply = super().postReplyRecvd(identifier, reqId, frm, result, numReplies)
-        if reply:
-            for name in self._observers:
-                try:
-                    self._observers[name](name, reqId, frm, result, numReplies)
-                except Exception as ex:
-                    # TODO: All errors should not be shown on CLI, or maybe we
-                    # show errors with different color according to the
-                    # severity. Like an error occurring due to node sending
-                    # a malformed message should not result in an error message
-                    # being shown on the cli since the clients would anyway
-                    # collect enough replies from other nodes.
-                    logger.debug("Observer threw an exception", exc_info=ex)
 
     def requestConfirmed(self, identifier: str, reqId: int) -> bool:
         return self.txnLog.hasTxnWithReqId(identifier, reqId)
@@ -201,20 +206,3 @@ class Client(PlenumClient):
             return s + await self.peerStack.service(limit)
         else:
             return s
-
-    def registerObserver(self, observer: Callable, name=None):
-        if not name:
-            name = uuid.uuid4()
-        if name in self._observers or observer in self._observerSet:
-            raise RuntimeError("Observer {} already registered".format(name))
-        self._observers[name] = observer
-        self._observerSet.add(observer)
-
-    def deregisterObserver(self, name):
-        if name not in self._observers:
-            raise RuntimeError("Observer {} not registered".format(name))
-        self._observerSet.remove(self._observers[name])
-        del self._observers[name]
-
-    def hasObserver(self, name):
-        return name in self._observerSet
