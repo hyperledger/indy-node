@@ -2,16 +2,13 @@
 
 import argparse
 import logging
-import os
 
 from plenum.common.config_util import getConfig
 from plenum.common.constants import BLS_KEY, ALIAS
 from plenum.common.exceptions import OperationError, NoConsensusYet
 from plenum.common.keygen_utils import init_bls_keys
 from plenum.common.signer_did import DidSigner
-from plenum.common.util import hexToFriendly
 from stp_core.common.log import getlogger, Logger
-from stp_core.crypto.nacl_wrappers import Signer
 from stp_core.loop.eventually import eventually
 from stp_core.loop.looper import Looper
 from stp_core.network.port_dispenser import genHa
@@ -21,6 +18,7 @@ from indy_client.client.client import Client
 from indy_client.client.wallet.node import Node
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.util import get_reply_if_confirmed
+from indy_common.config_helper import NodeConfigHelper
 
 config = getConfig()
 config.enableStdOutLogging = False
@@ -110,7 +108,6 @@ if __name__ == "__main__":
     node_name, node_dest, steward_seed, bls_seed = parse_args()
     steward_seed = steward_seed.encode()
     bls_seed = bls_seed.encode()
-    key_dir = os.path.join(os.path.expanduser(config.baseDir), config.NETWORK_NAME)
-    bls_key = init_bls_keys(key_dir, node_name, bls_seed)
+    config_helper = NodeConfigHelper(node_name, config)
+    bls_key = init_bls_keys(config_helper.keys_dir, node_name, bls_seed)
     send_node_txn(node_name, bls_key, steward_seed, node_dest)
-

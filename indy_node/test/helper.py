@@ -127,7 +127,6 @@ class Scenario(ExitStack):
     @staticmethod
     def checkInboxForReAck(clientName, clientInBox, op, fromNode,
                            expectedCount: int):
-        msg = 'Got your request client ' + clientName
         actualCount = sum(
             1 for x in clientInBox
             if x[0]['op'] == op and x[1] == fromNode.clientstack.name)
@@ -247,6 +246,9 @@ class TestNode(TempStorage, TestNodeCore, Node):
 
     def getDomainReqHandler(self):
         return Node.getDomainReqHandler(self)
+
+    def init_core_authenticator(self):
+        return Node.init_core_authenticator(self)
 
     def onStopping(self, *args, **kwargs):
         # self.graphStore.store.close()

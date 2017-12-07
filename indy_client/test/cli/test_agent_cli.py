@@ -19,7 +19,7 @@ class TestAgentCLI(AgentCli, TestCliCore):
 
 @pytest.fixture(scope='module')
 def agentCliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns, tconf,
-                    cliTempLogger):
+                    txnPoolNodesLooper, cliTempLogger, txnPoolNodeSet):
     return partial(getCliBuilder, tdir=tdir, tconf=tconf,
                    tdirWithPoolTxns=tdirWithPoolTxns,
                    tdirWithDomainTxns=tdirWithDomainTxns,
@@ -27,8 +27,8 @@ def agentCliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns, tconf,
 
 
 @pytest.fixture(scope='module')
-def acmeAgentCli(agentCliBuilder, acmeAgentPort, tdir):
-    agent = create_acme(port=acmeAgentPort, base_dir_path=tdir,
+def acmeAgentCli(agentCliBuilder, acmeAgentPort, tdirWithClientPoolTxns):
+    agent = create_acme(port=acmeAgentPort, base_dir_path=tdirWithClientPoolTxns,
                         wallet=buildAcmeWallet())
     cliBuild = agentCliBuilder(name='Acme-Agent', agent=agent)
     cli = cliBuild('Acme-Agent')

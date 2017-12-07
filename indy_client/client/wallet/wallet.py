@@ -378,11 +378,11 @@ class Wallet(PWallet, TrustAnchoring):
         return self.preparePending(limit=1)[0]
 
     def getConnection(self, name, required=False) -> Connection:
-        l = self._connections.get(name)
-        if not l and required:
+        con_name = self._connections.get(name)
+        if not con_name and required:
             logger.debug("Wallet has connections {}".format(self._connections))
             raise ConnectionNotFound(name)
-        return l
+        return con_name
 
     def getConnectionBy(self,
                         remote: Identifier=None,

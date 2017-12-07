@@ -17,14 +17,15 @@ from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
 from indy_client.client.wallet.upgrade import Upgrade
-from indy_common.config_util import getConfig
 from indy_common.constants import NODE_UPGRADE, ACTION
+from indy_common.config import controlServiceHost, controlServicePort
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.server.upgrader import Upgrader
 from indy_node.test.helper import TestNode
 from indy_node.utils.node_control_tool import NodeControlTool
+from indy_common.config_helper import NodeConfigHelper
 
-config = getConfig()
+
 logger = getlogger()
 
 
@@ -128,7 +129,7 @@ def composeUpgradeMessage(version):
 
 def sendUpgradeMessage(version):
     sock = socket.create_connection(
-        (config.controlServiceHost, config.controlServicePort))
+        (controlServiceHost, controlServicePort))
     sock.sendall(composeUpgradeMessage(version))
     sock.close()
 
@@ -153,11 +154,12 @@ def get_valid_code_hash():
 
 
 def populate_log_with_upgrade_events(
-        tdir_with_pool_txns, pool_txn_node_names, tconf, version: Tuple[str, str, str]):
+        pool_txn_node_names, tdir, tconf, version: Tuple[str, str, str]):
     for nm in pool_txn_node_names:
-        path = os.path.join(tdir_with_pool_txns, tconf.nodeDataDir, nm)
-        os.makedirs(path)
-        log = UpgradeLog(os.path.join(path, tconf.upgradeLogFile))
+        config_helper = NodeConfigHelper(nm, tconf, chroot=tdir)
+        ledger_dir = config_helper.ledger_dir
+        os.makedirs(ledger_dir)
+        log = UpgradeLog(os.path.join(ledger_dir, tconf.upgradeLogFile))
         when = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         log.appendScheduled(when, version, randomString(10))
         log.appendStarted(when, version, randomString(10))

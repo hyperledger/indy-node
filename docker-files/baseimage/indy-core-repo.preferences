@@ -1,0 +1,3 @@
+Package: /indy-crypto/ /libindy/
+Pin: release l=Sovrin Main Repository
+Pin-Priority: 1000

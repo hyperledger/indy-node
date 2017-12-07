@@ -3,16 +3,17 @@
 from plenum.common.test_network_setup import TestNetworkSetup
 
 from indy_common.config_util import getConfig
+from indy_common.config_helper import ConfigHelper, NodeConfigHelper
 from indy_common.txn_util import getTxnOrderedFields
 
-config = getConfig()
+
 portsStart = 9700
 nodeParamsFileName = 'indy.env'
 
 
 if __name__ == "__main__":
-    TestNetworkSetup.bootstrapTestNodes(config, portsStart, nodeParamsFileName,
-                                        getTxnOrderedFields())
+    TestNetworkSetup.bootstrapTestNodes(getConfig(), portsStart, nodeParamsFileName,
+                                        getTxnOrderedFields(), ConfigHelper, NodeConfigHelper)
 
 
 # Usages:
