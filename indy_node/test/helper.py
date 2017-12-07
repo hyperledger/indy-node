@@ -233,7 +233,8 @@ class TestUpgrader(Upgrader):
              Node.reportSuspiciousNode, Node.reportSuspiciousClient,
              Node.processRequest, Node.processPropagate, Node.propagate,
              Node.forward, Node.send, Node.processInstanceChange,
-             Node.checkPerformance, Node.getReplyFromLedger])
+             Node.checkPerformance, Node.getReplyFromLedger,
+             Node.no_more_catchups_needed])
 class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
