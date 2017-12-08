@@ -38,12 +38,13 @@ def disable_transport_batching():
     Batched._should_batch = original_should_batch
 
 
+# Enable blowing up for log messages with WARNING and higher severity levels
 concerningLogLevels = [logging.WARNING,
                        logging.ERROR,
                        logging.CRITICAL]
 
 
-def test_3pc_batch_reverted_on_catchup_start_can_be_ordered_before_ledgers_sync(
+def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
         looper,
         tdirWithPoolTxns,
         tdirWithDomainTxns,
@@ -53,6 +54,34 @@ def test_3pc_batch_reverted_on_catchup_start_can_be_ordered_before_ledgers_sync(
         allPluginsPath,
         tconf,
         disable_transport_batching):
+    """
+    Verifies that a batch rejected due to catch-up start can be successfully
+    re-applied and ordered later before ledgers synchronization without any
+    warnings.
+
+    In the test we perform stashing / unstashing messages and patching /
+    unpatching methods to ensure the desired order of events for the following
+    scenario:
+
+    1. Start a pool of 4 nodes. One node with a master replica not being
+    a primary suffers from a slow network connection. We name this node slow.
+    2. Start a client.
+    3. Send a write request from the client to the pool.
+    4. All the 3PC messages for this request are sent, received and handled by
+    all the nodes except that COMMIT messages are not received by the slow node.
+    5. The other nodes reach a consensus and order the batch.
+    6. Initiate a catch-up of the slow node by calling its start_catchup method.
+    7. The slow node rejects the unordered batch.
+    8. The slow node sends MESSAGE_REQUEST for LEDGER_STATUS to the other nodes.
+    9. The slow node receives the COMMIT messages from the other nodes.
+    10. The slow node gets ORDER messages from its replicas and stashes them
+    since it is not in participating mode.
+    11. The slow node receives LEDGER_STATUS messages from the other nodes.
+    12. Prior to ledgers synchronization the slow node processes the stashed
+    ORDER messages. When it is processing the ORDER message from the master
+    replica, it re-applies the batch and orders it.
+    13. The slow node synchronizes its ledgers and completes the catch-up.
+    """
 
     non_primary_replicas_of_master = getNonPrimaryReplicas(nodeSet, 0)
     slow_node = non_primary_replicas_of_master[0].node
