@@ -228,13 +228,12 @@ class TestUpgrader(Upgrader):
 @spyable(
     methods=[Node.handleOneNodeMsg, Node.processRequest, Node.processOrdered,
              Node.postToClientInBox, Node.postToNodeInBox, "eatTestMsg",
-             Node.decidePrimaries, Node.startViewChange, Node.discard,
+             Node.discard,
              Node.reportSuspiciousNode, Node.reportSuspiciousClient,
              Node.processRequest, Node.processPropagate, Node.propagate,
-             Node.forward, Node.send, Node.processInstanceChange,
-             Node.checkPerformance, Node.getReplyFromLedger,
-             Node.no_more_catchups_needed, Node.onBatchCreated,
-             Node.onBatchRejected])
+             Node.forward, Node.send, Node.checkPerformance,
+             Node.getReplyFromLedger, Node.no_more_catchups_needed,
+             Node.onBatchCreated, Node.onBatchRejected])
 class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
