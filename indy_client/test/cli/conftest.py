@@ -10,6 +10,8 @@ from indy_client.test.agent.acme import ACME_ID, ACME_SEED
 from indy_client.test.agent.acme import ACME_VERKEY
 from indy_client.test.agent.faber import FABER_ID, FABER_VERKEY, FABER_SEED
 from indy_client.test.agent.thrift import THRIFT_ID, THRIFT_VERKEY, THRIFT_SEED
+from indy_common.config_helper import NodeConfigHelper
+from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 
 from stp_core.crypto.util import randomSeed
 from stp_core.network.port_dispenser import genHa
@@ -17,12 +19,15 @@ from stp_core.network.port_dispenser import genHa
 import plenum
 from plenum.common import util
 from plenum.common.constants import ALIAS, NODE_IP, NODE_PORT, CLIENT_IP, \
-    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY
+    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, TXN_TYPE, NODE, NYM
 from plenum.common.constants import CLIENT_STACK_SUFFIX
 from plenum.common.exceptions import BlowUp
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import randomString
 from plenum.test import waits
+from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
+
+from plenum.test.conftest import txnPoolNodeSet, patchPluginManager, tdirWithNodeKeepInited
 from stp_core.loop.eventually import eventually
 from stp_core.common.log import getlogger
 from plenum.test.conftest import tdirWithPoolTxns, tdirWithDomainTxns
@@ -32,15 +37,14 @@ from indy_common.constants import ENDPOINT, TRUST_ANCHOR
 from indy_common.roles import Roles
 from indy_common.test.conftest import poolTxnTrusteeNames
 from indy_common.test.conftest import domainTxnOrderedFields
-from plenum.common.keygen_utils import initNodeKeysForBothStacks, init_bls_keys
+from indy_node.test.helper import TestNode
+from plenum.common.keygen_utils import initNodeKeysForBothStacks
 
 # plenum.common.util.loggingConfigured = False
 
 from stp_core.loop.looper import Looper
-from plenum.test.cli.helper import newKeyPair, waitAllNodesStarted, \
-    doByCtx
+from plenum.test.cli.helper import newKeyPair, doByCtx
 
-from indy_common.config_util import getConfig
 from indy_client.test.cli.helper import ensureNodesCreated, get_connection_request, \
     getPoolTxnData, newCLI, getCliBuilder, P, prompt_is, addAgent, doSendNodeCmd, addNym
 from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
@@ -49,9 +53,13 @@ from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
     faberAgentPort, acmeAgentPort, thriftAgentPort, faberAgent, acmeAgent, \
     thriftAgent, faberBootstrap, acmeBootstrap
 from indy_client.test.cli.helper import connect_and_check_output
+from indy_common.config_helper import ConfigHelper
+from stp_core.crypto.util import randomSeed
 
 
-config = getConfig()
+@pytest.fixture("module")
+def ledger_base_dir(tconf):
+    return tconf.CLI_NETWORK_DIR
 
 
 @pytest.yield_fixture(scope="session")
@@ -70,8 +78,8 @@ def looper():
 
 
 @pytest.fixture("module")
-def cli(looper, tdir):
-    return newCLI(looper, tdir)
+def cli(looper, client_tdir):
+    return newCLI(looper, client_tdir)
 
 
 @pytest.fixture(scope="module")
@@ -80,14 +88,15 @@ def newKeyPairCreated(cli):
 
 
 @pytest.fixture(scope="module")
-def CliBuilder(tdir, tdirWithPoolTxns,
-               tdirWithDomainTxnsUpdated, tconf, cliTempLogger):
+def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+               txnPoolNodesLooper, tconf, cliTempLogger):
     return getCliBuilder(
         tdir,
         tconf,
         tdirWithPoolTxns,
         tdirWithDomainTxnsUpdated,
-        logFileName=cliTempLogger)
+        logFileName=cliTempLogger,
+        def_looper=txnPoolNodesLooper)
 
 
 def getDefaultUserMap(name):
@@ -904,19 +913,22 @@ def thriftCLI(CliBuilder):
 
 
 @pytest.fixture(scope="module")
-def poolCLI(poolCLI_baby, poolTxnData, poolTxnNodeNames, conf):
+def poolCLI(tdir, tconf, poolCLI_baby, poolTxnData, poolTxnNodeNames, txnPoolNodeSet):
     seeds = poolTxnData["seeds"]
     for nName in poolTxnNodeNames:
         seed = seeds[nName]
         use_bls = nName in poolTxnData['nodesWithBls']
-        initNodeKeysForBothStacks(nName, poolCLI_baby.basedirpath,
+        config_helper = NodeConfigHelper(nName, tconf, chroot=tdir)
+        initNodeKeysForBothStacks(nName, config_helper.keys_dir,
                                   seed, override=True, use_bls=use_bls)
+    for node in txnPoolNodeSet:
+        poolCLI_baby.nodes[node.name] = node
     return poolCLI_baby
 
 
 @pytest.fixture(scope="module")
 def poolNodesCreated(poolCLI, poolTxnNodeNames):
-    ensureNodesCreated(poolCLI, poolTxnNodeNames)
+    #ensureNodesCreated(poolCLI, poolTxnNodeNames)
     return poolCLI
 
 
@@ -933,6 +945,27 @@ class TestMultiNode:
         self.poolCli = poolCli
 
 
+def custom_tdir_with_pool_txns(pool_txn_data, tdir_for_pool_txns, pool_transactions_file_name):
+    ledger = create_genesis_txn_init_ledger(tdir_for_pool_txns, pool_transactions_file_name)
+
+    for item in pool_txn_data["txns"]:
+        if item.get(TXN_TYPE) == NODE:
+            ledger.add(item)
+    ledger.stop()
+    return tdir_for_pool_txns
+
+
+def custom_tdir_with_domain_txns(pool_txn_data, tdir_for_domain_txns,
+                                 domain_txn_ordered_fields, domain_transactions_file_name):
+    ledger = create_genesis_txn_init_ledger(tdir_for_domain_txns, domain_transactions_file_name)
+
+    for item in pool_txn_data["txns"]:
+        if item.get(TXN_TYPE) == NYM:
+            ledger.add(item)
+    ledger.stop()
+    return tdir_for_domain_txns
+
+
 @pytest.yield_fixture(scope="module")
 def multiPoolNodesCreated(request, tconf, looper, tdir,
                           cliTempLogger, namesOfPools=("pool1", "pool2")):
@@ -941,24 +974,44 @@ def multiPoolNodesCreated(request, tconf, looper, tdir,
     for poolName in namesOfPools:
         newPoolTxnNodeNames = [poolName + n for n
                                in ("Alpha", "Beta", "Gamma", "Delta")]
-        newTdir = os.path.join(tdir, poolName)
+        config_helper = ConfigHelper(tconf, chroot=tdir)
+        ledger_dir = os.path.join(config_helper.ledger_base_dir, poolName)
         newPoolTxnData = getPoolTxnData(poolName, newPoolTxnNodeNames)
-        newTdirWithPoolTxns = tdirWithPoolTxns(newPoolTxnData, newTdir, tconf)
-        newTdirWithDomainTxns = tdirWithDomainTxns(
-            newPoolTxnData, newTdir, tconf, domainTxnOrderedFields())
+        newTdirWithPoolTxns = custom_tdir_with_pool_txns(newPoolTxnData, ledger_dir,
+                                                         tconf.poolTransactionsFile)
+        newTdirWithDomainTxns = custom_tdir_with_domain_txns(
+            newPoolTxnData, ledger_dir, domainTxnOrderedFields(), tconf.domainTransactionsFile)
         testPoolNode = TestMultiNode(
-            poolName, newPoolTxnNodeNames, newTdir, tconf,
+            poolName, newPoolTxnNodeNames, tdir, tconf,
             newPoolTxnData, newTdirWithPoolTxns, newTdirWithDomainTxns, None)
 
-        poolCLIBabyGen = CliBuilder(newTdir, newTdirWithPoolTxns,
-                                    newTdirWithDomainTxns, tconf,
+        poolCLIBabyGen = CliBuilder(tdir, newTdirWithPoolTxns,
+                                    newTdirWithDomainTxns, looper, tconf,
                                     cliTempLogger)
-        poolCLIBaby = next(poolCLIBabyGen(poolName, looper))
-        poolCli = poolCLI(poolCLIBaby, newPoolTxnData, newPoolTxnNodeNames,
-                          tconf)
+        poolCLIBaby = next(poolCLIBabyGen(poolName))
+
+        # Ugly hack to build several networks
+        network_bak = tconf.NETWORK_NAME
+        tconf.NETWORK_NAME = poolName
+        tdirWithNodeKeepInited(tdir, tconf, NodeConfigHelper, newPoolTxnData, newPoolTxnNodeNames)
+
+        nodes = []
+        for nm in newPoolTxnNodeNames:
+            config_helper = NodeConfigHelper(nm, tconf, chroot=tdir)
+            node = TestNode(nm,
+                            config_helper=config_helper,
+                            config=tconf,
+                            pluginPaths=None)
+            looper.add(node)
+            nodes.append(node)
+        looper.run(checkNodesConnected(nodes))
+        ensureElectionsDone(looper=looper, nodes=nodes)
+
+        poolCli = poolCLI(tdir, tconf, poolCLIBaby, newPoolTxnData,
+                          newPoolTxnNodeNames, nodes)
         testPoolNode.poolCli = poolCli
         multiNodes.append(testPoolNode)
-        ensureNodesCreated(poolCli, newPoolTxnNodeNames)
+        tconf.NETWORK_NAME = network_bak
 
     return multiNodes
 
@@ -1181,7 +1234,8 @@ def savedKeyringRestored():
 def cliForMultiNodePools(request, multiPoolNodesCreated, tdir,
                          tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
                          cliTempLogger):
-    yield from getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+    yield from getCliBuilder(tdir, tconf,
+                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
                              cliTempLogger, multiPoolNodesCreated)("susan")
 
 
@@ -1189,7 +1243,8 @@ def cliForMultiNodePools(request, multiPoolNodesCreated, tdir,
 def aliceMultiNodePools(request, multiPoolNodesCreated, tdir,
                         tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
                         cliTempLogger):
-    yield from getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+    yield from getCliBuilder(tdir, tconf,
+                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
                              cliTempLogger, multiPoolNodesCreated)("alice")
 
 
@@ -1197,7 +1252,8 @@ def aliceMultiNodePools(request, multiPoolNodesCreated, tdir,
 def earlMultiNodePools(request, multiPoolNodesCreated, tdir,
                        tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
                        cliTempLogger):
-    yield from getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+    yield from getCliBuilder(tdir, tconf,
+                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
                              cliTempLogger, multiPoolNodesCreated)("earl")
 
 
@@ -1232,34 +1288,6 @@ def trusteeCli(be, do, trusteeMap, poolNodesStarted, nymAddedOut, trusteeCLI):
 @pytest.fixture(scope="module")
 def poolNodesStarted(be, do, poolCLI):
     be(poolCLI)
-
-    connectedExpect = [
-        'Alpha now connected to Beta',
-        'Alpha now connected to Gamma',
-        'Alpha now connected to Delta',
-        'Beta now connected to Alpha',
-        'Beta now connected to Gamma',
-        'Beta now connected to Delta',
-        'Gamma now connected to Alpha',
-        'Gamma now connected to Beta',
-        'Gamma now connected to Delta',
-        'Delta now connected to Alpha',
-        'Delta now connected to Beta',
-        'Delta now connected to Gamma']
-
-    # primarySelectedExpect = [
-    #     'Alpha:0 selected primary',
-    #     'Alpha:1 selected primary',
-    #     'Beta:0 selected primary',
-    #     'Beta:1 selected primary',
-    #     'Gamma:0 selected primary',
-    #     'Gamma:1 selected primary',
-    #     'Delta:0 selected primary',
-    #     'Delta:1 selected primary',
-    #     ]
-
-    do('new node all', within=6, expect=connectedExpect)
-
     return poolCLI
 
 
@@ -1272,11 +1300,12 @@ def philCli(be, do, philCLI, trusteeCli, poolTxnData):
 
     do('new wallet Phil', expect=['New wallet Phil created',
                                   'Active wallet set to "Phil"'])
-    phil_seed = poolTxnData['seeds']['Steward1']
-    phil_signer = DidSigner(seed=phil_seed.encode())
+
+    phil_seed = randomSeed()
+    phil_signer = DidSigner(seed=phil_seed)
 
     mapper = {
-        'seed': phil_seed,
+        'seed': phil_seed.decode(),
         'idr': phil_signer.identifier}
     do('new key with seed {seed}', expect=['Key created in wallet Phil',
                                            'DID for key is {idr}',
