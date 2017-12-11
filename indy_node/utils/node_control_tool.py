@@ -44,9 +44,8 @@ class NodeControlTool:
         self.test_mode = test_mode
         self.timeout = timeout or TIMEOUT
 
-        self.backup_dir = backup_dir or self.config.BACKUP_DIR
-
         config_helper = ConfigHelper(self.config)
+        self.backup_dir = backup_dir or config_helper.backup_dir
         self.backup_target = backup_target or config_helper.genesis_dir
 
         self.tmp_dir = TMP_DIR
