@@ -33,6 +33,10 @@ class ConfigHelper(PConfigHelper):
     def log_base_dir(self):
         return self.chroot_if_needed(self.config.LOG_DIR)
 
+    @property
+    def backup_dir(self):
+        return self.chroot_if_needed(self.config.BACKUP_DIR)
+
 
 class NodeConfigHelper(ConfigHelper):
 

@@ -88,7 +88,7 @@ new key with seed 000000000000000000000000Steward1
 ```
 2. Connect to the cluster as this Steward to the test Indy cluster we are running locally:
 ```
-connect test
+connect sandbox
 ```
 3. Register each Agent identifier (NYM) with the Trust Anchor role which allows to on-board other identifiers:
 ```
