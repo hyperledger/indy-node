@@ -19,10 +19,10 @@ def migrate():
                          .format(general_config_path))
         else:
             logger.info("Open '{}' for appending missing paths configuration."
-                         .format(general_config_path))
+                        .format(general_config_path))
             general_config_file = open(general_config_path, "a")
             logger.info("Open '{}' to get missing paths configuration."
-                         .format(indy_config.__file__))
+                        .format(indy_config.__file__))
             indy_config_file = open(indy_config.__file__, "r")
 
             general_config_file.write("\n")
@@ -35,5 +35,6 @@ def migrate():
 
             general_config_file.close()
             indy_config_file.close()
+
 
 migrate()
