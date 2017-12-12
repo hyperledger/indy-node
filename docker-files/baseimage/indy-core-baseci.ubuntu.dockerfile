@@ -2,7 +2,7 @@ FROM __NS__/indy-baseci:0.0.1
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 # sovrin repos
-RUN echo "deb https://repo.sovrin.org/sdk/deb xenial master" >> /etc/apt/sources.list && \
+RUN echo "deb https://repo.sovrin.org/sdk/deb xenial stable" >> /etc/apt/sources.list && \
     apt-get update
 
 # set highest priority for indy sdk packages in core repo

@@ -1,4 +1,4 @@
-FROM hyperledger/indy-core-baseci:0.0.1
+FROM hyperledger/indy-core-baseci:0.0.2
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
 ARG uid=1000
@@ -7,7 +7,7 @@ ARG venv=venv
 
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
-    libindy-crypto=0.1.6 \
+    libindy-crypto=0.2.0 \
     libindy
 
 RUN indy_ci_add_user $uid $user $venv && \
