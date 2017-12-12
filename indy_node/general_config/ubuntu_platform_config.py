@@ -15,3 +15,6 @@ BACKUP_DIR = '/var/lib/indy/backup'
 
 # Directory to store plugins.
 PLUGINS_DIR = '/var/lib/indy/plugins'
+
+# Directory to store node info.
+NODE_INFO_DIR = '/var/lib/indy'
