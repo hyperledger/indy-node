@@ -143,7 +143,7 @@ Indy needs [Libindy](https://github.com/hyperledger/indy-sdk) as a test dependen
 
 There is a deb package of libindy that can be used on Ubuntu:
 ```
-sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial master"
+sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable"
 sudo apt-get update
 sudo apt-get install -y libindy
 ```
