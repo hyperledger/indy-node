@@ -13,11 +13,16 @@ done
 if [ ! -f /etc/indy/indy_config.py ]; then
     echo "NETWORK_NAME = 'sandbox'" | sudo tee -a /etc/indy/indy_config.py
 
-    echo "baseDir = '/var/lib/indy'" | sudo tee -a /etc/indy/indy_config.py
-    echo "NODE_BASE_DATA_DIR = baseDir" | sudo tee -a /etc/indy/indy_config.py
+    echo "LEDGER_DIR = '/var/lib/indy'" | sudo tee -a /etc/indy/indy_config.py
+    echo "LOG_DIR = '/var/log/indy'"  | sudo tee -a /etc/indy/indy_config.py
+    echo "KEYS_DIR = '/var/lib/indy'"  | sudo tee -a /etc/indy/indy_config.py
+    echo "GENESIS_DIR = '/var/lib/indy'" | sudo tee -a /etc/indy/indy_config.py
+    echo "BACKUP_DIR = '/var/lib/indy/backup'" | sudo tee -a /etc/indy/indy_config.py
+    echo "PLUGINS_DIR = '/var/lib/indy/plugins'" | sudo tee -a /etc/indy/indy_config.py
+    echo "NODE_INFO_DIR = '/var/lib/indy'" | sudo tee -a /etc/indy/indy_config.py
+
     echo "CLI_BASE_DIR = '~/.indy-cli/'" | sudo tee -a /etc/indy/indy_config.py
     echo "CLI_NETWORK_DIR = '~/.indy-cli/networks'" | sudo tee -a /etc/indy/indy_config.py
-    echo "LOG_DIR = '/var/log/indy'" | sudo tee -a /etc/indy/indy_config.py
 fi
 
 # grant permissions
