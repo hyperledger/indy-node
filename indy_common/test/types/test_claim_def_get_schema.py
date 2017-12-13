@@ -1,13 +1,12 @@
-import pytest
-from indy_common.types import ClientClaimDefGetOperation
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, TxnSeqNoField
 
+from indy_common.types import ClientClaimDefGetOperation
+from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, TxnSeqNoField, IdentifierField
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
     ("ref", TxnSeqNoField),
-    ("origin", LimitedLengthStringField),
+    ("origin", IdentifierField),
     ('signature_type', LimitedLengthStringField),
 ])
 
