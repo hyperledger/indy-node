@@ -145,7 +145,7 @@ def makeGetAttrRequest(client, wallet, nym, raw):
 def makeGetClaimDefRequest(client, wallet):
     op = {
         TXN_TYPE: GET_CLAIM_DEF,
-        ORIGIN: 'any',
+        ORIGIN: '1' * 16, # must be a valid DID
         REF: 1,
         SIGNATURE_TYPE: 'any'
     }
