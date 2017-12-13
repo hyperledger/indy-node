@@ -57,6 +57,7 @@ class Node(PlenumNode, HasPoolManager):
                  keys_dir: str = None,
                  genesis_dir: str = None,
                  plugins_dir: str = None,
+                 node_info_dir: str = None,
                  primaryDecider=None,
                  pluginPaths: Iterable[str]=None,
                  storage=None,
@@ -69,6 +70,7 @@ class Node(PlenumNode, HasPoolManager):
         keys_dir = keys_dir or config_helper.keys_dir
         genesis_dir = genesis_dir or config_helper.genesis_dir
         plugins_dir = plugins_dir or config_helper.plugins_dir
+        node_info_dir = node_info_dir or config_helper.node_info_dir
 
         # TODO: 2 ugly lines ahead, don't know how to avoid
         self.idrCache = None
@@ -85,6 +87,7 @@ class Node(PlenumNode, HasPoolManager):
                          keys_dir=keys_dir,
                          genesis_dir=genesis_dir,
                          plugins_dir=plugins_dir,
+                         node_info_dir=node_info_dir,
                          primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          storage=storage,

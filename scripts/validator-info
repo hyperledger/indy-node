@@ -555,7 +555,7 @@ def main():
 
     statfile_group.add_argument(
         "--basedir", metavar="PATH",
-        default=config_helper.genesis_dir,
+        default=config_helper.node_info_dir,
         help=("Path to stats files")
     )
     # statfile_group.add_argument(
