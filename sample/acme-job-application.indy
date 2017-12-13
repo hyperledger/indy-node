@@ -1,0 +1,22 @@
+{
+  "connection-request": {
+    "name": "Acme Corp",
+    "identifier": "CzkavE58zgX7rUMrzSinLr",
+    "nonce": "57fbf9dc8c8e6acde33de98c6d747b28c",
+    "endpoint": "127.0.0.1:1213"
+  },
+  "proof-requests": [{
+    "name": "Job-Application",
+    "version": "0.2",
+    "attributes": {
+        "first_name": "string",
+        "last_name": "string",
+        "phone_number": "string",
+        "degree": "string",
+        "status": "string",
+        "ssn": "string"
+    },
+    "verifiableAttributes": ["degree", "status", "ssn"]
+  }],
+  "sig": "oeGeMdt5HRjRsbaXybGpRmkkijhHrGT82syxofEJQbkjTCLW63tM3jMn1boaf62vCSEEDyTaVJZnrpfDXAHtLZ9"
+}

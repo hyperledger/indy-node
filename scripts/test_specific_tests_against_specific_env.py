@@ -4,11 +4,11 @@
 # import os
 # import shutil
 #
-# import sovrin_client.test.cli.test_tutorial as testTutorialMod
-# import sovrin_client.test.cli.conftest as cliConftestMod
+# import indy_client.test.cli.test_tutorial as testTutorialMod
+# import indy_client.test.cli.conftest as cliConftestMod
 #
 # curDirPath = os.path.dirname(os.path.abspath(__file__))
-# pathForPoolTxnFile = '/home/rkalaria/.sovrin/pool_transactions_sandbox'
+# pathForPoolTxnFile = '/home/rkalaria/.indy/pool_transactions_sandbox'
 #
 #
 # # default/common monkeypatching required for any env
@@ -80,7 +80,7 @@
 #
 # # define env specific test config
 # sandboxConfig = {
-#     "poolTxnFilePath": "/home/rkalaria/.sovrin/pool_transactions_sandbox",
+#     "poolTxnFilePath": "/home/rkalaria/.indy/pool_transactions_sandbox",
 #     "testModulePaths": {
 #         'cli/test_tutorial.py': tutorialMonkeyPatching
 #     },
@@ -110,7 +110,7 @@
 #         exitCodes = {}
 #         for testModName, testMonkeyPatchFunc in testModulePaths.items():
 #             testModulePath = os.path.join(
-#                 curDirPath, '../sovrin_client/test', testModName)
+#                 curDirPath, '../indy_client/test', testModName)
 #             if testMonkeyPatchFunc:
 #                 testMonkeyPatchFunc(econf, monkeypatch)
 #             exitCodes[testModName] = pytest.main(['-s', testModulePath])

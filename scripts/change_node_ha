@@ -8,7 +8,7 @@ from plenum.common.util import getMaxFailures
 from stp_core.loop.eventually import eventually
 from plenum.test.helper import checkSufficientRepliesRecvd
 
-from sovrin_common.config_util import getConfig
+from indy_common.config_util import getConfig
 
 
 # Below is an example script command line parameters to be passed to test it.
@@ -45,7 +45,7 @@ def getHA(s):
 if __name__ == '__main__':
     args = parseArgs()
     config = getConfig()
-    with Looper(debug=True) as looper:
+    with Looper(debug=config.LOOPER_DEBUG) as looper:
         client, req = changeHA(looper,
                                config,
                                args.nodeName,
@@ -58,4 +58,3 @@ if __name__ == '__main__':
         f = getMaxFailures(len(client.nodeReg))
         looper.run(eventually(checkSufficientRepliesRecvd, client.inBox,
                               req.reqId, f, retryWait=1, timeout=8))
-

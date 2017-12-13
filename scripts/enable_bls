@@ -1,0 +1,113 @@
+#! /usr/bin/env python3
+
+import argparse
+import logging
+
+from plenum.common.config_util import getConfig
+from plenum.common.constants import BLS_KEY, ALIAS
+from plenum.common.exceptions import OperationError, NoConsensusYet
+from plenum.common.keygen_utils import init_bls_keys
+from plenum.common.signer_did import DidSigner
+from stp_core.common.log import getlogger, Logger
+from stp_core.loop.eventually import eventually
+from stp_core.loop.looper import Looper
+from stp_core.network.port_dispenser import genHa
+from stp_core.types import HA
+
+from indy_client.client.client import Client
+from indy_client.client.wallet.node import Node
+from indy_client.client.wallet.wallet import Wallet
+from indy_common.util import get_reply_if_confirmed
+from indy_common.config_helper import NodeConfigHelper
+
+config = getConfig()
+config.enableStdOutLogging = False
+Logger.setLogLevel(logging.INFO)
+logger = getlogger()
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Generate BLS keys for a node "
+                    "by taking the node's name and seeds "
+                    "and send NODE txn with the BLS key specified")
+
+    parser.add_argument('--name', required=True, help='node name')
+    parser.add_argument('--node_dest', required=True, type=str,
+                        help="Node's dest as specified in NODE txn")
+    parser.add_argument('--steward_seed', required=True, type=str,
+                        help="Steward's seed that was used to generate Steward's DID")
+    parser.add_argument('--bls_seed', required=True, type=str,
+                        help="Seed for a new BLS key")
+
+    args = parser.parse_args()
+
+    return args.name, args.node_dest, args.steward_seed, args.bls_seed
+
+
+def send_node_txn(node_name, bls_key, steward_seed, node_dest):
+    port = genHa()[1]
+    ha = HA('0.0.0.0', port)
+    name = "steward_wallet"
+    client = Client(name, ha=ha)
+
+    wallet = Wallet(name)
+    wallet.addIdentifier(signer=DidSigner(seed=steward_seed))
+
+    added = False
+    with Looper() as looper:
+        looper.add(client)
+        print('>>>>>>>>>>> Updating NYM with BLS keys...')
+        data = __prepare_node_data(node_name, bls_key)
+        req = __send_node_request(wallet, client,
+                                  data,
+                                  steward_seed, node_dest)
+        print('>>>>>>>>>>>> Sent {}'.format(req))
+        try:
+            looper.run(
+                eventually(_ensureReqCompleted,
+                           req.key, client,
+                           timeout=20, retryWait=2))
+            added = True
+        except NoConsensusYet:
+            raise TimeoutError('Request timed out')
+
+    if added:
+        print('>>>>>>>>>>>> Successfully updated NYM with BLS keys')
+    else:
+        print('>>>>>>>>>>>> Generated BLS key {} but failed to add it to the pool'.format(bls_key))
+
+
+def __prepare_node_data(node_name, bls_key):
+    data = {}
+    data[ALIAS] = node_name
+    data[BLS_KEY] = bls_key
+    return data
+
+
+def __send_node_request(wallet, client,
+                        data, steward_seed, node_dest):
+    steward_nym = DidSigner(seed=steward_seed).identifier
+
+    node = Node(node_dest, data, steward_nym)
+    wallet.addNode(node)
+    reqs = wallet.preparePending()
+    return client.submitReqs(*reqs)[0][0]
+
+
+def _ensureReqCompleted(reqKey, client):
+    reply, err = get_reply_if_confirmed(client, *reqKey)
+    if err:
+        raise OperationError(err)
+
+    if reply is None:
+        raise NoConsensusYet('not completed')
+
+
+if __name__ == "__main__":
+    node_name, node_dest, steward_seed, bls_seed = parse_args()
+    steward_seed = steward_seed.encode()
+    bls_seed = bls_seed.encode()
+    config_helper = NodeConfigHelper(node_name, config)
+    bls_key = init_bls_keys(config_helper.keys_dir, node_name, bls_seed)
+    send_node_txn(node_name, bls_key, steward_seed, node_dest)

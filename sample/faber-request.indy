@@ -1,0 +1,8 @@
+{
+  "connection-request": {
+    "name": "Faber College",
+    "identifier": "ULtgFQJe6bjiFbs7ke3NJD",
+    "nonce": "b1134a647eb818069c089e7694f63e6d"
+  },
+  "sig": "4QKqkwv9gXmc3Sw7YFkGm2vdF6ViZz9FKZcNJGh6pjnjgBXRqZ17Sk8bUDSb6hsXHoPxrzq2F51eDn1DKAaCzhqP"
+}
