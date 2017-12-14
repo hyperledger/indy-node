@@ -23,19 +23,6 @@ mkdir -p $GENERAL_DATA_DIR
 # create general indy log folder if does not exist
 mkdir -p $GENERAL_LOG_DIR
 
-# create indy config if does not exist
-#if [ ! -f /etc/indy/indy_config.py ]; then
-#    touch /etc/indy/indy_config.py
-#    echo "enableStdOutLogging=False" >> /etc/indy/indy_config.py
-#    echo "baseDir = '/var/lib/indy'" >> /etc/indy/indy_config.py
-#    echo "NODE_BASE_DATA_DIR = baseDir" >> /etc/indy/indy_config.py
-#    echo "LOG_DIR = '/var/log/indy'" >> /etc/indy/indy_config.py
-#    echo "BACKUP_DIR = '/var/lib/indy/backup'" >> /etc/indy/indy_config.py
-#    echo "CLI_BASE_DIR = '~/.indy-cli/'" >> /etc/indy/indy_config.py
-#    echo "CLI_NETWORK_DIR = '~/.indy-cli/networks'" >> /etc/indy/indy_config.py
-#    echo "NODE_BASE_DATA_DIR = baseDir" >> /etc/indy/indy_config.py
-#fi
-
 # create indy node config if does not exist
 if [ ! -f $GENERAL_CONFIG_DIR/indy_config.py ]; then
     cp $INSTALL_DIR/indy_node/general_config/indy_config.py $GENERAL_CONFIG_DIR

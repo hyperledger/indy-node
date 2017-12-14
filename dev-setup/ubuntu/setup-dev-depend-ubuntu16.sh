@@ -11,7 +11,7 @@ sudo add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu xenial main uni
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
 
 sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
-sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial master"
+sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable"
 sudo apt-get update
 echo 'Added repositories and keys'
 

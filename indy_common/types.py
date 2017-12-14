@@ -177,7 +177,7 @@ class ClientClaimDefGetOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_CLAIM_DEF)),
         (REF, TxnSeqNoField()),
-        (ORIGIN, LimitedLengthStringField(max_length=ORIGIN_FIELD_LIMIT)),
+        (ORIGIN, IdentifierField()),
         (SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
     )
 
