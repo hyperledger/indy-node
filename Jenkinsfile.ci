@@ -59,14 +59,14 @@ def staticCodeValidation() {
 
 
 def tests = [
-    common: {
+    common: [
         imgName: "hyperledger/indy-node-ci",
         dockerfile: "ci/ubuntu.dockerfile",
         contextDir: "ci",
         resFile: "test-result-common.${NODE_NAME}.xml",
         testDir: 'indy_common',
         python: python
-    }
+    ]
     /*
     client: { python ->
         test(
