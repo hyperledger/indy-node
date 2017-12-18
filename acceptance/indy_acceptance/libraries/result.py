@@ -6,31 +6,32 @@ Created on Nov 9, 2017
 Containing classes to make the test result as a json.
 """
 
-import json
-import time
-import os
 import errno
-from .constant import Colors
+import json
+import os
+import time
+
+from .constant import Color
+from enum import Enum
+
+TEST_CASE = "testcase"
+RESULT = "result"
+START_TIME = "starttime"
+DURATION = "duration"
+RUN = "run"
+STEP = "step"
+STATUS = "status"
+MESSAGE = "message"
 
 
-class KeyWord:
-    TEST_CASE = "testcase"
-    RESULT = "result"
-    START_TIME = "starttime"
-    DURATION = "duration"
-    RUN = "run"
-    STEP = "step"
-    STATUS = "status"
-    MESSAGE = "message"
-
-
-class Status:
+class Status(str, Enum):
     PASSED = "Passed"
     FAILED = "Failed"
 
 
 class TestResult:
-    __json_dir = os.path.join(os.path.dirname(__file__), "..") + "/test_output/test_results/"
+    __json_dir = os.path.join(os.path.dirname(
+        __file__), "..") + "/test_output/test_results/"
 
     def __init__(self, test_case_name):
         """
@@ -38,13 +39,17 @@ class TestResult:
 
         :param test_case_name: (optional) name of test case.
         """
+        self.__init_output_folder()
         self.__test_result = {}  # Store information of a test case
         self.__run = []  # Store information of steps in test case
-        self.__test_result[KeyWord.TEST_CASE] = test_case_name
-        self.__test_result[KeyWord.RESULT] = Status.PASSED
-        self.__test_result[KeyWord.START_TIME] = str(time.strftime("%Y-%m-%d_%H-%M-%S"))
-        self.__json_file_path = "{}{}_{}.json".format(TestResult.__json_dir, self.__test_result[KeyWord.TEST_CASE],
-                                                      self.__test_result[KeyWord.START_TIME])
+        self.__test_result[TEST_CASE] = test_case_name
+        self.__test_result[RESULT] = Status.PASSED
+        self.__test_result[START_TIME] = str(
+            time.strftime("%Y-%m-%d_%H-%M-%S"))
+        self.__json_file_path = "{}{}_{}.json".format(
+                                TestResult.__json_dir,
+                                self.__test_result[TEST_CASE],
+                                self.__test_result[START_TIME])
 
     def set_result(self, result):
         """
@@ -52,7 +57,7 @@ class TestResult:
 
         :param result: (optional) result of test.
         """
-        self.__test_result[KeyWord.RESULT] = result
+        self.__test_result[RESULT] = result
 
     def set_duration(self, duration):
         """
@@ -60,9 +65,10 @@ class TestResult:
 
         :param duration: (second).
         """
-        self.__test_result[KeyWord.DURATION] = round(duration * 1000)
+        self.__test_result[DURATION] = round(duration * 1000)
 
-    def set_step_status(self, step_summary: str, status: str = Status.PASSED, message: str = None):
+    def set_step_status(self, step_summary: str, status: str = Status.PASSED,
+                        message: str = None):
         """
         Set status and message for specify step.
 
@@ -70,7 +76,7 @@ class TestResult:
         :param status: (optional) PASSED or FAILED.
         :param message: anything that involve to step like Exception, Log,...
         """
-        temp = {KeyWord.STEP: step_summary, KeyWord.STATUS: status, KeyWord.MESSAGE: message}
+        temp = {STEP: step_summary, STATUS: status, MESSAGE: message}
         self.__run.append(temp)
 
     def add_step(self, step):
@@ -81,17 +87,20 @@ class TestResult:
         """
         if not step:
             return
-        temp = {KeyWord.STEP: step.get_name(), KeyWord.STATUS: step.get_status(), KeyWord.MESSAGE: step.get_message()}
+        temp = {STEP: step.get_name(), STATUS: step.get_status(),
+                MESSAGE: step.get_message()}
         self.__run.append(temp)
 
     def write_result_to_file(self):
         """
         Write the result as json.
         """
-        self.__test_result[KeyWord.RUN] = self.__run
+        self.__test_result[RUN] = self.__run
         with open(self.__json_file_path, "w+") as outfile:
-            json.dump(self.__test_result, outfile, ensure_ascii=False, indent=2)
-            print(Colors.OKBLUE + "\nJson file has been written at: {}\n".format(self.__json_file_path) + Colors.ENDC)
+            json.dump(self.__test_result, outfile,
+                      ensure_ascii=False, indent=2)
+            print(Color.OKBLUE + "\nJson file has been written at: {}\n"
+                  .format(self.__json_file_path) + Color.ENDC)
 
     def set_test_failed(self):
         """
@@ -111,7 +120,7 @@ class TestResult:
 
         :return: test status.
         """
-        return self.__test_result[KeyWord.RESULT]
+        return self.__test_result[RESULT]
 
     @staticmethod
     def __init_output_folder():

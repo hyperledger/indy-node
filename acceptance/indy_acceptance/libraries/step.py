@@ -5,6 +5,7 @@ Created on Nov 20, 2017
 
 
 """
+from libraries.result import Status
 
 
 class Steps:
@@ -34,9 +35,10 @@ class Steps:
         Add a new step to list step.
         :param name: variable hold the step name. Using to report.
         """
-        from libraries.constant import Colors
+        from libraries.constant import Color
         step_id = len(self.__steps)
-        print(Colors.HEADER + "\n{0}. {1}\n".format(step_id + 1, name) + Colors.ENDC)
+        print(Color.HEADER +
+              "\n{0}. {1}\n".format(step_id + 1, name) + Color.ENDC)
         new_step = Step(step_id + 1, name)
         self.__steps.append(new_step)
 
@@ -45,13 +47,13 @@ class Step:
     """
     Class manage information of a test step.
     """
-    from libraries.result import Status
 
     def __init__(self, step_id, name, status=Status.FAILED, message=""):
         self.__id = step_id
         self.__name = name
         self.__status = status
         self.__message = message
+        self.__freeze = False
 
     def get_id(self):
         """
@@ -77,8 +79,12 @@ class Step:
         """
         return self.__message
 
-    def set_status(self, status):
-        self.__status = status
+    def set_status(self, status, message=""):
+        if not self.__freeze:
+            self.__status = status
+            if status == Status.FAILED:
+                self.set_message(message)
+                self.__freeze = True
 
     def set_message(self, message):
         self.__message = message
