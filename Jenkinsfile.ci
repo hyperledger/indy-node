@@ -76,7 +76,11 @@ try {
         stage('Static code validation') {
             if (config.staticVerify) {
                 verifyStatic {
-                    dockerEnv = this.dockers.ubuntu
+                    dockerEnv = [
+                        imgName: "code-validation",
+                        dockerfile: "ci/code-validation.dockerfile",
+                        contextDir: "ci"
+                    ]
                     nodeLabel = this.labels.linux
                 }
             }
