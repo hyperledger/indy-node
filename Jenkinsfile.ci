@@ -18,11 +18,9 @@
 
 name = 'indy-node'
 
-library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM([
-    $class: 'GitSCMSource',
-    remote: 'git@github.com:evernym/jenkins-shared.git',
-    credentialsId: 'evernym-github-machine-user-token'
-])
+library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
+    github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
+)
 
 
 def config = [
@@ -34,7 +32,7 @@ def config = [
 
 
 // TODO enable windows
-def labels = [
+labels = [
     linux: env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
 ]
 
@@ -102,9 +100,9 @@ try {
         stage('Build / Test') {
             if (config.runTests) {
                 verify {
-                    labels = labels
-                    tests = tests
-                    failFast = config.failFast
+                    labels = this.labels
+                    tests = this.tests
+                    failFast = this.config.failFast
                 }
             }
         }
