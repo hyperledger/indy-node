@@ -40,22 +40,6 @@ if (env.INDY_AGENT_WINDOWS_LABEL) {
     labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
 }
 
-def staticCodeValidation() {
-    try {
-        echo 'Static code validation'
-        checkout scm
-
-        buildDocker('code-validation', 'ci/code-validation.dockerfile ci').inside {
-            sh "python3 -m flake8"
-        }
-    }
-    finally {
-        echo 'Static code validation: Cleanup'
-        step([$class: 'WsCleanup'])
-    }
-}
-
-
 dockers = [
     ubuntu: [
         imgName: "hyperledger/indy-node-ci",
@@ -91,8 +75,9 @@ try {
     timeout(60) {
         stage('Static code validation') {
             if (config.codeValidation) {
-                node(labels.linux) {
-                    staticCodeValidation()
+                verifyStatic {
+                    dockerEnv = this.dockers.ubuntu
+                    nodeLabel = this.labels.linux
                 }
             }
         }
