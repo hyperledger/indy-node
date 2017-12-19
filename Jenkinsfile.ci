@@ -69,7 +69,7 @@ tests = [
         resFile: { "test-result-common.${NODE_NAME}.xml" },
         testDir: 'indy_common',
         docker: 'ubuntu'
-    ]
+    ],
     client: {
         resFile: { "test-result-client.${NODE_NAME}.txt" },
         testDir: 'indy_client',
