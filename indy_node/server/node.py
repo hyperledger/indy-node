@@ -6,14 +6,12 @@ from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 from state.pruning_state import PruningState
 
-from plenum.common.constants import VERSION, \
-    POOL_TXN_TYPES, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID, POOL_LEDGER_ID, LedgerState
+from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
+    ENC, RAW, DOMAIN_LEDGER_ID, LedgerState
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.types import f, \
     OPERATION
-from plenum.common.messages.node_messages import Reply, PrePrepare
 from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.server.node import Node as PlenumNode
 from indy_common.config_util import getConfig
@@ -21,13 +19,14 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
     IN_PROGRESS
-from indy_common.constants import openTxns, \
-    validTxnTypes, IDENTITY_TXN_TYPES, CONFIG_TXN_TYPES
+from indy_common.constants import validTxnTypes, IDENTITY_TXN_TYPES, \
+    CONFIG_TXN_TYPES
 from indy_common.txn_util import getTxnOrderedFields
 from indy_common.types import Request, SafeRequest
+from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
-from indy_node.server.client_authn import TxnBasedAuthNr
+from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.node_authn import NodeAuthNr
@@ -53,16 +52,27 @@ class Node(PlenumNode, HasPoolManager):
                  ha=None,
                  cliname=None,
                  cliha=None,
-                 basedirpath=None,
-                 base_data_dir=None,
+                 config_helper=None,
+                 ledger_dir: str = None,
+                 keys_dir: str = None,
+                 genesis_dir: str = None,
+                 plugins_dir: str = None,
+                 node_info_dir: str = None,
                  primaryDecider=None,
-                 pluginPaths: Iterable[str] = None,
+                 pluginPaths: Iterable[str]=None,
                  storage=None,
                  config=None):
-        self.config = config or getConfig()
+        config = config or getConfig()
 
-        # TODO: 3 ugly lines ahead, don't know how to avoid
-        # self.stateTreeStore = None
+        config_helper = config_helper or NodeConfigHelper(name, config)
+
+        ledger_dir = ledger_dir or config_helper.ledger_dir
+        keys_dir = keys_dir or config_helper.keys_dir
+        genesis_dir = genesis_dir or config_helper.genesis_dir
+        plugins_dir = plugins_dir or config_helper.plugins_dir
+        node_info_dir = node_info_dir or config_helper.node_info_dir
+
+        # TODO: 2 ugly lines ahead, don't know how to avoid
         self.idrCache = None
         self.attributeStore = None
 
@@ -72,12 +82,16 @@ class Node(PlenumNode, HasPoolManager):
                          ha=ha,
                          cliname=cliname,
                          cliha=cliha,
-                         basedirpath=basedirpath,
-                         base_data_dir=base_data_dir,
+                         config_helper=config_helper,
+                         ledger_dir=ledger_dir,
+                         keys_dir=keys_dir,
+                         genesis_dir=genesis_dir,
+                         plugins_dir=plugins_dir,
+                         node_info_dir=node_info_dir,
                          primaryDecider=primaryDecider,
                          pluginPaths=pluginPaths,
                          storage=storage,
-                         config=self.config)
+                         config=config)
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
@@ -94,6 +108,7 @@ class Node(PlenumNode, HasPoolManager):
         self.poolCfg = self.getPoolConfig()
         self.configReqHandler = self.getConfigReqHandler()
         self.initConfigState()
+        self.register_req_handler(CONFIG_LEDGER_ID, self.configReqHandler)
         self.requestExecuter[CONFIG_LEDGER_ID] = self.executeConfigTxns
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
@@ -111,7 +126,7 @@ class Node(PlenumNode, HasPoolManager):
         """
         if self.config.primaryStorage is None:
             genesis_txn_initiator = GenesisTxnInitiatorFromFile(
-                self.basedirpath, self.config.domainTransactionsFile)
+                self.genesis_dir, self.config.domainTransactionsFile)
             return Ledger(
                 CompactMerkleTree(
                     hashStore=self.getHashStore('domain')),
@@ -147,6 +162,7 @@ class Node(PlenumNode, HasPoolManager):
             self.attributeStore = self.loadAttributeStore()
         return DomainReqHandler(self.domainLedger,
                                 self.states[DOMAIN_LEDGER_ID],
+                                self.config,
                                 self.reqProcessors,
                                 self.getIdrCache(),
                                 self.attributeStore,
@@ -197,6 +213,12 @@ class Node(PlenumNode, HasPoolManager):
         self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
                                  self.configLedger, self.configReqHandler)
 
+    @property
+    def ledgers(self):
+        ledgers = super().ledgers
+        ledgers.append(self.configLedger)
+        return ledgers
+
     def start_config_ledger_sync(self):
         self._sync_ledger(CONFIG_LEDGER_ID)
         self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
@@ -234,28 +256,34 @@ class Node(PlenumNode, HasPoolManager):
         self.acknowledge_upgrade()
 
     def acknowledge_upgrade(self):
-        if self.upgrader.should_notify_about_upgrade_result():
-            logger.debug('{} found the first run after upgrade, '
-                         'sending NODE_UPGRADE'.format(self))
-            lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
-            action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
-            op = {
-                TXN_TYPE: NODE_UPGRADE,
-                DATA: {
-                    ACTION: action,
-                    VERSION: lastUpgradeVersion
-                }
+        if not self.upgrader.should_notify_about_upgrade_result():
+            return
+        lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
+        action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
+        logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
+            self, action, lastUpgradeVersion))
+        op = {
+            TXN_TYPE: NODE_UPGRADE,
+            DATA: {
+                ACTION: action,
+                VERSION: lastUpgradeVersion
             }
-            op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
-            request = self.wallet.signOp(op)
-            self.startedProcessingReq(*request.key, self.nodestack.name)
-            self.send(request)
+        }
+        op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
+
+        # do not send protocol version before all Nodes support it after Upgrade
+        request = self.wallet.signRequest(
+            Request(operation=op, protocolVersion=None))
+
+        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.send(request)
+        self.upgrader.notified_about_upgrade_result()
 
     def notify_upgrade_start(self):
-        logger.info('{} is about to be upgraded, '
-                    'sending NODE_UPGRADE'.format(self))
         scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
         action = IN_PROGRESS
+        logger.info('{} is about to be upgraded, '
+                    'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))
         op = {
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
@@ -264,7 +292,11 @@ class Node(PlenumNode, HasPoolManager):
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
-        request = self.wallet.signOp(op)
+
+        # do not send protocol version before all Nodes support it after Upgrade
+        request = self.wallet.signRequest(
+            Request(operation=op, protocolVersion=None))
+
         self.startedProcessingReq(*request.key, self.nodestack.name)
         self.send(request)
 
@@ -309,52 +341,8 @@ class Node(PlenumNode, HasPoolManager):
         else:
             return super().authNr(req)
 
-    def isSignatureVerificationNeeded(self, msg: Any):
-        op = msg.get(OPERATION)
-        if op:
-            if op.get(TXN_TYPE) in openTxns:
-                return False
-        return True
-
-    def doStaticValidation(self, identifier, reqId, operation):
-        super().doStaticValidation(identifier, reqId, operation)
-        unknownKeys = set(operation.keys()).difference(set(allOpKeys))
-        if unknownKeys:
-            raise InvalidClientRequest(identifier, reqId,
-                                       'invalid keys "{}"'.
-                                       format(",".join(unknownKeys)))
-
-        missingKeys = set(reqOpKeys).difference(set(operation.keys()))
-        if missingKeys:
-            raise InvalidClientRequest(identifier, reqId,
-                                       'missing required keys "{}"'.
-                                       format(",".join(missingKeys)))
-
-        if operation[TXN_TYPE] not in validTxnTypes:
-            raise InvalidClientRequest(identifier, reqId, 'invalid {}: {}'.
-                                       format(TXN_TYPE, operation[TXN_TYPE]))
-
-        typ = operation.get(TXN_TYPE)
-        ledgerId = self.ledgerId(typ)
-        if ledgerId == DOMAIN_LEDGER_ID:
-            self.reqHandler.doStaticValidation(identifier, reqId,
-                                               operation)
-            return
-        if ledgerId == CONFIG_LEDGER_ID:
-            self.configReqHandler.doStaticValidation(identifier, reqId,
-                                                     operation)
-
-    def doDynamicValidation(self, request: Request):
-        """
-        State based validation
-        """
-        if self.ledgerIdForRequest(request) == CONFIG_LEDGER_ID:
-            self.configReqHandler.validate(request, self.config)
-        else:
-            super().doDynamicValidation(request)
-
-    def defaultAuthNr(self):
-        return TxnBasedAuthNr(self.idrCache)
+    def init_core_authenticator(self):
+        return LedgerBasedAuthNr(self.idrCache)
 
     def defaultNodeAuthNr(self):
         return NodeAuthNr(self.poolLedger)
@@ -365,32 +353,9 @@ class Node(PlenumNode, HasPoolManager):
         return c
 
     def processRequest(self, request: Request, frm: str):
-        if request.operation[TXN_TYPE] == GET_NYM:
-            self.send_ack_to_client(request.key, frm)
-            result = self.reqHandler.handleGetNymReq(request, frm)
-            self.transmitToClient(Reply(result), frm)
+        if self.is_query(request.operation[TXN_TYPE]):
+            self.process_query(request, frm)
             self.total_read_request_number += 1
-        elif request.operation[TXN_TYPE] == GET_SCHEMA:
-            self.send_ack_to_client(request.key, frm)
-            # TODO: `handleGetSchemaReq` should be changed to
-            # `get_reply_for_schema_req`, the rationale being that the method
-            # is not completely handling the request but fetching a response.
-            # Similar reasoning follows for other methods below
-            result = self.reqHandler.handleGetSchemaReq(request, frm)
-            self.transmitToClient(Reply(result), frm)
-            self.total_read_request_number += 1
-        elif request.operation[TXN_TYPE] == GET_ATTR:
-            self.send_ack_to_client(request.key, frm)
-            result = self.reqHandler.handleGetAttrsReq(request, frm)
-            self.transmitToClient(Reply(result), frm)
-            self.total_read_request_number += 1
-        elif request.operation[TXN_TYPE] == GET_CLAIM_DEF:
-            self.send_ack_to_client(request.key, frm)
-            result = self.reqHandler.handleGetClaimDefReq(request, frm)
-            self.transmitToClient(Reply(result), frm)
-            self.total_read_request_number += 1
-        elif request.operation[TXN_TYPE] == GET_TXNS:
-            super().processRequest(request, frm)
         else:
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [
@@ -408,31 +373,6 @@ class Node(PlenumNode, HasPoolManager):
                     request.reqId,
                     'Pool is in readonly mode, try again in 60 seconds')
 
-    @classmethod
-    def ledgerId(cls, txnType: str):
-        # It was called ledgerTypeForTxn before
-        if txnType in POOL_TXN_TYPES:
-            return POOL_LEDGER_ID
-        if txnType in IDENTITY_TXN_TYPES:
-            return DOMAIN_LEDGER_ID
-        if txnType in CONFIG_TXN_TYPES:
-            return CONFIG_LEDGER_ID
-
-    @property
-    def ledgers(self):
-        ledgers = super().ledgers
-        ledgers.append(self.configLedger)
-        return ledgers
-
-    def applyReq(self, request: Request, cons_time):
-        """
-        Apply request to appropriate ledger and state
-        """
-        if self.__class__.ledgerIdForRequest(request) == CONFIG_LEDGER_ID:
-            return self.configReqHandler.apply(request, cons_time)
-        else:
-            return super().applyReq(request, cons_time)
-
     def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
                           txnRoot) -> List:
         """
@@ -441,12 +381,14 @@ class Node(PlenumNode, HasPoolManager):
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        return self.commitAndSendReplies(self.reqHandler, ppTime, reqs,
+        req_handler = self.get_req_handler(DOMAIN_LEDGER_ID)
+        return self.commitAndSendReplies(req_handler, ppTime, reqs,
                                          stateRoot, txnRoot)
 
     def executeConfigTxns(self, ppTime, reqs: List[Request], stateRoot,
                           txnRoot) -> List:
-        return self.commitAndSendReplies(self.configReqHandler, ppTime, reqs,
+        req_handler = self.get_req_handler(CONFIG_LEDGER_ID)
+        return self.commitAndSendReplies(req_handler, ppTime, reqs,
                                          stateRoot, txnRoot)
 
     def update_txn_with_extra_data(self, txn):

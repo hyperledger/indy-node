@@ -6,10 +6,8 @@ from collections import deque
 from typing import List
 from typing import Optional
 
-from jsonpickle import tags
-
 from ledger.util import F
-from plenum.client.wallet import Wallet as PWallet, getClassVersionKey
+from plenum.client.wallet import Wallet as PWallet
 from plenum.common.did_method import DidMethods
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
@@ -37,154 +35,11 @@ ENCODING = "utf-8"
 logger = getlogger()
 
 
-def getClassVersionKeyBeforeRebranding(cls):
-    return getClassVersionKey(cls).replace('indy_client', 'sovrin_client')
-
-
-class WalletRawUpdaterToVersion1:
-
-    _LINK_FIELD_RENAMINGS = {
-        'linkStatus': 'connection_status',
-        'linkLastSynced': 'connection_last_synced',
-        'linkLastSyncNo': 'connection_last_sync_no',
-        'invitationNonce': 'request_nonce',
-
-        # rule for the intermediate renaming state (MGL version)
-        'connectionLastSynced': 'connection_last_synced'
-    }
-
-    @classmethod
-    def _processLink(cls, link):
-        link[tags.OBJECT] = \
-            'sovrin_client.client.wallet.connection.Connection'
-        for key in link:
-            if key in cls._LINK_FIELD_RENAMINGS:
-                link[cls._LINK_FIELD_RENAMINGS[key]] = link.pop(key)
-
-    @classmethod
-    def _traverseDict(cls, d):
-        if d.get(tags.OBJECT) == 'sovrin_client.client.wallet.link.Link':
-            cls._processLink(d)
-
-        for key in d:
-            cls._traverseObject(d[key])
-
-    @classmethod
-    def _traverseList(cls, l):
-        for item in l:
-            cls._traverseObject(item)
-
-    @classmethod
-    def _traverseObject(cls, v):
-        if isinstance(v, dict):
-            cls._traverseDict(v)
-        elif isinstance(v, list):
-            cls._traverseList(v)
-
-    @classmethod
-    def update(cls, raw):
-        if '_links' in raw:
-            raw['_connections'] = raw.pop('_links')
-
-        cls._traverseDict(raw)
-
-        raw[getClassVersionKeyBeforeRebranding(Wallet)] = 1
-
-
-class WalletRawUpdaterToVersion2:
-
-    @classmethod
-    def _processDidMethods(cls, didMethods):
-        if 'd' in didMethods:
-            d = didMethods['d']
-            if isinstance(d, dict) and 'sovrin' in d:
-                d['indy'] = d.pop('sovrin')
-
-    @classmethod
-    def _processDidMethod(cls, didMethod):
-        if 'name' in didMethod and isinstance(didMethod['name'], str):
-            didMethod['name'] = \
-                didMethod['name'].replace('sovrin', 'indy')
-        if 'pattern' in didMethod and isinstance(didMethod['pattern'], str):
-            didMethod['pattern'] = \
-                didMethod['pattern'].replace('sovrin', 'indy')
-
-    @classmethod
-    def _traverseDict(cls, d):
-        if tags.OBJECT in d:
-            if d[tags.OBJECT] == 'plenum.common.did_method.DidMethods':
-                cls._processDidMethods(d)
-            if d[tags.OBJECT] == 'plenum.common.did_method.DidMethod':
-                cls._processDidMethod(d)
-
-            if isinstance(d[tags.OBJECT], str):
-                d[tags.OBJECT] = \
-                    d[tags.OBJECT].replace('sovrin_common', 'indy_common')
-                d[tags.OBJECT] = \
-                    d[tags.OBJECT].replace('sovrin_client', 'indy_client')
-
-        for key in d:
-            cls._traverseObject(d[key])
-
-    @classmethod
-    def _traverseList(cls, l):
-        for item in l:
-            cls._traverseObject(item)
-
-    @classmethod
-    def _traverseObject(cls, v):
-        if isinstance(v, dict):
-            cls._traverseDict(v)
-        elif isinstance(v, list):
-            cls._traverseList(v)
-
-    @classmethod
-    def update(cls, raw):
-        cls._traverseDict(raw)
-
-        raw.pop(getClassVersionKeyBeforeRebranding(Wallet), None)
-        raw[getClassVersionKey(Wallet)] = 2
-
-
 # TODO: Maybe we should have a thinner wallet which should not have
 # ProverWallet
 class Wallet(PWallet, TrustAnchoring):
 
-    # Increment the class version each time when the structure
-    # of this class object is changed or the structure of objects being used
-    # in this class object graph is changed. Note that the structure related to
-    # inherited classes must be versioned by themselves using the same
-    # mechanism, so modification of inherited classes structure does not require
-    # increment of this class version.
-    CLASS_VERSION = 2
-
-    RAW_UPDATERS = {
-        1: WalletRawUpdaterToVersion1.update,
-        2: WalletRawUpdaterToVersion2.update
-    }
-
     clientNotPresentMsg = "The wallet does not have a client associated with it"
-
-    @staticmethod
-    def makeRawCompatible(raw):
-        """
-        Updates a raw representation of a wallet from any previous version
-        to the current version. If the raw representation of the wallet is
-        of the current version or higher then this method does nothing.
-
-        :param raw: the wallet's raw representation to update
-        """
-
-        # At first, call makeRawCompatible method of base class(es)
-        # if it contains such the method
-
-        rawClassVersion = raw.get(getClassVersionKey(Wallet))
-        if rawClassVersion is None:
-            rawClassVersion = \
-                raw.get(getClassVersionKeyBeforeRebranding(Wallet), 0)
-
-        for version in range(rawClassVersion, Wallet.CLASS_VERSION):
-            Wallet.RAW_UPDATERS[version + 1](raw)
 
     def __init__(self,
                  name: str=None,
@@ -193,10 +48,6 @@ class Wallet(PWallet, TrustAnchoring):
                          name,
                          supportedDidMethods or DefaultDidMethods)
         TrustAnchoring.__init__(self)
-
-        # Copy the class version to the instance for the version
-        # to be serialized when the wallet is persisted
-        setattr(self, getClassVersionKey(Wallet), Wallet.CLASS_VERSION)
 
         self._attributes = {}  # type: Dict[(str, Identifier,
         # Optional[Identifier]), Attribute]
@@ -527,11 +378,11 @@ class Wallet(PWallet, TrustAnchoring):
         return self.preparePending(limit=1)[0]
 
     def getConnection(self, name, required=False) -> Connection:
-        l = self._connections.get(name)
-        if not l and required:
+        con_name = self._connections.get(name)
+        if not con_name and required:
             logger.debug("Wallet has connections {}".format(self._connections))
             raise ConnectionNotFound(name)
-        return l
+        return con_name
 
     def getConnectionBy(self,
                         remote: Identifier=None,

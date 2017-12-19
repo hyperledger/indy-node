@@ -1,44 +1,30 @@
 import ast
+import asyncio
 import datetime
-from collections import OrderedDict
-
 import importlib
 import json
 import os
+import traceback
+from collections import OrderedDict
 from functools import partial
 from hashlib import sha256
 from operator import itemgetter
 from typing import Dict, Any, Tuple, Callable, NamedTuple
 
-import asyncio
-
 import base58
-from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file, \
-    update_genesis_txn_file_name_if_outdated
 from libnacl import randombytes
-
-from anoncreds.protocol.exceptions import SchemaNotFoundError
-from plenum.cli.cli import Cli as PlenumCli
+from prompt_toolkit import prompt
 from prompt_toolkit.contrib.completers import WordCompleter
 from prompt_toolkit.layout.lexers import SimpleLexer
 from pygments.token import Token
 
+from anoncreds.protocol.exceptions import SchemaNotFoundError
 from anoncreds.protocol.globals import KEYS
 from anoncreds.protocol.types import Schema, ID, ProofRequest
-from plenum.cli.constants import PROMPT_ENV_SEPARATOR, NO_ENV
-from plenum.cli.helper import getClientGrams
-from plenum.cli.phrase_word_completer import PhraseWordCompleter
-from plenum.common.signer_did import DidSigner
-from plenum.common.signer_simple import SimpleSigner
-from plenum.common.constants import NAME, VERSION, TYPE, VERKEY, DATA, TXN_ID, FORCE
-from plenum.common.txn_util import createGenesisTxnFile
-from plenum.common.types import f
-from plenum.common.util import randomString, getWalletFilePath
-
-from indy_client.agent.walleted_agent import WalletedAgent
 from indy_client.agent.constants import EVENT_NOTIFY_MSG, EVENT_POST_ACCEPT_INVITE, \
     EVENT_NOT_CONNECTED_TO_ANY_ENV
 from indy_client.agent.msg_constants import ERR_NO_PROOF_REQUEST_SCHEMA_FOUND
+from indy_client.agent.walleted_agent import WalletedAgent
 from indy_client.cli.command import acceptConnectionCmd, connectToCmd, \
     disconnectCmd, loadFileCmd, newDIDCmd, pingTargetCmd, reqClaimCmd, \
     sendAttribCmd, sendProofCmd, sendGetNymCmd, sendClaimDefCmd, sendNodeCmd, \
@@ -46,32 +32,43 @@ from indy_client.cli.command import acceptConnectionCmd, connectToCmd, \
     sendNymCmd, sendPoolUpgCmd, sendSchemaCmd, setAttrCmd, showClaimCmd, \
     listClaimsCmd, showFileCmd, showConnectionCmd, syncConnectionCmd, addGenesisTxnCmd, \
     sendProofRequestCmd, showProofRequestCmd, reqAvailClaimsCmd, listConnectionsCmd, sendPoolConfigCmd, changeKeyCmd
-
 from indy_client.cli.helper import getNewClientGrams, \
     USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
 from indy_client.client.client import Client
 from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.client.wallet.connection import Connection
 from indy_client.client.wallet.node import Node
+from indy_client.client.wallet.pool_config import PoolConfig
 from indy_client.client.wallet.upgrade import Upgrade
 from indy_client.client.wallet.wallet import Wallet
-from indy_client.client.wallet.pool_config import PoolConfig
+from indy_client.utils.migration import combined_migration
+from indy_client.utils.migration.combined_migration import \
+    is_cli_base_dir_untouched, legacy_base_dir_exists
 from indy_common.auth import Authoriser
 from indy_common.config_util import getConfig
+from indy_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
+    ACTION, SHA256, TIMEOUT, SCHEDULE, START, JUSTIFICATION, NULL, WRITES, \
+    REINSTALL, ATTR_NAMES
 from indy_common.exceptions import InvalidConnectionException, ConnectionAlreadyExists, \
     ConnectionNotFound, NotConnectedToNetwork
 from indy_common.identity import Identity
-from indy_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
-    ACTION, SHA256, TIMEOUT, SCHEDULE, GET_SCHEMA, \
-    START, JUSTIFICATION, NULL, WRITES, REINSTALL, ATTR_NAMES
-
+from indy_common.roles import Roles
+from indy_common.txn_util import getTxnOrderedFields
+from indy_common.util import ensureReqCompleted, getIndex, \
+    invalidate_config_caches
+from indy_node.__metadata__ import __version__
+from ledger.genesis_txn.genesis_txn_file_util import genesis_txn_file
+from plenum.cli.cli import Cli as PlenumCli
+from plenum.cli.constants import PROMPT_ENV_SEPARATOR, NO_ENV
+from plenum.cli.helper import getClientGrams
+from plenum.cli.phrase_word_completer import PhraseWordCompleter
+from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE
+from plenum.common.signer_did import DidSigner
+from plenum.common.txn_util import createGenesisTxnFile
+from plenum.common.util import randomString, getWalletFilePath
 from stp_core.crypto.signer import Signer
 from stp_core.crypto.util import cleanSeed
 from stp_core.network.port_dispenser import genHa
-from indy_common.roles import Roles
-from indy_common.txn_util import getTxnOrderedFields
-from indy_common.util import ensureReqCompleted, getIndex
-from indy_node.__metadata__ import __version__
 
 try:
     nodeMod = importlib.import_module('indy_node.server.node')
@@ -110,6 +107,8 @@ class IndyCli(PlenumCli):
     override_file_path = None
 
     def __init__(self, *args, **kwargs):
+        IndyCli._migrate_legacy_app_data_if_just_upgraded_and_user_agrees()
+
         self.aliases = {}  # type: Dict[str, Signer]
         self.trustAnchors = set()
         self.users = set()
@@ -125,6 +124,29 @@ class IndyCli(PlenumCli):
 
         # TODO bad code smell
         self.curContext = Context(None, None, {})  # type: Context
+
+    @staticmethod
+    def _migrate_legacy_app_data_if_just_upgraded_and_user_agrees():
+        if is_cli_base_dir_untouched() and legacy_base_dir_exists():
+            print('Application data from previous Indy version has been found')
+            answer = prompt('Do you want to migrate it? [Y/n] ')
+
+            if not answer or answer.upper().startswith('Y'):
+                try:
+                    combined_migration.migrate()
+                    # Invalidate config caches to pick up overridden config
+                    # parameters from migrated application data
+                    invalidate_config_caches()
+                    print('Application data has been migrated')
+
+                except Exception as e:
+                    print('Error occurred when trying to migrate'
+                          ' application data: {}'.format(e))
+                    traceback.print_exc()
+                    print('Application data has not been migrated')
+
+            else:
+                print('Application data was not migrated')
 
     @staticmethod
     def getCliVersion():
@@ -630,18 +652,18 @@ class IndyCli(PlenumCli):
     def _getAttr(self, nym, raw, enc, hsh):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1
         if raw:
-            l = LedgerStore.RAW
+            led_store = LedgerStore.RAW
             data = raw
         elif enc:
-            l = LedgerStore.ENC
+            led_store = LedgerStore.ENC
             data = enc
         elif hsh:
-            l = LedgerStore.HASH
+            led_store = LedgerStore.HASH
             data = hsh
         else:
             raise RuntimeError('One of raw, enc, or hash are required.')
 
-        attrib = Attribute(data, dest=nym, ledgerStore=l)
+        attrib = Attribute(data, dest=nym, ledgerStore=led_store)
         req = self.activeWallet.requestAttribute(
             attrib, sender=self.activeWallet.defaultId)
         self.activeClient.submitReqs(req)
@@ -1770,7 +1792,6 @@ class IndyCli(PlenumCli):
             return "Unknown environment {}".format(envName)
 
         new_base_path = os.path.join(self.ledger_base_dir, envName)
-        update_genesis_txn_file_name_if_outdated(new_base_path, self.config.poolTransactionsFile)
 
         if not os.path.exists(os.path.join(new_base_path,
                               genesis_txn_file(self.config.poolTransactionsFile))):

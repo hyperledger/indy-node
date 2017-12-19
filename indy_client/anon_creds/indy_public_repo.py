@@ -1,6 +1,8 @@
 import json
 from typing import Optional
 
+from plenum.common.types import f
+
 from anoncreds.protocol.exceptions import SchemaNotFoundError
 from common.serializers.json_serializer import JsonSerializer
 from ledger.util import F
@@ -8,7 +10,8 @@ from stp_core.loop.eventually import eventually
 from plenum.common.exceptions import NoConsensusYet, OperationError
 from stp_core.common.log import getlogger
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, DATA, NAME, \
-    VERSION, TYPE, ORIGIN, IDENTIFIER, CURRENT_PROTOCOL_VERSION
+    VERSION, TYPE, ORIGIN, IDENTIFIER, CURRENT_PROTOCOL_VERSION, \
+    DOMAIN_LEDGER_ID
 
 from indy_common.constants import GET_SCHEMA, SCHEMA, ATTR_NAMES, \
     GET_CLAIM_DEF, REF, CLAIM_DEF, PRIMARY, REVOCATION, GET_TXNS
@@ -76,6 +79,7 @@ class IndyPublicRepo(PublicRepo):
 
         else:
             op = {
+                f.LEDGER_ID.nm: DOMAIN_LEDGER_ID,
                 TXN_TYPE: GET_TXNS,
                 DATA: id.schemaId
             }
@@ -107,7 +111,7 @@ class IndyPublicRepo(PublicRepo):
         data, seqNo = await self._sendGetReq(op)
         if not data:
             raise ValueError(
-                'No value for schema with ID={} and key={}'.format(
+                'No CLAIM_DEF for schema with ID={} and key={}'.format(
                     id.schemaId, id.schemaKey))
         data = data[PRIMARY]
         pk = PublicKey.from_str_dict(data)._replace(seqId=seqNo)
@@ -124,8 +128,10 @@ class IndyPublicRepo(PublicRepo):
         data, seqNo = await self._sendGetReq(op)
         if not data:
             raise ValueError(
-                'No value for schema with ID={} and key={}'.format(
+                'No CLAIM_DEF for schema with ID={} and key={}'.format(
                     id.schemaId, id.schemaKey))
+        if REVOCATION not in data:
+            return None
         data = data[REVOCATION]
         pkR = RevocationPublicKey.fromStrDict(data)._replace(seqId=seqNo)
         return pkR

@@ -28,8 +28,6 @@ from plenum.common.plugin_helper import loadPlugins
 from indy_client.cli.cli import IndyCli
 from indy_node.pool.local_pool import create_local_pool
 
-config = getConfig()
-
 
 def demo_start_agents(pool, looper, b_dir):
     demo_start_agent(b_dir, create_faber, bootstrap_faber,
@@ -67,7 +65,8 @@ def demo_start_agent(b_dir, create_func, bootstrap_func,
 
 
 def main():
-    base_dir = config.baseDir
+    config = getConfig()
+    base_dir = config.CLI_BASE_DIR
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
     loadPlugins(base_dir)

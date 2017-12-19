@@ -2,6 +2,7 @@ import pytest
 
 # it is fixture - do not remove
 from indy_client.test.cli.conftest import acmeAddedByPhil as agentAddedBySponsor
+from indy_common.exceptions import NotConnectedToNetwork
 
 from plenum.common.exceptions import OperationError, NoConsensusYet
 
@@ -52,34 +53,35 @@ def testCreateAgentDoesNotAllocatePort(tdirWithPoolTxns):
         agent.stop()
 
 
-def testAgentStartedWithoutPoolStarted(emptyLooper, tdirWithPoolTxns):
+def testAgentStartedWithoutPoolStarted(emptyLooper, tdirWithClientPoolTxns):
+    import indy_client.agent.run_agent
+    indy_client.agent.run_agent.CONNECTION_TIMEOUT = 10
     newAgentName = "Agent2"
-    with pytest.raises(NoConsensusYet):
-        runAgent(emptyLooper, tdirWithPoolTxns, agentPort,
+    with pytest.raises(NotConnectedToNetwork):
+        runAgent(emptyLooper, tdirWithClientPoolTxns, agentPort,
                  name=newAgentName)
     stopAgent(emptyLooper, newAgentName)
 
 
-def testStartNewAgentOnUsedPort(poolNodesStarted, tdirWithPoolTxns,
+def testStartNewAgentOnUsedPort(poolNodesStarted, tdirWithClientPoolTxns,
                                 emptyLooper, agentAddedBySponsor,
                                 agentStarted):
-
     with pytest.raises(PortNotAvailable):
-        runAgent(emptyLooper, tdirWithPoolTxns, agentPort, name='Agent4')
+        runAgent(emptyLooper, tdirWithClientPoolTxns, agentPort, name='Agent4')
 
     stopAgent(emptyLooper, 'Agent4')
 
 
-def testStartAgentChecksForPortAvailability(poolNodesStarted, tdirWithPoolTxns,
+def testStartAgentChecksForPortAvailability(poolNodesStarted, tdirWithClientPoolTxns,
                                             emptyLooper, agentAddedBySponsor):
     newAgentName1 = "Agent11"
     newAgentName2 = "Agent12"
     with pytest.raises(PortNotAvailable):
-        agent = getNewAgent(newAgentName1, tdirWithPoolTxns, agentPort,
+        agent = getNewAgent(newAgentName1, tdirWithClientPoolTxns, agentPort,
                             agentWallet())
-        runAgent(emptyLooper, tdirWithPoolTxns, agentPort,
+        runAgent(emptyLooper, tdirWithClientPoolTxns, agentPort,
                  name=newAgentName2)
-        runAgent(emptyLooper, tdirWithPoolTxns, agentPort,
+        runAgent(emptyLooper, tdirWithClientPoolTxns, agentPort,
                  name=newAgentName1, agent=agent)
 
     stopAgent(emptyLooper, newAgentName2)

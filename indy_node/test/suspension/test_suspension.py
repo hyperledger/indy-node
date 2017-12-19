@@ -21,35 +21,35 @@ logger = getlogger()
 
 
 @pytest.fixture(scope="module")
-def anotherTrustee(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherTrustee(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newTrustee',
                                   role=TRUSTEE)
 
 
 @pytest.fixture(scope="module")
-def anotherTGB(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherTGB(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newTGB', role=TGB)
 
 
 @pytest.fixture(scope="module")
-def anotherSteward(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherSteward(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newSteward',
                                   role=STEWARD)
 
 
 @pytest.fixture(scope="module")
-def anotherSteward1(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherSteward1(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newSteward1',
                                   role=STEWARD)
 
 
 @pytest.fixture(scope="module")
-def anotherTrustAnchor(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherTrustAnchor(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newTrustAnchor',
                                   role=TRUST_ANCHOR)
 

@@ -58,7 +58,9 @@ For this guide, however, we’ll be using a command-line interface instead of an
 ## Install Indy
 You can install a test network in one of several ways:
 
- - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/master/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
+ - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
+ 
+ - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
 
  - **Coming soon:** Use client side docker images to make it easy for you to play with Indy.
 
@@ -95,7 +97,7 @@ ALICE> status
 Not connected to Indy network. Please connect first.
 
 Usage:
-    connect(test | live)
+    connect(sandbox | live)
 ```
 Alice might also try the 'help' command to see a list of the other commands that are available to her.
 
@@ -259,23 +261,23 @@ Request acceptance aborted.
 Cannot sync because not connected. Please connect first.
 
 Usage:
-    connect <test|live>
+    connect <sandbox|live>
 ```
 
 In order to accept a connection request, its origin must be proved. Just because a connection request says the sender is "Faber College" doesn’t make it so; the ease of forging email headers is a reminder of why we can’t just trust what a sender says. Syncing the connection with the ledger will allow us to prove the association between Faber College’s identity and public key, but the CLI must be connected to the ledger to sync -- and we haven’t connected yet.
 
-There are two Indy networks we might connect to. One is a test network, and the other is live (production). We’ll use the test network for the demo.
+There are two Indy networks we might connect to. One is a sandbox (test) network, and the other is live (production). We’ll use the sandbox (test) network for the demo.
 
 ```
-ALICE> connect test
+ALICE> connect sandbox
  ...
-Connected to test.
+Connected to sandbox.
 ```
 
 Alice tries again to accept the connection request from Faber College. This time she succeeds.
 
 ```
-ALICE@test> accept request from Faber
+ALICE@sandbox> accept request from Faber
 Expanding Faber to "Faber College"
 Request not yet verified.
 Connection not yet synchronized.
@@ -311,7 +313,7 @@ Accepting a connection request takes the nonce that Faber College provided, and 
 Once the connection is accepted and synchronized, Alice inspects it again.
 
 ```
-ALICE@test> show connection Faber
+ALICE@sandbox> show connection Faber
 Expanding Faber to "Faber College"
 Connection
     Name: Faber College
@@ -341,7 +343,7 @@ Alice can see now that the remote verification key and remote endpoint, as well 
 At this point Alice is connected to Faber College and can interact in a secure way. The Indy CLI supports a ping command to test secure pairwise interactions. (This command is partly implemented today, and partly still a stub.)
 
 ```
-ALICE@test> ping Faber
+ALICE@sandbox> ping Faber
 Expanding Faber to "Faber College"
 
 Pinging remote endpoint: ('10.20.30.101', 5555)
@@ -372,7 +374,7 @@ Notice that when Alice last showed the Faber connection, there was a new line: `
 Claims are offered by an **issuer**. An issuer may be any identity owner known to the ledger and any issuer may issue a claim about any identity owner it can identify. The usefulness and reliability of a claim are tied to the reputation of the issuer with respect to the claim at hand. For Alice to self-issue a claim that she likes chocolate ice cream may be perfectly reasonable, but for her to self-issue a claim that she graduated from Faber College should not impress anyone. The value of this transcript is that it is provably issued by Faber College. Alice wants to use that claim. She asks for more information:
 
 ```
-ALICE@test> show claim Transcript
+ALICE@sandbox> show claim Transcript
 Found claim Transcript in connection Faber College
 Status: available (not yet issued)
 Name: Transcript
@@ -391,7 +393,7 @@ Try Next:
 Alice sees the attributes the transcript contains. These attributes are known because a schema for Transcript has been written to the ledger (see [Appendix](#appendix)). However, the "not yet issued" note means that the transcript has not been delivered to Alice in a usable form. To get the transcript, Alice needs to request it.
 
 ```
-ALICE@test> request claim Transcript
+ALICE@sandbox> request claim Transcript
 Found claim Transcript in connection Faber College
 Requesting claim Transcript from Faber College...
 
@@ -405,7 +407,7 @@ Response from Faber College (34.61 ms):
 Now the transcript has been issued; Alice has it in her possession, in much the same way that she would hold a physical transcript that had been mailed to her. When she inspects it again, she sees more details:
 
 ```
-ALICE@test> show claim Transcript
+ALICE@sandbox> show claim Transcript
 Found claim Transcript in connection Faber College
 Status: 2017-05-01 12:32:17.497455
 Name: Transcript
@@ -423,7 +425,7 @@ Attributes:
 At some time in the future, Alice would like to work for the fictional company, Acme Corp. Normally she would browse to their website, where she would click on a hyperlink to apply for a job. Her browser would download a connection request which her Indy app would open; this would trigger a prompt to Alice, asking her to accept the connection with Acme Corp. Because we’re using a CLI, the interface is different, but the steps are the same. We do approximately the same things that we did when Alice was accepting Faber College’s connection request:
 
 ```
-ALICE@test> show sample/acme-job-application.indy
+ALICE@sandbox> show sample/acme-job-application.indy
 {
   "connection-request": {
     "name": "Acme Corp",
@@ -457,7 +459,7 @@ In this case, Acme Corp is requesting that Alice provide a Job Application. The 
 
 Notice that the connection request also identifies an endpoint. This is different from our previous case, where an identity owner’s endpoint was discovered through lookup on the ledger. Here, Acme has decided to short-circuit the ledger and just directly publish its job application acceptor endpoint with each request. The Indy code base supports this.  Alice quickly works through the sequence of commands that establishes a new pairwise connection with Acme:
 ```
-ALICE@test> load sample/acme-job-application.indy
+ALICE@sandbox> load sample/acme-job-application.indy
 1 connection request found for Acme Corp.
 Creating Connection for Acme Corp.
 
@@ -466,7 +468,7 @@ Try Next:
     accept request from "Acme Corp"
 
 
-ALICE@test> show connection Acme
+ALICE@sandbox> show connection Acme
 Expanding Acme to "Acme Corp"
 Connection (not yet accepted)
     Name: Acme Corp
@@ -487,7 +489,7 @@ Try Next:
     accept request from "Acme Corp"
 
 
-ALICE@test> accept request from Acme
+ALICE@sandbox> accept request from Acme
 Expanding Acme to "Acme Corp"
 Request not yet verified.
 Connection not yet synchronized.
@@ -517,7 +519,7 @@ Try Next:
 Notice what the proof request looks like now. Although the application is not submitted, it has various claims filled in:
 
 ```
-ALICE@test> show proof request Job-Application
+ALICE@sandbox> show proof request Job-Application
 Found proof request "Job-Application" in connection "Acme Corp"
 Status: Requested
 Name: Job-Application
@@ -553,15 +555,15 @@ The pre-population doesn’t create data leakage though; the request is still pe
 Notice that some attributes are verifiable and some are not. The proof request schema says that SSN, degree, and graduation status in the transcript must be formally asserted by an issuer other than Alice. Notice also that the first occurrence of first_name and last_name, plus the only occurrence of phone_number, are currently empty, and are not required to be verifiable. By not tagging these claims with a verifiable status, Acme’s claim request is saying it will accept Alice’s own claim about her names and phone numbers. (This might be done to allow Alice to provide a first name that’s a nickname, for example.) Alice therefore adds the extra attributes now:
 
 ```
-ALICE@test> set first_name to Alice
-ALICE@test> set last_name to Garcia
-ALICE@test> set phone_number to 123-456-7890
+ALICE@sandbox> set first_name to Alice
+ALICE@sandbox> set last_name to Garcia
+ALICE@sandbox> set phone_number to 123-456-7890
 ```
 
 Alice checks to see what the proof request looks like now.
 
 ```
-ALICE@test> show proof request Job-Application
+ALICE@sandbox> show proof request Job-Application
 Found proof request "Job-Application" in connection "Acme Corp"
 Status: Requested
 Name: Job-Application
@@ -593,7 +595,7 @@ Try Next:
 She decides to submit.
 
 ```
-ALICE@test> send proof Job-Application to Acme
+ALICE@sandbox> send proof Job-Application to Acme
 
 Signature accepted.
 
@@ -609,7 +611,7 @@ It will be interesting to see whether Acme accepts this application with the inf
 Here, we’ll assume the application is accepted, and Alice ends up getting the job. When Alice inspects her connection with Acme a week later, she sees that a new claim is available:
 
 ```
-ALICE@test> show connection Acme
+ALICE@sandbox> show connection Acme
 Expanding Acme to "Acme Corp"
 Connection
     Name: Acme Corp
@@ -638,7 +640,7 @@ Try Next:
 Now that Alice has a job, she’d like to apply for a loan. That will require proof of employment. She can get this from the Job-Certificate claim offered by Acme. Alice goes through a familiar sequence of interactions. First she inspects the claim:
 
 ```
-ALICE@test> show claim Job-Certificate
+ALICE@sandbox> show claim Job-Certificate
 Found claim Job-Certificate in connection Acme Corp.
 Status: available(not yet issued)
 Name: Job-Certificate
@@ -657,7 +659,7 @@ Try Next:
 Next, she requests it:
 
 ```
-ALICE@test> request claim Job-Certificate
+ALICE@sandbox> request claim Job-Certificate
 Found claim Job-Certificate in connection Acme Corp
 Requesting claim Job-Certificate from Acme Corp...
 
@@ -670,7 +672,7 @@ Response from Acme Corp (11.48 ms):
 The Job-Certificate has been issued, and she now has it in her possession.
 
 ```
-ALICE@test> show claim Job-Certificate
+ALICE@sandbox> show claim Job-Certificate
 Found claim Job-Certificate in connection Acme Corp
 Status: 2017-05-01 16:53:53.742695
 Name: Job-Certificate
@@ -689,7 +691,7 @@ There is a disadvantage in this approach to data sharing though, -- it may discl
 
 Alice now loads Thrift Bank's loan application connection:
 ```
-ALICE@test> load sample/thrift-loan-application.indy
+ALICE@sandbox> load sample/thrift-loan-application.indy
 1 connection request found for Thrift Bank.
 Creating Connection for Thrift Bank.
 
@@ -701,7 +703,7 @@ Try Next:
 Alice accepts the loan application connection:
 
 ```
-ALICE@test> accept request from Thrift
+ALICE@sandbox> accept request from Thrift
 Expanding thrift to "Thrift Bank"
 Request not yet verified.
 Connection not yet synchronized.
@@ -734,7 +736,7 @@ Try Next:
 
 Alice checks to see what the proof request "Loan-Application-Basic" looks like:
 ```
-ALICE@test> show proof request Loan-Application-Basic
+ALICE@sandbox> show proof request Loan-Application-Basic
 Found proof request "Loan-Application-Basic" in connection "Thrift Bank"
 Status: Requested
 Name: Loan-Application-Basic
@@ -760,7 +762,7 @@ Try Next:
 Alice sends just the "Loan-Application-Basic" proof to the bank. This allows her to minimize the **PII** (personally identifiable information) that she has to share when all she's trying to do right now is prove basic eligibility.
 
 ```
-ALICE@test> send proof Loan-Application-Basic to Thrift Bank
+ALICE@sandbox> send proof Loan-Application-Basic to Thrift Bank
 
 Signature accepted.
 
@@ -773,7 +775,7 @@ Response from Thrift Bank (479.17 ms):
 Alice now checks the second proof request where she needs to share her personal information with the bank.
 
 ```
-ALICE@test> show proof request Loan-Application-KYC
+ALICE@sandbox> show proof request Loan-Application-KYC
 Found proof request "Loan-Application-KYC" in connection "Thrift Bank"
 Status: Requested
 Name: Loan-Application-KYC
@@ -806,7 +808,7 @@ Try Next:
 
 Alice now sends "Loan-Application-KYC" proof to the bank:
 ```
-ALICE@test> send proof Loan-Application-KYC to Thrift Bank
+ALICE@sandbox> send proof Loan-Application-KYC to Thrift Bank
 
 Signature accepted.
 

@@ -1,0 +1,13 @@
+FROM __NS__/indy-baseci:0.0.1
+LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
+
+# sovrin repos
+RUN echo "deb https://repo.sovrin.org/sdk/deb xenial stable" >> /etc/apt/sources.list && \
+    apt-get update
+
+# set highest priority for indy sdk packages in core repo
+COPY indy-core-repo.preferences /etc/apt/preferences.d/indy-core-repo
+
+COPY __VERSION_FILE__ /
+
+RUN indy_image_clean

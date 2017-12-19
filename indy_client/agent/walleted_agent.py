@@ -2,8 +2,8 @@ import errno
 import os
 
 from plenum.client.wallet import WalletStorageHelper
-from plenum.common.util import normalizedWalletFileName, getLastSavedWalletFileName, getWalletFilePath, \
-    updateWalletsBaseDirNameIfOutdated
+from plenum.common.util import normalizedWalletFileName, \
+    getLastSavedWalletFileName, getWalletFilePath
 from indy_client.agent.agent import Agent
 from indy_client.agent.caching import Caching
 from indy_client.agent.walleted import Walleted
@@ -36,8 +36,6 @@ class WalletedAgent(Walleted, Agent, Caching):
 
         self._wallet = None
         self._walletSaver = None
-
-        updateWalletsBaseDirNameIfOutdated(self.config)
 
         # restore any active wallet belonging to this agent
         self._restoreWallet()
@@ -97,8 +95,7 @@ class WalletedAgent(Walleted, Agent, Caching):
         super().stop(*args, **kwargs)
 
     def getWalletsBaseDir(self):
-        return os.path.expanduser(os.path.join(
-            self.config.baseDir, self.config.walletsDir))
+        return os.path.expanduser(os.path.join(self.config.CLI_BASE_DIR, self.config.walletsDir))
 
     def getContextDir(self):
         return os.path.join(
