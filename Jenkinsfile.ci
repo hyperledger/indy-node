@@ -22,6 +22,7 @@ library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
     github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
 )
 
+
 config = [
     staticVerify: true,
     runTests: true,
@@ -29,20 +30,69 @@ config = [
     sendNotif: false
 ]
 
-def common = load 'Jenkinsfile.common'
+
+// TODO enable windows
+labels = [
+    linux: env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
+]
+
+if (env.INDY_AGENT_WINDOWS_LABEL) {
+    labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
+}
+
+dockers = [
+    ubuntu: [
+        imgName: "hyperledger/indy-node-ci",
+        dockerfile: "ci/ubuntu.dockerfile",
+        contextDir: "ci"
+    ]
+]
+
+tests = [
+    common: [
+        resFile: { "test-result-common.${NODE_NAME}.xml" },
+        testDir: 'indy_common',
+        docker: 'ubuntu'
+    ],
+    client: [
+        resFile: { "test-result-client.${NODE_NAME}.txt" },
+        testDir: 'indy_client',
+        useRunner: true,
+        docker: 'ubuntu'
+    ],
+    node: [
+        resFile: { "test-result-node.${NODE_NAME}.txt" },
+        testDir: 'indy_node',
+        useRunner: true,
+        docker: 'ubuntu'
+    ]
+].collect {k, v -> [k, v]}
+
 
 // PIPELINE
 
 try {
     timeout(60) {
         if (config.staticVerify) {
-            common.staticVerify()
+            verifyStatic {
+                dockerEnv = [
+                    imgName: "code-validation",
+                    dockerfile: "ci/code-validation.dockerfile",
+                    contextDir: "ci"
+                ]
+                nodeLabel = this.labels.linux
+            }
         }
         if (config.runTests) {
-            common.verify()
+            verify {
+                labels = this.labels
+                dockers = this.dockers
+                tests = this.tests
+                failFast = this.config.failFast
+            }
         }
+        currentBuild.result = 'SUCCESS'
     }
-    currentBuild.result = 'SUCCESS'
 } catch (Exception err) {
     println(err.toString())
     currentBuild.result = 'FAILURE'
