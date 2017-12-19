@@ -73,26 +73,22 @@ tests = [
 
 try {
     timeout(60) {
-        stage('Static code validation') {
-            if (config.staticVerify) {
-                verifyStatic {
-                    dockerEnv = [
-                        imgName: "code-validation",
-                        dockerfile: "ci/code-validation.dockerfile",
-                        contextDir: "ci"
-                    ]
-                    nodeLabel = this.labels.linux
-                }
+        if (config.staticVerify) {
+            verifyStatic {
+                dockerEnv = [
+                    imgName: "code-validation",
+                    dockerfile: "ci/code-validation.dockerfile",
+                    contextDir: "ci"
+                ]
+                nodeLabel = this.labels.linux
             }
         }
-        stage('Build / Test') {
-            if (config.runTests) {
-                verify {
-                    labels = this.labels
-                    dockers = this.dockers
-                    tests = this.tests
-                    failFast = this.config.failFast
-                }
+        if (config.runTests) {
+            verify {
+                labels = this.labels
+                dockers = this.dockers
+                tests = this.tests
+                failFast = this.config.failFast
             }
         }
         currentBuild.result = 'SUCCESS'
