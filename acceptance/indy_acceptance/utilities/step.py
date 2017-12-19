@@ -5,7 +5,7 @@ Created on Nov 20, 2017
 
 
 """
-from libraries.result import Status
+from .result import Status
 
 
 class Steps:
@@ -35,7 +35,7 @@ class Steps:
         Add a new step to list step.
         :param name: variable hold the step name. Using to report.
         """
-        from libraries.constant import Color
+        from .constant import Color
         step_id = len(self.__steps)
         print(Color.HEADER +
               "\n{0}. {1}\n".format(step_id + 1, name) + Color.ENDC)
@@ -83,7 +83,8 @@ class Step:
         if not self.__freeze:
             self.__status = status
             if status == Status.FAILED:
-                self.set_message(message)
+                if message != "":
+                    self.set_message(message)
                 self.__freeze = True
 
     def set_message(self, message):

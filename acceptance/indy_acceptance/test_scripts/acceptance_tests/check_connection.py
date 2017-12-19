@@ -10,9 +10,9 @@ import json
 
 from indy import pool, signus, wallet
 
-from libraries import constant
-from libraries.utils import perform
-from test_scripts.test_scenario_base import TestScenarioBase
+from indy_acceptance.utilities import constant
+from indy_acceptance.utilities.utils import perform
+from indy_acceptance.test_scripts.test_scenario_base import TestScenarioBase
 
 
 class CheckConnection(TestScenarioBase):

@@ -5,20 +5,19 @@ Created on Nov 22, 2017
 
 Containing the test base class.
 """
-import asyncio
 import inspect
 import os
 import time
 
-from libraries import common
-from libraries import constant
-from libraries import utils
-from libraries.constant import Color
-from libraries.logger import Logger
-from libraries.result import TestResult, Status
-from libraries.step import Steps
-from libraries.utils import generate_random_string, run_async_method,\
-                            make_final_result
+from indy_acceptance.utilities import common
+from indy_acceptance.utilities import constant
+from indy_acceptance.utilities import utils
+from indy_acceptance.utilities.constant import Color
+from indy_acceptance.utilities.logger import Logger
+from indy_acceptance.utilities.result import TestResult, Status
+from indy_acceptance.utilities.step import Steps
+from indy_acceptance.utilities.utils import generate_random_string,\
+                                    run_async_method, make_final_result
 
 
 class TestScenarioBase():
@@ -85,8 +84,6 @@ class TestScenarioBase():
         self.init_data_test()
         utils.print_with_color("\nTest case: {} ----> started\n"
                                .format(self.test_name), Color.BOLD)
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
         try:
             run_async_method(self.execute_precondition_steps)
             run_async_method(self.execute_test_steps)
@@ -97,11 +94,9 @@ class TestScenarioBase():
         finally:
             try:
                 run_async_method(self.execute_postcondition_steps)
-                loop.close()
             except Exception as e:
                 utils.print_error("\n{}\n".format(str(type(e))))
-            make_final_result(
-                self.test_result, self.steps.get_list_step(), begin_time,
-                self.logger)
+            make_final_result(self.test_result, self.steps.get_list_step(),
+                              begin_time, self.logger)
             utils.print_with_color("Test case: {} ----> finished\n".
                                    format(self.test_name), Color.BOLD)

@@ -11,11 +11,11 @@ import os
 
 from indy import pool
 
-from libraries.constant import original_pool_genesis_txn_file,\
+from indy_acceptance.utilities.constant import original_pool_genesis_txn_file,\
                                pool_genesis_txn_file
-from libraries.result import Status
-from libraries.utils import perform
-from test_scripts.test_scenario_base import TestScenarioBase
+from indy_acceptance.utilities.result import Status
+from indy_acceptance.utilities.utils import perform
+from indy_acceptance.test_scripts.test_scenario_base import TestScenarioBase
 
 
 """ cmds """
@@ -50,7 +50,8 @@ class VerifyMessagesOnConnection(TestScenarioBase):
 
         # 2. Open pool ledger -------------------------------------------------
         self.steps.add_step("Open pool ledger")
-        message_2 = "Failed due to the Bug IS-332"
+        bug_is332 = "Bug: https://jira.hyperledger.org/browse/IS-332"
+        message_2 = "Failed due to the Bug IS-332" + "\n" + bug_is332
         self.steps.get_last_step().set_status(Status.FAILED, message_2)
 
         # 3. verifying the message --------------------------------------------

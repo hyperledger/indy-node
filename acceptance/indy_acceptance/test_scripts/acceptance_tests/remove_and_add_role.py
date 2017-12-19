@@ -9,13 +9,13 @@ import json
 
 from indy import ledger, signus
 
-from libraries import common
-from libraries.constant import pool_genesis_txn_file, \
-    seed_default_trustee
-from libraries import utils
-from libraries.constant import Color, Role
-from libraries.result import Status
-from test_scripts.test_scenario_base import TestScenarioBase
+from indy_acceptance.utilities import common
+from indy_acceptance.utilities.constant import pool_genesis_txn_file, \
+                                                seed_default_trustee
+from indy_acceptance.utilities import utils
+from indy_acceptance.utilities.constant import Color, Role
+from indy_acceptance.utilities.result import Status
+from indy_acceptance.test_scripts.test_scenario_base import TestScenarioBase
 
 
 class RemoveAndAddRole(TestScenarioBase):
@@ -230,6 +230,7 @@ class RemoveAndAddRole(TestScenarioBase):
                                                            "TrustAnchor1")
         result = result and temp
         message_20 += message
+
         if not result:
             self.steps.get_last_step().set_message(
                 "{}\n{}".format(message_20[1:], bug_is_430))

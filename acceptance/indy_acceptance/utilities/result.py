@@ -37,7 +37,7 @@ class TestResult:
         """
         Constructor of a TestResult instance.
 
-        :param test_case_name: (optional) name of test case.
+        :param test_case_name: name of test case.
         """
         self.__init_output_folder()
         self.__test_result = {}  # Store information of a test case
@@ -55,7 +55,7 @@ class TestResult:
         """
         Set a result (PASSED or FAILED) for test case.
 
-        :param result: (optional) result of test.
+        :param result: result of test.
         """
         self.__test_result[RESULT] = result
 
@@ -72,8 +72,8 @@ class TestResult:
         """
         Set status and message for specify step.
 
-        :param step_summary: (optional) title of step.
-        :param status: (optional) PASSED or FAILED.
+        :param step_summary: title of step.
+        :param status: PASSED or FAILED.
         :param message: anything that involve to step like Exception, Log,...
         """
         temp = {STEP: step_summary, STATUS: status, MESSAGE: message}
@@ -83,7 +83,7 @@ class TestResult:
         """
         Add a step to report.
 
-        :param step: (optional) a Step object in step.py
+        :param step: a Step object in step.py
         """
         if not step:
             return

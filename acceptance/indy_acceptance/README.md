@@ -4,7 +4,7 @@
 
 This is Python Basic Acceptance test for Indy. The tests are not driven by any unit test framework but are standalone python scripts.
 
-This test currently requires python 3.6.
+This test currently requires python 3.5.
   
 ### How to run
 
@@ -18,11 +18,11 @@ After building successfully the Indy SDK for Python, you need to set the PYTHONP
 #### Then run:
 - Run one test case:
 
-    python3.6 indy_acceptance/test_scripts/acceptance_tests/<testcase_name>.py
+    python3.5 indy_acceptance/test_scripts/acceptance_tests/<testcase_name>.py
     
     Ex:
 ```
-    python3.6 indy_acceptance/test_scripts/acceptance_tests/verify_messages_on_connection.py
+    python3.5 indy_acceptance/test_scripts/acceptance_tests/verify_messages_on_connection.py
 ```
 
 #### Result location:
@@ -38,15 +38,15 @@ You are able to generate the summary report of the runs as html report file. And
 
 - Get the summary report for all the run
 ```
-    python3.6 indy_acceptance/test_scripts/reporter.py
+    python3.5 indy_acceptance/test_scripts/reporter.py
 ```
 - Get the summary report for a group of test cases that having "message" string.
 ```
-    python3.6 indy_acceptance/test_scripts/reporter.py -n *messages*
+    python3.5 indy_acceptance/test_scripts/reporter.py -n *messages*
 ```
 - Get the summary report on a giving date
 ```
-    python3.6 indy_acceptance/test_scripts/reporter.py -n *2017-12-14*
+    python3.5 indy_acceptance/test_scripts/reporter.py -n *2017-12-14*
 ``` 
 
 ##### This is the usage of reporter.py
