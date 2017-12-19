@@ -24,7 +24,7 @@ library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
 
 
 config = [
-    codeValidation: false,
+    staticVerify: true,
     runTests: true,
     failFast: false,
     sendNotif: false
@@ -74,7 +74,7 @@ tests = [
 try {
     timeout(60) {
         stage('Static code validation') {
-            if (config.codeValidation) {
+            if (config.staticVerify) {
                 verifyStatic {
                     dockerEnv = this.dockers.ubuntu
                     nodeLabel = this.labels.linux
