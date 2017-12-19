@@ -1,0 +1,61 @@
+#!/usr/bin/env groovy
+
+// TODO enable windows
+labels = [
+    linux: env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
+]
+
+if (env.INDY_AGENT_WINDOWS_LABEL) {
+    labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
+}
+
+dockers = [
+    ubuntu: [
+        imgName: "hyperledger/indy-node-ci",
+        dockerfile: "ci/ubuntu.dockerfile",
+        contextDir: "ci"
+    ]
+]
+
+tests = [
+    common: [
+        resFile: { "test-result-common.${NODE_NAME}.xml" },
+        testDir: 'indy_common',
+        docker: 'ubuntu'
+    ],
+    client: [
+        resFile: { "test-result-client.${NODE_NAME}.txt" },
+        testDir: 'indy_client',
+        useRunner: true,
+        docker: 'ubuntu'
+    ],
+    node: [
+        resFile: { "test-result-node.${NODE_NAME}.txt" },
+        testDir: 'indy_node',
+        useRunner: true,
+        docker: 'ubuntu'
+    ]
+].collect {k, v -> [k, v]}
+
+
+def staticVerify() {
+    verifyStatic {
+        dockerEnv = [
+            imgName: "code-validation",
+            dockerfile: "ci/code-validation.dockerfile",
+            contextDir: "ci"
+        ]
+        nodeLabel = this.labels.linux
+    }
+}
+
+def verify(labels) {
+    verify {
+        labels = this.labels
+        dockers = this.dockers
+        tests = this.tests
+        failFast = this.config.failFast
+    }
+}
+
+return this;
