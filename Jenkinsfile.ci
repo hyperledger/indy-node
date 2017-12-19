@@ -70,12 +70,12 @@ tests = [
         testDir: 'indy_common',
         docker: 'ubuntu'
     ],
-    client: {
+    client: [
         resFile: { "test-result-client.${NODE_NAME}.txt" },
         testDir: 'indy_client',
         useRunner: true,
         docker: 'ubuntu'
-    },
+    ],
     node: [
         resFile: { "test-result-node.${NODE_NAME}.txt" },
         testDir: 'indy_node',
