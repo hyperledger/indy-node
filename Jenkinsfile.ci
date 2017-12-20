@@ -78,7 +78,7 @@ try {
             node = 'ubuntu-master'
         }
 
-        _automerge {
+        _autoMerge {
             node = this.labels.linux
             gitHubCredentialsId = 'evernym-github-machine-user-token' //TODO from env
         }
