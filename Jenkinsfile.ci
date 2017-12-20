@@ -74,9 +74,13 @@ tests = [
 try {
     timeout(60) {
 
+        _getReleaseVersion {
+            node = 'ubuntu-master'
+        }
+
         _automerge {
             node = this.labels.linux
-            gitHubCredentialsId: 'evernym-github-machine-user-token' //TODO from env
+            gitHubCredentialsId = 'evernym-github-machine-user-token' //TODO from env
         }
 
         _isTested {
