@@ -75,8 +75,8 @@ try {
     timeout(60) {
 
         _isTested {
-            config.node = this.labels.linux
-            config.branch = 'master'
+            node = this.labels.linux
+            branch = 'master'
         }
 
         if (config.staticVerify) {
