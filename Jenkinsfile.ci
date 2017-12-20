@@ -96,7 +96,7 @@ try {
 
         packaging {
             node = this.labels.linux
-            builder.deb = buildDebUbuntu
+            builders.deb = buildDebUbuntu
             version = releaseVersion
         }
 
