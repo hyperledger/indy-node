@@ -74,10 +74,16 @@ tests = [
 try {
     timeout(60) {
 
+        _automerge {
+            node = this.labels.linux
+            gitHubCredentialsId: 'evernym-github-machine-user-token' //TODO from env
+        }
+
         _isTested {
             node = this.labels.linux
             branch = 'master'
         }
+
 
         if (config.staticVerify) {
             verifyStatic {
