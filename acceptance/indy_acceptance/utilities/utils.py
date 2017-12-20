@@ -144,6 +144,15 @@ def make_final_result(test_result, steps, begin_time, logger):
     logger.save_log(test_result.get_test_status())
 
 
+def print_test_result(test_name, test_status):
+    if test_status == Status.PASSED:
+        print_with_color("Test case: {} ----> {}\n".
+                         format(test_name, "PASSED"),
+                         Color.OKGREEN)
+    else:
+        print_error("Test case: {} ----> {}\n".format(test_name, "FAILED"))
+
+
 def print_with_color(message: str, color: str):
     print(color + message + Color.ENDC)
 
