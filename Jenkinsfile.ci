@@ -90,7 +90,7 @@ def buildDebUbuntu = { releaseVersion, sourcePath ->
 try {
     timeout(60) {
 
-        releaseVersion = getReleaseVersion {
+        def releaseVersion = getReleaseVersion {
             node = 'ubuntu-master'
         }
 
