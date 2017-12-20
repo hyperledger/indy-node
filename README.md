@@ -87,6 +87,7 @@ Use project name `INDY`.
 
 - We'd love your help; see these [instructions on how to contribute](http://bit.ly/2ugd0bq).
 - You may also want to read this info about [maintainers](MAINTAINERS.md).
+- See [How to send a PR](#how-to-send-a-pr) below.
 
 
 ## How to Install a Test Network 
@@ -124,17 +125,25 @@ Please have a look at [Continues integration/delivery](docs/ci-cd.md)
 
 ## How to send a PR
 
+- Make sure that all your commits have a DCO sign-off from the author
+- Make sure that static code validation passed 
+(you can run `flake8 .` on the project root to check it; you can install flake8 from pypi: `pip install flake8`)
+- Provide a full description of changes in the PR including Jira ticket number if any
+- Put the link to the PR to `#indy-pr-review` channel in Rocket.Chat
+- A reviewer needs to start your tests first (add `test this please` comment to the PR)
+- You need to make sure that all the tests pass
+- A reviewer needs to review the code and approve the PR. If there are review comments, they will be put into the PR itself.
+- You must process them (feel free to reply in the PR threads, or have a discussion in Rocket.Chat if needed)
+- A reviewer or maintainer will merge the PR (we usually use Squash)
+ 
+
+#### How to send a PR to both plenum and node
 If you made changes in both indy-plenum and indy-node, you need to do the following:
-- Raise a PR to indy-plenum's master
-    - Make sure that all your commits have a DCO sign-off from the author
-    - Make sure that static code validation passed 
-    (you can run `flake8 .` on the project root to check it; you can install flake8 from pypi: `pip install flake8`)
-    - Put the link to the PR to `#indy-pr-review` channel in Rocket.Chat
-    - A reviewer needs to review the code, approve it, start your tests (add `test this please` comment to the PR), and merge a PR (we usually use Squash) after all the tests pass.
-    - So, a new build of indy-plenum is created 
+- Raise a PR to indy-plenum's master and wait until code is reviewed and merged (see above)
+    - So, a new build of indy-plenum is created
 - Note a just built version of indy-plenum (indy-plenum-dev in pypi): X.Y.Z (you can check it either on [tags/releases](https://github.com/hyperledger/indy-plenum/releases) page, [pypi](https://pypi.python.org/pypi/indy-plenum-dev) or on CI server).
 - Change indy-plenum-dev's dependency version to the new one in indy-node's [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py).
-- Raise PR to indy-node's master and wait until code is reviewed and merged (the same as described above).
+- Raise PR to indy-node's master and wait until code is reviewed and merged (see above)
     - So, a new build of indy-node is created 
 
 
