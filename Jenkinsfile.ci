@@ -73,6 +73,12 @@ tests = [
 
 try {
     timeout(60) {
+
+        _isTested {
+            config.node = this.labels.linux
+            config.branch = 'master'
+        }
+
         if (config.staticVerify) {
             verifyStatic {
                 dockerEnv = [
