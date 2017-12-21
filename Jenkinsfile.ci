@@ -30,6 +30,8 @@ config = [
     sendNotif: false
 ]
 
+env.DRY_RUN = "Y"
+
 
 // TODO enable windows
 labels = [
