@@ -94,6 +94,12 @@ try {
             node = 'ubuntu-master'
         }
 
+        _publishToPypi {
+            node = this.labels.linux
+            version = releaseVersion
+            credentialsId = 'pypi_credentials' // TODO from env
+        }
+
         packaging {
             node = this.labels.linux
             builders.deb = buildDebUbuntu
@@ -102,7 +108,7 @@ try {
 
         autoMerge {
             node = this.labels.linux
-            gitHubCredentialsId = 'evernym-github-machine-user-token' //TODO from env
+            credentialsId = 'evernym-github-machine-user-token' //TODO from env
         }
 
         isTested {
