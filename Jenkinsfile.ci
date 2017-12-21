@@ -97,7 +97,7 @@ try {
         _publishToGitHub {
             node = this.labels.linux
             version = releaseVersion
-            credentialsId = 'pypi_credentials' // TODO from env
+            credentialsId = 'id_rsa.evernym-ci' // TODO from env
             versionPostfix = 'testtt'
         }
 
