@@ -94,6 +94,13 @@ try {
             node = 'ubuntu-master'
         }
 
+        _publishToGitHub {
+            node = this.labels.linux
+            version = releaseVersion
+            credentialsId = 'pypi_credentials' // TODO from env
+            versionPostfix = 'testtt'
+        }
+
         _publishToPypi {
             node = this.labels.linux
             version = releaseVersion
