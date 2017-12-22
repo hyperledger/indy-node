@@ -93,5 +93,6 @@ setup(
              'scripts/validator-info',
              'scripts/init_bls_keys',
              'scripts/enable_bls',
-             'scripts/create_dirs.sh']
+             'scripts/create_dirs.sh',
+             'scripts/indy_export_dids']
 )
