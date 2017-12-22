@@ -98,6 +98,19 @@ try {
 
         releaseVersion = "0.0.0.${BUILD_NUMBER}"
 
+        indyPublishPackages {
+            node = this.labels.linux
+            version = releaseVersion
+            credentialsIdGitHub = 'evernym-github-machine-user'
+            deb.host = env.SOVRIN_REPO_HOST
+            deb.credentialsId = 'SovrinRepoSSHKey'
+            deb.repo = 'test' // env.SOVRIN_CORE_REPO_NAME
+            deb.component = 'master-latest'
+            logLevel = env.LOGLEVEL
+            // packaging options
+            builders.deb = buildDebUbuntu
+        }
+
         _publishToGitHub {
             node = this.labels.linux
             version = releaseVersion
