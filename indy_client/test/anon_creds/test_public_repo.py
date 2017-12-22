@@ -8,6 +8,8 @@ from anoncreds.protocol.issuer import Issuer
 from anoncreds.protocol.repo.attributes_repo import AttributeRepoInMemory
 from anoncreds.protocol.types import Schema, ID
 from anoncreds.protocol.wallet.issuer_wallet import IssuerWalletInMemory
+
+from plenum.common.exceptions import OperationError
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 
@@ -146,6 +148,13 @@ def testSubmitSchema(submittedSchemaDefGvt, schemaDefGvt):
 
     assert withNoSeqId(submittedSchemaDefGvt) == withNoSeqId(schemaDefGvt)
 
+def test_submit_same_schema_twice(looper, publicRepo,
+                                  schemaDefGvt,
+                                  submittedSchemaDefGvt):
+    assert submittedSchemaDefGvt
+    with pytest.raises(OperationError) as ex_info:
+        looper.run(publicRepo.submitSchema(schemaDefGvt))
+        ex_info.match("can have one and only one SCHEMA with name GVT and version 1.0'")
 
 def testGetSchema(submittedSchemaDefGvt, publicRepo, looper):
     key = submittedSchemaDefGvt.getKey()
