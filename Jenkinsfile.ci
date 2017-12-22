@@ -96,6 +96,8 @@ try {
             node = 'ubuntu-master'
         }
 
+        releaseVersion = "0.0.0.${BUILD_NUMBER}"
+
         _publishToGitHub {
             node = this.labels.linux
             version = releaseVersion
