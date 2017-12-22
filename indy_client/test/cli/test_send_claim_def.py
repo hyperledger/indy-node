@@ -25,7 +25,7 @@ def testSendClaimDefFailsIfRefIsSeqNoOfNonSchemaTxn(
 
     be(trusteeCli)
 
-    do('send SCHEMA name=Degree version=1.0'
+    do('send SCHEMA name=Degree version=1.1'
        ' keys=undergrad,last_name,first_name,birth_date,postgrad,expiry_date',
        expect=SCHEMA_ADDED,
        within=5)
@@ -50,7 +50,7 @@ def testSendClaimDefFailsIfRefIsNotExistingSeqNo(
 
     be(trusteeCli)
 
-    do('send SCHEMA name=Degree version=1.0'
+    do('send SCHEMA name=Degree version=1.2'
        ' keys=undergrad,last_name,first_name,birth_date,postgrad,expiry_date',
        expect=SCHEMA_ADDED, within=5)
 
