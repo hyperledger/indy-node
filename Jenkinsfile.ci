@@ -98,6 +98,7 @@ try {
             indyAutoMerge {
                 node = this.labels.linux
                 credentialsId = this.config.common.credentials.gitHub.token // 'evernym-github-machine-user-token' //TODO from env
+                dryRun = this.config.common.dryRun
             }
         }
 
@@ -114,6 +115,7 @@ try {
                 node = this.labels.linux
                 version = releaseVersion
                 credentialsId = this.config.common.credentials.pypi //'pypi_credentials' // TODO from env
+                dryRun = this.config.common.dryRun
             }
         }
 
@@ -127,6 +129,7 @@ try {
                 deb.repo = this.config.common.aptRepo.name // env.SOVRIN_CORE_REPO_NAME
                 deb.component = 'master-latest'
                 logLevel = this.config.common.logLevel
+                dryRun = this.config.common.dryRun
                 // packaging options
                 builders.deb = buildDebUbuntu
             }
@@ -138,6 +141,7 @@ try {
                 version = releaseVersion
                 credentialsId = this.config.common.credentials.gitHub.sshKey // 'id_rsa.evernym-ci' // TODO from env
                 versionPostfix = 'testtt'
+                dryRun = this.config.common.dryRun
             }
         }
 
