@@ -2,16 +2,35 @@
 
 def init() {
     return [
-        stages : [
-            // stages
-            staticVerify: params.staticVerify ?: true,
-            runTests: params.runTests ?: true,
-            sendNotif: params.sendNotif ?: false,
-        ],
-
-        // other
-        failFast: params.failFast ?: false,
-        dryRun: params.dryRun ?: true
+        common: indyLoadParams(),
+        local: [
+            dockers: [
+                ubuntu: [
+                    imgName: "hyperledger/indy-node-ci",
+                    dockerfile: "ci/ubuntu.dockerfile",
+                    contextDir: "ci"
+                ]
+            ],
+            tests: [
+                common: [
+                    resFile: { "test-result-common.${NODE_NAME}.xml" },
+                    testDir: 'indy_common',
+                    docker: 'ubuntu'
+                ],
+                client: [
+                    resFile: { "test-result-client.${NODE_NAME}.txt" },
+                    testDir: 'indy_client',
+                    useRunner: true,
+                    docker: 'ubuntu'
+                ],
+                node: [
+                    resFile: { "test-result-node.${NODE_NAME}.txt" },
+                    testDir: 'indy_node',
+                    useRunner: true,
+                    docker: 'ubuntu'
+                ]
+            ].collect {k, v -> [k, v]}
+        ]
     ]
 }
 

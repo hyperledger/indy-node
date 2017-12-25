@@ -22,60 +22,27 @@ library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
     github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
 )
 
-
 // TODO enable windows
 labels = [
-    linux: env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
+    linux: params.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
 ]
 
-if (env.INDY_AGENT_WINDOWS_LABEL) {
-    labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
+if (params.INDY_AGENT_WINDOWS_LABEL) {
+    labels[windows] = params.INDY_AGENT_WINDOWS_LABEL
 }
 
-def pipeline
-node('agent') {
+def locallib
+node(labels.linux) {
     stage('Load local lib') {
         checkout scm
-        pipeline = load 'pipeline.groovy'
+        locallib = load 'pipeline.groovy'
     }
 }
 
-config = pipeline.init()
-log.info("loaded config: $config")
-
-return
-
+config = locallib.init()
+log.info("parameters: $config")
 
 env.DRY_RUN = "Y"
-
-
-dockers = [
-    ubuntu: [
-        imgName: "hyperledger/indy-node-ci",
-        dockerfile: "ci/ubuntu.dockerfile",
-        contextDir: "ci"
-    ]
-]
-
-tests = [
-    common: [
-        resFile: { "test-result-common.${NODE_NAME}.xml" },
-        testDir: 'indy_common',
-        docker: 'ubuntu'
-    ],
-    client: [
-        resFile: { "test-result-client.${NODE_NAME}.txt" },
-        testDir: 'indy_client',
-        useRunner: true,
-        docker: 'ubuntu'
-    ],
-    node: [
-        resFile: { "test-result-node.${NODE_NAME}.txt" },
-        testDir: 'indy_node',
-        useRunner: true,
-        docker: 'ubuntu'
-    ]
-].collect {k, v -> [k, v]}
 
 
 def buildDebUbuntu = { releaseVersion, sourcePath ->
@@ -99,55 +66,24 @@ def buildDebUbuntu = { releaseVersion, sourcePath ->
 try {
     timeout(60) {
 
-        def releaseVersion = getReleaseVersion {
-            node = 'ubuntu-master'
+        // TODO skip testing if isTested
+        if (config.common.stages.indyIsTested) {
+            indyIsTested {
+                node = this.labels.linux
+                branch = 'master'
+            }
         }
 
-        releaseVersion = "0.0.0.${BUILD_NUMBER}"
-
-        indyPublishPackages {
-            node = this.labels.linux
-            version = releaseVersion
-            credentialsIdGitHub = 'evernym-github-machine-user'
-            deb.host = this.env.SOVRIN_REPO_HOST
-            deb.credentialsId = 'SovrinRepoSSHKey'
-            deb.repo = 'test' // env.SOVRIN_CORE_REPO_NAME
-            deb.component = 'master-latest'
-            logLevel = this.env.LOGLEVEL
-            // packaging options
-            builders.deb = buildDebUbuntu
+        if (config.common.stages.indyVerify) {
+            verify {
+                labels = this.labels
+                dockers = this.config.local.dockers
+                tests = this.config.local.tests
+                failFast = this.config.common.failFast
+            }
         }
 
-        _publishToGitHub {
-            node = this.labels.linux
-            version = releaseVersion
-            credentialsId = 'id_rsa.evernym-ci' // TODO from env
-            versionPostfix = 'testtt'
-        }
-
-        _publishToPypi {
-            node = this.labels.linux
-            version = releaseVersion
-            credentialsId = 'pypi_credentials' // TODO from env
-        }
-
-        indyPackaging {
-            node = this.labels.linux
-            builders.deb = buildDebUbuntu
-            version = releaseVersion
-        }
-
-        autoMerge {
-            node = this.labels.linux
-            credentialsId = 'evernym-github-machine-user-token' //TODO from env
-        }
-
-        isTested {
-            node = this.labels.linux
-            branch = 'master'
-        }
-
-        if (config.staticVerify) {
+        if (config.common.stages.indyVerifyStatic) {
             verifyStatic {
                 dockerEnv = [
                     imgName: "code-validation",
@@ -157,14 +93,54 @@ try {
                 nodeLabel = this.labels.linux
             }
         }
-        if (config.runTests) {
-            verify {
-                labels = this.labels
-                dockers = this.dockers
-                tests = this.tests
-                failFast = this.config.failFast
+
+        if (config.common.stages.indyAutoMerge) {
+            indyAutoMerge {
+                node = this.labels.linux
+                credentialsId = this.config.common.credentials.gitHub.token // 'evernym-github-machine-user-token' //TODO from env
             }
         }
+
+        def releaseVersion
+        if (config.common.stages.indyGetReleaseVersion) {
+            releaseVersion = indyGetReleaseVersion {
+                node = this.labels.linux
+            }
+        }
+        releaseVersion = "0.0.0.${BUILD_NUMBER}"
+
+        if (config.common.stages.indyPublishPypi) {
+            indyPublishPypi {
+                node = this.labels.linux
+                version = releaseVersion
+                credentialsId = this.config.common.credentials.pypi //'pypi_credentials' // TODO from env
+            }
+        }
+
+        if (config.common.stages.indyPublishPackages) {
+            indyPublishPackages {
+                node = this.labels.linux
+                version = releaseVersion
+                credentialsIdGitHub = this.config.common.credentials.gitHub.userToken // 'evernym-github-machine-user'
+                deb.host = this.config.common.aptRepo.host
+                deb.credentialsId = this.config.common.aptRepo.sshKey // 'SovrinRepoSSHKey'
+                deb.repo = this.config.common.aptRepo.name // env.SOVRIN_CORE_REPO_NAME
+                deb.component = 'master-latest'
+                logLevel = this.config.common.logLevel
+                // packaging options
+                builders.deb = buildDebUbuntu
+            }
+        }
+
+        if (config.common.stages.indyPublishGitHub) {
+            indyPublishGitHub {
+                node = this.labels.linux
+                version = releaseVersion
+                credentialsId = this.config.common.credentials.gitHub.sshKey // 'id_rsa.evernym-ci' // TODO from env
+                versionPostfix = 'testtt'
+            }
+        }
+
         currentBuild.result = 'SUCCESS'
     }
 } catch (Exception err) {
@@ -172,7 +148,7 @@ try {
     currentBuild.result = 'FAILURE'
 } finally {
     stage('Build result notification') {
-        if (config.sendNotif) {
+        if (config.common.stages.indySendNotif) {
             def emailMessage = [
                 body: '$DEFAULT_CONTENT',
                 replyTo: '$DEFAULT_REPLYTO',
