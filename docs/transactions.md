@@ -49,28 +49,29 @@ These values are added to each transaction as first-level keys (that is at the s
         
 - `identifier` (base58-encoded string):
  
-     identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
+     Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
      for 16 or 32 bit DID value.
      It may differ from `dest` field for some of transaction (for example NYM), where `dest` is a 
      target identifier (for example, a newly created DID identifier).
      
-     *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID
+     *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
      
 - `reqId` (integer): 
 
-    unique ID number of the request with transaction
-    
+    Unique ID number of the request with transaction.
+        
 - `signature` (base58-encoded string; mutually exclusive with `signatures` field):
  
-    submitter's signature
+    Submitter's signature.
     
 - `signatures` (array of base58-encoded string; mutually exclusive with `signature` field): 
     
-    submitters' signature in multisig case
+    Submitters' signature in multisig case. This is a map where cleint's identifiers are the keys and 
+    base58-encoded signature strings are the values.
     
 - `txnTime` (integer as POSIX timestamp): 
 
-    the time when transaction was written to the Ledger as POSIX timestamp
+    The time when transaction was written to the Ledger as POSIX timestamp.
 
 Please note that all these metadata fields may be absent for genesis transactions.
 
