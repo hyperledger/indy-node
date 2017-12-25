@@ -42,9 +42,6 @@ node(labels.linux) {
 config = locallib.init()
 log.info("parameters: $config")
 
-env.DRY_RUN = "Y"
-
-
 def buildDebUbuntu = { releaseVersion, sourcePath ->
     def volumeName = "$name-deb-u1604"
     if (env.BRANCH_NAME && env.BRANCH_NAME != 'master') {
