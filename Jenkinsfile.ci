@@ -23,16 +23,6 @@ library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
 )
 
 
-config = [
-    staticVerify: true,
-    runTests: true,
-    failFast: false,
-    sendNotif: false
-]
-
-env.DRY_RUN = "Y"
-
-
 // TODO enable windows
 labels = [
     linux: env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
@@ -41,6 +31,23 @@ labels = [
 if (env.INDY_AGENT_WINDOWS_LABEL) {
     labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
 }
+
+def pipeline
+node('agent') {
+    stage('Load local lib') {
+        checkout scm
+        pipeline = load 'pipeline.groovy'
+    }
+}
+
+config = pipeline.init()
+log.info("loaded config: $config")
+
+return
+
+
+env.DRY_RUN = "Y"
+
 
 dockers = [
     ubuntu: [
@@ -102,11 +109,11 @@ try {
             node = this.labels.linux
             version = releaseVersion
             credentialsIdGitHub = 'evernym-github-machine-user'
-            deb.host = env.SOVRIN_REPO_HOST
+            deb.host = this.env.SOVRIN_REPO_HOST
             deb.credentialsId = 'SovrinRepoSSHKey'
             deb.repo = 'test' // env.SOVRIN_CORE_REPO_NAME
             deb.component = 'master-latest'
-            logLevel = env.LOGLEVEL
+            logLevel = this.env.LOGLEVEL
             // packaging options
             builders.deb = buildDebUbuntu
         }
@@ -124,7 +131,7 @@ try {
             credentialsId = 'pypi_credentials' // TODO from env
         }
 
-        packaging {
+        indyPackaging {
             node = this.labels.linux
             builders.deb = buildDebUbuntu
             version = releaseVersion
