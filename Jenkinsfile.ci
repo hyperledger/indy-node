@@ -119,16 +119,18 @@ try {
         if (config.common.stages.indyPublishPackages) {
             indyPublishPackages {
                 node = this.labels.linux
+                packageName = name
                 version = releaseVersion
+                builders.deb = buildDebUbuntu
+                logLevel = this.config.common.logLevel
+                dryRun = this.config.common.dryRun
+
                 credentialsIdGitHub = this.config.common.credentials.gitHub.userToken // 'evernym-github-machine-user'
                 deb.host = this.config.common.aptRepo.host
                 deb.credentialsId = this.config.common.aptRepo.sshKey // 'SovrinRepoSSHKey'
                 deb.repo = this.config.common.aptRepo.name // env.SOVRIN_CORE_REPO_NAME
                 deb.component = 'master-latest'
-                logLevel = this.config.common.logLevel
-                dryRun = this.config.common.dryRun
                 // packaging options
-                builders.deb = buildDebUbuntu
             }
         }
 
