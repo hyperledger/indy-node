@@ -6,7 +6,7 @@ If you are interested in the format of client's Request (both write and read one
 - The ledger is based on Merkle Tree. 
 - The ledger consists of two things:
     - transactions log as a sequence of key-value pairs 
-where key is a sequence number of the transaction and valur is serialized transaction
+where key is a sequence number of the transaction and value is serialized transaction
     - merkle tree (where hashes for leaves and nodes are persisted)
 - Each transaction has a sequence number (no gaps) - keys in transactions log
 - So, this can be considered as a blockchain where each block size equals to 1
@@ -15,14 +15,14 @@ where key is a sequence number of the transaction and valur is serialized transa
     - config ledger: transactions for pool configuration plus transactions related to Pool Upgrade
     - domain ledger: all main domain and application specific transactions (including NYM transactions for DID)
 - All transactions are serialized to MsgPack format
-- All transactions (both transaction log and merkle tree hash stores) are stored in LeveldDB
+- All transactions (both transaction log and merkle tree hash stores) are stored in LevelDB
 - One can use `read_ledger` script to get transactions for a specified ledger in a readable (JSON) format
 - See TBD on the roles and who can create each type of transactions
 
 Below you can find the format and description of all supported transactions.
 
 ## Genesis transactions
-As Indy is Public **Permissoned** blockchain, each ledger may have a number of pre-defined 
+As Indy is Public **Permissioned** blockchain, each ledger may have a number of pre-defined 
 transactions defining the Pool and the Network.
 - pool genesis transactions defining initial trusted Nodes in the Pool
 - domain genesis transactions defining initial trusted Trustees and Stewards
@@ -66,7 +66,7 @@ These values are added to each transaction as first-level keys (that is at the s
     
 - `signatures` (array of base58-encoded string; mutually exclusive with `signature` field): 
     
-    Submitters' signature in multisig case. This is a map where cleint's identifiers are the keys and 
+    Submitters' signature in multisig case. This is a map where client's identifiers are the keys and 
     base58-encoded signature strings are the values.
     
 - `txnTime` (integer as POSIX timestamp): 
@@ -106,11 +106,19 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 
     Target verification key as base58-encoded string. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
-    (doesn't owns the identifier yet).
+    (doesnt owns the identifier yet).
 
 - `alias` (string; optional): 
 
     NYM's alias.
+
+If there is no NYM transaction with the specified DID (`dest`), then it can be considered as creation of a new DID.
+
+If there is a NYM transaction with the specified DID (`dest`),  then this is update of existing DID.
+In this case we can specify only the values we would like to override. All unspecified values remain the same.
+So, if key rotation needs to be performed, the owner of the DID needs to send a NYM request with
+`dest` and `verkey` only. `role` and `alias` will stay the same.
+
 
 **Example**:
 ```
@@ -172,14 +180,18 @@ Adds attribute to a NYM record
 
 
 #### SCHEMA
-Claim's schema
+Adds Claim's schema.
+
+It's not possible to update existing Schema.
+So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
+
 - `data` (dict):
  
      Dictionary with Schema's data:
      
         - `attr_names`: array of attribute name strings
         - `name`: Schema's name string
-        - `version`: Schema's vserion string
+        - `version`: Schema's version string
 
 **Example**:
 ```
@@ -200,7 +212,8 @@ Claim's schema
 ```
 
 #### CLAIM_DEF
-A claim definition (in particular, public key), that Issuer creates and publishes for a particular Claim Schema
+Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular Claim Schema.
+
 - `data` (dict):
  
      Dictionary with Claim Definition's data:
@@ -250,12 +263,12 @@ Adds a new node to the pool, or updates existing node in the pool
     Data associated with the Node:
     
     - `alias` (string): Node's alias
-    - `blskey` (base58-encoded string): BLS multi-signature key as base58-encoded string (it's needed for BLS signatures and state proofs support)
-    - `client_ip` (string): Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)  
-    - `client_port` (string): Node's client listener port, that is the port clients use to connect to the node when sending read and write requests (ZMQ with TCP)
-    - `node_ip` (string): The IP address other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
-    - `node_port` (string): The port other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
-    - `services` (array of strings): the service of the Node. `VALIDATOR` is the only supported one now. 
+    - `blskey` (base58-encoded string; optional): BLS multi-signature key as base58-encoded string (it's needed for BLS signatures and state proofs support)
+    - `client_ip` (string; optional): Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)  
+    - `client_port` (string; optional): Node's client listener port, that is the port clients use to connect to the node when sending read and write requests (ZMQ with TCP)
+    - `node_ip` (string; optional): The IP address other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
+    - `node_port` (string; optional): The port other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
+    - `services` (array of strings; optional): the service of the Node. `VALIDATOR` is the only supported one now. 
 
 - `dest` (base58-encoded string):
 
@@ -268,6 +281,14 @@ Adds a new node to the pool, or updates existing node in the pool
 
     Target Node verification key as base58-encoded string.
     It may absent if `dest` is 32-bit cryptonym CID. 
+
+If there is no NODE transaction with the specified Node ID (`dest`), then it can be considered as creation of a new NODE.
+
+If there is a NODE transaction with the specified Node ID (`dest`), then this is update of existing NODE.
+In this case we can specify only the values we would like to override. All unspecified values remain the same.
+So, if a Steward wants to rotate BLS key, then it's sufficient to send a NODE transaction with `dest` and a new `blskey` in `data`.
+There is no need to specify all other fields in `data`, and they will remain the same.
+
 
 **Example**:
 ```
@@ -298,8 +319,6 @@ Adds a new node to the pool, or updates existing node in the pool
 
 #### POOL_UPGRADE
 Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (either all nodes in the Pool, or some specific ones).
-
-**Example:**
 
 - `name` (string):
 
@@ -346,6 +365,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 
     Optional justification string for this particular Upgrade.
 
+**Example:**
 ```
 {
     "name":"upgrade-13",
