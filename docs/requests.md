@@ -217,7 +217,7 @@ These common metadata values are added to result's JSON at the same level as rea
      
 - `reqId` (integer): 
 
-    as was in read (may differ from the `reqId` in `data` which defines 
+    as was in read Request (may differ from the `reqId` in `data` which defines 
     the request used to write the transaction to the Ledger)
     
 - `seqNo` (integer):
@@ -227,6 +227,28 @@ These common metadata values are added to result's JSON at the same level as rea
 - `txnTime` (integer as POSIX timestamp): 
 
     the time when transaction was written to the Ledger as POSIX timestamp
+    
+- `state_proof` (dict):
+
+    State proof with BLS multi-signature of the State:
+    
+        - `root_hash` (base58-encoded string): state trie root hash for the ledger the returned transaction belongs to
+        - `proof_nodes` (base64-encoded string): state proof for the returned transaction against the state trie with the specified `root_hash`
+        - `multi_signature` (dict): BLS multi-signature against the specified state trie root hash
+            - `value` (dict): the value the BLS multi-signature was created against
+                - `timestamp` (integer as POSIX timestamp): last update of the state
+                - `ledger_id` (integer): ID of the ledger the returned transaction belongs to (Pool=0; Domain=1; Config=2)
+                - `txn_root_hash` (base58-encoded string): root hash of the ledger the returned transaction belongs to
+                - `state_root_hash` (base58-encoded string): state trie root hash for the ledger the returned transaction belongs to
+                - `pool_state_root_hash` (base58-encoded string): pool state trie root hash to get the state of the Pool at the moment the BLS multi-signature was created
+            - `signature` (base58-encoded string): BLS multi-signature against the state trie with the specified `root_hash`
+            - `participants` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
+            
+- `data` (json):
+
+    transaction-specific data (see [transactions](transactions.md) for each transaction type)
+    
+- request-specific fields as they appear in Read request      
     
       
 ## Write Requests
@@ -273,8 +295,6 @@ Please see [transactions](transactions.md) for detailed description of each fiel
 }
 ```
 
-
-
 ### CLAIM_DEF
 
 ### SCHEMA
@@ -292,3 +312,4 @@ Please see [transactions](transactions.md) for detailed description of each fiel
 
 ## Read Requests
 
+### GET_NYM
