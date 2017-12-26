@@ -39,12 +39,12 @@ class Role(str, Enum):
 work_dir = os.path.expanduser('~') + os.sep + ".indy"
 seed_default_trustee = "000000000000000000000000Trustee1"
 # The path to the genesis transaction file is configurable. The default
-# directory is "/var/lib/indy/sandbox/".
-genesis_transaction_file_path = "/var/lib/indy/sandbox/"
-pool_genesis_txn_file = genesis_transaction_file_path + \
-    "pool_transactions_sandbox_genesis"
+# directory is "acceptance/pool.txn".
+genesis_transaction_file_path = os.path.join(os.path.dirname(__file__),
+                                             "../../")
+pool_genesis_txn_file = genesis_transaction_file_path + "pool.txn"
 original_pool_genesis_txn_file = genesis_transaction_file_path + \
-    "original_pool_transactions_sandbox_genesis"
+    "original_pool.txn"
 
 # Message
 ERR_PATH_DOES_NOT_EXIST = "Cannot find the path specified! \"{}\""

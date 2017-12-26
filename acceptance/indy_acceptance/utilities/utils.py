@@ -34,7 +34,7 @@ def generate_random_string(prefix="", suffix="", size=20):
     return result
 
 
-def exit_if_exception(result):
+def raise_if_exception(result):
     """
     If "result" is an exception then raise the "result".
     Unless "result" is an exception then return the "result".
@@ -42,7 +42,7 @@ def exit_if_exception(result):
     :return: "result" if it is not an exception.
     """
     if (isinstance(result, Exception)):
-        exit(1)
+        raise result
     else:
         return result
 
@@ -71,7 +71,7 @@ async def perform(steps, func, *args, ignore_exception=True):
         result = Ex
 
     if not ignore_exception:
-        exit_if_exception(result)
+        raise_if_exception(result)
 
     return result
 

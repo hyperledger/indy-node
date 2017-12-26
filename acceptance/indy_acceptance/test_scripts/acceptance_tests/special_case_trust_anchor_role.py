@@ -6,7 +6,6 @@ Created on Nov 8, 2017
 Containing test scripts of test scenario 11: special case for TrustAnchor role.
 """
 
-# !/usr/bin/env python3.6
 import json
 
 from indy import ledger, signus

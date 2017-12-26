@@ -5,7 +5,6 @@ Created on Nov 8, 2017
 
 Containing test script of test scenario 04: keyrings wallets.
 """
-# !/usr/bin/env python3.6
 import json
 import os.path
 

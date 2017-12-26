@@ -20,7 +20,7 @@ from indy_acceptance.utilities.utils import generate_random_string,\
                                     run_async_method, make_final_result
 
 
-class TestScenarioBase():
+class TestScenarioBase:
     """
     Test base....
     All test scenario should inherit from this class.
