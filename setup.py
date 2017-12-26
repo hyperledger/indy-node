@@ -94,5 +94,5 @@ setup(
              'scripts/init_bls_keys',
              'scripts/enable_bls',
              'scripts/create_dirs.sh',
-             'scripts/indy_export_dids']
+             'scripts/indy_old_cli_export_dids']
 )
