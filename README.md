@@ -125,12 +125,12 @@ Please have a look at [Continues integration/delivery](docs/ci-cd.md)
 
 ## How to send a PR
 
+- Make sure that you followed [write code guideline](docs/write-code-guideline.md) before sending a PR
 - Do not create big PRs; send a PR for one feature or bug fix only.
  If a feature is too big, consider splitting a big PR to a number of small ones
 - Consider sending a design doc into `design` folder (as markdown or PlantUML diagram) for a new feature  before implementing it.
 - Make sure that a new feature or fix is covered by tests (try following TDD)
 - Make sure that documentation is updated according to your changes
-- Follow incremental re-factoring approach (do not hesitate to improve the code)
 - Provide a full description of changes in the PR including Jira ticket number if any  
 - Make sure that all your commits have a DCO sign-off from the author
 - Make sure that static code validation passed 
@@ -155,6 +155,7 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 
 ## Docs and links
 
+- Please have a look at documents ad diagrams in [docs](docs) folder.
 - Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
 - Relationship between Entities and Transactions: [relationship diagram](docs/relationship diagram.png)
 - Supported transactions and their format: [transactions](docs/transactions-format.md)
