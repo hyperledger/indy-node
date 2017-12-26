@@ -161,6 +161,8 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 - Supported transactions and their format: [transactions](docs/transactions-format.md)
 - Supported requests (write, read) and their format: [requests](docs/requests-format.md)
 - [Network roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)
+- [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
+- [Helper Scripts](docs/helper-scripts.md)
 - More TBD
 
 
