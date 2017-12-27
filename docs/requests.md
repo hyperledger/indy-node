@@ -1,7 +1,7 @@
 # Requests
 * [Common Request Structure](#common-request-structure)
 * [Reply Structure for Write Requests](#reply-structure-for-write-requests)
-* [Reply Structure for Read Requests (except GET_TXN)](#reply-structure-for-read-requests-(except-get_txn))
+* [Reply Structure for Read Requests (except GET_TXN)](#reply-structure-for-read-requests)
 * [Write Requests](#write-requests)
 
     * [NYM](#nym)    
