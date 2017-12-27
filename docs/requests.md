@@ -29,23 +29,23 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
     The request-specific operation json.
     
-        - `type`: request type as one of the following values:
-   
-            - NODE = "0"
-            - NYM = "1"
-            - ATTRIB = "100"
-            - SCHEMA = "101"
-            - CLAIM_DEF = "102"
-            - POOL_UPGRADE = "109"
-            - NODE_UPGRADE = "110"
-            - POOL_CONFIG = "111"
-            - GET_TXN = "3"
-            - GET_ATTR = "104"
-            - GET_NYM = "105"
-            - GET_SCHEMA = "107"
-            - GET_CLAIM_DEF = "108"
-            
-        - request-specific data
+    - `type`: request type as one of the following values:
+
+        - NODE = "0"
+        - NYM = "1"
+        - ATTRIB = "100"
+        - SCHEMA = "101"
+        - CLAIM_DEF = "102"
+        - POOL_UPGRADE = "109"
+        - NODE_UPGRADE = "110"
+        - POOL_CONFIG = "111"
+        - GET_TXN = "3"
+        - GET_ATTR = "104"
+        - GET_NYM = "105"
+        - GET_SCHEMA = "107"
+        - GET_CLAIM_DEF = "108"
+        
+    - request-specific data
 
 - `identifier` (base58-encoded string):
  
