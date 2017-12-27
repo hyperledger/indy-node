@@ -43,7 +43,7 @@ from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, patchPluginManager, tdirWithClientPoolTxns, \
-    warncheck, warnfilters as plenum_warnfilters, setResourceLimits
+    warncheck, warnfilters as plenum_warnfilters, setResourceLimits, do_post_node_creation
 
 # noinspection PyUnresolvedReferences
 from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNames, \
