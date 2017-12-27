@@ -1,14 +1,10 @@
 @startuml
 object "Schema Issuer (NYM txn)" as DID1 {
-(identifier: <font color=blue><i><schema_issuer_did>)
-\n
-seq_no: <i><schema_issuer_seq_no>
+(dest: <font color=blue><i><schema_issuer_did>)
 }
 
 object "Claim Def Issuer (NYM txn)" as DID2 {
-(identifier: <font color=purple><i><claim_def_issuer_did>)
-\n
-seq_no: <i><claim_def_issuer_seq_no>
+(dest: <font color=purple><i><claim_def_issuer_did>)
 }
 
 object SCHEMA {

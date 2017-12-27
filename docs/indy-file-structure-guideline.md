@@ -1,5 +1,4 @@
 # Indy File Folders Structure Guideline
-
 Indy-node service works with some files and folders on the file system.
 We need to be careful when selecting this files and folders or adding new ones.
 
@@ -52,9 +51,9 @@ Private keys can only be read by the user the service is run for (indy user usua
 #### 4. Provide a way to override config and other data for different networks
 Each Network may have its own config extending base config.
 
-    Ubuntu:
-    - `/etc/indy`  - base config
-    - `/etc/indy/{network_name}`  - config extension
+*Ubuntu:*
+- `/etc/indy`  - base config
+- `/etc/indy/{network_name}`  - config extension
     
 #### 5. Client should use /home folder
 Client doesn’t need a service, and should use its own home directory for files with proper permissions.
@@ -68,4 +67,5 @@ Client and Node should be two independent products not sharing any common files/
 We may install and work with both node and client on the same machine independently
 
 #### 8. It should be possible to run client (libindy) for multiple users
+
 We may have multiple users working with client code on the same machine. Each user must have separate data and key files with proper permissions.
