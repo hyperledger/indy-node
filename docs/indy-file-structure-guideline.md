@@ -11,14 +11,18 @@ So, we should follow the following principles:
 - Use system-specific folder for storing config files
     - Indy-config files
     - other config files (such as service config)
-    - Ubuntu: /etc/indy
+    
+    *Ubuntu: /etc/indy*
 - Use system-specific folder for storing data, such as 
     - ledger (transaction log, states)
     - Genesis transaction files
     - Node keys (transport and BLS)
-    - Ubuntu: `/var/lib/indy`
+    
+    *Ubuntu: `/var/lib/indy`*
 - Use system-specific folder to store log files
-    - Ubuntu: `/var/log/indy`
+
+    *Ubuntu: `/var/log/indy`*
+    
 - Avoid using /home folder for indy-node service
 
 #### 2. Organize file folders to support possibility to work with multiple networks (live, test, local, etc.)
@@ -26,14 +30,19 @@ We may have multiple Networks (identified by different genesis transaction files
 The file structure should support it.
 
 - Separate config files for each Network
-    - Ubuntu: `/etc/indy/{network_name}`
+
+    *Ubuntu: `/etc/indy/{network_name}`*
+    
 - Separate data for each Network
     - Separate ledgers (transaction log, states)
     - Separate genesis transaction files
     - Separate Node keys (transport and BLS)
-    - Ubuntu: `/var/lib/indy/{network_name}`
+    
+    *Ubuntu: `/var/lib/indy/{network_name}`*
+    
 - Separate log files for each Network
-    - Ubuntu: `/var/log/indy/{network_name}`
+
+    *Ubuntu: `/var/log/indy/{network_name}`*
     
     
 #### 3. Set proper permissions for files and folders
@@ -43,9 +52,9 @@ Private keys can only be read by the user the service is run for (indy user usua
 #### 4. Provide a way to override config and other data for different networks
 Each Network may have its own config extending base config.
 
-Ubuntu:
-- `/etc/indy`  - base config
-- `/etc/indy/{network_name}`  - config extension
+    Ubuntu:
+    - `/etc/indy`  - base config
+    - `/etc/indy/{network_name}`  - config extension
     
 #### 5. Client should use /home folder
 Client doesn’t need a service, and should use its own home directory for files with proper permissions.
