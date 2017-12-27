@@ -1,4 +1,25 @@
 # Transactions
+
+* [General Information](#general-information)
+* [Genesis Transactions](#genesis-transactions)
+* [Common Metadata](#common-metadata)
+* [Domain Ledger](#domain-ledger)
+
+    * [NYM](#nym)    
+    * [ATTRIB](#attrib)    
+    * [SCHEMA](#schema)
+    * [CLAIM_DEF](#claim-def)
+    
+* [Pool Ledger](#pool-ledger)    
+    * [NODE](#node)
+    
+* [Config Ledger](#config-ledger)    
+    * [POOL_UPGRADE](#pool-upgrade)
+    * [NODE_UPGRADE](#node-upgrade)
+    * [POOL_CONFIG](#pool-config)
+
+## General Information
+
 This doc is about supported transactions and their representation on the Ledger (that is internal one).
 If you are interested in the format of client's Request (both write and read ones), then have a look at [requests](requests.md).
 
@@ -21,14 +42,14 @@ where key is a sequence number of the transaction and value is the serialized tr
 
 Below you can find the format and description of all supported transactions.
 
-## Genesis transactions
+## Genesis Transactions
 As Indy is Public **Permissioned** blockchain, each ledger may have a number of pre-defined 
 transactions defining the Pool and the Network.
 - pool genesis transactions defining initial trusted Nodes in the Pool
 - domain genesis transactions defining initial trusted Trustees and Stewards
 
 
-## Common metadata
+## Common Metadata
 Each transaction has the following metadata values common for all transaction types (see `reqToTxn` in plenum).
 These values are added to each transaction as first-level keys (that is at the same level as real data).
 

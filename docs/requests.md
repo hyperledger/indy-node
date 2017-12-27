@@ -1,4 +1,26 @@
 # Requests
+* [Common Request Structure](#common-request-structure)
+* [Reply Structure for Write Requests](#reply-structure-for-write-requests)
+* [Reply Structure for Read Requests (except GET_TXN)](#reply-structure-for-read-requests)
+* [Reply Structure for Write Requests](#reply-structure-for-write-requests)
+* [Write Requests](#write-requests)
+
+    * [NYM](#nym)    
+    * [ATTRIB](#attrib)    
+    * [SCHEMA](#schema)
+    * [CLAIM_DEF](#claim-def)
+    * [NODE](#node)
+    * [POOL_UPGRADE](#pool-upgrade)
+    * [POOL_CONFIG](#pool-config)
+
+* [Read Requests](#read-requests)
+
+    * [GET_NYM](#get-nym)    
+    * [GET_ATTRIB](#get-attrib)    
+    * [GET_SCHEMA](#get-schema)
+    * [GET_CLAIM_DEF](#get-claim-def)
+    * [GET_TXN](#get-txn)
+    
 This doc is about supported client's Request (both write and read ones).
 If you are interested in transactions and their representation on the Ledger (that is internal one),
 then have a look at [transactions](transactions.md).
@@ -78,7 +100,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
 Please find the format of each request-specific data for each type of request below.
 
-## Common Reply Structure for Write Requests
+## Reply Structure for Write Requests
 
 Each Reply to write requests has a number of common metadata fields
 (we don't support State Proofs for write requests yet). Most of these fields are actually metadata fields 
