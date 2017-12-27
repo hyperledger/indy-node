@@ -17,7 +17,7 @@ where key is a sequence number of the transaction and value is serialized transa
 - All transactions are serialized to MsgPack format
 - All transactions (both transaction log and merkle tree hash stores) are stored in LevelDB
 - One can use `read_ledger` script to get transactions for a specified ledger in a readable (JSON) format
-- See TBD on the roles and who can create each type of transactions
+- See [roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0) on the roles and who can create each type of transactions
 
 Below you can find the format and description of all supported transactions.
 
@@ -79,7 +79,7 @@ Please note that all these metadata fields may be absent for genesis transaction
 
 #### NYM
 Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and trustee can be created only by other trusties (see [roles]).
+Note that only trustees and stewards can create new trust anchors and trustee can be created only by other trusties (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
 
 The transaction can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -100,7 +100,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
         - "2" (STEWARD)
         - "101" (TRUST_ANCHOR)
     
-  A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles]).
+  A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
 - `verkey` (base58-encoded string; optional): 
 

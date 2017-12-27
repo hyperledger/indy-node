@@ -155,11 +155,11 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 
 ## Docs and links
 
-- Please have a look at documents ad diagrams in [docs](docs) folder.
+- Please have a look at documents ad diagrams in [docs](docs) folder
 - Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
 - Relationship between Entities and Transactions: [relationship diagram](docs/relationship diagram.png)
-- Supported transactions and their format: [transactions](docs/transactions-format.md)
-- Supported requests (write, read) and their format: [requests](docs/requests-format.md)
+- Supported transactions and their format: [transactions](docs/transactions.md)
+- Supported requests (write, read) and their format: [requests](docs/requests.md)
 - [Network roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)
 - [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
 - [Helper Scripts](docs/helper-scripts.md)
