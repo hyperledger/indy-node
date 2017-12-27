@@ -19,6 +19,8 @@ that provide a [self-sovereign identity ecosystem](https://sovrin.org) on top of
 distributed ledger. It is the core project for Indy; over time, all other indy-\* projects may
 collapse into this one, except for [indy-sdk](https://github.com/hyperledger/indy-sdk).
 
+Indy has its own distributed ledger based on RBFT.
+
 ##### Relationship with Sovrin
 This code is independent from but commonly associated with [Sovrin](https://sovrin.org). Sovrin is a public utility
 for identity, built on top of this codebase. People who install sovrin packages (e.g., with

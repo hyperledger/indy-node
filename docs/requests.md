@@ -353,31 +353,25 @@ Adds attribute to a NYM record.
     
     *Example*: `identifier` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
     
-- `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
+- `raw` (json; mutually exclusive with `hash` and `enc`):
 
-    Hash of the raw attribute data. 
     Raw data is represented as json, where key is attribute name and value is attribute value.
-    The ledger contains hash of the raw data only; the real raw data is stored in a separate 
-    attribute store.
 
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
-    Hash of attribute data (as sent by the client).
+    Hash of attribute data.
 
-- `enc` (sha256 hash string; mutually exclusive with `raw` and `hash`):
+- `enc` (string; mutually exclusive with `raw` and `hash`):
 
-    Hash of encrypted attribute data.
-    The ledger contains hash only; the real encrypted data is stored in a separate 
-    attribute store. 
+    Encrypted attribute data.
 
 *Request Example*:
 ```
 {
     'operation': {
-        'type': '1'
+        'type': '100'
         'dest': 'N22KY2Dyvmuu2PyyqSFKue',
-        'role': '101',
-        'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
+        'raw': '{"name": "Alice"}'
     },
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
@@ -392,7 +386,7 @@ Adds attribute to a NYM record.
 {
     'op': 'REPLY', 
     'result': {
-        'type': '101',
+        'type': '100',
         'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
         'reqId': 1514213797569745,
         'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
@@ -405,8 +399,7 @@ Adds attribute to a NYM record.
         'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
 		
         'dest': 'N22KY2Dyvmuu2PyyqSFKue',
-        'role': '101',
-        'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
+        'raw': '{"name":"Alice"}'
     }
 }
 ```
@@ -857,22 +850,17 @@ Gets information about an Attribute for the specified DID.
     
     *Example*: `identifier` is a DID of read request sender, and `dest` is the DID we get an attribute for.
     
-- `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
+- `raw` (string; mutually exclusive with `hash` and `enc`):
 
-    Hash of the raw attribute data. 
-    Raw data is represented as json, where key is attribute name and value is attribute value.
-    The ledger contains hash of the raw data only; the real raw data is stored in a separate 
-    attribute store.
+    Requested attribute name.
 
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
-    Hash of attribute data (as sent by the client).
+    Requested attribute hash.
 
-- `enc` (sha256 hash string; mutually exclusive with `raw` and `hash`):
+- `enc` (string; mutually exclusive with `raw` and `hash`):
 
-    Hash of encrypted attribute data.
-    The ledger contains hash only; the real encrypted data is stored in a separate 
-    attribute store. 
+    Encrypted attribute. 
 
 *Request Example*:
 ```
