@@ -180,7 +180,9 @@ These common metadata values are added to result's JSON at the same level as rea
     
 - transaction-specific fields as defined in [transactions](transactions.md) for each transaction type
 
-## Reply Structure for Read Requests (except GET_TXN)
+## Reply Structure for Read Requests
+
+The structure below is not applicable for [GET_TXN](#get_txn).
 
 Each Reply to read requests has a number of common metadata fields and state-proof related fields.
 Some of these fields are actually metadata fields of a transaction in the Ledger (see [transactions](transactions.md)).
