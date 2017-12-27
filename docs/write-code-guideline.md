@@ -71,9 +71,9 @@ If it's not possible to use indy-sdk for some reasons
     If you still import fixtures, mark such the imports with the following hint for IDE not to mark them as unused and not to remove them when optimizing imports:
     
         `# noinspection PyUnresolvedReferences`
-- Try to use the same configs and file folder structure for integration tests as in real environment.
+- Try to use the same config and file folder structure for integration tests as in real environment.
 As of now, all tests follow the same file folder structure (see [indy-file-structure-guideline](indy-file-structure-guideline.md))
-as Indy-node service, but this folders are created inside `tmp` test folder.
+as Indy-node service, but the folders are created inside `tmp` test folder.
  
 
  

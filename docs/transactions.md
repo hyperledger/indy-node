@@ -2,18 +2,18 @@
 This doc is about supported transactions and their representation on the Ledger (that is internal one).
 If you are interested in the format of client's Request (both write and read ones), then have a look at [requests](requests.md).
 
-- All transactions are stored in distributed Ledger (replicated on all Nodes) 
-- The ledger is based on Merkle Tree. 
+- All transactions are stored in a distributed Ledger (replicated on all Nodes) 
+- The ledger is based on Merkle Tree
 - The ledger consists of two things:
     - transactions log as a sequence of key-value pairs 
-where key is a sequence number of the transaction and value is serialized transaction
+where key is a sequence number of the transaction and value is the serialized transaction
     - merkle tree (where hashes for leaves and nodes are persisted)
 - Each transaction has a sequence number (no gaps) - keys in transactions log
 - So, this can be considered as a blockchain where each block size equals to 1
 - There are multiple ledgers by default:
-    - pool ledger: transactions related to pool/network configuration (listing all nodes, their keys and addresses)
-    - config ledger: transactions for pool configuration plus transactions related to Pool Upgrade
-    - domain ledger: all main domain and application specific transactions (including NYM transactions for DID)
+    - *pool ledger*: transactions related to pool/network configuration (listing all nodes, their keys and addresses)
+    - *config ledger*: transactions for pool configuration plus transactions related to Pool Upgrade
+    - *domain ledger*: all main domain and application specific transactions (including NYM transactions for DID)
 - All transactions are serialized to MsgPack format
 - All transactions (both transaction log and merkle tree hash stores) are stored in LevelDB
 - One can use `read_ledger` script to get transactions for a specified ledger in a readable (JSON) format
@@ -38,14 +38,14 @@ These values are added to each transaction as first-level keys (that is at the s
 
     Supported transaction type:
     
-        - NODE = "0"
-        - NYM = "1"
-        - ATTRIB = "100"
-        - SCHEMA = "101"
-        - CLAIM_DEF = "102"
-        - POOL_UPGRADE = "109"
-        - NODE_UPGRADE = "110"
-        - POOL_CONFIG = "111"
+    - NODE = "0"
+    - NYM = "1"
+    - ATTRIB = "100"
+    - SCHEMA = "101"
+    - CLAIM_DEF = "102"
+    - POOL_UPGRADE = "109"
+    - NODE_UPGRADE = "110"
+    - POOL_CONFIG = "111"
         
 - `identifier` (base58-encoded string):
  
@@ -95,10 +95,10 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 
     Role of a user NYM record being created for. One of the following numbers
     
-        - None (common USER)
-        - "0" (TRUSTEE)
-        - "2" (STEWARD)
-        - "101" (TRUST_ANCHOR)
+    - None (common USER)
+    - "0" (TRUSTEE)
+    - "2" (STEWARD)
+    - "101" (TRUST_ANCHOR)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
@@ -189,9 +189,9 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
  
      Dictionary with Schema's data:
      
-        - `attr_names`: array of attribute name strings
-        - `name`: Schema's name string
-        - `version`: Schema's version string
+    - `attr_names`: array of attribute name strings
+    - `name`: Schema's name string
+    - `version`: Schema's version string
 
 **Example**:
 ```
@@ -218,8 +218,8 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
  
      Dictionary with Claim Definition's data:
      
-        - `primary`: primary claim public key
-        - `revocation`: revocation claim public key
+    - `primary`: primary claim public key
+    - `revocation`: revocation claim public key
         
 - `ref` (string):
     

@@ -114,14 +114,14 @@ These common metadata values are added to result's JSON at the same level as rea
 
     Supported transaction types:
     
-        - NODE = "0"
-        - NYM = "1"
-        - ATTRIB = "100"
-        - SCHEMA = "101"
-        - CLAIM_DEF = "102"
-        - POOL_UPGRADE = "109"
-        - NODE_UPGRADE = "110"
-        - POOL_CONFIG = "111"
+    - NODE = "0"
+    - NYM = "1"
+    - ATTRIB = "100"
+    - SCHEMA = "101"
+    - CLAIM_DEF = "102"
+    - POOL_UPGRADE = "109"
+    - NODE_UPGRADE = "110"
+    - POOL_CONFIG = "111"
 
 - `identifier` (base58-encoded string):
  
@@ -207,10 +207,10 @@ These common metadata values are added to result's JSON at the same level as rea
 
     Supported transaction types:
     
-        - GET_ATTR = "104"
-        - GET_NYM = "105"
-        - GET_SCHEMA = "107"
-        - GET_CLAIM_DEF = "108"
+    - GET_ATTR = "104"
+    - GET_NYM = "105"
+    - GET_SCHEMA = "107"
+    - GET_CLAIM_DEF = "108"
 
 - `identifier` (base58-encoded string):
  
@@ -275,10 +275,10 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 
     Role of a user NYM record being created for. One of the following numbers
     
-        - None (common USER)
-        - "0" (TRUSTEE)
-        - "2" (STEWARD)
-        - "101" (TRUST_ANCHOR)
+    - None (common USER)
+    - "0" (TRUSTEE)
+    - "2" (STEWARD)
+    - "101" (TRUST_ANCHOR)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
@@ -421,9 +421,9 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
  
      Dictionary with Schema's data:
      
-        - `attr_names`: array of attribute name strings
-        - `name`: Schema's name string
-        - `version`: Schema's version string
+    - `attr_names`: array of attribute name strings
+    - `name`: Schema's name string
+    - `version`: Schema's version string
 
 *Request Example*:
 ```
@@ -479,8 +479,8 @@ All fields must be specified to update existing claim definition (for example, r
  
      Dictionary with Claim Definition's data:
      
-        - `primary`: primary claim public key
-        - `revocation`: revocation claim public key
+    - `primary`: primary claim public key
+    - `revocation`: revocation claim public key
         
 - `ref` (string):
     
@@ -1004,6 +1004,19 @@ Gets Claim's Schema.
 
 Gets Claim Definition.
 
+- `origin` (base58-encoded string):
+
+    Claim Definition Issuer's DID as base58-encoded string for 16 or 32 bit DID value.
+        
+- `ref` (string):
+    
+    Sequence number of a Schema transaction the claim definition is created for.
+
+- `signature_type` (string):
+
+    Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
+
+
 *Request Example*:
 ```
 {
@@ -1063,11 +1076,11 @@ Gets Claim Definition.
 
 A generic request to get a transaction from Ledger by its sequence number.
 
-- 'ledgerId' (int enum):
+- `ledgerId` (int enum):
 
     ID of the ledger the requested transaction belongs to (Pool=0; Domain=1; Config=2).
 
-- 'data' (int):
+- `data` (int):
 
     Requested transaction sequence number as it's stored on Ledger.
 
