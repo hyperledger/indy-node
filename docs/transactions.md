@@ -8,15 +8,15 @@
     * [NYM](#nym)    
     * [ATTRIB](#attrib)    
     * [SCHEMA](#schema)
-    * [CLAIM_DEF](#claim-def)
+    * [CLAIM_DEF](#claim_def)
     
 * [Pool Ledger](#pool-ledger)    
     * [NODE](#node)
     
 * [Config Ledger](#config-ledger)    
-    * [POOL_UPGRADE](#pool-upgrade)
-    * [NODE_UPGRADE](#node-upgrade)
-    * [POOL_CONFIG](#pool-config)
+    * [POOL_UPGRADE](#pool_upgrade)
+    * [NODE_UPGRADE](#node_upgrade)
+    * [POOL_CONFIG](#pool_config)
 
 ## General Information
 

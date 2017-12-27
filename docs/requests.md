@@ -8,18 +8,18 @@
     * [NYM](#nym)    
     * [ATTRIB](#attrib)    
     * [SCHEMA](#schema)
-    * [CLAIM_DEF](#claim-def)
+    * [CLAIM_DEF](#claim_def)
     * [NODE](#node)
-    * [POOL_UPGRADE](#pool-upgrade)
-    * [POOL_CONFIG](#pool-config)
+    * [POOL_UPGRADE](#pool_upgrade)
+    * [POOL_CONFIG](#pool_config)
 
 * [Read Requests](#read-requests)
 
     * [GET_NYM](#get-nym)    
     * [GET_ATTRIB](#get-attrib)    
     * [GET_SCHEMA](#get-schema)
-    * [GET_CLAIM_DEF](#get-claim-def)
-    * [GET_TXN](#get-txn)
+    * [GET_CLAIM_DEF](#get-claim_def)
+    * [GET_TXN](#get_txn)
     
 This doc is about supported client's Request (both write and read ones).
 If you are interested in transactions and their representation on the Ledger (that is internal one),
