@@ -28,9 +28,13 @@ So, we should follow the following principles:
 We may have multiple Networks (identified by different genesis transaction files) installed for the same indy-node service.
 The file structure should support it.
 
+- The current Network to work with is specified explicitly in the main config file (`NETWORK_NAME=`):
+
+    *Ubuntu: /etc/indy*
+
 - Separate config files for each Network
 
-    *Ubuntu: `/etc/indy/{network_name}`*
+    *Ubuntu: `/var/lib/indy/{network_name}`*
     
 - Separate data for each Network
     - Separate ledgers (transaction log, states)
