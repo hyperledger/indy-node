@@ -1,8 +1,7 @@
 # Requests
 * [Common Request Structure](#common-request-structure)
 * [Reply Structure for Write Requests](#reply-structure-for-write-requests)
-* [Reply Structure for Read Requests (except GET_TXN)](#reply-structure-for-read-requests)
-* [Reply Structure for Write Requests](#reply-structure-for-write-requests)
+* [Reply Structure for Read Requests (except GET_TXN)](#reply-structure-for-read-requests-(except-get_txn))
 * [Write Requests](#write-requests)
 
     * [NYM](#nym)    
@@ -15,10 +14,10 @@
 
 * [Read Requests](#read-requests)
 
-    * [GET_NYM](#get-nym)    
-    * [GET_ATTRIB](#get-attrib)    
-    * [GET_SCHEMA](#get-schema)
-    * [GET_CLAIM_DEF](#get-claim_def)
+    * [GET_NYM](#get_nym)    
+    * [GET_ATTRIB](#get_attrib)    
+    * [GET_SCHEMA](#get_schema)
+    * [GET_CLAIM_DEF](#get_claim_def)
     * [GET_TXN](#get_txn)
     
 This doc is about supported client's Request (both write and read ones).
@@ -364,7 +363,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 }
 ```
 
-### ATTR
+### ATTRIB
 
 Adds attribute to a NYM record.
 
