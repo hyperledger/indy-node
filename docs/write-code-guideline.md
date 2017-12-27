@@ -5,25 +5,25 @@ Please make sure that you take into account the following items before sending a
 ### General items
 - Consider sending a design doc into `design` folder (as markdown or PlantUML diagram) for a new feature  before implementing it.
 - Make sure that a new feature or fix is covered by tests (try following TDD)
-- Make sure that documentation is updated according to your changes (see [docs](docs) folder).
+- Make sure that documentation is updated according to your changes (see [docs](.) folder).
 In particular, update [transactions](transactions.md) and [requests](requests.md) if you change any transactions or requests format.
 - Follow incremental re-factoring approach: 
     - do not hesitate to improve the code
     - put TODO and FIXME comments if you see an issue in the code
     - log tickets in [Indy Jira](https://jira.hyperledger.org/secure/RapidBoard.jspa?rapidView=133&projectKey=INDY&view=planning.nodetail) if you see an issue.
 
-### Code items
+### Code quality items
 The current code is not perfect, so feel free to improve it. 
 - Follow PEP 8 and keep same code style in all files.
-    - Naming. Snake case for functions, camel case for classes, etc
+    - Naming. Snake case for functions, camel case for classes, etc.
     - Give names starting with the underscore to class members that are not public by their intention. Don’t use these members outside of the class which they belong to.
     - Docstrings for all public modules and functions/methods. Pay special attention to describing argument list
     - Annotate types for arguments of public functions 
-    - Annotate return type for public functions 
+    - Annotate return type for public functions
     - Use flake8 in developer environment and CI (fail a build if the flake8 check does not pass).
-    (you can run `flake8 .` on the project root to check it; you can install flake8 from pypi: `pip install flake8`).
+    (you can run `flake8 .` on the project root to check it; you can install flake8 from pypi: `pip install flake8`)
 - Inheritance and polymorphism
-    - Use ABC when creating abstract class to ensure that all its fields implemented in successors
+    - Use ABC when creating abstract class to ensure that all its fields implemented in successors.
     - Prefer composition instead of multiple inheritance
     - Avoid creating deep hierarchies
     - Avoid type checks (type(instance) == specific_subclass), we have them in some places and it is awful, do polymorphism instead
@@ -51,11 +51,11 @@ The current code is not perfect, so feel free to improve it.
     - It does not break context - exception raised in a coroutine has the same stack trace as an exception raised in a method (while the one raised in callback don’t)
     - It is easy to chain coroutine calls
     - If it is needed you can easily wrap coroutine in a Future and execute it in non-blocking fashion
-- Consider using Actor models (this is our long-term goals for re-factoring to achieve better code and performance)     
+- Consider using Actor models (this is our long-term goal for re-factoring to achieve better code quality and performance)     
 - Think about performance of the pool
 
 
-### Test items
+### Test quality items
 - Write good tests
     - Not all of our tests are clean and clear enough
     - Follow TDD in writing the tests first
