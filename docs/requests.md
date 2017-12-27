@@ -5,6 +5,8 @@ then have a look at [transactions](transactions.md).
 
 [indy-sdk](https://github.com/hyperledger/indy-sdk) expects the format as specified below.
 
+See [roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0) on the roles and who can create each type of transactions.
+
 ## Common Request Structure
 
 Each Request (both write and read) is a JSON with a number of common metadata fields.
@@ -257,7 +259,7 @@ The format of each request-specific data for each type of request.
 
 ### NYM
 Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and trustee can be created only by other trusties (see [roles]).
+Note that only trustees and stewards can create new trust anchors and trustee can be created only by other trusties (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
 
 The request can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -278,7 +280,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
         - "2" (STEWARD)
         - "101" (TRUST_ANCHOR)
     
-  A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles]).
+  A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
 - `verkey` (base58-encoded string; optional): 
 

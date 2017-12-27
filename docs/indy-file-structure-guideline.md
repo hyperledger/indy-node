@@ -3,7 +3,7 @@
 Indy-node service works with some files and folders on the file system.
 We need to be careful when selecting this files and folders or adding new ones.
 
-#### Use system-specific files and folder for indy-node service
+#### 1. Use system-specific files and folder for indy-node service
 As of now, we support indy-node service (using systemctl) on Ubuntu only.
 But in future we will support more platforms (CentOS, Windows Server, etc.)
 
@@ -21,7 +21,7 @@ So, we should follow the following principles:
     - Ubuntu: `/var/log/indy`
 - Avoid using /home folder for indy-node service
 
-#### Organize file folders to support possibility to work with multiple networks (live, test, local, etc.)
+#### 2. Organize file folders to support possibility to work with multiple networks (live, test, local, etc.)
 We may have multiple Networks (identified by different genesis transaction files) installed for the same indy-node service.
 The file structure should support it.
 
@@ -36,27 +36,27 @@ The file structure should support it.
     - Ubuntu: `/var/log/indy/{network_name}`
     
     
-#### Set proper permissions for files and folders
+#### 3. Set proper permissions for files and folders
 Make sure that all data, and, especially, keys have proper permissions.
 Private keys can only be read by the user the service is run for (indy user usually)
 
-#### Provide a way to override config and other data for different networks
+#### 4. Provide a way to override config and other data for different networks
 Each Network may have its own config extending base config.
 
 Ubuntu:
 - `/etc/indy`  - base config
 - `/etc/indy/{network_name}`  - config extension
     
-#### Client should use /home folder
+#### 5. Client should use /home folder
 Client doesn’t need a service, and should use its own home directory for files with proper permissions.
 
 Indy-sdk uses `~/.indy_client`
 
-#### Separate node and client folders
+#### 6. Separate node and client folders
 Client and Node should be two independent products not sharing any common files/folders
 
-#### It should be possible to work with both node and client (libindy) on the same machine
+#### 7. It should be possible to work with both node and client (libindy) on the same machine
 We may install and work with both node and client on the same machine independently
 
-#### It should be possible to run client (libindy) for multiple users
+#### 8. It should be possible to run client (libindy) for multiple users
 We may have multiple users working with client code on the same machine. Each user must have separate data and key files with proper permissions.
