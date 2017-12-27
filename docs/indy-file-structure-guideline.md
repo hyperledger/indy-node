@@ -1,3 +1,5 @@
+# Indy File Folders Structure Guideline
+
 Indy-node service works with some files and folders on the file system.
 We need to be careful when selecting this files and folders or adding new ones.
 

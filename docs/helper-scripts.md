@@ -1,3 +1,5 @@
+# Helper Scripts
+
 Indy-node comes with a number of useful helper scripts:
 - `init_indy_keys`
 

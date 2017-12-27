@@ -1,3 +1,5 @@
+# Code quality requirements guideline
+
 Please make sure that you take into account the following items before sending a PR with the new code:
 
 ### General items
