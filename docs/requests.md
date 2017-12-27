@@ -234,17 +234,17 @@ These common metadata values are added to result's JSON at the same level as rea
 
     State proof with BLS multi-signature of the State:
     
-        - `root_hash` (base58-encoded string): state trie root hash for the ledger the returned transaction belongs to
-        - `proof_nodes` (base64-encoded string): state proof for the returned transaction against the state trie with the specified `root_hash`
-        - `multi_signature` (dict): BLS multi-signature against the specified state trie root hash
-            - `value` (dict): the value the BLS multi-signature was created against
-                - `timestamp` (integer as POSIX timestamp): last update of the state
-                - `ledger_id` (integer enum): ID of the ledger the returned transaction belongs to (Pool=0; Domain=1; Config=2)
-                - `txn_root_hash` (base58-encoded string): root hash of the ledger the returned transaction belongs to
-                - `state_root_hash` (base58-encoded string): state trie root hash for the ledger the returned transaction belongs to
-                - `pool_state_root_hash` (base58-encoded string): pool state trie root hash to get the state of the Pool at the moment the BLS multi-signature was created
-            - `signature` (base58-encoded string): BLS multi-signature against the state trie with the specified `root_hash`
-            - `participants` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
+    - `root_hash` (base58-encoded string): state trie root hash for the ledger the returned transaction belongs to
+    - `proof_nodes` (base64-encoded string): state proof for the returned transaction against the state trie with the specified `root_hash`
+    - `multi_signature` (dict): BLS multi-signature against the specified state trie root hash
+        - `value` (dict): the value the BLS multi-signature was created against
+            - `timestamp` (integer as POSIX timestamp): last update of the state
+            - `ledger_id` (integer enum): ID of the ledger the returned transaction belongs to (Pool=0; Domain=1; Config=2)
+            - `txn_root_hash` (base58-encoded string): root hash of the ledger the returned transaction belongs to
+            - `state_root_hash` (base58-encoded string): state trie root hash for the ledger the returned transaction belongs to
+            - `pool_state_root_hash` (base58-encoded string): pool state trie root hash to get the state of the Pool at the moment the BLS multi-signature was created
+        - `signature` (base58-encoded string): BLS multi-signature against the state trie with the specified `root_hash`
+        - `participants` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
             
 - `data` (json or dict):
 
