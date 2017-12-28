@@ -1,0 +1,1005 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Evernym Sandbox Pool Validator Node"
+                    },
+                    "Parameters": [
+                        "KeyPairName",
+                        "DomainName",
+                        "InstanceType",
+                        "Department",
+                        "Owner"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "DomainName": {
+                    "default": "Domain"
+                },
+                "KeyPairName": {
+                    "default": "Key Pair Name"
+                },
+                "InstanceType": {
+                    "default": "Instance Type"
+                }
+            }
+        },
+        "AWS::CloudFormation::Designer": {
+            "8fc9ea52-83c8-44ad-a17d-cea3121c1360": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": -150,
+                    "y": 140
+                },
+                "z": 2,
+                "parent": "3118bc0d-5f32-4dd0-95a3-01104149d043",
+                "embeds": [],
+                "ismemberof": [
+                    "cbe68e38-fa90-4c72-83f4-b34103430146"
+                ],
+                "dependson": [
+                    "f6af709a-d125-4e24-ab7c-1ba926452562"
+                ],
+                "isrelatedto": [
+                    "cbe68e38-fa90-4c72-83f4-b34103430146"
+                ]
+            },
+            "cbe68e38-fa90-4c72-83f4-b34103430146": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 20,
+                    "y": 140
+                },
+                "z": 1,
+                "parent": "2d179af4-c61b-44c0-adaa-c31df48da299",
+                "embeds": []
+            },
+            "d25f47a0-d2ae-4d12-8f69-289ffda0df54": {
+                "source": {
+                    "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+                },
+                "target": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                },
+                "z": 1
+            },
+            "7b9e9a93-4d7d-4743-b1a9-1243b7be4ffd": {
+                "source": {
+                    "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+                },
+                "target": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                },
+                "z": 2
+            },
+            "02258688-dd19-4346-b661-46baf165ac93": {
+                "source": {
+                    "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+                },
+                "target": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                },
+                "z": 3
+            },
+            "b93e539e-5830-4db7-9a28-7a5621cb0588": {
+                "source": {
+                    "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+                },
+                "target": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                },
+                "z": 4
+            },
+            "a3f6ba86-8a1b-43fe-8340-fe90d601535f": {
+                "source": {
+                    "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                },
+                "target": {
+                    "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+                },
+                "z": 5
+            },
+            "747ecf24-b0d6-4e6d-8c61-e6dfe66e2e46": {
+                "source": {
+                    "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+                },
+                "target": {
+                    "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+                },
+                "z": 6
+            },
+            "e14fb501-1d64-4055-b053-26eb891a25c6": {
+                "source": {
+                    "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+                },
+                "target": {
+                    "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+                },
+                "z": 7
+            },
+            "5a92f1e9-1193-45ac-a758-05b3bed614ea": {
+                "source": {
+                    "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+                },
+                "target": {
+                    "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+                },
+                "z": 8
+            },
+            "df6d132d-984e-4c3a-9db8-8ed10b71eff4": {
+                "source": {
+                    "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+                },
+                "target": {
+                    "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                },
+                "z": 9
+            },
+            "fb77c7d1-cc40-41df-9d3d-97f32392a682": {
+                "source": {
+                    "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+                },
+                "target": {
+                    "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+                },
+                "z": 10
+            },
+            "2f6f00a9-f757-4b06-b883-e3c5974fe52e": {
+                "source": {
+                    "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+                },
+                "target": {
+                    "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+                },
+                "z": 11
+            },
+            "c3bf8872-9977-4d60-9d2a-ceb69274e459": {
+                "source": {
+                    "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+                },
+                "target": {
+                    "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+                },
+                "z": 12
+            },
+            "ed6a72ba-951a-4dd6-bfb7-15efb4db1ee8": {
+                "source": {
+                    "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+                },
+                "target": {
+                    "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                },
+                "z": 13
+            },
+            "a73bbd39-fdc8-48e3-8506-68e3f0d3afd4": {
+                "source": {
+                    "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+                },
+                "target": {
+                    "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+                },
+                "z": 14
+            },
+            "d490a337-d98d-4a1e-b699-162317d3d0f9": {
+                "source": {
+                    "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+                },
+                "target": {
+                    "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+                },
+                "z": 15
+            },
+            "70fb1f01-c174-481b-9c6c-3749cec7e914": {
+                "source": {
+                    "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+                },
+                "target": {
+                    "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+                },
+                "z": 16
+            },
+            "9469350e-5a7a-42a9-b119-44744dca07e9": {
+                "source": {
+                    "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+                },
+                "target": {
+                    "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                },
+                "z": 17
+            },
+            "e9b6b90e-aa33-4923-9476-27406e42704f": {
+                "source": {
+                    "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+                },
+                "target": {
+                    "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+                },
+                "z": 18
+            },
+            "0f3cc2ae-c9ec-4b77-bdef-5bf4437f1ae1": {
+                "source": {
+                    "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+                },
+                "target": {
+                    "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+                },
+                "z": 19
+            },
+            "895bed83-409f-4aff-aa90-38cf5e9887ef": {
+                "source": {
+                    "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+                },
+                "target": {
+                    "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+                },
+                "z": 20
+            },
+            "11467fb9-72dc-45b2-b26a-77cade6e15f7": {
+                "source": {
+                    "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+                },
+                "target": {
+                    "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                },
+                "z": 21
+            },
+            "f060db36-8884-4272-890c-54fdd2fe15be": {
+                "source": {
+                    "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+                },
+                "target": {
+                    "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+                },
+                "z": 22
+            },
+            "3c591f31-686a-455b-a845-c938951676b6": {
+                "source": {
+                    "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+                },
+                "target": {
+                    "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+                },
+                "z": 23
+            },
+            "f249ea66-5e4f-4c8c-badc-576d6e6e88f0": {
+                "source": {
+                    "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+                },
+                "target": {
+                    "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+                },
+                "z": 24
+            },
+            "3118bc0d-5f32-4dd0-95a3-01104149d043": {
+                "size": {
+                    "width": 130,
+                    "height": 140
+                },
+                "position": {
+                    "x": -173,
+                    "y": 106
+                },
+                "z": 1,
+                "parent": "2d179af4-c61b-44c0-adaa-c31df48da299",
+                "embeds": [
+                    "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                ]
+            },
+            "2d179af4-c61b-44c0-adaa-c31df48da299": {
+                "size": {
+                    "width": 330,
+                    "height": 340
+                },
+                "position": {
+                    "x": -190,
+                    "y": 70
+                },
+                "z": 0,
+                "embeds": [
+                    "5cb5bf3f-d7b3-4708-8860-7c9b3e375443",
+                    "cbe68e38-fa90-4c72-83f4-b34103430146",
+                    "3118bc0d-5f32-4dd0-95a3-01104149d043"
+                ]
+            },
+            "2a1abf80-6581-4c1e-83a3-abf012946269": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 190,
+                    "y": 330
+                },
+                "z": 0,
+                "embeds": []
+            },
+            "d6c7c9d2-c5fb-44d2-9bc4-dc52dbe9d728": {
+                "source": {
+                    "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+                },
+                "target": {
+                    "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+                },
+                "z": 3
+            },
+            "c5ec73cf-1e31-46eb-95ff-e993a97c45a8": {
+                "source": {
+                    "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+                },
+                "target": {
+                    "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+                },
+                "z": 4
+            },
+            "45e659b6-c22b-4bde-a83b-957e787fb816": {
+                "source": {
+                    "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+                },
+                "target": {
+                    "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+                },
+                "z": 5
+            },
+            "3a3d5ab1-894e-40f9-8c0c-1435a8fc8f50": {
+                "source": {
+                    "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+                },
+                "target": {
+                    "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+                },
+                "z": 6
+            },
+            "fb222de1-3415-4513-a516-1d1b385d8dbc": {
+                "source": {
+                    "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+                },
+                "target": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                },
+                "z": 7
+            },
+            "28652f4e-8dd4-423b-9438-956f47ed3482": {
+                "source": {
+                    "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+                },
+                "target": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                },
+                "z": 8
+            },
+            "41627ca9-f4ae-4529-b9bc-8d0300d2ebc5": {
+                "source": {
+                    "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+                },
+                "target": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                },
+                "z": 9
+            },
+            "590671c3-4bff-4665-be83-300f53813e31": {
+                "source": {
+                    "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                },
+                "target": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                },
+                "z": 10
+            },
+            "7bd0dbaa-9a1a-4374-b4ac-a703081fa358": {
+                "source": {
+                    "id": "2a1abf80-6581-4c1e-83a3-abf012946269"
+                },
+                "target": {
+                    "id": "2d179af4-c61b-44c0-adaa-c31df48da299"
+                },
+                "z": 0
+            },
+            "5cb5bf3f-d7b3-4708-8860-7c9b3e375443": {
+                "size": {
+                    "width": 140,
+                    "height": 140
+                },
+                "position": {
+                    "x": -20,
+                    "y": 250
+                },
+                "z": 1,
+                "parent": "2d179af4-c61b-44c0-adaa-c31df48da299",
+                "embeds": [
+                    "f6af709a-d125-4e24-ab7c-1ba926452562"
+                ]
+            },
+            "f6af709a-d125-4e24-ab7c-1ba926452562": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 20,
+                    "y": 290
+                },
+                "z": 2,
+                "parent": "5cb5bf3f-d7b3-4708-8860-7c9b3e375443",
+                "embeds": [],
+                "references": [
+                    "2a1abf80-6581-4c1e-83a3-abf012946269"
+                ],
+                "dependson": [
+                    "7bd0dbaa-9a1a-4374-b4ac-a703081fa358"
+                ]
+            },
+            "11e05bcb-29f8-420b-8b2c-6aaaf50f0744": {
+                "source": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "target": {
+                    "id": "2a1abf80-6581-4c1e-83a3-abf012946269"
+                },
+                "z": 3
+            },
+            "e2c29e4b-a8bb-4e90-b6c3-5c1e29eb0965": {
+                "source": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "target": {
+                    "id": "7bd0dbaa-9a1a-4374-b4ac-a703081fa358"
+                },
+                "z": 4
+            },
+            "cd50f840-8cee-4ce2-8f84-5e744c8fcccc": {
+                "source": {
+                    "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+                },
+                "target": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "z": 5
+            },
+            "1fa48bd9-6c67-4f24-b533-10d877582662": {
+                "source": {
+                    "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+                },
+                "target": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "z": 6
+            },
+            "0a16645f-8022-44e8-912c-62a971f9c51e": {
+                "source": {
+                    "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+                },
+                "target": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "z": 7
+            },
+            "925b5b55-3d1b-4a58-b5f8-591e0f07796f": {
+                "source": {
+                    "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                },
+                "target": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "z": 8
+            },
+            "5ace05b2-c300-4231-a17d-52b1bf776fb0": {
+                "source": {
+                    "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+                },
+                "target": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "z": 9
+            },
+            "c68e2ab1-3403-4fbb-857c-b82232553b19": {
+                "source": {
+                    "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+                },
+                "target": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "z": 10
+            },
+            "a51daf4e-d286-4c1d-a688-1541a318f1d6": {
+                "source": {
+                    "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+                },
+                "target": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "z": 11
+            },
+            "98fb4d7c-0d34-48c9-8625-04d12e5942bd": {
+                "source": {
+                    "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+                },
+                "target": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                },
+                "z": 12
+            },
+            "a858c5aa-810c-4486-93b6-e19166d9d691": {
+                "source": {
+                    "id": "5cb5bf3f-d7b3-4708-8860-7c9b3e375443"
+                },
+                "target": {
+                    "id": "3118bc0d-5f32-4dd0-95a3-01104149d043"
+                },
+                "z": 1
+            }
+        }
+    },
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/28"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "2d179af4-c61b-44c0-adaa-c31df48da299"
+                }
+            }
+        },
+        "PublicSubnet": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/28",
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "3118bc0d-5f32-4dd0-95a3-01104149d043"
+                }
+            }
+        },
+        "Validator": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "DisableApiTermination": "true",
+                "InstanceInitiatedShutdownBehavior": "stop",
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "validator",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "ami"
+                    ]
+                },
+                "KeyName": {
+                    "Ref": "KeyPairName"
+                },
+                "NetworkInterfaces": [
+                    {
+                        "DeviceIndex": 0,
+                        "AssociatePublicIpAddress": "True",
+                        "SubnetId": {
+                            "Ref": "PublicSubnet"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SecurityGroup"
+                            }
+                        ]
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "Evernym Validator Pool (",
+                                    {
+                                        "Fn::FindInMap": [
+                                            "validator",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "hostname"
+                                        ]
+                                    },
+                                    ")"
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Hostname",
+                        "Value": {
+                            "Fn::Join": [
+                                ".",
+                                [
+                                    {
+                                        "Fn::FindInMap": [
+                                            "validator",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "hostname"
+                                        ]
+                                    },
+                                    {
+                                        "Ref": "DomainName"
+                                    }
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "Purpose",
+                        "Value": "Evernym 'Sandbox' Validator Pool for POCs and Customers"
+                    },
+                    {
+                        "Key": "Department",
+                        "Value": {
+                            "Ref": "Department"
+                        }
+                    },
+                    {
+                        "Key": "Owner",
+                        "Value": {
+                            "Ref": "Owner"
+                        }
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "\n",
+                                "# Setup Network\n",
+                                "echo \"",
+                                {
+                                    "Fn::FindInMap": [
+                                        "validator",
+                                        {
+                                            "Ref": "AWS::Region"
+                                        },
+                                        "hostname"
+                                    ]
+                                },
+                                ".",
+                                {
+                                    "Ref": "DomainName"
+                                },
+                                "\" > /etc/hostname\n",
+                                "hostname ",
+                                {
+                                    "Fn::FindInMap": [
+                                        "validator",
+                                        {
+                                            "Ref": "AWS::Region"
+                                        },
+                                        "hostname"
+                                    ]
+                                },
+                                ".",
+                                {
+                                    "Ref": "DomainName"
+                                },
+                                "\n",
+                                "echo \"127.0.0.1\tlocalhost localhost.",
+                                {
+                                    "Ref": "DomainName"
+                                },
+                                "\" >> /etc/hosts\n",
+                                "\n",
+                                "# Install Packages\n",
+                                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                                {
+                                    "Fn::FindInMap": [
+                                        "repository",
+                                        "evernym",
+                                        "key"
+                                    ]
+                                },
+                                "\n",
+                                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                                {
+                                    "Fn::FindInMap": [
+                                        "repository",
+                                        "sovrin",
+                                        "key"
+                                    ]
+                                },
+                                "\n",
+                                "add-apt-repository \"",
+                                {
+                                    "Fn::FindInMap": [
+                                        "repository",
+                                        "evernym",
+                                        "repo"
+                                    ]
+                                },
+                                "\"\n",
+                                "add-apt-repository \"",
+                                {
+                                    "Fn::FindInMap": [
+                                        "repository",
+                                        "sovrin",
+                                        "repo"
+                                    ]
+                                },
+                                "\"\n",
+                                "apt-get update\n",
+                                "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
+                                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-node tmux vim wget\n",
+                                "\n",
+                                "# Install and Configure Node\n",
+                                "su - sovrin -c 'init_sovrin_node ",
+                                {
+                                    "Fn::FindInMap": [
+                                        "validator",
+                                        {
+                                            "Ref": "AWS::Region"
+                                        },
+                                        "hostname"
+                                    ]
+                                },
+                                " 9701 9702",
+                                "'\n",
+                                "systemctl enable sovrin-node\n",
+                                "\n",
+                                "# Bug Fixes\n",
+                                "perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/sovrin-node.service\n",
+                                "chmod -x /etc/systemd/system/orientdb.service\n",
+                                "echo 'SendMonitorStats = False' >> /home/sovrin/.sovrin/sovrin_config.py\n",
+                                "chown sovrin:sovrin /home/sovrin/.sovrin/sovrin_config.py\n",
+                                "\n",
+                                "# Clean Up\n",
+                                "rm /etc/update-motd.d/10-help-text\n",
+                                "rm /etc/update-motd.d/51-cloudguest\n",
+                                "rm /etc/update-motd.d/97-overlayroot\n",
+                                "apt-get update\n",
+                                "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y\n",
+                                "updatedb\n"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+                }
+            },
+            "DependsOn": [
+                "PublicRoute"
+            ]
+        },
+        "SecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Network rules for validators in the Evernym Sandbox Pool",
+                "VpcId": {
+                    "Ref": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "9701",
+                        "ToPort": "9702",
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "icmp",
+                        "FromPort": "8",
+                        "ToPort": "-1",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "IpProtocol": "-1",
+                        "FromPort": "0",
+                        "ToPort": "65535",
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ]
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+                }
+            }
+        },
+        "PublicRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "5cb5bf3f-d7b3-4708-8860-7c9b3e375443"
+                }
+            }
+        },
+        "PublicRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "GatewayId": {
+                    "Ref": "InternetGateway"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0"
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+                }
+            },
+            "DependsOn": [
+                "VPCGatewayAttachment"
+            ]
+        },
+        "InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {},
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "2a1abf80-6581-4c1e-83a3-abf012946269"
+                }
+            }
+        },
+        "VPCGatewayAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "InternetGatewayId": {
+                    "Ref": "InternetGateway"
+                },
+                "VpcId": {
+                    "Ref": "VPC"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "7bd0dbaa-9a1a-4374-b4ac-a703081fa358"
+                }
+            }
+        },
+        "SubnetRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PublicRouteTable"
+                },
+                "SubnetId": {
+                    "Ref": "PublicSubnet"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "a858c5aa-810c-4486-93b6-e19166d9d691"
+                }
+            }
+        }
+    },
+    "Parameters": {
+        "KeyPairName": {
+            "Description": "Key Pair to use for administrative login on all nodes",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "ConstraintDescription": "Must be a valid EC2 Key Pair in this region"
+        },
+        "DomainName": {
+            "Description": "Domain name to append to all hostnames (no leading '.')",
+            "Type": "String",
+            "Default": "sandbox.evernym.com",
+            "AllowedPattern": "[a-zA-Z0-9][a-zA-Z0-9.]*",
+            "ConstraintDescription": "Must be formatted as a valid domain name without the leading '.'"
+        },
+        "InstanceType": {
+            "Description": "Instance type for the validator",
+            "Type": "String",
+            "Default": "t2.medium",
+            "AllowedValues": [
+                "t2.small",
+                "t2.medium"
+            ],
+            "ConstraintDescription": "Must be a valid EC2 Instance Type"
+        },
+        "Owner": {
+            "Description": "Name or email of the person responsible for the instance",
+            "Type": "String"
+        },
+        "Department": {
+            "Description": "Name of the department that owns the instance",
+            "Type": "String"
+        }
+    },
+    "Mappings": {
+        "validator": {
+            "ap-northeast-1": {
+                "ami": "ami-aae114cc",
+                "hostname": "japan"
+            },
+            "ap-northeast-2": {
+                "ami": "ami-d24e97bc",
+                "hostname": "korea"
+            },
+            "ap-southeast-1": {
+                "ami": "ami-e8da418b",
+                "hostname": "singapore"
+            },
+            "ap-southeast-2": {
+                "ami": "ami-49b3aa2a",
+                "hostname": "australia"
+            },
+            "ca-central-1": {
+                "ami": "ami-b3cf71d7",
+                "hostname": "canada"
+            },
+            "eu-central-1": {
+                "ami": "ami-9c1db3f3",
+                "hostname": "germany"
+            },
+            "eu-west-1": {
+                "ami": "ami-016f9e78",
+                "hostname": "ireland"
+            },
+            "eu-west-2": {
+                "ami": "ami-fde6f799",
+                "hostname": "england"
+            },
+            "sa-east-1": {
+                "ami": "ami-7ad8ae16",
+                "hostname": "brazil"
+            },
+            "us-east-1": {
+                "ami": "ami-b391b9c8",
+                "hostname": "virginia"
+            },
+            "us-east-2": {
+                "ami": "ami-a7aa8ac2",
+                "hostname": "ohio"
+            },
+            "us-west-1": {
+                "ami": "ami-8edbf0ee",
+                "hostname": "california"
+            },
+            "us-west-2": {
+                "ami": "ami-9d04e4e5",
+                "hostname": "oregon"
+            }
+        },
+        "repository": {
+            "evernym": {
+                "key": "BD33704C",
+                "repo": "deb https://repo.evernym.com/deb xenial stable"
+            },
+            "sovrin": {
+                "key": "68DB5E88",
+                "repo": "deb https://repo.sovrin.org/deb xenial stable"
+            }
+        }
+    }
+}
