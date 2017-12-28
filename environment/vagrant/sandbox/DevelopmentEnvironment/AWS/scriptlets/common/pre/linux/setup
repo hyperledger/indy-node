@@ -1,0 +1,140 @@
+USER=ec2-user
+
+# Read in the config.properties file if one exists. The properties file is a way
+# to answer ALL questions in this script.
+properties="/vagrant/config.properties"
+
+if [ -f "$properties" ]
+then
+  echo "Properties file $properties found."
+
+  while IFS='=' read -r key value
+  do
+    # Remove all leading and trailing whitespace
+    key=$(echo $key | awk '{$1=$1}1')
+
+    # Get the next line if this line is blank or is a comment
+    if [[ $key =~ ^#.*$ ]] || [ -z "$key" ]; then
+      continue
+    fi
+
+    key=$(echo $key | tr '.' '_')
+    eval "${key}='${value}'"
+  done < "$properties"
+  # All properties are now available as bash variables
+  # Example: property foo.bar.baz is now available as a foo_bar_baz bash variable
+else
+  echo "Properties file $properties NOT found."
+fi
+
+# Function to determine if a repo is skipped. Converts all dashes to underscores
+#skipped() {
+#  # Replace all dashes with underscores
+#  property_friendly_reponame=$(echo ${1} | tr - _)
+#  property="development_repos_${property_friendly_reponame}_skipped"
+#  if [ -z ${!property+x} ]; then
+#    #echo "${property} is unset"
+#    return 1
+#  else
+#    #echo "${property} is set to ${!property}"
+#    if [[ ${!property} =~ [Yy]$ ]]; then
+#      return 0
+#    else
+#      return 1
+#    fi
+#  fi
+#}
+
+echo 'Setting Up Networking'
+if [ -f /vagrant/etc/hosts ]; then
+  cp /vagrant/etc/hosts /etc/hosts
+fi
+
+#--------------------------------------------------------
+# BE CAREFUL WHEN UNCOMMENTING THIS SECTION
+#perl -p -i -e 's/(PasswordAuthentication\s+)no/$1yes/' /etc/ssh/sshd_config
+#service sshd restart
+
+#--------------------------------------------------------
+echo "Setup default .vimrc ..."
+echo ":set colorcolumn=80" >> /home/ec2-user/.vimrc
+
+#--------------------------------------------------------
+# Ammend the Vagrant and root user .bashrc
+#  - Add convenience aliases for managing repos CI/CD targets
+if [ -f /vagrant/scriptlets/common/pre/linux/bashrc ]; then
+  if ! grep -q "package_manager" /home/ec2-user/.bashrc; then
+    echo "Ammending .bashrc for user vagrant"
+    cat /vagrant/scriptlets/common/pre/linux/bashrc >> /home/ec2-user/.bashrc
+  fi 
+  if ! grep -q "package_manager" /root/.bashrc; then
+    echo "Ammending .bashrc for user root"
+    cat /vagrant/scriptlets/common/pre/linux/bashrc >> /root/.bashrc
+  fi 
+fi
+
+# Build source dependencies
+mkdir -p /src
+
+# Install Python from source
+# IMPORTANT: The Sovrin client expects to find python<major>.<minor> in /usr/bin. Set the
+#            prefix to /usr.
+PYTHON_MAJOR_VERSION=3
+PYTHON_MINOR_VERSION=6
+PYTHON_PATCH_VERSION=2
+PYTHON_VERSION=${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}.${PYTHON_PATCH_VERSION}
+PYTHON_PIP_VERSION=${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}
+cd /src
+curl https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz | tar -xz
+cd Python-${PYTHON_VERSION}
+./configure --prefix=/usr
+make
+make install
+
+#--------------------------------------------------------
+# Build and install modern version of libsodium from sources:
+LIBSODIUM_VERSION=1.0.12
+echo "Build and install libsodium ${LIBSODIUM_VERSION}..."
+cd /src
+curl https://download.libsodium.org/libsodium/releases/libsodium-${LIBSODIUM_VERSION}.tar.gz | tar -xz
+cd /src/libsodium-${LIBSODIUM_VERSION}
+./configure
+make
+make install
+
+#--------------------------------------------------------
+# Sovrin Client - Prerequsites
+echo "Install Sovrin CLI prerequisites..."
+mkdir -p /home/$USER/sovrin-cli && cd /home/$USER/sovrin-cli
+if [ ! -d ./indy-anoncreds ]; then
+  git clone https://github.com/hyperledger/indy-anoncreds.git
+fi
+cd indy-anoncreds
+sed -i -- 's#if \[ -f /etc/redhat-release \]#if \[ -f /etc/redhat-release \] \|\| grep -q "Amazon Linux AMI" /etc/os-release#' ./setup-charm.sh
+
+# Comment taken from ./setup-charm.sh
+#
+# Ensure that you are using pip<major>.<minor> for installation.
+# Use link to refer pip<major>.<minor> using pip command
+#
+# Ugg!
+#
+# We installed Python from source. The prefix was set to /usr during
+# installation.
+#
+# TODO: Figure out how to activate a Python virtualenv on 'vagrant up' (non
+#       interactive shell)
+ln -sf /usr/bin/pip${PYTHON_PIP_VERSION} /usr/bin/pip
+./setup-charm.sh
+
+#--------------------------------------------------------
+# Setup a Python virtual environment with Python 3.6
+#cd /home/$USER
+#echo "Setup and activate a Python virtual environment..."
+#virtualenv -p python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION} sovrin-client
+#source ./sovrin-client/bin/activate
+
+#--------------------------------------------------------
+# Install sovrin client in the Python virtual environment
+echo "Install sovrin (CLI) client..."
+pip install sovrin
