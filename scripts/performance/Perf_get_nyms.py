@@ -208,8 +208,7 @@ async def get_nyms(threadnum):
     try:
         steward_did = await signus.create_and_store_my_did(my_wallet_handle, json.dumps({"seed":
                                                                                         MyVariables.key_to_use}))
-        print(Colors.HEADER + "\n\n\t======== Created DID to use when verifying NYMS %s " % str(steward_did[0])
-              + Colors.ENDC)
+        print(Colors.HEADER + "\n\n\t======== Created DID to use when verifying NYMS %s " % str(steward_did[0]) + Colors.ENDC)
         logger.info("\n\n\t======== Created DID to use when verifying NYMS %s " % str(steward_did[0]))
     except IndyError as e:
         print(Colors.FAIL + str(e) + Colors.ENDC)
@@ -269,8 +268,7 @@ async def get_nyms(threadnum):
 
                     get_nym_txn_resp = await ledger.submit_request(MyVariables.pool_handle, get_nym_txn1)
                     MyVariables.total_number_of_nyms += 1
-                    print(Colors.HEADER + "\t======== Submit request response:  %s" % str(get_nym_txn_resp)
-                          + Colors.ENDC)
+                    print(Colors.HEADER + "\t======== Submit request response:  %s" % str(get_nym_txn_resp) + Colors.ENDC)
                 except IndyError as e:
                     print(Colors.FAIL + str(e) + Colors.ENDC)
 
@@ -294,7 +292,7 @@ async def get_nyms(threadnum):
             logger.info("Running total of NYMs processed: %d" % MyVariables.total_number_of_nyms + "\n")
 
             # Run the timer delay between files
-            #timer()
+            # timer()
 
         # # Run the timer between files
         # timer()

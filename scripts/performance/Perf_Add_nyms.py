@@ -17,10 +17,10 @@ from indy.error import IndyError
 #          python3.6 Perf_Add_nyms.py testPool 500 000000000000000000000000Steward1 <number_of_threads>
 # -------------------------------------------------------------------------------
 parser = argparse.ArgumentParser(description='Script to create multiple NYMs and store them in .txt files to be  '
-                     'used by the \'Perf_get_nyms.py\' script.\n\n', usage='To create 500 '
-                     'NYMs in the default \'nym_files\' directory and use \nthe default '
-                     '\'stability_pool\' transaction file in the current working directory, '
-                     '\nuse: python3.6 Perf_Add_nyms.py -p testPool -n 500 -i 000000000000000000000000Steward1 -s 1')
+                                             'used by the \'Perf_get_nyms.py\' script.\n\n', usage='To create 500 '
+                                             'NYMs in the default \'nym_files\' directory and use \nthe default '
+                                             '\'stability_pool\' transaction file in the current working directory, '
+                                             '\nuse: python3.6 Perf_Add_nyms.py -p testPool -n 500 -i 000000000000000000000000Steward1 -s 1')
 
 parser.add_argument('-d', help='Specify the directory location to store the NYM .txt files.  The default '
                                'directory is set to the "nym_files" directory in this scripts current working '
@@ -33,19 +33,19 @@ parser.add_argument('-g', help='Specify the name of the genesis transaction file
                                '\"stability_pool\"', action='store', default='stability_pool_no_blskey')
 
 parser.add_argument('-p', help='Specify the pool name to use.  The default name will be \"Perf_Add_NYMS\"',
-                                action='store', default='Perf_Add_NYMS')
+                    action='store', default='Perf_Add_NYMS')
 
 parser.add_argument('-n', help='Specify the number of NYMs tp create.  The default value will be 100',
-                                action='store', type=int, default=100)
+                    action='store', type=int, default=100)
 
 parser.add_argument('-i', help='Specify the role to use to create the NYMs.  The default steward ID will be  used',
-                                action='store', default='000000000000000000000000Steward1')
+                    action='store', default='000000000000000000000000Steward1')
 
 parser.add_argument('-s', help='Specify the number of threads (required when using the Perf_runner.py script) '
                                'The default value will be 1', action='store', type=int, default=1)
 
 parser.add_argument('-b', help='To see additional output, use -b in addition to the other command line options',
-                                action='store_true', default=False)
+                    action='store_true', default=False)
 # parser.print_help()
 results = parser.parse_args()
 # default=os.path.join(os.getcwd(), "nym_files"))
