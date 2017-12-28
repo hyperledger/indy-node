@@ -207,7 +207,7 @@
       "displayName": "Git Uri",
       "description": "The git Uri.",
       "required": true,
-      "value": "https://github.com/evernym/sovrin-environments.git"
+      "value": "https://github.com/hyperledger/indy-node.git"
     },
     {
       "name": "DOCKER_FILE_PATH",

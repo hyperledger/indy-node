@@ -6,7 +6,7 @@ $SCRIPT_DIR/initialize.sh
 echo "Starting sovrin node ..."
 echo
 
-# echo "Starting sovrin-node-control service ..."
+# echo "Starting indy-node-control service ..."
 # echo "/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool.py ${TEST_MODE} --hold-ext ${HOLD_EXT}"
 # echo
 # exec /usr/bin/env python3 -O /usr/local/bin/start_node_control_tool.py ${TEST_MODE} --hold-ext ${HOLD_EXT} &

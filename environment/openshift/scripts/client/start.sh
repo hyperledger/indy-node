@@ -10,4 +10,4 @@ echo "The sovrin cli will not keep the pod running, so instead we'll sleep for i
 echo "To use the sovrin cli, rsh into the pod and run the cli in the session."
 echo
 sleep infinity
-# sovrin
+# indy

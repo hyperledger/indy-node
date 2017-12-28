@@ -1,4 +1,4 @@
-# sovrin-environments
+# Indy Environment
 Methods and scripts for standing up Sovrin test environments for different use-cases.
 
 The following are among the methods that can be used to set up a Sovrin Validator cluster for testing.  Others will be implemented in the future.
@@ -16,4 +16,4 @@ Using the Vagrant and bash scripts, an administrator can create VMs in his own P
 Using the Docker configuration and bash scripts, you can build and run Sovrin containers on your own PC (Linux, Mac, or Windows) docker environment, provided that it has adequate storage, memory, and CPU cores. The scripts automate the docker build process for Sovrin node and client images, and the steps for running the communicating containers. The only prerequisite is having a Docker installation running before executing the scripts. See the [ReadMe](docker/pool/README.md) for how to run the scripts, with additional details on starting the Agents (Faber College, etc.) needed for completing the Sovrin Tutorial - Alice and her Transcripts, Job, and Bank Applications.
 
 ## Util
-A collection of utilities/scripts intended to be reused/reusable by all sovrin environments. TODO: Decide how these utilities/scripts will be organized. It may be helpful to create a directory structure (component taxonomy/namespace) that aids in discovery.
+A collection of utilities/scripts intended to be reused/reusable by all Indy environments. TODO: Decide how these utilities/scripts will be organized. It may be helpful to create a directory structure (component taxonomy/namespace) that aids in discovery.

@@ -1,14 +1,14 @@
 # Setting Up a Test Indy Network in VMs
 
 When you're finished working through this document, you will be able to proceed through to the [*Getting
-Started Guide*](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) or if you would like, you may continue setting up an actual Developer Environment connected to a sandbox by following these [instructions](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/sandbox/DevelopmentEnvironment/Vagrantfile).
+Started Guide*](../../../../getting-started.md) or if you would like, you may continue setting up an actual Developer Environment connected to a sandbox by following these [instructions](../../sandbox/DevelopmentEnvironment/Vagrantfile).
 
 This document will guide you in configuring a private network of Indy
 validator nodes for testing and learning about Indy.  Additional servers
 acting as Indy agents can also be provisioned on an ad-hoc basis, using this
 framework.  Using this guide, VirtualBox VMs will be used as the basis for
 creating a four-Validator network appropriate for completing the [*Getting
-Started Guide*](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md)
+Started Guide*](../../../../getting-started.md)
 and for other purposes.
 
 ### Assumptions
@@ -66,8 +66,8 @@ the quickest way to get all the necessary files (plus more).  Then navigate to t
 directory containing the scripts.
 
 ```sh
-$ git clone https://github.com/evernym/sovrin-environments.git
-$ cd sovrin-environments/vagrant/training/vb-multi-vm
+$ git clone https://github.com/hyperledger/indy-node.git
+$ cd indy-node/environment/vagrant/training/vb-multi-vm
 $ git checkout stable
 ```
 
@@ -109,7 +109,7 @@ validator and CLI client nodes:
 $ vagrant up
 ```
 
-> **Note:** You will still need to be in this same directory (sovrin-environments/vagrant/training/vb-multi-vm) in order to run the above command. Also, you must wait until this process of "vagrant up" is complete prior to proceeding with the instructions below. If you attempt to proceed with the instructions below, it will cause error later in the process.
+> **Note:** You will still need to be in this same directory (indy-node/environment/vagrant/training/vb-multi-vm) in order to run the above command. Also, you must wait until this process of "vagrant up" is complete prior to proceeding with the instructions below. If you attempt to proceed with the instructions below, it will cause error later in the process.
 
 This command will take several minutes to complete, as each VM is provisioned
 and its validator.sh script is executed.  After provisioning, each of the validator nodes

@@ -4,8 +4,8 @@
 2. Use the `oc_configure_builds.sh` and `oc_configure_deployments.sh` scripts to configure and deploy the 'Alice' example network in your OpenShift project.
 3. Wait for the builds and deployments to complete.
 4. Open a terminal to the client node.
-5. Configure the agent nodes following the instructions here; [Starting the Indy Agent Scripts](https://github.com/evernym/sovrin-environments/blob/master/docker/StartSovrinAgents.md). *Ensure that you use the IP addresses assigned by openshift, not the default IP addresses in the instructions.*
-6. Open a terminal to the client node and walk through the [Alice Gets a Transcript](https://github.com/hyperledger/indy-node/blob/master/getting-started.md#alice-gets-a-transcript) example.
+5. Configure the agent nodes following the instructions here; [Starting the Indy Agent Scripts](../docker/StartIndyAgents.md). *Ensure that you use the IP addresses assigned by openshift, not the default IP addresses in the instructions.*
+6. Open a terminal to the client node and walk through the [Alice Gets a Transcript](../../getting-started.md#alice-gets-a-transcript) example.
 
 
 ## Prerequisites
@@ -48,4 +48,4 @@ By default the scripts setup a hyperledger indy network consisting of:
 
 All of the nodes are dynamically configured with the IP addresses of the Indy Nodes so they are able to connect and communicate.
 
-Currently the agent configuration must be performed manually following the instructions here; [Starting the Sovrin Agent Scripts](https://github.com/evernym/sovrin-environments/blob/master/docker/StartSovrinAgents.md).  The plan is to script and automate the agent configuration and registration in a later version so the whole environment comes up in a state where the 'Alice' example can be run out of the box.
+Currently the agent configuration must be performed manually following the instructions here; [Starting the Indy Agent Scripts](../docker/StartIndyAgents.md).  The plan is to script and automate the agent configuration and registration in a later version so the whole environment comes up in a state where the 'Alice' example can be run out of the box.
