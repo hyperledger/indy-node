@@ -27,7 +27,7 @@ Container is retained after indy shell is closed. Executing ```client_stop.sh```
 
 # Start agents (optional)
 
-If you are planning to run the Indy Tutorial (about Alice, her transcripts, job, and bank), start the organization Indy Agents using the instructions in [StartIndyAgents.md](../StartIndyAgents.md) in this folder.
+If you are planning to run the Indy Tutorial (about Alice, her transcripts, job, and bank), start the organization Indy Agents using the instructions in [StartIndyAgents.md](StartIndyAgents.md) in this folder.
 
 # Stop pool
 ```
