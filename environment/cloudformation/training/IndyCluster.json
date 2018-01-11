@@ -1393,7 +1393,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -1413,7 +1413,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
@@ -1425,10 +1425,10 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - sovrin -c 'init_sovrin_node ",
+                "su - indy -c 'init_indy_node ",
                 {
                   "Ref": "Validator01Hostname"
                 },
@@ -1441,10 +1441,10 @@
                   "Ref": "Validator01NodeClientPort"
                 },
                 "'\n",
-                "systemctl start sovrin-node\n",
-                "systemctl enable sovrin-node\n",
-                "systemctl status sovrin-node.service\n",
-                "su - sovrin -c \"generate_sovrin_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                "systemctl start indy-node\n",
+                "systemctl enable indy-node\n",
+                "systemctl status indy-node.service\n",
+                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
                 {
                   "Fn::FindInMap": [
                     "ValidatorData",
@@ -1487,20 +1487,20 @@
                 "\\\"\"\n",
                 "\n",
                 "# Bug Fixes\n",
-                "if grep -Fxq '[Install]' /etc/systemd/system/sovrin-node.service\n",
+                "if grep -Fxq '[Install]' /etc/systemd/system/indy-node.service\n",
                 "then\n",
-                "  echo '[Install] section is present in sovrin-node target'\n",
+                "  echo '[Install] section is present in indy-node target'\n",
                 "else\n",
-                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/sovrin-node.service\n",
+                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
                 "fi\n",
                 "chmod -x /etc/systemd/system/orientdb.service\n",
-                "if grep -Fxq 'SendMonitorStats' /home/sovrin/.sovrin/sovrin_config.py\n",
+                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
                 "then\n",
-                "  echo 'SendMonitorStats is configured in sovrin_config.py'\n",
+                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
                 "else\n",
-                "  echo 'SendMonitorStats = False' >> /home/sovrin/.sovrin/sovrin_config.py\n",
+                "  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py\n",
                 "fi\n",
-                "chown sovrin:sovrin /home/sovrin/.sovrin/sovrin_config.py\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
                 "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
@@ -1837,7 +1837,7 @@
                     {
                       "Ref": "Validator02OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -1857,7 +1857,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Validator02OperatingSystem"
                     },
@@ -1869,10 +1869,10 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - sovrin -c 'init_sovrin_node ",
+                "su - indy -c 'init_indy_node ",
                 {
                   "Ref": "Validator02Hostname"
                 },
@@ -1885,10 +1885,10 @@
                   "Ref": "Validator02NodeClientPort"
                 },
                 "'\n",
-                "systemctl start sovrin-node\n",
-                "systemctl enable sovrin-node\n",
-                "systemctl status sovrin-node.service\n",
-                "su - sovrin -c \"generate_sovrin_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                "systemctl start indy-node\n",
+                "systemctl enable indy-node\n",
+                "systemctl status indy-node.service\n",
+                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
                 {
                   "Fn::FindInMap": [
                     "ValidatorData",
@@ -1931,20 +1931,20 @@
                 "\\\"\"\n",
                 "\n",
                 "# Bug Fixes\n",
-                "if grep -Fxq '[Install]' /etc/systemd/system/sovrin-node.service\n",
+                "if grep -Fxq '[Install]' /etc/systemd/system/indy-node.service\n",
                 "then\n",
-                "  echo '[Install] section is present in sovrin-node target'\n",
+                "  echo '[Install] section is present in indy-node target'\n",
                 "else\n",
-                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/sovrin-node.service\n",
+                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
                 "fi\n",
                 "chmod -x /etc/systemd/system/orientdb.service\n",
-                "if grep -Fxq 'SendMonitorStats' /home/sovrin/.sovrin/sovrin_config.py\n",
+                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
                 "then\n",
-                "  echo 'SendMonitorStats is configured in sovrin_config.py'\n",
+                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
                 "else\n",
-                "  echo 'SendMonitorStats = False' >> /home/sovrin/.sovrin/sovrin_config.py\n",
+                "  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py\n",
                 "fi\n",
-                "chown sovrin:sovrin /home/sovrin/.sovrin/sovrin_config.py\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
                 "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
@@ -2281,7 +2281,7 @@
                     {
                       "Ref": "Validator03OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -2301,7 +2301,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Validator03OperatingSystem"
                     },
@@ -2313,10 +2313,10 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - sovrin -c 'init_sovrin_node ",
+                "su - indy -c 'init_indy_node ",
                 {
                   "Ref": "Validator03Hostname"
                 },
@@ -2329,10 +2329,10 @@
                   "Ref": "Validator03NodeClientPort"
                 },
                 "'\n",
-                "systemctl start sovrin-node\n",
-                "systemctl enable sovrin-node\n",
-                "systemctl status sovrin-node.service\n",
-                "su - sovrin -c \"generate_sovrin_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                "systemctl start indy-node\n",
+                "systemctl enable indy-node\n",
+                "systemctl status indy-node.service\n",
+                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
                 {
                   "Fn::FindInMap": [
                     "ValidatorData",
@@ -2375,20 +2375,20 @@
                 "\\\"\"\n",
                 "\n",
                 "# Bug Fixes\n",
-                "if grep -Fxq '[Install]' /etc/systemd/system/sovrin-node.service\n",
+                "if grep -Fxq '[Install]' /etc/systemd/system/indy-node.service\n",
                 "then\n",
-                "  echo '[Install] section is present in sovrin-node target'\n",
+                "  echo '[Install] section is present in indy-node target'\n",
                 "else\n",
-                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/sovrin-node.service\n",
+                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
                 "fi\n",
                 "chmod -x /etc/systemd/system/orientdb.service\n",
-                "if grep -Fxq 'SendMonitorStats' /home/sovrin/.sovrin/sovrin_config.py\n",
+                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
                 "then\n",
-                "  echo 'SendMonitorStats is configured in sovrin_config.py'\n",
+                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
                 "else\n",
-                "  echo 'SendMonitorStats = False' >> /home/sovrin/.sovrin/sovrin_config.py\n",
+                "  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py\n",
                 "fi\n",
-                "chown sovrin:sovrin /home/sovrin/.sovrin/sovrin_config.py\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
                 "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
@@ -2725,7 +2725,7 @@
                     {
                       "Ref": "Validator04OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -2745,7 +2745,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Validator04OperatingSystem"
                     },
@@ -2757,10 +2757,10 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - sovrin -c 'init_sovrin_node ",
+                "su - indy -c 'init_indy_node ",
                 {
                   "Ref": "Validator04Hostname"
                 },
@@ -2773,10 +2773,10 @@
                   "Ref": "Validator04NodeClientPort"
                 },
                 "'\n",
-                "systemctl start sovrin-node\n",
-                "systemctl enable sovrin-node\n",
-                "systemctl status sovrin-node.service\n",
-                "su - sovrin -c \"generate_sovrin_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                "systemctl start indy-node\n",
+                "systemctl enable indy-node\n",
+                "systemctl status indy-node.service\n",
+                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
                 {
                   "Fn::FindInMap": [
                     "ValidatorData",
@@ -2819,20 +2819,20 @@
                 "\\\"\"\n",
                 "\n",
                 "# Bug Fixes\n",
-                "if grep -Fxq '[Install]' /etc/systemd/system/sovrin-node.service\n",
+                "if grep -Fxq '[Install]' /etc/systemd/system/indy-node.service\n",
                 "then\n",
-                "  echo '[Install] section is present in sovrin-node target'\n",
+                "  echo '[Install] section is present in indy-node target'\n",
                 "else\n",
-                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/sovrin-node.service\n",
+                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
                 "fi\n",
                 "chmod -x /etc/systemd/system/orientdb.service\n",
-                "if grep -Fxq 'SendMonitorStats' /home/sovrin/.sovrin/sovrin_config.py\n",
+                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
                 "then\n",
-                "  echo 'SendMonitorStats is configured in sovrin_config.py'\n",
+                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
                 "else\n",
-                "  echo 'SendMonitorStats = False' >> /home/sovrin/.sovrin/sovrin_config.py\n",
+                "  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py\n",
                 "fi\n",
-                "chown sovrin:sovrin /home/sovrin/.sovrin/sovrin_config.py\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
                 "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
@@ -3168,7 +3168,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -3188,7 +3188,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Agent01OperatingSystem"
                     },
@@ -3200,13 +3200,13 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-client tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
                 "\n",
                 "su - ",
                 {
                   "Ref": "AgentUsername"
                 },
-                " -c \"generate_sovrin_pool_transactions --nodes 4 --clients 4 ",
+                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
                 " --ips \\\"",
                 {
                   "Fn::FindInMap": [
@@ -3575,7 +3575,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -3595,7 +3595,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Agent02OperatingSystem"
                     },
@@ -3607,13 +3607,13 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-client tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
                 "\n",
                 "su - ",
                 {
                   "Ref": "AgentUsername"
                 },
-                " -c \"generate_sovrin_pool_transactions --nodes 4 --clients 4 ",
+                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
                 " --ips \\\"",
                 {
                   "Fn::FindInMap": [
@@ -3982,7 +3982,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -4002,7 +4002,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Agent03OperatingSystem"
                     },
@@ -4014,13 +4014,13 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-client tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
                 "\n",
                 "su - ",
                 {
                   "Ref": "AgentUsername"
                 },
-                " -c \"generate_sovrin_pool_transactions --nodes 4 --clients 4 ",
+                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
                 " --ips \\\"",
                 {
                   "Fn::FindInMap": [
@@ -4389,7 +4389,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -4409,7 +4409,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Agent04OperatingSystem"
                     },
@@ -4421,13 +4421,13 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-client tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
                 "\n",
                 "su - ",
                 {
                   "Ref": "AgentUsername"
                 },
-                " -c \"generate_sovrin_pool_transactions --nodes 4 --clients 4 ",
+                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
                 " --ips \\\"",
                 {
                   "Fn::FindInMap": [
@@ -4686,7 +4686,7 @@
     "ValidatorUsername": {
       "Description": "Username for Validator login",
       "Type": "String",
-      "Default": "sovrin",
+      "Default": "indy",
       "AllowedPattern": "[a-zA-Z0-9]{3,}",
       "ConstraintDescription": "Must have at least 3 alphanumerics characters from the set [a-zA-Z0-9]; no special characters or whitespace are allowed"
     },
@@ -5014,12 +5014,12 @@
         "IPaddress": "10.0.0.204"
       }
     },
-    "ClientCodePyPi": {
-      "Ubuntu1604": {
-        "stable": "sovrin-client",
-        "master": "sovrin-client-dev"
-      }
-    },
+//    "ClientCodePyPi": {
+//      "Ubuntu1604": {
+//        "stable": "indy-client",
+//        "master": "indy-client-dev"
+//      }
+//    },
     "RegionBasedData": {
       "ap-northeast-1": {
         "Ubuntu1604": "ami-aae114cc"
@@ -5064,7 +5064,7 @@
     "RepositoryKeys": {
       "Ubuntu1604": {
         "evernym": "BD33704C",
-        "sovrin": "68DB5E88"
+        "indy": "68DB5E88"
       }
     },
     "RepositoryEvernym": {
@@ -5073,7 +5073,7 @@
         "master": "deb https://repo.evernym.com/deb xenial master"
       }
     },
-    "RepositorySovrin": {
+    "RepositoryIndy": {
       "Ubuntu1604": {
         "stable": "deb https://repo.sovrin.org/deb xenial stable",
         "master": "deb https://repo.sovrin.org/deb xenial master"

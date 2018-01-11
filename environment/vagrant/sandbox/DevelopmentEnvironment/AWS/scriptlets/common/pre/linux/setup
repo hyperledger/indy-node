@@ -77,7 +77,7 @@ fi
 mkdir -p /src
 
 # Install Python from source
-# IMPORTANT: The Sovrin client expects to find python<major>.<minor> in /usr/bin. Set the
+# IMPORTANT: The Indy client expects to find python<major>.<minor> in /usr/bin. Set the
 #            prefix to /usr.
 PYTHON_MAJOR_VERSION=3
 PYTHON_MINOR_VERSION=6
@@ -103,9 +103,9 @@ make
 make install
 
 #--------------------------------------------------------
-# Sovrin Client - Prerequsites
-echo "Install Sovrin CLI prerequisites..."
-mkdir -p /home/$USER/sovrin-cli && cd /home/$USER/sovrin-cli
+# Indy Client - Prerequsites
+echo "Install Indy CLI prerequisites..."
+mkdir -p /home/$USER/indy-cli && cd /home/$USER/indy-cli
 if [ ! -d ./indy-anoncreds ]; then
   git clone https://github.com/hyperledger/indy-anoncreds.git
 fi
@@ -131,10 +131,10 @@ ln -sf /usr/bin/pip${PYTHON_PIP_VERSION} /usr/bin/pip
 # Setup a Python virtual environment with Python 3.6
 #cd /home/$USER
 #echo "Setup and activate a Python virtual environment..."
-#virtualenv -p python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION} sovrin-client
-#source ./sovrin-client/bin/activate
+#virtualenv -p python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION} indy-client
+#source ./indy-client/bin/activate
 
 #--------------------------------------------------------
-# Install sovrin client in the Python virtual environment
-echo "Install sovrin (CLI) client..."
-pip install sovrin
+# Install indy client in the Python virtual environment
+echo "Install indy (CLI) client..."
+pip install indy

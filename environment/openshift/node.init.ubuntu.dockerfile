@@ -1,5 +1,5 @@
 # Development
-FROM sovrincore
+FROM indycore
 
 ARG nodename
 ARG nport
@@ -16,20 +16,20 @@ ENV CLIENT_PORT $cport
 ENV NODE_IP_LIST $ips
 ENV NODE_COUNT $nodecnt
 ENV CLIENT_COUNT $clicnt
-ENV HOME=/home/sovrin
+ENV HOME=/home/indy
 ENV TEST_MODE=
-ENV HOLD_EXT="sovrin "
+ENV HOLD_EXT="indy "
 
 EXPOSE $nport $cport
 
-COPY ./scripts/common/*.sh /home/sovrin/
-COPY ./scripts/node/start.sh /home/sovrin/
+COPY ./scripts/common/*.sh /home/indy/
+COPY ./scripts/node/start.sh /home/indy/
 
-RUN chown -R sovrin:root /home/sovrin && \
-	chgrp -R 0 /home/sovrin && \
-	chmod -R g+rwX /home/sovrin && \
-	chmod +x /home/sovrin/*.sh
+RUN chown -R indy:root /home/indy && \
+	chgrp -R 0 /home/indy && \
+	chmod -R g+rwX /home/indy && \
+	chmod +x /home/indy/*.sh
 
 USER 10001
-WORKDIR /home/sovrin
-CMD ["/home/sovrin/start.sh"]
+WORKDIR /home/indy
+CMD ["/home/indy/start.sh"]

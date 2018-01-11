@@ -1,5 +1,5 @@
 # Development
-FROM sovrincore
+FROM indycore
 
 ARG nodename
 ARG nport

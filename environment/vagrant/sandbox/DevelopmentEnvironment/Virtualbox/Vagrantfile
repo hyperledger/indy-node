@@ -87,14 +87,14 @@ development_repos = {
     "url" => "https://github.com/<USERNAME>/indy-sdk.git",
     "branch" => "master"
   },
-  #"sovrin" => {
-  #  "path" => "/vagrant/sovrin",
-  #  "url" => "https://github.com/<USERNAME>/sovrin.git",
+  #"indy" => {
+  #  "path" => "/vagrant/indy",
+  #  "url" => "https://github.com/<USERNAME>/indy.git",
   #  "branch" => "master"
   #},
-  #"sovrin-self-serve" => {
-  #  "path" => "/vagrant/sovrin-self-serve",
-  #  "url" => "https://gitlab.corp.evernym.com/<USERNAME>/sovrin-self-serve.git",
+  #"indy-self-serve" => {
+  #  "path" => "/vagrant/indy-self-serve",
+  #  "url" => "https://gitlab.corp.evernym.com/<USERNAME>/indy  -self-serve.git",
   #  "branch" => "master"
   #},
 }
@@ -299,13 +299,13 @@ echo "Installing Required Packages"
 # Refresh package lists from existing repos
 apt-get update
 apt-get install -y software-properties-common python-software-properties
-# The following two lines are required to install a sovrin cli
+# The following two lines are required to install a indy cli
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
 add-apt-repository "deb https://repo.sovrin.org/deb xenial stable"
 # Download the package lists from added repos
 apt-get update
 
-# NOTE: Packages required by sovrin cli: debsig*, apt-transport-https, sovrin
+# NOTE: Packages required by indy cli: debsig*, apt-transport-https, indy
 DEBIAN_FRONTEND=noninteractive apt-get install -y \
     curl \
     dialog \
@@ -323,7 +323,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     debsigs \
     debsig-verify \
     apt-transport-https \
-    sovrin
+    indy-node
 
 echo "Install docker ..."
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
