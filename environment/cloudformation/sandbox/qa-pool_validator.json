@@ -700,7 +700,7 @@
                 {
                   "Fn::FindInMap": [
                     "repository",
-                    "sovrin",
+                    "indy",
                     "key"
                   ]
                 },
@@ -718,17 +718,17 @@
                 {
                   "Fn::FindInMap": [
                     "repository",
-                    "sovrin",
+                    "indy",
                     "repo"
                   ]
                 },
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - sovrin -c 'init_sovrin_node ",
+                "su - indy -c 'init_indy_node ",
                 {
                   "Fn::FindInMap": [
                     "validator",
@@ -742,8 +742,8 @@
                 "'\n",
                 "# Bug Fixes\n",
                 "chmod -x /etc/systemd/system/orientdb.service\n",
-                "echo 'SendMonitorStats = False' > /home/sovrin/.sovrin/sovrin_config.py\n",
-                "chown sovrin:sovrin /home/sovrin/.sovrin/sovrin_config.py\n",
+                "echo 'SendMonitorStats = False' > /etc/indy/indy_config.py\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
                 "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
@@ -968,7 +968,7 @@
         "key": "BD33704C",
         "repo": "deb https://repo.evernym.com/deb xenial stable"
       },
-      "sovrin": {
+      "indy": {
         "key": "68DB5E88",
         "repo": "deb https://repo.sovrin.org/deb xenial stable"
       }

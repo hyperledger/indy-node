@@ -6,7 +6,7 @@
     "name": "Deployment Template",
     "annotations":
     {
-      "description": "A deployment template for the Alice sovrin-indy example application in OpenShift.",
+      "description": "A deployment template for the Alice indy example application in OpenShift.",
       "tags": "alice,sorin,indy",
       "iconClass": "icon-github"
     }
@@ -229,7 +229,7 @@
       "name": "APPLICATION_NAME",
       "displayName": "Application Name",
       "description": "The name assigned to the objects related to the deployment.",
-      "value": "sovrinnode1"
+      "value": "indynode1"
     },
     {
       "name": "APPLICATION_SERVICE_DESCRIPTION",
@@ -248,7 +248,7 @@
       "name": "SOURCE_IMAGE_NAME",
       "displayName": "Source Image Name",
       "description": "The name of the image source for the deployment.",
-      "value": "sovrinnode1"
+      "value": "indynode1"
     },
     {
       "name": "IMAGE_NAMESPACE",
@@ -266,14 +266,14 @@
     {
       "name": "NODE_NAME",
       "displayName": "Node Name",
-      "description": "The name of the sovrin node.",
+      "description": "The name of the indy node.",
       "required": false,
       "value": ""
     },
     {
       "name": "NODE_NUMBER",
       "displayName": "Node Number",
-      "description": "The number of the sovrin node.",
+      "description": "The number of the indy node.",
       "required": false,
       "value": ""
     },
@@ -287,28 +287,28 @@
     {
       "name": "CLIENT_PORT",
       "displayName": "Client Port",
-      "description": "The port number used to communicate with sovrin clients.",
+      "description": "The port number used to communicate with indy clients.",
       "required": true,
       "value": "9702"
     },
     {
       "name": "NODE_IP_LIST",
       "displayName": "Node IP List",
-      "description": "The list of IP addresses for all the sovrin nodes.",
+      "description": "The list of IP addresses for all the indy nodes.",
       "required": true,
       "value": "127.0.0.1"
     },
     {
       "name": "NODE_COUNT",
       "displayName": "Node Count",
-      "description": "The number of sovrin nodes in the pool.",
+      "description": "The number of indy nodes in the pool.",
       "required": true,
       "value": "4"
     },
     {
       "name": "CLIENT_COUNT",
       "displayName": "Client Count",
-      "description": "The number of sovrin clients.",
+      "description": "The number of indy clients.",
       "required": true,
       "value": "10"
     },
@@ -317,7 +317,7 @@
       "displayName": "Home Directory",
       "description": "The default home directory.",
       "required": true,
-      "value": "/home/sovrin"
+      "value": "/home/indy"
     },
     {
       "name": "AGENT_NAME",

@@ -1,4 +1,4 @@
-FROM sovrinbase
+FROM indybase
 
 ARG uid=1000
 
@@ -21,6 +21,6 @@ RUN echo "deb https://repo.evernym.com/deb xenial stable" >> /etc/apt/sources.li
 RUN echo "deb https://repo.sovrin.org/deb xenial stable" >> /etc/apt/sources.list
 RUN useradd -ms /bin/bash -l -u $uid indy
 RUN apt-get update -y && apt-get install -y \
-	sovrin
+	indy-node
 USER indy
 WORKDIR /home/indy

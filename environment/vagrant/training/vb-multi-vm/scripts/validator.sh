@@ -36,7 +36,7 @@ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
 add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
 apt-get update
 #DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
-DEBIAN_FRONTEND=noninteractive apt-get install -y unzip make screen sovrin tmux vim wget
+DEBIAN_FRONTEND=noninteractive apt-get install -y unzip make screen indy-node tmux vim wget
 
 #--------------------------------------------------------
 [[ $HOSTNAME =~ [^0-9]*([0-9]*) ]]
