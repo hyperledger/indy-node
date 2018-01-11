@@ -29,6 +29,7 @@ def faberMap(faberMapWithoutEndpointPubkey):
     return fbrMap
 
 
+@pytest.mark.skip(reason='INDY-1086')
 def test_request_not_accepted_if_agent_was_added_using_hex_as_pubkey(
         be, do, aliceCli, faberMap, preRequisite,
         syncedInviteAcceptedWithClaimsOut, faberInviteSyncedWithEndpoint):
