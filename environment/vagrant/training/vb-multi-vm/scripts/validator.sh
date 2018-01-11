@@ -42,7 +42,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y unzip make screen sovrin tmux 
 [[ $HOSTNAME =~ [^0-9]*([0-9]*) ]]
 NODENUM=${BASH_REMATCH[1]}
 echo "Setting Up Indy Node Number $NODENUM"
-su - indy -c "init_indy_node $HOSTNAME $NODEPORT $CLIENTPORT"  # set up /home/indy/.indy/indy.env
+su - indy -c "init_indy_node $HOSTNAME $NODEPORT $CLIENTPORT"  # set up /etc/indy/indy.env
 su - indy -c "generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum $NODENUM --ips '10.20.30.201,10.20.30.202,10.20.30.203,10.20.30.204'"
 systemctl start indy-node
 systemctl enable indy-node
@@ -56,15 +56,15 @@ then
 else
   perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service
 fi
-if grep -Fxq 'SendMonitorStats' /home/indy/.indy/indy_config.py
+if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py
 then
   echo 'SendMonitorStats is configured in indy_config.py'
 else
-  echo 'SendMonitorStats = False' >> /home/indy/.indy/indy_config.py
+  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py
 fi
-chown indy:indy /home/indy/.indy/indy_config.py
+chown indy:indy /etc/indy/indy_config.py
 echo "Setting Up Indy Node Number $NODENUM"
-su - indy -c "init_indy_node $HOSTNAME $NODEPORT $CLIENTPORT"  # set up /home/indy/.indy/indy.env
+su - indy -c "init_indy_node $HOSTNAME $NODEPORT $CLIENTPORT"  # set up /etc/indy/indy.env
 su - indy -c "generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum $NODENUM --ips '10.20.30.201,10.20.30.202,10.20.30.203,10.20.30.204'"
 systemctl start indy-node
 systemctl enable indy-node
