@@ -23,9 +23,9 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 # 1. IP address                                                                 
 # 2. Node port - inter-validator-node communication port                        
 # 3. Client port - clients connect on this port                                 
-# Note that some branches of libindy use "sovrin" as the username and others    
+# Note that some branches of libindy use "indy" as the username and others
 # use "indy". Check for both and use "indy" first.                              
-cat_command='if [ -d /home/indy ]; then   cat /home/indy/.sovrin/pool_transactions_sandbox_genesis; elif [ -d /home/sovrin ]; then   cat /home/sovrin/.sovrin/pool_transactions_sandbox_genesis; fi'
+cat_command='if [ -d /home/indy ]; then   cat /home/indy/.indy/pool_transactions_sandbox_genesis; elif [ -d /home/indy ]; then   cat /home/indy/.indy/pool_transactions_sandbox_genesis; fi'
                                                                                 
 echo "Getting pool_transactions_sandbox_genesis file from indy_pool docker container ..."                                                               
 sudo docker exec -i indy_pool sh -c "${cat_command}" > $DIR/pool_transactions_sandbox_genesis 

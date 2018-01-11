@@ -32,10 +32,10 @@ echo "Creating a new node ${NODE_NAME} ${NPORT} ${CPORT}"
 echo "Setting up docker with systemd"
 docker run --rm --privileged -v /:/host solita/ubuntu-systemd setup
 
-echo "Building sovrinbase"
-docker build -t 'sovrinbase' -f ${SCRIPT_DIR}/base.systemd.ubuntu.dockerfile $SCRIPT_DIR
-echo "Building sovrincore for user ${USER_ID}"
-docker build -t 'sovrincore' --build-arg uid=$USER_ID -f ${SCRIPT_DIR}/core.ubuntu.dockerfile $SCRIPT_DIR
+echo "Building indybase"
+docker build -t 'indybase' -f ${SCRIPT_DIR}/base.systemd.ubuntu.dockerfile $SCRIPT_DIR
+echo "Building indycore for user ${USER_ID}"
+docker build -t 'indycore' --build-arg uid=$USER_ID -f ${SCRIPT_DIR}/core.ubuntu.dockerfile $SCRIPT_DIR
 echo "Building $NODE_IMAGE_TAG"
 docker build -t "$NODE_IMAGE_TAG" --build-arg nodename=$NODE_NAME --build-arg nport=$NPORT --build-arg cport=$CPORT --build-arg ips=$IPS --build-arg nodenum=$NODE_NUM --build-arg nodecnt=$CNT --build-arg clicnt=$CLI_CNT -f ${SCRIPT_DIR}/node.init.ubuntu.dockerfile $SCRIPT_DIR
 

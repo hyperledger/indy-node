@@ -1,5 +1,5 @@
-echo "Testing sovrin-self-serve artifacts..."                                   
-cd /src/sovrin-self-serve/                                                      
+echo "Testing indy-self-serve artifacts..."
+cd /src/indy-self-serve/
 echo "Testing lambda/nym ..."                                                   
                                                                                 
 # Note that PYTHONPATH and LD_LIBRARY_PATH are defined in .bashrc               

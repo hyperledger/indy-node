@@ -18,7 +18,7 @@
 #       3. From the provisioning script call deploy.sh script with ARN
 #          and profile.
 
-echo "Deploying sovrin-self-serve artifacts..."
-cd /src/sovrin-self-serve/
+echo "Deploying indy-self-serve artifacts..."
+cd /src/indy-self-serve/
 echo "Deploying lambda/nym ..."
 sudo -H -u ec2-user lambda/nym/deploy.sh

@@ -7,7 +7,7 @@ require 'set'
 
 # README
 #
-# This Vagrantfile is designed to instantiate an Sovrin Development Environment
+# This Vagrantfile is designed to instantiate an Indy Development Environment
 # using AWS as the vagrant provider and automates the following:
 #
 #  1. Clone all the required source code from github, or use clones you have
