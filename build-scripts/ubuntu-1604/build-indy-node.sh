@@ -26,6 +26,7 @@ fpm --input-type "python" \
     --exclude "*.pyc" \
     --exclude "*.pyo" \
     --depends at \
+    --depends iptables \
     --no-python-fix-dependencies \
     --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
     --before-install "preinst_node" \

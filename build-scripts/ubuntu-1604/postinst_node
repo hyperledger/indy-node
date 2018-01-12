@@ -11,6 +11,13 @@ CLI_WALLETS_DIR="$CLI_BASE_DIR/wallets"
 
 INSTALL_DIR='/usr/local/lib/python3.5/dist-packages'
 
+NOFILES_SOFT_LIMIT=16384
+NOFILES_HARD_LIMIT=65536
+
+NOFILES_NODE_RESERVED=1024
+CLIENT_CONNECTIONS_LIMIT=$((NOFILES_SOFT_LIMIT-NOFILES_NODE_RESERVED))
+
+
 # workaround when .indy become regular file
 if [ -f $CLI_BASE_DIR ]; then
     rm $CLI_BASE_DIR
@@ -40,6 +47,33 @@ chown -R indy:indy $CLI_BASE_DIR
 chmod -R ug+rwx $CLI_BASE_DIR
 
 
+# setup_indy_node_iptables script
+cat <<EOF > /usr/local/bin/setup_indy_node_iptables
+#!/bin/bash
+
+if [ \$# -lt 2 ]; then
+    echo ""
+    echo "Usage: \$0 client_port connlimit";
+    echo "  client_port - node client port";
+    echo "  connlimit   - clients connections limit";
+    echo ""
+    exit 1;
+fi
+
+# Check whether iptables installed and works
+dpkg -s iptables 2>/dev/null 1>&2 && iptables -L 2>/dev/null 1>&2
+if [ \$? -eq 0 ]; then
+    # Add iptables rule to limit the number of simultaneous clients connections
+    iptables -I INPUT -p tcp --syn --dport \$3 \\
+        -m connlimit --connlimit-above $CLIENT_CONNECTIONS_LIMIT --connlimit-mask 0 \\
+        -j REJECT --reject-with tcp-reset
+else
+    echo "Warning: iptables is not installed or permission denied, clients connections limit is not set."
+fi
+EOF
+
+chmod +x /usr/local/bin/setup_indy_node_iptables
+
 # init_indy_node script
 cat <<EOF > /usr/local/bin/init_indy_node
 #!/bin/bash
@@ -64,6 +98,9 @@ if [ -z \$4 ]; then
 else
     init_indy_keys --name \$1 --seed \$4
 fi
+
+/usr/local/bin/setup_indy_node_iptables \$3 $CLIENT_CONNECTIONS_LIMIT
+
 EOF
 
 chmod +x /usr/local/bin/init_indy_node
@@ -84,7 +121,7 @@ RestartSec=10
 StartLimitBurst=10
 StartLimitInterval=200
 TimeoutSec=300
-LimitNOFILE=16384:65536
+LimitNOFILE=$NOFILES_SOFT_LIMIT:$NOFILES_HARD_LIMIT
 
 [Install]
 WantedBy=multi-user.target
