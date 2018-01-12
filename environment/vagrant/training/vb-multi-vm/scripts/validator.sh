@@ -60,7 +60,7 @@ if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py
 then
   echo 'SendMonitorStats is configured in indy_config.py'
 else
-  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py
+  printf "\n%s\n" "SendMonitorStats = False" >> /etc/indy/indy_config.py
 fi
 chown indy:indy /etc/indy/indy_config.py
 echo "Setting Up Indy Node Number $NODENUM"
