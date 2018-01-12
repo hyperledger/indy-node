@@ -20,7 +20,7 @@ add-apt-repository "deb https://repo.evernym.com/deb xenial master"
 add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
 apt-get update
 #DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
-DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen sovrin tmux vim wget
+DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget
 
 #--------------------------------------------------------
 echo 'Setting Up Indy Node'

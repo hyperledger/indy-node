@@ -1,7 +1,7 @@
 FROM __NS__/indy-baseci:0.0.1
 LABEL maintainer="Hyperledger <hyperledger-indy@lists.hyperledger.org>"
 
-# sovrin repos
+# indy repos
 RUN echo "deb https://repo.sovrin.org/sdk/deb xenial stable" >> /etc/apt/sources.list && \
     apt-get update
 

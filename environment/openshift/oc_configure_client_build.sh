@@ -144,9 +144,9 @@ if [ ! -z "$DEBUG_MESSAGES" ]; then
 	echo "GIT_URI=${GIT_URI}"
 	echo "OUTPUT_IMAGE_NAME=${OUTPUT_IMAGE_NAME}"
 	echo "OUTPUT_IMAGE_TAG=${OUTPUT_IMAGE_TAG}"
-	echo "SOVRIN_NODE_IP_LIST=${NODE_IP_LIST}"
-	echo "SOVRIN_NODE_COUNT=${NODE_COUNT}"
-	echo "SOVRIN_CLIENT_COUNT=${CLIENT_COUNT}"
+	echo "INDY_NODE_IP_LIST=${NODE_IP_LIST}"
+	echo "INDY_NODE_COUNT=${NODE_COUNT}"
+	echo "INDY_CLIENT_COUNT=${CLIENT_COUNT}"
 	echo "Output File=${BuildConfig}"
 	echo "------------------------------------------------------------------------"
 	echo
@@ -164,9 +164,9 @@ oc process \
 -p GIT_URI=${GIT_URI} \
 -p OUTPUT_IMAGE_NAME=${OUTPUT_IMAGE_NAME} \
 -p OUTPUT_IMAGE_TAG=${OUTPUT_IMAGE_TAG} \
--p SOVRIN_NODE_IP_LIST=${NODE_IP_LIST} \
--p SOVRIN_NODE_COUNT=${NODE_COUNT} \
--p SOVRIN_CLIENT_COUNT=${CLIENT_COUNT} \
+-p INDY_NODE_IP_LIST=${NODE_IP_LIST} \
+-p INDY_NODE_COUNT=${NODE_COUNT} \
+-p INDY_CLIENT_COUNT=${CLIENT_COUNT} \
 > ${BuildConfig}
 echo "Generated ${BuildConfig} ..."
 echo

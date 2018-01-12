@@ -8,7 +8,7 @@ When you start up the Indy client for testing, you will be in a shell running th
 
 Within the new command line, log into the Indy Client docker container:
 
-```docker exec -i -t sovrinclient bash```
+```docker exec -i -t indyclient bash```
 
 ### Start up Indy and carry out the next series of commands with Indy.
 
@@ -83,7 +83,7 @@ Exit from the Indy command line application, but stay in the bash shell in the d
 
 ```exit```
 
-You should be back to the bash prompt within the sovrinclient container.
+You should be back to the bash prompt within the indyclient container.
 
 ## Start the Indy Agents
 
@@ -108,4 +108,4 @@ To stream the end of the (in the case) Faber College agent log. Ctrl-C to exit o
 
 That completes the process for starting the Agents. Leave this command line running while you complete the rest of the tutorial - the story of Alice, her transcripts, job, and banking - in the terminal window in which you ran the script to start the Indy Client. You should be at a "indy" prompt.
 
-Note that when the sovrinclient container stops, the agents will stop automatically. That will happen when you "exit" from the indy command line in the other terminal window.
+Note that when the indyclient container stops, the agents will stop automatically. That will happen when you "exit" from the indy command line in the other terminal window.

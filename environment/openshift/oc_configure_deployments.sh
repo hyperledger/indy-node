@@ -52,11 +52,11 @@ fi
 TEMPLATE_DIR="templates"
 DeploymentConfigTemplate="${SCRIPT_DIR}/${TEMPLATE_DIR}/deploymentConfig.json"
 DeploymentConfigPostfix="_DeploymentConfig.json"
-SovrinHomeDirectory="/home/sovrin"
+IndyHomeDirectory="/home/indy"
 
-ClientImageName="sovrinclient"
-NodeImageName="sovrinnode"
-AgentImageName="sovrinagent"
+ClientImageName="indyclient"
+NodeImageName="indynode"
+AgentImageName="indyagent"
 ImageTag="latest"
 
 NodeName="Node"
@@ -111,7 +111,7 @@ ${SCRIPT_DIR}/oc_configure_node_deployments.sh \
 	${NodeImageName} \
 	${ImageTag} \
 	${NODE_IP_LIST} \
-	${SovrinHomeDirectory} \
+	${IndyHomeDirectory} \
 	${NODE_SERVICE_HOST_PATTERN}
 echo "============================================================================="
 echo
@@ -131,7 +131,7 @@ ${SCRIPT_DIR}/oc_configure_client_deployment.sh \
 	${NODE_IP_LIST} \
 	${NODE_COUNT} \
 	${CLIENT_COUNT} \
-	${SovrinHomeDirectory} \
+	${IndyHomeDirectory} \
 	${ClientName} \
 	${NODE_SERVICE_HOST_PATTERN}
 echo "============================================================================="
@@ -155,7 +155,7 @@ ${SCRIPT_DIR}/oc_configure_agent_deployment.sh \
 	${NODE_IP_LIST} \
 	${NODE_COUNT} \
 	${CLIENT_COUNT} \
-	${SovrinHomeDirectory} \
+	${IndyHomeDirectory} \
 	${FaberAgentName} \
 	${FaberAgentPort} \
 	${NODE_SERVICE_HOST_PATTERN}
@@ -169,7 +169,7 @@ ${SCRIPT_DIR}/oc_configure_agent_deployment.sh \
 	${NODE_IP_LIST} \
 	${NODE_COUNT} \
 	${CLIENT_COUNT} \
-	${SovrinHomeDirectory} \
+	${IndyHomeDirectory} \
 	${AcmeAgentName} \
 	${AcmeAgentPort} \
 	${NODE_SERVICE_HOST_PATTERN}
@@ -182,7 +182,7 @@ ${SCRIPT_DIR}/oc_configure_agent_deployment.sh \
 	${NODE_IP_LIST} \
 	${NODE_COUNT} \
 	${CLIENT_COUNT} \
-	${SovrinHomeDirectory} \
+	${IndyHomeDirectory} \
 	${ThriftAgentName} \
 	${ThriftAgentPort} \
 	${NODE_SERVICE_HOST_PATTERN}	
