@@ -95,5 +95,5 @@ setup(
              'scripts/enable_bls',
              'scripts/create_dirs.sh',
              'scripts/indy_old_cli_export_dids',
-             'scripts/setup_indy_node_iptable']
+             'scripts/setup_indy_node_iptables']
 )
