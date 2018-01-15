@@ -13,7 +13,7 @@ from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     VERKEY, DATA, NAME, VERSION, ORIGIN, \
     TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, UnknownIdentifier
+    UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
 from plenum.common.types import f
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from stp_core.common.log import getlogger
@@ -213,10 +213,10 @@ class DomainReqHandler(PHandler):
             schemaVersion=schema_version
         )
         if schema:
-            raise UnauthorizedClientRequest(identifier, req.reqId,
-                                            '{} can have one and only one SCHEMA with '
-                                            'name {} and version {}'
-                                            .format(identifier, schema_name, schema_version))
+            raise InvalidClientMessageException(identifier, req.reqId,
+                                                '{} can have one and only one SCHEMA with '
+                                                'name {} and version {}'
+                                                .format(identifier, schema_name, schema_version))
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
@@ -229,10 +229,10 @@ class DomainReqHandler(PHandler):
             schemaSeqNo=schema_ref
         )
         if claim_def:
-            raise UnauthorizedClientRequest(identifier, req.reqId,
-                                            '{} can have one and only one CLAIM_DEF with '
-                                            'issuer DID (identifier) {} and schema ref {}'
-                                            .format(identifier, identifier, schema_ref))
+            raise InvalidClientMessageException(identifier, req.reqId,
+                                                '{} can have one and only one CLAIM_DEF with '
+                                                'issuer DID (identifier) {} and schema ref {}'
+                                                .format(identifier, identifier, schema_ref))
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
