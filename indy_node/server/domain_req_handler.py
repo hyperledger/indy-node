@@ -224,15 +224,17 @@ class DomainReqHandler(PHandler):
         identifier = req.identifier
         operation = req.operation
         schema_ref = operation[REF]
+        signature_type = operation[SIGNATURE_TYPE]
         claim_def, _, _, _ = self.getClaimDef(
             author=identifier,
-            schemaSeqNo=schema_ref
+            schemaSeqNo=schema_ref,
+            signatureType=signature_type
         )
         if claim_def:
             raise InvalidClientRequest(identifier, req.reqId,
-                                       '{} can have one and only one CLAIM_DEF with '
-                                       'issuer DID (identifier) {} and schema ref {}'
-                                       .format(identifier, identifier, schema_ref))
+                                       '{} can have one and only one CLAIM_DEF for '
+                                       'and schema ref {} and signature type {}'
+                                       .format(identifier, schema_ref, signature_type))
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)

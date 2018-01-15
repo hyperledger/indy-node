@@ -59,7 +59,7 @@ def test_send_claim_def_fails_if_ref_is_not_existing_seqno(
        within=5)
 
 
-def test_can_not_update_existing_claim_def(
+def test_can_not_send_claim_def_for_same_schema_and_signature_type(
         be, do, poolNodesStarted, trusteeCli):
     be(trusteeCli)
 
