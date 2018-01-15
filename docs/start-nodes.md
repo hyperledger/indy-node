@@ -32,6 +32,7 @@ In order to run your own Network, you need to do the following for each Node:
             - The file must be named as `domain_transactions_genesis`
             - The file contains initial NYM transactions (for example, Trustees, Stewards, etc.)
             - File must be located in ```/var/lib/indy/{network_name}``` folder
+    - configure iptables to limit the number of simultaneous clients connections (recommended)
 
 ## Scripts for Initialization
 
@@ -39,13 +40,22 @@ There are a number of scripts which can help in generation of keys and running a
 
 #### Generating keys
 
+###### For deb installation
+The following script should be used to generate both ed25519 and BLS keys for a node named `Alpha` with node port `9701` and client port `9702`
+```
+init_indy_node Alpha 9701 9702 [--seed 111111111111111111111111111Alpha]
+```
+Also this script generates indy-node environment file needed for systemd service config and indy-node iptables setup script.
+
+###### For pip installation
 The following script can generate both ed25519 and BLS keys for a node named `Alpha`
 ```
 init_indy_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
 ```
+
 Note: Seed can be any randomly chosen 32 byte value. It does not have to be in the format 11..<name of the node>
 
-Please not that this script must be called *after* CURRENT_NETWORK is set in config (see above).
+Please note that these scripts must be called *after* CURRENT_NETWORK is set in config (see above).
 
 
 #### Generating keys and test genesis transaction files for a test network
@@ -62,6 +72,27 @@ There is a script that can generate keys and corresponding test genesis files to
 - `--network` specifies a Network generate transaction files and keys for. `sandbox` is used by default.
  
 We can run the script multiple times for different networks. 
+
+#### Setup iptables (recommended)
+
+###### For deb installation
+To setup the limit of the number of simultaneous clients connections it is enough to run the following script without parameters
+```
+setup_indy_node_iptables
+```
+This script gets client port and recommended connections limit from the indy-node environment file.
+
+NOTE: this script should be called *after* `init_indy_node` script.
+
+###### For pip installation
+The `setup_indy_node_iptables` script can not be used in case of pip installation as indy-node environment file does not exist,
+use the `setup_iptables` script instead (9702 is a client port, 15360 is recommended limit for now)
+```
+setup_iptables 9702 15360
+```
+In fact, the `setup_indy_node_iptables` script is just a wrapper for the `setup_iptables` script.
+
+NOTE: you should be a root to operate with iptables.
 
 #### Running Node
 
