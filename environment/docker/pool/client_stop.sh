@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE_NAME="sovrinclient"
+IMAGE_NAME="indyclient"
 SCRIPT_DIR=$(dirname $0)
 
 if [ "$1" = "--help" ]; then

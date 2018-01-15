@@ -17,11 +17,11 @@ echo "Creating a new client"
 echo "Setting up docker with systemd"
 docker run --rm --privileged -v /:/host solita/ubuntu-systemd setup
 
-echo "Building sovrinbase"
-docker build -t 'sovrinbase' -f ${SCRIPT_DIR}/base.systemd.ubuntu.dockerfile $SCRIPT_DIR
-echo "Building sovrincore for user ${USER_ID}"
-docker build -t 'sovrincore' --build-arg uid=$USER_ID -f ${SCRIPT_DIR}/core.ubuntu.dockerfile $SCRIPT_DIR
-echo "Building sovrinclient"
-docker build -t 'sovrinclient' --build-arg ips=$IPS --build-arg nodecnt=$CNT --build-arg clicnt=$CLI_CNT -f ${SCRIPT_DIR}/client.ubuntu.dockerfile $SCRIPT_DIR
+echo "Building indybase"
+docker build -t 'indybase' -f ${SCRIPT_DIR}/base.systemd.ubuntu.dockerfile $SCRIPT_DIR
+echo "Building indycore for user ${USER_ID}"
+docker build -t 'indycore' --build-arg uid=$USER_ID -f ${SCRIPT_DIR}/core.ubuntu.dockerfile $SCRIPT_DIR
+echo "Building indyclient"
+docker build -t 'indyclient' --build-arg ips=$IPS --build-arg nodecnt=$CNT --build-arg clicnt=$CLI_CNT -f ${SCRIPT_DIR}/client.ubuntu.dockerfile $SCRIPT_DIR
 
 echo "Indy client created"
