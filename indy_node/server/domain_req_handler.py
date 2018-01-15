@@ -213,10 +213,10 @@ class DomainReqHandler(PHandler):
             schemaVersion=schema_version
         )
         if schema:
-            raise InvalidClientMessageException(identifier, req.reqId,
-                                                '{} can have one and only one SCHEMA with '
-                                                'name {} and version {}'
-                                                .format(identifier, schema_name, schema_version))
+            raise InvalidClientRequest(identifier, req.reqId,
+                                       '{} can have one and only one SCHEMA with '
+                                       'name {} and version {}'
+                                       .format(identifier, schema_name, schema_version))
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
@@ -229,10 +229,10 @@ class DomainReqHandler(PHandler):
             schemaSeqNo=schema_ref
         )
         if claim_def:
-            raise InvalidClientMessageException(identifier, req.reqId,
-                                                '{} can have one and only one CLAIM_DEF with '
-                                                'issuer DID (identifier) {} and schema ref {}'
-                                                .format(identifier, identifier, schema_ref))
+            raise InvalidClientRequest(identifier, req.reqId,
+                                       '{} can have one and only one CLAIM_DEF with '
+                                       'issuer DID (identifier) {} and schema ref {}'
+                                       .format(identifier, identifier, schema_ref))
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
