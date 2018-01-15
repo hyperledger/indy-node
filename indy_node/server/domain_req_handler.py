@@ -89,8 +89,6 @@ class DomainReqHandler(PHandler):
             self._doStaticValidationNym(identifier, req_id, operation)
         if operation[TXN_TYPE] == ATTRIB:
             self._doStaticValidationAttrib(identifier, req_id, operation)
-        if operation[TXN_TYPE] == SCHEMA:
-            self._do_static_validation_schema(identifier, req_id, operation)
 
     def _doStaticValidationNym(self, identifier, reqId, operation):
         role = operation.get(ROLE)
@@ -127,22 +125,6 @@ class DomainReqHandler(PHandler):
                                        'attribute for it'.
                                        format(TARGET_NYM))
 
-    def _do_static_validation_schema(self, identifier, reqId, operation):
-        # we can not add a Schema with already existent NAME and VERSION
-        # sine a Schema needs to be indetified by seqNo
-        schema_name = operation[DATA][NAME]
-        schema_version = operation[DATA][VERSION]
-        schema, _, _, _ = self.getSchema(
-            author=identifier,
-            schemaName=schema_name,
-            schemaVersion=schema_version
-        )
-        if schema:
-            raise InvalidClientRequest(identifier, reqId,
-                                       '{} can have one and only one SCHEMA with '
-                                       'name {} and version {}'
-                                       .format(identifier, schema_name, schema_version))
-
     def validate(self, req: Request, config=None):
         op = req.operation
         typ = op[TXN_TYPE]
@@ -151,6 +133,10 @@ class DomainReqHandler(PHandler):
             self._validateNym(req)
         elif typ == ATTRIB:
             self._validateAttrib(req)
+        elif typ == SCHEMA:
+            self._validate_schema(req)
+        elif typ == CLAIM_DEF:
+            self._validate_claim_def(req)
 
     def _validateNym(self, req: Request):
         origin = req.identifier
@@ -213,6 +199,40 @@ class DomainReqHandler(PHandler):
                 req.reqId,
                 "Only identity owner/guardian can add attribute "
                 "for that identity")
+
+    def _validate_schema(self, req: Request):
+        # we can not add a Schema with already existent NAME and VERSION
+        # sine a Schema needs to be identified by seqNo
+        identifier = req.identifier
+        operation = req.operation
+        schema_name = operation[DATA][NAME]
+        schema_version = operation[DATA][VERSION]
+        schema, _, _, _ = self.getSchema(
+            author=identifier,
+            schemaName=schema_name,
+            schemaVersion=schema_version
+        )
+        if schema:
+            raise UnauthorizedClientRequest(identifier, req.reqId,
+                                            '{} can have one and only one SCHEMA with '
+                                            'name {} and version {}'
+                                            .format(identifier, schema_name, schema_version))
+
+    def _validate_claim_def(self, req: Request):
+        # we can not add a Claim Def with existent ISSUER_DID
+        # sine a Claim Def needs to be identified by seqNo
+        identifier = req.identifier
+        operation = req.operation
+        schema_ref = operation[REF]
+        claim_def, _, _, _ = self.getClaimDef(
+            author=identifier,
+            schemaSeqNo=schema_ref
+        )
+        if claim_def:
+            raise UnauthorizedClientRequest(identifier, req.reqId,
+                                            '{} can have one and only one CLAIM_DEF with '
+                                            'issuer DID (identifier) {} and schema ref {}'
+                                            .format(identifier, identifier, schema_ref))
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
