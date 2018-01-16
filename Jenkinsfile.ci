@@ -39,8 +39,9 @@ node(labels.linux) {
     }
 }
 
-config = locallib.init()
-log.info("parameters: $config")
+def config = locallib.init()
+def indyConfig = indyConfig()
+log.info("parameters: local $config, indyConfig: $indyConfig")
 
 def buildDebUbuntu = { releaseVersion, sourcePath ->
     def volumeName = "$name-deb-u1604"
@@ -59,106 +60,57 @@ def buildDebUbuntu = { releaseVersion, sourcePath ->
 
 
 // PIPELINE
-
-try {
-    timeout(60) {
-
-        // TODO skip testing if isTested
-        if (config.common.stages.indyIsTested) {
-            indyIsTested {
-                node = this.labels.linux
-                branch = 'master'
-            }
-        }
-
-        if (config.common.stages.indyVerify) {
-            verify {
-                labels = this.labels
-                dockers = this.config.local.dockers
-                tests = this.config.local.tests
-                failFast = this.config.common.failFast
-            }
-        }
-
-        if (config.common.stages.indyVerifyStatic) {
-            verifyStatic {
-                dockerEnv = [
-                    imgName: "code-validation",
-                    dockerfile: "ci/code-validation.dockerfile",
-                    contextDir: "ci"
-                ]
-                nodeLabel = this.labels.linux
-            }
-        }
-
-        if (config.common.stages.indyAutoMerge) {
-            indyAutoMerge {
-                node = this.labels.linux
-                credentialsId = this.config.common.credentials.gitHub.token // 'evernym-github-machine-user-token' //TODO from env
-                dryRun = this.config.common.dryRun
-            }
-        }
-
-        def releaseVersion
-        if (config.common.stages.indyGetReleaseVersion) {
-            releaseVersion = indyGetReleaseVersion {
-                node = this.labels.linux
-            }
-        }
-        releaseVersion = "0.0.0.${BUILD_NUMBER}"
-
-        if (config.common.stages.indyPublishPypi) {
-            indyPublishPypi {
-                node = this.labels.linux
-                version = releaseVersion
-                credentialsId = this.config.common.credentials.pypi //'pypi_credentials' // TODO from env
-                dryRun = this.config.common.dryRun
-            }
-        }
-
-        if (config.common.stages.indyPublishPackages) {
-            indyPublishPackages {
-                node = this.labels.linux
-                packageName = name
-                version = releaseVersion
-                builders.deb = buildDebUbuntu
-                logLevel = this.config.common.logLevel
-                dryRun = this.config.common.dryRun
-
-                credentialsIdGitHub = this.config.common.credentials.gitHub.userToken // 'evernym-github-machine-user'
-                deb.host = this.config.common.aptRepo.host
-                deb.credentialsId = this.config.common.aptRepo.sshKey // 'SovrinRepoSSHKey'
-                deb.repo = this.config.common.aptRepo.name // env.SOVRIN_CORE_REPO_NAME
-                deb.component = 'master-latest'
-                // packaging options
-            }
-        }
-
-        if (config.common.stages.indyPublishGitHub) {
-            indyPublishGitHub {
-                node = this.labels.linux
-                version = releaseVersion
-                credentialsId = this.config.common.credentials.gitHub.sshKey // 'id_rsa.evernym-ci' // TODO from env
-                versionPostfix = 'testtt'
-                dryRun = this.config.common.dryRun
-            }
-        }
-
-        currentBuild.result = 'SUCCESS'
+indyPipeline {
+    type = 'CD'
+    timeout = 0
+    onFail = { err ->
+        echo "Failed"
+        println(.toString())
     }
-} catch (Exception err) {
-    println(err.toString())
-    currentBuild.result = 'FAILURE'
-} finally {
-    stage('Build result notification') {
-        if (config.common.stages.indySendNotif) {
-            def emailMessage = [
-                body: '$DEFAULT_CONTENT',
-                replyTo: '$DEFAULT_REPLYTO',
-                subject: '$DEFAULT_SUBJECT',
-                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+    onSuccess = {
+        "Success"
+    }
+
+    // stages parameters
+    stages = [
+
+        indyIsTested = {
+            node = this.labels.linux
+            branch = 'master'
+        },
+
+        indyVerifyStatic = {
+            dockerEnv = [
+                imgName: "code-validation",
+                dockerfile: "ci/code-validation.dockerfile",
+                contextDir: "ci"
             ]
-            emailext emailMessage
+            node = this.labels.linux
+        },
+
+        indyVerify = {
+            labels = this.labels
+            dockers = config.dockers
+            tests = config.tests
         }
-    }
+
+        indyAutoMerge = {
+            node = this.labels.linux
+            credentialsId = indyConfig.credentials.gitHub.token
+        },
+
+        indyGetReleaseVersion = {
+            node = this.labels.linux
+        },
+
+        indyPublish = { releaseVersion ->
+            node = this.labels.linux
+            packageName = this.name
+            version = "0.0.0.${BUILD_NUMBER}" // XXX releaseVersion
+            builders.deb = buildDebUbuntu
+            copyWithDeps = false
+            publish = true
+            // packaging options
+        }
+    ]
 }
