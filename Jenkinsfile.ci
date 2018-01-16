@@ -62,9 +62,9 @@ def buildDebUbuntu = { releaseVersion, sourcePath ->
 // PIPELINE
 indyPipeline {
     type = 'CD'
-    timeout = 0
+    timeout = 60
+
     onFail = { err ->
-        echo "Failed"
         println(err.toString())
     }
     onSuccess = {
@@ -72,45 +72,42 @@ indyPipeline {
     }
 
     // stages parameters
-    stages = [
+    stages.indyIsTested = {
+        node = this.labels.linux
+        branch = 'master'
+    },
 
-        indyIsTested = {
-            node = this.labels.linux
-            branch = 'master'
-        },
+    stages.indyVerifyStatic = {
+        dockerEnv = [
+            imgName: "code-validation",
+            dockerfile: "ci/code-validation.dockerfile",
+            contextDir: "ci"
+        ]
+        node = this.labels.linux
+    },
 
-        indyVerifyStatic = {
-            dockerEnv = [
-                imgName: "code-validation",
-                dockerfile: "ci/code-validation.dockerfile",
-                contextDir: "ci"
-            ]
-            node = this.labels.linux
-        },
+    stages.indyVerify = {
+        labels = this.labels
+        dockers = config.dockers
+        tests = config.tests
+    },
 
-        indyVerify = {
-            labels = this.labels
-            dockers = config.dockers
-            tests = config.tests
-        }
+    stages.indyAutoMerge = {
+        node = this.labels.linux
+        credentialsId = indyConfig.credentials.gitHub.token
+    },
 
-        indyAutoMerge = {
-            node = this.labels.linux
-            credentialsId = indyConfig.credentials.gitHub.token
-        },
+    stages.indyGetReleaseVersion = {
+        node = this.labels.linux
+    },
 
-        indyGetReleaseVersion = {
-            node = this.labels.linux
-        },
-
-        indyPublish = { releaseVersion ->
-            node = this.labels.linux
-            packageName = this.name
-            version = "0.0.0.${BUILD_NUMBER}" // XXX releaseVersion
-            builders.deb = buildDebUbuntu
-            copyWithDeps = false
-            publish = true
-            // packaging options
-        }
-    ]
+    stages.indyPublish = { releaseVersion ->
+        node = this.labels.linux
+        packageName = this.name
+        version = "0.0.0.${BUILD_NUMBER}" // XXX releaseVersion
+        builders.deb = buildDebUbuntu
+        copyWithDeps = false
+        publish = true
+        // packaging options
+    }
 }
