@@ -65,7 +65,7 @@ indyPipeline {
     timeout = 0
     onFail = { err ->
         echo "Failed"
-        println(.toString())
+        println(err.toString())
     }
     onSuccess = {
         "Success"
