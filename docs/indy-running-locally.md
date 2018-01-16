@@ -45,7 +45,7 @@ Now we are ready to create our nodes.
 Create a script ```setupEnvironment.sh``` containing:
 
 ```
-# Remove .indy folder
+# Remove node data
 rm -rf /var/lib/indy
 
 
