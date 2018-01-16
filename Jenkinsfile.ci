@@ -75,7 +75,7 @@ indyPipeline {
     stages.indyIsTested = {
         node = this.labels.linux
         branch = 'master'
-    },
+    }
 
     stages.indyVerifyStatic = {
         dockerEnv = [
@@ -84,22 +84,22 @@ indyPipeline {
             contextDir: "ci"
         ]
         node = this.labels.linux
-    },
+    }
 
     stages.indyVerify = {
         labels = this.labels
         dockers = config.dockers
         tests = config.tests
-    },
+    }
 
     stages.indyAutoMerge = {
         node = this.labels.linux
         credentialsId = indyConfig.credentials.gitHub.token
-    },
+    }
 
     stages.indyGetReleaseVersion = {
         node = this.labels.linux
-    },
+    }
 
     stages.indyPublish = { releaseVersion ->
         node = this.labels.linux
