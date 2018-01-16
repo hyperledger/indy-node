@@ -97,14 +97,10 @@ indyPipeline {
         credentialsId = indyConfig.credentials.gitHub.token
     }
 
-    stages.indyGetReleaseVersion = {
-        node = this.labels.linux
-    }
-
-    stages.indyPublish = { releaseVersion ->
+    stages.indyPublish = {
         node = this.labels.linux
         packageName = this.name
-        version = "0.0.0.${BUILD_NUMBER}" // XXX releaseVersion
+        releaseVersion = "0.0.0.${BUILD_NUMBER}"
         builders.deb = buildDebUbuntu
         copyWithDeps = false
         publish = true
