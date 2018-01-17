@@ -13,8 +13,8 @@ fi
 dpkg -s iptables 2>/dev/null 1>&2 && iptables -L 2>/dev/null 1>&2
 if [ $? -eq 0 ]; then
     # Add iptables rule to limit the number of simultaneous clients connections
-    iptables -I INPUT -p tcp --syn --dport $1 \\
-        -m connlimit --connlimit-above $2 --connlimit-mask 0 \\
+    iptables -I INPUT -p tcp --syn --dport $1 \
+        -m connlimit --connlimit-above $2 --connlimit-mask 0 \
         -j REJECT --reject-with tcp-reset
 else
     echo "Warning: iptables is not installed or permission denied, clients connections limit is not set."
