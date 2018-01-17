@@ -102,7 +102,7 @@ indyPipeline {
     stages.indyPublish = {
         node = this.labels.linux
         packageName = this.name
-        releaseVersion = "0.0.0.${BUILD_NUMBER}"
+        releaseVersion = "0.0.0.${this.env.BUILD_NUMBER}"
         builders.deb = buildDebUbuntu
         copyWithDeps = false
         publish = true
