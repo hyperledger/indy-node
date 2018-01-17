@@ -18,6 +18,8 @@
 
 name = 'indy-node'
 
+env.BRANCH_NAME = 'mytest' // TODO REMOVE THAT !!!
+
 library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
     github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
 )
