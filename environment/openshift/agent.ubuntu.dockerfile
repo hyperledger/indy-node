@@ -1,4 +1,4 @@
-FROM sovrincore
+FROM indycore
 
 ARG ips
 ARG nodecnt
@@ -11,18 +11,18 @@ ENV NODE_COUNT $nodecnt
 ENV CLIENT_COUNT $clicnt
 ENV AGENT_NAME $agentname
 ENV AGENT_PORT $agentport
-ENV HOME=/home/sovrin
+ENV HOME=/home/indy
 
 EXPOSE $agentport
 
-COPY ./scripts/common/*.sh /home/sovrin/
-COPY ./scripts/agent/start.sh /home/sovrin/
+COPY ./scripts/common/*.sh /home/indy/
+COPY ./scripts/agent/start.sh /home/indy/
 
-RUN chown -R sovrin:root /home/sovrin && \
-	chgrp -R 0 /home/sovrin && \
-	chmod -R g+rwX /home/sovrin && \
-	chmod +x /home/sovrin/*.sh
+RUN chown -R indy:root /home/indy && \
+	chgrp -R 0 /home/indy && \
+	chmod -R g+rwX /home/indy && \
+	chmod +x /home/indy/*.sh
 
 USER 10001
-WORKDIR /home/sovrin
-CMD ["/home/sovrin/start.sh"]
+WORKDIR /home/indy
+CMD ["/home/indy/start.sh"]

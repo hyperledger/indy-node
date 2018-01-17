@@ -78,45 +78,45 @@ TEMPLATE_DIR="templates"
 BuildConfigTemplate="${SCRIPT_DIR}/${TEMPLATE_DIR}/buildConfig.json"
 BuildConfigPostfix="_BuildConfig.json"
 
-SovrinBaseBuildConfig="sovrinBase${BuildConfigPostfix}"
-SovrinCoreBuildConfig="sovrinCore${BuildConfigPostfix}"
-SovrinNodeBuildConfig="sovrinNode${BuildConfigPostfix}"
-SovrinClientBuildConfig="sovrinClient${BuildConfigPostfix}"
-SovrinAgentBuildConfig="sovrinAgent${BuildConfigPostfix}"
+IndyBaseBuildConfig="indyBase${BuildConfigPostfix}"
+IndyCoreBuildConfig="indyCore${BuildConfigPostfix}"
+IndyNodeBuildConfig="indyNode${BuildConfigPostfix}"
+IndyClientBuildConfig="indyClient${BuildConfigPostfix}"
+IndyAgentBuildConfig="indyAgent${BuildConfigPostfix}"
 
-SovrinBaseDockerFile="base.systemd.ubuntu.dockerfile"
-SovrinCoreDockerFile="core.ubuntu.dockerfile"
-SovrinNodeDockerFile="node.init.ubuntu.dockerfile"
-SovrinClientDockerFile="client.ubuntu.dockerfile"
-SovrinAgentDockerFile="agent.ubuntu.dockerfile"
+IndyBaseDockerFile="base.systemd.ubuntu.dockerfile"
+IndyCoreDockerFile="core.ubuntu.dockerfile"
+IndyNodeDockerFile="node.init.ubuntu.dockerfile"
+IndyClientDockerFile="client.ubuntu.dockerfile"
+IndyAgentDockerFile="agent.ubuntu.dockerfile"
 
-SovrinBaseName="sovrinbase"
-SovrinCoreName="sovrincore"
-SovrinNodeName="sovrinnode"
-SovrinClientName="sovrinclient"
-SovrinAgentName="sovrinagent"
+IndyBaseName="indybase"
+IndyCoreName="indycore"
+IndyNodeName="indynode"
+IndyClientName="indyclient"
+IndyAgentName="indyagent"
 
-SovrinAgentInstanceName="Faber"
-SovrinAgentInstancePort="5555"
+IndyAgentInstanceName="Faber"
+IndyAgentInstancePort="5555"
 
-SovrinBaseSourceImageKind="DockerImage"
-SovrinCoreSourceImageKind="ImageStreamTag"
-SovrinNodeSourceImageKind="ImageStreamTag"
-SovrinClientSourceImageKind="ImageStreamTag"
-SovrinAgentSourceImageKind="ImageStreamTag"
+IndyBaseSourceImageKind="DockerImage"
+IndyCoreSourceImageKind="ImageStreamTag"
+IndyNodeSourceImageKind="ImageStreamTag"
+IndyClientSourceImageKind="ImageStreamTag"
+IndyAgentSourceImageKind="ImageStreamTag"
 
-SovrinBaseSourceImageName="solita/ubuntu-systemd"
-SovrinCoreSourceImageName="sovrinbase"
-SovrinNodeSourceImageName="sovrincore"
-SovrinClientSourceImageName="sovrincore"
-SovrinAgentSourceImageName="sovrincore"
+IndyBaseSourceImageName="solita/ubuntu-systemd"
+IndyCoreSourceImageName="indybase"
+IndyNodeSourceImageName="indycore"
+IndyClientSourceImageName="indycore"
+IndyAgentSourceImageName="indycore"
 
 OutputImageTag="latest"
-SovrinBaseSourceImageTag="16.04"
-SovrinCoreSourceImageTag="${OutputImageTag}"
-SovrinNodeSourceImageTag="${OutputImageTag}"
-SovrinClientSourceImageTag="${OutputImageTag}"
-SovrinAgentSourceImageTag="${OutputImageTag}"
+IndyBaseSourceImageTag="16.04"
+IndyCoreSourceImageTag="${OutputImageTag}"
+IndyNodeSourceImageTag="${OutputImageTag}"
+IndyClientSourceImageTag="${OutputImageTag}"
+IndyAgentSourceImageTag="${OutputImageTag}"
 # ==============================================================================
 
 echo "============================================================================="
@@ -143,15 +143,15 @@ echo "--------------------------------------------------------------------------
 ${SCRIPT_DIR}/oc_configure_base_build.sh \
 	${BuildConfigTemplate} \
 	${BuildConfigPostfix} \
-	${SovrinBaseName} \
-	${SovrinBaseSourceImageKind} \
-	${SovrinBaseSourceImageName} \
-	${SovrinBaseSourceImageTag} \
-	${SovrinBaseDockerFile} \
+	${IndyBaseName} \
+	${IndyBaseSourceImageKind} \
+	${IndyBaseSourceImageName} \
+	${IndyBaseSourceImageTag} \
+	${IndyBaseDockerFile} \
 	${GIT_CONTEXT_DIR} \
 	${GIT_REF} \
 	${GIT_URI} \
-	${SovrinBaseName} \
+	${IndyBaseName} \
 	${OutputImageTag} \	
 echo "============================================================================="
 echo
@@ -162,15 +162,15 @@ echo "--------------------------------------------------------------------------
 ${SCRIPT_DIR}/oc_configure_base_build.sh \
 	${BuildConfigTemplate} \
 	${BuildConfigPostfix} \
-	${SovrinCoreName} \
-	${SovrinCoreSourceImageKind} \
-	${SovrinCoreSourceImageName} \
-	${SovrinCoreSourceImageTag} \
-	${SovrinCoreDockerFile} \
+	${IndyCoreName} \
+	${IndyCoreSourceImageKind} \
+	${IndyCoreSourceImageName} \
+	${IndyCoreSourceImageTag} \
+	${IndyCoreDockerFile} \
 	${GIT_CONTEXT_DIR} \
 	${GIT_REF} \
 	${GIT_URI} \
-	${SovrinCoreName} \
+	${IndyCoreName} \
 	${OutputImageTag} \	
 echo "============================================================================="
 echo
@@ -215,15 +215,15 @@ fi
 ${SCRIPT_DIR}/oc_configure_node_build.sh \
 	${BuildConfigTemplate} \
 	${BuildConfigPostfix} \
-	${SovrinNodeName} \
-	${SovrinNodeSourceImageKind} \
-	${SovrinNodeSourceImageName} \
-	${SovrinNodeSourceImageTag} \
-	${SovrinNodeDockerFile} \
+	${IndyNodeName} \
+	${IndyNodeSourceImageKind} \
+	${IndyNodeSourceImageName} \
+	${IndyNodeSourceImageTag} \
+	${IndyNodeDockerFile} \
 	${GIT_CONTEXT_DIR} \
 	${GIT_REF} \
 	${GIT_URI} \
-	${SovrinNodeName} \
+	${IndyNodeName} \
 	${OutputImageTag} \
 	${NODE_NAME} \
 	${NODE_PORT} \
@@ -241,15 +241,15 @@ echo "--------------------------------------------------------------------------
 ${SCRIPT_DIR}/oc_configure_client_build.sh \
 	${BuildConfigTemplate} \
 	${BuildConfigPostfix} \
-	${SovrinClientName} \
-	${SovrinClientSourceImageKind} \
-	${SovrinClientSourceImageName} \
-	${SovrinClientSourceImageTag} \
-	${SovrinClientDockerFile} \
+	${IndyClientName} \
+	${IndyClientSourceImageKind} \
+	${IndyClientSourceImageName} \
+	${IndyClientSourceImageTag} \
+	${IndyClientDockerFile} \
 	${GIT_CONTEXT_DIR} \
 	${GIT_REF} \
 	${GIT_URI} \
-	${SovrinClientName} \
+	${IndyClientName} \
 	${OutputImageTag} \
 	${NODE_IP_LIST} \
 	${NODE_COUNT} \
@@ -263,21 +263,21 @@ echo "--------------------------------------------------------------------------
 ${SCRIPT_DIR}/oc_configure_agent_build.sh \
 	${BuildConfigTemplate} \
 	${BuildConfigPostfix} \
-	${SovrinAgentName} \
-	${SovrinAgentSourceImageKind} \
-	${SovrinAgentSourceImageName} \
-	${SovrinAgentSourceImageTag} \
-	${SovrinAgentDockerFile} \
+	${IndyAgentName} \
+	${IndyAgentSourceImageKind} \
+	${IndyAgentSourceImageName} \
+	${IndyAgentSourceImageTag} \
+	${IndyAgentDockerFile} \
 	${GIT_CONTEXT_DIR} \
 	${GIT_REF} \
 	${GIT_URI} \
-	${SovrinAgentName} \
+	${IndyAgentName} \
 	${OutputImageTag} \
 	${NODE_IP_LIST} \
 	${NODE_COUNT} \
 	${CLIENT_COUNT} \
-	${SovrinAgentInstanceName} \
-	${SovrinAgentInstancePort}
+	${IndyAgentInstanceName} \
+	${IndyAgentInstancePort}
 
 echo "============================================================================="
 echo

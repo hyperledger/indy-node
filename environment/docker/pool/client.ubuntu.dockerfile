@@ -1,4 +1,4 @@
-FROM sovrincore
+FROM indycore
 
 ARG ips
 ARG nodecnt

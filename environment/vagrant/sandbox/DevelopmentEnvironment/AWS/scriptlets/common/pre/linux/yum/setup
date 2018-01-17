@@ -67,7 +67,7 @@ do
 done
 source $user_bashrc
 
-# Required for Sovrin client
+# Required for Indy client
 yum install -y \
     curl \
     dialog \
