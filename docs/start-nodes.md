@@ -75,24 +75,7 @@ We can run the script multiple times for different networks.
 
 #### Setup iptables (recommended)
 
-###### For deb installation
-To setup the limit of the number of simultaneous clients connections it is enough to run the following script without parameters
-```
-setup_indy_node_iptables
-```
-This script gets client port and recommended connections limit from the indy-node environment file.
-
-NOTE: this script should be called *after* `init_indy_node` script.
-
-###### For pip installation
-The `setup_indy_node_iptables` script can not be used in case of pip installation as indy-node environment file does not exist,
-use the `setup_iptables` script instead (9702 is a client port, 15360 is recommended limit for now)
-```
-setup_iptables 9702 15360
-```
-In fact, the `setup_indy_node_iptables` script is just a wrapper for the `setup_iptables` script.
-
-NOTE: you should be a root to operate with iptables.
+Instructions related to iptables setup can be found [here](https://github.com/hyperledger/indy-node/blob/master/docs/setup-iptables.md).
 
 #### Running Node
 
