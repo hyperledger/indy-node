@@ -34,67 +34,76 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
 ```
 {
-    'operation': {
-        'type': '1',
+    'reqType': '1',
+    'reqVersion': '1',
+    'protocolVersion': 1,
+    
+    'data': {
         <request-specific fields>
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514215425836443,
-    'protocolVersion': 1,
-    'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd'
+    'reqMetadata': {
+        'reqId': 1514215425836443,
+        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
+        'multiSignature': null
+    }
 }
 ```
 
-- `operation` (json):
+## Common Metadata
+Each request has the following metadata values common for all types.
 
-    The request-specific operation json.
-    
-    - `type`: request type as one of the following values:
-
-        - NODE = "0"
-        - NYM = "1"
-        - ATTRIB = "100"
-        - SCHEMA = "101"
-        - CLAIM_DEF = "102"
-        - POOL_UPGRADE = "109"
-        - NODE_UPGRADE = "110"
-        - POOL_CONFIG = "111"
-        - GET_TXN = "3"
-        - GET_ATTR = "104"
-        - GET_NYM = "105"
-        - GET_SCHEMA = "107"
-        - GET_CLAIM_DEF = "108"
-        
-    - request-specific data
-
-- `identifier` (base58-encoded string):
+- `reqType` (enum string):
  
-     Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-     for 16 or 32 bit DID value.
-     It may differ from `dest` field for some of requests (for example NYM), where `dest` is a 
-     target identifier (for example, a newly created DID identifier).
-     
-     *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
-     
-- `reqId` (integer): 
+    Request type as one of the following values:
 
-    Unique ID number of the request with transaction.
-    
+    - NODE = "0"
+    - NYM = "1"
+    - ATTRIB = "100"
+    - SCHEMA = "101"
+    - CLAIM_DEF = "102"
+    - POOL_UPGRADE = "109"
+    - NODE_UPGRADE = "110"
+    - POOL_CONFIG = "111"
+    - GET_TXN = "3"
+    - GET_ATTR = "104"
+    - GET_NYM = "105"
+    - GET_SCHEMA = "107"
+    - GET_CLAIM_DEF = "108"
+        
+- `reqVersion` (string):
+
+    Request version to be able to evolve requests.
+    The content of `data` and `reqMetadata` fields may depend on the version.  
+
 - `protocolVersion` (integer; optional): 
 
     The version of client-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
     Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
     between clients and nodes.     
-    
-- `signature` (base58-encoded string; mutually exclusive with `signatures` field):
- 
-    Submitter's signature. Not required for read requests.
-    
-- `signatures` (map of base58-encoded string; mutually exclusive with `signature` field): 
-    
-    Submitters' signature in multisig case. This is a map where client's identifiers are the keys and 
-    base58-encoded signature strings are the values. Not required for read requests.
+
+- `reqMetadata` (json):
+
+    Metadata coming with the Request and saving in the transaction as is (if this is a write request).
+
+    - `senderDid` (base58-encoded string):
+         Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
+         for 16 or 32 bit DID value.
+         It may differ from `did` field for some of requests (for example NYM), where `did` is a 
+         target identifier (for example, a newly created DID identifier).
+         
+         *Example*: `senderDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+         
+    - `reqId` (integer): 
+        Unique ID number of the request with transaction.
+        
+    - `signature` (base58-encoded string; mutually exclusive with `multiSignature` field):
+        Submitter's signature. Not required for read requests.
+        
+    - `multiSignature` (map of base58-encoded string; mutually exclusive with `signature` field): 
+        Submitters' signature in multisig case. This is a map where client's identifiers are the keys and 
+        base58-encoded signature strings are the values. Not required for read requests.
     
 
 Please find the format of each request-specific data for each type of request below.
@@ -105,153 +114,157 @@ Each Reply to write requests has a number of common metadata fields
 (we don't support State Proofs for write requests yet). Most of these fields are actually metadata fields 
 of a transaction in the Ledger (see [transactions](transactions.md)).
 
-These common metadata values are added to result's JSON at the same level as real data.
-
-**TODO**: consider distinguishing and separating real transaction data and metadata into different levels.
- 
-
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '101',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514211108692476,
-        'signature': '4pTTS4JeodhyQLxsYHr7iRXo9Q8kHL1pXnypZLUKzX5Rut5sFossZp7QSZiBueEYwYnkqpFaebzr94uHrHBu7ojS',
-        'signatures': None,
-        
+    'op': 'REPLY_WRITE', 
+    
+    'reqType': '1',
+    'reqVersion': '1',
+    'protocolVersion': 1,
+    
+    'txn': {
+        `txnType`: <...>,
+        `txnVersion`: <...>,
+        `data`: {
+            <txn-specific fields>
+        }
+        `reqMetadata`: {
+            "reqId": <...>,
+            "senderDid": <...>,
+            "signature": <...>,
+            "multiSignature": <...>,
+        },
+        `txnMetadata`: {
+            "creationTime": <...>,    
+        }
+    },
+    
+    'ledgerMetadata': {
         'seqNo': 10,
-        `txnTime': 1514211268,
-		
         'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
         'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
-		
-        <transaction-specific fields>
     }
 }
 ```
 
-- `type` (enum number as string): 
+- `reqType` (enum number as string): 
 
-    Supported transaction types:
+    Request types (as in Request).
     
-    - NODE = "0"
-    - NYM = "1"
-    - ATTRIB = "100"
-    - SCHEMA = "101"
-    - CLAIM_DEF = "102"
-    - POOL_UPGRADE = "109"
-    - NODE_UPGRADE = "110"
-    - POOL_CONFIG = "111"
+- `reqVersion` (string):
 
-- `identifier` (base58-encoded string):
- 
-     as was in Request and saved as transaction's metadata on Ledger
-     
-- `reqId` (integer): 
+    Request version (as in Request).
 
-    as was in Request and saved as transaction's metadata on Ledger
-    
-- `signature` (base58-encoded string; mutually exclusive with `signatures` field):
- 
-    as was in Request and saved as transaction's metadata on Ledger
-    
-- `signatures` (map of base58-encoded string; mutually exclusive with `signature` field): 
-    
-    as was in Request and saved as transaction's metadata on Ledger 
-    
-- `seqNo` (integer):
+- `protocolVersion` (integer; optional): 
 
-    a unique sequence number of the transaction on Ledger
-
-- `txnTime` (integer as POSIX timestamp): 
-
-    the time when transaction was written to the Ledger as POSIX timestamp
+    The version of client-to-node protocol (as in Request).
     
-- `rootHash` (base58-encoded hash string):
+- `txn` (json): 
 
-    base58-encoded ledger's merkle tree root hash
-    
-- `auditPath` (array of base58-encoded hash strings):
+    Transaction as written to the Ledger (see [transactions](transactions.md)).
+    Includes transaction data, request metadata (as was in Request) and transaction metadata.
 
-    ledger's merkle tree audit proof as array of base58-encoded hash strings
-    (this is a cryptographic proof to verify that the new transaction has 
-    been appended to the ledger)
+- `ledgerMetadata` (json):
+    Metadata associated with the given transaction in the Ledger. 
+    This metadata is not part of transaction in the Ledger and just attached to the Reply.
+
+    - `seqNo` (integer):
+        a unique sequence number of the transaction on Ledger
     
-- transaction-specific fields as defined in [transactions](transactions.md) for each transaction type
+    - `rootHash` (base58-encoded hash string):
+        base58-encoded ledger's merkle tree root hash
+        
+    - `auditPath` (array of base58-encoded hash strings):
+        ledger's merkle tree audit proof as array of base58-encoded hash strings
+        (this is a cryptographic proof to verify that the new transaction has 
+        been appended to the ledger)
+    
 
 ## Reply Structure for Read Requests
 
 The structure below is not applicable for [GET_TXN](#get_txn).
 
 Each Reply to read requests has a number of common metadata fields and state-proof related fields.
-Some of these fields are actually metadata fields of a transaction in the Ledger (see [transactions](transactions.md)).
-
-These common metadata values are added to result's JSON at the same level as real data.
-
-**TODO**: consider distinguishing and separating real transaction data and metadata into different levels.
 
 
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '105',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514214863899317,
-        
-        'seqNo': 10,
-        'txnTime': 1514214795,
-
-        'state_proof': {
-            'root_hash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
-            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-            'multi_signature': {
-                'value': {
-                    'timestamp': 1514214795,
-                    'ledger_id': 1, 
-                    'txn_root_hash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-                    'pool_state_root_hash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-                    'state_root_hash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK'
-                },
-                'signature': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-                'participants': ['Delta', 'Gamma', 'Alpha']
-            }
+    'op': 'REPLY_READ',
+    
+    'reqType': '1',
+    'reqVersion': '1',
+    'protocolVersion': 1,
+    
+    `reqMetadata`: {
+        "reqId": <...>,
+        "senderDid": <...>,
+        "signature": <...>,
+        "multiSignature": <...>,
+    },
+    
+    'txn': {
+        `txnType`: <...>,
+        `txnVersion`: <...>,
+        `data`: {
+            <txn-specific fields>
+        }
+        `reqMetadata`: {
+            "reqId": <...>,
+            "senderDid": <...>,
+            "signature": <...>,
+            "multiSignature": <...>,
         },
-        
-        'data': <transaction-specific data>,
-        
-        <request-specific data>
+        `txnMetadata`: {
+            "creationTime": <...>,    
+        }
+    },
+     
+    'ledgerMetadata': {
+        'seqNo': 10,
+    }  
+     
+    'stateProof': {
+        'proof': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+        'multiSignature': {
+            'value': {
+                'stateTimestamp': 1514214795,
+                'ledgerId': 1, 
+                'ledgerRootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
+                'poolStateRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
+                'stateRootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK'
+            },
+            'signature': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
+            'participants': ['Delta', 'Gamma', 'Alpha']
+        }
+    }, 
+
 }
 ```
 
 
-- `type` (enum number as string): 
+- `reqType` (enum number as string): 
 
-    Supported transaction types:
+    Request types (as in Request).
     
-    - GET_ATTR = "104"
-    - GET_NYM = "105"
-    - GET_SCHEMA = "107"
-    - GET_CLAIM_DEF = "108"
+- `reqVersion` (string):
 
-- `identifier` (base58-encoded string):
- 
-     as was in read Request (may differ from the `identifier` in `data` which defines 
-     transaction submitter)
-     
-- `reqId` (integer): 
+    Request version (as in Request).
 
-    as was in read Request (may differ from the `reqId` in `data` which defines 
-    the request used to write the transaction to the Ledger)
+- `protocolVersion` (integer; optional): 
+
+    The version of client-to-node protocol (as in Request).
     
-- `seqNo` (integer):
+- `txn` (json): 
 
-    a unique sequence number of the transaction on Ledger
+    Transaction as written to the Ledger (see [transactions](transactions.md)).
+    Includes transaction data, request metadata (as was in Request) and transaction metadata.
 
-- `txnTime` (integer as POSIX timestamp): 
+- `ledgerMetadata` (json):
+    Metadata associated with the given transaction in the Ledger. 
+    This metadata is not part of transaction in the Ledger and just attached to the Reply.
 
-    the time when transaction was written to the Ledger as POSIX timestamp
+    - `seqNo` (integer):
+        a unique sequence number of the transaction on Ledger
     
 - `state_proof` (dict):
 
@@ -269,13 +282,6 @@ These common metadata values are added to result's JSON at the same level as rea
         - `signature` (base58-encoded string): BLS multi-signature against the state trie with the specified `root_hash`
         - `participants` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
             
-- `data` (json or dict):
-
-    transaction-specific data (see [transactions](transactions.md) for each transaction type)
-    
-- request-specific fields as they appear in Read request      
-    
-      
 ## Write Requests
 
 The format of each request-specific data for each type of request.
@@ -287,12 +293,12 @@ Note that only trustees and stewards can create new trust anchors and trustee ca
 The request can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
 
-- `dest` (base58-encoded string):
+- `did` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
+    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
     
-    *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
+    *Example*: `senderDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
      
 - `role` (enum number as string; optional): 
 
@@ -316,28 +322,34 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     NYM's alias.
     
 
-If there is no NYM transaction with the specified DID (`dest`), then it can be considered as creation of a new DID.
+If there is no NYM transaction with the specified DID (`did`), then it can be considered as creation of a new DID.
 
-If there is a NYM transaction with the specified DID (`dest`),  then this is update of existing DID.
+If there is a NYM transaction with the specified DID (`did`),  then this is update of existing DID.
 In this case we can specify only the values we would like to override. All unspecified values remain the same.
 So, if key rotation needs to be performed, the owner of the DID needs to send a NYM request with
-`dest` and `verkey` only. `role` and `alias` will stay the same.
+`did` and `verkey` only. `role` and `alias` will stay the same.
 
 
 *Request Example*:
 ```
 {
-    'operation': {
-        'type': '1'
-        'dest': 'N22KY2Dyvmuu2PyyqSFKue',
+
+    'reqType': '1',
+    'reqVersion': '1',
+    'protocolVersion': 1,
+    
+    'data': {
+        'did': 'N22KY2Dyvmuu2PyyqSFKue',
         'role': '101',
         'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514213797569745,
-    'protocolVersion': 1,
-    'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
+    'reqMetadata': {
+        'reqId': 1514215425836443,
+        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
+        'multiSignature': null
+    }
 }
 ```
 
