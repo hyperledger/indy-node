@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]; then
+    echo ""
+    echo "Usage: $0 client_port connlimit";
+    echo "  client_port - node client port";
+    echo "  connlimit   - clients connections limit";
+    echo ""
+    exit 1;
+fi
+
+# Check whether iptables installed and works
+dpkg -s iptables 2>/dev/null 1>&2 && iptables -L 2>/dev/null 1>&2
+if [ $? -eq 0 ]; then
+    # Add iptables rule to limit the number of simultaneous clients connections
+    iptables -I INPUT -p tcp --syn --dport $1 \
+        -m connlimit --connlimit-above $2 --connlimit-mask 0 \
+        -j REJECT --reject-with tcp-reset
+else
+    echo "Warning: iptables is not installed or permission denied, clients connections limit is not set."
+fi

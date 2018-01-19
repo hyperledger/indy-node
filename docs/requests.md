@@ -489,7 +489,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 ### CLAIM_DEF
 Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular Claim Schema.
 
-All fields must be specified to update existing claim definition (for example, rotate keys).
+It's not possible to update `data` in existing Claim Def.
+So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
+a new Claim Def needs to be created by a new Issuer DID (`identifier`).
+
 
 - `data` (dict):
  
