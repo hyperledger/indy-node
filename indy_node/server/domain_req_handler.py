@@ -101,10 +101,6 @@ class DomainReqHandler(PHandler):
             raise InvalidClientRequest(identifier, reqId,
                                        "{} not a valid role".
                                        format(role))
-        # TODO: This is not static validation as it involves state
-        s, reason = self.canNymRequestBeProcessed(identifier, operation)
-        if not s:
-            raise InvalidClientRequest(identifier, reqId, reason)
 
     @staticmethod
     def _validate_attrib_keys(operation):
@@ -141,6 +137,10 @@ class DomainReqHandler(PHandler):
     def _validateNym(self, req: Request):
         origin = req.identifier
         op = req.operation
+
+        s, reason = self.canNymRequestBeProcessed(origin, op)
+        if not s:
+            raise InvalidClientRequest(origin, req.reqId, reason)
 
         try:
             originRole = self.idrCache.getRole(
@@ -191,6 +191,14 @@ class DomainReqHandler(PHandler):
     def _validateAttrib(self, req: Request):
         origin = req.identifier
         op = req.operation
+
+        if not (not op.get(TARGET_NYM) or
+                self.hasNym(op[TARGET_NYM], isCommitted=False)):
+            raise InvalidClientRequest(origin, req.reqId,
+                                       '{} should be added before adding '
+                                       'attribute for it'.
+                                       format(TARGET_NYM))
+
         if op.get(TARGET_NYM) and op[TARGET_NYM] != req.identifier and \
                 not self.idrCache.getOwnerFor(op[TARGET_NYM],
                                               isCommitted=False) == origin:
