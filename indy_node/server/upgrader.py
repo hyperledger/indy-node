@@ -253,19 +253,20 @@ class Upgrader(HasActionQueue):
             return self.compareVersions(currentVersion, scheduledVersion) == 0
         return False
 
-    def isScheduleValid(self, schedule, nodeIds, force) -> (bool, str):
+    def isScheduleValid(self, schedule, node_srvs, force) -> (bool, str):
         """
         Validates schedule of planned node upgrades
 
         :param schedule: dictionary of node ids and upgrade times
-        :param nodeIds: real node ids
+        :param nodeSrvs: dictionary of node ids and services
         :return: whether schedule valid
         """
 
         # flag "force=True" ignore basic checks! only datetime format is
         # checked
         times = []
-        if not force and set(schedule.keys()) != nodeIds:
+        non_demoted_nodes = set([k for k, v in node_srvs.items() if v ])
+        if not force and set(schedule.keys()) != non_demoted_nodes:
             return False, 'Schedule should contain id of all nodes'
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         for dateStr in schedule.values():
