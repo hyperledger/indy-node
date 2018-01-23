@@ -51,9 +51,6 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 }
 ```
 
-## Common Metadata
-Each request has the following metadata values common for all types.
-
 - `reqType` (enum string):
  
     Request type as one of the following values:
@@ -83,6 +80,10 @@ Each request has the following metadata values common for all types.
     Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
     between clients and nodes.     
 
+- `data` (json):
+
+    Request-specific data.
+
 - `reqMetadata` (json):
 
     Metadata coming with the Request and saving in the transaction as is (if this is a write request).
@@ -108,98 +109,26 @@ Each request has the following metadata values common for all types.
 
 Please find the format of each request-specific data for each type of request below.
 
-## Reply Structure for Write Requests
+## Reply Structure 
 
-Each Reply to write requests has a number of common metadata fields
+Each Reply to requests has a number of common metadata fields and state-proof related fields.
+Please note that state-proof is absent for write requests Reply since  
 (we don't support State Proofs for write requests yet). Most of these fields are actually metadata fields 
 of a transaction in the Ledger (see [transactions](transactions.md)).
 
 ```
 {
-    'op': 'REPLY_WRITE', 
-    
-    'reqType': '1',
-    'reqVersion': '1',
-    'protocolVersion': 1,
-    
-    'txn': {
-        `txnType`: <...>,
-        `txnVersion`: <...>,
-        `data`: {
-            <txn-specific fields>
-        }
-        `reqMetadata`: {
-            "reqId": <...>,
-            "senderDid": <...>,
-            "signature": <...>,
-            "multiSignature": <...>,
-        },
-        `txnMetadata`: {
-            "creationTime": <...>,    
-        }
-    },
-    
-    'ledgerMetadata': {
-        'seqNo': 10,
-        'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
-    }
-}
-```
-
-- `reqType` (enum number as string): 
-
-    Request types (as in Request).
-    
-- `reqVersion` (string):
-
-    Request version (as in Request).
-
-- `protocolVersion` (integer; optional): 
-
-    The version of client-to-node protocol (as in Request).
-    
-- `txn` (json): 
-
-    Transaction as written to the Ledger (see [transactions](transactions.md)).
-    Includes transaction data, request metadata (as was in Request) and transaction metadata.
-
-- `ledgerMetadata` (json):
-    Metadata associated with the given transaction in the Ledger. 
-    This metadata is not part of transaction in the Ledger and just attached to the Reply.
-
-    - `seqNo` (integer):
-        a unique sequence number of the transaction on Ledger
-    
-    - `rootHash` (base58-encoded hash string):
-        base58-encoded ledger's merkle tree root hash
-        
-    - `auditPath` (array of base58-encoded hash strings):
-        ledger's merkle tree audit proof as array of base58-encoded hash strings
-        (this is a cryptographic proof to verify that the new transaction has 
-        been appended to the ledger)
-    
-
-## Reply Structure for Read Requests
-
-The structure below is not applicable for [GET_TXN](#get_txn).
-
-Each Reply to read requests has a number of common metadata fields and state-proof related fields.
-
-
-```
-{
-    'op': 'REPLY_READ',
+    'op': 'REPLY',
     
     'reqType': '1',
     'reqVersion': '1',
     'protocolVersion': 1,
     
     `reqMetadata`: {
-        "reqId": <...>,
-        "senderDid": <...>,
-        "signature": <...>,
-        "multiSignature": <...>,
+        'reqId': <...>,
+        'senderDid': <...>,
+        'signature': <...>,
+        'multiSignature': <...>,
     },
     
     'txn': {
@@ -215,32 +144,35 @@ Each Reply to read requests has a number of common metadata fields and state-pro
             "multiSignature": <...>,
         },
         `txnMetadata`: {
-            "creationTime": <...>,    
+            'creationTime': <...>,   
+            'seqNo': <...>,
         }
     },
      
     'ledgerMetadata': {
-        'seqNo': 10,
-    }  
-     
-    'stateProof': {
-        'proof': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
-        'multiSignature': {
-            'value': {
-                'stateTimestamp': 1514214795,
-                'ledgerId': 1, 
-                'ledgerRootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-                'poolStateRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-                'stateRootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK'
-            },
-            'signature': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-            'participants': ['Delta', 'Gamma', 'Alpha']
-        }
+        'ledgerId': 1, 
+        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
+        'size': 100,
+    }
+
+    'stateMetadata': {
+        'timestamp': 1514214795,
+        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
+        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    },
+
+    'multiSignature': {
+        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
+        'participants': ['Delta', 'Gamma', 'Alpha']
     }, 
 
-}
-```
+    'stateProof': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=',
 
+    'auditProof': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+
+}
+
+```
 
 - `reqType` (enum number as string): 
 
@@ -254,34 +186,68 @@ Each Reply to read requests has a number of common metadata fields and state-pro
 
     The version of client-to-node protocol (as in Request).
     
+- `reqMetadata` (json; optional):
+
+    Metadata as in Request. It may be absent for Reply to write requests as `txn` fields already contains 
+    this information as part of transaction written to the ledger.
+    
 - `txn` (json): 
 
     Transaction as written to the Ledger (see [transactions](transactions.md)).
     Includes transaction data, request metadata (as was in Request) and transaction metadata.
 
 - `ledgerMetadata` (json):
-    Metadata associated with the given transaction in the Ledger. 
-    This metadata is not part of transaction in the Ledger and just attached to the Reply.
 
-    - `seqNo` (integer):
-        a unique sequence number of the transaction on Ledger
-    
-- `state_proof` (dict):
+    Metadata associated with the current state of the Ledger.
 
-    State proof with BLS multi-signature of the State:
+    - `ledgerId` (enum integer):
+        ID of the ledger the transaction is written to:
+        - POOL_LEDGER = 0
+        - DOMAIN_LEDGER = 1
+        - CONFIG_LEDGER = 2
     
-    - `root_hash` (base58-encoded string): state trie root hash for the ledger the returned transaction belongs to
-    - `proof_nodes` (base64-encoded string): state proof for the returned transaction against the state trie with the specified `root_hash`
-    - `multi_signature` (dict): BLS multi-signature against the specified state trie root hash
-        - `value` (dict): the value the BLS multi-signature was created against
-            - `timestamp` (integer as POSIX timestamp): last update of the state
-            - `ledger_id` (integer enum): ID of the ledger the returned transaction belongs to (Pool=0; Domain=1; Config=2)
-            - `txn_root_hash` (base58-encoded string): root hash of the ledger the returned transaction belongs to
-            - `state_root_hash` (base58-encoded string): state trie root hash for the ledger the returned transaction belongs to
-            - `pool_state_root_hash` (base58-encoded string): pool state trie root hash to get the state of the Pool at the moment the BLS multi-signature was created
-        - `signature` (base58-encoded string): BLS multi-signature against the state trie with the specified `root_hash`
-        - `participants` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
-            
+    - `rootHash` (base58-encoded hash string):
+        base58-encoded ledger's merkle tree root hash
+        
+    - `size` (integer):
+        Ledger's size (that is the last seqNo present at the ledger at that time).
+        
+- `stateMetadata` (json):
+
+    Metadata associated with the state (Patricia Merkle Trie) the returned transaction belongs to
+    (see `ledgerId`).
+    
+    - `timestamp` (integer as POSIX timestamp):
+     last update of the state
+         
+    - `poolRootHash` (base58-encoded hash string):
+     pool state trie root hash to get the current state of the Pool
+     (it can be used to get the state of the Pool at the moment the BLS multi-signature was created).
+        
+    - `rootHash` (base58-encoded string):
+     state trie root hash for the ledger the returned transaction belongs to
+
+- `multi_signature` (json):
+ 
+    BLS multi-signature against the given `ledgerMetadata` and `stateMetadata` (serialized to MsgPack)
+    - `value` (base58-encoded string): the value of the BLS multi-signature
+    - `participants` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
+
+- `stateProof` (base64-encoded string; optional): 
+
+    Patricia Merkle Trie State proof for the returned transaction.
+    It proves that the returned transaction belongs to the Patricia Merkle Trie with a
+    root hash as specified in `stateMetadata`.
+    It may be absent for Replies to write requests.
+    
+- `auditProof` (array of base58-encoded hash strings; optional):
+
+    Ledger's merkle tree audit proof as array of base58-encoded hash strings.
+    This is a cryptographic proof to verify that the returnef transaction has 
+    been appended to the ledger with the root hash as specified in `ledgerMetadata`.
+    It may be absent for Replies to read requests.
+    
+
 ## Write Requests
 
 The format of each request-specific data for each type of request.
@@ -356,23 +322,35 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY', 
-    'result': {
-        'type': '101',
-        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-        'reqId': 1514213797569745,
-        'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
-        'signatures': None,
-        
+    'op': 'REPLY_WRITE', 
+    
+    'reqType': '1',
+    'reqVersion': '1',
+    'protocolVersion': 1,
+    
+    'txn': {
+        `txnType`: '1',
+        `txnVersion`: '1',
+        `data`: {
+            'did': 'N22KY2Dyvmuu2PyyqSFKue',
+            'role': '101',
+            'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
+        }
+        `reqMetadata`: {
+            'reqId': 1514215425836443,
+            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
+            'multiSignature': null
+        },
+        `txnMetadata`: {
+            "creationTime": 1514211268,    
+        }
+    },
+    
+    'ledgerMetadata': {
         'seqNo': 10,
-        `txnTime': 1514211268,
-		
         'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
         'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
-		
-        'dest': 'N22KY2Dyvmuu2PyyqSFKue',
-        'role': '101',
-        'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
     }
 }
 ```

@@ -68,9 +68,9 @@ transaction specific data:
     },
     
     "txnMetadata": {
-        "creationTime": <...>,    
+        "creationTime": <...>,
+        "seqNo": <...>,  
     }
-    
 
 }
 ```
@@ -125,6 +125,9 @@ transaction specific data:
     
     - `creationTime` (integer as POSIX timestamp): 
         The time when transaction was written to the Ledger as POSIX timestamp.
+        
+    - `seqNo` (integer):
+        A unique sequence number of the transaction on Ledger
 
 Please note that all these metadata fields may be absent for genesis transactions.
 
@@ -192,6 +195,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     },
     "txnMetadata": {
         "creationTime":1513945121,
+        "seqNo": 10,  
     },
 
 }
@@ -202,7 +206,7 @@ Adds attribute to a NYM record
 
 - `did` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID we set an attribute for as base58-encoded string for 16 or 32 bit DID value.
     It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
     
     *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
@@ -242,6 +246,7 @@ Adds attribute to a NYM record
     },
     "txnMetadata": {
         "creationTime":1513945121,
+        "seqNo": 10,
     },
 }
 ```
@@ -252,6 +257,14 @@ Adds Claim's schema.
 
 It's not possible to update existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
+
+- `did` (base58-encoded string):
+
+    Target DID we create a Schema for as base58-encoded string for 16 or 32 bit DID value.
+    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
+    In practice, `did` will be equal to `senderDid` in most of the cases.
+    
+    *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Schema for.
 
 - `attrNames` (array of strings):
  
@@ -271,6 +284,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     "txnType":"101",
     
     "data": {
+        "did":"L5AD5g65TDQr1PPHHRoiGf",
         "attrNames": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
         "name":"Degree",
         "version":"1.0",
@@ -284,6 +298,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     },
     "txnMetadata": {
         "creationTime":1513945121,
+        "seqNo": 10,
     },
 }
 ```
@@ -293,7 +308,15 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
 
 It's not possible to update `data` in existing Claim Def.
 So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
-a new Claim Def needs to be created by a new Issuer DID (`identifier`).
+a new Claim Def needs to be created for a new Issuer DID (`did`).
+
+- `did` (base58-encoded string):
+
+    Target DID we create a Claim Def for (that is Issuer DID) as base58-encoded string for 16 or 32 bit DID value.
+    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
+    In practice, `did` will be equal to `senderDid` in most of the cases. 
+    
+    *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Claim Def for.
 
 
 - `publicKeys` (dict):
@@ -317,6 +340,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     "txnType":"102",
     
     "data": {
+        "did":"L5AD5g65TDQr1PPHHRoiGf",
         "publicKeys": {
             "primary": {
                 ...
@@ -337,6 +361,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     },
     "txnMetadata": {
         "creationTime":1513945121,
+        "seqNo": 10,
     },
 }
 ```
@@ -421,6 +446,7 @@ There is no need to specify all other fields, and they will remain the same.
     },
     "txnMetadata": {
         "creationTime":1513945121,
+        "seqNo": 10,
     },
 }
 ```
@@ -502,6 +528,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     },
     "txnMetadata": {
         "creationTime":1513945121,
+        "seqNo": 10,
     },
 }
 ```
@@ -536,6 +563,7 @@ Status of each Node's upgrade (sent by each upgraded Node)
     },
     "txnMetadata": {
         "creationTime":1513945121,
+        "seqNo": 10,
     },
 }
 ```
@@ -577,6 +605,7 @@ Command to change Pool's configuration
     },
     "txnMetadata": {
         "creationTime":1513945121,
+        "seqNo": 10,
     },
 }
 ```
