@@ -73,39 +73,20 @@ indyPipeline {
         "Success"
     }
 
-    // stages parameters
-    stages.indyIsTested = {
-        node = this.labels.linux
-        branch = 'master'
-    }
-
-    stages.indyVerifyStatic = {
-        dockerEnv = [
-            imgName: "code-validation",
-            dockerfile: "ci/code-validation.dockerfile",
-            contextDir: "ci"
-        ]
-        node = this.labels.linux
-    }
-
-    stages.indyVerify = {
-        labels = this.labels
-        dockers = config.dockers
-        tests = config.tests
-    }
-
-    stages.indyAutoMerge = {
-        node = this.labels.linux
-        credentialsId = indyConfig.credentials.gitHub.token
-    }
-
-    stages.indyPublish = {
-        node = this.labels.linux
-        packageName = this.name
-        releaseVersion = "0.0.0.${this.env.BUILD_NUMBER}"
-        builders.deb = buildDebUbuntu
-        copyWithDeps = false
-        publish = true
-        // packaging options
-    }
+    stages = [
+        ['indyIsTested', {}],
+        ['indyVerifyStatic', {}],
+        ['indyVerify', {
+            labels = this.labels.collect {k, v -> v}
+            dockers = config.dockers
+            tests = config.tests
+        }],
+        ['indyAutoMerge', {}],
+        ['indyPublish', {
+            packageName = this.name
+            releaseVersion = "0.0.0.${this.env.BUILD_NUMBER}" // XXX TODO FIXME
+            builders.deb = buildDebUbuntu
+            copyWithDeps = false // XXX
+        }]
+    ]
 }

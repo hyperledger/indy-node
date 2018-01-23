@@ -27,7 +27,7 @@ def init() {
                 useRunner: true,
                 docker: 'ubuntu'
             ]
-        ].collect {k, v -> [k, v]}
+        ]
     ]
 }
 
