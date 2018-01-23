@@ -47,7 +47,7 @@ class ConfigReqHandler(RequestHandler):
             force = operation.get(FORCE)
             force = str(force) == 'True'
             isValid, msg = self.upgrader.isScheduleValid(
-                schedule, self.poolManager.nodeIds, force)
+                schedule, self.poolManager.getNodesServices(), force)
             if not isValid:
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} not a valid schedule since {}".
