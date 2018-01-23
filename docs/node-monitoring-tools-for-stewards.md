@@ -152,4 +152,4 @@ sudo sh -c "printf \"[default]\nregion=us-west-2\" > /home/sovrin/.aws/config"
 sudo sh -c "printf \" .[default]\naws_access_key_id=AKIAIGKGW3CKRXKKWPZA\naws_secret_access_key=<YOUR_SECRET_KEY>\" > /home/sovrin/.aws/credentials"
 sudo sh -c "printf \"SOVRIN_NOTIFIER_AWSSNS_TOPICARN=arn:aws:sns:us-west-2:034727365312:validator-health-monitor-STN\" >> /home/sovrin/.sovrin/sovrin.env"
 sudo chown -R sovrin:sovrin /home/sovrin/.aws /home/sovrin/.sovrin/sovrin.env
-sudo systemctl restart sovrin-node`
+sudo systemctl restart sovrin-node``
