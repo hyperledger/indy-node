@@ -81,7 +81,7 @@ indyPipeline {
             dockers = config.dockers
             tests = config.tests
         }],
-        ['indyAutoMerge', {}],
+        ['indyAutoMergePR', {}],
         ['indyPublish', {
             packageName = this.name
             releaseVersion = "0.0.0.${this.env.BUILD_NUMBER}" // XXX TODO FIXME
