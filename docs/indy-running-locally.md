@@ -10,9 +10,10 @@ This guide describes the process of setting up a local 4 node cluster and attach
 
 ## Requirements
 
-It's recommended to use an Ubuntu Virtual Machine and virtual environment if possible. 
+It's recommended to use an Ubuntu Virtual Machine and virtual environment if possible.
 Please follow the [setup-dev](https://github.com/hyperledger/indy-node/blob/master/docs/setup-dev.md) instruction for pre-requisites and dependencies.
 As for installation of indy-node, it's recommended to create a separate virtual environment and install indy-node there as
+
 ```
 pip install indy-node-dev
 ```
@@ -24,6 +25,7 @@ pip install pytest
 ```
 
 ## Initial setup
+
 In your home folder, create an Indy folder. In here we are going to put the scripts we will use to setup the environment. Then change into this folder.
 
 First of all we need to create basic folder structure. It could be done with the following command
@@ -43,8 +45,8 @@ Now we are ready to create our nodes.
 Create a script ```setupEnvironment.sh``` containing:
 
 ```
-# Remove .indy folder
-rm -rf ~/.indy
+# Remove node data
+rm -rf /var/lib/indy
 
 
 # Create nodes and generate initial transactions
@@ -97,6 +99,7 @@ send NYM dest=CzkavE58zgX7rUMrzSinLr role=TRUST_ANCHOR verkey=~WjXEvZ9xj4Tz9sLtz
 send NYM dest=H2aKRiDeq8aLZSydQMDbtf role=TRUST_ANCHOR verkey=~3sphzTb2itL2mwSeJ1Ji28
 ```
 4. Impersonate each Agent owner (using pre-generated key seeds like for the Steward) and register its endpoint as an attribute against the NYM.
+
 ```
 new key with seed Faber000000000000000000000000000
 send ATTRIB dest=ULtgFQJe6bjiFbs7ke3NJD raw={"endpoint": {"ha": "127.0.0.1:5555", "pubkey": "5hmMA64DDQz5NzGJNVtRzNwpkZxktNQds21q3Wxxa62z"}}
@@ -111,18 +114,18 @@ send ATTRIB dest=H2aKRiDeq8aLZSydQMDbtf raw={"endpoint": {"ha": "127.0.0.1:7777"
 At this point we can start the Agents as follows, using separate sessions/windows (using [screen](https://www.gnu.org/software/screen/) for instance).
 
 ```
-python /usr/lib/python3.5/site-packages/indy_client/test/agent/faber.py --port 5555
-python /usr/lib/python3.5/site-packages/indy_client/test/agent/acme.py --port 6666
-python /usr/lib/python3.5/site-packages/indy_client/test/agent/thrift.py --port 7777
+python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/faber.py  --port 5555 --network <network_name>
+python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/acme.py  --port 6666 --network <network_name>
+python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/thrift.py  --port 7777 --network <network_name>
 ```
 REM: you may have to change the path to your Python interpreter and the libraries according to your environment (i. e.: ```/bin/python3.5 ~/.virtualenvs/indy/lib/python3.5/site-packages/indy_client/test/agent/...```).
 
 Each Agent should then start up, connect to our test Indy cluster, handshake and be accepted as a Trust Anchor.
 
-## Run Getting Started guide
+## Run the Getting Started Guide
 
-At this point, you can follow the Getting Started guide from [Using Indy CLI](https://github.com/hyperledger/indy-node/blob/master/getting-started.md#using-the-indy-cli).
-I recommend you use a seperate Indy CLI instance for this.
+At this point, you can follow the Getting Started Guide from [Using Indy CLI](https://github.com/hyperledger/indy-node/blob/master/getting-started.md#using-the-indy-cli).
+I recommend you use a separate Indy CLI instance for this.
 
 Here are the resulting commands ready to copy/paste:
 
@@ -174,4 +177,4 @@ send proof Loan-Application-KYC to Thrift Bank
 If you wish to reset your Indy environment and recreate it again, you can run ```clear_node.py --full```.
 
 Then, when you want to re-create your environment from scratch, ensure that all the nodes and agents are stopped and just run the setupEnvironment.sh script.
-Then you can restart the Nodes, attach the agents and away you go again.
+Then you can restart the Nodes, attach the agents, and away you go again.

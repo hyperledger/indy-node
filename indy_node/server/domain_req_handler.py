@@ -2,21 +2,21 @@ from copy import deepcopy
 from typing import List
 
 import base58
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
-    VERKEY, DATA, NAME, VERSION, ORIGIN, \
-    TXN_TIME
-from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, UnknownIdentifier
-from plenum.common.types import f
-from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
+
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
+    VERKEY, DATA, NAME, VERSION, ORIGIN, \
+    TXN_TIME
+from plenum.common.exceptions import InvalidClientRequest, \
+    UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
+from plenum.common.types import f
+from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from stp_core.common.log import getlogger
-
 
 logger = getlogger()
 
@@ -128,6 +128,10 @@ class DomainReqHandler(PHandler):
             self._validateNym(req)
         elif typ == ATTRIB:
             self._validateAttrib(req)
+        elif typ == SCHEMA:
+            self._validate_schema(req)
+        elif typ == CLAIM_DEF:
+            self._validate_claim_def(req)
 
     @staticmethod
     def _validate_attrib_keys(operation):
@@ -196,6 +200,42 @@ class DomainReqHandler(PHandler):
                 "Only identity owner/guardian can add attribute "
                 "for that identity")
 
+    def _validate_schema(self, req: Request):
+        # we can not add a Schema with already existent NAME and VERSION
+        # sine a Schema needs to be identified by seqNo
+        identifier = req.identifier
+        operation = req.operation
+        schema_name = operation[DATA][NAME]
+        schema_version = operation[DATA][VERSION]
+        schema, _, _, _ = self.getSchema(
+            author=identifier,
+            schemaName=schema_name,
+            schemaVersion=schema_version
+        )
+        if schema:
+            raise InvalidClientRequest(identifier, req.reqId,
+                                       '{} can have one and only one SCHEMA with '
+                                       'name {} and version {}'
+                                       .format(identifier, schema_name, schema_version))
+
+    def _validate_claim_def(self, req: Request):
+        # we can not add a Claim Def with existent ISSUER_DID
+        # sine a Claim Def needs to be identified by seqNo
+        identifier = req.identifier
+        operation = req.operation
+        schema_ref = operation[REF]
+        signature_type = operation[SIGNATURE_TYPE]
+        claim_def, _, _, _ = self.getClaimDef(
+            author=identifier,
+            schemaSeqNo=schema_ref,
+            signatureType=signature_type
+        )
+        if claim_def:
+            raise InvalidClientRequest(identifier, req.reqId,
+                                       '{} can have one and only one CLAIM_DEF for '
+                                       'and schema ref {} and signature type {}'
+                                       .format(identifier, schema_ref, signature_type))
+
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
         txn_time = data.get(TXN_TIME)
@@ -237,12 +277,22 @@ class DomainReqHandler(PHandler):
         return result
 
     def handleGetSchemaReq(self, request: Request):
-        authorDid = request.operation[TARGET_NYM]
+        author_did = request.operation[TARGET_NYM]
+        schema_name = request.operation[DATA][NAME]
+        schema_version = request.operation[DATA][VERSION]
         schema, lastSeqNo, lastUpdateTime, proof = self.getSchema(
-            author=authorDid,
-            schemaName=(request.operation[DATA][NAME]),
-            schemaVersion=(request.operation[DATA][VERSION])
+            author=author_did,
+            schemaName=schema_name,
+            schemaVersion=schema_version
         )
+        # TODO: we have to do this since SCHEMA has a bit different format than other txns
+        # (it has NAME and VERSION inside DATA, and it's not part of the state value, but state key)
+        if schema is None:
+            schema = {}
+        schema.update({
+            NAME: schema_name,
+            VERSION: schema_version
+        })
         return self.make_result(request=request,
                                 data=schema,
                                 last_seq_no=lastSeqNo,
@@ -365,12 +415,6 @@ class DomainReqHandler(PHandler):
         path = domain.make_state_path_for_schema(author, schemaName, schemaVersion)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
-            if keys is None:
-                keys = {}
-            keys.update({
-                NAME: schemaName,
-                VERSION: schemaVersion
-            })
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
