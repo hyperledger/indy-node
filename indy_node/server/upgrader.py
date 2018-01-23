@@ -265,7 +265,7 @@ class Upgrader(HasActionQueue):
         # flag "force=True" ignore basic checks! only datetime format is
         # checked
         times = []
-        non_demoted_nodes = set([k for k, v in node_srvs.items() if v ])
+        non_demoted_nodes = set([k for k, v in node_srvs.items() if v])
         if not force and set(schedule.keys()) != non_demoted_nodes:
             return False, 'Schedule should contain id of all nodes'
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
