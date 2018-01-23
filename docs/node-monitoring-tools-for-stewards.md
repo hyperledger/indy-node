@@ -146,7 +146,9 @@ To restart the Validator on a Ubuntu system you must execute the command `sudo s
 
 This simple script will complete the setup, assuming that the sovrinnotifierawssns package is already installed:
 
-```#!/bin/bash
+```
+#!/bin/bash
+
 sudo mkdir /home/sovrin/.aws
 
 sudo sh -c "printf \"[default]\nregion=us-west-2\" > /home/sovrin/.aws/config"
@@ -157,4 +159,6 @@ sudo sh -c "printf \"SOVRIN_NOTIFIER_AWSSNS_TOPICARN=arn:aws:sns:us-west-2:03472
 
 sudo chown -R sovrin:sovrin /home/sovrin/.aws /home/sovrin/.sovrin/sovrin.env
 
-sudo systemctl restart sovrin-node```
+sudo systemctl restart sovrin-node
+
+```
