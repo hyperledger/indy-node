@@ -4,8 +4,7 @@ from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, VERSION, ORIGIN, FORCE
 from plenum.common.messages.fields import IterableField, AnyMapField, \
-    NonEmptyStringField, LedgerIdField as PLedgerIdField, \
-    LedgerInfoField as PLedgerInfoField
+    NonEmptyStringField
 from plenum.common.messages.node_message_factory import node_message_factory
 
 from plenum.common.messages.message_base import MessageValidator
@@ -239,21 +238,22 @@ class ClientMessageValidator(PClientMessageValidator):
     )
 
 
-class LedgerIdField(PLedgerIdField):
-    ledger_ids = PLedgerIdField.ledger_ids + (CONFIG_LEDGER_ID,)
-
-
-class LedgerInfoField(PLedgerInfoField):
-    _ledger_id_class = LedgerIdField
+# THE CODE BELOW MIGHT BE NEEDED IN THE FUTURE, THEREFORE KEEPING IT
+# class LedgerIdField(PLedgerIdField):
+#     ledger_ids = PLedgerIdField.ledger_ids + (CONFIG_LEDGER_ID,)
+#
+#
+# class LedgerInfoField(PLedgerInfoField):
+#     _ledger_id_class = LedgerIdField
 
 
 # TODO: it is a workaround which helps extend some fields from
 # downstream projects, should be removed after we find a better way
 # to do this
-node_message_factory.update_schemas_by_field_type(
-    PLedgerIdField, LedgerIdField)
-node_message_factory.update_schemas_by_field_type(
-    PLedgerInfoField, LedgerInfoField)
+# node_message_factory.update_schemas_by_field_type(
+#     PLedgerIdField, LedgerIdField)
+# node_message_factory.update_schemas_by_field_type(
+#     PLedgerInfoField, LedgerInfoField)
 
 
 class SafeRequest(Request, ClientMessageValidator):
