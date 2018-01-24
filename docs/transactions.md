@@ -392,19 +392,19 @@ Adds a new node to the pool, or updates existing node in the pool
  
     BLS multi-signature key as base58-encoded string (it's needed for BLS signatures and state proofs support)
     
-- `client_ip` (string; optional): 
+- `clientIp` (string; optional): 
     
     Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)
       
-- `client_port` (string; optional):
+- `clientPort` (string; optional):
 
     Node's client listener port, that is the port clients use to connect to the node when sending read and write requests (ZMQ with TCP)
     
-- `node_ip` (string; optional):
+- `nodeIp` (string; optional):
  
     The IP address other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
     
-- `node_port` (string; optional):
+- `nodePort` (string; optional):
  
     The port other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
     
@@ -412,7 +412,6 @@ Adds a new node to the pool, or updates existing node in the pool
  
     The service of the Node. `VALIDATOR` is the only supported one now.
      
-
 
 If there is no NODE transaction with the specified Node ID (`did`), then it can be considered as creation of a new NODE.
 
@@ -431,10 +430,10 @@ There is no need to specify all other fields, and they will remain the same.
         "did":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
         "alias":"Delta",
         "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
-        "client_ip":"127.0.0.1",
-        "client_port":7407,
-        "node_ip":"127.0.0.1",
-        "node_port":7406,
+        "clientIp":"127.0.0.1",
+        "clientPort":7407,
+        "nodeIp":"127.0.0.1",
+        "nodePort":7406,
         "services":["VALIDATOR"]
     },
 
