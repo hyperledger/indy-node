@@ -24,7 +24,6 @@ strict_types.defaultShouldCheck = True
 
 import pytest
 
-from plenum.common.signer_simple import SimpleSigner
 from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYPE
 
 from indy_client.client.wallet.wallet import Wallet
@@ -33,8 +32,7 @@ from indy_common.constants import TXN_TYPE, TARGET_NYM, ROLE
 from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToGenesisFile
 from indy_node.test.helper import makePendingTxnsRequest, buildStewardClient, \
     TestNode
-from indy_client.test.helper import addRole, \
-    genTestClient, TestClient, createNym
+from indy_client.test.helper import addRole, genTestClient, TestClient, createNym
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
