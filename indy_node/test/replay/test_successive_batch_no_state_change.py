@@ -46,7 +46,6 @@ def test_successive_batch_do_no_change_state(looper,
     Also check reject and commit
     :return:
     """
-    prim_node = getPrimaryReplica(nodeSet, 0).node
     all_reqs = []
 
     # Delay only first PRE-PREPARE
@@ -131,8 +130,6 @@ def test_successive_batch_do_no_change_state(looper,
     looper.run(eventually(check_uncommitted, 0))
 
     check_verkey(new_idr, verkey)
-
-    pp_seq_no_to_delay = 4
 
     new_client.deregisterObserver(name='temp')
 

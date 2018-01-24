@@ -424,7 +424,8 @@ def testStewardCannotAddUsersAttribute(nodeSet, looper, steward,
                 checkRejects,
                 steward,
                 reqs[0].reqId,
-                "UnauthorizedClientRequest('Only identity owner/guardian can add attribute for that identity'",
+                "UnauthorizedClientRequest('Only identity owner/guardian can "
+                "add attribute for that identity'",
                 retryWait=1,
                 timeout=timeout))
 
