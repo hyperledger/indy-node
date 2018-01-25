@@ -2,7 +2,7 @@
 
 * [General Information](#general-information)
 * [Genesis Transactions](#genesis-transactions)
-* [Common Metadata](#common-metadata)
+* [Common Structure](#common-structure)
 * [Domain Ledger](#domain-ledger)
 
     * [NYM](#nym)    
