@@ -86,7 +86,6 @@ indyPipeline {
             packageName = this.name
             releaseVersion = "0.0.0.${this.env.BUILD_NUMBER}" // XXX TODO FIXME
             builders.deb = buildDebUbuntu
-            copyWithDeps = false // XXX
         }]
     ]
 }
