@@ -1,3 +1,4 @@
+import json
 import pytest
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
@@ -8,6 +9,8 @@ from indy_common.roles import Roles
 from plenum.common.constants import TARGET_NYM
 from indy_node.test.did.conftest import wallet, abbrevVerkey
 from indy_client.test.cli.helper import connect_and_check_output
+from indy.ledger import sign_request, submit_request, build_nym_request
+
 
 TRUST_ANCHOR_SEED = b'TRUST0NO0ONE00000000000000000000'
 
@@ -361,3 +364,18 @@ def test_send_different_nyms_succeeds_when_batched(
 
     do('send GET_NYM dest={dest}',
         mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
+
+
+def test_nym_resend(looper, sdk_pool_handle, sdk_wallet_steward):
+    idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
+
+    wallet_handle, identifier = sdk_wallet_steward
+
+    request = looper.loop.run_until_complete(build_nym_request(identifier, idr, verkey, None, None))
+    req_signed = looper.loop.run_until_complete(sign_request(wallet_handle, identifier, request))
+
+    result = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+    assert result['result']
+
+    result = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+    assert result['result']
