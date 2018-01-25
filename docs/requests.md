@@ -557,7 +557,7 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
 
 It's not possible to update `data` in existing Claim Def.
 So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
-a new Claim Def needs to be created by a new Issuer DID (`identifier`).
+a new Claim Def needs to be created by a new Issuer DID (`did`).
 
 - `did` (base58-encoded string; optional):
 
