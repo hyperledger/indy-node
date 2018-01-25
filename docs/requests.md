@@ -1,7 +1,6 @@
 # Requests
 * [Common Request Structure](#common-request-structure)
-* [Reply Structure for Write Requests](#reply-structure-for-write-requests)
-* [Reply Structure for Read Requests (except GET_TXN)](#reply-structure-for-read-requests)
+* [Common Reply Structure](#common-reply-structure)
 * [Write Requests](#write-requests)
 
     * [NYM](#nym)    
@@ -111,7 +110,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
 Please find the format of each request-specific data for each type of request below.
 
-## Reply Structure 
+## Common Reply Structure 
 
 Each Reply to requests has a number of common metadata fields and state-proof related fields.
 Please note that state-proof is absent for write requests Reply since  
