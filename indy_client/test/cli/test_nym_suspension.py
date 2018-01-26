@@ -127,7 +127,7 @@ def testTrusteeSuspendingTrustee(be, do, trusteeCli, anotherTrusteeAdded,
        within=5,
        expect=nymAddedOut, mapper=anotherTrusteeAdded)
     be(anotherTrusteeCli)
-    errorMsg = 'InvalidClientRequest'
+    errorMsg = 'CouldNotAuthenticate'
     do('send NYM dest={remote} role=',
        within=5,
        expect=[errorMsg], mapper=stewardAdded)
