@@ -56,9 +56,6 @@ from indy_client.test.cli.helper import connect_and_check_output
 from indy_common.config_helper import ConfigHelper
 from stp_core.crypto.util import randomSeed
 
-from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
-    sdk_wallet_name, sdk_steward_seed
-
 
 @pytest.fixture("module")
 def ledger_base_dir(tconf):
