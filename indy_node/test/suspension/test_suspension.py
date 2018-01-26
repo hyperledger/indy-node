@@ -108,7 +108,7 @@ def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
     # trustee suspension by steward1 is failed
     _, sWallet = anotherSteward1
     suspendRole(looper, trClient, trWallet, sWallet.defaultId,
-                nAckReasonContains='is neither Trustee nor owner of')
+                nAckReasonContains='cannot update role')
 
 
 def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,

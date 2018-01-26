@@ -73,15 +73,6 @@ class DomainReqHandler(PHandler):
         self.idrCache.onBatchCommitted(stateRoot)
         return r
 
-    def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
-        nym = msg.get(TARGET_NYM)
-        if self.hasNym(nym, isCommitted=False):
-            if not self.idrCache.hasTrustee(identifier, isCommitted=False) \
-                    and self.idrCache.getOwnerFor(nym, isCommitted=False) != identifier:
-                reason = '{} is neither Trustee nor owner of {}' \
-                    .format(identifier, nym)
-                return False, reason
-        return True, ''
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -137,10 +128,6 @@ class DomainReqHandler(PHandler):
     def _validateNym(self, req: Request):
         origin = req.identifier
         op = req.operation
-
-        s, reason = self.canNymRequestBeProcessed(origin, op)
-        if not s:
-            raise InvalidClientRequest(origin, req.reqId, reason)
 
         try:
             originRole = self.idrCache.getRole(
