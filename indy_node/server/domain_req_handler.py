@@ -188,7 +188,6 @@ class DomainReqHandler(PHandler):
             raise UnauthorizedClientRequest(
                 req.identifier, req.reqId, reason)
 
-
     def _validateAttrib(self, req: Request):
         origin = req.identifier
         op = req.operation
