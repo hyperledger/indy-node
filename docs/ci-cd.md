@@ -1,18 +1,36 @@
-# Continues integration/delivery
-
-- Unit/Integration tests are executed for each PR
-- Each PR needs to be reviewed
-- PR can be merged only after all tests pass and code is reviewed
-- We use pipeline in code approach and Jenkins as our main CI/CD server
-- CI part of the pipeline (running tests for each PR) is defined in `Jenkinsfile.ci` file. 
-- CI part is run on Hyperledger Jenkins, so it is public and open as every contributor needs to see results of the tests run for his or her PR.
-- CD part of the pipeline (running tests for each PR) is defined in `Jenkinsfile.cd` file.
-- CD part is run on a private Jenkins server dealing with issuing and uploading new builds. 
-
 #### Branches
 
 - Master branch contains the latest changes. All PRs usually need to be sent to master.
-- Stable branch contains latest releases (https://github.com/hyperledger/indy-node/releases). Hotfixes need to be sent to stable.
+- Stable branch contains latest releases (https://github.com/hyperledger/indy-node/releases). Hotfixes need to be sent to both stable and master.
+
+#### Pull Requests
+
+- Each PR needs to be reviewed.
+- PR can be merged only after all tests pass and code is reviewed.
+
+# Continues integration
+
+- for each PR we execute:
+    - static code validation
+    - Unit/Integration tests
+- We use pipeline in code approach and Jenkins as our main CI/CD server.
+- CI part of the pipeline (running tests for each PR) is defined in `Jenkinsfile.ci` file. 
+- CI part is run on Hyperledger Jenkins, so it is public and open as every contributor needs to see results of the tests run for his or her PR.
+
+#### Static Code Validation
+
+- We use flake8 for static code validation.
+- It's run against every PR. PR fails if there are some static code validation errors.
+- Not all checks are enabled (have a look at `.flake8` file at the project root)
+- You can run static code validation locally:
+    - Install flake8: `pip install flake8`
+    - Run validation on the root folder of the project: `flake8 .` 
+
+
+# Continues delivery
+
+- CD part of the pipeline is defined in `Jenkinsfile.cd` file.
+- CD part is run on a private Jenkins server dealing with issuing and uploading new builds. 
 
 #### Builds
 
@@ -47,6 +65,26 @@ Use cases for artifacts
     - indy-node deb package from [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) 
     contains the latest changes (from master branch). It's not guaranteed that that this code is stable enough.
 
+#### Packaging
+
+##### Supported platforms and OSes
+
+- Ubuntu 16.04 on x86_64
+
+##### Build scripts
+
+We use [fpm](https://github.com/jordansissel/fpm) for packaging python code into deb packages. Build scripts are placed in `build-scripts` folders  of each indy repo:
+- https://github.com/hyperledger/indy-node/blob/master/build-scripts
+- https://github.com/hyperledger/indy-plenum/blob/master/build-scripts
+- https://github.com/hyperledger/indy-anoncreds/blob/master/build-scripts
+
+We also pack some 3rd parties dependencies which are not presented in canonical ubuntu repositories:
+- https://github.com/hyperledger/indy-node/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh
+- https://github.com/hyperledger/indy-plenum/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh
+- https://github.com/hyperledger/indy-anoncreds/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh
+
+Each `build-scripts` folders includes `Readme.md`. Please check them for more details.
+
 #### Versioning
 
 - Please note, that we are using semver-like approach for versioning (major, minor, build) for each of the components. 
@@ -60,15 +98,6 @@ Use cases for artifacts
         - dev suffix in project names and indy-plenum dependency in master; no suffixes in stable
         - different versions of indy-plenum dependency
     - different versions in migrations scripts  
-
-#### Static Code Validation
-
-- We use flake8 for static code validation.
-- It's run against every PR. PR fails if there are some static code validation errors.
-- Not all checks are enabled (have a look at `.flake8` file at the project root)
-- You can run static code validation locally:
-    - Install flake8: `pip install flake8`
-    - Run validation on the root folder of the project: `flake8 .` 
 
 ## How to Create a Stable Release
 
