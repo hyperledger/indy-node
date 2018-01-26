@@ -15,6 +15,7 @@ from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
 from plenum.common.types import f
+from plenum.common.constants import TRUSTEE
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from stp_core.common.log import getlogger
 
@@ -157,22 +158,36 @@ class DomainReqHandler(PHandler):
             )
 
     def _validateExistingNym(self, req: Request, op, originRole, nymData):
+        unauthorized = False
+        reason = None
         origin = req.identifier
         owner = self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
         isOwner = origin == owner
-        updateKeys = [ROLE, VERKEY]
-        for key in updateKeys:
-            if key in op:
-                newVal = op[key]
-                oldVal = nymData.get(key)
-                if oldVal != newVal:
-                    r, msg = Authoriser.authorised(NYM, key, originRole,
-                                                   oldVal=oldVal, newVal=newVal,
-                                                   isActorOwnerOfSubject=isOwner)
-                    if not r:
-                        raise UnauthorizedClientRequest(
-                            req.identifier, req.reqId, "{} cannot update {}".
-                            format(Roles.nameFromValue(originRole), key))
+
+        if not originRole == TRUSTEE and not isOwner:
+            reason = '{} is neither Trustee nor owner of {}' \
+                .format(origin, op[TARGET_NYM])
+            unauthorized = True
+
+        if not unauthorized:
+            updateKeys = [ROLE, VERKEY]
+            for key in updateKeys:
+                if key in op:
+                    newVal = op[key]
+                    oldVal = nymData.get(key)
+                    if oldVal != newVal:
+                        r, msg = Authoriser.authorised(NYM, key, originRole,
+                                                       oldVal=oldVal, newVal=newVal,
+                                                       isActorOwnerOfSubject=isOwner)
+                        if not r:
+                            unauthorized = True
+                            reason = "{} cannot update {}".\
+                                format(Roles.nameFromValue(originRole), key)
+                            break
+        if unauthorized:
+            raise UnauthorizedClientRequest(
+                req.identifier, req.reqId, reason)
+
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier
