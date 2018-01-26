@@ -73,7 +73,6 @@ class DomainReqHandler(PHandler):
         self.idrCache.onBatchCommitted(stateRoot)
         return r
 
-
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
         if operation[TXN_TYPE] == NYM:
