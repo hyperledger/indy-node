@@ -47,6 +47,10 @@ from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
 from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
 
+from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
+    sdk_wallet_name, sdk_steward_seed
+
+
 Logger.setLogLevel(logging.NOTSET)
 
 
