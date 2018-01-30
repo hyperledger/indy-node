@@ -15,6 +15,7 @@ from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
 from plenum.common.types import f
+from plenum.common.constants import TRUSTEE
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from stp_core.common.log import getlogger
 
@@ -73,16 +74,6 @@ class DomainReqHandler(PHandler):
         self.idrCache.onBatchCommitted(stateRoot)
         return r
 
-    def canNymRequestBeProcessed(self, identifier, msg) -> (bool, str):
-        nym = msg.get(TARGET_NYM)
-        if self.hasNym(nym, isCommitted=False):
-            if not self.idrCache.hasTrustee(identifier, isCommitted=False) \
-                    and self.idrCache.getOwnerFor(nym, isCommitted=False) != identifier:
-                reason = '{} is neither Trustee nor owner of {}' \
-                    .format(identifier, nym)
-                return False, reason
-        return True, ''
-
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
         if operation[TXN_TYPE] == NYM:
@@ -101,15 +92,6 @@ class DomainReqHandler(PHandler):
             raise InvalidClientRequest(identifier, reqId,
                                        "{} not a valid role".
                                        format(role))
-        # TODO: This is not static validation as it involves state
-        s, reason = self.canNymRequestBeProcessed(identifier, operation)
-        if not s:
-            raise InvalidClientRequest(identifier, reqId, reason)
-
-    @staticmethod
-    def _validate_attrib_keys(operation):
-        dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
-        return len(dataKeys) == 1
 
     def _doStaticValidationAttrib(self, identifier, reqId, operation):
         if not self._validate_attrib_keys(operation):
@@ -137,6 +119,11 @@ class DomainReqHandler(PHandler):
             self._validate_schema(req)
         elif typ == CLAIM_DEF:
             self._validate_claim_def(req)
+
+    @staticmethod
+    def _validate_attrib_keys(operation):
+        dataKeys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
+        return len(dataKeys) == 1
 
     def _validateNym(self, req: Request):
         origin = req.identifier
@@ -171,26 +158,47 @@ class DomainReqHandler(PHandler):
             )
 
     def _validateExistingNym(self, req: Request, op, originRole, nymData):
+        unauthorized = False
+        reason = None
         origin = req.identifier
         owner = self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
         isOwner = origin == owner
-        updateKeys = [ROLE, VERKEY]
-        for key in updateKeys:
-            if key in op:
-                newVal = op[key]
-                oldVal = nymData.get(key)
-                if oldVal != newVal:
-                    r, msg = Authoriser.authorised(NYM, key, originRole,
-                                                   oldVal=oldVal, newVal=newVal,
-                                                   isActorOwnerOfSubject=isOwner)
-                    if not r:
-                        raise UnauthorizedClientRequest(
-                            req.identifier, req.reqId, "{} cannot update {}".
-                            format(Roles.nameFromValue(originRole), key))
+
+        if not originRole == TRUSTEE and not isOwner:
+            reason = '{} is neither Trustee nor owner of {}' \
+                .format(origin, op[TARGET_NYM])
+            unauthorized = True
+
+        if not unauthorized:
+            updateKeys = [ROLE, VERKEY]
+            for key in updateKeys:
+                if key in op:
+                    newVal = op[key]
+                    oldVal = nymData.get(key)
+                    if oldVal != newVal:
+                        r, msg = Authoriser.authorised(NYM, key, originRole,
+                                                       oldVal=oldVal, newVal=newVal,
+                                                       isActorOwnerOfSubject=isOwner)
+                        if not r:
+                            unauthorized = True
+                            reason = "{} cannot update {}".\
+                                format(Roles.nameFromValue(originRole), key)
+                            break
+        if unauthorized:
+            raise UnauthorizedClientRequest(
+                req.identifier, req.reqId, reason)
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier
         op = req.operation
+
+        if not (not op.get(TARGET_NYM) or
+                self.hasNym(op[TARGET_NYM], isCommitted=False)):
+            raise InvalidClientRequest(origin, req.reqId,
+                                       '{} should be added before adding '
+                                       'attribute for it'.
+                                       format(TARGET_NYM))
+
         if op.get(TARGET_NYM) and op[TARGET_NYM] != req.identifier and \
                 not self.idrCache.getOwnerFor(op[TARGET_NYM],
                                               isCommitted=False) == origin:

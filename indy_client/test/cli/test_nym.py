@@ -9,6 +9,7 @@ from plenum.common.constants import TARGET_NYM
 from indy_node.test.did.conftest import wallet, abbrevVerkey
 from indy_client.test.cli.helper import connect_and_check_output
 
+
 TRUST_ANCHOR_SEED = b'TRUST0NO0ONE00000000000000000000'
 
 NYM_ADDED = 'Nym {dest} added'
@@ -361,3 +362,4 @@ def test_send_different_nyms_succeeds_when_batched(
 
     do('send GET_NYM dest={dest}',
         mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
+

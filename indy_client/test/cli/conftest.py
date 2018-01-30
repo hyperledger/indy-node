@@ -125,7 +125,7 @@ def susanMap():
     return getDefaultUserMap("Susan")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def faberMap(agentIpAddress, faberAgentPort):
     ha = "{}:{}".format(agentIpAddress, faberAgentPort)
     return {'inviter': 'Faber College',

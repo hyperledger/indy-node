@@ -2,12 +2,10 @@ from typing import Iterable, Any, List
 
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
-from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
-from state.pruning_state import PruningState
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID, LedgerState
+    ENC, RAW, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.types import f, \
@@ -15,13 +13,9 @@ from plenum.common.types import f, \
 from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.server.node import Node as PlenumNode
 from indy_common.config_util import getConfig
-from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
-    DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
     IN_PROGRESS
-from indy_common.constants import validTxnTypes, IDENTITY_TXN_TYPES, \
-    CONFIG_TXN_TYPES
-from indy_common.txn_util import getTxnOrderedFields
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
@@ -43,7 +37,6 @@ class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_indy_keys"
     _client_request_class = SafeRequest
     _info_tool_class = ValidatorNodeInfoTool
-    ledger_ids = PlenumNode.ledger_ids + [CONFIG_LEDGER_ID]
 
     def __init__(self,
                  name,
@@ -72,9 +65,11 @@ class Node(PlenumNode, HasPoolManager):
         plugins_dir = plugins_dir or config_helper.plugins_dir
         node_info_dir = node_info_dir or config_helper.node_info_dir
 
-        # TODO: 2 ugly lines ahead, don't know how to avoid
+        # TODO: 4 ugly lines ahead, don't know how to avoid
         self.idrCache = None
         self.attributeStore = None
+        self.upgrader = None
+        self.poolCfg = None
 
         super().__init__(name=name,
                          nodeRegistry=nodeRegistry,
@@ -95,21 +90,6 @@ class Node(PlenumNode, HasPoolManager):
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
-
-        self.configLedger = self.getConfigLedger()
-        self.ledgerManager.addLedger(
-            CONFIG_LEDGER_ID,
-            self.configLedger,
-            postCatchupCompleteClbk=self.postConfigLedgerCaughtUp,
-            postTxnAddedToLedgerClbk=self.postTxnFromCatchupAddedToLedger)
-        self.on_new_ledger_added(CONFIG_LEDGER_ID)
-        self.states[CONFIG_LEDGER_ID] = self.loadConfigState()
-        self.upgrader = self.getUpgrader()
-        self.poolCfg = self.getPoolConfig()
-        self.configReqHandler = self.getConfigReqHandler()
-        self.initConfigState()
-        self.register_req_handler(CONFIG_LEDGER_ID, self.configReqHandler)
-        self.requestExecuter[CONFIG_LEDGER_ID] = self.executeConfigTxns
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
@@ -140,14 +120,6 @@ class Node(PlenumNode, HasPoolManager):
                                dataDir=self.dataLocation,
                                config=self.config)
 
-    def send_ledger_status_to_newly_connected_node(self, node_name):
-        super().send_ledger_status_to_newly_connected_node(node_name)
-        # If the domain ledger is already synced send config ledger status
-        # else after the domain ledger is caught up, config ledger status
-        # will be sent
-        if self.ledgerManager.ledgerRegistry[DOMAIN_LEDGER_ID].state == LedgerState.synced:
-            self.sendConfigLedgerStatus(node_name)
-
     def getUpgrader(self):
         return Upgrader(self.id,
                         self.name,
@@ -177,22 +149,6 @@ class Node(PlenumNode, HasPoolManager):
                                      )
         return self.idrCache
 
-    def getConfigLedger(self):
-        hashStore = LevelDbHashStore(
-            dataDir=self.dataLocation, fileNamePrefix='config')
-        return Ledger(CompactMerkleTree(hashStore=hashStore),
-                      dataDir=self.dataLocation,
-                      fileName=self.config.configTransactionsFile,
-                      ensureDurability=self.config.EnsureLedgerDurability)
-
-    def loadConfigState(self):
-        return PruningState(
-            initKeyValueStorage(
-                self.config.configStateStorage,
-                self.dataLocation,
-                self.config.configStateDbName)
-        )
-
     def loadAttributeStore(self):
         return AttributeStore(
             initKeyValueStorage(
@@ -200,6 +156,11 @@ class Node(PlenumNode, HasPoolManager):
                 self.dataLocation,
                 self.config.attrDbName)
         )
+
+    def setup_config_req_handler(self):
+        self.upgrader = self.getUpgrader()
+        self.poolCfg = self.getPoolConfig()
+        super().setup_config_req_handler()
 
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,
@@ -209,35 +170,8 @@ class Node(PlenumNode, HasPoolManager):
                                 self.poolManager,
                                 self.poolCfg)
 
-    def initConfigState(self):
-        self.initStateFromLedger(self.states[CONFIG_LEDGER_ID],
-                                 self.configLedger, self.configReqHandler)
-
-    @property
-    def ledgers(self):
-        ledgers = super().ledgers
-        ledgers.append(self.configLedger)
-        return ledgers
-
-    def start_config_ledger_sync(self):
-        self._sync_ledger(CONFIG_LEDGER_ID)
-        self.ledgerManager.processStashedLedgerStatuses(CONFIG_LEDGER_ID)
-
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
         pass
-
-    def sendConfigLedgerStatus(self, nodeName):
-        self.sendLedgerStatus(nodeName, CONFIG_LEDGER_ID)
-
-    @property
-    def configLedgerStatus(self):
-        return self.build_ledger_status(CONFIG_LEDGER_ID)
-
-    def getLedgerStatus(self, ledgerId: int):
-        if ledgerId == CONFIG_LEDGER_ID:
-            return self.configLedgerStatus
-        else:
-            return super().getLedgerStatus(ledgerId)
 
     def postPoolLedgerCaughtUp(self, **kwargs):
         # The only reason to override this is to set the correct node id in
@@ -246,13 +180,10 @@ class Node(PlenumNode, HasPoolManager):
         self.upgrader.nodeId = self.id
         super().postPoolLedgerCaughtUp(**kwargs)
 
-    def catchup_next_ledger_after_pool(self):
-        self.start_config_ledger_sync()
-
     def postConfigLedgerCaughtUp(self, **kwargs):
         self.poolCfg.processLedger()
         self.upgrader.processLedger()
-        self.start_domain_ledger_sync()
+        super().postConfigLedgerCaughtUp(**kwargs)
         self.acknowledge_upgrade()
 
     def acknowledge_upgrade(self):
@@ -316,13 +247,6 @@ class Node(PlenumNode, HasPoolManager):
         # corresponding client request(REQUEST)
         self.recordAndPropagate(request, frm)
 
-    def postRecvTxnFromCatchup(self, ledgerId: int, txn: Any):
-        if ledgerId == CONFIG_LEDGER_ID:
-            # Since no config ledger transactions are applied to the state
-            return None
-        else:
-            return super().postRecvTxnFromCatchup(ledgerId, txn)
-
     def validateNodeMsg(self, wrappedMsg):
         msg, frm = wrappedMsg
         if all(attr in msg.keys()
@@ -381,15 +305,8 @@ class Node(PlenumNode, HasPoolManager):
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        req_handler = self.get_req_handler(DOMAIN_LEDGER_ID)
-        return self.commitAndSendReplies(req_handler, ppTime, reqs,
-                                         stateRoot, txnRoot)
-
-    def executeConfigTxns(self, ppTime, reqs: List[Request], stateRoot,
-                          txnRoot) -> List:
-        req_handler = self.get_req_handler(CONFIG_LEDGER_ID)
-        return self.commitAndSendReplies(req_handler, ppTime, reqs,
-                                         stateRoot, txnRoot)
+        return self.default_executer(DOMAIN_LEDGER_ID, ppTime, reqs,
+                                     stateRoot, txnRoot)
 
     def update_txn_with_extra_data(self, txn):
         """
@@ -415,15 +332,3 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache.close()
         if self.attributeStore:
             self.attributeStore.close()
-
-    def onBatchCreated(self, ledgerId, stateRoot):
-        if ledgerId == CONFIG_LEDGER_ID:
-            self.configReqHandler.onBatchCreated(stateRoot)
-        else:
-            super().onBatchCreated(ledgerId, stateRoot)
-
-    def onBatchRejected(self, ledgerId):
-        if ledgerId == CONFIG_LEDGER_ID:
-            self.configReqHandler.onBatchRejected()
-        else:
-            super().onBatchRejected(ledgerId)
