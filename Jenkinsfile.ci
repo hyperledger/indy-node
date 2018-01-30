@@ -41,7 +41,7 @@ node(labels.linux) {
 
 def config = locallib.init()
 def indyConfig = indyConfig()
-log.info("parameters: local $config, indyConfig: $indyConfig")
+indyLogger.info("parameters: local $config, indyConfig: $indyConfig")
 
 def buildDebUbuntu = { releaseVersion, sourcePath ->
     def volumeName = "$name-deb-u1604"
