@@ -15,7 +15,7 @@ env.indyGitHubTokenCredId = 'evernym-github-machine-user-token'
 
 env.BRANCH_NAME = 'stable'
 env.SOVRIN_CORE_REPO_NAME = 'test'
-env.SOVRIN_SDK_REPO_NAME = 'test''
+env.SOVRIN_SDK_REPO_NAME = 'test'
 
 labels = [
     linux: params.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
