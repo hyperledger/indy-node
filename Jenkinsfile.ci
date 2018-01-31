@@ -39,18 +39,6 @@ library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
     github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
 )
 
-println indyPublish
-println indyPublish.logPrefix
-
-library identifier: 'evernym@feature/INDY-997_private-lib', retriever: modernSCM(
-    github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
-)
-
-println indyPublish
-println indyPublish.logPrefix
-return
-
-
 def config = locallib.init()
 def indyConfig = indyConfig()
 indyLogger.info("parameters: local $config, indyConfig: $indyConfig")
