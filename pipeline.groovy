@@ -8,18 +8,6 @@ def loadIndyLib(credentialsId) {
     )
 }
 
-aaa = { bbb ->
-    println bbb
-}
-
-def ccc = { bbb ->
-    println bbb
-}
-
-@Field def ddd = { bbb ->
-    println bbb
-}
-
 def init() {
     return [
         dockers: [
@@ -52,7 +40,7 @@ def init() {
 }
 
 
-def buildDebUbuntu(releaseVersion, sourcePath) {
+@Field def buildDebUbuntu = { releaseVersion, sourcePath ->
     def volumeName = "$name-deb-u1604"
     if (env.BRANCH_NAME && env.BRANCH_NAME != 'master') {
         volumeName = "${volumeName}.${env.BRANCH_NAME}"
