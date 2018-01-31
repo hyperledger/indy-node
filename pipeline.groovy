@@ -33,21 +33,4 @@ def init() {
     ]
 }
 
-
-@Field def buildDebUbuntu = { releaseVersion, sourcePath ->
-    def volumeName = "$name-deb-u1604"
-    if (env.BRANCH_NAME && env.BRANCH_NAME != 'master') {
-        volumeName = "${volumeName}.${env.BRANCH_NAME}"
-    }
-    if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
-        sh "docker volume rm $volumeName"
-    }
-    dir('build-scripts/ubuntu-1604') {
-        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName"
-        sh "./build-3rd-parties-docker.sh $volumeName"
-    }
-    return "$volumeName"
-}
-
-
 return this;
