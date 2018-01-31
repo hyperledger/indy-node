@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 
-import groovy.transform.Field                                                                                                                                                                                                                                        | 
+import groovy.transform.Field
 
 def loadIndyLib(credentialsId) {
     library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
