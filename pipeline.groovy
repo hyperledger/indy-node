@@ -1,9 +1,23 @@
 #!/usr/bin/env groovy
 
+import groovy.transform.Field                                                                                                                                                                                                                                        | 
+
 def loadIndyLib(credentialsId) {
     library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
         github(credentialsId: credentialsId, repoOwner: 'evernym', repository: 'jenkins-shared')
     )
+}
+
+aaa = { bbb ->
+    println bbb
+}
+
+def ccc = { bbb ->
+    println bbb
+}
+
+@Field def ddd = { bbb ->
+    println bbb
 }
 
 def init() {
