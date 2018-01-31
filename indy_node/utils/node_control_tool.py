@@ -18,9 +18,9 @@ logger = getlogger()
 
 TIMEOUT = 300
 BACKUP_FORMAT = 'zip'
-DEPS = ['indy-plenum', 'indy-anoncreds']
+DEPS = ['indy-plenum', 'indy-anoncreds', 'python3-indy-crypto']
 BACKUP_NUM = 10
-PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'
+PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node python3-indy-crypto'
 TMP_DIR = '/tmp/.indy_tmp'
 
 
@@ -213,8 +213,7 @@ class NodeControlTool:
         except Exception as e:
             self._restore_from_backup(current_version)
             raise e
-        finally:
-            self._remove_old_backups()
+        self._remove_old_backups()
 
     def _upgrade(self, new_version, migrate=True, rollback=True):
         current_version = Upgrader.getVersion()
