@@ -1,93 +1,63 @@
-#!groovy
-
-@Library('SovrinHelpers') _
+#!/usr/bin/env groovy
 
 def name = 'indy-node'
 
-def nodeTestUbuntu = {
-    try {
-        echo 'Ubuntu Test: Checkout csm'
+env.indyNodeLabel = 'ubuntu'
+env.indyPRStatusContext = 'ci/hyperledger-jenkins/pr-merge'
+
+env.evernymApprovers = 'ME:TEST_APPROVER'
+env.TEST_APPROVER = 'andrey.kononykhin@dsr-corporation.com andkononykhin@gmail.com'
+env.evernymRecipientProviders = 'RequesterRecipientProvider'
+env.FAILED_BUILD_RECIPIENTS = 'andrey.kononykhin@dsr-corporation.com'
+env.SUCCESS_BUILD_RECIPIENTS = 'andrey.kononykhin@dsr-corporation.com'
+env.INDY_NODE_SUCCESS_BUILD_RECIPIENTS = 'andrey.kononykhin@dsr-corporation.com'
+env.indyGitHubTokenCredId = 'evernym-github-machine-user-token'
+
+env.BRANCH_NAME = 'stable'
+env.SOVRIN_CORE_REPO_NAME = 'test'
+env.SOVRIN_SDK_REPO_NAME = 'test''
+
+labels = [
+    linux: params.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
+]
+
+def locallib
+stage('Load local lib') {
+    node(labels.linux) {
         checkout scm
-
-        echo 'Ubuntu Test: Build docker image'
-        def testEnv = dockerHelpers.build(name)
-
-        testEnv.inside('--network host') {
-            echo 'Ubuntu Test: Install dependencies'
-            testHelpers.install()
-
-            echo 'Ubuntu Test: Test'
-            testHelpers.testRunner([resFile: "test-result-node.${NODE_NAME}.txt", testDir: 'indy_node'])
-            //testHelpers.testJUnit(resFile: "test-result-node.${NODE_NAME}.xml")
-        }
-    }
-    finally {
-        echo 'Ubuntu Test: Cleanup'
-        step([$class: 'WsCleanup'])
+        locallib = load 'pipeline.groovy'
     }
 }
 
-def clientTestUbuntu = {
-    try {
-        echo 'Ubuntu Test: Checkout csm'
-        checkout scm
+locallib.loadIndyLib('evernym-github-machine-user')
 
-        echo 'Ubuntu Test: Build docker image'
-        def testEnv = dockerHelpers.build(name)
+def config = locallib.init()
+def indyConfig = indyConfig()
+indyLogger.info("parameters: local $config, indyConfig: $indyConfig")
 
-        testEnv.inside('--network host') {
-            echo 'Ubuntu Test: Install dependencies'
-            testHelpers.install()
+// PIPELINE
+indyPipeline {
+    timeout = 90
 
-            echo 'Ubuntu Test: Test'
-            testHelpers.testRunner([resFile: "test-result-client.${NODE_NAME}.txt", testDir: 'indy_client'])
-            //testHelpers.testJUnit(resFile: "test-result-client.${NODE_NAME}.xml")
-        }
+    onFail = { err ->
+        println(err.toString())
     }
-    finally {
-        echo 'Ubuntu Test: Cleanup'
-        step([$class: 'WsCleanup'])
+    onSuccess = {
+        "Success"
     }
+
+    stages = [
+        ['indyIsTested', {}],
+        ['indyVerifyStatic', {}],
+        ['indyVerify', {
+            labels = this.labels.collect {k, v -> v}
+            dockers = config.dockers
+            tests = config.tests
+        }],
+        ['indyPublish', {
+            packageName = this.name
+            releaseVersion = "0.0.0.${this.env.BUILD_NUMBER}" // XXX TODO FIXME
+            builders.deb = locallib.buildDebUbuntu
+        }]
+    ]
 }
-
-def commonTestUbuntu = {
-    try {
-        echo 'Ubuntu Test: Checkout csm'
-        checkout scm
-
-        echo 'Ubuntu Test: Build docker image'
-        def testEnv = dockerHelpers.build(name)
-
-        testEnv.inside {
-            echo 'Ubuntu Test: Install dependencies'
-            testHelpers.install()
-
-            echo 'Ubuntu Test: Test'
-            testHelpers.testJUnit([resFile: "test-result-common.${NODE_NAME}.xml", testDir: 'indy_common'])
-        }
-    }
-    finally {
-        echo 'Ubuntu Test: Cleanup'
-        step([$class: 'WsCleanup'])
-    }
-}
-
-def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
-    def volumeName = "$name-deb-u1604"
-    if (env.BRANCH_NAME != '' && env.BRANCH_NAME != 'master') {
-        volumeName = "${volumeName}.${BRANCH_NAME}"
-    }
-    if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
-        sh "docker volume rm $volumeName"
-    }
-    dir('build-scripts/ubuntu-1604') {
-        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName"
-        sh "./build-3rd-parties-docker.sh $volumeName"
-    }
-    return "$volumeName"
-}
-
-options = new TestAndPublishOptions()
-options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
-options.setCopyWithDeps(true)
-testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
