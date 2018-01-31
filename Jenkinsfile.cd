@@ -29,7 +29,13 @@ stage('Load local lib') {
     }
 }
 
-locallib.loadIndyLib('evernym-github-machine-user')
+library identifier: 'evernym@feature/INDY-997_private-lib', retriever: modernSCM(
+    github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
+)
+
+library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
+    github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
+)
 
 def config = locallib.init()
 def indyConfig = indyConfig()
