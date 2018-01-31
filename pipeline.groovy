@@ -38,7 +38,7 @@ def init() {
 }
 
 
-def buildDebUbuntu = { releaseVersion, sourcePath ->
+def buildDebUbuntu(releaseVersion, sourcePath) {
     def volumeName = "$name-deb-u1604"
     if (env.BRANCH_NAME && env.BRANCH_NAME != 'master') {
         volumeName = "${volumeName}.${env.BRANCH_NAME}"
