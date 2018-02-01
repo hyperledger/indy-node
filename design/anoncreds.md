@@ -5,12 +5,12 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 * [Requirements](#requirements)
 * [Technical goals](#technical-goals)
 * [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-creddef-in-credentials-and-proofs)
-* [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
 * [How Prover and Verifier get keys for Credentials and Proofs](#how-prover-and-verifier-get-keys-for-credentials-and-proofs)
 * [Timestamp Support in State](#timestamp-support-in-state)
+* [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
 * [SCHEMA](#schema)
 * [CRED_DEF](#cred_def)
-* [REVOC_REG_DEF](#revoc_def)
+* [REVOC_REG_DEF](#revoc_reg_def)
 * [REVOC_REG](#revoc_reg)
 
 ### Anoncreds Links
@@ -96,7 +96,7 @@ checking the ownership when modifying existing entities (only the issuer who cre
       
 ### How Prover and Verifier get keys for Credentials and Proofs
 * Proofs and credentials come with `schemaUUID`, `credDefUUID`, `revocDefUUID`.
-* Also there is `issuanceTime` attribute in each credential (which can be disclosed in the proof).
+* Also there can be `issuanceTime` attribute in each credential (which can be disclosed in the proof).
 * Prover/Verifier looks up SCHEMA using `GET_SCHEMA(schemaUUID)` request to the ledger
 * Prover/Verifier looks up CRED_DEF using `GET_CRED_DEF(credDefUUID, issuanceTime)` request to the ledger
 * Prover/Verifier looks up REVOC_REG_DEF using `GET_REVOC_REG_DEF(revocDefUUID, issuanceTime)` request to the ledger
@@ -106,7 +106,24 @@ checking the ownership when modifying existing entities (only the issuer who cre
  using `GET_REVOC_REG(revocDefUUID, timestamp)` request to the ledger
 * Prover and Verifier should look up REVOC_REG by the same `timestamp` when generating and verifying the proof.
 
+### Timestamp Support in State
+
+We need to have a generic way to get the State at the given time.
+- State Trie allows to go to the past, that is given the root hash, get the state with this root.
+- We may have a mapping of each State update (timestamp) to the corresponding root.
+- We need to find a data structure that can help us to find the nearest state timestamp (to get the root) for the given
+time.
+- So, we will be able to get the data (state) at the given time.
+
+This approach can be used for
+* getting `REVOC_REG` at desired time (the same for both proper and verifier),
+possibly long ago in the past;
+* dealing with Requirement 6. 
+
 ### Changes in Anoncreds Protocol
+
+If want to support Requirement 6, then the following changes are required in the
+anoncerds protocol:
 
 * Each Credential must have a reserved mandatory attribute: `issuanceTime`.
     * It's set by the Issuer to specify the time of Issuance.
@@ -128,14 +145,7 @@ a proof that `issuanceTime` is really the current time and not the time from the
     * If it's not disclosed and not verified as a Predicate, then there is a chance the the proof verification will fail because 
 of key rotations, since the latest keys will be used.
 
-### Timestamp Support in State
 
-We need to have a generic way to get the State at the given time.
-- State Trie allows to go to the past, that is given the root hash, get the state with this root.
-- We may have a mapping of each State update (timestamp) to the corresponding root.
-- We need to find a data structure that can help us to find the nearest state timestamp (to get the root) for the given
-time.
-- So, we will be able to get the data (state) at the given time.
 
 ### SCHEMA
 
@@ -196,6 +206,10 @@ using Record2.
 So, we will have 2 lookups for each request. 
 
 ### CRED_DEF
+
+The Definition of credentials for the given Schema by the given Issuer.
+It contains public keys (primary and revocation),
+signature type and reference to the Schema. 
 
 #### CRED_DEF txn
 ```
@@ -362,17 +376,22 @@ Result for the Example above:
 
 ### REVOC_REG_DEF
 
+The Definition of revocation registry for the given CredDef.
+It contains public keys, maximum number of credentials the registry may contain,
+reference to the CredDef, plus some revocation registry specific data.
+
 #### REVOC_REG_DEF txn
 ```
 {
     "data": {
         "uuid":"ZXzcdDLhCpGCYRHW82kjHd",
+        "revocRegType":"CL_ACCUM",
         "credDefRef":"GEzcdDLhCpGCYRHW82kjHd",
-        "accumKey": {},
+        "publicKeys": {},
         "maxCredNum": 1000000,
-        "tails": {
-            "hash": "<SHA256 hash>",
-            "location": "<URL>"
+        "metadata": {
+            "tailsHash": "<SHA256 hash>",
+            "tailsLocation": "<URL>"
         }
         "oldKeyTrustTime": {                    (optional)
             "from": "10", 
@@ -433,6 +452,8 @@ The logic is the same as for `GET_CLAIM_DEF` (involving Record1, Record2 and `is
 
 
 ### REVOC_REG
+
+The delta of the RevocReg current state (accumulator, issued and revoked indices, etc.).
 
 #### REVOC_REG txn
 ```
