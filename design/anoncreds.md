@@ -73,8 +73,9 @@ Anoncreds protocol links:
     * It's needed to fulfill Requirements 5.
 * This attribute can be considered as `m3` special attribute (`m1` is master secret, `m2` is credential context, `m3` is issuance time).
 * The `issuanceTime` can be disclosed in each proof.
+    * The Verifier should use Predicates (instead of disclosing) for the value of `issuanceTime`. 
     * We do not force disclosing `issuanceTime` (if want to avoid correlation),
-but if it's not disclosed, then there is a chance the the proof verification will fail because 
+but if it's not disclosed and not verified as a Predicate, then there is a chance the the proof verification will fail because 
 of key rotations.  
     * If `issuanceTime` is not disclosed, then the latest keys will be used.
 
