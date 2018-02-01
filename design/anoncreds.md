@@ -4,7 +4,7 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 * [Anoncreds Link](#anoncreds-links)
 * [Requirements](#requirements)
 * [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
-* [Referencing Schema, CredDef and RevocReg in credentials and proofs](#referencing-schema,-credDef-and-revocReg-in-credentials-and-proofs)
+* [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-credDef-in-credentials-and-proofs)
 * [How Prover and Verifier get keys for Credentials and Proofs](#how-prover-and-verifier-get-keys-for-credentials-and-proofs)
 * [Timestamp Support in State](#timestamp-support-in-state)
 * [SCHEMA](#schema)
@@ -80,7 +80,7 @@ of key rotations.
 * If `issuanceTime` is not disclosed, then the latest keys will be used.
 
 
-### Referencing Schema, CredDef and RevocReg in credentials and proofs
+### Referencing Schema and CredDef in Credentials and Proofs
 * Schema is referenced by unique `SchemaDID`.
     * Created for each new Schema.
     * This is different from Schema Issuer DID (DID used to send `SCHEMA` txn) which can be the same for 
