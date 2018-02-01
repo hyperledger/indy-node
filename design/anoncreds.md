@@ -4,8 +4,8 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 * [Anoncreds Link](#anoncreds-links)
 * [Requirements](#requirements)
 * [Technical goals](#technical-goals)
-* [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
 * [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-creddef-in-credentials-and-proofs)
+* [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
 * [How Prover and Verifier get keys for Credentials and Proofs](#how-prover-and-verifier-get-keys-for-credentials-and-proofs)
 * [Timestamp Support in State](#timestamp-support-in-state)
 * [SCHEMA](#schema)
@@ -87,6 +87,11 @@ Anoncreds protocol links:
     * Used to update RevocReg.
     * This is different from RevocDef Issuer DID (DID used to send `REVOC_DEF` txn) which can be the same for 
     any number of RevocDef.
+* Each `UUID` can be considered as a global UUID within the Ledger.
+The Ledger can guarantee that malicious party can not change/break existing entity 
+defined by a UUID by 
+and checking if there is an entity with the given UUID already existent, plus
+checking the ownership when modifying existing entities (only the issuer who created en entity with the given UUID can modify it). 
 
       
 ### How Prover and Verifier get keys for Credentials and Proofs
@@ -138,7 +143,7 @@ time.
 ```
 {
     "data": {
-        "did":"GEzcdDLhCpGCYRHW82kjHd",
+        "uuid":"GEzcdDLhCpGCYRHW82kjHd",
         "attrNames": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
         "name":"Degree",
         "version":"1.0",
@@ -152,12 +157,13 @@ time.
 ....
 }
 ```
-`schemaDid` is Schema's DID. It's different from `issuerDid`.
+`uuid` is Schema's UUID. It's different from `issuerDid`.
 
 #### Restrictions
 
-* Existing Schema (identified by the Schema `did`) can be modified/changed/evolved.
-* Only the `issuerDid` can modify existing Schema (that is we need to keep the ownership). 
+* Existing Schema (identified by the Schema `uuid`) can be modified/changed/evolved.
+* Only the `issuerDid` who created the Schema can modify it (that is we need to keep the ownership).
+* It's not possible to create multiple entities with the same `uuid` (so, it's unique within the ledger). 
 
 #### State
 
@@ -166,11 +172,11 @@ We need to have two records for Schema in State Trie in order to have
 1. Requirements 8
 
 Record 1:
-* key: `schemaIssuerDid | SchemaMarker | schemaName | schemaVersion | schemaDid` 
+* key: `schemaIssuerDid | SchemaMarker | schemaName | schemaVersion | schemaUUID` 
 * value: aggregated txn data
 
 Record 2:
-* key: `schemaDid`
+* key: `schemaUUID`
 * value: Record 1 key
 
 
@@ -178,12 +184,12 @@ Record 2:
 ```
 {
     'data': {
-        'schemaDid': 'GEzcdDLhCpGCYRHW82kjHd',
+        'uuid': 'GEzcdDLhCpGCYRHW82kjHd',
     },
 ...
 }
 ```
-1. Lookup State Trie to get `schemaIssuerDid | SchemaMarker |schemaName | schemaVersion | schemaDid` by `schemaDid`
+1. Lookup State Trie to get `schemaIssuerDid | SchemaMarker |schemaName | schemaVersion | schemaUUID` by `uuid`
 using Record2. 
 1. Lookup State Trie to get data by the key found above (Record1).
 
@@ -191,11 +197,11 @@ So, we will have 2 lookups for each request.
 
 ### CRED_DEF
 
-##### CRED_DEF txn
+#### CRED_DEF txn
 ```
 {
     "data": {
-        "did":"TYzcdDLhCpGCYRHW82kjHd",
+        "uuid":"TYzcdDLhCpGCYRHW82kjHd",
         "publicKeys": {},
         "schemaRef":"GEzcdDLhCpGCYRHW82kjHd",
         "signatureType":"CL",
@@ -213,7 +219,7 @@ So, we will have 2 lookups for each request.
 ....
 }
 ```
-* `did` is CredDef's DID. It's different from `issuerDid`.
+* `uuid` is CredDef's UUID. It's different from `issuerDid`.
 * `oldKeyTrustTime` can be set each time the key is rotated and defines
  `the intervals when we still can trust the previous value of the key`.
  This is delta; all intervals are accumulated and appended in the State. 
@@ -223,28 +229,28 @@ We can not always use revocation to deprecate old credentials, since revocation 
 be stolen as well.  
  
 
-##### Restrictions
+#### Restrictions
 
-* Existing CredDef (identified by the CredDef `did`) can be modified/changed/evolved.
+* Existing CredDef (identified by the CredDef `uuid`) can be modified/changed/evolved.
 That is rotation of keys is supported.
-* Only the `issuerDid` can modify existing CredDef (that is we need to keep the ownership). 
+* Only the `issuerDID` created the CredDef can modify it (that is we need to keep the ownership). 
+* It's not possible to create multiple entities with the same `uuid` (so, it's unique within the ledger).
 
-
-##### State
+#### State
 
 We need to have two records for CredDef in State Trie in order to have
 1. Simple referencing of CredDef in the protocol (by CredDef DID)
 1. Requirements 8
 
 Record 1:
-* key: `credDefIssuerDid | CredDefMarker | schemaDid | signatureType | credDefDid` 
+* key: `credDefIssuerDid | CredDefMarker | schemaUUID | signatureType | credDefUUID` 
 * value: aggregated txn data plus `trustTime` as an array (each next `trustTme` is appended).
 
 Record 2:
-* key: `credDefDid`
+* key: `credDefUUID`
 * value: Record 1 key
 
-##### How oldKeyTrustTime works
+#### How oldKeyTrustTime works
 Let's assume that 
 * `key1` was issued at `timeA`
 * `key2` was issued at `timeC`, and we suspect that `key1` is stolen at `timeB`
@@ -266,7 +272,7 @@ The following txns will be put on Ledger:
 1.    
  ```
  "data": {
-        "did":"TYzcdDLhCpGCYRHW82kjHd",
+        "uuid":"TYzcdDLhCpGCYRHW82kjHd",
         "publicKeys": {key1},
         "schemaRef":"GEzcdDLhCpGCYRHW82kjHd",
         "signatureType":"CL",
@@ -275,7 +281,7 @@ The following txns will be put on Ledger:
 2.    
  ```
  "data": {
-        "did":"TYzcdDLhCpGCYRHW82kjHd",
+        "uuid":"TYzcdDLhCpGCYRHW82kjHd",
         "publicKeys": {key2},
         "schemaRef":"GEzcdDLhCpGCYRHW82kjHd",
         "signatureType":"CL",
@@ -288,7 +294,7 @@ The following txns will be put on Ledger:
 3.    
  ```
  "data": {
-        "did":"TYzcdDLhCpGCYRHW82kjHd",
+        "uuid":"TYzcdDLhCpGCYRHW82kjHd",
         "publicKeys": {key3},
         "schemaRef":"GEzcdDLhCpGCYRHW82kjHd",
         "signatureType":"CL",
@@ -306,7 +312,7 @@ The current state (Record1) will look the following:
  ```
  ....
  "data": {
-        "did":"TYzcdDLhCpGCYRHW82kjHd",
+        "uuid":"TYzcdDLhCpGCYRHW82kjHd",
         "publicKeys": {key3},
         "schemaRef":"GEzcdDLhCpGCYRHW82kjHd",
         "signatureType":"CL",
@@ -319,11 +325,11 @@ The current state (Record1) will look the following:
  ....
 ```
  
-##### GET_CRED_DEF
+#### GET_CRED_DEF
 ```
 {
     'data': {
-        'credDefDid': 'TYzcdDLhCpGCYRHW82kjHd',
+        'uuid': 'TYzcdDLhCpGCYRHW82kjHd',
         'issuanceTime': 20, (optional)
     },
 ...
@@ -331,7 +337,7 @@ The current state (Record1) will look the following:
 ```
 There is a special logic to get the valid and trusted value of the keys
 depending on the issuance time:
-1. Lookup State Trie to get `credDefIssuerDid | CredDefMarker | schemaDid | signatureType | credDefDid`  by `credDefDid`
+1. Lookup State Trie to get `credDefIssuerDid | CredDefMarker | schemaUUID | signatureType | credDefUUID`  by `uuid`
 using Record2. 
 1. Lookup State Trie to get the current state by the key found above (Record1).
 1. If no `issuanceTime` provided, then just return the current value.  
@@ -356,14 +362,14 @@ Result for the Example above:
 
 ### REVOC_DEF
 
-##### REVOC_DEF txn
+#### REVOC_DEF txn
 ```
 {
     "data": {
-        "did":"ZXzcdDLhCpGCYRHW82kjHd",
+        "uuid":"ZXzcdDLhCpGCYRHW82kjHd",
         "credDefRef":"GEzcdDLhCpGCYRHW82kjHd",
         "accumKey": {},
-        "maxCredNum": 1000000
+        "maxCredNum": 1000000,
         "tails": {
             "hash": "<SHA256 hash>",
             "location": "<URL>"
@@ -382,7 +388,7 @@ Result for the Example above:
 ....
 }
 ```
-* `did` is RevocDef's DID. It's different from `issuerDid`.
+* `uuid` is RevocDef's UUID. It's different from `issuerDid`.
 * `oldKeyTrustTime` can be set each time the accumulator key is rotated and defines
  `the interval when we still can trust the previous value of the key`. 
 It is needed to deprecate credentials issued during the time when we suspect
@@ -391,33 +397,33 @@ We can not always use revocation to deprecate old credentials, since revocation 
 be stolen as well.  
  
 
-##### Restrictions
+#### Restrictions
 
-* Existing RevocDef (identified by the RevocDef `did`) can be modified/changed/evolved.
+* Existing RevocDef (identified by the RevocDef `uuid`) can be modified/changed/evolved.
 That is rotation of keys is supported.
-* Only the `issuerDid` can modify existing RevocDef (that is we need to keep the ownership). 
+* Only the `issuerDid` who created the RevocDef can modify it (that is we need to keep the ownership). 
+* It's not possible to create multiple entities with the same `uuid` (so, it's unique within the ledger).
 
-
-##### State
+#### State
 
 We need to have two records for RevocDef in State Trie in order to have
 1. Simple referencing of RevocDef in the protocol (by RevocDef DID)
 1. Requirements 8
 
 Record 1:
-* key: `revocDefIssuerDid | RevocRefMarker | credDefDid | revocDefDid` 
+* key: `revocDefIssuerDid | RevocRefMarker | credDefUUID | revocDefUUID` 
 * value: aggregated txn data plus `trustTime` as an array (each next `trustTme` is appended).
 
 Record 2:
-* key: `revocDefDid`
+* key: `revocDefUUID`
 * value: Record 1 key
 
 
-##### GET_REVOC_DEF
+#### GET_REVOC_DEF
 ```
 {
     'data': {
-        'revocDefDid': 'ZXzcdDLhCpGCYRHW82kjHd',
+        'uuid': 'ZXzcdDLhCpGCYRHW82kjHd',
         'issuanceTime': 20, (optional)
     },
 ...
@@ -428,11 +434,11 @@ The logic is the same as for `GET_CLAIM_DEF` (involving Record1, Record2 and `is
 
 ### REVOC_REG
 
-##### REVOC_REG txn
+#### REVOC_REG txn
 ```
 {
     "data": {
-        "revocRegDid":"ZXzcdDLhCpGCYRHW82kjHd",
+        "uuid":"ZXzcdDLhCpGCYRHW82kjHd",
         "type": "<issued by default or not>"
         "accum":"<accum_value>",
         "issued": [], (optional)
@@ -447,34 +453,34 @@ The logic is the same as for `GET_CLAIM_DEF` (involving Record1, Record2 and `is
 ....
 }
 ```
-* `revocRegDid` must match an existing `REVOC_DEF` with the given DID.
+* `uuid` must match an existing `REVOC_DEF` with the given UUID.
 * `type`: issuance by default (`issued` will be empty in this case assuming that everything is already issued)
 or issuance by request (`issued` will be fulfilled by newly issued indices).
 * `issued`: an array of issued indices (may be absent/empty if the type is "issuance by default"); this is delta; will be accumulated in state.
 * `revoked`: an array of revoked indices (delta; will be accumulated in state)
 
-##### Restrictions
+#### Restrictions
 
-* Existing RevocReg (identified by the RevocDef `did`) can be modified/changed/evolved.
+* Existing RevocReg (identified by the RevocDef's `uuid`) can be modified/changed/evolved.
 * Only the `issuerDid` who created the corresponding `REVOC_DEF` can modify it. 
 
 
-##### State
+#### State
 
-* key: `revocDefDid` 
+* key: `revocDefUUID` 
 * value: aggregated txn data (aggregated accum_value, issued and revoked arrays)
 
 
-##### GET_REVOC_REG
+#### GET_REVOC_REG
 ```
 {
     'data': {
-        'revocDefDid': 'ZXzcdDLhCpGCYRHW82kjHd',
+        'uuid': 'ZXzcdDLhCpGCYRHW82kjHd',
         'timestamp': 20,
     },
 ...
 }
 ```
 1. Use generic logic to get the root of the State trie at the time `timestamp`. 
-1. Lookup State Trie with the found root to find the state for `revocDefDid`.
+1. Lookup State Trie with the found root to find the state for `uuid`.
 
