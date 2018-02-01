@@ -205,8 +205,9 @@ def prepare_get_attr_for_state(txn):
     if attr_type == ENC:
         attr_key = hash_of(attr_key)
 
-    path = make_state_path_for_attr(nym, attr_key)
-    return path, None, None, None
+    path = make_state_path_for_attr(nym, attr_key,
+                                    attr_type == HASH or attr_type == ENC)
+    return attr_type, path, None, None, None
 
 
 def _extract_attr_typed_value(txn):
