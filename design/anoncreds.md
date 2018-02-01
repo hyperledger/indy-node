@@ -10,7 +10,7 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 * [Timestamp Support in State](#timestamp-support-in-state)
 * [SCHEMA](#schema)
 * [CRED_DEF](#cred_def)
-* [REVOC_DEF](#revoc_def)
+* [REVOC_REG_DEF](#revoc_def)
 * [REVOC_REG](#revoc_reg)
 
 ### Anoncreds Links
@@ -32,14 +32,14 @@ Anoncreds protocol links:
     1. CredDef Issuer needs to be able to create multiple CredDefs for the same Schema by the same issuer DID.
     1. We need to keep reputation for CredDef's Issuer DID.
 1. Creation of Revocation entities (Def and Registry):
-    1. RevocDef Issuer may not be the same as Schema Issuer and CredDef issuer. 
-    1. RevocDef Issuer needs to be able to create multiple RevocDefs for the same issuer DID.
-    1. RevocDef Issuer needs to be able to create multiple RevocDef for the same CredDef by the same issuer DID.
-    1. We need to keep reputation for RevocDef's Issuer DID.
-1. Referencing Schema/CredDef/RevocDef:
-    1. Prover needs to know what CredDef (public keys), Schema and RevocDef 
+    1. RevocRegDef Issuer may not be the same as Schema Issuer and CredDef issuer. 
+    1. RevocRegDef Issuer needs to be able to create multiple RevocRegDefs for the same issuer DID.
+    1. RevocRegDef Issuer needs to be able to create multiple RevocRegDef for the same CredDef by the same issuer DID.
+    1. We need to keep reputation for RevocRegDef's Issuer DID.
+1. Referencing Schema/CredDef/RevocRegDef:
+    1. Prover needs to know what CredDef (public keys), Schema and RevocRegDef 
     were used for issuing the credential.  
-    1. Verifier needs to know what CredDef (public keys), Schema and RevocDef 
+    1. Verifier needs to know what CredDef (public keys), Schema and RevocRegDef 
     were used for issuing the credential from the proof.
 1. <b>Keys rotation</b>:
     1. Issuer needs to be able to rotate the keys and issue new credentials with the new keys.
@@ -64,11 +64,11 @@ Anoncreds protocol links:
     1. One needs to be able to get all SCHEMAs created by the given Issuer DID.
     1. One needs to be able to get all SCHEMAs with the given name created by the given Issuer DID.
     1. One needs to be able to get all SCHEMAs with the given name and version created by the given Issuer DID.
-    1. One needs to be able to get all REVOC_DEFs created by the given Issuer DID.
-    1. One needs to be able to get all REVOC_DEFs created by the given Issuer DID for the given CRED_DEF.    
+    1. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID.
+    1. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID for the given CRED_DEF.    
 
 ### Technical goals
-* Define how Schemas, CreDefs and RevocDefs are identified (seqNo, UUID, primary key tuples?)
+* Define how Schemas, CreDefs and RevocRegDefs are identified (seqNo, UUID, primary key tuples?)
 * Define how to deal with Requirements 6.
 * Define Revocation-related transactions and necessary changes in indy-node.
 
@@ -82,11 +82,11 @@ Anoncreds protocol links:
     * Created for each new CredDef.
     * This is different from CredDef Issuer DID (DID used to send `CRED_DEF` txn) which can be the same for 
     any number of CredDef.
-* RevocDef and RevocReg are referenced by unique `RevocDefUUID`.
-    * Created for each new RevocDef.
+* RevocRegDef and RevocReg are referenced by unique `RevocRegDefUUID`.
+    * Created for each new RevocRegDef.
     * Used to update RevocReg.
-    * This is different from RevocDef Issuer DID (DID used to send `REVOC_DEF` txn) which can be the same for 
-    any number of RevocDef.
+    * This is different from RevocRegDef Issuer DID (DID used to send `REVOC_REG_DEF` txn) which can be the same for 
+    any number of RevocRegDef.
 * Each `UUID` can be considered as a global UUID within the Ledger.
 The Ledger can guarantee that malicious party can not change/break existing entity 
 defined by a UUID by 
@@ -99,7 +99,7 @@ checking the ownership when modifying existing entities (only the issuer who cre
 * Also there is `issuanceTime` attribute in each credential (which can be disclosed in the proof).
 * Prover/Verifier looks up SCHEMA using `GET_SCHEMA(schemaUUID)` request to the ledger
 * Prover/Verifier looks up CRED_DEF using `GET_CRED_DEF(credDefUUID, issuanceTime)` request to the ledger
-* Prover/Verifier looks up REVOC_DEF using `GET_REVOC_DEF(revocDefUUID, issuanceTime)` request to the ledger
+* Prover/Verifier looks up REVOC_REG_DEF using `GET_REVOC_REG_DEF(revocDefUUID, issuanceTime)` request to the ledger
 * Prover looks up REVOC_REG to update the witness for the given `timestamp` 
  using `GET_REVOC_REG(revocDefUUID, timestamp)` request to the ledger
 * Verifies looks up REVOC_REG to get accumulator value for the given `timestamp`  
@@ -360,9 +360,9 @@ Result for the Example above:
 * `issuanceTime > E` => [E,...] => state at timeE => key3 (OK)
 
 
-### REVOC_DEF
+### REVOC_REG_DEF
 
-#### REVOC_DEF txn
+#### REVOC_REG_DEF txn
 ```
 {
     "data": {
@@ -388,7 +388,7 @@ Result for the Example above:
 ....
 }
 ```
-* `uuid` is RevocDef's UUID. It's different from `issuerDid`.
+* `uuid` is RevocRegDef's UUID. It's different from `issuerDid`.
 * `oldKeyTrustTime` can be set each time the accumulator key is rotated and defines
  `the interval when we still can trust the previous value of the key`. 
 It is needed to deprecate credentials issued during the time when we suspect
@@ -399,15 +399,15 @@ be stolen as well.
 
 #### Restrictions
 
-* Existing RevocDef (identified by the RevocDef `uuid`) can be modified/changed/evolved.
+* Existing RevocRegDef (identified by the RevocRegDef `uuid`) can be modified/changed/evolved.
 That is rotation of keys is supported.
-* Only the `issuerDid` who created the RevocDef can modify it (that is we need to keep the ownership). 
+* Only the `issuerDid` who created the RevocRegDef can modify it (that is we need to keep the ownership). 
 * It's not possible to create multiple entities with the same `uuid` (so, it's unique within the ledger).
 
 #### State
 
-We need to have two records for RevocDef in State Trie in order to have
-1. Simple referencing of RevocDef in the protocol (by RevocDef DID)
+We need to have two records for RevocRegDef in State Trie in order to have
+1. Simple referencing of RevocRegDef in the protocol (by RevocRegDef DID)
 1. Requirements 8
 
 Record 1:
@@ -419,7 +419,7 @@ Record 2:
 * value: Record 1 key
 
 
-#### GET_REVOC_DEF
+#### GET_REVOC_REG_DEF
 ```
 {
     'data': {
@@ -453,7 +453,7 @@ The logic is the same as for `GET_CLAIM_DEF` (involving Record1, Record2 and `is
 ....
 }
 ```
-* `uuid` must match an existing `REVOC_DEF` with the given UUID.
+* `uuid` must match an existing `REVOC_REG_DEF` with the given UUID.
 * `type`: issuance by default (`issued` will be empty in this case assuming that everything is already issued)
 or issuance by request (`issued` will be fulfilled by newly issued indices).
 * `issued`: an array of issued indices (may be absent/empty if the type is "issuance by default"); this is delta; will be accumulated in state.
@@ -461,8 +461,8 @@ or issuance by request (`issued` will be fulfilled by newly issued indices).
 
 #### Restrictions
 
-* Existing RevocReg (identified by the RevocDef's `uuid`) can be modified/changed/evolved.
-* Only the `issuerDid` who created the corresponding `REVOC_DEF` can modify it. 
+* Existing RevocReg (identified by the RevocRegDef's `uuid`) can be modified/changed/evolved.
+* Only the `issuerDid` who created the corresponding `REVOC_REG_DEF` can modify it. 
 
 
 #### State
