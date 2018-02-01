@@ -72,7 +72,16 @@ Anoncreds protocol links:
     * It's set by the Issuer to specify the time of Issuance.
     * It's needed to fulfill Requirements 5.
 * This attribute can be considered as `m3` special attribute (`m1` is master secret, `m2` is credential context, `m3` is issuance time).
-* The `issuanceTime` can be disclosed in each proof.
+* Since the Issuer may be malicious (if keys were compromised already), then 
+a proof that  `issuanceTime` is really the current time and not the time from the past is needed
+    * We can use our blockchain to prepare such a proof.
+    * Issuer signs (by his Cred Def's public key) the `issuanceTime` and sends it to the pool.
+    * Each node verifies that `issuanceTime` is not less that the current one, and signs the result with BLS key.
+    * Each node then sends the signed result to the Issuer (no need to write anything to the ledger).
+    * The issuer prepares a BLS multi-signature (making sure that there is a consensus)
+    and adds the BLS-signed proof of the `issuanceTime` to the credential.
+    * The verifier will then use the proof to make sure that the `issuanceTime` is really the correct one.
+* The `issuanceTime` needs to be verified in each proof.
     * The Verifier should use Predicates (instead of disclosing) for the value of `issuanceTime`. 
     * We do not force disclosing `issuanceTime` (if want to avoid correlation),
 but if it's not disclosed and not verified as a Predicate, then there is a chance the the proof verification will fail because 
@@ -119,7 +128,7 @@ time.
 
 ### SCHEMA
 
-##### SCHEMA txn
+#### SCHEMA txn
 ```
 {
     "data": {
@@ -139,12 +148,12 @@ time.
 ```
 `schemaDid` is Schema's DID. It's different from `issuerDid`.
 
-##### Restrictions
+#### Restrictions
 
 * Existing Schema (identified by the Schema `did`) can be modified/changed/evolved.
 * Only the `issuerDid` can modify existing Schema (that is we need to keep the ownership). 
 
-##### State
+#### State
 
 We need to have two records for Schema in State Trie in order to have
 1. Simple referencing of Schemas in the protocol (by Schema DID)
@@ -159,7 +168,7 @@ Record 2:
 * value: Record 1 key
 
 
-##### GET_SCHEMA
+#### GET_SCHEMA
 ```
 {
     'data': {
