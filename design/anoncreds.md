@@ -3,6 +3,7 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 
 * [Anoncreds Link](#anoncreds-links)
 * [Requirements](#requirements)
+* [Technical goals](#technical-goals)
 * [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
 * [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-creddef-in-credentials-and-proofs)
 * [How Prover and Verifier get keys for Credentials and Proofs](#how-prover-and-verifier-get-keys-for-credentials-and-proofs)
@@ -66,6 +67,40 @@ Anoncreds protocol links:
     1. One needs to be able to get all REVOC_DEFs created by the given Issuer DID.
     1. One needs to be able to get all REVOC_DEFs created by the given Issuer DID for the given CRED_DEF.    
 
+### Technical goals
+* Define how Schemas, CreDefs and RevocDefs are identified (seqNo, UUID, primary key tuples?)
+* Define how to deal with Requirements 6.
+* Define Revocation-related transactions and necessary changes in indy-node.
+
+
+### Referencing Schema and CredDef in Credentials and Proofs
+* Schema is referenced by unique `SchemaUUID`.
+    * Created for each new Schema.
+    * This is different from Schema Issuer DID (DID used to send `SCHEMA` txn) which can be the same for 
+    any number of Schemas.
+* CredDef is referenced by unique `CredDefUUID`.
+    * Created for each new CredDef.
+    * This is different from CredDef Issuer DID (DID used to send `CRED_DEF` txn) which can be the same for 
+    any number of CredDef.
+* RevocDef and RevocReg are referenced by unique `RevocDefUUID`.
+    * Created for each new RevocDef.
+    * Used to update RevocReg.
+    * This is different from RevocDef Issuer DID (DID used to send `REVOC_DEF` txn) which can be the same for 
+    any number of RevocDef.
+
+      
+### How Prover and Verifier get keys for Credentials and Proofs
+* Proofs and credentials come with `schemaUUID`, `credDefUUID`, `revocDefUUID`.
+* Also there is `issuanceTime` attribute in each credential (which can be disclosed in the proof).
+* Prover/Verifier looks up SCHEMA using `GET_SCHEMA(schemaUUID)` request to the ledger
+* Prover/Verifier looks up CRED_DEF using `GET_CRED_DEF(credDefUUID, issuanceTime)` request to the ledger
+* Prover/Verifier looks up REVOC_DEF using `GET_REVOC_DEF(revocDefUUID, issuanceTime)` request to the ledger
+* Prover looks up REVOC_REG to update the witness for the given `timestamp` 
+ using `GET_REVOC_REG(revocDefUUID, timestamp)` request to the ledger
+* Verifies looks up REVOC_REG to get accumulator value for the given `timestamp`  
+ using `GET_REVOC_REG(revocDefUUID, timestamp)` request to the ledger
+* Prover and Verifier should look up REVOC_REG by the same `timestamp` when generating and verifying the proof.
+
 ### Changes in Anoncreds Protocol
 
 * Each Credential must have a reserved mandatory attribute: `issuanceTime`.
@@ -73,7 +108,7 @@ Anoncreds protocol links:
     * It's needed to fulfill Requirements 5.
 * This attribute can be considered as `m3` special attribute (`m1` is master secret, `m2` is credential context, `m3` is issuance time).
 * Since the Issuer may be malicious (if keys were compromised already), then 
-a proof that  `issuanceTime` is really the current time and not the time from the past is needed
+a proof that `issuanceTime` is really the current time and not the time from the past is needed.
     * We can use our blockchain to prepare such a proof.
     * Issuer signs (by his Cred Def's public key) the `issuanceTime` and sends it to the pool.
     * Each node verifies that `issuanceTime` is not less that the current one, and signs the result with BLS key.
@@ -82,40 +117,11 @@ a proof that  `issuanceTime` is really the current time and not the time from th
     and adds the BLS-signed proof of the `issuanceTime` to the credential.
     * The verifier will then use the proof to make sure that the `issuanceTime` is really the correct one.
 * The `issuanceTime` needs to be verified in each proof.
-    * The Verifier should use Predicates (instead of disclosing) for the value of `issuanceTime`. 
-    * We do not force disclosing `issuanceTime` (if want to avoid correlation),
-but if it's not disclosed and not verified as a Predicate, then there is a chance the the proof verification will fail because 
-of key rotations.  
-    * If `issuanceTime` is not disclosed, then the latest keys will be used.
-
-
-### Referencing Schema and CredDef in Credentials and Proofs
-* Schema is referenced by unique `SchemaDID`.
-    * Created for each new Schema.
-    * This is different from Schema Issuer DID (DID used to send `SCHEMA` txn) which can be the same for 
-    any number of Schemas.
-* CredDef is referenced by unique `CredDefDID`.
-    * Created for each new CredDef.
-    * This is different from CredDef Issuer DID (DID used to send `CRED_DEF` txn) which can be the same for 
-    any number of CredDef.
-* RevocDef and RevocReg are referenced by unique `RevocDefDID`.
-    * Created for each new RevocDef.
-    * Used to update RevocReg.
-    * This is different from RevocDef Issuer DID (DID used to send `REVOC_DEF` txn) which can be the same for 
-    any number of RevocDef.
-
-      
-### How Prover and Verifier get keys for Credentials and Proofs
-* Proofs and credentials come with `schemaDID`, `credDefDID`, `revocDefDid`.
-* Also there is `issuanceTime` attribute in each credential (which can be disclosed in the proof).
-* Prover/Verifier looks up SCHEMA using `GET_SCHEMA(schemaDID)` request to the ledger
-* Prover/Verifier looks up CRED_DEF using `GET_CRED_DEF(credDefDID, issuanceTime)` request to the ledger
-* Prover/Verifier looks up REVOC_DEF using `GET_REVOC_DEF(revocDefDid, issuanceTime)` request to the ledger
-* Prover looks up REVOC_REG to update the witness for the given `timestamp` 
- using `GET_REVOC_REG(revocDefDid, timestamp)` request to the ledger
-* Verifies looks up REVOC_REG to get accumulator value for the given `timestamp`  
- using `GET_REVOC_REG(revocDefDid, timestamp)` request to the ledger
-* Prover and Verifier should look up REVOC_REG by the same `timestamp` when generating and verifying the proof.
+    * The Verifier should use Predicates (instead of disclosing) for the value of `issuanceTime`
+    to avoid correlation. 
+    * It's possible also to disclose `issuanceTime`, but we don't force it.
+    * If it's not disclosed and not verified as a Predicate, then there is a chance the the proof verification will fail because 
+of key rotations, since the latest keys will be used.
 
 ### Timestamp Support in State
 
