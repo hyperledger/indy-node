@@ -4,7 +4,7 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 * [Anoncreds Link](#anoncreds-links)
 * [Requirements](#requirements)
 * [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
-* [Referencing Schema, CredDef and RevocReg in credentials and proofs](#referencing-schema-credDef-and-revocReg-in-credentials-and-proofs)
+* [Referencing Schema, CredDef and RevocReg in credentials and proofs](#referencing-schema,-credDef-and-revocReg-in-credentials-and-proofs)
 * [How Prover and Verifier get keys for Credentials and Proofs](#how-prover-and-verifier-get-keys-for-credentials-and-proofs)
 * [Timestamp Support in State](#timestamp-support-in-state)
 * [SCHEMA](#schema)
@@ -99,11 +99,14 @@ of key rotations.
 ### How Prover and Verifier get keys for Credentials and Proofs
 * Proofs amd credential comes with `schemaDID`, `credDefDID`, `revocDefDid`.
 * Also there is `issuanceTime` attribute in each credential (which can be disclosed in the proof).
-* Prover/Verifier lookup SCHEMA using `GET_SCHEMA(schemaDID)` request to the ledger
-* Prover/Verifier lookup CRED_DEF using `GET_CRED_DEF(credDefDID, issuanceTime)` request to the ledger
-* Prover/Verifier lookup REVOC_DEF using `GET_REVOC_DEF(revocDefDid, issuanceTime)` request to the ledger
-* Prover/Verifier lookup REVOC_REG (to update the witness and get accumulator value) 
- using `GET_REVOC_REG(revocDefDid, issuanceTime)` request to the ledger
+* Prover/Verifier looks up SCHEMA using `GET_SCHEMA(schemaDID)` request to the ledger
+* Prover/Verifier looks up CRED_DEF using `GET_CRED_DEF(credDefDID, issuanceTime)` request to the ledger
+* Prover/Verifier looks up REVOC_DEF using `GET_REVOC_DEF(revocDefDid, issuanceTime)` request to the ledger
+* Prover looks up REVOC_REG to update the witness for the given `timestamp` 
+ using `GET_REVOC_REG(revocDefDid, timestamp)` request to the ledger
+* Verifies looks up REVOC_REG to get accumulator value for the given `timestamp`  
+ using `GET_REVOC_REG(revocDefDid, timestamp)` request to the ledger
+* Prover and Vefrifier should look up REVOC_REG by the same `timestamp` when generating and verifying the proof.
 
 ### Timestamp Support in State
 
