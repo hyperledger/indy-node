@@ -16,6 +16,9 @@ name = 'indy-node'
 
 env.indyDryRun = 'true'
 
+env.indyVerify = 'false'
+env.indyVerifyStatic = 'false'
+
 labels = [
     linux: params.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
 ]
