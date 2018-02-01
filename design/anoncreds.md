@@ -385,7 +385,7 @@ reference to the CredDef, plus some revocation registry specific data.
 {
     "data": {
         "uuid":"ZXzcdDLhCpGCYRHW82kjHd",
-        "revocRegType":"CL_ACCUM",
+        "type":"CL_ACCUM",
         "credDefRef":"GEzcdDLhCpGCYRHW82kjHd",
         "publicKeys": {},
         "maxCredNum": 1000000,
