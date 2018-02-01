@@ -4,7 +4,7 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 * [Anoncreds Link](#anoncreds-links)
 * [Requirements](#requirements)
 * [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
-* [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-credDef-in-credentials-and-proofs)
+* [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-creddef-in-credentials-and-proofs)
 * [How Prover and Verifier get keys for Credentials and Proofs](#how-prover-and-verifier-get-keys-for-credentials-and-proofs)
 * [Timestamp Support in State](#timestamp-support-in-state)
 * [SCHEMA](#schema)
