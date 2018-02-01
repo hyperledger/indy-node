@@ -7,25 +7,16 @@
  *  - environment variable:
  *      - INDY_AGENT_LINUX_DOCKER_LABEL: label for agents with ability
  *          to run linux docker containers
- *      - (optional) INDY_AGENT_WINDOWS_LABEL: label for windows agents
  *  - agents:
  *      - linux:
  *          - docker
- *      - windows:
- *          - python3.5 + virtualenv
- *          - cygwin
  */
 
 name = 'indy-node'
 
-// TODO enable windows
 labels = [
     linux: params.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
 ]
-
-if (params.INDY_AGENT_WINDOWS_LABEL) {
-    labels[windows] = params.INDY_AGENT_WINDOWS_LABEL
-}
 
 def locallib
 stage('Load local lib') {
@@ -39,14 +30,15 @@ library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
     github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
 )
 
-def config = locallib.init()
 def indyConfig = indyConfig()
-indyLogger.info("parameters: local $config, indyConfig: $indyConfig")
+indyLogger.info("local config: $locallib.config")
+indyLogger.info("indy config: $indyConfig")
 
 // PIPELINE
 indyPipeline {
     timeout = 60
 
+    // TODO
     onFail = { err ->
         println(err.toString())
     }
@@ -58,8 +50,8 @@ indyPipeline {
         ['indyVerifyStatic', {}],
         ['indyVerify', {
             labels = this.labels.collect {k, v -> v}
-            dockers = config.dockers
-            tests = config.tests
+            dockers = locallib.config.dockers
+            tests = locallib.config.tests
         }],
         ['indyAutoMergePR', {}],
         ['indyPackaging', {
