@@ -24,26 +24,26 @@ Anoncreds protocol links:
     1. Schema Issuer needs to be able to create multiple schemas by the same issuer DID.
     1. Schema Issuer needs to be able to evolve existing schema adding new attributes.
     1. We need to keep reputation for Schema's Issuer DID.
-    1. We should have any semver assumptions for Schema's version by the Ledger.
+    1. We should not have any semver assumptions for Schema's version by the Ledger.
 1. Creation of Cred Def:
-    1. CredDef Issuer may not be the same as CredDef issuer.
+    1. CredDef Issuer may not be the same as Schema issuer.
     1. CredDef Issuer needs to be able to create multiple CredDefs by the same issuer DID.
     1. CredDef Issuer needs to be able to create multiple CredDefs for the same Schema by the same issuer DID.
-    1. We need to keep reputation for Issuer DID.
-1. Creation of Revoc Reg:
-    1. RevocReg Issuer may not be the same as Schema Issuer and CredDef issuer. 
-    1. RevocReg Issuer needs to be able to create multiple RevocReg for the same issuer DID.
-    1. RevocReg Issuer needs to be able to create multiple RevocReg for the same CredDef by the same issuer DID.
-    1. We need to keep reputation for RevocReg DID.
-1. Referencing Schema/CredDef/RevocReg:
-    1. Prover needs to know what CredDef (public keys), Schema and Revocation Registry 
+    1. We need to keep reputation for CredDef's Issuer DID.
+1. Creation of Revocation entities (Def and Registry):
+    1. RevocDef Issuer may not be the same as Schema Issuer and CredDef issuer. 
+    1. RevocDef Issuer needs to be able to create multiple RevocDefs for the same issuer DID.
+    1. RevocDef Issuer needs to be able to create multiple RevocDef for the same CredDef by the same issuer DID.
+    1. We need to keep reputation for RevocDef's Issuer DID.
+1. Referencing Schema/CredDef/RevocDef:
+    1. Prover needs to know what CredDef (public keys), Schema and RevocDef 
     were used for issuing the credential.  
-    1. Verifier needs to know what CredDef (public keys), Schema and Revocation Registry 
+    1. Verifier needs to know what CredDef (public keys), Schema and RevocDef 
     were used for issuing the credential from the proof.
 1. <b>Keys rotation</b>:
     1. Issuer needs to be able to rotate the keys and issue new credentials with the new keys.
     1. Issuer needs to be able to rotate the keys using the same Issuer DID.
-1. <b>Processing issued credentials when key is compromised</b>: 
+1. <b>Validity of already issued credentials when key is compromised</b>: 
     1. If the Issuer's key is compromised and the issuer suspects that it's compromised 
     from the very beginning, then the Issuer should be able to rotate the key so that all issued credentials
     becomes invalid.
@@ -57,27 +57,26 @@ Anoncreds protocol links:
 1. <b>Revocation</b>
     1. Verifier needs to be able to Verify that the credential is not revoked at the current time
     (the time when proof request is created).
-    1. Verifier needs to be able to Verify that the credential is not revoked at the given time (in the past).       
+    1. Verifier needs to be able to Verify that the credential is not revoked at the given time (any time in the past).       
 1. Querying
-    1. One needs to be able to get all CRED_DEFs created by the given Issuer.
-    1. One needs to be able to get all SCHEMAs created by the given Issuer.
-    1. One needs to be able to get all SCHEMAs with the given name created by the given Issuer.
-    1. One needs to be able to get all SCHEMAs with the given name and version created by the given Issuer.
-    1. One needs to be able to get all REVOC_DEFs created by the given Issuer.
-    1. One needs to be able to get all REVOC_DEFs created by the given Issuer for the given CRED_DEF.
-    
+    1. One needs to be able to get all CRED_DEFs created by the given Issuer DID.
+    1. One needs to be able to get all SCHEMAs created by the given Issuer DID.
+    1. One needs to be able to get all SCHEMAs with the given name created by the given Issuer DID.
+    1. One needs to be able to get all SCHEMAs with the given name and version created by the given Issuer DID.
+    1. One needs to be able to get all REVOC_DEFs created by the given Issuer DID.
+    1. One needs to be able to get all REVOC_DEFs created by the given Issuer DID for the given CRED_DEF.    
 
 ### Changes in Anoncreds Protocol
 
-* Each Credential must have a reserved mandatory attribute: Issuance time.
-* It's set by the Issuer to specify the time of Issuance.
-* It's needed to fulfill Requirements 5.
+* Each Credential must have a reserved mandatory attribute: `issuanceTime`.
+    * It's set by the Issuer to specify the time of Issuance.
+    * It's needed to fulfill Requirements 5.
 * This attribute can be considered as `m3` special attribute (`m1` is master secret, `m2` is credential context, `m3` is issuance time).
-* The issuance time can be disclosed in each proof.
-* We do not force disclosing `issuanceTime` (if want to avoid correlation),
+* The `issuanceTime` can be disclosed in each proof.
+    * We do not force disclosing `issuanceTime` (if want to avoid correlation),
 but if it's not disclosed, then there is a chance the the proof verification will fail because 
 of key rotations.  
-* If `issuanceTime` is not disclosed, then the latest keys will be used.
+    * If `issuanceTime` is not disclosed, then the latest keys will be used.
 
 
 ### Referencing Schema and CredDef in Credentials and Proofs
@@ -97,7 +96,7 @@ of key rotations.
 
       
 ### How Prover and Verifier get keys for Credentials and Proofs
-* Proofs amd credential comes with `schemaDID`, `credDefDID`, `revocDefDid`.
+* Proofs and credentials come with `schemaDID`, `credDefDID`, `revocDefDid`.
 * Also there is `issuanceTime` attribute in each credential (which can be disclosed in the proof).
 * Prover/Verifier looks up SCHEMA using `GET_SCHEMA(schemaDID)` request to the ledger
 * Prover/Verifier looks up CRED_DEF using `GET_CRED_DEF(credDefDID, issuanceTime)` request to the ledger
@@ -106,7 +105,7 @@ of key rotations.
  using `GET_REVOC_REG(revocDefDid, timestamp)` request to the ledger
 * Verifies looks up REVOC_REG to get accumulator value for the given `timestamp`  
  using `GET_REVOC_REG(revocDefDid, timestamp)` request to the ledger
-* Prover and Vefrifier should look up REVOC_REG by the same `timestamp` when generating and verifying the proof.
+* Prover and Verifier should look up REVOC_REG by the same `timestamp` when generating and verifying the proof.
 
 ### Timestamp Support in State
 
@@ -170,9 +169,9 @@ Record 2:
 ```
 1. Lookup State Trie to get `schemaIssuerDid | SchemaMarker |schemaName | schemaVersion | schemaDid` by `schemaDid`
 using Record2. 
-1. Lookup State Trie to get data by the key found above.
+1. Lookup State Trie to get data by the key found above (Record1).
 
-So, we will have from 2 lookups for each request. 
+So, we will have 2 lookups for each request. 
 
 ### CRED_DEF
 
@@ -200,7 +199,8 @@ So, we will have from 2 lookups for each request.
 ```
 * `did` is CredDef's DID. It's different from `issuerDid`.
 * `oldKeyTrustTime` can be set each time the key is rotated and defines
- `the interval when we still can trust the previous value of the key`. 
+ `the intervals when we still can trust the previous value of the key`.
+ This is delta; all intervals are accumulated and appended in the State. 
 It is needed to deprecate credentials issued during the time when we suspect
 the keys were stolen.
 We can not always use revocation to deprecate old credentials, since revocation keys can
@@ -285,7 +285,7 @@ The following txns will be put on Ledger:
 
 
 The current state (Record1) will look the following:
-* key: `HHAD5g65TDQr1PPHHRoiGf|GEzcdDLhCpGCYRHW82kjHd|CL|TYzcdDLhCpGCYRHW82kjHd`
+* key: `HHAD5g65TDQr1PPHHRoiGf|CRED_DEF|GEzcdDLhCpGCYRHW82kjHd|CL|TYzcdDLhCpGCYRHW82kjHd`
 * value:
  ```
  ....
@@ -317,7 +317,7 @@ There is a special logic to get the valid and trusted value of the keys
 depending on the issuance time:
 1. Lookup State Trie to get `credDefIssuerDid | CredDefMarker | schemaDid | signatureType | credDefDid`  by `credDefDid`
 using Record2. 
-1. Lookup State Trie to get the current state by the key found above.
+1. Lookup State Trie to get the current state by the key found above (Record1).
 1. If no `issuanceTime` provided, then just return the current value.  
 1. Try to find the interval (in `oldKeyTrustTime` array) the `issuanceTime` belongs to.
     * If it's greater than the most right interval, then return the current value.
@@ -330,12 +330,12 @@ of this interval.
 So, we will have from 2 to 5 lookups for each request. 
 
 Result for the Example above:
-* issuanceTime < A => [A,B] => state at timeA => key1 (OK)
-* A <= issuanceTime <= B => [A,B] => state at timeA => key1 (OK)
-* B < issuanceTime < C => [C,D] => state at timeC => key2 (deprecated credentials)
-* C <= issuanceTime <= D => [C,D] => state at timeC => key2 (OK)
-* D < issuanceTime < E => [E,...] => state at timeE => key3 (deprecated credentials)
-* issuanceTime > E => [E,...] => state at timeE => key3 (OK)
+* `issuanceTime < A` => [A,B] => state at timeA => key1 (OK)
+* `A <= issuanceTime <= B` => [A,B] => state at timeA => key1 (OK)
+* `B < issuanceTime < C` => [C,D] => state at timeC => key2 (deprecated credentials)
+* `C <= issuanceTime <= D` => [C,D] => state at timeC => key2 (OK)
+* `D < issuanceTime < E` => [E,...] => state at timeE => key3 (deprecated credentials)
+* `issuanceTime > E` => [E,...] => state at timeE => key3 (OK)
 
 
 ### REVOC_DEF
