@@ -2,6 +2,11 @@
 
 name = 'indy-node'
 
+env.indyDryRun = 'true'
+
+env.indyVerify = 'false'
+env.indyVerifyStatic = 'false'
+
 env.indyNodeLabel = 'ubuntu'
 env.indyPRStatusContext = 'ci/hyperledger-jenkins/pr-merge'
 

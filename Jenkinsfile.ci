@@ -14,6 +14,8 @@
 
 name = 'indy-node'
 
+env.indyDryRun = 'true'
+
 labels = [
     linux: params.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
 ]
@@ -33,6 +35,23 @@ library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
 def indyConfig = indyConfig()
 indyLogger.info("local config: $locallib.config")
 indyLogger.info("indy config: $indyConfig")
+
+def buildDebUbuntu = { releaseVersion, sourcePath ->
+    def volumeName = "$name-deb-u1604"
+    if (env.BRANCH_NAME && env.BRANCH_NAME != 'master') {
+        volumeName = "${volumeName}.${env.BRANCH_NAME}"
+    }
+    if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
+        sh "docker volume rm $volumeName"
+    }
+    dir('build-scripts/ubuntu-1604') {
+        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName"
+        sh "./build-3rd-parties-docker.sh $volumeName"
+    }
+    return "$volumeName"
+}
+
+
 
 // PIPELINE
 indyPipeline {
@@ -56,7 +75,7 @@ indyPipeline {
         ['indyAutoMergePR', {}],
         ['indyPackaging', {
             version = "0.0.0.${this.env.BUILD_NUMBER}" // XXX TODO FIXME
-            builders.deb = locallib.buildDebUbuntu
+            builders.deb = buildDebUbuntu
         }]
     ]
 }
