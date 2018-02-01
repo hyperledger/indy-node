@@ -408,16 +408,16 @@ class Wallet(PWallet, TrustAnchoring):
     def build_attrib(self, nym, raw=None, enc=None, hsh=None):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1
         if raw:
-            l = LedgerStore.RAW
+            store = LedgerStore.RAW
             data = raw
         elif enc:
-            l = LedgerStore.ENC
+            store = LedgerStore.ENC
             data = enc
         elif hsh:
-            l = LedgerStore.HASH
+            store = LedgerStore.HASH
             data = hsh
         else:
             raise RuntimeError('One of raw, enc, or hash are required.')
 
         return Attribute(randomString(5), data, self.defaultId,
-                         dest=nym, ledgerStore=l)
+                         dest=nym, ledgerStore=store)
