@@ -5,7 +5,6 @@ from collections import deque
 from typing import Dict, Union, Tuple, Optional, Callable
 
 from base58 import b58decode, b58encode
-from plenum import config
 
 from plenum.client.client import Client as PlenumClient
 from plenum.common.error import fault
