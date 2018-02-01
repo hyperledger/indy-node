@@ -843,12 +843,9 @@ class IndyCli(PlenumCli):
             if not self.canMakeIndyRequest:
                 return True
             nym = matchedVars.get('dest_id')
-            raw = matchedVars.get('raw') \
-                if matchedVars.get('raw') else None
-            enc = ast.literal_eval(matchedVars.get('enc')) \
-                if matchedVars.get('enc') else None
-            hsh = matchedVars.get('hash') \
-                if matchedVars.get('hash') else None
+            raw = matchedVars.get('raw', None)
+            enc = matchedVars.get('enc', None)
+            hsh = matchedVars.get('hash', None)
             self._addAttribToNym(nym, raw, enc, hsh)
             return True
 
@@ -859,12 +856,9 @@ class IndyCli(PlenumCli):
             if not self.canMakeIndyRequest:
                 return True
             nym = matchedVars.get('dest_id')
-            raw = matchedVars.get('raw') \
-                if matchedVars.get('raw') else None
-            enc = ast.literal_eval(matchedVars.get('enc')) \
-                if matchedVars.get('enc') else None
-            hsh = matchedVars.get('hash') \
-                if matchedVars.get('hash') else None
+            raw = matchedVars.get('raw', None)
+            enc = matchedVars.get('enc', None)
+            hsh = matchedVars.get('hash', None)
             self._getAttr(nym, raw, enc, hsh)
             return True
 

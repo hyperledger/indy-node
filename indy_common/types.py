@@ -104,7 +104,7 @@ class ClientAttribOperation(MessageValidator):
         (TARGET_NYM, IdentifierField(optional=True)),
         (RAW, JsonField(max_length=JSON_FIELD_LIMIT, optional=True)),
         (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
-        (HASH, LimitedLengthStringField(max_length=HASH_FIELD_LIMIT, optional=True)),
+        (HASH, Sha256HexField(optional=True)),
     )
 
     def _validate_message(self, msg):

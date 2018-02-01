@@ -408,17 +408,16 @@ class Wallet(PWallet, TrustAnchoring):
     def build_attrib(self, nym, raw=None, enc=None, hsh=None):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1
         if raw:
-            # l = LedgerStore.RAW
+            l = LedgerStore.RAW
             data = raw
         elif enc:
-            # l = LedgerStore.ENC
+            l = LedgerStore.ENC
             data = enc
         elif hsh:
-            # l = LedgerStore.HASH
+            l = LedgerStore.HASH
             data = hsh
         else:
             raise RuntimeError('One of raw, enc, or hash are required.')
 
-        # TODO looks like a possible error why we do not use `l` (see above)?
         return Attribute(randomString(5), data, self.defaultId,
-                         dest=nym, ledgerStore=LedgerStore.RAW)
+                         dest=nym, ledgerStore=l)

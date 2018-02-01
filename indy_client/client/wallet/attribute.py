@@ -1,7 +1,7 @@
 from enum import unique, IntEnum
 from typing import Optional, TypeVar
 
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ORIGIN, CURRENT_PROTOCOL_VERSION
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, ORIGIN, CURRENT_PROTOCOL_VERSION
 from indy_common.generates_request import GeneratesRequest
 from indy_common.constants import ATTRIB, GET_ATTR
 from indy_common.types import Request
@@ -71,9 +71,9 @@ class Attribute(AttributeKey, GeneratesRequest):
         if self.ledgerStore == LedgerStore.RAW:
             op[RAW] = self.value
         elif self.ledgerStore == LedgerStore.ENC:
-            raise NotImplementedError
+            op[ENC] = self.value
         elif self.ledgerStore == LedgerStore.HASH:
-            raise NotImplementedError
+            op[HASH] = self.value
         elif self.ledgerStore == LedgerStore.DONT:
             raise RuntimeError("This attribute cannot be stored externally")
         else:

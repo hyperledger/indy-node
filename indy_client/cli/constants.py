@@ -50,7 +50,7 @@ GET_ATTR_REG_EX = \
 ADD_ATTRIB_REG_EX = \
     "(\s* (?P<send_attrib>send\s+{attrib}) " \
     "\s+ dest=\s*(?P<dest_id>[A-Za-z0-9+=/]+) " \
-    "\s+ raw=(?P<raw>\{{\s*.*\}}) \s*) ".format(
+    "\s+ ((raw=(?P<raw>\{{\s*.*\}}))|(hash=(?P<hash>[A-Fa-f0-9]+)|(enc=(?P<enc>[A-Za-z0-9+=/]+))) \s*)) ".format(
         attrib=IndyTransactions.ATTRIB.name)
 
 SEND_SCHEMA_REG_EX = "(\s*(?P<send_schema>send\s+{schema})" \

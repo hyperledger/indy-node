@@ -99,13 +99,6 @@ class DomainReqHandler(PHandler):
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
-        # TODO: This is not static validation as it involves state
-        if not (not operation.get(TARGET_NYM) or
-                self.hasNym(operation[TARGET_NYM], isCommitted=False)):
-            raise InvalidClientRequest(identifier, reqId,
-                                       '{} should be added before adding '
-                                       'attribute for it'.
-                                       format(TARGET_NYM))
 
     def validate(self, req: Request, config=None):
         op = req.operation
@@ -374,9 +367,10 @@ class DomainReqHandler(PHandler):
         the trie stores a blank value for the key did+hash
         """
         assert txn[TXN_TYPE] == ATTRIB
-        path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
+        attr_type, path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
         self.state.set(path, value_bytes)
-        self.attributeStore.set(hashed_value, value)
+        if attr_type != HASH:
+            self.attributeStore.set(hashed_value, value)
 
     def _addSchema(self, txn) -> None:
         assert txn[TXN_TYPE] == SCHEMA
@@ -463,13 +457,8 @@ class DomainReqHandler(PHandler):
         in the ledger but only the hash of it.
         """
         txn = deepcopy(txn)
-        attr_key, value = domain.parse_attr_txn(txn)
-        hashed_val = domain.hash_of(value) if value else ''
+        attr_type, _, value = domain.parse_attr_txn(txn)
+        if attr_type in [RAW, ENC]:
+            txn[attr_type] = domain.hash_of(value) if value else ''
 
-        if RAW in txn:
-            txn[RAW] = hashed_val
-        elif ENC in txn:
-            txn[ENC] = hashed_val
-        elif HASH in txn:
-            txn[HASH] = txn[HASH]
         return txn
