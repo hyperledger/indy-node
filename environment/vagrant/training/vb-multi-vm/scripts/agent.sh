@@ -35,6 +35,9 @@ apt-get update
 #DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 DEBIAN_FRONTEND=noninteractive apt-get install -y unzip make screen indy-node tmux vim wget
 
+awk '{if (index($1, "NETWORK_NAME") != 0) {print("NETWORK_NAME = \"sandbox\"")} else print($0)}' /etc/indy/indy_config.py> /tmp/indy_config.py
+mv /tmp/indy_config.py /etc/indy/indy_config.py
+
 #--------------------------------------------------------
 echo 'Generating Genesis Transaction Files'
 su - vagrant -c "generate_indy_pool_transactions --nodes 4 --clients 4 --ips '10.20.30.201,10.20.30.202,10.20.30.203,10.20.30.204'"
