@@ -19,7 +19,7 @@
     * [GET_CLAIM_DEF](#get_claim_def)
     * [GET_TXN](#get_txn)
     
-This doc is about supported client's Request (both write and read ones).
+This doc is about supported client"s Request (both write and read ones).
 If you are interested in transactions and their representation on the Ledger (that is internal one),
 then have a look at [transactions](transactions.md).
 
@@ -33,45 +33,46 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
 ```
 {
-    'reqType': <...>,
-    'reqVersion': <...>,
-    'protocolVersion': <...>,
+    "reqType": <...>,
+    "reqVersion": <...>,
+    "protocolVersion": <...>,
     
-    'data': {
+    "data": {
         <request-specific fields>
     },
-    
-    'reqMetadata': {
-        'reqId': <...>,
-        'senderDid': <...>,
-        'signature': <...>,
-        'multiSignature': <...>
-    }
+    "reqMetadata": {
+        "reqId": <...>,
+        "submitterDID": <...>,
+    },
+    "reqSignature": {
+        "type": <...>,
+        "value": <...>
+    }   
 }
 ```
 
-- `reqType` (enum string):
+- `reqType` (enum integer):
  
     Request type as one of the following values:
 
-    - NODE = "0"
-    - NYM = "1"
-    - ATTRIB = "100"
-    - SCHEMA = "101"
-    - CLAIM_DEF = "102"
-    - POOL_UPGRADE = "109"
-    - NODE_UPGRADE = "110"
-    - POOL_CONFIG = "111"
-    - GET_TXN = "3"
-    - GET_ATTR = "104"
-    - GET_NYM = "105"
-    - GET_SCHEMA = "107"
-    - GET_CLAIM_DEF = "108"
+    - NODE = 0
+    - NYM = 1
+    - ATTRIB = 100
+    - SCHEMA = 101
+    - CLAIM_DEF = 102
+    - POOL_UPGRADE = 109
+    - NODE_UPGRADE = 110
+    - POOL_CONFIG = 111
+    - GET_TXN = 3
+    - GET_ATTR = 104
+    - GET_NYM = 105
+    - GET_SCHEMA = 107
+    - GET_CLAIM_DEF = 108
         
-- `reqVersion` (string):
+- `reqVersion` (integer):
 
     Request version to be able to evolve requests.
-    The content of `data` and `reqMetadata` fields may depend on the version.  
+    The content of "data" and "reqMetadata" fields may depend on the version.  
 
 - `protocolVersion` (integer; optional): 
 
@@ -87,7 +88,7 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
     Metadata coming with the Request and saving in the transaction as is (if this is a write request).
 
-    - `senderDid` (base58-encoded string):
+    - `submitterDID` (base58-encoded string):
          Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
          for 16 or 32 bit DID value.
          It must be present on Ledger for write requests and can be any value for read requests.
@@ -95,18 +96,21 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
          It may differ from `did` field for some of requests (for example NYM), where `did` is a 
          target identifier (for example, a newly created DID identifier).
          
-         *Example*: `senderDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+         *Example*: `submitterDID` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
          
     - `reqId` (integer): 
         Unique ID number of the request with transaction.
         
-    - `signature` (base58-encoded string; mutually exclusive with `multiSignature` field; optional):
-        Submitter's signature. Not required for read requests.
-        
-    - `multiSignature` (map of base58-encoded string; mutually exclusive with `signature` field; optional): 
-        Submitters' signature in multisig case. This is a map where client's identifiers are the keys and 
-        base58-encoded signature strings are the values. Not required for read requests.
+- `reqSignature` (json):
+
+    Submitter's signature over "data" and "reqMetadata".
     
+    - `type` (enum number as integer):
+        
+        - ED25519: ed25519 signature
+        - ED25519_MULTI: ed25519 signature in multisig case.
+    
+    - `value` (base58-encoded string or array of base58-encoded string): signature value    
 
 Please find the format of each request-specific data for each type of request below.
 
@@ -114,47 +118,50 @@ Please find the format of each request-specific data for each type of request be
 
 Each Reply to requests has a number of common metadata fields and state-proof related fields.
 Please note that state-proof is absent for write requests Reply since  
-(we don't support State Proofs for write requests yet). Most of these fields are actually metadata fields 
+(we don"t support State Proofs for write requests yet). Most of these fields are actually metadata fields 
 of a transaction in the Ledger (see [transactions](transactions.md)).
 
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': <...>,
-    'reqVersion': <...>,
-    'protocolVersion': <...>,
+    "reqType": <...>,
+    "reqVersion": <...>,
+    "protocolVersion": <...>,
     
-    `reqMetadata`: {
-        'reqId': <...>,
-        'senderDid': <...>,
-        'signature': <...>,
-        'multiSignature': <...>,
+    "reqMetadata": {
+        "reqId": <...>,
+        "submitterDID": <...>,
+    },
+    "reqSignature": {
+        "type": <...>,
+        "value": <...>
     },
     
-    'txn': {
+    "txn": {
         <txn as in ledger>
     },
      
-    'ledgerMetadata': {
-        'ledgerId': <...>, 
-        'rootHash': <...>,
-        'size': <...>,
-    }
-
-    'stateMetadata': {
-        'timestamp': <...>,
-        'poolRootHash': <...>,
-        'rootHash': <...>,
+    "ledgerMetadata": {
+        "ledgerId": <...>, 
+        "rootHash": <...>,
+        "size": <...>,
     },
 
-    'multiSignature': {
-        'value': <...>,
-        'participants': <...>
+    "stateMetadata": {
+        "timestamp": <...>,
+        "poolRootHash": <...>,
+        "rootHash": <...>,
+    },
+
+    "poolMultiSignature": {
+        "type": <...>,
+        "value": <...>,
+        "participants": <...>
     }, 
 
-    'stateProof': <...>,
-    'auditProof': <...>, 
+    "stateProof": <...>,
+    "auditProof": <...>, 
 
 }
 
@@ -193,10 +200,10 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - CONFIG_LEDGER = 2
     
     - `rootHash` (base58-encoded hash string):
-        base58-encoded ledger's merkle tree root hash
+        base58-encoded ledger"s merkle tree root hash
         
     - `size` (integer):
-        Ledger's size (that is the last seqNo present at the ledger at that time).
+        Ledger"s size (that is the last seqNo present at the ledger at that time).
         
 - `stateMetadata` (json):
 
@@ -213,9 +220,11 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     - `rootHash` (base58-encoded string):
      state trie root hash for the ledger the returned transaction belongs to
 
-- `multi_signature` (json):
+- `poolMultiSignature` (json):
  
-    BLS multi-signature against the given `ledgerMetadata` and `stateMetadata` (serialized to MsgPack)
+    Nodes' Multi-signature against the given `ledgerMetadata` and `stateMetadata` (serialized to MsgPack)
+    - `value` (enum string): multi-signature type
+        - BLS: BLS multi-signature
     - `value` (base58-encoded string): the value of the BLS multi-signature
     - `participants` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
 
@@ -248,18 +257,18 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 - `did` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the submitter.
     
-    *Example*: `senderDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+    *Example*: `submitterDID` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
      
-- `role` (enum number as string; optional): 
+- `role` (enum number as integer; optional): 
 
     Role of a user NYM record being created for. One of the following numbers
     
     - None (common USER)
-    - "0" (TRUSTEE)
-    - "2" (STEWARD)
-    - "101" (TRUST_ANCHOR)
+    - 0 (TRUSTEE)
+    - 2 (STEWARD)
+    - 101 (TRUST_ANCHOR)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
@@ -286,21 +295,22 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 ```
 {
 
-    'reqType': '1',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 1,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'did': 'N22KY2Dyvmuu2PyyqSFKue',
-        'role': '101',
-        'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
+    "data": {
+        "did": "N22KY2Dyvmuu2PyyqSFKue",
+        "role": "101",
+        "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
     },
-    
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-        'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
     }
 }
 ```
@@ -308,50 +318,62 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '1',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 1,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'txn': {
-        `txnType`: '1',
-        `txnVersion`: '1',
-        `data`: {
-            'did': 'N22KY2Dyvmuu2PyyqSFKue',
-            'role': '101',
-            'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+       "type": "ED25519",
+       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },
+    
+    "txn": {
+        "txnType": 1,
+        "txnVersion": 1,
+        "data": {
+            "did": "N22KY2Dyvmuu2PyyqSFKue",
+            "role": "101",
+            "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 300,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+           "type": "ED25519",
+           "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 300,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 300,
-    }
-
-    'stateMetadata': {
-        'timestamp': 1514214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 300,
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "stateMetadata": {
+        "timestamp": 1514214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+    },
+
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'], 
+    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```
 
@@ -362,9 +384,9 @@ Adds attribute to a NYM record.
 - `did` (base58-encoded string):
 
     Target DID we set an attribute for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the submitter.
     
-    *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
+    *Example*: `submitterDID` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
     
 - `raw` (json; mutually exclusive with `hash` and `enc`):
 
@@ -382,70 +404,84 @@ Adds attribute to a NYM record.
 ```
 {
 
-    'reqType': '100',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 100,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'did': 'N22KY2Dyvmuu2PyyqSFKue',
-        'raw': '{"name": "Alice"}'
+    "data": {
+        "did": "N22KY2Dyvmuu2PyyqSFKue",
+        "raw": "{"name": "Alice"}"
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-        'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     }
+    "reqSignature": {
+       "type": "ED25519",
+       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },    
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '100',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 100,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'txn': {
-        `txnType`: '100',
-        `txnVersion`: '1',
-        `data`: {
-            'did': 'N22KY2Dyvmuu2PyyqSFKue',
-            'raw': '{"name": "Alice"}'
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+       "type": "ED25519",
+       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },
+    
+    "txn": {
+        "txnType": 100,
+        "txnVersion": 1,
+        "data": {
+            "did": "N22KY2Dyvmuu2PyyqSFKue",
+            "raw": "{"name": "Alice"}"
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 301,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+           "type": "ED25519",
+           "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 301,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 301,
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 301,
     }
 
-    'stateMetadata': {
-        'timestamp': 1514214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "stateMetadata": {
+        "timestamp": 1514214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'], 
+    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```
 
@@ -459,10 +495,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 - `did` (base58-encoded string; optional):
 
     Target DID we create a Schema for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
-    If not specified, the `did` will be equal to `senderDid`.
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the submitter.
+    If not specified, the `did` will be equal to `submitterDID`.
     
-    *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Schema for.
+    *Example*: `submitterDID` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Schema for.
 
 - `attrNames` (array of strings):
  
@@ -480,73 +516,87 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 ```
 {
 
-    'reqType': '101',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 101,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'version': '1.0',
-        'name': 'Degree',
-        'attrNames': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+    "data": {
+        "version": "1.0",
+        "name": "Degree",
+        "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-        'multiSignature': null
-    }
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+       "type": "ED25519",
+       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '101',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 101,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'txn': {
-        `txnType`: '101',
-        `txnVersion`: '1',
-        `data`: {
-            'did': 'L5AD5g65TDQr1PPHHRoiGf',
-            'version': '1.0',
-            'name': 'Degree',
-            'attrNames': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+       "type": "ED25519",
+       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },
+    
+    "txn": {
+        "txnType": 101,
+        "txnVersion": 1,
+        "data": {
+            "did": "L5AD5g65TDQr1PPHHRoiGf",
+            "version": "1.0",
+            "name": "Degree",
+            "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
         }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 302,
+        "reqSignature": {
+           "type": "ED25519",
+           "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 302,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 302,
-    }
-
-    'stateMetadata': {
-        'timestamp': 1514214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 302,
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "stateMetadata": {
+        "timestamp": 1514214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+    },
+
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'], 
+    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```
 
@@ -561,10 +611,10 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
 - `did` (base58-encoded string; optional):
 
     Target DID we create a Claim Def for (that is Issuer DID) as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
-    If not specified, then `did` will be equal to `senderDid`. 
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the submitter.
+    If not specified, then `did` will be equal to `submitterDID`. 
     
-    *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Claim Def for.
+    *Example*: `submitterDID` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Claim Def for.
 
 - `publicKeys` (dict):
  
@@ -586,24 +636,26 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
 ```
 {
 
-    'reqType': '102',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 102,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'signatureType': 'CL',
-        'schemaRef': 10,    
-        'publicKeys': {
-            'primary': ....,
-            'revocation': ....
+    "data": {
+        "signatureType": "CL",
+        "schemaRef": 10,    
+        "publicKeys": {
+            "primary": ....,
+            "revocation": ....
         }
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-        'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+       "type": "ED25519",
+       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
     }
 }
 ```
@@ -611,54 +663,66 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '102',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 102,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'txn': {
-        `txnType`: '102',
-        `txnVersion`: '1',
-        `data`: {
-            'did': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signatureType': 'CL',
-            'schemaRef': 10,    
-            'publicKeys': {
-                'primary': ....,
-                'revocation': ....
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },
+    
+    "txn": {
+        "txnType": 102,
+        "txnVersion": 1,
+        "data": {
+            "did": "L5AD5g65TDQr1PPHHRoiGf",
+            "signatureType": "CL",
+            "schemaRef": 10,    
+            "publicKeys": {
+                "primary": ....,
+                "revocation": ....
             }
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 302,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 302,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 302,
-    }
-
-    'stateMetadata': {
-        'timestamp': 1514214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 302,
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "stateMetadata": {
+        "timestamp": 1514214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+    },
+
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'], 
+    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```
 
@@ -668,9 +732,9 @@ Adds a new node to the pool, or updates existing node in the pool.
 - `did` (base58-encoded string):
 
     Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the transaction submitter (Steward's DID).
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the transaction submitter (Steward"s DID).
     
-    *Example*: `senderDid` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
+    *Example*: `submitterDID` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
     
 - `verkey` (base58-encoded string; optional): 
 
@@ -718,26 +782,28 @@ There is no need to specify all other fields, and they will remain the same.
 ```
 {
 
-    'reqType': '0',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 0,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'did': '6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8'
-        'alias': 'Node1',
-        'clientIp': '127.0.0.1',
-        'clientPort': 7588,
-        'nodeIp': '127.0.0.1', 
-        'nodePort': 7587,
-        'blskey': '00000000000000000000000000000000',
-        'services': ['VALIDATOR']
+    "data": {
+        "did": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
+        "alias": "Node1",
+        "clientIp": "127.0.0.1",
+        "clientPort": 7588,
+        "nodeIp": "127.0.0.1", 
+        "nodePort": 7587,
+        "blskey": "00000000000000000000000000000000",
+        "services": ["VALIDATOR"]
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-        'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
     }
 }
 ```
@@ -745,55 +811,67 @@ There is no need to specify all other fields, and they will remain the same.
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '0',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 0,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'txn': {
-        `txnType`: '0',
-        `txnVersion`: '1',
-        `data`: {
-            'did': '6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8'
-            'alias': 'Node1',
-            'clientIp': '127.0.0.1',
-            'clientPort': 7588,
-            'nodeIp': '127.0.0.1', 
-            'nodePort': 7587,
-            'blskey': '00000000000000000000000000000000',
-            'services': ['VALIDATOR']
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },    
+    
+    "txn": {
+        "txnType": 0,
+        "txnVersion": 1,
+        "data": {
+            "did": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
+            "alias": "Node1",
+            "clientIp": "127.0.0.1",
+            "clientPort": 7588,
+            "nodeIp": "127.0.0.1", 
+            "nodePort": 7587,
+            "blskey": "00000000000000000000000000000000",
+            "services": ["VALIDATOR"]
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 10,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },        
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 10,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 0, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 10,
-    }
-
-    'stateMetadata': {
-        'timestamp': 1514214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "ledgerMetadata": {
+        "ledgerId": 0, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 10,
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "stateMetadata": {
+        "timestamp": 1514214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+    },
+
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'], 
+    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```
 
@@ -850,26 +928,28 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 ```
 {
 
-    'reqType': '109',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 109,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'name': `upgrade-13`,
-        'action': `start`,
-        'version': `1.3`,
-        'schedule': {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
-        'sha256': `db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55`,
-        'force': false,
-        'reinstall': false,
-        'timeout': 1
+    "data": {
+        "name": `upgrade-13`,
+        "action": `start`,
+        "version": `1.3`,
+        "schedule": {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
+        "sha256": `db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55`,
+        "force": false,
+        "reinstall": false,
+        "timeout": 1
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-        'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
     }
 }
 ```
@@ -877,55 +957,67 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '109',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 109,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'txn': {
-        `txnType`: '109',
-        `txnVersion`: '1',
-        `data`: {
-            'name': `upgrade-13`,
-            'action': `start`,
-            'version': `1.3`,
-            'schedule': {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
-            'sha256': `db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55`,
-            'force': false,
-            'reinstall': false,
-            'timeout': 1
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },         
+    
+    "txn": {
+        "txnType": 109,
+        "txnVersion": 1,
+        "data": {
+            "name": `upgrade-13`,
+            "action": `start`,
+            "version": `1.3`,
+            "schedule": {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
+            "sha256": `db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55`,
+            "force": false,
+            "reinstall": false,
+            "timeout": 1
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 45,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },        
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 45,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 2, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 45,
-    }
-
-    'stateMetadata': {
-        'timestamp': 1514214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "ledgerMetadata": {
+        "ledgerId": 2, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 45,
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "stateMetadata": {
+        "timestamp": 1514214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+    },
+
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'], 
+    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```
 
@@ -952,70 +1044,84 @@ Command to change Pool's configuration
 ```
 {
 
-    'reqType': '111',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 111,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'writes':false,
-        'force':true
+    "data": {
+        "writes":false,
+        "force":true
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-        'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-        'multiSignature': null
-    }
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },
 }
 ```
 
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '111',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 111,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'txn': {
-        `txnType`: '111',
-        `txnVersion`: '1',
-        `data`: {
-            'writes':false,
-            'force':true
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },       
+    
+    "txn": {
+        "txnType": 111,
+        "txnVersion": 1,
+        "data": {
+            "writes":false,
+            "force":true
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 46,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },           
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 46,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 2, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 46,
+    "ledgerMetadata": {
+        "ledgerId": 2, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 46,
     }
 
-    'stateMetadata': {
-        'timestamp': 1514214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "stateMetadata": {
+        "timestamp": 1514214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'], 
+    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```
 
@@ -1027,23 +1133,23 @@ Gets information about a DID (NYM).
 - `did` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the sender (may not exist on ledger at all).
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the sender (may not exist on ledger at all).
 
 *Request Example*:
 ```
 {
 
-    'reqType': '105',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 105,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'did': '2VkbBskPNNyWrLrZq7DBhk'
+    "data": {
+        "did": "2VkbBskPNNyWrLrZq7DBhk"
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     }
 }
 ```
@@ -1051,55 +1157,58 @@ Gets information about a DID (NYM).
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '105',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 105,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-    }
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
     
-    'txn': {
-        `txnType`: '1',
-        `txnVersion`: '1',
-        `data`: {
-            'did': '2VkbBskPNNyWrLrZq7DBhk',
-            'role': '101',
-            'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "txn": {
+        "txnType": 1,
+        "txnVersion": 1,
+        "data": {
+            "did": "2VkbBskPNNyWrLrZq7DBhk",
+            "role": "101",
+            "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 46,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },           
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 46,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 300,
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 300,
     }
 
-    'stateMetadata': {
-        'timestamp': 1524214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "stateMetadata": {
+        "timestamp": 1524214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'state_proof': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+    "state_proof": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
 }
 ```
 
@@ -1110,7 +1219,7 @@ Gets information about an Attribute for the specified DID.
 - `did` (base58-encoded string):
 
     Target DID we get an attribute for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the sender (may not exist on ledger at all).
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the sender (may not exist on ledger at all).
     
 - `raw` (string; mutually exclusive with `hash` and `enc`):
 
@@ -1128,18 +1237,18 @@ Gets information about an Attribute for the specified DID.
 ```
 {
 
-    'reqType': '104',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 104,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'did': 'AH4RRiPR78DUrCWatnCW2w',
-        'raw': 'dateOfBirth'
+    "data": {
+        "did": "AH4RRiPR78DUrCWatnCW2w",
+        "raw": "dateOfBirth"
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     }
 }
 ```
@@ -1147,54 +1256,57 @@ Gets information about an Attribute for the specified DID.
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '104',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 104,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-    }
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
     
-    'txn': {
-        `txnType`: '100',
-        `txnVersion`: '1',
-        `data`: {
-            'did': 'AH4RRiPR78DUrCWatnCW2w',
-            'raw': '{"name": "Alice"}'
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "txn": {
+        "txnType": 100,
+        "txnVersion": 1,
+        "data": {
+            "did": "AH4RRiPR78DUrCWatnCW2w",
+            "raw": "{"name": "Alice"}"
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 301,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },           
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 301,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 300,
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 300,
     }
 
-    'stateMetadata': {
-        'timestamp': 1524214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "stateMetadata": {
+        "timestamp": 1524214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'state_proof': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+    "state_proof": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
 }
 ```
 
@@ -1205,7 +1317,7 @@ Gets Claim's Schema.
 - `did` (base58-encoded string; optional):
 
     Target DID we get a Schema for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the sender (may not exist on ledger at all).
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the sender (may not exist on ledger at all).
 
 - `name` (string):
  
@@ -1220,19 +1332,19 @@ Gets Claim's Schema.
 ```
 {
 
-    'reqType': '107',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 107,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'did': 'AH4RRiPR78DUrCWatnCW2w',
-        'version': '1.0',
-        'name': 'Degree',
+    "data": {
+        "did": "AH4RRiPR78DUrCWatnCW2w",
+        "version": "1.0",
+        "name": "Degree",
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     }
 }
 ```
@@ -1240,56 +1352,59 @@ Gets Claim's Schema.
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '107',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 107,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-    }
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
     
-    'txn': {
-       `txnType`: '101',
-        `txnVersion`: '1',
-        `data`: {
-            'did': 'AH4RRiPR78DUrCWatnCW2w',
-            'version': '1.0',
-            'name': 'Degree',
-            'attrNames': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "txn": {
+       "txnType": 101,
+        "txnVersion": 1,
+        "data": {
+            "did": "AH4RRiPR78DUrCWatnCW2w",
+            "version": "1.0",
+            "name": "Degree",
+            "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 302,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },        
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 302,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 300,
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 300,
     }
 
-    'stateMetadata': {
-        'timestamp': 1524214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "stateMetadata": {
+        "timestamp": 1524214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'state_proof': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+    "state_proof": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
 }
 ```
  
@@ -1300,7 +1415,7 @@ Gets Claim Definition.
 - `did` (base58-encoded string):
 
     Target DID we get a Claim Def for (that is Issuer DID) as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the sender (may not exist on ledger at all).
+    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the sender (may not exist on ledger at all).
 
 - `schemaRef` (string):
     
@@ -1314,19 +1429,19 @@ Gets Claim Definition.
 ```
 {
 
-    'reqType': '108',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 108,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
+    "data": {
         "did":"AH4RRiPR78DUrCWatnCW2w",
         "schemaRef":12,
         "signatureType":"CL",
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     }
 }
 ```
@@ -1334,59 +1449,62 @@ Gets Claim Definition.
 *Reply Example*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '108',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 108,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-    }
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    },
     
-    'txn': {
-        `txnType`: '102',
-        `txnVersion`: '1',
-        `data`: {
-            'did': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signatureType': 'CL',
-            'schemaRef': 10,    
-            'publicKeys': {
-                'primary': ....,
-                'revocation': ....
+    "txn": {
+        "txnType": 102,
+        "txnVersion": 1,
+        "data": {
+            "did": "L5AD5g65TDQr1PPHHRoiGf",
+            "signatureType": "CL",
+            "schemaRef": 10,    
+            "publicKeys": {
+                "primary": ....,
+                "revocation": ....
             }
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 302,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },           
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 302,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 300,
-    }
-
-    'stateMetadata': {
-        'timestamp': 1524214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 300,
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "stateMetadata": {
+        "timestamp": 1524214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+    },
+
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'state_proof': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+    "state_proof": "+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=", 
 }
 ```
 
@@ -1406,18 +1524,18 @@ A generic request to get a transaction from Ledger by its sequence number.
 ```
 {
 
-    'reqType': '3',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 3,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'data': {
-        'ledgerId': '1',
-        'seqNo': 9,
+    "data": {
+        "ledgerId": "1",
+        "seqNo": 9,
     },
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     }
 }
 ```
@@ -1425,54 +1543,57 @@ A generic request to get a transaction from Ledger by its sequence number.
 *Reply Example (returns a NYM txn with seqNo=9)*:
 ```
 {
-    'op': 'REPLY',
+    "op": "REPLY",
     
-    'reqType': '3',
-    'reqVersion': '1',
-    'protocolVersion': 1,
+    "reqType": 3,
+    "reqVersion": 1,
+    "protocolVersion": 1,
     
-    'reqMetadata': {
-        'reqId': 1514215425836443,
-        'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
+    "reqMetadata": {
+        "reqId": 1514215425836443,
+        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     }
     
-    'txn': {
-        `txnType`: '1',
-        `txnVersion`: '1',
-        `data`: {
-            'did': '2VkbBskPNNyWrLrZq7DBhk',
-            'role': '101',
-            'verkey': '31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE'
-        }
-        `reqMetadata`: {
-            'reqId': 1514215425836443,
-            'senderDid': 'L5AD5g65TDQr1PPHHRoiGf',
-            'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd',
-            'multiSignature': null
+    "txn": {
+        "txnType": 1,
+        "txnVersion": 1,
+        "data": {
+            "did": "2VkbBskPNNyWrLrZq7DBhk",
+            "role": "101",
+            "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
         },
-        `txnMetadata`: {
-            'creationTime': 1514211268,
-            'seqNo': 9,
+        "reqMetadata": {
+            "reqId": 1514215425836443,
+            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        },           
+        "txnMetadata": {
+            "creationTime": 1514211268,
+            "seqNo": 9,
         }
     },
      
-    'ledgerMetadata': {
-        'ledgerId': 1, 
-        'rootHash': 'DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr',
-        'size': 300,
+    "ledgerMetadata": {
+        "ledgerId": 1, 
+        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+        "size": 300,
     }
 
-    'stateMetadata': {
-        'timestamp': 1524214795,
-        'poolRootHash': 'TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj',
-        'rootHash': '7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK',
+    "stateMetadata": {
+        "timestamp": 1524214795,
+        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
     },
 
-    'multiSignature': {
-        'value': 'RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b',
-        'participants': ['Delta', 'Gamma', 'Alpha']
+    "poolMultiSignature": {
+        "type": "BLS",
+        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+        "participants": ["Delta", "Gamma", "Alpha"]
     }, 
 
-    'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'], 
+    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```

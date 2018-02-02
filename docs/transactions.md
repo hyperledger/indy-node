@@ -62,10 +62,13 @@ transaction specific data:
     
     "reqMetadata": {
         "reqId": <...>,
-        "senderDid": <...>,
-        "signature": <...>,
-        "multiSignature": <...>,
+        "submitterDid": <...>,
     },
+
+    "reqSignature": {
+        "type": <...>,
+        "value": <...>
+    }
     
     "txnMetadata": {
         "creationTime": <...>,
@@ -75,20 +78,20 @@ transaction specific data:
 }
 ```
 
-- `txnType` (enum number as string): 
+- `txnType` (enum number as integer): 
 
     Supported transaction type:
     
-    - NODE = "0"
-    - NYM = "1"
-    - ATTRIB = "100"
-    - SCHEMA = "101"
-    - CLAIM_DEF = "102"
-    - POOL_UPGRADE = "109"
-    - NODE_UPGRADE = "110"
-    - POOL_CONFIG = "111"
+    - NODE = 0
+    - NYM = 1
+    - ATTRIB = 100
+    - SCHEMA = 101
+    - CLAIM_DEF = 102
+    - POOL_UPGRADE = 109
+    - NODE_UPGRADE = 110
+    - POOL_CONFIG = 111
         
-- `txnVersion` (string):
+- `txnVersion` (integer):
 
     Transaction version to be able to evolve transactions.
     The content of `data` and `reqMetadata` and `txnMetadata` fields may depend on the version.  
@@ -101,23 +104,27 @@ transaction specific data:
 
     Metadata as came from the Request.
         
-    - `senderDid` (base58-encoded string):
+    - `submitterDid` (base58-encoded string):
          Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
          for 16 or 32 bit DID value.
          It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
          target identifier (for example, a newly created DID identifier).
          
-         *Example*: `senderDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+         *Example*: `submitterDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
          
     - `reqId` (integer): 
         Unique ID number of the request with transaction.
             
-    - `signature` (base58-encoded string; mutually exclusive with `multiSignature` field):
-        Submitter's signature.
+- `reqSignature` (json):
+
+    Submitter's signature over `data` and `reqMetadata`.
+    
+    - `type` (enum number as string):
         
-    - `multiSignature` (array of base58-encoded string; mutually exclusive with `signature` field): 
-        Submitters' signature in multisig case. This is a map where client's identifiers are the keys and 
-        base58-encoded signature strings are the values.
+        - ED25519: ed25519 signature
+        - ED25519_MULTI: ed25519 signature in multisig case.
+    
+    - `value` (base58-encoded string or array of base58-encoded string): signature value
     
 - `txnMetadata` (json):
 
@@ -143,18 +150,18 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 - `did` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `submitterId` metadata field, where `senderDid` is the DID of the submitter.
+    It differs from `submitterId` metadata field, where `submitterDid` is the DID of the submitter.
     
-    *Example*: `senderDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+    *Example*: `submitterDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
      
-- `role` (enum number as string; optional): 
+- `role` (enum number as integer; optional): 
 
     Role of a user NYM record being created for. One of the following numbers
     
     - None (common USER)
-    - "0" (TRUSTEE)
-    - "2" (STEWARD)
-    - "101" (TRUST_ANCHOR)
+    - 0 (TRUSTEE)
+    - 2 (STEWARD)
+    - 101 (TRUST_ANCHOR)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
@@ -179,20 +186,25 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 **Example**:
 ```
 {
-    "txnType":"1",
+    "txnType":1,
+    "txnVersion": 1,
     
     "data": {
         "did":"GEzcdDLhCpGCYRHW82kjHd",
         "verkey":"~HmUWn928bnFT6Ephf65YXv",
-        "role":"101",
+        "role":101,
     },
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "senderDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
-        "multiSignature":null,
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
     },
+    
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }
+    
     "txnMetadata": {
         "creationTime":1513945121,
         "seqNo": 10,  
@@ -207,9 +219,9 @@ Adds attribute to a NYM record
 - `did` (base58-encoded string):
 
     Target DID we set an attribute for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
+    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
     
-    *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
+    *Example*: `submitterDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
     
 - `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
 
@@ -231,7 +243,8 @@ Adds attribute to a NYM record
 **Example**:
 ```
 {
-    "txnType":"100",
+    "txnType":100,
+    "txnVersion": 1,
     
     "data": {
         "did":"GEzcdDLhCpGCYRHW82kjHd",
@@ -240,10 +253,12 @@ Adds attribute to a NYM record
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "senderDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
-        "multiSignature":null,
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
     },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }
     "txnMetadata": {
         "creationTime":1513945121,
         "seqNo": 10,
@@ -261,10 +276,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 - `did` (base58-encoded string):
 
     Target DID we create a Schema for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
-    In practice, `did` will be equal to `senderDid` in most of the cases.
+    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
+    In practice, `did` will be equal to `submitterDid` in most of the cases.
     
-    *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Schema for.
+    *Example*: `submitterDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Schema for.
 
 - `attrNames` (array of strings):
  
@@ -281,7 +296,8 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 **Example**:
 ```
 {
-    "txnType":"101",
+    "txnType":101,
+    "txnVersion": 1,
     
     "data": {
         "did":"L5AD5g65TDQr1PPHHRoiGf",
@@ -292,10 +308,12 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "senderDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
-        "multiSignature":null,
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
     },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }    
     "txnMetadata": {
         "creationTime":1513945121,
         "seqNo": 10,
@@ -313,10 +331,10 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
 - `did` (base58-encoded string):
 
     Target DID we create a Claim Def for (that is Issuer DID) as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the submitter.
-    In practice, `did` will be equal to `senderDid` in most of the cases. 
+    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
+    In practice, `did` will be equal to `submitterDid` in most of the cases. 
     
-    *Example*: `senderDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Claim Def for.
+    *Example*: `submitterDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Claim Def for.
 
 
 - `publicKeys` (dict):
@@ -337,7 +355,8 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
 **Example**:
 ```
 {
-    "txnType":"102",
+    "txnType":102,
+    "txnVersion": 1,
     
     "data": {
         "did":"L5AD5g65TDQr1PPHHRoiGf",
@@ -355,10 +374,12 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "senderDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
-        "multiSignature":null,
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
     },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }    
     "txnMetadata": {
         "creationTime":1513945121,
         "seqNo": 10,
@@ -375,9 +396,9 @@ Adds a new node to the pool, or updates existing node in the pool
 - `did` (base58-encoded string):
 
     Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `senderDid` metadata field, where `senderDid` is the DID of the transaction submitter (Steward's DID).
+    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the transaction submitter (Steward's DID).
     
-    *Example*: `senderDid` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
+    *Example*: `submitterDid` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
     
 - `verkey` (base58-encoded string; optional): 
 
@@ -424,7 +445,8 @@ There is no need to specify all other fields, and they will remain the same.
 **Example**:
 ```
 {
-    "txnType":"0",
+    "txnType":0,
+    "txnVersion": 1,
 
     "data": {
         "did":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
@@ -439,10 +461,12 @@ There is no need to specify all other fields, and they will remain the same.
 
     "reqMetadata": {
         "reqId":1513945121191691,
-        "senderDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
-        "multiSignature":null,
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
     },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }    
     "txnMetadata": {
         "creationTime":1513945121,
         "seqNo": 10,
@@ -505,7 +529,8 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 **Example:**
 ```
 {
-    "txnType":"109",
+    "txnType":109,
+    "txnVersion": 1,
     
     "data"" {
         "name":"upgrade-13",
@@ -521,10 +546,12 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "senderDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
-        "multiSignature":null,
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
     },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }    
     "txnMetadata": {
         "creationTime":1513945121,
         "seqNo": 10,
@@ -547,7 +574,8 @@ Status of each Node's upgrade (sent by each upgraded Node)
 **Example:**
 ```
 {
-    "txnType":"110",
+    "txnType":110,
+    "txnVersion": 1,
     
     "data":{
         "action":"complete",
@@ -556,10 +584,12 @@ Status of each Node's upgrade (sent by each upgraded Node)
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "senderDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
-        "multiSignature":null,
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
     },
+    "signature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }    
     "txnMetadata": {
         "creationTime":1513945121,
         "seqNo": 10,
@@ -589,7 +619,8 @@ Command to change Pool's configuration
 **Example:**
 ```
 {
-    "txnType":"111",
+    "txnType":111,
+    "txnVersion": 1,
     
     "data": {
         "writes":false,
@@ -598,10 +629,12 @@ Command to change Pool's configuration
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "senderDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
-        "multiSignature":null,
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
     },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }    
     "txnMetadata": {
         "creationTime":1513945121,
         "seqNo": 10,
