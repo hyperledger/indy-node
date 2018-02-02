@@ -1,7 +1,7 @@
 # Anoncreds Design
 Here you can find the requirements and design for Anoncreds workflow (including revocation).
 
-* [Anoncreds Link](#anoncreds-links)
+* [Anoncreds References(#anoncreds-references)
 * [Requirements](#requirements)
 * [Technical goals](#technical-goals)
 * [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-creddef-in-credentials-and-proofs)
@@ -13,7 +13,7 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 * [REVOC_REG_DEF](#revoc_reg_def)
 * [REVOC_REG](#revoc_reg)
 
-### Anoncreds Links
+### Anoncreds References
 
 Anoncreds protocol links:
 - [Anoncreds Sequence Diagram](https://github.com/hyperledger/indy-sdk/blob/master/doc/libindy-anoncreds.svg)
@@ -22,17 +22,17 @@ Anoncreds protocol links:
 
 ### Requirements
 1. Creation of Schemas:
-    1. Schema Issuer needs to be able to create multiple schemas by the same issuer DID.
-    1. Schema Issuer needs to be able to evolve existing schema adding new attributes.
+    1. Schema Author needs to be able to create multiple schemas by the same issuer DID.
+    1. Schema Author needs to be able to evolve existing schema by adding new attributes.
     1. We need to keep reputation for Schema's Issuer DID.
     1. We should not have any semver assumptions for Schema's version by the Ledger.
 1. Creation of Cred Def:
-    1. CredDef Issuer may not be the same as Schema issuer.
+    1. CredDef Issuer may not be the same as Schema Author.
     1. CredDef Issuer needs to be able to create multiple CredDefs by the same issuer DID.
     1. CredDef Issuer needs to be able to create multiple CredDefs for the same Schema by the same issuer DID.
     1. We need to keep reputation for CredDef's Issuer DID.
 1. Creation of Revocation entities (Def and Registry):
-    1. RevocRegDef Issuer may not be the same as Schema Issuer and CredDef issuer. 
+    1. RevocRegDef Issuer may not be the same as Schema Author and CredDef issuer. 
     1. RevocRegDef Issuer needs to be able to create multiple RevocRegDefs for the same issuer DID.
     1. RevocRegDef Issuer needs to be able to create multiple RevocRegDef for the same CredDef by the same issuer DID.
     1. We need to keep reputation for RevocRegDef's Issuer DID.
@@ -76,7 +76,7 @@ Anoncreds protocol links:
 ### Referencing Schema and CredDef in Credentials and Proofs
 * Schema is referenced by unique `SchemaUUID`.
     * Created for each new Schema.
-    * This is different from Schema Issuer DID (DID used to send `SCHEMA` txn) which can be the same for 
+    * This is different from Schema Author DID (DID used to send `SCHEMA` txn) which can be the same for 
     any number of Schemas.
 * CredDef is referenced by unique `CredDefUUID`.
     * Created for each new CredDef.
@@ -283,7 +283,7 @@ when keys are suspicious, will not be verifiable anymore, because they were issu
 but the Verifies will use key2 (key3) for verification (as returned by `GET_CRED_DEF`). 
 
 The following txns will be put on Ledger:
-1.    
+1. At `timeA`:
  ```
  "data": {
         "uuid":"TYzcdDLhCpGCYRHW82kjHd",
@@ -292,7 +292,7 @@ The following txns will be put on Ledger:
         "signatureType":"CL",
     },
 ```
-2.    
+2. At `timeC`:   
  ```
  "data": {
         "uuid":"TYzcdDLhCpGCYRHW82kjHd",
@@ -305,7 +305,7 @@ The following txns will be put on Ledger:
         }
     },
 ```
-3.    
+3. At `timeE`:   
  ```
  "data": {
         "uuid":"TYzcdDLhCpGCYRHW82kjHd",
