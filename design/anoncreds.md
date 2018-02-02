@@ -177,15 +177,16 @@ of key rotations, since the latest keys will be used.
 
 #### State
 
-We need to have two records for Schema in State Trie in order to have
+We need to have two records for Schema (one in State Trie and one in some cache key-value storage)
+in order to have
 1. Simple referencing of Schemas in the protocol (by Schema DID)
 1. Requirements 8
 
-Record 1:
+Record 1 (State Trie):
 * key: `schemaIssuerDid | SchemaMarker | schemaName | schemaVersion | schemaUUID` 
 * value: aggregated txn data
 
-Record 2:
+Record 2 (Cache Storage):
 * key: `schemaUUID`
 * value: Record 1 key
 
@@ -199,11 +200,10 @@ Record 2:
 ...
 }
 ```
-1. Lookup State Trie to get `schemaIssuerDid | SchemaMarker |schemaName | schemaVersion | schemaUUID` by `uuid`
+1. Lookup Cache Storage to get `schemaIssuerDid | SchemaMarker |schemaName | schemaVersion | schemaUUID` by `uuid`
 using Record2. 
 1. Lookup State Trie to get data by the key found above (Record1).
 
-So, we will have 2 lookups for each request. 
 
 ### CRED_DEF
 
@@ -252,15 +252,15 @@ That is rotation of keys is supported.
 
 #### State
 
-We need to have two records for CredDef in State Trie in order to have
+We need to have two records for CredDef (one in State Trie and one in some cache key-value storage) in order to have
 1. Simple referencing of CredDef in the protocol (by CredDef DID)
 1. Requirements 8
 
-Record 1:
+Record 1 (State Trie):
 * key: `credDefIssuerDid | CredDefMarker | schemaUUID | signatureType | credDefUUID` 
 * value: aggregated txn data plus `trustTime` as an array (each next `trustTme` is appended).
 
-Record 2:
+Record 2 (Cache Storage):
 * key: `credDefUUID`
 * value: Record 1 key
 
@@ -351,7 +351,7 @@ The current state (Record1) will look the following:
 ```
 There is a special logic to get the valid and trusted value of the keys
 depending on the issuance time:
-1. Lookup State Trie to get `credDefIssuerDid | CredDefMarker | schemaUUID | signatureType | credDefUUID`  by `uuid`
+1. Lookup Cache Storage to get `credDefIssuerDid | CredDefMarker | schemaUUID | signatureType | credDefUUID`  by `uuid`
 using Record2. 
 1. Lookup State Trie to get the current state by the key found above (Record1).
 1. If no `issuanceTime` provided, then just return the current value.  
@@ -363,7 +363,7 @@ of this interval.
 1. Use generic logic to get the root of the State trie at the time `to` found above. 
 1. Lookup State Trie with the found root to find the state at that time (the same way as in Steps 1 and 2)
 
-So, we will have from 2 to 5 lookups for each request. 
+So, we will have not more than 2 lookups for each request. 
 
 Result for the Example above:
 * `issuanceTime < A` => [A,B] => state at timeA => key1 (OK)
@@ -425,15 +425,15 @@ That is rotation of keys is supported.
 
 #### State
 
-We need to have two records for RevocRegDef in State Trie in order to have
+We need to have two records for RevocRegDef (one in State Trie and one in some cache key-value storage) in order to have
 1. Simple referencing of RevocRegDef in the protocol (by RevocRegDef DID)
 1. Requirements 8
 
-Record 1:
+Record 1 (State Trie):
 * key: `revocDefIssuerDid | RevocRefMarker | credDefUUID | revocDefUUID` 
 * value: aggregated txn data plus `trustTime` as an array (each next `trustTme` is appended).
 
-Record 2:
+Record 2 (Cache Storage):
 * key: `revocDefUUID`
 * value: Record 1 key
 
