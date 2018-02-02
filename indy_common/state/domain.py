@@ -76,15 +76,11 @@ def prepare_attr_for_state(txn):
     assert txn[TXN_TYPE] in {ATTRIB, GET_ATTR}
     nym = txn[TARGET_NYM]
     attr_type, attr_key, value = parse_attr_txn(txn)
-    if attr_type == ENC:
-        hashed_value = attr_key
-    else:
-        hashed_value = hash_of(value) if value else ''
+    hashed_value = hash_of(value) if value else ''
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     value_bytes = encode_state_value(hashed_value, seq_no, txn_time)
-    path = make_state_path_for_attr(nym, attr_key,
-                                    attr_type == HASH or attr_type == ENC)
+    path = make_state_path_for_attr(nym, attr_key, attr_type == HASH)
     return attr_type, path, value, hashed_value, value_bytes
 
 
@@ -187,7 +183,7 @@ def parse_attr_txn(txn):
         key, _ = data.popitem()
         return attr_type, key, re_raw
     if attr_type == ENC:
-        return attr_type, hash_of(attr), attr
+        return attr_type, attr, attr
     if attr_type == HASH:
         return attr_type, attr, None
 
