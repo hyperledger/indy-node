@@ -62,7 +62,7 @@ from plenum.cli.cli import Cli as PlenumCli
 from plenum.cli.constants import PROMPT_ENV_SEPARATOR, NO_ENV
 from plenum.cli.helper import getClientGrams
 from plenum.cli.phrase_word_completer import PhraseWordCompleter
-from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE
+from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE, RAW
 from plenum.common.exceptions import OperationError
 from plenum.common.signer_did import DidSigner
 from plenum.common.txn_util import createGenesisTxnFile
@@ -672,11 +672,15 @@ class IndyCli(PlenumCli):
 
         def getAttrReply(reply, err, *args):
             if reply and reply[DATA]:
-                data = json.loads(reply[DATA])
-                if data:
-                    self.print(
-                        "Found attribute {}"
-                        .format(json.dumps(data)))
+                data_to_print = None
+                if RAW in reply:
+                    data = json.loads(reply[DATA])
+                    if data:
+                        data_to_print = json.dumps(data)
+                else:
+                    data_to_print = reply[DATA]
+                if data_to_print:
+                    self.print("Found attribute {}".format(data_to_print))
             else:
                 self.print("Attr not found")
 

@@ -108,11 +108,11 @@ class ClientAttribOperation(MessageValidator):
     )
 
     def _validate_message(self, msg):
-        self.__validate_field_set(msg)
+        self._validate_field_set(msg)
         if RAW in msg:
             self.__validate_raw_field(msg[RAW])
 
-    def __validate_field_set(self, msg):
+    def _validate_field_set(self, msg):
         fields_n = sum(1 for f in (RAW, ENC, HASH) if f in msg)
         if fields_n == 0:
             self._raise_missed_fields(RAW, ENC, HASH)
@@ -156,12 +156,17 @@ class ClientAttribOperation(MessageValidator):
                                        'invalid endpoint port')
 
 
-class ClientGetAttribOperation(MessageValidator):
+class ClientGetAttribOperation(ClientAttribOperation):
     schema = (
         (TXN_TYPE, ConstantField(GET_ATTR)),
         (TARGET_NYM, IdentifierField(optional=True)),
-        (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT)),
+        (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT, optional=True)),
+        (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
+        (HASH, Sha256HexField(optional=True)),
     )
+
+    def _validate_message(self, msg):
+        self._validate_field_set(msg)
 
 
 class ClientClaimDefSubmitOperation(MessageValidator):

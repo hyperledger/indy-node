@@ -323,14 +323,15 @@ class DomainReqHandler(PHandler):
                                        .format(ATTRIB, RAW, ENC, HASH))
         nym = request.operation[TARGET_NYM]
         if RAW in request.operation:
-            attr_key = request.operation[RAW]
+            attr_type = RAW
         elif ENC in request.operation:
             # If attribute is encrypted, it will be queried by its hash
-            attr_key = request.operation[ENC]
+            attr_type = ENC
         else:
-            attr_key = request.operation[HASH]
+            attr_type = HASH
+        attr_key = request.operation[attr_type]
         value, lastSeqNo, lastUpdateTime, proof = \
-            self.getAttr(did=nym, key=attr_key)
+            self.getAttr(did=nym, key=attr_key, attr_type=attr_type)
         attr = None
         if value is not None:
             if HASH in request.operation:
@@ -385,16 +386,17 @@ class DomainReqHandler(PHandler):
     def getAttr(self,
                 did: str,
                 key: str,
+                attr_type,
                 isCommitted=True) -> (str, int, int, list):
         assert did is not None
         assert key is not None
-        path = domain.make_state_path_for_attr(did, key)
+        path = domain.make_state_path_for_attr(did, key, attr_type == HASH)
         try:
             hashed_val, lastSeqNo, lastUpdateTime, proof = \
                 self.lookup(path, isCommitted)
         except KeyError:
             return None, None, None, None
-        if not hashed_val:
+        if not hashed_val or hashed_val == '':
             # Its a HASH attribute
             return hashed_val, lastSeqNo, lastUpdateTime, proof
         else:
