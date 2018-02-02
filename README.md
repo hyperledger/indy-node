@@ -162,8 +162,8 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 ## Docs and links
 
 - Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
-- Please have a look at documents ad diagrams in [docs](docs) folder
-- Please have a look at documents ad diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder:
+- Please have a look at documents and diagrams in [docs](docs) folder
+- Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder:
     - [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md)
     - [Glossary](https://github.com/hyperledger/indy-plenum/blob/master/docs/glossary.md)
     - [Storages](https://github.com/hyperledger/indy-plenum/blob/master/docs/storage.md)

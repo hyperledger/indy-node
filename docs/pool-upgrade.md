@@ -36,7 +36,7 @@ make it happen at the same time on all nodes (see below).
 ### Node Control Tool
 
 - Upgrade is performed by a `node-control-tool`.
-- See `node_control_tool.py`.
+- See [`node_control_tool.py`](../indy_node/utils/node_control_tool.py).
 - On Ubuntu it's installed as a systemd service (`indy-node-control`) in addition to 
 the node service (`indy-node`).
 - `indy-node-control` is executed from the `root` user.
@@ -45,7 +45,7 @@ the node service (`indy-node`).
     - stops `indy-node` service;
     - upgrades `indy-node` package (`apt-get install` on Ubuntu);
     - back-ups node data (ledger, etc.);
-    - runs migration scripts;
+    - runs migration scripts (see [`migration_tool.py`](../indy_node/utils/migration_tool.py));
     - starts `indy-node` service;
     - restarts `indy-node-control` service.
 - If upgrade failed for some reasons, node-control-tool tries to restore the data (ledger) from back-up
