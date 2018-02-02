@@ -273,13 +273,12 @@ Adds Claim's schema.
 It's not possible to update existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
 
-- `did` (base58-encoded string):
+- `uuid` (base58-encoded string):
 
-    Target DID we create a Schema for as base58-encoded string for 16 or 32 bit DID value.
+    Schema's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
     It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
-    In practice, `did` will be equal to `submitterDid` in most of the cases.
     
-    *Example*: `submitterDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Schema for.
+    *Example*: `submitterDid` is a DID of a Schema Author, and `uuid` is Schema's unique UUID.
 
 - `attrNames` (array of strings):
  
@@ -300,7 +299,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     "txnVersion": 1,
     
     "data": {
-        "did":"L5AD5g65TDQr1PPHHRoiGf",
+        "uuid":"sdfghj65TDQr1PPHHRoiGf",
         "attrNames": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
         "name":"Degree",
         "version":"1.0",
@@ -328,13 +327,12 @@ It's not possible to update `data` in existing Claim Def.
 So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
 a new Claim Def needs to be created for a new Issuer DID (`did`).
 
-- `did` (base58-encoded string):
+- `uuid` (base58-encoded string):
 
-    Target DID we create a Claim Def for (that is Issuer DID) as base58-encoded string for 16 or 32 bit DID value.
+    Claim Def's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
     It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
-    In practice, `did` will be equal to `submitterDid` in most of the cases. 
     
-    *Example*: `submitterDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Claim Def for.
+    *Example*: `submitterDid` is a DID of the ClaimDef Issuer, and `uuid` is the Claim Def's UUID.
 
 
 - `publicKeys` (dict):
@@ -346,7 +344,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
         
 - `schemaRef` (string):
     
-    Sequence number of a Schema transaction the claim definition is created for.
+    UUID of a Schema transaction the claim definition is created for.
 
 - `signatureType` (string):
 
@@ -359,7 +357,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
     "txnVersion": 1,
     
     "data": {
-        "did":"L5AD5g65TDQr1PPHHRoiGf",
+        "uuid":"cvbnmh65TDQr1PPHHRoiGf",
         "publicKeys": {
             "primary": {
                 ...
@@ -368,7 +366,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
                 ...
             }
         },
-        "schemaRef":12,
+        "schemaRef":"sdfghj65TDQr1PPHHRoiGf",
         "signatureType":"CL",
     },
     

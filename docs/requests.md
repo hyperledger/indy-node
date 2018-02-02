@@ -492,13 +492,12 @@ Adds Claim's schema.
 It's not possible to update existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
 
-- `did` (base58-encoded string; optional):
+- `uuid` (base58-encoded string):
 
-    Target DID we create a Schema for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the submitter.
-    If not specified, the `did` will be equal to `submitterDID`.
+    Schema's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
+    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
     
-    *Example*: `submitterDID` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Schema for.
+    *Example*: `submitterDid` is a DID of a Schema Author, and `uuid` is Schema's unique UUID.
 
 - `attrNames` (array of strings):
  
@@ -521,6 +520,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     "protocolVersion": 1,
     
     "data": {
+        "uuid":"sdfghj65TDQr1PPHHRoiGf",
         "version": "1.0",
         "name": "Degree",
         "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
@@ -559,7 +559,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         "txnType": 101,
         "txnVersion": 1,
         "data": {
-            "did": "L5AD5g65TDQr1PPHHRoiGf",
+            "uuid":"sdfghj65TDQr1PPHHRoiGf",
             "version": "1.0",
             "name": "Degree",
             "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
@@ -608,13 +608,12 @@ It's not possible to update `data` in existing Claim Def.
 So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
 a new Claim Def needs to be created by a new Issuer DID (`did`).
 
-- `did` (base58-encoded string; optional):
+- `uuid` (base58-encoded string):
 
-    Target DID we create a Claim Def for (that is Issuer DID) as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the submitter.
-    If not specified, then `did` will be equal to `submitterDID`. 
+    Claim Def's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
+    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
     
-    *Example*: `submitterDID` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we create the Claim Def for.
+    *Example*: `submitterDid` is a DID of the ClaimDef Issuer, and `uuid` is the Claim Def's UUID.
 
 - `publicKeys` (dict):
  
@@ -641,8 +640,9 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
     "protocolVersion": 1,
     
     "data": {
+        "uuid":"cvbnmh65TDQr1PPHHRoiGf",
         "signatureType": "CL",
-        "schemaRef": 10,    
+        "schemaRef":"sdfghj65TDQr1PPHHRoiGf",
         "publicKeys": {
             "primary": ....,
             "revocation": ....
@@ -682,9 +682,9 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
         "txnType": 102,
         "txnVersion": 1,
         "data": {
-            "did": "L5AD5g65TDQr1PPHHRoiGf",
+            "uuid":"cvbnmh65TDQr1PPHHRoiGf",
             "signatureType": "CL",
-            "schemaRef": 10,    
+            "schemaRef": "sdfghj65TDQr1PPHHRoiGf",    
             "publicKeys": {
                 "primary": ....,
                 "revocation": ....
@@ -1314,18 +1314,12 @@ Gets information about an Attribute for the specified DID.
 
 Gets Claim's Schema.
 
-- `did` (base58-encoded string; optional):
+- `uuid` (base58-encoded string):
 
-    Target DID we get a Schema for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the sender (may not exist on ledger at all).
-
-- `name` (string):
- 
-    Schema's name string.
-
-- `version` (string):
- 
-    Schema's version string
+    Schema's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
+    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
+    
+    *Example*: `submitterDid` is a DID of a Schema Author, and `uuid` is Schema's unique UUID.
 
     
 *Request Example*:
@@ -1337,9 +1331,7 @@ Gets Claim's Schema.
     "protocolVersion": 1,
     
     "data": {
-        "did": "AH4RRiPR78DUrCWatnCW2w",
-        "version": "1.0",
-        "name": "Degree",
+        "uuid":"sdfghj65TDQr1PPHHRoiGf",
     },
     
     "reqMetadata": {
@@ -1367,7 +1359,7 @@ Gets Claim's Schema.
        "txnType": 101,
         "txnVersion": 1,
         "data": {
-            "did": "AH4RRiPR78DUrCWatnCW2w",
+            "uuid":"sdfghj65TDQr1PPHHRoiGf",
             "version": "1.0",
             "name": "Degree",
             "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
@@ -1412,18 +1404,12 @@ Gets Claim's Schema.
 
 Gets Claim Definition.
 
-- `did` (base58-encoded string):
+- `uuid` (base58-encoded string):
 
-    Target DID we get a Claim Def for (that is Issuer DID) as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `submitterDID` metadata field, where `submitterDID` is the DID of the sender (may not exist on ledger at all).
-
-- `schemaRef` (string):
+    Claim Def's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
+    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
     
-    Sequence number of a Schema transaction the claim definition is created for.
-
-- `signatureType` (string):
-
-    Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
+    *Example*: `submitterDid` is a DID of the ClaimDef Issuer, and `uuid` is the Claim Def's UUID.
 
 *Request Example*:
 ```
@@ -1434,9 +1420,7 @@ Gets Claim Definition.
     "protocolVersion": 1,
     
     "data": {
-        "did":"AH4RRiPR78DUrCWatnCW2w",
-        "schemaRef":12,
-        "signatureType":"CL",
+        "uuid":"cvbnmh65TDQr1PPHHRoiGf",
     },
     
     "reqMetadata": {
@@ -1464,9 +1448,9 @@ Gets Claim Definition.
         "txnType": 102,
         "txnVersion": 1,
         "data": {
-            "did": "L5AD5g65TDQr1PPHHRoiGf",
+            "uuid":"cvbnmh65TDQr1PPHHRoiGf",
             "signatureType": "CL",
-            "schemaRef": 10,    
+            "schemaRef":"sdfghj65TDQr1PPHHRoiGf",
             "publicKeys": {
                 "primary": ....,
                 "revocation": ....
