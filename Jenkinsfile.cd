@@ -34,7 +34,7 @@ stage('Load local lib') {
     }
 }
 
-library identifier: 'indy@test_jenkins_hangs', retriever: modernSCM(
+library identifier: 'indy@feature/INDY-997_public-lib', retriever: modernSCM(
     github(credentialsId: 'evernym-github-machine-user', repoOwner: 'evernym', repository: 'jenkins-shared')
 )
 
