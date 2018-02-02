@@ -1,6 +1,9 @@
 # Requests
 * [Common Request Structure](#common-request-structure)
 * [Common Reply Structure](#common-reply-structure)
+* [ACK Structure](#ack-structure)
+* [NACK Structure](#nack-structure)
+* [Reject Structure](#reject-structure)
 * [Write Requests](#write-requests)
 
     * [NYM](#nym)    
@@ -242,6 +245,61 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     been appended to the ledger with the root hash as specified in `ledgerMetadata`.
     It is present for replies to write requests only, and GET_TXN Reply.
     
+## ACK Structure
+```
+{
+    "op": "REQACK",
+    
+    "reqType": <...>,
+    "reqVersion": <...>,
+    "protocolVersion": <...>,
+    
+    "reqMetadata": {
+        "reqId": <...>,
+        "submitterDID": <...>,
+    }
+}
+
+```
+
+
+## NACK Structure
+```
+{
+    "op": "REQNACK",
+    
+    "reqType": <...>,
+    "reqVersion": <...>,
+    "protocolVersion": <...>,
+    
+    "reqMetadata": {
+        "reqId": <...>,
+        "submitterDID": <...>,
+    },
+    
+    "reason": <reason_str>
+}
+
+```
+## Reject Structure
+```
+{
+    "op": "REQNACK",
+    
+    "reqType": <...>,
+    "reqVersion": <...>,
+    "protocolVersion": <...>,
+    
+    "reqMetadata": {
+        "reqId": <...>,
+        "submitterDID": <...>,
+    },
+    
+    "reason": <reason_str>
+}
+
+```
+ 
 
 ## Write Requests
 
