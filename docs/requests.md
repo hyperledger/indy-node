@@ -869,6 +869,9 @@ Gets information about a DID (NYM).
 ### GET_ATTRIB
 Gets information about an Attribute for the specified DID.
 
+NOTE: `GET_ATTRIB` for `hash` and `enc` attributes is something like the "proof of existence",
+i.e. reply data contains requested value only.
+
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.

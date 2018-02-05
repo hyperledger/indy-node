@@ -177,6 +177,7 @@ Adds attribute to a NYM record
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
     Hash of attribute data (as sent by the client).
+    The ledger contains this hash; nothing is stored in an attribute store.
 
 - `enc` (sha256 hash string; mutually exclusive with `raw` and `hash`):
 
