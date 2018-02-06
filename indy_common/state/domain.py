@@ -21,8 +21,8 @@ def make_state_path_for_nym(did) -> bytes:
     return sha256(did.encode()).digest()
 
 
-def make_state_path_for_attr(did, attr_name) -> bytes:
-    nameHash = sha256(attr_name.encode()).hexdigest()
+def make_state_path_for_attr(did, attr_name, attr_is_hash=False) -> bytes:
+    nameHash = sha256(attr_name.encode()).hexdigest() if not attr_is_hash else attr_name
     return "{DID}:{MARKER}:{ATTR_NAME}"\
         .format(DID=did,
                 MARKER=MARKER_ATTR,
@@ -75,13 +75,13 @@ def prepare_attr_for_state(txn):
     """
     assert txn[TXN_TYPE] in {ATTRIB, GET_ATTR}
     nym = txn[TARGET_NYM]
-    attr_key, value = parse_attr_txn(txn)
+    attr_type, attr_key, value = parse_attr_txn(txn)
     hashed_value = hash_of(value) if value else ''
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     value_bytes = encode_state_value(hashed_value, seq_no, txn_time)
-    path = make_state_path_for_attr(nym, attr_key)
-    return path, value, hashed_value, value_bytes
+    path = make_state_path_for_attr(nym, attr_key, attr_type == HASH)
+    return attr_type, path, value, hashed_value, value_bytes
 
 
 def prepare_claim_def_for_state(txn):
@@ -181,11 +181,11 @@ def parse_attr_txn(txn):
         re_raw = attrib_raw_data_serializer.serialize(data,
                                                       toBytes=False)
         key, _ = data.popitem()
-        return key, re_raw
+        return attr_type, key, re_raw
     if attr_type == ENC:
-        return hash_of(attr), attr
+        return attr_type, attr, attr
     if attr_type == HASH:
-        return attr, None
+        return attr_type, attr, None
 
 
 def prepare_get_attr_for_state(txn):
@@ -201,8 +201,9 @@ def prepare_get_attr_for_state(txn):
     if attr_type == ENC:
         attr_key = hash_of(attr_key)
 
-    path = make_state_path_for_attr(nym, attr_key)
-    return path, None, None, None
+    path = make_state_path_for_attr(nym, attr_key,
+                                    attr_type == HASH or attr_type == ENC)
+    return attr_type, path, None, None, None
 
 
 def _extract_attr_typed_value(txn):

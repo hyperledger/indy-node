@@ -99,13 +99,6 @@ class DomainReqHandler(PHandler):
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
-        # TODO: This is not static validation as it involves state
-        if not (not operation.get(TARGET_NYM) or
-                self.hasNym(operation[TARGET_NYM], isCommitted=False)):
-            raise InvalidClientRequest(identifier, reqId,
-                                       '{} should be added before adding '
-                                       'attribute for it'.
-                                       format(TARGET_NYM))
 
     def validate(self, req: Request, config=None):
         op = req.operation
@@ -330,14 +323,15 @@ class DomainReqHandler(PHandler):
                                        .format(ATTRIB, RAW, ENC, HASH))
         nym = request.operation[TARGET_NYM]
         if RAW in request.operation:
-            attr_key = request.operation[RAW]
+            attr_type = RAW
         elif ENC in request.operation:
             # If attribute is encrypted, it will be queried by its hash
-            attr_key = request.operation[ENC]
+            attr_type = ENC
         else:
-            attr_key = request.operation[HASH]
+            attr_type = HASH
+        attr_key = request.operation[attr_type]
         value, lastSeqNo, lastUpdateTime, proof = \
-            self.getAttr(did=nym, key=attr_key)
+            self.getAttr(did=nym, key=attr_key, attr_type=attr_type)
         attr = None
         if value is not None:
             if HASH in request.operation:
@@ -374,9 +368,10 @@ class DomainReqHandler(PHandler):
         the trie stores a blank value for the key did+hash
         """
         assert txn[TXN_TYPE] == ATTRIB
-        path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
+        attr_type, path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
         self.state.set(path, value_bytes)
-        self.attributeStore.set(hashed_value, value)
+        if attr_type != HASH:
+            self.attributeStore.set(hashed_value, value)
 
     def _addSchema(self, txn) -> None:
         assert txn[TXN_TYPE] == SCHEMA
@@ -391,16 +386,17 @@ class DomainReqHandler(PHandler):
     def getAttr(self,
                 did: str,
                 key: str,
+                attr_type,
                 isCommitted=True) -> (str, int, int, list):
         assert did is not None
         assert key is not None
-        path = domain.make_state_path_for_attr(did, key)
+        path = domain.make_state_path_for_attr(did, key, attr_type == HASH)
         try:
             hashed_val, lastSeqNo, lastUpdateTime, proof = \
                 self.lookup(path, isCommitted)
         except KeyError:
             return None, None, None, None
-        if not hashed_val:
+        if not hashed_val or hashed_val == '':
             # Its a HASH attribute
             return hashed_val, lastSeqNo, lastUpdateTime, proof
         else:
@@ -463,13 +459,8 @@ class DomainReqHandler(PHandler):
         in the ledger but only the hash of it.
         """
         txn = deepcopy(txn)
-        attr_key, value = domain.parse_attr_txn(txn)
-        hashed_val = domain.hash_of(value) if value else ''
+        attr_type, _, value = domain.parse_attr_txn(txn)
+        if attr_type in [RAW, ENC]:
+            txn[attr_type] = domain.hash_of(value) if value else ''
 
-        if RAW in txn:
-            txn[RAW] = hashed_val
-        elif ENC in txn:
-            txn[ENC] = hashed_val
-        elif HASH in txn:
-            txn[HASH] = txn[HASH]
         return txn
