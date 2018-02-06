@@ -1,7 +1,7 @@
 # Anoncreds Design
 Here you can find the requirements and design for Anoncreds workflow (including revocation).
 
-* [Anoncreds References(#anoncreds-references)
+* [Anoncreds References](#anoncreds-references)
 * [Requirements](#requirements)
 * [Technical goals](#technical-goals)
 * [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-creddef-in-credentials-and-proofs)
@@ -23,49 +23,42 @@ Anoncreds protocol links:
 ### Requirements
 1. Creation of Schemas:
     1. Schema Author needs to be able to create multiple schemas by the same issuer DID.
-    1. Schema Author needs to be able to evolve existing schema by adding new attributes.
-    1. We need to keep reputation for Schema's Issuer DID.
-    1. We should not have any semver assumptions for Schema's version by the Ledger.
-1. Creation of Cred Def:
+    2. Schema Author needs to be able to evolve existing schema by adding new attributes.
+    3. We need to keep reputation for Schema's Issuer DID.
+    4. We should not have any semver assumptions for Schema's version by the Ledger.
+2. Creation of Cred Def:
     1. CredDef Issuer may not be the same as Schema Author.
-    1. CredDef Issuer needs to be able to create multiple CredDefs by the same issuer DID.
-    1. CredDef Issuer needs to be able to create multiple CredDefs for the same Schema by the same issuer DID.
-    1. We need to keep reputation for CredDef's Issuer DID.
-1. Creation of Revocation entities (Def and Registry):
+    2. CredDef Issuer needs to be able to create multiple CredDefs by the same issuer DID.
+    3. CredDef Issuer needs to be able to create multiple CredDefs for the same Schema by the same issuer DID.
+    4. We need to keep reputation for CredDef's Issuer DID.
+3. Creation of Revocation entities (Def and Registry):
     1. RevocRegDef Issuer may not be the same as Schema Author and CredDef issuer. 
-    1. RevocRegDef Issuer needs to be able to create multiple RevocRegDefs for the same issuer DID.
-    1. RevocRegDef Issuer needs to be able to create multiple RevocRegDef for the same CredDef by the same issuer DID.
-    1. We need to keep reputation for RevocRegDef's Issuer DID.
-1. Referencing Schema/CredDef/RevocRegDef:
+    2. RevocRegDef Issuer needs to be able to create multiple RevocRegDefs for the same issuer DID.
+    3. RevocRegDef Issuer needs to be able to create multiple RevocRegDef for the same CredDef by the same issuer DID.
+    4. We need to keep reputation for RevocRegDef's Issuer DID.
+4. Referencing Schema/CredDef/RevocRegDef:
     1. Prover needs to know what CredDef (public keys), Schema and RevocRegDef 
     were used for issuing the credential.  
-    1. Verifier needs to know what CredDef (public keys), Schema and RevocRegDef 
+    2. Verifier needs to know what CredDef (public keys), Schema and RevocRegDef 
     were used for issuing the credential from the proof.
-1. <b>Keys rotation</b>:
+5. <b>Keys rotation</b>:
     1. Issuer needs to be able to rotate the keys and issue new credentials with the new keys.
-    1. Issuer needs to be able to rotate the keys using the same Issuer DID.
-1. <b>Validity of already issued credentials when key is compromised</b>: 
-    1. If the Issuer's key is compromised and the issuer suspects that it's compromised 
-    from the very beginning, then the Issuer should be able to rotate the key so that all issued credentials
-    becomes invalid.
-    All new credentials issued after rotation should be verifiable against the new key.
-    1. If the Issuer published a key at time A, and at time C he realised that the key was compromised at time B (A < B < C), 
-    then the Issuer should be able to rotate the key so that all credentials
-    issued before time B can be successfully verified using old key, and
-    all credentials issued between B and C becomes invalid.
-    All new credentials issued after C should be verifiable against the new key.
-    1. The Issuer needs to be able to rotate the keys multiple times. Requirement 5.ii must be true for each key rotation.  
-1. <b>Revocation</b>
+    2. Issuer needs to be able to rotate the keys using the same Issuer DID.
+6. <b>Validity of already issued credentials when key is compromised</b>: 
+    1. If the Issuer's key is compromised and the issuer suspects that it's compromised from the very beginning, then the Issuer should be able to rotate the key so that all issued credentials becomes invalid.All new credentials issued after rotation should be verifiable against the new key.
+    2. If the Issuer published a key at time A, and at time C he realised that the key was compromised at time B (A < B < C), then the Issuer should be able to rotate the key so that all credentials issued before time B can be successfully verified using old key, and all credentials issued between B and C becomes invalid. All new credentials issued after C should be verifiable against the new key.
+    3. The Issuer needs to be able to rotate the keys multiple times. Requirement 5.ii must be true for each key rotation.  
+7. <b>Revocation</b>
     1. Verifier needs to be able to Verify that the credential is not revoked at the current time
     (the time when proof request is created).
-    1. Verifier needs to be able to Verify that the credential is not revoked at the given time (any time in the past).       
-1. Querying
+    2. Verifier needs to be able to Verify that the credential is not revoked at the given time (any time in the past).       
+8. Querying
     1. One needs to be able to get all CRED_DEFs created by the given Issuer DID.
-    1. One needs to be able to get all SCHEMAs created by the given Issuer DID.
-    1. One needs to be able to get all SCHEMAs with the given name created by the given Issuer DID.
-    1. One needs to be able to get all SCHEMAs with the given name and version created by the given Issuer DID.
-    1. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID.
-    1. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID for the given CRED_DEF.    
+    2. One needs to be able to get all SCHEMAs created by the given Issuer DID.
+    3. One needs to be able to get all SCHEMAs with the given name created by the given Issuer DID.
+    4. One needs to be able to get all SCHEMAs with the given name and version created by the given Issuer DID.
+    5. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID.
+    6. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID for the given CRED_DEF.    
 
 ### Technical goals
 * Define how Schemas, CreDefs and RevocRegDefs are identified (seqNo, UUID, primary key tuples?)
@@ -142,8 +135,7 @@ a proof that `issuanceTime` is really the current time and not the time from the
     * The Verifier should use Predicates (instead of disclosing) for the value of `issuanceTime`
     to avoid correlation. 
     * It's possible also to disclose `issuanceTime`, but we don't force it.
-    * If it's not disclosed and not verified as a Predicate, then there is a chance the the proof verification will fail because 
-of key rotations, since the latest keys will be used.
+    * If it's not disclosed and not verified as a Predicate, then there is a chance the the proof verification will fail because of key rotations, since the latest keys will be used.
 
 
 
@@ -180,7 +172,7 @@ of key rotations, since the latest keys will be used.
 We need to have two records for Schema (one in State Trie and one in some cache key-value storage)
 in order to have
 1. Simple referencing of Schemas in the protocol (by Schema DID)
-1. Requirements 8
+2. Requirements 8
 
 Record 1 (State Trie):
 * key: `schemaIssuerDid | SchemaMarker | schemaName | schemaVersion | schemaUUID` 
@@ -503,5 +495,4 @@ or issuance by request (`issued` will be fulfilled by newly issued indices).
 }
 ```
 1. Use generic logic to get the root of the State trie at the time `timestamp`. 
-1. Lookup State Trie with the found root to find the state for `uuid`.
-
+2. Lookup State Trie with the found root to find the state for `uuid`.
