@@ -128,6 +128,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     Target verification key as base58-encoded string. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
     (doesnt owns the identifier yet).
+    Verkey can be changed to None by owner, it means that this user goes back under guardianship.
 
 - `alias` (string; optional): 
 
