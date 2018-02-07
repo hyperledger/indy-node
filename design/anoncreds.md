@@ -1,29 +1,30 @@
 # Anoncreds Design
 Here you can find the requirements and design for Anoncreds workflow (including revocation).
 
-* [Anoncreds References(#anoncreds-references)
+* [Anoncreds References](#anoncreds-references)
 * [Requirements](#requirements)
-* [Technical goals](#technical-goals)
-* [Referencing Schema and CredDef in Credentials and Proofs](#referencing-schema-and-creddef-in-credentials-and-proofs)
-* [How Prover and Verifier get keys for Credentials and Proofs](#how-prover-and-verifier-get-keys-for-credentials-and-proofs)
-* [Timestamp Support in State](#timestamp-support-in-state)
-* [Changes in Anoncreds Protocol](#changes-in-anoncreds-protocol)
+* [Referencing Schemas, CredDefs and RevocRegs](#referencing-schemas,-creddefs-and-revocregs)
 * [SCHEMA](#schema)
 * [CRED_DEF](#cred_def)
 * [REVOC_REG_DEF](#revoc_reg_def)
-* [REVOC_REG](#revoc_reg)
+* [REVOC_REG_ENTRY](#revoc_reg_entry)
+* [Timestamp Support in State](#timestamp-support-in-state)
+* [GET_OBJ](#get_obj)
+* [Issuer Key Rotation](#issuer-key-rotation)
 
-### Anoncreds References
+## Anoncreds References
 
 Anoncreds protocol links:
 - [Anoncreds Sequence Diagram](https://github.com/hyperledger/indy-sdk/blob/master/doc/libindy-anoncreds.svg)
 - [Anoncreds Protocol Math](https://github.com/hyperledger/indy-crypto/blob/master/libindy-crypto/docs/AnonCred.pdf)
 - [Anoncreds Protocol Crypto API](https://github.com/hyperledger/indy-crypto/blob/master/libindy-crypto/docs/anoncreds-design.md)
 
-### Requirements
+## Requirements
 1. Creation of Schemas:
     1. Schema Author needs to be able to create multiple schemas by the same issuer DID.
-    1. Schema Author needs to be able to evolve existing schema by adding new attributes.
+    1. Schema Author needs to be able to evolve schemas by adding new attributes (a new Schema with a new name/version 
+    can be created). 
+    1. No one can modify existing Schemas.
     1. We need to keep reputation for Schema's Issuer DID.
     1. We should not have any semver assumptions for Schema's version by the Ledger.
 1. Creation of Cred Def:
@@ -41,10 +42,12 @@ Anoncreds protocol links:
     were used for issuing the credential.  
     1. Verifier needs to know what CredDef (public keys), Schema and RevocRegDef 
     were used for issuing the credential from the proof.
-1. <b>Keys rotation</b>:
+    1. The reference must be compact (a single value).
+1. Keys rotation:
     1. Issuer needs to be able to rotate the keys and issue new credentials with the new keys.
     1. Issuer needs to be able to rotate the keys using the same Issuer DID.
-1. <b>Validity of already issued credentials when key is compromised</b>: 
+    1. Only CredDef's Issuer can modify existing CredDef (that is rotate keys).
+1. Validity of already issued credentials when key is compromised: 
     1. If the Issuer's key is compromised and the issuer suspects that it's compromised 
     from the very beginning, then the Issuer should be able to rotate the key so that all issued credentials
     becomes invalid.
@@ -55,7 +58,7 @@ Anoncreds protocol links:
     all credentials issued between B and C becomes invalid.
     All new credentials issued after C should be verifiable against the new key.
     1. The Issuer needs to be able to rotate the keys multiple times. Requirement 5.ii must be true for each key rotation.  
-1. <b>Revocation</b>
+1. Revocation
     1. Verifier needs to be able to Verify that the credential is not revoked at the current time
     (the time when proof request is created).
     1. Verifier needs to be able to Verify that the credential is not revoked at the given time (any time in the past).       
@@ -67,46 +70,254 @@ Anoncreds protocol links:
     1. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID.
     1. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID for the given CRED_DEF.    
 
-### Technical goals
-* Define how Schemas, CreDefs and RevocRegDefs are identified (seqNo, UUID, primary key tuples?)
-* Define how to deal with Requirements 6.
-* Define Revocation-related transactions and necessary changes in indy-node.
+## Referencing Schemas, CredDefs and RevocRegs
 
+<b>Reqs 4</b>
 
-### Referencing Schema and CredDef in Credentials and Proofs
-* Schema is referenced by unique `SchemaUUID`.
-    * Created for each new Schema.
-    * This is different from Schema Author DID (DID used to send `SCHEMA` txn) which can be the same for 
-    any number of Schemas.
-* CredDef is referenced by unique `CredDefUUID`.
-    * Created for each new CredDef.
-    * This is different from CredDef Issuer DID (DID used to send `CRED_DEF` txn) which can be the same for 
-    any number of CredDef.
-* RevocRegDef and RevocReg are referenced by unique `RevocRegDefUUID`.
-    * Created for each new RevocRegDef.
-    * Used to update RevocReg.
-    * This is different from RevocRegDef Issuer DID (DID used to send `REVOC_REG_DEF` txn) which can be the same for 
-    any number of RevocRegDef.
-* Each `UUID` can be considered as a global UUID within the Ledger.
-The Ledger can guarantee that malicious party can not change/break existing entity 
-defined by a UUID by 
-and checking if there is an entity with the given UUID already existent, plus
-checking the ownership when modifying existing entities (only the issuer who created en entity with the given UUID can modify it). 
+The proposed solution is to identify entities by a unique `id`.
+ * State-Trie-based key will be used as `id`. 
+ This is the actual key used to store the entities in Patricia Merkle State Trie.
+ * It can be deterministically calculated from the primary key tuples (by the client).
+ * This single value will be used in anoncreds protocol (in libindy) to identify entities.
+ * This ID should be included in all transactions as a new field (`id`).
+ * We may expect changes in the format of this field, so it's not just address (key)
+ in the State Trie, but can be a descriptive identifier.
+ * The `id` attribute is calculated by the client and send as a part of SCHEMA/CRED_DEF/REVOC_REG_DEF txns.
+ The ledger doesn't use this key as it is for storing the data in the State Trie.
+ The ledger also calculates the key on its side from the primary key tuples, compares it with the provided `id`,
+ and orders it only if they match. The request is rejected if they don't match.
+ * We need to support [`GET_OBJ`](.get_obj) request to get the current state of the Schema/CredDef/RevocReg by its `id`.
 
       
-### How Prover and Verifier get keys for Credentials and Proofs
-* Proofs and credentials come with `schemaUUID`, `credDefUUID`, `revocDefUUID`.
-* Also there can be `issuanceTime` attribute in each credential (which can be disclosed in the proof).
-* Prover/Verifier looks up SCHEMA using `GET_SCHEMA(schemaUUID)` request to the ledger
-* Prover/Verifier looks up CRED_DEF using `GET_CRED_DEF(credDefUUID, issuanceTime)` request to the ledger
-* Prover/Verifier looks up REVOC_REG_DEF using `GET_REVOC_REG_DEF(revocDefUUID, issuanceTime)` request to the ledger
-* Prover looks up REVOC_REG to update the witness for the given `timestamp` 
- using `GET_REVOC_REG(revocDefUUID, timestamp)` request to the ledger
-* Verifies looks up REVOC_REG to get accumulator value for the given `timestamp`  
- using `GET_REVOC_REG(revocDefUUID, timestamp)` request to the ledger
-* Prover and Verifier should look up REVOC_REG by the same `timestamp` when generating and verifying the proof.
+## SCHEMA 
 
-### Timestamp Support in State
+<b>Reqs 1, 4, 8</b>
+
+#### SCHEMA txn
+```
+{
+    "data": {
+        "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
+        "attrNames": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
+        "name":"Degree",
+        "version":"1.0",
+    },
+    
+    "reqMetadata": {
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        .....
+    },
+    
+....
+}
+```
+
+#### Restrictions
+
+* Existing Schema (identified by the Schema `id`) can not be modified/changed/evolved.
+A new Schema with a new name/version needs to be issued if one needs to evolve it.
+* Only the `submitterDid` who created the Schema can modify it (that is we need to keep the ownership).
+* `id` field must match the State Trie key (address) for this Schema.
+
+#### State
+
+* key: `schemasubmitterDid | SchemaMarker | schemaName | schemaVersion` 
+* value: aggregated txn `data` and `txnMetadata` (as in ledger)
+
+
+#### GET_SCHEMA
+```
+{
+    "data": {
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        "name":"Degree",
+        "version":"1.0",
+    },
+...
+}
+```
+
+
+## CRED_DEF
+
+<b>Reqs 2, 4, 5, 8</b>
+
+The Definition of credentials for the given Schema by the given Issuer.
+It contains public keys (primary and revocation),
+signature type and reference to the Schema. 
+
+#### CRED_DEF txn
+```
+{
+    "data": {
+        "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
+        "publicKeys": {},
+        "schemaId":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
+        "signatureType":"CL",
+        "tag": "key1",
+    },
+    
+    "reqMetadata": {
+        "submitterDid":"HHAD5g65TDQr1PPHHRoiGf",
+        .....
+    },
+    
+....
+}
+```
+ 
+
+#### Restrictions
+
+* Existing CredDef (identified by the CredDef `id`) can be modified/changed/evolved.
+That is rotation of keys is supported.
+* Only the `submitterDid` created the CredDef can modify it (that is we need to keep the ownership). 
+* `id` field must match the State Trie key (address) for this CredDef.
+
+#### State
+
+* key: `credDefsubmitterDid | CredDefMarker | schemaID | signatureType | credDefTag` 
+* value: aggregated txn `data` and `txnMetadata` (as in ledger)
+
+
+
+ 
+#### GET_CRED_DEF
+```
+{
+    "data": {
+        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        "schemaId":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
+        "signatureType":"CL",
+        "tag": "key1"
+    },
+...
+}
+```
+
+### REVOC_REG_DEF
+
+<b>Reqs 3, 4, 8</b>
+
+The Definition of revocation registry for the given CredDef.
+It contains public keys, maximum number of credentials the registry may contain,
+reference to the CredDef, plus some revocation registry specific data.
+
+#### REVOC_REG_DEF txn
+```
+{
+    "data": {
+        "id":"MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "type":"CL_ACCUM",
+        "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
+        "tag": "reg1",
+        "maxCredNum": 1000000,
+        "publicKeys": {},
+        "metadata": {
+            "tailsHash": "<SHA256 hash>",
+            "tailsLocation": "<URL>"
+        }
+    },
+    
+    "reqMetadata": {
+        "submitterDid":"MMAD5g65TDQr1PPHHRoiGf",
+        .....
+    },
+    
+....
+}
+```
+ 
+
+#### Restrictions
+
+* Existing RevocRegDef (identified by the RevocRegDef `id`) can be modified/changed/evolved.
+That is rotation of keys is supported.
+* Only the `submitterDid` who created the RevocRegDef can modify it (that is we need to keep the ownership). 
+* `id` field must match the State Trie key (address) for this RevocRegDef.
+
+#### State
+
+* key: `revocDefSubmitterDid | RevocRegMarker | credDefID | revocDefType | revocDefTag` 
+* value: aggregated txn `data` and `txnMetadata` (as in ledger)
+
+
+
+#### GET_REVOC_REG_DEF
+```
+{
+    "data": {
+        "submitterDid":"MMAD5g65TDQr1PPHHRoiGf",
+        "type":"CL_ACCUM",
+        "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
+        "tag": "reg1",
+    },
+...
+}
+```
+
+
+### REVOC_REG_ENTRY
+
+<b>Reqs 3, 4, 8</b>
+
+The delta of the RevocReg current state (accumulator, issued and revoked indices, etc.).
+
+#### REVOC_REG_ENTRY txn
+```
+{
+    "data": {
+        "id":"MMAD5g65TDQr1PPHHRoiGf4MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "type": "<issued by default or not>",
+        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1"
+        "accum":"<accum_value>",
+        "issued": [], (optional)
+        "revoked": [],
+    },
+    
+    "reqMetadata": {
+        "submitterDid":"MMAD5g65TDQr1PPHHRoiGf",
+        .....
+    },
+    
+....
+}
+```
+* `uuid` must match an existing `REVOC_REG_DEF` with the given UUID.
+* `type`: issuance by default (`issued` will be empty in this case assuming that everything is already issued)
+or issuance by request (`issued` will be fulfilled by newly issued indices).
+* `issued`: an array of issued indices (may be absent/empty if the type is "issuance by default"); this is delta; will be accumulated in state.
+* `revoked`: an array of revoked indices (delta; will be accumulated in state)
+
+#### Restrictions
+
+* Existing RevocRegEntry (identified by the RevocRegEntry's `id`) can be modified/changed/evolved.
+* Only the `submitterDid` who created the corresponding `REVOC_REG_DEF` can modify it. 
+
+
+#### State
+
+* key: `revocDefSubmitterDid | RevocRegEntryMarker | revocRegId`
+
+* value: aggregated txn `data` and `txnMetadata` (as in ledger); 
+contains aggregated aggregated accum_value, issued and revoked arrays.
+
+
+#### GET_REVOC_REG_ENTRY
+```
+{
+    "data": {
+        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "timestamp": 20,
+    },
+...
+}
+```
+See next sections on how to get the state for the given `timestamp`. 
+
+## Timestamp Support in State
+
+<b>Reqs 6, 7</b>
 
 We need to have a generic way to get the State at the given time.
 - State Trie allows to go to the past, that is given the root hash, get the state with this root.
@@ -116,11 +327,29 @@ time.
 - So, we will be able to get the data (state) at the given time.
 
 This approach can be used for
-* getting `REVOC_REG` at desired time (the same for both proper and verifier),
+* getting `REVOC_REG_ENTRY` at desired time (the same for both proper and verifier),
 possibly long ago in the past;
 * dealing with Requirement 6. 
 
-### Changes in Anoncreds Protocol
+## GET_OBJ
+
+<b>Reqs 4</b>
+
+`GET_OBJ` request can be used to get the current state of the Object by its `id` (the key in the State Trie).
+```
+{
+    "data": {
+        "id": "L5AD5g65TDQr1PPHHRoiGf1Degree1",
+    },
+...
+}
+```
+
+## Issuer Key Rotation
+
+<b>Reqs 6</b>
+
+#### Changes in Anoncreds Protocol
 
 If want to support Requirement 6, then the following changes are required in the
 anoncerds protocol:
@@ -145,124 +374,15 @@ a proof that `issuanceTime` is really the current time and not the time from the
     * If it's not disclosed and not verified as a Predicate, then there is a chance the the proof verification will fail because 
 of key rotations, since the latest keys will be used.
 
-
-
-### SCHEMA
-
-#### SCHEMA txn
-```
-{
-    "data": {
-        "uuid":"GEzcdDLhCpGCYRHW82kjHd",
-        "attrNames": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
-        "name":"Degree",
-        "version":"1.0",
-    },
-    
-    "reqMetadata": {
-        "issuerDid":"L5AD5g65TDQr1PPHHRoiGf",
-        .....
-    },
-    
-....
-}
-```
-`uuid` is Schema's UUID. It's different from `issuerDid`.
-
-#### Restrictions
-
-* Existing Schema (identified by the Schema `uuid`) can be modified/changed/evolved.
-* Only the `issuerDid` who created the Schema can modify it (that is we need to keep the ownership).
-* It's not possible to create multiple entities with the same `uuid` (so, it's unique within the ledger). 
-
-#### State
-
-We need to have two records for Schema (one in State Trie and one in some cache key-value storage)
-in order to have
-1. Simple referencing of Schemas in the protocol (by Schema DID)
-1. Requirements 8
-
-Record 1 (State Trie):
-* key: `schemaIssuerDid | SchemaMarker | schemaName | schemaVersion | schemaUUID` 
-* value: aggregated txn data
-
-Record 2 (Cache Storage):
-* key: `schemaUUID`
-* value: Record 1 key
-
-
-#### GET_SCHEMA
-```
-{
-    'data': {
-        'uuid': 'GEzcdDLhCpGCYRHW82kjHd',
-    },
-...
-}
-```
-1. Lookup Cache Storage to get `schemaIssuerDid | SchemaMarker |schemaName | schemaVersion | schemaUUID` by `uuid`
-using Record2. 
-1. Lookup State Trie to get data by the key found above (Record1).
-
-
-### CRED_DEF
-
-The Definition of credentials for the given Schema by the given Issuer.
-It contains public keys (primary and revocation),
-signature type and reference to the Schema. 
-
-#### CRED_DEF txn
-```
-{
-    "data": {
-        "uuid":"TYzcdDLhCpGCYRHW82kjHd",
-        "publicKeys": {},
-        "schemaRef":"GEzcdDLhCpGCYRHW82kjHd",
-        "signatureType":"CL",
-        "oldKeyTrustTime": {                    (optional)
-            "from": "10", 
-            "to": "30",
-        }
-    },
-    
-    "reqMetadata": {
-        "issuerDid":"HHAD5g65TDQr1PPHHRoiGf",
-        .....
-    },
-    
-....
-}
-```
-* `uuid` is CredDef's UUID. It's different from `issuerDid`.
-* `oldKeyTrustTime` can be set each time the key is rotated and defines
- `the intervals when we still can trust the previous value of the key`.
- This is delta; all intervals are accumulated and appended in the State. 
+#### Changes in Transactions
+A new field `oldKeyTrustTime` needs to be added to `CRED_DEF` and `REVOC_REF_DEF` txns.
+`oldKeyTrustTime` can be set each time a key is rotated and defines
+ `the intervals when we still can trust the previous value of the key`. 
 It is needed to deprecate credentials issued during the time when we suspect
 the keys were stolen.
 We can not always use revocation to deprecate old credentials, since revocation keys can
 be stolen as well.  
- 
 
-#### Restrictions
-
-* Existing CredDef (identified by the CredDef `uuid`) can be modified/changed/evolved.
-That is rotation of keys is supported.
-* Only the `issuerDID` created the CredDef can modify it (that is we need to keep the ownership). 
-* It's not possible to create multiple entities with the same `uuid` (so, it's unique within the ledger).
-
-#### State
-
-We need to have two records for CredDef (one in State Trie and one in some cache key-value storage) in order to have
-1. Simple referencing of CredDef in the protocol (by CredDef DID)
-1. Requirements 8
-
-Record 1 (State Trie):
-* key: `credDefIssuerDid | CredDefMarker | schemaUUID | signatureType | credDefUUID` 
-* value: aggregated txn data plus `trustTime` as an array (each next `trustTme` is appended).
-
-Record 2 (Cache Storage):
-* key: `credDefUUID`
-* value: Record 1 key
 
 #### How oldKeyTrustTime works
 Let's assume that 
@@ -338,22 +458,18 @@ The current state (Record1) will look the following:
     },
  ....
 ```
- 
-#### GET_CRED_DEF
-```
-{
-    'data': {
-        'uuid': 'TYzcdDLhCpGCYRHW82kjHd',
-        'issuanceTime': 20, (optional)
-    },
-...
-}
-```
+
+#### Changes in GET request
+
+An optional field `issuanceTime` needs to be supported for 
+* `GET_CRED_DEF`
+* `GET_REVOC_REG_DEF`
+* `GET_OBJ`.
+
 There is a special logic to get the valid and trusted value of the keys
 depending on the issuance time:
-1. Lookup Cache Storage to get `credDefIssuerDid | CredDefMarker | schemaUUID | signatureType | credDefUUID`  by `uuid`
-using Record2. 
-1. Lookup State Trie to get the current state by the key found above (Record1).
+1. Lookup State Trie to get the current state by the key (either `id` in case of `GET_OBJ` or a key created
+from primary key fields provided in the request).
 1. If no `issuanceTime` provided, then just return the current value.  
 1. Try to find the interval (in `oldKeyTrustTime` array) the `issuanceTime` belongs to.
     * If it's greater than the most right interval, then return the current value.
@@ -361,7 +477,7 @@ using Record2.
     * If it's in between intervals, then get the right interval, and get the left value (`from`)
 of this interval.
 1. Use generic logic to get the root of the State trie at the time `to` found above. 
-1. Lookup State Trie with the found root to find the state at that time (the same way as in Steps 1 and 2)
+1. Lookup State Trie with the found root to find the state at that time (the same way as in Step 1)
 
 So, we will have not more than 2 lookups for each request. 
 
@@ -372,136 +488,3 @@ Result for the Example above:
 * `C <= issuanceTime <= D` => [C,D] => state at timeC => key2 (OK)
 * `D < issuanceTime < E` => [E,...] => state at timeE => key3 (deprecated credentials)
 * `issuanceTime > E` => [E,...] => state at timeE => key3 (OK)
-
-
-### REVOC_REG_DEF
-
-The Definition of revocation registry for the given CredDef.
-It contains public keys, maximum number of credentials the registry may contain,
-reference to the CredDef, plus some revocation registry specific data.
-
-#### REVOC_REG_DEF txn
-```
-{
-    "data": {
-        "uuid":"ZXzcdDLhCpGCYRHW82kjHd",
-        "type":"CL_ACCUM",
-        "credDefRef":"GEzcdDLhCpGCYRHW82kjHd",
-        "publicKeys": {},
-        "maxCredNum": 1000000,
-        "metadata": {
-            "tailsHash": "<SHA256 hash>",
-            "tailsLocation": "<URL>"
-        }
-        "oldKeyTrustTime": {                    (optional)
-            "from": "10", 
-            "to": "30",
-        }
-    },
-    
-    "reqMetadata": {
-        "issuerDid":"MMAD5g65TDQr1PPHHRoiGf",
-        .....
-    },
-    
-....
-}
-```
-* `uuid` is RevocRegDef's UUID. It's different from `issuerDid`.
-* `oldKeyTrustTime` can be set each time the accumulator key is rotated and defines
- `the interval when we still can trust the previous value of the key`. 
-It is needed to deprecate credentials issued during the time when we suspect
-the keys were stolen.
-We can not always use revocation to deprecate old credentials, since revocation keys can
-be stolen as well.  
- 
-
-#### Restrictions
-
-* Existing RevocRegDef (identified by the RevocRegDef `uuid`) can be modified/changed/evolved.
-That is rotation of keys is supported.
-* Only the `issuerDid` who created the RevocRegDef can modify it (that is we need to keep the ownership). 
-* It's not possible to create multiple entities with the same `uuid` (so, it's unique within the ledger).
-
-#### State
-
-We need to have two records for RevocRegDef (one in State Trie and one in some cache key-value storage) in order to have
-1. Simple referencing of RevocRegDef in the protocol (by RevocRegDef DID)
-1. Requirements 8
-
-Record 1 (State Trie):
-* key: `revocDefIssuerDid | RevocRefMarker | credDefUUID | revocDefUUID` 
-* value: aggregated txn data plus `trustTime` as an array (each next `trustTme` is appended).
-
-Record 2 (Cache Storage):
-* key: `revocDefUUID`
-* value: Record 1 key
-
-
-#### GET_REVOC_REG_DEF
-```
-{
-    'data': {
-        'uuid': 'ZXzcdDLhCpGCYRHW82kjHd',
-        'issuanceTime': 20, (optional)
-    },
-...
-}
-```
-The logic is the same as for `GET_CLAIM_DEF` (involving Record1, Record2 and `issuanceTime`).
-
-
-### REVOC_REG
-
-The delta of the RevocReg current state (accumulator, issued and revoked indices, etc.).
-
-#### REVOC_REG txn
-```
-{
-    "data": {
-        "uuid":"ZXzcdDLhCpGCYRHW82kjHd",
-        "type": "<issued by default or not>"
-        "accum":"<accum_value>",
-        "issued": [], (optional)
-        "revoked": [],
-    },
-    
-    "reqMetadata": {
-        "issuerDid":"MMAD5g65TDQr1PPHHRoiGf",
-        .....
-    },
-    
-....
-}
-```
-* `uuid` must match an existing `REVOC_REG_DEF` with the given UUID.
-* `type`: issuance by default (`issued` will be empty in this case assuming that everything is already issued)
-or issuance by request (`issued` will be fulfilled by newly issued indices).
-* `issued`: an array of issued indices (may be absent/empty if the type is "issuance by default"); this is delta; will be accumulated in state.
-* `revoked`: an array of revoked indices (delta; will be accumulated in state)
-
-#### Restrictions
-
-* Existing RevocReg (identified by the RevocRegDef's `uuid`) can be modified/changed/evolved.
-* Only the `issuerDid` who created the corresponding `REVOC_REG_DEF` can modify it. 
-
-
-#### State
-
-* key: `revocDefUUID` 
-* value: aggregated txn data (aggregated accum_value, issued and revoked arrays)
-
-
-#### GET_REVOC_REG
-```
-{
-    'data': {
-        'uuid': 'ZXzcdDLhCpGCYRHW82kjHd',
-        'timestamp': 20,
-    },
-...
-}
-```
-1. Use generic logic to get the root of the State trie at the time `timestamp`. 
-1. Lookup State Trie with the found root to find the state for `uuid`.
-
