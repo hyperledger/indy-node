@@ -550,12 +550,10 @@ Adds Claim's schema.
 It's not possible to update existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
 
-- `uuid` (base58-encoded string):
+- `id` (string):
 
-    Schema's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
-    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
-    
-    *Example*: `submitterDid` is a DID of a Schema Author, and `uuid` is Schema's unique UUID.
+    Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
+    It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
 
 - `attrNames` (array of strings):
  
@@ -578,7 +576,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     "protocolVersion": 1,
     
     "data": {
-        "uuid":"sdfghj65TDQr1PPHHRoiGf",
+        "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
         "version": "1.0",
         "name": "Degree",
         "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
@@ -617,7 +615,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         "txnType": 101,
         "txnVersion": 1,
         "data": {
-            "uuid":"sdfghj65TDQr1PPHHRoiGf",
+            "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
             "version": "1.0",
             "name": "Degree",
             "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
@@ -666,12 +664,10 @@ It's not possible to update `data` in existing Claim Def.
 So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
 a new Claim Def needs to be created by a new Issuer DID (`did`).
 
-- `uuid` (base58-encoded string):
+- `id` (string):
 
-    Claim Def's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
-    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
-    
-    *Example*: `submitterDid` is a DID of the ClaimDef Issuer, and `uuid` is the Claim Def's UUID.
+    Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
+    It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
 
 - `publicKeys` (dict):
  
@@ -688,6 +684,11 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
 
+- `tag` (string):
+
+    A unique descriptive tag of the given CRED_DEF for the given Issuer and Schema. An Issuer may have multiple 
+    CRED_DEFs for the same Schema created with different tags. 
+
 
 *Request Example*:
 ```
@@ -698,13 +699,14 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
     "protocolVersion": 1,
     
     "data": {
-        "uuid":"cvbnmh65TDQr1PPHHRoiGf",
+        "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
         "signatureType": "CL",
-        "schemaRef":"sdfghj65TDQr1PPHHRoiGf",
+        "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
         "publicKeys": {
             "primary": ....,
             "revocation": ....
-        }
+        },
+        "tag": "key1",
     },
     
     "reqMetadata": {
@@ -740,13 +742,14 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
         "txnType": 102,
         "txnVersion": 1,
         "data": {
-            "uuid":"cvbnmh65TDQr1PPHHRoiGf",
+            "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
             "signatureType": "CL",
-            "schemaRef": "sdfghj65TDQr1PPHHRoiGf",    
+            "schemaRef": "L5AD5g65TDQr1PPHHRoiGf1Degree1",    
             "publicKeys": {
                 "primary": ....,
                 "revocation": ....
-            }
+            },
+            "tag": "key1",
         },
         "reqMetadata": {
             "reqId": 1514215425836443,
@@ -1372,12 +1375,16 @@ Gets information about an Attribute for the specified DID.
 
 Gets Claim's Schema.
 
-- `uuid` (base58-encoded string):
+- `submitterDid` (base58-encoded string):
+     Identifier (DID) of the transaction submitter (Schema's Author).
 
-    Schema's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
-    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
-    
-    *Example*: `submitterDid` is a DID of a Schema Author, and `uuid` is Schema's unique UUID.
+- `name` (string):
+ 
+    Schema's name string.
+
+- `version` (string):
+ 
+    Schema's version string
 
     
 *Request Example*:
@@ -1389,12 +1396,14 @@ Gets Claim's Schema.
     "protocolVersion": 1,
     
     "data": {
-        "uuid":"sdfghj65TDQr1PPHHRoiGf",
+        "submitterDID":"L5AD5g65TDQr1PPHHRoiGf",
+        "name":"Degree",
+        "version":"1.0",
     },
     
     "reqMetadata": {
         "reqId": 1514215425836443,
-        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+        "submitterDID": "RthJ5g65TDQr1PPHHRoiGf",
     }
 }
 ```
@@ -1417,7 +1426,7 @@ Gets Claim's Schema.
        "txnType": 101,
         "txnVersion": 1,
         "data": {
-            "uuid":"sdfghj65TDQr1PPHHRoiGf",
+            "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
             "version": "1.0",
             "name": "Degree",
             "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
@@ -1462,12 +1471,18 @@ Gets Claim's Schema.
 
 Gets Claim Definition.
 
-- `uuid` (base58-encoded string):
-
-    Claim Def's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
-    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
+- `schemaRef` (string):
     
-    *Example*: `submitterDid` is a DID of the ClaimDef Issuer, and `uuid` is the Claim Def's UUID.
+    ID of a Schema transaction the claim definition is created for.
+
+- `signatureType` (string):
+
+    Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
+
+- `tag` (string):
+
+    A unique descriptive tag of the given CRED_DEF for the given Issuer and Schema. An Issuer may have multiple 
+    CRED_DEFs for the same Schema created with different tags. 
 
 *Request Example*:
 ```
@@ -1478,7 +1493,9 @@ Gets Claim Definition.
     "protocolVersion": 1,
     
     "data": {
-        "uuid":"cvbnmh65TDQr1PPHHRoiGf",
+        "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
+        "signatureType":"CL",
+        "tag": "key1",
     },
     
     "reqMetadata": {
@@ -1506,13 +1523,14 @@ Gets Claim Definition.
         "txnType": 102,
         "txnVersion": 1,
         "data": {
-            "uuid":"cvbnmh65TDQr1PPHHRoiGf",
+            "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
             "signatureType": "CL",
-            "schemaRef":"sdfghj65TDQr1PPHHRoiGf",
+            "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
             "publicKeys": {
                 "primary": ....,
                 "revocation": ....
-            }
+            },
+            "tag": "key1",
         },
         "reqMetadata": {
             "reqId": 1514215425836443,

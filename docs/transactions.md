@@ -273,12 +273,10 @@ Adds Claim's schema.
 It's not possible to update existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
 
-- `uuid` (base58-encoded string):
+- `id` (string):
 
-    Schema's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
-    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
-    
-    *Example*: `submitterDid` is a DID of a Schema Author, and `uuid` is Schema's unique UUID.
+    Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
+    It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
 
 - `attrNames` (array of strings):
  
@@ -299,7 +297,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     "txnVersion": 1,
     
     "data": {
-        "uuid":"sdfghj65TDQr1PPHHRoiGf",
+        "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
         "attrNames": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
         "name":"Degree",
         "version":"1.0",
@@ -327,12 +325,11 @@ It's not possible to update `data` in existing Claim Def.
 So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
 a new Claim Def needs to be created for a new Issuer DID (`did`).
 
-- `uuid` (base58-encoded string):
+- `id` (string):
 
-    Claim Def's UUID as base58-encoded string for 16 or 32 bit DID value. It must be unique within the ledger.
-    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
-    
-    *Example*: `submitterDid` is a DID of the ClaimDef Issuer, and `uuid` is the Claim Def's UUID.
+    Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
+    It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
+
 
 
 - `publicKeys` (dict):
@@ -344,11 +341,16 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
         
 - `schemaRef` (string):
     
-    UUID of a Schema transaction the claim definition is created for.
+    ID of a Schema transaction the claim definition is created for.
 
 - `signatureType` (string):
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
+
+- `tag` (string):
+
+    A unique descriptive tag of the given CRED_DEF for the given Issuer and Schema. An Issuer may have multiple 
+    CRED_DEFs for the same Schema created with different tags. 
 
 **Example**:
 ```
@@ -357,7 +359,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
     "txnVersion": 1,
     
     "data": {
-        "uuid":"cvbnmh65TDQr1PPHHRoiGf",
+        "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
         "publicKeys": {
             "primary": {
                 ...
@@ -366,8 +368,9 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
                 ...
             }
         },
-        "schemaRef":"sdfghj65TDQr1PPHHRoiGf",
+        "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
         "signatureType":"CL",
+        "tag": "key1",
     },
     
     "reqMetadata": {
