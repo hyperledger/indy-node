@@ -3,7 +3,7 @@ Here you can find the requirements and design for Anoncreds workflow (including 
 
 * [Anoncreds References](#anoncreds-references)
 * [Requirements](#requirements)
-* [Referencing Schemas, CredDefs and RevocRegs](#referencing-schemas,-creddefs-and-revocregs)
+* [Referencing Anoncreds Entities](#referencing-anoncreds-entities)
 * [SCHEMA](#schema)
 * [CRED_DEF](#cred_def)
 * [REVOC_REG_DEF](#revoc_reg_def)
@@ -32,15 +32,15 @@ Anoncreds protocol links:
     1. CredDef Issuer needs to be able to create multiple CredDefs by the same issuer DID.
     1. CredDef Issuer needs to be able to create multiple CredDefs for the same Schema by the same issuer DID.
     1. We need to keep reputation for CredDef's Issuer DID.
-1. Creation of Revocation entities (Def and Registry):
-    1. RevocRegDef Issuer may not be the same as Schema Author and CredDef issuer. 
-    1. RevocRegDef Issuer needs to be able to create multiple RevocRegDefs for the same issuer DID.
-    1. RevocRegDef Issuer needs to be able to create multiple RevocRegDef for the same CredDef by the same issuer DID.
-    1. We need to keep reputation for RevocRegDef's Issuer DID.
-1. Referencing Schema/CredDef/RevocRegDef:
-    1. Prover needs to know what CredDef (public keys), Schema and RevocRegDef 
+1. Creation of Revocation Registry (Def and Enteries):
+    1. RevocReg Issuer may not be the same as Schema Author and CredDef issuer. 
+    1. RevocReg Issuer needs to be able to create multiple RevocRegs for the same issuer DID.
+    1. RevocReg Issuer needs to be able to create multiple RevocReg for the same CredDef by the same issuer DID.
+    1. We need to keep reputation for RevocReg's Issuer DID.
+1. Referencing Schema/CredDef/RevocReg:
+    1. Prover needs to know what CredDef (public keys), Schema and RevocReg 
     were used for issuing the credential.  
-    1. Verifier needs to know what CredDef (public keys), Schema and RevocRegDef 
+    1. Verifier needs to know what CredDef (public keys), Schema and RevocReg 
     were used for issuing the credential from the proof.
     1. The reference must be compact (a single value).
 1. Keys rotation:
@@ -57,20 +57,20 @@ Anoncreds protocol links:
     issued before time B can be successfully verified using old key, and
     all credentials issued between B and C becomes invalid.
     All new credentials issued after C should be verifiable against the new key.
-    1. The Issuer needs to be able to rotate the keys multiple times. Requirement 5.ii must be true for each key rotation.  
+    1. The Issuer needs to be able to rotate the keys multiple times. Requirement 5.ii must be true for each key rotation.
+    1. The Issuer needs to be able to deprecate all credentials created by a rotated key
+      and re-issue all existing credentials.
 1. Revocation
-    1. Verifier needs to be able to Verify that the credential is not revoked at the current time
-    (the time when proof request is created).
     1. Verifier needs to be able to Verify that the credential is not revoked at the given time (any time in the past).       
 1. Querying
     1. One needs to be able to get all CRED_DEFs created by the given Issuer DID.
     1. One needs to be able to get all SCHEMAs created by the given Issuer DID.
     1. One needs to be able to get all SCHEMAs with the given name created by the given Issuer DID.
     1. One needs to be able to get all SCHEMAs with the given name and version created by the given Issuer DID.
-    1. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID.
-    1. One needs to be able to get all REVOC_REG_DEFs created by the given Issuer DID for the given CRED_DEF.    
+    1. One needs to be able to get all REVOC_REGs created by the given Issuer DID.
+    1. One needs to be able to get all REVOC_REGs created by the given Issuer DID for the given CRED_DEF.    
 
-## Referencing Schemas, CredDefs and RevocRegs
+## Referencing Anoncreds Entities
 
 <b>Reqs 4</b>
 
@@ -267,7 +267,6 @@ The delta of the RevocReg current state (accumulator, issued and revoked indices
 ```
 {
     "data": {
-        "id":"MMAD5g65TDQr1PPHHRoiGf4MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
         "type": "<issued by default or not>",
         "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1"
         "accum":"<accum_value>",
@@ -283,21 +282,22 @@ The delta of the RevocReg current state (accumulator, issued and revoked indices
 ....
 }
 ```
-* `uuid` must match an existing `REVOC_REG_DEF` with the given UUID.
+* `revocRegId` must match an existing `REVOC_REG_DEF` with the given `id`.
 * `type`: issuance by default (`issued` will be empty in this case assuming that everything is already issued)
 or issuance by request (`issued` will be fulfilled by newly issued indices).
 * `issued`: an array of issued indices (may be absent/empty if the type is "issuance by default"); this is delta; will be accumulated in state.
 * `revoked`: an array of revoked indices (delta; will be accumulated in state)
+* `accum`: current accum value
 
 #### Restrictions
 
-* Existing RevocRegEntry (identified by the RevocRegEntry's `id`) can be modified/changed/evolved.
+* Existing RevocRegEntry (identified by the RevocRegDef's `id`) can be modified/changed/evolved.
 * Only the `submitterDid` who created the corresponding `REVOC_REG_DEF` can modify it. 
 
 
 #### State
 
-* key: `revocDefSubmitterDid | RevocRegEntryMarker | revocRegId`
+* key: `revocDefSubmitterDid | RevocRegEntryMarker | revocRegDefId`
 
 * value: aggregated txn `data` and `txnMetadata` (as in ledger); 
 contains aggregated aggregated accum_value, issued and revoked arrays.
@@ -307,7 +307,7 @@ contains aggregated aggregated accum_value, issued and revoked arrays.
 ```
 {
     "data": {
-        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
         "timestamp": 20,
     },
 ...
@@ -330,6 +330,13 @@ This approach can be used for
 * getting `REVOC_REG_ENTRY` at desired time (the same for both proper and verifier),
 possibly long ago in the past;
 * dealing with Requirement 6. 
+
+<b>Example</b>:
+* There are the following entries (in key-value storage): 
+    * `ts1` - `root1`
+    * `ts2` - `root2`
+* We need to find the nearest root for ts3, where `ts1 < ts3 < ts2`.
+    * So, we need to return `root1`
 
 ## GET_OBJ
 
