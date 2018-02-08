@@ -7,7 +7,8 @@ import libnacl.secret
 from base58 import b58decode
 from common.serializers.serialization import serialize_msg_for_signing
 from plenum.common.types import f
-from plenum.common.util import isHex, error, cryptonymToHex
+from plenum.common.util import isHex, cryptonymToHex
+from common.error import error
 from stp_core.crypto.nacl_wrappers import Verifier
 
 

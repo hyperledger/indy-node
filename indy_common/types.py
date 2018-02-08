@@ -4,8 +4,7 @@ from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, VERSION, ORIGIN, FORCE
 from plenum.common.messages.fields import IterableField, AnyMapField, \
-    NonEmptyStringField, LedgerIdField as PLedgerIdField, \
-    LedgerInfoField as PLedgerInfoField
+    NonEmptyStringField
 from plenum.common.messages.node_message_factory import node_message_factory
 
 from plenum.common.messages.message_base import MessageValidator
@@ -105,15 +104,15 @@ class ClientAttribOperation(MessageValidator):
         (TARGET_NYM, IdentifierField(optional=True)),
         (RAW, JsonField(max_length=JSON_FIELD_LIMIT, optional=True)),
         (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
-        (HASH, LimitedLengthStringField(max_length=HASH_FIELD_LIMIT, optional=True)),
+        (HASH, Sha256HexField(optional=True)),
     )
 
     def _validate_message(self, msg):
-        self.__validate_field_set(msg)
+        self._validate_field_set(msg)
         if RAW in msg:
             self.__validate_raw_field(msg[RAW])
 
-    def __validate_field_set(self, msg):
+    def _validate_field_set(self, msg):
         fields_n = sum(1 for f in (RAW, ENC, HASH) if f in msg)
         if fields_n == 0:
             self._raise_missed_fields(RAW, ENC, HASH)
@@ -157,12 +156,17 @@ class ClientAttribOperation(MessageValidator):
                                        'invalid endpoint port')
 
 
-class ClientGetAttribOperation(MessageValidator):
+class ClientGetAttribOperation(ClientAttribOperation):
     schema = (
         (TXN_TYPE, ConstantField(GET_ATTR)),
         (TARGET_NYM, IdentifierField(optional=True)),
-        (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT)),
+        (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT, optional=True)),
+        (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
+        (HASH, Sha256HexField(optional=True)),
     )
+
+    def _validate_message(self, msg):
+        self._validate_field_set(msg)
 
 
 class ClientClaimDefSubmitOperation(MessageValidator):
@@ -239,21 +243,22 @@ class ClientMessageValidator(PClientMessageValidator):
     )
 
 
-class LedgerIdField(PLedgerIdField):
-    ledger_ids = PLedgerIdField.ledger_ids + (CONFIG_LEDGER_ID,)
-
-
-class LedgerInfoField(PLedgerInfoField):
-    _ledger_id_class = LedgerIdField
+# THE CODE BELOW MIGHT BE NEEDED IN THE FUTURE, THEREFORE KEEPING IT
+# class LedgerIdField(PLedgerIdField):
+#     ledger_ids = PLedgerIdField.ledger_ids + (CONFIG_LEDGER_ID,)
+#
+#
+# class LedgerInfoField(PLedgerInfoField):
+#     _ledger_id_class = LedgerIdField
 
 
 # TODO: it is a workaround which helps extend some fields from
 # downstream projects, should be removed after we find a better way
 # to do this
-node_message_factory.update_schemas_by_field_type(
-    PLedgerIdField, LedgerIdField)
-node_message_factory.update_schemas_by_field_type(
-    PLedgerInfoField, LedgerInfoField)
+# node_message_factory.update_schemas_by_field_type(
+#     PLedgerIdField, LedgerIdField)
+# node_message_factory.update_schemas_by_field_type(
+#     PLedgerInfoField, LedgerInfoField)
 
 
 class SafeRequest(Request, ClientMessageValidator):

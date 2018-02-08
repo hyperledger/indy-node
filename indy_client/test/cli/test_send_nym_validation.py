@@ -516,7 +516,7 @@ def testSendNymHasInvalidSyntaxForUuidIdentifierAndEmptyVerkey(
 
     be(trusteeCli)
     do('send NYM dest={dest} role={role} verkey={verkey}',
-       mapper=parameters, expect=INVALID_SYNTAX, within=2)
+       mapper=parameters, expect=NYM_ADDED, within=2)
 
 
 @pytest.mark.skip(reason='SOV-1111')
