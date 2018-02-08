@@ -79,7 +79,7 @@ class Identity(GeneratesRequest):
             TARGET_NYM: self.identity.identifier
         }
         if self.identity.verkey is not None:
-            op[VERKEY] = self.identity.verkey
+            op[VERKEY] = None if self.identity.verkey == '' else self.identity.verkey
         if self._role:
             op[ROLE] = self.role
         return op
