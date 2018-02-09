@@ -2,6 +2,10 @@ from plenum.test.test_node import ensure_node_disconnected, getNonPrimaryReplica
 from indy_node.test.helper import addRawAttribute
 
 
+from indy_client.test.conftest import nodeSet
+from indy_common.test.conftest import config_helper_class, node_config_helper_class
+
+
 def test_n_minus_f_pool_processes_attrib(looper, nodeSet, up,
                                          steward, stewardWallet):
     """

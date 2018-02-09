@@ -127,7 +127,6 @@ class Scenario(ExitStack):
     @staticmethod
     def checkInboxForReAck(clientName, clientInBox, op, fromNode,
                            expectedCount: int):
-        msg = 'Got your request client ' + clientName
         actualCount = sum(
             1 for x in clientInBox
             if x[0]['op'] == op and x[1] == fromNode.clientstack.name)
@@ -229,11 +228,12 @@ class TestUpgrader(Upgrader):
 @spyable(
     methods=[Node.handleOneNodeMsg, Node.processRequest, Node.processOrdered,
              Node.postToClientInBox, Node.postToNodeInBox, "eatTestMsg",
-             Node.decidePrimaries, Node.startViewChange, Node.discard,
+             Node.discard,
              Node.reportSuspiciousNode, Node.reportSuspiciousClient,
              Node.processRequest, Node.processPropagate, Node.propagate,
-             Node.forward, Node.send, Node.processInstanceChange,
-             Node.checkPerformance, Node.getReplyFromLedger])
+             Node.forward, Node.send, Node.checkPerformance,
+             Node.getReplyFromLedger, Node.no_more_catchups_needed,
+             Node.onBatchCreated, Node.onBatchRejected])
 class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
         Node.__init__(self, *args, **kwargs)
@@ -246,6 +246,9 @@ class TestNode(TempStorage, TestNodeCore, Node):
 
     def getDomainReqHandler(self):
         return Node.getDomainReqHandler(self)
+
+    def init_core_authenticator(self):
+        return Node.init_core_authenticator(self)
 
     def onStopping(self, *args, **kwargs):
         # self.graphStore.store.close()

@@ -1,0 +1,9 @@
+echo "Setting up indy-self-serve environment..."
+cd /src/indy-self-serve/
+# Start the indy_pool                                                           
+/vagrant/common/indypool.py start                                               
+# Get indy_pool's pool_transactions_sandbox_genesis file and place it in        
+# /vagrant/common/                                                              
+/vagrant/common/getIndypoolGenesisFiles.sh                                      
+echo "Setting up lambda/nym ..."                                                
+sudo -H -u ec2-user GENESIS_FILE=/vagrant/common/pool_transactions_sandbox_genesis lambda/nym/config.sh

@@ -16,11 +16,11 @@ whitelist = ['unable to send message',
 
 
 @pytest.fixture(scope="module")
-def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tconf):
+def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tdir, tconf):
     # For each node, adding a file with he current version number which makes the node
     # think that an upgrade has been performed
     populate_log_with_upgrade_events(
-        tdirWithPoolTxns, poolTxnNodeNames, tconf, INVALID_VERSION)
+        poolTxnNodeNames, tdir, tconf, INVALID_VERSION)
     return tdirWithPoolTxns
 
 

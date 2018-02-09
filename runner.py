@@ -25,6 +25,13 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
     collectedData = open(testListFile).read()
     os.remove(testListFile)
     log("Collecting modules")
+
+    # check errors during collect
+    if re.findall("={5,} ERRORS ={5,}", collectedData):
+        log("Errors found during collection")
+        log(collectedData)
+        return -1
+
     testList = re.findall("<Module '(.+)'>", collectedData)
     # testList = list(set(os.path.dirname(t) for t in testList))
     first_level_tests = set()

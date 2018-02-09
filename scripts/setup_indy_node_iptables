@@ -1,0 +1,14 @@
+#!/bin/bash
+
+GENERAL_CONFIG_DIR="/etc/indy"
+
+ENVFILE=$GENERAL_CONFIG_DIR/indy.env
+
+if [ -f $ENVFILE ]; then
+    source $ENVFILE
+else
+    echo "Indy-node environment file does not exist ($ENVFILE), run init_indy_node first."
+    exit 1
+fi
+
+/usr/local/bin/setup_iptables $NODE_CLIENT_PORT $CLIENT_CONNECTIONS_LIMIT

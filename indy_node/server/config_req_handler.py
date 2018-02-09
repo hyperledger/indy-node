@@ -6,7 +6,7 @@ from plenum.common.txn_util import reqToTxn, isTxnForced
 from plenum.server.req_handler import RequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.auth import Authoriser
-from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG
+from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
@@ -16,6 +16,8 @@ from indy_node.server.pool_config import PoolConfig
 
 
 class ConfigReqHandler(RequestHandler):
+    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
+
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
         super().__init__(ledger, state)
@@ -24,11 +26,12 @@ class ConfigReqHandler(RequestHandler):
         self.poolManager = poolManager
         self.poolCfg = poolCfg
 
-    def doStaticValidation(self, identifier, reqId, operation):
+    def doStaticValidation(self, request: Request):
+        identifier, req_id, operation = request.identifier, request.reqId, request.operation
         if operation[TXN_TYPE] == POOL_UPGRADE:
-            self._doStaticValidationPoolUpgrade(identifier, reqId, operation)
+            self._doStaticValidationPoolUpgrade(identifier, req_id, operation)
         elif operation[TXN_TYPE] == POOL_CONFIG:
-            self._doStaticValidationPoolConfig(identifier, reqId, operation)
+            self._doStaticValidationPoolConfig(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
         pass
@@ -44,7 +47,7 @@ class ConfigReqHandler(RequestHandler):
             force = operation.get(FORCE)
             force = str(force) == 'True'
             isValid, msg = self.upgrader.isScheduleValid(
-                schedule, self.poolManager.nodeIds, force)
+                schedule, self.poolManager.getNodesServices(), force)
             if not isValid:
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} not a valid schedule since {}".
@@ -52,7 +55,7 @@ class ConfigReqHandler(RequestHandler):
 
         # TODO: Check if cancel is submitted before start
 
-    def validate(self, req: Request, config=None):
+    def validate(self, req: Request):
         status = None
         operation = req.operation
         typ = operation.get(TXN_TYPE)
@@ -110,8 +113,8 @@ class ConfigReqHandler(RequestHandler):
 
     def apply(self, req: Request, cons_time):
         txn = reqToTxn(req, cons_time)
-        self.ledger.appendTxns([txn])
-        return txn
+        (start, _), _ = self.ledger.appendTxns([txn])
+        return start, txn
 
     def commit(self, txnCount, stateRoot, txnRoot) -> List:
         committedTxns = super().commit(txnCount, stateRoot, txnRoot)

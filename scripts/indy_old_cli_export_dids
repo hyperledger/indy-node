@@ -1,0 +1,52 @@
+#! /usr/bin/env python3
+"""
+Script for export DIDs from client wallet.
+
+$indy_export_dids [-e <environment name>] -w <wallet name>
+"""
+
+import argparse
+import base64
+import json
+import os
+from pathlib import Path
+
+from indy_common.config_util import getConfig
+from plenum.cli.constants import NO_ENV, WALLET_FILE_EXTENSION
+from plenum.client.wallet import WalletStorageHelper
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-e", "--env_name", default=NO_ENV)
+ap.add_argument("-w", "--wallet_name", required=True)
+ap.add_argument("-f", "--output_file", required=False)
+args = ap.parse_args()
+env_name = args.env_name
+wallet_name = args.wallet_name
+output_file = args.output_file
+
+config = getConfig()
+base_dir = os.path.expanduser(config.CLI_BASE_DIR)
+wallets_dir = os.path.join(base_dir, config.walletsDir)
+
+wallet_dir = os.path.join(wallets_dir, env_name)
+storage_helper = WalletStorageHelper(wallet_dir)
+wallet_path = os.path.join(wallet_dir, "{}.{}".format(wallet_name, WALLET_FILE_EXTENSION))
+wallet = storage_helper.loadWallet(wallet_path)
+
+dids = []
+for did, did_signer in wallet.idsToSigners.items():
+    seed_base64 = base64.b64encode(did_signer.seed).decode("ascii")
+    dids.append({"did": did, "seed": seed_base64})
+
+dto = {
+    "version": 1,
+    "dids": dids
+}
+
+out_file = output_file if output_file else \
+    os.path.join(os.path.curdir, "{}_{}.exp_wallet".format(env_name, wallet_name))
+
+path = Path(out_file)
+path.write_text(json.dumps(dto))
+
+print("Wallet successfully exported to {}".format(out_file))
