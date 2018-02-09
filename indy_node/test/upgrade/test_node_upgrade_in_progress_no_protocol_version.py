@@ -1,17 +1,9 @@
 import pytest
 
 from indy_common.constants import IN_PROGRESS
-from indy_node.test.helper import TestNode
-from indy_node.test.upgrade.helper import check_node_sent_acknowledges_upgrade
+from indy_node.test.upgrade.helper import check_node_sent_acknowledges_upgrade, TestNodeNoProtocolVersion
 
 whitelist = ['unable to send message']
-
-
-class TestNodeNoProtocolVersion(TestNode):
-    def processNodeRequest(self, request, frm):
-        if request.protocolVersion is not None:
-            raise ValueError('Do not understand what protocolVersion is!!!')
-        super().processNodeRequest(request, frm)
 
 
 @pytest.fixture(scope="module")

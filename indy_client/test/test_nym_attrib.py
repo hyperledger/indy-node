@@ -9,7 +9,6 @@ from plenum.common.constants import ENC, REPLY, TXN_TIME, TXN_ID, \
     OP_FIELD_NAME, NYM, TARGET_NYM, \
     TXN_TYPE, ROLE, NONCE, VERKEY
 from plenum.common.signer_did import DidSigner
-from plenum.common.signer_simple import SimpleSigner
 from plenum.common.types import f
 from plenum.common.util import adict
 from plenum.test import waits
@@ -17,7 +16,7 @@ from indy_client.client.client import Client
 from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.test.helper import checkNacks, submitAndCheckRejects, \
-    genTestClient, createNym, checkRejects, addRole, submit, submitAndCheckAccepts, makePendingTxnsRequest
+    genTestClient, createNym, checkRejects, makePendingTxnsRequest
 from indy_common.constants import SKEY
 from indy_common.identity import Identity
 from indy_common.txn_util import ATTRIB, TRUST_ANCHOR
@@ -27,6 +26,7 @@ from indy_node.test.helper import submitAndCheck, \
     getAttribute
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
+
 
 logger = getlogger()
 
@@ -86,10 +86,10 @@ def addedEncryptedAttribute(userIdA, trustAnchor, trustAnchorWallet, looper,
 
 
 @pytest.fixture(scope="module")
-def nonTrustAnchor(looper, nodeSet, tdir):
+def nonTrustAnchor(looper, nodeSet, tdirWithClientPoolTxns):
     sseed = b'a secret trust anchor seed......'
     signer = DidSigner(seed=sseed)
-    c, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    c, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     w = Wallet(c.name)
     w.addIdentifier(signer=signer)
     c.registerObserver(w.handleIncomingReply)
@@ -99,10 +99,10 @@ def nonTrustAnchor(looper, nodeSet, tdir):
 
 
 @pytest.fixture(scope="module")
-def anotherTrustAnchor(nodeSet, steward, stewardWallet, tdir, looper):
+def anotherTrustAnchor(nodeSet, steward, stewardWallet, tdirWithClientPoolTxns, looper):
     sseed = b'1 secret trust anchor seed......'
     signer = DidSigner(seed=sseed)
-    c, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    c, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     w = Wallet(c.name)
     w.addIdentifier(signer=signer)
     c.registerObserver(w.handleIncomingReply)
@@ -300,8 +300,9 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(
     _, key = trustAnchorWallet._prepared.pop((req.identifier, req.reqId))
     req.reqId = lastReqId
 
-    req.signature = trustAnchorWallet.signMsg(msg=req.signingState,
-                                              identifier=req.identifier)
+    req.signature = trustAnchorWallet.signMsg(
+        msg=req.signingState(identifier=req.identifier),
+        identifier=req.identifier)
     trustAnchorWallet._prepared[req.identifier, req.reqId] = req, key
     trustAnchor.submitReqs(req)
 
@@ -313,14 +314,11 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(
             result = last.result
             assert result is not None
 
-            # TODO: Time is not equal as some precision is lost while storing
-            # in oientdb, using seconds may be an option, need to think of a
-            # use cases where time in milliseconds is required
             replies[node.clientstack.name][f.RESULT.nm].pop(TXN_TIME, None)
             result.result.pop(TXN_TIME, None)
 
-            assert replies[node.clientstack.name][f.RESULT.nm] == \
-                {k: v for k, v in result.result.items() if v is not None}
+            assert {k: v for k, v in result.result.items() if v is not None}.items() <=\
+                   replies[node.clientstack.name][f.RESULT.nm].items()
 
     timeout = waits.expectedTransactionExecutionTime(len(nodeSet))
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
@@ -426,7 +424,8 @@ def testStewardCannotAddUsersAttribute(nodeSet, looper, steward,
                 checkRejects,
                 steward,
                 reqs[0].reqId,
-                "UnauthorizedClientRequest('Only identity owner/guardian can add attribute for that identity'",
+                "UnauthorizedClientRequest('Only identity owner/guardian can "
+                "add attribute for that identity'",
                 retryWait=1,
                 timeout=timeout))
 
@@ -523,12 +522,12 @@ def testGetTxnsNoSeqNo():
 
 @pytest.mark.skip(reason="SOV-560. Come back to it later since "
                          "requestPendingTxns move to wallet")
-def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdir,
+def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdirWithClientPoolTxns,
                      trustAnchorWallet, looper):
     """
     Test GET_TXNS from client and provide seqNo to fetch from
     """
-    trustAnchor = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    trustAnchor = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
 
     looper.add(trustAnchor)
     looper.run(trustAnchor.ensureConnectedToNodes())
@@ -542,9 +541,9 @@ def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdir,
 
 
 def testNonTrustAnchoredNymCanDoGetNym(nodeSet, addedTrustAnchor,
-                                       trustAnchorWallet, tdir, looper):
+                                       trustAnchorWallet, tdirWithClientPoolTxns, looper):
     signer = DidSigner()
-    someClient, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    someClient, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     wallet = Wallet(someClient.name)
     wallet.addIdentifier(signer=signer)
     someClient.registerObserver(wallet.handleIncomingReply)
@@ -583,13 +582,13 @@ def test_user_add_attrs_for_herself(
 
 
 @pytest.mark.skip(reason="INDY-896 ATTR cannot be added without dest")
-def test_attr_with_no_dest_added(nodeSet, tdir, looper,
+def test_attr_with_no_dest_added(nodeSet, tdirWithClientPoolTxns, looper,
                                  trustAnchor, addedTrustAnchor, attributeData):
     user_wallet = Wallet()
     signer = DidSigner()
     user_wallet.addIdentifier(signer=signer)
 
-    client, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
+    client, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     client.registerObserver(user_wallet.handleIncomingReply)
     looper.add(client)
     looper.run(client.ensureConnectedToNodes())

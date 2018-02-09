@@ -5,9 +5,6 @@ from indy_client.agent.helper import buildAgentWallet
 from indy_client.test import waits
 from stp_core.loop.eventually import eventually
 from indy_client.agent.run_agent import runAgent
-from indy_common.config_util import getConfig
-
-config = getConfig()
 
 
 def connectAgents(agent1, agent2):

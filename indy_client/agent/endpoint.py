@@ -1,3 +1,5 @@
+import os
+
 from typing import Callable
 
 from plenum import config
@@ -56,7 +58,7 @@ class ZEndpoint(SimpleZStack, EndpointCore):
             "auth_mode": AuthMode.ALLOW_ANY.value
         }
         if basedirpath:
-            stackParams["basedirpath"] = basedirpath
+            stackParams["basedirpath"] = os.path.join(basedirpath, "keys")
 
         seed = seed or randomSeed()
         SimpleZStack.__init__(

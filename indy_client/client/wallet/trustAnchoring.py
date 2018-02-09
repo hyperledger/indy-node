@@ -23,8 +23,8 @@ class TrustAnchoring:
     def _sendIdReq(self, idy):
         req = idy.ledgerRequest()
         if req:
-            if not req.identifier:
-                req.identifier = self.defaultId
+            if not req._identifier:
+                req._identifier = self.defaultId
             self.pendRequest(req, idy.identifier)
         return len(self._pending)
 

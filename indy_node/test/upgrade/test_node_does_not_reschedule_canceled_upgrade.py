@@ -6,11 +6,12 @@ from indy_node.test.upgrade.helper import checkNoUpgradeScheduled, \
     ensureUpgradeSent
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 from stp_core.loop.eventually import eventually
+from indy_common.config_helper import NodeConfigHelper
 
 
 def test_node_does_not_reschedule_cancelled_upgrade_after_restart(
         upgradeScheduled, looper, nodeSet, validUpgrade,
-        testNodeClass, tdirWithPoolTxns, tconf, allPluginsPath,
+        testNodeClass, tdir, tconf, allPluginsPath,
         trustee, trusteeWallet):
 
     # Cancel the scheduled upgrade
@@ -39,7 +40,8 @@ def test_node_does_not_reschedule_cancelled_upgrade_after_restart(
         del node
 
     for nm in names:
-        node = testNodeClass(nm, basedirpath=tdirWithPoolTxns,
+        config_helper = NodeConfigHelper(nm, tconf, chroot=tdir)
+        node = testNodeClass(nm, config_helper=config_helper,
                              config=tconf, pluginPaths=allPluginsPath)
         looper.add(node)
         nodeSet.append(node)

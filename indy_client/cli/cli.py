@@ -62,7 +62,8 @@ from plenum.cli.cli import Cli as PlenumCli
 from plenum.cli.constants import PROMPT_ENV_SEPARATOR, NO_ENV
 from plenum.cli.helper import getClientGrams
 from plenum.cli.phrase_word_completer import PhraseWordCompleter
-from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE
+from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE, RAW
+from plenum.common.exceptions import OperationError
 from plenum.common.signer_did import DidSigner
 from plenum.common.txn_util import createGenesisTxnFile
 from plenum.common.util import randomString, getWalletFilePath
@@ -652,18 +653,18 @@ class IndyCli(PlenumCli):
     def _getAttr(self, nym, raw, enc, hsh):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1
         if raw:
-            l = LedgerStore.RAW
+            led_store = LedgerStore.RAW
             data = raw
         elif enc:
-            l = LedgerStore.ENC
+            led_store = LedgerStore.ENC
             data = enc
         elif hsh:
-            l = LedgerStore.HASH
+            led_store = LedgerStore.HASH
             data = hsh
         else:
             raise RuntimeError('One of raw, enc, or hash are required.')
 
-        attrib = Attribute(data, dest=nym, ledgerStore=l)
+        attrib = Attribute(data, dest=nym, ledgerStore=led_store)
         req = self.activeWallet.requestAttribute(
             attrib, sender=self.activeWallet.defaultId)
         self.activeClient.submitReqs(req)
@@ -671,11 +672,15 @@ class IndyCli(PlenumCli):
 
         def getAttrReply(reply, err, *args):
             if reply and reply[DATA]:
-                data = json.loads(reply[DATA])
-                if data:
-                    self.print(
-                        "Found attribute {}"
-                        .format(json.dumps(data)))
+                data_to_print = None
+                if RAW in reply:
+                    data = json.loads(reply[DATA])
+                    if data:
+                        data_to_print = json.dumps(data)
+                else:
+                    data_to_print = reply[DATA]
+                if data_to_print:
+                    self.print("Found attribute {}".format(data_to_print))
             else:
                 self.print("Attr not found")
 
@@ -842,12 +847,9 @@ class IndyCli(PlenumCli):
             if not self.canMakeIndyRequest:
                 return True
             nym = matchedVars.get('dest_id')
-            raw = matchedVars.get('raw') \
-                if matchedVars.get('raw') else None
-            enc = ast.literal_eval(matchedVars.get('enc')) \
-                if matchedVars.get('enc') else None
-            hsh = matchedVars.get('hash') \
-                if matchedVars.get('hash') else None
+            raw = matchedVars.get('raw', None)
+            enc = matchedVars.get('enc', None)
+            hsh = matchedVars.get('hash', None)
             self._addAttribToNym(nym, raw, enc, hsh)
             return True
 
@@ -858,12 +860,9 @@ class IndyCli(PlenumCli):
             if not self.canMakeIndyRequest:
                 return True
             nym = matchedVars.get('dest_id')
-            raw = matchedVars.get('raw') \
-                if matchedVars.get('raw') else None
-            enc = ast.literal_eval(matchedVars.get('enc')) \
-                if matchedVars.get('enc') else None
-            hsh = matchedVars.get('hash') \
-                if matchedVars.get('hash') else None
+            raw = matchedVars.get('raw', None)
+            enc = matchedVars.get('enc', None)
+            hsh = matchedVars.get('hash', None)
             self._getAttr(nym, raw, enc, hsh)
             return True
 
@@ -960,10 +959,15 @@ class IndyCli(PlenumCli):
         if not self.canMakeIndyRequest:
             return True
 
-        schema = await self.agent.issuer.genSchema(
-            name=matchedVars.get(NAME),
-            version=matchedVars.get(VERSION),
-            attrNames=[s.strip() for s in matchedVars.get(KEYS).split(",")])
+        try:
+            schema = await self.agent.issuer.genSchema(
+                name=matchedVars.get(NAME),
+                version=matchedVars.get(VERSION),
+                attrNames=[s.strip() for s in matchedVars.get(KEYS).split(",")])
+        except OperationError as ex:
+            self.print("Can not add SCHEMA {}".format(ex),
+                       Token.BoldOrange)
+            return False
 
         self.print("The following schema is published "
                    "to the Indy distributed ledger\n", Token.BoldBlue,

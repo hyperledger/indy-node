@@ -21,11 +21,7 @@ cliNodeReg = OrderedDict([
     ('DeltaC', ('127.0.0.1', 9708))
 ])
 
-baseDir = "~/.indy"
-NODE_BASE_DATA_DIR = baseDir
-LOG_DIR = os.path.join(baseDir, "log")
 GENERAL_CONFIG_DIR = '/etc/indy/'
-BACKUP_DIR = os.path.join(baseDir, "backup")
 
 CLI_BASE_DIR = '~/.indy-cli/'
 CLI_NETWORK_DIR = os.path.join(CLI_BASE_DIR, 'networks')
@@ -58,7 +54,7 @@ idrCacheDbName = 'idr_cache_db'
 
 RAETLogLevel = "concise"
 RAETLogLevelCli = "mute"
-RAETLogFilePath = os.path.join(os.path.expanduser(baseDir), "raet.log")
+RAETLogFilePath = os.path.expanduser("~/.indy/raet.log")
 RAETLogFilePathCli = None
 RAETMessageTimeout = 30
 

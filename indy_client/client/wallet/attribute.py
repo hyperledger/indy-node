@@ -1,7 +1,7 @@
 from enum import unique, IntEnum
 from typing import Optional, TypeVar
 
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ORIGIN, CURRENT_PROTOCOL_VERSION
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, ORIGIN, CURRENT_PROTOCOL_VERSION
 from indy_common.generates_request import GeneratesRequest
 from indy_common.constants import ATTRIB, GET_ATTR
 from indy_common.types import Request
@@ -62,23 +62,27 @@ class Attribute(AttributeKey, GeneratesRequest):
         self.encKey = encKey
         self.seqNo = seqNo
 
+    def _op_fill_attr_type_and_data(self, op, data):
+        if self.ledgerStore == LedgerStore.RAW:
+            op[RAW] = data
+        elif self.ledgerStore == LedgerStore.ENC:
+            op[ENC] = data
+        elif self.ledgerStore == LedgerStore.HASH:
+            op[HASH] = data
+        elif self.ledgerStore == LedgerStore.DONT:
+            raise RuntimeError("This attribute cannot be stored externally")
+        else:
+            raise RuntimeError("Unknown ledgerStore: {}".
+                               format(self.ledgerStore))
+
     def _op(self):
         op = {
             TXN_TYPE: ATTRIB
         }
         if self.dest:
             op[TARGET_NYM] = self.dest
-        if self.ledgerStore == LedgerStore.RAW:
-            op[RAW] = self.value
-        elif self.ledgerStore == LedgerStore.ENC:
-            raise NotImplementedError
-        elif self.ledgerStore == LedgerStore.HASH:
-            raise NotImplementedError
-        elif self.ledgerStore == LedgerStore.DONT:
-            raise RuntimeError("This attribute cannot be stored externally")
-        else:
-            raise RuntimeError("Unknown ledgerStore: {}".
-                               format(self.ledgerStore))
+        self._op_fill_attr_type_and_data(op, self.value)
+
         return op
 
     def ledgerRequest(self):
@@ -92,8 +96,8 @@ class Attribute(AttributeKey, GeneratesRequest):
         op = {
             TARGET_NYM: self.dest,
             TXN_TYPE: GET_ATTR,
-            RAW: self.name
         }
+        self._op_fill_attr_type_and_data(op, self.name)
         if self.origin:
             op[ORIGIN] = self.origin
         return op
