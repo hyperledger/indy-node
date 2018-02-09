@@ -209,6 +209,7 @@ reference to the CredDef, plus some revocation registry specific data.
     "data": {
         "id":"MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
         "type":"CL_ACCUM",
+        "issuanceType": "<issued by default or not>",
         "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
         "tag": "reg1",
         "maxCredNum": 1000000,
@@ -227,6 +228,18 @@ reference to the CredDef, plus some revocation registry specific data.
 ....
 }
 ```
+* `id` (string): ID as a key in State Trie.
+* `type` (enum string): Revocation Registry type (only `CL_ACCUM` is supported for now).
+* `issuanceType` (enum string): Type of Issuance:
+    * `ISSUANCE_BY_DEFAULT`: all indices are assumed to be issued and initial accumulator is calculated over all indices; 
+    Revocation Registry is updated only during revocation.
+    * `ISSUANCE_ON_DEMAND`: nothing is issued initially accumulator is 1; 
+    Revocation Registry is updated only during each issuance and  revocation.
+* `credDefId` (string): ID of the corresponding CredDef
+* `tag` (string): unique descriptive ID of the Registry.
+* `maxCredNum` (int): maximum number of credentials the Registry can serve.
+* `publicKeys` (json): Registry's public key.
+* `metadata` (json): Registry-specific metadata. For example, it contains `hash` and `locaiton` of tails files for `CL_ACCUM`. 
  
 
 #### Restrictions
@@ -261,17 +274,20 @@ That is rotation of keys is supported.
 
 <b>Reqs 3, 4, 8</b>
 
-The delta of the RevocReg current state (accumulator, issued and revoked indices, etc.).
+The RevocReg entry containing the new accumulator value and issued/revoked indices. This is juat a delta of indices, not 
+the whole list.
+So, it can be sent each time a new claim is issued/revoked.
 
 #### REVOC_REG_ENTRY txn
 ```
 {
     "data": {
-        "type": "<issued by default or not>",
-        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1"
-        "accum":"<accum_value>",
-        "issued": [], (optional)
-        "revoked": [],
+        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "entry": {
+            "accum":"<accum_value>",
+            "issued": [], (optional)
+            "revoked": [],
+        }
     },
     
     "reqMetadata": {
@@ -283,11 +299,10 @@ The delta of the RevocReg current state (accumulator, issued and revoked indices
 }
 ```
 * `revocRegId` must match an existing `REVOC_REG_DEF` with the given `id`.
-* `type`: issuance by default (`issued` will be empty in this case assuming that everything is already issued)
-or issuance by request (`issued` will be fulfilled by newly issued indices).
-* `issued`: an array of issued indices (may be absent/empty if the type is "issuance by default"); this is delta; will be accumulated in state.
-* `revoked`: an array of revoked indices (delta; will be accumulated in state)
-* `accum`: current accum value
+* `entry`: Registry-specific entry:
+    * `issued`: an array of issued indices (may be absent/empty if the type is "issuance by default"); this is delta; will be accumulated in state.
+    * `revoked`: an array of revoked indices (delta; will be accumulated in state)
+    * `accum`: current accumulator value
 
 #### Restrictions
 
@@ -300,10 +315,14 @@ or issuance by request (`issued` will be fulfilled by newly issued indices).
 * key: `revocDefSubmitterDid | RevocRegEntryMarker | revocRegDefId`
 
 * value: aggregated txn `data` and `txnMetadata` (as in ledger); 
-contains aggregated aggregated accum_value, issued and revoked arrays.
+contains aggregated accum_value, issued and revoked arrays.
 
+<b>Hint</b>: We should consider using BitMask to store the current aggregated state of issued and revoked arrays
+in the State Trie to reduce the required space.  
 
-#### GET_REVOC_REG_ENTRY
+#### GET_REVOC_REG
+Gets the accumulated state of the Revocation Registry (at the given time defined by `timestamp`).
+Returns just the current accumulator value for `CL_ACCUM` type. 
 ```
 {
     "data": {
