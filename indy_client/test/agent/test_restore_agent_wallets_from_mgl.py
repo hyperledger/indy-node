@@ -6,19 +6,17 @@ from indy_client.anon_creds.indy_issuer import IndyIssuerWalletInMemory
 from indy_client.anon_creds.indy_public_repo import IndyPublicRepo
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.test.client.TestClient import TestClient
-from indy_common.config_util import getConfig
 from stp_core.network.port_dispenser import genHa
 
 
-def test_restore_agent_wallets_from_minimal_go_live(tdirWithPoolTxns):
+def test_restore_agent_wallets_from_minimal_go_live(tconf, tdirWithClientPoolTxns):
     source_dir = os.path.dirname(os.path.realpath(__file__))
     agent_wallet_source_path = os.path.join(
         source_dir, 'agent_wallet_from_minimal_go_live')
     issuer_wallet_source_path = os.path.join(
         source_dir, 'issuer_wallet_from_minimal_go_live')
 
-    config = getConfig(tdirWithPoolTxns)
-    agent_wallets_dir = os.path.join(config.CLI_BASE_DIR, config.walletsDir,
+    agent_wallets_dir = os.path.join(tconf.CLI_BASE_DIR, tconf.walletsDir,
                                      'agents', 'test-agent')
     issuer_wallet_dir = os.path.join(agent_wallets_dir, 'issuer')
 
@@ -30,9 +28,9 @@ def test_restore_agent_wallets_from_minimal_go_live(tdirWithPoolTxns):
 
     client = TestClient('test-client',
                         ha=genHa(),
-                        basedirpath=tdirWithPoolTxns)
+                        basedirpath=tdirWithClientPoolTxns)
     agent = WalletedAgent('test-agent',
-                          basedirpath=tdirWithPoolTxns,
+                          basedirpath=tdirWithClientPoolTxns,
                           client=client)
 
     agent_wallet = agent.wallet

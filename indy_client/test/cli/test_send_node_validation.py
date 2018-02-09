@@ -68,7 +68,6 @@ def testSendNodeSucceedsIfServicesIsEmptyArray(
     ensurePoolIsOperable(be, do, newStewardCli)
 
 
-@pytest.mark.skip(reason='SOV-1092')
 def testSendNodeFailsIfDestIsSmallDecimalNumber(
         be, do, poolNodesStarted, newStewardCli, newNodeVals):
 
@@ -81,7 +80,6 @@ def testSendNodeFailsIfDestIsSmallDecimalNumber(
     ensurePoolIsOperable(be, do, newStewardCli)
 
 
-@pytest.mark.skip(reason='SOV-1092')
 def testSendNodeFailsIfDestIsShortReadableName(
         be, do, poolNodesStarted, newStewardCli, newNodeVals):
 

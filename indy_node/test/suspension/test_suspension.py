@@ -21,36 +21,43 @@ logger = getlogger()
 
 
 @pytest.fixture(scope="module")
-def anotherTrustee(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherTrustee(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newTrustee',
                                   role=TRUSTEE)
 
 
 @pytest.fixture(scope="module")
-def anotherTGB(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherTGB(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newTGB', role=TGB)
 
 
 @pytest.fixture(scope="module")
-def anotherSteward(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherSteward(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newSteward',
                                   role=STEWARD)
 
 
 @pytest.fixture(scope="module")
-def anotherSteward1(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherSteward1(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newSteward1',
                                   role=STEWARD)
 
 
 @pytest.fixture(scope="module")
-def anotherTrustAnchor(nodeSet, tdir, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdir, looper,
+def anotherTrustAnchor(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                   trustee, trusteeWallet, 'newTrustAnchor',
+                                  role=TRUST_ANCHOR)
+
+
+@pytest.fixture(scope="module")
+def anotherTrustAnchor1(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
+                                  trustee, trusteeWallet, 'newTrustAnchor1',
                                   role=TRUST_ANCHOR)
 
 
@@ -124,6 +131,16 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
                      nAckReasonContains='TRUSTEE cannot update verkey')
         # Identity owner can change verkey
         changeVerkey(looper, *identity, wallet.defaultId, signer.verkey)
+
+
+def testTrustAnchorSuspendingHimselfByVerkeyFlush(looper, trustee, trusteeWallet, anotherTrustAnchor1):
+    _, wallet = anotherTrustAnchor1
+    changeVerkey(looper, *anotherTrustAnchor1, wallet.defaultId, '')
+    signer = DidSigner()
+    changeVerkey(looper, *anotherTrustAnchor1, wallet.defaultId, signer.verkey,
+                 nAckReasonContains="CouldNotAuthenticate('Can not find verkey for")
+    # Now NYM creator should have permission to set verkey.
+    changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, signer.verkey)
 
 
 # Keep the test below at the end of the suite since it will make one of the

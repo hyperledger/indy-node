@@ -5,9 +5,9 @@ from indy_node.test.did.helper import updateIndyIdrWithVerkey
 
 
 @pytest.fixture(scope="module")
-def some_transactions_done(looper, nodeSet, tdirWithPoolTxns, trustee,
+def some_transactions_done(looper, nodeSet, tdirWithClientPoolTxns, trustee,
                            trusteeWallet):
-    new_c, new_w = getClientAddedWithRole(nodeSet, tdirWithPoolTxns, looper,
+    new_c, new_w = getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
                                           trustee, trusteeWallet, 'some_name',
                                           addVerkey=False)
     new_idr = new_w.defaultId

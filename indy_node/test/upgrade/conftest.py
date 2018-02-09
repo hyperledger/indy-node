@@ -117,10 +117,10 @@ def invalidUpgrade(nodeIds, tconf):
 
 
 @pytest.fixture(scope="module")
-def steward(nodeSet, tdir, looper, trustee, trusteeWallet):
+def steward(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
     return getClientAddedWithRole(
         nodeSet,
-        tdir,
+        tdirWithClientPoolTxns,
         looper,
         trustee,
         trusteeWallet,
