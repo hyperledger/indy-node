@@ -38,6 +38,7 @@ def request_handler(bls_store):
     attr_store = AttributeStore(KeyValueStorageInMemory())
     return DomainReqHandler(ledger=None,
                             state=state,
+                            config=None,
                             requestProcessor=None,
                             idrCache=cache,
                             attributeStore=attr_store,
@@ -107,9 +108,10 @@ def test_state_proofs_for_get_attr(request_handler):
             TARGET_NYM: nym,
             RAW: 'last_name'
         },
+        signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION
     )
-    result = request_handler.handleGetAttrsReq(get_request, 'Sender')
+    result = request_handler.handleGetAttrsReq(get_request)
 
     proof = extract_proof(result, multi_sig)
     attr_value = result[DATA]
@@ -155,15 +157,17 @@ def test_state_proofs_for_get_claim_def(request_handler):
             REF: schema_seqno,
             SIGNATURE_TYPE: signature_type
         },
+        signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION
     )
 
-    result = request_handler.handleGetClaimDefReq(request, 'Sender')
+    result = request_handler.handleGetClaimDefReq(request)
     proof = extract_proof(result, multi_sig)
     assert result[DATA] == key_components
 
     # Verifying signed state proof
-    path = domain.make_state_path_for_claim_def(nym, schema_seqno, signature_type)
+    path = domain.make_state_path_for_claim_def(nym, schema_seqno,
+                                                signature_type)
     assert is_proof_verified(request_handler,
                              proof, path,
                              key_components, seq_no, txn_time)
@@ -199,10 +203,11 @@ def test_state_proofs_for_get_schema(request_handler):
             TARGET_NYM: nym,
             DATA: schema_key
         },
+        signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION
     )
 
-    result = request_handler.handleGetSchemaReq(request, 'Sender')
+    result = request_handler.handleGetSchemaReq(request)
     proof = extract_proof(result, multi_sig)
     result[DATA].pop(NAME)
     result[DATA].pop(VERSION)
@@ -238,9 +243,10 @@ def test_state_proofs_for_get_nym(request_handler):
         operation={
             TARGET_NYM: nym
         },
+        signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION
     )
-    result = request_handler.handleGetNymReq(request, "Sender")
+    result = request_handler.handleGetNymReq(request)
     proof = extract_proof(result, multi_sig)
 
     # Verifying signed state proof
@@ -280,7 +286,8 @@ def test_no_state_proofs_if_protocol_version_less(request_handler):
     request = Request(
         operation={
             TARGET_NYM: nym
-        }
+        },
+        signatures={}
     )
-    result = request_handler.handleGetNymReq(request, "Sender")
+    result = request_handler.handleGetNymReq(request)
     assert STATE_PROOF not in result

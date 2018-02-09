@@ -117,7 +117,7 @@ class Upgrader(HasActionQueue):
         # that is whether Upgrade Log contains STARTED event
         self._upgrade_started = self._is_upgrade_started()
         if self._upgrade_started:
-            # append SUCCESS or FAIL to the Upgrade Lof
+            # append SUCCESS or FAIL to the Upgrade Log
             self._update_upgrade_log_for_started_upgrade()
 
     def _is_upgrade_started(self):
@@ -253,19 +253,20 @@ class Upgrader(HasActionQueue):
             return self.compareVersions(currentVersion, scheduledVersion) == 0
         return False
 
-    def isScheduleValid(self, schedule, nodeIds, force) -> (bool, str):
+    def isScheduleValid(self, schedule, node_srvs, force) -> (bool, str):
         """
         Validates schedule of planned node upgrades
 
         :param schedule: dictionary of node ids and upgrade times
-        :param nodeIds: real node ids
+        :param nodeSrvs: dictionary of node ids and services
         :return: whether schedule valid
         """
 
         # flag "force=True" ignore basic checks! only datetime format is
         # checked
         times = []
-        if not force and set(schedule.keys()) != nodeIds:
+        non_demoted_nodes = set([k for k, v in node_srvs.items() if v])
+        if not force and set(schedule.keys()) != non_demoted_nodes:
             return False, 'Schedule should contain id of all nodes'
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         for dateStr in schedule.values():
@@ -332,21 +333,21 @@ class Upgrader(HasActionQueue):
                     currentVersion, version, reinstall):
                 return
 
-            if isinstance(when, str):
-                when = dateutil.parser.parse(when)
-            if self.scheduledUpgrade and self.scheduledUpgrade == (version, when, upgrade_id):
-                logger.debug("Node {} already scheduled upgrade to version '{}' ".format(
-                    self.nodeName, version))
-                return
+            if self.scheduledUpgrade:
+                if isinstance(when, str):
+                    when = dateutil.parser.parse(when)
+                if self.scheduledUpgrade == (version, when, upgrade_id):
+                    logger.debug("Node {} already scheduled upgrade to version '{}' ".format(
+                        self.nodeName, version))
+                    return
+                else:
+                    logger.info(
+                        "Node '{}' cancels previous upgrade and schedules a new one to {}".format(
+                            self.nodeName, version))
+                    self._cancelScheduledUpgrade(justification)
 
             logger.info("Node '{}' schedules upgrade to {}".format(
                 self.nodeName, version))
-
-            if self.scheduledUpgrade:
-                logger.info(
-                    "Node '{}' cancels previous upgrade and schedules a new one to {}".format(
-                        self.nodeName, version))
-                self._cancelScheduledUpgrade(justification)
 
             self._scheduleUpgrade(
                 version, when, failTimeout, upgrade_id)

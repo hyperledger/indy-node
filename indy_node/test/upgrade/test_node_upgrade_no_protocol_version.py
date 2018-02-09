@@ -2,29 +2,21 @@ import pytest
 
 import indy_node
 from indy_common.constants import COMPLETE
-from indy_node.test.helper import TestNode
 from indy_node.test.upgrade.helper import populate_log_with_upgrade_events, \
-    check_node_sent_acknowledges_upgrade
+    check_node_sent_acknowledges_upgrade, TestNodeNoProtocolVersion
 
 whitelist = ['unable to send message']
 
 version = indy_node.__metadata__.__version__
 
 
-class TestNodeNoProtocolVersion(TestNode):
-    def processNodeRequest(self, request, frm):
-        if request.protocolVersion is not None:
-            raise ValueError('Do not understand what protocolVersion is!!!')
-        super().processNodeRequest(request, frm)
-
-
 @pytest.fixture(scope="module")
-def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tconf):
+def tdirWithPoolTxns(tdirWithPoolTxns, poolTxnNodeNames, tdir, tconf):
     # For each node, adding a file with he current version number which makes the node
     # think that an upgrade has been performed
     populate_log_with_upgrade_events(
-        tdirWithPoolTxns,
         poolTxnNodeNames,
+        tdir,
         tconf,
         version)
     return tdirWithPoolTxns

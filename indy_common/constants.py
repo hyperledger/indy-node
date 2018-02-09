@@ -95,8 +95,6 @@ NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
 
 POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
 
-openTxns = (GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, GET_TXNS)
-
 # TXN_TYPE -> (requireds, optionals)
 fields = {NYM: ([TARGET_NYM], [ROLE]),
           ATTRIB: ([], [RAW, ENC, HASH]),

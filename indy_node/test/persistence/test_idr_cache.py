@@ -4,7 +4,7 @@ from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_node.persistence.idr_cache import IdrCache
 
 identifier = "fake_identifier"
-committed_items = (0, # seq_no
+committed_items = (0,   # seq_no
                    get_utc_epoch(), # txn_time
                    "committed_ta_value",
                    "committed_role_value",

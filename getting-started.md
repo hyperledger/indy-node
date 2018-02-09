@@ -2,7 +2,7 @@
 
 ## A Developer Guide for an Implementation of the Indy Code Base
 
-**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/sandbox/DevelopmentEnvironment/Vagrantfile) instead.
+**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](https://github.com/hyperledger/indy-node/blob/master/environment/vagrant/sandbox/DevelopmentEnvironment/Virtualbox/Vagrantfile) instead.
 
 ![logo](collateral/logos/indy-logo.png)
 
@@ -47,7 +47,7 @@ Faber College has done some prep work to offer this service to Alice. It has the
 
 Alice doesn’t realize it yet, but in order to use this digital transcript she will need a new type of identity -- not the traditional identity that Faber College has built for her in its on-campus database, but a new and portable one that belongs to her, independent of all past and future relationships, that nobody can revoke or co-opt or correlate without her permission. This is a **_self-sovereign identity_** and it is the core feature of the ledger.
 
-In normal contexts, managing a self-sovereign identity will require a tool such as a desktop or mobile application. It might be a standalone app, or it might leverage a third party service provider that the ledger calls an **agency**. For example, leaders in this technology such as the Sovrin Foundation and companies like Evernym, publish reference versions of such tools. Faber College will have studied these requirements and will recommend a **_Indy app_** to Alice if she doesn’t already have one; this app will install as part of the workflow from the **Get Transcript** button.
+In normal contexts, managing a self-sovereign identity will require a tool such as a desktop or mobile application. It might be a standalone app, or it might leverage a third party service provider that the ledger calls an **agency**. For example, leaders in this technology such as the Sovrin Foundation and companies like Evernym, publish reference versions of such tools. Faber College will have studied these requirements and will recommend an **_Indy app_** to Alice if she doesn’t already have one; this app will install as part of the workflow from the **Get Transcript** button.
 
 When Alice clicks **Get Transcript**, she will download a file that holds an Indy **connection request**. This connection request file, having a .indy extension and associated with her Indy app, will allow her to establish a secure channel of communication with another party in the ledger ecosystem -- Faber College.
 
@@ -56,19 +56,21 @@ So when Alice clicks **Get Transcript**, she will normally end up installing an 
 For this guide, however, we’ll be using a command-line interface instead of an app, so we can see what happens behind the scenes. We will pretend to be a particularly curious and technically adventurous Alice…
 
 ## Install Indy
+
 You can install a test network in one of several ways:
 
- - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
- 
+ - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
+
  - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
 
- - **Coming soon:** Use client side docker images to make it easy for you to play with Indy.
+ - **Docker:** [Start Pool and Client with Docker](environment/docker/pool/StartIndyAgents.md).
 
  - **Also coming soon:** Create virtual machines in AWS.
 
 To proceed past this point, you should have a test Indy Validator cluster running, either in separate nodes (VMs), or in simulation. You should also have Agent nodes (or a simulation) running with the "Faber College", "Acme Corp", and "Thrift Bank" Agents in separate terminals.  You should also have a CLI client which gives you a command-line interface(CLI) to Indy. We are going to use that CLI to explore what Indy can do. (Indy also has a programmatic API, but it is not yet fully formalized, and this version of the guide doesn’t document it.)
 
 ## Using the Indy CLI
+
 After completing the preceding, you should have a terminal with an Indy client CLI prompt:
 
 ```
@@ -124,8 +126,6 @@ Alice sees a bunch of data that looks interesting but mysterious. She wants to k
 
 ```
 ALICE> load sample/faber-request.indy
-New wallet Default created
-Active wallet set to "Default"
 1 connection request found for Faber College.
 Creating Connection for Faber College.
 
@@ -140,7 +140,7 @@ This causes the client to parse and validate the file in addition to displaying 
 ALICE> show connection Faber
 ```
 
-Unlike the 'show' command for files, this one asks Indy to show a connection. More details are exposed:
+Unlike the 'show' command for files, this one asks the Indy network to show a connection. More details are exposed:
 
 ```
 Expanding Faber to "Faber College"
@@ -175,7 +175,7 @@ DID: not yet assigned
 ```
 
 **DID** (**distributed identifier**) is an opaque, unique sequences of bits, (like UUIDs or GUIDs) that get generated when a user tries to accept the connection request. That DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
- Each connection request on Indy establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within the Indy code base.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
+ Each connection request on the Indy network establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within the Indy code base.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
 
 ```
 Trust anchor: Faber College(not yet written to Indy)
@@ -198,9 +198,11 @@ The verification key is a 32 byte Ed25519 verification key. Ed25519 is a particu
 The verification key has a subtle relationship with the DID value a couple lines above it in the CLI output.
 
 There are three options possible for a verification key associated with a DID:
-- **Empty.** There is no verkey (verification key) associated with a DID, and the DID is a **NCID** (non-cryptographic identifier).
-In this case, the creator of the identity record (the trust anchor) controls the DID, and no independent proof-of-existence is possible until either an Abbreviated or Full verkey is created.
+
+- **Empty.** There is no verkey (verification key) associated with a DID, and the DID is a **NCID** (non-cryptographic identifier). In this case, the creator of the identity record (the trust anchor) controls the DID, and no independent proof-of-existence is possible until either an Abbreviated or Full verkey is created.
+
 - **Abbreviated.** In this case, there is a verkey starting with a tilde '~' followed by 22 or 23 characters. The tilde indicates that the DID itself represents the first 16 bytes of the verkey and the string following the tilde represents the second 16 bytes of the verkey, both using base58Check encoding.
+
 - **Full.** In this case, there is a full 44 character verkey, representing a base58Check encoding of all 32 bytes of a Ed25519 verification key.
 
 In this guide, an Abbreviated key will be created and used by Alice (you'll notice the `~` prefix for the verification key later in the guide).
@@ -233,20 +235,23 @@ Remote endpoint: < unknown, waiting for sync >
 ```
 
 Remotes can have endpoints -- locations (IRIs / URIs / URLs) on the network where others can contact them. These endpoints can be static or they can be ephemeral pseudonymous endpoints facilitated by a third party agency. To keep things simple, we’ll just use static endpoints for now.
+
 ```
 Request nonce: b1134a647eb818069c089e7694f63e6d
 ```
 
 This **nonce** is just a big random number that Faber College generated to track the unique connection request. A nonce is a random arbitrary number that can only be used one time. When a connection request is accepted, the invitee digitally signs the nonce such that the inviter can match the acceptance with a prior request.
+
 ```
 Request status: not verified, remote verification key unknown
 ```
 
 Requests are signed by the remote. We have a signature, but we don’t yet know Faber College’s verification key, so the signature can’t be proved authentic. We might have a connection request from someone masquerading as Faber College. We’ll resolve that uncertainty when we sync.
+
 ```
 Last synced: < this connection has not yet been synchronized >
 ```
-A connection stores when it was last synchronized with the Indy network, so we can tell how stale some of the information might be. Ultimately, values will be proved current when a transaction is committed to the ledger, so staleness isn’t dangerous -- but it makes the ledger more efficient when identity owners work with up-to-date data.
+A connection stores when it was last synchronized with the Indy ledger, so we can tell how stale some of the information might be. Ultimately, values will be proved current when a transaction is committed to the ledger, so staleness isn’t dangerous -- but it makes the ledger more efficient when identity owners work with up-to-date data.
 
 ## Accept a Connection Request
 
@@ -453,7 +458,7 @@ Try Next:
     load sample/acme-job-application.indy
 ```
 
-Notice that this connection request contains a **proof request**. A proof request is a request made by the party who needs verifiable proof of certain attributes  that can be provided by other verified claims. (Some attributes can be marked so that they must be verified by other proven claims -- like a SSN -- and some attributes can be self-attested to -- like a nickname.)
+Notice that this connection request contains a **proof request**. A proof request is a request made by the party who needs verifiable proof of certain attributes that can be provided by other verified claims. (Some attributes can be marked so that they must be verified by other proven claims -- like a SSN -- and some attributes can be self-attested to -- like a nickname.)
 
 In this case, Acme Corp is requesting that Alice provide a Job Application. The Job Application is a rich document type that has a schema defined on the ledger; its particulars are outside the scope of this guide, but it will require a name, SSN, and degree, so it overlaps with the transcript we’ve already looked at. This becomes important below.
 

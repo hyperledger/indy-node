@@ -22,8 +22,8 @@ def test_disconnect_when_not_connected(alice, be, do):
 def alice_connected(alice, be, do, poolNodesCreated):
     be(alice)
     do(None, expect=prompt_is("indy"))
-    do('connect alice', within=5, expect=["Connected to alice"])
-    do(None, expect=prompt_is("indy@alice"))
+    do('connect sandbox', within=5, expect=["Connected to sandbox"])
+    do(None, expect=prompt_is("indy@sandbox"))
 
 
 def test_connect_to_test(alice_connected):
@@ -33,10 +33,10 @@ def test_connect_to_test(alice_connected):
 @pytest.fixture(scope="module")
 def alice_disconnected(alice, be, do, alice_connected):
     be(alice)
-    do(None, expect=prompt_is("indy@alice"))
+    do(None, expect=prompt_is("indy@sandbox"))
     do('disconnect', within=1, expect=[
-        'Disconnecting from alice ...',
-        'Disconnected from alice'
+        'Disconnecting from sandbox ...',
+        'Disconnected from sandbox'
     ])
     do(None, expect=prompt_is("indy"))
 
@@ -58,13 +58,13 @@ def testConnectEnv(poolNodesCreated, looper, notConnectedStatus):
     poolCLI.enterCmd("connect dummy")
     assert "Unknown environment dummy" in poolCLI.lastCmdOutput
 
-    poolCLI.enterCmd("connect pool")
-    assert "Connecting to pool" in poolCLI.lastCmdOutput
+    poolCLI.enterCmd("connect sandbox")
+    assert "Connecting to sandbox" in poolCLI.lastCmdOutput
     timeout = waits.expectedAgentConnected()
     looper.run(eventually(checkConnectedToEnv, poolCLI, retryWait=1,
                           timeout=timeout))
     poolCLI.enterCmd("status")
-    assert "Connected to pool Indy network" == poolCLI.lastCmdOutput
+    assert "Connected to sandbox Indy network" == poolCLI.lastCmdOutput
 
 
 def testCreateMultiPoolNodes(multiPoolNodesCreated):

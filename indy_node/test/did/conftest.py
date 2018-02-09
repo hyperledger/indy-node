@@ -14,8 +14,8 @@ def wallet():
 
 
 @pf
-def client(wallet, looper, tdir):
-    s, _ = genTestClient(tmpdir=tdir, usePoolLedger=True)
+def client(wallet, looper, tdirWithClientPoolTxns):
+    s, _ = genTestClient(tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     s.registerObserver(wallet.handleIncomingReply)
     looper.add(s)
     looper.run(s.ensureConnectedToNodes())

@@ -45,19 +45,17 @@ def _checkFuture(future):
     return _check
 
 
-def testScheduleNodeUpgrade(nodeSet):
+def testScheduleNodeUpgrade(tconf, nodeSet):
     """
     Tests that upgrade scheduling works. For that it starts mock
     control service, schedules upgrade for near future and then checks that
     service received notification.
     """
-    from indy_common.config_util import getConfig
-    config = getConfig()
     loop = asyncio.get_event_loop()
     server, indicator = loop.run_until_complete(
         _createServer(
-            host=config.controlServiceHost,
-            port=config.controlServicePort
+            host=tconf.controlServiceHost,
+            port=tconf.controlServicePort
         )
     )
     indicator.add_done_callback(_stopServer(server))
@@ -71,7 +69,7 @@ def testScheduleNodeUpgrade(nodeSet):
     upgrader = Upgrader(nodeId=None,
                         nodeName=None,
                         dataDir=node.dataLocation,
-                        config=config,
+                        config=tconf,
                         ledger=None)
     upgrader._callUpgradeAgent(
         time.time(), "1.2", failTimeout=1000, upgrade_id=None)

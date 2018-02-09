@@ -17,6 +17,7 @@ from glob import glob
 import re
 
 from indy_common.config_util import getConfig
+from indy_common.config_helper import ConfigHelper
 from stp_core.common.log import Logger
 from stp_core.common.log import getlogger
 
@@ -530,6 +531,8 @@ def main():
         else:
             return res
 
+    config_helper = ConfigHelper(config)
+
     parser = argparse.ArgumentParser(
         description=(
             "Tool to explore and gather statistics about running validator"
@@ -552,7 +555,7 @@ def main():
 
     statfile_group.add_argument(
         "--basedir", metavar="PATH",
-        default=os.path.join(config.baseDir, config.NETWORK_NAME),
+        default=config_helper.node_info_dir,
         help=("Path to stats files")
     )
     # statfile_group.add_argument(
@@ -585,7 +588,7 @@ def main():
     other_group.add_argument(
         "--log", metavar="FILE",
         default=os.path.join(
-            config.baseDir,
+            config_helper.log_base_dir,
             os.path.basename(sys.argv[0] + ".log")
         ),
         help="Path to log file")

@@ -14,6 +14,8 @@ from plenum.common.ledger import Ledger
 from plenum.persistence.leveldb_hash_store import LevelDbHashStore
 
 from indy_common.config_util import getConfig
+from indy_common.config_helper import ConfigHelper, NodeConfigHelper
+
 
 logging.root.handlers = []
 logger = logging.getLogger()
@@ -55,29 +57,25 @@ def get_ledger_dir(node_name, client_name, network):
 
     config = getConfig()
     _network = network if network else config.NETWORK_NAME
-    base_dir = config.CLI_BASE_DIR if client_name else config.baseDir
-    data_dir = config.clientDataDir if client_name else config.nodeDataDir
-    ledger_data_dir = os.path.join(base_dir, _network, data_dir)
-    if not os.path.exists(ledger_data_dir):
-        logger.error("Can not find the directory with the ledger: {}".format(ledger_data_dir))
-        exit()
-
-    target_dir = node_name
-    if client_name:
-        target_dir = client_name
-
-    if target_dir:
-        ledger_data_dir = os.path.join(ledger_data_dir, target_dir)
+    if node_name or client_name:
+        if node_name:
+            config_helper = NodeConfigHelper(node_name, config)
+            ledger_data_dir = config_helper.ledger_dir
+        else:
+            ledger_data_dir = os.path.join(config.CLI_BASE_DIR, _network,
+                                           config.clientDataDir, client_name)
         if not os.path.isdir(ledger_data_dir):
             print("Specified Node or Client folder not found: {}".format(ledger_data_dir))
             exit()
-        return ledger_data_dir
+    else:
+        config_helper = ConfigHelper(config)
+        dirs = os.listdir(config_helper.ledger_data_dir)
+        if len(dirs) == 0:
+            print("Node's 'data' folder not found: {}".format(config_helper.ledger_data_dir))
+            exit()
+        ledger_data_dir = os.path.join(config_helper.ledger_data_dir, dirs[0])
 
-    dirs = os.listdir(ledger_data_dir)
-    if len(dirs) == 0:
-        print("Node's 'data' folder not found: {}".format(ledger_data_dir))
-        exit()
-    return os.path.join(ledger_data_dir, dirs[0])
+    return ledger_data_dir
 
 
 def get_ledger(type_, ledger_data_dir):

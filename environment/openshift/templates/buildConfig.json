@@ -1,0 +1,283 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata":
+  {
+    "name": "Docker Build Template",
+    "annotations":
+    {
+      "description": "A template for docker builds for the Alice indy example application in OpenShift.",
+      "tags": "alice,sorin,indy",
+      "iconClass": "icon-github"
+    }
+  },
+  "objects": [
+    {
+      "kind": "ImageStream",
+      "apiVersion": "v1",
+      "metadata":
+      {
+        "name": "${OUTPUT_IMAGE_NAME}",
+        "generation": 1,
+        "creationTimestamp": null
+      },
+      "spec":
+      {
+        "tags": [
+          {
+            "name": "${OUTPUT_IMAGE_TAG}",
+            "annotations": null,
+            "generation": null,
+            "importPolicy": {}
+          }
+        ]
+      },
+      "status": {}
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "BuildConfig",
+      "metadata":
+      {
+        "creationTimestamp": null,
+        "labels":
+        {
+          "app": "${BUILD_NAME}",
+          "template": "${TEMPLATE_NAME}"
+        },
+        "name": "${BUILD_NAME}"
+      },
+      "spec":
+      {
+        "nodeSelector": null,
+        "output":
+        {
+          "to":
+          {
+            "kind": "ImageStreamTag",
+            "name": "${OUTPUT_IMAGE_NAME}:${OUTPUT_IMAGE_TAG}"
+          }
+        },
+        "postCommit": {},
+        "resources": {},
+        "runPolicy": "Serial",
+        "source":
+        {
+          "contextDir": "${SOURCE_CONTEXT_DIR}",
+          "git":
+          {
+            "ref": "${GIT_REF}",
+            "uri": "${GIT_URI}"
+          },
+          "type": "Git"
+        },
+        "strategy":
+        {
+          "type": "Docker",
+          "dockerStrategy":
+          {
+            "dockerfilePath": "${DOCKER_FILE_PATH}",
+            "from":
+            {
+              "kind": "${SOURCE_IMAGE_KIND}",
+              "name": "${SOURCE_IMAGE_NAME}:${SOURCE_IMAGE_TAG}"
+            },
+            "env": [
+              {
+                "name": "nodename",
+                "value": "${INDY_NODE_NAME}"
+              },
+              {
+                "name": "nport",
+                "value": "${INDY_NODE_PORT}"
+              },
+              {
+                "name": "cport",
+                "value": "${INDY_CLIENT_PORT}"
+              },
+              {
+                "name": "ips",
+                "value": "${INDY_NODE_IP_LIST}"
+              },
+              {
+                "name": "nodenum",
+                "value": "${INDY_NODE_NUMBER}"
+              },
+              {
+                "name": "nodecnt",
+                "value": "${INDY_NODE_COUNT}"
+              },
+              {
+                "name": "clicnt",
+                "value": "${INDY_CLIENT_COUNT}"
+              },
+              {
+                "name": "agentname",
+                "value": "${INDY_AGENT_NAME}"
+              },
+              {
+                "name": "agentport",
+                "value": "${INDY_AGENT_PORT}"
+              }
+            ]
+          }
+        },
+        "triggers": [
+          {
+            "imageChange": {},
+            "type": "ImageChange"
+          },
+          {
+            "type": "ConfigChange"
+          }
+        ]
+      },
+      "status":
+      {
+        "lastVersion": 0
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "name": "BUILD_NAME",
+      "displayName": "Build Name",
+      "description": "The name given to the build.",
+      "required": true,
+      "value": "indybase"
+    },
+    {
+      "name": "SOURCE_IMAGE_KIND",
+      "displayName": "Source Image Kind",
+      "description": "The 'kind' (type) of the  source image; typically ImageStreamTag, or DockerImage.",
+      "required": true,
+      "value": "indybase"
+    },
+    {
+      "name": "SOURCE_IMAGE_NAME",
+      "displayName": "Source Image Name",
+      "description": "The name of the source image.",
+      "required": true,
+      "value": "indybase"
+    },
+    {
+      "name": "SOURCE_IMAGE_TAG",
+      "displayName": "Source Image Tag",
+      "description": "The tag of the source image.",
+      "required": true,
+      "value": "latest"
+    },
+    {
+      "name": "OUTPUT_IMAGE_NAME",
+      "displayName": "Output Image Name",
+      "description": "The name given to the built image.",
+      "required": true,
+      "value": "indybase"
+    },
+    {
+      "name": "OUTPUT_IMAGE_TAG",
+      "displayName": "Output Image Tag",
+      "description": "The tag given to the built image.",
+      "required": true,
+      "value": "latest"
+    },
+    {
+      "name": "TEMPLATE_NAME",
+      "displayName": "Template Name",
+      "description": "The name of this template.",
+      "required": true,
+      "value": "alice-example"
+    },
+    {
+      "name": "SOURCE_CONTEXT_DIR",
+      "displayName": "Source Context Directory",
+      "description": "The source context directory.",
+      "required": true,
+      "value": "docker"
+    },
+    {
+      "name": "GIT_REF",
+      "displayName": "Git Referance",
+      "description": "The git referance or branch.",
+      "required": true,
+      "value": "master"
+    },
+    {
+      "name": "GIT_URI",
+      "displayName": "Git Uri",
+      "description": "The git Uri.",
+      "required": true,
+      "value": "https://github.com/hyperledger/indy-node.git"
+    },
+    {
+      "name": "DOCKER_FILE_PATH",
+      "displayName": "Docker File Path",
+      "description": "The path to the docker file.",
+      "required": true,
+      "value": "base.systemd.ubuntu.dockerfile"
+    },
+    {
+      "name": "INDY_NODE_NAME",
+      "displayName": "Indy Node Name",
+      "description": "The name of the indy node.  This is injected into the docker build.  Only used for indy node builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "INDY_NODE_PORT",
+      "displayName": "Indy Node Port",
+      "description": "The port to be used by the indy node.  This is injected into the docker build.  Only used for indy node builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "INDY_CLIENT_PORT",
+      "displayName": "Indy Client Port",
+      "description": "The client port to be used by the indy node.  This is injected into the docker build.  Only used for indy node builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "INDY_NODE_IP_LIST",
+      "displayName": "Indy Node IP Address List",
+      "description": "The list of IP addresses for the indy nodes.  This is injected into the docker build.  Used for indy node and client builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "INDY_NODE_NUMBER",
+      "displayName": "Indy Node Number",
+      "description": "The number of the indy node.  This is injected into the docker build.  Only used for indy node builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "INDY_NODE_COUNT",
+      "displayName": "Indy Node Count",
+      "description": "The number of indy nodes.  This is injected into the docker build.  Used for indy node and client builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "INDY_CLIENT_COUNT",
+      "displayName": "Indy Client Count",
+      "description": "The number of indy Clients.  This is injected into the docker build.  Used for indy node and client builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "INDY_AGENT_NAME",
+      "displayName": "Indy Agent Name",
+      "description": "The name of the indy agent.  This is injected into the docker build.  Used for indy agent builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "INDY_AGENT_PORT",
+      "displayName": "Indy Agent Port",
+      "description": "The port on which the indy agent will listen.  This is injected into the docker build.  Used for indy agent builds; all other builds ignore this parameter.",
+      "required": false,
+      "value": ""
+    }
+  ]
+}
