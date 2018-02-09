@@ -322,7 +322,9 @@ in the State Trie to reduce the required space.
 
 #### GET_REVOC_REG
 Gets the accumulated state of the Revocation Registry (at the given time defined by `timestamp`).
-Returns just the current accumulator value for `CL_ACCUM` type. 
+Returns just the current accumulator value for `CL_ACCUM` type.
+
+Request: 
 ```
 {
     "data": {
@@ -332,7 +334,54 @@ Returns just the current accumulator value for `CL_ACCUM` type.
 ...
 }
 ```
+Reply:
+```
+{
+    "data": {
+        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "entry": {
+            "accum":"<accum_value>",
+        }
+    },
+....
+}
+```
+
 See next sections on how to get the state for the given `timestamp`. 
+
+#### GET_REVOC_REG_DELTA
+Gets the Delta of the accumulated state of the Revocation Registry.
+The Delta is defined by `from` and `to` timestamp fields.
+If `from` is not specified, then the whole state till `to` will be returned.
+
+For `CL_ACCUM` type it returns the accumulator value at time `to` plus a Delta of issued and revoked indices.
+
+Request: 
+```
+{
+    "data": {
+        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "from": 20, (optional)
+        "to": 40
+    },
+...
+}
+```
+Reply:
+```
+{
+    "data": {
+        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "entry": {
+            "accum":"<accum_value>",
+            "issued": [1, 45], 
+            "revoked": [56, 78, 890],
+        }
+    },
+....
+}
+```
+See next sections on how to get the state for the given timestamp. 
 
 ## Timestamp Support in State
 
