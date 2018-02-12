@@ -126,12 +126,24 @@ A new Schema with a new name/version needs to be issued if one needs to evolve i
 
 
 #### GET_SCHEMA
+Gets a Schema by ID.
+```
+{
+    "data": {
+        "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
+    },
+...
+}
+```
+
+#### LIST_SCHEMA
+Gets the list of schemas according to the given filters.
 ```
 {
     "data": {
         "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "name":"Degree",
-        "version":"1.0",
+        "name":"Degree", (optional)
+        "version":"1.0", (optional)
     },
 ...
 }
@@ -151,10 +163,12 @@ signature type and reference to the Schema.
 {
     "data": {
         "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
-        "publicKeys": {},
-        "schemaId":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
-        "signatureType":"CL",
+        "type":"CL",
         "tag": "key1",
+        "schemaId":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
+        "value": {
+            "publicKeys": {},            
+        }
     },
     
     "reqMetadata": {
@@ -180,16 +194,26 @@ That is rotation of keys is supported.
 * value: aggregated txn `data` and `txnMetadata` (as in ledger)
 
 
-
- 
 #### GET_CRED_DEF
+Gets a CredDef by ID.
+```
+{
+    "data": {
+        "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
+    },
+...
+}
+```
+
+#### LIST_CRED_DEF
+Gets a list of CredDefs according to the given filters.
 ```
 {
     "data": {
         "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
-        "schemaId":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
-        "signatureType":"CL",
-        "tag": "key1"
+        "type":"CL",    (optional)
+        "tag": "key1",    (optional)
+        "schemaId":"L5AD5g65TDQr1PPHHRoiGf1Degree1",    (optional)
     },
 ...
 }
@@ -209,12 +233,12 @@ reference to the CredDef, plus some revocation registry specific data.
     "data": {
         "id":"MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
         "type":"CL_ACCUM",
-        "issuanceType": "<issued by default or not>",
-        "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
         "tag": "reg1",
-        "maxCredNum": 1000000,
-        "publicKeys": {},
-        "metadata": {
+        "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
+        "value": {
+            "issuanceType": "<issued by default or not>",
+            "maxCredNum": 1000000,
+            "publicKeys": {},
             "tailsHash": "<SHA256 hash>",
             "tailsLocation": "<URL>"
         }
@@ -230,16 +254,19 @@ reference to the CredDef, plus some revocation registry specific data.
 ```
 * `id` (string): ID as a key in State Trie.
 * `type` (enum string): Revocation Registry type (only `CL_ACCUM` is supported for now).
-* `issuanceType` (enum string): Type of Issuance:
-    * `ISSUANCE_BY_DEFAULT`: all indices are assumed to be issued and initial accumulator is calculated over all indices; 
-    Revocation Registry is updated only during revocation.
-    * `ISSUANCE_ON_DEMAND`: nothing is issued initially accumulator is 1; 
+
     Revocation Registry is updated only during each issuance and  revocation.
 * `credDefId` (string): ID of the corresponding CredDef
 * `tag` (string): unique descriptive ID of the Registry.
-* `maxCredNum` (int): maximum number of credentials the Registry can serve.
-* `publicKeys` (json): Registry's public key.
-* `metadata` (json): Registry-specific metadata. For example, it contains `hash` and `locaiton` of tails files for `CL_ACCUM`. 
+* `value` (json): Registry-specific data.
+    * `issuanceType` (enum string): Type of Issuance:
+        * `ISSUANCE_BY_DEFAULT`: all indices are assumed to be issued and initial accumulator is calculated over all indices; 
+        Revocation Registry is updated only during revocation.
+        * `ISSUANCE_ON_DEMAND`: nothing is issued initially accumulator is 1; 
+    * `maxCredNum` (int): maximum number of credentials the Registry can serve.
+    * `publicKeys` (json): Registry's public key.        
+    * `tailsHash` (string): hash of tails.
+    * `tailsLocaiton` (string): location of tails file. 
  
 
 #### Restrictions
@@ -257,18 +284,29 @@ That is rotation of keys is supported.
 
 
 #### GET_REVOC_REG_DEF
+Gets a RevocRegDef by ID.
 ```
 {
     "data": {
-        "submitterDid":"MMAD5g65TDQr1PPHHRoiGf",
-        "type":"CL_ACCUM",
-        "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
-        "tag": "reg1",
+        "id":"MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
     },
 ...
 }
 ```
 
+#### LIST_REVOC_REG_DEF
+Gets a list of RevocRegDefs according to the given filters.
+```
+{
+    "data": {
+        "submitterDid":"MMAD5g65TDQr1PPHHRoiGf",
+        "type":"CL_ACCUM",   (optional)
+        "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",   (optional)
+        "tag": "reg1",    (optional)
+    },
+...
+}
+```
 
 ### REVOC_REG_ENTRY
 
@@ -282,7 +320,7 @@ So, it can be sent each time a new claim is issued/revoked.
 ```
 {
     "data": {
-        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
         "entry": {
             "prevAccum":"<prev_accum_value>",
             "accum":"<accum_value>",
@@ -325,16 +363,16 @@ contains aggregated accum_value, issued and revoked arrays.
 <b>Hint</b>: We should consider using BitMask to store the current aggregated state of issued and revoked arrays
 in the State Trie to reduce the required space.  
 
-
 #### GET_REVOC_REG
-Gets the accumulated state of the Revocation Registry (at the given time defined by `timestamp`).
+Gets the accumulated state of the Revocation Registry by ID
+The state is defined by the given  `timestamp`.
 Returns just the current accumulator value for `CL_ACCUM` type.
 
 Request: 
 ```
 {
     "data": {
-        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "revocRegDefId":"MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
         "timestamp": 20,
     },
 ...
@@ -344,7 +382,7 @@ Reply:
 ```
 {
     "data": {
-        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
         "entry": {
             "accum":"<accum_value>",
         }
@@ -412,19 +450,6 @@ possibly long ago in the past;
 * We need to find the nearest root for ts3, where `ts1 < ts3 < ts2`.
     * So, we need to return `root1`
 
-## GET_OBJ
-
-<b>Reqs 4</b>
-
-`GET_OBJ` request can be used to get the current state of the Object by its `id` (the key in the State Trie).
-```
-{
-    "data": {
-        "id": "L5AD5g65TDQr1PPHHRoiGf1Degree1",
-    },
-...
-}
-```
 
 ## Issuer Key Rotation
 
