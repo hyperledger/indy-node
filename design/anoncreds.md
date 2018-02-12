@@ -284,6 +284,7 @@ So, it can be sent each time a new claim is issued/revoked.
     "data": {
         "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
         "entry": {
+            "prevAccum":"<prev_accum_value>",
             "accum":"<accum_value>",
             "issued": [], (optional)
             "revoked": [],
@@ -302,12 +303,16 @@ So, it can be sent each time a new claim is issued/revoked.
 * `entry`: Registry-specific entry:
     * `issued`: an array of issued indices (may be absent/empty if the type is "issuance by default"); this is delta; will be accumulated in state.
     * `revoked`: an array of revoked indices (delta; will be accumulated in state)
+    * `prevAccum`: previous accumulator value; it's compared with the current value, and txn is rejected if they don't match;
+    it's needed to avoid dirty writes and updates of accumulator. 
     * `accum`: current accumulator value
 
 #### Restrictions
 
 * Existing RevocRegEntry (identified by the RevocRegDef's `id`) can be modified/changed/evolved.
 * Only the `submitterDid` who created the corresponding `REVOC_REG_DEF` can modify it. 
+* Submitter must specify the previous value of accumulator. It's compared with the current value, and txn is rejected if they don't match.
+This is needed to avoid dirty writes and updates of accumulator. 
 
 
 #### State
@@ -319,6 +324,7 @@ contains aggregated accum_value, issued and revoked arrays.
 
 <b>Hint</b>: We should consider using BitMask to store the current aggregated state of issued and revoked arrays
 in the State Trie to reduce the required space.  
+
 
 #### GET_REVOC_REG
 Gets the accumulated state of the Revocation Registry (at the given time defined by `timestamp`).
