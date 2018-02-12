@@ -1393,7 +1393,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -1413,7 +1413,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
@@ -1841,7 +1841,7 @@
                     {
                       "Ref": "Validator02OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -1861,7 +1861,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Validator02OperatingSystem"
                     },
@@ -2289,7 +2289,7 @@
                     {
                       "Ref": "Validator03OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -2309,7 +2309,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Validator03OperatingSystem"
                     },
@@ -2737,7 +2737,7 @@
                     {
                       "Ref": "Validator04OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -2757,7 +2757,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Validator04OperatingSystem"
                     },
@@ -3184,7 +3184,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -3204,7 +3204,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Agent01OperatingSystem"
                     },
@@ -3596,7 +3596,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -3616,7 +3616,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Agent02OperatingSystem"
                     },
@@ -4008,7 +4008,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -4028,7 +4028,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Agent03OperatingSystem"
                     },
@@ -4420,7 +4420,7 @@
                     {
                       "Ref": "Validator01OperatingSystem"
                     },
-                    "sovrin"
+                    "indy"
                   ]
                 },
                 "\n",
@@ -4440,7 +4440,7 @@
                 "add-apt-repository \"",
                 {
                   "Fn::FindInMap": [
-                    "RepositorySovrin",
+                    "RepositoryIndy",
                     {
                       "Ref": "Agent04OperatingSystem"
                     },
@@ -5094,7 +5094,7 @@
     "RepositoryKeys": {
       "Ubuntu1604": {
         "evernym": "BD33704C",
-        "sovrin": "68DB5E88"
+        "indy": "68DB5E88"
       }
     },
     "RepositoryEvernym": {
@@ -5103,7 +5103,7 @@
         "master": "deb https://repo.evernym.com/deb xenial master"
       }
     },
-    "RepositorySovrin": {
+    "RepositoryIndy": {
       "Ubuntu1604": {
         "stable": "deb https://repo.sovrin.org/deb xenial stable",
         "master": "deb https://repo.sovrin.org/deb xenial master"
