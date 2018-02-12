@@ -148,7 +148,7 @@ Gets the list of schemas according to the given filters.
 ...
 }
 ```
-
+The filters can be applied in the following order: `submitterDid` -> `name` -> `version`.
 
 ## CRED_DEF
 
@@ -211,13 +211,14 @@ Gets a list of CredDefs according to the given filters.
 {
     "data": {
         "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        "schemaId":"L5AD5g65TDQr1PPHHRoiGf1Degree1",    (optional)
         "type":"CL",    (optional)
         "tag": "key1",    (optional)
-        "schemaId":"L5AD5g65TDQr1PPHHRoiGf1Degree1",    (optional)
     },
 ...
 }
 ```
+The filters can be applied in the following order: `submitterDid` -> `schemaId` -> `type` -> `tag`.
 
 ### REVOC_REG_DEF
 
@@ -300,13 +301,14 @@ Gets a list of RevocRegDefs according to the given filters.
 {
     "data": {
         "submitterDid":"MMAD5g65TDQr1PPHHRoiGf",
-        "type":"CL_ACCUM",   (optional)
         "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",   (optional)
+        "type":"CL_ACCUM",   (optional)
         "tag": "reg1",    (optional)
     },
 ...
 }
 ```
+The filters can be applied in the following order: `submitterDid` -> `credDefId` -> `type` -> `tag`.
 
 ### REVOC_REG_ENTRY
 
@@ -321,7 +323,8 @@ So, it can be sent each time a new claim is issued/revoked.
 {
     "data": {
         "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
-        "entry": {
+        "type":"CL_ACCUM",
+        "value": {
             "prevAccum":"<prev_accum_value>",
             "accum":"<accum_value>",
             "issued": [], (optional)
@@ -383,7 +386,8 @@ Reply:
 {
     "data": {
         "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
-        "entry": {
+        "type":"CL_ACCUM",
+        "value": {
             "accum":"<accum_value>",
         }
     },
@@ -416,7 +420,8 @@ Reply:
 {
     "data": {
         "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
-        "entry": {
+        "type":"CL_ACCUM",
+        "value": {
             "accum":"<accum_value>",
             "issued": [1, 45], 
             "revoked": [56, 78, 890],
