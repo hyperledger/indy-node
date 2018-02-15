@@ -1425,10 +1425,14 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - indy -c 'init_indy_node ",
+                "su - ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " -c 'init_indy_node ",
                 {
                   "Ref": "Validator01Hostname"
                 },
@@ -1444,7 +1448,16 @@
                 "systemctl start indy-node\n",
                 "systemctl enable indy-node\n",
                 "systemctl status indy-node.service\n",
-                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                "echo ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " ALL = NOPASSWD: /usr/local/bin/generate_indy_pool_transactions >> /etc/sudoers\n",
+                "su - ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " -c \"sudo generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
                 {
                   "Fn::FindInMap": [
                     "ValidatorData",
@@ -1493,15 +1506,6 @@
                 "else\n",
                 "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
                 "fi\n",
-                "chmod -x /etc/systemd/system/orientdb.service\n",
-                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
-                "then\n",
-                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
-                "else\n",
-                "  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py\n",
-                "fi\n",
-                "chown indy:indy /etc/indy/indy_config.py\n",
-                "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
                 "rm /etc/update-motd.d/51-cloudguest\n",
@@ -1869,10 +1873,14 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - indy -c 'init_indy_node ",
+                "su - ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " -c 'init_indy_node ",
                 {
                   "Ref": "Validator02Hostname"
                 },
@@ -1888,7 +1896,16 @@
                 "systemctl start indy-node\n",
                 "systemctl enable indy-node\n",
                 "systemctl status indy-node.service\n",
-                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                "echo ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " ALL = NOPASSWD: /usr/local/bin/generate_indy_pool_transactions >> /etc/sudoers\n",
+                "su - ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " -c \"sudo generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
                 {
                   "Fn::FindInMap": [
                     "ValidatorData",
@@ -1937,15 +1954,6 @@
                 "else\n",
                 "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
                 "fi\n",
-                "chmod -x /etc/systemd/system/orientdb.service\n",
-                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
-                "then\n",
-                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
-                "else\n",
-                "  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py\n",
-                "fi\n",
-                "chown indy:indy /etc/indy/indy_config.py\n",
-                "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
                 "rm /etc/update-motd.d/51-cloudguest\n",
@@ -2313,10 +2321,14 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - indy -c 'init_indy_node ",
+                "su - ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " -c 'init_indy_node ",
                 {
                   "Ref": "Validator03Hostname"
                 },
@@ -2332,7 +2344,16 @@
                 "systemctl start indy-node\n",
                 "systemctl enable indy-node\n",
                 "systemctl status indy-node.service\n",
-                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                "echo ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " ALL = NOPASSWD: /usr/local/bin/generate_indy_pool_transactions >> /etc/sudoers\n",
+                "su - ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " -c \"sudo generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
                 {
                   "Fn::FindInMap": [
                     "ValidatorData",
@@ -2381,15 +2402,6 @@
                 "else\n",
                 "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
                 "fi\n",
-                "chmod -x /etc/systemd/system/orientdb.service\n",
-                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
-                "then\n",
-                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
-                "else\n",
-                "  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py\n",
-                "fi\n",
-                "chown indy:indy /etc/indy/indy_config.py\n",
-                "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
                 "rm /etc/update-motd.d/51-cloudguest\n",
@@ -2757,10 +2769,14 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev unzip make screen indy-node tmux vim wget\n",
                 "\n",
                 "# Install and Configure Node\n",
-                "su - indy -c 'init_indy_node ",
+                "su - ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " -c 'init_indy_node ",
                 {
                   "Ref": "Validator04Hostname"
                 },
@@ -2776,7 +2792,16 @@
                 "systemctl start indy-node\n",
                 "systemctl enable indy-node\n",
                 "systemctl status indy-node.service\n",
-                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                "echo ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " ALL = NOPASSWD: /usr/local/bin/generate_indy_pool_transactions >> /etc/sudoers\n",
+                "su - ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                " -c \"sudo generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
                 {
                   "Fn::FindInMap": [
                     "ValidatorData",
@@ -2825,15 +2850,6 @@
                 "else\n",
                 "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
                 "fi\n",
-                "chmod -x /etc/systemd/system/orientdb.service\n",
-                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
-                "then\n",
-                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
-                "else\n",
-                "  echo 'SendMonitorStats = False' >> /etc/indy/indy_config.py\n",
-                "fi\n",
-                "chown indy:indy /etc/indy/indy_config.py\n",
-                "\n",
                 "# Clean Up\n",
                 "rm /etc/update-motd.d/10-help-text\n",
                 "rm /etc/update-motd.d/51-cloudguest\n",
@@ -3200,13 +3216,18 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev unzip make screen indy-node tmux vim wget\n",
                 "\n",
+                "echo ",
+                {
+                  "Ref": "AgentUsername"
+                },
+                " ALL = NOPASSWD: /usr/local/bin/generate_indy_pool_transactions >> /etc/sudoers\n",
                 "su - ",
                 {
                   "Ref": "AgentUsername"
                 },
-                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
+                " -c \"sudo generate_indy_pool_transactions --nodes 4 --clients 4 ",
                 " --ips \\\"",
                 {
                   "Fn::FindInMap": [
@@ -3607,13 +3628,18 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev unzip make screen indy-node tmux vim wget\n",
                 "\n",
+                "echo ",
+                {
+                  "Ref": "AgentUsername"
+                },
+                " ALL = NOPASSWD: /usr/local/bin/generate_indy_pool_transactions >> /etc/sudoers\n",
                 "su - ",
                 {
                   "Ref": "AgentUsername"
                 },
-                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
+                " -c \"sudo generate_indy_pool_transactions --nodes 4 --clients 4 ",
                 " --ips \\\"",
                 {
                   "Fn::FindInMap": [
@@ -4014,13 +4040,18 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev unzip make screen indy-node tmux vim wget\n",
                 "\n",
+                "echo ",
+                {
+                  "Ref": "AgentUsername"
+                },
+                " ALL = NOPASSWD: /usr/local/bin/generate_indy_pool_transactions >> /etc/sudoers\n",
                 "su - ",
                 {
                   "Ref": "AgentUsername"
                 },
-                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
+                " -c \"sudo generate_indy_pool_transactions --nodes 4 --clients 4 ",
                 " --ips \\\"",
                 {
                   "Fn::FindInMap": [
@@ -4421,13 +4452,18 @@
                 "\"\n",
                 "apt-get update\n",
                 "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
-                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev unzip make screen indy-node tmux vim wget\n",
                 "\n",
+                "echo ",
+                {
+                  "Ref": "AgentUsername"
+                },
+                " ALL = NOPASSWD: /usr/local/bin/generate_indy_pool_transactions >> /etc/sudoers\n",
                 "su - ",
                 {
                   "Ref": "AgentUsername"
                 },
-                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
+                " -c \"sudo generate_indy_pool_transactions --nodes 4 --clients 4 ",
                 " --ips \\\"",
                 {
                   "Fn::FindInMap": [
@@ -5014,51 +5050,45 @@
         "IPaddress": "10.0.0.204"
       }
     },
-//    "ClientCodePyPi": {
-//      "Ubuntu1604": {
-//        "stable": "indy-client",
-//        "master": "indy-client-dev"
-//      }
-//    },
     "RegionBasedData": {
       "ap-northeast-1": {
-        "Ubuntu1604": "ami-aae114cc"
+        "Ubuntu1604": "ami-adceb9cb"
       },
       "ap-northeast-2": {
-        "Ubuntu1604": "ami-d24e97bc"
+        "Ubuntu1604": "ami-35a3015b"
       },
       "ap-southeast-1": {
-        "Ubuntu1604": "ami-e8da418b"
+        "Ubuntu1604": "ami-a55c1dd9"
       },
       "ap-southeast-2": {
-        "Ubuntu1604": "ami-49b3aa2a"
+        "Ubuntu1604": "ami-e1c43f83"
       },
       "ca-central-1": {
-        "Ubuntu1604": "ami-b3cf71d7"
+        "Ubuntu1604": "ami-c7a622a3"
       },
       "eu-central-1": {
-        "Ubuntu1604": "ami-9c1db3f3"
+        "Ubuntu1604": "ami-714f2b1e"
       },
       "eu-west-1": {
-        "Ubuntu1604": "ami-016f9e78"
+        "Ubuntu1604": "ami-c1167eb8"
       },
       "eu-west-2": {
-        "Ubuntu1604": "ami-fde6f799"
+        "Ubuntu1604": "ami-e0bc5987"
       },
       "sa-east-1": {
-        "Ubuntu1604": "ami-7ad8ae16"
+        "Ubuntu1604": "ami-9a2d63f6"
       },
       "us-east-1": {
-        "Ubuntu1604": "ami-b391b9c8"
+        "Ubuntu1604": "ami-0b383171"
       },
       "us-east-2": {
-        "Ubuntu1604": "ami-a7aa8ac2"
+        "Ubuntu1604": "ami-4f80b52a"
       },
       "us-west-1": {
-        "Ubuntu1604": "ami-8edbf0ee"
+        "Ubuntu1604": "ami-9cb2dbfc"
       },
       "us-west-2": {
-        "Ubuntu1604": "ami-9d04e4e5"
+        "Ubuntu1604": "ami-c62eaabe"
       }
     },
     "RepositoryKeys": {
