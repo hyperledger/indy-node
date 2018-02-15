@@ -42,6 +42,9 @@ will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
 ## Technical Overview of Indy Blockchain
 Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
 
+More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
+and [indy-node-docs](docs).
+
 ## Indy Node Repository Structure
 
 Indy Node repo consists of the following parts:
