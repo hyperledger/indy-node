@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
+from indy_node import PLUGIN_CLIENT_REQ_OP_TYPES
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, VERSION, ORIGIN, FORCE
 from plenum.common.messages.fields import IterableField, AnyMapField, \
     NonEmptyStringField
@@ -19,7 +20,7 @@ from plenum.common.util import is_network_ip_address_valid, is_network_port_vali
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
     NONCE_FIELD_LIMIT, ORIGIN_FIELD_LIMIT, \
     ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
-    HASH_FIELD_LIMIT, VERSION_FIELD_LIMIT
+    VERSION_FIELD_LIMIT
 
 from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
@@ -214,7 +215,7 @@ class ClientPoolConfigOperation(MessageValidator):
 
 class ClientOperationField(PClientOperationField):
 
-    _specific_operations = {
+    _specific_operations = {**{
         SCHEMA: ClientSchemaOperation(),
         ATTRIB: ClientAttribOperation(),
         GET_ATTR: ClientGetAttribOperation(),
@@ -225,7 +226,7 @@ class ClientOperationField(PClientOperationField):
         GET_SCHEMA: ClientGetSchemaOperation(),
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
         POOL_CONFIG: ClientPoolConfigOperation(),
-    }
+    }, **{k: v() for k, v in PLUGIN_CLIENT_REQ_OP_TYPES.items()}}
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
     # constant

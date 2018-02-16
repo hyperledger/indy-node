@@ -3,7 +3,7 @@ import json
 from indy_client.test.cli.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy.ledger import sign_request, submit_request, build_nym_request
 from indy.error import IndyError, ErrorCode
-from plenum.common.constants import REPLY, REJECT
+from plenum.common.constants import REPLY
 
 
 def test_nym_send_twice(looper, sdk_pool_handle, sdk_wallet_steward):
@@ -23,19 +23,24 @@ def test_nym_send_twice(looper, sdk_pool_handle, sdk_wallet_steward):
             # in fact it should be simple:
             # assert result['op'] == REJECT
             try:
-                json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+                json.loads(looper.loop.run_until_complete(
+                    submit_request(sdk_pool_handle, req_signed)))
                 assert False
             except IndyError as ex:
                 assert ex.error_code == ErrorCode.LedgerInvalidTransaction
+
 
 def test_nym_resend(looper, sdk_pool_handle, sdk_wallet_steward):
     idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
 
     wallet_handle, identifier = sdk_wallet_steward
 
-    request = looper.loop.run_until_complete(build_nym_request(identifier, idr, verkey, None, None))
-    req_signed = looper.loop.run_until_complete(sign_request(wallet_handle, identifier, request))
+    request = looper.loop.run_until_complete(build_nym_request(
+        identifier, idr, verkey, None, None))
+    req_signed = looper.loop.run_until_complete(sign_request(
+        wallet_handle, identifier, request))
 
     for i in range(2):
-        result = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+        result = json.loads(looper.loop.run_until_complete(submit_request(
+            sdk_pool_handle, req_signed)))
         assert result['op'] == REPLY

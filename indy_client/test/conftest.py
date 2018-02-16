@@ -265,7 +265,8 @@ def userIdB(userWalletB):
 
 @pytest.fixture(scope="module")
 def userClientA(nodeSet, userWalletA, looper, tdirWithClientPoolTxns):
-    u, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
+    u, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns,
+                         usePoolLedger=True)
     u.registerObserver(userWalletA.handleIncomingReply)
     looper.add(u)
     looper.run(u.ensureConnectedToNodes())
@@ -275,7 +276,8 @@ def userClientA(nodeSet, userWalletA, looper, tdirWithClientPoolTxns):
 
 @pytest.fixture(scope="module")
 def userClientB(nodeSet, userWalletB, looper, tdirWithClientPoolTxns):
-    u, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
+    u, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns,
+                         usePoolLedger=True)
     u.registerObserver(userWalletB.handleIncomingReply)
     looper.add(u)
     looper.run(u.ensureConnectedToNodes())

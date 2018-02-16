@@ -117,13 +117,13 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
         slow_node.spylog.count(Node.processOrdered.__name__)
 
     assert on_batch_rejected_call_times_after \
-           - on_batch_rejected_call_times_before == 1
+        - on_batch_rejected_call_times_before == 1
 
     assert on_batch_created_call_times_after \
-           - on_batch_created_call_times_before == 1
+        - on_batch_created_call_times_before == 1
 
     assert process_ordered_call_times_after \
-           - process_ordered_call_times_before == 2  # one per replica
+        - process_ordered_call_times_before == 2  # one per replica
     last_2_process_ordered_results = \
         [call.result for call
          in slow_node.spylog.getAll(Node.processOrdered.__name__)[-2:]]

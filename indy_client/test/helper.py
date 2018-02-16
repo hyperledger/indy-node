@@ -54,13 +54,17 @@ def makePendingTxnsRequest(client, wallet):
     client.submitReqs(*prepared)
 
 
-def buildStewardClient(looper, tdir, stewardWallet):
+def build_client_for_wallet(looper, tdir, wallet):
     s, _ = genTestClient(tmpdir=tdir, usePoolLedger=True)
-    s.registerObserver(stewardWallet.handleIncomingReply)
+    s.registerObserver(wallet.handleIncomingReply)
     looper.add(s)
     looper.run(s.ensureConnectedToNodes())
-    makePendingTxnsRequest(s, stewardWallet)
+    makePendingTxnsRequest(s, wallet)
     return s
+
+
+def buildStewardClient(looper, tdir, stewardWallet):
+    return build_client_for_wallet(looper, tdir, stewardWallet)
 
 
 def addRole(looper, creatorClient, creatorWallet, name,
