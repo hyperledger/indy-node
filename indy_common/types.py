@@ -3,8 +3,7 @@ from copy import deepcopy
 from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, ORIGIN, FORCE, SUBMITTER_DID, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
-    TAILS_HASH, TAILS_LOCATION, ID, TYPE, TAG, CRED_DEF_ID
+    VERSION, ORIGIN, FORCE
 from plenum.common.messages.fields import IterableField, AnyMapField, \
     NonEmptyStringField
 from plenum.common.messages.node_message_factory import node_message_factory
@@ -28,7 +27,8 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
     DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY, START, CANCEL, \
-    REVOC_REG_DEF, REQ_METADATA,
+    REVOC_REG_DEF, REQ_METADATA, SUBMITTER_DID, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
+    TAILS_HASH, TAILS_LOCATION, ID, TYPE, TAG, CRED_DEF_ID
 
 
 class Request(PRequest):
