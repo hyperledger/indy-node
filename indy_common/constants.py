@@ -27,6 +27,16 @@ JUSTIFICATION = 'justification'
 REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 
+ID = "id"
+TAG = "tag"
+CRED_DEF_ID = "credDefId"
+ISSUANCE_TYPE = "issuanceType"
+MAX_CRED_NUM = "maxCredNum"
+PUBLIC_KEYS = "publicKeys"
+TAILS_HASH = "tailsHash"
+TAILS_LOCATION = "tailsLocation"
+SUBMITTER_DID = "submitterDid"
+
 NULL = 'null'
 OWNER = '<owner>'
 
