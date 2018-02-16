@@ -1,7 +1,9 @@
 import json
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
-from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA, NAME, VERSION, ORIGIN
+from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, \
+    TARGET_NYM, DATA, NAME, VERSION, ORIGIN, \
+    ID, TYPE, TAG
 from plenum.common.types import f
 from indy_common.serialization import attrib_raw_data_serializer
 from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
@@ -9,6 +11,7 @@ from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
 MARKER_CLAIM_DEF = "\03"
+MARKER_REVOC_DEF = "\04"
 LAST_SEQ_NO = "lsn"
 VALUE = "val"
 LAST_UPDATE_TIME = "lut"
@@ -44,6 +47,13 @@ def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type) ->
                 SIGNATURE_TYPE=signature_type,
                 SCHEMA_SEQ_NO=schema_seq_no).encode()
 
+def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revoc_def_tag) -> bytes:
+    return "{DID}:{MARKER}:{CRED_DEF_ID}:{REVOC_DEF_TYPE}:{REVOC_DEF_TAG}" \
+        .format(DID=authors_did,
+                MARKER=MARKER_REVOC_DEF,
+                CRED_DEF_ID=cred_def_id,
+                REVOC_DEF_TYPE=revoc_def_type,
+                REVOC_DEF_TAG=revoc_def_tag).encode()
 
 def prepare_nym_for_state(txn):
     # TODO: this is semi-duplicated in plenum.DomainRequestHandler
@@ -97,6 +107,30 @@ def prepare_claim_def_for_state(txn):
                          .format(DATA))
     signature_type = txn.get(SIGNATURE_TYPE, 'CL')
     path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    value_bytes = encode_state_value(data, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_revoc_def_for_state(txn):
+    author_did = txn.get(f.IDENTIFIER.nm)
+    schema_seq_no = txn.get(REF)
+    if schema_seq_no is None:
+        raise ValueError("'{}' field is absent, "
+                         "but it must contain schema seq no".format(REF))
+    data = txn.get(DATA)
+    cred_def_id = data.get(ID)
+    revoc_def_type = data.get(TYPE)
+    revoc_def_tag = data.get(TAG)
+    if data is None:
+        raise ValueError("'{}' field is absent, "
+                         "but it must contain components of keys"
+                         .format(DATA))
+    path = make_state_path_for_revoc_def(author_did,
+                                         cred_def_id,
+                                         revoc_def_type,
+                                         revoc_def_tag)
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     value_bytes = encode_state_value(data, seq_no, txn_time)
