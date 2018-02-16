@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, ORIGIN, DATA, RAW, \
-    ENC, HASH, NAME, VERSION, TYPE, POOL_TXN_TYPES, ALIAS, VERKEY, FORCE
+    ENC, HASH, NAME, VERSION, TYPE, POOL_TXN_TYPES, ALIAS, VERKEY, FORCE, REQ_METADATA
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 
@@ -83,6 +83,7 @@ NYM = IndyTransactions.NYM.value
 ATTRIB = IndyTransactions.ATTRIB.value
 SCHEMA = IndyTransactions.SCHEMA.value
 CLAIM_DEF = IndyTransactions.CLAIM_DEF.value
+REVOC_REG_DEF = IndyTransactions.REVOC_REG_DEF.value
 DISCLO = IndyTransactions.DISCLO.value
 GET_ATTR = IndyTransactions.GET_ATTR.value
 GET_NYM = IndyTransactions.GET_NYM.value
@@ -101,7 +102,8 @@ fields = {NYM: ([TARGET_NYM], [ROLE]),
           SCHEMA: ([NAME, VERSION, ATTR_NAMES]),
           GET_SCHEMA: ([], []),
           CLAIM_DEF: ([REF, DATA, SIGNATURE_TYPE]),
-          GET_CLAIM_DEF: ([REF, ORIGIN, SIGNATURE_TYPE])
+          GET_CLAIM_DEF: ([REF, ORIGIN, SIGNATURE_TYPE]),
+          REVOC_REG_DEF: ([REF, DATA, REQ_METADATA, SIGNATURE_TYPE])
           }
 
 CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
