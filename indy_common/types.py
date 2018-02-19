@@ -235,8 +235,6 @@ class ClientPoolConfigOperation(MessageValidator):
     )
 
 
-
-
 class ClientOperationField(PClientOperationField):
 
     _specific_operations = {

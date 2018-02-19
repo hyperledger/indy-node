@@ -46,6 +46,7 @@ def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type) ->
                 SIGNATURE_TYPE=signature_type,
                 SCHEMA_SEQ_NO=schema_seq_no).encode()
 
+
 def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revoc_def_tag) -> bytes:
     return "{DID}:{MARKER}:{CRED_DEF_ID}:{REVOC_DEF_TYPE}:{REVOC_DEF_TAG}" \
         .format(DID=authors_did,
@@ -53,6 +54,7 @@ def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revo
                 CRED_DEF_ID=cred_def_id,
                 REVOC_DEF_TYPE=revoc_def_type,
                 REVOC_DEF_TAG=revoc_def_tag).encode()
+
 
 def prepare_nym_for_state(txn):
     # TODO: this is semi-duplicated in plenum.DomainRequestHandler

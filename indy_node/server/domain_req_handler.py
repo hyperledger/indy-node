@@ -1,6 +1,5 @@
 from copy import deepcopy
 from typing import List
-import schema
 
 import base58
 
@@ -259,7 +258,6 @@ class DomainReqHandler(PHandler):
         if revoc_def:
             logger.info("Already got revoc_def_txn in ledger")
 
-
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
         txn_time = data.get(TXN_TIME)
@@ -410,7 +408,6 @@ class DomainReqHandler(PHandler):
         assert txn[TXN_TYPE] == REVOC_REG_DEF
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
-
 
     def getAttr(self,
                 did: str,
