@@ -249,14 +249,9 @@ class DomainReqHandler(PHandler):
         cred_def_id = operation.get("id")
         revoc_def_type = operation.get("type")
         revoc_def_tag = operation.get("tag")
-        revoc_def, _, _, _ = self.getRevocDef(
-            author_did=author_did,
-            cred_def_id=cred_def_id,
-            revoc_def_type=revoc_def_type,
-            revoc_def_tag=revoc_def_tag
-        )
-        if revoc_def:
-            logger.info("Already got revoc_def_txn in ledger")
+        assert cred_def_id
+        assert revoc_def_tag
+        assert revoc_def_tag
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
