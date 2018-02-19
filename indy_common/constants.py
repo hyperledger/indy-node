@@ -38,6 +38,11 @@ TAILS_LOCATION = "tailsLocation"
 SUBMITTER_DID = "submitterDid"
 VALUE = "value"
 REQ_METADATA = "reqMetadata"
+REVOC_REG_DEF_ID = "revocRegDefId"
+PREV_ACCUM = "prevAccum"
+ACCUM = "accum"
+ISSUED = "issued"
+REVOKED = "revoked"
 
 NULL = 'null'
 OWNER = '<owner>'
@@ -96,6 +101,7 @@ ATTRIB = IndyTransactions.ATTRIB.value
 SCHEMA = IndyTransactions.SCHEMA.value
 CLAIM_DEF = IndyTransactions.CLAIM_DEF.value
 REVOC_REG_DEF = IndyTransactions.REVOC_REG_DEF.value
+REVOC_REG_ENTRY = IndyTransactions.REVOC_REG_ENTRY.value
 DISCLO = IndyTransactions.DISCLO.value
 GET_ATTR = IndyTransactions.GET_ATTR.value
 GET_NYM = IndyTransactions.GET_NYM.value
@@ -115,7 +121,8 @@ fields = {NYM: ([TARGET_NYM], [ROLE]),
           GET_SCHEMA: ([], []),
           CLAIM_DEF: ([REF, DATA, SIGNATURE_TYPE]),
           GET_CLAIM_DEF: ([REF, ORIGIN, SIGNATURE_TYPE]),
-          REVOC_REG_DEF: ([ID, TYPE, TAG, CRED_DEF_ID, VALUE])
+          REVOC_REG_DEF: ([ID, TYPE, TAG, CRED_DEF_ID, VALUE]),
+          REVOC_REG_ENTRY: ([REVOC_REG_DEF_ID, TYPE, VALUE]),
           }
 
 CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}

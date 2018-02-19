@@ -26,3 +26,4 @@ class IndyTransactions(Transactions):
     CHANGE_KEY = "112"
 
     REVOC_REG_DEF = "113"
+    REVOC_REG_ENTRY = "114"

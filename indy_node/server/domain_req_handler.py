@@ -5,7 +5,8 @@ import base58
 
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, \
+    REVOC_REG_DEF_ID
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -23,7 +24,7 @@ logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-    write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF}
+    write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
     query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
 
     def __init__(self, ledger, state, config, requestProcessor,
@@ -66,6 +67,8 @@ class DomainReqHandler(PHandler):
             self._addClaimDef(txn)
         elif typ == REVOC_REG_DEF:
             self._addRevocDef(txn)
+        elif typ == REVOC_REG_ENTRY:
+            self._addRevocRegEntry(txn)
         else:
             logger.debug(
                 'Cannot apply request of type {} to state'.format(typ))
@@ -116,6 +119,8 @@ class DomainReqHandler(PHandler):
             self._validate_claim_def(req)
         elif typ == REVOC_REG_DEF:
             self._validate_revoc_reg_def(req)
+        elif typ == REVOC_REG_ENTRY:
+            self._validate_revoc_reg_entry(req)
 
     @staticmethod
     def _validate_attrib_keys(operation):
@@ -251,6 +256,12 @@ class DomainReqHandler(PHandler):
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
+
+    def _validate_revoc_reg_entry(self, req: Request):
+        operation = req.operation
+        revoc_reg_def_id = operation.get(REVOC_REG_DEF_ID)
+        assert revoc_reg_def_id
+        # TODO Add check that sufficient revoc_reg_def exist
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
@@ -403,6 +414,11 @@ class DomainReqHandler(PHandler):
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
 
+    def _addRevocRegEntry(self, txn) -> None:
+        assert txn[TXN_TYPE] == REVOC_REG_ENTRY
+        path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
+        self.state.set(path, value_bytes)
+
     def getAttr(self,
                 did: str,
                 key: str,
@@ -471,6 +487,20 @@ class DomainReqHandler(PHandler):
                                                     cred_def_id,
                                                     revoc_def_type,
                                                     revoc_def_tag)
+        try:
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            return keys, seqno, lastUpdateTime, proof
+        except KeyError:
+            return None, None, None, None
+
+    def getRevocDefEntry(self,
+                    author_did,
+                    revoc_reg_def_id,
+                    isCommitted=True) -> (str, int, int, list):
+        assert author_did
+        assert revoc_reg_def_id
+        path = domain.make_state_path_for_revoc_reg_entry(authors_did=author_did,
+                                                          revoc_reg_def_id=revoc_reg_def_id)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof
