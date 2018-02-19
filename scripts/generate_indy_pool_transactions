@@ -5,6 +5,7 @@ from plenum.common.test_network_setup import TestNetworkSetup
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper, NodeConfigHelper
 from indy_common.txn_util import getTxnOrderedFields
+import logging
 
 
 portsStart = 9700
@@ -12,6 +13,8 @@ nodeParamsFileName = 'indy.env'
 
 
 if __name__ == "__main__":
+    logger = logging.getLogger()
+    logger.disabled = True
     TestNetworkSetup.bootstrapTestNodes(getConfig(), portsStart, nodeParamsFileName,
                                         getTxnOrderedFields(), ConfigHelper, NodeConfigHelper)
 

@@ -146,3 +146,20 @@ def testTrusteeSuspendingTGB(be, do, trusteeCli, tbgAdded, nymAddedOut):
     do('send NYM dest={remote} role=',
        within=5,
        expect=nymAddedOut, mapper=tbgAdded)
+
+
+def testTrustAnchorSuspendingHimselfByVerkeyFlush(be, do, trusteeCli, trustAnchorAdded,
+                                                  nymAddedOut, trustAnchorCli):
+    # The trust anchor has already lost its role due to previous tests,
+    # but it is ok for this test where the trust anchor flushes its verkey
+    # and then he is unable to send NYM due to empty verkey.
+    be(trustAnchorCli)
+    do('send NYM dest={remote} verkey=',
+       within=5,
+       expect=nymAddedOut, mapper=trustAnchorAdded)
+
+    s = DidSigner().identifier
+    errorMsg = "CouldNotAuthenticate('Can not find verkey for"
+    do('send NYM dest={remote}',
+       within=5,
+       expect=[errorMsg], mapper={'remote': s})
