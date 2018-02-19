@@ -494,9 +494,9 @@ class DomainReqHandler(PHandler):
             return None, None, None, None
 
     def getRevocDefEntry(self,
-                    author_did,
-                    revoc_reg_def_id,
-                    isCommitted=True) -> (str, int, int, list):
+                         author_did,
+                         revoc_reg_def_id,
+                         isCommitted=True) -> (str, int, int, list):
         assert author_did
         assert revoc_reg_def_id
         path = domain.make_state_path_for_revoc_reg_entry(authors_did=author_did,

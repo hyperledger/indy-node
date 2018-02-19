@@ -4,8 +4,6 @@ from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
     VERSION, ORIGIN, FORCE
-from plenum.common.messages.fields import IterableField, AnyMapField, \
-    NonEmptyStringField, IntegerField
 from plenum.common.messages.node_message_factory import node_message_factory
 
 from plenum.common.messages.message_base import MessageValidator
@@ -13,7 +11,8 @@ from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
 from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.messages.fields import ConstantField, IdentifierField, LimitedLengthStringField, TxnSeqNoField, \
-    Sha256HexField, JsonField, MapField, BooleanField, VersionField, ChooseField, IntegerField
+    Sha256HexField, JsonField, MapField, BooleanField, VersionField, ChooseField, IntegerField, IterableField, \
+    AnyMapField, NonEmptyStringField
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
