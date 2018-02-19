@@ -243,7 +243,6 @@ class DomainReqHandler(PHandler):
 
     def _validate_revoc_reg_def(self, req: Request):
         # TODO Need to check that CRED_DEF for this REVOC_DEF exist
-        author_did = req.identifier
         operation = req.operation
 
         cred_def_id = operation.get("id")
@@ -251,7 +250,7 @@ class DomainReqHandler(PHandler):
         revoc_def_tag = operation.get("tag")
         assert cred_def_id
         assert revoc_def_tag
-        assert revoc_def_tag
+        assert revoc_def_type
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
