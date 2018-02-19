@@ -1,6 +1,6 @@
 from collections import OrderedDict
-from indy_common.types import RevocDefValueField, ClientRevocDefSubmitField, \
-    IntegerField, AnyMapField, NonEmptyStringField
+from indy_common.types import RevocDefValueField, ClientRevocDefSubmitField
+from plenum.common.messages.fields import IntegerField, AnyMapField, NonEmptyStringField
 from indy_common.constants import ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
     TAILS_LOCATION, TAILS_HASH, ID, TYPE, TAG, CRED_DEF_ID, VALUE
 
