@@ -6,7 +6,7 @@ import base58
 
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REQ_METADATA
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -247,10 +247,9 @@ class DomainReqHandler(PHandler):
         author_did = req.identifier
         operation = req.operation
 
-        data = operation[DATA]
-        cred_def_id = data.get("id")
-        revoc_def_type = data.get("type")
-        revoc_def_tag = data.get("tag")
+        cred_def_id = operation.get("id")
+        revoc_def_type = operation.get("type")
+        revoc_def_tag = operation.get("tag")
         revoc_def, _, _, _ = self.getRevocDef(
             author_did=author_did,
             cred_def_id=cred_def_id,
@@ -259,9 +258,6 @@ class DomainReqHandler(PHandler):
         )
         if revoc_def:
             logger.info("Already got revoc_def_txn in ledger")
-
-        pass
-
 
 
     def updateNym(self, nym, data, isCommitted=True):

@@ -2,11 +2,10 @@ import json
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, \
-    TARGET_NYM, DATA, NAME, VERSION, ORIGIN, \
-    ID, TYPE, TAG
+    TARGET_NYM, DATA, NAME, VERSION, ORIGIN
 from plenum.common.types import f
 from indy_common.serialization import attrib_raw_data_serializer
-from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
+from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, ID, TYPE, TAG, CRED_DEF_ID
 
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
@@ -114,26 +113,23 @@ def prepare_claim_def_for_state(txn):
 
 
 def prepare_revoc_def_for_state(txn):
-    author_did = txn.get(f.IDENTIFIER.nm)
-    schema_seq_no = txn.get(REF)
-    if schema_seq_no is None:
-        raise ValueError("'{}' field is absent, "
-                         "but it must contain schema seq no".format(REF))
-    data = txn.get(DATA)
-    cred_def_id = data.get(ID)
-    revoc_def_type = data.get(TYPE)
-    revoc_def_tag = data.get(TAG)
-    if data is None:
-        raise ValueError("'{}' field is absent, "
-                         "but it must contain components of keys"
-                         .format(DATA))
+    author_did = txn.get(ID)
+    cred_def_id = txn.get(CRED_DEF_ID)
+    revoc_def_type = txn.get(TYPE)
+    revoc_def_tag = txn.get(TAG)
+    assert author_did
+    assert cred_def_id
+    assert revoc_def_type
+    assert revoc_def_tag
     path = make_state_path_for_revoc_def(author_did,
                                          cred_def_id,
                                          revoc_def_type,
                                          revoc_def_tag)
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
-    value_bytes = encode_state_value(data, seq_no, txn_time)
+    assert seq_no
+    assert txn_time
+    value_bytes = encode_state_value(txn, seq_no, txn_time)
     return path, value_bytes
 
 
