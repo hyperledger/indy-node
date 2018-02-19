@@ -27,8 +27,8 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
     DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY, START, CANCEL, \
-    REVOC_REG_DEF, REQ_METADATA, SUBMITTER_DID, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
-    TAILS_HASH, TAILS_LOCATION, ID, TYPE, TAG, CRED_DEF_ID
+    REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
+    TAILS_HASH, TAILS_LOCATION, ID, TYPE, TAG, CRED_DEF_ID, VALUE
 
 
 class Request(PRequest):
@@ -96,13 +96,13 @@ class RevocDefValueField(MessageValidator):
     )
 
 
-class RevocDefField(MessageValidator):
+class ClientRevocDefSubmitField(MessageValidator):
     schema = (
         (ID, NonEmptyStringField()),
         (TYPE, NonEmptyStringField()),
         (TAG, NonEmptyStringField()),
         (CRED_DEF_ID, NonEmptyStringField()),
-        ("value", RevocDefValueField())
+        (VALUE, RevocDefValueField())
     )
 
 
@@ -235,14 +235,6 @@ class ClientPoolConfigOperation(MessageValidator):
     )
 
 
-class ClientRevocDefSubmitOperation(MessageValidator):
-    schema = (
-        (TXN_TYPE, ConstantField(REVOC_REG_DEF)),
-        (REF, TxnSeqNoField()),
-        (DATA, RevocDefField()),
-        (REQ_METADATA, MapField(ConstantField(SUBMITTER_DID), NonEmptyStringField())),
-        (SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
-    )
 
 
 class ClientOperationField(PClientOperationField):
@@ -258,7 +250,7 @@ class ClientOperationField(PClientOperationField):
         GET_SCHEMA: ClientGetSchemaOperation(),
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
         POOL_CONFIG: ClientPoolConfigOperation(),
-        REVOC_REG_DEF: ClientRevocDefSubmitOperation(),
+        REVOC_REG_DEF: ClientRevocDefSubmitField(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
