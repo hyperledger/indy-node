@@ -2,7 +2,7 @@ import pytest
 import json
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_DEF
-from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_signed_requests, sdk_send_and_check
+from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 
 
 @pytest.fixture(scope="module")
