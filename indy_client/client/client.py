@@ -137,7 +137,7 @@ class Client(PlenumClient):
         if request_type == GET_NYM:
             return domain.prepare_get_nym_for_state(result)
         if request_type == GET_ATTR:
-            path, value, hashed_value, value_bytes = \
+            attr_type, path, value, hashed_value, value_bytes = \
                 domain.prepare_get_attr_for_state(result)
             return path, value_bytes
         if request_type == GET_CLAIM_DEF:
