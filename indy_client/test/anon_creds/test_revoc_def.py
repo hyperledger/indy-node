@@ -3,6 +3,7 @@ import json
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_DEF
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
+from plenum.test.pool_transactions.conftest import looper
 
 
 @pytest.fixture(scope="module")
