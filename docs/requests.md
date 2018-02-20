@@ -30,33 +30,120 @@ then have a look at [transactions](transactions.md).
 
 See [roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0) on the roles and who can create each type of transactions.
 
-## Common Request Structure
 
-Each Request (both write and read) is a JSON with a number of common metadata fields.
+## Base Client-to-Node and Node-to-Node serialization 
+
+The main Client-to-Node and Node-to-Node envelope is serialized in MsgPack format.
+
+## Common Message Structure
+
+This is a common structure for ALL messages (both Node-to-Node and Client-to-Node).
 
 ```
 {
-    "reqType": <...>,
-    "reqVersion": <...>,
-    "protocolVersion": <...>,
-    
-    "data": {
-        <request-specific fields>
-    },
-    "reqMetadata": {
-        "reqId": <...>,
-        "submitterDID": <...>,
-    },
-    "reqSignature": {
+    "from": <...>,
+    "signature": {
         "type": <...>,
         "value": <...>
-    }   
+    },
+    "serialization": <...>,
+    "msg": <serialized-msg>
+}
+```
+where the `msg` field has the following structure:
+```
+    "type": <...>,
+    "protocolVersion": <...>,
+    "data": {
+        "version": <...>,
+        <msg-specific fields>
+    },
+    "metadata": {
+        "version": <...>,
+        <msg-specific fields>
+    },
+```
+- `from` (base58-encoded string):
+     Identifier (DID) of the message sender (a client or node who sent the transaction) as base58-encoded string
+     for 16 or 32 bit DID value.
+     It must be present on Ledger for write requests and can be any value for read requests.
+     
+     It may differ from `did` field for some of requests (for example NYM), where `did` is a 
+     target identifier (for example, a newly created DID identifier).
+     
+     *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+
+- `signature` (dict, optional):
+
+    Submitter's signature over serialized `msg` field.
+    
+    - `type` (string enum):
+        
+        - ED25519: ed25519 signature
+        - ED25519_MULTI: ed25519 signature in multisig case.
+    
+    - `value` (base58-encoded string or array of base58-encoded string): signature value   
+    
+- `serialization` (string enum):
+
+    Defines how the `msg` is serialized
+     - JSON: json
+     - MSG_PACK: MsgPack
+        
+- `msg` (dict):
+    
+    Serialized message.
+
+    - `type` (enum integer): 
+     
+        Msg type.
+
+- `protocolVersion` (integer; optional): 
+
+    The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
+    Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
+    between clients and nodes.     
+
+- `data` (dict):
+
+    Message-specific data.
+
+- `metadata` (json):
+
+    Message-specific metadata.
+
+
+## Common Request Structure
+
+Each Request (both write and read) follows the pattern as shown above.
+
+```
+{
+    "from": <...>,
+    "signature": {
+        "type": <...>,
+        "value": <...>
+    },
+    "serialization": <...>,
+    "msg": {
+        "type": <...>,
+        "protocolVersion": <...>,
+        "data": {
+            "version": <...>,
+            <msg-specific fields>
+        },
+        "metadata": {
+            "version": <...>,
+            "reqId": <...>,
+            "from": <...>,
+        },
+    }
 }
 ```
 
-- `reqType` (enum integer):
- 
-    Request type as one of the following values:
+- `signature` is required for write requests only.
+
+- Message Type `type` is one of the following values:
 
     - NODE = 0
     - NYM = 1
@@ -70,28 +157,13 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
     - GET_ATTR = 104
     - GET_NYM = 105
     - GET_SCHEMA = 107
-    - GET_CLAIM_DEF = 108
-        
-- `reqVersion` (integer):
+    - GET_CLAIM_DEF = 108 
 
-    Request version to be able to evolve requests.
-    The content of "data" and "reqMetadata" fields may depend on the version.  
-
-- `protocolVersion` (integer; optional): 
-
-    The version of client-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
-    Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
-    between clients and nodes.     
-
-- `data` (json):
-
-    Request-specific data.
-
-- `reqMetadata` (json):
+- `metadata` (json):
 
     Metadata coming with the Request and saving in the transaction as is (if this is a write request).
 
-    - `submitterDID` (base58-encoded string):
+    - `from` (base58-encoded string):
          Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
          for 16 or 32 bit DID value.
          It must be present on Ledger for write requests and can be any value for read requests.
@@ -104,85 +176,56 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
     - `reqId` (integer): 
         Unique ID number of the request with transaction.
         
-- `reqSignature` (json):
+- Please find the format of each request-specific data for each type of request below.
 
-    Submitter's signature over "data" and "reqMetadata".
-    
-    - `type` (enum number as integer):
-        
-        - ED25519: ed25519 signature
-        - ED25519_MULTI: ed25519 signature in multisig case.
-    
-    - `value` (base58-encoded string or array of base58-encoded string): signature value    
+## Common Reply Structure
 
-Please find the format of each request-specific data for each type of request below.
-
-## Common Reply Structure 
-
-Each Reply to requests has a number of common metadata fields and state-proof related fields.
-Please note that state-proof is absent for write requests Reply since  
-(we don"t support State Proofs for write requests yet). Most of these fields are actually metadata fields 
-of a transaction in the Ledger (see [transactions](transactions.md)).
+Each Reply follows the pattern as shown above.
 
 ```
 {
-    "op": "REPLY",
-    
-    "reqType": <...>,
-    "reqVersion": <...>,
-    "protocolVersion": <...>,
-    
-    "reqMetadata": {
-        "reqId": <...>,
-        "submitterDID": <...>,
-    },
-    "reqSignature": {
-        "type": <...>,
-        "value": <...>
-    },
-    
-    "txn": {
-        <txn as in ledger>
-    },
-     
-    "ledgerMetadata": {
-        "ledgerId": <...>, 
-        "rootHash": <...>,
-        "size": <...>,
-    },
-
-    "stateMetadata": {
-        "timestamp": <...>,
-        "poolRootHash": <...>,
-        "rootHash": <...>,
-    },
-
-    "poolMultiSignature": {
-        "type": <...>,
-        "value": <...>,
-        "participants": <...>
-    }, 
-
-    "stateProof": <...>,
-    "auditProof": <...>, 
-
+    "from": <...>,
+    "serialization": <...>,
+    "msg": {
+        "type": REPLY,
+        "protocolVersion": <...>,
+        "data": {
+            "version": <...>,
+            "txn": {
+                <txn as in ledger>
+            },
+             
+            "ledgerMetadata": {
+                "ledgerId": <...>, 
+                "rootHash": <...>,
+                "size": <...>,
+            },
+        
+            "stateMetadata": {
+                "timestamp": <...>,
+                "poolRootHash": <...>,
+                "rootHash": <...>,
+            },
+        
+            "poolMultiSignature": {
+                "type": <...>,
+                "value": <...>,
+                "participants": <...>
+            }, 
+        
+            "stateProof": <...>,
+            "auditProof": <...>, 
+        },
+        "metadata": {
+            "version": <...>,
+            "reqId": <...>,
+            "from": <...>,
+        },
+    }
 }
-
 ```
 
-- `reqType` (enum number as string): 
-
-    Request types (as in Request).
-    
-- `reqVersion` (string):
-
-    Request version (as in Request).
-
-- `protocolVersion` (integer; optional): 
-
-    The version of client-to-node protocol (as in Request).
-    
-- `reqMetadata` (json; optional):
+- `metadata` (json; optional):
 
     Metadata as in Request. It may be absent for Reply to write requests as `txn` fields already contains 
     this information as part of transaction written to the ledger.
@@ -246,60 +289,72 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     It is present for replies to write requests only, and GET_TXN Reply.
     
 ## ACK Structure
+Each ACK follows the pattern as shown above.
+
 ```
 {
-    "op": "REQACK",
-    
-    "reqType": <...>,
-    "reqVersion": <...>,
-    "protocolVersion": <...>,
-    
-    "reqMetadata": {
-        "reqId": <...>,
-        "submitterDID": <...>,
+    "from": "GFAD5g65TDQr1PPHHRoiGf",
+    "serialization": "MSG_PACK",
+    "msg": {
+        "type": REQACK,
+        "protocolVersion": 1,
+        "data": {
+            "version": 1,
+        },
+        "metadata": {
+            "version": 1,
+            "reqId": 1514215425836443,
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+        },
     }
 }
-
 ```
 
 
 ## NACK Structure
+Each NACK follows the pattern as shown above.
 ```
 {
-    "op": "REQNACK",
-    
-    "reqType": <...>,
-    "reqVersion": <...>,
-    "protocolVersion": <...>,
-    
-    "reqMetadata": {
-        "reqId": <...>,
-        "submitterDID": <...>,
-    },
-    
-    "reason": <reason_str>
+    "from": "GFAD5g65TDQr1PPHHRoiGf",
+    "serialization": "MSG_PACK",
+    "msg": {
+        "type": REQNACK,
+        "protocolVersion": <...>,
+        "data": {
+            "version": <...>,
+            "reason": <reason_str>
+        },
+        "metadata": {
+            "version": <...>,
+            "reqId": 1514215425836443,
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+    }
 }
-
 ```
+
 ## Reject Structure
+Each Reject follows the pattern as shown above.
 ```
 {
-    "op": "REQNACK",
-    
-    "reqType": <...>,
-    "reqVersion": <...>,
-    "protocolVersion": <...>,
-    
-    "reqMetadata": {
-        "reqId": <...>,
-        "submitterDID": <...>,
-    },
-    
-    "reason": <reason_str>
+    "from": "GFAD5g65TDQr1PPHHRoiGf",
+    "serialization": "MSG_PACK",
+    "msg": {
+        "type": REJECT,
+        "protocolVersion": 1,
+        "data": {
+            "version": 1,
+            "reason": <reason_str>
+        },
+        "metadata": {
+            "version": 1,
+            "reqId": 1514215425836443,
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+        },
+    }
 }
-
 ```
- 
+
 
 ## Write Requests
 
@@ -352,25 +407,28 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 *Request Example*:
 ```
 {
-
-    "reqType": 1,
-    "reqVersion": 1,
-    "protocolVersion": 1,
-    
-    "data": {
-        "did": "N22KY2Dyvmuu2PyyqSFKue",
-        "role": "101",
-        "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
-    },
-    "reqMetadata": {
-        "reqId": 1514215425836443,
-        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
-    },
-    "reqSignature": {
+    "from": "L5AD5g65TDQr1PPHHRoiGf",
+    "serialization": "MSG_PACK",
+    "signature": {
         "type": "ED25519",
         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+    },
+    "msg": {
+        "reqType": 1,
+        "protocolVersion": 1,
+        
+        "data": {
+            "version": 1,
+            "did": "N22KY2Dyvmuu2PyyqSFKue",
+            "role": "101",
+            "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
+        },
+        "metadata": {
+            "version": 1,
+            "reqId": 1514215425836443,
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+        },
     }
-}
 ```
 
 *Reply Example*:
@@ -461,24 +519,29 @@ Adds attribute to a NYM record.
 *Request Example*:
 ```
 {
-
-    "reqType": 100,
-    "reqVersion": 1,
-    "protocolVersion": 1,
-    
-    "data": {
-        "did": "N22KY2Dyvmuu2PyyqSFKue",
-        "raw": "{"name": "Alice"}"
+    "from": "L5AD5g65TDQr1PPHHRoiGf",
+    "serialization": "MSG_PACK",
+    "signature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
     },
-    
-    "reqMetadata": {
-        "reqId": 1514215425836443,
-        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
+    "msg": {
+
+        "reqType": 100,
+        "protocolVersion": 1,
+        
+        "data": {
+            "version": 1,
+            "did": "N22KY2Dyvmuu2PyyqSFKue",
+            "raw": "{"name": "Alice"}"
+        },
+        
+        "reqMetadata": {
+            "version": 1,
+            "reqId": 1514215425836443,
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+        }
     }
-    "reqSignature": {
-       "type": "ED25519",
-       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-    },    
 }
 ```
 
@@ -576,13 +639,15 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     "protocolVersion": 1,
     
     "data": {
+        "version": 1,
         "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
         "version": "1.0",
         "name": "Degree",
         "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
     },
     
-    "reqMetadata": {
+    "metadata": {
+        "version": 1,
         "reqId": 1514215425836443,
         "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     },
@@ -699,6 +764,7 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
     "protocolVersion": 1,
     
     "data": {
+        "version": 1,
         "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
         "signatureType": "CL",
         "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
@@ -709,7 +775,8 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
         "tag": "key1",
     },
     
-    "reqMetadata": {
+    "metadata": {
+        "version": 1,
         "reqId": 1514215425836443,
         "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     },
@@ -848,6 +915,7 @@ There is no need to specify all other fields, and they will remain the same.
     "protocolVersion": 1,
     
     "data": {
+        "version": 1,
         "did": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
         "alias": "Node1",
         "clientIp": "127.0.0.1",
@@ -858,7 +926,8 @@ There is no need to specify all other fields, and they will remain the same.
         "services": ["VALIDATOR"]
     },
     
-    "reqMetadata": {
+    "metadata": {
+        "version": 1,
         "reqId": 1514215425836443,
         "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     },
@@ -994,6 +1063,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     "protocolVersion": 1,
     
     "data": {
+        "version": 1,
         "name": `upgrade-13`,
         "action": `start`,
         "version": `1.3`,
@@ -1004,7 +1074,8 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         "timeout": 1
     },
     
-    "reqMetadata": {
+    "metadata": {
+        "version": 1,
         "reqId": 1514215425836443,
         "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     },
@@ -1110,11 +1181,13 @@ Command to change Pool's configuration
     "protocolVersion": 1,
     
     "data": {
+        "version": 1,
         "writes":false,
         "force":true
     },
     
-    "reqMetadata": {
+    "metadata": {
+        "version": 1,
         "reqId": 1514215425836443,
         "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
     },
