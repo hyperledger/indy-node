@@ -1,11 +1,12 @@
 import pytest
+import json
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_DEF
+from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_signed_requests, sdk_send_and_check
 
 
-@pytest.mark.skip("Check failed adding test")
 @pytest.fixture(scope="module")
-def send_revoc_def(public_repo, looper):
+def send_revoc_def(looper, sdk_wallet_steward, sdk_pool_handle, txnPoolNodeSet):
     data = {
         "id": randomString(50),
         "type": REVOC_REG_DEF,
@@ -20,19 +21,18 @@ def send_revoc_def(public_repo, looper):
         }
     }
 
-    looper.run(public_repo._sendSubmitReq(data))
-    return data
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    sdk_send_and_check([json.dumps(req)], looper, txnPoolNodeSet, sdk_pool_handle)
+
+    return req
 
 
-@pytest.mark.skip("Check failed adding test")
 def test_revoc_validation(send_revoc_def):
     # 1. Send revocaton_definition
-    op = send_revoc_def
+    req = send_revoc_def
 
-
-@pytest.mark.skip("Check failed adding test")
-def test_revoc_send_twice(looper, public_repo, send_revoc_def):
+def test_revoc_send_twice(send_revoc_def, sdk_pool_handle, looper, txnPoolNodeSet):
     # 1. Send revocation definition
-    op = send_revoc_def
+    req = send_revoc_def
     # 2. Resend revocation definition
-    looper.run(public_repo._sendSubmitReq(op))
+    sdk_send_and_check([json.dumps(req)], looper, txnPoolNodeSet, sdk_pool_handle)
