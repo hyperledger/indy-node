@@ -53,32 +53,34 @@ Each transaction has the following structure containing of metadata values (comm
 transaction specific data:
 ```
 {
-    "txnType": <...>,
-    "txnVersion": <...>,
-    
     "data": {
-        <txn-specific fields>
-    }
-    
-    "reqMetadata": {
-        "reqId": <...>,
-        "submitterDid": <...>,
+        "type": <...>,
+        "protocolVersion": <...>,
+        
+        "data": {
+            "version": <...>,
+            <txn-specific fields>
+        },
+        
+        "metadata": {
+            "version": <...>,
+            "reqId": <...>,
+            "from": <...>
+        },
     },
-
-    "reqSignature": {
+    "metadata": {
+        "version": <...>,
+        "creationTime": <...>,
+        "seqNo": <...>,  
+    },
+    "signature": {
         "type": <...>,
         "value": <...>
     }
-    
-    "txnMetadata": {
-        "creationTime": <...>,
-        "seqNo": <...>,  
-    }
-
 }
 ```
 
-- `txnType` (enum number as integer): 
+- `type` (enum number as integer): 
 
     Supported transaction type:
     
@@ -91,10 +93,10 @@ transaction specific data:
     - NODE_UPGRADE = 110
     - POOL_CONFIG = 111
         
-- `txnVersion` (integer):
+- `version` (integer):
 
     Transaction version to be able to evolve transactions.
-    The content of `data` and `reqMetadata` and `txnMetadata` fields may depend on the version.  
+    The content of `data` and `metadata` fields may depend on the version.  
    
 - `data` (json):
 

@@ -414,7 +414,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
     },
     "msg": {
-        "reqType": 1,
+        "type": 1,
         "protocolVersion": 1,
         
         "data": {
@@ -434,62 +434,68 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 *Reply Example*:
 ```
 {
-    "op": "REPLY",
-    
-    "reqType": 1,
-    "reqVersion": 1,
-    "protocolVersion": 1,
-    
-    "reqMetadata": {
-        "reqId": 1514215425836443,
-        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
-    },
-    "reqSignature": {
-       "type": "ED25519",
-       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-    },
-    
-    "txn": {
-        "txnType": 1,
-        "txnVersion": 1,
+    "from": "Node1",
+    "serialization": "MSG_PACK",
+    "msg": {
+        "type": "REPLY",
+        "protocolVersion": 1,
+        
         "data": {
-            "did": "N22KY2Dyvmuu2PyyqSFKue",
-            "role": "101",
-            "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
+            "version": 1,
+        
+            "txn": {
+                "data": {
+                    "type": 1,
+                    "protocolVersion": 1,
+                    
+                    "data": {
+                        "version": 1,
+                        "did": "N22KY2Dyvmuu2PyyqSFKue",
+                        "role": "101",
+                        "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
+                    },
+                    "metadata": {
+                        "version": 1,
+                        "reqId": 1514215425836443,
+                        "from": "L5AD5g65TDQr1PPHHRoiGf",
+                    },
+                },
+                "metadata": {
+                    "creationTime": 1514211268,
+                    "seqNo": 300,
+                },
+                "signature": {
+                   "type": "ED25519",
+                   "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+                },
+            },
+             
+            "ledgerMetadata": {
+                "ledgerId": 1, 
+                "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+                "size": 300,
+            },
+        
+            "stateMetadata": {
+                "timestamp": 1514214795,
+                "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+                "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+            },
+        
+            "poolMultiSignature": {
+                "type": "BLS",
+                "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+                "participants": ["Delta", "Gamma", "Alpha"]
+            }, 
+        
+            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
-        "reqMetadata": {
+        "metadata": {
+            "version": 1,
             "reqId": 1514215425836443,
-            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
-        },
-        "reqSignature": {
-           "type": "ED25519",
-           "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        },
-        "txnMetadata": {
-            "creationTime": 1514211268,
-            "seqNo": 300,
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
         }
-    },
-     
-    "ledgerMetadata": {
-        "ledgerId": 1, 
-        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
-        "size": 300,
-    },
-
-    "stateMetadata": {
-        "timestamp": 1514214795,
-        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
-        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
-    },
-
-    "poolMultiSignature": {
-        "type": "BLS",
-        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
-        "participants": ["Delta", "Gamma", "Alpha"]
-    }, 
-
-    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
+    } 
 }
 ```
 
@@ -526,8 +532,7 @@ Adds attribute to a NYM record.
         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
     },
     "msg": {
-
-        "reqType": 100,
+        "type": 100,
         "protocolVersion": 1,
         
         "data": {
@@ -536,7 +541,7 @@ Adds attribute to a NYM record.
             "raw": "{"name": "Alice"}"
         },
         
-        "reqMetadata": {
+        "metadata": {
             "version": 1,
             "reqId": 1514215425836443,
             "from": "L5AD5g65TDQr1PPHHRoiGf",
@@ -548,61 +553,70 @@ Adds attribute to a NYM record.
 *Reply Example*:
 ```
 {
-    "op": "REPLY",
-    
-    "reqType": 100,
-    "reqVersion": 1,
-    "protocolVersion": 1,
-    
-    "reqMetadata": {
-        "reqId": 1514215425836443,
-        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
-    },
-    "reqSignature": {
-       "type": "ED25519",
-       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-    },
-    
-    "txn": {
-        "txnType": 100,
-        "txnVersion": 1,
+{
+    "from": "Node1",
+    "serialization": "MSG_PACK",
+    "msg": {
+        "type": "REPLY",
+        "protocolVersion": 1,
+        
         "data": {
-            "did": "N22KY2Dyvmuu2PyyqSFKue",
-            "raw": "{"name": "Alice"}"
+            "version": 1,
+        
+            "txn": {
+                "data": {
+                    "type": 100,
+                    "protocolVersion": 1,
+                    
+                    "data": {
+                        "version": 1,
+                        "did": "N22KY2Dyvmuu2PyyqSFKue",
+                        "raw": "{"name": "Alice"}"
+                    },
+                    
+                    "metadata": {
+                        "version": 1,
+                        "reqId": 1514215425836443,
+                        "from": "L5AD5g65TDQr1PPHHRoiGf",
+                    }
+                },
+                "metadata": {
+                    "creationTime": 1514211268,
+                    "seqNo": 300,
+                },
+                "signature": {
+                   "type": "ED25519",
+                   "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+                },
+            },
+             
+            "ledgerMetadata": {
+                "ledgerId": 1, 
+                "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+                "size": 300,
+            },
+        
+            "stateMetadata": {
+                "timestamp": 1514214795,
+                "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+                "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+            },
+        
+            "poolMultiSignature": {
+                "type": "BLS",
+                "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+                "participants": ["Delta", "Gamma", "Alpha"]
+            }, 
+        
+            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
-        "reqMetadata": {
+        "metadata": {
+            "version": 1,
             "reqId": 1514215425836443,
-            "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
-        },
-        "reqSignature": {
-           "type": "ED25519",
-           "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        },
-        "txnMetadata": {
-            "creationTime": 1514211268,
-            "seqNo": 301,
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
         }
-    },
-     
-    "ledgerMetadata": {
-        "ledgerId": 1, 
-        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
-        "size": 301,
-    }
-
-    "stateMetadata": {
-        "timestamp": 1514214795,
-        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
-        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
-    },
-
-    "poolMultiSignature": {
-        "type": "BLS",
-        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
-        "participants": ["Delta", "Gamma", "Alpha"]
-    }, 
-
-    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
+    } 
+}
 }
 ```
 
@@ -618,74 +632,46 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
     It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
 
+- `schemaName` (string):
+ 
+    Schema's name string.
+
+- `schemaVersion` (string):
+ 
+    Schema's version string
+
+- `value` (string):
+
+    Schema's specific 
 - `attrNames` (array of strings):
  
     Array of attribute name strings.
 
-- `name` (string):
- 
-    Schema's name string.
-
-- `version` (string):
- 
-    Schema's version string
-
 *Request Example*:
 ```
 {
-
-    "reqType": 101,
-    "reqVersion": 1,
-    "protocolVersion": 1,
-    
-    "data": {
-        "version": 1,
-        "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
-        "version": "1.0",
-        "name": "Degree",
-        "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
+    "from": "L5AD5g65TDQr1PPHHRoiGf",
+    "serialization": "MSG_PACK",
+    "signature": {
+        "type": "ED25519",
+        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
     },
-    
-    "metadata": {
-        "version": 1,
-        "reqId": 1514215425836443,
-        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
-    },
-    "reqSignature": {
-       "type": "ED25519",
-       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-    },
-}
-```
-
-*Reply Example*:
-```
-{
-    "op": "REPLY",
-    
-    "reqType": 101,
-    "reqVersion": 1,
-    "protocolVersion": 1,
-    
-    "reqMetadata": {
-        "reqId": 1514215425836443,
-        "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
-    },
-    "reqSignature": {
-       "type": "ED25519",
-       "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-    },
-    
-    "txn": {
-        "txnType": 101,
-        "txnVersion": 1,
+    "msg": {
+        "type": 101,
+        "protocolVersion": 1,
+        
         "data": {
+            "version": 1,
             "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
-            "version": "1.0",
-            "name": "Degree",
-            "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
-        }
-        "reqMetadata": {
+            "schemaVersion": "1.0",
+            "schemaName": "Degree",
+            "value": {
+                "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
+            }
+        },
+        
+        "metadata": {
+            "version": 1,
             "reqId": 1514215425836443,
             "submitterDID": "L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -693,33 +679,77 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
            "type": "ED25519",
            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
         },
-        "txnMetadata": {
-            "creationTime": 1514211268,
-            "seqNo": 302,
-        }
-    },
-     
-    "ledgerMetadata": {
-        "ledgerId": 1, 
-        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
-        "size": 302,
-    },
-
-    "stateMetadata": {
-        "timestamp": 1514214795,
-        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
-        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
-    },
-
-    "poolMultiSignature": {
-        "type": "BLS",
-        "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
-        "participants": ["Delta", "Gamma", "Alpha"]
-    }, 
-
-    "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"], 
 }
 ```
+
+*Reply Example*:
+```
+{
+    "from": "Node1",
+    "serialization": "MSG_PACK",
+    "msg": {
+        "type": "REPLY",
+        "protocolVersion": 1,
+        
+        "data": {
+            "version": 1,
+        
+            "txn": {
+                "data": {
+                    "type": 1,
+                    "protocolVersion": 1,
+                    
+                    "data": {
+                        "version": 1,
+                        "did": "N22KY2Dyvmuu2PyyqSFKue",
+                        "role": "101",
+                        "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
+                    },
+                    "metadata": {
+                        "version": 1,
+                        "reqId": 1514215425836443,
+                        "from": "L5AD5g65TDQr1PPHHRoiGf",
+                    },
+                },
+                "metadata": {
+                    "creationTime": 1514211268,
+                    "seqNo": 300,
+                },
+                "signature": {
+                   "type": "ED25519",
+                   "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+                },
+            },
+             
+            "ledgerMetadata": {
+                "ledgerId": 1, 
+                "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+                "size": 300,
+            },
+        
+            "stateMetadata": {
+                "timestamp": 1514214795,
+                "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+                "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+            },
+        
+            "poolMultiSignature": {
+                "type": "BLS",
+                "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+                "participants": ["Delta", "Gamma", "Alpha"]
+            }, 
+        
+            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+        },
+        "metadata": {
+            "version": 1,
+            "reqId": 1514215425836443,
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+        }
+    } 
+}
+```
+
 
 
 ### CLAIM_DEF
