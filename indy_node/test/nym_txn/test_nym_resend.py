@@ -19,6 +19,10 @@ def test_nym_send_twice(looper, sdk_pool_handle, sdk_wallet_steward):
         if i == 0:
             assert result['op'] == REPLY
         else:
+<<<<<<< HEAD
+=======
+            result = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+>>>>>>> base/master
             assert result['op'] == REJECT
 
 
