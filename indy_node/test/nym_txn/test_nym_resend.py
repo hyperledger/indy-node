@@ -19,14 +19,9 @@ def test_nym_send_twice(looper, sdk_pool_handle, sdk_wallet_steward):
             result = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
             assert result['op'] == REPLY
         else:
-            # TODO(INDY-1069): Ugly hack to deal with old libindy which raises exception on REJECT,
-            # in fact it should be simple:
-            # assert result['op'] == REJECT
-            try:
-                json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
-                assert False
-            except IndyError as ex:
-                assert ex.error_code == ErrorCode.LedgerInvalidTransaction
+            result = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+            assert result['op'] == REJECT
+
 
 def test_nym_resend(looper, sdk_pool_handle, sdk_wallet_steward):
     idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
