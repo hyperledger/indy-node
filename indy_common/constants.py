@@ -27,6 +27,18 @@ JUSTIFICATION = 'justification'
 REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 
+ID = "id"
+TAG = "tag"
+CRED_DEF_ID = "credDefId"
+ISSUANCE_TYPE = "issuanceType"
+MAX_CRED_NUM = "maxCredNum"
+PUBLIC_KEYS = "publicKeys"
+TAILS_HASH = "tailsHash"
+TAILS_LOCATION = "tailsLocation"
+SUBMITTER_DID = "submitterDid"
+VALUE = "value"
+REQ_METADATA = "reqMetadata"
+
 NULL = 'null'
 OWNER = '<owner>'
 
@@ -83,6 +95,7 @@ NYM = IndyTransactions.NYM.value
 ATTRIB = IndyTransactions.ATTRIB.value
 SCHEMA = IndyTransactions.SCHEMA.value
 CLAIM_DEF = IndyTransactions.CLAIM_DEF.value
+REVOC_REG_DEF = IndyTransactions.REVOC_REG_DEF.value
 DISCLO = IndyTransactions.DISCLO.value
 GET_ATTR = IndyTransactions.GET_ATTR.value
 GET_NYM = IndyTransactions.GET_NYM.value
@@ -101,7 +114,8 @@ fields = {NYM: ([TARGET_NYM], [ROLE]),
           SCHEMA: ([NAME, VERSION, ATTR_NAMES]),
           GET_SCHEMA: ([], []),
           CLAIM_DEF: ([REF, DATA, SIGNATURE_TYPE]),
-          GET_CLAIM_DEF: ([REF, ORIGIN, SIGNATURE_TYPE])
+          GET_CLAIM_DEF: ([REF, ORIGIN, SIGNATURE_TYPE]),
+          REVOC_REG_DEF: ([ID, TYPE, TAG, CRED_DEF_ID, VALUE])
           }
 
 CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}

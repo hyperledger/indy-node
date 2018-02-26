@@ -258,8 +258,8 @@ class Upgrader(HasActionQueue):
         Validates schedule of planned node upgrades
 
         :param schedule: dictionary of node ids and upgrade times
-        :param nodeSrvs: dictionary of node ids and services
-        :return: whether schedule valid
+        :param node_srvs: dictionary of node ids and services
+        :return: a 2-tuple of whether schedule valid or not and the reason
         """
 
         # flag "force=True" ignore basic checks! only datetime format is

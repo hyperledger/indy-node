@@ -93,10 +93,6 @@ class BaseAgent(TestWalletedAgent):
     def setupLogging(self, filePath):
         Logger().setLogLevel(agentLoggingLevel)
         Logger().enableFileLogging(filePath)
-        self.setupRaetLogging(Console.Wordage.concise)
-
-    def setupRaetLogging(self, level):
-        Logger().setupRaet(raet_log_level=level)
 
     def getInternalIdByInvitedNonce(self, nonce):
         if nonce in self._invites:
