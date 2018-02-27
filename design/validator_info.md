@@ -65,9 +65,9 @@ This file is updated by node once a minute and contains following information:
 ```
 
 ## Modification - New Read Command
-Validator_info should be accessible as read command, available for TRUSTEE only. New command should provide info from
+Validator_info should be accessible as read command, available for TRUSTEE and STEWARDS only. New command should provide info from
 all the connected nodes without need of consensus (similar to force=True flag in upgrade cmd). Command should allow
-requesting os all parameters or some subset of parameters.
+requesting all parameters or some subset of parameters.
 
 For reference: [INDY-1184](https://jira.hyperledger.org/browse/INDY-1184)
 
