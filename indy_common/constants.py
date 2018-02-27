@@ -43,6 +43,8 @@ PREV_ACCUM = "prevAccum"
 ACCUM = "accum"
 ISSUED = "issued"
 REVOKED = "revoked"
+ISSUANCE_BY_DEFAULT = "ISSUANCE_BY_DEFAULT"
+ISSUANCE_ON_DEMAND = "ISSUANCE_ON_DEMAND"
 
 NULL = 'null'
 OWNER = '<owner>'

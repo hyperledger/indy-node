@@ -124,7 +124,7 @@ def prepare_claim_def_for_state(txn):
 
 
 def prepare_revoc_def_for_state(txn):
-    author_did = txn.get(ID)
+    author_did = txn.get(f.IDENTIFIER.nm)
     cred_def_id = txn.get(CRED_DEF_ID)
     revoc_def_type = txn.get(TYPE)
     revoc_def_tag = txn.get(TAG)

@@ -5,8 +5,8 @@ import base58
 
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, \
-    REVOC_REG_DEF_ID
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
+    REVOC_REG_DEF_ID, VALUE, ACCUM, PREV_ACCUM, ISSUED, REVOKED, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -17,15 +17,127 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
 from plenum.common.types import f
 from plenum.common.constants import TRUSTEE
+from plenum.common.txn_util import reqToTxn, txnToReq
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from stp_core.common.log import getlogger
 
 logger = getlogger()
 
 
+class RevocationStrategy:
+
+    def __init__(self, state):
+        self.state = state
+        self.author_did = None
+        self.revoc_reg_def_id = None
+        self.req_id = None
+
+    def set_parameters_from_txn(self, txn):
+        self.author_did = txn.get(f.IDENTIFIER.nm)
+        self.revoc_reg_def_id = txn.get(REVOC_REG_DEF_ID)
+        self.req_id = txn.get(f.REQ_ID.nm)
+
+    def set_strategy(self, strategy):
+        self.strategy = strategy
+
+    def set_to_state(self, txn):
+        assert self.strategy
+        self.strategy.write(txn)
+
+    def validate_txn(self, current_entry, txn):
+        self.set_parameters_from_txn(txn)
+        # General checks for all Revocation entry
+        operation = txn
+        value_from_txn = operation.get(VALUE)
+        issued_from_txn = value_from_txn.get(ISSUED)
+        revoked_from_txn = value_from_txn.get(REVOKED)
+        intersection = set(issued_from_txn).intersection(set(revoked_from_txn))
+        if len(intersection) > 0:
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Indices {} are existed in issued and revoked list".format(intersection))
+        if current_entry is None:
+            return None
+        value_from_state = current_entry.get(VALUE)
+        assert value_from_state
+        current_accum = value_from_state.get(ACCUM)
+        if current_accum != value_from_txn.get(PREV_ACCUM):
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Accum value from state: {} "
+                                       "do not equal with {} value "
+                                       "from txn: {}".format(current_accum,
+                                                             PREV_ACCUM,
+                                                             value_from_state.get(PREV_ACCUM)))
+
+        # Strategy specific validation
+        self.strategy.validate(current_entry, txn)
+
+    def write(self, current_reg_entry, txn):
+        raise NotImplementedError()
+
+
+class RevokedStrategy(RevocationStrategy):
+    # This strategy save in state only revoked indicies
+
+    def __init__(self, state):
+        super().__init__(state)
+
+    def validate(self, current_reg_entry, txn):
+        self.set_parameters_from_txn(txn)
+        value_from_state = current_reg_entry.get(VALUE)
+        assert value_from_state
+        indices = value_from_state.get(REVOKED, [])
+        value_from_txn = txn.get(VALUE)
+        issued_from_txn = value_from_txn.get(ISSUED, [])
+        revoked_from_txn = value_from_txn.get(REVOKED, [])
+        issued_difference = set(issued_from_txn).difference(indices)
+        if len(issued_difference) > 0:
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Issued indices from txn: {} "
+                                       "does not exist in current "
+                                       "revoked list from state: {}".format(issued_difference,
+                                                                            indices))
+        revoked_intersection = set(indices).intersection(revoked_from_txn)
+        if len(revoked_intersection) > 0:
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Revoked indices from txn: {} "
+                                       "already revoked "
+                                       "in current state: {}".format(revoked_intersection,
+                                                                     indices))
+
+    def write(self, current_reg_entry, txn):
+        self.set_parameters_from_txn(txn)
+        if current_reg_entry is not None:
+            value_from_state = current_reg_entry.get(VALUE)
+            assert value_from_state
+            indices = value_from_state.get(REVOKED, [])
+            value_from_txn = txn.get(VALUE)
+            issued_from_txn = value_from_txn.get(ISSUED, [])
+            revoked_from_txn = value_from_txn.get(REVOKED, [])
+            # set with all previous revoked minus issued from txn
+            result_indicies = set(indices).difference(issued_from_txn)
+            result_indicies.update(revoked_from_txn)
+            value_from_txn[ISSUED] = []
+            value_from_txn[REVOKED] = list(result_indicies)
+            txn[VALUE] = value_from_txn
+        # contains already changed txn
+        path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
+        self.state.set(path, value_bytes)
+
+class IssuedStrategy(RevocationStrategy):
+    pass
+
+
 class DomainReqHandler(PHandler):
     write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
     query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
+    revocation_strategy_map = {
+        "ISSUANCE_BY_DEFAULT": RevokedStrategy,
+        "ISSUANCE_ON_DEMAND": IssuedStrategy,
+    }
 
     def __init__(self, ledger, state, config, requestProcessor,
                  idrCache, attributeStore, bls_store):
@@ -44,6 +156,9 @@ class DomainReqHandler(PHandler):
 
     def onBatchRejected(self):
         self.idrCache.batchRejected()
+
+    def get_revocation_strategy(self, typ):
+        return self.revocation_strategy_map.get(typ, None)
 
     def _updateStateWithSingleTxn(self, txn, isCommitted=False):
         typ = txn.get(TXN_TYPE)
@@ -257,11 +372,35 @@ class DomainReqHandler(PHandler):
         assert revoc_def_tag
         assert revoc_def_type
 
-    def _validate_revoc_reg_entry(self, req: Request):
-        operation = req.operation
-        revoc_reg_def_id = operation.get(REVOC_REG_DEF_ID)
+    def get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
+        assert author_did
         assert revoc_reg_def_id
+        # TODO Need to be "isCommited"==True?
+        current_entry, _, _, _ = self.getRevocDefEntry(author_did=author_did,
+                                                       revoc_reg_def_id=revoc_reg_def_id,
+                                                       isCommitted=False)
+        # TODO Need to be "isCommited"==True ?
+        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False)
+        if revoc_def is None:
+            raise InvalidClientRequest(author_did,
+                                       req_id,
+                                       "There is no any REVOC_REG_DEF by path: {}".format(revoc_reg_def_id))
+        return current_entry, revoc_def
+
+    def _validate_revoc_reg_entry(self, req: Request):
+
         # TODO Add check that sufficient revoc_reg_def exist
+        current_entry, revoc_def = self.get_current_revoc_entry_and_revoc_def(
+            author_did=req.identifier,
+            revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
+            req_id=req.reqId
+        )
+        # First REVOC_ENTRY transaction for REVOC_DEF
+        validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
+        validator = validator_cls(self.state)
+        validator.set_strategy(validator)
+        validator.validate_txn(current_entry, reqToTxn(req))
+
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
@@ -415,9 +554,15 @@ class DomainReqHandler(PHandler):
         self.state.set(path, value_bytes)
 
     def _addRevocRegEntry(self, txn) -> None:
-        assert txn[TXN_TYPE] == REVOC_REG_ENTRY
-        path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
-        self.state.set(path, value_bytes)
+        current_entry, revoc_def = self.get_current_revoc_entry_and_revoc_def(
+            author_did=txn[f.IDENTIFIER.nm],
+            revoc_reg_def_id=txn[REVOC_REG_DEF_ID],
+            req_id=txn[f.REQ_ID.nm]
+        )
+        writer_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
+        writer = writer_cls(self.state)
+        writer.set_strategy(writer)
+        writer.write(current_entry, txn)
 
     def getAttr(self,
                 did: str,
