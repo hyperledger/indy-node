@@ -1,5 +1,6 @@
 import pytest
 import time
+from contextlib import ExitStack
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, TYPE, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
@@ -24,13 +25,14 @@ def create_node_and_not_start(testNodeClass,
                               tdirWithPoolTxns,
                               tdirWithDomainTxns,
                               tdirWithNodeKeepInited):
-    node = create_new_test_node(testNodeClass,
+    with ExitStack() as exitStack:
+        node = exitStack.enter_context(create_new_test_node(testNodeClass,
                                 node_config_helper_class,
                                 "Alpha",
                                 tconf,
                                 tdir,
-                                allPluginsPath)
-    return node
+                                allPluginsPath))
+        yield node
 
 @pytest.fixture(scope="module")
 def add_revoc_def_by_default(create_node_and_not_start,
