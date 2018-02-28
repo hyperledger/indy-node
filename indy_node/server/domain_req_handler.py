@@ -137,10 +137,49 @@ class IssuedStrategy(RevocationStrategy):
         super().__init__(state)
 
     def validate(self, current_reg_entry, req: Request):
-        pass
+        value_from_state = current_reg_entry.get(VALUE)
+        assert value_from_state
+        indices = value_from_state.get(ISSUED, [])
+        value_from_txn = req.operation.get(VALUE)
+        issued_from_txn = value_from_txn.get(ISSUED, [])
+        revoked_from_txn = value_from_txn.get(REVOKED, [])
+        revoked_difference = set(revoked_from_txn).difference(indices)
+        if len(revoked_difference) > 0:
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Revoked indices from txn: {} "
+                                       "does not exist in current "
+                                       "issued list from state: {}".format(revoked_difference,
+                                                                           indices))
+        issued_intersection = set(indices).intersection(issued_from_txn)
+        if len(issued_intersection) > 0:
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Issued indices from txn: {} "
+                                       "already issued "
+                                       "in current state: {}".format(issued_intersection,
+                                                                     indices))
 
-    def write(self, current_entry, txn):
-        pass
+    def write(self, current_reg_entry, txn):
+        self.set_parameters_from_txn(author_did=txn.get(f.IDENTIFIER.nm),
+                                     revoc_reg_def_id=txn.get(REVOC_REG_DEF_ID),
+                                     req_id=txn.get(f.REQ_ID.nm))
+        if current_reg_entry is not None:
+            value_from_state = current_reg_entry.get(VALUE)
+            assert value_from_state
+            indices = value_from_state.get(ISSUED, [])
+            value_from_txn = txn.get(VALUE)
+            issued_from_txn = value_from_txn.get(ISSUED, [])
+            revoked_from_txn = value_from_txn.get(REVOKED, [])
+            # set with all previous issued minus revoked from txn
+            result_indicies = set(indices).difference(revoked_from_txn)
+            result_indicies.update(issued_from_txn)
+            value_from_txn[ISSUED] = []
+            value_from_txn[REVOKED] = list(result_indicies)
+            txn[VALUE] = value_from_txn
+        # contains already changed txn
+        path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
+        self.state.set(path, value_bytes)
 
 
 class DomainReqHandler(PHandler):
