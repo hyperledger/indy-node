@@ -79,7 +79,7 @@ class RevocationStrategy:
 
 
 class RevokedStrategy(RevocationStrategy):
-    # This strategy save in state only revoked indicies
+    # This strategy save in state only revoked indices
 
     def __init__(self, state):
         super().__init__(state)
@@ -439,14 +439,11 @@ class DomainReqHandler(PHandler):
         return current_entry, revoc_def
 
     def _validate_revoc_reg_entry(self, req: Request):
-
-        # TODO Add check that sufficient revoc_reg_def exist
         current_entry, revoc_def = self.get_current_revoc_entry_and_revoc_def(
             author_did=req.identifier,
             revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
             req_id=req.reqId
         )
-        # First REVOC_ENTRY transaction for REVOC_DEF
         validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
         validator = validator_cls(self.state)
         validator.set_strategy(validator)
