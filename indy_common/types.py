@@ -111,7 +111,7 @@ class RevocRegEntryValueField(MessageValidator):
         (PREV_ACCUM, NonEmptyStringField()),
         (ACCUM, NonEmptyStringField()),
         (ISSUED, IterableField(inner_field_type=IntegerField())),
-        (REVOKED, IterableField(inner_field_type=NonEmptyStringField()))
+        (REVOKED, IterableField(inner_field_type=IntegerField()))
     )
 
 
