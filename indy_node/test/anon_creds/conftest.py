@@ -72,7 +72,6 @@ def add_revoc_def_by_default(create_node_and_not_start,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
     req_handler = node.getDomainReqHandler()
-    req_handler.validate(Request(**req))
     txn = reqToTxn(Request(**req))
     txn[f.SEQ_NO.nm] = node.domainLedger.seqNo + 1
     txn[TXN_TIME] = int(time.time())
@@ -125,7 +124,6 @@ def add_revoc_def_by_demand(create_node_and_not_start,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
     req_handler = node.getDomainReqHandler()
-    req_handler.validate(Request(**req))
     txn = reqToTxn(Request(**req))
     txn[f.SEQ_NO.nm] = node.domainLedger.seqNo + 1
     txn[TXN_TIME] = int(time.time())
