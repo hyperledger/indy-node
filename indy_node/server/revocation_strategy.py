@@ -46,8 +46,9 @@ class RevocationStrategy(metaclass=ABCMeta):
                                        self.req_id,
                                        "The current accumulator value: {} "
                                        "must be equal to the last accumulator "
-                                       "value: {} in transaction".format(current_accum,
-                                                             value_from_state.get(PREV_ACCUM)))
+                                       "value: {} in transaction".format(
+                                           current_accum,
+                                           value_from_state.get(PREV_ACCUM)))
         # Do strategy specific validation
         self.specific_validation(current_entry, req)
 
