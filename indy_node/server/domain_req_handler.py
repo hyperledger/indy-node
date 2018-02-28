@@ -17,7 +17,6 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
 from plenum.common.types import f
 from plenum.common.constants import TRUSTEE
-from plenum.common.txn_util import reqToTxn, txnToReq
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from stp_core.common.log import getlogger
 
@@ -32,10 +31,10 @@ class RevocationStrategy:
         self.revoc_reg_def_id = None
         self.req_id = None
 
-    def set_parameters_from_txn(self, txn):
-        self.author_did = txn.get(f.IDENTIFIER.nm)
-        self.revoc_reg_def_id = txn.get(REVOC_REG_DEF_ID)
-        self.req_id = txn.get(f.REQ_ID.nm)
+    def set_parameters_from_txn(self, author_did, revoc_reg_def_id, req_id):
+        self.author_did = author_did
+        self.revoc_reg_def_id = revoc_reg_def_id
+        self.req_id = req_id
 
     def set_strategy(self, strategy):
         self.strategy = strategy
@@ -44,10 +43,12 @@ class RevocationStrategy:
         assert self.strategy
         self.strategy.write(txn)
 
-    def validate_txn(self, current_entry, txn):
-        self.set_parameters_from_txn(txn)
-        # General checks for all Revocation entry
-        operation = txn
+    def validate_txn(self, current_entry, req: Request):
+        self.set_parameters_from_txn(author_did=req.identifier,
+                                     revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
+                                     req_id=req.reqId)
+        # General checks for all Revocation entries
+        operation = req.operation
         value_from_txn = operation.get(VALUE)
         issued_from_txn = value_from_txn.get(ISSUED)
         revoked_from_txn = value_from_txn.get(REVOKED)
@@ -71,7 +72,7 @@ class RevocationStrategy:
                                                              value_from_state.get(PREV_ACCUM)))
 
         # Strategy specific validation
-        self.strategy.validate(current_entry, txn)
+        self.strategy.validate(current_entry, req)
 
     def write(self, current_reg_entry, txn):
         raise NotImplementedError()
@@ -83,12 +84,11 @@ class RevokedStrategy(RevocationStrategy):
     def __init__(self, state):
         super().__init__(state)
 
-    def validate(self, current_reg_entry, txn):
-        self.set_parameters_from_txn(txn)
+    def validate(self, current_reg_entry, req: Request):
         value_from_state = current_reg_entry.get(VALUE)
         assert value_from_state
         indices = value_from_state.get(REVOKED, [])
-        value_from_txn = txn.get(VALUE)
+        value_from_txn = req.operation.get(VALUE)
         issued_from_txn = value_from_txn.get(ISSUED, [])
         revoked_from_txn = value_from_txn.get(REVOKED, [])
         issued_difference = set(issued_from_txn).difference(indices)
@@ -109,7 +109,9 @@ class RevokedStrategy(RevocationStrategy):
                                                                      indices))
 
     def write(self, current_reg_entry, txn):
-        self.set_parameters_from_txn(txn)
+        self.set_parameters_from_txn(author_did=txn.get(f.IDENTIFIER.nm),
+                                     revoc_reg_def_id=txn.get(REVOC_REG_DEF_ID),
+                                     req_id=txn.get(f.REQ_ID.nm))
         if current_reg_entry is not None:
             value_from_state = current_reg_entry.get(VALUE)
             assert value_from_state
@@ -127,8 +129,18 @@ class RevokedStrategy(RevocationStrategy):
         path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
         self.state.set(path, value_bytes)
 
+
 class IssuedStrategy(RevocationStrategy):
-    pass
+    # This strategy saves in state only issued indices
+
+    def __init__(self, state):
+        super().__init__(state)
+
+    def validate(self, current_reg_entry, req: Request):
+        pass
+
+    def write(self, current_entry, txn):
+        pass
 
 
 class DomainReqHandler(PHandler):
@@ -399,8 +411,7 @@ class DomainReqHandler(PHandler):
         validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
         validator = validator_cls(self.state)
         validator.set_strategy(validator)
-        validator.validate_txn(current_entry, reqToTxn(req))
-
+        validator.validate_txn(current_entry, req)
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
