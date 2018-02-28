@@ -5,7 +5,8 @@ import base58
 
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
+    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -18,13 +19,18 @@ from plenum.common.types import f
 from plenum.common.constants import TRUSTEE
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from stp_core.common.log import getlogger
+from indy_node.server.revocation_strategy import RevokedStrategy, IssuedStrategy
 
 logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-    write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF}
+    write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
     query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
+    revocation_strategy_map = {
+        ISSUANCE_BY_DEFAULT: RevokedStrategy,
+        ISSUANCE_ON_DEMAND: IssuedStrategy,
+    }
 
     def __init__(self, ledger, state, config, requestProcessor,
                  idrCache, attributeStore, bls_store):
@@ -43,6 +49,9 @@ class DomainReqHandler(PHandler):
 
     def onBatchRejected(self):
         self.idrCache.batchRejected()
+
+    def get_revocation_strategy(self, typ):
+        return self.revocation_strategy_map.get(typ, None)
 
     def _updateStateWithSingleTxn(self, txn, isCommitted=False):
         typ = txn.get(TXN_TYPE)
@@ -66,6 +75,8 @@ class DomainReqHandler(PHandler):
             self._addClaimDef(txn)
         elif typ == REVOC_REG_DEF:
             self._addRevocDef(txn)
+        elif typ == REVOC_REG_ENTRY:
+            self._addRevocRegEntry(txn)
         else:
             logger.debug(
                 'Cannot apply request of type {} to state'.format(typ))
@@ -116,6 +127,8 @@ class DomainReqHandler(PHandler):
             self._validate_claim_def(req)
         elif typ == REVOC_REG_DEF:
             self._validate_revoc_reg_def(req)
+        elif typ == REVOC_REG_ENTRY:
+            self._validate_revoc_reg_entry(req)
 
     @staticmethod
     def _validate_attrib_keys(operation):
@@ -251,6 +264,29 @@ class DomainReqHandler(PHandler):
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
+
+    def _get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
+        assert author_did
+        assert revoc_reg_def_id
+        current_entry, _, _, _ = self.getRevocDefEntry(author_did=author_did,
+                                                       revoc_reg_def_id=revoc_reg_def_id,
+                                                       isCommitted=False)
+        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False)
+        if revoc_def is None:
+            raise InvalidClientRequest(author_did,
+                                       req_id,
+                                       "There is no any REVOC_REG_DEF by path: {}".format(revoc_reg_def_id))
+        return current_entry, revoc_def
+
+    def _validate_revoc_reg_entry(self, req: Request):
+        current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
+            author_did=req.identifier,
+            revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
+            req_id=req.reqId
+        )
+        validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
+        validator = validator_cls(self.state)
+        validator.validate(current_entry, req)
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
@@ -403,6 +439,16 @@ class DomainReqHandler(PHandler):
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
 
+    def _addRevocRegEntry(self, txn) -> None:
+        current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
+            author_did=txn[f.IDENTIFIER.nm],
+            revoc_reg_def_id=txn[REVOC_REG_DEF_ID],
+            req_id=txn[f.REQ_ID.nm]
+        )
+        writer_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
+        writer = writer_cls(self.state)
+        writer.write(current_entry, txn)
+
     def getAttr(self,
                 did: str,
                 key: str,
@@ -471,6 +517,20 @@ class DomainReqHandler(PHandler):
                                                     cred_def_id,
                                                     revoc_def_type,
                                                     revoc_def_tag)
+        try:
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            return keys, seqno, lastUpdateTime, proof
+        except KeyError:
+            return None, None, None, None
+
+    def getRevocDefEntry(self,
+                         author_did,
+                         revoc_reg_def_id,
+                         isCommitted=True) -> (str, int, int, list):
+        assert author_did
+        assert revoc_reg_def_id
+        path = domain.make_state_path_for_revoc_reg_entry(authors_did=author_did,
+                                                          revoc_reg_def_id=revoc_reg_def_id)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof
