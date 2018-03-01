@@ -640,13 +640,13 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
  
     Schema's version string
 
-- `value` (string):
+- `value` (dict):
 
-    Schema's specific 
-- `attrNames` (array of strings):
- 
-    Array of attribute name strings.
-
+    Schema's specific data
+    
+    - `attrNames` (array of strings):
+      Array of attribute name strings.
+      
 *Request Example*:
 ```
 {
@@ -764,18 +764,7 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
     Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
     It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
 
-- `publicKeys` (dict):
- 
-     Dictionary with Claim Definition's public keys:
-     
-    - `primary`: primary claim public key
-    - `revocation`: revocation claim public key
-        
-- `schemaRef` (string):
-    
-    Sequence number of a Schema transaction the claim definition is created for.
-
-- `signatureType` (string):
+- `type` (string):
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
 
@@ -783,6 +772,21 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
 
     A unique descriptive tag of the given CRED_DEF for the given Issuer and Schema. An Issuer may have multiple 
     CRED_DEFs for the same Schema created with different tags. 
+
+- `schemaId` (string):
+    
+    ID of a Schema transaction the claim definition is created for.
+
+- `value` (dict):
+
+    Type-specific value:
+
+    - `publicKeys` (dict):
+     
+         Dictionary with Claim Definition's public keys:
+         
+        - `primary`: primary claim public key
+        - `revocation`: revocation claim public key
 
 
 *Request Example*:
@@ -1478,7 +1482,7 @@ Gets information about an Attribute for the specified DID.
 
 Gets Claim's Schema.
 
-- `submitterDid` (base58-encoded string):
+- `from` (base58-encoded string):
      Identifier (DID) of the transaction submitter (Schema's Author).
 
 - `name` (string):

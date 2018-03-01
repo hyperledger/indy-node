@@ -53,7 +53,7 @@ Each transaction has the following structure containing of metadata values (comm
 transaction specific data:
 ```
 {
-    "data": {
+    "txn": {
         "type": <...>,
         "protocolVersion": <...>,
         
@@ -68,75 +68,92 @@ transaction specific data:
             "from": <...>
         },
     },
-    "metadata": {
+    "txnMetadata": {
         "version": <...>,
         "creationTime": <...>,
         "seqNo": <...>,  
     },
-    "signature": {
+    "reqSignature": {
         "type": <...>,
         "value": <...>
     }
 }
 ```
-
-- `type` (enum number as integer): 
-
-    Supported transaction type:
+- `txn` (dict):
     
-    - NODE = 0
-    - NYM = 1
-    - ATTRIB = 100
-    - SCHEMA = 101
-    - CLAIM_DEF = 102
-    - POOL_UPGRADE = 109
-    - NODE_UPGRADE = 110
-    - POOL_CONFIG = 111
+    Transaction-specific payload (data)
+
+    - `type` (enum number as integer): 
+    
+        Supported transaction type:
         
-- `version` (integer):
+        - NODE = 0
+        - NYM = 1
+        - ATTRIB = 100
+        - SCHEMA = 101
+        - CLAIM_DEF = 102
+        - POOL_UPGRADE = 109
+        - NODE_UPGRADE = 110
+        - POOL_CONFIG = 111
 
-    Transaction version to be able to evolve transactions.
-    The content of `data` and `metadata` fields may depend on the version.  
-   
-- `data` (json):
+    - `protocolVersion` (integer; optional): 
+    
+        The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
+        Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
+        between clients and nodes.     
+     
+    - `data` (dict):
 
-    Transaction-specific data fields (see next sections for each transaction description).   
-       
-- `reqMetadata` (json):
-
-    Metadata as came from the Request.
-        
-    - `submitterDid` (base58-encoded string):
-         Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-         for 16 or 32 bit DID value.
-         It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
-         target identifier (for example, a newly created DID identifier).
-         
-         *Example*: `submitterDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
-         
-    - `reqId` (integer): 
-        Unique ID number of the request with transaction.
+        Transaction-specific data fields (see next sections for each transaction description).  
             
-- `reqSignature` (json):
+        - `version` (integer):
+            Transaction version to be able to evolve `data`.
+            The content of `data` may depend on the version.  
+       
+    - `metadata` (dict):
+    
+        Metadata as came from the Request.
 
-    Submitter's signature over `data` and `reqMetadata`.
+        - `version` (integer):
+            Transaction version to be able to evolve `metadata`.
+            The content of `metadata` may depend on the version.  
+            
+        - `from` (base58-encoded string):
+             Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
+             for 16 or 32 bit DID value.
+             It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
+             target identifier (for example, a newly created DID identifier).
+             
+             *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+             
+        - `reqId` (integer): 
+            Unique ID number of the request with transaction.
+  
+    - `txnMetadata` (dict):
     
-    - `type` (enum number as string):
+        Metadata attached to the transaction.    
         
-        - ED25519: ed25519 signature
-        - ED25519_MULTI: ed25519 signature in multisig case.
-    
-    - `value` (base58-encoded string or array of base58-encoded string): signature value
-    
-- `txnMetadata` (json):
-
-    Metadata attached to the transaction.    
-    
-    - `creationTime` (integer as POSIX timestamp): 
-        The time when transaction was written to the Ledger as POSIX timestamp.
+         - `version` (integer):
+            Transaction version to be able to evolve `txnMetadata`.
+            The content of `txnMetadata` may depend on the version.  
         
-    - `seqNo` (integer):
-        A unique sequence number of the transaction on Ledger
+        - `creationTime` (integer as POSIX timestamp): 
+            The time when transaction was written to the Ledger as POSIX timestamp.
+            
+        - `seqNo` (integer):
+            A unique sequence number of the transaction on Ledger
+  
+    - `reqSignature` (json):
+    
+        Submitter's signature over `txn`.
+        
+        - `type` (enum number as string):
+            
+            - ED25519: ed25519 signature
+            - ED25519_MULTI: ed25519 signature in multisig case.
+        
+        - `value` (base58-encoded string or array of base58-encoded string): signature value
+    
 
 Please note that all these metadata fields may be absent for genesis transactions.
 
@@ -152,9 +169,9 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 - `did` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `submitterId` metadata field, where `submitterDid` is the DID of the submitter.
+    It differs from `from` metadata field, where `from` is the DID of the submitter.
     
-    *Example*: `submitterDid` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+    *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
      
 - `role` (enum number as integer; optional): 
 
@@ -188,29 +205,32 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 **Example**:
 ```
 {
-    "txnType":1,
-    "txnVersion": 1,
-    
-    "data": {
-        "did":"GEzcdDLhCpGCYRHW82kjHd",
-        "verkey":"~HmUWn928bnFT6Ephf65YXv",
-        "role":101,
+    "txn": {
+        "type":1,
+        "protocolVersion":1,
+        
+        "data": {
+            "version":1,
+            "did":"GEzcdDLhCpGCYRHW82kjHd",
+            "verkey":"~HmUWn928bnFT6Ephf65YXv",
+            "role":101,
+        },
+        
+        "metadata": {
+            "version":1,
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+        },
     },
-    
-    "reqMetadata": {
-        "reqId":1513945121191691,
-        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+    "txnMetadata": {
+        "version":1,
+        "creationTime":1513945121,
+        "seqNo": 10,  
     },
-    
     "reqSignature": {
         "type": "ED25519",
         "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
     }
-    
-    "txnMetadata": {
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
 
 }
 ```
@@ -221,9 +241,9 @@ Adds attribute to a NYM record
 - `did` (base58-encoded string):
 
     Target DID we set an attribute for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the submitter.
+    It differs from `from` metadata field, where `from` is the DID of the submitter.
     
-    *Example*: `submitterDid` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
+    *Example*: `from` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
     
 - `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
 
@@ -245,26 +265,31 @@ Adds attribute to a NYM record
 **Example**:
 ```
 {
-    "txnType":100,
-    "txnVersion": 1,
-    
-    "data": {
-        "did":"GEzcdDLhCpGCYRHW82kjHd",
-        "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
+    "txn": {
+        "type":100,
+        "protocolVersion":1,
+        
+        "data": {
+            "version":1,
+            "did":"GEzcdDLhCpGCYRHW82kjHd",
+            "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
+        },
+        
+        "metadata": {
+            "version":1,
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+        },
     },
-    
-    "reqMetadata": {
-        "reqId":1513945121191691,
-        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+    "txnMetadata": {
+        "version":1,
+        "creationTime":1513945121,
+        "seqNo": 10,  
     },
     "reqSignature": {
         "type": "ED25519",
         "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
     }
-    "txnMetadata": {
-        "creationTime":1513945121,
-        "seqNo": 10,
-    },
 }
 ```
 
@@ -280,43 +305,55 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
     It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
 
-- `attrNames` (array of strings):
- 
-    Array of attribute name strings.
-
-- `name` (string):
+- `schemaName` (string):
  
     Schema's name string.
 
-- `version` (string):
+- `schemaVersion` (string):
  
     Schema's version string
+
+- `value` (dict):
+
+    Schema's specific data
+    
+    - `attrNames` (array of strings):
+      Array of attribute name strings.
+
 
 **Example**:
 ```
 {
-    "txnType":101,
-    "txnVersion": 1,
-    
-    "data": {
-        "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
-        "attrNames": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
-        "name":"Degree",
-        "version":"1.0",
+    "txn": {
+        "type":101,
+        "protocolVersion":1,
+        
+        "data": {
+            "version":1,
+            "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
+            "schemaName": "Degree",
+            "schemaVersion": "1.0",
+            "value": {
+                "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
+            }
+        },
+        
+        "metadata": {
+            "version":1,
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+        },
     },
-    
-    "reqMetadata": {
-        "reqId":1513945121191691,
-        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+    "txnMetadata": {
+        "version":1,
+        "creationTime":1513945121,
+        "seqNo": 10,  
     },
     "reqSignature": {
         "type": "ED25519",
         "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
-    }    
-    "txnMetadata": {
-        "creationTime":1513945121,
-        "seqNo": 10,
-    },
+    }
+   
 }
 ```
 
@@ -332,20 +369,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
     Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
     It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
 
-
-
-- `publicKeys` (dict):
- 
-     Dictionary with Claim Definition's public keys:
-     
-    - `primary`: primary claim public key
-    - `revocation`: revocation claim public key
-        
-- `schemaRef` (string):
-    
-    ID of a Schema transaction the claim definition is created for.
-
-- `signatureType` (string):
+- `type` (string):
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
 
@@ -354,9 +378,62 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
     A unique descriptive tag of the given CRED_DEF for the given Issuer and Schema. An Issuer may have multiple 
     CRED_DEFs for the same Schema created with different tags. 
 
+- `schemaId` (string):
+    
+    ID of a Schema transaction the claim definition is created for.
+
+- `value` (dict):
+
+    Type-specific value:
+
+    - `publicKeys` (dict):
+     
+         Dictionary with Claim Definition's public keys:
+         
+        - `primary`: primary claim public key
+        - `revocation`: revocation claim public key
+
 **Example**:
 ```
 {
+    "txn": {
+        "type":102,
+        "protocolVersion":1,
+        
+        "data": {
+            "version":1,
+            "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
+            "type":"CL",
+            "tag": "key1",
+
+            "publicKeys": {
+                "primary": {
+                    ...
+                 },
+                "revocation": {
+                    ...
+                }
+            },
+            "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
+        },
+        
+        "metadata": {
+            "version":1,
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+        },
+    },
+    "txnMetadata": {
+        "version":1,
+        "creationTime":1513945121,
+        "seqNo": 10,  
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+    }
+
+
     "txnType":102,
     "txnVersion": 1,
     
@@ -377,7 +454,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        "from":"L5AD5g65TDQr1PPHHRoiGf",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -399,9 +476,9 @@ Adds a new node to the pool, or updates existing node in the pool
 - `did` (base58-encoded string):
 
     Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `submitterDid` metadata field, where `submitterDid` is the DID of the transaction submitter (Steward's DID).
+    It differs from `from` metadata field, where `from` is the DID of the transaction submitter (Steward's DID).
     
-    *Example*: `submitterDid` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
+    *Example*: `from` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
     
 - `verkey` (base58-encoded string; optional): 
 
@@ -464,7 +541,7 @@ There is no need to specify all other fields, and they will remain the same.
 
     "reqMetadata": {
         "reqId":1513945121191691,
-        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        "from":"L5AD5g65TDQr1PPHHRoiGf",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -549,7 +626,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        "from":"L5AD5g65TDQr1PPHHRoiGf",
     },
     "reqSignature": {
         "type": "ED25519",
@@ -587,7 +664,7 @@ Status of each Node's upgrade (sent by each upgraded Node)
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        "from":"L5AD5g65TDQr1PPHHRoiGf",
     },
     "signature": {
         "type": "ED25519",
@@ -632,7 +709,7 @@ Command to change Pool's configuration
     
     "reqMetadata": {
         "reqId":1513945121191691,
-        "submitterDid":"L5AD5g65TDQr1PPHHRoiGf",
+        "from":"L5AD5g65TDQr1PPHHRoiGf",
     },
     "reqSignature": {
         "type": "ED25519",
