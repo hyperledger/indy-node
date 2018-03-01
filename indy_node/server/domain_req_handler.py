@@ -6,7 +6,7 @@ import base58
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
-    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
+    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TYPE, TAG, CRED_DEF_ID
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -255,15 +255,18 @@ class DomainReqHandler(PHandler):
                                        .format(identifier, schema_ref, signature_type))
 
     def _validate_revoc_reg_def(self, req: Request):
-        # TODO Need to check that CRED_DEF for this REVOC_DEF exist
         operation = req.operation
-
-        cred_def_id = operation.get("id")
-        revoc_def_type = operation.get("type")
-        revoc_def_tag = operation.get("tag")
+        cred_def_id = operation.get(CRED_DEF_ID)
+        revoc_def_type = operation.get(TYPE)
+        revoc_def_tag = operation.get(TAG)
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
+        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False)
+        if cred_def is None:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "There is no any CRED_DEF by path: {}".format(cred_def_id))
 
     def _get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
         assert author_did
