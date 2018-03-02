@@ -120,6 +120,57 @@ TimeoutSec=300
 WantedBy=multi-user.target
 EOF
 
+# add supervisord script
+cat <<EOF > /etc/supervisor/indy-node.conf
+[supervisord]
+nodaemon=true
+logfile=/var/log/indy/supervisord.log
+logfile_maxbytes=10MB
+loglevel=critical
+
+[supervisorctl]
+serverurl=http://127.0.0.1:9001
+
+[inet_http_server]
+port = 127.0.0.1:9001
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[program:ntp]
+command=/usr/sbin/ntpd -n
+autorestart=true
+startsecs=15
+startretries=6
+stopasgroup=true
+killasgroup=true
+
+[program:indy-node]
+command=/usr/local/bin/init_and_start_indy_node.sh
+user=indy
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+autorestart=true
+startsecs=15
+startretries=6
+stopasgroup=true
+killasgroup=true
+
+[program:indy-node-control]
+command=/usr/local/bin/start_node_control_tool
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+autorestart=true
+startsecs=15
+startretries=6
+stopasgroup=true
+killasgroup=true
+EOF
+
 HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/indy/node_control.conf)
 if [ ! -f $GENERAL_CONFIG_DIR/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
     cat <<EOF > $GENERAL_CONFIG_DIR/node_control.conf
