@@ -56,13 +56,6 @@ ERROR_COLOR="\x1b[31;01m"
 WARN_COLOR="\x1b[33;01m"
 BLUE_COLOR="\x1b[34;01m"
 
-#current_dir = $(shell pwd)
-#docker run --rm --name IndyAlice -it -v $(current_dir)/indy-client-dir:/root/.indy-cli indy-base /bin/bash -c "\
-#docker run --rm --name IndyCli -it -v $(current_dir)/indy-client-dir:/root/.indy-cli indy-base /bin/bash -c "create_dirs.sh; generate_indy_pool_transactions --nodes 4 --clients 5 --ips $(IPS); /bin/bash"
-#docker run --rm --name Indy -it -v $(current_dir)/indy-client-dir:/root/.indy-cli indy-base /bin/bash -c "\
-#@echo -e $(current_dir)
-
-
 run-demo: clean info cluster faber acme thrift indy
 
 run-alice: clean info cluster faber acme thrift indy-alice
@@ -72,7 +65,6 @@ indy-base:
 	-rm -Rf ./indy-node
 	-docker rmi -f indy-base
 	git clone https://github.com/hyperledger/indy-node.git; cd indy-node;pwd;git checkout stable;git status
-#	git clone https://github.com/hyperledger/indy-node.git; cd indy-node;pwd;git checkout 6b5a602062bdb14b86da9a0d0829e8a9a1b60cb1;git status
 	cp ./indy-cli ./indy-node/scripts
 	docker build -t indy-base -f ./indy-base-dockerfile .
 	@echo -e  $(GREEN_COLOR)SUCCESS Indy-base Docker $(LOCAL) $(NO_COLOR)
