@@ -19,6 +19,7 @@ def test_send_get_revoc_reg_def(looper,
                                                     str(claim_def_req['operation']["ref"])])
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
     sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+    revoc_reg_def_id = revoc_reg['operation'][ID]
     get_revoc_reg_def_req = {
         ID: ":".join([author_did,
                      domain.MARKER_REVOC_DEF,
@@ -30,7 +31,9 @@ def test_send_get_revoc_reg_def(looper,
     get_revoc_reg_def_req = sdk_sign_request_from_dict(looper,
                                                        sdk_wallet_steward,
                                                        get_revoc_reg_def_req)
-    sdk_send_and_check([json.dumps(get_revoc_reg_def_req)],
+    replies = sdk_send_and_check([json.dumps(get_revoc_reg_def_req)],
                                  looper,
                                  txnPoolNodeSet,
                                  sdk_pool_handle)
+    req, reply = replies[0]
+    assert revoc_reg_def_id == reply['result']['data'][ID]
