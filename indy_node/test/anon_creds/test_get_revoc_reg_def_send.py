@@ -39,12 +39,16 @@ def test_get_revoc_reg_def_from_uncommited(looper,
                                            sdk_wallet_steward,
                                            sdk_pool_handle,
                                            send_revoc_reg_def):
+    # REVOC_REG_DEF was added into pool by send_revoc_reg_def fixture
+
     _, author_did = sdk_wallet_steward
     revoc_req = send_revoc_reg_def
     new_maxCredNum = 100
-    # old_maxCredNum = revoc_req['operation'][VALUE][MAX_CRED_NUM]
     revoc_req['operation'][VALUE][MAX_CRED_NUM] = new_maxCredNum
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_req['operation'])
+
+    # We apply transacttion, which will be not commited
+
     for node in txnPoolNodeSet:
         node.getDomainReqHandler().apply(Request(**revoc_req), int(time.time()))
     get_revoc_reg_def_req = {
@@ -58,6 +62,10 @@ def test_get_revoc_reg_def_from_uncommited(looper,
     get_revoc_reg_def_req = sdk_sign_request_from_dict(looper,
                                                        sdk_wallet_steward,
                                                        get_revoc_reg_def_req)
+
+    # Send GET_REVOC_REG_DEF query.
+    # We expects that commited REVOC_REG_DEF transaction will be returned
+
     replies = sdk_send_and_check([json.dumps(get_revoc_reg_def_req)],
                                  looper,
                                  txnPoolNodeSet,
