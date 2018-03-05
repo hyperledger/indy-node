@@ -16,8 +16,7 @@ def run_node(config, name, node_port, client_port):
 
     logFileName = os.path.join(node_config_helper.log_dir, name + ".log")
 
-    Logger(config)
-    Logger().enableFileLogging(logFileName)
+    Logger(config).enableFileLogging(logFileName)
 
     logger = getlogger()
     logger.setLevel(config.logLevel)
