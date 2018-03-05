@@ -143,7 +143,7 @@ transaction specific data:
         - `seqNo` (integer):
             A unique sequence number of the transaction on Ledger
   
-    - `reqSignature` (json):
+    - `reqSignature` (dict):
     
         Submitter's signature over `txn`.
         
@@ -402,7 +402,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
         
         "data": {
             "version":1,
-            "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
+            "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1:Degree1:CL:key1",
             "type":"CL",
             "tag": "key1",
 
@@ -432,38 +432,6 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
         "type": "ED25519",
         "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
     }
-
-
-    "txnType":102,
-    "txnVersion": 1,
-    
-    "data": {
-        "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
-        "publicKeys": {
-            "primary": {
-                ...
-             },
-            "revocation": {
-                ...
-            }
-        },
-        "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
-        "signatureType":"CL",
-        "tag": "key1",
-    },
-    
-    "reqMetadata": {
-        "reqId":1513945121191691,
-        "from":"L5AD5g65TDQr1PPHHRoiGf",
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
-    }    
-    "txnMetadata": {
-        "creationTime":1513945121,
-        "seqNo": 10,
-    },
 }
 ```
 
@@ -525,32 +493,39 @@ There is no need to specify all other fields, and they will remain the same.
 **Example**:
 ```
 {
-    "txnType":0,
-    "txnVersion": 1,
 
-    "data": {
-        "did":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
-        "alias":"Delta",
-        "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
-        "clientIp":"127.0.0.1",
-        "clientPort":7407,
-        "nodeIp":"127.0.0.1",
-        "nodePort":7406,
-        "services":["VALIDATOR"]
+{
+    "txn": {
+        "type":0,
+        "protocolVersion":1,
+        
+        "data": {
+            "version":1,
+            "did":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
+            "alias":"Delta",
+            "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
+            "clientIp":"127.0.0.1",
+            "clientPort":7407,
+            "nodeIp":"127.0.0.1",
+            "nodePort":7406,
+            "services":["VALIDATOR"]
+        },
+        
+        "metadata": {
+            "version":1,
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+        },
     },
-
-    "reqMetadata": {
-        "reqId":1513945121191691,
-        "from":"L5AD5g65TDQr1PPHHRoiGf",
+    "txnMetadata": {
+        "version":1,
+        "creationTime":1513945121,
+        "seqNo": 10,  
     },
     "reqSignature": {
         "type": "ED25519",
         "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
-    }    
-    "txnMetadata": {
-        "creationTime":1513945121,
-        "seqNo": 10,
-    },
+    }
 }
 ```
 
@@ -609,33 +584,38 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 **Example:**
 ```
 {
-    "txnType":109,
-    "txnVersion": 1,
-    
-    "data"" {
-        "name":"upgrade-13",
-        "action":"start",
-        "version":"1.3",
-        "schedule":{"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
-        "sha256":"db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55",
-        "force":false,
-        "reinstall":false,
-        "timeout":1,
-        "justification":null,
+    "txn": {
+        "type":109,
+        "protocolVersion":1,
+        
+        "data": {
+            "version":1,
+            "name":"upgrade-13",
+            "action":"start",
+            "version":"1.3",
+            "schedule":{"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
+            "sha256":"db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55",
+            "force":false,
+            "reinstall":false,
+            "timeout":1,
+            "justification":null,
+        },
+        
+        "metadata": {
+            "version":1,
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+        },
     },
-    
-    "reqMetadata": {
-        "reqId":1513945121191691,
-        "from":"L5AD5g65TDQr1PPHHRoiGf",
+    "txnMetadata": {
+        "version":1,
+        "creationTime":1513945121,
+        "seqNo": 10,  
     },
     "reqSignature": {
         "type": "ED25519",
         "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
-    }    
-    "txnMetadata": {
-        "creationTime":1513945121,
-        "seqNo": 10,
-    },
+    }
 }
 ```
 
@@ -654,26 +634,31 @@ Status of each Node's upgrade (sent by each upgraded Node)
 **Example:**
 ```
 {
-    "txnType":110,
-    "txnVersion": 1,
-    
-    "data":{
-        "action":"complete",
-        "version":"1.2"
+    "txn": {
+        "type":110,
+        "protocolVersion":1,
+        
+        "data": {
+            "version":1,
+            "action":"complete",
+            "version":"1.2"
+        },
+        
+        "metadata": {
+            "version":1,
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+        },
     },
-    
-    "reqMetadata": {
-        "reqId":1513945121191691,
-        "from":"L5AD5g65TDQr1PPHHRoiGf",
+    "txnMetadata": {
+        "version":1,
+        "creationTime":1513945121,
+        "seqNo": 10,  
     },
-    "signature": {
+    "reqSignature": {
         "type": "ED25519",
         "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
-    }    
-    "txnMetadata": {
-        "creationTime":1513945121,
-        "seqNo": 10,
-    },
+    }
 }
 ```
 
@@ -699,25 +684,30 @@ Command to change Pool's configuration
 **Example:**
 ```
 {
-    "txnType":111,
-    "txnVersion": 1,
-    
-    "data": {
-        "writes":false,
-        "force":true,
+    "txn": {
+        "type":111,
+        "protocolVersion":1,
+        
+        "data": {
+            "version":1,
+            "writes":false,
+            "force":true,
+        },
+        
+        "metadata": {
+            "version":1,
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+        },
     },
-    
-    "reqMetadata": {
-        "reqId":1513945121191691,
-        "from":"L5AD5g65TDQr1PPHHRoiGf",
+    "txnMetadata": {
+        "version":1,
+        "creationTime":1513945121,
+        "seqNo": 10,  
     },
     "reqSignature": {
         "type": "ED25519",
         "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
-    }    
-    "txnMetadata": {
-        "creationTime":1513945121,
-        "seqNo": 10,
-    },
+    }
 }
 ```
