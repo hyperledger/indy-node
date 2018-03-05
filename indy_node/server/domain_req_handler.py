@@ -379,10 +379,10 @@ class DomainReqHandler(PHandler):
         except KeyError:
             keys, last_seq_no, last_update_time, proof = None, None, None, None
         result = self.make_result(request=request,
-                                 data=keys,
-                                 last_seq_no=last_seq_no,
-                                 update_time=last_update_time,
-                                 proof=proof)
+                                  data=keys,
+                                  last_seq_no=last_seq_no,
+                                  update_time=last_update_time,
+                                  proof=proof)
         return result
 
     def handleGetAttrsReq(self, request: Request):
