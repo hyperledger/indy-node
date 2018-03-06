@@ -5,7 +5,7 @@ from contextlib import ExitStack
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, TYPE, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
-    CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF
+    CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, GET_REVOC_REG_DEF
 from indy_common.types import Request
 from indy_common.state import domain
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
@@ -189,3 +189,21 @@ def send_claim_def(looper,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, claim_def)
     sdk_send_and_check([json.dumps(req)], looper, txnPoolNodeSet, sdk_pool_handle)
     return req
+
+@pytest.fixture(scope="module")
+def send_revoc_reg_def(looper,
+                       txnPoolNodeSet,
+                       sdk_wallet_steward,
+                       sdk_pool_handle,
+                       send_claim_def,
+                       build_revoc_def_by_default):
+    _, author_did = sdk_wallet_steward
+    claim_def_req = send_claim_def
+    revoc_reg = build_revoc_def_by_default
+    revoc_reg['operation'][CRED_DEF_ID] = ":".join([author_did,
+                                                    domain.MARKER_CLAIM_DEF,
+                                                    claim_def_req['operation']["signature_type"],
+                                                    str(claim_def_req['operation']["ref"])])
+    revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
+    sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+    return revoc_req

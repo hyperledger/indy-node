@@ -28,7 +28,8 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY, START, CANCEL, \
     REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
     TAILS_HASH, TAILS_LOCATION, ID, TYPE, TAG, CRED_DEF_ID, VALUE, \
-    REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM
+    REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
+    GET_REVOC_REG_DEF
 
 
 class Request(PRequest):
@@ -227,6 +228,13 @@ class ClientClaimDefGetOperation(MessageValidator):
     )
 
 
+class ClientGetRevocRegDefField(MessageValidator):
+    schema = (
+        (ID, NonEmptyStringField()),
+        (TYPE, ConstantField(GET_REVOC_REG_DEF)),
+    )
+
+
 class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),
@@ -267,6 +275,7 @@ class ClientOperationField(PClientOperationField):
         POOL_CONFIG: ClientPoolConfigOperation(),
         REVOC_REG_DEF: ClientRevocDefSubmitField(),
         REVOC_REG_ENTRY: ClientRevocRegEntrySubmitField(),
+        GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
