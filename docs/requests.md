@@ -41,18 +41,21 @@ This is a common structure for ALL messages (both Node-to-Node and Client-to-Nod
 
 ```
 {
+    "type": <...>,
+    "version": <...>,
+    
     "from": <...>,
     "signature": {
         "type": <...>,
         "value": <...>
     },
+    
     "serialization": <...>,
     "msg": <serialized-msg>
 }
 ```
 where the `msg` field has the following structure:
 ```
-    "type": <...>,
     "protocolVersion": <...>,
     "data": {
         "version": <...>,
@@ -62,7 +65,15 @@ where the `msg` field has the following structure:
         "version": <...>,
         <msg-specific fields>
     },
+    "pluginData": {
+        <plugin-specific-fields>
+    }
 ```
+- `type` (enum integer): 
+ 
+    Msg type.
+    
+    
 - `from` (base58-encoded string):
      Identifier (DID) of the message sender (a client or node who sent the transaction) as base58-encoded string
      for 16 or 32 bit DID value.
@@ -94,10 +105,6 @@ where the `msg` field has the following structure:
     
     Serialized message.
 
-    - `type` (enum integer): 
-     
-        Msg type.
-
     - `protocolVersion` (integer; optional): 
     
         The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
@@ -112,6 +119,9 @@ where the `msg` field has the following structure:
     
         Message-specific metadata.
 
+    - `pluginData` (dict):
+    
+        Plugin-specific data.
 
 ## Common Request Structure
 
