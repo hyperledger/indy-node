@@ -6,7 +6,8 @@ import base58
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
-    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TYPE, TAG, CRED_DEF_ID
+    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TYPE, TAG, CRED_DEF_ID, \
+    GET_REVOC_REG_DEF, ID
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -26,7 +27,7 @@ logger = getlogger()
 
 class DomainReqHandler(PHandler):
     write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
-    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
+    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, GET_REVOC_REG_DEF}
     revocation_strategy_map = {
         ISSUANCE_BY_DEFAULT: RevokedStrategy,
         ISSUANCE_ON_DEMAND: IssuedStrategy,
@@ -42,6 +43,7 @@ class DomainReqHandler(PHandler):
             GET_ATTR: self.handleGetAttrsReq,
             GET_SCHEMA: self.handleGetSchemaReq,
             GET_CLAIM_DEF: self.handleGetClaimDefReq,
+            GET_REVOC_REG_DEF: self.handleGetRevocRegDefReq,
         }
 
     def onBatchCreated(self, stateRoot):
@@ -367,6 +369,20 @@ class DomainReqHandler(PHandler):
                                   update_time=lastUpdateTime,
                                   proof=proof)
         result[SIGNATURE_TYPE] = signatureType
+        return result
+
+    def handleGetRevocRegDefReq(self, request: Request):
+        state_path = request.operation.get(ID, None)
+        assert state_path
+        try:
+            keys, last_seq_no, last_update_time, proof = self.lookup(state_path, isCommitted=True)
+        except KeyError:
+            keys, last_seq_no, last_update_time, proof = None, None, None, None
+        result = self.make_result(request=request,
+                                  data=keys,
+                                  last_seq_no=last_seq_no,
+                                  update_time=last_update_time,
+                                  proof=proof)
         return result
 
     def handleGetAttrsReq(self, request: Request):
