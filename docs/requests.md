@@ -508,7 +508,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
                 "participants": ["Delta", "Gamma", "Alpha"]
             }, 
         
-            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
         "metadata": {
             "version": 1,
@@ -626,7 +626,7 @@ Adds attribute to a NYM record.
                 "participants": ["Delta", "Gamma", "Alpha"]
             }, 
         
-            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
         "metadata": {
             "version": 1,
@@ -760,7 +760,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
                 "participants": ["Delta", "Gamma", "Alpha"]
             }, 
         
-            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
         "metadata": {
             "version": 1,
@@ -909,7 +909,7 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
                 "participants": ["Delta", "Gamma", "Alpha"]
             }, 
         
-            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
         "metadata": {
             "version": 1,
@@ -1070,7 +1070,7 @@ There is no need to specify all other fields, and they will remain the same.
                 "participants": ["Delta", "Gamma", "Alpha"]
             }, 
         
-            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
         "metadata": {
             "version": 1,
@@ -1226,7 +1226,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
                 "participants": ["Delta", "Gamma", "Alpha"]
             }, 
         
-            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
         "metadata": {
             "version": 1,
@@ -1342,7 +1342,7 @@ Command to change Pool's configuration
                 "participants": ["Delta", "Gamma", "Alpha"]
             }, 
         
-            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
         "metadata": {
             "version": 1,
@@ -1863,7 +1863,7 @@ A generic request to get a transaction from Ledger by its sequence number.
                 "participants": ["Delta", "Gamma", "Alpha"]
             }, 
         
-            "auditPath": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
         },
         "metadata": {
             "version": 1,
