@@ -29,7 +29,7 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
     TAILS_HASH, TAILS_LOCATION, ID, TYPE, TAG, CRED_DEF_ID, VALUE, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
-    GET_REVOC_REG_DEF
+    GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP
 
 
 class Request(PRequest):
@@ -235,6 +235,28 @@ class ClientGetRevocRegDefField(MessageValidator):
     )
 
 
+class ClientGetRevocRegField(MessageValidator):
+    schema = (
+        (REVOC_REG_DEF_ID, NonEmptyStringField()),
+        (TIMESTAMP, IntegerField()),
+        (TYPE, ConstantField(GET_REVOC_REG)),
+    )
+
+
+class ReplyRevocRegEntryValueField(MessageValidator):
+    schema = (
+        (ACCUM, NonEmptyStringField())
+    )
+
+
+class ReplyRevocRegEntryField(MessageValidator):
+    schema = (
+        (REVOC_REG_DEF_ID, NonEmptyStringField()),
+        (TYPE, NonEmptyStringField()),
+        (VALUE, ReplyRevocRegEntryValueField())
+    )
+
+
 class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),
@@ -276,6 +298,7 @@ class ClientOperationField(PClientOperationField):
         REVOC_REG_DEF: ClientRevocDefSubmitField(),
         REVOC_REG_ENTRY: ClientRevocRegEntrySubmitField(),
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
+        GET_REVOC_REG: ClientGetRevocRegField(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

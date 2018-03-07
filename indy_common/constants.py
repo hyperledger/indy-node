@@ -45,6 +45,7 @@ ISSUED = "issued"
 REVOKED = "revoked"
 ISSUANCE_BY_DEFAULT = "ISSUANCE_BY_DEFAULT"
 ISSUANCE_ON_DEMAND = "ISSUANCE_ON_DEMAND"
+TIMESTAMP = 'timestamp'
 
 NULL = 'null'
 OWNER = '<owner>'
@@ -111,6 +112,7 @@ GET_TXNS = IndyTransactions.GET_TXNS.value
 GET_SCHEMA = IndyTransactions.GET_SCHEMA.value
 GET_CLAIM_DEF = IndyTransactions.GET_CLAIM_DEF.value
 GET_REVOC_REG_DEF = IndyTransactions.GET_REVOC_REG_DEF.value
+GET_REVOC_REG = IndyTransactions.GET_REVOC_REG.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
