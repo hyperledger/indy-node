@@ -30,6 +30,11 @@ def public_repo_2(trustee, trusteeWallet):
 
 
 @pytest.fixture(scope="module")
+def public_repo_for_client(client1, added_client_without_role):
+    return IndyPublicRepo(client1, added_client_without_role)
+
+
+@pytest.fixture(scope="module")
 def issuer(public_repo):
     return Issuer(IssuerWalletInMemory('issuer1', public_repo),
                   AttributeRepoInMemory())

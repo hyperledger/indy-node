@@ -33,6 +33,15 @@ def test_submit_same_schema_twice(looper, public_repo,
         ex_info.match("can have one and only one SCHEMA with name GVT and version 1.0'")
 
 
+def test_submit_schema_without_role(looper, public_repo_for_client,
+                                    schema):
+    with pytest.raises(OperationError) as ex_info:
+        looper.run(
+            public_repo_for_client.submitSchema(schema)
+        )
+        ex_info.match("role cannot add claim def")
+
+
 def test_get_schema(submitted_schema, public_repo, looper):
     key = submitted_schema.getKey()
     schema = looper.run(public_repo.getSchema(ID(schemaKey=key)))

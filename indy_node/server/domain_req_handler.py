@@ -237,6 +237,26 @@ class DomainReqHandler(PHandler):
                                        '{} can have one and only one SCHEMA with '
                                        'name {} and version {}'
                                        .format(identifier, schema_name, schema_version))
+        try:
+            origin_role = self.idrCache.getRole(
+                req.identifier, isCommitted=False) or None
+        except BaseException:
+            raise UnknownIdentifier(
+                req.identifier,
+                req.reqId)
+        r, msg = Authoriser.authorised(typ=SCHEMA,
+                                       field=ROLE,
+                                       actorRole=origin_role,
+                                       oldVal=None,
+                                       newVal=None,
+                                       isActorOwnerOfSubject=True)
+        if not r:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "{} cannot add schema".format(
+                    Roles.nameFromValue(origin_role))
+            )
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
@@ -250,11 +270,38 @@ class DomainReqHandler(PHandler):
             schemaSeqNo=schema_ref,
             signatureType=signature_type
         )
+
+        try:
+            origin_role = self.idrCache.getRole(
+                req.identifier, isCommitted=False) or None
+        except BaseException:
+            raise UnknownIdentifier(
+                req.identifier,
+                req.reqId)
         if claim_def:
-            raise InvalidClientRequest(identifier, req.reqId,
-                                       '{} can have one and only one CLAIM_DEF for '
-                                       'and schema ref {} and signature type {}'
-                                       .format(identifier, schema_ref, signature_type))
+            origin = req.identifier
+            owner = self.idrCache.getOwnerFor(req.identifier, isCommitted=False)
+            is_owner = origin == owner
+            r, msg = Authoriser.authorised(typ=CLAIM_DEF,
+                                           field=ROLE,
+                                           actorRole=origin_role,
+                                           oldVal=None,
+                                           newVal=None,
+                                           isActorOwnerOfSubject=is_owner)
+        else:
+            r, msg = Authoriser.authorised(typ=CLAIM_DEF,
+                                           field=ROLE,
+                                           actorRole=origin_role,
+                                           oldVal=None,
+                                           newVal=None,
+                                           isActorOwnerOfSubject=True)
+        if not r:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "{} cannot add claim def".format(
+                    Roles.nameFromValue(origin_role))
+            )
 
     def _validate_revoc_reg_def(self, req: Request):
         operation = req.operation
