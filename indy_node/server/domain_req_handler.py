@@ -7,7 +7,7 @@ from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TYPE, TAG, CRED_DEF_ID, \
-    GET_REVOC_REG_DEF, ID, GET_REVOC_REG
+    GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -27,7 +27,8 @@ logger = getlogger()
 
 class DomainReqHandler(PHandler):
     write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
-    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, GET_REVOC_REG_DEF, GET_REVOC_REG}
+    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF,
+                   GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA}
     revocation_strategy_map = {
         ISSUANCE_BY_DEFAULT: RevokedStrategy,
         ISSUANCE_ON_DEMAND: IssuedStrategy,
@@ -45,6 +46,7 @@ class DomainReqHandler(PHandler):
             GET_CLAIM_DEF: self.handleGetClaimDefReq,
             GET_REVOC_REG_DEF: self.handleGetRevocRegDefReq,
             GET_REVOC_REG: self.handleGetRevocRegReq,
+            GET_REVOC_REG_DELTA: self.handleGetRevocRegDelta,
         }
 
     def onBatchCreated(self, stateRoot):
@@ -387,6 +389,9 @@ class DomainReqHandler(PHandler):
         return result
 
     def handleGetRevocRegReq(self, request: Request):
+        pass
+
+    def handleGetRevocRegDelta(self, request: Request):
         pass
 
     def handleGetAttrsReq(self, request: Request):

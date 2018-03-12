@@ -5,7 +5,10 @@ from contextlib import ExitStack
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, TYPE, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
-    CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, GET_REVOC_REG_DEF
+    CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, \
+    GET_REVOC_REG_DEF, TIMESTAMP, GET_REVOC_REG, \
+    GET_REVOC_REG_DELTA
+
 from indy_common.types import Request
 from indy_common.state import domain
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
@@ -207,3 +210,15 @@ def send_revoc_reg_def(looper,
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
     sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)
     return revoc_req
+
+@pytest.fixture(scope="module")
+def build_get_revoc_reg_entry(looper,
+                              sdk_wallet_steward):
+
+    data = {
+        REVOC_REG_DEF_ID: randomString(10),
+        TYPE: GET_REVOC_REG,
+        TIMESTAMP: int(time.time())
+    }
+    revoc_reg_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return revoc_reg_req
