@@ -99,17 +99,20 @@ class NodeControlTool:
         return ret.stdout.strip()
 
     def _hold_packages(self):
-        cmd = compose_cmd(['apt-mark', 'hold', self.packages_to_hold])
-        ret = self._run_shell_command(cmd)
-        if ret.returncode != 0:
-            raise Exception('cannot mark {} packages for hold '
-                            'since {} returned {}'
-                            .format(self.packages_to_hold,
-                                    cmd,
-                                    ret.returncode))
+        if shutil.which("apt-mark"):
+            cmd = compose_cmd(['apt-mark', 'hold', self.packages_to_hold])
+            ret = self._run_shell_command(cmd)
+            if ret.returncode != 0:
+                raise Exception('cannot mark {} packages for hold '
+                                'since {} returned {}'
+                                .format(self.packages_to_hold,
+                                        cmd,
+                                        ret.returncode))
 
-        logger.info('Successfully put {} packages on hold'.format(
-            self.packages_to_hold))
+                logger.info('Successfully put {} packages on hold'.format(
+                    self.packages_to_hold))
+        else:
+            logger.info('Skipping packages holding')
 
     def _get_deps_list(self, package):
         logger.info('Getting dependencies for {}'.format(package))

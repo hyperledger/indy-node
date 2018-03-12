@@ -6,7 +6,7 @@ import base58
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
-    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TYPE, TAG, CRED_DEF_ID, \
+    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, REVOC_TYPE, TAG, CRED_DEF_ID, \
     GET_REVOC_REG_DEF, ID
 from indy_common.roles import Roles
 from indy_common.state import domain
@@ -306,7 +306,7 @@ class DomainReqHandler(PHandler):
     def _validate_revoc_reg_def(self, req: Request):
         operation = req.operation
         cred_def_id = operation.get(CRED_DEF_ID)
-        revoc_def_type = operation.get(TYPE)
+        revoc_def_type = operation.get(REVOC_TYPE)
         revoc_def_tag = operation.get(TAG)
         assert cred_def_id
         assert revoc_def_tag

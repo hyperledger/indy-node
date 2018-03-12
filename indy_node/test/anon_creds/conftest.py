@@ -4,8 +4,9 @@ import json
 from contextlib import ExitStack
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
-    REVOKED, PREV_ACCUM, ACCUM, TYPE, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
-    CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, GET_REVOC_REG_DEF
+    REVOKED, PREV_ACCUM, ACCUM, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
+    CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, GET_REVOC_REG_DEF, \
+    TXN_TYPE, REVOC_TYPE, ISSUANCE_TYPE, MAX_CRED_NUM, TAILS_HASH, TAILS_LOCATION, PUBLIC_KEYS
 from indy_common.types import Request
 from indy_common.state import domain
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
@@ -38,16 +39,17 @@ def create_node_and_not_start(testNodeClass,
 @pytest.fixture(scope="module")
 def build_revoc_def_by_default(looper, sdk_wallet_steward):
     data = {
-        "id": randomString(50),
-        "type": REVOC_REG_DEF,
-        "tag": randomString(5),
-        "credDefId": randomString(50),
-        "value":{
-            "issuanceType": ISSUANCE_BY_DEFAULT,
-            "maxCredNum": 1000000,
-            "tailsHash": randomString(50),
-            "tailsLocation": 'http://tails.location.com',
-            "publicKeys": {},
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: randomString(50),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
         }
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
@@ -59,16 +61,17 @@ def add_revoc_def_by_default(create_node_and_not_start,
                   sdk_wallet_steward):
     node = create_node_and_not_start
     data = {
-        "id": randomString(50),
-        "type": REVOC_REG_DEF,
-        "tag": randomString(5),
-        "credDefId": randomString(50),
-        "value":{
-            "issuanceType": ISSUANCE_BY_DEFAULT,
-            "maxCredNum": 1000000,
-            "tailsHash": randomString(50),
-            "tailsLocation": 'http://tails.location.com',
-            "publicKeys": {},
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: randomString(50),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
         }
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
@@ -89,11 +92,11 @@ def build_txn_for_revoc_def_entry_by_default(looper,
     path = ":".join([revoc_def_txn[f.IDENTIFIER.nm],
                      domain.MARKER_REVOC_DEF,
                      revoc_def_txn[CRED_DEF_ID],
-                     revoc_def_txn[TYPE],
+                     revoc_def_txn[REVOC_TYPE],
                      revoc_def_txn[TAG]])
     data = {
         REVOC_REG_DEF_ID: path,
-        TYPE: REVOC_REG_ENTRY,
+        TXN_TYPE: REVOC_REG_ENTRY,
         VALUE: {
             PREV_ACCUM: randomString(10),
             ACCUM: randomString(10),
@@ -111,16 +114,17 @@ def add_revoc_def_by_demand(create_node_and_not_start,
                   sdk_wallet_steward):
     node = create_node_and_not_start
     data = {
-        "id": randomString(50),
-        "type": REVOC_REG_DEF,
-        "tag": randomString(5),
-        "credDefId": randomString(50),
-        "value":{
-            "issuanceType": ISSUANCE_ON_DEMAND,
-            "maxCredNum": 1000000,
-            "tailsHash": randomString(50),
-            "tailsLocation": 'http://tails.location.com',
-            "publicKeys": {},
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: randomString(50),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_ON_DEMAND,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
         }
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
@@ -141,11 +145,11 @@ def build_txn_for_revoc_def_entry_by_demand(looper,
     path = ":".join([revoc_def_txn[f.IDENTIFIER.nm],
                      domain.MARKER_REVOC_DEF,
                      revoc_def_txn[CRED_DEF_ID],
-                     revoc_def_txn[TYPE],
+                     revoc_def_txn[REVOC_TYPE],
                      revoc_def_txn[TAG]])
     data = {
         REVOC_REG_DEF_ID: path,
-        TYPE: REVOC_REG_ENTRY,
+        TXN_TYPE: REVOC_REG_ENTRY,
         VALUE: {
             PREV_ACCUM: randomString(10),
             ACCUM: randomString(10),
