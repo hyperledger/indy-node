@@ -233,7 +233,7 @@ reference to the CredDef, plus some revocation registry specific data.
 {
     "data": {
         "id":"MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
-        "type":"CL_ACCUM",
+        "revocDefType":"CL_ACCUM",
         "tag": "reg1",
         "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
         "value": {
@@ -254,7 +254,7 @@ reference to the CredDef, plus some revocation registry specific data.
 }
 ```
 * `id` (string, ":" as a field separator): ID as a key in State Trie.
-* `type` (enum string): Revocation Registry type (only `CL_ACCUM` is supported for now).
+* `revocDefType` (enum string): Revocation Registry type (only `CL_ACCUM` is supported for now).
 
     Revocation Registry is updated only during each issuance and  revocation.
 * `credDefId` (string): ID of the corresponding CredDef
@@ -302,7 +302,7 @@ Gets a list of RevocRegDefs according to the given filters.
     "data": {
         "submitterDid":"MMAD5g65TDQr1PPHHRoiGf",
         "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",   (optional)
-        "type":"CL_ACCUM",   (optional)
+        "revocDefType":"CL_ACCUM",   (optional)
         "tag": "reg1",    (optional)
     },
 ...
@@ -323,7 +323,7 @@ So, it can be sent each time a new claim is issued/revoked.
 {
     "data": {
         "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
-        "type":"CL_ACCUM",
+        "revocDefType":"CL_ACCUM",
         "value": {
             "prevAccum":"<prev_accum_value>",
             "accum":"<accum_value>",
@@ -386,7 +386,7 @@ Reply:
 {
     "data": {
         "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
-        "type":"CL_ACCUM",
+        "revocDefType":"CL_ACCUM",
         "value": {
             "accum":"<accum_value>",
         }
@@ -420,7 +420,7 @@ Reply:
 {
     "data": {
         "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
-        "type":"CL_ACCUM",
+        "revocDefType":"CL_ACCUM",
         "value": {
             "accum":"<accum_value>",
             "issued": [1, 45], 
