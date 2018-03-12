@@ -8,6 +8,7 @@ from stp_core.common.log import getlogger
 
 logger = getlogger()
 
+
 def test_error_submit_claim_def_by_client(submitted_schema_ID,
                                           public_key,
                                           public_revocation_key,
@@ -99,4 +100,3 @@ def test_submit_claim_def_same_schema_and_signature_type(submitted_claim_def,
                                             pk=public_key,
                                             pkR=public_revocation_key,
                                             signatureType='CL'))
-
