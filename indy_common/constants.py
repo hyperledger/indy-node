@@ -27,7 +27,7 @@ JUSTIFICATION = 'justification'
 REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 
-REVOC_TYPE = "revoc_type"
+REVOC_TYPE = "revocDefType"
 ID = "id"
 TAG = "tag"
 CRED_DEF_ID = "credDefId"
