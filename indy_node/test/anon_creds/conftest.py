@@ -7,7 +7,7 @@ from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, TYPE, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
     CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, \
     GET_REVOC_REG_DEF, TIMESTAMP, GET_REVOC_REG, \
-    GET_REVOC_REG_DELTA
+    GET_REVOC_REG_DELTA, FROM, TO
 
 from indy_common.types import Request
 from indy_common.state import domain
@@ -222,3 +222,15 @@ def build_get_revoc_reg_entry(looper,
     }
     revoc_reg_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     return revoc_reg_req
+
+@pytest.fixture(scope="module")
+def build_get_revoc_reg_delta(looper,
+                              sdk_wallet_steward):
+    data = {
+        REVOC_REG_DEF_ID: randomString(10),
+        TYPE: GET_REVOC_REG_DELTA,
+        FROM: 10,
+        TO: 20,
+    }
+    revoc_reg_delta_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return revoc_reg_delta_req

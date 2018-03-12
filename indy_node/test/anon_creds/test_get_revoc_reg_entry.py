@@ -1,6 +1,6 @@
 import pytest
 import json
-from plenum.common.request import SafeRequest
+from indy_common.types import SafeRequest
 from plenum.test.helper import sdk_send_and_check
 
 
