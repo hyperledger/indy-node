@@ -1,9 +1,7 @@
 from abc import abstractmethod, ABCMeta
 from indy_common.state import domain
 from indy_common.types import Request
-from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
-    REVOC_REG_DEF_ID, VALUE, ACCUM, PREV_ACCUM, ISSUED, REVOKED, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND
+from indy_common.constants import REVOC_REG_DEF_ID, VALUE, ACCUM, PREV_ACCUM, ISSUED, REVOKED
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.types import f
 
