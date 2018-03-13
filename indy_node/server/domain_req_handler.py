@@ -7,7 +7,7 @@ from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, REVOC_TYPE, TAG, CRED_DEF_ID, \
-    GET_REVOC_REG_DEF, ID
+    GET_REVOC_REG_DEF, ID, ATTR_NAMES
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -95,6 +95,8 @@ class DomainReqHandler(PHandler):
             self._doStaticValidationNym(identifier, req_id, operation)
         if operation[TXN_TYPE] == ATTRIB:
             self._doStaticValidationAttrib(identifier, req_id, operation)
+        if operation[TXN_TYPE] == SCHEMA:
+            self._doStaticValidationSchema(identifier, req_id, operation)
 
     def _doStaticValidationNym(self, identifier, reqId, operation):
         role = operation.get(ROLE)
@@ -114,6 +116,11 @@ class DomainReqHandler(PHandler):
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
+
+    def _doStaticValidationSchema(self, identifier, reqId, operation):
+        if not operation.get(DATA).get(ATTR_NAMES):
+            raise InvalidClientRequest(identifier, reqId,
+                                       "attr_names in schema can not be empty")
 
     def validate(self, req: Request, config=None):
         op = req.operation
