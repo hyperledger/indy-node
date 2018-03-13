@@ -3,6 +3,7 @@ from storage.kv_store_leveldb_int_keys import KeyValueStorageLeveldbIntKeys
 
 logger = getlogger()
 
+
 class TimestampRevocationStorage():
     def __init__(self, name, db_dir, db_name):
         logger.debug("Initializing timestamp-root_hash storage for revocation")

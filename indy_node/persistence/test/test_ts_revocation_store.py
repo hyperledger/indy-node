@@ -1,12 +1,11 @@
 import pytest
 from plenum.common.util import randomString
 from indy_node.persistence.timestamp_revocation_storage import TimestampRevocationStorage
-from plenum.test.conftest import tdir
 
 
-@pytest.fixture(scope="module")
-def storage_with_ts_root_hashes(tdir):
-    storage = TimestampRevocationStorage("test", tdir, "test_db")
+@pytest.fixture(scope="function")
+def storage_with_ts_root_hashes(tmpdir):
+    storage = TimestampRevocationStorage("test", tmpdir.dirname, "test_db")
     ts_list = {
         2: "aaaa",
         4: "bbbb",
