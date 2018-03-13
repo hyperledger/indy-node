@@ -261,16 +261,6 @@ class DomainReqHandler(PHandler):
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
         # sine a Claim Def needs to be identified by seqNo
-        identifier = req.identifier
-        operation = req.operation
-        schema_ref = operation[REF]
-        signature_type = operation[SIGNATURE_TYPE]
-        claim_def, _, _, _ = self.getClaimDef(
-            author=identifier,
-            schemaSeqNo=schema_ref,
-            signatureType=signature_type
-        )
-
         try:
             origin_role = self.idrCache.getRole(
                 req.identifier, isCommitted=False) or None
