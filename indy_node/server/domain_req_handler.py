@@ -34,7 +34,7 @@ class DomainReqHandler(PHandler):
     }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store):
+                 idrCache, attributeStore, bls_store, tsRevoc_store):
         super().__init__(ledger, state, config, requestProcessor, bls_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
@@ -45,6 +45,7 @@ class DomainReqHandler(PHandler):
             GET_CLAIM_DEF: self.handleGetClaimDefReq,
             GET_REVOC_REG_DEF: self.handleGetRevocRegDefReq,
         }
+        self.tsRevoc_store = tsRevoc_store
 
     def onBatchCreated(self, stateRoot):
         self.idrCache.currentBatchCreated(stateRoot)
@@ -502,6 +503,7 @@ class DomainReqHandler(PHandler):
         writer_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
+        self.tsRevoc_store.set(txn[TXN_TIME], self.state.headHash)
 
     def getAttr(self,
                 did: str,

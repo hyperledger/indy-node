@@ -51,6 +51,7 @@ attrStorage = KeyValueStorageType.Leveldb
 configStateDbName = 'config_state'
 attrDbName = 'attr_db'
 idrCacheDbName = 'idr_cache_db'
+tsRevocationDbName = "timestamp_revoc_db"
 
 
 PluginsToLoad = []
