@@ -2,7 +2,7 @@ from random import randint
 
 import pytest
 from anoncreds.protocol.exceptions import SchemaNotFoundError
-from anoncreds.protocol.types import ID
+from anoncreds.protocol.types import ID, Schema
 
 from plenum.common.exceptions import OperationError
 from plenum.common.util import randomString
@@ -41,6 +41,21 @@ def test_can_not_submit_schema_by_identity_owner(looper,
             public_repo_for_client.submitSchema(schema)
         )
         ex_info.match("role cannot add claim def")
+
+def test_can_not_submit_schema_with_empty_attr_names(looper,
+                                                     public_repo,
+                                                     stewardWallet):
+    schema = Schema(name='newSchema',
+                    version='4.0',
+                    attrNames=[],
+                    issuerId=stewardWallet.defaultId,
+                    seqId=None)
+
+    with pytest.raises(OperationError) as ex_info:
+        looper.run(
+            public_repo.submitSchema(schema)
+        )
+        ex_info.match("attr_names in schema can not be empty")
 
 
 def test_get_schema(submitted_schema, public_repo, looper):
