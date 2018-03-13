@@ -10,7 +10,8 @@ from plenum.common.signer_did import DidSigner
 from plenum.common.util import randomString
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import waitNodeDataEquality
-from plenum.test.test_node import getPrimaryReplica
+from plenum.test.delayers import icDelay
+from plenum.test.stasher import delay_rules
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.identity import Identity
 from stp_core.common.log import getlogger
@@ -238,15 +239,17 @@ def test_successive_batch_do_no_change_state(looper,
 
     waitNodeDataEquality(looper, nodeSet[0], *nodeSet[1:])
 
-    keys = {}
-    for _ in range(3):
-        idy, _ = new_identity()
-        keys[idy.identifier] = idy.verkey
-        submit_id_req(idy)
-        looper.runFor(.01)
+    stashers = [n.nodeIbStasher for n in nodeSet]
+    with delay_rules(stashers, icDelay()):
+        keys = {}
+        for _ in range(3):
+            idy, _ = new_identity()
+            keys[idy.identifier] = idy.verkey
+            submit_id_req(idy)
+            looper.runFor(.01)
 
-    # Correct number of uncommitted entries
-    looper.run(eventually(check_uncommitted, 3, retryWait=1))
+        # Correct number of uncommitted entries
+        looper.run(eventually(check_uncommitted, 3, retryWait=1))
 
     # Check batch reject
     for node in nodeSet:
