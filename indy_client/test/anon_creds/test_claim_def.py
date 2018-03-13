@@ -9,16 +9,16 @@ from stp_core.common.log import getlogger
 logger = getlogger()
 
 
-def test_error_submit_claim_def_by_client(submitted_schema_ID,
-                                          public_key,
-                                          public_revocation_key,
-                                          looper,
-                                          public_repo_for_client):
+def test_can_not_submit_claim_def_by_identity_owner(submitted_schema_ID,
+                                                    public_key,
+                                                    public_revocation_key,
+                                                    looper,
+                                                    public_repo_for_client):
     with pytest.raises(OperationError) as ex_info:
         looper.run(public_repo_for_client.submitPublicKeys(id=submitted_schema_ID,
-                                                  pk=public_key,
-                                                  pkR=public_revocation_key,
-                                                  signatureType='CL'))
+                                                           pk=public_key,
+                                                           pkR=public_revocation_key,
+                                                           signatureType='CL'))
         assert "role cannot add claim def" in ex_info[0]
 
 

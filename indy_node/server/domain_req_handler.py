@@ -278,23 +278,14 @@ class DomainReqHandler(PHandler):
             raise UnknownIdentifier(
                 req.identifier,
                 req.reqId)
-        if claim_def:
-            origin = req.identifier
-            owner = self.idrCache.getOwnerFor(req.identifier, isCommitted=False)
-            is_owner = origin == owner
-            r, msg = Authoriser.authorised(typ=CLAIM_DEF,
-                                           field=ROLE,
-                                           actorRole=origin_role,
-                                           oldVal=None,
-                                           newVal=None,
-                                           isActorOwnerOfSubject=is_owner)
-        else:
-            r, msg = Authoriser.authorised(typ=CLAIM_DEF,
-                                           field=ROLE,
-                                           actorRole=origin_role,
-                                           oldVal=None,
-                                           newVal=None,
-                                           isActorOwnerOfSubject=True)
+        # only owner can update claim_def,
+        # because his identifier is the primary key of claim_def
+        r, msg = Authoriser.authorised(typ=CLAIM_DEF,
+                                       field=ROLE,
+                                       actorRole=origin_role,
+                                       oldVal=None,
+                                       newVal=None,
+                                       isActorOwnerOfSubject=True)
         if not r:
             raise UnauthorizedClientRequest(
                 req.identifier,

@@ -33,8 +33,9 @@ def test_submit_same_schema_twice(looper, public_repo,
         ex_info.match("can have one and only one SCHEMA with name GVT and version 1.0'")
 
 
-def test_submit_schema_without_role(looper, public_repo_for_client,
-                                    schema):
+def test_can_not_submit_schema_by_identity_owner(looper,
+                                                 public_repo_for_client,
+                                                 schema):
     with pytest.raises(OperationError) as ex_info:
         looper.run(
             public_repo_for_client.submitSchema(schema)
