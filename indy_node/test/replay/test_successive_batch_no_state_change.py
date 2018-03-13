@@ -181,13 +181,15 @@ def test_successive_batch_do_no_change_state(looper,
 
     uncommitteds = {}
     methods = {}
+    allow_rejects = 0
     for node in nodeSet:
         cache = node.idrCache
         uncommitteds[cache._name] = []
 
         cre = cache.currentBatchCreated
         com = cache.onBatchCommitted
-        methods[cache._name] = (cre, com)
+        rej = cache.batchRejected
+        methods[cache._name] = (cre, com, rej)
 
         # Patch methods to record and check roots after commit
 
@@ -201,8 +203,15 @@ def test_successive_batch_do_no_change_state(looper,
             uncommitteds[self._name] = uncommitteds[self._name][1:]
             return rv
 
+        def patched_rej(self):
+            print("Batch reject while allow_rejects={}".format(allow_rejects))
+            rv = methods[self._name][2]()
+            # uncommitteds[self._name] = uncommitteds[self._name][:-1]
+            return rv
+
         cache.currentBatchCreated = types.MethodType(patched_cre, cache)
         cache.onBatchCommitted = types.MethodType(patched_com, cache)
+        cache.batchRejected = types.MethodType(patched_rej, cache)
 
     # Set verkey of multiple identities
     more = 5
@@ -243,7 +252,9 @@ def test_successive_batch_do_no_change_state(looper,
     for node in nodeSet:
         cache = node.idrCache
         initial = cache.un_committed
+        allow_rejects = 1
         cache.batchRejected()
+        allow_rejects = 0
         # After reject, last entry is removed
         assert cache.un_committed == initial[:-1]
         root = cache.un_committed[0][0]
