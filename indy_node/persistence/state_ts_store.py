@@ -6,7 +6,7 @@ logger = getlogger()
 
 class StateTsDbStorage():
     def __init__(self, name, storage):
-        logger.debug("Initializing timestamp-root_hash storage for revocation")
+        logger.debug("Initializing timestamp-root_hash storage")
         self._storage = storage
         self._name = name
 
