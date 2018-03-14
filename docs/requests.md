@@ -47,7 +47,11 @@ This is a common structure for ALL messages (both Node-to-Node and Client-to-Nod
     "from": <...>,
     "signature": {
         "type": <...>,
-        "value": <...>
+        "values": [
+            "from": <...>,
+            "value": <...>,
+        ],
+        "threshold": <...>
     },
     
     "serialization": <...>,
