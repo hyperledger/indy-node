@@ -1,7 +1,8 @@
 from collections import OrderedDict
 from indy_common.types import RevocRegEntryValueField, ClientRevocRegEntrySubmitField
-from plenum.common.messages.fields import NonEmptyStringField, IterableField
-from indy_common.constants import REVOC_REG_DEF_ID, TYPE, VALUE, PREV_ACCUM, ACCUM, ISSUED, REVOKED
+from plenum.common.messages.fields import NonEmptyStringField, IterableField, ConstantField
+from indy_common.constants import REVOC_REG_DEF_ID, REVOC_TYPE, VALUE, PREV_ACCUM, \
+    ACCUM, ISSUED, REVOKED, TXN_TYPE
 
 
 EXPECTED_REVOC_DEF_ENTRY_VALUE_FIELDS = OrderedDict([
@@ -12,8 +13,9 @@ EXPECTED_REVOC_DEF_ENTRY_VALUE_FIELDS = OrderedDict([
 ])
 
 EXPECTED_REVOC_DEF_ENTRY_SUBMIT_FIELDS = OrderedDict([
+    (TXN_TYPE, ConstantField),
     (REVOC_REG_DEF_ID, NonEmptyStringField),
-    (TYPE, NonEmptyStringField),
+    (REVOC_TYPE, NonEmptyStringField),
     (VALUE, RevocRegEntryValueField)
 ])
 

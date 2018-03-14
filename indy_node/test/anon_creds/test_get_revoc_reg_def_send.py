@@ -1,6 +1,6 @@
 import json
 import time
-from indy_common.constants import CRED_DEF_ID, ID, TYPE, TAG, GET_REVOC_REG_DEF, VALUE, MAX_CRED_NUM
+from indy_common.constants import CRED_DEF_ID, ID, REVOC_TYPE, TAG, GET_REVOC_REG_DEF, VALUE, MAX_CRED_NUM, TXN_TYPE
 from indy_common.state import domain
 from indy_common.types import Request
 from plenum.test.helper import sdk_sign_request_from_dict
@@ -10,7 +10,7 @@ from plenum.test.helper import sdk_send_and_check
 def compare_request_reply(req, reply):
     assert req['operation'][CRED_DEF_ID] == reply['result']['data'][CRED_DEF_ID]
     assert req['operation'][ID] == reply['result']['data'][ID]
-    assert req['operation'][TYPE] == reply['result']['data'][TYPE]
+    assert req['operation'][REVOC_TYPE] == reply['result']['data'][REVOC_TYPE]
     assert req['operation'][TAG] == reply['result']['data'][TAG]
     assert req['operation'][VALUE] == reply['result']['data'][VALUE]
 
@@ -27,9 +27,10 @@ def test_send_get_revoc_reg_def(looper,
         ID: ":".join([author_did,
                       domain.MARKER_REVOC_DEF,
                       revoc_req['operation'][CRED_DEF_ID],
-                      revoc_req['operation'][TYPE],
+                      revoc_req['operation'][REVOC_TYPE],
                       revoc_req['operation'][TAG]]),
-        TYPE: GET_REVOC_REG_DEF,
+        TXN_TYPE: GET_REVOC_REG_DEF,
+        REVOC_TYPE: revoc_req['operation'][REVOC_TYPE],
     }
     get_revoc_reg_def_req = sdk_sign_request_from_dict(looper,
                                                        sdk_wallet_steward,
@@ -63,9 +64,10 @@ def test_get_revoc_reg_def_from_uncommited(looper,
         ID: ":".join([author_did,
                       domain.MARKER_REVOC_DEF,
                       revoc_req['operation'][CRED_DEF_ID],
-                      revoc_req['operation'][TYPE],
+                      revoc_req['operation'][REVOC_TYPE],
                       revoc_req['operation'][TAG]]),
-        TYPE: GET_REVOC_REG_DEF,
+        TXN_TYPE: GET_REVOC_REG_DEF,
+        REVOC_TYPE: revoc_req['operation'][REVOC_TYPE]
     }
     get_revoc_reg_def_req = sdk_sign_request_from_dict(looper,
                                                        sdk_wallet_steward,

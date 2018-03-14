@@ -6,8 +6,8 @@ import base58
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
-    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TYPE, TAG, CRED_DEF_ID, \
-    GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA
+    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
+    GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, ATTR_NAMES, REVOC_TYPE
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -98,6 +98,8 @@ class DomainReqHandler(PHandler):
             self._doStaticValidationNym(identifier, req_id, operation)
         if operation[TXN_TYPE] == ATTRIB:
             self._doStaticValidationAttrib(identifier, req_id, operation)
+        if operation[TXN_TYPE] == SCHEMA:
+            self._doStaticValidationSchema(identifier, req_id, operation)
 
     def _doStaticValidationNym(self, identifier, reqId, operation):
         role = operation.get(ROLE)
@@ -117,6 +119,11 @@ class DomainReqHandler(PHandler):
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
+
+    def _doStaticValidationSchema(self, identifier, reqId, operation):
+        if not operation.get(DATA).get(ATTR_NAMES):
+            raise InvalidClientRequest(identifier, reqId,
+                                       "attr_names in schema can not be empty")
 
     def validate(self, req: Request, config=None):
         op = req.operation
@@ -240,29 +247,57 @@ class DomainReqHandler(PHandler):
                                        '{} can have one and only one SCHEMA with '
                                        'name {} and version {}'
                                        .format(identifier, schema_name, schema_version))
+        try:
+            origin_role = self.idrCache.getRole(
+                req.identifier, isCommitted=False) or None
+        except BaseException:
+            raise UnknownIdentifier(
+                req.identifier,
+                req.reqId)
+        r, msg = Authoriser.authorised(typ=SCHEMA,
+                                       field=ROLE,
+                                       actorRole=origin_role,
+                                       oldVal=None,
+                                       newVal=None,
+                                       isActorOwnerOfSubject=True)
+        if not r:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "{} cannot add schema".format(
+                    Roles.nameFromValue(origin_role))
+            )
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
         # sine a Claim Def needs to be identified by seqNo
-        identifier = req.identifier
-        operation = req.operation
-        schema_ref = operation[REF]
-        signature_type = operation[SIGNATURE_TYPE]
-        claim_def, _, _, _ = self.getClaimDef(
-            author=identifier,
-            schemaSeqNo=schema_ref,
-            signatureType=signature_type
-        )
-        if claim_def:
-            raise InvalidClientRequest(identifier, req.reqId,
-                                       '{} can have one and only one CLAIM_DEF for '
-                                       'and schema ref {} and signature type {}'
-                                       .format(identifier, schema_ref, signature_type))
+        try:
+            origin_role = self.idrCache.getRole(
+                req.identifier, isCommitted=False) or None
+        except BaseException:
+            raise UnknownIdentifier(
+                req.identifier,
+                req.reqId)
+        # only owner can update claim_def,
+        # because his identifier is the primary key of claim_def
+        r, msg = Authoriser.authorised(typ=CLAIM_DEF,
+                                       field=ROLE,
+                                       actorRole=origin_role,
+                                       oldVal=None,
+                                       newVal=None,
+                                       isActorOwnerOfSubject=True)
+        if not r:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "{} cannot add claim def".format(
+                    Roles.nameFromValue(origin_role))
+            )
 
     def _validate_revoc_reg_def(self, req: Request):
         operation = req.operation
         cred_def_id = operation.get(CRED_DEF_ID)
-        revoc_def_type = operation.get(TYPE)
+        revoc_def_type = operation.get(REVOC_TYPE)
         revoc_def_tag = operation.get(TAG)
         assert cred_def_id
         assert revoc_def_tag

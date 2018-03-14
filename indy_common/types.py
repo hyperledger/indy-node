@@ -27,7 +27,7 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY, START, CANCEL, \
     REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
-    TAILS_HASH, TAILS_LOCATION, ID, TYPE, TAG, CRED_DEF_ID, VALUE, \
+    TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
     GET_REVOC_REG_DELTA, FROM, TO
@@ -100,8 +100,9 @@ class RevocDefValueField(MessageValidator):
 
 class ClientRevocDefSubmitField(MessageValidator):
     schema = (
+        (TXN_TYPE, ConstantField(REVOC_REG_DEF)),
         (ID, NonEmptyStringField()),
-        (TYPE, NonEmptyStringField()),
+        (REVOC_TYPE, NonEmptyStringField()),
         (TAG, NonEmptyStringField()),
         (CRED_DEF_ID, NonEmptyStringField()),
         (VALUE, RevocDefValueField())
@@ -119,8 +120,9 @@ class RevocRegEntryValueField(MessageValidator):
 
 class ClientRevocRegEntrySubmitField(MessageValidator):
     schema = (
+        (TXN_TYPE, ConstantField(REVOC_REG_ENTRY)),
         (REVOC_REG_DEF_ID, NonEmptyStringField()),
-        (TYPE, NonEmptyStringField()),
+        (REVOC_TYPE, NonEmptyStringField()),
         (VALUE, RevocRegEntryValueField())
     )
 
@@ -232,7 +234,8 @@ class ClientClaimDefGetOperation(MessageValidator):
 class ClientGetRevocRegDefField(MessageValidator):
     schema = (
         (ID, NonEmptyStringField()),
-        (TYPE, ConstantField(GET_REVOC_REG_DEF)),
+        (REVOC_TYPE, NonEmptyStringField()),
+        (TXN_TYPE, ConstantField(GET_REVOC_REG_DEF)),
     )
 
 
