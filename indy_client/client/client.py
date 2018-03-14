@@ -5,7 +5,6 @@ from collections import deque
 from typing import Dict, Union, Tuple, Optional, Callable
 
 from base58 import b58decode, b58encode
-from plenum import config
 
 from plenum.client.client import Client as PlenumClient
 from plenum.common.error import fault
@@ -18,7 +17,6 @@ from plenum.common.types import f
 from plenum.common.util import libnacl
 from plenum.server.router import Router
 from stp_core.network.auth_mode import AuthMode
-from stp_raet.rstack import SimpleRStack
 from stp_zmq.simple_zstack import SimpleZStack
 
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, GET_NYM, ROLE, \
@@ -88,9 +86,7 @@ class Client(PlenumClient):
 
     @property
     def peerStackClass(self):
-        if config.UseZStack:
-            return SimpleZStack
-        return SimpleRStack
+        return SimpleZStack
 
     def setupAnoncreds(self):
         if self.anoncredsAreSetUp is False:

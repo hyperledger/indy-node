@@ -47,6 +47,9 @@ from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
 from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
+from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
+    sdk_wallet_name, sdk_steward_seed
+
 Logger.setLogLevel(logging.DEBUG)
 
 
@@ -202,6 +205,18 @@ def client1(clientAndWallet1, looper):
     looper.add(client)
     looper.run(client.ensureConnectedToNodes())
     return client
+
+
+@pytest.fixture(scope="module")
+def added_client_without_role(steward, stewardWallet, looper,
+                           wallet1):
+    createNym(looper,
+              wallet1.defaultId,
+              steward,
+              stewardWallet,
+              role=None,
+              verkey=wallet1.getVerkey())
+    return wallet1
 
 
 @pytest.fixture(scope="module")

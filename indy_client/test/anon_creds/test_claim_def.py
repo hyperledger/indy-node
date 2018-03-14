@@ -9,21 +9,21 @@ from stp_core.common.log import getlogger
 logger = getlogger()
 
 
+def test_can_not_submit_claim_def_by_identity_owner(submitted_schema_ID,
+                                                    public_key,
+                                                    public_revocation_key,
+                                                    looper,
+                                                    public_repo_for_client):
+    with pytest.raises(OperationError) as ex_info:
+        looper.run(public_repo_for_client.submitPublicKeys(id=submitted_schema_ID,
+                                                           pk=public_key,
+                                                           pkR=public_revocation_key,
+                                                           signatureType='CL'))
+        assert "role cannot add claim def" in ex_info[0]
+
+
 def test_submit_claim_def(submitted_claim_def):
     assert submitted_claim_def
-
-
-def test_submit_claim_def_same_schema_and_signature_type(submitted_claim_def,
-                                                         looper, public_repo,
-                                                         submitted_schema_ID,
-                                                         public_key, public_revocation_key):
-    assert submitted_claim_def
-    with pytest.raises(OperationError) as ex_info:
-        looper.run(public_repo.submitPublicKeys(id=submitted_schema_ID,
-                                                pk=public_key,
-                                                pkR=public_revocation_key,
-                                                signatureType='CL'))
-        ex_info.match("can have one and only one CLAIM_DEF")
 
 
 def test_submit_claim_def_same_schema_different_signature_type(
@@ -89,3 +89,14 @@ def test_get_revocation_public_key_non_existent(submitted_schema_ID,
     with pytest.raises(ValueError):
         looper.run(public_repo.getPublicKeyRevocation(id=schemaId,
                                                       signatureType='CL'))
+
+
+def test_submit_claim_def_same_schema_and_signature_type(submitted_claim_def,
+                                                         looper, public_repo,
+                                                         submitted_schema_ID,
+                                                         public_key, public_revocation_key):
+    assert submitted_claim_def
+    looper.run(public_repo.submitPublicKeys(id=submitted_schema_ID,
+                                            pk=public_key,
+                                            pkR=public_revocation_key,
+                                            signatureType='CL'))

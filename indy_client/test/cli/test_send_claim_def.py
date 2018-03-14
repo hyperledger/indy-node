@@ -59,8 +59,8 @@ def test_send_claim_def_fails_if_ref_is_not_existing_seqno(
        within=5)
 
 
-def test_can_not_send_claim_def_for_same_schema_and_signature_type(
-        be, do, poolNodesStarted, trusteeCli):
+def test_update_claim_def_for_same_schema_and_signature_type(
+        be, do, trusteeCli):
     be(trusteeCli)
 
     do('send SCHEMA name=Degree version=1.3'
@@ -76,9 +76,10 @@ def test_can_not_send_claim_def_for_same_schema_and_signature_type(
        within=239)
 
     do('send CLAIM_DEF ref={ref} signature_type=CL',
-       expect='can have one and only one CLAIM_DEF',
+       expect=CLAIM_DEF_ADDED,
        mapper={'ref': schemaTxnSeqNo},
-       within=5)
+       within=239)
+
 
 def test_can_send_same_claim_def_by_different_issuers(
         be, do, poolNodesStarted, trusteeCli, newStewardCli):
