@@ -85,7 +85,7 @@ class DomainReqHandler(PHandler):
                 'Cannot apply request of type {} to state'.format(typ))
 
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
-        r = super().commit(txnCount, stateRoot, txnRoot)
+        r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
         stateRoot = base58.b58decode(stateRoot.encode())
         self.idrCache.onBatchCommitted(stateRoot)
         self.tsRevoc_store.set(ppTime, stateRoot)
