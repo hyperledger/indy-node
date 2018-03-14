@@ -11,6 +11,7 @@ from plenum.common.ledger import Ledger
 from plenum.common.types import f, \
     OPERATION
 from plenum.persistence.storage import initStorage, initKeyValueStorage
+from storage.kv_store_leveldb_int_keys import KeyValueStorageLeveldbIntKeys
 from plenum.server.node import Node as PlenumNode
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
@@ -156,8 +157,9 @@ class Node(PlenumNode, HasPoolManager):
         if self.stateTsDbStorage is None:
             self.stateTsDbStorage = StateTsDbStorage(
                 self.name,
-                self.dataLocation,
-                self.config.stateTsDbName)
+                KeyValueStorageLeveldbIntKeys(self.dataLocation,
+                                              self.config.stateTsDbName)
+            )
         return self.stateTsDbStorage
 
     def loadAttributeStore(self):

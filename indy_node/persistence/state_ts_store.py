@@ -5,9 +5,9 @@ logger = getlogger()
 
 
 class StateTsDbStorage():
-    def __init__(self, name, db_dir, db_name):
+    def __init__(self, name, storage):
         logger.debug("Initializing timestamp-root_hash storage for revocation")
-        self._storage = KeyValueStorageLeveldbIntKeys(db_dir, db_name)
+        self._storage = storage
         self._name = name
 
     def __repr__(self):
