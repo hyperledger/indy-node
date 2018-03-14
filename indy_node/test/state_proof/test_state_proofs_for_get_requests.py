@@ -21,7 +21,6 @@ from plenum.common.util import get_utc_epoch
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_common.state import domain
-from indy_node.persistence.timestamp_revocation_storage import TimestampRevocationStorage
 
 
 @pytest.fixture()

@@ -20,7 +20,7 @@ from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
-from indy_node.persistence.timestamp_revocation_storage import TimestampRevocationStorage
+from indy_node.persistence.timestamp_revocation_storage import StateTsDbStorage
 from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
@@ -69,7 +69,7 @@ class Node(PlenumNode, HasPoolManager):
         # TODO: 4 ugly lines ahead, don't know how to avoid
         self.idrCache = None
         self.attributeStore = None
-        self.tsRevocationStorage = None
+        self.stateTsDbStorage = None
         self.upgrader = None
         self.poolCfg = None
 
@@ -141,7 +141,7 @@ class Node(PlenumNode, HasPoolManager):
                                 self.getIdrCache(),
                                 self.attributeStore,
                                 self.bls_bft.bls_store,
-                                self.getTsRevocationStorage())
+                                self.getStateTsDbStorage())
 
     def getIdrCache(self):
         if self.idrCache is None:
@@ -152,13 +152,13 @@ class Node(PlenumNode, HasPoolManager):
                                      )
         return self.idrCache
 
-    def getTsRevocationStorage(self):
-        if self.tsRevocationStorage is None:
-            self.tsRevocationStorage = TimestampRevocationStorage(
+    def getStateTsDbStorage(self):
+        if self.stateTsDbStorage is None:
+            self.stateTsDbStorage = StateTsDbStorage(
                 self.name,
                 self.dataLocation,
-                self.config.tsRevocationDbName)
-        return self.tsRevocationStorage
+                self.config.stateTsDbName)
+        return self.stateTsDbStorage
 
     def loadAttributeStore(self):
         return AttributeStore(
@@ -343,5 +343,5 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache.close()
         if self.attributeStore:
             self.attributeStore.close()
-        if self.tsRevocationStorage:
-            self.tsRevocationStorage.close()
+        if self.stateTsDbStorage:
+            self.stateTsDbStorage.close()

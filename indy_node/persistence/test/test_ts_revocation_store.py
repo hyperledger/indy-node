@@ -1,11 +1,10 @@
 import pytest
-from plenum.common.util import randomString
-from indy_node.persistence.timestamp_revocation_storage import TimestampRevocationStorage
+from indy_node.persistence.timestamp_revocation_storage import StateTsDbStorage
 
 
 @pytest.fixture(scope="function")
 def storage_with_ts_root_hashes(tmpdir):
-    storage = TimestampRevocationStorage("test", tmpdir.dirname, "test_db")
+    storage = StateTsDbStorage("test", tmpdir.dirname, "test_db")
     ts_list = {
         2: "aaaa",
         4: "bbbb",
@@ -26,3 +25,7 @@ def test_previous_key_for_given(storage_with_ts_root_hashes):
     storage, ts_list = storage_with_ts_root_hashes
     assert storage.get_equal_or_prev(3).decode("utf-8") == ts_list[2]
     assert storage.get_equal_or_prev(101).decode("utf-8") == ts_list[100]
+
+def test_get_required_key(storage_with_ts_root_hashes):
+    storage, ts_list = storage_with_ts_root_hashes
+    assert storage.get_equal_or_prev(2).decode("utf-8") == ts_list[2]
