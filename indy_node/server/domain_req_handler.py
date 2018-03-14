@@ -84,10 +84,11 @@ class DomainReqHandler(PHandler):
             logger.debug(
                 'Cannot apply request of type {} to state'.format(typ))
 
-    def commit(self, txnCount, stateRoot, txnRoot) -> List:
+    def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot)
         stateRoot = base58.b58decode(stateRoot.encode())
         self.idrCache.onBatchCommitted(stateRoot)
+        self.tsRevoc_store.set(ppTime, stateRoot)
         return r
 
     def doStaticValidation(self, request: Request):
@@ -503,7 +504,6 @@ class DomainReqHandler(PHandler):
         writer_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
-        self.tsRevoc_store.set(txn[TXN_TIME], self.state.headHash)
 
     def getAttr(self,
                 did: str,
