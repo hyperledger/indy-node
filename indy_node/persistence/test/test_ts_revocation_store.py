@@ -1,5 +1,5 @@
 import pytest
-from indy_node.persistence.timestamp_revocation_storage import StateTsDbStorage
+from indy_node.persistence.state_ts_store import StateTsDbStorage
 
 
 @pytest.fixture(scope="function")
@@ -25,6 +25,7 @@ def test_previous_key_for_given(storage_with_ts_root_hashes):
     storage, ts_list = storage_with_ts_root_hashes
     assert storage.get_equal_or_prev(3).decode("utf-8") == ts_list[2]
     assert storage.get_equal_or_prev(101).decode("utf-8") == ts_list[100]
+
 
 def test_get_required_key(storage_with_ts_root_hashes):
     storage, ts_list = storage_with_ts_root_hashes
