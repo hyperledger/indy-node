@@ -10,7 +10,7 @@ from plenum.common.signer_did import DidSigner
 from plenum.common.util import randomString
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import waitNodeDataEquality
-from plenum.test.test_node import getPrimaryReplica
+from plenum.test.delayers import icDelay
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.identity import Identity
 from stp_core.common.log import getlogger
@@ -47,6 +47,10 @@ def test_successive_batch_do_no_change_state(looper,
     :return:
     """
     all_reqs = []
+
+    # Disable view change during this test
+    for n in nodeSet:
+        n.nodeIbStasher.delay(icDelay())
 
     # Delay only first PRE-PREPARE
     pp_seq_no_to_delay = 1
