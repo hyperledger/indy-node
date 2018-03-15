@@ -5,7 +5,7 @@ from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, \
     TARGET_NYM, DATA, NAME, VERSION, ORIGIN
 from plenum.common.types import f
 from indy_common.serialization import attrib_raw_data_serializer
-from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, ID, TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID
+from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, ID, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID
 
 
 MARKER_ATTR = "\01"
@@ -126,7 +126,7 @@ def prepare_claim_def_for_state(txn):
 def prepare_revoc_def_for_state(txn):
     author_did = txn.get(f.IDENTIFIER.nm)
     cred_def_id = txn.get(CRED_DEF_ID)
-    revoc_def_type = txn.get(TYPE)
+    revoc_def_type = txn.get(REVOC_TYPE)
     revoc_def_tag = txn.get(TAG)
     assert author_did
     assert cred_def_id

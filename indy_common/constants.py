@@ -27,6 +27,7 @@ JUSTIFICATION = 'justification'
 REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 
+REVOC_TYPE = "revocDefType"
 ID = "id"
 TAG = "tag"
 CRED_DEF_ID = "credDefId"
@@ -110,6 +111,7 @@ GET_NYM = IndyTransactions.GET_NYM.value
 GET_TXNS = IndyTransactions.GET_TXNS.value
 GET_SCHEMA = IndyTransactions.GET_SCHEMA.value
 GET_CLAIM_DEF = IndyTransactions.GET_CLAIM_DEF.value
+GET_REVOC_REG_DEF = IndyTransactions.GET_REVOC_REG_DEF.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
