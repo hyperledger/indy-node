@@ -35,7 +35,7 @@ class DomainReqHandler(PHandler):
     }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store):
+                 idrCache, attributeStore, bls_store, tsRevoc_store):
         super().__init__(ledger, state, config, requestProcessor, bls_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
@@ -48,6 +48,7 @@ class DomainReqHandler(PHandler):
             GET_REVOC_REG: self.handleGetRevocRegReq,
             GET_REVOC_REG_DELTA: self.handleGetRevocRegDelta,
         }
+        self.tsRevoc_store = tsRevoc_store
 
     def onBatchCreated(self, stateRoot):
         self.idrCache.currentBatchCreated(stateRoot)
@@ -86,10 +87,11 @@ class DomainReqHandler(PHandler):
             logger.debug(
                 'Cannot apply request of type {} to state'.format(typ))
 
-    def commit(self, txnCount, stateRoot, txnRoot) -> List:
-        r = super().commit(txnCount, stateRoot, txnRoot)
+    def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
+        r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
         stateRoot = base58.b58decode(stateRoot.encode())
         self.idrCache.onBatchCommitted(stateRoot)
+        self.tsRevoc_store.set(ppTime, stateRoot)
         return r
 
     def doStaticValidation(self, request: Request):

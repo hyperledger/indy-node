@@ -116,8 +116,8 @@ class ConfigReqHandler(RequestHandler):
         (start, _), _ = self.ledger.appendTxns([txn])
         return start, txn
 
-    def commit(self, txnCount, stateRoot, txnRoot) -> List:
-        committedTxns = super().commit(txnCount, stateRoot, txnRoot)
+    def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
+        committedTxns = super().commit(txnCount, stateRoot, txnRoot, ppTime)
         for txn in committedTxns:
             # Handle POOL_UPGRADE or POOL_CONFIG transaction here
             # only in case it is not forced.
