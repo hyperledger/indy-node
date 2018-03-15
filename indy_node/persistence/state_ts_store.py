@@ -1,5 +1,4 @@
 from stp_core.common.log import getlogger
-from storage.kv_store_leveldb_int_keys import KeyValueStorageLeveldbIntKeys
 
 logger = getlogger()
 
