@@ -62,9 +62,16 @@ class DomainReqHandlerWithAuthz:
 
     def _add_agent_authz(self, txn, isCommitted=False):
         verkey = txn.get(VERKEY, txn[f.IDENTIFIER.nm])
-        self._update_policy_address(txn[ADDRESS], verkey,
+        address = txn[ADDRESS]
+        commitment = txn.get(COMMITMENT)
+        # Since address and commitment are big numbers
+        if isinstance(address, str):
+            address = int(address)
+        if commitment is not None and isinstance(commitment, str):
+            commitment = int(commitment)
+        self._update_policy_address(address, verkey,
                                     auth=txn.get(AUTHORIZATION),
-                                    commitment=txn.get(COMMITMENT),
+                                    commitment=commitment,
                                     is_committed=isCommitted)
 
     def get_agent_authz(self, request: Request):

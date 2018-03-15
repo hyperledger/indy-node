@@ -9,16 +9,20 @@ from plenum.common.messages.fields import ConstantField, FullVerkeyField
 from plenum.common.messages.message_base import MessageValidator
 
 
+# Temporary value, needs to change
+MAX_POLICY_ADDRESS = 1000000
+# Temporary value, needs to change
+MAX_COMMITMENT = 199
+
+
 class ClientAgentAuthzSubmitOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(AGENT_AUTHZ)),
-        # Temporary value, needs to change
-        (ADDRESS, AgentAuthzPolicyAddressField(1000000)),
+        (ADDRESS, AgentAuthzPolicyAddressField(MAX_POLICY_ADDRESS)),
         (VERKEY, FullVerkeyField(optional=True)),
         # Temporary value, needs to change
         (AUTHORIZATION, AgentAuthzAuthorisationField(128, optional=True)),
-        # Temporary value, needs to change
-        (COMMITMENT, AgentAuthzCommitmentField(199, optional=True)),
+        (COMMITMENT, AgentAuthzCommitmentField(MAX_COMMITMENT, optional=True)),
     )
 
 
@@ -32,5 +36,5 @@ class ClientAgentAuthzAccumGetOperation(MessageValidator):
 class ClientAgentAuthzPolicyGetOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_AGENT_AUTHZ_ACCUM)),
-        (ADDRESS, AgentAuthzPolicyAddressField(1000000)),
+        (ADDRESS, AgentAuthzPolicyAddressField(MAX_POLICY_ADDRESS)),
     )

@@ -10,7 +10,7 @@ from indy_common.config_helper import NodeConfigHelper
 from indy_node.server.node import Node
 
 
-def integrate(node_config_helper, node):
+def integrate(node_config_helper, node, logger):
     plugin_root = node_config_helper.config.PLUGIN_ROOT
     try:
         plugin_root = importlib.import_module(plugin_root)
@@ -24,7 +24,9 @@ def integrate(node_config_helper, node):
         spec = spec_from_file_location('main.py', plugin_path)
         main = module_from_spec(spec)
         spec.loader.exec_module(main)
+        logger.info('Going to integrate plugin: {}'.format(plugin_name))
         node = main.__dict__['integrate_plugin_in_node'](node)
+        logger.info('Integrated plugin: {}'.format(plugin_name))
     return node
 
 
@@ -50,7 +52,7 @@ def run_node(config, name, node_port, client_port):
         node = Node(name, nodeRegistry=None,
                     config_helper=node_config_helper,
                     ha=node_ha, cliha=client_ha)
-        node = integrate(node_config_helper, node)
+        node = integrate(node_config_helper, node, logger)
         looper.add(node)
         looper.run()
 
