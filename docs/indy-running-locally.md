@@ -174,7 +174,7 @@ send proof Loan-Application-KYC to Thrift Bank
 
 # Resetting the Indy environment
 
-If you wish to reset your Indy environment and recreate it again, you can run ```clear_node.py --full```.
+If you wish to reset your Indy environment and recreate it again, you can run ```clear_node.py --full FULL```.
 
 Then, when you want to re-create your environment from scratch, ensure that all the nodes and agents are stopped and just run the setupEnvironment.sh script.
 Then you can restart the Nodes, attach the agents, and away you go again.
