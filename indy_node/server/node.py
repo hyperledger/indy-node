@@ -14,8 +14,8 @@ from plenum.persistence.storage import initStorage, initKeyValueStorage
 from plenum.server.node import Node as PlenumNode
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
-    IN_PROGRESS
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
+    IN_PROGRESS, POOL_RESTART
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
@@ -283,13 +283,14 @@ class Node(PlenumNode, HasPoolManager):
         else:
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
+                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced()\
+                    or request.operation[TXN_TYPE] == POOL_RESTART:
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
             # here we should have write transactions that should be processed
             # only on writable pool
             if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG]):
+                    POOL_UPGRADE, POOL_CONFIG, POOL_RESTART]):
                 super().processRequest(request, frm)
             else:
                 raise InvalidClientRequest(

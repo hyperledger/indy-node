@@ -4,9 +4,9 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn, isTxnForced
 from plenum.server.req_handler import RequestHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, DATA
 from indy_common.auth import Authoriser
-from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE
+from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, POOL_RESTART
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
@@ -16,7 +16,7 @@ from indy_node.server.pool_config import PoolConfig
 
 
 class ConfigReqHandler(RequestHandler):
-    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
+    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, POOL_RESTART}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
@@ -32,9 +32,17 @@ class ConfigReqHandler(RequestHandler):
             self._doStaticValidationPoolUpgrade(identifier, req_id, operation)
         elif operation[TXN_TYPE] == POOL_CONFIG:
             self._doStaticValidationPoolConfig(identifier, req_id, operation)
+        elif operation[TXN_TYPE] == POOL_RESTART:
+            self._doStaticValidationPoolRestart(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
         pass
+
+    def _doStaticValidationPoolRestart(self, identifier, req_id, operation):
+        self._doStaticValidationPoolUpgrade(identifier, req_id, operation)
+        if not operation.get(DATA).get(TIME):
+            raise InvalidClientRequest(identifier, req_id,
+                                       "time for restart can not be empty")
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)

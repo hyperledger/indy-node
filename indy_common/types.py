@@ -29,7 +29,7 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
     TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
-    GET_REVOC_REG_DEF
+    GET_REVOC_REG_DEF, POOL_RESTART, RESTART_TIME
 
 
 class Request(PRequest):
@@ -252,6 +252,17 @@ class ClientPoolUpgradeOperation(MessageValidator):
         (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (FORCE, BooleanField(optional=True)),
         (REINSTALL, BooleanField(optional=True)),
+    )
+
+
+class ClientPoolRestartOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(POOL_RESTART)),
+        (ACTION, ChooseField(values=(START, CANCEL,))),
+        (SCHEDULE, MapField(IdentifierField(),
+                            NonEmptyStringField(), optional=True)),
+        (SHA256, Sha256HexField()),
+        (RESTART_TIME, NonNegativeNumberField(optional=True)),  # TODO: correct format for field
     )
 
 

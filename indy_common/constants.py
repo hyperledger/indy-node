@@ -17,6 +17,7 @@ ATTR_NAMES = "attr_names"
 ACTION = 'action'
 SCHEDULE = 'schedule'
 TIMEOUT = 'timeout'
+RESTART_TIME = 'restart_time'
 SHA256 = 'sha256'
 START = 'start'
 CANCEL = 'cancel'
@@ -115,6 +116,7 @@ GET_REVOC_REG_DEF = IndyTransactions.GET_REVOC_REG_DEF.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
+POOL_RESTART = IndyTransactions.POOL_RESTART.value
 
 POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
 
@@ -129,7 +131,7 @@ fields = {NYM: ([TARGET_NYM], [ROLE]),
           REVOC_REG_ENTRY: ([REVOC_REG_DEF_ID, TYPE, VALUE]),
           }
 
-CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
+CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, POOL_RESTART}
 IDENTITY_TXN_TYPES = {NYM,
                       ATTRIB,
                       DISCLO,

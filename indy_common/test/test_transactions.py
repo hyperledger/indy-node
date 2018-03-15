@@ -37,6 +37,7 @@ def testTransactionEnumDecoded():
     assert IndyTransactions.POOL_UPGRADE.name == "POOL_UPGRADE"
     assert IndyTransactions.NODE_UPGRADE.name == "NODE_UPGRADE"
     assert IndyTransactions.POOL_CONFIG.name == "POOL_CONFIG"
+    assert IndyTransactions.POOL_RESTART.name == "POOL_RESTART"
 
 
 def testTransactionEnumEncoded():
@@ -56,3 +57,4 @@ def testTransactionEnumEncoded():
     assert IndyTransactions.POOL_UPGRADE.value == "109"
     assert IndyTransactions.NODE_UPGRADE.value == "110"
     assert IndyTransactions.POOL_CONFIG.value == "111"
+    assert IndyTransactions.POOL_RESTART.value == "116"
