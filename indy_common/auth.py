@@ -32,9 +32,9 @@ class Authoriser:
             {TRUSTEE: []},
         '{}_role_{}_'.format(NYM, TRUST_ANCHOR):
             {TRUSTEE: []},
-        '{}_role_<any>_<any>'.format(SCHEMA):
+        '{}_name_<any>_<any>'.format(SCHEMA):
             {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
-        '{}_role_<any>_<any>'.format(CLAIM_DEF):
+        '{}_ref_<any>_<any>'.format(CLAIM_DEF):
             {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
         '{}_verkey_<any>_<any>'.format(NYM):
             {r: [OWNER] for r in ValidRoles},

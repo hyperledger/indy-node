@@ -1,7 +1,7 @@
 from plenum.common.constants import TRUSTEE, STEWARD
 
 from indy_common.auth import Authoriser
-from indy_common.constants import ROLE, TGB, TRUST_ANCHOR, CLAIM_DEF
+from indy_common.constants import REF, TGB, TRUST_ANCHOR, CLAIM_DEF
 
 
 def test_claim_def_adding():
@@ -27,7 +27,7 @@ def test_claim_def_adding_not_owner():
 
 def _authorised_for_claim_def(role, is_owner):
     return Authoriser.authorised(typ=CLAIM_DEF,
-                                 field=ROLE,
+                                 field=REF,
                                  actorRole=role,
                                  oldVal=None,
                                  newVal=None,

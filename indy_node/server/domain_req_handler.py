@@ -254,7 +254,7 @@ class DomainReqHandler(PHandler):
                 req.identifier,
                 req.reqId)
         r, msg = Authoriser.authorised(typ=SCHEMA,
-                                       field=ROLE,
+                                       field=NAME,
                                        actorRole=origin_role,
                                        oldVal=None,
                                        newVal=None,
@@ -280,7 +280,7 @@ class DomainReqHandler(PHandler):
         # only owner can update claim_def,
         # because his identifier is the primary key of claim_def
         r, msg = Authoriser.authorised(typ=CLAIM_DEF,
-                                       field=ROLE,
+                                       field=REF,
                                        actorRole=origin_role,
                                        oldVal=None,
                                        newVal=None,

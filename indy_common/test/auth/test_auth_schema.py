@@ -1,7 +1,7 @@
 from plenum.common.constants import TRUSTEE, STEWARD
 
 from indy_common.auth import Authoriser
-from indy_common.constants import ROLE, TGB, TRUST_ANCHOR, SCHEMA
+from indy_common.constants import NAME, TGB, TRUST_ANCHOR, SCHEMA
 
 
 def test_schema_adding():
@@ -27,7 +27,7 @@ def test_schema_adding_not_owner():
 
 def _authorised_for_schemas(role, is_owner):
     return Authoriser.authorised(typ=SCHEMA,
-                                 field=ROLE,
+                                 field=NAME,
                                  actorRole=role,
                                  oldVal=None,
                                  newVal=None,
