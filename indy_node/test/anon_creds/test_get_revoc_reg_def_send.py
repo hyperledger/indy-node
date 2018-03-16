@@ -19,9 +19,9 @@ def test_send_get_revoc_reg_def(looper,
                                 txnPoolNodeSet,
                                 sdk_wallet_steward,
                                 sdk_pool_handle,
-                                send_revoc_reg_def):
+                                send_revoc_reg_def_by_default):
     _, author_did = sdk_wallet_steward
-    revoc_req = send_revoc_reg_def
+    revoc_req = send_revoc_reg_def_by_default
     revoc_reg_def_id = revoc_req['operation'][ID]
     get_revoc_reg_def_req = {
         ID: ":".join([author_did,
@@ -47,11 +47,11 @@ def test_get_revoc_reg_def_from_uncommited(looper,
                                            txnPoolNodeSet,
                                            sdk_wallet_steward,
                                            sdk_pool_handle,
-                                           send_revoc_reg_def):
-    # REVOC_REG_DEF was added into pool by send_revoc_reg_def fixture
+                                           send_revoc_reg_def_by_default):
+    # REVOC_REG_DEF was added into pool by send_revoc_reg_def_by_default fixture
 
     _, author_did = sdk_wallet_steward
-    revoc_req = send_revoc_reg_def
+    revoc_req = send_revoc_reg_def_by_default
     new_maxCredNum = 100
     revoc_req['operation'][VALUE][MAX_CRED_NUM] = new_maxCredNum
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_req['operation'])

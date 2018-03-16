@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from indy_common.types import ClientGetRevocRegDeltaField
 from plenum.common.messages.fields import NonEmptyStringField, ConstantField, IntegerField
-from indy_common.constants import TYPE, REVOC_REG_DEF_ID,FROM, TO, GET_REVOC_REG_DELTA
+from indy_common.constants import TYPE, REVOC_REG_DEF_ID, FROM, TO, GET_REVOC_REG_DELTA
 
 
 EXPECTED_GET_REVOC_REG_DELTA_FIELD = OrderedDict([

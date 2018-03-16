@@ -243,13 +243,13 @@ class ClientGetRevocRegField(MessageValidator):
     schema = (
         (REVOC_REG_DEF_ID, NonEmptyStringField()),
         (TIMESTAMP, IntegerField()),
-        (TYPE, ConstantField(GET_REVOC_REG)),
+        (TXN_TYPE, ConstantField(GET_REVOC_REG)),
     )
 
 
 class ClientGetRevocRegDeltaField(MessageValidator):
     schema = (
-        (TYPE, ConstantField(GET_REVOC_REG_DELTA)),
+        (TXN_TYPE, ConstantField(GET_REVOC_REG_DELTA)),
         (REVOC_REG_DEF_ID, NonEmptyStringField()),
         (FROM, IntegerField(optional=True)),
         (TO, IntegerField()),
@@ -265,7 +265,7 @@ class ReplyRevocRegEntryValueField(MessageValidator):
 class ReplyRevocRegEntryField(MessageValidator):
     schema = (
         (REVOC_REG_DEF_ID, NonEmptyStringField()),
-        (TYPE, NonEmptyStringField()),
+        (TXN_TYPE, NonEmptyStringField()),
         (VALUE, ReplyRevocRegEntryValueField())
     )
 

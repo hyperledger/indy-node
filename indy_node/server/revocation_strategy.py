@@ -58,6 +58,10 @@ class RevocationStrategy(metaclass=ABCMeta):
     def write(self, current_reg_entry, txn):
         raise NotImplementedError
 
+    @staticmethod
+    def get_delta(to_dict, from_dict=None):
+        raise NotImplementedError
+
 
 class RevokedStrategy(RevocationStrategy):
     # This strategy save in state only revoked indices
@@ -107,6 +111,14 @@ class RevokedStrategy(RevocationStrategy):
         path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
         self.state.set(path, value_bytes)
 
+    @staticmethod
+    def get_delta(to_dict, from_dict=None):
+        if from_dict is None:
+            return to_dict[ISSUED], to_dict[REVOKED]
+        revoked = set(to_dict[REVOKED]).difference(set(from_dict[REVOKED]))
+        issued = set(from_dict[REVOKED]).difference(set(to_dict[REVOKED]))
+        return issued, revoked
+
 
 class IssuedStrategy(RevocationStrategy):
     # This strategy saves in state only issued indices
@@ -155,3 +167,11 @@ class IssuedStrategy(RevocationStrategy):
         # contains already changed txn
         path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
         self.state.set(path, value_bytes)
+
+    @staticmethod
+    def get_delta(to_dict, from_dict=None):
+        if from_dict is None:
+            return to_dict[ISSUED], to_dict[REVOKED]
+        issued = set(to_dict[ISSUED]).difference(set(from_dict[ISSUED]))
+        revoked = set(from_dict[ISSUED]).difference(set(to_dict[ISSUED]))
+        return issued, revoked

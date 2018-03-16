@@ -49,6 +49,8 @@ ISSUANCE_ON_DEMAND = "ISSUANCE_ON_DEMAND"
 TIMESTAMP = 'timestamp'
 FROM = "from"
 TO = "to"
+STATE_PROOF_FROM = "stateProofFrom"
+REVOC_REG_ID = "revocRegId"
 
 NULL = 'null'
 OWNER = '<owner>'
