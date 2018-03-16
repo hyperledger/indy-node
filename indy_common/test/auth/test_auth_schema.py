@@ -18,13 +18,6 @@ def test_schema_adding_without_permission():
         assert not r and msg
 
 
-def test_schema_adding_not_owner():
-    roles = {TRUSTEE, STEWARD, TRUST_ANCHOR}
-    for role in roles:
-        r, msg = _authorised_for_schemas(role, False)
-        assert not r and msg == "Only owner is allowed"
-
-
-def _authorised_for_schemas(role, is_owner):
+def _authorised_for_schemas(role):
     return Authoriser.authorised(typ=SCHEMA,
                                  actorRole=role)
