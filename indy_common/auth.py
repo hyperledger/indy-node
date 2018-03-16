@@ -1,7 +1,7 @@
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
 
-from indy_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM, POOL_CONFIG
+from indy_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM, POOL_CONFIG, SCHEMA, CLAIM_DEF
 from indy_common.roles import Roles
 
 logger = getlogger()
@@ -32,6 +32,10 @@ class Authoriser:
             {TRUSTEE: []},
         '{}_role_{}_'.format(NYM, TRUST_ANCHOR):
             {TRUSTEE: []},
+        '{}_role_<any>_<any>'.format(SCHEMA):
+            {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
+        '{}_role_<any>_<any>'.format(CLAIM_DEF):
+            {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
         '{}_verkey_<any>_<any>'.format(NYM):
             {r: [OWNER] for r in ValidRoles},
         '{}_services__[VALIDATOR]'.format(NODE):

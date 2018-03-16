@@ -5,7 +5,9 @@ import base58
 
 from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
+    REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, REVOC_TYPE, TAG, CRED_DEF_ID, \
+    GET_REVOC_REG_DEF, ID, ATTR_NAMES
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -18,16 +20,21 @@ from plenum.common.types import f
 from plenum.common.constants import TRUSTEE
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
 from stp_core.common.log import getlogger
+from indy_node.server.revocation_strategy import RevokedStrategy, IssuedStrategy
 
 logger = getlogger()
 
 
 class DomainReqHandler(PHandler):
-    write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF}
-    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF}
+    write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
+    query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, GET_REVOC_REG_DEF}
+    revocation_strategy_map = {
+        ISSUANCE_BY_DEFAULT: RevokedStrategy,
+        ISSUANCE_ON_DEMAND: IssuedStrategy,
+    }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store):
+                 idrCache, attributeStore, bls_store, tsRevoc_store):
         super().__init__(ledger, state, config, requestProcessor, bls_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
@@ -36,13 +43,18 @@ class DomainReqHandler(PHandler):
             GET_ATTR: self.handleGetAttrsReq,
             GET_SCHEMA: self.handleGetSchemaReq,
             GET_CLAIM_DEF: self.handleGetClaimDefReq,
+            GET_REVOC_REG_DEF: self.handleGetRevocRegDefReq,
         }
+        self.tsRevoc_store = tsRevoc_store
 
     def onBatchCreated(self, stateRoot):
         self.idrCache.currentBatchCreated(stateRoot)
 
     def onBatchRejected(self):
         self.idrCache.batchRejected()
+
+    def get_revocation_strategy(self, typ):
+        return self.revocation_strategy_map.get(typ, None)
 
     def _updateStateWithSingleTxn(self, txn, isCommitted=False):
         typ = txn.get(TXN_TYPE)
@@ -66,14 +78,17 @@ class DomainReqHandler(PHandler):
             self._addClaimDef(txn)
         elif typ == REVOC_REG_DEF:
             self._addRevocDef(txn)
+        elif typ == REVOC_REG_ENTRY:
+            self._addRevocRegEntry(txn)
         else:
             logger.debug(
                 'Cannot apply request of type {} to state'.format(typ))
 
-    def commit(self, txnCount, stateRoot, txnRoot) -> List:
-        r = super().commit(txnCount, stateRoot, txnRoot)
+    def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
+        r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
         stateRoot = base58.b58decode(stateRoot.encode())
         self.idrCache.onBatchCommitted(stateRoot)
+        self.tsRevoc_store.set(ppTime, stateRoot)
         return r
 
     def doStaticValidation(self, request: Request):
@@ -82,6 +97,8 @@ class DomainReqHandler(PHandler):
             self._doStaticValidationNym(identifier, req_id, operation)
         if operation[TXN_TYPE] == ATTRIB:
             self._doStaticValidationAttrib(identifier, req_id, operation)
+        if operation[TXN_TYPE] == SCHEMA:
+            self._doStaticValidationSchema(identifier, req_id, operation)
 
     def _doStaticValidationNym(self, identifier, reqId, operation):
         role = operation.get(ROLE)
@@ -102,6 +119,11 @@ class DomainReqHandler(PHandler):
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
 
+    def _doStaticValidationSchema(self, identifier, reqId, operation):
+        if not operation.get(DATA).get(ATTR_NAMES):
+            raise InvalidClientRequest(identifier, reqId,
+                                       "attr_names in schema can not be empty")
+
     def validate(self, req: Request, config=None):
         op = req.operation
         typ = op[TXN_TYPE]
@@ -116,6 +138,8 @@ class DomainReqHandler(PHandler):
             self._validate_claim_def(req)
         elif typ == REVOC_REG_DEF:
             self._validate_revoc_reg_def(req)
+        elif typ == REVOC_REG_ENTRY:
+            self._validate_revoc_reg_entry(req)
 
     @staticmethod
     def _validate_attrib_keys(operation):
@@ -222,35 +246,89 @@ class DomainReqHandler(PHandler):
                                        '{} can have one and only one SCHEMA with '
                                        'name {} and version {}'
                                        .format(identifier, schema_name, schema_version))
+        try:
+            origin_role = self.idrCache.getRole(
+                req.identifier, isCommitted=False) or None
+        except BaseException:
+            raise UnknownIdentifier(
+                req.identifier,
+                req.reqId)
+        r, msg = Authoriser.authorised(typ=SCHEMA,
+                                       field=ROLE,
+                                       actorRole=origin_role,
+                                       oldVal=None,
+                                       newVal=None,
+                                       isActorOwnerOfSubject=True)
+        if not r:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "{} cannot add schema".format(
+                    Roles.nameFromValue(origin_role))
+            )
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
         # sine a Claim Def needs to be identified by seqNo
-        identifier = req.identifier
-        operation = req.operation
-        schema_ref = operation[REF]
-        signature_type = operation[SIGNATURE_TYPE]
-        claim_def, _, _, _ = self.getClaimDef(
-            author=identifier,
-            schemaSeqNo=schema_ref,
-            signatureType=signature_type
-        )
-        if claim_def:
-            raise InvalidClientRequest(identifier, req.reqId,
-                                       '{} can have one and only one CLAIM_DEF for '
-                                       'and schema ref {} and signature type {}'
-                                       .format(identifier, schema_ref, signature_type))
+        try:
+            origin_role = self.idrCache.getRole(
+                req.identifier, isCommitted=False) or None
+        except BaseException:
+            raise UnknownIdentifier(
+                req.identifier,
+                req.reqId)
+        # only owner can update claim_def,
+        # because his identifier is the primary key of claim_def
+        r, msg = Authoriser.authorised(typ=CLAIM_DEF,
+                                       field=ROLE,
+                                       actorRole=origin_role,
+                                       oldVal=None,
+                                       newVal=None,
+                                       isActorOwnerOfSubject=True)
+        if not r:
+            raise UnauthorizedClientRequest(
+                req.identifier,
+                req.reqId,
+                "{} cannot add claim def".format(
+                    Roles.nameFromValue(origin_role))
+            )
 
     def _validate_revoc_reg_def(self, req: Request):
-        # TODO Need to check that CRED_DEF for this REVOC_DEF exist
         operation = req.operation
-
-        cred_def_id = operation.get("id")
-        revoc_def_type = operation.get("type")
-        revoc_def_tag = operation.get("tag")
+        cred_def_id = operation.get(CRED_DEF_ID)
+        revoc_def_type = operation.get(REVOC_TYPE)
+        revoc_def_tag = operation.get(TAG)
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
+        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False)
+        if cred_def is None:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "There is no any CRED_DEF by path: {}".format(cred_def_id))
+
+    def _get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
+        assert author_did
+        assert revoc_reg_def_id
+        current_entry, _, _, _ = self.getRevocDefEntry(author_did=author_did,
+                                                       revoc_reg_def_id=revoc_reg_def_id,
+                                                       isCommitted=False)
+        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False)
+        if revoc_def is None:
+            raise InvalidClientRequest(author_did,
+                                       req_id,
+                                       "There is no any REVOC_REG_DEF by path: {}".format(revoc_reg_def_id))
+        return current_entry, revoc_def
+
+    def _validate_revoc_reg_entry(self, req: Request):
+        current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
+            author_did=req.identifier,
+            revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
+            req_id=req.reqId
+        )
+        validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
+        validator = validator_cls(self.state)
+        validator.validate(current_entry, req)
 
     def updateNym(self, nym, data, isCommitted=True):
         updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
@@ -330,6 +408,20 @@ class DomainReqHandler(PHandler):
         result[SIGNATURE_TYPE] = signatureType
         return result
 
+    def handleGetRevocRegDefReq(self, request: Request):
+        state_path = request.operation.get(ID, None)
+        assert state_path
+        try:
+            keys, last_seq_no, last_update_time, proof = self.lookup(state_path, isCommitted=True)
+        except KeyError:
+            keys, last_seq_no, last_update_time, proof = None, None, None, None
+        result = self.make_result(request=request,
+                                  data=keys,
+                                  last_seq_no=last_seq_no,
+                                  update_time=last_update_time,
+                                  proof=proof)
+        return result
+
     def handleGetAttrsReq(self, request: Request):
         if not self._validate_attrib_keys(request.operation):
             raise InvalidClientRequest(request.identifier, request.reqId,
@@ -403,6 +495,16 @@ class DomainReqHandler(PHandler):
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
 
+    def _addRevocRegEntry(self, txn) -> None:
+        current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
+            author_did=txn[f.IDENTIFIER.nm],
+            revoc_reg_def_id=txn[REVOC_REG_DEF_ID],
+            req_id=txn[f.REQ_ID.nm]
+        )
+        writer_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
+        writer = writer_cls(self.state)
+        writer.write(current_entry, txn)
+
     def getAttr(self,
                 did: str,
                 key: str,
@@ -471,6 +573,20 @@ class DomainReqHandler(PHandler):
                                                     cred_def_id,
                                                     revoc_def_type,
                                                     revoc_def_tag)
+        try:
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            return keys, seqno, lastUpdateTime, proof
+        except KeyError:
+            return None, None, None, None
+
+    def getRevocDefEntry(self,
+                         author_did,
+                         revoc_reg_def_id,
+                         isCommitted=True) -> (str, int, int, list):
+        assert author_did
+        assert revoc_reg_def_id
+        path = domain.make_state_path_for_revoc_reg_entry(authors_did=author_did,
+                                                          revoc_reg_def_id=revoc_reg_def_id)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof

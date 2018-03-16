@@ -208,6 +208,18 @@ def client1(clientAndWallet1, looper):
 
 
 @pytest.fixture(scope="module")
+def added_client_without_role(steward, stewardWallet, looper,
+                           wallet1):
+    createNym(looper,
+              wallet1.defaultId,
+              steward,
+              stewardWallet,
+              role=None,
+              verkey=wallet1.getVerkey())
+    return wallet1
+
+
+@pytest.fixture(scope="module")
 def wallet1(clientAndWallet1):
     return clientAndWallet1[1]
 

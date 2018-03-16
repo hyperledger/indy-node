@@ -4,8 +4,6 @@ from hashlib import sha256
 
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
     VERSION, ORIGIN, FORCE
-from plenum.common.messages.fields import IterableField, AnyMapField, \
-    NonEmptyStringField
 from plenum.common.messages.node_message_factory import node_message_factory
 
 from plenum.common.messages.message_base import MessageValidator
@@ -13,7 +11,8 @@ from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
 from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.messages.fields import ConstantField, IdentifierField, LimitedLengthStringField, TxnSeqNoField, \
-    Sha256HexField, JsonField, MapField, BooleanField, VersionField, ChooseField, IntegerField
+    Sha256HexField, JsonField, MapField, BooleanField, VersionField, ChooseField, IntegerField, IterableField, \
+    AnyMapField, NonEmptyStringField
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
@@ -28,7 +27,9 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
     TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY, START, CANCEL, \
     REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
-    TAILS_HASH, TAILS_LOCATION, ID, TYPE, TAG, CRED_DEF_ID, VALUE
+    TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
+    REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
+    GET_REVOC_REG_DEF
 
 
 class Request(PRequest):
@@ -98,11 +99,30 @@ class RevocDefValueField(MessageValidator):
 
 class ClientRevocDefSubmitField(MessageValidator):
     schema = (
+        (TXN_TYPE, ConstantField(REVOC_REG_DEF)),
         (ID, NonEmptyStringField()),
-        (TYPE, NonEmptyStringField()),
+        (REVOC_TYPE, NonEmptyStringField()),
         (TAG, NonEmptyStringField()),
         (CRED_DEF_ID, NonEmptyStringField()),
         (VALUE, RevocDefValueField())
+    )
+
+
+class RevocRegEntryValueField(MessageValidator):
+    schema = (
+        (PREV_ACCUM, NonEmptyStringField()),
+        (ACCUM, NonEmptyStringField()),
+        (ISSUED, IterableField(inner_field_type=IntegerField())),
+        (REVOKED, IterableField(inner_field_type=IntegerField()))
+    )
+
+
+class ClientRevocRegEntrySubmitField(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(REVOC_REG_ENTRY)),
+        (REVOC_REG_DEF_ID, NonEmptyStringField()),
+        (REVOC_TYPE, NonEmptyStringField()),
+        (VALUE, RevocRegEntryValueField())
     )
 
 
@@ -210,6 +230,14 @@ class ClientClaimDefGetOperation(MessageValidator):
     )
 
 
+class ClientGetRevocRegDefField(MessageValidator):
+    schema = (
+        (ID, NonEmptyStringField()),
+        (REVOC_TYPE, NonEmptyStringField()),
+        (TXN_TYPE, ConstantField(GET_REVOC_REG_DEF)),
+    )
+
+
 class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),
@@ -249,6 +277,8 @@ class ClientOperationField(PClientOperationField):
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
         POOL_CONFIG: ClientPoolConfigOperation(),
         REVOC_REG_DEF: ClientRevocDefSubmitField(),
+        REVOC_REG_ENTRY: ClientRevocRegEntrySubmitField(),
+        GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

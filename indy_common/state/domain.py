@@ -5,12 +5,14 @@ from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, \
     TARGET_NYM, DATA, NAME, VERSION, ORIGIN
 from plenum.common.types import f
 from indy_common.serialization import attrib_raw_data_serializer
-from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, ID, TYPE, TAG, CRED_DEF_ID
+from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, ID, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID
+
 
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
 MARKER_CLAIM_DEF = "\03"
 MARKER_REVOC_DEF = "\04"
+MARKER_REVOC_REG_ENTRY = "\05"
 LAST_SEQ_NO = "lsn"
 VALUE = "val"
 LAST_UPDATE_TIME = "lut"
@@ -54,6 +56,13 @@ def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revo
                 CRED_DEF_ID=cred_def_id,
                 REVOC_DEF_TYPE=revoc_def_type,
                 REVOC_DEF_TAG=revoc_def_tag).encode()
+
+
+def make_state_path_for_revoc_reg_entry(authors_did, revoc_reg_def_id) -> bytes:
+    return "{DID}:{MARKER}:{REVOC_REG_DEF_ID}" \
+        .format(DID=authors_did,
+                MARKER=MARKER_REVOC_DEF,
+                REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
 
 
 def prepare_nym_for_state(txn):
@@ -115,9 +124,9 @@ def prepare_claim_def_for_state(txn):
 
 
 def prepare_revoc_def_for_state(txn):
-    author_did = txn.get(ID)
+    author_did = txn.get(f.IDENTIFIER.nm)
     cred_def_id = txn.get(CRED_DEF_ID)
-    revoc_def_type = txn.get(TYPE)
+    revoc_def_type = txn.get(REVOC_TYPE)
     revoc_def_tag = txn.get(TAG)
     assert author_did
     assert cred_def_id
@@ -127,6 +136,22 @@ def prepare_revoc_def_for_state(txn):
                                          cred_def_id,
                                          revoc_def_type,
                                          revoc_def_tag)
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    assert seq_no
+    assert txn_time
+    value_bytes = encode_state_value(txn, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_revoc_reg_entry_for_state(txn):
+    author_did = txn.get(f.IDENTIFIER.nm)
+    revoc_reg_def_id = txn.get(REVOC_REG_DEF_ID)
+    assert author_did
+    assert revoc_reg_def_id
+    path = make_state_path_for_revoc_reg_entry(authors_did=author_did,
+                                               revoc_reg_def_id=revoc_reg_def_id)
+
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     assert seq_no
