@@ -27,8 +27,5 @@ def test_claim_def_adding_not_owner():
 
 def _authorised_for_claim_def(role, is_owner):
     return Authoriser.authorised(typ=CLAIM_DEF,
-                                 field=REF,
                                  actorRole=role,
-                                 oldVal=None,
-                                 newVal=None,
                                  isActorOwnerOfSubject=is_owner)

@@ -27,8 +27,4 @@ def test_schema_adding_not_owner():
 
 def _authorised_for_schemas(role, is_owner):
     return Authoriser.authorised(typ=SCHEMA,
-                                 field=NAME,
-                                 actorRole=role,
-                                 oldVal=None,
-                                 newVal=None,
-                                 isActorOwnerOfSubject=is_owner)
+                                 actorRole=role)
