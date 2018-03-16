@@ -88,6 +88,34 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 }
 
 options = new TestAndPublishOptions()
-options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
+
+options.skip([
+    StagesEnum.IS_TESTED,
+    StagesEnum.STATIC_CODE_VALIDATION,
+    StagesEnum.TEST,
+    StagesEnum.AUTOMERGE,
+    //StagesEnum.GET_RELEASE_VERSION,
+    //StagesEnum.PYPI_RELEASE,
+    //StagesEnum.PACK_RELEASE,
+    //StagesEnum.PACK_RELEASE_COPY,
+
+    StagesEnum.GITHUB_RELEASE,
+    StagesEnum.QA_NOTIF,
+    StagesEnum.QA_APPROVAL,
+    StagesEnum.PRODUCT_NOTIF,
+    StagesEnum.PRODUCT_APPROVAL,
+    StagesEnum.TGB_NOTIF,
+    StagesEnum.TGB_APPROVAL,
+    StagesEnum.PACK_RELEASE_ST,
+    StagesEnum.PACK_RELEASE_COPY_ST,
+    StagesEnum.GITHUB_RELEASE_ST,
+    StagesEnum.POOL_UPDATE_NOTIF,
+    StagesEnum.BUILD_RESULT_NOTIF
+])
+
+options.setPublishableBranches(['authz'])
+options.setPostfixes([master: 'authz'])
+
+options.enable([StagesEnum.PACK_RELEASE_COPY])
 options.setCopyWithDeps(true)
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])

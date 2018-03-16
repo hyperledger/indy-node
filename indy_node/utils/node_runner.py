@@ -55,4 +55,3 @@ def run_node(config, name, node_port, client_port):
         node = integrate(node_config_helper, node, logger)
         looper.add(node)
         looper.run()
-

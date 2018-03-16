@@ -80,7 +80,7 @@ class DomainReqHandlerWithAuthz:
                                             is_committed=True)
         return DomainReqHandler.make_result(request=request,
                                             data=policy,
-                                            last_seq_no=0, # TODO: Fix me
+                                            last_seq_no=0,  # TODO: Fix me
                                             update_time=0,  # TODO: Fix me
                                             proof=None)    # TODO: Fix me
 
@@ -214,7 +214,7 @@ class DomainReqHandlerWithAuthz:
             return (*existing_policy, (agent_verkey, auth, commitment))
         else:
             return (*existing_policy[:i], (agent_verkey, auth, commitment),
-                    *existing_policy[i+1:])
+                    *existing_policy[(i + 1):])
 
     @staticmethod
     def policy_address_to_state_key(policy_address: int) -> bytes:
