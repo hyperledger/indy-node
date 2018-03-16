@@ -12,7 +12,7 @@ from plenum.common.messages.message_base import MessageValidator
 # Temporary value, needs to change
 MAX_POLICY_ADDRESS = 1000000
 # Temporary value, needs to change
-MAX_COMMITMENT = 199
+MAX_COMMITMENT = 104729
 
 
 class ClientAgentAuthzSubmitOperation(MessageValidator):
