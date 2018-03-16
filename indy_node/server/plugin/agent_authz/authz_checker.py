@@ -1,4 +1,4 @@
-#TODO: Code to create a new policy data object from authorisation integer and expose methods to check specific authorisations.
+# TODO: Code to create a new policy data object from authorisation integer and expose methods to check specific authorisations.
 from ledger.util import has_nth_bit_set
 
 
