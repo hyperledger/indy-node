@@ -36,10 +36,10 @@ BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 LOG_DIR = os.path.join(BASE_DIR, "log")
 CONFIG_FILE = os.path.join(BASE_DIR, "indy_config.py")
 
-tests_require = ['pytest', 'pytest-xdist', 'python3-indy']
+tests_require = ['pytest', 'pytest-xdist', 'python3-indy-authz-rc==1.3.0-420']
 
 setup(
-    name='indy-node-dev',
+    name='indy-node-authz',
     version=__version__,
     description='Indy node',
     url='https://github.com/hyperledger/indy-node',
@@ -56,7 +56,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.2.242',
+    install_requires=['indy-plenum-authz==1.2.247',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator'],
