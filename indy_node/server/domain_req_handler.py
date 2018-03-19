@@ -452,7 +452,7 @@ class DomainReqHandler(PHandler):
                         ACCUM: revoc_reg_entry[VALUE].get(ACCUM)
                     }
                 }
-            proof = self.make_proof(path, headHash=past_root)
+            proof = self.make_proof(path, head_hash=past_root)
         return self.make_result(request=request,
                                 data=reply_data,
                                 last_seq_no=seq_no,
@@ -468,7 +468,7 @@ class DomainReqHandler(PHandler):
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry)
             reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-            reg_entry_proof = self.make_proof(path_to_reg_entry, headHash=past_root)
+            reg_entry_proof = self.make_proof(path_to_reg_entry, head_hash=past_root)
         return past_root, reg_entry, seq_no, last_update_time, reg_entry_proof
 
     def handleGetRevocRegDelta(self, request: Request):
