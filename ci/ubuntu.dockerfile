@@ -9,8 +9,8 @@ RUN /bin/bash -c "sed -i 's/sdk\/deb xenial master/sdk\/deb xenial authz/g' /etc
 
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
-    libindy-crypto=0.1.6~14 \
-    libindy=1.3.0~5
+    libindy-crypto \
+    libindy
 
 RUN indy_ci_add_user $uid $user $venv && \
     indy_ci_charm_crypto $user $venv
