@@ -32,9 +32,9 @@ class Authoriser:
             {TRUSTEE: []},
         '{}_role_{}_'.format(NYM, TRUST_ANCHOR):
             {TRUSTEE: []},
-        '{}_role_<any>_<any>'.format(SCHEMA):
-            {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
-        '{}_role_<any>_<any>'.format(CLAIM_DEF):
+        '{}_<any>_<any>_<any>'.format(SCHEMA):
+            {TRUSTEE: [], STEWARD: [], TRUST_ANCHOR: []},
+        '{}_<any>_<any>_<any>'.format(CLAIM_DEF):
             {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
         '{}_verkey_<any>_<any>'.format(NYM):
             {r: [OWNER] for r in ValidRoles},
@@ -86,22 +86,26 @@ class Authoriser:
         return True
 
     @staticmethod
-    def authorised(typ, field, actorRole, oldVal=None, newVal=None,
+    def authorised(typ, actorRole, field=None, oldVal=None, newVal=None,
                    isActorOwnerOfSubject=None) -> (bool, str):
+        field = field if field is not None else ""
         oldVal = '' if oldVal is None else \
             str(oldVal).replace('"', '').replace("'", '')
         newVal = '' if newVal is None else \
             str(newVal).replace('"', '').replace("'", '')
         key = '_'.join([typ, field, oldVal, newVal])
         if key not in Authoriser.AuthMap:
-            anyKey = '_'.join([typ, field, '<any>', '<any>'])
-            if anyKey not in Authoriser.AuthMap:
-                msg = "key '{}' not found in authorized map". \
-                    format(key)
-                logger.debug(msg)
-                return False, msg
+            any_value = '_'.join([typ, field, '<any>', '<any>'])
+            if any_value not in Authoriser.AuthMap:
+                any_field = '_'.join([typ, "<any>", '<any>', '<any>'])
+                if any_field not in Authoriser.AuthMap:
+                    msg = "key '{}' not found in authorized map".format(key)
+                    logger.debug(msg)
+                    return False, msg
+                else:
+                    key = any_field
             else:
-                key = anyKey
+                key = any_value
         roles = Authoriser.AuthMap[key]
         if actorRole not in roles:
             roles_as_str = [Roles.nameFromValue(role) for role in roles.keys()]
