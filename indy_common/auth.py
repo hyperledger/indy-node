@@ -99,8 +99,7 @@ class Authoriser:
             if any_value not in Authoriser.AuthMap:
                 any_field = '_'.join([typ, "<any>", '<any>', '<any>'])
                 if any_field not in Authoriser.AuthMap:
-                    msg = "key '{}' not found in authorized map". \
-                    format(key)
+                    msg = "key '{}' not found in authorized map".format(key)
                     logger.debug(msg)
                     return False, msg
                 else:
