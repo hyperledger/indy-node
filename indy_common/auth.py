@@ -95,7 +95,7 @@ class Authoriser:
             str(newVal).replace('"', '').replace("'", '')
         key = '_'.join([typ, field, oldVal, newVal])
         if key not in Authoriser.AuthMap:
-            any_value = '_'.join([typ, "<any>", '<any>', '<any>'])
+            any_value = '_'.join([typ, field, '<any>', '<any>'])
             if any_value not in Authoriser.AuthMap:
                 any_field = '_'.join([typ, "<any>", '<any>', '<any>'])
                 if any_field not in Authoriser.AuthMap:
