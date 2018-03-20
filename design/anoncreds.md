@@ -364,7 +364,29 @@ This is needed to avoid dirty writes and updates of accumulator.
 contains aggregated accum_value, issued and revoked arrays.
 
 <b>Hint</b>: We should consider using BitMask to store the current aggregated state of issued and revoked arrays
-in the State Trie to reduce the required space.  
+in the State Trie to reduce the required space.
+
+<b>Additional</b>: For `GET_REVOC_REG` and `GET_REVOC_REG_DELTA` transactions we should save `ACCUM` value 
+into different state record (state proof purposes):
+
+* key: `revocDefSubmitterDid | RevocRegEntryAccumMarker | revocRegDefId`
+
+* value: aggregated txn `data` and `txnMetadata` (as in ledger) with only accum value without issued and revoked arrays.
+
+    * Schema of "pruned" `data` from txn must be:
+        ```
+        {
+            "data": {
+                "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
+                "revocDefType":"CL_ACCUM",
+                "value": {
+                    "accum":"<accum_value>",
+                }
+            },    
+        ....
+        }
+        ```
+    
 
 #### GET_REVOC_REG
 Gets the accumulated state of the Revocation Registry by ID
