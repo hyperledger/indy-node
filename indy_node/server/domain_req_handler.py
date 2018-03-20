@@ -173,8 +173,11 @@ class DomainReqHandler(PHandler):
 
     def _validateNewNym(self, req: Request, op, originRole):
         role = op.get(ROLE)
-        r, msg = Authoriser.authorised(NYM, ROLE, originRole,
-                                       oldVal=None, newVal=role)
+        r, msg = Authoriser.authorised(NYM,
+                                       originRole,
+                                       field=ROLE,
+                                       oldVal=None,
+                                       newVal=role)
         if not r:
             raise UnauthorizedClientRequest(
                 req.identifier,
@@ -203,7 +206,7 @@ class DomainReqHandler(PHandler):
                     newVal = op[key]
                     oldVal = nymData.get(key)
                     if oldVal != newVal:
-                        r, msg = Authoriser.authorised(NYM, key, originRole,
+                        r, msg = Authoriser.authorised(NYM, originRole, field=key,
                                                        oldVal=oldVal, newVal=newVal,
                                                        isActorOwnerOfSubject=isOwner)
                         if not r:
@@ -260,11 +263,7 @@ class DomainReqHandler(PHandler):
                 req.identifier,
                 req.reqId)
         r, msg = Authoriser.authorised(typ=SCHEMA,
-                                       field=ROLE,
-                                       actorRole=origin_role,
-                                       oldVal=None,
-                                       newVal=None,
-                                       isActorOwnerOfSubject=True)
+                                       actorRole=origin_role)
         if not r:
             raise UnauthorizedClientRequest(
                 req.identifier,
@@ -286,10 +285,7 @@ class DomainReqHandler(PHandler):
         # only owner can update claim_def,
         # because his identifier is the primary key of claim_def
         r, msg = Authoriser.authorised(typ=CLAIM_DEF,
-                                       field=ROLE,
                                        actorRole=origin_role,
-                                       oldVal=None,
-                                       newVal=None,
                                        isActorOwnerOfSubject=True)
         if not r:
             raise UnauthorizedClientRequest(
