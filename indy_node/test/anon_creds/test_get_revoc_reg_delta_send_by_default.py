@@ -3,7 +3,7 @@ import copy
 from plenum.common.util import get_utc_epoch
 from plenum.test.helper import sdk_send_and_check, sdk_sign_request_from_dict
 from indy_common.constants import REVOC_REG_DEF_ID, VALUE, FROM, TO, ISSUED, \
-    REVOKED, PREV_ACCUM, ACCUM, STATE_PROOF_FROM
+    REVOKED, PREV_ACCUM, ACCUM_FROM, ACCUM_TO, STATE_PROOF_FROM, ACCUM
 from plenum.common.constants import TXN_TIME, DATA
 from plenum.common.types import f
 from plenum.common.util import randomString
@@ -22,7 +22,7 @@ def test_send_with_only_to_by_default(looper,
     sdk_reply = sdk_send_and_check([json.dumps(get_revoc_reg_delta)], looper, txnPoolNodeSet, sdk_pool_handle)
     reply = sdk_reply[0][1]
     assert rev_entry_req['operation'][REVOC_REG_DEF_ID] == reply['result'][REVOC_REG_DEF_ID]
-    assert rev_entry_req['operation'][VALUE][ACCUM] == reply['result'][DATA][VALUE][ACCUM]
+    assert rev_entry_req['operation'][VALUE][ACCUM] == reply['result'][DATA][VALUE][ACCUM_TO][VALUE][ACCUM]
     assert rev_entry_req['operation'][VALUE][REVOKED] == reply['result'][DATA][VALUE][REVOKED]
 
 
@@ -86,5 +86,5 @@ def test_send_with_from_by_default(looper,
     assert get_reply['result'][DATA][STATE_PROOF_FROM]
     assert get_reply['result'][DATA][VALUE][ISSUED] == [1, 2, 3]
     assert get_reply['result'][DATA][VALUE][REVOKED] == [10, 11]
-    assert get_reply['result'][DATA][VALUE][ACCUM] == rev_reg_req3['operation'][VALUE][ACCUM]
-    assert get_reply['result'][DATA][ACCUM] == rev_reg_reply1['result'][VALUE][ACCUM]
+    assert get_reply['result'][DATA][VALUE][ACCUM_TO][VALUE][ACCUM] == rev_reg_req3['operation'][VALUE][ACCUM]
+    assert get_reply['result'][DATA][VALUE][ACCUM_FROM][VALUE][ACCUM] == rev_reg_reply1['result'][VALUE][ACCUM]

@@ -256,20 +256,6 @@ class ClientGetRevocRegDeltaField(MessageValidator):
     )
 
 
-class ReplyRevocRegEntryValueField(MessageValidator):
-    schema = (
-        (ACCUM, NonEmptyStringField())
-    )
-
-
-class ReplyRevocRegEntryField(MessageValidator):
-    schema = (
-        (REVOC_REG_DEF_ID, NonEmptyStringField()),
-        (TXN_TYPE, NonEmptyStringField()),
-        (VALUE, ReplyRevocRegEntryValueField())
-    )
-
-
 class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),

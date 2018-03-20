@@ -8,7 +8,7 @@ from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
     GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, ATTR_NAMES, REVOC_TYPE, \
-    TIMESTAMP, ACCUM, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, REVOC_REG_ID
+    TIMESTAMP, ACCUM, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, REVOC_REG_ID, ACCUM_FROM, ACCUM_TO
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -430,11 +430,11 @@ class DomainReqHandler(PHandler):
         req_ts = request.operation.get(TIMESTAMP)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
         author_did = request.identifier
-        # Get root hash corresponding with givtimestamp
+        # Get root hash corresponding with given timestamp
         past_root = self.tsRevoc_store.get_equal_or_prev(req_ts)
-        # Path to corresponding REVOC_REG_ENTRY
-        path = domain.make_state_path_for_revoc_reg_entry(authors_did=author_did,
-                                                          revoc_reg_def_id=revoc_reg_def_id)
+        # Path to corresponding ACCUM record in state
+        path = domain.make_state_path_for_revoc_reg_entry_accum(authors_did=author_did,
+                                                                revoc_reg_def_id=revoc_reg_def_id)
         if past_root is None:
             reply_data = None
             seq_no = None
@@ -442,16 +442,10 @@ class DomainReqHandler(PHandler):
             proof = None
         else:
             encoded_entry = self.state.get_for_root_hash(past_root, path)
-            revoc_reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+            revoc_reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
 
-            reply_data = None if revoc_reg_entry is None else \
-                {
-                    REVOC_REG_DEF_ID: revoc_reg_def_id,
-                    REVOC_TYPE: revoc_reg_entry.get(REVOC_TYPE),
-                    VALUE: {
-                        ACCUM: revoc_reg_entry[VALUE].get(ACCUM)
-                    }
-                }
+            reply_data = None if revoc_reg_entry_accum is None else revoc_reg_entry_accum
+
             proof = self.make_proof(path, head_hash=past_root)
         return self.make_result(request=request,
                                 data=reply_data,
@@ -461,15 +455,34 @@ class DomainReqHandler(PHandler):
 
     def _get_reg_entry_by_timestamp(self, timestamp, path_to_reg_entry):
         reg_entry = None
-        seq_no = None
-        last_update_time = None
-        reg_entry_proof = None
         past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry)
-            reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-            reg_entry_proof = self.make_proof(path_to_reg_entry, head_hash=past_root)
-        return past_root, reg_entry, seq_no, last_update_time, reg_entry_proof
+            assert encoded_entry
+            reg_entry, _, _ = domain.decode_state_value(encoded_entry)
+        return past_root, reg_entry
+
+    def _get_reg_entry_accum_by_timestamp(self, timestamp, path_to_reg_entry_accum):
+        reg_entry_accum = None
+        seq_no = None
+        last_update_time = None
+        reg_entry_accum_proof = None
+        past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
+        if past_root:
+            encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry_accum)
+            reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+            reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
+        return reg_entry_accum, seq_no, last_update_time, reg_entry_accum_proof
+
+    def _validateGetRevocRegDelta(self, request: Request):
+        assert request.operation
+        req_ts_to = request.operation.get(TO, None)
+        assert req_ts_to
+        req_ts_from = request.operation.get(FROM, None)
+        if req_ts_from and req_ts_from > req_ts_to:
+            raise InvalidClientRequest(request.identifier,
+                                       request.reqId,
+                                       "Timestamp FROM more then TO: {} > {}".format(req_ts_from, req_ts_to))
 
     def handleGetRevocRegDelta(self, request: Request):
         """
@@ -485,34 +498,36 @@ class DomainReqHandler(PHandler):
         :param request:
         :return: Reply
         """
-
+        self._validateGetRevocRegDelta(request)
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
         author_did = request.identifier
         reply = None
         # Get root hash for "to" timestamp
-        # Get REVOC_REG_ENTRY for timestamp "to"
+        # Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"
         path_to_reg_entry = domain.make_state_path_for_revoc_reg_entry(authors_did=author_did,
                                                                        revoc_reg_def_id=revoc_reg_def_id)
-        past_root_to, \
-            reg_entry_to, \
+        path_to_reg_entry_accum = domain.make_state_path_for_revoc_reg_entry_accum(authors_did=author_did,
+                                                                                   revoc_reg_def_id=revoc_reg_def_id)
+        past_root_to, reg_entry_to = self._get_reg_entry_by_timestamp(req_ts_to, path_to_reg_entry)
+        reg_entry_accum_to, \
             seq_no_to, \
             last_update_time_to, \
-            reg_entry_proof_to = self._get_reg_entry_by_timestamp(req_ts_to, path_to_reg_entry)
+            reg_entry_accum_proof_to = self._get_reg_entry_accum_by_timestamp(req_ts_to, path_to_reg_entry_accum)
         if past_root_to:
             # Get issuance type from REVOC_REG_DEF
-            encoded_revoc_reg = self.state.get_for_root_hash(past_root_to, revoc_reg_def_id)
-            assert encoded_revoc_reg
-            revoc_reg, _, _ = domain.decode_state_value(encoded_revoc_reg)
-            strategy_cls = self.get_revocation_strategy(revoc_reg[VALUE][ISSUANCE_TYPE])
+            encoded_revoc_reg_def = self.state.get_for_root_hash(past_root_to, revoc_reg_def_id)
+            assert encoded_revoc_reg_def
+            revoc_reg_def, _, _ = domain.decode_state_value(encoded_revoc_reg_def)
+            strategy_cls = self.get_revocation_strategy(revoc_reg_def[VALUE][ISSUANCE_TYPE])
 
             if req_ts_from:
-                past_root_from, \
-                    reg_entry_from, \
+                past_root_from, reg_entry_from = self._get_reg_entry_by_timestamp(req_ts_from, path_to_reg_entry)
+                req_entry_accum_from, \
                     seq_no_from, \
                     last_update_time_from, \
-                    reg_entry_proof_from = self._get_reg_entry_by_timestamp(req_ts_from, path_to_reg_entry)
+                    reg_entry_accum_proof_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
                 # Compute issued/revoked lists corresponding with ISSUANCE_TYPE strategy
                 result_issued, result_revoked = strategy_cls.get_delta({ISSUED: reg_entry_to[VALUE][ISSUED],
                                                                         REVOKED: reg_entry_to[VALUE][REVOKED]},
@@ -524,23 +539,24 @@ class DomainReqHandler(PHandler):
                                                                        None)
             reply = {
                 REVOC_REG_ID: str(path_to_reg_entry),
-                REVOC_TYPE: revoc_reg.get(REVOC_TYPE),
+                REVOC_TYPE: revoc_reg_def.get(REVOC_TYPE),
                 VALUE: {
-                    ACCUM: reg_entry_to[VALUE].get(ACCUM),
+                    ACCUM_TO: reg_entry_accum_to,
                     ISSUED: result_issued,
                     REVOKED: result_revoked
                 }
+
             }
             # If we got "from" timestamp, then add state proof into "data" section of reply
             if req_ts_from:
-                reply[STATE_PROOF_FROM] = reg_entry_proof_from
-                reply[ACCUM] = reg_entry_from[VALUE][ACCUM]
+                reply[STATE_PROOF_FROM] = reg_entry_accum_proof_from
+                reply[VALUE][ACCUM_FROM] = req_entry_accum_from
 
         return self.make_result(request=request,
                                 data=reply,
                                 last_seq_no=seq_no_to,
                                 update_time=last_update_time_to,
-                                proof=reg_entry_proof_to)
+                                proof=reg_entry_accum_proof_to)
 
     def handleGetAttrsReq(self, request: Request):
         if not self._validate_attrib_keys(request.operation):

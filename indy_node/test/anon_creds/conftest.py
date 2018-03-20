@@ -236,8 +236,8 @@ def send_revoc_reg_def_by_default(looper,
                                                     claim_def_req['operation']["signature_type"],
                                                     str(claim_def_req['operation']["ref"])])
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
-    sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)
-    return revoc_req
+    _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
+    return revoc_req, revoc_reply
 
 @pytest.fixture(scope="module")
 def send_revoc_reg_def_by_demand(looper,
@@ -264,7 +264,7 @@ def send_revoc_reg_entry_by_default(looper,
                          sdk_wallet_steward,
                          sdk_pool_handle,
                          send_revoc_reg_def_by_default):
-    revoc_def_req = send_revoc_reg_def_by_default
+    revoc_def_req, _ = send_revoc_reg_def_by_default
     rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
     rev_reg_entry[VALUE][REVOKED] = [1, 2, 3, 4, 5]
     rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, rev_reg_entry)

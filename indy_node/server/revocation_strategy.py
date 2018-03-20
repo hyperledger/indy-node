@@ -50,6 +50,15 @@ class RevocationStrategy(metaclass=ABCMeta):
         # Do strategy specific validation
         self.specific_validation(current_entry, req)
 
+    def set_to_state(self, txn):
+        # Set REVOC_REG_ENTRY
+        path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
+        self.state.set(path, value_bytes)
+        # Set ACCUM from REVOC_REG_ENTRY
+        txn[VALUE] = {ACCUM: txn[VALUE][ACCUM]}
+        path, value_bytes = domain.prepare_revoc_reg_entry_accum_for_state(txn)
+        self.state.set(path, value_bytes)
+
     @abstractmethod
     def specific_validation(self, current_entry, req: Request):
         raise NotImplementedError
@@ -108,8 +117,7 @@ class RevokedStrategy(RevocationStrategy):
             value_from_txn[REVOKED] = list(result_indicies)
             txn[VALUE] = value_from_txn
         # contains already changed txn
-        path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
-        self.state.set(path, value_bytes)
+        self.set_to_state(txn)
 
     @staticmethod
     def get_delta(to_dict, from_dict=None):
@@ -165,8 +173,7 @@ class IssuedStrategy(RevocationStrategy):
             value_from_txn[ISSUED] = list(result_indicies)
             txn[VALUE] = value_from_txn
         # contains already changed txn
-        path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
-        self.state.set(path, value_bytes)
+        self.set_to_state(txn)
 
     @staticmethod
     def get_delta(to_dict, from_dict=None):
