@@ -13,6 +13,7 @@ MARKER_SCHEMA = "\02"
 MARKER_CLAIM_DEF = "\03"
 MARKER_REVOC_DEF = "\04"
 MARKER_REVOC_REG_ENTRY = "\05"
+MARKER_REVOC_REG_ENTRY_ACCUM = "\06"
 LAST_SEQ_NO = "lsn"
 VALUE = "val"
 LAST_UPDATE_TIME = "lut"
@@ -61,7 +62,14 @@ def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revo
 def make_state_path_for_revoc_reg_entry(authors_did, revoc_reg_def_id) -> bytes:
     return "{DID}:{MARKER}:{REVOC_REG_DEF_ID}" \
         .format(DID=authors_did,
-                MARKER=MARKER_REVOC_DEF,
+                MARKER=MARKER_REVOC_REG_ENTRY,
+                REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
+
+
+def make_state_path_for_revoc_reg_entry_accum(authors_did, revoc_reg_def_id) -> bytes:
+    return "{DID}:{MARKER}:{REVOC_REG_DEF_ID}" \
+        .format(DID=authors_did,
+                MARKER=MARKER_REVOC_REG_ENTRY_ACCUM,
                 REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
 
 
@@ -156,6 +164,22 @@ def prepare_revoc_reg_entry_for_state(txn):
     txn_time = txn[TXN_TIME]
     assert seq_no
     assert txn_time
+    value_bytes = encode_state_value(txn, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_revoc_reg_entry_accum_for_state(txn):
+    author_did = txn.get(f.IDENTIFIER.nm)
+    revoc_reg_def_id = txn.get(REVOC_REG_DEF_ID)
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    assert author_did
+    assert revoc_reg_def_id
+    assert seq_no
+    assert txn_time
+    path = make_state_path_for_revoc_reg_entry_accum(authors_did=author_did,
+                                                     revoc_reg_def_id=revoc_reg_def_id)
+
     value_bytes = encode_state_value(txn, seq_no, txn_time)
     return path, value_bytes
 
