@@ -20,7 +20,7 @@ def integrate_plugin_in_node(node):
     authz_req_handler.update_req_handler(domain_req_handler)
     for txn_type in authz_req_handler.valid_txn_types:
         node.register_txn_type(txn_type, DOMAIN_LEDGER_ID, domain_req_handler)
-
+    authz_req_handler.add_hooks(node)
     agent_authnr = AgentAuthzAuthNr(authz_cache)
     node.clientAuthNr.register_authenticator(agent_authnr)
     return node

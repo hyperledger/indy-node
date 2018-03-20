@@ -4,7 +4,7 @@ import rlp
 from rlp.sedes import List, big_endian_int, raw, CountableList
 
 from indy_node.server.plugin.agent_authz.helper import update_accumulator_val
-from plenum.common.constants import VERKEY
+from plenum.common.constants import VERKEY, NodeHooks, TXN_TYPE
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.types import f
@@ -78,6 +78,9 @@ class DomainReqHandlerWithAuthz:
         policy_address = request.operation[ADDRESS]
         policy = self.get_policy_from_state(policy_address,
                                             is_committed=True)
+        for item in policy:
+            if len(item) > 2 and isinstance(item[2], int):
+                item[2] = str(item[2])
         return DomainReqHandler.make_result(request=request,
                                             data=policy,
                                             last_seq_no=0,  # TODO: Fix me
@@ -88,7 +91,7 @@ class DomainReqHandlerWithAuthz:
         accum_id = request.operation[ACCUMULATOR_ID]
         accum_value = self.agent_authz_cache.get_accumulator(accum_id,
                                                              is_committed=True)
-        accum_value = int(accum_value)
+        # accum_value = int(accum_value)
         return DomainReqHandler.make_result(request=request,
                                             data=accum_value,
                                             last_seq_no=0,  # TODO: Fix me
@@ -251,3 +254,15 @@ class DomainReqHandlerWithAuthz:
     @property
     def valid_txn_types(self) -> set:
         return self.write_types.union(self.query_types)
+
+    def convert_big_numbers_to_string(self, committed_txns, pp_time):
+        # If `ADDRESS` and `COMMITMENT` are integers, convert them to string
+        for txn in committed_txns:
+            if txn.get(TXN_TYPE) in self.valid_txn_types:
+                if isinstance(txn.get(ADDRESS), int):
+                    txn[ADDRESS] = str(txn[ADDRESS])
+                if isinstance(txn.get(COMMITMENT), int):
+                    txn[COMMITMENT] = str(txn[COMMITMENT])
+
+    def add_hooks(self, node):
+        node.register_hook(NodeHooks.PRE_SEND_REPLY, self.convert_big_numbers_to_string)

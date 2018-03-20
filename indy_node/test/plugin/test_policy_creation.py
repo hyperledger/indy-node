@@ -2,6 +2,8 @@ import pytest
 
 from indy_node.server.plugin.agent_authz.constants import AGENT_AUTHZ, ADDRESS, \
     AUTHORIZATION, COMMITMENT
+from indy_node.server.plugin.agent_authz.messages.types import \
+    MAX_POLICY_ADDRESS, MAX_COMMITMENT
 from indy_node.test.plugin.helper import gen_random_commitment, \
     gen_random_verkey, gen_random_policy_address, PRIMES, \
     check_policy_txn_updates_state_and_cache
@@ -40,13 +42,13 @@ def test_new_authz_policy_bad_address(looper,
 
     op = {
         TXN_TYPE: AGENT_AUTHZ,
-        ADDRESS: 1000001,
+        ADDRESS: str(MAX_POLICY_ADDRESS+10),
         VERKEY: gen_random_verkey(),
         AUTHORIZATION: 1,
         COMMITMENT: gen_random_commitment(),
     }
     send_op_and_wait_for_nack(looper, nodeSet, op, agent1_client, agent1_wallet,
-                              'should not be greater than {}'.format(1000000))
+                              'should not be greater than {}'.format(MAX_POLICY_ADDRESS))
 
 
 def test_new_authz_policy_bad_commitment(looper,
@@ -87,10 +89,10 @@ def test_new_authz_policy_bad_commitment(looper,
         ADDRESS: gen_random_policy_address(),
         VERKEY: gen_random_verkey(),
         AUTHORIZATION: 1,
-        COMMITMENT: PRIMES[-1]+1,
+        COMMITMENT: str(MAX_COMMITMENT+1),
     }
     send_op_and_wait_for_nack(looper, nodeSet, op, agent1_client, agent1_wallet,
-                              'should not be greater than {}'.format(PRIMES[-1]))
+                              'should not be greater than {}'.format(MAX_COMMITMENT))
 
 
 def test_new_authz_policy_has_bad_verkey(looper,
@@ -181,7 +183,8 @@ def test_new_authz_policy_with_correct_verkey(looper,
     """
     addr = gen_random_policy_address()
     verkey, _ = agent1_wallet.addIdentifier(signer=SimpleSigner())
-    commitment = gen_random_commitment()
+    # BigNumber, so a string
+    commitment = "318028647963126151329853788044970037553383723548483991111562082327990638642710893355904748171562443528303700560839933521244978396415095418730498962422748911233060199731345351794902617682381377504128982684873285344278700181318498672093457626984884328901609908211755665042560103660590284040739154480985634957587"
     op = {
         TXN_TYPE: AGENT_AUTHZ,
         ADDRESS: addr,
@@ -193,7 +196,7 @@ def test_new_authz_policy_with_correct_verkey(looper,
     waitForSufficientRepliesForRequests(looper, agent1_client,
                                         requests=requests)
     check_policy_txn_updates_state_and_cache(nodeSet, addr, verkey, 1,
-                                             commitment)
+                                             int(commitment))
 
 
 def test_new_authz_policy_with_correct_authz_bits(looper,

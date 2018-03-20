@@ -35,6 +35,6 @@ def check_policy_txn_updates_state_and_cache(nodes, policy_address, verkey,
                                                                is_committed=True)
         for (v, a, c) in val:
             if verkey.encode() == v:
-                assert (verkey.encode(), auth, commitment) == (v, a, c)
+                assert (verkey.encode(), auth, commitment) == (v, a, c), (commitment, (v, a, c))
         assert req_handler.agent_authz_cache.get_agent_details(
             policy_address, verkey, True) == (auth, commitment)

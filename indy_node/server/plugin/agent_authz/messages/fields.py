@@ -29,7 +29,9 @@ class AgentAuthzPolicyAddressField(CappedNumberField):
                 val = int(val)
             except ValueError as ex:
                 return str(ex)
-        return super()._specific_validation(val)
+        err = super()._specific_validation(val)
+        if err:
+            return err
 
 
 class AgentAuthzAuthorisationField(CappedNumberField):
