@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # it should be fixed
+ENABLE_STDOUT_LOGGING="enableStdOutLogging"
 GENERAL_CONFIG_DIR="/etc/indy"
 GENERAL_DATA_DIR="/var/lib/indy"
 GENERAL_LOG_DIR="/var/log/indy"
@@ -33,6 +34,10 @@ mkdir -p $GENERAL_LOG_DIR
 # create indy node config if does not exist
 if [ ! -f $GENERAL_CONFIG_DIR/indy_config.py ]; then
     cp $INSTALL_DIR/indy_node/general_config/indy_config.py $GENERAL_CONFIG_DIR
+else
+    if [ -z "$(grep $ENABLE_STDOUT_LOGGING $GENERAL_CONFIG_DIR/indy_config.py)" ]; then
+        printf "\n%s\n%s\n" "# Disable stdout logging" "$ENABLE_STDOUT_LOGGING = False" >> $GENERAL_CONFIG_DIR/indy_config.py
+    fi
 fi
 
 chmod -R ug+rwx $GENERAL_CONFIG_DIR
