@@ -29,4 +29,4 @@ def test_revoc_reg_delta_from_greater_then_to(create_node_and_not_start,
     req['operation'][FROM] = 100
     req['operation'][TO] = 20
     with pytest.raises(InvalidClientRequest, match="Timestamp FROM more then TO"):
-        req_handler.get_query_response(Request(**req))
+        req_handler.doStaticValidation(Request(**req))

@@ -103,6 +103,8 @@ class DomainReqHandler(PHandler):
             self._doStaticValidationAttrib(identifier, req_id, operation)
         if operation[TXN_TYPE] == SCHEMA:
             self._doStaticValidationSchema(identifier, req_id, operation)
+        if operation[TXN_TYPE] == GET_REVOC_REG_DELTA:
+            self._doStaticValidationGetRevocRegDelta(request)
 
     def _doStaticValidationNym(self, identifier, reqId, operation):
         role = operation.get(ROLE)
@@ -474,7 +476,7 @@ class DomainReqHandler(PHandler):
             reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
         return reg_entry_accum, seq_no, last_update_time, reg_entry_accum_proof
 
-    def _validateGetRevocRegDelta(self, request: Request):
+    def _doStaticValidationGetRevocRegDelta(self, request: Request):
         assert request.operation
         req_ts_to = request.operation.get(TO, None)
         assert req_ts_to
@@ -498,7 +500,6 @@ class DomainReqHandler(PHandler):
         :param request:
         :return: Reply
         """
-        self._validateGetRevocRegDelta(request)
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
