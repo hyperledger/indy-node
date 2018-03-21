@@ -1,6 +1,9 @@
+from indy_crypto.big_number import BigNumber
+
 from indy_client.test.conftest import nodeSet
 from indy_node.server.plugin.agent_authz.constants import ADDRESS, \
-    GET_AGENT_AUTHZ, GET_AGENT_AUTHZ_ACCUM, ACCUMULATOR_ID, ACCUMULATOR_1
+    GET_AGENT_AUTHZ, GET_AGENT_AUTHZ_ACCUM, ACCUMULATOR_ID, ACCUMULATOR_1, \
+    GET_AGENT_AUTHZ_ACCUM_WIT, COMMITMENT
 from indy_node.test.plugin.test_policy_creation import policy_created
 from indy_node.test.plugin.test_authorize_agents import prove_grant_given, \
     prove_revoke_given
@@ -43,19 +46,70 @@ def test_get_accumulator(looper, nodeSet, agent1_wallet, agent1_client,
                                       agent1_wallet, agent1_client)
     v2 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
                                 op)
-    assert (v1**commitment1) % config.AuthzAccumMod == v2
+    assert BigNumber.modular_exponentiation(int(v1), commitment1,
+                                            config.AuthzAccumMod[ACCUMULATOR_1]) == int(v2)
 
     _, _, _, commitment2 = give_prove(looper, addr, admin_verkey,
                                       agent1_wallet, agent1_client)
     v3 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
                                 op)
-    assert (v2 ** commitment2) % config.AuthzAccumMod == v3
+    assert BigNumber.modular_exponentiation(int(v2), commitment2,
+                                            config.AuthzAccumMod[ACCUMULATOR_1]) == int(v3)
 
     _, _, _, commitment3 = give_prove(looper, addr, admin_verkey,
                                       agent1_wallet, agent1_client)
     v4 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
                                 op)
-    assert (v3 ** commitment3) % config.AuthzAccumMod == v4
+    assert BigNumber.modular_exponentiation(int(v3), commitment3,
+                                            config.AuthzAccumMod[ACCUMULATOR_1]) == int(v4)
+
+    # Witness
+    # _, _, _, commitment4 = give_prove(looper, addr, admin_verkey,
+    #                                   agent1_wallet, agent1_client)
+    # _, _, _, commitment5 = give_prove(looper, addr, admin_verkey,
+    #                                   agent1_wallet, agent1_client)
+    op = {
+        TXN_TYPE: GET_AGENT_AUTHZ_ACCUM_WIT,
+        ACCUMULATOR_ID: ACCUMULATOR_1,
+        COMMITMENT: commitment1
+    }
+    v5 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
+                                op)
+    assert v5[0] == v4  # Latest accumulator
+    assert v5[1] == v1  # Accumulator before adding commitment1
+    assert v5[2] == [str(commitment2), str(commitment3)]  # Commitments added after adding commitment1
+
+    op = {
+        TXN_TYPE: GET_AGENT_AUTHZ_ACCUM_WIT,
+        ACCUMULATOR_ID: ACCUMULATOR_1,
+        COMMITMENT: admin_commitment
+    }
+    v6 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
+                                op)
+    assert v6[0] == v4  # Latest accumulator
+    assert v6[2] == [str(commitment1), str(commitment2), str(commitment3)] # Commitments added after adding admin_commitment
+
+    op = {
+        TXN_TYPE: GET_AGENT_AUTHZ_ACCUM_WIT,
+        ACCUMULATOR_ID: ACCUMULATOR_1,
+        COMMITMENT: commitment2
+    }
+    v7 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
+                                op)
+    assert v7[0] == v4  # Latest accumulator
+    assert v7[1] == v2  # Accumulator before adding commitment2
+    assert v7[2] == [str(commitment3)]  # Commitments added after adding commitment2
+
+    op = {
+        TXN_TYPE: GET_AGENT_AUTHZ_ACCUM_WIT,
+        ACCUMULATOR_ID: ACCUMULATOR_1,
+        COMMITMENT: commitment3
+    }
+    v8 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
+                                op)
+    assert v8[0] == v4  # Latest accumulator
+    assert v8[1] == v3  # Accumulator before adding commitment3
+    assert v8[2] == []  # Commitments added after adding commitment3
 
 
 def test_get_auth_policy_by_address(looper, nodeSet, agent1_wallet,
@@ -83,8 +137,7 @@ def test_get_auth_policy_by_address(looper, nodeSet, agent1_wallet,
     data = get_result_data_for_op(looper, query_wallet_client,
                                   sdk_pool_handle, op)
 
-    assert [admin_verkey, admin_auth, admin_commitment] in data
-    assert [granter_verkey, granter_auth, 0] in data
-    assert [revoker_verkey, revoker_auth, 0] in data
-    assert [prover_verkey, prover_auth, prover_commitment] in data
-
+    assert [admin_verkey, admin_auth, str(admin_commitment)] in data
+    assert [granter_verkey, granter_auth, '0'] in data
+    assert [revoker_verkey, revoker_auth, '0'] in data
+    assert [prover_verkey, prover_auth, str(prover_commitment)] in data

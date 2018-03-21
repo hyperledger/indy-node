@@ -12,3 +12,4 @@ ACCUMULATOR_2 = 'accum_2'
 AGENT_AUTHZ = AgentAuthzTransactions.AGENT_AUTHZ.value
 GET_AGENT_AUTHZ = AgentAuthzTransactions.GET_AGENT_AUTHZ.value
 GET_AGENT_AUTHZ_ACCUM = AgentAuthzTransactions.GET_AGENT_AUTHZ_ACCUM.value
+GET_AGENT_AUTHZ_ACCUM_WIT = AgentAuthzTransactions.GET_AGENT_AUTHZ_ACCUM_WIT.value

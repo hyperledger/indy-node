@@ -1,6 +1,6 @@
 from indy_node.server.plugin.agent_authz.constants import AGENT_AUTHZ, ADDRESS, \
     AUTHORIZATION, COMMITMENT, GET_AGENT_AUTHZ_ACCUM, ACCUMULATOR_ID, \
-    ACCUMULATOR_1, ACCUMULATOR_2
+    ACCUMULATOR_1, ACCUMULATOR_2, GET_AGENT_AUTHZ, GET_AGENT_AUTHZ_ACCUM_WIT
 from indy_node.server.plugin.agent_authz.messages.fields import \
     AgentAuthzPolicyAddressField, AgentAuthzCommitmentField, \
     AgentAuthzAuthorisationField, AgentAuthzAccumIdField
@@ -35,6 +35,14 @@ class ClientAgentAuthzAccumGetOperation(MessageValidator):
 
 class ClientAgentAuthzPolicyGetOperation(MessageValidator):
     schema = (
-        (TXN_TYPE, ConstantField(GET_AGENT_AUTHZ_ACCUM)),
+        (TXN_TYPE, ConstantField(GET_AGENT_AUTHZ)),
         (ADDRESS, AgentAuthzPolicyAddressField(MAX_POLICY_ADDRESS)),
+    )
+
+
+class ClientAgentAuthzAccumWitGetOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_AGENT_AUTHZ_ACCUM_WIT)),
+        (ACCUMULATOR_ID, AgentAuthzAccumIdField(ACCUMULATOR_1, ACCUMULATOR_2)),
+        (COMMITMENT, AgentAuthzCommitmentField(MAX_COMMITMENT)),
     )

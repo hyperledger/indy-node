@@ -8,3 +8,4 @@ class AgentAuthzTransactions(Transactions):
     AGENT_AUTHZ = PREFIX + '0'
     GET_AGENT_AUTHZ = PREFIX + '1'
     GET_AGENT_AUTHZ_ACCUM = PREFIX + '2'
+    GET_AGENT_AUTHZ_ACCUM_WIT = PREFIX + '3'
