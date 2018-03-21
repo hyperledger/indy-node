@@ -35,9 +35,9 @@ from indy_client.test.conftest import trustAnchorWallet, \
     trusteeData, trusteeWallet, trustee, warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
-    whitelist, concerningLogLevels, logcapture, keySharedNodes, \
-    startedNodes, tdirWithPoolTxns, tdirWithDomainTxns, tdirWithClientPoolTxns, txnPoolNodeSet, \
+from plenum.test.conftest import tdir, client_tdir, nodeReg, \
+    whitelist, concerningLogLevels, logcapture, \
+    tdirWithPoolTxns, tdirWithDomainTxns, tdirWithClientPoolTxns, txnPoolNodeSet, \
     poolTxnData, dirName, poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     patchPluginManager, txnPoolNodesLooper, warncheck, \
