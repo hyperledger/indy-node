@@ -1,3 +1,5 @@
+import base58
+
 from plenum.common.constants import NODE_IP, CLIENT_IP, CLIENT_PORT, NODE_PORT, \
     ALIAS, BLS_KEY
 from plenum.common.util import randomString
@@ -45,7 +47,7 @@ def test_add_same_node_with_changed_bls_by_trustee(be, do, trusteeCli,
     '''
     be(trusteeCli)
     node_vals = newNodeVals
-    node_vals['newNodeData'][BLS_KEY] = randomString(32)
+    node_vals['newNodeData'][BLS_KEY] = base58.b58encode(randomString(128).encode())
     doSendNodeCmd(do, node_vals,
                   expMsgs=["TRUSTEE not in allowed roles ['STEWARD']"])
     exitFromCli(do)
@@ -106,7 +108,7 @@ def test_update_bls(be, do, newStewardCli,
 
     node_vals = nodeValsEmptyData
     node_vals['newNodeData'][ALIAS] = newNodeVals['newNodeData'][ALIAS]
-    node_vals['newNodeData'][BLS_KEY] = randomString(32)
+    node_vals['newNodeData'][BLS_KEY] = base58.b58encode(randomString(128).encode())
 
     doSendNodeCmd(do, node_vals,
                   expMsgs=['Node request completed'])
@@ -123,7 +125,7 @@ def test_update_bls_by_trustee(be, do, trusteeCli,
 
     node_vals = nodeValsEmptyData
     node_vals['newNodeData'][ALIAS] = newNodeVals['newNodeData'][ALIAS]
-    node_vals['newNodeData'][BLS_KEY] = randomString(32)
+    node_vals['newNodeData'][BLS_KEY] = base58.b58encode(randomString(128).encode())
 
     doSendNodeCmd(do, node_vals,
                   expMsgs=["TRUSTEE not in allowed roles ['STEWARD']"])
