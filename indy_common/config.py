@@ -47,10 +47,12 @@ primaryStorage = None
 configStateStorage = KeyValueStorageType.Leveldb
 idrCacheStorage = KeyValueStorageType.Leveldb
 attrStorage = KeyValueStorageType.Leveldb
+stateTsStorage = KeyValueStorageType.Rocksdb
 
 configStateDbName = 'config_state'
 attrDbName = 'attr_db'
 idrCacheDbName = 'idr_cache_db'
+stateTsDbName = "state_ts_db"
 
 
 PluginsToLoad = []
