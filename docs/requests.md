@@ -192,16 +192,16 @@ Each Request (both write and read) follows the pattern as shown above.
         
 - Please find the format of each request-specific data for each type of request below.
 
-## Common Reply Structure
+## Write/Read Reply Structure
 
-Each Reply follows the pattern as shown above.
+Each Write/Read Reply follows the pattern as shown above.
 
 ```
 {
     "from": <...>,
     "serialization": <...>,
     "msg": {
-        "type": REPLY,
+        "type": REPLY_WRITE/REPLY_READ,
         "protocolVersion": <...>,
         
         "data": {
@@ -330,6 +330,37 @@ Each Reply follows the pattern as shown above.
 
     Metadata as in Request. It may be absent for Reply to write requests as `txn` fields already contains 
     this information as part of transaction written to the ledger.    
+
+## Action Reply Structure
+
+Each Reply to commands/actions follows the pattern as shown above.
+
+```
+{
+    "from": <...>,
+    "serialization": <...>,
+    "msg": {
+        "type": REPLY_COMMAND,
+        "protocolVersion": <...>,
+        
+        "data": {
+            "version": <...>,
+            "type": <...>,
+            
+            "results": [
+                "result": {
+                    <result>
+                },
+            ]
+        },
+        "metadata": {
+            "version": <...>,
+            "reqId": <...>,
+            "from": <...>,
+        },
+    }
+}
+```
 
 
 ## ACK Structure
