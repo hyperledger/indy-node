@@ -11,7 +11,7 @@ import shutil
 from common.serializers.json_serializer import JsonSerializer
 from ledger.compact_merkle_tree import CompactMerkleTree
 from plenum.common.ledger import Ledger
-from plenum.persistence.leveldb_hash_store import LevelDbHashStore
+from storage.helper import initHashStore
 
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper, NodeConfigHelper
@@ -92,7 +92,7 @@ def get_ledger(type_, ledger_data_dir):
         print("Unknown ledger type: {}".format(type_))
         exit()
 
-    hash_store = LevelDbHashStore(dataDir=ledger_data_dir, fileNamePrefix=type_)
+    hash_store = initHashStore(ledger_data_dir, type_, config)
     return Ledger(CompactMerkleTree(hashStore=hash_store), dataDir=ledger_data_dir, fileName=ledger_name)
 
 
