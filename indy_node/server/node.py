@@ -1,5 +1,6 @@
 from typing import Iterable, Any, List
 
+from indy_node.server.restarter import Restarter
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
@@ -8,6 +9,7 @@ from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
     ENC, RAW, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
+from plenum.common.messages.node_messages import Reply, ActionResult
 from plenum.common.types import f, \
     OPERATION
 from plenum.persistence.storage import initStorage, initKeyValueStorage
@@ -72,6 +74,7 @@ class Node(PlenumNode, HasPoolManager):
         self.attributeStore = None
         self.stateTsDbStorage = None
         self.upgrader = None
+        self.restarter = None
         self.poolCfg = None
 
         super().__init__(name=name,
@@ -132,6 +135,13 @@ class Node(PlenumNode, HasPoolManager):
                         upgradeFailedCallback=self.postConfigLedgerCaughtUp,
                         upgrade_start_callback=self.notify_upgrade_start)
 
+    def getRestarter(self):
+        return Restarter(self.id,
+                         self.name,
+                         self.dataLocation,
+                         self.config,
+                         self.configLedger)
+
     def getDomainReqHandler(self):
         if self.attributeStore is None:
             self.attributeStore = self.loadAttributeStore()
@@ -172,6 +182,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def setup_config_req_handler(self):
         self.upgrader = self.getUpgrader()
+        self.restarter = self.getRestarter()
         self.poolCfg = self.getPoolConfig()
         super().setup_config_req_handler()
 
@@ -180,6 +191,7 @@ class Node(PlenumNode, HasPoolManager):
                                 self.states[CONFIG_LEDGER_ID],
                                 self.getIdrCache(),
                                 self.upgrader,
+                                self.restarter,
                                 self.poolManager,
                                 self.poolCfg)
 
@@ -294,22 +306,50 @@ class Node(PlenumNode, HasPoolManager):
             self.process_query(request, frm)
             self.total_read_request_number += 1
         else:
+            if request.operation[TXN_TYPE] == POOL_RESTART:
+                reply = {}
+                try:
+                    self.configReqHandler.validate(request)
+                    self.configReqHandler.applyRestart(request)
+                    reply = self.generate_action_reply(request)
+                except Exception as ex:
+                    reply = self.generate_action_reply(request,
+                                                       False,
+                                                       ex.args[0])
+                finally:
+                    self.sendReplyToClient(reply,
+                                           (request.identifier, request.reqId))
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced()\
-                    or request.operation[TXN_TYPE] == POOL_RESTART:
+                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
             # here we should have write transactions that should be processed
+            # pool_restart should not be written to ledger
             # only on writable pool
-            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG, POOL_RESTART]):
+            if request.operation[TXN_TYPE] != POOL_RESTART and (
+                self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
+                    POOL_UPGRADE, POOL_CONFIG])):
                 super().processRequest(request, frm)
-            else:
+
+            elif request.operation[TXN_TYPE] != POOL_RESTART:
                 raise InvalidClientRequest(
                     request.identifier,
                     request.reqId,
                     'Pool is in readonly mode, try again in 60 seconds')
+
+    def generate_action_reply(self, request: Request, is_success=True,
+                              msg=None):
+        operation = {TXN_TYPE: request.operation.get(TXN_TYPE)}
+        if request.operation.get(DATA):
+            operation.update(request.operation.get(DATA))
+        return Reply(ActionResult(identifier=request.identifier,
+                                  reqId=request.reqId,
+                                  signature=request.signature,
+                                  operation=operation,
+                                  protocolVersion=request.protocolVersion,
+                                  isSuccess=is_success,
+                                  msg=msg))
 
     def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
                           txnRoot) -> List:

@@ -1,5 +1,6 @@
 from typing import List
 
+from indy_node.server.restarter import Restarter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn, isTxnForced
@@ -19,10 +20,11 @@ class ConfigReqHandler(RequestHandler):
     write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, POOL_RESTART}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
-                 upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
+                 upgrader: Upgrader, restarter: Restarter, poolManager, poolCfg: PoolConfig):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
+        self.restarter = restarter
         self.poolManager = poolManager
         self.poolCfg = poolCfg
 
@@ -39,8 +41,7 @@ class ConfigReqHandler(RequestHandler):
         pass
 
     def _doStaticValidationPoolRestart(self, identifier, req_id, operation):
-        self._doStaticValidationPoolUpgrade(identifier, req_id, operation)
-        if not operation.get(DATA).get(TIME):
+        if not operation.get(DATA).get(SCHEDULE):
             raise InvalidClientRequest(identifier, req_id,
                                        "time for restart can not be empty")
 
@@ -67,7 +68,7 @@ class ConfigReqHandler(RequestHandler):
         status = None
         operation = req.operation
         typ = operation.get(TXN_TYPE)
-        if typ not in [POOL_UPGRADE, POOL_CONFIG]:
+        if typ not in [POOL_UPGRADE, POOL_CONFIG, POOL_RESTART]:
             return
         origin = req.identifier
         try:
@@ -77,6 +78,8 @@ class ConfigReqHandler(RequestHandler):
                 req.identifier,
                 req.reqId,
                 "Nym {} not added to the ledger yet".format(origin))
+        if typ == POOL_RESTART:
+            action = operation.get(ACTION)
         if typ == POOL_UPGRADE:
             currentVersion = Upgrader.getVersion()
             targetVersion = req.operation[VERSION]
@@ -111,7 +114,6 @@ class ConfigReqHandler(RequestHandler):
             trname = IndyTransactions.POOL_CONFIG.name
             action = None
             status = None
-
         r, msg = Authoriser.authorised(
             typ, ACTION, originRole, oldVal=status, newVal=action)
         if not r:
@@ -140,4 +142,9 @@ class ConfigReqHandler(RequestHandler):
         if req.isForced():
             txn = reqToTxn(req)
             self.upgrader.handleUpgradeTxn(txn)
+            self.poolCfg.handleConfigTxn(txn)
+
+    def applyRestart(self, req: Request):
+            txn = reqToTxn(req)
+            self.restarter.handleRestartTxn(txn)
             self.poolCfg.handleConfigTxn(txn)
