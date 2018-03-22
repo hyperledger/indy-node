@@ -4,10 +4,8 @@ from plenum.server.client_authn import CoreAuthNr
 
 
 class AgentAuthzAuthNr(CoreAuthNr):
-    write_types = CoreAuthNr.write_types.union(
-        DomainReqHandlerWithAuthz.write_types)
-    query_types = CoreAuthNr.query_types.union(
-        DomainReqHandlerWithAuthz.query_types)
+    write_types = DomainReqHandlerWithAuthz.write_types
+    query_types = DomainReqHandlerWithAuthz.query_types
 
     def __init__(self, authz_cache):
         self.cache = authz_cache
