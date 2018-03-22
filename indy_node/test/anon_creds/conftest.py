@@ -6,7 +6,8 @@ from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
     CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, GET_REVOC_REG_DEF, \
-    TXN_TYPE, REVOC_TYPE, ISSUANCE_TYPE, MAX_CRED_NUM, TAILS_HASH, TAILS_LOCATION, PUBLIC_KEYS
+    TXN_TYPE, REVOC_TYPE, ISSUANCE_TYPE, MAX_CRED_NUM, TAILS_HASH, TAILS_LOCATION, PUBLIC_KEYS, \
+    GET_REVOC_REG_DELTA, GET_REVOC_REG, TIMESTAMP, FROM, TO
 from indy_common.types import Request
 from indy_common.state import domain
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
@@ -36,24 +37,6 @@ def create_node_and_not_start(testNodeClass,
         yield node
         node.stop()
 
-@pytest.fixture(scope="module")
-def build_revoc_def_by_default(looper, sdk_wallet_steward):
-    data = {
-        ID: randomString(50),
-        TXN_TYPE: REVOC_REG_DEF,
-        REVOC_TYPE: "CL_ACCUM",
-        TAG: randomString(5),
-        CRED_DEF_ID: randomString(50),
-        VALUE:{
-            ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
-            MAX_CRED_NUM: 1000000,
-            TAILS_HASH: randomString(50),
-            TAILS_LOCATION: 'http://tails.location.com',
-            PUBLIC_KEYS: {},
-        }
-    }
-    req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
-    return req
 
 @pytest.fixture(scope="module")
 def add_revoc_def_by_default(create_node_and_not_start,
@@ -83,11 +66,8 @@ def add_revoc_def_by_default(create_node_and_not_start,
     req_handler._addRevocDef(txn)
     return req
 
-@pytest.fixture(scope="module")
-def build_txn_for_revoc_def_entry_by_default(looper,
-                                  sdk_wallet_steward,
-                                  add_revoc_def_by_default):
-    revoc_def_txn = add_revoc_def_by_default
+def build_revoc_reg_entry_for_given_revoc_reg_def(
+        revoc_def_txn):
     revoc_def_txn = reqToTxn(revoc_def_txn)
     path = ":".join([revoc_def_txn[f.IDENTIFIER.nm],
                      domain.MARKER_REVOC_DEF,
@@ -97,6 +77,7 @@ def build_txn_for_revoc_def_entry_by_default(looper,
     data = {
         REVOC_REG_DEF_ID: path,
         TXN_TYPE: REVOC_REG_ENTRY,
+        REVOC_TYPE: revoc_def_txn[REVOC_TYPE],
         VALUE: {
             PREV_ACCUM: randomString(10),
             ACCUM: randomString(10),
@@ -104,7 +85,15 @@ def build_txn_for_revoc_def_entry_by_default(looper,
             REVOKED: [],
         }
     }
+    return data
 
+
+@pytest.fixture(scope="module")
+def build_txn_for_revoc_def_entry_by_default(looper,
+                                  sdk_wallet_steward,
+                                  add_revoc_def_by_default):
+    revoc_def_txn = add_revoc_def_by_default
+    data = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_txn)
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     return req
 
@@ -195,12 +184,50 @@ def send_claim_def(looper,
     return req
 
 @pytest.fixture(scope="module")
-def send_revoc_reg_def(looper,
-                       txnPoolNodeSet,
-                       sdk_wallet_steward,
-                       sdk_pool_handle,
-                       send_claim_def,
-                       build_revoc_def_by_default):
+def build_revoc_def_by_default(looper, sdk_wallet_steward):
+    data = {
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: randomString(50),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
+        }
+    }
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return req
+
+@pytest.fixture(scope="module")
+def build_revoc_def_by_demand(looper, sdk_wallet_steward):
+    data = {
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: randomString(50),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_ON_DEMAND,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
+        }
+    }
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return req
+
+@pytest.fixture(scope="module")
+def send_revoc_reg_def_by_default(looper,
+                                  txnPoolNodeSet,
+                                  sdk_wallet_steward,
+                                  sdk_pool_handle,
+                                  send_claim_def,
+                                  build_revoc_def_by_default):
     _, author_did = sdk_wallet_steward
     claim_def_req = send_claim_def
     revoc_reg = build_revoc_def_by_default
@@ -209,5 +236,83 @@ def send_revoc_reg_def(looper,
                                                     claim_def_req['operation']["signature_type"],
                                                     str(claim_def_req['operation']["ref"])])
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
+    _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
+    return revoc_req, revoc_reply
+
+@pytest.fixture(scope="module")
+def send_revoc_reg_def_by_demand(looper,
+                                  txnPoolNodeSet,
+                                  sdk_wallet_steward,
+                                  sdk_pool_handle,
+                                  send_claim_def,
+                                 build_revoc_def_by_demand):
+    _, author_did = sdk_wallet_steward
+    claim_def_req = send_claim_def
+    revoc_reg = build_revoc_def_by_demand
+    revoc_reg['operation'][CRED_DEF_ID] = ":".join([author_did,
+                                                    domain.MARKER_CLAIM_DEF,
+                                                    claim_def_req['operation']["signature_type"],
+                                                    str(claim_def_req['operation']["ref"])])
+    revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
     sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)
     return revoc_req
+
+
+@pytest.fixture(scope="module")
+def send_revoc_reg_entry_by_default(looper,
+                         txnPoolNodeSet,
+                         sdk_wallet_steward,
+                         sdk_pool_handle,
+                         send_revoc_reg_def_by_default):
+    revoc_def_req, _ = send_revoc_reg_def_by_default
+    rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
+    rev_reg_entry[VALUE][REVOKED] = [1, 2, 3, 4, 5]
+    rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, rev_reg_entry)
+    reg_entry_replies = sdk_send_and_check([json.dumps(rev_entry_req)],
+                       looper,
+                       txnPoolNodeSet,
+                       sdk_pool_handle)
+    return reg_entry_replies[0]
+
+
+@pytest.fixture(scope="module")
+def send_revoc_reg_entry_by_demand(looper,
+                         txnPoolNodeSet,
+                         sdk_wallet_steward,
+                         sdk_pool_handle,
+                         send_revoc_reg_def_by_demand):
+    revoc_def_req = send_revoc_reg_def_by_demand
+    rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
+    rev_reg_entry[VALUE][ISSUED] = [1, 2, 3, 4, 5]
+    rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, rev_reg_entry)
+    reg_entry_replies = sdk_send_and_check([json.dumps(rev_entry_req)],
+                       looper,
+                       txnPoolNodeSet,
+                       sdk_pool_handle)
+    return reg_entry_replies[0]
+
+
+@pytest.fixture(scope="module")
+def build_get_revoc_reg_entry(looper,
+                              sdk_wallet_steward):
+
+    data = {
+        REVOC_REG_DEF_ID: randomString(10),
+        TXN_TYPE: GET_REVOC_REG,
+        TIMESTAMP: int(time.time())
+    }
+    revoc_reg_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return revoc_reg_req
+
+
+@pytest.fixture(scope="module")
+def build_get_revoc_reg_delta(looper,
+                              sdk_wallet_steward):
+    data = {
+        REVOC_REG_DEF_ID: randomString(10),
+        TXN_TYPE: GET_REVOC_REG_DELTA,
+        FROM: 10,
+        TO: 20,
+    }
+    revoc_reg_delta_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return revoc_reg_delta_req

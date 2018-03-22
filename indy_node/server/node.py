@@ -10,9 +10,10 @@ from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.types import f, \
     OPERATION
-from plenum.persistence.storage import initStorage, initKeyValueStorage
+from plenum.persistence.storage import initStorage
 from storage.kv_store_leveldb_int_keys import KeyValueStorageLeveldbIntKeys
 from plenum.server.node import Node as PlenumNode
+from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
@@ -157,8 +158,9 @@ class Node(PlenumNode, HasPoolManager):
         if self.stateTsDbStorage is None:
             self.stateTsDbStorage = StateTsDbStorage(
                 self.name,
-                KeyValueStorageLeveldbIntKeys(self.dataLocation,
-                                              self.config.stateTsDbName)
+                initKeyValueStorageIntKeys(self.config.stateTsStorage,
+                                           self.dataLocation,
+                                           self.config.stateTsDbName)
             )
         return self.stateTsDbStorage
 

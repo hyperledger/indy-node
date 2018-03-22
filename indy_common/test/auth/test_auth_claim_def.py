@@ -1,7 +1,7 @@
 from plenum.common.constants import TRUSTEE, STEWARD
 
 from indy_common.auth import Authoriser
-from indy_common.constants import ROLE, TGB, TRUST_ANCHOR, CLAIM_DEF
+from indy_common.constants import REF, TGB, TRUST_ANCHOR, CLAIM_DEF
 
 
 def test_claim_def_adding():
@@ -25,10 +25,15 @@ def test_claim_def_adding_not_owner():
         assert not r and msg == "Only owner is allowed"
 
 
+def test_claim_def_adding_with_some_field():
+    r, msg = Authoriser.authorised(typ=CLAIM_DEF,
+                                   actorRole=TRUSTEE,
+                                   field="name",
+                                   isActorOwnerOfSubject=True)
+    assert r and not msg
+
+
 def _authorised_for_claim_def(role, is_owner):
     return Authoriser.authorised(typ=CLAIM_DEF,
-                                 field=ROLE,
                                  actorRole=role,
-                                 oldVal=None,
-                                 newVal=None,
                                  isActorOwnerOfSubject=is_owner)
