@@ -54,6 +54,13 @@ def anotherTrustAnchor(nodeSet, tdirWithClientPoolTxns, looper, trustee, trustee
                                   role=TRUST_ANCHOR)
 
 
+@pytest.fixture(scope="module")
+def anotherTrustAnchor1(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
+    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
+                                  trustee, trusteeWallet, 'newTrustAnchor1',
+                                  role=TRUST_ANCHOR)
+
+
 def testTrusteeAddingAnotherTrustee(anotherTrustee):
     pass
 
@@ -124,6 +131,16 @@ def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
                      nAckReasonContains='TRUSTEE cannot update verkey')
         # Identity owner can change verkey
         changeVerkey(looper, *identity, wallet.defaultId, signer.verkey)
+
+
+def testTrustAnchorSuspendingHimselfByVerkeyFlush(looper, trustee, trusteeWallet, anotherTrustAnchor1):
+    _, wallet = anotherTrustAnchor1
+    changeVerkey(looper, *anotherTrustAnchor1, wallet.defaultId, '')
+    signer = DidSigner()
+    changeVerkey(looper, *anotherTrustAnchor1, wallet.defaultId, signer.verkey,
+                 nAckReasonContains="CouldNotAuthenticate('Can not find verkey for")
+    # Now NYM creator should have permission to set verkey.
+    changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, signer.verkey)
 
 
 # Keep the test below at the end of the suite since it will make one of the

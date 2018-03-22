@@ -4,6 +4,7 @@ import re
 import tempfile
 from typing import List
 
+import base58
 import pytest
 from plenum.common.signer_did import DidSigner
 from indy_client.test.agent.acme import ACME_ID, ACME_SEED
@@ -125,7 +126,7 @@ def susanMap():
     return getDefaultUserMap("Susan")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def faberMap(agentIpAddress, faberAgentPort):
     ha = "{}:{}".format(agentIpAddress, faberAgentPort)
     return {'inviter': 'Faber College',
@@ -1362,7 +1363,7 @@ def newNodeVals():
         CLIENT_PORT: clientPort,
         ALIAS: randomString(6),
         SERVICES: [VALIDATOR],
-        BLS_KEY: '0' * 32
+        BLS_KEY: base58.b58encode(randomString(128).encode())
     }
 
     return {

@@ -6,7 +6,7 @@ from indy_client.test.conftest import nodeSet
 from indy_common.test.conftest import config_helper_class, node_config_helper_class
 
 
-def test_n_minus_f_pool_processes_attrib(looper, nodeSet, up,
+def test_n_minus_f_pool_processes_attrib(looper, nodeSet,
                                          steward, stewardWallet):
     """
     The pool N-f nodes should be able to process ATTRIB txn.

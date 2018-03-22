@@ -54,11 +54,13 @@ def testSendNymVerkey(grammar):
         "send_nym": "send NYM", "dest_id": dest, "role": role
     })
 
-    # Verkey being empty string is not supported
-    with pytest.raises(AssertionError):
-        matchedVars = getMatchedVariables(
-            grammar,
-            "send NYM dest={} role={} verkey={}".format(dest, role, ''))
+    # Verkey being empty string is supported
+    matchedVars = getMatchedVariables(
+        grammar,
+        "send NYM dest={} role={} verkey={}".format(dest, role, ''))
+    assertCliTokens(matchedVars, {
+        "send_nym": "send NYM", "dest_id": dest, "role": role, "new_ver_key": ''
+    })
 
 
 def testGetNym(grammar):

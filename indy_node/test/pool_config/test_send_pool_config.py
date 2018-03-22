@@ -40,10 +40,8 @@ def test_send_pool_config_2_nodes_can_force_writes_false_force_true(
 
     disconnect_node_and_ensure_disconnected(
         looper, nodeSet, node0.name, stopNode=False)
-    looper.removeProdable(node0)
     disconnect_node_and_ensure_disconnected(
         looper, nodeSet, node1.name, stopNode=False)
-    looper.removeProdable(node1)
 
     sendPoolConfig(trustee, trusteeWallet, poolConfigWFFT)
 
