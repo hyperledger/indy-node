@@ -310,15 +310,18 @@ class Node(PlenumNode, HasPoolManager):
                 reply = {}
                 try:
                     self.configReqHandler.validate(request)
-                    self.configReqHandler.applyRestart(request)
-                    reply = self.generate_action_reply(request)
+                    reply = self.generate_action_result(request)
+                    if not self.isProcessingReq(*request.key):
+                        self.startedProcessingReq(*request.key, frm)
                 except Exception as ex:
-                    reply = self.generate_action_reply(request,
-                                                       False,
-                                                       ex.args[0])
+                    reply = self.generate_action_result(request,
+                                                        False,
+                                                        ex.args[0])
+                    logger.warning("Restart is failed")
                 finally:
                     self.sendReplyToClient(reply,
                                            (request.identifier, request.reqId))
+                    self.configReqHandler.applyRestart(request)
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [
                     POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
@@ -338,8 +341,8 @@ class Node(PlenumNode, HasPoolManager):
                     request.reqId,
                     'Pool is in readonly mode, try again in 60 seconds')
 
-    def generate_action_reply(self, request: Request, is_success=True,
-                              msg=None):
+    def generate_action_result(self, request: Request, is_success=True,
+                               msg=None):
         operation = {TXN_TYPE: request.operation.get(TXN_TYPE)}
         if request.operation.get(DATA):
             operation.update(request.operation.get(DATA))

@@ -248,7 +248,7 @@ class NodeControlTool:
         try:
             command = json.loads(data.decode("utf-8"))
             logger.debug("Decoded ", command)
-            if command['version'] is not None:
+            if command.get("version") is not None:
                 new_version = command['version']
                 self._upgrade(new_version)
             elif command[ACTION] == RESTART:

@@ -131,6 +131,8 @@ class Restarter(HasActionQueue):
                                .format(ex))
                 asyncio.sleep(self.retry_timeout)
                 retry_limit -= 1
+        if not retry_limit:
+            raise Exception("Failed to communicate to control tool")
 
     async def _open_connection_and_send(self, message: str):
         control_service_host = self.config.controlServiceHost
