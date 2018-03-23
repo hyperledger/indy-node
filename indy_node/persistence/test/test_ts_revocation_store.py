@@ -1,12 +1,21 @@
 import pytest
 from indy_node.persistence.state_ts_store import StateTsDbStorage
-from storage.kv_store_leveldb_int_keys import KeyValueStorageLeveldbIntKeys
+from storage.helper import initKeyValueStorageIntKeys
+from plenum.common.constants import KeyValueStorageType
 
 
-@pytest.fixture(scope="function")
-def storage_with_ts_root_hashes(tmpdir):
+@pytest.fixture(scope="module", params=['rocksdb', 'leveldb'])
+def storage_with_ts_root_hashes(request, tmpdir_factory):
+    if request.param == 'leveldb':
+        kv_storage_type = KeyValueStorageType.Leveldb
+    else:
+        kv_storage_type = KeyValueStorageType.Rocksdb
+
     storage = StateTsDbStorage("test",
-                               KeyValueStorageLeveldbIntKeys(tmpdir.dirname, "test_db"))
+                               initKeyValueStorageIntKeys(
+                                   kv_storage_type,
+                                   tmpdir_factory.mktemp('').strpath,
+                                   "test_db"))
     ts_list = {
         2: "aaaa",
         4: "bbbb",

@@ -43,10 +43,17 @@ REQ_METADATA = "reqMetadata"
 REVOC_REG_DEF_ID = "revocRegDefId"
 PREV_ACCUM = "prevAccum"
 ACCUM = "accum"
+ACCUM_FROM = "accum_from"
+ACCUM_TO = "accum_to"
 ISSUED = "issued"
 REVOKED = "revoked"
 ISSUANCE_BY_DEFAULT = "ISSUANCE_BY_DEFAULT"
 ISSUANCE_ON_DEMAND = "ISSUANCE_ON_DEMAND"
+TIMESTAMP = 'timestamp'
+FROM = "from"
+TO = "to"
+STATE_PROOF_FROM = "stateProofFrom"
+REVOC_REG_ID = "revocRegId"
 
 NULL = 'null'
 OWNER = '<owner>'
@@ -113,6 +120,8 @@ GET_TXNS = IndyTransactions.GET_TXNS.value
 GET_SCHEMA = IndyTransactions.GET_SCHEMA.value
 GET_CLAIM_DEF = IndyTransactions.GET_CLAIM_DEF.value
 GET_REVOC_REG_DEF = IndyTransactions.GET_REVOC_REG_DEF.value
+GET_REVOC_REG = IndyTransactions.GET_REVOC_REG.value
+GET_REVOC_REG_DELTA = IndyTransactions.GET_REVOC_REG_DELTA.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value

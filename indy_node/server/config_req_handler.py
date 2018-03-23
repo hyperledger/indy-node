@@ -115,7 +115,7 @@ class ConfigReqHandler(RequestHandler):
             action = None
             status = None
         r, msg = Authoriser.authorised(
-            typ, ACTION, originRole, oldVal=status, newVal=action)
+            typ, originRole, field=ACTION, oldVal=status, newVal=action)
         if not r:
             raise UnauthorizedClientRequest(
                 req.identifier, req.reqId, "{} cannot do {}".format(
