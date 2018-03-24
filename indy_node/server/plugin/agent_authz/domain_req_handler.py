@@ -4,6 +4,8 @@ import rlp
 from rlp.sedes import List, big_endian_int, raw, CountableList
 from orderedset import OrderedSet
 
+from indy_node.server.plugin.agent_authz.dynamic_accumulator import \
+    DynamicAccumulator
 from indy_node.server.plugin.agent_authz.helper import update_accumulator_val
 from plenum.common.constants import VERKEY, NodeHooks, TXN_TYPE
 from plenum.common.exceptions import InvalidClientRequest, \
@@ -32,18 +34,19 @@ class DomainReqHandlerWithAuthz:
     _state_val_outer_sedes = CountableList(List([raw, big_endian_int, big_endian_int]))
 
     def __init__(self, domain_state, cache: AgentAuthzCommitmentCache,
-                 commitment_db1, commitment_db2, config):
+                 dyn_accum, config):
         self.domain_state = domain_state
         self.agent_authz_cache = cache
-        self.commitment_dbs = {
-            ACCUMULATOR_1: commitment_db1,
-            ACCUMULATOR_2: commitment_db2
-        }
         self.config = config
-        self.commitments = {
-            ACCUMULATOR_1: [OrderedSet()],
-            ACCUMULATOR_2: [OrderedSet()],
-        }
+        self.dynamic_accumulator = dyn_accum    # type: DynamicAccumulator
+        # self.commitment_dbs = {
+        #     ACCUMULATOR_1: commitment_db1,
+        #     ACCUMULATOR_2: commitment_db2
+        # }
+        # self.commitments = {
+        #     ACCUMULATOR_1: [OrderedSet()],
+        #     ACCUMULATOR_2: [OrderedSet()],
+        # }
 
     def _do_static_validation_agent_authz(self, identifier, reqId, operation):
         pass
@@ -103,9 +106,10 @@ class DomainReqHandlerWithAuthz:
 
     def get_accum(self, request: Request):
         accum_id = request.operation[ACCUMULATOR_ID]
-        accum_value = self.agent_authz_cache.get_accumulator(accum_id,
-                                                             is_committed=True)
-        accum_value = str(int(accum_value))
+        # accum_value = self.agent_authz_cache.get_accumulator(accum_id,
+        #                                                      is_committed=True)
+        # accum_value = str(int(accum_value))
+        accum_value = str(self.dynamic_accumulator.committed_value)
         return DomainReqHandler.make_result(request=request,
                                             data=accum_value,
                                             last_seq_no=0,  # TODO: Fix me
@@ -115,32 +119,45 @@ class DomainReqHandlerWithAuthz:
     def get_accum_witness(self, request: Request):
         data = []
         accum_id = request.operation[ACCUMULATOR_ID]
-        accum_value = self.agent_authz_cache.get_accumulator(accum_id,
-                                                             is_committed=True)
-        accum_value = str(int(accum_value))
-        data.append(accum_value)
-        # TODO: Fixme; Too inefficient, store accumulator in commitment db too
+        if accum_id == ACCUMULATOR_2:
+            # ACCUMULATOR_2 not needed
+            return DomainReqHandler.make_result(request=request,
+                                                data=[],
+                                                last_seq_no=0,  # TODO: Fix me
+                                                update_time=0,  # TODO: Fix me
+                                                proof=None)  # TODO: Fix me
+
+        # accum_value = self.agent_authz_cache.get_accumulator(accum_id,
+        #                                                      is_committed=True)
+        # accum_value = str(self.dynamic_accumulator.committed_value)
+        # data.append(accum_value)
         commitment = request.operation[COMMITMENT]
         if isinstance(commitment, int):
             commitment = str(commitment)
-        commitment_db = self.commitment_dbs[accum_id]
-        if accum_id == ACCUMULATOR_1:
-            if commitment_db.has_commitment(commitment):
-                commitments = commitment_db.all_commitments_from_index(1)
-                old_accum = self.config.AuthzAccumGenerator[accum_id]
-                for i, c in enumerate(commitments):
-                    if c == commitment:
-                        break
-                    old_accum = update_accumulator_val(old_accum, int(c),
-                                                       self.config.AuthzAccumMod[accum_id])
-                data.append(str(old_accum))
-                data.append(commitments[i+1:])
-        else:
-            # The witness for revocation accumulator consists of all members
-            # so that `gcd(non_member, product(members))=1`
-            data.append(accum_value)    # Redundant
-            commitments = commitment_db.all_commitments_from_index(1)
-            data.append(commitments)
+        data.extend(
+            self.dynamic_accumulator.get_witness_data_for_committed_commitment(commitment))
+        data[0] = str(data[0]) if isinstance(data[0], int) else data[0]
+        data[1] = str(data[1]) if isinstance(data[1], int) else data[1]
+        data[2] = list(map(str, data[2])) if isinstance(data[2], (list, tuple)) else data[2]
+        # # TODO: Fixme; Too inefficient, store accumulator in commitment db too
+        # commitment_db = self.commitment_dbs[accum_id]
+        # if accum_id == ACCUMULATOR_1:
+        #     if commitment_db.has_commitment(commitment):
+        #         commitments = commitment_db.all_commitments_from_index(1)
+        #         old_accum = self.config.AuthzAccumGenerator[accum_id]
+        #         for i, c in enumerate(commitments):
+        #             if c == commitment:
+        #                 break
+        #             old_accum = update_accumulator_val(old_accum, int(c),
+        #                                                self.config.AuthzAccumMod[accum_id])
+        #         data.append(str(old_accum))
+        #         data.append(commitments[i+1:])
+        # else:
+        #     # The witness for revocation accumulator consists of all members
+        #     # so that `gcd(non_member, product(members))=1`
+        #     data.append(accum_value)    # Redundant
+        #     commitments = commitment_db.all_commitments_from_index(1)
+        #     data.append(commitments)
         return DomainReqHandler.make_result(request=request,
                                             data=data,
                                             last_seq_no=0,  # TODO: Fix me
@@ -182,18 +199,22 @@ class DomainReqHandlerWithAuthz:
             self._new_commitment_added(commitment, is_committed=is_committed)
         else:
             commitment = commitment or 0
-            updated_policy = self._get_updated_policy(policy, agent_verkey,
-                                                      auth, commitment)
+            updated_policy, updated_index = self._get_updated_policy(policy, agent_verkey,
+                                                                     auth, commitment)
             self.set_policy_in_state(policy_address, updated_policy)
             self.agent_authz_cache.update_agent_details(policy_address,
                                                         agent_verkey,
                                                         authorisation=auth,
                                                         commitment=commitment,
                                                         is_committed=is_committed)
+            new_agent_added = len(updated_policy) > len(policy)
             # TODO: Fixme: Not correct always; check for when commitment was
             # already present or PROVE is revoked
-            if commitment > 0:
+            if new_agent_added and commitment > 0:
                 self._new_commitment_added(commitment, is_committed=is_committed)
+            if not new_agent_added and AgentAuthzChecker(policy[updated_index][1]).has_prove_auth and \
+                    not AgentAuthzChecker(updated_policy[updated_index][1]).has_prove_auth:
+                self._existing_commitment_deleted(policy[updated_index][-1], is_committed=is_committed)
 
     def get_policy_from_state(self, policy_address, is_committed=False):
         return self._get_policy_from_state(self.domain_state, policy_address,
@@ -204,47 +225,62 @@ class DomainReqHandlerWithAuthz:
                               rlp.encode(policy))
 
     def _new_commitment_added(self, commitment, is_committed=False):
-        self.new_commitment_added(self.domain_state, self.agent_authz_cache,
-                                  self.config, commitment,
-                                  is_committed=is_committed)
-        if not is_committed:
-            logger.debug('In _new_commitment_added, adding {} to accumulator {}'
-                         .format(commitment, ACCUMULATOR_1))
-            self.commitments[ACCUMULATOR_1][-1].add(commitment)
+        self.dynamic_accumulator.add_commitment(commitment)
+        val = self.dynamic_accumulator.committed_value if is_committed else self.dynamic_accumulator.uncommitted_value
+        self._update_accumulator_in_state(self.domain_state, ACCUMULATOR_1, val)
+        # self.new_commitment_added(self.domain_state, self.agent_authz_cache,
+        #                           self.config, commitment,
+        #                           is_committed=is_committed)
+        # if not is_committed:
+        #     logger.debug('In _new_commitment_added, adding {} to accumulator {}'
+        #                  .format(commitment, ACCUMULATOR_1))
+        #     self.commitments[ACCUMULATOR_1][-1].add(commitment)
 
     def _existing_commitment_deleted(self, commitment, is_committed=False):
-        self.existing_commitment_deleted(self.domain_state,
-                                         self.agent_authz_cache, commitment,
-                                         self.config,
-                                         is_committed=is_committed)
-        if not is_committed:
-            self.commitments[ACCUMULATOR_2][-1].add(commitment)
+        self.dynamic_accumulator.remove_commitment(commitment)
+        val = self.dynamic_accumulator.committed_value if is_committed else self.dynamic_accumulator.uncommitted_value
+        self._update_accumulator_in_state(self.domain_state, ACCUMULATOR_1, val)
+        # self.existing_commitment_deleted(self.domain_state,
+        #                                  self.agent_authz_cache, self.config,
+        #                                  commitment, is_committed=is_committed)
+        # if not is_committed:
+        #     logger.debug('In _existing_commitment_deleted, adding {} to accumulator {}'
+        #                  .format(commitment, ACCUMULATOR_2))
+        #     self.commitments[ACCUMULATOR_2][-1].add(commitment)
 
     def on_batch_created(self, batch_idr):
+        logger.debug('{} called on_batch_created with {}'.format(self, batch_idr))
         self.agent_authz_cache.create_batch_from_current(batch_idr)
-        self.commitments[ACCUMULATOR_1].append(OrderedSet())
-        self.commitments[ACCUMULATOR_2].append(OrderedSet())
+        # self.commitments[ACCUMULATOR_1].append(OrderedSet())
+        # self.commitments[ACCUMULATOR_2].append(OrderedSet())
+        self.dynamic_accumulator.add_new_batch()
 
     def on_batch_committed(self, state_root):
-        self.agent_authz_cache.on_batch_committed(state_root)
         logger.debug(
-            '{} adding {} to accumulator {}'.format(self, self.commitments[ACCUMULATOR_1][0], ACCUMULATOR_1))
-        for comm in self.commitments[ACCUMULATOR_1][0]:
-            self.commitment_dbs[ACCUMULATOR_1].add_commitment(str(comm))
+            '{} called on_batch_committed with {}'.format(self, state_root))
+        self.agent_authz_cache.on_batch_committed(state_root)
+        self.dynamic_accumulator.commit()
 
-        logger.debug('{} adding {} to accumulator {}'.format(self,
-                                                             self.commitments[ACCUMULATOR_2][0],
-                                                             ACCUMULATOR_2))
-        for comm in self.commitments[ACCUMULATOR_2][0]:
-            self.commitment_dbs[ACCUMULATOR_2].add_commitment(str(comm))
-
-        self.commitments[ACCUMULATOR_1] = self.commitments[ACCUMULATOR_1][1:]
-        self.commitments[ACCUMULATOR_2] = self.commitments[ACCUMULATOR_2][1:]
+        # logger.debug(
+        #     '{} adding {} to accumulator {}'.format(self, self.commitments[ACCUMULATOR_1][0], ACCUMULATOR_1))
+        # for comm in self.commitments[ACCUMULATOR_1][0]:
+        #     self.commitment_dbs[ACCUMULATOR_1].add_commitment(str(comm))
+        #
+        # logger.debug('{} adding {} to accumulator {}'.format(self,
+        #                                                      self.commitments[ACCUMULATOR_2][0],
+        #                                                      ACCUMULATOR_2))
+        # for comm in self.commitments[ACCUMULATOR_2][0]:
+        #     self.commitment_dbs[ACCUMULATOR_2].add_commitment(str(comm))
+        #
+        # self.commitments[ACCUMULATOR_1] = self.commitments[ACCUMULATOR_1][1:]
+        # self.commitments[ACCUMULATOR_2] = self.commitments[ACCUMULATOR_2][1:]
 
     def on_batch_rejected(self):
+        logger.debug('{} called on_batch_rejected'.format(self))
         self.agent_authz_cache.reject_batch()
-        self.commitments[ACCUMULATOR_1] = self.commitments[ACCUMULATOR_1][:-1]
-        self.commitments[ACCUMULATOR_2] = self.commitments[ACCUMULATOR_2][:-1]
+        # self.commitments[ACCUMULATOR_1] = self.commitments[ACCUMULATOR_1][:-1]
+        # self.commitments[ACCUMULATOR_2] = self.commitments[ACCUMULATOR_2][:-1]
+        self.dynamic_accumulator.remove_last_batch()
 
     @staticmethod
     def new_commitment_added(state, cache, config, commitment, is_committed=False):
@@ -275,6 +311,12 @@ class DomainReqHandlerWithAuthz:
         state.set(state_key, encoded_val)
 
     @staticmethod
+    def _update_accumulator_in_state(state, accum_id, accum_value):
+        encoded_val = str(accum_value).encode()
+        state_key = DomainReqHandlerWithAuthz.accum_id_to_state_key(accum_id)
+        state.set(state_key, encoded_val)
+
+    @staticmethod
     def _get_policy_from_state(state, policy_address, is_committed=False):
         val = state.get(
             DomainReqHandlerWithAuthz.policy_address_to_state_key(
@@ -296,10 +338,10 @@ class DomainReqHandlerWithAuthz:
                 break
             i += 1
         if i == len(existing_policy):
-            return (*existing_policy, (agent_verkey, auth, commitment))
+            return (*existing_policy, (agent_verkey, auth, commitment)), i
         else:
             return (*existing_policy[:i], (agent_verkey, auth, commitment),
-                    *existing_policy[(i + 1):])
+                    *existing_policy[(i + 1):]), i
 
     @staticmethod
     def policy_address_to_state_key(policy_address: int) -> bytes:
@@ -342,17 +384,17 @@ class DomainReqHandlerWithAuthz:
         for txn in committed_txns:
             typ = txn.get(TXN_TYPE)
             if typ in self.valid_txn_types:
-                if typ in self.write_types:
-                    try:
-                        a = self.agent_authz_cache.get_accumulator(ACCUMULATOR_1, True)
-                        txn[ACCUMULATOR_1] = int(a)
-                    except KeyError:
-                        pass
-                    try:
-                        a = self.agent_authz_cache.get_accumulator(ACCUMULATOR_2, True)
-                        txn[ACCUMULATOR_2] = int(a)
-                    except KeyError:
-                        pass
+                # if typ in self.write_types:
+                #     try:
+                #         a = self.agent_authz_cache.get_accumulator(ACCUMULATOR_1, True)
+                #         txn[ACCUMULATOR_1] = int(a)
+                #     except KeyError:
+                #         pass
+                #     try:
+                #         a = self.agent_authz_cache.get_accumulator(ACCUMULATOR_2, True)
+                #         txn[ACCUMULATOR_2] = int(a)
+                #     except KeyError:
+                #         pass
 
                 self._convert_big_numbers_to_string(txn)
 

@@ -95,7 +95,7 @@ class AgentAuthzCommitmentCache(OptimisticKVStore):
 
     def on_batch_committed(self, state_root):
         if self.first_batch_idr != state_root:
-            raise ValueError('integrity check failed')
+            raise ValueError('integrity check failed, expected {}, got {}'.format(self.first_batch_idr, state_root))
         self.commit_batch()
 
     @staticmethod

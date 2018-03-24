@@ -3,7 +3,7 @@ from indy_node.server.plugin.agent_authz.config import get_config
 from indy_node.server.plugin.agent_authz.domain_req_handler import \
     DomainReqHandlerWithAuthz
 from indy_node.server.plugin.agent_authz.storage import \
-    get_authz_commitment_cache, get_commitment_db_accum
+    get_authz_commitment_cache, get_commitment_db_accum, get_dyn_accum
 from plenum.common.constants import DOMAIN_LEDGER_ID
 
 
@@ -12,17 +12,21 @@ def integrate_plugin_in_node(node):
     authz_cache = get_authz_commitment_cache(node.dataLocation,
                                              node.config.AgentAuthzCommitmentCacheDbName,
                                              node.config)
-    commitment_db1 = get_commitment_db_accum(node.dataLocation,
-                                             node.config.AgentAuthzAccum1CommDbName, node.config)
-    commitment_db2 = get_commitment_db_accum(node.dataLocation,
-                                             node.config.AgentAuthzAccum2CommDbName,
+    # commitment_db1 = get_commitment_db_accum(node.dataLocation,
+    #                                          node.config.AgentAuthzAccum1CommDbName, node.config)
+    # commitment_db2 = get_commitment_db_accum(node.dataLocation,
+    #                                          node.config.AgentAuthzAccum2CommDbName,
+    #                                          node.config)
+    dyn_accum = get_dyn_accum(node.dataLocation,
+                                             node.config.AgentAuthzDynAccumDbName,
                                              node.config)
     domain_req_handler = node.get_req_handler(ledger_id=DOMAIN_LEDGER_ID)
     domain_state = node.getState(DOMAIN_LEDGER_ID)
     authz_req_handler = DomainReqHandlerWithAuthz(domain_state=domain_state,
                                                   cache=authz_cache,
-                                                  commitment_db1=commitment_db1,
-                                                  commitment_db2=commitment_db2,
+                                                  dyn_accum=dyn_accum,
+                                                  # commitment_db1=commitment_db1,
+                                                  # commitment_db2=commitment_db2,
                                                   config=node.config)
     authz_req_handler.update_req_handler(domain_req_handler)
     for txn_type in authz_req_handler.valid_txn_types:

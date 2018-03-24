@@ -101,3 +101,7 @@ logLevel = logging.INFO
 
 PLUGIN_ROOT = 'indy_node.server.plugin'
 ENABLED_PLUGINS = ['agent_authz']
+
+# Accumulator requests take long
+DELTA = 0.2
+LAMBDA = 70

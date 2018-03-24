@@ -6,7 +6,7 @@ from indy_node.server.plugin.agent_authz.constants import ADDRESS, \
     GET_AGENT_AUTHZ_ACCUM_WIT, COMMITMENT
 from indy_node.test.plugin.test_policy_creation import policy_created
 from indy_node.test.plugin.test_authorize_agents import prove_grant_given, \
-    prove_revoke_given
+    prove_revoke_given, revoke_prove
 from indy_node.test.plugin.test_authorize_agents import give_prove
 from plenum.common.constants import TXN_TYPE
 from plenum.test.conftest import sdk_wallet_handle, \
@@ -19,7 +19,9 @@ def get_result_data_for_op(looper, wallet_client, sdk_pool_handle, op):
     req_obj = sdk_gen_request(op, identifier=wallet_client[1])
     req = sdk_sign_and_submit_req_obj(looper, sdk_pool_handle,
                                       wallet_client, req_obj)
-    _, resp_task = sdk_get_reply(looper, req, timeout=sdk_eval_timeout(1, 4))
+    # Witness requests take long
+    _, resp_task = sdk_get_reply(looper, req, timeout=sdk_eval_timeout(1, 4,
+                                                                       customTimeoutPerReq=15))
     return resp_task['result']['data']
 
 
@@ -49,7 +51,7 @@ def test_get_accumulator(looper, nodeSet, agent1_wallet, agent1_client,
     assert BigNumber.modular_exponentiation(int(v1), commitment1,
                                             config.AuthzAccumMod[ACCUMULATOR_1]) == int(v2)
 
-    _, _, _, commitment2 = give_prove(looper, addr, admin_verkey,
+    _, verkey2, _, commitment2 = give_prove(looper, addr, admin_verkey,
                                       agent1_wallet, agent1_client)
     v3 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
                                 op)
@@ -68,6 +70,7 @@ def test_get_accumulator(looper, nodeSet, agent1_wallet, agent1_client,
     #                                   agent1_wallet, agent1_client)
     # _, _, _, commitment5 = give_prove(looper, addr, admin_verkey,
     #                                   agent1_wallet, agent1_client)
+
     op = {
         TXN_TYPE: GET_AGENT_AUTHZ_ACCUM_WIT,
         ACCUMULATOR_ID: ACCUMULATOR_1,
@@ -110,6 +113,44 @@ def test_get_accumulator(looper, nodeSet, agent1_wallet, agent1_client,
     assert v8[0] == v4  # Latest accumulator
     assert v8[1] == v3  # Accumulator before adding commitment3
     assert v8[2] == []  # Commitments added after adding commitment3
+
+    # Revoke agent2's verkey, witness data for agent2 should be None
+    revoke_prove(looper, addr, admin_verkey, verkey2, agent1_wallet,
+                 agent1_client)
+    op = {
+        TXN_TYPE: GET_AGENT_AUTHZ_ACCUM_WIT,
+        ACCUMULATOR_ID: ACCUMULATOR_1,
+        COMMITMENT: commitment2
+    }
+    v9 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
+                                op)
+    assert v9 == [None, None, None]
+
+    # Witness data for agent1 should change
+    op = {
+        TXN_TYPE: GET_AGENT_AUTHZ_ACCUM_WIT,
+        ACCUMULATOR_ID: ACCUMULATOR_1,
+        COMMITMENT: commitment1
+    }
+    v10 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle, op)
+    # Previous accumulated value for agent1 should not change as agent2 was
+    # added after agent1
+    assert v10[0] != v5[0]
+    assert v10[1] == v5[1]
+    assert v10[2] != v5[2]
+
+    # Witness data for agent3 should change
+    op = {
+        TXN_TYPE: GET_AGENT_AUTHZ_ACCUM_WIT,
+        ACCUMULATOR_ID: ACCUMULATOR_1,
+        COMMITMENT: commitment3
+    }
+    v11 = get_result_data_for_op(looper, query_wallet_client, sdk_pool_handle,
+                                 op)
+    # Previous accumulated value for agent3 should change as agent2 was
+    # added before agent3
+    assert v11[0] != v8[0]
+    assert v11[1] != v8[1]
 
 
 def test_get_auth_policy_by_address(looper, nodeSet, agent1_wallet,

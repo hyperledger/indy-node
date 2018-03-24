@@ -1,6 +1,7 @@
 from storage.kv_store import KeyValueStorage
 
 
+# Db to store commitments of an add only accumulator
 class CommitmentDb:
     # TODO: A better option would be to rely on the sorted nature of key
     # storage and have keys like `comm:<comm>idx:<i>`. That way its just one kind of key

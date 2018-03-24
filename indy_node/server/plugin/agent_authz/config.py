@@ -21,4 +21,6 @@ def get_config(config):
     config.AgentAuthzAccumCommDbType = KeyValueStorageType.Leveldb
     config.AgentAuthzAccum1CommDbName = 'agent_authz_accum1_commitment_db'
     config.AgentAuthzAccum2CommDbName = 'agent_authz_accum2_commitment_db'
+    config.AgentAuthzDynAccumDbType = KeyValueStorageType.Leveldb
+    config.AgentAuthzDynAccumDbName = 'agent_authz_dyn_accum_db'
     return config
