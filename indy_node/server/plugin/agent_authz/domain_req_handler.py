@@ -253,7 +253,7 @@ class DomainReqHandlerWithAuthz:
         self.agent_authz_cache.create_batch_from_current(batch_idr)
         # self.commitments[ACCUMULATOR_1].append(OrderedSet())
         # self.commitments[ACCUMULATOR_2].append(OrderedSet())
-        self.dynamic_accumulator.add_new_batch()
+        self.dynamic_accumulator.new_batch_added()
 
     def on_batch_committed(self, state_root):
         logger.debug(

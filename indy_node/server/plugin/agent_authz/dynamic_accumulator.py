@@ -21,6 +21,8 @@ class DynamicAccumulator:
         self.committed_size = 0
         self.committed_value = generator
         self.uncommitted_value = self.committed_value
+        # TODO: It feels cleaner to have a current batch's working set rather
+        # than rely on the last member of the list
         self.uncommitted_additions = [OrderedSet(), ]
         self.uncommitted_deletions = [OrderedSet(), ]
         self.init_from_storage()
@@ -196,13 +198,16 @@ class DynamicAccumulator:
                 continue
         return all_comms
 
-    def add_new_batch(self):
+    def new_batch_added(self):
         self.uncommitted_additions.append(OrderedSet())
         self.uncommitted_deletions.append(OrderedSet())
 
     def remove_last_batch(self):
         self.uncommitted_additions = self.uncommitted_additions[:-1]
         self.uncommitted_deletions = self.uncommitted_deletions[:-1]
+
+        self.uncommitted_additions.append(OrderedSet())
+        self.uncommitted_deletions.append(OrderedSet())
 
     @staticmethod
     def commitment_key(commitment):

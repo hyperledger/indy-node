@@ -64,7 +64,7 @@ def test_add_remove_commitments_committed(dyn_accum):
     for v in add_vals:
         dyn_accum.add_commitment(v)
     dyn_accum.commit()
-    dyn_accum.add_new_batch()
+    dyn_accum.new_batch_added()
 
     a1 = dyn_accum.committed_value
 
@@ -100,14 +100,14 @@ def test_add_remove_commitments_committed_and_uncommitted(to_commit, dyn_accum):
     for v in add_vals:
         dyn_accum.add_commitment(v)
     dyn_accum.commit()
-    dyn_accum.add_new_batch()
+    dyn_accum.new_batch_added()
 
     for v in [11, 13]:
         dyn_accum.add_commitment(v)
         add_vals.append(v)
     if to_commit:
         dyn_accum.commit()
-        dyn_accum.add_new_batch()
+        dyn_accum.new_batch_added()
 
     for v in [17, 19]:
         dyn_accum.add_commitment(v)
@@ -115,7 +115,7 @@ def test_add_remove_commitments_committed_and_uncommitted(to_commit, dyn_accum):
 
     if to_commit:
         dyn_accum.commit()
-        dyn_accum.add_new_batch()
+        dyn_accum.new_batch_added()
 
     a1 = dyn_accum.committed_value
 
@@ -144,7 +144,7 @@ def test_witness(dyn_accum):
     for v in add_vals:
         dyn_accum.add_commitment(v)
     dyn_accum.commit()
-    dyn_accum.add_new_batch()
+    dyn_accum.new_batch_added()
 
     a1 = update_accumulator_with_multiple_vals(G, add_vals, N)
     assert dyn_accum.committed_value == a1
@@ -158,7 +158,7 @@ def test_witness(dyn_accum):
         dyn_accum.add_commitment(v)
         add_vals.append(v)
     dyn_accum.commit()
-    dyn_accum.add_new_batch()
+    dyn_accum.new_batch_added()
     a2 = update_accumulator_with_multiple_vals(G, add_vals, N)
 
     for i, n in enumerate(add_vals):
@@ -175,7 +175,7 @@ def test_witness(dyn_accum):
         a2, update_accumulator_with_multiple_vals(G, add_vals[:i], N), add_vals[i+1:])
 
     dyn_accum.commit()
-    dyn_accum.add_new_batch()
+    dyn_accum.new_batch_added()
     a3 = update_accumulator_with_multiple_vals(G, set(add_vals).difference(set(rem_vals)), N)
 
     for i in rem_vals:
