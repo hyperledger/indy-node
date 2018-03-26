@@ -77,7 +77,9 @@ class DynamicAccumulator:
                 self.uncommitted_value = update_accumulator_with_multiple_vals(
                     self.generator, all_comms, self.modulus)
             else:
-                raise KeyError('Commitment to remove, {} not found anywhere', commitment)
+                # TODO: Fixme; This is temporary
+                # raise KeyError('Commitment to remove, {} not found anywhere', commitment)
+                logger.error('{} got commitment to remove, {} not found anywhere', self, commitment)
 
     def add_remove_uncommitted_commitments(self, all_comms):
         for u in self.uncommitted_additions:
