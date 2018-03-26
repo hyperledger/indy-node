@@ -2,7 +2,6 @@ from hashlib import sha256
 
 import rlp
 from rlp.sedes import List, big_endian_int, raw, CountableList
-from orderedset import OrderedSet
 
 from indy_node.server.plugin.agent_authz.dynamic_accumulator import \
     DynamicAccumulator

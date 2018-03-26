@@ -3,6 +3,9 @@ from orderedset._orderedset import OrderedSet
 from indy_node.server.plugin.agent_authz.helper import update_accumulator_val, \
     update_accumulator_with_multiple_vals
 from storage.kv_store import KeyValueStorage
+from stp_core.common.log import getlogger
+
+logger = getlogger()
 
 
 class DynamicAccumulator:
@@ -85,6 +88,9 @@ class DynamicAccumulator:
 
     def commit(self):
         if not self.uncommitted_deletions[0]:
+            logger.debug('{}, during commit, found 0 commitments to remove, '
+                         '{} new commitments to add'.format(self,
+                                                            len(self.uncommitted_additions[0])))
             # No removals
             if self.uncommitted_additions[0]:
                 self.update_with_committed_commitments(self.uncommitted_additions[0])
@@ -92,11 +98,13 @@ class DynamicAccumulator:
             new_commitments_to_commit = self.uncommitted_additions[0].difference(
                 self.uncommitted_deletions[0])
             if self.uncommitted_deletions[0].issubset(self.uncommitted_additions[0]):
+                logger.debug(
+                    '{}, during commit, found {} uncommitted commitments, 0 committed commitments to remove, '
+                    '{} new commitments to add'.format(self, len(self.uncommitted_deletions[0]), len(new_commitments_to_commit)))
                 # No committed removals
                 self.update_with_committed_commitments(new_commitments_to_commit)
             else:
                 # Committed removals
-
                 all_comms = OrderedSet()
 
                 all_comms.update(self._get_all_committed_commitments())
@@ -112,6 +120,9 @@ class DynamicAccumulator:
 
                 # Remove committed commitments (excluding uncommitteds)
                 to_remove = self.uncommitted_deletions[0].difference(self.uncommitted_additions[0])
+                logger.debug(
+                    '{}, during commit, {} committed commitments to remove, '
+                    '{} new commitments to add'.format(self, len(to_remove),len(new_commitments_to_commit)))
                 self.remove_committed_commitments(to_remove)
 
                 self.add_committed_commitments(new_commitments_to_commit)
