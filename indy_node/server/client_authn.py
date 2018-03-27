@@ -18,11 +18,13 @@ class LedgerBasedAuthNr(CoreAuthMixin, NaclAuthNr):
     """
 
     write_types = CoreAuthMixin.write_types.union({ATTRIB, SCHEMA, CLAIM_DEF,
-                                                   POOL_CONFIG, POOL_UPGRADE, POOL_RESTART,
+                                                   POOL_CONFIG, POOL_UPGRADE,
                                                    REVOC_REG_DEF, REVOC_REG_ENTRY})
     query_types = CoreAuthMixin.query_types.union({GET_NYM, GET_ATTR, GET_SCHEMA,
                                                    GET_CLAIM_DEF, GET_REVOC_REG_DEF,
                                                    GET_REVOC_REG, GET_REVOC_REG_DELTA})
+    action_types = CoreAuthMixin.action_types.union({POOL_RESTART})
+
 
     def __init__(self, cache: IdrCache):
         NaclAuthNr.__init__(self)
