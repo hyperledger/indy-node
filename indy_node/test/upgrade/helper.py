@@ -255,7 +255,7 @@ def check_no_loop(nodeSet, event):
                                                 node.upgrader.scheduledUpgrade[2])
         node.notify_upgrade_start()
         # mimicking upgrader's initialization after restart
-        node.upgrader.process_upgrade_log_for_first_run()
+        node.upgrader.process_action_log_for_first_run()
 
         node.upgrader.scheduledUpgrade = None
         assert node.upgrader._upgradeLog.lastEvent[1] == event

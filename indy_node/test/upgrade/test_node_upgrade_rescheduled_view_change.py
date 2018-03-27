@@ -27,4 +27,4 @@ def test_scheduled_once_after_view_change(nodeSet, validUpgrade, upgradeSchedule
         when = dateutil.parser.parse(validUpgrade['schedule'][node_id])
         assert node.upgrader.scheduledUpgrade == (version, when, upgrade_id)
         assert len(node.upgrader._upgradeLog) == 1
-        assert node.upgrader.lastUpgradeEventInfo == (UpgradeLog.UPGRADE_SCHEDULED, when, version, upgrade_id)
+        assert node.upgrader.lastActionEventInfo == (UpgradeLog.UPGRADE_SCHEDULED, when, version, upgrade_id)

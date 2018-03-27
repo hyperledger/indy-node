@@ -7,12 +7,14 @@ from typing import Tuple, Union, Optional, Callable, Dict
 import dateutil.parser
 import dateutil.tz
 
+from indy_node.server.node_controller import NodeController
+from indy_node.server.restart_log import RestartLog
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.common.types import f
 from plenum.server.has_action_queue import HasActionQueue
-from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, IN_PROGRESS, FORCE, \
+from indy_common.constants import ACTION, POOL_RESTART, START, SCHEDULE, \
+    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, IN_PROGRESS, FORCE, \
     POOL_RESTART, RESTART
 from plenum.server import notifier_plugin_manager
 from ledger.util import F
@@ -21,89 +23,183 @@ import asyncio
 logger = getlogger()
 
 
-class Restarter(HasActionQueue):
+class Restarter(NodeController):
 
-    def __init__(self,
-                 nodeId,
-                 nodeName,
-                 dataDir,
-                 config,
-                 ledger,
-                 restart_failed_callback: Callable = None,
-                 restart_start_callback: Callable = None):
+    def __defaultLog(self, dataDir, config):
+        log = os.path.join(dataDir, config.restartLogFile)
+        return RestartLog(filePath=log)
 
-        self.nodeId = nodeId
-        self.nodeName = nodeName
-        self.config = config
-        self.dataDir = dataDir
-        self.ledger = ledger
-        self.scheduled_restart = None  # type: Tuple[str, int, str]
-        self._notifier = notifier_plugin_manager.PluginManager()
-        self._restartFailedCallback = \
-            restart_failed_callback if restart_failed_callback else lambda: None
-        self._restart_start_callback = \
-            restart_start_callback if restart_start_callback else lambda: None
+    def _is_action_started(self):
+        if not self.lastActionEventInfo:
+            logger.debug('Node {} has no restart events'
+                         .format(self.nodeName))
+            return False
 
-        self.retry_timeout = 5
-        self.retry_limit = 3
+        (event_type, when, restart_id) = self.lastActionEventInfo
 
-        HasActionQueue.__init__(self)
+        if event_type != RestartLog.RESTART_STARTED:
+            logger.debug(
+                'Restart for node {} was not scheduled. Last event is {}:{}:{}'.format(
+                    self.nodeName, event_type, when, restart_id))
+            return False
 
-    def __repr__(self):
-        # Since nodeid can be null till pool ledger has not caught up
-        return self.nodeId or ''
+        return True
 
-    def service(self):
-        return self._serviceActions()
+    def _update_action_log_for_started_action(self):
+        (event_type, when, restart_id) = self.lastActionEventInfo
 
-    def handleRestartTxn(self, txn) -> None:
+        if not self.didLastExecutedRestartSucceeded:
+            self._actionLog.appendFailed(when, restart_id)
+            self._action_failed(scheduled_on=when,
+                                restart_id=restart_id,
+                                external_reason=True)
+            return
+
+        self._actionLog.appendSucceeded(when, restart_id)
+        logger.info("Node '{}' successfully restarted"
+                    .format(self.nodeName))
+        self._notifier.sendMessageUponNodeRestartComplete(
+            "Restart of node '{}' scheduled on {} "
+            " with restart_id {} completed successfully"
+                .format(self.nodeName, when, restart_id))
+
+    def handleActionTxn(self, txn) -> None:
         """
         Handles transaction of type POOL_RESTART
-        Can schedule to restart node
+        Can schedule or cancel restart to a newer
+        version at specified time
 
         :param txn:
         """
+        FINALIZING_EVENT_TYPES = [
+            RestartLog.RESTART_SUCCEEDED, RestartLog.RESTART_FAILED]
+
+        if txn[TXN_TYPE] != POOL_RESTART:
+            return
+
         logger.info("Node '{}' handles restart txn {}".format(
             self.nodeName, txn))
-        action = txn[DATA][ACTION]
-        restart_id = None
-        if action == START:
-            when = txn[DATA][SCHEDULE]
-            if isinstance(when, str):
-                when = dateutil.parser.parse(when)
-            if self.scheduled_restart:
-                self._schedule_restart(when, restart_id)
-            self._call_restart_agent()
+        action = txn[ACTION]
+        justification = txn.get(JUSTIFICATION) #todo:where get?
+        # reinstall = txn.get(REINSTALL, False)
+        restart_id = self.get_action_id(txn)
 
-    def _schedule_restart(self,
-                          when: Union[datetime, str],
-                          restart_id) -> None:
+        if action == START:
+            # forced txn could have partial schedule list
+            if self.nodeId not in txn[SCHEDULE]:
+                logger.info("Node '{}' disregards restart txn {}".format(
+                    self.nodeName, txn))
+                return
+
+            last_event = self.lastActionEventInfo
+            if last_event and last_event[3] == restart_id and last_event[
+                0] in FINALIZING_EVENT_TYPES:
+                logger.info(
+                    "Node '{}' has already performed an restart with restart_id {}. "
+                    "Last recorded event is {}".format(
+                        self.nodeName, restart_id, last_event))
+                return
+
+            when = txn[SCHEDULE][self.nodeId]
+            failTimeout = txn.get(TIMEOUT, self.defaultActionTimeout)
+
+            if self.scheduledAction:
+                if isinstance(when, str):
+                    when = dateutil.parser.parse(when)
+                if self.scheduledAction == (when, restart_id):
+                    logger.debug(
+                        "Node {} already scheduled restart".format(
+                            self.nodeName))
+                    return
+                else:
+                    logger.info(
+                        "Node '{}' cancels previous restart and schedules a new one".format(
+                            self.nodeName))
+                    self._cancelScheduledRestart(justification)
+
+            logger.info("Node '{}' schedules restart".format(
+                self.nodeName))
+
+            self._scheduleRestart(when, failTimeout, restart_id)
+            return
+
+        if action == CANCEL:
+            if self.scheduledAction:
+                self._cancelScheduledRestart(justification)
+                logger.info("Node '{}' cancels restart".format(
+                    self.nodeName))
+            return
+
+        logger.error(
+            "Got {} transaction with unsupported action {}".format(
+                POOL_RESTART, action))
+
+    def _scheduleRestart(self,
+                         when: Union[datetime, str],
+                         failTimeout,
+                         restart_id) -> None:
         """
         Schedules node restart to a newer version
 
+        :param version: version to restart to
         :param when: restart time
         :param restart_id: restart identifier (req_id+seq_no) of a txn that started the restart
         """
         assert isinstance(when, (str, datetime))
-        logger.info("{}'s restarter processing restart"
+        logger.info("{}'s restartr processing restart"
                     .format(self))
         if isinstance(when, str):
             when = dateutil.parser.parse(when)
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
 
-        # self._notifier.sendMessageUponNodeRestarteScheduled(
-        #     "Restart of node has been scheduled on {}".format(
-        #         self.nodeName, when))
-        # self._restartLog.appendScheduled(when, restart_id)
+        self._notifier.sendMessageUponNodeRestartScheduled(
+            "Restart of node '{}' has been scheduled on {}".format(
+                self.nodeName, when))
+        self._actionLog.appendScheduled(when, restart_id)
 
-        call_agent = partial(self._call_restart_agent)
+        callAgent = partial(self._callRestartAgent, when,
+                            failTimeout, restart_id)
         delay = 0
         if now < when:
             delay = (when - now).total_seconds()
-        self.scheduled_restart = (when, restart_id)
-        self._schedule(call_agent, delay)
+        self.scheduledAction = (when, restart_id)
+        self._schedule(callAgent, delay)
 
-    def _call_restart_agent(self) -> None:
+    def _cancelScheduledRestart(self, justification=None) -> None:
+        """
+        Cancels scheduled restart
+
+        :param when: time restart was scheduled to
+        :param version: version restart scheduled for
+        """
+
+        if self.scheduledAction:
+            why_prefix = ": "
+            why = justification
+            if justification is None:
+                why_prefix = ", "
+                why = "cancellation reason not specified"
+
+            (when, restart_id) = self.scheduledAction
+            logger.info("Cancelling restart {restart_id}"
+                        " of node {node}"
+                        " scheduled on {when}"
+                        "{why_prefix}{why}"
+                        .format(restart_id=restart_id,
+                                node=self.nodeName,
+                                when=when,
+                                why_prefix=why_prefix,
+                                why=why))
+
+            self._unscheduleAction()
+            self._actionLog.appendCancelled(when, restart_id)
+            self._notifier.sendMessageUponPoolRestartCancel(
+                "Restart of node '{}'"
+                "has been cancelled due to {}".format(
+                    self.nodeName, why))
+
+    def _callRestartAgent(self, when, failTimeout,
+                          restart_id) -> None:
         """
         Callback which is called when restart time come.
         Writes restart record to restart log and asks
@@ -113,16 +209,18 @@ class Restarter(HasActionQueue):
         :param version: version to restart to
         """
 
-        logger.info("{}'s restart calling agent for restart".format(self))
-        self._restart_start_callback()
-        self.scheduled_restart = None
-        asyncio.ensure_future(self._send_update_request())
+        logger.info("{}'s restartr calling agent for restart".format(self))
+        self._actionLog.appendStarted(when, restart_id)
+        self._action_start_callback()
+        self.scheduledAction = None
+        asyncio.ensure_future(
+            self._sendUpdateRequest(when, restart_id, failTimeout))
 
-    async def _send_update_request(self):
-        retry_limit = self.retry_limit
-        while retry_limit:
+    async def _sendUpdateRequest(self, when, restart_id, failTimeout):
+        retryLimit = self.retry_limit
+        while retryLimit:
             try:
-                msg = RestartMessage(RESTART).toJson()
+                msg = RestartMessage(action=POOL_RESTART).toJson()
                 logger.info("Sending message to control tool: {}".format(msg))
                 await self._open_connection_and_send(msg)
                 break
@@ -130,20 +228,57 @@ class Restarter(HasActionQueue):
                 logger.warning("Failed to communicate to control tool: {}"
                                .format(ex))
                 asyncio.sleep(self.retry_timeout)
-                retry_limit -= 1
-        if not retry_limit:
-            raise Exception("Failed to communicate to control tool")
+                retryLimit -= 1
+        if not retryLimit:
+            self._action_failed(scheduled_on=when,
+                                restart_id=restart_id,
+                                reason="problems in communication with "
+                                       "node control service")
+            self._unscheduleAction()
+            self._actionFailedCallback()
+        else:
+            logger.info("Waiting {} minutes for restart to be performed"
+                        .format(failTimeout))
+            timesUp = partial(self._declareTimeoutExceeded, when,
+                              restart_id)
+            self._schedule(timesUp, self.get_timeout(failTimeout))
 
-    async def _open_connection_and_send(self, message: str):
-        control_service_host = self.config.controlServiceHost
-        control_service_port = self.config.controlServicePort
-        msg_bytes = bytes(message, "utf-8")
-        _, writer = await asyncio.open_connection(
-            host=control_service_host,
-            port=control_service_port
-        )
-        writer.write(msg_bytes)
-        writer.close()
+    def _declareTimeoutExceeded(self, when, restart_id):
+        """
+        This function is called when time for restart is up
+        """
+
+        logger.info("Timeout exceeded for {}".format(when))
+        last = self._actionLog.lastEvent
+        if last and last[1:-1] == (RestartLog.RESTART_FAILED, when):
+            return None
+
+        self._action_failed(scheduled_on=when,
+                            restart_id=restart_id,
+                            reason="exceeded restart timeout")
+
+        self._unscheduleAction()
+        self._actionFailedCallback()
+
+    def _action_failed(self, *,
+                       scheduled_on,
+                       restart_id,
+                       reason=None,
+                       external_reason=False):
+        if reason is None:
+            reason = "unknown reason"
+        error_message = "Node {node} failed restart {restart_id} " \
+                        "scheduled on {scheduled_on} " \
+                        "because of {reason}" \
+            .format(node=self.nodeName,
+                    restart_id=restart_id,
+                    scheduled_on=scheduled_on,
+                    reason=reason)
+        logger.error(error_message)
+        if external_reason:
+            logger.error("This problem may have external reasons, "
+                         "check syslog for more information")
+        self._notifier.sendMessageUponNodeRestartFail(error_message)
 
 
 class RestartMessage:

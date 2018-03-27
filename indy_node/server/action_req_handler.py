@@ -1,29 +1,29 @@
 from typing import List
 
-from indy_node.server.restarter import Restarter
+import dateutil.parser
+
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn, isTxnForced
 from plenum.server.req_handler import RequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, DATA
 from indy_common.auth import Authoriser
-from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, POOL_RESTART
+from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, \
+    POOL_CONFIG, NODE_UPGRADE, POOL_RESTART
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
-from indy_node.server.upgrader import Upgrader
+from indy_node.server.restarter import Restarter
 from indy_node.server.pool_config import PoolConfig
 
 
-class ConfigReqHandler(RequestHandler):
+class ActionReqHandler(RequestHandler):
     action_types = {POOL_RESTART}
 
-    def __init__(self, ledger, state, idrCache: IdrCache,
-                 upgrader: Upgrader, restarter: Restarter, poolManager, poolCfg: PoolConfig):
-        super().__init__(ledger, state)
+    def __init__(self, idrCache: IdrCache,
+                 restarter: Restarter, poolManager, poolCfg: PoolConfig):
         self.idrCache = idrCache
-        self.upgrader = upgrader
         self.restarter = restarter
         self.poolManager = poolManager
         self.poolCfg = poolCfg
@@ -34,9 +34,11 @@ class ConfigReqHandler(RequestHandler):
             self._doStaticValidationPoolRestart(identifier, req_id, operation)
 
     def _doStaticValidationPoolRestart(self, identifier, req_id, operation):
-        if not operation.get(DATA).get(SCHEDULE):
+        try:
+            dateutil.parser.parse(operation.get(DATA).get(SCHEDULE))
+        except Exception:
             raise InvalidClientRequest(identifier, req_id,
-                                       "time for restart can not be empty")
+                                       "time is not valid")
 
     def validate(self, req: Request):
         status = None
@@ -52,33 +54,17 @@ class ConfigReqHandler(RequestHandler):
                 req.identifier,
                 req.reqId,
                 "Nym {} not added to the ledger yet".format(origin))
+        action = ""
         if typ == POOL_RESTART:
             action = operation.get(ACTION)
         r, msg = Authoriser.authorised(
             typ, originRole, field=ACTION, oldVal=status, newVal=action)
         if not r:
             raise UnauthorizedClientRequest(
-                req.identifier, req.reqId, "{} cannot do {}".format(
-                    Roles.nameFromValue(originRole), trname))
-
-    def apply(self, req: Request, cons_time):
-        txn = reqToTxn(req, cons_time)
-        (start, _), _ = self.ledger.appendTxns([txn])
-        return start, txn
-
-    def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
-        committedTxns = super().commit(txnCount, stateRoot, txnRoot, ppTime)
-        for txn in committedTxns:
-            # Handle POOL_UPGRADE or POOL_CONFIG transaction here
-            # only in case it is not forced.
-            # If it is forced then it was handled earlier
-            # in applyForced method.
-            if not isTxnForced(txn):
-                self.upgrader.handleUpgradeTxn(txn)
-                self.poolCfg.handleConfigTxn(txn)
-        return committedTxns
+                req.identifier, req.reqId, "{} cannot do restart".format(
+                    Roles.nameFromValue(originRole)))
 
     def applyRestart(self, req: Request):
-            txn = reqToTxn(req)
-            self.restarter.handleRestartTxn(txn)
-            self.poolCfg.handleConfigTxn(txn)
+        txn = reqToTxn(req)
+        self.restarter.handleActionTxn(txn)
+        self.poolCfg.handleConfigTxn(txn)

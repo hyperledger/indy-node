@@ -277,7 +277,7 @@ class ClientPoolRestartOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_RESTART)),
         (ACTION, ChooseField(values=(START, CANCEL,))),
-        (SCHEDULE, NonNegativeNumberField(optional=True)),  # TODO: correct format for field
+        (SCHEDULE, NonEmptyStringField()),
     )
 
 
@@ -302,6 +302,7 @@ class ClientOperationField(PClientOperationField):
         GET_SCHEMA: ClientGetSchemaOperation(),
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
         POOL_CONFIG: ClientPoolConfigOperation(),
+        POOL_RESTART: ClientPoolRestartOperation(),
         REVOC_REG_DEF: ClientRevocDefSubmitField(),
         REVOC_REG_ENTRY: ClientRevocRegEntrySubmitField(),
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),

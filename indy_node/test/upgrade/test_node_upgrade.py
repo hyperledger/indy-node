@@ -33,7 +33,7 @@ def test_node_detected_upgrade_done(nodeSet):
     '''
     for node in nodeSet:
         assert node.upgrader.scheduledUpgrade is None
-        assert node.upgrader.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_SUCCEEDED
+        assert node.upgrader.lastActionEventInfo[0] == UpgradeLog.UPGRADE_SUCCEEDED
 
 
 def test_node_sent_upgrade_successful(looper, nodeSet, nodeIds):

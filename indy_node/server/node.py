@@ -1,5 +1,6 @@
 from typing import Iterable, Any, List
 
+from indy_node.server.action_req_handler import ActionReqHandler
 from indy_node.server.restarter import Restarter
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
@@ -133,15 +134,14 @@ class Node(PlenumNode, HasPoolManager):
                         self.dataLocation,
                         self.config,
                         self.configLedger,
-                        upgradeFailedCallback=self.postConfigLedgerCaughtUp,
-                        upgrade_start_callback=self.notify_upgrade_start)
+                        actionFailedCallback=self.postConfigLedgerCaughtUp,
+                        action_start_callback=self.notify_upgrade_start)
 
     def getRestarter(self):
         return Restarter(self.id,
                          self.name,
                          self.dataLocation,
-                         self.config,
-                         self.configLedger)
+                         self.config)
 
     def getDomainReqHandler(self):
         if self.attributeStore is None:
@@ -187,12 +187,18 @@ class Node(PlenumNode, HasPoolManager):
         self.restarter = self.getRestarter()
         self.poolCfg = self.getPoolConfig()
         super().setup_config_req_handler()
+        super().setup_action_req_handler()
 
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,
                                 self.states[CONFIG_LEDGER_ID],
                                 self.getIdrCache(),
                                 self.upgrader,
+                                self.poolManager,
+                                self.poolCfg)
+
+    def get_action_req_handler(self):
+        return ActionReqHandler(self.getIdrCache(),
                                 self.restarter,
                                 self.poolManager,
                                 self.poolCfg)
@@ -214,9 +220,9 @@ class Node(PlenumNode, HasPoolManager):
         self.acknowledge_upgrade()
 
     def acknowledge_upgrade(self):
-        if not self.upgrader.should_notify_about_upgrade_result():
+        if not self.upgrader.should_notify_about_action_result():
             return
-        lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
+        lastUpgradeVersion = self.upgrader.lastActionEventInfo[2]
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
         logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
             self, action, lastUpgradeVersion))
@@ -235,7 +241,7 @@ class Node(PlenumNode, HasPoolManager):
 
         self.startedProcessingReq(*request.key, self.nodestack.name)
         self.send(request)
-        self.upgrader.notified_about_upgrade_result()
+        self.upgrader.notified_about_action_result()
 
     def notify_upgrade_start(self):
         scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
@@ -307,11 +313,11 @@ class Node(PlenumNode, HasPoolManager):
         if self.is_query(request.operation[TXN_TYPE]):
             self.process_query(request, frm)
             self.total_read_request_number += 1
-        else:
+        elif self.is_action(request.operation[TXN_TYPE]):
             if request.operation[TXN_TYPE] == POOL_RESTART:
                 reply = {}
                 try:
-                    self.configReqHandler.validate(request)
+                    self.actionReqHandler.validate(request)
                     reply = self.generate_action_result(request)
                     if not self.isProcessingReq(*request.key):
                         self.startedProcessingReq(*request.key, frm)
@@ -323,7 +329,8 @@ class Node(PlenumNode, HasPoolManager):
                 finally:
                     self.sendReplyToClient(reply,
                                            (request.identifier, request.reqId))
-                    self.configReqHandler.applyRestart(request)
+                    self.actionReqHandler.applyRestart(request)
+        else:
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [
                     POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
@@ -332,9 +339,8 @@ class Node(PlenumNode, HasPoolManager):
             # here we should have write transactions that should be processed
             # pool_restart should not be written to ledger
             # only on writable pool
-            if request.operation[TXN_TYPE] != POOL_RESTART and (
-                self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG])):
+            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
+                    POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
 
             elif request.operation[TXN_TYPE] != POOL_RESTART:

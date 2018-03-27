@@ -1,10 +1,9 @@
 from typing import List
 
-from indy_node.server.restarter import Restarter
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn, isTxnForced
-from plenum.server.req_handler import RequestHandler
+from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, DATA
 from indy_common.auth import Authoriser
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, POOL_RESTART
@@ -16,15 +15,14 @@ from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
 
 
-class ConfigReqHandler(RequestHandler):
-    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, POOL_RESTART}
+class ConfigReqHandler(LedgerRequestHandler):
+    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
-                 upgrader: Upgrader, restarter: Restarter, poolManager, poolCfg: PoolConfig):
+                 upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
-        self.restarter = restarter
         self.poolManager = poolManager
         self.poolCfg = poolCfg
 
@@ -134,17 +132,12 @@ class ConfigReqHandler(RequestHandler):
             # If it is forced then it was handled earlier
             # in applyForced method.
             if not isTxnForced(txn):
-                self.upgrader.handleUpgradeTxn(txn)
+                self.upgrader.handleActionTxn(txn)
                 self.poolCfg.handleConfigTxn(txn)
         return committedTxns
 
     def applyForced(self, req: Request):
         if req.isForced():
             txn = reqToTxn(req)
-            self.upgrader.handleUpgradeTxn(txn)
-            self.poolCfg.handleConfigTxn(txn)
-
-    def applyRestart(self, req: Request):
-            txn = reqToTxn(req)
-            self.restarter.handleRestartTxn(txn)
+            self.upgrader.handleActionTxn(txn)
             self.poolCfg.handleConfigTxn(txn)
