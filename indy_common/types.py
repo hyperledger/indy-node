@@ -234,7 +234,6 @@ class ClientClaimDefGetOperation(MessageValidator):
 class ClientGetRevocRegDefField(MessageValidator):
     schema = (
         (ID, NonEmptyStringField()),
-        (REVOC_TYPE, NonEmptyStringField()),
         (TXN_TYPE, ConstantField(GET_REVOC_REG_DEF)),
     )
 
