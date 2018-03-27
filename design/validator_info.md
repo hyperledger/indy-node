@@ -133,7 +133,7 @@ For reference: [INDY-1184](https://jira.hyperledger.org/browse/INDY-1184)
 
 * Node info
     * name
-    * last N txns from the pool ledger that belong to the current node only
+    * last N txns from state that belong to the current node only
     * current mode
     * metrics
     * view change status
