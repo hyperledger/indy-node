@@ -56,14 +56,13 @@ transaction specific data:
     "txn": {
         "type": <...>,
         "protocolVersion": <...>,
+        "version": <...>,
         
         "data": {
-            "version": <...>,
             <txn-specific fields>
         },
         
         "metadata": {
-            "version": <...>,
             "reqId": <...>,
             "from": <...>
         },
@@ -75,7 +74,10 @@ transaction specific data:
     },
     "reqSignature": {
         "type": <...>,
-        "value": <...>
+        "values": [
+            "from": <...>,
+            "value": <...>
+        ]
     }
 }
 ```
@@ -102,22 +104,19 @@ transaction specific data:
         Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
         between clients and nodes.     
      
+    - `version` (integer):
+    
+        Transaction version to be able to evolve content.
+        The content of `data` and `metadata` may depend on the version.       
+ 
     - `data` (dict):
 
         Transaction-specific data fields (see next sections for each transaction description).  
-            
-        - `version` (integer):
-            Transaction version to be able to evolve `data`.
-            The content of `data` may depend on the version.  
        
     - `metadata` (dict):
     
         Metadata as came from the Request.
 
-        - `version` (integer):
-            Transaction version to be able to evolve `metadata`.
-            The content of `metadata` may depend on the version.  
-            
         - `from` (base58-encoded string):
              Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
              for 16 or 32 bit DID value.
@@ -143,17 +142,22 @@ transaction specific data:
         - `seqNo` (integer):
             A unique sequence number of the transaction on Ledger
   
-    - `reqSignature` (dict):
+- `reqSignature` (dict):
+
+    Submitter's signature over request with transaction (`txn` field).
     
-        Submitter's signature over `txn`.
+    - `type` (string enum):
         
-        - `type` (enum number as string):
-            
-            - ED25519: ed25519 signature
-            - ED25519_MULTI: ed25519 signature in multisig case.
-        
-        - `value` (base58-encoded string or array of base58-encoded string): signature value
+        - ED25519: ed25519 signature
+        - ED25519_MULTI: ed25519 signature in multisig case.
     
+    - `values` (list): 
+        
+        - `from` (base58-encoded string):
+        Identifier (DID) of signer as base58-encoded string for 16 or 32 bit DID value.
+        
+        - `value` (base58-encoded string):
+         signature value
 
 Please note that all these metadata fields may be absent for genesis transactions.
 
@@ -165,6 +169,11 @@ Note that only trustees and stewards can create new trust anchors and trustee ca
 
 The transaction can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
+
+- `id` (string):
+
+    Nym's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
+    It must be equal (or be mapped to) the real key of the NYM state in the State Trie. 
  
 - `did` (base58-encoded string):
 
@@ -208,17 +217,17 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 {
     "txn": {
         "type":1,
+        "version":1,
         "protocolVersion":1,
         
         "data": {
-            "version":1,
+            "id": "N22KY2Dyvmuu2PyyqSFKue|01",
             "did":"GEzcdDLhCpGCYRHW82kjHd",
             "verkey":"~HmUWn928bnFT6Ephf65YXv",
             "role":101,
         },
         
         "metadata": {
-            "version":1,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -230,7 +239,10 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     },
     "reqSignature": {
         "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     }
 
 }
@@ -238,6 +250,12 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 
 #### ATTRIB
 Adds attribute to a NYM record
+
+- `id` (string):
+
+    Attr's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
+    It must be equal (or be mapped to) the real key of the ATTR state in the State Trie. 
+
 
 - `did` (base58-encoded string):
 
@@ -269,16 +287,16 @@ Adds attribute to a NYM record
 {
     "txn": {
         "type":100,
+        "version":1,
         "protocolVersion":1,
         
         "data": {
-            "version":1,
+            "id": "N22KY2Dyvmuu2PyyqSFKue|02",
             "did":"GEzcdDLhCpGCYRHW82kjHd",
             "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
         },
         
         "metadata": {
-            "version":1,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -290,7 +308,10 @@ Adds attribute to a NYM record
     },
     "reqSignature": {
         "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     }
 }
 ```
@@ -328,10 +349,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 {
     "txn": {
         "type":101,
+        "version":1,
         "protocolVersion":1,
         
         "data": {
-            "version":1,
             "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
             "schemaName": "Degree",
             "schemaVersion": "1.0",
@@ -341,7 +362,6 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         },
         
         "metadata": {
-            "version":1,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -353,7 +373,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     },
     "reqSignature": {
         "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     }
    
 }
@@ -400,10 +423,10 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
 {
     "txn": {
         "type":102,
+        "version":1,
         "protocolVersion":1,
         
         "data": {
-            "version":1,
             "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1:Degree1:CL:key1",
             "type":"CL",
             "tag": "key1",
@@ -420,7 +443,6 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
         },
         
         "metadata": {
-            "version":1,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -432,7 +454,10 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
     },
     "reqSignature": {
         "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     }
 }
 ```
@@ -499,10 +524,10 @@ There is no need to specify all other fields, and they will remain the same.
 {
     "txn": {
         "type":0,
+        "version":1,
         "protocolVersion":1,
         
         "data": {
-            "version":1,
             "did":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
             "alias":"Delta",
             "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
@@ -514,7 +539,6 @@ There is no need to specify all other fields, and they will remain the same.
         },
         
         "metadata": {
-            "version":1,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -526,7 +550,10 @@ There is no need to specify all other fields, and they will remain the same.
     },
     "reqSignature": {
         "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     }
 }
 ```
@@ -588,10 +615,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 {
     "txn": {
         "type":109,
+        "version":1,
         "protocolVersion":1,
         
         "data": {
-            "version":1,
             "name":"upgrade-13",
             "action":"start",
             "version":"1.3",
@@ -604,7 +631,6 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         },
         
         "metadata": {
-            "version":1,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -616,7 +642,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     },
     "reqSignature": {
         "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     }
 }
 ```
@@ -638,16 +667,15 @@ Status of each Node's upgrade (sent by each upgraded Node)
 {
     "txn": {
         "type":110,
+        "version":1,
         "protocolVersion":1,
         
         "data": {
-            "version":1,
             "action":"complete",
             "version":"1.2"
         },
         
         "metadata": {
-            "version":1,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -659,7 +687,10 @@ Status of each Node's upgrade (sent by each upgraded Node)
     },
     "reqSignature": {
         "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     }
 }
 ```
@@ -688,16 +719,15 @@ Command to change Pool's configuration
 {
     "txn": {
         "type":111,
+        "version":1,
         "protocolVersion":1,
         
         "data": {
-            "version":1,
             "writes":false,
             "force":true,
         },
         
         "metadata": {
-            "version":1,
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -709,7 +739,10 @@ Command to change Pool's configuration
     },
     "reqSignature": {
         "type": "ED25519",
-        "value": "3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     }
 }
 ```
