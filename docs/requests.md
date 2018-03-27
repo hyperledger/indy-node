@@ -40,11 +40,54 @@ The main Client-to-Node and Node-to-Node envelope is serialized in MsgPack forma
 This is a common structure for ALL messages (both Node-to-Node and Client-to-Node).
 
 ```
+    "type": <...>,
+    "version": <...>,
+    "protocolVersion": <...>,
+    
+    "data": {
+        <msg-specific fields>
+    },
+    
+    "metadata": {
+        <msg-specific fields>
+    },
+    
+    "pluginData": {
+        <plugin-specific-fields>
+    }
+```
+- `type` (enum integer): 
+ 
+    Msg type.
+    
+- `protocolVersion` (integer; optional): 
+
+    The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
+    Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
+    between clients and nodes.     
+
+- `data` (dict):
+
+    Message-specific data.
+
+- `metadata` (dict):
+
+    Message-specific metadata.
+
+- `pluginData` (dict):
+
+    Plugin-specific data.
+
+## Signed Message Structure
+
+A message (see above) can be wrapped into a Signed Message envelope.
+All write requests must be signed.
+
+```
 {
     "type": <...>,
     "version": <...>,
     
-    "from": <...>,
     "signature": {
         "type": <...>,
         "values": [
@@ -58,37 +101,7 @@ This is a common structure for ALL messages (both Node-to-Node and Client-to-Nod
     "msg": <serialized-msg>
 }
 ```
-where the `msg` field has the following structure:
-```
-    "protocolVersion": <...>,
-    "data": {
-        "version": <...>,
-        <msg-specific fields>
-    },
-    "metadata": {
-        "version": <...>,
-        <msg-specific fields>
-    },
-    "pluginData": {
-        <plugin-specific-fields>
-    }
-```
-- `type` (enum integer): 
- 
-    Msg type.
-    
-    
-- `from` (base58-encoded string):
-     Identifier (DID) of the message sender (a client or node who sent the transaction) as base58-encoded string
-     for 16 or 32 bit DID value.
-     It must be present on Ledger for write requests and can be any value for read requests.
-     
-     It may differ from `did` field for some of requests (for example NYM), where `did` is a 
-     target identifier (for example, a newly created DID identifier).
-     
-     *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
-
-- `signature` (dict, optional):
+- `signature` (dict):
 
     Submitter's signature over serialized `msg` field.
     
@@ -97,9 +110,15 @@ where the `msg` field has the following structure:
         - ED25519: ed25519 signature
         - ED25519_MULTI: ed25519 signature in multisig case.
     
-    - `value` (base58-encoded string or array of base58-encoded string): signature value   
+    - `values` (list): 
+        
+        - `from` (base58-encoded string):
+        Identifier (DID) of signer as base58-encoded string for 16 or 32 bit DID value.
+        
+        - `value` (base58-encoded string):
+         signature value
     
-- `serialization` (string enum):
+- `serialization` (string enum, optional):
 
     Defines how the `msg` is serialized
      - JSON: json
@@ -108,54 +127,28 @@ where the `msg` field has the following structure:
 - `msg` (dict):
     
     Serialized message.
-
-    - `protocolVersion` (integer; optional): 
     
-        The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
-        Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
-        between clients and nodes.     
     
-    - `data` (dict):
-    
-        Message-specific data.
-    
-    - `metadata` (dict):
-    
-        Message-specific metadata.
-
-    - `pluginData` (dict):
-    
-        Plugin-specific data.
-
 ## Common Request Structure
 
 Each Request (both write and read) follows the pattern as shown above.
 
 ```
 {
-    "from": <...>,
-    "signature": {
-        "type": <...>,
-        "value": <...>
+    "type": <...>,
+    "version": <...>,
+    "protocolVersion": <...>,
+    
+    "data": {
+        <msg-specific fields>
     },
-    "serialization": <...>,
-    "msg": {
-        "type": <...>,
-        "protocolVersion": <...>,
-        "data": {
-            "version": <...>,
-            <msg-specific fields>
-        },
-        "metadata": {
-            "version": <...>,
-            "reqId": <...>,
-            "from": <...>,
-        },
-    }
+    
+    "metadata": {
+        "reqId": <...>,
+        "from": <...>,
+    },
 }
 ```
-
-- `signature` is required for write requests only.
 
 - Message Type `type` is one of the following values:
 
@@ -198,57 +191,51 @@ Each Write/Read Reply follows the pattern as shown above.
 
 ```
 {
-    "from": <...>,
-    "serialization": <...>,
-    "msg": {
-        "type": REPLY_WRITE/REPLY_READ,
-        "protocolVersion": <...>,
+    "type": REPLY_WRITE/REPLY_READ,
+    "version": <...>,
+    "protocolVersion": <...>,
+    
+    "data": {
+        "results": [
+            "result": {
+                <result>
+            },
+            
+            "multiSignature": {
+                "type": <...>,
+                "value": <...>,
+                "from": <...>,
+                "serialization": <...>,
+                "signedState": <...>
+            }, 
         
-        "data": {
-            "version": <...>,
-            "type": <...>,
-            
-            "results": [
-                "result": {
-                    <result>
-                },
-                "txnMetadata": {
-                    <txn metadata as in ledger>
-                },
-                "reqSignature": {
-                    <txn request signature as in ledger>
-                }
-                
-                "ledgerMetadata": {
-                    "ledgerId": <...>, 
-                    "rootHash": <...>,
-                    "size": <...>,
-                },
-            
-                "stateMetadata": {
-                    "timestamp": <...>,
-                    "poolRootHash": <...>,
-                    "rootHash": <...>,
-                },
-            
-                "poolMultiSignature": {
-                    "type": <...>,
-                    "value": <...>,
-                    "participants": <...>
-                }, 
-            
-                "stateProof": <...>,
-                "auditProof": <...>, 
-            ]
-        },
-        "metadata": {
-            "version": <...>,
-            "reqId": <...>,
-            "from": <...>,
-        },
-    }
+            "stateProof": <...>,
+            "auditProof": <...>, 
+        ]
+    },
+    "metadata": {
+        "reqId": <...>,
+        "from": <...>,
+    },
 }
 ```
+where `multiSignature`'s `signedState` is a serialized value having the following form:
+```
+{
+    "ledgerMetadata": {
+        "ledgerId": <...>, 
+        "rootHash": <...>,
+        "size": <...>,
+    },
+
+    "stateMetadata": {
+        "timestamp": <...>,
+        "poolRootHash": <...>,
+        "rootHash": <...>,
+    }
+}
+``` 
+
 - `type` (string):
     
     Request type as was in the corresponding Request. 
@@ -264,53 +251,41 @@ Each Write/Read Reply follows the pattern as shown above.
     The main result. It can be a transaction from state (see `state proof` then),
      a transaction from ledger (see `audit proof`), or any custom result.
     It usually includes transaction data and request metadata (as was in Request).
+    It also includes `txnMetadata` and `reqSignature`.
 
-- `txnMetadata` (dict):
-
-    Transaction metadata as stored in the Ledger.
-
-- `reqSignature` (dict):
-
-    Transaction's Request signature as stored in the Ledger.
-
-- `ledgerMetadata` (dict):
-
-    Metadata associated with the current state of the Ledger.
-
-    - `ledgerId` (enum integer):
-        ID of the ledger the transaction is written to:
-        - POOL_LEDGER = 0
-        - DOMAIN_LEDGER = 1
-        - CONFIG_LEDGER = 2
-    
-    - `rootHash` (base58-encoded hash string):
-        base58-encoded ledger"s merkle tree root hash
-        
-    - `size` (integer):
-        Ledger"s size (that is the last seqNo present at the ledger at that time).
-        
-- `stateMetadata` (dict):
-
-    Metadata associated with the state (Patricia Merkle Trie) the returned transaction belongs to
-    (see `ledgerId`).
-    
-    - `timestamp` (integer as POSIX timestamp):
-     last update of the state
-         
-    - `poolRootHash` (base58-encoded hash string):
-     pool state trie root hash to get the current state of the Pool
-     (it can be used to get the state of the Pool at the moment the BLS multi-signature was created).
-        
-    - `rootHash` (base58-encoded string):
-     state trie root hash for the ledger the returned transaction belongs to
-
-- `poolMultiSignature` (dict):
+- `multiSignature` (dict):
  
     Nodes' Multi-signature against the given `ledgerMetadata` and `stateMetadata` (serialized to MsgPack)
     - `value` (enum string): multi-signature type
         - BLS: BLS multi-signature
     - `value` (base58-encoded string): the value of the BLS multi-signature
-    - `participants` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
+    - `from` (array os strings): Aliases of Nodes participated in BLS multi-signature (the number of participated nodes is not less than n-f)
+    - `serialization` (enum string, optional): serialization type of the `signedState` (MsgPack by default). 
+    - `signedState` (bytes): serialized the multi-signed state the signature is calculated against
+    
+        - `ledgerMetadata` (dict):
+            Metadata associated with the current state of the Ledger.
+            - `ledgerId` (enum integer):
+                ID of the ledger the transaction is written to:
+                - POOL_LEDGER = 0
+                - DOMAIN_LEDGER = 1
+                - CONFIG_LEDGER = 2
+            - `rootHash` (base58-encoded hash string):
+                base58-encoded ledger"s merkle tree root hash
+            - `size` (integer):
+                Ledger"s size (that is the last seqNo present at the ledger at that time).
+                
+        - `stateMetadata` (dict):
+            Metadata associated with the state (Patricia Merkle Trie) the returned transaction belongs to
+            (see `ledgerId`).
+            - `timestamp` (integer as POSIX timestamp):
+             last update of the state
+            - `poolRootHash` (base58-encoded hash string):
+             pool state trie root hash to get the current state of the Pool
+             (it can be used to get the state of the Pool at the moment the BLS multi-signature was created).
+            - `rootHash` (base58-encoded string):
+             state trie root hash for the ledger the returned transaction belongs to
+
 
 - `stateProof` (base64-encoded string; optional): 
 
@@ -337,28 +312,22 @@ Each Reply to commands/actions follows the pattern as shown above.
 
 ```
 {
-    "from": <...>,
-    "serialization": <...>,
-    "msg": {
-        "type": REPLY_COMMAND,
-        "protocolVersion": <...>,
-        
-        "data": {
-            "version": <...>,
-            "type": <...>,
-            
-            "results": [
-                "result": {
-                    <result>
-                },
-            ]
-        },
-        "metadata": {
-            "version": <...>,
-            "reqId": <...>,
-            "from": <...>,
-        },
-    }
+    "type": REPLY_COMMAND,
+    "version": <...>,
+    "protocolVersion": <...>,
+    
+    "data": {
+        "type": <...>,
+        "results": [
+            "result": {
+                <result>
+            },
+        ]
+    },
+    "metadata": {
+        "reqId": <...>,
+        "from": <...>,
+    },
 }
 ```
 
@@ -368,20 +337,17 @@ Each ACK follows the pattern as shown above.
 
 ```
 {
-    "from": "GFAD5g65TDQr1PPHHRoiGf",
-    "serialization": "MSG_PACK",
-    "msg": {
-        "type": REQACK,
-        "protocolVersion": 1,
-        "data": {
-            "version": 1,
-        },
-        "metadata": {
-            "version": 1,
-            "reqId": 1514215425836443,
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-        },
-    }
+    
+    "type": REQACK,
+    "version": 1,
+    "protocolVersion": 1,
+    
+    "data": {
+    },
+    "metadata": {
+        "reqId": 1514215425836443,
+        "from": "L5AD5g65TDQr1PPHHRoiGf",
+    },
 }
 ```
 
@@ -390,21 +356,17 @@ Each ACK follows the pattern as shown above.
 Each NACK follows the pattern as shown above.
 ```
 {
-    "from": "GFAD5g65TDQr1PPHHRoiGf",
-    "serialization": "MSG_PACK",
-    "msg": {
-        "type": REQNACK,
-        "protocolVersion": <...>,
-        "data": {
-            "version": <...>,
-            "reason": <reason_str>
-        },
-        "metadata": {
-            "version": <...>,
-            "reqId": 1514215425836443,
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-        },
-    }
+    "type": REQNACK,
+    "version": 1,
+    "protocolVersion": 1,
+    
+    "data": {
+        "reason": <reason_str>
+    },
+    "metadata": {
+        "reqId": 1514215425836443,
+        "from": "L5AD5g65TDQr1PPHHRoiGf",
+    },
 }
 ```
 
@@ -412,21 +374,17 @@ Each NACK follows the pattern as shown above.
 Each Reject follows the pattern as shown above.
 ```
 {
-    "from": "GFAD5g65TDQr1PPHHRoiGf",
-    "serialization": "MSG_PACK",
-    "msg": {
-        "type": REJECT,
-        "protocolVersion": 1,
-        "data": {
-            "version": 1,
-            "reason": <reason_str>
-        },
-        "metadata": {
-            "version": 1,
-            "reqId": 1514215425836443,
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-        },
-    }
+    "type": REJECT,
+    "version": 1,
+    "protocolVersion": 1,
+    
+    "data": {
+        "reason": <reason_str>
+    },
+    "metadata": {
+        "reqId": 1514215425836443,
+        "from": "L5AD5g65TDQr1PPHHRoiGf",
+    },
 }
 ```
 
@@ -441,6 +399,11 @@ Note that only trustees and stewards can create new trust anchors and trustee ca
 
 The request can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
+
+- `id` (string):
+
+    Nym's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
+    It must be equal (or be mapped to) the real key of the NYM state in the State Trie. 
 
 - `did` (base58-encoded string):
 
@@ -483,24 +446,28 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 *Request Example*:
 ```
 {
-    "from": "L5AD5g65TDQr1PPHHRoiGf",
+    "type": 1,
+    "version": 1,
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
-        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        "values": [
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        ]
     },
     "msg": {
         "type": 1,
+        "version": 1,
         "protocolVersion": 1,
         
         "data": {
-            "version": 1,
+            "id": "N22KY2Dyvmuu2PyyqSFKue|01",
             "did": "N22KY2Dyvmuu2PyyqSFKue",
             "role": "101",
             "verkey": "~HmUWn928bnFT6Ephf65YXv"
         },
         "metadata": {
-            "version": 1,
             "reqId": 1514215425836443,
             "from": "L5AD5g65TDQr1PPHHRoiGf",
         },
@@ -510,76 +477,81 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 *Reply Example*:
 ```
 {
-    "from": "Node1",
-    "serialization": "MSG_PACK",
-    "msg": {
-        "type": "REPLY",
-        "protocolVersion": 1,
-        
-        "data": {
-            "version": 1,
-            "type": 1,
-        
-            "results": [
-                "result": {
+    "type": "REPLY",
+    "version": 1,
+    "protocolVersion": 1,
+    
+    "data": {
+
+        "results": [
+            "result": {
+                "txn": {
                     "type": 1,
                     "protocolVersion": 1,
-                    
+                    "version": 1,
+                                    
                     "data": {
-                        "version": 1,
+                        "id": "N22KY2Dyvmuu2PyyqSFKue|01",
                         "did": "N22KY2Dyvmuu2PyyqSFKue",
                         "role": "101",
                         "verkey": "~HmUWn928bnFT6Ephf65YXv"
                     },
                     "metadata": {
-                        "version": 1,
                         "reqId": 1514215425836443,
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                     },
                 },
                 "txnMetadata": {
-                    "version":1,
+                    "version": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
-                    "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+                    "values": [
+                        "from": "L5AD5g65TDQr1PPHHRoiGf",
+                        "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+                    ]
                 },
-                 
-                "ledgerMetadata": {
-                    "ledgerId": 1, 
-                    "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
-                    "size": 300,
-                },
-            
-                "stateMetadata": {
-                    "timestamp": 1514214795,
-                    "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
-                    "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
-                },
-            
-                "poolMultiSignature": {
-                    "type": "BLS",
-                    "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
-                    "participants": ["Delta", "Gamma", "Alpha"]
-                }, 
-            
-                "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
-            ]
-        },
-        "metadata": {
-            "version": 1,
-            "reqId": 1514215425836443,
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-        }
-    } 
+            },
+             
+            "multiSignature": {
+                "type": "BLS",
+                "value": "RTyxbErBLcmTHBLj1rYCAEpMMkLnL65kchGni2tQczqzomYWZx9QQpLvnvNN5rD2nXkqaVW3USGak1vyAgvj2ecAKXQZXwcfosmnsBvRrH3M2M7cJeZSVWJCACfxMWuxAoMRtuaE2ABuDz6NFcUctXcSa4rdZFkxh5GoLYFqU4og6b",
+                "from": ["Delta", "Gamma", "Alpha"],
+                "serialization": "MsgPack",
+                "signedState": {
+                    "ledgerMetadata": {
+                        "ledgerId": 1, 
+                        "rootHash": "DqQ7G4fgDHBfdfVLrE6DCdYyyED1fY5oKw76aDeFsLVr",
+                        "size": 300,
+                    },
+                    "stateMetadata": {
+                        "timestamp": 1514214795,
+                        "poolRootHash": "TfMhX3KDjrqq94Wj7BHV9sZrgivZyjbHJ3cGRG4h1Zj",
+                        "rootHash": "7Wdj3rrMCZ1R1M78H4xK5jxikmdUUGW2kbfJQ1HoEpK",
+                    },
+                }                
+            }, 
+        
+            "auditProof": ["Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA", "3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt"],
+        ]
+    },
+    "metadata": {
+        "reqId": 1514215425836443,
+        "from": "L5AD5g65TDQr1PPHHRoiGf",
+    }
 }
 ```
 
 ### ATTRIB
 
 Adds attribute to a NYM record.
+
+- `id` (string):
+
+    Attr's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
+    It must be equal (or be mapped to) the real key of the ATTR state in the State Trie. 
 
 - `did` (base58-encoded string):
 
@@ -630,7 +602,6 @@ Adds attribute to a NYM record.
 
 *Reply Example*:
 ```
-{
 {
     "from": "Node1",
     "serialization": "MSG_PACK",
