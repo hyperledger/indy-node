@@ -65,7 +65,7 @@ class RevocationStrategy(metaclass=ABCMeta):
             raise InvalidClientRequest(self.author_did,
                                        self.req_id,
                                        "Got equal accum and prev_accum but "
-                                       "issued and revoked indicies are empty")
+                                       "issued and revoked indices are not empty")
 
         # Do strategy specific validation
         self.specific_validation(current_entry, req)
