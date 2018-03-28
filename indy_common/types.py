@@ -111,10 +111,10 @@ class ClientRevocDefSubmitField(MessageValidator):
 
 class RevocRegEntryValueField(MessageValidator):
     schema = (
-        (PREV_ACCUM, NonEmptyStringField()),
+        (PREV_ACCUM, NonEmptyStringField(optional=True)),
         (ACCUM, NonEmptyStringField()),
-        (ISSUED, IterableField(inner_field_type=IntegerField())),
-        (REVOKED, IterableField(inner_field_type=IntegerField()))
+        (ISSUED, IterableField(inner_field_type=IntegerField(), optional=True)),
+        (REVOKED, IterableField(inner_field_type=IntegerField(), optional=True))
     )
 
 

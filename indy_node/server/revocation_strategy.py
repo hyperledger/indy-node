@@ -26,14 +26,22 @@ class RevocationStrategy(metaclass=ABCMeta):
         # General checks for all Revocation entries
         operation = req.operation
         value_from_txn = operation.get(VALUE)
-        issued_from_txn = value_from_txn.get(ISSUED)
-        revoked_from_txn = value_from_txn.get(REVOKED)
+        issued_from_txn = value_from_txn.get(ISSUED, [])
+        revoked_from_txn = value_from_txn.get(REVOKED, [])
         intersection = set(issued_from_txn).intersection(set(revoked_from_txn))
         if len(intersection) > 0:
             raise InvalidClientRequest(self.author_did,
                                        self.req_id,
                                        "Can not have an index in both "
                                        "'issued' and 'revoked' lists")
+        prev_accum = value_from_txn.get(PREV_ACCUM, None)
+        accum = value_from_txn.get(ACCUM, None)
+        if prev_accum is not None and current_entry is None:
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Got '{}': {} but there is no "
+                                       "previous REVOC_REG_ENTRY".format(PREV_ACCUM,
+                                                                         prev_accum))
         if current_entry is None:
             return None
         value_from_state = current_entry.get(VALUE)
@@ -47,6 +55,18 @@ class RevocationStrategy(metaclass=ABCMeta):
                                        "value: {} in transaction".format(
                                            current_accum,
                                            value_from_state.get(PREV_ACCUM)))
+        if len(issued_from_txn) == 0 and len(revoked_from_txn) == 0:
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Got '{}' and '{}' but '{}' and '{}' lists are empty".format(
+                                           PREV_ACCUM, ACCUM,
+                                           ISSUED, REVOKED))
+        if prev_accum == accum and (len(issued_from_txn) > 0 or len(revoked_from_txn) > 0):
+            raise InvalidClientRequest(self.author_did,
+                                       self.req_id,
+                                       "Got equal accum and prev_accum but "
+                                       "issued and revoked indicies are empty")
+
         # Do strategy specific validation
         self.specific_validation(current_entry, req)
 
