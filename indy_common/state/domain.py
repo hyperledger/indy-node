@@ -1,14 +1,19 @@
 import json
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
-from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, TARGET_NYM, DATA, NAME, VERSION, ORIGIN
+from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, TXN_TYPE, \
+    TARGET_NYM, DATA, NAME, VERSION, ORIGIN
 from plenum.common.types import f
 from indy_common.serialization import attrib_raw_data_serializer
-from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE
+from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, ID, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID
+
 
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
 MARKER_CLAIM_DEF = "\03"
+MARKER_REVOC_DEF = "\04"
+MARKER_REVOC_REG_ENTRY = "\05"
+MARKER_REVOC_REG_ENTRY_ACCUM = "\06"
 LAST_SEQ_NO = "lsn"
 VALUE = "val"
 LAST_UPDATE_TIME = "lut"
@@ -21,8 +26,8 @@ def make_state_path_for_nym(did) -> bytes:
     return sha256(did.encode()).digest()
 
 
-def make_state_path_for_attr(did, attr_name) -> bytes:
-    nameHash = sha256(attr_name.encode()).hexdigest()
+def make_state_path_for_attr(did, attr_name, attr_is_hash=False) -> bytes:
+    nameHash = sha256(attr_name.encode()).hexdigest() if not attr_is_hash else attr_name
     return "{DID}:{MARKER}:{ATTR_NAME}"\
         .format(DID=did,
                 MARKER=MARKER_ATTR,
@@ -43,6 +48,29 @@ def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type) ->
                 MARKER=MARKER_CLAIM_DEF,
                 SIGNATURE_TYPE=signature_type,
                 SCHEMA_SEQ_NO=schema_seq_no).encode()
+
+
+def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revoc_def_tag) -> bytes:
+    return "{DID}:{MARKER}:{CRED_DEF_ID}:{REVOC_DEF_TYPE}:{REVOC_DEF_TAG}" \
+        .format(DID=authors_did,
+                MARKER=MARKER_REVOC_DEF,
+                CRED_DEF_ID=cred_def_id,
+                REVOC_DEF_TYPE=revoc_def_type,
+                REVOC_DEF_TAG=revoc_def_tag).encode()
+
+
+def make_state_path_for_revoc_reg_entry(authors_did, revoc_reg_def_id) -> bytes:
+    return "{DID}:{MARKER}:{REVOC_REG_DEF_ID}" \
+        .format(DID=authors_did,
+                MARKER=MARKER_REVOC_REG_ENTRY,
+                REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
+
+
+def make_state_path_for_revoc_reg_entry_accum(authors_did, revoc_reg_def_id) -> bytes:
+    return "{DID}:{MARKER}:{REVOC_REG_DEF_ID}" \
+        .format(DID=authors_did,
+                MARKER=MARKER_REVOC_REG_ENTRY_ACCUM,
+                REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
 
 
 def prepare_nym_for_state(txn):
@@ -75,13 +103,13 @@ def prepare_attr_for_state(txn):
     """
     assert txn[TXN_TYPE] in {ATTRIB, GET_ATTR}
     nym = txn[TARGET_NYM]
-    attr_key, value = parse_attr_txn(txn)
+    attr_type, attr_key, value = parse_attr_txn(txn)
     hashed_value = hash_of(value) if value else ''
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     value_bytes = encode_state_value(hashed_value, seq_no, txn_time)
-    path = make_state_path_for_attr(nym, attr_key)
-    return path, value, hashed_value, value_bytes
+    path = make_state_path_for_attr(nym, attr_key, attr_type == HASH)
+    return attr_type, path, value, hashed_value, value_bytes
 
 
 def prepare_claim_def_for_state(txn):
@@ -100,6 +128,59 @@ def prepare_claim_def_for_state(txn):
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
     value_bytes = encode_state_value(data, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_revoc_def_for_state(txn):
+    author_did = txn.get(f.IDENTIFIER.nm)
+    cred_def_id = txn.get(CRED_DEF_ID)
+    revoc_def_type = txn.get(REVOC_TYPE)
+    revoc_def_tag = txn.get(TAG)
+    assert author_did
+    assert cred_def_id
+    assert revoc_def_type
+    assert revoc_def_tag
+    path = make_state_path_for_revoc_def(author_did,
+                                         cred_def_id,
+                                         revoc_def_type,
+                                         revoc_def_tag)
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    assert seq_no
+    assert txn_time
+    value_bytes = encode_state_value(txn, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_revoc_reg_entry_for_state(txn):
+    author_did = txn.get(f.IDENTIFIER.nm)
+    revoc_reg_def_id = txn.get(REVOC_REG_DEF_ID)
+    assert author_did
+    assert revoc_reg_def_id
+    path = make_state_path_for_revoc_reg_entry(authors_did=author_did,
+                                               revoc_reg_def_id=revoc_reg_def_id)
+
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    assert seq_no
+    assert txn_time
+    value_bytes = encode_state_value(txn, seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_revoc_reg_entry_accum_for_state(txn):
+    author_did = txn.get(f.IDENTIFIER.nm)
+    revoc_reg_def_id = txn.get(REVOC_REG_DEF_ID)
+    seq_no = txn[f.SEQ_NO.nm]
+    txn_time = txn[TXN_TIME]
+    assert author_did
+    assert revoc_reg_def_id
+    assert seq_no
+    assert txn_time
+    path = make_state_path_for_revoc_reg_entry_accum(authors_did=author_did,
+                                                     revoc_reg_def_id=revoc_reg_def_id)
+
+    value_bytes = encode_state_value(txn, seq_no, txn_time)
     return path, value_bytes
 
 
@@ -181,11 +262,11 @@ def parse_attr_txn(txn):
         re_raw = attrib_raw_data_serializer.serialize(data,
                                                       toBytes=False)
         key, _ = data.popitem()
-        return key, re_raw
+        return attr_type, key, re_raw
     if attr_type == ENC:
-        return hash_of(attr), attr
+        return attr_type, attr, attr
     if attr_type == HASH:
-        return attr, None
+        return attr_type, attr, None
 
 
 def prepare_get_attr_for_state(txn):
@@ -201,8 +282,9 @@ def prepare_get_attr_for_state(txn):
     if attr_type == ENC:
         attr_key = hash_of(attr_key)
 
-    path = make_state_path_for_attr(nym, attr_key)
-    return path, None, None, None
+    path = make_state_path_for_attr(nym, attr_key,
+                                    attr_type == HASH or attr_type == ENC)
+    return attr_type, path, None, None, None
 
 
 def _extract_attr_typed_value(txn):

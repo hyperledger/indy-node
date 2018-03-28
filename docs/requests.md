@@ -310,6 +310,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     Target verification key as base58-encoded string. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
     (doesnt owns the identifier yet).
+    Verkey can be changed to None by owner, it means that this user goes back under guardianship.
 
 - `alias` (string; optional): 
 
@@ -489,7 +490,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 ### CLAIM_DEF
 Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular Claim Schema.
 
-All fields must be specified to update existing claim definition (for example, rotate keys).
+It's not possible to update `data` in existing Claim Def.
+So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
+a new Claim Def needs to be created by a new Issuer DID (`identifier`).
+
 
 - `data` (dict):
  
@@ -865,6 +869,9 @@ Gets information about a DID (NYM).
 
 ### GET_ATTRIB
 Gets information about an Attribute for the specified DID.
+
+NOTE: `GET_ATTRIB` for `hash` and `enc` attributes is something like the "proof of existence",
+i.e. reply data contains requested value only.
 
 - `dest` (base58-encoded string):
 

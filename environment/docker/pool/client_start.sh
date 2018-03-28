@@ -3,7 +3,7 @@
 IP="$1"
 POOL_NETWORK_NAME="$2"
 
-IMAGE_NAME="sovrinclient"
+IMAGE_NAME="indyclient"
 SCRIPT_DIR=$(dirname $0)
 
 if [ "$IP" = "--help" ]; then

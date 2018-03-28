@@ -10,8 +10,8 @@ before running `vagrant up`.
 
 ## Objectives
 
-1. Instantiate an Sovrin AWS Development Environment with all of the tools and
-   source code needed to contribute to any Sovrin AWS project.
+1. Instantiate an Indy AWS Development Environment with all of the tools and
+   source code needed to contribute to any Indy AWS project.
 2. All CI/CD targets (clean, build, test, bundle, deposit, and deploy) should be
    identical or nearly identical to their counterparts in the Jenkins CI/CD
    pipelines (if applicable). Please read scriptlets/README.md for more details.
@@ -31,8 +31,8 @@ before running `vagrant up`.
 3. Once on the Vagrant guest (aws.lambda.development), run `userepo <repo>` where
    <repo> is the name one of the repos you have configured in config.properties.
    Note that the name of the repo is prepended to the PS1 prompt.
-   Example: After running `userepo sovrin-self-serv`, the PS1 prompt will display
-            `(sovrin-self-serv)vagrant@aws.labmda.development:~$`
+   Example: After running `userepo indy-self-serv`, the PS1 prompt will display
+            `(indy-self-serv)vagrant@aws.labmda.development:~$`
 4. Run `helprepo` to see available CI/CD commands and usage information or take
    a look at the /home/ec2-user/.bashrc for aliases and exported functions.
 

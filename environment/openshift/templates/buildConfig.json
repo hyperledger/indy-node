@@ -6,7 +6,7 @@
     "name": "Docker Build Template",
     "annotations":
     {
-      "description": "A template for docker builds for the Alice sovrin-indy example application in OpenShift.",
+      "description": "A template for docker builds for the Alice indy example application in OpenShift.",
       "tags": "alice,sorin,indy",
       "iconClass": "icon-github"
     }
@@ -85,39 +85,39 @@
             "env": [
               {
                 "name": "nodename",
-                "value": "${SOVRIN_NODE_NAME}"
+                "value": "${INDY_NODE_NAME}"
               },
               {
                 "name": "nport",
-                "value": "${SOVRIN_NODE_PORT}"
+                "value": "${INDY_NODE_PORT}"
               },
               {
                 "name": "cport",
-                "value": "${SOVRIN_CLIENT_PORT}"
+                "value": "${INDY_CLIENT_PORT}"
               },
               {
                 "name": "ips",
-                "value": "${SOVRIN_NODE_IP_LIST}"
+                "value": "${INDY_NODE_IP_LIST}"
               },
               {
                 "name": "nodenum",
-                "value": "${SOVRIN_NODE_NUMBER}"
+                "value": "${INDY_NODE_NUMBER}"
               },
               {
                 "name": "nodecnt",
-                "value": "${SOVRIN_NODE_COUNT}"
+                "value": "${INDY_NODE_COUNT}"
               },
               {
                 "name": "clicnt",
-                "value": "${SOVRIN_CLIENT_COUNT}"
+                "value": "${INDY_CLIENT_COUNT}"
               },
               {
                 "name": "agentname",
-                "value": "${SOVRIN_AGENT_NAME}"
+                "value": "${INDY_AGENT_NAME}"
               },
               {
                 "name": "agentport",
-                "value": "${SOVRIN_AGENT_PORT}"
+                "value": "${INDY_AGENT_PORT}"
               }
             ]
           }
@@ -144,21 +144,21 @@
       "displayName": "Build Name",
       "description": "The name given to the build.",
       "required": true,
-      "value": "sovrinbase"
+      "value": "indybase"
     },
     {
       "name": "SOURCE_IMAGE_KIND",
       "displayName": "Source Image Kind",
       "description": "The 'kind' (type) of the  source image; typically ImageStreamTag, or DockerImage.",
       "required": true,
-      "value": "sovrinbase"
+      "value": "indybase"
     },
     {
       "name": "SOURCE_IMAGE_NAME",
       "displayName": "Source Image Name",
       "description": "The name of the source image.",
       "required": true,
-      "value": "sovrinbase"
+      "value": "indybase"
     },
     {
       "name": "SOURCE_IMAGE_TAG",
@@ -172,7 +172,7 @@
       "displayName": "Output Image Name",
       "description": "The name given to the built image.",
       "required": true,
-      "value": "sovrinbase"
+      "value": "indybase"
     },
     {
       "name": "OUTPUT_IMAGE_TAG",
@@ -217,65 +217,65 @@
       "value": "base.systemd.ubuntu.dockerfile"
     },
     {
-      "name": "SOVRIN_NODE_NAME",
-      "displayName": "Sovrin Node Name",
-      "description": "The name of the sovrin node.  This is injected into the docker build.  Only used for sovrin node builds; all other builds ignore this parameter.",
+      "name": "INDY_NODE_NAME",
+      "displayName": "Indy Node Name",
+      "description": "The name of the indy node.  This is injected into the docker build.  Only used for indy node builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     },
     {
-      "name": "SOVRIN_NODE_PORT",
-      "displayName": "Sovrin Node Port",
-      "description": "The port to be used by the sovrin node.  This is injected into the docker build.  Only used for sovrin node builds; all other builds ignore this parameter.",
+      "name": "INDY_NODE_PORT",
+      "displayName": "Indy Node Port",
+      "description": "The port to be used by the indy node.  This is injected into the docker build.  Only used for indy node builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     },
     {
-      "name": "SOVRIN_CLIENT_PORT",
-      "displayName": "Sovrin Client Port",
-      "description": "The client port to be used by the sovrin node.  This is injected into the docker build.  Only used for sovrin node builds; all other builds ignore this parameter.",
+      "name": "INDY_CLIENT_PORT",
+      "displayName": "Indy Client Port",
+      "description": "The client port to be used by the indy node.  This is injected into the docker build.  Only used for indy node builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     },
     {
-      "name": "SOVRIN_NODE_IP_LIST",
-      "displayName": "Sovrin Node IP Address List",
-      "description": "The list of IP addresses for the sovrin nodes.  This is injected into the docker build.  Used for sovrin node and client builds; all other builds ignore this parameter.",
+      "name": "INDY_NODE_IP_LIST",
+      "displayName": "Indy Node IP Address List",
+      "description": "The list of IP addresses for the indy nodes.  This is injected into the docker build.  Used for indy node and client builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     },
     {
-      "name": "SOVRIN_NODE_NUMBER",
-      "displayName": "Sovrin Node Number",
-      "description": "The number of the sovrin node.  This is injected into the docker build.  Only used for sovrin node builds; all other builds ignore this parameter.",
+      "name": "INDY_NODE_NUMBER",
+      "displayName": "Indy Node Number",
+      "description": "The number of the indy node.  This is injected into the docker build.  Only used for indy node builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     },
     {
-      "name": "SOVRIN_NODE_COUNT",
-      "displayName": "Sovrin Node Count",
-      "description": "The number of sovrin nodes.  This is injected into the docker build.  Used for sovrin node and client builds; all other builds ignore this parameter.",
+      "name": "INDY_NODE_COUNT",
+      "displayName": "Indy Node Count",
+      "description": "The number of indy nodes.  This is injected into the docker build.  Used for indy node and client builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     },
     {
-      "name": "SOVRIN_CLIENT_COUNT",
-      "displayName": "Sovrin Client Count",
-      "description": "The number of sovrin Clients.  This is injected into the docker build.  Used for sovrin node and client builds; all other builds ignore this parameter.",
+      "name": "INDY_CLIENT_COUNT",
+      "displayName": "Indy Client Count",
+      "description": "The number of indy Clients.  This is injected into the docker build.  Used for indy node and client builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     },
     {
-      "name": "SOVRIN_AGENT_NAME",
-      "displayName": "Sovrin Agent Name",
-      "description": "The name of the sovrin agent.  This is injected into the docker build.  Used for sovrin agent builds; all other builds ignore this parameter.",
+      "name": "INDY_AGENT_NAME",
+      "displayName": "Indy Agent Name",
+      "description": "The name of the indy agent.  This is injected into the docker build.  Used for indy agent builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     },
     {
-      "name": "SOVRIN_AGENT_PORT",
-      "displayName": "Sovrin Agent Port",
-      "description": "The port on which the sovrin agent will listen.  This is injected into the docker build.  Used for sovrin agent builds; all other builds ignore this parameter.",
+      "name": "INDY_AGENT_PORT",
+      "displayName": "Indy Agent Port",
+      "description": "The port on which the indy agent will listen.  This is injected into the docker build.  Used for indy agent builds; all other builds ignore this parameter.",
       "required": false,
       "value": ""
     }

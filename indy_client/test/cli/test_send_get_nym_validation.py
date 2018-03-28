@@ -10,7 +10,8 @@ from indy_common.roles import Roles
 from indy_node.test.helper import check_str_is_base58_compatible
 
 CURRENT_VERKEY_FOR_NYM = 'Current verkey for NYM {dest} is {verkey}'
-CURRENT_VERKEY_FOR_NYM_WITH_ROLE = 'Current verkey for NYM {dest} is {verkey} with role {role}'
+CURRENT_VERKEY_FOR_NYM_WITH_ROLE = 'Current verkey for NYM {dest} is ' \
+                                   '{verkey} with role {role}'
 CURRENT_VERKEY_IS_SAME_AS_IDENTIFIER = \
     'Current verkey is same as identifier {dest}'
 NYM_NOT_FOUND = 'NYM {dest} not found'
@@ -48,7 +49,8 @@ def test_get_nym_returns_role(
         be, do, poolNodesStarted, trusteeCli):
     current_role = Roles.TRUST_ANCHOR
     uuidIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
-    addNym(be, do, trusteeCli, idr=uuidIdentifier, verkey=abbrevVerkey, role=current_role)
+    addNym(be, do, trusteeCli, idr=uuidIdentifier, verkey=abbrevVerkey,
+           role=current_role)
 
     parameters = {
         'dest': uuidIdentifier,
@@ -59,7 +61,8 @@ def test_get_nym_returns_role(
     do('send GET_NYM dest={dest}',
        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM_WITH_ROLE, within=2)
     new_role = ''
-    addNym(be, do, trusteeCli, idr=uuidIdentifier, verkey=abbrevVerkey, role=new_role)
+    addNym(be, do, trusteeCli, idr=uuidIdentifier, verkey=abbrevVerkey,
+           role=new_role)
     do('send GET_NYM dest={dest}',
        mapper=parameters, expect=CURRENT_VERKEY_FOR_NYM, within=2)
 

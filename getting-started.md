@@ -2,7 +2,7 @@
 
 ## A Developer Guide for an Implementation of the Indy Code Base
 
-**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](environment/vagrant/sandbox/DevelopmentEnvironment/Vagrantfile) instead.
+**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](https://github.com/hyperledger/indy-node/blob/master/environment/vagrant/sandbox/DevelopmentEnvironment/Virtualbox/Vagrantfile) instead.
 
 ![logo](collateral/logos/indy-logo.png)
 
@@ -126,8 +126,6 @@ Alice sees a bunch of data that looks interesting but mysterious. She wants to k
 
 ```
 ALICE> load sample/faber-request.indy
-New wallet Default created
-Active wallet set to "Default"
 1 connection request found for Faber College.
 Creating Connection for Faber College.
 

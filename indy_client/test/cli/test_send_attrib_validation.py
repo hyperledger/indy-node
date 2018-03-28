@@ -724,7 +724,6 @@ def testSendAttribFailsIfRawContainsNoAttrs(
        mapper=parameters, expect=ERROR, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribFailsIfRawIsBrokenJson(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -744,10 +743,14 @@ def testSendAttribFailsIfRawIsBrokenJson(
 
     be(trusteeCli)
     do('send ATTRIB dest={dest} raw={raw}',
+       mapper=parameters, expect=INVALID_SYNTAX, within=2)
+
+    brokenJson = validJson.replace(':', '-')
+    parameters['raw'] = brokenJson
+    do('send ATTRIB dest={dest} raw={raw}',
        mapper=parameters, expect=ERROR, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribFailsIfRawIsHex(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -761,10 +764,9 @@ def testSendAttribFailsIfRawIsHex(
 
     be(trusteeCli)
     do('send ATTRIB dest={dest} raw={raw}',
-       mapper=parameters, expect=ERROR, within=2)
+       mapper=parameters, expect=INVALID_SYNTAX, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribFailsIfRawIsHumanReadableText(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -778,10 +780,9 @@ def testSendAttribFailsIfRawIsHumanReadableText(
 
     be(trusteeCli)
     do('send ATTRIB dest={dest} raw={raw}',
-       mapper=parameters, expect=ERROR, within=2)
+       mapper=parameters, expect=INVALID_SYNTAX, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribFailsIfRawIsDecimalNumber(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -795,7 +796,7 @@ def testSendAttribFailsIfRawIsDecimalNumber(
 
     be(trusteeCli)
     do('send ATTRIB dest={dest} raw={raw}',
-       mapper=parameters, expect=ERROR, within=2)
+       mapper=parameters, expect=INVALID_SYNTAX, within=2)
 
 
 def testSendAttribHasInvalidSyntaxIfRawIsEmptyString(
@@ -814,7 +815,6 @@ def testSendAttribHasInvalidSyntaxIfRawIsEmptyString(
        mapper=parameters, expect=INVALID_SYNTAX, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribSucceedsForHexSha256Hash(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -835,7 +835,6 @@ def testSendAttribSucceedsForHexSha256Hash(
        mapper=parameters, expect=ATTRIBUTE_ADDED, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribSucceedsForHexHashWithLettersInBothCases(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -844,14 +843,14 @@ def testSendAttribSucceedsForHexHashWithLettersInBothCases(
 
     parameters = {
         'dest': uuidIdentifier,
-        'hash': '6d4a333838d0ef96756cccC680AF2531075C512502Fb68c5503c63d93de859b3'}
+        'hash': '6d4a333838d0ef96756cccC680AF2531075C512502Fb68c5503c63d93de859b3'
+    }
 
     be(trusteeCli)
     do('send ATTRIB dest={dest} hash={hash}',
        mapper=parameters, expect=ATTRIBUTE_ADDED, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribFailsForHashShorterThanSha256(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -868,7 +867,6 @@ def testSendAttribFailsForHashShorterThanSha256(
        mapper=parameters, expect=ERROR, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribFailsForHashLongerThanSha256(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -885,7 +883,6 @@ def testSendAttribFailsForHashLongerThanSha256(
        mapper=parameters, expect=ERROR, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribFailsForBase58Hash(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -905,10 +902,9 @@ def testSendAttribFailsForBase58Hash(
 
     be(trusteeCli)
     do('send ATTRIB dest={dest} hash={hash}',
-       mapper=parameters, expect=ERROR, within=2)
+       mapper=parameters, expect=INVALID_SYNTAX, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribFailsForBase64Hash(
         be, do, poolNodesStarted, trusteeCli):
 
@@ -928,7 +924,7 @@ def testSendAttribFailsForBase64Hash(
 
     be(trusteeCli)
     do('send ATTRIB dest={dest} hash={hash}',
-       mapper=parameters, expect=ERROR, within=2)
+       mapper=parameters, expect=INVALID_SYNTAX, within=2)
 
 
 def testSendAttribHasInvalidSyntaxIfHashIsEmpty(
@@ -947,7 +943,6 @@ def testSendAttribHasInvalidSyntaxIfHashIsEmpty(
        mapper=parameters, expect=INVALID_SYNTAX, within=2)
 
 
-@pytest.mark.skip(reason='INDY-71')
 def testSendAttribSucceedsForNonEmptyEnc(
         be, do, poolNodesStarted, trusteeCli):
 

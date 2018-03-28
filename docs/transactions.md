@@ -128,6 +128,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     Target verification key as base58-encoded string. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
     (doesnt owns the identifier yet).
+    Verkey can be changed to None by owner, it means that this user goes back under guardianship.
 
 - `alias` (string; optional): 
 
@@ -177,6 +178,7 @@ Adds attribute to a NYM record
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
     Hash of attribute data (as sent by the client).
+    The ledger contains this hash; nothing is stored in an attribute store.
 
 - `enc` (sha256 hash string; mutually exclusive with `raw` and `hash`):
 
@@ -234,6 +236,11 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 
 #### CLAIM_DEF
 Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular Claim Schema.
+
+It's not possible to update `data` in existing Claim Def.
+So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
+a new Claim Def needs to be created by a new Issuer DID (`identifier`).
+
 
 - `data` (dict):
  

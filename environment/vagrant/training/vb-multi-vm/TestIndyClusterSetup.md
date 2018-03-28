@@ -1,7 +1,7 @@
 # Setting Up a Test Indy Network in VMs
 
 When you're finished working through this document, you will be able to proceed through to the [*Getting
-Started Guide*](../../../../getting-started.md) or if you would like, you may continue setting up an actual Developer Environment connected to a sandbox by following these [instructions](../../sandbox/DevelopmentEnvironment/Vagrantfile).
+Started Guide*](../../../../getting-started.md) or if you would like, you may continue setting up an actual Developer Environment connected to a sandbox by following these [instructions](https://github.com/hyperledger/indy-node/blob/master/environment/vagrant/sandbox/DevelopmentEnvironment/Virtualbox/Vagrantfile).
 
 This document will guide you in configuring a private network of Indy
 validator nodes for testing and learning about Indy.  Additional servers
@@ -51,12 +51,16 @@ Help](https://www.vagrantup.com/docs/cli/)
 This downloads a Vagrant "box" for Ubuntu 16.04 (LTS) onto your PC.  Think of
 your "box" as an VM image, similar to an AWS AMI or a VMware OVA.
 
-> **Tip:** Try this if you get the error "The box 'bento/ubuntu-1604' could not be found"
+> **Tip:** Try this if you get the error "The box 'bento/ubuntu-16.04' could not be found"
 >   * `git clone https://github.com/chef/bento`
 >   * `cd bento/ubuntu`
->   * `packer build ubuntu-16.04-i386.json` # adjust for your environment
->   * `vagrant box add ../builds/ubuntu-16.04-i386.virtualbox.box --name bento/ubuntu1604`
+>   * `packer build ubuntu-16.04-amd64.json` # adjust for your environment
+>   * `vagrant box add ../builds/ubuntu-16.04.virtualbox.box --name bento/ubuntu-16.04`
 
+#### Warning
+
+As of this writing Vagrant instructions do not work on a host ubuntu system due to a known vagrant issue found here: https://github.com/hashicorp/vagrant/issues/7155
+.
 ## Download Vagrant script and bash scripts
 
 Scripts to spin up Indy validator and agent nodes are available on github, in
@@ -157,7 +161,7 @@ by Indy.
 
 In a term window, you will now ssh into `cli01`, bring up the CLI, and
 configure the CLI to communicate with the "test" Indy validator cluster that
-we have configured here. 
+we have configured here.
 
 ```sh
 $ vagrant ssh cli01
@@ -220,24 +224,24 @@ the "Faber College" agent process.
 
 ````sh
 $ vagrant ssh agent01
-vagrant@agent01:~$ python3 /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/faber.py  --port 5555
-```
+vagrant@agent01:~$ python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/faber.py  --port 5555 --network <network_name>
+````
 
 You will see logging output to the screen.  In another term window (or tab),
 ssh into agent02 and bring up the "Acme Corp" agent process:
 
 ````sh
 $ vagrant ssh agent02
-vagrant@agent02:~$ python3 /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/acme.py  --port 6666
-```
+vagrant@agent02:~$ python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/acme.py  --port 6666 --network <network_name>
+````
 
 In another term window (or tab), ssh into agent03 and bring up the "Thrift
 Bank" agent process:
 
 ```sh
 $ vagrant ssh agent03
-vagrant@agent03:~$ python3 /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/thrift.py  --port 7777
-````
+vagrant@agent03:~$ python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/thrift.py  --port 7777 --network <network_name>
+```
 
 Congratulations!  Your Indy four-validator cluster, along with agent nodes as
 desired, is complete.  Now, in the CLI client on `cli01`, type quit to exit the

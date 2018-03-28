@@ -1,4 +1,4 @@
-from indy_client.agent.endpoint import REndpoint, ZEndpoint
+from indy_client.agent.endpoint import ZEndpoint
 
 
 class AgentNet:
@@ -10,20 +10,14 @@ class AgentNet:
     def __init__(self, name, port, msgHandler, config, basedirpath=None,
                  endpoint_args=None):
         if port:
-            if config.UseZStack:
-                endpoint_args = endpoint_args or {}
-                seed = endpoint_args.get('seed')
-                onlyListener = endpoint_args.get('onlyListener', False)
-                self.endpoint = ZEndpoint(port=port,
-                                          msgHandler=msgHandler,
-                                          name=name,
-                                          basedirpath=basedirpath,
-                                          seed=seed,
-                                          onlyListener=onlyListener)
-            else:
-                self.endpoint = REndpoint(port=port,
-                                          msgHandler=msgHandler,
-                                          name=name,
-                                          basedirpath=basedirpath)
+            endpoint_args = endpoint_args or {}
+            seed = endpoint_args.get('seed')
+            onlyListener = endpoint_args.get('onlyListener', False)
+            self.endpoint = ZEndpoint(port=port,
+                                      msgHandler=msgHandler,
+                                      name=name,
+                                      basedirpath=basedirpath,
+                                      seed=seed,
+                                      onlyListener=onlyListener)
         else:
             self.endpoint = None

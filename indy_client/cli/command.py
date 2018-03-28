@@ -40,7 +40,7 @@ sendGetNymCmd = Command(
 sendAttribCmd = Command(
     id="send {attrib}".format(attrib=attribName),
     title="Adds attributes to existing DID",
-    usage="send {attrib} dest=<target DID> [raw={{<json-data>}}] [hash=<hashed-data>] [enc: <encrypted-data>]".format(
+    usage="send {attrib} dest=<target DID> [raw={{<json-data>}}] [hash=<hashed-data>] [enc=<encrypted-data>]".format(
         attrib=attribName),
     examples='send {attrib} dest=33A18XMqWqTzDpLHXLR5nT raw={{"endpoint": "127.0.0.1:5555"}}'.format(attrib=attribName))
 
@@ -48,7 +48,7 @@ sendGetAttrCmd = Command(
     id="send {getAttr}".format(
         getAttr=getAttrName),
     title="Get ATTR from indy",
-    usage="send {getAttr} dest=<target DID> raw=<name>".format(
+    usage="send {getAttr} dest=<target DID> [raw=<name>] [hash=<hashed-data>] [enc=<encrypted-data>]".format(
         getAttr=getAttrName),
     examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT raw=endpoint".format(
         getAttr=getAttrName))

@@ -1,6 +1,7 @@
 ![logo](collateral/logos/indy-logo.png)
 
 * [About Indy Node](#about-indy-node)
+* [Technical Overview of Indy Blockchain](#technical-overview-of-indy-blockchain)
 * [Indy Node Repository Structure](#indy-node-repository-structure)
 * [Dependent Projects](#dependent-projects)
 * [Contact us](#contact-us)
@@ -37,6 +38,12 @@ will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
 ##### Hyperledger Wiki-Indy
 
 - If you haven't done so already, please visit the main resource for all things "Indy" to get acquainted with the code base, helpful resources, and up-to-date information: [Hyperledger Wiki-Indy](https://wiki.hyperledger.org/projects/indy).
+
+## Technical Overview of Indy Blockchain
+Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
+
+More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
+and [indy-node-docs](docs).
 
 ## Indy Node Repository Structure
 
@@ -157,15 +164,23 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 
 ## Docs and links
 
-- Please have a look at documents ad diagrams in [docs](docs) folder
 - Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
-- Relationship between Entities and Transactions: [relationship diagram](docs/relationship diagram.png)
+- Please have a look at documents and diagrams in [docs](docs) folder
+- Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder:
+    - [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md)
+    - [Glossary](https://github.com/hyperledger/indy-plenum/blob/master/docs/glossary.md)
+    - [Storages](https://github.com/hyperledger/indy-plenum/blob/master/docs/storage.md)
+    - [Request Handling](https://github.com/hyperledger/indy-plenum/blob/master/docs/request_handling.md)
+    - [Catchup](https://github.com/hyperledger/indy-plenum/blob/master/docs/catchup.md)
+    - [Plugins](https://github.com/hyperledger/indy-plenum/blob/master/docs/plugins.md)
+- Relationship between Entities and Transactions: [relationship diagram](docs/relationship-diagram.png)
 - Supported transactions and their format: [transactions](docs/transactions.md)
 - Supported requests (write, read) and their format: [requests](docs/requests.md)
 - [Network roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)
 - [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
 - [Helper Scripts](docs/helper-scripts.md)
-- More TBD
+- [Pool Upgrade](docs/pool-upgrade.md)
+
 
 
 
