@@ -34,11 +34,12 @@ class ActionReqHandler(RequestHandler):
             self._doStaticValidationPoolRestart(identifier, req_id, operation)
 
     def _doStaticValidationPoolRestart(self, identifier, req_id, operation):
-        try:
-            dateutil.parser.parse(operation.get(DATA).get(SCHEDULE))
-        except Exception:
-            raise InvalidClientRequest(identifier, req_id,
-                                       "time is not valid")
+        if operation[SCHEDULE]:
+            try:
+                dateutil.parser.parse(operation[SCHEDULE])
+            except Exception:
+                raise InvalidClientRequest(identifier, req_id,
+                                           "time is not valid")
 
     def validate(self, req: Request):
         status = None

@@ -25,7 +25,7 @@ logger = getlogger()
 
 class Restarter(NodeController):
 
-    def __defaultLog(self, dataDir, config):
+    def _defaultLog(self, dataDir, config):
         log = os.path.join(dataDir, config.restartLogFile)
         return RestartLog(filePath=log)
 

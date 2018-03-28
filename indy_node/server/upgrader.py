@@ -54,7 +54,7 @@ class Upgrader(NodeController):
             return 1
         return 0
 
-    def __defaultLog(self, dataDir, config):
+    def _defaultLog(self, dataDir, config):
         log = os.path.join(dataDir, config.upgradeLogFile)
         return UpgradeLog(filePath=log)
 

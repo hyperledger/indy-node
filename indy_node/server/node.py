@@ -10,7 +10,7 @@ from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
     ENC, RAW, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
-from plenum.common.messages.node_messages import Reply, ActionResult
+from plenum.common.messages.node_messages import Reply
 from plenum.common.types import f, \
     OPERATION
 from plenum.persistence.storage import initStorage
@@ -187,7 +187,6 @@ class Node(PlenumNode, HasPoolManager):
         self.restarter = self.getRestarter()
         self.poolCfg = self.getPoolConfig()
         super().setup_config_req_handler()
-        super().setup_action_req_handler()
 
     def getConfigReqHandler(self):
         return ConfigReqHandler(self.configLedger,
@@ -351,16 +350,11 @@ class Node(PlenumNode, HasPoolManager):
 
     def generate_action_result(self, request: Request, is_success=True,
                                msg=None):
-        operation = {TXN_TYPE: request.operation.get(TXN_TYPE)}
-        if request.operation.get(DATA):
-            operation.update(request.operation.get(DATA))
-        return Reply(ActionResult(identifier=request.identifier,
-                                  reqId=request.reqId,
-                                  signature=request.signature,
-                                  operation=operation,
-                                  protocolVersion=request.protocolVersion,
-                                  isSuccess=is_success,
-                                  msg=msg))
+        return Reply({TXN_TYPE: request.operation.get(TXN_TYPE),
+                      f.IDENTIFIER.nm: request.identifier,
+                      f.REQ_ID.nm: request.reqId,
+                      f.IS_SUCCESS.nm: is_success,
+                      f.MSG.nm: msg})
 
     def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
                           txnRoot) -> List:

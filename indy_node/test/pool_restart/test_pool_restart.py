@@ -16,8 +16,8 @@ def test_pool_restart(
     start_at = unow + timedelta(seconds=100)
     op = {
         TXN_TYPE: POOL_RESTART,
-        DATA: {ACTION: START,
-               SCHEDULE: str(start_at)}
+        ACTION: START,
+        SCHEDULE: str(start_at)
     }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
     req = sdk_sign_and_submit_req_obj(looper,
@@ -25,10 +25,10 @@ def test_pool_restart(
                                        sdk_wallet_trustee,
                                        req_obj)
     req_json, resp = sdk_get_reply(looper, req, 100)
+    assert resp[f.RESULT.nm][f.MSG.nm] is None
     assert resp["op"] == REPLY
     assert resp[f.RESULT.nm][f.IDENTIFIER.nm] == req_obj.identifier
     assert resp[f.RESULT.nm][f.REQ_ID.nm] == req_obj.reqId
     assert resp[f.RESULT.nm][f.IS_SUCCESS.nm]
-    assert resp[f.RESULT.nm][f.MSG.nm] is None
 
 

@@ -6,7 +6,7 @@ import socket
 import subprocess
 from typing import List
 
-from indy_common.constants import RESTART, ACTION
+from indy_common.constants import ACTION, POOL_RESTART, POOL_UPGRADE
 from stp_core.common.log import getlogger
 
 from indy_common.config_util import getConfig
@@ -248,10 +248,10 @@ class NodeControlTool:
         try:
             command = json.loads(data.decode("utf-8"))
             logger.debug("Decoded ", command)
-            if command.get("version") is not None:
+            if command[ACTION] == POOL_UPGRADE:
                 new_version = command['version']
                 self._upgrade(new_version)
-            elif command[ACTION] == RESTART:
+            elif command[ACTION] == POOL_RESTART:
                 self._restart()
         except json.decoder.JSONDecodeError as e:
             logger.error("JSON decoding failed: {}".format(e))

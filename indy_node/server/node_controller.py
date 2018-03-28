@@ -1,3 +1,4 @@
+import abc
 import os
 from collections import deque
 from datetime import datetime, timedelta
@@ -60,7 +61,7 @@ class NodeController(HasActionQueue):
         self.scheduledAction = None  # type: Tuple[str, int, str]
         self._notifier = notifier_plugin_manager.PluginManager()
         self._actionLog = actionLog if actionLog else \
-            self.__defaultLog(dataDir, config)
+            self._defaultLog(dataDir, config)
         self._actionFailedCallback = \
             actionFailedCallback if actionFailedCallback else lambda: None
         self._action_start_callback = \
@@ -170,8 +171,13 @@ class NodeController(HasActionQueue):
         writer.write(msgBytes)
         writer.close()
 
-    def __defaultLog(self, dataDir, config):
-        pass
+    def _defaultLog(self, dataDir, config):
+        """
+        Default log for store action txns
+        :param dataDir:
+        :param config:
+        :return: UpgradeLog or ResartLog
+        """
 
     def _update_action_log_for_started_action(self):
         pass
