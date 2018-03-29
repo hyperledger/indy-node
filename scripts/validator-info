@@ -516,6 +516,32 @@ def watch(fpath, verbose, _json):
         pass
 
 
+def format_key(key):
+    return "{:>15}".format('"{}": '.format(key))
+
+
+def make_indent(indent):
+    return indent * "{:5}".format("")
+
+
+def format_value(value):
+    return " {:<10}".format(str(value))
+
+
+def create_print_tree(stats: dict, indent=0, lines=[]):
+    for key, value in stats.items():
+        if isinstance(value, dict):
+            lines.append(make_indent(indent) + format_key(key))
+            create_print_tree(value, indent + 1, lines)
+        elif isinstance(value, list):
+            lines.append(make_indent(indent) + format_key(key))
+            for line in value:
+                lines.append(make_indent(indent + 1) + format_value(line))
+        else:
+            lines.append(make_indent(indent) + format_key(key) + format_value(value))
+    return lines
+
+
 def main():
     global logger
 
@@ -547,6 +573,11 @@ def main():
     parser.add_argument(
         "--json", action="store_true",
         help="Format output as JSON (ignores -v)"
+    )
+
+    parser.add_argument(
+        "--short", action="store_true",
+        help="Print short output"
     )
 
     statfile_group = parser.add_argument_group(
@@ -641,7 +672,11 @@ def main():
         return
     for file_path in paths:
         logger.info("Reading file {} ...".format(file_path))
-        print(get_stats_from_file(file_path, args.verbose, args.json))
+        if args.short:
+            print(get_stats_from_file(file_path, args.verbose, args.json))
+        else:
+            with open(file_path) as f_stats:
+                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats))))
         print('\n')
 
     logger.info("Done")
