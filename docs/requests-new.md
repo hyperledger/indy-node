@@ -317,7 +317,7 @@ where `multiSignature`'s `signedState` is a serialized value having the followin
     Metadata as in Request. It may be absent for Reply to write requests as `txn` fields already contains 
     this information as part of transaction written to the ledger.    
 
-## Action Reply Structure
+## Command Reply Structure
 
 Each Reply to commands/actions follows the pattern as shown above.
 
