@@ -2,7 +2,7 @@
 
 * [General Information](#general-information)
 * [Genesis Transactions](#genesis-transactions)
-* [Common Structure](#common-structure)
+* [Common Metadata](#common-metadata)
 * [Domain Ledger](#domain-ledger)
 
     * [NYM](#nym)    
@@ -48,116 +48,51 @@ transactions defining the Pool and the Network.
 - pool genesis transactions defining initial trusted Nodes in the Pool
 - domain genesis transactions defining initial trusted Trustees and Stewards
 
-## Common Structure
-Each transaction has the following structure containing of metadata values (common for all transaction types) and 
-transaction specific data:
-```
-{
-    "txn": {
-        "type": <...>,
-        "protocolVersion": <...>,
-        "version": <...>,
-        
-        "data": {
-            <txn-specific fields>
-        },
-        
-        "metadata": {
-            "reqId": <...>,
-            "from": <...>
-        },
-    },
-    "txnMetadata": {
-        "version": <...>,
-        "creationTime": <...>,
-        "seqNo": <...>,  
-    },
-    "reqSignature": {
-        "type": <...>,
-        "values": [
-            "from": <...>,
-            "value": <...>
-        ]
-    }
-}
-```
-- `txn` (dict):
-    
-    Transaction-specific payload (data)
 
-    - `type` (enum number as integer): 
-    
-        Supported transaction type:
-        
-        - NODE = 0
-        - NYM = 1
-        - ATTRIB = 100
-        - SCHEMA = 101
-        - CLAIM_DEF = 102
-        - POOL_UPGRADE = 109
-        - NODE_UPGRADE = 110
-        - POOL_CONFIG = 111
+## Common Metadata
+Each transaction has the following metadata values common for all transaction types (see `reqToTxn` in plenum).
+These values are added to each transaction as first-level keys (that is at the same level as real data).
 
-    - `protocolVersion` (integer; optional): 
+**TODO**: consider distinguishing and separating real transaction data and metadata into different levels.    
+
+- `type` (enum number as string): 
+
+    Supported transaction type:
     
-        The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
-        Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
-        between clients and nodes.     
-     
-    - `version` (integer):
-    
-        Transaction version to be able to evolve content.
-        The content of `data` and `metadata` may depend on the version.       
+    - NODE = "0"
+    - NYM = "1"
+    - ATTRIB = "100"
+    - SCHEMA = "101"
+    - CLAIM_DEF = "102"
+    - POOL_UPGRADE = "109"
+    - NODE_UPGRADE = "110"
+    - POOL_CONFIG = "111"
+        
+- `identifier` (base58-encoded string):
  
-    - `data` (dict):
+     Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
+     for 16 or 32 bit DID value.
+     It may differ from `dest` field for some of transaction (for example NYM), where `dest` is a 
+     target identifier (for example, a newly created DID identifier).
+     
+     *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
+     
+- `reqId` (integer): 
 
-        Transaction-specific data fields (see next sections for each transaction description).  
-       
-    - `metadata` (dict):
+    Unique ID number of the request with transaction.
+        
+- `signature` (base58-encoded string; mutually exclusive with `signatures` field):
+ 
+    Submitter's signature.
     
-        Metadata as came from the Request.
+- `signatures` (array of base58-encoded string; mutually exclusive with `signature` field): 
+    
+    Submitters' signature in multisig case. This is a map where client's identifiers are the keys and 
+    base58-encoded signature strings are the values.
+    
+- `txnTime` (integer as POSIX timestamp): 
 
-        - `from` (base58-encoded string):
-             Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-             for 16 or 32 bit DID value.
-             It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
-             target identifier (for example, a newly created DID identifier).
-             
-             *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
-             
-        - `reqId` (integer): 
-            Unique ID number of the request with transaction.
-  
-    - `txnMetadata` (dict):
-    
-        Metadata attached to the transaction.    
-        
-         - `version` (integer):
-            Transaction version to be able to evolve `txnMetadata`.
-            The content of `txnMetadata` may depend on the version.  
-        
-        - `creationTime` (integer as POSIX timestamp): 
-            The time when transaction was written to the Ledger as POSIX timestamp.
-            
-        - `seqNo` (integer):
-            A unique sequence number of the transaction on Ledger
-  
-- `reqSignature` (dict):
-
-    Submitter's signature over request with transaction (`txn` field).
-    
-    - `type` (string enum):
-        
-        - ED25519: ed25519 signature
-        - ED25519_MULTI: ed25519 signature in multisig case.
-    
-    - `values` (list): 
-        
-        - `from` (base58-encoded string):
-        Identifier (DID) of signer as base58-encoded string for 16 or 32 bit DID value.
-        
-        - `value` (base58-encoded string):
-         signature value
+    The time when transaction was written to the Ledger as POSIX timestamp.
 
 Please note that all these metadata fields may be absent for genesis transactions.
 
@@ -169,100 +104,68 @@ Note that only trustees and stewards can create new trust anchors and trustee ca
 
 The transaction can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
-
-- `id` (string):
-
-    Nym's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
-    It must be equal (or be mapped to) the real key of the NYM state in the State Trie. 
  
-- `did` (base58-encoded string):
+- `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `from` metadata field, where `from` is the DID of the submitter.
+    It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
-    *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+    *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
      
-- `role` (enum number as integer; optional): 
+- `role` (enum number as string; optional): 
 
     Role of a user NYM record being created for. One of the following numbers
     
     - None (common USER)
-    - 0 (TRUSTEE)
-    - 2 (STEWARD)
-    - 101 (TRUST_ANCHOR)
+    - "0" (TRUSTEE)
+    - "2" (STEWARD)
+    - "101" (TRUST_ANCHOR)
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
 - `verkey` (base58-encoded string; optional): 
 
     Target verification key as base58-encoded string. If not set, then either the target identifier
-    (`did`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
+    (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
     (doesnt owns the identifier yet).
-    Verkey can be changed to None by owner, it means that this user goes back under guardianship.
 
 - `alias` (string; optional): 
 
     NYM's alias.
 
-If there is no NYM transaction with the specified DID (`did`), then it can be considered as creation of a new DID.
+If there is no NYM transaction with the specified DID (`dest`), then it can be considered as creation of a new DID.
 
-If there is a NYM transaction with the specified DID (`did`),  then this is update of existing DID.
+If there is a NYM transaction with the specified DID (`dest`),  then this is update of existing DID.
 In this case we can specify only the values we would like to override. All unspecified values remain the same.
 So, if key rotation needs to be performed, the owner of the DID needs to send a NYM request with
-`did` and `verkey` only. `role` and `alias` will stay the same.
+`dest` and `verkey` only. `role` and `alias` will stay the same.
 
 
 **Example**:
 ```
 {
-    "txn": {
-        "type":1,
-        "version":1,
-        "protocolVersion":1,
-        
-        "data": {
-            "id": "N22KY2Dyvmuu2PyyqSFKue|01",
-            "did":"GEzcdDLhCpGCYRHW82kjHd",
-            "verkey":"~HmUWn928bnFT6Ephf65YXv",
-            "role":101,
-        },
-        
-        "metadata": {
-            "reqId":1513945121191691,
-            "from":"L5AD5g65TDQr1PPHHRoiGf",
-        },
-    },
-    "txnMetadata": {
-        "version":1,
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "values": [
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
-    }
-
+    "dest":"GEzcdDLhCpGCYRHW82kjHd",
+    "verkey":"~HmUWn928bnFT6Ephf65YXv",
+    "role":"101",
+    
+    "type":"1",
+    "identifier":"L5AD5g65TDQr1PPHHRoiGf",
+    "reqId":1513945121191691,
+    "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
+    "signatures":null,
+    "txnTime":1513945121
 }
 ```
 
 #### ATTRIB
 Adds attribute to a NYM record
 
-- `id` (string):
+- `dest` (base58-encoded string):
 
-    Attr's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
-    It must be equal (or be mapped to) the real key of the ATTR state in the State Trie. 
-
-
-- `did` (base58-encoded string):
-
-    Target DID we set an attribute for as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `from` metadata field, where `from` is the DID of the submitter.
+    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
-    *Example*: `from` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
+    *Example*: `identifier` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
     
 - `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
 
@@ -274,7 +177,6 @@ Adds attribute to a NYM record
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
     Hash of attribute data (as sent by the client).
-    The ledger contains this hash; nothing is stored in an attribute store.
 
 - `enc` (sha256 hash string; mutually exclusive with `raw` and `hash`):
 
@@ -285,34 +187,15 @@ Adds attribute to a NYM record
 **Example**:
 ```
 {
-    "txn": {
-        "type":100,
-        "version":1,
-        "protocolVersion":1,
-        
-        "data": {
-            "id": "N22KY2Dyvmuu2PyyqSFKue|02",
-            "did":"GEzcdDLhCpGCYRHW82kjHd",
-            "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
-        },
-        
-        "metadata": {
-            "reqId":1513945121191691,
-            "from":"L5AD5g65TDQr1PPHHRoiGf",
-        },
-    },
-    "txnMetadata": {
-        "version":1,
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "values": [
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
-    }
+    "dest":"GEzcdDLhCpGCYRHW82kjHd",
+    "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
+    
+    "type":"1",
+    "identifier":"L5AD5g65TDQr1PPHHRoiGf",
+    "reqId":1513945121191691,
+    "signature":"3SyRto3MGcBy1o4UmHoDezy1TJiNHDdU9o7TjHtYcSqgtpWzejMoHDrz3dpT93Xe8QXMF2tJVCQTtGmebmS2DkLS",
+    "signatures":null,
+    "txnTime":1513945121
 }
 ```
 
@@ -323,62 +206,29 @@ Adds Claim's schema.
 It's not possible to update existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
 
-- `id` (string):
-
-    Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
-    It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
-
-- `schemaName` (string):
+- `data` (dict):
  
-    Schema's name string.
-
-- `schemaVersion` (string):
- 
-    Schema's version string
-
-- `value` (dict):
-
-    Schema's specific data
-    
-    - `attrNames` (array of strings):
-      Array of attribute name strings.
-
+     Dictionary with Schema's data:
+     
+    - `attr_names`: array of attribute name strings
+    - `name`: Schema's name string
+    - `version`: Schema's version string
 
 **Example**:
 ```
 {
-    "txn": {
-        "type":101,
-        "version":1,
-        "protocolVersion":1,
-        
-        "data": {
-            "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
-            "schemaName": "Degree",
-            "schemaVersion": "1.0",
-            "value": {
-                "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
-            }
-        },
-        
-        "metadata": {
-            "reqId":1513945121191691,
-            "from":"L5AD5g65TDQr1PPHHRoiGf",
-        },
+    "data": {
+        "attr_names": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
+        "name":"Degree",
+        "version":"1.0"
     },
-    "txnMetadata": {
-        "version":1,
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "values": [
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
-    }
-   
+    
+    "type":"102"
+    "identifier":"L5AD5g65TDQr1PPHHRoiGf",
+    "reqId":1514192534428527,
+    "signature":"nKdn1WE1wkDdwcbaYuQZDiqHnKEDLoz14B2PFeVYTEXG4BkybnYQD2Qwg4nSUZF9J5XPXJfTyewdbeDthazWuir",
+    "signatures":null,
+    "txnTime":1514192534
 }
 ```
 
@@ -387,78 +237,44 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
 
 It's not possible to update `data` in existing Claim Def.
 So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
-a new Claim Def needs to be created for a new Issuer DID (`did`).
+a new Claim Def needs to be created by a new Issuer DID (`identifier`).
 
-- `id` (string):
 
-    Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
-    It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
+- `data` (dict):
+ 
+     Dictionary with Claim Definition's data:
+     
+    - `primary`: primary claim public key
+    - `revocation`: revocation claim public key
+        
+- `ref` (string):
+    
+    Sequence number of a Schema transaction the claim definition is created for.
 
-- `type` (string):
+- `signature_type` (string):
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
-
-- `tag` (string):
-
-    A unique descriptive tag of the given CRED_DEF for the given Issuer and Schema. An Issuer may have multiple 
-    CRED_DEFs for the same Schema created with different tags. 
-
-- `schemaId` (string):
-    
-    ID of a Schema transaction the claim definition is created for.
-
-- `value` (dict):
-
-    Type-specific value:
-
-    - `publicKeys` (dict):
-     
-         Dictionary with Claim Definition's public keys:
-         
-        - `primary`: primary claim public key
-        - `revocation`: revocation claim public key
 
 **Example**:
 ```
 {
-    "txn": {
-        "type":102,
-        "version":1,
-        "protocolVersion":1,
-        
-        "data": {
-            "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1:Degree1:CL:key1",
-            "type":"CL",
-            "tag": "key1",
-
-            "publicKeys": {
-                "primary": {
-                    ...
-                 },
-                "revocation": {
-                    ...
-                }
-            },
-            "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
-        },
-        
-        "metadata": {
-            "reqId":1513945121191691,
-            "from":"L5AD5g65TDQr1PPHHRoiGf",
-        },
+    "data": {
+        "primary": {
+            ...
+         },
+        "revocation": {
+            ...
+        }
     },
-    "txnMetadata": {
-        "version":1,
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "values": [
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
-    }
+    "ref":12,
+    "signature_type":"CL",
+    
+    "type":"102"
+    "identifier":"L5AD5g65TDQr1PPHHRoiGf",
+    "reqId":1514192534428527,
+    "signature":"nKdn1WE1wkDdwcbaYuQZDiqHnKEDLoz14B2PFeVYTEXG4BkybnYQD2Qwg4nSUZF9J5XPXJfTyewdbeDthazWuir",
+    "signatures":null,
+    "txnTime":1514192534
 }
 ```
 
@@ -468,93 +284,58 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
 
 Adds a new node to the pool, or updates existing node in the pool
 
-- `did` (base58-encoded string):
+- `data` (dict):
+    
+    Data associated with the Node:
+    
+    - `alias` (string): Node's alias
+    - `blskey` (base58-encoded string; optional): BLS multi-signature key as base58-encoded string (it's needed for BLS signatures and state proofs support)
+    - `client_ip` (string; optional): Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)  
+    - `client_port` (string; optional): Node's client listener port, that is the port clients use to connect to the node when sending read and write requests (ZMQ with TCP)
+    - `node_ip` (string; optional): The IP address other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
+    - `node_port` (string; optional): The port other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
+    - `services` (array of strings; optional): the service of the Node. `VALIDATOR` is the only supported one now. 
+
+- `dest` (base58-encoded string):
 
     Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `from` metadata field, where `from` is the DID of the transaction submitter (Steward's DID).
+    It differs from `identifier` metadata field, where `identifier` is the DID of the transaction submitter (Steward's DID).
     
-    *Example*: `from` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
+    *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the DID of this Node.
     
 - `verkey` (base58-encoded string; optional): 
 
     Target Node verification key as base58-encoded string.
-    It may absent if `did` is 32-bit cryptonym CID. 
+    It may absent if `dest` is 32-bit cryptonym CID. 
 
-- `alias` (string): 
-    
-    Node's alias
-    
-- `blskey` (base58-encoded string; optional):
- 
-    BLS multi-signature key as base58-encoded string (it's needed for BLS signatures and state proofs support)
-    
-- `clientIp` (string; optional): 
-    
-    Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)
-      
-- `clientPort` (string; optional):
+If there is no NODE transaction with the specified Node ID (`dest`), then it can be considered as creation of a new NODE.
 
-    Node's client listener port, that is the port clients use to connect to the node when sending read and write requests (ZMQ with TCP)
-    
-- `nodeIp` (string; optional):
- 
-    The IP address other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
-    
-- `nodePort` (string; optional):
- 
-    The port other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
-    
-- `services` (array of strings; optional):
- 
-    The service of the Node. `VALIDATOR` is the only supported one now.
-     
-
-If there is no NODE transaction with the specified Node ID (`did`), then it can be considered as creation of a new NODE.
-
-If there is a NODE transaction with the specified Node ID (`did`), then this is update of existing NODE.
+If there is a NODE transaction with the specified Node ID (`dest`), then this is update of existing NODE.
 In this case we can specify only the values we would like to override. All unspecified values remain the same.
-So, if a Steward wants to rotate BLS key, then it's sufficient to send a NODE transaction with `did` and a new `blskey`.
-There is no need to specify all other fields, and they will remain the same.
+So, if a Steward wants to rotate BLS key, then it's sufficient to send a NODE transaction with `dest` and a new `blskey` in `data`.
+There is no need to specify all other fields in `data`, and they will remain the same.
 
 
 **Example**:
 ```
 {
-
-{
-    "txn": {
-        "type":0,
-        "version":1,
-        "protocolVersion":1,
-        
-        "data": {
-            "did":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
-            "alias":"Delta",
-            "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
-            "clientIp":"127.0.0.1",
-            "clientPort":7407,
-            "nodeIp":"127.0.0.1",
-            "nodePort":7406,
-            "services":["VALIDATOR"]
-        },
-        
-        "metadata": {
-            "reqId":1513945121191691,
-            "from":"L5AD5g65TDQr1PPHHRoiGf",
-        },
+    "data": {
+        "alias":"Delta",
+        "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
+        "client_ip":"127.0.0.1",
+        "client_port":7407,
+        "node_ip":"127.0.0.1",
+        "node_port":7406,
+        "services":["VALIDATOR"]
     },
-    "txnMetadata": {
-        "version":1,
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "values": [
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
-    }
+    "dest":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
+    
+    "type":"0",
+    "identifier":"WMStfRmANynUmdpa1QYKDw",
+    "reqId":1514190301783582,
+    "signature":"3uscTPs41aS65KvhDDLMpgL73p9AYEs2F8xo3M6G5FpH1tyuAWRq3NbJoEF55KeotBgMiXDKS27fb5Pe79R6wToo",
+    "signatures":null,
+    "txnTime":1514190301
 }
 ```
 
@@ -613,85 +394,50 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 **Example:**
 ```
 {
-    "txn": {
-        "type":109,
-        "version":1,
-        "protocolVersion":1,
-        
-        "data": {
-            "name":"upgrade-13",
-            "action":"start",
-            "version":"1.3",
-            "schedule":{"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
-            "sha256":"db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55",
-            "force":false,
-            "reinstall":false,
-            "timeout":1,
-            "justification":null,
-        },
-        
-        "metadata": {
-            "reqId":1513945121191691,
-            "from":"L5AD5g65TDQr1PPHHRoiGf",
-        },
-    },
-    "txnMetadata": {
-        "version":1,
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "values": [
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
-    }
+    "name":"upgrade-13",
+    "action":"start",
+    "version":"1.3",
+    "schedule":{"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
+    "sha256":"db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55",
+    "force":false,
+    "reinstall":false,
+    "timeout":1,
+    "justification":null,
+    
+    "type":"109",
+    "identifier":"L5AD5g65TDQr1PPHHRoiGf",
+    "reqId":1514197458906260,
+    "signature":"5pj8EDBWXx5xDFsX9xLZzWQEGZJx1ooZxorL7JUjM1PQFTj9ZBG8Fg6zbcMacjSWkxqpRLhr9ERt2XfA4muskHNr",
+    "signatures":null,
+    "txnTime":1514197459,
 }
 ```
 
 #### NODE_UPGRADE
 Status of each Node's upgrade (sent by each upgraded Node)
 
-- `action` (enum string): 
+- `data` (dict):
 
-    One of `in_progress`, `complete` or `fail`.
+    Data related to Node Upgrade:
     
-- `version` (string): 
-    
-    The version of indy-node the node was upgraded to.
+    - `action`: one of `in_progress`, `complete` or `fail`
+    - `version`: the version of indy-node the node was upgraded to
     
 
 **Example:**
 ```
 {
-    "txn": {
-        "type":110,
-        "version":1,
-        "protocolVersion":1,
-        
-        "data": {
-            "action":"complete",
-            "version":"1.2"
-        },
-        
-        "metadata": {
-            "reqId":1513945121191691,
-            "from":"L5AD5g65TDQr1PPHHRoiGf",
-        },
+    "data":{
+        "action":"complete",
+        "version":"1.2"
     },
-    "txnMetadata": {
-        "version":1,
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "values": [
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
-    }
+    
+    "type":"110",
+    "identifier":"DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2",
+    "reqId":1514207697895141,
+    "signature":"2brJa9NJzagQQfhUSNCRY1Tfthj8RdKjUx1xUm2hmnc8sWGQpHbfDGXJwWMdt8tHnPpVrnHUj1Pfaucmdpo1KKUD",
+    "signatures":null,
+    "txnTime":1514207698,
 }
 ```
 
@@ -717,32 +463,14 @@ Command to change Pool's configuration
 **Example:**
 ```
 {
-    "txn": {
-        "type":111,
-        "version":1,
-        "protocolVersion":1,
-        
-        "data": {
-            "writes":false,
-            "force":true,
-        },
-        
-        "metadata": {
-            "reqId":1513945121191691,
-            "from":"L5AD5g65TDQr1PPHHRoiGf",
-        },
-    },
-    "txnMetadata": {
-        "version":1,
-        "creationTime":1513945121,
-        "seqNo": 10,  
-    },
-    "reqSignature": {
-        "type": "ED25519",
-        "values": [
-            "from": "L5AD5g65TDQr1PPHHRoiGf",
-            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
-    }
+    "writes":false,
+    "force":true,
+    
+    "type":"111",
+    "identifier":"L5AD5g65TDQr1PPHHRoiGf",
+    "reqId":1514194299680775,
+    "signature":"5f7crPEYfVF47QSQCqRGposfrgUCQjp9YLfceqP7j9gM2m5R6mDnQUhiCiUr42cN1uSUraFFCyF1avPhNaUTcH1M",
+    "signatures":null,
+    "txnTime":1514194299
 }
 ```
