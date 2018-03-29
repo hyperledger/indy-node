@@ -6,7 +6,7 @@ POOL_RESTART T is the command to restart all nodes at the time specified in fiel
 'protocolVersion': 1,
 'identifier': 'M9BJDuS24bqbJNvBRsoGg3',
 'operation': {
-        'schedule': '0',
+        'datetime': '2018-03-28 16:00:41.442782+00:00',
         'action': 'start',
         'type': '118'
         }
@@ -18,7 +18,7 @@ To send POOL_RESTART, fill the field "action" with the value "start".
 To cancel the scheduled restart, you should set the field "action" value "cancel".
 
 ### POOL_RESTART - restart now
-To restart as early as possible, leave the "schedule" field empty, put "0" or the past date on this place.
+To restart as early as possible, send message without the "schedule" field or put in it value "0" or the past date on this place.
 The restart is performed immediately and there is no guarantee of receiving an answer with Reply.
 
 ### POOL_RESTART - Reply
