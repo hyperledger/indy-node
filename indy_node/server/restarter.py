@@ -14,8 +14,7 @@ from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.common.types import f
 from plenum.server.has_action_queue import HasActionQueue
 from indy_common.constants import ACTION, POOL_RESTART, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, IN_PROGRESS, FORCE, \
-    POOL_RESTART, RESTART
+    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, IN_PROGRESS, FORCE
 from plenum.server import notifier_plugin_manager
 from ledger.util import F
 import asyncio
@@ -77,10 +76,20 @@ class Restarter(NodeController):
         if txn[TXN_TYPE] != POOL_RESTART:
             return
 
-        logger.info("Node '{}' handles restart txn {}".format(
-            self.nodeName, txn))
+        when = txn[SCHEDULE] if SCHEDULE in txn.keys() else None
+        if isinstance(when, str) and when != "0":
+            when = dateutil.parser.parse(when)
+        now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+        if when is None or when == "0" or now >= when:
+            msg = RestartMessage(action=POOL_RESTART).toJson()
+            try:
+                asyncio.ensure_future(self._open_connection_and_send(msg))
+            except Exception as ex:
+                logger.warning(ex.args[0])
+            return
+
         action = txn[ACTION]
-        justification = txn.get(JUSTIFICATION) #todo:where get?
+        justification = txn.get(JUSTIFICATION)
         # reinstall = txn.get(REINSTALL, False)
         restart_id = self.get_action_id(txn)
 
@@ -100,7 +109,6 @@ class Restarter(NodeController):
                         self.nodeName, restart_id, last_event))
                 return
 
-            when = txn[SCHEDULE][self.nodeId]
             failTimeout = txn.get(TIMEOUT, self.defaultActionTimeout)
 
             if self.scheduledAction:

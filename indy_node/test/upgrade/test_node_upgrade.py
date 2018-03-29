@@ -32,7 +32,7 @@ def test_node_detected_upgrade_done(nodeSet):
     Upgrade log already created START event (see fixture above emulating real upgrade)
     '''
     for node in nodeSet:
-        assert node.upgrader.scheduledUpgrade is None
+        assert node.upgrader.scheduledAction is None
         assert node.upgrader.lastActionEventInfo[0] == UpgradeLog.UPGRADE_SUCCEEDED
 
 

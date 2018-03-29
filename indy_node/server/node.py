@@ -243,7 +243,7 @@ class Node(PlenumNode, HasPoolManager):
         self.upgrader.notified_about_action_result()
 
     def notify_upgrade_start(self):
-        scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
+        scheduled_upgrade_version = self.upgrader.scheduledAction[0]
         action = IN_PROGRESS
         logger.info('{} is about to be upgraded, '
                     'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))

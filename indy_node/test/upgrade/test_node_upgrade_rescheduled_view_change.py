@@ -21,10 +21,10 @@ def test_scheduled_once_after_view_change(nodeSet, validUpgrade, upgradeSchedule
 
     # check that there are no cancel events in Upgrade log
     version = validUpgrade['version']
-    upgrade_id = nodeSet[0].upgrader.scheduledUpgrade[2]
+    upgrade_id = nodeSet[0].upgrader.scheduledAction[2]
     for node in nodeSet:
         node_id = node.poolManager.get_nym_by_name(node.name)
         when = dateutil.parser.parse(validUpgrade['schedule'][node_id])
-        assert node.upgrader.scheduledUpgrade == (version, when, upgrade_id)
-        assert len(node.upgrader._upgradeLog) == 1
+        assert node.upgrader.scheduledAction == (version, when, upgrade_id)
+        assert len(node.upgrader._actionLog) == 1
         assert node.upgrader.lastActionEventInfo == (UpgradeLog.UPGRADE_SCHEDULED, when, version, upgrade_id)

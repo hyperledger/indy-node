@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import json
 import multiprocessing
@@ -38,3 +39,43 @@ def send_restart_message(action):
         (controlServiceHost, controlServicePort))
     sock.sendall(compose_restart_message(action))
     sock.close()
+
+
+async def _createServer(host, port):
+    """
+    Create async server that listens host:port, reads client request and puts
+    value to some future that can be used then for checks
+
+    :return: reference to server and future for request
+    """
+    indicator = asyncio.Future()
+
+    async def _handle(reader, writer):
+        raw = await reader.readline()
+        request = raw.decode("utf-8")
+        indicator.set_result(request)
+    server = await asyncio.start_server(_handle, host, port)
+    return server, indicator
+
+
+def _stopServer(server):
+    print('Closing server')
+    server.close()
+    # def _stop(x):
+    #     print('Closing server')
+    #     server.close()
+    # return _stop
+
+
+def _checkFuture(future):
+    """
+    Wrapper for futures that lets checking of their status using 'eventually'
+    """
+    def _check():
+        if future.cancelled():
+            return None
+        if future.done():
+            return future.result()
+        raise Exception()
+    return _check
+

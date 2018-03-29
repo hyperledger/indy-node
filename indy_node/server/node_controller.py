@@ -159,7 +159,6 @@ class NodeController(HasActionQueue):
         self.aqStash = deque()
         self.scheduledAction = None
 
-
     async def _open_connection_and_send(self, message: str):
         controlServiceHost = self.config.controlServiceHost
         controlServicePort = self.config.controlServicePort

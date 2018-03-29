@@ -37,10 +37,10 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch):
     for node in nodeSet:
         monkeypatch.setattr(
             node.upgrader,
-            '_upgradeFailedCallback',
+            '_actionFailedCallback',
             functools.partial(
                 upgrade_failed_callback_test,
                 node.name))
-        looper.run(node.upgrader._sendActionRequest(when, version, None, timeout))
+        looper.run(node.upgrader._sendUpdateRequest(when, version, None, timeout))
 
     looper.run(eventually(chk))

@@ -34,7 +34,8 @@ class ActionReqHandler(RequestHandler):
             self._doStaticValidationPoolRestart(identifier, req_id, operation)
 
     def _doStaticValidationPoolRestart(self, identifier, req_id, operation):
-        if operation[SCHEDULE]:
+        if SCHEDULE in operation.keys() is None and operation[SCHEDULE] != "0":
+     #   if operation[SCHEDULE] is None and operation[SCHEDULE] != "0":
             try:
                 dateutil.parser.parse(operation[SCHEDULE])
             except Exception:
