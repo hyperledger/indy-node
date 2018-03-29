@@ -526,13 +526,13 @@ class DomainReqHandler(PHandler):
                     last_update_time_from, \
                     reg_entry_accum_proof_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
                 # Compute issued/revoked lists corresponding with ISSUANCE_TYPE strategy
-                result_issued, result_revoked = strategy_cls.get_delta({ISSUED: reg_entry_to[VALUE][ISSUED],
-                                                                        REVOKED: reg_entry_to[VALUE][REVOKED]},
-                                                                       {ISSUED: reg_entry_from[VALUE][ISSUED],
-                                                                        REVOKED: reg_entry_from[VALUE][REVOKED]})
+                result_issued, result_revoked = strategy_cls.get_delta({ISSUED: reg_entry_to[VALUE].get(ISSUED, []),
+                                                                        REVOKED: reg_entry_to[VALUE].get(REVOKED, [])},
+                                                                       {ISSUED: reg_entry_from[VALUE].get(ISSUED, []),
+                                                                        REVOKED: reg_entry_from[VALUE].get(REVOKED, [])})
             else:
-                result_issued, result_revoked = strategy_cls.get_delta({ISSUED: reg_entry_to[VALUE][ISSUED],
-                                                                        REVOKED: reg_entry_to[VALUE][REVOKED]},
+                result_issued, result_revoked = strategy_cls.get_delta({ISSUED: reg_entry_to[VALUE].get(ISSUED, []),
+                                                                        REVOKED: reg_entry_to[VALUE].get(REVOKED, [])},
                                                                        None)
             reply = {
                 REVOC_REG_ID: str(path_to_reg_entry),
