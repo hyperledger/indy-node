@@ -128,7 +128,8 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     Target verification key as base58-encoded string. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
     (doesnt owns the identifier yet).
-
+    Verkey can be changed to None by owner, it means that this user goes back under guardianship.
+    
 - `alias` (string; optional): 
 
     NYM's alias.
@@ -177,7 +178,8 @@ Adds attribute to a NYM record
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
     Hash of attribute data (as sent by the client).
-
+    The ledger contains this hash; nothing is stored in an attribute store.
+    
 - `enc` (sha256 hash string; mutually exclusive with `raw` and `hash`):
 
     Hash of encrypted attribute data.
