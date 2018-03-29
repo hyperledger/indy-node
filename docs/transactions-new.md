@@ -56,9 +56,9 @@ transaction specific data:
     "txn": {
         "type": <...>,
         "protocolVersion": <...>,
-        "version": <...>,
         
         "data": {
+            "ver": <...>,
             <txn-specific fields>
         },
         
@@ -68,12 +68,13 @@ transaction specific data:
         },
     },
     "txnMetadata": {
-        "version": <...>,
+        "ver": <...>,
         "creationTime": <...>,
         "seqNo": <...>,  
     },
     "reqSignature": {
         "type": <...>,
+        "ver": <...>,
         "values": [
             "from": <...>,
             "value": <...>
@@ -104,7 +105,7 @@ transaction specific data:
         Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
         between clients and nodes.     
      
-    - `version` (integer):
+    - `ver` (integer):
     
         Transaction version to be able to evolve content.
         The content of `data` and `metadata` may depend on the version.       
@@ -217,10 +218,10 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 {
     "txn": {
         "type":1,
-        "version":1,
         "protocolVersion":1,
         
         "data": {
+            "ver": 1,
             "id": "N22KY2Dyvmuu2PyyqSFKue|01",
             "did":"GEzcdDLhCpGCYRHW82kjHd",
             "verkey":"~HmUWn928bnFT6Ephf65YXv",
@@ -233,7 +234,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         },
     },
     "txnMetadata": {
-        "version":1,
+        "ver":1,
         "creationTime":1513945121,
         "seqNo": 10,  
     },
@@ -287,10 +288,10 @@ Adds attribute to a NYM record
 {
     "txn": {
         "type":100,
-        "version":1,
         "protocolVersion":1,
         
         "data": {
+            "ver":1,
             "id": "N22KY2Dyvmuu2PyyqSFKue|02",
             "did":"GEzcdDLhCpGCYRHW82kjHd",
             "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
@@ -302,7 +303,7 @@ Adds attribute to a NYM record
         },
     },
     "txnMetadata": {
-        "version":1,
+        "ver":1,
         "creationTime":1513945121,
         "seqNo": 10,  
     },
@@ -349,10 +350,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 {
     "txn": {
         "type":101,
-        "version":1,
         "protocolVersion":1,
         
         "data": {
+            "ver":1,
             "id":"L5AD5g65TDQr1PPHHRoiGf1Degree1.0",
             "schemaName": "Degree",
             "schemaVersion": "1.0",
@@ -367,7 +368,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         },
     },
     "txnMetadata": {
-        "version":1,
+        "ver":1,
         "creationTime":1513945121,
         "seqNo": 10,  
     },
@@ -423,10 +424,10 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
 {
     "txn": {
         "type":102,
-        "version":1,
         "protocolVersion":1,
         
         "data": {
+            "ver":1,
             "id":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1:Degree1:CL:key1",
             "type":"CL",
             "tag": "key1",
@@ -448,7 +449,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
         },
     },
     "txnMetadata": {
-        "version":1,
+        "ver":1,
         "creationTime":1513945121,
         "seqNo": 10,  
     },
@@ -524,10 +525,10 @@ There is no need to specify all other fields, and they will remain the same.
 {
     "txn": {
         "type":0,
-        "version":1,
         "protocolVersion":1,
         
         "data": {
+            "ver":1,
             "did":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
             "alias":"Delta",
             "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
@@ -544,7 +545,7 @@ There is no need to specify all other fields, and they will remain the same.
         },
     },
     "txnMetadata": {
-        "version":1,
+        "ver":1,
         "creationTime":1513945121,
         "seqNo": 10,  
     },
@@ -615,10 +616,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 {
     "txn": {
         "type":109,
-        "version":1,
         "protocolVersion":1,
         
         "data": {
+            "ver":1,
             "name":"upgrade-13",
             "action":"start",
             "version":"1.3",
@@ -636,7 +637,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         },
     },
     "txnMetadata": {
-        "version":1,
+        "ver":1,
         "creationTime":1513945121,
         "seqNo": 10,  
     },
@@ -667,10 +668,10 @@ Status of each Node's upgrade (sent by each upgraded Node)
 {
     "txn": {
         "type":110,
-        "version":1,
         "protocolVersion":1,
         
         "data": {
+            "ver":1,
             "action":"complete",
             "version":"1.2"
         },
@@ -681,7 +682,7 @@ Status of each Node's upgrade (sent by each upgraded Node)
         },
     },
     "txnMetadata": {
-        "version":1,
+        "ver":1,
         "creationTime":1513945121,
         "seqNo": 10,  
     },
@@ -719,10 +720,10 @@ Command to change Pool's configuration
 {
     "txn": {
         "type":111,
-        "version":1,
         "protocolVersion":1,
         
         "data": {
+            "ver":1,
             "writes":false,
             "force":true,
         },
@@ -733,7 +734,7 @@ Command to change Pool's configuration
         },
     },
     "txnMetadata": {
-        "version":1,
+        "ver":1,
         "creationTime":1513945121,
         "seqNo": 10,  
     },

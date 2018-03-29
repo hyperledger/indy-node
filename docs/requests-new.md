@@ -41,10 +41,11 @@ This is a common structure for ALL messages (both Node-to-Node and Client-to-Nod
 
 ```
     "type": <...>,
-    "version": <...>,
     "protocolVersion": <...>,
+    "ver": 1,
     
     "data": {
+        "ver": 1,
         <msg-specific fields>
     },
     
@@ -66,6 +67,10 @@ This is a common structure for ALL messages (both Node-to-Node and Client-to-Nod
     Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
     between clients and nodes.     
 
+- `ver` (integer, optional):
+
+    Data/Metdata version.
+
 - `data` (dict):
 
     Message-specific data.
@@ -86,10 +91,11 @@ All write requests must be signed.
 ```
 {
     "type": <...>,
-    "version": <...>,
+    "ver": <...>,
     
     "signature": {
         "type": <...>,
+        "ver": <...>,
         "values": [
             "from": <...>,
             "value": <...>,
@@ -136,10 +142,11 @@ Each Request (both write and read) follows the pattern as shown above.
 ```
 {
     "type": <...>,
-    "version": <...>,
+    "ver": <...>,
     "protocolVersion": <...>,
     
     "data": {
+        "ver": <...>,
         <msg-specific fields>
     },
     
@@ -192,10 +199,11 @@ Each Write/Read Reply follows the pattern as shown above.
 ```
 {
     "type": REPLY,
-    "version": <...>,
+    "ver": <...>,
     "protocolVersion": <...>,
     
     "data": {
+        "ver": <...>,
         "results": [
             "result": {
                 <result>
@@ -313,11 +321,11 @@ Each Reply to commands/actions follows the pattern as shown above.
 ```
 {
     "type": REPLY_COMMAND,
-    "version": <...>,
     "protocolVersion": <...>,
+    "ver": <...>,
     
     "data": {
-        "type": <...>,
+        "ver": <...>,
         "results": [
             "result": {
                 <result>
@@ -339,7 +347,7 @@ Each ACK follows the pattern as shown above.
 {
     
     "type": REQACK,
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
@@ -357,7 +365,7 @@ Each NACK follows the pattern as shown above.
 ```
 {
     "type": REQNACK,
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
@@ -375,7 +383,7 @@ Each Reject follows the pattern as shown above.
 ```
 {
     "type": REJECT,
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
@@ -447,10 +455,11 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 ```
 {
     "type": 1,
-    "version": 1,
+    "ver": 1,
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
+        "ver": 1,
         "values": [
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -458,10 +467,11 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     },
     "msg": {
         "type": 1,
-        "version": 1,
+        "ver": 1,
         "protocolVersion": 1,
         
         "data": {
+            "ver":1,
             "id": "N22KY2Dyvmuu2PyyqSFKue|01",
             "did": "N22KY2Dyvmuu2PyyqSFKue",
             "role": "101",
@@ -478,19 +488,19 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 ```
 {
     "type": "WRITE_REPLY",
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
-
+        "ver": 1,
         "results": [
             "result": {
                 "txn": {
                     "type": 1,
                     "protocolVersion": 1,
-                    "version": 1,
                                     
                     "data": {
+                        "ver":1,
                         "id": "N22KY2Dyvmuu2PyyqSFKue|01",
                         "did": "N22KY2Dyvmuu2PyyqSFKue",
                         "role": "101",
@@ -502,12 +512,13 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
                     },
                 },
                 "txnMetadata": {
-                    "version": 1,
+                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
+                    "ver": 1,
                     "values": [
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -576,10 +587,11 @@ Adds attribute to a NYM record.
 ```
 {
     "type": 100,
-    "version": 1,
+    "ver": 1,
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
+        "ver": 1,
         "values": [
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -587,10 +599,11 @@ Adds attribute to a NYM record.
     },
     "msg": {
         "type": 100,
-        "version": 1,
+        "ver": 1,
         "protocolVersion": 1,
         
         "data": {
+            "ver": 1,
             "id": "N22KY2Dyvmuu2PyyqSFKue|02",
             "did": "N22KY2Dyvmuu2PyyqSFKue",
             "raw": "{"name": "Alice"}"
@@ -606,19 +619,19 @@ Adds attribute to a NYM record.
 ```
 {
     "type": "WRITE_REPLY",
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
-
+        "ver": 1,
         "results": [
             "result": {
                 "txn": {
                     "type": 100,
                     "protocolVersion": 1,
-                    "version": 1,
                                     
                     "data": {
+                        "ver": 1,
                         "id": "N22KY2Dyvmuu2PyyqSFKue|02",
                         "did": "N22KY2Dyvmuu2PyyqSFKue",
                         "raw": "{"name": "Alice"}"
@@ -629,12 +642,13 @@ Adds attribute to a NYM record.
                     },
                 },
                 "txnMetadata": {
-                    "version": 1,
+                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
+                    "ver": 1,
                     "values": [
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -702,10 +716,11 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 ```
 {
     "type": 101,
-    "version": 1,
+    "ver": 1,
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
+        "ver": 1,
         "values": [
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -713,10 +728,11 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     },
     "msg": {
         "type": 101,
-        "version": 1,
+        "ver": 1,
         "protocolVersion": 1,
         
         "data": {
+            "ver": 1,
             "id":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
             "schemaVersion": "1.0",
             "schemaName": "Degree",
@@ -735,19 +751,19 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 ```
 {
     "type": "WRITE_REPLY",
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
-
+        "ver": 1,
         "results": [
             "result": {
                 "txn": {
                     "type": 101,
                     "protocolVersion": 1,
-                    "version": 1,
                                     
                     "data": {
+                        "ver": 1,
                         "id":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
                         "schemaVersion": "1.0",
                         "schemaName": "Degree",
@@ -761,12 +777,13 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
                     },
                 },
                 "txnMetadata": {
-                    "version": 1,
+                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
+                    "ver": 1,
                     "values": [
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -844,10 +861,11 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
 ```
 {
     "type": 102,
-    "version": 1,
+    "ver": 1,
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
+        "ver": 1,
         "values": [
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -855,10 +873,11 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
     },
     "msg": {
         "type": 102,
-        "version": 1,
+        "ver": 1,
         "protocolVersion": 1,
         
         "data": {
+            "ver": 1,
             "id":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
             "signatureType": "CL",
             "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
@@ -879,19 +898,19 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
 ```
 {
     "type": "WRITE_REPLY",
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
-
+        "ver": 1,
         "results": [
             "result": {
                 "txn": {
                     "type": 102,
                     "protocolVersion": 1,
-                    "version": 1,
                                     
                     "data": {
+                        "ver": 1,
                         "id":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
                         "signatureType": "CL",
                         "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
@@ -907,12 +926,13 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
                     },
                 },
                 "txnMetadata": {
-                    "version": 1,
+                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
+                    "ver": 1,
                     "values": [
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1006,7 +1026,7 @@ There is no need to specify all other fields, and they will remain the same.
 ```
 {
     "type": 0,
-    "version": 1,
+    "ver": 1,
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
@@ -1017,10 +1037,11 @@ There is no need to specify all other fields, and they will remain the same.
     },
     "msg": {
         "type": 0,
-        "version": 1,
+        "ver": 1,
         "protocolVersion": 1,
         
         "data": {
+            "ver": 1,
             "did": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
             "alias": "Node1",
             "clientIp": "127.0.0.1",
@@ -1041,19 +1062,19 @@ There is no need to specify all other fields, and they will remain the same.
 ```
 {
     "type": "WRITE_REPLY",
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
-
+        "ver": 1,
         "results": [
             "result": {
                 "txn": {
                     "type": 0,
                     "protocolVersion": 1,
-                    "version": 1,
                                     
                     "data": {
+                        "ver": 1,
                         "did": "6HoV7DUEfNDiUP4ENnSC4yePja8w7JDQJ5uzVgyW4nL8"
                         "alias": "Node1",
                         "clientIp": "127.0.0.1",
@@ -1069,12 +1090,13 @@ There is no need to specify all other fields, and they will remain the same.
                     },
                 },
                 "txnMetadata": {
-                    "version": 1,
+                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
+                    "ver": 1,
                     "values": [
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1165,7 +1187,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 ```
 {
     "type": 109,
-    "version": 1,
+    "ver": 1,
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
@@ -1176,10 +1198,11 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     },
     "msg": {
         "type": 109,
-        "version": 1,
+        "ver": 1,
         "protocolVersion": 1,
         
         "data": {
+            "ver": 1,
             "action": `start`,
             "version": `1.3`,
             "schedule": {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
@@ -1199,19 +1222,19 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 ```
 {
     "type": "WRITE_REPLY",
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
-
+        "ver": 1,
         "results": [
             "result": {
                 "txn": {
                     "type": 109,
                     "protocolVersion": 1,
-                    "version": 1,
                                     
                     "data": {
+                        "ver": 1,
                         "action": `start`,
                         "version": `1.3`,
                         "schedule": {"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2":"2017-12-25T10:25:58.271857+00:00","AtDfpKFe1RPgcr5nnYBw1Wxkgyn8Zjyh5MzFoEUTeoV3":"2017-12-25T10:26:16.271857+00:00","DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2":"2017-12-25T10:26:25.271857+00:00","JpYerf4CssDrH76z7jyQPJLnZ1vwYgvKbvcp16AB5RQ":"2017-12-25T10:26:07.271857+00:00"},
@@ -1226,12 +1249,13 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
                     },
                 },
                 "txnMetadata": {
-                    "version": 1,
+                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
+                    "ver": 1,
                     "values": [
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1293,10 +1317,11 @@ Command to change Pool's configuration
 ```
 {
     "type": 111,
-    "version": 1,
+    "ver": 1,
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
+        "ver": 1,
         "values": [
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1304,10 +1329,11 @@ Command to change Pool's configuration
     },
     "msg": {
         "type": 111,
-        "version": 1,
+        "ver": 1,
         "protocolVersion": 1,
         
         "data": {
+            "ver": 1,
             "writes":false,
             "force":true
         },
@@ -1322,19 +1348,19 @@ Command to change Pool's configuration
 ```
 {
     "type": "WRITE_REPLY",
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
-
+        "ver": 1,
         "results": [
             "result": {
                 "txn": {
                     "type": 111,
                     "protocolVersion": 1,
-                    "version": 1,
                                     
                     "data": {
+                        "ver": 1,
                         "writes":false,
                         "force":true
                     },
@@ -1344,12 +1370,13 @@ Command to change Pool's configuration
                     },
                 },
                 "txnMetadata": {
-                    "version": 1,
+                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
+                    "ver": 1,
                     "values": [
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1400,10 +1427,11 @@ Gets information about a DID (NYM).
 ```
 {
     "type": 105,
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
+        "ver": 1,
         "did": "N22KY2Dyvmuu2PyyqSFKue",
     },
     "metadata": {
@@ -1417,19 +1445,19 @@ Gets information about a DID (NYM).
 ```
 {
         "type": "READ_REPLY",
+        "ver": 1,
         "protocolVersion": 1,
-        "version": 1,
         
         "data": {
-       
+            "ver": 1,
             "results": [
                 "result": {
                     "txn": {
                         "type": 1,
-                        "version": 1,
                         "protocolVersion": 1,
                         
                         "data": {
+                            "ver": 1,
                             "id": "N22KY2Dyvmuu2PyyqSFKue|01",
                             "did": "N22KY2Dyvmuu2PyyqSFKue",
                             "role": "101",
@@ -1441,12 +1469,13 @@ Gets information about a DID (NYM).
                         },
                     },
                     "txnMetadata": {
-                        "version":1,
+                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 300,
                     },
                     "reqSignature": {
                         "type": "ED25519",
+                        "ver": 1,
                         "values": [
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1477,7 +1506,6 @@ Gets information about a DID (NYM).
             ]
         },
         "metadata": {
-            "version": 1,
             "reqId": 1514215425836444,
             "from": "DDAD5g65TDQr1PPHHRoiGf",
         }
@@ -1513,10 +1541,11 @@ i.e. reply data contains requested value only.
 ```
 {
     "type": 105,
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
+        "ver": 1,
         "did": "AH4RRiPR78DUrCWatnCW2w",
         "raw": "dateOfBirth"
     },
@@ -1531,19 +1560,19 @@ i.e. reply data contains requested value only.
 ```
 {
         "type": "READ_REPLY",
+        "ver": 1,
         "protocolVersion": 1,
-        "version": 1,
         
         "data": {
-       
+            "ver": 1,
             "results": [
                 "result": {
                     "txn": {
                         "type": 1,
-                        "version": 1,
                         "protocolVersion": 1,
                         
                         "data": {
+                            "ver": 1,
                             "id": "N22KY2Dyvmuu2PyyqSFKue|02",
                             "did": "N22KY2Dyvmuu2PyyqSFKue",
                             "raw": "{"name": "Alice"}"
@@ -1554,12 +1583,13 @@ i.e. reply data contains requested value only.
                         },
                     },
                     "txnMetadata": {
-                        "version":1,
+                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 300,
                     },
                     "reqSignature": {
                         "type": "ED25519",
+                        "ver": 1,
                         "values": [
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1590,7 +1620,6 @@ i.e. reply data contains requested value only.
             ]
         },
         "metadata": {
-            "version": 1,
             "reqId": 1514215425836444,
             "from": "DDAD5g65TDQr1PPHHRoiGf",
         }
@@ -1613,7 +1642,7 @@ Gets Claim's Schema.
 ```
 {
     "type": 105,
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
@@ -1630,19 +1659,19 @@ Gets Claim's Schema.
 ```
 {
         "type": "READ_REPLY",
+        "ver": 1,
         "protocolVersion": 1,
-        "version": 1,
         
         "data": {
-       
+            "ver": 1,
             "results": [
                 "result": {
                     "txn": {
                         "type": 1,
-                        "version": 1,
                         "protocolVersion": 1,
                         
                         "data": {
+                            "ver": 1,
                             "id":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
                             "schemaVersion": "1.0",
                             "schemaName": "Degree",
@@ -1656,12 +1685,13 @@ Gets Claim's Schema.
                         },
                     },
                     "txnMetadata": {
-                        "version":1,
+                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 300,
                     },
                     "reqSignature": {
                         "type": "ED25519",
+                        "ver": 1,
                         "values": [
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1692,7 +1722,6 @@ Gets Claim's Schema.
             ]
         },
         "metadata": {
-            "version": 1,
             "reqId": 1514215425836444,
             "from": "DDAD5g65TDQr1PPHHRoiGf",
         }
@@ -1713,10 +1742,11 @@ Gets Claim Definition.
 ```
 {
     "type": 105,
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
+        "ver": 1,
         "id":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
     },
     "metadata": {
@@ -1730,19 +1760,19 @@ Gets Claim Definition.
 ```
 {
         "type": "READ_REPLY",
+        "ver": 1,
         "protocolVersion": 1,
-        "version": 1,
         
         "data": {
-       
+            "ver": 1,
             "results": [
                 "result": {
                     "txn": {
                         "type": 1,
-                        "version": 1,
                         "protocolVersion": 1,
                         
                         "data": {
+                            "ver": 1,
                             "id":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
                             "signatureType": "CL",
                             "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
@@ -1758,12 +1788,13 @@ Gets Claim Definition.
                         },
                     },
                     "txnMetadata": {
-                        "version":1,
+                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 300,
                     },
                     "reqSignature": {
                         "type": "ED25519",
+                        "ver": 1,
                         "values": [
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1794,7 +1825,6 @@ Gets Claim Definition.
             ]
         },
         "metadata": {
-            "version": 1,
             "reqId": 1514215425836444,
             "from": "DDAD5g65TDQr1PPHHRoiGf",
         }
@@ -1819,10 +1849,11 @@ A generic request to get a transaction from Ledger by its sequence number.
 ```
 {
     "type": 105,
-    "version": 1,
+    "ver": 1,
     "protocolVersion": 1,
     
     "data": {
+        "ver": 1,
         "ledgerId": "1",
         "seqNo": 9,
     },
@@ -1837,19 +1868,19 @@ A generic request to get a transaction from Ledger by its sequence number.
 ```
 {
         "type": "READ_REPLY",
+        "ver": 1,
         "protocolVersion": 1,
-        "version": 1,
         
         "data": {
-       
+            "ver": 1,
             "results": [
                 "result": {
                     "txn": {
                         "type": 1,
-                        "version": 1,
                         "protocolVersion": 1,
                         
                         "data": {
+                            "ver": 1,
                             "id": "2VkbBskPNNyWrLrZq7DBhk|\1"
                             "did": "2VkbBskPNNyWrLrZq7DBhk",
                             "role": "101",
@@ -1861,12 +1892,13 @@ A generic request to get a transaction from Ledger by its sequence number.
                         },
                     },
                     "txnMetadata": {
-                        "version":1,
+                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 9,
                     },
                     "reqSignature": {
                         "type": "ED25519",
+                        "ver": 1,
                         "values": [
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
@@ -1897,7 +1929,6 @@ A generic request to get a transaction from Ledger by its sequence number.
             ]
         },
         "metadata": {
-            "version": 1,
             "reqId": 1514215425836444,
             "from": "DDAD5g65TDQr1PPHHRoiGf",
         }
