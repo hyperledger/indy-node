@@ -26,6 +26,19 @@ class LedgerBasedAuthNr(CoreAuthMixin, NaclAuthNr):
         CoreAuthMixin.__init__(self)
         self.cache = cache
 
+    def serializeForSig(self, msg, identifier=None, topLevelKeysToIgnore=None):
+        if msg[OPERATION].get(TXN_TYPE) == ATTRIB:
+            msgCopy = deepcopy(msg)
+            keyName = {RAW, ENC, HASH}.intersection(
+                set(msgCopy[OPERATION].keys())).pop()
+            msgCopy[OPERATION][keyName] = sha256(
+                msgCopy[OPERATION][keyName].encode()).hexdigest()
+            return super().serializeForSig(msgCopy, identifier=identifier,
+                                           topLevelKeysToIgnore=topLevelKeysToIgnore)
+        else:
+            return super().serializeForSig(msg, identifier=identifier,
+                                           topLevelKeysToIgnore=topLevelKeysToIgnore)
+
     def addIdr(self, identifier, verkey, role=None):
         raise RuntimeError('Add verification keys through the NYM txn')
 
