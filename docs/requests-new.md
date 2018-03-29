@@ -1,6 +1,9 @@
 # Requests
+* [Common Message Structure](#common-message-structure)
+* [Signed Message Structure](#signed-message-structure)
 * [Common Request Structure](#common-request-structure)
 * [Common Reply Structure](#common-reply-structure)
+* [Command Reply Structure](#command-reply-structure)
 * [ACK Structure](#ack-structure)
 * [NACK Structure](#nack-structure)
 * [Reject Structure](#reject-structure)
@@ -192,7 +195,7 @@ Each Request (both write and read) follows the pattern as shown above.
         
 - Please find the format of each request-specific data for each type of request below.
 
-## Write/Read Reply Structure
+## Common Reply Structure
 
 Each Write/Read Reply follows the pattern as shown above.
 
@@ -697,11 +700,11 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     Schema's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
     It must be equal (or be mapped to) the real key of the SCHEMA state in the State Trie. 
 
-- `schemaName` (string):
+- `name` (string):
  
     Schema's name string.
 
-- `schemaVersion` (string):
+- `version` (string):
  
     Schema's version string
 
@@ -734,8 +737,8 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         "data": {
             "ver": 1,
             "id":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
-            "schemaVersion": "1.0",
-            "schemaName": "Degree",
+            "version": "1.0",
+            "name": "Degree",
             "value": {
                 "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
             }
@@ -765,8 +768,8 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
                     "data": {
                         "ver": 1,
                         "id":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
-                        "schemaVersion": "1.0",
-                        "schemaName": "Degree",
+                        "version": "1.0",
+                        "name": "Degree",
                         "value": {
                             "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
                         }
@@ -1673,8 +1676,8 @@ Gets Claim's Schema.
                         "data": {
                             "ver": 1,
                             "id":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
-                            "schemaVersion": "1.0",
-                            "schemaName": "Degree",
+                            "version": "1.0",
+                            "name": "Degree",
                             "value": {
                                 "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
                             }
