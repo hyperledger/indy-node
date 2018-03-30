@@ -6,4 +6,4 @@ def test_pool_upgrade_force_scheduled_only_once(upgradeScheduledExpForceTrue,
     for node in nodeSet:
         assert len(list(node.upgrader._actionLog)) == 1
         assert node.upgrader._actionLog.lastEvent[1] == \
-               UpgradeLog.UPGRADE_SCHEDULED
+               UpgradeLog.SCHEDULED

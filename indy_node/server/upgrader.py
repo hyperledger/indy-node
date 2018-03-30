@@ -75,7 +75,7 @@ class Upgrader(NodeMaintainer):
 
         (event_type, when, version, upgrade_id) = self.lastActionEventInfo
 
-        if event_type != UpgradeLog.UPGRADE_STARTED:
+        if event_type != UpgradeLog.STARTED:
             logger.debug(
                 'Upgrade for node {} was not scheduled. Last event is {}:{}:{}:{}'.format(
                     self.nodeName, event_type, when, version, upgrade_id))
@@ -199,7 +199,7 @@ class Upgrader(NodeMaintainer):
         :param txn:
         """
         FINALIZING_EVENT_TYPES = [
-            UpgradeLog.UPGRADE_SUCCEEDED, UpgradeLog.UPGRADE_FAILED]
+            UpgradeLog.SUCCEEDED, UpgradeLog.FAILED]
 
         if txn[TXN_TYPE] != POOL_UPGRADE:
             return
@@ -386,7 +386,7 @@ class Upgrader(NodeMaintainer):
 
         logger.info("Timeout exceeded for {}:{}".format(when, version))
         last = self._actionLog.lastEvent
-        if last and last[1:-1] == (UpgradeLog.UPGRADE_FAILED, when, version):
+        if last and last[1:-1] == (UpgradeLog.FAILED, when, version):
             return None
 
         self._action_failed(version=version,

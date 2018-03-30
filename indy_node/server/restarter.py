@@ -36,7 +36,7 @@ class Restarter(NodeMaintainer):
 
         (event_type, when) = self.lastActionEventInfo
 
-        if event_type != RestartLog.RESTART_STARTED:
+        if event_type != RestartLog.STARTED:
             logger.debug(
                 'Restart for node {} was not scheduled. Last event is {}:{}:{}'.format(
                     self.nodeName, event_type, when))
@@ -70,7 +70,7 @@ class Restarter(NodeMaintainer):
         :param txn:
         """
         FINALIZING_EVENT_TYPES = [
-            RestartLog.RESTART_SUCCEEDED, RestartLog.RESTART_FAILED]
+            RestartLog.SUCCEEDED, RestartLog.FAILED]
 
         if txn[TXN_TYPE] != POOL_RESTART:
             return
@@ -249,7 +249,7 @@ class Restarter(NodeMaintainer):
 
         logger.info("Timeout exceeded for {}".format(when))
         last = self._actionLog.lastEvent
-        if last and last[1:-1] == (RestartLog.RESTART_FAILED, when):
+        if last and last[1:-1] == (RestartLog.FAILED, when):
             return None
 
         self._action_failed(scheduled_on=when,

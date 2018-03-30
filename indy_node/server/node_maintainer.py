@@ -107,7 +107,7 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
         Default log for store action txns
         :param dataDir:
         :param config:
-        :return: ActionLog or ResartLog
+        :return: ActionLog
         """
 
     @abstractmethod
