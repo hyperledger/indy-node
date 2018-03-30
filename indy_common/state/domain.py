@@ -59,17 +59,15 @@ def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revo
                 REVOC_DEF_TAG=revoc_def_tag).encode()
 
 
-def make_state_path_for_revoc_reg_entry(authors_did, revoc_reg_def_id) -> bytes:
-    return "{DID}:{MARKER}:{REVOC_REG_DEF_ID}" \
-        .format(DID=authors_did,
-                MARKER=MARKER_REVOC_REG_ENTRY,
+def make_state_path_for_revoc_reg_entry(revoc_reg_def_id) -> bytes:
+    return "{MARKER}:{REVOC_REG_DEF_ID}" \
+        .format(MARKER=MARKER_REVOC_REG_ENTRY,
                 REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
 
 
-def make_state_path_for_revoc_reg_entry_accum(authors_did, revoc_reg_def_id) -> bytes:
-    return "{DID}:{MARKER}:{REVOC_REG_DEF_ID}" \
-        .format(DID=authors_did,
-                MARKER=MARKER_REVOC_REG_ENTRY_ACCUM,
+def make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id) -> bytes:
+    return "{MARKER}:{REVOC_REG_DEF_ID}" \
+        .format(MARKER=MARKER_REVOC_REG_ENTRY_ACCUM,
                 REVOC_REG_DEF_ID=revoc_reg_def_id).encode()
 
 
@@ -157,8 +155,7 @@ def prepare_revoc_reg_entry_for_state(txn):
     revoc_reg_def_id = txn.get(REVOC_REG_DEF_ID)
     assert author_did
     assert revoc_reg_def_id
-    path = make_state_path_for_revoc_reg_entry(authors_did=author_did,
-                                               revoc_reg_def_id=revoc_reg_def_id)
+    path = make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
 
     seq_no = txn[f.SEQ_NO.nm]
     txn_time = txn[TXN_TIME]
@@ -177,8 +174,7 @@ def prepare_revoc_reg_entry_accum_for_state(txn):
     assert revoc_reg_def_id
     assert seq_no
     assert txn_time
-    path = make_state_path_for_revoc_reg_entry_accum(authors_did=author_did,
-                                                     revoc_reg_def_id=revoc_reg_def_id)
+    path = make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
 
     value_bytes = encode_state_value(txn, seq_no, txn_time)
     return path, value_bytes
