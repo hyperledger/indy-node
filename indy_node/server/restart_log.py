@@ -31,39 +31,36 @@ class RestartLog:
                     record_date = parse_date(item[0])
                     event = item[1]
                     when = parse_date(item[2])
-                    restart_id = None  # default parameter required for backward compatibility
-                    if len(item) > 3:
-                        restart_id = item[3]
-                    parsed = (record_date, event, when, restart_id)
+                    parsed = (record_date, event, when)
                     self.__items.append(parsed)
 
     @property
     def lastEvent(self):
         return self.__items[-1] if self.__items else None
 
-    def appendScheduled(self, when, restart_id) -> None:
-        self.__append(RestartLog.RESTART_SCHEDULED, when, restart_id)
+    def appendScheduled(self, when) -> None:
+        self.__append(RestartLog.RESTART_SCHEDULED, when)
 
-    def appendStarted(self, when, restart_id) -> None:
-        self.__append(RestartLog.RESTART_STARTED, when, restart_id)
+    def appendStarted(self, when) -> None:
+        self.__append(RestartLog.RESTART_STARTED, when)
 
-    def appendSucceeded(self, when, restart_id) -> None:
-        self.__append(RestartLog.RESTART_SUCCEEDED, when, restart_id)
+    def appendSucceeded(self, when) -> None:
+        self.__append(RestartLog.RESTART_SUCCEEDED, when)
 
-    def appendFailed(self, when, restart_id) -> None:
-        self.__append(RestartLog.RESTART_FAILED, when, restart_id)
+    def appendFailed(self, when) -> None:
+        self.__append(RestartLog.RESTART_FAILED, when)
 
-    def appendCancelled(self, when, restart_id) -> None:
-        self.__append(RestartLog.RESTART_CANCELLED, when, restart_id)
+    def appendCancelled(self, when) -> None:
+        self.__append(RestartLog.RESTART_CANCELLED, when)
 
-    def __append(self, type, when, restart_id) -> None:
+    def __append(self, type, when) -> None:
         """
         Appends event to log
         Be careful it opens file every time!
         """
 
         now = datetime.utcnow()
-        event = (now, type, when, restart_id)
+        event = (now, type, when)
 
         with open(self.__filePath, mode="a+", newline="") as file:
             writer = csv.writer(file, delimiter=self.__delimiter)

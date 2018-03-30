@@ -23,25 +23,12 @@ import asyncio
 logger = getlogger()
 
 
-class NodeController(HasActionQueue):
+class NodeMaintainer(HasActionQueue):
     defaultActionTimeout = 10  # minutes
 
     @staticmethod
-    def getVersion():
-        from indy_node.__metadata__ import __version__
-        return __version__
-
-    @staticmethod   
-    def get_action_id(txn):
-        seq_no = txn.get(F.seqNo.name, '')
-        if txn[TXN_TYPE] == POOL_RESTART or txn.get(FORCE, None):
-            seq_no = ''
-        return '{}{}'.format(txn[f.REQ_ID.nm], seq_no)
-
-    @staticmethod   
     def get_timeout(timeout):
         return timedelta(minutes=timeout).seconds
-    
 
     def __init__(self,
                  nodeId,
@@ -109,42 +96,6 @@ class NodeController(HasActionQueue):
         """
         last_event = self._actionLog.lastEvent
         return last_event[1:] if last_event else None
-    
-
-    def isScheduleValid(self, schedule, node_srvs, force) -> (bool, str):
-        """
-        Validates schedule of planned node upgrades
-
-        :param schedule: dictionary of node ids and upgrade times
-        :param node_srvs: dictionary of node ids and services
-        :return: a 2-tuple of whether schedule valid or not and the reason
-        """
-
-        # flag "force=True" ignore basic checks! only datetime format is
-        # checked
-        times = []
-        non_demoted_nodes = set([k for k, v in node_srvs.items() if v])
-        if not force and set(schedule.keys()) != non_demoted_nodes:
-            return False, 'Schedule should contain id of all nodes'
-        now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        for dateStr in schedule.values():
-            try:
-                when = dateutil.parser.parse(dateStr)
-                if when <= now and not force:
-                    return False, '{} is less than current time'.format(when)
-                times.append(when)
-            except ValueError:
-                return False, '{} cannot be parsed to a time'.format(dateStr)
-        if force:
-            return True, ''
-        times = sorted(times)
-        for i in range(len(times) - 1):
-            diff = (times[i + 1] - times[i]).seconds
-            if diff < self.config.MinSepBetweenNodeUpgrades:
-                return False, 'time span between upgrades is {} ' \
-                              'seconds which is less than specified ' \
-                              'in the config'.format(diff)
-        return True, ''
     
 
     def _unscheduleAction(self): 

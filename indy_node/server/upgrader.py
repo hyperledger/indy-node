@@ -7,7 +7,7 @@ from typing import Tuple, Union, Optional, Callable, Dict
 import dateutil.parser
 import dateutil.tz
 
-from indy_node.server.node_controller import NodeController
+from indy_node.server.node_maintainer import NodeMaintainer
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.common.types import f
@@ -22,12 +22,24 @@ import asyncio
 logger = getlogger()
 
 
-class Upgrader(NodeController):
+class Upgrader(NodeMaintainer):
+
+    @staticmethod
+    def getVersion():
+        from indy_node.__metadata__ import __version__
+        return __version__
 
     @staticmethod
     def is_version_upgradable(old, new, reinstall: bool = False):
         return (Upgrader.compareVersions(old, new) > 0) \
             or (Upgrader.compareVersions(old, new) == 0) and reinstall
+
+    @staticmethod
+    def get_action_id(txn):
+        seq_no = txn.get(F.seqNo.name, '')
+        if txn.get(FORCE, None):
+            seq_no = ''
+        return '{}{}'.format(txn[f.REQ_ID.nm], seq_no)
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -399,6 +411,41 @@ class Upgrader(NodeController):
             logger.error("This problem may have external reasons, "
                          "check syslog for more information")
         self._notifier.sendMessageUponNodeUpgradeFail(error_message)
+
+    def isScheduleValid(self, schedule, node_srvs, force) -> (bool, str):
+        """
+        Validates schedule of planned node upgrades
+
+        :param schedule: dictionary of node ids and upgrade times
+        :param node_srvs: dictionary of node ids and services
+        :return: a 2-tuple of whether schedule valid or not and the reason
+        """
+
+        # flag "force=True" ignore basic checks! only datetime format is
+        # checked
+        times = []
+        non_demoted_nodes = set([k for k, v in node_srvs.items() if v])
+        if not force and set(schedule.keys()) != non_demoted_nodes:
+            return False, 'Schedule should contain id of all nodes'
+        now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+        for dateStr in schedule.values():
+            try:
+                when = dateutil.parser.parse(dateStr)
+                if when <= now and not force:
+                    return False, '{} is less than current time'.format(when)
+                times.append(when)
+            except ValueError:
+                return False, '{} cannot be parsed to a time'.format(dateStr)
+        if force:
+            return True, ''
+        times = sorted(times)
+        for i in range(len(times) - 1):
+            diff = (times[i + 1] - times[i]).seconds
+            if diff < self.config.MinSepBetweenNodeUpgrades:
+                return False, 'time span between upgrades is {} ' \
+                              'seconds which is less than specified ' \
+                              'in the config'.format(diff)
+        return True, ''
 
 
 class UpgradeMessage:
