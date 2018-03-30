@@ -88,7 +88,7 @@ def build_revoc_reg_entry_for_given_revoc_reg_def(
     return data
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def build_txn_for_revoc_def_entry_by_default(looper,
                                   sdk_wallet_steward,
                                   add_revoc_def_by_default):
@@ -267,6 +267,7 @@ def send_revoc_reg_entry_by_default(looper,
     revoc_def_req, _ = send_revoc_reg_def_by_default
     rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
     rev_reg_entry[VALUE][REVOKED] = [1, 2, 3, 4, 5]
+    del rev_reg_entry[VALUE][PREV_ACCUM]
     rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, rev_reg_entry)
     reg_entry_replies = sdk_send_and_check([json.dumps(rev_entry_req)],
                        looper,
@@ -284,6 +285,7 @@ def send_revoc_reg_entry_by_demand(looper,
     revoc_def_req = send_revoc_reg_def_by_demand
     rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
     rev_reg_entry[VALUE][ISSUED] = [1, 2, 3, 4, 5]
+    del rev_reg_entry[VALUE][PREV_ACCUM]
     rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, rev_reg_entry)
     reg_entry_replies = sdk_send_and_check([json.dumps(rev_entry_req)],
                        looper,
