@@ -1,29 +1,17 @@
-import abc
-import os
+from abc import ABCMeta, abstractmethod
 from collections import deque
 from datetime import datetime, timedelta
-from functools import partial
-from typing import Tuple, Union, Optional, Callable, Dict
+from typing import Tuple, Callable
 
-import dateutil.parser
-import dateutil.tz
-
-from indy_node.server.restart_log import RestartLog
 from stp_core.common.log import getlogger
-from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
-from plenum.common.types import f
 from plenum.server.has_action_queue import HasActionQueue
-from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, IN_PROGRESS, FORCE, \
-    POOL_RESTART
 from plenum.server import notifier_plugin_manager
-from ledger.util import F
 import asyncio
 
 logger = getlogger()
 
 
-class NodeMaintainer(HasActionQueue):
+class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
     defaultActionTimeout = 10  # minutes
 
     @staticmethod
@@ -69,7 +57,7 @@ class NodeMaintainer(HasActionQueue):
         return self._serviceActions()
 
     def process_action_log_for_first_run(self):
-        # whether upgrade was started before the Node restarted,
+        # whether action was started before the Node restarted,
         # that is whether Action Log contains STARTED event
         self._action_started = self._is_action_started()
         if self._action_started:
@@ -81,23 +69,22 @@ class NodeMaintainer(HasActionQueue):
         
 
     @property 
-    def lastActionEventInfo(self) -> Optional[Tuple[str, str, str, str]]:
+    def lastActionEventInfo(self):
         """
-        (event, when, version, upgrade_id) of last performed upgrade
+        action parameters of last performed action
 
-        :returns: (event, when, version, upgrade_id) or None if there were no upgrades
+        :returns: action parameters or None if there were no actions
         """
         last_event = self._actionLog.lastEvent
         return last_event[1:] if last_event else None
-    
 
     def _unscheduleAction(self): 
         """
-        Unschedule current upgrade
+        Unschedule current action
 
-        Note that it does not add record to upgrade log and does not do
-        required steps to resume previous upgrade. If you need this - use
-        _cancelScheduledUpgrade
+        Note that it does not add record to action log and does not do
+        required steps to resume previous action. If you need this - use
+        _cancelScheduledAction
 
         """
         self.aqStash = deque()
@@ -114,16 +101,19 @@ class NodeMaintainer(HasActionQueue):
         writer.write(msgBytes)
         writer.close()
 
+    @abstractmethod
     def _defaultLog(self, dataDir, config):
         """
         Default log for store action txns
         :param dataDir:
         :param config:
-        :return: UpgradeLog or ResartLog
+        :return: ActionLog or ResartLog
         """
 
+    @abstractmethod
     def _update_action_log_for_started_action(self):
         pass
 
+    @abstractmethod
     def _is_action_started(self):
         pass

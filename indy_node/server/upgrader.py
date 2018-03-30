@@ -1,5 +1,4 @@
 import os
-from collections import deque
 from datetime import datetime, timedelta
 from functools import partial
 from typing import Tuple, Union, Optional, Callable, Dict
@@ -11,11 +10,9 @@ from indy_node.server.node_maintainer import NodeMaintainer
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.common.types import f
-from plenum.server.has_action_queue import HasActionQueue
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, IN_PROGRESS, FORCE
+    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, FORCE
 from indy_node.server.upgrade_log import UpgradeLog
-from plenum.server import notifier_plugin_manager
 from ledger.util import F
 import asyncio
 
@@ -352,9 +349,9 @@ class Upgrader(NodeMaintainer):
         self._action_start_callback()
         self.scheduledAction = None
         asyncio.ensure_future(
-            self._sendUpdateRequest(when, version, upgrade_id, failTimeout))
+            self._sendUpgradeRequest(when, version, upgrade_id, failTimeout))
 
-    async def _sendUpdateRequest(self, when, version, upgrade_id, failTimeout):
+    async def _sendUpgradeRequest(self, when, version, upgrade_id, failTimeout):
         retryLimit = self.retry_limit
         while retryLimit:
             try:
