@@ -105,6 +105,16 @@ class Upgrader(NodeMaintainer):
             " with upgrade_id {} completed successfully"
             .format(self.nodeName, version, when, upgrade_id))
 
+    def should_notify_about_action_result(self):
+        # do not rely on NODE_UPGRADE txn in config ledger, since in
+        # some cases (for example, when
+        # we run POOL_UPGRADE with force=true), we may not have
+        # IN_PROGRESS NODE_UPGRADE in the ledger.
+
+        # send NODE_UPGRADE txn only if we were in Upgrade Started
+        # state at the very beginning (after Node restarted)
+        return self._action_started
+
     def get_last_node_upgrade_txn(self, start_no: int = None):
         return self.get_upgrade_txn(
             lambda txn: txn[TXN_TYPE] == NODE_UPGRADE and txn[IDENTIFIER] == self.nodeId,
