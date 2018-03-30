@@ -73,7 +73,7 @@ class NodeMaintainer(HasActionQueue):
         # that is whether Action Log contains STARTED event
         self._action_started = self._is_action_started()
         if self._action_started:
-            # append SUCCESS or FAIL to the Upgrade Log
+            # append SUCCESS to the action log
             self._update_action_log_for_started_action()
             
     def should_notify_about_action_result(self):
