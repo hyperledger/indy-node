@@ -95,6 +95,23 @@ class DomainReqHandler(PHandler):
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
 
+    def _doStaticValidationSchema(self, identifier, reqId, operation):
+        # TODO: Fixme; This should be handled in `SchemaField` by defining
+        # `ATTR_NAMES` with a min_lenght. `IterableField` should be changed to
+        # support an otional min and max length
+        if not operation.get(DATA).get(ATTR_NAMES):
+            raise InvalidClientRequest(identifier, reqId,
+                                       "{} in schema can not be empty".format(ATTR_NAMES))
+
+    def _doStaticValidationGetRevocRegDelta(self, identifier, reqId, operation):
+        req_ts_to = operation.get(TO, None)
+        assert req_ts_to
+        req_ts_from = operation.get(FROM, None)
+        if req_ts_from and req_ts_from > req_ts_to:
+            raise InvalidClientRequest(identifier,
+                                       reqId,
+                                       "Timestamp FROM more then TO: {} > {}".format(req_ts_from, req_ts_to))
+
     def validate(self, req: Request, config=None):
         op = req.operation
         txn_type = op[TXN_TYPE]
@@ -310,6 +327,7 @@ class DomainReqHandler(PHandler):
     def _add_default_static_validation_handlers(self):
         self.add_static_validation_handler(NYM, self._doStaticValidationNym)
         self.add_static_validation_handler(ATTRIB, self._doStaticValidationAttrib)
+        self.add_static_validation_handler(SCHEMA, self._doStaticValidationSchema)
         self.add_static_validation_handler(GET_REVOC_REG_DELTA, self._doStaticValidationGetRevocRegDelta)
 
     def add_static_validation_handler(self, txn_type, handler: Callable):
@@ -516,15 +534,6 @@ class DomainReqHandler(PHandler):
             reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
             reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
         return reg_entry_accum, seq_no, last_update_time, reg_entry_accum_proof
-
-    def _doStaticValidationGetRevocRegDelta(self, identifier, reqId, operation):
-        req_ts_to = operation.get(TO, None)
-        assert req_ts_to
-        req_ts_from = operation.get(FROM, None)
-        if req_ts_from and req_ts_from > req_ts_to:
-            raise InvalidClientRequest(identifier,
-                                       reqId,
-                                       "Timestamp FROM more then TO: {} > {}".format(req_ts_from, req_ts_to))
 
     def handleGetRevocRegDelta(self, request: Request):
         """

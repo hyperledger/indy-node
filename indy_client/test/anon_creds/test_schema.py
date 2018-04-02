@@ -42,6 +42,7 @@ def test_can_not_submit_schema_by_identity_owner(looper,
         )
         ex_info.match("role cannot add claim def")
 
+
 def test_can_not_submit_schema_with_empty_attr_names(looper,
                                                      public_repo,
                                                      stewardWallet):
