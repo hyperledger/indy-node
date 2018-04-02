@@ -328,7 +328,7 @@ class Node(PlenumNode, HasPoolManager):
                 finally:
                     self.sendReplyToClient(reply,
                                            (request.identifier, request.reqId))
-                    self.actionReqHandler.applyRestart(request)
+                    self.actionReqHandler.apply(request)
         else:
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [

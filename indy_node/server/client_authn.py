@@ -25,7 +25,6 @@ class LedgerBasedAuthNr(CoreAuthMixin, NaclAuthNr):
                                                    GET_REVOC_REG, GET_REVOC_REG_DELTA})
     action_types = CoreAuthMixin.action_types.union({POOL_RESTART})
 
-
     def __init__(self, cache: IdrCache):
         NaclAuthNr.__init__(self)
         CoreAuthMixin.__init__(self)

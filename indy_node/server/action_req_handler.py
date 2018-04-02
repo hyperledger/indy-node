@@ -19,7 +19,7 @@ from indy_node.server.pool_config import PoolConfig
 
 
 class ActionReqHandler(RequestHandler):
-    action_types = {POOL_RESTART}
+    operation_types = {POOL_RESTART}
 
     def __init__(self, idrCache: IdrCache,
                  restarter: Restarter, poolManager, poolCfg: PoolConfig):
@@ -65,7 +65,7 @@ class ActionReqHandler(RequestHandler):
                 req.identifier, req.reqId, "{} cannot do restart".format(
                     Roles.nameFromValue(originRole)))
 
-    def applyRestart(self, req: Request):
+    def apply(self, req: Request, cons_time: int = None):
         txn = reqToTxn(req)
         self.restarter.handleActionTxn(txn)
         self.poolCfg.handleConfigTxn(txn)

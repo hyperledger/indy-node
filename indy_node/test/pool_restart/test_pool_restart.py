@@ -100,7 +100,7 @@ def test_pool_restart_now(
     try:
         req_json, resp = sdk_get_reply(looper, req, 100)
     except Exception as ex:
-        assert "Timeout" in ex.args[0]
+        assert "Timeout" in ex.args
     _stopServer(server)
     if is_reply_received:
         _comparison_reply(resp, req_obj)
