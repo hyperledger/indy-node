@@ -1,5 +1,3 @@
-import indy_node
-
 import os   # noqa
 import importlib    # noqa
 from importlib.util import module_from_spec, spec_from_file_location    # noqa: E402
@@ -20,7 +18,7 @@ def setup_plugins():
     global PLUGIN_CLIENT_REQUEST_FIELDS
     global PLUGIN_CLIENT_REQ_OP_TYPES
 
-    config = getConfigOnce()
+    config = getConfigOnce(ignore_external_config_update_errors=True)
 
     plugin_root = config.PLUGIN_ROOT
     try:
