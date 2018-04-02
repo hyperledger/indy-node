@@ -17,8 +17,8 @@ def _getConfig(plenum_config_func,
 
     try:
         extend_with_default_external_config(config,
-                        general_config_dir=general_config_dir,
-                        user_config_dir=user_config_dir)
+                                            general_config_dir=general_config_dir,
+                                            user_config_dir=user_config_dir)
     except Exception as ex:
         if not ignore_external_config_update_errors:
             raise ex
