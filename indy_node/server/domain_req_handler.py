@@ -535,7 +535,7 @@ class DomainReqHandler(PHandler):
                                                                             REVOKED: revoked_to},
                                                                            None)
                 reply = {
-                    REVOC_REG_ID: str(path_to_reg_entry),
+                    REVOC_REG_DEF_ID: revoc_reg_def_id,
                     REVOC_TYPE: revoc_reg_def.get(REVOC_TYPE),
                     VALUE: {
                         ACCUM_TO: reg_entry_accum_to,
