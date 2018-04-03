@@ -515,11 +515,14 @@ class DomainReqHandler(PHandler):
 
                 issued_to = reg_entry_to[VALUE].get(ISSUED, [])
                 revoked_to = reg_entry_to[VALUE].get(REVOKED, [])
+                reg_entry_from = None
+                reg_entry_accum_from = None
                 if req_ts_from:
                     """Get REVOC_REG_ENTRY and ACCUM records for timestamp from if exist"""
                     past_root_from, reg_entry_from = self._get_reg_entry_by_timestamp(req_ts_from, path_to_reg_entry)
                     res_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
-                    req_entry_accum_from, seq_no_from, last_update_time_from, reg_entry_accum_proof_from = res_from
+                    reg_entry_accum_from, seq_no_from, last_update_time_from, reg_entry_accum_proof_from = res_from
+                if reg_entry_from and reg_entry_accum_from:
                     """Compute issued/revoked lists corresponding with ISSUANCE_TYPE strategy"""
                     issued_from = reg_entry_from[VALUE].get(ISSUED, [])
                     revoked_from = reg_entry_from[VALUE].get(REVOKED, [])
@@ -544,7 +547,7 @@ class DomainReqHandler(PHandler):
                 """If we got "from" timestamp, then add state proof into "data" section of reply"""
                 if req_ts_from:
                     reply[STATE_PROOF_FROM] = reg_entry_accum_proof_from
-                    reply[VALUE][ACCUM_FROM] = req_entry_accum_from
+                    reply[VALUE][ACCUM_FROM] = reg_entry_accum_from
 
         return self.make_result(request=request,
                                 data=reply,
