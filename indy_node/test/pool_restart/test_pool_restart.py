@@ -8,7 +8,7 @@ from indy_node.test.pool_restart.helper import _createServer, _stopServer
 from plenum.common.constants import REPLY, TXN_TYPE, DATA
 from plenum.common.types import f
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
-    sdk_get_reply
+    sdk_get_reply, sdk_get_and_check_replies
 from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
     nodeControlGeneralMonkeypatching
 
@@ -16,14 +16,12 @@ from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
 def test_pool_restart(
         sdk_pool_handle, sdk_wallet_trustee, looper, tconf):
 
-    #loop = asyncio.get_event_loop()
     server, indicator = looper.loop.run_until_complete(
         _createServer(
             host=tconf.controlServiceHost,
             port=tconf.controlServicePort
         )
     )
-    #indicator.add_done_callback(_stopServer(server))
 
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     start_at = unow + timedelta(seconds=1000)
@@ -104,6 +102,26 @@ def test_pool_restart_now(
     _stopServer(server)
     if is_reply_received:
         _comparison_reply(resp, req_obj)
+
+
+def test_fail_pool_restart(
+        sdk_pool_handle, sdk_wallet_steward, looper, tdir, tconf):
+    server, indicator = looper.loop.run_until_complete(
+        _createServer(
+            host=tconf.controlServiceHost,
+            port=tconf.controlServicePort
+        )
+    )
+    op = {
+        TXN_TYPE: POOL_RESTART,
+        ACTION: START,
+    }
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_steward[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_steward,
+                                      req_obj)
+    resp = sdk_get_and_check_replies(looper, [req], 100)
 
 
 def _comparison_reply(resp, req_obj):

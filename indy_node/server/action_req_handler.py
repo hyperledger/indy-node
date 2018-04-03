@@ -1,21 +1,23 @@
-from typing import List
-
 import dateutil.parser
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
-from plenum.common.txn_util import reqToTxn, isTxnForced
+from plenum.common.messages.node_messages import Reply
+from plenum.common.txn_util import reqToTxn
+from plenum.common.types import f
 from plenum.server.req_handler import RequestHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, DATA
+from plenum.common.constants import TXN_TYPE
 from indy_common.auth import Authoriser
-from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, \
-    POOL_CONFIG, NODE_UPGRADE, POOL_RESTART
+from indy_common.constants import SCHEDULE, ACTION, POOL_RESTART
 from indy_common.roles import Roles
-from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.restarter import Restarter
 from indy_node.server.pool_config import PoolConfig
+from stp_core.common.log import getlogger
+
+
+logger = getlogger()
 
 
 class ActionReqHandler(RequestHandler):
@@ -49,7 +51,7 @@ class ActionReqHandler(RequestHandler):
             return
         origin = req.identifier
         try:
-            originRole = self.idrCache.getRole(origin, isCommitted=False)
+            origin_role = self.idrCache.getRole(origin, isCommitted=False)
         except BaseException:
             raise UnauthorizedClientRequest(
                 req.identifier,
@@ -59,13 +61,34 @@ class ActionReqHandler(RequestHandler):
         if typ == POOL_RESTART:
             action = operation.get(ACTION)
         r, msg = Authoriser.authorised(
-            typ, originRole, field=ACTION, oldVal=status, newVal=action)
+            typ, origin_role, field=ACTION, oldVal=status, newVal=action)
         if not r:
             raise UnauthorizedClientRequest(
                 req.identifier, req.reqId, "{} cannot do restart".format(
-                    Roles.nameFromValue(originRole)))
+                    Roles.nameFromValue(origin_role)))
 
     def apply(self, req: Request, cons_time: int = None):
-        txn = reqToTxn(req)
-        self.restarter.handleActionTxn(txn)
-        self.poolCfg.handleConfigTxn(txn)
+        if req.txn_type != POOL_RESTART:
+            raise InvalidClientRequest("{} is not type of action transaction"
+                                       .format(req.txn_type))
+        result = {}
+        try:
+            txn = reqToTxn(req)
+            self.restarter.handleActionTxn(txn)
+            result = self._generate_action_result(req)
+        except Exception as ex:
+            result = self._generate_action_result(req,
+                                                 False,
+                                                 ex.args[0])
+            logger.warning("Restart is failed")
+        finally:
+            return result
+
+    def _generate_action_result(self, request: Request, is_success=True,
+                                msg=None):
+        return {TXN_TYPE: request.operation.get(TXN_TYPE),
+                      f.IDENTIFIER.nm: request.identifier,
+                      f.REQ_ID.nm: request.reqId,
+                      f.IS_SUCCESS.nm: is_success,
+                      f.MSG.nm: msg}
+

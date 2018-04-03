@@ -76,8 +76,6 @@ class ConfigReqHandler(LedgerRequestHandler):
                 req.identifier,
                 req.reqId,
                 "Nym {} not added to the ledger yet".format(origin))
-        if typ == POOL_RESTART:
-            action = operation.get(ACTION)
         if typ == POOL_UPGRADE:
             currentVersion = Upgrader.getVersion()
             targetVersion = req.operation[VERSION]

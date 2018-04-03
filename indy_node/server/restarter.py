@@ -88,8 +88,6 @@ class Restarter(NodeMaintainer):
             return
 
         action = txn[ACTION]
-        justification = txn.get(JUSTIFICATION)
-
         if action == START:
             # forced txn could have partial schedule list
             if self.nodeId not in txn[SCHEDULE]:
@@ -120,7 +118,7 @@ class Restarter(NodeMaintainer):
                     logger.info(
                         "Node '{}' cancels previous restart and schedules a new one".format(
                             self.nodeName))
-                    self._cancelScheduledRestart(justification)
+                    self._cancelScheduledRestart()
 
             logger.info("Node '{}' schedules restart".format(
                 self.nodeName))
@@ -130,7 +128,7 @@ class Restarter(NodeMaintainer):
 
         if action == CANCEL:
             if self.scheduledAction:
-                self._cancelScheduledRestart(justification)
+                self._cancelScheduledRestart()
                 logger.info("Node '{}' cancels restart".format(
                     self.nodeName))
             return

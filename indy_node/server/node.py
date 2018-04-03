@@ -313,22 +313,7 @@ class Node(PlenumNode, HasPoolManager):
             self.process_query(request, frm)
             self.total_read_request_number += 1
         elif self.is_action(request.operation[TXN_TYPE]):
-            if request.operation[TXN_TYPE] == POOL_RESTART:
-                reply = {}
-                try:
-                    self.actionReqHandler.validate(request)
-                    reply = self.generate_action_result(request)
-                    if not self.isProcessingReq(*request.key):
-                        self.startedProcessingReq(*request.key, frm)
-                except Exception as ex:
-                    reply = self.generate_action_result(request,
-                                                        False,
-                                                        ex.args[0])
-                    logger.warning("Restart is failed")
-                finally:
-                    self.sendReplyToClient(reply,
-                                           (request.identifier, request.reqId))
-                    self.actionReqHandler.apply(request)
+            self.process_action(request, frm)
         else:
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [
@@ -347,14 +332,6 @@ class Node(PlenumNode, HasPoolManager):
                     request.identifier,
                     request.reqId,
                     'Pool is in readonly mode, try again in 60 seconds')
-
-    def generate_action_result(self, request: Request, is_success=True,
-                               msg=None):
-        return Reply({TXN_TYPE: request.operation.get(TXN_TYPE),
-                      f.IDENTIFIER.nm: request.identifier,
-                      f.REQ_ID.nm: request.reqId,
-                      f.IS_SUCCESS.nm: is_success,
-                      f.MSG.nm: msg})
 
     def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
                           txnRoot) -> List:
