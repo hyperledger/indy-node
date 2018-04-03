@@ -452,8 +452,10 @@ class DomainReqHandler(PHandler):
         past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry)
-            assert encoded_entry
-            reg_entry, _, _ = domain.decode_state_value(encoded_entry)
+            if encoded_entry:
+                reg_entry, _, _ = domain.decode_state_value(encoded_entry)
+            else:
+                past_root = None
         return past_root, reg_entry
 
     def _get_reg_entry_accum_by_timestamp(self, timestamp, path_to_reg_entry_accum):
@@ -464,8 +466,9 @@ class DomainReqHandler(PHandler):
         past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry_accum)
-            reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-            reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
+            if encoded_entry:
+                reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+                reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
         return reg_entry_accum, seq_no, last_update_time, reg_entry_accum_proof
 
     def _doStaticValidationGetRevocRegDelta(self, request: Request):
