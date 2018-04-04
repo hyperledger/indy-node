@@ -77,7 +77,9 @@ class SchemaField(MessageValidator):
     schema = (
         (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
-        (ATTR_NAMES, IterableField(LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))),
+        (ATTR_NAMES, IterableField(
+            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
+            min_length=1)),
     )
 
 
