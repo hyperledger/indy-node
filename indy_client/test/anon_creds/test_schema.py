@@ -30,7 +30,7 @@ def test_submit_same_schema_twice(looper, public_repo,
         looper.run(
             public_repo.submitSchema(schema)
         )
-        ex_info.match("can have one and only one SCHEMA with name GVT and version 1.0'")
+        ex_info.match("can have one and only one SCHEMA with name GVT and version 1.0'")    # This line is unreachable in case of an exception
 
 
 def test_can_not_submit_schema_by_identity_owner(looper,
@@ -40,7 +40,7 @@ def test_can_not_submit_schema_by_identity_owner(looper,
         looper.run(
             public_repo_for_client.submitSchema(schema)
         )
-        ex_info.match("role cannot add claim def")
+        ex_info.match("role cannot add claim def")  # This line is unreachable in case of an exception
 
 
 def test_can_not_submit_schema_with_empty_attr_names(looper,
@@ -56,7 +56,7 @@ def test_can_not_submit_schema_with_empty_attr_names(looper,
         looper.run(
             public_repo.submitSchema(schema)
         )
-        ex_info.match("attr_names in schema can not be empty")
+        ex_info.match("attr_names in schema can not be empty")  # This line is unreachable in case of an exception
 
 
 def test_get_schema(submitted_schema, public_repo, looper):
