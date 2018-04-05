@@ -3,7 +3,7 @@ from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PRO
     MULTI_SIGNATURE_VALUE_STATE_ROOT, MULTI_SIGNATURE_VALUE_TXN_ROOT, MULTI_SIGNATURE_VALUE_POOL_STATE_ROOT, \
     MULTI_SIGNATURE_VALUE_TIMESTAMP, TYPE, DATA
 from indy_common.constants import VALUE, GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, \
-    ACCUM_FROM, ACCUM_TO, STATE_PROOF_FROM
+    ACCUM_FROM, ACCUM_TO, STATE_PROOF_FROM, ISSUED
 from common.serializers.serialization import state_roots_serializer, proof_nodes_serializer
 from state.pruning_state import PruningState
 from indy_common.state import domain
@@ -16,7 +16,10 @@ def prepare_for_state(result):
     if request_type == GET_REVOC_REG:
         return domain.prepare_revoc_reg_entry_accum_for_state(result['data'])
     if request_type == GET_REVOC_REG_DELTA:
-        return domain.prepare_revoc_reg_entry_accum_for_state(result['data'])
+        if ISSUED in result['data'][VALUE]:
+            return domain.prepare_revoc_reg_entry_for_state(result['data'])
+        else:
+            return domain.prepare_revoc_reg_entry_accum_for_state(result['data'])
     raise ValueError("Cannot make state key for "
                      "request of type {}"
                      .format(request_type))

@@ -3,7 +3,7 @@ import copy
 from indy_common.constants import CRED_DEF_ID, ID, REVOC_TYPE, TAG, GET_REVOC_REG_DEF, \
     TXN_TYPE, TIMESTAMP, REVOC_REG_DEF_ID, VALUE, FROM, TO, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM
-from plenum.common.constants import TXN_TIME
+from plenum.common.constants import TXN_TIME, STATE_PROOF
 from indy_common.state import domain
 from plenum.common.util import randomString
 from indy_node.test.anon_creds.helper import check_valid_proof
@@ -91,3 +91,35 @@ def test_state_proof_returned_for_get_revoc_reg_delta(looper,
     reg_delta_req['operation'][TO] = rev_reg_reply3['result'][TXN_TIME] + 1000
     get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
     check_valid_proof(get_reply)
+
+
+def test_state_proof_returned_for_get_revoc_reg_delta_with_only_to(
+                                                      looper,
+                                                      txnPoolNodeSet,
+                                                      sdk_pool_handle,
+                                                      sdk_wallet_steward,
+                                                      send_revoc_reg_entry_by_default,
+                                                      build_get_revoc_reg_delta):
+    rev_reg_req, rev_reg_reply = send_revoc_reg_entry_by_default
+    reg_delta_req = copy.deepcopy(build_get_revoc_reg_delta)
+    del reg_delta_req['operation'][FROM]
+    reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req['operation'][REVOC_REG_DEF_ID]
+    reg_delta_req['operation'][TO] = get_utc_epoch() + 1000
+    get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
+    check_valid_proof(get_reply)
+
+
+def test_state_proof_returned_for_delta_with_None_reply(
+                                                      looper,
+                                                      txnPoolNodeSet,
+                                                      sdk_pool_handle,
+                                                      sdk_wallet_steward,
+                                                      send_revoc_reg_entry_by_default,
+                                                      build_get_revoc_reg_delta):
+    rev_reg_req, rev_reg_reply = send_revoc_reg_entry_by_default
+    reg_delta_req = copy.deepcopy(build_get_revoc_reg_delta)
+    del reg_delta_req['operation'][FROM]
+    reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req['operation'][REVOC_REG_DEF_ID]
+    reg_delta_req['operation'][TO] = get_utc_epoch() - 1000
+    get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
+    assert STATE_PROOF not in get_reply['result']
