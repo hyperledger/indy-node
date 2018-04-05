@@ -26,7 +26,6 @@ def test_state_proof_returned_for_get_revoc_reg_def(looper,
                       revoc_req['operation'][REVOC_TYPE],
                       revoc_req['operation'][TAG]]),
         TXN_TYPE: GET_REVOC_REG_DEF,
-        REVOC_TYPE: revoc_req['operation'][REVOC_TYPE],
     }
     get_revoc_reg_def_req = sdk_sign_request_from_dict(looper,
                                                        sdk_wallet_steward,
@@ -59,7 +58,7 @@ def test_state_proof_returned_for_get_revoc_reg_delta(looper,
                                                       send_revoc_reg_entry_by_default,
                                                       build_get_revoc_reg_delta):
     # We save timestamp of state changes.
-    # looper and txnPoolNodeSet has "module", therefore,
+    # looper and txnPoolNodeSet has "module" scope, therefore,
     # when we send request with FROM section, it's not a clean situation
     looper.runFor(3)
     # Assume, that send_revoc_reg_entry_by_default will add into revoked [1,2,3,4,5]

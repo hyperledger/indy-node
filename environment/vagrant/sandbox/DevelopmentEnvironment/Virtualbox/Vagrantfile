@@ -313,7 +313,6 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y \
     python-pip \
     python3-pip \
     python3.5-dev \
-    libsodium18 \
     unzip \
     make \
     screen \

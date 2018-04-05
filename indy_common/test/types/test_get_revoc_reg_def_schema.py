@@ -6,7 +6,6 @@ from indy_common.constants import ID, TXN_TYPE, REVOC_TYPE
 
 EXPECTED_GET_REVOC_REG_DEF_FIELD = OrderedDict([
     (ID, NonEmptyStringField()),
-    (REVOC_TYPE, NonEmptyStringField),
     (TXN_TYPE, ConstantField),
 ])
 
