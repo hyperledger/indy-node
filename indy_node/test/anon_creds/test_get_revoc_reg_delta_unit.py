@@ -83,12 +83,20 @@ def test_get_delta_with_other_reg_def_in_state(looper,
 
     # timestamp beetween FIRST_ID_TS and SECOND_ID_TS
     delta_req['operation'][FROM] = FIRST_ID_TS + 10
-    path_to_reg_entry_accum = domain.make_state_path_for_revoc_reg_entry(
+    path_to_reg_entry = domain.make_state_path_for_revoc_reg_entry(
         revoc_reg_def_id=entry_second_id['operation'][REVOC_REG_DEF_ID])
-
     past_root, reg_entry, _, _, _ = req_handler._get_reg_entry_by_timestamp(
         delta_req['operation'][FROM],
-        path_to_reg_entry_accum)
+        path_to_reg_entry)
     # we found root_hash in txRevoc storage but there is not corresponded reg_entry by path
     assert past_root is not None
     assert reg_entry is None
+
+    path_to_reg_entry_accum = domain.make_state_path_for_revoc_reg_entry(
+        revoc_reg_def_id=entry_second_id['operation'][REVOC_REG_DEF_ID])
+    reg_entry_accum, _, _, _ = req_handler._get_reg_entry_accum_by_timestamp(
+        delta_req['operation'][FROM],
+        path_to_reg_entry_accum)
+    assert reg_entry_accum is None
+
+

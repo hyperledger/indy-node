@@ -589,11 +589,11 @@ class DomainReqHandler(PHandler):
                     res_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
                     reg_entry_accum_from, _, _, reg_entry_accum_proof_from = res_from
                     state_proof_from = reg_entry_accum_proof_from
+                if reg_entry_from and reg_entry_accum_from:
                     """ If 'from' was found then state_proof for 'to' must be from accum"""
                     state_proof_to = reg_entry_accum_proof_to
                     seq_no_to = seq_no_accum_to
                     last_update_time_to = last_update_time_accum_to
-                if reg_entry_from and reg_entry_accum_from:
                     """Compute issued/revoked lists corresponding with ISSUANCE_TYPE strategy"""
                     issued_from = reg_entry_from[VALUE].get(ISSUED, [])
                     revoked_from = reg_entry_from[VALUE].get(REVOKED, [])

@@ -123,3 +123,19 @@ def test_state_proof_returned_for_delta_with_None_reply(
     reg_delta_req['operation'][TO] = get_utc_epoch() - 1000
     get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
     assert STATE_PROOF not in get_reply['result']
+
+
+def test_state_proof_returned_for_delta_with_from_earlier(
+                                                      looper,
+                                                      txnPoolNodeSet,
+                                                      sdk_pool_handle,
+                                                      sdk_wallet_steward,
+                                                      send_revoc_reg_entry_by_default,
+                                                      build_get_revoc_reg_delta):
+    rev_reg_req, rev_reg_reply = send_revoc_reg_entry_by_default
+    reg_delta_req = copy.deepcopy(build_get_revoc_reg_delta)
+    reg_delta_req['operation'][FROM] = get_utc_epoch() - 1000
+    reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req['operation'][REVOC_REG_DEF_ID]
+    reg_delta_req['operation'][TO] = get_utc_epoch() + 1000
+    get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
+    check_valid_proof(get_reply)

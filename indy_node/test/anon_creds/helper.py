@@ -73,7 +73,7 @@ def check_valid_proof(reply):
     assert MULTI_SIGNATURE_VALUE_TIMESTAMP in multi_sig_value
     assert multi_sig_value[MULTI_SIGNATURE_VALUE_TIMESTAMP]
     if result[TYPE] == GET_REVOC_REG_DELTA:
-        if STATE_PROOF_FROM in result[DATA]:
+        if STATE_PROOF_FROM in result[DATA] and result[DATA][STATE_PROOF_FROM]:
             reply_from = {DATA: result['data'][VALUE][ACCUM_FROM],
                           STATE_PROOF: result['data'][STATE_PROOF_FROM],
                           TYPE: result[TYPE]}
