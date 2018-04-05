@@ -137,16 +137,8 @@ port = 127.0.0.1:9001
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
-[program:ntp]
-command=/usr/sbin/ntpd -n
-autorestart=true
-startsecs=15
-startretries=6
-stopasgroup=true
-killasgroup=true
-
 [program:indy-node]
-command=/usr/local/bin/init_and_start_indy_node.sh
+command=/usr/bin/env python3 -O /usr/local/bin/start_indy_node %(ENV_NODE_NAME)s %(ENV_NODE_PORT)s %(ENV_NODE_CLIENT_PORT)s
 user=indy
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
@@ -159,7 +151,7 @@ stopasgroup=true
 killasgroup=true
 
 [program:indy-node-control]
-command=/usr/local/bin/start_node_control_tool
+command=sh -ac 'sed -i "s/\\\\\"/\"/g" $GENERAL_CONFIG_DIR/node_control.conf;. $GENERAL_CONFIG_DIR/node_control.conf;/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool ${TEST_MODE} --hold-ext ${HOLD_EXT}'
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
