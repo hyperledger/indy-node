@@ -26,6 +26,15 @@ from indy_node.server.revocation_strategy import RevokedStrategy, IssuedStrategy
 logger = getlogger()
 
 
+class StateValue:
+    def __init__(self, root_hash=None, value=None, seq_no=None, update_time=None, proof=None):
+        self.root_hash = root_hash
+        self.value = value
+        self.seq_no = seq_no
+        self.update_time = update_time
+        self.proof = proof
+
+
 class DomainReqHandler(PHandler):
     write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
     query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF,
@@ -507,14 +516,20 @@ class DomainReqHandler(PHandler):
 
     def _get_reg_entry_by_timestamp(self, timestamp, path_to_reg_entry):
         reg_entry = None
+        seq_no = None
+        last_update_time = None
+        reg_entry_proof = None
         past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry)
             if encoded_entry:
-                reg_entry, _, _ = domain.decode_state_value(encoded_entry)
-            else:
-                past_root = None
-        return past_root, reg_entry
+                reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+                reg_entry_proof = self.make_proof(path_to_reg_entry, head_hash=past_root)
+        return StateValue(root_hash=past_root,
+                          value=reg_entry,
+                          seq_no=seq_no,
+                          update_time=last_update_time,
+                          proof=reg_entry_proof)
 
     def _get_reg_entry_accum_by_timestamp(self, timestamp, path_to_reg_entry_accum):
         reg_entry_accum = None
@@ -527,7 +542,11 @@ class DomainReqHandler(PHandler):
             if encoded_entry:
                 reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
                 reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
-        return reg_entry_accum, seq_no, last_update_time, reg_entry_accum_proof
+        return StateValue(root_hash=past_root,
+                          value=reg_entry_accum,
+                          seq_no=seq_no,
+                          update_time=last_update_time,
+                          proof=reg_entry_accum_proof)
 
     def handleGetRevocRegDelta(self, request: Request):
         """
@@ -546,37 +565,38 @@ class DomainReqHandler(PHandler):
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
-        reply = None
+        reply = {
+            REVOC_REG_DEF_ID: revoc_reg_def_id,
+        }
         """
         Get root hash for "to" timestamp
         Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"
         """
         path_to_reg_entry = domain.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
         path_to_reg_entry_accum = domain.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
-        past_root_to, reg_entry_to = self._get_reg_entry_by_timestamp(req_ts_to, path_to_reg_entry)
-        res_to = self._get_reg_entry_accum_by_timestamp(req_ts_to, path_to_reg_entry_accum)
-        reg_entry_accum_to, seq_no_to, last_update_time_to, reg_entry_accum_proof_to = res_to
-        if reg_entry_accum_to and past_root_to:
+
+        entry_to = self._get_reg_entry_by_timestamp(req_ts_to, path_to_reg_entry)
+        accum_to = self._get_reg_entry_accum_by_timestamp(req_ts_to, path_to_reg_entry_accum)
+        entry_from = StateValue()
+        accum_from = StateValue()
+
+        if accum_to.value and entry_to.value:
             """Get issuance type from REVOC_REG_DEF"""
-            encoded_revoc_reg_def = self.state.get_for_root_hash(past_root_to,
+            encoded_revoc_reg_def = self.state.get_for_root_hash(entry_to.root_hash,
                                                                  revoc_reg_def_id)
             if encoded_revoc_reg_def:
                 revoc_reg_def, _, _ = domain.decode_state_value(encoded_revoc_reg_def)
                 strategy_cls = self.get_revocation_strategy(revoc_reg_def[VALUE][ISSUANCE_TYPE])
-
-                issued_to = reg_entry_to[VALUE].get(ISSUED, [])
-                revoked_to = reg_entry_to[VALUE].get(REVOKED, [])
-                reg_entry_from = None
-                reg_entry_accum_from = None
+                issued_to = entry_to.value[VALUE].get(ISSUED, [])
+                revoked_to = entry_to.value[VALUE].get(REVOKED, [])
                 if req_ts_from:
                     """Get REVOC_REG_ENTRY and ACCUM records for timestamp from if exist"""
-                    past_root_from, reg_entry_from = self._get_reg_entry_by_timestamp(req_ts_from, path_to_reg_entry)
-                    res_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
-                    reg_entry_accum_from, seq_no_from, last_update_time_from, reg_entry_accum_proof_from = res_from
-                if reg_entry_from and reg_entry_accum_from:
+                    entry_from = self._get_reg_entry_by_timestamp(req_ts_from, path_to_reg_entry)
+                    accum_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
+                if req_ts_from and entry_from.value and accum_from.value:
                     """Compute issued/revoked lists corresponding with ISSUANCE_TYPE strategy"""
-                    issued_from = reg_entry_from[VALUE].get(ISSUED, [])
-                    revoked_from = reg_entry_from[VALUE].get(REVOKED, [])
+                    issued_from = entry_from.value[VALUE].get(ISSUED, [])
+                    revoked_from = entry_from.value[VALUE].get(REVOKED, [])
                     result_issued, result_revoked = strategy_cls.get_delta({ISSUED: issued_to,
                                                                             REVOKED: revoked_to},
                                                                            {ISSUED: issued_from,
@@ -589,22 +609,31 @@ class DomainReqHandler(PHandler):
                     REVOC_REG_DEF_ID: revoc_reg_def_id,
                     REVOC_TYPE: revoc_reg_def.get(REVOC_TYPE),
                     VALUE: {
-                        ACCUM_TO: reg_entry_accum_to,
+                        ACCUM_TO: accum_to.value if entry_from.value else entry_to.value,
                         ISSUED: result_issued,
                         REVOKED: result_revoked
                     }
 
                 }
                 """If we got "from" timestamp, then add state proof into "data" section of reply"""
-                if req_ts_from:
-                    reply[STATE_PROOF_FROM] = reg_entry_accum_proof_from
-                    reply[VALUE][ACCUM_FROM] = reg_entry_accum_from
+                if req_ts_from and accum_from.value:
+                    reply[STATE_PROOF_FROM] = accum_from.proof
+                    reply[VALUE][ACCUM_FROM] = accum_from.value
+
+        if accum_to and entry_to:
+            seq_no = accum_to.seq_no if entry_from.value else entry_to.seq_no
+            update_time = accum_to.update_time if entry_from.value else entry_to.update_time
+            proof = accum_to.proof if entry_from.value else entry_to.proof
+        else:
+            seq_no = None
+            update_time = None
+            proof = None
 
         return self.make_result(request=request,
                                 data=reply,
-                                last_seq_no=seq_no_to,
-                                update_time=last_update_time_to,
-                                proof=reg_entry_accum_proof_to)
+                                last_seq_no=seq_no,
+                                update_time=update_time,
+                                proof=proof)
 
     def handleGetAttrsReq(self, request: Request):
         if not self._validate_attrib_keys(request.operation):
