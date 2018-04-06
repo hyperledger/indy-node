@@ -2,6 +2,8 @@ import asyncio
 from datetime import datetime, timedelta
 
 import dateutil
+import pytest
+from plenum.common.exceptions import RequestRejectedException
 
 from indy_common.constants import POOL_RESTART, ACTION, START, SCHEDULE, CANCEL
 from indy_node.test.pool_restart.helper import _createServer, _stopServer
@@ -105,13 +107,7 @@ def test_pool_restart_now(
 
 
 def test_fail_pool_restart(
-        sdk_pool_handle, sdk_wallet_steward, looper, tdir, tconf):
-    server, indicator = looper.loop.run_until_complete(
-        _createServer(
-            host=tconf.controlServiceHost,
-            port=tconf.controlServicePort
-        )
-    )
+        sdk_pool_handle, sdk_wallet_steward, looper):
     op = {
         TXN_TYPE: POOL_RESTART,
         ACTION: START,
@@ -121,7 +117,9 @@ def test_fail_pool_restart(
                                       sdk_pool_handle,
                                       sdk_wallet_steward,
                                       req_obj)
-    resp = sdk_get_and_check_replies(looper, [req], 100)
+    with pytest.raises(RequestRejectedException) as excinfo:
+        sdk_get_and_check_replies(looper, [req], 100)
+    assert excinfo.match("STEWARD cannot do restart")
 
 
 def _comparison_reply(resp, req_obj):
