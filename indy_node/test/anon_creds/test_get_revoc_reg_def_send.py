@@ -10,7 +10,6 @@ from plenum.test.helper import sdk_send_and_check
 def compare_request_reply(req, reply):
     assert req['operation'][CRED_DEF_ID] == reply['result']['data'][CRED_DEF_ID]
     assert req['operation'][ID] == reply['result']['data'][ID]
-    assert req['operation'][REVOC_TYPE] == reply['result']['data'][REVOC_TYPE]
     assert req['operation'][TAG] == reply['result']['data'][TAG]
     assert req['operation'][VALUE] == reply['result']['data'][VALUE]
 
@@ -30,7 +29,6 @@ def test_send_get_revoc_reg_def(looper,
                       revoc_req['operation'][REVOC_TYPE],
                       revoc_req['operation'][TAG]]),
         TXN_TYPE: GET_REVOC_REG_DEF,
-        REVOC_TYPE: revoc_req['operation'][REVOC_TYPE],
     }
     get_revoc_reg_def_req = sdk_sign_request_from_dict(looper,
                                                        sdk_wallet_steward,
@@ -67,7 +65,6 @@ def test_get_revoc_reg_def_from_uncommited(looper,
                       revoc_req['operation'][REVOC_TYPE],
                       revoc_req['operation'][TAG]]),
         TXN_TYPE: GET_REVOC_REG_DEF,
-        REVOC_TYPE: revoc_req['operation'][REVOC_TYPE]
     }
     get_revoc_reg_def_req = sdk_sign_request_from_dict(looper,
                                                        sdk_wallet_steward,
