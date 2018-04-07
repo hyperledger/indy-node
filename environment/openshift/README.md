@@ -1,4 +1,4 @@
-# This client is deprecated! Please, use [new getting started](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md)
+This client is deprecated! Please, use the new libindy-based CLI: https://github.com/hyperledger/indy-sdk/tree/master/cli
 ________________________________________________________________________
 # Getting Started
 
