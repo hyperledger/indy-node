@@ -42,6 +42,9 @@ from stp_core.loop.looper import Looper
 
 
 def run_cli():
+    print("This client is deprecated! "
+          "Please, use new getting started: "
+          "https://github.com/hyperledger/indy-node/blob/stable/getting-started.md")
 
     commands = sys.argv[1:]
 
