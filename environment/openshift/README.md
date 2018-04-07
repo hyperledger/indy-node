@@ -1,3 +1,5 @@
+# This client is deprecated! Please, use [new getting started](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md)
+________________________________________________________________________
 # Getting Started
 
 1. Bring up (or connect to) an OpenShift cluster.
