@@ -202,3 +202,22 @@ and run tests
 ```
 pytest .
 ```
+
+## Issues with Quick Setup on Ubuntu 16.04
+
+If encountering `fatal error: rocksdb/slice.h: No such file or directory` when running the `init-dev-project.sh <github-name> <new-virtualenv-name>` command during the quick setup (step 7) here is a guide to solve this issue:
+
+Independently install rocksdb with the following commands:
+```
+apt-get install build-essential
+apt-get install libsnappy-dev zlib1g-dev libbz2-dev libgflags-dev liblz4-dev
+git clone https://github.com/facebook/rocksdb.git
+cd rocksdb
+make shared_lib
+```
+And set the path variables as following:
+```
+export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:`pwd`/include
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:`pwd`
+export LIBRARY_PATH=${LIBRARY_PATH}:`pwd`
+```
