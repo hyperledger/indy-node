@@ -22,7 +22,7 @@ from indy_common.identity import Identity
 from indy_common.txn_util import ATTRIB, TRUST_ANCHOR
 from indy_common.util import getSymmetricallyEncryptedVal
 from indy_node.test.helper import submitAndCheck, \
-    makeAttribRequest, makeGetNymRequest, addAttributeAndCheck, TestNode, \
+    makeAttribRequest, makeGetNymRequest, sdk_add_attribute_and_check, TestNode, \
     getAttribute
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
@@ -63,7 +63,7 @@ def addedRawAttribute(userWalletA: Wallet, trustAnchor: Client,
                        value=attributeData,
                        dest=userWalletA.defaultId,
                        ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, trustAnchor, trustAnchorWallet, attrib)
+    sdk_add_attribute_and_check(looper, trustAnchor, trustAnchorWallet, attrib)
     return attrib
 
 
@@ -495,7 +495,7 @@ def testLatestAttrIsReceived(
                        value=attr1,
                        dest=userIdA,
                        ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, trustAnchor, trustAnchorWallet, attrib)
+    sdk_add_attribute_and_check(looper, trustAnchor, trustAnchorWallet, attrib)
     assert attr1 in [
         a.value for a in trustAnchorWallet.getAttributesForNym(userIdA)]
 
@@ -505,7 +505,7 @@ def testLatestAttrIsReceived(
                        value=attr2,
                        dest=userIdA,
                        ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, trustAnchor, trustAnchorWallet, attrib)
+    sdk_add_attribute_and_check(looper, trustAnchor, trustAnchorWallet, attrib)
     logger.debug(
         [a.value for a in trustAnchorWallet.getAttributesForNym(userIdA)])
     assert attr2 in [a.value for a in
@@ -578,7 +578,7 @@ def test_user_add_attrs_for_herself(
                        value=attr1,
                        dest=userIdA,
                        ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, userClientA, userWalletA, attrib)
+    sdk_add_attribute_and_check(looper, userClientA, userWalletA, attrib)
 
 
 @pytest.mark.skip(reason="INDY-896 ATTR cannot be added without dest")
@@ -607,4 +607,4 @@ def test_attr_with_no_dest_added(nodeSet, tdirWithClientPoolTxns, looper,
                        value=attr1,
                        dest=None,
                        ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, client, user_wallet, attrib)
+    sdk_add_attribute_and_check(looper, client, user_wallet, attrib)

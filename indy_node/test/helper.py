@@ -4,13 +4,15 @@ from contextlib import ExitStack
 from typing import Iterable
 import base58
 
+from indy.ledger import build_attrib_request
 from plenum.common.constants import REQACK, TXN_ID, DATA
+from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
 from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import getMaxFailures, runall
-from plenum.test.helper import TestNodeSet as PlenumTestNodeSet
+from plenum.test.test_node import TestNodeSet as PlenumTestNodeSet
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
-    checkLastClientReqForNode, buildCompletedTxnFromReply
+    checkLastClientReqForNode, buildCompletedTxnFromReply, sdk_get_and_check_replies
 from plenum.test.test_node import checkNodesAreReady, TestNodeCore
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.testable import spyable
@@ -24,7 +26,6 @@ from indy_node.server.node import Node
 from indy_node.server.upgrader import Upgrader
 from stp_core.loop.eventually import eventually
 from stp_core.loop.looper import Looper
-
 
 logger = getlogger()
 
@@ -202,7 +203,7 @@ class Organization:
             raise ValueError("No wallet exists for this user id")
 
     def addTxnsForCompletedRequestsInWallet(self, reqs: Iterable, wallet:
-                                            Wallet):
+    Wallet):
         for req in reqs:
             reply, status = self.client.getReply(req.reqId)
             if status == "CONFIRMED":
@@ -363,12 +364,28 @@ def addRawAttribute(looper, client, wallet, name, value, dest=None,
     addAttributeAndCheck(looper, client, wallet, attrib)
 
 
+def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib):
+    _, did = sdk_wallet_handle
+    attrib_req = looper.loop.run_until_complete(
+        build_attrib_request(did, did, None, attrib, None))
+    request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_handle,
+                                                        sdk_pool_handle, attrib_req)
+    sdk_get_and_check_replies(looper, [request_couple])
+    return request_couple[0]['reqId']
+
+
+def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, value):
+    _, did = sdk_wallet_handle
+    attrData = json.dumps({name: value})
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrData)
+
+
 def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
     reply, status = trustAnchor.getReply(*reqKey)
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
-        (data is not None and data.get(attrName) == attrValue)
+           (data is not None and data.get(attrName) == attrValue)
     return reply
 
 
@@ -391,6 +408,10 @@ def getAttribute(
     return looper.run(eventually(checkGetAttr, req.key, trustAnchor,
                                  attributeName, attributeValue, retryWait=1,
                                  timeout=timeout))
+
+
+def sdk_get_attribute():
+    pass
 
 
 def buildStewardClient(looper, tdir, stewardWallet):

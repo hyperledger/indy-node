@@ -29,7 +29,7 @@ def txnPoolNodeSet(tconf, nodeSet):
 
 @pytest.mark.skip(reason='SOV-559')
 def testUpgradeLatestUncancelledVersion(looper,
-                                        txnPoolNodeSet, tconf, nodeThetaAdded,
+                                        txnPoolNodeSet, tconf, sdk_node_theta_added,
                                         validUpgrade, trustee, trusteeWallet,
                                         tdirWithPoolTxns, allPluginsPath):
     """
@@ -38,7 +38,7 @@ def testUpgradeLatestUncancelledVersion(looper,
     since 1.5 is cancelled, it selects 1.4
     """
     nodeSet = txnPoolNodeSet
-    newSteward, newStewardWallet, newNode = nodeThetaAdded
+    _, newNode = sdk_node_theta_added
     for node in nodeSet[:-1]:
         node.nodestack.removeRemoteByName(newNode.nodestack.name)
         newNode.nodestack.removeRemoteByName(node.nodestack.name)

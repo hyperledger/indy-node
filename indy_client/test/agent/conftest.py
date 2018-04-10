@@ -36,7 +36,7 @@ from indy_client.test.agent.faber import create_faber, bootstrap_faber
 from indy_client.test.agent.helper import ensureAgentConnected, buildFaberWallet, \
     buildAcmeWallet, buildThriftWallet, startAgent
 from indy_client.test.agent.thrift import create_thrift
-from indy_node.test.helper import addAttributeAndCheck
+from indy_node.test.helper import sdk_add_attribute_and_check
 from indy_client.test.helper import createNym, TestClient
 
 # noinspection PyUnresolvedReferences
@@ -385,7 +385,7 @@ def addAgent(looper, agent, steward, stewardWallet):
                        value=attributeData,
                        dest=agentNym,
                        ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, agent.client, agent.wallet, attrib)
+    sdk_add_attribute_and_check(looper, agent.client, agent.wallet, attrib)
     return attrib
 
 

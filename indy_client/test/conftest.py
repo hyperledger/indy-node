@@ -68,6 +68,7 @@ def warnfilters(plenum_warnfilters):
         plenum_warnfilters()
         warnings.filterwarnings(
             'ignore', category=ResourceWarning, message='unclosed file')
+
     return _
 
 
@@ -218,7 +219,7 @@ def client1(clientAndWallet1, looper):
 
 @pytest.fixture(scope="module")
 def added_client_without_role(steward, stewardWallet, looper,
-                           wallet1):
+                              wallet1):
     createNym(looper,
               wallet1.defaultId,
               steward,
@@ -318,56 +319,3 @@ def pytest_assertrepr_compare(op, left, right):
             mod = 'not ' if 'not' in op else ''
             lines = ['    ' + s for s in right.split('\n')]
             return ['"{}" should {}be in...'.format(left, mod)] + lines
-
-
-@pytest.fixture("module")
-def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
-                   stewardWallet, allPluginsPath, testNodeClass,
-                   testClientClass, tdir):
-    newStewardName = "testClientSteward" + randomString(3)
-    newNodeName = "Theta"
-    newSteward, newStewardWallet = getClientAddedWithRole(
-        nodeSet, tdir, looper, steward, stewardWallet, newStewardName, STEWARD)
-
-    sigseed = randomString(32).encode()
-    nodeSigner = DidSigner(seed=sigseed)
-
-    (nodeIp, nodePort), (clientIp, clientPort) = genHa(2)
-
-    data = {
-        NODE_IP: nodeIp,
-        NODE_PORT: nodePort,
-        CLIENT_IP: clientIp,
-        CLIENT_PORT: clientPort,
-        ALIAS: newNodeName,
-        SERVICES: [VALIDATOR, ]
-    }
-
-    node = Node(nodeSigner.identifier, data, newStewardWallet.defaultId)
-    newStewardWallet.addNode(node)
-    reqs = newStewardWallet.preparePending()
-    req = newSteward.submitReqs(*reqs)[0][0]
-
-    waitForSufficientRepliesForRequests(looper, newSteward, requests=[req])
-
-    def chk():
-        assert newStewardWallet.getNode(node.id).seqNo is not None
-
-    timeout = waits.expectedTransactionExecutionTime(len(nodeSet))
-    looper.run(eventually(chk, retryWait=1, timeout=timeout))
-
-    initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
-
-    newNode = testNodeClass(newNodeName, basedirpath=tdir, base_data_dir=tdir, config=tconf,
-                            ha=(nodeIp, nodePort), cliha=(
-                                clientIp, clientPort),
-                            pluginPaths=allPluginsPath)
-
-    nodeSet.append(newNode)
-    looper.add(newNode)
-    looper.run(checkNodesConnected(nodeSet))
-    ensureClientConnectedToNodesAndPoolLedgerSame(looper, steward,
-                                                  *nodeSet)
-    ensureClientConnectedToNodesAndPoolLedgerSame(looper, newSteward,
-                                                  *nodeSet)
-    return newSteward, newStewardWallet, newNode
