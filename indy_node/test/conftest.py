@@ -35,17 +35,21 @@ from indy_client.test.conftest import trustAnchorWallet, \
     trusteeData, trusteeWallet, trustee, warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
-    whitelist, concerningLogLevels, logcapture, keySharedNodes, \
-    startedNodes, tdirWithPoolTxns, tdirWithDomainTxns, tdirWithClientPoolTxns, txnPoolNodeSet, \
+from plenum.test.conftest import tdir, client_tdir, nodeReg, \
+    whitelist, concerningLogLevels, logcapture, \
+    tdirWithPoolTxns, tdirWithDomainTxns, tdirWithClientPoolTxns, txnPoolNodeSet, \
     poolTxnData, dirName, poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     patchPluginManager, txnPoolNodesLooper, warncheck, \
-    warnfilters as plenum_warnfilters
+    warnfilters as plenum_warnfilters, do_post_node_creation
 
 # noinspection PyUnresolvedReferences
 from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
+
+from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
+    sdk_wallet_name, sdk_steward_seed, sdk_wallet_client
+
 
 Logger.setLogLevel(logging.NOTSET)
 

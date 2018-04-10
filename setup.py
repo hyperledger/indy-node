@@ -36,7 +36,7 @@ BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 LOG_DIR = os.path.join(BASE_DIR, "log")
 CONFIG_FILE = os.path.join(BASE_DIR, "indy_config.py")
 
-tests_require = ['pytest', 'pytest-xdist', 'python3-indy']
+tests_require = ['pytest', 'pytest-xdist', 'python3-indy==1.3.1-dev-403']
 
 setup(
     name='indy-node-dev',
@@ -56,7 +56,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.2.212',
+    install_requires=['indy-plenum-dev==1.2.310',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator'],
@@ -94,5 +94,7 @@ setup(
              'scripts/init_bls_keys',
              'scripts/enable_bls',
              'scripts/create_dirs.sh',
-             'scripts/indy_old_cli_export_dids']
+             'scripts/indy_old_cli_export_dids',
+             'scripts/setup_iptables',
+             'scripts/setup_indy_node_iptables']
 )

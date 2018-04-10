@@ -18,9 +18,9 @@ logger = getlogger()
 
 TIMEOUT = 300
 BACKUP_FORMAT = 'zip'
-DEPS = ['indy-plenum', 'indy-anoncreds']
+DEPS = ['indy-plenum', 'indy-anoncreds', 'python3-indy-crypto']
 BACKUP_NUM = 10
-PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node'
+PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node python3-indy-crypto'
 TMP_DIR = '/tmp/.indy_tmp'
 
 
@@ -99,17 +99,20 @@ class NodeControlTool:
         return ret.stdout.strip()
 
     def _hold_packages(self):
-        cmd = compose_cmd(['apt-mark', 'hold', self.packages_to_hold])
-        ret = self._run_shell_command(cmd)
-        if ret.returncode != 0:
-            raise Exception('cannot mark {} packages for hold '
-                            'since {} returned {}'
-                            .format(self.packages_to_hold,
-                                    cmd,
-                                    ret.returncode))
+        if shutil.which("apt-mark"):
+            cmd = compose_cmd(['apt-mark', 'hold', self.packages_to_hold])
+            ret = self._run_shell_command(cmd)
+            if ret.returncode != 0:
+                raise Exception('cannot mark {} packages for hold '
+                                'since {} returned {}'
+                                .format(self.packages_to_hold,
+                                        cmd,
+                                        ret.returncode))
 
-        logger.info('Successfully put {} packages on hold'.format(
-            self.packages_to_hold))
+                logger.info('Successfully put {} packages on hold'.format(
+                    self.packages_to_hold))
+        else:
+            logger.info('Skipping packages holding')
 
     def _get_deps_list(self, package):
         logger.info('Getting dependencies for {}'.format(package))
@@ -213,8 +216,7 @@ class NodeControlTool:
         except Exception as e:
             self._restore_from_backup(current_version)
             raise e
-        finally:
-            self._remove_old_backups()
+        self._remove_old_backups()
 
     def _upgrade(self, new_version, migrate=True, rollback=True):
         current_version = Upgrader.getVersion()

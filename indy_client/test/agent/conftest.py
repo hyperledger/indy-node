@@ -2,7 +2,6 @@ from indy_client.test import waits
 
 from plenum.common.signer_did import DidSigner
 
-from indy_client.agent.endpoint import REndpoint
 from indy_client.test.agent.test_walleted_agent import TestWalletedAgent
 from indy_common.strict_types import strict_types
 from stp_core.network.port_dispenser import genHa

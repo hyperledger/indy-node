@@ -47,7 +47,7 @@ class ConfigReqHandler(RequestHandler):
             force = operation.get(FORCE)
             force = str(force) == 'True'
             isValid, msg = self.upgrader.isScheduleValid(
-                schedule, self.poolManager.nodeIds, force)
+                schedule, self.poolManager.getNodesServices(), force)
             if not isValid:
                 raise InvalidClientRequest(identifier, reqId,
                                            "{} not a valid schedule since {}".
@@ -105,7 +105,7 @@ class ConfigReqHandler(RequestHandler):
             status = None
 
         r, msg = Authoriser.authorised(
-            typ, ACTION, originRole, oldVal=status, newVal=action)
+            typ, originRole, field=ACTION, oldVal=status, newVal=action)
         if not r:
             raise UnauthorizedClientRequest(
                 req.identifier, req.reqId, "{} cannot do {}".format(
@@ -116,8 +116,8 @@ class ConfigReqHandler(RequestHandler):
         (start, _), _ = self.ledger.appendTxns([txn])
         return start, txn
 
-    def commit(self, txnCount, stateRoot, txnRoot) -> List:
-        committedTxns = super().commit(txnCount, stateRoot, txnRoot)
+    def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
+        committedTxns = super().commit(txnCount, stateRoot, txnRoot, ppTime)
         for txn in committedTxns:
             # Handle POOL_UPGRADE or POOL_CONFIG transaction here
             # only in case it is not forced.

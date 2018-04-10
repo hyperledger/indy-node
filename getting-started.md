@@ -2,7 +2,7 @@
 
 ## A Developer Guide for an Implementation of the Indy Code Base
 
-**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/sandbox/DevelopmentEnvironment/Vagrantfile) instead.
+**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](https://github.com/hyperledger/indy-node/blob/master/environment/vagrant/sandbox/DevelopmentEnvironment/Virtualbox/Vagrantfile) instead.
 
 ![logo](collateral/logos/indy-logo.png)
 
@@ -59,11 +59,11 @@ For this guide, however, we’ll be using a command-line interface instead of an
 
 You can install a test network in one of several ways:
 
- - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
+ - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
 
  - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
 
- - **Coming soon:** Use client side docker images to make it easy for you to play with Indy.
+ - **Docker:** [Start Pool and Client with Docker](environment/docker/pool/StartIndyAgents.md).
 
  - **Also coming soon:** Create virtual machines in AWS.
 
@@ -126,8 +126,6 @@ Alice sees a bunch of data that looks interesting but mysterious. She wants to k
 
 ```
 ALICE> load sample/faber-request.indy
-New wallet Default created
-Active wallet set to "Default"
 1 connection request found for Faber College.
 Creating Connection for Faber College.
 

@@ -226,7 +226,7 @@ def test_nym_addition_fails_with_empty_verkey(looper, addedTrustAnchor,
         wallet=trustAnchorWallet,
         op=op,
         identifier=trustAnchorWallet.defaultId,
-        contains='validation error [ClientNYMOperation]: b58 decoded value length 0 should be one of [32]',
+        contains='Neither a full verkey nor an abbreviated one',
         check_func=checkNacks)
 
 
@@ -424,7 +424,8 @@ def testStewardCannotAddUsersAttribute(nodeSet, looper, steward,
                 checkRejects,
                 steward,
                 reqs[0].reqId,
-                "UnauthorizedClientRequest('Only identity owner/guardian can add attribute for that identity'",
+                "UnauthorizedClientRequest('Only identity owner/guardian can "
+                "add attribute for that identity'",
                 retryWait=1,
                 timeout=timeout))
 

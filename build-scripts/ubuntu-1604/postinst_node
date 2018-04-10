@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # it should be fixed
+ENABLE_STDOUT_LOGGING="enableStdOutLogging"
 GENERAL_CONFIG_DIR="/etc/indy"
 GENERAL_DATA_DIR="/var/lib/indy"
 GENERAL_LOG_DIR="/var/log/indy"
@@ -10,6 +11,13 @@ CLI_NETWORKS_DIR="$CLI_BASE_DIR/networks"
 CLI_WALLETS_DIR="$CLI_BASE_DIR/wallets"
 
 INSTALL_DIR='/usr/local/lib/python3.5/dist-packages'
+
+NOFILES_SOFT_LIMIT=16384
+NOFILES_HARD_LIMIT=65536
+
+NOFILES_NODE_RESERVED=1024
+CLIENT_CONNECTIONS_LIMIT=$((NOFILES_SOFT_LIMIT-NOFILES_NODE_RESERVED))
+
 
 # workaround when .indy become regular file
 if [ -f $CLI_BASE_DIR ]; then
@@ -26,6 +34,10 @@ mkdir -p $GENERAL_LOG_DIR
 # create indy node config if does not exist
 if [ ! -f $GENERAL_CONFIG_DIR/indy_config.py ]; then
     cp $INSTALL_DIR/indy_node/general_config/indy_config.py $GENERAL_CONFIG_DIR
+else
+    if [ -z "$(grep $ENABLE_STDOUT_LOGGING $GENERAL_CONFIG_DIR/indy_config.py)" ]; then
+        printf "\n%s\n%s\n" "# Disable stdout logging" "$ENABLE_STDOUT_LOGGING = False" >> $GENERAL_CONFIG_DIR/indy_config.py
+    fi
 fi
 
 chmod -R ug+rwx $GENERAL_CONFIG_DIR
@@ -58,6 +70,7 @@ fi
 echo "NODE_NAME=\$1" > $GENERAL_CONFIG_DIR/indy.env
 echo "NODE_PORT=\$2" >> $GENERAL_CONFIG_DIR/indy.env
 echo "NODE_CLIENT_PORT=\$3" >> $GENERAL_CONFIG_DIR/indy.env
+echo "CLIENT_CONNECTIONS_LIMIT=$CLIENT_CONNECTIONS_LIMIT" >> $GENERAL_CONFIG_DIR/indy.env
 
 if [ -z \$4 ]; then
     init_indy_keys --name \$1
@@ -84,7 +97,7 @@ RestartSec=10
 StartLimitBurst=10
 StartLimitInterval=200
 TimeoutSec=300
-LimitNOFILE=16384:65536
+LimitNOFILE=$NOFILES_SOFT_LIMIT:$NOFILES_HARD_LIMIT
 
 [Install]
 WantedBy=multi-user.target

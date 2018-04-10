@@ -47,16 +47,12 @@ primaryStorage = None
 configStateStorage = KeyValueStorageType.Leveldb
 idrCacheStorage = KeyValueStorageType.Leveldb
 attrStorage = KeyValueStorageType.Leveldb
+stateTsStorage = KeyValueStorageType.Rocksdb
 
 configStateDbName = 'config_state'
 attrDbName = 'attr_db'
 idrCacheDbName = 'idr_cache_db'
-
-RAETLogLevel = "concise"
-RAETLogLevelCli = "mute"
-RAETLogFilePath = os.path.expanduser("~/.indy/raet.log")
-RAETLogFilePathCli = None
-RAETMessageTimeout = 30
+stateTsDbName = "state_ts_db"
 
 
 PluginsToLoad = []

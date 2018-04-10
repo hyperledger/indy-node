@@ -1,6 +1,7 @@
 ![logo](collateral/logos/indy-logo.png)
 
 * [About Indy Node](#about-indy-node)
+* [Technical Overview of Indy Blockchain](#technical-overview-of-indy-blockchain)
 * [Indy Node Repository Structure](#indy-node-repository-structure)
 * [Dependent Projects](#dependent-projects)
 * [Contact us](#contact-us)
@@ -10,7 +11,7 @@
 * [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
 * [Continues integration and delivery](#continues-integration-and-delivery)
 * [How to send a PR](#how-to-send-a-pr)
-* [How to Understand the Code](#how-to-understand-the-code)
+* [Docs and links](#docs-and-links)
 
 ## About Indy Node
 
@@ -18,6 +19,8 @@ This codebase embodies all the functionality to run nodes (validators and/or obs
 that provide a [self-sovereign identity ecosystem](https://sovrin.org) on top of a
 distributed ledger. It is the core project for Indy; over time, all other indy-\* projects may
 collapse into this one, except for [indy-sdk](https://github.com/hyperledger/indy-sdk).
+
+Indy has its own distributed ledger based on RBFT.
 
 ##### Relationship with Sovrin
 This code is independent from but commonly associated with [Sovrin](https://sovrin.org). Sovrin is a public utility
@@ -35,6 +38,12 @@ will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
 ##### Hyperledger Wiki-Indy
 
 - If you haven't done so already, please visit the main resource for all things "Indy" to get acquainted with the code base, helpful resources, and up-to-date information: [Hyperledger Wiki-Indy](https://wiki.hyperledger.org/projects/indy).
+
+## Technical Overview of Indy Blockchain
+Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
+
+More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
+and [indy-node-docs](docs).
 
 ## Indy Node Repository Structure
 
@@ -97,9 +106,9 @@ to understand what needs to be done to create a Network, initialize and start No
 
 The described process is automated in one of the ways below (it allow to install a test Network):
 
- - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
+ - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
 
- - **Docker** [Start Pool and Client with Docker](https://github.com/evernym/sovrin-environments/tree/master/docker)
+ - **Docker** [Start Pool and Client with Docker](environment/docker/pool/README.md)
  
  - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
 
@@ -125,11 +134,17 @@ Please have a look at [Continues integration/delivery](docs/ci-cd.md)
 
 ## How to send a PR
 
+- Make sure that you followed [write code guideline](docs/write-code-guideline.md) before sending a PR
+- Do not create big PRs; send a PR for one feature or bug fix only.
+ If a feature is too big, consider splitting a big PR to a number of small ones.
+- Consider sending a design doc into `design` folder (as markdown or PlantUML diagram) for a new feature  before implementing it
+- Make sure that a new feature or fix is covered by tests (try following TDD)
+- Make sure that documentation is updated according to your changes
+- Provide a full description of changes in the PR including Jira ticket number if any  
 - Make sure that all your commits have a DCO sign-off from the author
 - Make sure that static code validation passed 
 (you can run `flake8 .` on the project root to check it; you can install flake8 from pypi: `pip install flake8`)
-- Provide a full description of changes in the PR including Jira ticket number if any
-- Put the link to the PR to `#indy-pr-review` channel in Rocket.Chat
+- Put the link to the PR into `#indy-pr-review` channel in Rocket.Chat
 - A reviewer needs to start your tests first (add `test this please` comment to the PR)
 - You need to make sure that all the tests pass
 - A reviewer needs to review the code and approve the PR. If there are review comments, they will be put into the PR itself.
@@ -147,12 +162,25 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
     - So, a new build of indy-node is created 
 
 
-## How to Understand the Code
+## Docs and links
 
 - Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
-- [Indy Transaction Types](https://docs.google.com/spreadsheets/d/19A3u4Ba3OjDSHeJdLjtoGWLWHTSBk3Y15u13-67TIX4/edit#gid=657206024)
+- Please have a look at documents and diagrams in [docs](docs) folder
+- Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder:
+    - [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md)
+    - [Glossary](https://github.com/hyperledger/indy-plenum/blob/master/docs/glossary.md)
+    - [Storages](https://github.com/hyperledger/indy-plenum/blob/master/docs/storage.md)
+    - [Request Handling](https://github.com/hyperledger/indy-plenum/blob/master/docs/request_handling.md)
+    - [Catchup](https://github.com/hyperledger/indy-plenum/blob/master/docs/catchup.md)
+    - [Plugins](https://github.com/hyperledger/indy-plenum/blob/master/docs/plugins.md)
+- Relationship between Entities and Transactions: [relationship diagram](docs/relationship-diagram.png)
+- Supported transactions and their format: [transactions](docs/transactions.md)
+- Supported requests (write, read) and their format: [requests](docs/requests.md)
 - [Network roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)
-- More TBD
+- [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
+- [Helper Scripts](docs/helper-scripts.md)
+- [Pool Upgrade](docs/pool-upgrade.md)
+
 
 
 

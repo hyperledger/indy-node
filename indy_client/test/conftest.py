@@ -4,10 +4,18 @@ import logging
 import base58
 
 from anoncreds.protocol.utils import randomString
+
+from indy_node.server.node import Node
+from plenum.test.helper import waitForSufficientRepliesForRequests
+
+from plenum.test.test_node import checkNodesConnected
+
+from plenum.test.node_catchup.helper import ensureClientConnectedToNodesAndPoolLedgerSame
+
 from plenum.common.keygen_utils import initLocalKeys
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import friendlyToRaw
-from plenum.test import waits as plenumWaits
+from plenum.test import waits as plenumWaits, waits
 from stp_core.common.log import Logger
 
 from stp_core.loop.eventually import eventually
@@ -24,8 +32,8 @@ strict_types.defaultShouldCheck = True
 
 import pytest
 
-from plenum.common.signer_simple import SimpleSigner
-from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYPE
+from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYPE, NODE_IP, NODE_PORT, CLIENT_IP, \
+    CLIENT_PORT, SERVICES, VALIDATOR
 
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.constants import NYM, TRUST_ANCHOR
@@ -33,21 +41,23 @@ from indy_common.constants import TXN_TYPE, TARGET_NYM, ROLE
 from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToGenesisFile
 from indy_node.test.helper import makePendingTxnsRequest, buildStewardClient, \
     TestNode
-from indy_client.test.helper import addRole, \
-    genTestClient, TestClient, createNym
+from indy_client.test.helper import addRole, genTestClient, TestClient, createNym, getClientAddedWithRole
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, client_tdir, nodeReg, up, ready, \
-    whitelist, concerningLogLevels, logcapture, keySharedNodes, \
-    startedNodes, tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
+from plenum.test.conftest import tdir, client_tdir, nodeReg, \
+    whitelist, concerningLogLevels, logcapture, \
+    tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, patchPluginManager, tdirWithClientPoolTxns, \
-    warncheck, warnfilters as plenum_warnfilters, setResourceLimits
+    warncheck, warnfilters as plenum_warnfilters, setResourceLimits, do_post_node_creation
 
 # noinspection PyUnresolvedReferences
 from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
+
+from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
+    sdk_wallet_name, sdk_steward_seed
 
 Logger.setLogLevel(logging.DEBUG)
 
@@ -115,7 +125,7 @@ def trusteeWallet(trusteeData):
 # indy_common's conftest.
 @pytest.fixture(scope="module")
 # TODO devin
-def trustee(nodeSet, looper, tdirWithClientPoolTxns, up, trusteeWallet):
+def trustee(nodeSet, looper, tdirWithClientPoolTxns, trusteeWallet):
     return buildStewardClient(looper, tdirWithClientPoolTxns, trusteeWallet)
 
 
@@ -191,7 +201,7 @@ def trustAnchorCli(looper, tdir):
 
 
 @pytest.fixture(scope="module")
-def clientAndWallet1(client1Signer, looper, nodeSet, tdirWithClientPoolTxns, up):
+def clientAndWallet1(client1Signer, looper, nodeSet, tdirWithClientPoolTxns):
     client, wallet = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     wallet = Wallet(client.name)
     wallet.addIdentifier(signer=client1Signer)
@@ -204,6 +214,18 @@ def client1(clientAndWallet1, looper):
     looper.add(client)
     looper.run(client.ensureConnectedToNodes())
     return client
+
+
+@pytest.fixture(scope="module")
+def added_client_without_role(steward, stewardWallet, looper,
+                           wallet1):
+    createNym(looper,
+              wallet1.defaultId,
+              steward,
+              stewardWallet,
+              role=None,
+              verkey=wallet1.getVerkey())
+    return wallet1
 
 
 @pytest.fixture(scope="module")

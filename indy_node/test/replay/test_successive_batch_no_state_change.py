@@ -3,14 +3,15 @@ import types
 import pytest
 
 from indy_client.test.helper import genTestClient
-from plenum.common.constants import VERKEY
+from indy_node.persistence.idr_cache import IdrCache
+from plenum.common.constants import VERKEY, DOMAIN_LEDGER_ID
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.messages.node_messages import PrePrepare, Commit
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import randomString
 from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test.node_catchup.helper import waitNodeDataEquality
-from plenum.test.test_node import getPrimaryReplica
+from plenum.test.delayers import icDelay
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.identity import Identity
 from stp_core.common.log import getlogger
@@ -46,12 +47,13 @@ def test_successive_batch_do_no_change_state(looper,
     Also check reject and commit
     :return:
     """
-    prim_node = getPrimaryReplica(nodeSet, 0).node
     all_reqs = []
 
+    # Disable view change during this test
+    for n in nodeSet:
+        n.nodeIbStasher.delay(icDelay())
+
     # Delay only first PRE-PREPARE
-    pp_seq_no_to_delay = 1
-    delay_pp_duration = 5
     delay_cm_duration = 10
 
     def delay_commits(wrappedMsg):
@@ -132,8 +134,6 @@ def test_successive_batch_do_no_change_state(looper,
 
     check_verkey(new_idr, verkey)
 
-    pp_seq_no_to_delay = 4
-
     new_client.deregisterObserver(name='temp')
 
     # Setting the verkey to `x`, then `y` and then back to `x` but in different
@@ -185,10 +185,18 @@ def test_successive_batch_do_no_change_state(looper,
     uncommitteds = {}
     methods = {}
     for node in nodeSet:
-        cache = node.idrCache
+        cache = node.idrCache   # type: IdrCache
         uncommitteds[cache._name] = []
-
-        cre = cache.currentBatchCreated
+        # Since the post batch creation handler is registered (added to a list),
+        # find it and patch it
+        dh = node.get_req_handler(DOMAIN_LEDGER_ID)
+        for i, handler in enumerate(dh.post_batch_creation_handlers):
+            # Find the cache's post create handler, not hardcoding names of
+            # class or functions as they can change with refactoring.
+            if handler.__func__.__qualname__ == '{}.{}'.format(cache.__class__.__name__,
+                                                               cache.currentBatchCreated.__name__):
+                cre = dh.post_batch_creation_handlers[i]
+                break
         com = cache.onBatchCommitted
         methods[cache._name] = (cre, com)
 
@@ -204,7 +212,7 @@ def test_successive_batch_do_no_change_state(looper,
             uncommitteds[self._name] = uncommitteds[self._name][1:]
             return rv
 
-        cache.currentBatchCreated = types.MethodType(patched_cre, cache)
+        dh.post_batch_creation_handlers[i] = types.MethodType(patched_cre, cache)
         cache.onBatchCommitted = types.MethodType(patched_com, cache)
 
     # Set verkey of multiple identities

@@ -55,7 +55,8 @@ class PoolRequestHandler(PHandler):
                 if not newVal:
                     newVal = []
             if oldVal != newVal:
-                r, msg = Authoriser.authorised(NODE, k, actorRole,
+                r, msg = Authoriser.authorised(NODE, actorRole,
+                                               field=k,
                                                oldVal=oldVal,
                                                newVal=newVal,
                                                isActorOwnerOfSubject=isStewardOfNode)
