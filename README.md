@@ -42,6 +42,9 @@ will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
 ## Technical Overview of Indy Blockchain
 Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
 
+More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
+and [indy-node-docs](docs).
+
 ## Indy Node Repository Structure
 
 Indy Node repo consists of the following parts:
@@ -170,7 +173,7 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
     - [Request Handling](https://github.com/hyperledger/indy-plenum/blob/master/docs/request_handling.md)
     - [Catchup](https://github.com/hyperledger/indy-plenum/blob/master/docs/catchup.md)
     - [Plugins](https://github.com/hyperledger/indy-plenum/blob/master/docs/plugins.md)
-- Relationship between Entities and Transactions: [relationship diagram](docs/relationship diagram.png)
+- Relationship between Entities and Transactions: [relationship diagram](docs/relationship-diagram.png)
 - Supported transactions and their format: [transactions](docs/transactions.md)
 - Supported requests (write, read) and their format: [requests](docs/requests.md)
 - [Network roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)

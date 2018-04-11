@@ -8,7 +8,13 @@ ARG venv=venv
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
     libindy-crypto=0.2.0 \
-    libindy
+    libindy=1.3.1~403 \
+# rocksdb python wrapper
+    libbz2-dev \
+    zlib1g-dev \
+    liblz4-dev \
+    libsnappy-dev \
+    rocksdb=5.8.8
 
 RUN indy_ci_add_user $uid $user $venv && \
     indy_ci_charm_crypto $user $venv

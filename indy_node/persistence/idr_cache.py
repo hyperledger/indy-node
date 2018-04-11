@@ -107,7 +107,7 @@ class IdrCache(OptimisticKVStore):
             return
 
         try:
-            super().commit_batch()
+            return super().commit_batch()
         except ValueError:
             logger.warning('{}{} found no uncommitted batch'.
                            format(THREE_PC_PREFIX, self))
