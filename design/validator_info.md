@@ -65,9 +65,12 @@ This file is updated by node once a minute and contains following information:
 ```
 
 ## Modification - New Read Command
-Validator_info should be accessible as read command, available for TRUSTEE and STEWARDS only. New command should provide info from
-all the connected nodes without need of consensus (similar to force=True flag in upgrade cmd). Command should allow
-requesting all parameters or some subset of parameters.
+Validator_info accessible as read command, available for all clients. New command provide info from
+all the connected nodes without need of consensus (similar to force=True flag in upgrade cmd).
+Command allow requesting all parameters or some subset of parameters.
+
+The client sends a command to each node. After receiving the request, each node starts a validator-info script, and then sends the Jason result without compression to the client.
+The client should not wait for the consensus of the all node, but should handle the response from each node separately.
 
 For reference: [INDY-1184](https://jira.hyperledger.org/browse/INDY-1184)
 
