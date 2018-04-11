@@ -219,7 +219,7 @@ class Node(PlenumNode, HasPoolManager):
         self.acknowledge_upgrade()
 
     def acknowledge_upgrade(self):
-        if not self.upgrader.should_notify_about_action_result():
+        if not self.upgrader.should_notify_about_upgrade_result():
             return
         lastUpgradeVersion = self.upgrader.lastActionEventInfo[2]
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL

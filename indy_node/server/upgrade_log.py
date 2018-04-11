@@ -14,7 +14,6 @@ class UpgradeLog(ActionLog):
 
     def __init__(self, filePath, delimiter="\t"):
         super().__init__(filePath, delimiter)
-        self._load()
 
     def appendScheduled(self, when, version, upgrade_id) -> None:
         self._append(UpgradeLog.SCHEDULED, when, version, upgrade_id)

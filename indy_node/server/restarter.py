@@ -47,12 +47,6 @@ class Restarter(NodeMaintainer):
     def _update_action_log_for_started_action(self):
         (event_type, when) = self.lastActionEventInfo
 
-        if not self.didLastExecutedRestartSucceeded:
-            self._actionLog.appendFailed(when)
-            self._action_failed(scheduled_on=when,
-                                external_reason=True)
-            return
-
         self._actionLog.appendSucceeded(when)
         logger.info("Node '{}' successfully restarted"
                     .format(self.nodeName))

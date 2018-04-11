@@ -59,14 +59,9 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
     def process_action_log_for_first_run(self):
         # whether action was started before the Node restarted,
         # that is whether Action Log contains STARTED event
-        self._action_started = self._is_action_started()
-        if self._action_started:
+        if self._is_action_started():
             # append SUCCESS to the action log
             self._update_action_log_for_started_action()
-
-    def notified_about_action_result(self): 
-        self._action_started = False
-        
 
     @property 
     def lastActionEventInfo(self):

@@ -21,6 +21,7 @@ class ActionLog(metaclass=ABCMeta):
         self.__delimiter = delimiter
         self.__filePath = filePath
         self.__items = []
+        self._load()
 
     @property
     def lastEvent(self):

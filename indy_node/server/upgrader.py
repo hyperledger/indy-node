@@ -21,6 +21,13 @@ logger = getlogger()
 
 class Upgrader(NodeMaintainer):
 
+    def __init__(self, nodeId, nodeName, dataDir, config, ledger=None,
+                 actionLog=None, actionFailedCallback: Callable = None,
+                 action_start_callback: Callable = None):
+        self._should_notify_about_upgrade = False
+        super().__init__(nodeId, nodeName, dataDir, config, ledger, actionLog,
+                         actionFailedCallback, action_start_callback)
+
     @staticmethod
     def getVersion():
         from indy_node.__metadata__ import __version__
@@ -85,7 +92,7 @@ class Upgrader(NodeMaintainer):
 
     def _update_action_log_for_started_action(self):
         (event_type, when, version, upgrade_id) = self.lastActionEventInfo
-
+        self._should_notify_about_upgrade = True
         if not self.didLastExecutedUpgradeSucceeded:
             self._actionLog.appendFailed(when, version, upgrade_id)
             self._action_failed(version=version,
@@ -102,7 +109,7 @@ class Upgrader(NodeMaintainer):
             " with upgrade_id {} completed successfully"
             .format(self.nodeName, version, when, upgrade_id))
 
-    def should_notify_about_action_result(self):
+    def should_notify_about_upgrade_result(self):
         # do not rely on NODE_UPGRADE txn in config ledger, since in
         # some cases (for example, when
         # we run POOL_UPGRADE with force=true), we may not have
@@ -110,7 +117,10 @@ class Upgrader(NodeMaintainer):
 
         # send NODE_UPGRADE txn only if we were in Upgrade Started
         # state at the very beginning (after Node restarted)
-        return self._action_started
+        return self._should_notify_about_upgrade
+
+    def notified_about_action_result(self):
+        self._should_notify_about_upgrade = False
 
     def get_last_node_upgrade_txn(self, start_no: int = None):
         return self.get_upgrade_txn(

@@ -14,7 +14,6 @@ class RestartLog(ActionLog):
 
     def __init__(self, filePath, delimiter="\t"):
         super().__init__(filePath, delimiter)
-        self._load()
 
     def appendScheduled(self, when) -> None:
         self._append(RestartLog.SCHEDULED, when)
