@@ -32,8 +32,7 @@ with a different network, using whatever conventions a community chooses.
 ##### Getting Started Guide
 
 - Today, documentation for Indy is sparse. Most materials that exist were written for Sovrin. Therefore,
-we recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) to learn about Indy Node basics. In the future, documentation
-will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
+we recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md) to learn about Indy basics.
 
 ##### Hyperledger Wiki-Indy
 
