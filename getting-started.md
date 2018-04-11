@@ -1,5 +1,5 @@
 # Getting Started with Indy
-**WARNING**: This Getting Started deprecated. Please, use [new Getting Started in Indy SDK](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md)
+**WARNING**: This Getting Started has been deprecated. Please, use [new Getting Started in Indy SDK](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md)
 
 ## A Developer Guide for an Implementation of the Indy Code Base
 
