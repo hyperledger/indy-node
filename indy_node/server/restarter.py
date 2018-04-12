@@ -13,7 +13,7 @@ from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.common.types import f
 from plenum.server.has_action_queue import HasActionQueue
-from indy_common.constants import ACTION, POOL_RESTART, START, SCHEDULE, \
+from indy_common.constants import ACTION, POOL_RESTART, START, DATETIME, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, IN_PROGRESS, FORCE
 from plenum.server import notifier_plugin_manager
 from ledger.util import F
@@ -69,7 +69,7 @@ class Restarter(NodeMaintainer):
         if txn[TXN_TYPE] != POOL_RESTART:
             return
 
-        when = txn[SCHEDULE] if SCHEDULE in txn.keys() else None
+        when = txn[DATETIME] if DATETIME in txn.keys() else None
         if isinstance(when, str) and when != "0":
             when = dateutil.parser.parse(when)
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
@@ -83,8 +83,7 @@ class Restarter(NodeMaintainer):
 
         action = txn[ACTION]
         if action == START:
-            # forced txn could have partial schedule list
-            if self.nodeId not in txn[SCHEDULE]:
+            if self.nodeId not in txn[DATETIME]:
                 logger.info("Node '{}' disregards restart txn {}".format(
                     self.nodeName, txn))
                 return

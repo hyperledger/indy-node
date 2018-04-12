@@ -20,7 +20,7 @@ from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
-    IN_PROGRESS, POOL_RESTART
+    IN_PROGRESS
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
@@ -327,7 +327,7 @@ class Node(PlenumNode, HasPoolManager):
                     POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
 
-            elif request.operation[TXN_TYPE] != POOL_RESTART:
+            else:
                 raise InvalidClientRequest(
                     request.identifier,
                     request.reqId,

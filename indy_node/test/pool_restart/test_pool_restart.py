@@ -5,7 +5,7 @@ import dateutil
 import pytest
 from plenum.common.exceptions import RequestRejectedException
 
-from indy_common.constants import POOL_RESTART, ACTION, START, SCHEDULE, CANCEL
+from indy_common.constants import POOL_RESTART, ACTION, START, DATETIME, CANCEL
 from indy_node.test.pool_restart.helper import _createServer, _stopServer
 from plenum.common.constants import REPLY, TXN_TYPE, DATA
 from plenum.common.types import f
@@ -30,7 +30,7 @@ def test_pool_restart(
     op = {
         TXN_TYPE: POOL_RESTART,
         ACTION: START,
-        SCHEDULE: str(datetime.isoformat(start_at))
+        DATETIME: str(datetime.isoformat(start_at))
     }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
     req = sdk_sign_and_submit_req_obj(looper,
@@ -57,7 +57,7 @@ def test_pool_restart_cancel(
     op = {
         TXN_TYPE: POOL_RESTART,
         ACTION: START,
-        SCHEDULE: str(start_at)
+        DATETIME: str(start_at)
     }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
     req = sdk_sign_and_submit_req_obj(looper,
@@ -67,7 +67,7 @@ def test_pool_restart_cancel(
     op = {
         TXN_TYPE: POOL_RESTART,
         ACTION: CANCEL,
-        SCHEDULE: str(datetime.isoformat(start_at))
+        DATETIME: str(datetime.isoformat(start_at))
     }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
     req = sdk_sign_and_submit_req_obj(looper,

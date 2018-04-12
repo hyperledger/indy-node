@@ -8,7 +8,7 @@ from plenum.common.types import f
 from plenum.server.req_handler import RequestHandler
 from plenum.common.constants import TXN_TYPE
 from indy_common.auth import Authoriser
-from indy_common.constants import SCHEDULE, ACTION, POOL_RESTART
+from indy_common.constants import ACTION, POOL_RESTART, DATETIME
 from indy_common.roles import Roles
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
@@ -36,9 +36,9 @@ class ActionReqHandler(RequestHandler):
             self._doStaticValidationPoolRestart(identifier, req_id, operation)
 
     def _doStaticValidationPoolRestart(self, identifier, req_id, operation):
-        if SCHEDULE in operation.keys() is None and operation[SCHEDULE] != "0":
+        if DATETIME in operation.keys() is None and operation[DATETIME] != "0":
             try:
-                dateutil.parser.parse(operation[SCHEDULE])
+                dateutil.parser.parse(operation[DATETIME])
             except Exception:
                 raise InvalidClientRequest(identifier, req_id,
                                            "time is not valid")
