@@ -472,8 +472,8 @@ class UpgradeMessage(NodeControlToolMessage):
     """
 
     def __init__(self, version: str):
-        self.version = version
         super().__init__(UPGRADE_MESSAGE)
+        self.version = version
 
     def toJson(self):
         import json
