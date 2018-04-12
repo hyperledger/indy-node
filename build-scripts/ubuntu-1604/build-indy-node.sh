@@ -27,6 +27,7 @@ fpm --input-type "python" \
     --exclude "*.pyo" \
     --depends at \
     --depends iptables \
+    --depends libsodium18 \
     --no-python-fix-dependencies \
     --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
     --before-install "preinst_node" \

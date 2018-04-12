@@ -24,3 +24,9 @@ class IndyTransactions(Transactions):
     POOL_CONFIG = "111"
 
     CHANGE_KEY = "112"
+
+    REVOC_REG_DEF = "113"
+    REVOC_REG_ENTRY = "114"
+    GET_REVOC_REG_DEF = "115"
+    GET_REVOC_REG = "116"
+    GET_REVOC_REG_DELTA = "117"
