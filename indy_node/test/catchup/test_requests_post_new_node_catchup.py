@@ -83,7 +83,7 @@ def test_new_node_catchup_update_projection(looper, tdirWithClientPoolTxns,
     new_node.cleanupOnStopping = False
     new_node.stop()
     looper.removeProdable(new_node)
-    ensure_node_disconnected(looper, new_node.name, other_nodes)
+    ensure_node_disconnected(looper, new_node, other_nodes)
 
     trust_anchors = []
     attributes = []
