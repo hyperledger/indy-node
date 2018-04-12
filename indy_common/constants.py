@@ -69,8 +69,8 @@ REVOCATION = "revocation"
 
 WRITES = "writes"
 
-RESTART_MESSAGE = "restart_message_for_node_control_tool"
-UPGRADE_MESSAGE = "upgrade_message_for_node_control_tool"
+RESTART_MESSAGE = "restart"
+UPGRADE_MESSAGE = "upgrade"
 MESSAGE_TYPE = "message_type"
 
 allOpKeys = (
