@@ -232,8 +232,8 @@ reference to the CredDef, plus some revocation registry specific data.
 ```
 {
     "data": {
-        "id":"MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
-        "type":"CL_ACCUM",
+        "id":"MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
+        "revocDefType":"CL_ACCUM",
         "tag": "reg1",
         "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",
         "value": {
@@ -253,8 +253,8 @@ reference to the CredDef, plus some revocation registry specific data.
 ....
 }
 ```
-* `id` (string): ID as a key in State Trie.
-* `type` (enum string): Revocation Registry type (only `CL_ACCUM` is supported for now).
+* `id` (string, ":" as a field separator): ID as a key in State Trie.
+* `revocDefType` (enum string): Revocation Registry type (only `CL_ACCUM` is supported for now).
 
     Revocation Registry is updated only during each issuance and  revocation.
 * `credDefId` (string): ID of the corresponding CredDef
@@ -281,6 +281,7 @@ That is rotation of keys is supported.
 
 * key: `revocDefSubmitterDid | RevocRegMarker | credDefID | revocDefType | revocDefTag` 
 * value: aggregated txn `data` and `txnMetadata` (as in ledger)
+* RevocRegMarker = "\04"
 
 
 
@@ -289,7 +290,7 @@ Gets a RevocRegDef by ID.
 ```
 {
     "data": {
-        "id":"MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "id":"MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
     },
 ...
 }
@@ -302,7 +303,7 @@ Gets a list of RevocRegDefs according to the given filters.
     "data": {
         "submitterDid":"MMAD5g65TDQr1PPHHRoiGf",
         "credDefId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1",   (optional)
-        "type":"CL_ACCUM",   (optional)
+        "revocDefType":"CL_ACCUM",   (optional)
         "tag": "reg1",    (optional)
     },
 ...
@@ -322,8 +323,8 @@ So, it can be sent each time a new claim is issued/revoked.
 ```
 {
     "data": {
-        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
-        "type":"CL_ACCUM",
+        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
+        "revocDefType":"CL_ACCUM",
         "value": {
             "prevAccum":"<prev_accum_value>",
             "accum":"<accum_value>",
@@ -363,8 +364,34 @@ This is needed to avoid dirty writes and updates of accumulator.
 * value: aggregated txn `data` and `txnMetadata` (as in ledger); 
 contains aggregated accum_value, issued and revoked arrays.
 
+* RevocRegEntryMarker = "\05"
+
 <b>Hint</b>: We should consider using BitMask to store the current aggregated state of issued and revoked arrays
-in the State Trie to reduce the required space.  
+in the State Trie to reduce the required space.
+
+<b>Additional</b>: For `GET_REVOC_REG` and `GET_REVOC_REG_DELTA` transactions we should save `ACCUM` value 
+into different state record (state proof purposes):
+
+* key: `revocDefSubmitterDid | RevocRegEntryAccumMarker | revocRegDefId`
+
+* value: aggregated txn `data` and `txnMetadata` (as in ledger) with only accum value without issued and revoked arrays.
+
+    * Schema of "pruned" `data` from txn must be:
+        ```
+        {
+            "data": {
+                "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
+                "revocDefType":"CL_ACCUM",
+                "value": {
+                    "accum":"<accum_value>",
+                }
+            },    
+        ....
+        }
+        ```
+        
+* RevocRegEntryAccumMarker = "\06"
+    
 
 #### GET_REVOC_REG
 Gets the accumulated state of the Revocation Registry by ID
@@ -375,7 +402,7 @@ Request:
 ```
 {
     "data": {
-        "revocRegDefId":"MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "revocRegDefId":"MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
         "timestamp": 20,
     },
 ...
@@ -385,8 +412,8 @@ Reply:
 ```
 {
     "data": {
-        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
-        "type":"CL_ACCUM",
+        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
+        "revocDefType":"CL_ACCUM",
         "value": {
             "accum":"<accum_value>",
         }
@@ -408,7 +435,7 @@ Request:
 ```
 {
     "data": {
-        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
+        "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
         "from": 20, (optional)
         "to": 40
     },
@@ -419,10 +446,12 @@ Reply:
 ```
 {
     "data": {
-        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf3HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1CL_ACCUMreg1",
-        "type":"CL_ACCUM",
+        "revocRegId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
+        "revocDefType":"CL_ACCUM",
+        "stateProofFrom": <state proof for accum by timestamp 'from'>  (if "from" parameter is presented in request)
         "value": {
-            "accum":"<accum_value>",
+            "accum_to": "<accum_value from ledger for timestamp 'to'>",
+            "accum_from": "<accum_value from ledger for timestamp 'from'>" (if "from" parameter is presented in request)
             "issued": [1, 45], 
             "revoked": [56, 78, 890],
         }
@@ -430,6 +459,10 @@ Reply:
 ....
 }
 ```
+Notes:
+* accum_to and accum_from it's a transactions from ledger "as-is", 
+like reply for for GET_REVOC_REG query.  
+
 See next sections on how to get the state for the given timestamp. 
 
 ## Timestamp Support in State

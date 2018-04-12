@@ -1,3 +1,4 @@
+
 # Directory to store ledger.
 LEDGER_DIR = '/var/lib/indy'
 
