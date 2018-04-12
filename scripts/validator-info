@@ -254,7 +254,7 @@ class BindingsStats(BaseStats):
 
             bindings = self.explore_bindings(data['port'].val)
             logger.info(
-                "Found the folloiwng bindings for target {} "
+                "Found the following bindings for target {} "
                 "with port {}: {}".format(target, data['port'], bindings)
             )
             self[target] = ConnectionStatsOut([] if bindings is None else [

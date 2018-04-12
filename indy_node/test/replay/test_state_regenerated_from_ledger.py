@@ -50,7 +50,7 @@ def test_state_regenerated_from_ledger(looper, tdirWithClientPoolTxns,
     node_to_stop.cleanupOnStopping = False
     node_to_stop.stop()
     looper.removeProdable(node_to_stop)
-    ensure_node_disconnected(looper, node_to_stop.name, nodeSet[:-1])
+    ensure_node_disconnected(looper, node_to_stop, nodeSet[:-1])
 
     shutil.rmtree(state_db_path)
 
