@@ -17,7 +17,8 @@ from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
 from indy_client.client.wallet.upgrade import Upgrade
-from indy_common.constants import NODE_UPGRADE, ACTION, POOL_UPGRADE
+from indy_common.constants import NODE_UPGRADE, ACTION, POOL_UPGRADE, \
+    UPGRADE_MESSAGE, MESSAGE_TYPE
 from indy_common.config import controlServiceHost, controlServicePort
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.server.upgrader import Upgrader
@@ -129,7 +130,7 @@ class NodeControlToolExecutor:
 
 
 def composeUpgradeMessage(version):
-    return (json.dumps({"version": version, "action": POOL_UPGRADE})).encode()
+    return (json.dumps({"version": version, MESSAGE_TYPE: UPGRADE_MESSAGE})).encode()
 
 
 def sendUpgradeMessage(version):

@@ -7,14 +7,17 @@ from typing import Tuple, Union, Optional, Callable, Dict
 import dateutil.parser
 import dateutil.tz
 
-from indy_node.server.node_maintainer import NodeMaintainer
+from indy_common.types import Request
+from indy_node.server.node_maintainer import NodeMaintainer, \
+    NodeControlToolMessage
 from indy_node.server.restart_log import RestartLog
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.common.types import f
 from plenum.server.has_action_queue import HasActionQueue
 from indy_common.constants import ACTION, POOL_RESTART, START, DATETIME, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, IN_PROGRESS, FORCE
+    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, IN_PROGRESS, FORCE, \
+    RESTART_MESSAGE
 from plenum.server import notifier_plugin_manager
 from ledger.util import F
 import asyncio
@@ -38,7 +41,8 @@ class Restarter(NodeMaintainer):
 
         if event_type != RestartLog.STARTED:
             logger.debug(
-                'Restart for node {} was not scheduled. Last event is {}:{}:{}'.format(
+                'Restart for node {} was not scheduled. '
+                'Last event is {}:{}:{}'.format(
                     self.nodeName, event_type, when))
             return False
 
@@ -55,14 +59,15 @@ class Restarter(NodeMaintainer):
             "completed successfully"
                 .format(self.nodeName, when))
 
-    def handleActionTxn(self, txn) -> None:
+    def handleActionTxn(self, req: Request) -> None:
         """
         Handles transaction of type POOL_RESTART
         Can schedule or cancel restart to a newer
         version at specified time
 
-        :param txn:
+        :param req:
         """
+        txn = req.operation
         FINALIZING_EVENT_TYPES = [
             RestartLog.SUCCEEDED, RestartLog.FAILED]
 
@@ -74,7 +79,7 @@ class Restarter(NodeMaintainer):
             when = dateutil.parser.parse(when)
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         if when is None or when == "0" or now >= when:
-            msg = RestartMessage(action=POOL_RESTART).toJson()
+            msg = RestartMessage().toJson()
             try:
                 asyncio.ensure_future(self._open_connection_and_send(msg))
             except Exception as ex:
@@ -83,11 +88,6 @@ class Restarter(NodeMaintainer):
 
         action = txn[ACTION]
         if action == START:
-            if self.nodeId not in txn[DATETIME]:
-                logger.info("Node '{}' disregards restart txn {}".format(
-                    self.nodeName, txn))
-                return
-
             last_event = self.lastActionEventInfo
             if last_event and last_event[
                 0] in FINALIZING_EVENT_TYPES:
@@ -146,7 +146,7 @@ class Restarter(NodeMaintainer):
             when = dateutil.parser.parse(when)
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
 
-        self._notifier.sendMessageUponNodeRestartScheduled(
+        logger.info(
             "Restart of node '{}' has been scheduled on {}".format(
                 self.nodeName, when))
         self._actionLog.appendScheduled(when)
@@ -186,7 +186,7 @@ class Restarter(NodeMaintainer):
 
             self._unscheduleAction()
             self._actionLog.appendCancelled(when)
-            self._notifier.sendMessageUponPoolRestartCancel(
+            logger.info(
                 "Restart of node '{}'"
                 "has been cancelled due to {}".format(
                     self.nodeName, why))
@@ -212,7 +212,7 @@ class Restarter(NodeMaintainer):
         retryLimit = self.retry_limit
         while retryLimit:
             try:
-                msg = RestartMessage(action=POOL_RESTART).toJson()
+                msg = RestartMessage().toJson()
                 logger.info("Sending message to control tool: {}".format(msg))
                 await self._open_connection_and_send(msg)
                 break
@@ -268,13 +268,13 @@ class Restarter(NodeMaintainer):
         self._notifier.sendMessageUponNodeRestartFail(error_message)
 
 
-class RestartMessage:
+class RestartMessage(NodeControlToolMessage):
     """
     Data structure that represents request for node update
     """
 
-    def __init__(self, action: str):
-        self.action = action
+    def __init__(self):
+        super().__init__(RESTART_MESSAGE)
 
     def toJson(self):
         import json

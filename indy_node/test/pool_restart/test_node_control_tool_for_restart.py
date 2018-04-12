@@ -4,7 +4,7 @@ import multiprocessing
 
 import time
 
-from indy_common.constants import POOL_RESTART
+from indy_common.constants import POOL_RESTART, RESTART_MESSAGE
 from indy_node.test.pool_restart.helper import compose_restart_message, \
     send_restart_message
 from stp_core.loop.eventually import eventually
@@ -17,7 +17,7 @@ whitelist = ['Unexpected error in _restart test']
 
 def test_node_control_tool_restart(looper, tdir, monkeypatch, tconf):
     received = m.list()
-    msg = POOL_RESTART
+    msg = RESTART_MESSAGE
     stdout = 'teststdout'
 
     def transform(tool):
@@ -38,7 +38,7 @@ def test_node_control_tool_restart(looper, tdir, monkeypatch, tconf):
 
 def test_communication_with_node_control_tool(looper, tdir, tconf, monkeypatch):
     received = m.list()
-    msg = POOL_RESTART
+    msg = RESTART_MESSAGE
     stdout = 'teststdout'
 
     def transform(tool):
@@ -49,7 +49,7 @@ def test_communication_with_node_control_tool(looper, tdir, tconf, monkeypatch):
         assert len(received) == 1
 
     def restart_count():
-        received.append(POOL_RESTART)
+        received.append(RESTART_MESSAGE)
 
     nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:

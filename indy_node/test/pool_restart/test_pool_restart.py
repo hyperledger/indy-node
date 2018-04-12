@@ -77,6 +77,7 @@ def test_pool_restart_cancel(
     req_json, resp = sdk_get_reply(looper, req, 100)
     _stopServer(server)
     _comparison_reply(resp, req_obj)
+    assert resp[f.RESULT.nm][DATETIME] == str(datetime.isoformat(start_at))
 
 
 def test_pool_restart_now(
@@ -128,4 +129,6 @@ def _comparison_reply(resp, req_obj):
     assert resp[f.RESULT.nm][f.IDENTIFIER.nm] == req_obj.identifier
     assert resp[f.RESULT.nm][f.REQ_ID.nm] == req_obj.reqId
     assert resp[f.RESULT.nm][f.IS_SUCCESS.nm]
+    assert resp[f.RESULT.nm][ACTION]
+    assert resp[f.RESULT.nm][TXN_TYPE] == POOL_RESTART
 

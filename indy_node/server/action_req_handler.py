@@ -73,8 +73,7 @@ class ActionReqHandler(RequestHandler):
                                        .format(req.txn_type))
         result = {}
         try:
-            txn = reqToTxn(req)
-            self.restarter.handleActionTxn(txn)
+            self.restarter.handleActionTxn(req)
             result = self._generate_action_result(req)
         except Exception as ex:
             result = self._generate_action_result(req,
@@ -86,9 +85,9 @@ class ActionReqHandler(RequestHandler):
 
     def _generate_action_result(self, request: Request, is_success=True,
                                 msg=None):
-        return {TXN_TYPE: request.operation.get(TXN_TYPE),
-                      f.IDENTIFIER.nm: request.identifier,
-                      f.REQ_ID.nm: request.reqId,
-                      f.IS_SUCCESS.nm: is_success,
-                      f.MSG.nm: msg}
-
+        return {**request.operation, **{
+            f.IDENTIFIER.nm: request.identifier,
+            f.REQ_ID.nm: request.reqId,
+            f.IS_SUCCESS.nm: is_success,
+            f.MSG.nm: msg}
+                }

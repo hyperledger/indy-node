@@ -112,3 +112,16 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
     @abstractmethod
     def _is_action_started(self):
         pass
+
+
+class NodeControlToolMessage(metaclass=ABCMeta):
+    """
+    Data structure that represents request for node control tool
+    """
+
+    def __init__(self, message_type: str):
+        self.message_type = message_type
+
+    def toJson(self):
+        import json
+        return json.dumps(self.__dict__)

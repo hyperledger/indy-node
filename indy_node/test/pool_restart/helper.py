@@ -18,7 +18,8 @@ from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
 from indy_client.client.wallet.upgrade import Upgrade
-from indy_common.constants import NODE_UPGRADE, ACTION
+from indy_common.constants import NODE_UPGRADE, ACTION, MESSAGE_TYPE, \
+    RESTART_MESSAGE
 from indy_common.config import controlServiceHost, controlServicePort
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.server.upgrader import Upgrader
@@ -31,7 +32,7 @@ logger = getlogger()
 
 
 def compose_restart_message(action):
-    return (json.dumps({ACTION: action})).encode()
+    return (json.dumps({MESSAGE_TYPE: RESTART_MESSAGE})).encode()
 
 
 def send_restart_message(action):

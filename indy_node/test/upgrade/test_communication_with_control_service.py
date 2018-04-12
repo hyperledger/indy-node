@@ -77,7 +77,7 @@ def testScheduleNodeUpgrade(tconf, nodeSet):
         time.time(), "1.2", failTimeout=1000, upgrade_id=None)
 
     result = loop.run_until_complete(eventuallySoon(_checkFuture(indicator)))
-    expectedResult = UpgradeMessage(version, POOL_UPGRADE)
+    expectedResult = UpgradeMessage(version)
     assert result == expectedResult.toJson()
 
 

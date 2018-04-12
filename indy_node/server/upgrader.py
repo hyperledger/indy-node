@@ -6,12 +6,14 @@ from typing import Tuple, Union, Optional, Callable, Dict
 import dateutil.parser
 import dateutil.tz
 
-from indy_node.server.node_maintainer import NodeMaintainer
+from indy_node.server.node_maintainer import NodeMaintainer, \
+    NodeControlToolMessage
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.common.types import f
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, FORCE
+    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, FORCE, \
+    UPGRADE_MESSAGE
 from indy_node.server.upgrade_log import UpgradeLog
 from ledger.util import F
 import asyncio
@@ -365,8 +367,7 @@ class Upgrader(NodeMaintainer):
         retryLimit = self.retry_limit
         while retryLimit:
             try:
-                msg = UpgradeMessage(version=version, action=POOL_UPGRADE)\
-                    .toJson()
+                msg = UpgradeMessage(version=version).toJson()
                 logger.info("Sending message to control tool: {}".format(msg))
                 await self._open_connection_and_send(msg)
                 break
@@ -465,14 +466,14 @@ class Upgrader(NodeMaintainer):
         return True, ''
 
 
-class UpgradeMessage:
+class UpgradeMessage(NodeControlToolMessage):
     """
     Data structure that represents request for node update
     """
 
-    def __init__(self, version: str, action: str):
-        self.action = action
+    def __init__(self, version: str):
         self.version = version
+        super().__init__(UPGRADE_MESSAGE)
 
     def toJson(self):
         import json

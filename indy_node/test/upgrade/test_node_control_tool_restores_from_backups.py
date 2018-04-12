@@ -12,6 +12,7 @@ from indy_node.server.upgrader import Upgrader
 m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
+
 def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
