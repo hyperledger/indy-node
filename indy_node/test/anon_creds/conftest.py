@@ -17,6 +17,14 @@ from plenum.common.constants import TXN_TIME
 from plenum.test.helper import create_new_test_node
 
 
+def build_path_for_claim_def(did, sig_type, seq_no):
+    return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}" \
+        .format(DID=did,
+                MARKER="3",
+                SIGNATURE_TYPE=sig_type,
+                SCHEMA_SEQ_NO=seq_no)
+
+
 @pytest.fixture(scope="module")
 def create_node_and_not_start(testNodeClass,
                               node_config_helper_class,
@@ -48,7 +56,7 @@ def add_revoc_def_by_default(create_node_and_not_start,
         TXN_TYPE: REVOC_REG_DEF,
         REVOC_TYPE: "CL_ACCUM",
         TAG: randomString(5),
-        CRED_DEF_ID: randomString(50),
+        CRED_DEF_ID: ":".join(4*[randomString(10)]),
         VALUE:{
             ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
             MAX_CRED_NUM: 1000000,
@@ -107,7 +115,7 @@ def add_revoc_def_by_demand(create_node_and_not_start,
         TXN_TYPE: REVOC_REG_DEF,
         REVOC_TYPE: "CL_ACCUM",
         TAG: randomString(5),
-        CRED_DEF_ID: randomString(50),
+        CRED_DEF_ID: ":".join(4 * [randomString(10)]),
         VALUE:{
             ISSUANCE_TYPE: ISSUANCE_ON_DEMAND,
             MAX_CRED_NUM: 1000000,
@@ -190,7 +198,7 @@ def build_revoc_def_by_default(looper, sdk_wallet_steward):
         TXN_TYPE: REVOC_REG_DEF,
         REVOC_TYPE: "CL_ACCUM",
         TAG: randomString(5),
-        CRED_DEF_ID: randomString(50),
+        CRED_DEF_ID: ":".join(4 * [randomString(10)]),
         VALUE:{
             ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
             MAX_CRED_NUM: 1000000,
@@ -209,7 +217,7 @@ def build_revoc_def_by_demand(looper, sdk_wallet_steward):
         TXN_TYPE: REVOC_REG_DEF,
         REVOC_TYPE: "CL_ACCUM",
         TAG: randomString(5),
-        CRED_DEF_ID: randomString(50),
+        CRED_DEF_ID: ":".join(4 * [randomString(10)]),
         VALUE:{
             ISSUANCE_TYPE: ISSUANCE_ON_DEMAND,
             MAX_CRED_NUM: 1000000,
@@ -231,10 +239,9 @@ def send_revoc_reg_def_by_default(looper,
     _, author_did = sdk_wallet_steward
     claim_def_req = send_claim_def
     revoc_reg = build_revoc_def_by_default
-    revoc_reg['operation'][CRED_DEF_ID] = ":".join([author_did,
-                                                    domain.MARKER_CLAIM_DEF,
-                                                    claim_def_req['operation']["signature_type"],
-                                                    str(claim_def_req['operation']["ref"])])
+    revoc_reg['operation'][CRED_DEF_ID] = build_path_for_claim_def(author_did,
+                                                                   claim_def_req['operation']["signature_type"],
+                                                                   str(claim_def_req['operation']["ref"]))
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
     _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
     return revoc_req, revoc_reply
@@ -249,10 +256,9 @@ def send_revoc_reg_def_by_demand(looper,
     _, author_did = sdk_wallet_steward
     claim_def_req = send_claim_def
     revoc_reg = build_revoc_def_by_demand
-    revoc_reg['operation'][CRED_DEF_ID] = ":".join([author_did,
-                                                    domain.MARKER_CLAIM_DEF,
-                                                    claim_def_req['operation']["signature_type"],
-                                                    str(claim_def_req['operation']["ref"])])
+    revoc_reg['operation'][CRED_DEF_ID] = build_path_for_claim_def(author_did,
+                                                                   claim_def_req['operation']["signature_type"],
+                                                                   str(claim_def_req['operation']["ref"]))
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
     sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)
     return revoc_req
