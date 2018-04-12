@@ -109,7 +109,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=$GENERAL_CONFIG_DIR/node_control.conf
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \$HOLD_EXT
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \${TEST_MODE} --hold-ext "\${HOLD_EXT}"
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
@@ -138,7 +138,7 @@ port = 127.0.0.1:9001
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
 [program:indy-node]
-command=/usr/bin/env python3 -O /usr/local/bin/start_indy_node %(ENV_NODE_NAME)s %(ENV_NODE_PORT)s %(ENV_NODE_CLIENT_PORT)s
+command=sh -ac '. $GENERAL_CONFIG_DIR/indy.env;/usr/bin/env python3 -O /usr/local/bin/start_indy_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}'
 user=indy
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
@@ -151,7 +151,7 @@ stopasgroup=true
 killasgroup=true
 
 [program:indy-node-control]
-command=sh -ac 'sed -i "s/\\\\\"/\"/g" $GENERAL_CONFIG_DIR/node_control.conf;. $GENERAL_CONFIG_DIR/node_control.conf;/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool ${TEST_MODE} --hold-ext ${HOLD_EXT}'
+command=sh -ac '. $GENERAL_CONFIG_DIR/node_control.conf;/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \${TEST_MODE} --hold-ext "\${HOLD_EXT}"'
 stdout_logfile=/dev/stdout
 stdout_logfile_maxbytes=0
 stderr_logfile=/dev/stderr
@@ -170,7 +170,7 @@ if [ ! -f $GENERAL_CONFIG_DIR/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ];
 #TEST_MODE=--test
 
 TEST_MODE=
-HOLD_EXT=\"\"
+HOLD_EXT=
 EOF
 fi
 
