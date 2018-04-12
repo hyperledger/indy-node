@@ -36,7 +36,7 @@ BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 LOG_DIR = os.path.join(BASE_DIR, "log")
 CONFIG_FILE = os.path.join(BASE_DIR, "indy_config.py")
 
-tests_require = ['pytest', 'pytest-xdist', 'python3-indy==1.3.1-dev-403']
+tests_require = ['pytest', 'pytest-xdist', 'python3-indy==1.3.1-dev-454']
 
 setup(
     name='indy-node',

@@ -21,6 +21,15 @@ sudo apt-get install -y libsodium18
 echo 'Installed libsodium'
 
 
+echo 'Installing RocksDB...'
+sudo apt-get install -y libbz2-dev \
+    zlib1g-dev \
+    liblz4-dev \
+    libsnappy-dev \
+    rocksdb=5.8.8
+echo 'Installed RocksDB'
+
+
 echo 'Installing Charm Crypto...'
 sudo apt-get install -y python3-charm-crypto
 echo 'Installed Charm Crypto'
