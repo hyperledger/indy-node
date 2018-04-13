@@ -114,7 +114,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=$GENERAL_CONFIG_DIR/node_control.conf
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \${TEST_MODE} --hold-ext "\${HOLD_EXT}"
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext "\${HOLD_EXT}"
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
