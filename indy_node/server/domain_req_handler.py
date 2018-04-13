@@ -38,7 +38,7 @@ class StateValue:
 class DomainReqHandler(PHandler):
     write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
     query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF,
-                   GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA}
+                    GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA}
     revocation_strategy_map = {
         ISSUANCE_BY_DEFAULT: RevokedStrategy,
         ISSUANCE_ON_DEMAND: IssuedStrategy,

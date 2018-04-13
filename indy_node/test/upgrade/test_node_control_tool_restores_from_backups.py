@@ -3,6 +3,8 @@ import os
 import functools
 import shutil
 
+import time
+
 from stp_core.loop.eventually import eventually
 from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, composeUpgradeMessage, sendUpgradeMessage, nodeControlGeneralMonkeypatching
 from indy_node.server.upgrader import Upgrader
@@ -10,7 +12,8 @@ from indy_node.server.upgrader import Upgrader
 m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
-def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper):
+
+def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
     currentVersion = Upgrader.getVersion()
