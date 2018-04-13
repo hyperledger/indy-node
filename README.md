@@ -110,9 +110,14 @@ The described process is automated in one of the ways below (it allow to install
 
  - **Docker** [Start Pool and Client with Docker](environment/docker/pool/README.md)
  
- - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
+ - **Running locally** [Indy Cluster Simulation](docs/cluster-simulation.md)
+
+ - **Docker-based pool using with new libindy-based CLI**:
+   - [Start Pool Locally](https://github.com/hyperledger/indy-sdk/blob/master/README.md#how-to-start-local-nodes-pool-with-docker)
+   - [Get Started with Libindy](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md)
 
  - **Also coming soon:** Create virtual machines in AWS.
+
 
 
 ## How to Start Working with the Code
