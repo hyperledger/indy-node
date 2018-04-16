@@ -7,6 +7,7 @@ from anoncreds.protocol.utils import randomString
 
 from indy_node.server.node import Node
 from plenum.test.helper import waitForSufficientRepliesForRequests
+from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 from plenum.test.test_node import checkNodesConnected
 
@@ -57,7 +58,7 @@ from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNa
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
 from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
-    sdk_wallet_name, sdk_steward_seed
+    sdk_wallet_name, sdk_steward_seed, sdk_wallet_trustee
 
 Logger.setLogLevel(logging.DEBUG)
 

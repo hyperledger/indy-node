@@ -1,4 +1,3 @@
-import pytest
 from stp_core.loop.eventually import eventually
 from indy_node.server.upgrader import Upgrader
 import functools

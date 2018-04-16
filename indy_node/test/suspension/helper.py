@@ -2,6 +2,7 @@ from plenum.test import waits
 from indy_client.test.helper import checkRejects, checkNacks
 from indy_common.constants import NULL
 from indy_common.identity import Identity
+from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 from stp_core.loop.eventually import eventually
 
 
@@ -44,6 +45,7 @@ def checkIdentityRequestFailed(looper, client, req, cause):
 def checkIdentityRequestSucceed(looper, actingClient, actingWallet, idr):
     def chk():
         assert actingWallet.getTrustAnchoredIdentity(idr).seqNo is not None
+
     timeout = waits.expectedTransactionExecutionTime(
         len(actingClient.nodeReg)
     )
@@ -68,3 +70,11 @@ def suspendRole(looper, actingClient, actingWallet,
     else:
         checkIdentityRequestFailed(
             looper, actingClient, reqs[0], nAckReasonContains)
+
+
+def sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_sender, did):
+    op = {'type': '1',
+          'dest': did,
+          'role': None}
+    req = sdk_sign_and_submit_op(looper, sdk_pool_handle, sdk_wallet_sender, op)
+    sdk_get_and_check_replies(looper, [req])

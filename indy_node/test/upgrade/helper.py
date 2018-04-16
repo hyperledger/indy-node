@@ -8,15 +8,17 @@ from datetime import datetime
 from typing import List, Tuple
 
 import dateutil.tz
-from plenum.common.constants import TXN_TYPE, DATA, VERSION
+
+from indy.ledger import build_pool_upgrade_request
+from plenum.common.constants import TXN_TYPE, DATA, VERSION, FORCE
 from plenum.common.types import f
 from plenum.common.util import randomString
 from plenum.test import waits as plenumWaits
-from plenum.test.helper import waitForSufficientRepliesForRequests
+from plenum.test.helper import sdk_get_and_check_replies
+from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
-from indy_client.client.wallet.upgrade import Upgrade
 from indy_common.constants import NODE_UPGRADE, ACTION
 from indy_common.config import controlServiceHost, controlServicePort
 from indy_node.server.upgrade_log import UpgradeLog
@@ -24,7 +26,6 @@ from indy_node.server.upgrader import Upgrader
 from indy_node.test.helper import TestNode
 from indy_node.utils.node_control_tool import NodeControlTool
 from indy_common.config_helper import NodeConfigHelper
-
 
 logger = getlogger()
 
@@ -36,24 +37,28 @@ class TestNodeNoProtocolVersion(TestNode):
         super().processNodeRequest(request, frm)
 
 
-def sendUpgrade(client, wallet, upgradeData):
-    upgrade = Upgrade(**upgradeData, trustee=wallet.defaultId)
-    wallet.doPoolUpgrade(upgrade)
-    reqs = wallet.preparePending()
-    req = client.submitReqs(*reqs)[0][0]
-    return upgrade, req
+def sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_trustee, upgrade_data):
+    _, did = sdk_wallet_trustee
+    req = get_req_from_update(looper, did, upgrade_data)
+    return sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
+                                              sdk_pool_handle, req)
 
 
-def ensureUpgradeSent(looper, trustee, trusteeWallet, upgradeData):
-    upgrade, req = sendUpgrade(trustee, trusteeWallet, upgradeData)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=[req])
+def sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, upgrade_data):
+    req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_trustee, upgrade_data)
+    sdk_get_and_check_replies(looper, [req])
 
-    def check():
-        assert trusteeWallet.getPoolUpgrade(upgrade.key).seqNo
 
-    timeout = plenumWaits.expectedReqAckQuorumTime()
-    looper.run(eventually(check, retryWait=1, timeout=timeout))
-    return upgrade
+def get_req_from_update(looper, did, nup):
+    req = looper.loop.run_until_complete(
+        build_pool_upgrade_request(did, nup['name'], nup['version'], nup['action'], nup['sha256'],
+                                   nup['timeout'],
+                                   json.dumps(nup['schedule']) if 'schedule' in nup else None,
+                                   nup['justification'] if 'justification' in nup else 'null',
+                                   nup['reinstall'] if 'reinstall' in nup else None,
+                                   nup[FORCE] if FORCE in nup else None))
+    return req
 
 
 def checkUpgradeScheduled(nodes, version, schedule=None):

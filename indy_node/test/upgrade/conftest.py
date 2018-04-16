@@ -2,13 +2,12 @@ from datetime import datetime, timedelta
 
 import dateutil.tz
 import pytest
-from plenum.common.constants import VERSION, STEWARD
-from indy_client.test.helper import getClientAddedWithRole
+from plenum.common.constants import VERSION
 
 from indy_common.constants import START, FORCE
 from indy_node.test import waits
-from indy_node.test.upgrade.helper import bumpedVersion, ensureUpgradeSent, \
-    checkUpgradeScheduled, bumpVersion
+from indy_node.test.upgrade.helper import bumpedVersion, \
+    checkUpgradeScheduled, bumpVersion, sdk_ensure_upgrade_sent
 from stp_core.loop.eventually import eventually
 
 
@@ -50,9 +49,10 @@ def validUpgradeExpForceTrue(validUpgradeExpForceFalse):
 
 
 @pytest.fixture(scope="module")
-def validUpgradeSent(looper, nodeSet, tdir, trustee, trusteeWallet,
+def validUpgradeSent(looper, nodeSet, tdir, sdk_pool_handle, sdk_wallet_trustee,
                      validUpgrade):
-    ensureUpgradeSent(looper, trustee, trusteeWallet, validUpgrade)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, validUpgrade)
 
 
 @pytest.fixture(scope="module")
@@ -60,17 +60,18 @@ def validUpgradeSentExpForceFalse(
         looper,
         nodeSet,
         tdir,
-        trustee,
-        trusteeWallet,
+        sdk_pool_handle,
+        sdk_wallet_trustee,
         validUpgradeExpForceFalse):
-    ensureUpgradeSent(looper, trustee, trusteeWallet,
-                      validUpgradeExpForceFalse)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, validUpgrade)
 
 
 @pytest.fixture(scope="module")
-def validUpgradeSentExpForceTrue(looper, nodeSet, tdir, trustee, trusteeWallet,
-                                 validUpgradeExpForceTrue):
-    ensureUpgradeSent(looper, trustee, trusteeWallet, validUpgradeExpForceTrue)
+def validUpgradeSentExpForceTrue(looper, nodeSet, tdir, sdk_pool_handle,
+                                 sdk_wallet_trustee, validUpgradeExpForceTrue):
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, validUpgrade)
 
 
 @pytest.fixture(scope="module")
@@ -114,15 +115,3 @@ def invalidUpgrade(nodeIds, tconf):
                 # sha256=get_valid_code_hash(),
                 sha256='46c715a90b1067142d548cb1f1405b0486b32b1a27d418ef3a52bd976e9fae50',
                 timeout=10)
-
-
-@pytest.fixture(scope="module")
-def steward(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(
-        nodeSet,
-        tdirWithClientPoolTxns,
-        looper,
-        trustee,
-        trusteeWallet,
-        'newSteward',
-        STEWARD)

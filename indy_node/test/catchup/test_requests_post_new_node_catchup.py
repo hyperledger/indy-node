@@ -1,21 +1,15 @@
 from plenum.common.constants import DOMAIN_LEDGER_ID
-from plenum.common.types import f
 from plenum.common.util import randomString
-from plenum.test.helper import assertLength
 from plenum.test.node_catchup.helper import checkNodeDataForEquality, \
     waitNodeDataEquality
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.test_node import ensure_node_disconnected, checkNodesConnected
-from indy_client.test.client.TestClient import TestClient
-from indy_client.test.helper import getClientAddedWithRole
-from indy_common.constants import TRUST_ANCHOR
 from indy_node.test.conftest import sdk_node_theta_added
-from indy_node.test.helper import TestNode, addRawAttribute, getAttribute, sdk_add_raw_attribute
+from indy_node.test.helper import TestNode, sdk_add_raw_attribute
 from indy_common.config_helper import NodeConfigHelper
 
 
-def test_new_node_catchup_update_projection(looper, tdirWithClientPoolTxns,
-                                            tdirWithDomainTxnsUpdated,
+def test_new_node_catchup_update_projection(looper,
                                             nodeSet, tconf, tdir,
                                             sdk_pool_handle,
                                             sdk_wallet_trustee,
