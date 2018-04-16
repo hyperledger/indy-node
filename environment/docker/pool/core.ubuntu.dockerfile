@@ -13,7 +13,7 @@ RUN apt-get update -y && apt-get install -y \
 	apt-transport-https \
 	ca-certificates 
 RUN pip3 install -U \ 
-	pip \ 
+	pip==9.0.3 \
 	setuptools
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
