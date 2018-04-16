@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 
 import dateutil
 import pytest
+
+from indy_node.server.restart_log import RestartLog
 from plenum.common.exceptions import RequestRejectedException
 
 from indy_common.constants import POOL_RESTART, ACTION, START, DATETIME, CANCEL
@@ -16,7 +18,7 @@ from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
 
 
 def test_pool_restart(
-        sdk_pool_handle, sdk_wallet_trustee, looper, tconf):
+        sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
 
     server, indicator = looper.loop.run_until_complete(
         _createServer(
@@ -38,12 +40,14 @@ def test_pool_restart(
                                        sdk_wallet_trustee,
                                        req_obj)
     req_json, resp = sdk_get_reply(looper, req, 100)
+    for node in txnPoolNodeSet:
+        assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
     _stopServer(server)
     _comparison_reply(resp, req_obj)
 
 
 def test_pool_restart_cancel(
-        sdk_pool_handle, sdk_wallet_trustee, looper, tconf):
+        sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
     loop = asyncio.get_event_loop()
     server, indicator = loop.run_until_complete(
         _createServer(
@@ -64,6 +68,8 @@ def test_pool_restart_cancel(
                                        sdk_pool_handle,
                                        sdk_wallet_trustee,
                                        req_obj)
+    for node in txnPoolNodeSet:
+        assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
     op = {
         TXN_TYPE: POOL_RESTART,
         ACTION: CANCEL,
@@ -75,6 +81,8 @@ def test_pool_restart_cancel(
                                       sdk_wallet_trustee,
                                       req_obj)
     req_json, resp = sdk_get_reply(looper, req, 100)
+    for node in txnPoolNodeSet:
+        assert node.restarter.lastActionEventInfo[0] == RestartLog.CANCELLED
     _stopServer(server)
     _comparison_reply(resp, req_obj)
     assert resp[f.RESULT.nm][DATETIME] == str(datetime.isoformat(start_at))

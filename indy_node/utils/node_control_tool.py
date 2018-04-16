@@ -55,7 +55,8 @@ class NodeControlTool:
         self.deps = deps
 
         _files_to_preserve = [self.config.lastRunVersionFile, self.config.nextVersionFile,
-                              self.config.upgradeLogFile, self.config.lastVersionFilePath]
+                              self.config.upgradeLogFile, self.config.lastVersionFilePath,
+                              self.config.restartLogFile]
 
         self.files_to_preserve = files_to_preserve or _files_to_preserve
         self.backup_num = backup_num
