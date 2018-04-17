@@ -1,4 +1,5 @@
 # Getting Started with Indy
+**WARNING**: This Getting Started has been deprecated. Please, use [new Getting Started in Indy SDK](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md)
 
 ## A Developer Guide for an Implementation of the Indy Code Base
 
@@ -61,7 +62,7 @@ You can install a test network in one of several ways:
 
  - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
 
- - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
+ - **Running locally** [Indy Cluster Simulation](docs/cluster-simulation.md)
 
  - **Docker:** [Start Pool and Client with Docker](environment/docker/pool/StartIndyAgents.md).
 

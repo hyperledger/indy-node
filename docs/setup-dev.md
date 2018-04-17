@@ -137,6 +137,31 @@ sudo apt-get install libindy-crypto
 
 See [Indy-Crypto](https://github.com/hyperledger/indy-crypto) on how it can be installed on other platforms.
 
+
+### Setup RocksDB
+
+Indy depends on RocksDB, an embeddable persistent key-value store for fast storage.
+
+Currently Indy requires RocksDB version 5.8.8 or higher. There is a deb package of RocksDB-5.8.8 and related stuff that
+can be used on Ubuntu 16.04 (repository configuration steps may be skipped if Indy-Crypto installation steps have been done):
+```
+# Start of repository configuration steps
+sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+sudo add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
+# End of repository configuration steps
+sudo apt-get update
+sudo apt-get install libbz2-dev \
+    zlib1g-dev \
+    liblz4-dev \
+    libsnappy-dev \
+    rocksdb=5.8.8
+```
+
+See [RocksDB](https://github.com/facebook/rocksdb) on how it can be installed on other platforms.
+
+
 ### Setup Libindy
 
 Indy needs [Libindy](https://github.com/hyperledger/indy-sdk) as a test dependency.

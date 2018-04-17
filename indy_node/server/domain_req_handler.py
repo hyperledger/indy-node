@@ -275,7 +275,16 @@ class DomainReqHandler(PHandler):
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
-        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False)
+        tags = cred_def_id.split(":")
+        if len(tags) != 4:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "Format of {} field is not acceptable. "
+                                       "Expected: 'did:marker:signature_type:seq_no'".format(CRED_DEF_ID))
+        cred_def_path = domain.make_state_path_for_claim_def(authors_did=tags[0],
+                                                             signature_type=tags[2],
+                                                             schema_seq_no=tags[3])
+        cred_def, _, _, _ = self.lookup(cred_def_path, isCommitted=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
