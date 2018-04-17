@@ -42,7 +42,7 @@ class Restarter(NodeMaintainer):
         if event_type != RestartLog.STARTED:
             logger.debug(
                 'Restart for node {} was not scheduled. '
-                'Last event is {}:{}:{}'.format(
+                'Last event is {}:{}'.format(
                     self.nodeName, event_type, when))
             return False
 
@@ -88,15 +88,6 @@ class Restarter(NodeMaintainer):
 
         action = txn[ACTION]
         if action == START:
-            last_event = self.lastActionEventInfo
-            if last_event and last_event[
-                0] in FINALIZING_EVENT_TYPES:
-                logger.info(
-                    "Node '{}' has already performed an restart. "
-                    "Last recorded event is {}".format(
-                        self.nodeName, last_event))
-                return
-
             failTimeout = txn.get(TIMEOUT, self.defaultActionTimeout)
 
             if self.scheduledAction:
