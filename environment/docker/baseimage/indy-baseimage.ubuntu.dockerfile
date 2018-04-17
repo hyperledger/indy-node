@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
     
 # pypi based packages
 RUN pip3 install -U \ 
-    pip==9.0.3 \
+    'pip<10.0.0' \
     setuptools \
     virtualenv
 
