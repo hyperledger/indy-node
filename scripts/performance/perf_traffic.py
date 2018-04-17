@@ -43,7 +43,7 @@ class Option:
         parser.add_argument('-n',
                             help='Number of transactions will be sent '
                                  'in a set. Default value will be 100.',
-                            action='store', type=int, 
+                            action='store', type=int,
                             default=100, dest='transactions_delay')
 
         parser.add_argument('--log',
@@ -109,7 +109,7 @@ class TesterSimulateTraffic(Tester):
         utils.run_async_method(
             None, TesterSimulateTraffic._prepare_samples_for_get_req,
             TesterSimulateTraffic.__number_of_request_samples)
-            
+
         if time_out <= 0 or transactions_delay <= 0 or number_of_clients <= 0:
             return
 
@@ -275,11 +275,11 @@ class TesterSimulateTraffic(Tester):
 
 if __name__ == '__main__':
     opts = Option().args
-    
-    tester = TesterSimulateTraffic(number_of_clients=opts.clients, 
+
+    tester = TesterSimulateTraffic(number_of_clients=opts.clients,
                                    transactions_delay=opts.transactions_delay,
                                    time_out=opts.time_out, log=opts.log)
-    
+
     utils.run_async_method(None, tester.test)
 
     elapsed_time = tester.finish_time - tester.start_time

@@ -122,7 +122,7 @@ async def create_submitter_did():
             Var.wallet_handle, json.dumps({"seed": seed_default_steward}))
 
         target_did, _ = await signus.create_and_store_my_did(
-                Var.wallet_handle, json.dumps({}))
+            Var.wallet_handle, json.dumps({}))
         return submitter_did, target_did
     except Exception as e:
         print_error("Exception: " + str(e))
@@ -197,13 +197,11 @@ async def calculate_transactions_per_minute(start_seqNo, end_seqNo):
         # calculate the transactions per second
         num_of_trans = latest_number - int(start_number)
         duration_as_second = latest_time - begin_time
-        duration_as_minute = (latest_time - begin_time)/60
+        duration_as_minute = (latest_time - begin_time) / 60
         result_minute = num_of_trans / duration_as_minute
         result_second = num_of_trans / duration_as_second
-        print_green("From number: " + str(start_number) + " - Timestamp: "
-                    + str(begin_time))
-        print_green("To number: " + str(latest_number) + " - Timestamp: "
-                    + str(latest_time))
+        print_green("From number: " + str(start_number) + " - Timestamp: " + str(begin_time))
+        print_green("To number: " + str(latest_number) + " - Timestamp: " + str(latest_time))
         print_green("ADD measurement")
         print_green(str(int(result_minute)) + " txns/min")
         print_green(str(int(result_second)) + " txns/sec")
