@@ -32,7 +32,7 @@ from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
     TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
     REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
-    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME
+    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO
 
 
 class Request(PRequest):
@@ -284,6 +284,12 @@ class ClientPoolRestartOperation(MessageValidator):
     )
 
 
+class ClientValidatorInfoOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(POOL_RESTART))
+    )
+
+
 class ClientPoolConfigOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_CONFIG)),
@@ -306,6 +312,7 @@ class ClientOperationField(PClientOperationField):
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
         POOL_CONFIG: ClientPoolConfigOperation(),
         POOL_RESTART: ClientPoolRestartOperation(),
+        VALIDATOR_INFO: ClientValidatorInfoOperation(),
         REVOC_REG_DEF: ClientRevocDefSubmitField(),
         REVOC_REG_ENTRY: ClientRevocRegEntrySubmitField(),
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
