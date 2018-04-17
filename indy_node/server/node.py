@@ -306,6 +306,7 @@ class Node(PlenumNode, HasPoolManager):
     async def prod(self, limit: int = None) -> int:
         c = await super().prod(limit)
         c += self.upgrader.service()
+        c += self.restarter.service()
         return c
 
     def processRequest(self, request: Request, frm: str):

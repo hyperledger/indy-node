@@ -201,7 +201,7 @@ class Restarter(NodeMaintainer):
         :param version: version to restart to
         """
 
-        logger.info("{}'s restartr calling agent for restart".format(self))
+        logger.info("{}'s restart calling agent for restart".format(self))
         self._actionLog.appendStarted(when)
         self._action_start_callback()
         self.scheduledAction = None
