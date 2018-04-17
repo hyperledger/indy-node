@@ -286,7 +286,7 @@ class ClientPoolRestartOperation(MessageValidator):
 
 class ClientValidatorInfoOperation(MessageValidator):
     schema = (
-        (TXN_TYPE, ConstantField(POOL_RESTART))
+        (TXN_TYPE, ConstantField(VALIDATOR_INFO)),
     )
 
 
