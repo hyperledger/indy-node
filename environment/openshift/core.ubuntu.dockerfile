@@ -16,7 +16,7 @@ RUN apt-get update -y && apt-get install -y \
 	ca-certificates
 
 RUN pip3 install -U \ 
-	pip==9.0.3 \
+	'pip<10.0.0' \
 	setuptools
 
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88

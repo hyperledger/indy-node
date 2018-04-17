@@ -12,7 +12,7 @@ RUN apt-get update -y && apt-get install -y \
 	python-setuptools \
 	python3-nacl
 RUN pip3 install -U \ 
-	pip==9.0.3 \
+	'pip<10.0.0' \
 	setuptools \
 	pep8 \
 	pep8-naming \
