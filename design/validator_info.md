@@ -73,6 +73,28 @@ The client sends a command with some parameters to each node. There are only one
 After receiving the request, each node starts a validator-info script, and then sends the Json result without compression to the client.
 The client should not wait for the consensus of the all node, but should handle the response from each node separately.
 
+Request for getting validator info data :
+```
+{'protocolVersion': 1,
+'operation': {'type': '119'},
+'reqId': 83193,
+'identifier': 'M9BJDuS24bqbJNvBRsoGg3'}
+```
+
+Reply from the one node :
+```
+{
+'op': 'REPLY',
+'result': {
+'reqId': 83193,
+'msg': None,
+'data': { <Json with specific data> },
+'type': '119',
+'isSuccess': True,
+'identifier': 'M9BJDuS24bqbJNvBRsoGg3'}
+}
+```
+
 For reference: [INDY-1184](https://jira.hyperledger.org/browse/INDY-1184)
 
 
