@@ -351,6 +351,16 @@ class ValidatorStats(BaseStats):
 
     @staticmethod
     def get_process_state():
+        ctl = os.getenv('INDY_CONTROL', 'systemctl')
+        if ctl == "systemctl":
+           return ValidatorStats.get_process_state_via_systemctl()
+        elif ctl == "supervisorctl":
+           return ValidatorStats.get_process_state_via_supervisorctl()
+        else:
+           return "Invalid value for INDY_CONTROL environment variable: '%s'" % ctl
+
+    @staticmethod
+    def get_process_state_via_systemctl():
         ret = subprocess.check_output(
             'systemctl is-failed indy-node; exit 0',
             stderr=subprocess.STDOUT, shell=True
@@ -368,7 +378,35 @@ class ValidatorStats(BaseStats):
             return None
 
     @staticmethod
+    def get_process_state_via_supervisorctl():
+        ret = subprocess.check_output(
+            "supervisorctl status indy-node | awk '{print $2}'; exit 0",
+            stderr=subprocess.STDOUT, shell=True
+        )
+        ret = ret.decode().strip()
+        if ret == 'STOPPED':
+            return 'stopped'
+        elif ret == 'RUNNING':
+            return 'running'
+        else:
+            logger.info(
+                "Non-expected output for indy-node "
+                "status: {}".format(ret)
+            )
+            return None
+
+    @staticmethod
     def get_enabled_state():
+        ctl = os.getenv('INDY_CONTROL', 'systemctl')
+        if ctl == "systemctl":
+           return ValidatorStats.get_enabled_state_via_systemctl()
+        elif ctl == "supervisorctl":
+           return ValidatorStats.get_enabled_state_via_supervisorctl()
+        else:
+           return "Invalid value for INDY_CONTROL environment variable: '%s'" % ctl
+
+    @staticmethod
+    def get_enabled_state_via_systemctl():
         ret = subprocess.check_output(
             'systemctl is-enabled indy-node; exit 0',
             stderr=subprocess.STDOUT, shell=True
@@ -377,6 +415,24 @@ class ValidatorStats(BaseStats):
         if ret in ('enabled', 'static'):
             return True
         elif ret == 'disabled':
+            return False
+        else:
+            logger.info(
+                "Non-expected output for indy-node "
+                "is-enabled state: {}".format(ret)
+            )
+            return None
+
+    @staticmethod
+    def get_enabled_state_via_supervisorctl():
+        ret = subprocess.check_output(
+            "supervisorctl status indy-node | awk '{print $2}'; exit 0",
+            stderr=subprocess.STDOUT, shell=True
+        )
+        ret = ret.decode().strip()
+        if ret in ('RUNNING', 'BACKOFF', 'STARTING'):
+            return True
+        elif ret == 'STOPPED':
             return False
         else:
             logger.info(

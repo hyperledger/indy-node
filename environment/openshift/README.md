@@ -1,3 +1,5 @@
+This client is deprecated! Please, use the new libindy-based CLI: https://github.com/hyperledger/indy-sdk/tree/master/cli
+________________________________________________________________________
 # Getting Started
 
 1. Bring up (or connect to) an OpenShift cluster.
