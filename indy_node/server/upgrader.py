@@ -381,7 +381,7 @@ class Upgrader(NodeMaintainer):
                                 scheduled_on=when,
                                 upgrade_id=upgrade_id,
                                 reason="problems in communication with "
-                                        "node control service")
+                                       "node control service")
             self._unscheduleAction()
             self._actionFailedCallback()
         else:

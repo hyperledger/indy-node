@@ -76,9 +76,7 @@ class ActionReqHandler(RequestHandler):
             self.restarter.handleActionTxn(req)
             result = self._generate_action_result(req)
         except Exception as ex:
-            result = self._generate_action_result(req,
-                                                 False,
-                                                 ex.args[0])
+            result = self._generate_action_result(req, False, ex.args[0])
             logger.warning("Restart is failed")
         finally:
             return result
@@ -89,5 +87,4 @@ class ActionReqHandler(RequestHandler):
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
             f.IS_SUCCESS.nm: is_success,
-            f.MSG.nm: msg}
-                }
+            f.MSG.nm: msg}}

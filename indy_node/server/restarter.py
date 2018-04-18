@@ -56,8 +56,7 @@ class Restarter(NodeMaintainer):
                     .format(self.nodeName))
         self._notifier.sendMessageUponNodeRestartComplete(
             "Restart of node '{}' scheduled on {} "
-            "completed successfully"
-                .format(self.nodeName, when))
+            "completed successfully".format(self.nodeName, when))
 
     def handleActionTxn(self, req: Request) -> None:
         """
@@ -68,9 +67,6 @@ class Restarter(NodeMaintainer):
         :param req:
         """
         txn = req.operation
-        FINALIZING_EVENT_TYPES = [
-            RestartLog.SUCCEEDED, RestartLog.FAILED]
-
         if txn[TXN_TYPE] != POOL_RESTART:
             return
 

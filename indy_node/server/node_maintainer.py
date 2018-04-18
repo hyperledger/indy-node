@@ -23,8 +23,8 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
                  nodeName,
                  dataDir,
                  config,
-                 ledger = None,
-                 actionLog = None,
+                 ledger=None,
+                 actionLog=None,
                  actionFailedCallback: Callable = None,
                  action_start_callback: Callable = None):
 
@@ -63,7 +63,7 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
             # append SUCCESS to the action log
             self._update_action_log_for_started_action()
 
-    @property 
+    @property
     def lastActionEventInfo(self):
         """
         action parameters of last performed action
@@ -73,7 +73,7 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
         last_event = self._actionLog.lastEvent
         return last_event[1:] if last_event else None
 
-    def _unscheduleAction(self): 
+    def _unscheduleAction(self):
         """
         Unschedule current action
 
