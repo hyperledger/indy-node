@@ -34,4 +34,4 @@ def test_upgrade_does_not_get_into_loop_if_failed(looper, tconf, nodeSet,
 
     # we have not patched indy_node version so nodes think the upgrade had
     # failed
-    check_no_loop(nodeSet, UpgradeLog.UPGRADE_FAILED)
+    check_no_loop(nodeSet, UpgradeLog.FAILED)
