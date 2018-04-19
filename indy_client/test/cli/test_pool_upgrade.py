@@ -119,8 +119,8 @@ def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
     def checksched():
         for node in nodes:
             if node.name not in ["Delta", "Gamma"]:
-                assert node.upgrader.scheduledUpgrade
-                assert node.upgrader.scheduledUpgrade[0] == validUpgradeExpForceTrue[VERSION]
+                assert node.upgrader.scheduledAction
+                assert node.upgrader.scheduledAction[0] == validUpgradeExpForceTrue[VERSION]
 
     poolNodesStarted.looper.run(eventually(
         checksched, retryWait=1, timeout=10))

@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import List
+from typing import List, Callable
 
 import base58
 
@@ -26,6 +26,15 @@ from indy_node.server.revocation_strategy import RevokedStrategy, IssuedStrategy
 logger = getlogger()
 
 
+class StateValue:
+    def __init__(self, root_hash=None, value=None, seq_no=None, update_time=None, proof=None):
+        self.root_hash = root_hash
+        self.value = value
+        self.seq_no = seq_no
+        self.update_time = update_time
+        self.proof = proof
+
+
 class DomainReqHandler(PHandler):
     write_types = {NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY}
     query_types = {GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF,
@@ -40,71 +49,41 @@ class DomainReqHandler(PHandler):
         super().__init__(ledger, state, config, requestProcessor, bls_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
-        self.query_handlers = {
-            GET_NYM: self.handleGetNymReq,
-            GET_ATTR: self.handleGetAttrsReq,
-            GET_SCHEMA: self.handleGetSchemaReq,
-            GET_CLAIM_DEF: self.handleGetClaimDefReq,
-            GET_REVOC_REG_DEF: self.handleGetRevocRegDefReq,
-            GET_REVOC_REG: self.handleGetRevocRegReq,
-            GET_REVOC_REG_DELTA: self.handleGetRevocRegDelta,
-        }
         self.tsRevoc_store = tsRevoc_store
 
-    def onBatchCreated(self, stateRoot):
-        self.idrCache.currentBatchCreated(stateRoot)
+        self.static_validation_handlers = {}
+        self.dynamic_validation_handlers = {}
+        self.state_update_handlers = {}
+        self.query_handlers = {}
+        self.post_batch_creation_handlers = []
+        self.post_batch_commit_handlers = []
+        self.post_batch_rejection_handlers = []
 
-    def onBatchRejected(self):
-        self.idrCache.batchRejected()
-
-    def get_revocation_strategy(self, typ):
-        return self.revocation_strategy_map.get(typ, None)
+        self._add_default_handlers()
 
     def _updateStateWithSingleTxn(self, txn, isCommitted=False):
-        typ = txn.get(TXN_TYPE)
-        nym = txn.get(TARGET_NYM)
-        if typ == NYM:
-            data = {
-                f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm),
-                f.SEQ_NO.nm: txn.get(f.SEQ_NO.nm),
-                TXN_TIME: txn.get(TXN_TIME)
-            }
-            if ROLE in txn:
-                data[ROLE] = txn.get(ROLE)
-            if VERKEY in txn:
-                data[VERKEY] = txn.get(VERKEY)
-            self.updateNym(nym, data, isCommitted=isCommitted)
-        elif typ == ATTRIB:
-            self._addAttr(txn)
-        elif typ == SCHEMA:
-            self._addSchema(txn)
-        elif typ == CLAIM_DEF:
-            self._addClaimDef(txn)
-        elif typ == REVOC_REG_DEF:
-            self._addRevocDef(txn)
-        elif typ == REVOC_REG_ENTRY:
-            self._addRevocRegEntry(txn)
+        txn_type = txn.get(TXN_TYPE)
+        if txn_type in self.state_update_handlers:
+            self.state_update_handlers[txn_type](txn, isCommitted)
         else:
             logger.debug(
-                'Cannot apply request of type {} to state'.format(typ))
+                'Cannot apply request of type {} to state'.format(txn_type))
 
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
+        self.onBatchCommitted(stateRoot, ppTime)
+        return r
+
+    def update_idr_cache_and_ts_revoc_store(self, stateRoot, ppTime):
         stateRoot = base58.b58decode(stateRoot.encode())
         self.idrCache.onBatchCommitted(stateRoot)
         self.tsRevoc_store.set(ppTime, stateRoot)
-        return r
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
-        if operation[TXN_TYPE] == NYM:
-            self._doStaticValidationNym(identifier, req_id, operation)
-        if operation[TXN_TYPE] == ATTRIB:
-            self._doStaticValidationAttrib(identifier, req_id, operation)
-        if operation[TXN_TYPE] == SCHEMA:
-            self._doStaticValidationSchema(identifier, req_id, operation)
-        if operation[TXN_TYPE] == GET_REVOC_REG_DELTA:
-            self._doStaticValidationGetRevocRegDelta(request)
+        txn_type = operation[TXN_TYPE]
+        if txn_type in self.static_validation_handlers:
+            self.static_validation_handlers[txn_type](identifier, req_id, operation)
 
     def _doStaticValidationNym(self, identifier, reqId, operation):
         role = operation.get(ROLE)
@@ -125,27 +104,20 @@ class DomainReqHandler(PHandler):
                                        '{}, {}, {}'
                                        .format(ATTRIB, RAW, ENC, HASH))
 
-    def _doStaticValidationSchema(self, identifier, reqId, operation):
-        if not operation.get(DATA).get(ATTR_NAMES):
-            raise InvalidClientRequest(identifier, reqId,
-                                       "attr_names in schema can not be empty")
+    def _doStaticValidationGetRevocRegDelta(self, identifier, reqId, operation):
+        req_ts_to = operation.get(TO, None)
+        assert req_ts_to
+        req_ts_from = operation.get(FROM, None)
+        if req_ts_from and req_ts_from > req_ts_to:
+            raise InvalidClientRequest(identifier,
+                                       reqId,
+                                       "Timestamp FROM more then TO: {} > {}".format(req_ts_from, req_ts_to))
 
     def validate(self, req: Request, config=None):
         op = req.operation
-        typ = op[TXN_TYPE]
-
-        if typ == NYM:
-            self._validateNym(req)
-        elif typ == ATTRIB:
-            self._validateAttrib(req)
-        elif typ == SCHEMA:
-            self._validate_schema(req)
-        elif typ == CLAIM_DEF:
-            self._validate_claim_def(req)
-        elif typ == REVOC_REG_DEF:
-            self._validate_revoc_reg_def(req)
-        elif typ == REVOC_REG_ENTRY:
-            self._validate_revoc_reg_entry(req)
+        txn_type = op[TXN_TYPE]
+        if txn_type in self.dynamic_validation_handlers:
+            self.dynamic_validation_handlers[txn_type](req)
 
     @staticmethod
     def _validate_attrib_keys(operation):
@@ -303,17 +275,24 @@ class DomainReqHandler(PHandler):
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
-        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False)
+        tags = cred_def_id.split(":")
+        if len(tags) != 4:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "Format of {} field is not acceptable. "
+                                       "Expected: 'did:marker:signature_type:seq_no'".format(CRED_DEF_ID))
+        cred_def_path = domain.make_state_path_for_claim_def(authors_did=tags[0],
+                                                             signature_type=tags[2],
+                                                             schema_seq_no=tags[3])
+        cred_def, _, _, _ = self.lookup(cred_def_path, isCommitted=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
                                        "There is no any CRED_DEF by path: {}".format(cred_def_id))
 
     def _get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
-        assert author_did
         assert revoc_reg_def_id
-        current_entry, _, _, _ = self.getRevocDefEntry(author_did=author_did,
-                                                       revoc_reg_def_id=revoc_reg_def_id,
+        current_entry, _, _, _ = self.getRevocDefEntry(revoc_reg_def_id=revoc_reg_def_id,
                                                        isCommitted=False)
         revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False)
         if revoc_def is None:
@@ -345,6 +324,101 @@ class DomainReqHandler(PHandler):
 
     def hasNym(self, nym, isCommitted: bool = True):
         return self.idrCache.hasNym(nym, isCommitted=isCommitted)
+
+    def _add_default_handlers(self):
+        self._add_default_static_validation_handlers()
+        self._add_default_dynamic_validation_handlers()
+        self._add_default_state_update_handlers()
+        self._add_default_post_batch_creation_handlers()
+        self._add_default_post_batch_commit_handlers()
+        self._add_default_post_batch_rejection_handlers()
+        self._add_default_query_handlers()
+
+    def _add_default_static_validation_handlers(self):
+        self.add_static_validation_handler(NYM, self._doStaticValidationNym)
+        self.add_static_validation_handler(ATTRIB, self._doStaticValidationAttrib)
+        self.add_static_validation_handler(GET_REVOC_REG_DELTA, self._doStaticValidationGetRevocRegDelta)
+
+    def add_static_validation_handler(self, txn_type, handler: Callable):
+        if txn_type in self.static_validation_handlers:
+            raise ValueError('There is already a static validation handler'
+                             ' registered for {}'.format(txn_type))
+        self.static_validation_handlers[txn_type] = handler
+
+    def _add_default_dynamic_validation_handlers(self):
+        self.add_dynamic_validation_handler(NYM, self._validateNym)
+        self.add_dynamic_validation_handler(ATTRIB,
+                                            self._validateAttrib)
+        self.add_dynamic_validation_handler(SCHEMA,
+                                            self._validate_schema)
+        self.add_dynamic_validation_handler(CLAIM_DEF,
+                                            self._validate_claim_def)
+        self.add_dynamic_validation_handler(REVOC_REG_DEF,
+                                            self._validate_revoc_reg_def)
+        self.add_dynamic_validation_handler(REVOC_REG_ENTRY,
+                                            self._validate_revoc_reg_entry)
+
+    def add_dynamic_validation_handler(self, txn_type, handler: Callable):
+        if txn_type in self.dynamic_validation_handlers:
+            raise ValueError('There is already a dynamic validation handler'
+                             ' registered for {}'.format(txn_type))
+        self.dynamic_validation_handlers[txn_type] = handler
+
+    def _add_default_state_update_handlers(self):
+        self.add_state_update_handler(NYM, self._addNym)
+        self.add_state_update_handler(ATTRIB, self._addAttr)
+        self.add_state_update_handler(SCHEMA, self._addSchema)
+        self.add_state_update_handler(CLAIM_DEF, self._addClaimDef)
+        self.add_state_update_handler(REVOC_REG_DEF, self._addRevocDef)
+        self.add_state_update_handler(REVOC_REG_ENTRY, self._addRevocRegEntry)
+
+    def add_state_update_handler(self, txn_type, handler: Callable):
+        if txn_type in self.state_update_handlers:
+            raise ValueError('There is already a state update handler registered '
+                             'for {}'.format(txn_type))
+        self.state_update_handlers[txn_type] = handler
+
+    def _add_default_post_batch_creation_handlers(self):
+        self.add_post_batch_creation_handler(self.idrCache.currentBatchCreated)
+
+    def add_post_batch_creation_handler(self, handler: Callable):
+        if handler in self.post_batch_creation_handlers:
+            raise ValueError('There is already a post batch create handler '
+                             'registered {}'.format(handler))
+        self.post_batch_creation_handlers.append(handler)
+
+    def _add_default_post_batch_commit_handlers(self):
+        self.add_post_batch_commit_handler(self.update_idr_cache_and_ts_revoc_store)
+
+    def add_post_batch_commit_handler(self, handler: Callable):
+        if handler in self.post_batch_commit_handlers:
+            raise ValueError('There is already a post batch commit handler '
+                             'registered {}'.format(handler))
+        self.post_batch_commit_handlers.append(handler)
+
+    def _add_default_post_batch_rejection_handlers(self):
+        self.add_post_batch_rejection_handler(self.idrCache.batchRejected)
+
+    def add_post_batch_rejection_handler(self, handler: Callable):
+        if handler in self.post_batch_rejection_handlers:
+            raise ValueError('There is already a post batch reject handler '
+                             'registered {}'.format(handler))
+        self.post_batch_rejection_handlers.append(handler)
+
+    def _add_default_query_handlers(self):
+        self.add_query_handler(GET_NYM, self.handleGetNymReq)
+        self.add_query_handler(GET_ATTR, self.handleGetAttrsReq)
+        self.add_query_handler(GET_SCHEMA, self.handleGetSchemaReq)
+        self.add_query_handler(GET_CLAIM_DEF, self.handleGetClaimDefReq)
+        self.add_query_handler(GET_REVOC_REG_DEF, self.handleGetRevocRegDefReq)
+        self.add_query_handler(GET_REVOC_REG, self.handleGetRevocRegReq)
+        self.add_query_handler(GET_REVOC_REG_DELTA, self.handleGetRevocRegDelta)
+
+    def add_query_handler(self, txn_type, handler: Callable):
+        if txn_type in self.query_handlers:
+            raise ValueError('There is already a query handler registered '
+                             'for {}'.format(txn_type))
+        self.query_handlers[txn_type] = handler
 
     def handleGetNymReq(self, request: Request):
         nym = request.operation[TARGET_NYM]
@@ -427,12 +501,10 @@ class DomainReqHandler(PHandler):
     def handleGetRevocRegReq(self, request: Request):
         req_ts = request.operation.get(TIMESTAMP)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
-        author_did = request.identifier
         # Get root hash corresponding with given timestamp
         past_root = self.tsRevoc_store.get_equal_or_prev(req_ts)
         # Path to corresponding ACCUM record in state
-        path = domain.make_state_path_for_revoc_reg_entry_accum(authors_did=author_did,
-                                                                revoc_reg_def_id=revoc_reg_def_id)
+        path = domain.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
         if past_root is None:
             reply_data = None
             seq_no = None
@@ -453,12 +525,20 @@ class DomainReqHandler(PHandler):
 
     def _get_reg_entry_by_timestamp(self, timestamp, path_to_reg_entry):
         reg_entry = None
+        seq_no = None
+        last_update_time = None
+        reg_entry_proof = None
         past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry)
-            assert encoded_entry
-            reg_entry, _, _ = domain.decode_state_value(encoded_entry)
-        return past_root, reg_entry
+            if encoded_entry:
+                reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+                reg_entry_proof = self.make_proof(path_to_reg_entry, head_hash=past_root)
+        return StateValue(root_hash=past_root,
+                          value=reg_entry,
+                          seq_no=seq_no,
+                          update_time=last_update_time,
+                          proof=reg_entry_proof)
 
     def _get_reg_entry_accum_by_timestamp(self, timestamp, path_to_reg_entry_accum):
         reg_entry_accum = None
@@ -468,19 +548,14 @@ class DomainReqHandler(PHandler):
         past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry_accum)
-            reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-            reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
-        return reg_entry_accum, seq_no, last_update_time, reg_entry_accum_proof
-
-    def _doStaticValidationGetRevocRegDelta(self, request: Request):
-        assert request.operation
-        req_ts_to = request.operation.get(TO, None)
-        assert req_ts_to
-        req_ts_from = request.operation.get(FROM, None)
-        if req_ts_from and req_ts_from > req_ts_to:
-            raise InvalidClientRequest(request.identifier,
-                                       request.reqId,
-                                       "Timestamp FROM more then TO: {} > {}".format(req_ts_from, req_ts_to))
+            if encoded_entry:
+                reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+                reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
+        return StateValue(root_hash=past_root,
+                          value=reg_entry_accum,
+                          seq_no=seq_no,
+                          update_time=last_update_time,
+                          proof=reg_entry_accum_proof)
 
     def handleGetRevocRegDelta(self, request: Request):
         """
@@ -499,61 +574,75 @@ class DomainReqHandler(PHandler):
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
-        author_did = request.identifier
-        reply = None
-        # Get root hash for "to" timestamp
-        # Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"
-        path_to_reg_entry = domain.make_state_path_for_revoc_reg_entry(authors_did=author_did,
-                                                                       revoc_reg_def_id=revoc_reg_def_id)
-        path_to_reg_entry_accum = domain.make_state_path_for_revoc_reg_entry_accum(authors_did=author_did,
-                                                                                   revoc_reg_def_id=revoc_reg_def_id)
-        past_root_to, reg_entry_to = self._get_reg_entry_by_timestamp(req_ts_to, path_to_reg_entry)
-        reg_entry_accum_to, \
-            seq_no_to, \
-            last_update_time_to, \
-            reg_entry_accum_proof_to = self._get_reg_entry_accum_by_timestamp(req_ts_to, path_to_reg_entry_accum)
-        if past_root_to:
-            # Get issuance type from REVOC_REG_DEF
-            encoded_revoc_reg_def = self.state.get_for_root_hash(past_root_to, revoc_reg_def_id)
-            assert encoded_revoc_reg_def
-            revoc_reg_def, _, _ = domain.decode_state_value(encoded_revoc_reg_def)
-            strategy_cls = self.get_revocation_strategy(revoc_reg_def[VALUE][ISSUANCE_TYPE])
+        reply = {
+            REVOC_REG_DEF_ID: revoc_reg_def_id,
+        }
+        """
+        Get root hash for "to" timestamp
+        Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"
+        """
+        path_to_reg_entry = domain.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
+        path_to_reg_entry_accum = domain.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
 
-            if req_ts_from:
-                past_root_from, reg_entry_from = self._get_reg_entry_by_timestamp(req_ts_from, path_to_reg_entry)
-                req_entry_accum_from, \
-                    seq_no_from, \
-                    last_update_time_from, \
-                    reg_entry_accum_proof_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
-                # Compute issued/revoked lists corresponding with ISSUANCE_TYPE strategy
-                result_issued, result_revoked = strategy_cls.get_delta({ISSUED: reg_entry_to[VALUE].get(ISSUED, []),
-                                                                        REVOKED: reg_entry_to[VALUE].get(REVOKED, [])},
-                                                                       {ISSUED: reg_entry_from[VALUE].get(ISSUED, []),
-                                                                        REVOKED: reg_entry_from[VALUE].get(REVOKED, [])})
-            else:
-                result_issued, result_revoked = strategy_cls.get_delta({ISSUED: reg_entry_to[VALUE].get(ISSUED, []),
-                                                                        REVOKED: reg_entry_to[VALUE].get(REVOKED, [])},
-                                                                       None)
-            reply = {
-                REVOC_REG_ID: str(path_to_reg_entry),
-                REVOC_TYPE: revoc_reg_def.get(REVOC_TYPE),
-                VALUE: {
-                    ACCUM_TO: reg_entry_accum_to,
-                    ISSUED: result_issued,
-                    REVOKED: result_revoked
+        entry_to = self._get_reg_entry_by_timestamp(req_ts_to, path_to_reg_entry)
+        accum_to = self._get_reg_entry_accum_by_timestamp(req_ts_to, path_to_reg_entry_accum)
+        entry_from = StateValue()
+        accum_from = StateValue()
+
+        if accum_to.value and entry_to.value:
+            """Get issuance type from REVOC_REG_DEF"""
+            encoded_revoc_reg_def = self.state.get_for_root_hash(entry_to.root_hash,
+                                                                 revoc_reg_def_id)
+            if encoded_revoc_reg_def:
+                revoc_reg_def, _, _ = domain.decode_state_value(encoded_revoc_reg_def)
+                strategy_cls = self.get_revocation_strategy(revoc_reg_def[VALUE][ISSUANCE_TYPE])
+                issued_to = entry_to.value[VALUE].get(ISSUED, [])
+                revoked_to = entry_to.value[VALUE].get(REVOKED, [])
+                if req_ts_from:
+                    """Get REVOC_REG_ENTRY and ACCUM records for timestamp from if exist"""
+                    entry_from = self._get_reg_entry_by_timestamp(req_ts_from, path_to_reg_entry)
+                    accum_from = self._get_reg_entry_accum_by_timestamp(req_ts_from, path_to_reg_entry_accum)
+                if req_ts_from and entry_from.value and accum_from.value:
+                    """Compute issued/revoked lists corresponding with ISSUANCE_TYPE strategy"""
+                    issued_from = entry_from.value[VALUE].get(ISSUED, [])
+                    revoked_from = entry_from.value[VALUE].get(REVOKED, [])
+                    result_issued, result_revoked = strategy_cls.get_delta({ISSUED: issued_to,
+                                                                            REVOKED: revoked_to},
+                                                                           {ISSUED: issued_from,
+                                                                            REVOKED: revoked_from})
+                else:
+                    result_issued, result_revoked = strategy_cls.get_delta({ISSUED: issued_to,
+                                                                            REVOKED: revoked_to},
+                                                                           None)
+                reply = {
+                    REVOC_REG_DEF_ID: revoc_reg_def_id,
+                    REVOC_TYPE: revoc_reg_def.get(REVOC_TYPE),
+                    VALUE: {
+                        ACCUM_TO: accum_to.value if entry_from.value else entry_to.value,
+                        ISSUED: result_issued,
+                        REVOKED: result_revoked
+                    }
+
                 }
+                """If we got "from" timestamp, then add state proof into "data" section of reply"""
+                if req_ts_from and accum_from.value:
+                    reply[STATE_PROOF_FROM] = accum_from.proof
+                    reply[VALUE][ACCUM_FROM] = accum_from.value
 
-            }
-            # If we got "from" timestamp, then add state proof into "data" section of reply
-            if req_ts_from:
-                reply[STATE_PROOF_FROM] = reg_entry_accum_proof_from
-                reply[VALUE][ACCUM_FROM] = req_entry_accum_from
+        if accum_to and entry_to:
+            seq_no = accum_to.seq_no if entry_from.value else entry_to.seq_no
+            update_time = accum_to.update_time if entry_from.value else entry_to.update_time
+            proof = accum_to.proof if entry_from.value else entry_to.proof
+        else:
+            seq_no = None
+            update_time = None
+            proof = None
 
         return self.make_result(request=request,
                                 data=reply,
-                                last_seq_no=seq_no_to,
-                                update_time=last_update_time_to,
-                                proof=reg_entry_accum_proof_to)
+                                last_seq_no=seq_no,
+                                update_time=update_time,
+                                proof=proof)
 
     def handleGetAttrsReq(self, request: Request):
         if not self._validate_attrib_keys(request.operation):
@@ -599,7 +688,20 @@ class DomainReqHandler(PHandler):
             return value, last_seq_no, last_update_time, proof
         return None, None, None, proof
 
-    def _addAttr(self, txn) -> None:
+    def _addNym(self, txn, isCommitted=False) -> None:
+        nym = txn.get(TARGET_NYM)
+        data = {
+            f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm),
+            f.SEQ_NO.nm: txn.get(f.SEQ_NO.nm),
+            TXN_TIME: txn.get(TXN_TIME)
+        }
+        if ROLE in txn:
+            data[ROLE] = txn.get(ROLE)
+        if VERKEY in txn:
+            data[VERKEY] = txn.get(VERKEY)
+        self.updateNym(nym, data, isCommitted=isCommitted)
+
+    def _addAttr(self, txn, isCommitted=False) -> None:
         """
         The state trie stores the hash of the whole attribute data at:
             the did+attribute name if the data is plaintext (RAW)
@@ -613,30 +715,43 @@ class DomainReqHandler(PHandler):
         if attr_type != HASH:
             self.attributeStore.set(hashed_value, value)
 
-    def _addSchema(self, txn) -> None:
+    def _addSchema(self, txn, isCommitted=False) -> None:
         assert txn[TXN_TYPE] == SCHEMA
         path, value_bytes = domain.prepare_schema_for_state(txn)
         self.state.set(path, value_bytes)
 
-    def _addClaimDef(self, txn) -> None:
+    def _addClaimDef(self, txn, isCommitted=False) -> None:
         assert txn[TXN_TYPE] == CLAIM_DEF
         path, value_bytes = domain.prepare_claim_def_for_state(txn)
         self.state.set(path, value_bytes)
 
-    def _addRevocDef(self, txn) -> None:
+    def _addRevocDef(self, txn, isCommitted=False) -> None:
         assert txn[TXN_TYPE] == REVOC_REG_DEF
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
 
-    def _addRevocRegEntry(self, txn) -> None:
+    def _addRevocRegEntry(self, txn, isCommitted=False) -> None:
         current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
             author_did=txn[f.IDENTIFIER.nm],
             revoc_reg_def_id=txn[REVOC_REG_DEF_ID],
             req_id=txn[f.REQ_ID.nm]
         )
-        writer_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
+        writer_cls = self.get_revocation_strategy(
+            revoc_def[VALUE][ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
+
+    def onBatchCreated(self, stateRoot):
+        for handler in self.post_batch_creation_handlers:
+            handler(stateRoot)
+
+    def onBatchRejected(self):
+        for handler in self.post_batch_rejection_handlers:
+            handler()
+
+    def onBatchCommitted(self, stateRoot, ppTime):
+        for handler in self.post_batch_commit_handlers:
+            handler(stateRoot, ppTime)
 
     def getAttr(self,
                 did: str,
@@ -713,18 +828,18 @@ class DomainReqHandler(PHandler):
             return None, None, None, None
 
     def getRevocDefEntry(self,
-                         author_did,
                          revoc_reg_def_id,
                          isCommitted=True) -> (str, int, int, list):
-        assert author_did
         assert revoc_reg_def_id
-        path = domain.make_state_path_for_revoc_reg_entry(authors_did=author_did,
-                                                          revoc_reg_def_id=revoc_reg_def_id)
+        path = domain.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
+
+    def get_revocation_strategy(self, typ):
+        return self.revocation_strategy_map.get(typ)
 
     def get_query_response(self, request: Request):
         return self.query_handlers[request.operation[TXN_TYPE]](request)

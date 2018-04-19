@@ -1,5 +1,7 @@
 from typing import Iterable, Any, List
 
+from indy_node.server.action_req_handler import ActionReqHandler
+from indy_node.server.restarter import Restarter
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
@@ -8,6 +10,7 @@ from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
     ENC, RAW, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
+from plenum.common.messages.node_messages import Reply
 from plenum.common.types import f, \
     OPERATION
 from plenum.persistence.storage import initStorage
@@ -16,7 +19,7 @@ from plenum.server.node import Node as PlenumNode
 from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
     IN_PROGRESS
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
@@ -43,7 +46,6 @@ class Node(PlenumNode, HasPoolManager):
 
     def __init__(self,
                  name,
-                 nodeRegistry=None,
                  clientAuthNr=None,
                  ha=None,
                  cliname=None,
@@ -73,10 +75,10 @@ class Node(PlenumNode, HasPoolManager):
         self.attributeStore = None
         self.stateTsDbStorage = None
         self.upgrader = None
+        self.restarter = None
         self.poolCfg = None
 
         super().__init__(name=name,
-                         nodeRegistry=nodeRegistry,
                          clientAuthNr=clientAuthNr,
                          ha=ha,
                          cliname=cliname,
@@ -101,8 +103,8 @@ class Node(PlenumNode, HasPoolManager):
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)
 
-    def initPoolManager(self, nodeRegistry, ha, cliname, cliha):
-        HasPoolManager.__init__(self, nodeRegistry, ha, cliname, cliha)
+    def initPoolManager(self, ha, cliname, cliha):
+        HasPoolManager.__init__(self, ha, cliname, cliha)
 
     def getPrimaryStorage(self):
         """
@@ -130,8 +132,14 @@ class Node(PlenumNode, HasPoolManager):
                         self.dataLocation,
                         self.config,
                         self.configLedger,
-                        upgradeFailedCallback=self.postConfigLedgerCaughtUp,
-                        upgrade_start_callback=self.notify_upgrade_start)
+                        actionFailedCallback=self.postConfigLedgerCaughtUp,
+                        action_start_callback=self.notify_upgrade_start)
+
+    def getRestarter(self):
+        return Restarter(self.id,
+                         self.name,
+                         self.dataLocation,
+                         self.config)
 
     def getDomainReqHandler(self):
         if self.attributeStore is None:
@@ -174,6 +182,7 @@ class Node(PlenumNode, HasPoolManager):
 
     def setup_config_req_handler(self):
         self.upgrader = self.getUpgrader()
+        self.restarter = self.getRestarter()
         self.poolCfg = self.getPoolConfig()
         super().setup_config_req_handler()
 
@@ -182,6 +191,12 @@ class Node(PlenumNode, HasPoolManager):
                                 self.states[CONFIG_LEDGER_ID],
                                 self.getIdrCache(),
                                 self.upgrader,
+                                self.poolManager,
+                                self.poolCfg)
+
+    def get_action_req_handler(self):
+        return ActionReqHandler(self.getIdrCache(),
+                                self.restarter,
                                 self.poolManager,
                                 self.poolCfg)
 
@@ -204,7 +219,7 @@ class Node(PlenumNode, HasPoolManager):
     def acknowledge_upgrade(self):
         if not self.upgrader.should_notify_about_upgrade_result():
             return
-        lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
+        lastUpgradeVersion = self.upgrader.lastActionEventInfo[2]
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
         logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
             self, action, lastUpgradeVersion))
@@ -223,10 +238,10 @@ class Node(PlenumNode, HasPoolManager):
 
         self.startedProcessingReq(*request.key, self.nodestack.name)
         self.send(request)
-        self.upgrader.notified_about_upgrade_result()
+        self.upgrader.notified_about_action_result()
 
     def notify_upgrade_start(self):
-        scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
+        scheduled_upgrade_version = self.upgrader.scheduledAction[0]
         action = IN_PROGRESS
         logger.info('{} is about to be upgraded, '
                     'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))
@@ -289,12 +304,15 @@ class Node(PlenumNode, HasPoolManager):
     async def prod(self, limit: int = None) -> int:
         c = await super().prod(limit)
         c += self.upgrader.service()
+        c += self.restarter.service()
         return c
 
     def processRequest(self, request: Request, frm: str):
         if self.is_query(request.operation[TXN_TYPE]):
             self.process_query(request, frm)
             self.total_read_request_number += 1
+        elif self.is_action(request.operation[TXN_TYPE]):
+            self.process_action(request, frm)
         else:
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [
@@ -302,10 +320,12 @@ class Node(PlenumNode, HasPoolManager):
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
             # here we should have write transactions that should be processed
+            # pool_restart should not be written to ledger
             # only on writable pool
             if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
                     POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
+
             else:
                 raise InvalidClientRequest(
                     request.identifier,

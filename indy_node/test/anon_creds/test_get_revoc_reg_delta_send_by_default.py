@@ -3,10 +3,27 @@ import copy
 from plenum.common.util import get_utc_epoch
 from plenum.test.helper import sdk_send_and_check, sdk_sign_request_from_dict
 from indy_common.constants import REVOC_REG_DEF_ID, VALUE, FROM, TO, ISSUED, \
-    REVOKED, PREV_ACCUM, ACCUM_FROM, ACCUM_TO, STATE_PROOF_FROM, ACCUM
+    REVOKED, PREV_ACCUM, ACCUM_FROM, ACCUM_TO, STATE_PROOF_FROM, ACCUM, REVOC_TYPE
 from plenum.common.constants import TXN_TIME, DATA
 from plenum.common.types import f
 from plenum.common.util import randomString
+
+
+def test_send_with_wrong_rev_reg_id_default(looper,
+                            txnPoolNodeSet,
+                            sdk_pool_handle,
+                            send_revoc_reg_entry_by_default,
+                            build_get_revoc_reg_delta):
+    rev_entry_req, reg_reply = send_revoc_reg_entry_by_default
+    get_revoc_reg_delta = copy.deepcopy(build_get_revoc_reg_delta)
+    del get_revoc_reg_delta['operation'][FROM]
+    get_revoc_reg_delta['operation'][REVOC_REG_DEF_ID] = randomString(30)
+    get_revoc_reg_delta['operation'][TO] = get_utc_epoch() + 1000
+    sdk_reply = sdk_send_and_check([json.dumps(get_revoc_reg_delta)], looper, txnPoolNodeSet, sdk_pool_handle)
+    reply = sdk_reply[0][1]
+    assert reply['result'][DATA][REVOC_REG_DEF_ID] == get_revoc_reg_delta['operation'][REVOC_REG_DEF_ID]
+    assert VALUE not in reply['result'][DATA]
+    assert REVOC_TYPE not in reply['result'][DATA]
 
 
 def test_send_with_only_to_by_default(looper,
@@ -39,7 +56,9 @@ def test_send_earlier_then_first_entry_by_default(
     get_revoc_reg_delta['operation'][TO] = get_utc_epoch() - 1000
     sdk_reply = sdk_send_and_check([json.dumps(get_revoc_reg_delta)], looper, txnPoolNodeSet, sdk_pool_handle)
     reply = sdk_reply[0][1]
-    assert reply['result'][DATA] is None
+    assert reply['result'][DATA][REVOC_REG_DEF_ID] == rev_entry_req['operation'][REVOC_REG_DEF_ID]
+    assert VALUE not in reply['result'][DATA]
+    assert REVOC_TYPE not in reply['result'][DATA]
     assert reply['result'][f.SEQ_NO.nm] is None
     assert reply['result'][TXN_TIME] is None
 
