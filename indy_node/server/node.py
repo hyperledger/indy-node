@@ -46,7 +46,6 @@ class Node(PlenumNode, HasPoolManager):
 
     def __init__(self,
                  name,
-                 nodeRegistry=None,
                  clientAuthNr=None,
                  ha=None,
                  cliname=None,
@@ -80,7 +79,6 @@ class Node(PlenumNode, HasPoolManager):
         self.poolCfg = None
 
         super().__init__(name=name,
-                         nodeRegistry=nodeRegistry,
                          clientAuthNr=clientAuthNr,
                          ha=ha,
                          cliname=cliname,
@@ -105,8 +103,8 @@ class Node(PlenumNode, HasPoolManager):
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)
 
-    def initPoolManager(self, nodeRegistry, ha, cliname, cliha):
-        HasPoolManager.__init__(self, nodeRegistry, ha, cliname, cliha)
+    def initPoolManager(self, ha, cliname, cliha):
+        HasPoolManager.__init__(self, ha, cliname, cliha)
 
     def getPrimaryStorage(self):
         """
@@ -307,6 +305,7 @@ class Node(PlenumNode, HasPoolManager):
     async def prod(self, limit: int = None) -> int:
         c = await super().prod(limit)
         c += self.upgrader.service()
+        c += self.restarter.service()
         return c
 
     def processRequest(self, request: Request, frm: str):

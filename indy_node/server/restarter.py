@@ -42,7 +42,7 @@ class Restarter(NodeMaintainer):
         if event_type != RestartLog.STARTED:
             logger.debug(
                 'Restart for node {} was not scheduled. '
-                'Last event is {}:{}:{}'.format(
+                'Last event is {}:{}'.format(
                     self.nodeName, event_type, when))
             return False
 
@@ -56,8 +56,7 @@ class Restarter(NodeMaintainer):
                     .format(self.nodeName))
         self._notifier.sendMessageUponNodeRestartComplete(
             "Restart of node '{}' scheduled on {} "
-            "completed successfully"
-                .format(self.nodeName, when))
+            "completed successfully".format(self.nodeName, when))
 
     def handleActionTxn(self, req: Request) -> None:
         """
@@ -68,9 +67,6 @@ class Restarter(NodeMaintainer):
         :param req:
         """
         txn = req.operation
-        FINALIZING_EVENT_TYPES = [
-            RestartLog.SUCCEEDED, RestartLog.FAILED]
-
         if txn[TXN_TYPE] != POOL_RESTART:
             return
 
@@ -88,15 +84,6 @@ class Restarter(NodeMaintainer):
 
         action = txn[ACTION]
         if action == START:
-            last_event = self.lastActionEventInfo
-            if last_event and last_event[
-                0] in FINALIZING_EVENT_TYPES:
-                logger.info(
-                    "Node '{}' has already performed an restart. "
-                    "Last recorded event is {}".format(
-                        self.nodeName, last_event))
-                return
-
             failTimeout = txn.get(TIMEOUT, self.defaultActionTimeout)
 
             if self.scheduledAction:
@@ -201,7 +188,7 @@ class Restarter(NodeMaintainer):
         :param version: version to restart to
         """
 
-        logger.info("{}'s restartr calling agent for restart".format(self))
+        logger.info("{}'s restart calling agent for restart".format(self))
         self._actionLog.appendStarted(when)
         self._action_start_callback()
         self.scheduledAction = None

@@ -71,28 +71,27 @@ class ActionReqHandler(RequestHandler):
                     Roles.nameFromValue(origin_role)))
 
     def apply(self, req: Request, cons_time: int = None):
-
-            result = {}
-            try:
-                if req.txn_type == POOL_RESTART:
-                    self.restarter.handleActionTxn(req)
-                    result = self._generate_action_result(req)
-                elif req.txn_type == VALIDATOR_INFO:
-                    result = self._generate_action_result(req)
-                    result[DATA] = self.info_tool.info
-                else:
-                    raise InvalidClientRequest(
-                        "{} is not type of action transaction"
+        result = {}
+        try:
+            if req.txn_type == POOL_RESTART:
+                self.restarter.handleActionTxn(req)
+                result = self._generate_action_result(req)
+            elif req.txn_type == VALIDATOR_INFO:
+                result = self._generate_action_result(req)
+                result[DATA] = self.info_tool.info
+            else:
+                raise InvalidClientRequest(
+                    "{} is not type of action transaction"
                         .format(req.txn_type))
-            except Exception as ex:
-                if isinstance(ex, InvalidClientRequest):
-                    raise ex
-                result = self._generate_action_result(req,
-                                                     False,
-                                                     ex.args[0])
-                logger.warning("Operation is failed")
-            finally:
-                return result
+        except Exception as ex:
+            if isinstance(ex, InvalidClientRequest):
+                raise ex
+            result = self._generate_action_result(req,
+                                                  False,
+                                                  ex.args[0])
+            logger.warning("Operation is failed")
+        finally:
+            return result
 
     def _generate_action_result(self, request: Request, is_success=True,
                                 msg=None):
@@ -100,5 +99,4 @@ class ActionReqHandler(RequestHandler):
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId,
             f.IS_SUCCESS.nm: is_success,
-            f.MSG.nm: msg}
-                }
+            f.MSG.nm: msg}}
