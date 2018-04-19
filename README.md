@@ -107,8 +107,6 @@ The described process is automated in one of the ways below (it allow to install
  - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
 
  - **Docker** [Start Pool and Client with Docker](environment/docker/pool/README.md)
- 
- - **Running locally** [Indy Cluster Simulation](docs/cluster-simulation.md)
 
  - **Docker-based pool using with new libindy-based CLI**:
    - [Start Pool Locally](https://github.com/hyperledger/indy-sdk/blob/master/README.md#how-to-start-local-nodes-pool-with-docker)
