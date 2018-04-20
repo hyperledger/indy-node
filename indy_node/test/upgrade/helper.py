@@ -7,15 +7,20 @@ import subprocess
 from datetime import datetime
 from typing import List, Tuple
 
+import base58
 import dateutil.tz
+from plenum.test.node_catchup.helper import waitNodeDataEquality, ensure_all_nodes_have_same_data
+
+from plenum.common.keygen_utils import init_bls_keys
 
 from indy.ledger import build_pool_upgrade_request
 from plenum.common.constants import TXN_TYPE, DATA, VERSION, FORCE
 from plenum.common.types import f
-from plenum.common.util import randomString
+from plenum.common.util import randomString, hexToFriendly
 from plenum.test import waits as plenumWaits
 from plenum.test.helper import sdk_get_and_check_replies
-from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
+from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_send_update_node, \
+    sdk_pool_refresh, sdk_add_new_nym
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
@@ -268,3 +273,31 @@ def check_no_loop(nodeSet, event):
         node.postConfigLedgerCaughtUp()
         assert node.upgrader.scheduledUpgrade is None
         assert node.upgrader._upgradeLog.lastEvent[1] == event
+
+
+def sdk_change_bls_key(looper, txnPoolNodeSet,
+                       node,
+                       sdk_pool_handle,
+                       sdk_wallet_steward,
+                       add_wrong=False,
+                       new_bls=None):
+    new_blspk = init_bls_keys(node.keys_dir, node.name)
+    key_in_txn = new_bls or new_blspk \
+        if not add_wrong \
+        else base58.b58encode(randomString(128).encode())
+    node_dest = hexToFriendly(node.nodestack.verhex)
+    sdk_send_update_node(looper, sdk_wallet_steward,
+                         sdk_pool_handle,
+                         node_dest, node.name,
+                         None, None,
+                         None, None,
+                         bls_key=key_in_txn,
+                         services=None)
+    poolSetExceptOne = list(txnPoolNodeSet)
+    poolSetExceptOne.remove(node)
+    waitNodeDataEquality(looper, node, *poolSetExceptOne)
+    sdk_pool_refresh(looper, sdk_pool_handle)
+    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward,
+                    alias=randomString(5))
+    ensure_all_nodes_have_same_data(looper, txnPoolNodeSet)
+    return new_blspk

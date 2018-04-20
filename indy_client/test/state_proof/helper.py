@@ -3,7 +3,7 @@ from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PRO
     MULTI_SIGNATURE_VALUE_STATE_ROOT, MULTI_SIGNATURE_VALUE_TXN_ROOT, MULTI_SIGNATURE_VALUE_POOL_STATE_ROOT, \
     MULTI_SIGNATURE_VALUE_TIMESTAMP
 from plenum.test.helper import getRepliesFromClientInbox, \
-    waitForSufficientRepliesForRequests
+    waitForSufficientRepliesForRequests, sdk_sign_and_submit_op, sdk_get_and_check_replies
 
 
 def submit_operation_and_get_replies(looper, wallet, client, operation):
@@ -13,6 +13,11 @@ def submit_operation_and_get_replies(looper, wallet, client, operation):
     client.submitReqs(*pending)
     waitForSufficientRepliesForRequests(looper, client, requests=pending)
     return getRepliesFromClientInbox(client.inBox, request.reqId)
+
+
+def sdk_submit_operation_and_get_replies(looper, sdk_pool_handle, sdk_wallet_sender, operation):
+    req = sdk_sign_and_submit_op(looper, sdk_pool_handle, sdk_wallet_sender, operation)
+    return sdk_get_and_check_replies(looper, [req])
 
 
 def check_valid_proof(reply, client):

@@ -1,30 +1,7 @@
 from plenum.test import waits
 from indy_client.test.helper import checkRejects, checkNacks
-from indy_common.constants import NULL
-from indy_common.identity import Identity
 from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 from stp_core.loop.eventually import eventually
-
-
-def sendIdentityRequest(actingClient, actingWallet, idy):
-    idr = idy.identifier
-    if actingWallet.getTrustAnchoredIdentity(idr):
-        actingWallet.updateTrustAnchoredIdentity(idy)
-    else:
-        actingWallet.addTrustAnchoredIdentity(idy)
-    reqs = actingWallet.preparePending()
-    actingClient.submitReqs(*reqs)
-    return reqs
-
-
-def sendChangeVerkey(actingClient, actingWallet, idr, verkey):
-    idy = Identity(identifier=idr, verkey=verkey)
-    return sendIdentityRequest(actingClient, actingWallet, idy)
-
-
-def sendSuspendRole(actingClient, actingWallet, did):
-    idy = Identity(identifier=did, role=NULL)
-    return sendIdentityRequest(actingClient, actingWallet, idy)
 
 
 def checkIdentityRequestFailed(looper, client, req, cause):
@@ -50,26 +27,6 @@ def checkIdentityRequestSucceed(looper, actingClient, actingWallet, idr):
         len(actingClient.nodeReg)
     )
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
-
-
-def changeVerkey(looper, actingClient, actingWallet, idr, verkey,
-                 nAckReasonContains=None):
-    reqs = sendChangeVerkey(actingClient, actingWallet, idr, verkey)
-    if not nAckReasonContains:
-        checkIdentityRequestSucceed(looper, actingClient, actingWallet, idr)
-    else:
-        checkIdentityRequestFailed(
-            looper, actingClient, reqs[0], nAckReasonContains)
-
-
-def suspendRole(looper, actingClient, actingWallet,
-                idr, nAckReasonContains=None):
-    reqs = sendSuspendRole(actingClient, actingWallet, idr)
-    if not nAckReasonContains:
-        checkIdentityRequestSucceed(looper, actingClient, actingWallet, idr)
-    else:
-        checkIdentityRequestFailed(
-            looper, actingClient, reqs[0], nAckReasonContains)
 
 
 def sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_sender, did):

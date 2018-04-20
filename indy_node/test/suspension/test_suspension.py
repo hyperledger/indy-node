@@ -1,8 +1,7 @@
 import pytest
 
 from plenum.common.exceptions import RequestRejectedException
-from plenum.common.signer_did import DidSigner
-from indy_node.test.suspension.helper import changeVerkey, suspendRole, sdk_suspend_role
+from indy_node.test.suspension.helper import sdk_suspend_role
 from plenum.common.util import randomString
 from plenum.test.pool_transactions.helper import demote_node, sdk_add_new_nym
 from stp_core.loop.eventually import eventually
@@ -73,15 +72,6 @@ def testTrusteeAddingTrustAnchor(looper, sdk_pool_handle, another_trust_anchor):
     sdk_add_new_nym(looper, sdk_pool_handle, another_trust_anchor)
 
 
-# TODO: remove when delete TGB
-def testTGBSuspensionByTrustee(looper, another_trustee, anotherTGB):
-    trClient, trWallet = another_trustee
-    _, tgbWallet = anotherTGB
-    suspendRole(looper, trClient, trWallet, tgbWallet.defaultId)
-    with pytest.raises(AssertionError):
-        addRole(looper, *anotherTGB, name=randomString())
-
-
 def testStewardSuspensionByTrustee(looper, sdk_pool_handle,
                                    another_trustee, another_steward):
     _, did_stew = another_steward
@@ -111,22 +101,6 @@ def testTrusteeSuspensionByTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,
     with pytest.raises(RequestRejectedException) as e:
         sdk_suspend_role(looper, sdk_pool_handle, another_steward1, did)
     e.match('is neither Trustee nor owner of')
-
-
-# TODO: remove when delete TGB
-def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
-                                  another_trustee, anotherTGB, another_steward,
-                                  another_trust_anchor):
-    for identity in (another_trustee, anotherTGB, another_steward,
-                     another_trust_anchor):
-        # Trustee cannot change verkey
-        _, wallet = identity
-        signer = DidSigner()
-        changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId,
-                     signer.verkey,
-                     nAckReasonContains='TRUSTEE cannot update verkey')
-        # Identity owner can change verkey
-        changeVerkey(looper, *identity, wallet.defaultId, signer.verkey)
 
 
 # Keep the test below at the end of the suite since it will make one of the
