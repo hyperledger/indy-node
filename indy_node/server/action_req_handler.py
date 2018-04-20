@@ -71,6 +71,8 @@ class ActionReqHandler(RequestHandler):
                     Roles.nameFromValue(origin_role)))
 
     def apply(self, req: Request, cons_time: int = None):
+        logger.debug("Transaction {} with type {} started"
+                     .format(req.reqId, req.txn_type))
         try:
             if req.txn_type == POOL_RESTART:
                 self.restarter.handleActionTxn(req)
@@ -85,6 +87,8 @@ class ActionReqHandler(RequestHandler):
         except Exception as ex:
             logger.warning("Operation is failed")
             raise ex
+        logger.debug("Transaction {} with type {} finished"
+                     .format(req.reqId, req.txn_type))
         return result
 
     def _generate_action_result(self, request: Request):
