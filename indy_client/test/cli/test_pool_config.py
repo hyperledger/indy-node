@@ -56,5 +56,5 @@ def testPoolUpgradeOnReadonlyPool(
 
     for node in poolNodesStarted.nodes.values():
         assert len(node.upgrader.aqStash) > 0
-        assert node.upgrader.scheduledUpgrade
-        assert node.upgrader.scheduledUpgrade[0] == validUpgrade[VERSION]
+        assert node.upgrader.scheduledAction
+        assert node.upgrader.scheduledAction[0] == validUpgrade[VERSION]

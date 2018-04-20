@@ -9,7 +9,7 @@ from indy_node.server.upgrader import Upgrader
 m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
-def testNodeControlCreatesBackups(monkeypatch, tdir, looper):
+def testNodeControlCreatesBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
     currentVersion = Upgrader.getVersion()
