@@ -124,14 +124,6 @@ class BaseStats(OrderedDict):
         self._verbose = verbose
 
 
-class ConnectionStats(BaseStats):
-    shema = [
-        ("ip", BaseUnknown),
-        ("port", BaseUnknown),
-        ("protocol", BaseUnknown)
-    ]
-
-
 class ConnectionStatsOut:
 
     def __init__(self, bindings, verbose):
@@ -154,11 +146,7 @@ class ConnectionStatsOut:
         return ", ".join(data)
 
 
-class BindingsStats(BaseStats):
-    shema = [
-        ("node", ConnectionStats),
-        ("client", ConnectionStats)
-    ]
+class BindingStats(BaseUnknown):
 
     @staticmethod
     def explore_bindings(port):
@@ -247,20 +235,19 @@ class BindingsStats(BaseStats):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        for target, data in self.items():
-            # change schema: ignoring any data received except port,
-            # resolve it ourselves (requested in original task INDY-715)
-            # TODO refactor
+        # change schema: ignoring any data received except port,
+        # resolve it ourselves (requested in original task INDY-715)
+        # TODO refactor
 
-            bindings = self.explore_bindings(data['port'].val)
-            logger.info(
-                "Found the following bindings for target {} "
-                "with port {}: {}".format(target, data['port'], bindings)
-            )
-            self[target] = ConnectionStatsOut([] if bindings is None else [
-                dict(port=data['port'], protocol=protocol, ip=ip)
-                for protocol, ip in bindings
-            ], self._verbose)
+        bindings = self.explore_bindings(self.val)
+        logger.info(
+            "Found the following bindings "
+            "with port {}: {}".format(self.val, bindings)
+        )
+        self.val = ConnectionStatsOut([] if bindings is None else [
+            dict(port=self.val, protocol=protocol, ip=ip)
+            for protocol, ip in bindings
+        ], self._verbose)
 
 
 class TransactionsStats(BaseStats):
@@ -286,18 +273,24 @@ class MetricsStats(BaseStats):
     ]
 
 
-class NodesListStats(BaseStats):
+class NodeStats(BaseStats):
     shema = [
-        ("count", BaseUnknown),
-        ("list", NodesListUnknown)
+        ("Name", BaseUnknown),
+        ("did", BaseUnknown),
+        ("verkey", BaseUnknown),
+        ("Node_port", BindingStats),
+        ("Client_port", BindingStats),
+        ("Metrics", MetricsStats)
     ]
 
 
 class PoolStats(BaseStats):
     shema = [
-        ("total-count", BaseUnknown),
-        ("reachable", NodesListStats),
-        ("unreachable", NodesListStats)
+        ("Total_nodes_count", BaseUnknown),
+        ("Reachable_nodes", NodesListUnknown),
+        ("Reachable_nodes_count", BaseUnknown),
+        ("Unreachable_nodes", NodesListUnknown),
+        ("Unreachable_nodes_count", BaseUnknown)
     ]
 
 
@@ -338,14 +331,10 @@ class ValidatorStats(BaseStats):
     shema = [
         ("response-version", BaseUnknown),
         ("timestamp", TimestampUnknown),
-        ("alias", BaseUnknown),
+        ("Node_info", NodeStats),
         ("state", StateUnknown),
         ("enabled", BaseUnknown),
-        ("did", BaseUnknown),
-        ("verkey", BaseUnknown),
-        ("bindings", BindingsStats),
-        ("metrics", MetricsStats),
-        ("pool", PoolStats),
+        ("Pool_info", PoolStats),
         ("software", SoftwareStats)
     ]
 
@@ -454,40 +443,39 @@ class ValidatorStats(BaseStats):
     def __str__(self):
         # TODO moving parts to other classes seems reasonable but
         # will drop visibility of output
-
         lines = [
-            "Validator {} is {}".format(self['alias'], self['state']),
+            "Validator {} is {}".format(self['Node_info']['Name'], self['state']),
             "#Current time:     {}".format(self['timestamp']),
-            "Validator DID:    {}".format(self['did']),
-            "Verification Key: {}".format(self['verkey']),
-            "Node Port:        {}".format(self['bindings']['node']),
-            "Client Port:      {}".format(self['bindings']['client']),
+            "Validator DID:    {}".format(self['Node_info']['did']),
+            "Verification Key: {}".format(self['Node_info']['verkey']),
+            "Node Port:        {}".format(self['Node_info']['Node_port']),
+            "Client Port:      {}".format(self['Node_info']['Client_port']),
             "Metrics:",
-            "  Uptime: {}".format(self['metrics']['uptime']),
+            "  Uptime: {}".format(self['Node_info']['Metrics']['uptime']),
             "#  Total Config Transactions:  {}".format(
-                self['metrics']['transaction-count']['config']),
+                self['Node_info']['Metrics']['transaction-count']['config']),
             "  Total Ledger Transactions:  {}".format(
-                self['metrics']['transaction-count']['ledger']),
+                self['Node_info']['Metrics']['transaction-count']['ledger']),
             "  Total Pool Transactions:    {}".format(
-                self['metrics']['transaction-count']['pool']),
+                self['Node_info']['Metrics']['transaction-count']['pool']),
             "  Read Transactions/Seconds:  {}".format(
-                self['metrics']['average-per-second']['read-transactions']),
+                self['Node_info']['Metrics']['average-per-second']['read-transactions']),
             "  Write Transactions/Seconds: {}".format(
-                self['metrics']['average-per-second']['write-transactions']),
+                self['Node_info']['Metrics']['average-per-second']['write-transactions']),
             "Reachable Hosts:   {}/{}".format(
-                self['pool']['reachable']['count'],
-                self['pool']['total-count'])
+                self['Pool_info']['Reachable_nodes_count'],
+                self['Pool_info']['Total_nodes_count'])
         ] + [
             "#  {}".format(alias)
-            for alias in self['pool']['reachable']['list']
+            for alias in self['Pool_info']['Reachable_nodes']
         ] + [
             "Unreachable Hosts: {}/{}".format(
-                self['pool']['unreachable']['count'],
-                self['pool']['total-count']
+                self['Pool_info']['Unreachable_nodes_count'],
+                self['Pool_info']['Total_nodes_count']
             )
         ] + [
             "#  {}".format(alias)
-            for alias in self['pool']['unreachable']['list']
+            for alias in self['Pool_info']['Unreachable_nodes']
         ] + [
             "#Software Versions:"
         ] + [
