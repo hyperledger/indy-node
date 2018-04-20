@@ -19,6 +19,11 @@
     * [GET_SCHEMA](#get_schema)
     * [GET_CLAIM_DEF](#get_claim_def)
     * [GET_TXN](#get_txn)
+
+* [Action Requests](#action-requests)
+
+    * [POOL_RESTART](#pool_restrt)
+    * [VALIDATOR_INFO](#validator_info)
     
 This doc is about supported client's Request (both write and read ones).
 If you are interested in transactions and their representation on the Ledger (that is internal one),
@@ -1146,6 +1151,84 @@ A generic request to get a transaction from Ledger by its sequence number.
             'role': '2',
             'verkey': '~HjhFpNnFJKyceyELpCz3b5'
         }
+    }
+}
+```
+
+
+## Action Requests
+
+### POOL_RESTART
+The command to restart all nodes at the time specified in field "datetime"(sent by Trustee).
+
+- `datetime` (string):
+
+    Restart time in datetime frmat/
+    To restart as early as possible, send message without the "datetime" field or put in it value "0" or the past date on this place.
+    The restart is performed immediately and there is no guarantee of receiving an answer with Reply.
+
+
+- `action` (enum: `start` or `cancel`):
+
+    Starts or cancels the Restart.
+
+*Request Example*:
+```
+{
+    "reqId": 98262,
+    "signature": "cNAkmqSySHTckJg5rhtdyda3z1fQcV6ZVo1rvcd8mKmm7Fn4hnRChebts1ur7rGPrXeF1Q3B9N7PATYzwQNzdZZ",
+    "protocolVersion": 1,
+    "identifier": "M9BJDuS24bqbJNvBRsoGg3",
+    "operation": {
+            "datetime": "2018-03-29T15:38:34.464106+00:00",
+            "action": "start",
+            "type": "118"
+    }
+}
+```
+
+*Reply Example*:
+```
+{
+    "op": "REPLY",
+    "result": {
+            "reqId": 98262,
+            "isSuccess": True,
+            "type": "118",
+            "identifier": "M9BJDuS24bqbJNvBRsoGg3",
+            "msg": None,
+            "datetime": "2018-03-29T15:38:34.464106+00:00",
+            "action": "start",
+    }
+}
+```
+
+### VALIDATOR_INFO
+Command provide info from all the connected nodes without need of consensus.
+
+*Request Example*:
+```
+{
+    'protocolVersion': 1,
+    'reqId': 83193,
+    'identifier': 'M9BJDuS24bqbJNvBRsoGg3',
+    'operation': {
+                'type': '119'
+    }
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY',
+    'result': {
+            'reqId': 83193,
+            'msg': None,
+            'isSuccess': True,
+            'data': { <Json with node info> },
+            'type': '119',
+            'identifier': 'M9BJDuS24bqbJNvBRsoGg3'
     }
 }
 ```

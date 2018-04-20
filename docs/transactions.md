@@ -18,6 +18,11 @@
     * [NODE_UPGRADE](#node_upgrade)
     * [POOL_CONFIG](#pool_config)
 
+* [Action Transactions](#action-transactions)
+
+    * [POOL_RESTART](#pool_restrt)
+    * [VALIDATOR_INFO](#validator_info)
+
 ## General Information
 
 This doc is about supported transactions and their representation on the Ledger (that is internal one).
