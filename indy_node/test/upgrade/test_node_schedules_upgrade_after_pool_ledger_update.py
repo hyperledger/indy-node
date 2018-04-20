@@ -1,6 +1,7 @@
 import pytest
 
-from plenum.test.bls.helper import check_bls_key, sdk_change_bls_key
+from indy_node.test.upgrade.helper import sdk_change_bls_key
+from plenum.test.bls.helper import check_bls_key
 
 
 @pytest.fixture(scope="module")
