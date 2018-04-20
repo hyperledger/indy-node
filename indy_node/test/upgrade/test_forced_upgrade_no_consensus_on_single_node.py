@@ -23,8 +23,8 @@ def test_forced_upgrade_no_consensus_on_single_node(
     def testsched():
         for node in nodeSet:
             if node.name == "Alpha":
-                assert node.upgrader.scheduledUpgrade
-                assert node.upgrader.scheduledUpgrade[0] == nup[VERSION]
+                assert node.upgrader.scheduledAction
+                assert node.upgrader.scheduledAction[0] == nup[VERSION]
 
     looper.run(eventually(testsched, retryWait=1,
                           timeout=waits.expectedUpgradeScheduled()))

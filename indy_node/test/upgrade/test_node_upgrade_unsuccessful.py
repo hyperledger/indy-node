@@ -31,8 +31,8 @@ def test_node_detected_upgrade_failed(nodeSet):
     Upgrade log already created START event (see fixture above emulating real upgrade)
     '''
     for node in nodeSet:
-        assert node.upgrader.scheduledUpgrade is None
-        assert node.upgrader.lastUpgradeEventInfo[0] == UpgradeLog.UPGRADE_FAILED
+        assert node.upgrader.scheduledAction is None
+        assert node.upgrader.lastActionEventInfo[0] == UpgradeLog.FAILED
 
 
 def test_node_sent_upgrade_fail(looper, nodeSet, nodeIds):

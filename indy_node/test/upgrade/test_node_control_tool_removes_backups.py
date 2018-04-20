@@ -13,7 +13,7 @@ whitelist = ['Unexpected error in _upgrade test']
 logger = getlogger()
 
 
-def testNodeControlRemovesBackups(monkeypatch, tdir, looper):
+def testNodeControlRemovesBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
     currentVersion = Upgrader.getVersion()

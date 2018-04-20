@@ -76,6 +76,7 @@ MinSepBetweenNodeUpgrades = 300
 
 
 upgradeLogFile = "upgrade_log"
+restartLogFile = "restart_log"
 
 lastVersionFilePath = "last_version_file"
 

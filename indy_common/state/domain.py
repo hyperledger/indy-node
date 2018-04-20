@@ -11,9 +11,10 @@ from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, ID, REV
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
 MARKER_CLAIM_DEF = "\03"
-MARKER_REVOC_DEF = "\04"
-MARKER_REVOC_REG_ENTRY = "\05"
-MARKER_REVOC_REG_ENTRY_ACCUM = "\06"
+# TODO: change previous markers in "request refactoring" sprint
+MARKER_REVOC_DEF = "4"
+MARKER_REVOC_REG_ENTRY = "5"
+MARKER_REVOC_REG_ENTRY_ACCUM = "6"
 LAST_SEQ_NO = "lsn"
 VALUE = "val"
 LAST_UPDATE_TIME = "lut"
