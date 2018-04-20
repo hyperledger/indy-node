@@ -82,7 +82,7 @@ class ActionReqHandler(RequestHandler):
             else:
                 raise InvalidClientRequest(
                     "{} is not type of action transaction"
-                        .format(req.txn_type))
+                    .format(req.txn_type))
         except Exception as ex:
             if isinstance(ex, InvalidClientRequest):
                 raise ex
