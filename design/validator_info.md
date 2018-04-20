@@ -87,10 +87,8 @@ Reply from the one node :
 'op': 'REPLY',
 'result': {
 'reqId': 83193,
-'msg': None,
 'data': { <Json with specific data> },
 'type': '119',
-'isSuccess': True,
 'identifier': 'M9BJDuS24bqbJNvBRsoGg3'}
 }
 ```

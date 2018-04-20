@@ -71,7 +71,6 @@ class ActionReqHandler(RequestHandler):
                     Roles.nameFromValue(origin_role)))
 
     def apply(self, req: Request, cons_time: int = None):
-        result = {}
         try:
             if req.txn_type == POOL_RESTART:
                 self.restarter.handleActionTxn(req)
@@ -84,19 +83,11 @@ class ActionReqHandler(RequestHandler):
                     "{} is not type of action transaction"
                     .format(req.txn_type))
         except Exception as ex:
-            if isinstance(ex, InvalidClientRequest):
-                raise ex
-            result = self._generate_action_result(req,
-                                                  False,
-                                                  ex.args[0])
             logger.warning("Operation is failed")
-        finally:
-            return result
+            raise ex
+        return result
 
-    def _generate_action_result(self, request: Request, is_success=True,
-                                msg=None):
+    def _generate_action_result(self, request: Request):
         return {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            f.IS_SUCCESS.nm: is_success,
-            f.MSG.nm: msg}}
+            f.REQ_ID.nm: request.reqId}}
