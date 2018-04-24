@@ -1,14 +1,16 @@
 # Setting Up a Test Indy Network in VMs
 
+**WARNING:** Here use deprecated client. Please, use [new client from SDK](https://github.com/hyperledger/indy-sdk/tree/master/cli)
+
 When you're finished working through this document, you will be able to proceed through to the [*Getting
-Started Guide*](../../../../getting-started.md) or if you would like, you may continue setting up an actual Developer Environment connected to a sandbox by following these [instructions](https://github.com/hyperledger/indy-node/blob/master/environment/vagrant/sandbox/DevelopmentEnvironment/Virtualbox/Vagrantfile).
+Started Guide*](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/run-getting-started.md) or if you would like, you may continue setting up an actual Developer Environment connected to a sandbox by following these [instructions](https://github.com/hyperledger/indy-node/blob/master/environment/vagrant/sandbox/DevelopmentEnvironment/Virtualbox/Vagrantfile).
 
 This document will guide you in configuring a private network of Indy
 validator nodes for testing and learning about Indy.  Additional servers
 acting as Indy agents can also be provisioned on an ad-hoc basis, using this
 framework.  Using this guide, VirtualBox VMs will be used as the basis for
 creating a four-Validator network appropriate for completing the [*Getting
-Started Guide*](../../../../getting-started.md)
+Started Guide*](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/run-getting-started.md)
 and for other purposes.
 
 ### Assumptions
