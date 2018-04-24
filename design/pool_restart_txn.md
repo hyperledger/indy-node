@@ -27,10 +27,8 @@ If POOL_RESTART was successfully received, then the reply will be as follows:
 {"op": "REPLY",
 "result": {
         "reqId": 98262,
-        "isSuccess": True,
         "type": "118",
         "identifier": "M9BJDuS24bqbJNvBRsoGg3",
-        "msg": None,
         "datetime": "2018-03-29T15:38:34.464106+00:00",
         "action": "start",
         }
