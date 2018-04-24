@@ -402,7 +402,7 @@ def buildStewardClient(looper, tdir, stewardWallet):
     return s
 
 
-base58_alphabet = set(base58.alphabet)
+base58_alphabet = set(base58.alphabet.decode("utf-8"))
 
 
 def check_str_is_base58_compatible(str):

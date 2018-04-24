@@ -190,7 +190,7 @@ def client1Signer():
     signer = DidSigner(seed=seed)
     testable_verkey = friendlyToRaw(signer.identifier)
     testable_verkey += friendlyToRaw(signer.verkey[1:])
-    testable_verkey = base58.b58encode(testable_verkey)
+    testable_verkey = base58.b58encode(testable_verkey).decode("utf-8")
     assert testable_verkey == '6JvpZp2haQgisbXEXE9NE6n3Tuv77MZb5HdF9jS5qY8m'
     return signer
 
