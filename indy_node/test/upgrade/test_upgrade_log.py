@@ -32,7 +32,7 @@ def test_update_log():
     # Check that we can add and then get event
     log.appendScheduled(now, version, upgrade_id)
     last = log.lastEvent
-    assert last[1] is UpgradeLog.UPGRADE_SCHEDULED
+    assert last[1] is UpgradeLog.SCHEDULED
     assert last[2] == now
     assert last[3] == version
     assert last[4] == upgrade_id

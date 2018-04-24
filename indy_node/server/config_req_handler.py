@@ -3,8 +3,8 @@ from typing import List
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn, isTxnForced
-from plenum.server.req_handler import RequestHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
+from plenum.server.ledger_req_handler import LedgerRequestHandler
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, DATA
 from indy_common.auth import Authoriser
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE
 from indy_common.roles import Roles
@@ -15,7 +15,7 @@ from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
 
 
-class ConfigReqHandler(RequestHandler):
+class ConfigReqHandler(LedgerRequestHandler):
     write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
@@ -103,7 +103,6 @@ class ConfigReqHandler(RequestHandler):
             trname = IndyTransactions.POOL_CONFIG.name
             action = None
             status = None
-
         r, msg = Authoriser.authorised(
             typ, originRole, field=ACTION, oldVal=status, newVal=action)
         if not r:
@@ -124,12 +123,12 @@ class ConfigReqHandler(RequestHandler):
             # If it is forced then it was handled earlier
             # in applyForced method.
             if not isTxnForced(txn):
-                self.upgrader.handleUpgradeTxn(txn)
+                self.upgrader.handleActionTxn(txn)
                 self.poolCfg.handleConfigTxn(txn)
         return committedTxns
 
     def applyForced(self, req: Request):
         if req.isForced():
             txn = reqToTxn(req)
-            self.upgrader.handleUpgradeTxn(txn)
+            self.upgrader.handleActionTxn(txn)
             self.poolCfg.handleConfigTxn(txn)
