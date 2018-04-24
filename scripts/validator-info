@@ -711,6 +711,7 @@ def main():
     #     loop.close()
     # else:
     paths = glob(os.path.join(args.basedir, "*_info.json"))
+    paths.append(glob(os.path.join(args.basedir, "*_additional_info.json")))
     if not paths:
         print('There are no info files in {}'.format(args.basedir))
         return
