@@ -45,11 +45,10 @@ class DomainReqHandler(PHandler):
     }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store, tsRevoc_store):
-        super().__init__(ledger, state, config, requestProcessor, bls_store)
+                 idrCache, attributeStore, bls_store, tsRevoc_store=None):
+        super().__init__(ledger, state, config, requestProcessor, bls_store, tsRevoc_store=tsRevoc_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
-        self.tsRevoc_store = tsRevoc_store
 
         self.static_validation_handlers = {}
         self.dynamic_validation_handlers = {}
@@ -71,13 +70,13 @@ class DomainReqHandler(PHandler):
 
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
-        self.onBatchCommitted(stateRoot, ppTime)
+        self.onBatchCommitted(stateRoot)
+
         return r
 
-    def update_idr_cache_and_ts_revoc_store(self, stateRoot, ppTime):
+    def update_idr_cache(self, stateRoot):
         stateRoot = base58.b58decode(stateRoot.encode())
         self.idrCache.onBatchCommitted(stateRoot)
-        self.tsRevoc_store.set(ppTime, stateRoot)
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -388,7 +387,7 @@ class DomainReqHandler(PHandler):
         self.post_batch_creation_handlers.append(handler)
 
     def _add_default_post_batch_commit_handlers(self):
-        self.add_post_batch_commit_handler(self.update_idr_cache_and_ts_revoc_store)
+        self.add_post_batch_commit_handler(self.update_idr_cache)
 
     def add_post_batch_commit_handler(self, handler: Callable):
         if handler in self.post_batch_commit_handlers:
@@ -749,9 +748,9 @@ class DomainReqHandler(PHandler):
         for handler in self.post_batch_rejection_handlers:
             handler()
 
-    def onBatchCommitted(self, stateRoot, ppTime):
+    def onBatchCommitted(self, stateRoot):
         for handler in self.post_batch_commit_handlers:
-            handler(stateRoot, ppTime)
+            handler(stateRoot)
 
     def getAttr(self,
                 did: str,
