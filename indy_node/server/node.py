@@ -354,5 +354,3 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache.close()
         if self.attributeStore:
             self.attributeStore.close()
-        if self.stateTsDbStorage:
-            self.stateTsDbStorage.close()
