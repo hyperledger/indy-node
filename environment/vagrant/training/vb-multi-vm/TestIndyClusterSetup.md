@@ -1,7 +1,7 @@
 # Setting Up a Test Indy Network in VMs
 
 **WARNING**: This guideline assumes using of a deprecated CLI and deprecated Getting Started Guide.
-Please have a look at [new client from SDK](https://github.com/hyperledger/indy-sdk/tree/master/cli) and new [Getting Started Guide](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/run-getting-started.md) instead.
+Please have a look at [new client from SDK](https://github.com/hyperledger/indy-sdk/tree/master/cli) and new [Getting Started Guide](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md) instead.
 
 When you're finished working through this document, you will be able to proceed through to the [*Getting
 Started Guide*](../../../../getting-started.md) or if you would like, you may continue setting up an actual Developer Environment connected to a sandbox by following these [instructions](https://github.com/hyperledger/indy-node/blob/master/environment/vagrant/sandbox/DevelopmentEnvironment/Virtualbox/Vagrantfile).
