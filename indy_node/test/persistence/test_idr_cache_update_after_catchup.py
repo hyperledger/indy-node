@@ -30,7 +30,7 @@ def test_idr_cache_update_after_catchup(txnPoolNodeSet,
     reconnect_node_and_ensure_connected(looper, txnPoolNodeSet, node_to_disconnect.name)
     waitNodeDataEquality(looper, node_to_disconnect, *txnPoolNodeSet)
     key = domain.make_state_path_for_nym(idr)
-    root_hash = req_handler.tsRevoc_store.get_equal_or_prev(result['result']['txnTime'])
+    root_hash = req_handler.ts_store.get_equal_or_prev(result['result']['txnTime'])
     from_state = req_handler.state.get_for_root_hash(root_hash=root_hash,
                                                      key=key)
     assert from_state

@@ -45,8 +45,8 @@ class DomainReqHandler(PHandler):
     }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store, tsRevoc_store=None):
-        super().__init__(ledger, state, config, requestProcessor, bls_store, tsRevoc_store=tsRevoc_store)
+                 idrCache, attributeStore, bls_store, ts_store=None):
+        super().__init__(ledger, state, config, requestProcessor, bls_store, ts_store=ts_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
 
@@ -501,7 +501,7 @@ class DomainReqHandler(PHandler):
         req_ts = request.operation.get(TIMESTAMP)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
         # Get root hash corresponding with given timestamp
-        past_root = self.tsRevoc_store.get_equal_or_prev(req_ts)
+        past_root = self.ts_store.get_equal_or_prev(req_ts)
         # Path to corresponding ACCUM record in state
         path = domain.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
         if past_root is None:
@@ -527,7 +527,7 @@ class DomainReqHandler(PHandler):
         seq_no = None
         last_update_time = None
         reg_entry_proof = None
-        past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
+        past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry)
             if encoded_entry:
@@ -544,7 +544,7 @@ class DomainReqHandler(PHandler):
         seq_no = None
         last_update_time = None
         reg_entry_accum_proof = None
-        past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
+        past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry_accum)
             if encoded_entry:
