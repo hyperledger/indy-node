@@ -41,14 +41,14 @@ There are a number of scripts which can help in generation of keys and running a
 #### Generating keys
 
 ###### For deb installation
-The following script should be used to generate both ed25519 and BLS keys for a node named `Alpha` with node port `9701` and client port `9702`
+The following script should be used to generate both ed25519 and BLS keys for a node named `Alpha` with node port `9701` and client port `9702`:
 ```
 init_indy_node Alpha 9701 9702 [--seed 111111111111111111111111111Alpha]
 ```
 Also this script generates indy-node environment file needed for systemd service config and indy-node iptables setup script.
 
 ###### For pip installation
-The following script can generate both ed25519 and BLS keys for a node named `Alpha`
+The following script can generate both ed25519 and BLS keys for a node named `Alpha`:
 ```
 init_indy_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
 ```
@@ -79,7 +79,7 @@ Instructions related to iptables setup can be found [here](https://github.com/hy
 
 #### Running Node
 
-The following script will start a Node process which can communicate with other Nodes and Clients
+The following script will start a Node process which can communicate with other Nodes and Clients:
 ```
 start_indy_node Alpha 9701 9702
 ```
@@ -115,13 +115,12 @@ start_indy_node Node4 9707 9708
 
 ## Remote Test Network Example 
 
-Now lets say you want to run 4 nodes on 4 different machines as
+Now let's say you want to run 4 nodes on 4 different machines as
 1. Node1 running on 191.177.76.26
 2. Node2 running on 22.185.194.102
 3. Node3 running on 247.81.153.79
 4. Node4 running on 93.125.199.45
 
-For this
 On machine with IP 191.177.76.26 you will run
 ```
 ~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
