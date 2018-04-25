@@ -1,13 +1,16 @@
+import pytest
 from indy_node.test import waits
 from stp_core.loop.eventually import eventually
 from plenum.common.constants import ALIAS, SERVICES, VERSION
 from indy_common.constants import SCHEDULE
 from indy_node.test.upgrade.helper import ensureUpgradeSent, checkUpgradeScheduled
 
-from plenum.test.pool_transactions.helper import updateNodeData
+# TODO: sdk integration
+# from plenum.test.pool_transactions.helper import updateNodeData
 from plenum.test.conftest import pool_txn_stewards_data, stewards_and_wallets
 
 
+@pytest.mark.skip(reason="sdk integration")
 def test_update_with_demoted_node(looper, nodeSet, validUpgrade,
                                   stewards_and_wallets, trustee, trusteeWallet):
     # demote one node
