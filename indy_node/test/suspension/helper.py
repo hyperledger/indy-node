@@ -29,9 +29,9 @@ def checkIdentityRequestSucceed(looper, actingClient, actingWallet, idr):
     looper.run(eventually(chk, retryWait=1, timeout=timeout))
 
 
-def sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_sender, did):
+def sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_sender, susp_did):
     op = {'type': '1',
-          'dest': did,
+          'dest': susp_did,
           'role': None}
     req = sdk_sign_and_submit_op(looper, sdk_pool_handle, sdk_wallet_sender, op)
     sdk_get_and_check_replies(looper, [req])

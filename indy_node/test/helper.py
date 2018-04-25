@@ -352,14 +352,15 @@ def addAttributeAndCheck(looper, client, wallet, attrib):
     return wallet.getAttribute(attrib).seqNo
 
 
-def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib):
-    _, did = sdk_wallet_handle
+def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib, dest=None):
+    _, s_did = sdk_wallet_handle
+    t_did = dest or s_did
     attrib_req = looper.loop.run_until_complete(
-        build_attrib_request(did, did, None, attrib, None))
+        build_attrib_request(s_did, t_did, None, attrib, None))
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_handle,
                                                         sdk_pool_handle, attrib_req)
     sdk_get_and_check_replies(looper, [request_couple])
-    return request_couple[0]['reqId']
+    return request_couple
 
 
 def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, value):
@@ -423,7 +424,7 @@ def sdk_rotate_verkey(looper, sdk_pool_handle, wh,
                       did_of_changed, seed=None, verkey=None):
     seed = seed or randomString(32)
     verkey = looper.loop.run_until_complete(
-        replace_keys_start(wh, did_of_changed, json.dumps({'seed': seed, 'cid': True})))
+        replace_keys_start(wh, did_of_changed, json.dumps({'seed': seed})))
 
     sdk_add_new_nym(looper, sdk_pool_handle,
                     (wh, did_of_changer), dest=did_of_changed,

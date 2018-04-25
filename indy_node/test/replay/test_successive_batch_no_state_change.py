@@ -76,11 +76,7 @@ def test_successive_batch_do_no_change_state(looper,
     wh, did = sdk_wallet_trustee
     seed = randomString(32)
     (new_did, verkey) = looper.loop.run_until_complete(
-        create_and_store_my_did(wh,
-                                json.dumps({
-                                    'seed': seed,
-                                    'cid': True})
-                                ))
+        create_and_store_my_did(wh, json.dumps({'seed': seed})))
 
     sdk_add_new_nym(looper, sdk_pool_handle,
                     sdk_wallet_trustee, dest=new_did,
@@ -110,7 +106,7 @@ def test_successive_batch_do_no_change_state(looper,
 
     seed = randomString(32)
     (new_client_did, verkey) = looper.loop.run_until_complete(
-        create_and_store_my_did(wh, json.dumps({'seed': seed, 'cid': True})))
+        create_and_store_my_did(wh, json.dumps({'seed': seed})))
     sdk_add_new_nym(looper, sdk_pool_handle,
                     sdk_wallet_trustee, dest=new_client_did,
                     verkey=verkey)

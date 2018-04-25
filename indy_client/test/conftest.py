@@ -5,18 +5,10 @@ import base58
 
 from anoncreds.protocol.utils import randomString
 
-from indy_node.server.node import Node
-from plenum.test.helper import waitForSufficientRepliesForRequests
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
-
-from plenum.test.test_node import checkNodesConnected
-
-from plenum.test.node_catchup.helper import ensureClientConnectedToNodesAndPoolLedgerSame
-
 from plenum.common.keygen_utils import initLocalKeys
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import friendlyToRaw
-from plenum.test import waits as plenumWaits, waits
 from stp_core.common.log import Logger
 
 from stp_core.loop.eventually import eventually
@@ -58,9 +50,16 @@ from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNa
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
 from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
-    sdk_wallet_name, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data
+    sdk_wallet_name, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data, sdk_wallet_client, \
+    sdk_client_seed, poolTxnClientData, poolTxnClientNames, poolTxnData
 
 Logger.setLogLevel(logging.DEBUG)
+
+
+@pytest.fixture(scope="module")
+def sdk_wallet_trust_anchor(looper, sdk_pool_handle, sdk_wallet_trustee):
+    return sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
+                           alias='TA-1', role='TRUST_ANCHOR')
 
 
 @pytest.fixture(scope="session")
@@ -270,6 +269,14 @@ def userWalletA(nodeSet, addedTrustAnchor,
                 trustAnchorWallet, looper, trustAnchor):
     return addRole(looper, trustAnchor, trustAnchorWallet, 'userA',
                    addVerkey=False)
+
+
+@pytest.fixture(scope="module")
+def sdk_user_wallet_a(nodeSet, sdk_wallet_trust_anchor,
+                      sdk_pool_handle, looper, trustAnchor):
+    return sdk_add_new_nym(looper, sdk_pool_handle,
+                           sdk_wallet_trust_anchor, alias='userA',
+                           skipverkey=True)
 
 
 @pytest.fixture(scope="module")
