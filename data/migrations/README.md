@@ -1,4 +1,4 @@
-# Migrations for sovrin-node
+# Migrations for indy-node / sovrin-node
 
 All migrations are python scripts with names satisfying the following rule:
 ```
@@ -39,5 +39,16 @@ logger = getlogger()
 logger.info(...)
 logger.debug(...)
 ```
-
+- Migration is run from `root` by default (since `node-control-tool` which starts migration
+ is executed from the `root`).
+ - If you need to run the code from `indy` user (it's needed in most of the case),
+ then you can write a helper script and run it from the main script from `indy` user:
+```
+ret = subprocess.run(
+    compose_cmd(
+        ["su -c 'python3 {}' indy".format(helper_migration_script_path)]
+    ),
+    shell=True,
+    timeout=TIMEOUT)
+```
 

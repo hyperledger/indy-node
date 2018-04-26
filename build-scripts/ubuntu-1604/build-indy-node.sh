@@ -1,17 +1,21 @@
-#!/usr/bin/env bash
+#!/bin/bash -xe
 
-set -x
-set -e
-
-INPUT_PATH=$1
-OUTPUT_PATH=${2:-.}
+INPUT_PATH="$1"
+VERSION="$2"
+OUTPUT_PATH="${3:-.}"
 
 PACKAGE_NAME=indy-node
-POSTINST_TMP=postinst-${PACKAGE_NAME}
-PREREM_TMP=prerm-${PACKAGE_NAME}
 
-cp prerm ${PREREM_TMP}
-sed -i 's/{package_name}/'${PACKAGE_NAME}'/' ${PREREM_TMP}
+# copy the sources to a temporary folder
+TMP_DIR="$(mktemp -d)"
+cp -r "${INPUT_PATH}/." "${TMP_DIR}"
+
+# prepare the sources
+cd "${TMP_DIR}/build-scripts/ubuntu-1604"
+./prepare-package.sh "${TMP_DIR}" "${VERSION}"
+
+
+sed -i "s/{package_name}/${PACKAGE_NAME}/" "prerm"
 
 fpm --input-type "python" \
     --output-type "deb" \
@@ -21,13 +25,16 @@ fpm --input-type "python" \
     --python-bin "/usr/bin/python3" \
     --exclude "*.pyc" \
     --exclude "*.pyo" \
+    --depends at \
+    --depends iptables \
+    --depends libsodium18 \
     --no-python-fix-dependencies \
     --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
     --before-install "preinst_node" \
     --after-install "postinst_node" \
-    --before-remove ${PREREM_TMP} \
-    --name ${PACKAGE_NAME} \
-    --package ${OUTPUT_PATH} \
-    ${INPUT_PATH}
+    --before-remove "prerm" \
+    --name "${PACKAGE_NAME}" \
+    --package "${OUTPUT_PATH}" \
+    "${TMP_DIR}"
 
-rm ${PREREM_TMP}
+rm -rf "${TMP_DIR}"

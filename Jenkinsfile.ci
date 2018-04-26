@@ -1,0 +1,227 @@
+#!/usr/bin/env groovy
+
+/*
+ * This Jenkinsfile is intended to run on https://ci.evernym.com and may fail anywhere else.
+ *
+ * Environment requirements:
+ *  - environment variable:
+ *      - INDY_AGENT_LINUX_DOCKER_LABEL: label for agents with ability
+ *          to run linux docker containers
+ *      - (optional) INDY_AGENT_WINDOWS_LABEL: label for windows agents
+ *  - agents:
+ *      - linux:
+ *          - docker
+ *      - windows:
+ *          - python3.5 + virtualenv
+ *          - cygwin
+ */
+
+name = 'indy-node'
+
+def config = [
+    codeValidation: true,
+    runTests: true,
+    failFast: false,
+    sendNotif: true
+]
+
+
+// TODO enable windows
+def labels = [
+    linux: env.INDY_AGENT_LINUX_DOCKER_LABEL ?: 'linux'
+]
+
+if (env.INDY_AGENT_WINDOWS_LABEL) {
+    labels[windows] = env.INDY_AGENT_WINDOWS_LABEL
+}
+
+def wsCleanup() {
+    try {
+        cleanWs()
+    } catch (NoSuchMethodError ex) {
+        echo "WARNING: failed to clean the workspace, seems ws-cleanup plugin is not installed"
+    }
+}
+
+def buildDocker(imageName, dockerfile) {
+    def uid = sh(returnStdout: true, script: 'id -u').trim()
+    return docker.build("$imageName", "--build-arg uid=$uid -f $dockerfile")
+}
+
+
+def install(options=[:]) {
+    options.pip = options.pip ?: 'pip'
+    options.isVEnv = options.isVEnv ?: false
+    options.deps = options.deps ?: []
+
+    for (def dep : options.deps) {
+        sh "$options.pip install " + (options.isVEnv ? "-U" : "") + " $dep"
+    }
+
+    // TODO check that `--ignore-installed` case works when windows is enabled
+    // (makes sense only for virtual envs with `--system-site-packages`)
+    sh "$options.pip install " + (options.isVEnv ? "--ignore-installed" : "") + " .[tests]"
+}
+
+
+def withTestEnv(body) {
+    echo 'Test: Checkout csm'
+    checkout scm
+
+    if (isUnix()) {
+        echo 'Test: Build docker image'
+
+        buildDocker("hyperledger/indy-node-ci", "ci/ubuntu.dockerfile ci").inside {
+            echo 'Test: Install dependencies'
+            install()
+            body.call('python')
+        }
+    } else { // windows expected
+        echo 'Test: Build virtualenv'
+        def virtualEnvDir = ".venv"
+        sh "virtualenv --system-site-packages $virtualEnvDir"
+
+        echo 'Test: Install dependencies'
+        install(pip: "$virtualEnvDir/Scripts/pip", isVenv: true)
+        body.call("$virtualEnvDir/Scripts/python")
+    }
+}
+
+
+def test(options=[:]) {
+    options.resFile = options.resFile ?: 'test-result.txt'
+    options.testDir = options.testDir ?: '.'
+    options.python = options.python ?: 'python'
+    options.useRunner = options.useRunner ?: false
+    options.testOnlySlice = options.testOnlySlice ?: '1/1'
+
+    try {
+        if (options.useRunner) {
+            sh "PYTHONASYNCIODEBUG='0' $options.python runner.py --pytest \"$options.python -m pytest\" --dir $options.testDir --output \"$options.resFile\" --test-only-slice \"$options.testOnlySlice\""
+        } else {
+            sh "$options.python -m pytest --junitxml=$options.resFile $options.testDir"
+        }
+    }
+    finally {
+        try {
+            sh "ls -la $options.resFile"
+        } catch (Exception ex) {
+            // pass
+        }
+
+        if (options.useRunner) {
+            archiveArtifacts allowEmptyArchive: true, artifacts: "$options.resFile"
+        } else {
+            junit "$options.resFile"
+        }
+    }
+}
+
+
+def staticCodeValidation() {
+    try {
+        echo 'Static code validation'
+        checkout scm
+
+        buildDocker('code-validation', 'ci/code-validation.dockerfile ci').inside {
+            sh "python3 -m flake8"
+        }
+    }
+    finally {
+        echo 'Static code validation: Cleanup'
+        wsCleanup()
+    }
+}
+
+
+def tests = [
+    common: { python ->
+        test(
+            resFile: "test-result-common.${NODE_NAME}.xml",
+            testDir: 'indy_common',
+            python: python
+        )
+    },
+    client: { python ->
+        test(
+            resFile: "test-result-client.${NODE_NAME}.txt",
+            testDir: 'indy_client',
+            python: python,
+            useRunner: true
+        )
+    },
+    node: { python ->
+        test(
+            resFile: "test-result-node.${NODE_NAME}.txt",
+            testDir: 'indy_node',
+            python: python,
+            useRunner: true
+        )
+    },
+].collect {k, v -> [k, v]}
+
+
+def builds = [:]
+def _labels = labels.collect {k, v -> v}
+for (i = 0; i < _labels.size(); i++) {
+    def label = _labels[i]
+    def descr = "${label}Test"
+
+    for(j = 0; j < tests.size(); j++) {
+        def part = tests[j][0]
+        def testFn = tests[j][1]
+        def currDescr = "${descr}-${part}"
+        builds[(currDescr)] = {
+            stage(currDescr) {
+                node(label) {
+                    try {
+                        withTestEnv() { python ->
+                            echo 'Test'
+                            testFn(python)
+                        }
+                    }
+                    finally {
+                        echo 'Cleanup'
+                        wsCleanup()
+                    }
+                }
+            }
+        }
+    }
+}
+
+// PIPELINE
+
+try {
+    timeout(60) {
+        stage('Static code validation') {
+            if (config.codeValidation) {
+                node(labels.linux) {
+                    staticCodeValidation()
+                }
+            }
+        }
+        stage('Build / Test') {
+            if (config.runTests) {
+                builds.failFast = config.failFast
+                parallel builds
+            }
+        }
+        currentBuild.result = 'SUCCESS'
+    }
+} catch (Exception err) {
+    println(err.toString())
+    currentBuild.result = 'FAILURE'
+} finally {
+    stage('Build result notification') {
+        if (config.sendNotif) {
+            def emailMessage = [
+                body: '$DEFAULT_CONTENT',
+                replyTo: '$DEFAULT_REPLYTO',
+                subject: '$DEFAULT_SUBJECT',
+                recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+            ]
+            emailext emailMessage
+        }
+    }
+}

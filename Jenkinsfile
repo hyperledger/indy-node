@@ -17,7 +17,7 @@ def nodeTestUbuntu = {
             testHelpers.install()
 
             echo 'Ubuntu Test: Test'
-            testHelpers.testRunner([resFile: "test-result-node.${NODE_NAME}.txt", testDir: 'sovrin_node'])
+            testHelpers.testRunner([resFile: "test-result-node.${NODE_NAME}.txt", testDir: 'indy_node'])
             //testHelpers.testJUnit(resFile: "test-result-node.${NODE_NAME}.xml")
         }
     }
@@ -40,7 +40,7 @@ def clientTestUbuntu = {
             testHelpers.install()
 
             echo 'Ubuntu Test: Test'
-            testHelpers.testRunner([resFile: "test-result-client.${NODE_NAME}.txt", testDir: 'sovrin_client'])
+            testHelpers.testRunner([resFile: "test-result-client.${NODE_NAME}.txt", testDir: 'indy_client'])
             //testHelpers.testJUnit(resFile: "test-result-client.${NODE_NAME}.xml")
         }
     }
@@ -63,7 +63,7 @@ def commonTestUbuntu = {
             testHelpers.install()
 
             echo 'Ubuntu Test: Test'
-            testHelpers.testJUnit([resFile: "test-result-common.${NODE_NAME}.xml", testDir: 'sovrin_common'])
+            testHelpers.testJUnit([resFile: "test-result-common.${NODE_NAME}.xml", testDir: 'indy_common'])
         }
     }
     finally {
@@ -73,15 +73,21 @@ def commonTestUbuntu = {
 }
 
 def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
-    def volumeName = "indy-node-deb-u1604"
-    sh "docker volume rm -f $volumeName"
+    def volumeName = "$name-deb-u1604"
+    if (env.BRANCH_NAME != '' && env.BRANCH_NAME != 'master') {
+        volumeName = "${volumeName}.${BRANCH_NAME}"
+    }
+    if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
+        sh "docker volume rm $volumeName"
+    }
     dir('build-scripts/ubuntu-1604') {
-        sh "./build-indy-node-docker.sh $sourcePath"
-        sh "./build-3rd-parties-docker.sh"
+        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName"
+        sh "./build-3rd-parties-docker.sh $volumeName"
     }
     return "$volumeName"
 }
 
 options = new TestAndPublishOptions()
-options.enable([StagesEnum.PACK_RELEASE_DEPS, StagesEnum.PACK_RELEASE_ST_DEPS])
+options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
+options.setCopyWithDeps(true)
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])

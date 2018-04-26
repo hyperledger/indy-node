@@ -1,0 +1,6 @@
+# TODO: Follow these instructions:
+#       http://docs.aws.amazon.com/lambda/latest/dg/with-s3-example-deployment-pkg.html#with-s3-example-deployment-pkg-python
+echo "Bundling indy-self-serve artifacts..."
+cd /src/indy-self-serve/
+echo "Bundling lambda/nym ..."
+sudo -H -u ec2-user lambda/nym/bundle.sh

@@ -18,10 +18,10 @@ before_install:
 
 install:
     - pip install -U -e .
-    - pip install -U sovrin-client
+    - pip install -U indy-client
 
 script:
-    - python -m sovrin_node.test
+    - python -m indy_node.test
 
 before_cache:
     - rm -f /opt/orientdb/log/*

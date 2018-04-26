@@ -1,19 +1,20 @@
 import logging
+from time import perf_counter
 
 from plenum.common.signer_did import DidSigner
-from sovrin_client.client.client import Client
-from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_common.identity import Identity
+from indy_client.client.client import Client
+from indy_client.client.wallet.wallet import Wallet
+from indy_common.identity import Identity
 from stp_core.common.log import getlogger, Logger
 from stp_core.network.port_dispenser import genHa, HA
 from stp_core.loop.looper import Looper
 from plenum.test.helper import waitForSufficientRepliesForRequests
-from time import *
+from indy_common.config_util import getConfig
 
 numReqs = 100
 splits = 1
 
-Logger.setLogLevel(logging.INFO)
+Logger.setLogLevel(logging.WARNING)
 logger = getlogger()
 
 
@@ -25,7 +26,7 @@ def sendRandomRequests(wallet: Wallet, client: Client, count: int):
                        verkey=signer.verkey)
         wallet.addTrustAnchoredIdentity(idy)
     reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)
+    return client.submitReqs(*reqs)[0]
 
 
 def put_load():
@@ -36,7 +37,7 @@ def put_load():
     wallet.addIdentifier(
         signer=DidSigner(seed=b'000000000000000000000000Steward1'))
     client = Client(name, ha=ha)
-    with Looper(debug=True) as looper:
+    with Looper(debug=getConfig().LOOPER_DEBUG) as looper:
         looper.add(client)
         print('Will send {} reqs in all'.format(numReqs))
         requests = sendRandomRequests(wallet, client, numReqs)

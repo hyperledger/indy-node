@@ -1,0 +1,3325 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "General Configuration"
+          },
+          "Parameters": [
+            "Purpose",
+            "CodeBase",
+            "KeyPairName",
+            "ValidatorUsername",
+            "ValidatorPassword",
+            "AgentUsername",
+            "AgentPassword",
+            "DomainName"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Validator #1"
+          },
+          "Parameters": [
+            "Validator01Hostname",
+            "Validator01InstanceType",
+            "Validator01OperatingSystem",
+            "Validator01NodePort",
+            "Validator01NodeClientPort"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Validator #2"
+          },
+          "Parameters": [
+            "Validator02Hostname",
+            "Validator02InstanceType",
+            "Validator02OperatingSystem",
+            "Validator02NodePort",
+            "Validator02NodeClientPort"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Validator #3"
+          },
+          "Parameters": [
+            "Validator03Hostname",
+            "Validator03InstanceType",
+            "Validator03OperatingSystem",
+            "Validator03NodePort",
+            "Validator03NodeClientPort"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Validator #4"
+          },
+          "Parameters": [
+            "Validator04Hostname",
+            "Validator04InstanceType",
+            "Validator04OperatingSystem",
+            "Validator04NodePort",
+            "Validator04NodeClientPort"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Agent #1"
+          },
+          "Parameters": [
+            "Agent01Hostname",
+            "Agent01InstanceType",
+            "Agent01OperatingSystem"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "CodeBase": {
+          "default": "Code Base"
+        },
+        "DomainName": {
+          "default": "Domain"
+        },
+        "KeyPairName": {
+          "default": "Key Pair Name"
+        },
+        "ValidatorUsername": {
+          "default": "Validator Username"
+        },
+        "ValidatorPassword": {
+          "default": "Validator Password"
+        },
+        "AgentUsername": {
+          "default": "Agent Username"
+        },
+        "AgentPassword": {
+          "default": "Agent Password"
+        },
+        "Validator01Hostname": {
+          "default": "Hostname"
+        },
+        "Validator02Hostname": {
+          "default": "Hostname"
+        },
+        "Validator03Hostname": {
+          "default": "Hostname"
+        },
+        "Validator04Hostname": {
+          "default": "Hostname"
+        },
+        "Validator01InstanceType": {
+          "default": "Instance Type"
+        },
+        "Validator02InstanceType": {
+          "default": "Instance Type"
+        },
+        "Validator03InstanceType": {
+          "default": "Instance Type"
+        },
+        "Validator04InstanceType": {
+          "default": "Instance Type"
+        },
+        "Validator01OperatingSystem": {
+          "default": "Operating System"
+        },
+        "Validator02OperatingSystem": {
+          "default": "Operating System"
+        },
+        "Validator03OperatingSystem": {
+          "default": "Operating System"
+        },
+        "Validator04OperatingSystem": {
+          "default": "Operating System"
+        },
+        "Validator01NodePort": {
+          "default": "Node Port"
+        },
+        "Validator02NodePort": {
+          "default": "Node Port"
+        },
+        "Validator03NodePort": {
+          "default": "Node Port"
+        },
+        "Validator04NodePort": {
+          "default": "Node Port"
+        },
+        "Validator01NodeClientPort": {
+          "default": "Client Port"
+        },
+        "Validator02NodeClientPort": {
+          "default": "Client Port"
+        },
+        "Validator03NodeClientPort": {
+          "default": "Client Port"
+        },
+        "Validator04NodeClientPort": {
+          "default": "Client Port"
+        },
+        "Agent01Hostname": {
+          "default": "Hostname"
+        },
+        "Agent01InstanceType": {
+          "default": "Instance Type"
+        },
+        "Agent01OperatingSystem": {
+          "default": "Operating System"
+        }
+      }
+    },
+    "AWS::CloudFormation::Designer": {
+      "d1d82c42-82be-4ccf-984b-c5ed98f4b838": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": -50,
+          "y": 140
+        },
+        "z": 2,
+        "parent": "3118bc0d-5f32-4dd0-95a3-01104149d043",
+        "embeds": [],
+        "ismemberof": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ],
+        "dependson": [
+          "f6af709a-d125-4e24-ab7c-1ba926452562"
+        ],
+        "isrelatedto": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ]
+      },
+      "8fc9ea52-83c8-44ad-a17d-cea3121c1360": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": -150,
+          "y": 140
+        },
+        "z": 2,
+        "parent": "3118bc0d-5f32-4dd0-95a3-01104149d043",
+        "embeds": [],
+        "ismemberof": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ],
+        "dependson": [
+          "f6af709a-d125-4e24-ab7c-1ba926452562"
+        ],
+        "isrelatedto": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ]
+      },
+      "6a50d886-ed7e-4a74-804e-a35c11dd1546": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 150,
+          "y": 140
+        },
+        "z": 2,
+        "parent": "3118bc0d-5f32-4dd0-95a3-01104149d043",
+        "embeds": [],
+        "ismemberof": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ],
+        "dependson": [
+          "f6af709a-d125-4e24-ab7c-1ba926452562"
+        ],
+        "isrelatedto": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ]
+      },
+      "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 50,
+          "y": 140
+        },
+        "z": 2,
+        "parent": "3118bc0d-5f32-4dd0-95a3-01104149d043",
+        "embeds": [],
+        "ismemberof": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ],
+        "dependson": [
+          "f6af709a-d125-4e24-ab7c-1ba926452562"
+        ],
+        "isrelatedto": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ]
+      },
+      "4aabb978-1d4a-4b8f-a711-552b3664632f": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": -150,
+          "y": 240
+        },
+        "z": 2,
+        "parent": "3118bc0d-5f32-4dd0-95a3-01104149d043",
+        "embeds": [],
+        "ismemberof": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ],
+        "dependson": [
+          "f6af709a-d125-4e24-ab7c-1ba926452562"
+        ],
+        "isrelatedto": [
+          "adb107a8-2301-4607-afe3-0deb3aafdf9b",
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58"
+        ]
+      },
+      "cbe68e38-fa90-4c72-83f4-b34103430146": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": -270,
+          "y": 140
+        },
+        "z": 1,
+        "parent": "2d179af4-c61b-44c0-adaa-c31df48da299",
+        "embeds": [],
+        "isrelatedto": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146"
+        ]
+      },
+      "d25f47a0-d2ae-4d12-8f69-289ffda0df54": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 1
+      },
+      "7b9e9a93-4d7d-4743-b1a9-1243b7be4ffd": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 2
+      },
+      "02258688-dd19-4346-b661-46baf165ac93": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 3
+      },
+      "b93e539e-5830-4db7-9a28-7a5621cb0588": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 4
+      },
+      "a3f6ba86-8a1b-43fe-8340-fe90d601535f": {
+        "source": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        },
+        "target": {
+          "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+        },
+        "z": 5
+      },
+      "747ecf24-b0d6-4e6d-8c61-e6dfe66e2e46": {
+        "source": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        },
+        "target": {
+          "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+        },
+        "z": 6
+      },
+      "e14fb501-1d64-4055-b053-26eb891a25c6": {
+        "source": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        },
+        "target": {
+          "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+        },
+        "z": 7
+      },
+      "5a92f1e9-1193-45ac-a758-05b3bed614ea": {
+        "source": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        },
+        "target": {
+          "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+        },
+        "z": 8
+      },
+      "df6d132d-984e-4c3a-9db8-8ed10b71eff4": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        },
+        "z": 9
+      },
+      "fb77c7d1-cc40-41df-9d3d-97f32392a682": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        },
+        "z": 10
+      },
+      "2f6f00a9-f757-4b06-b883-e3c5974fe52e": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        },
+        "z": 11
+      },
+      "c3bf8872-9977-4d60-9d2a-ceb69274e459": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        },
+        "z": 12
+      },
+      "ed6a72ba-951a-4dd6-bfb7-15efb4db1ee8": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        },
+        "z": 13
+      },
+      "a73bbd39-fdc8-48e3-8506-68e3f0d3afd4": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        },
+        "z": 14
+      },
+      "d490a337-d98d-4a1e-b699-162317d3d0f9": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        },
+        "z": 15
+      },
+      "70fb1f01-c174-481b-9c6c-3749cec7e914": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        },
+        "z": 16
+      },
+      "9469350e-5a7a-42a9-b119-44744dca07e9": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        },
+        "z": 17
+      },
+      "e9b6b90e-aa33-4923-9476-27406e42704f": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        },
+        "z": 18
+      },
+      "0f3cc2ae-c9ec-4b77-bdef-5bf4437f1ae1": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        },
+        "z": 19
+      },
+      "895bed83-409f-4aff-aa90-38cf5e9887ef": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        },
+        "z": 20
+      },
+      "11467fb9-72dc-45b2-b26a-77cade6e15f7": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        },
+        "z": 21
+      },
+      "f060db36-8884-4272-890c-54fdd2fe15be": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        },
+        "z": 22
+      },
+      "3c591f31-686a-455b-a845-c938951676b6": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        },
+        "z": 23
+      },
+      "f249ea66-5e4f-4c8c-badc-576d6e6e88f0": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        },
+        "z": 24
+      },
+      "3118bc0d-5f32-4dd0-95a3-01104149d043": {
+        "size": {
+          "width": 400,
+          "height": 240
+        },
+        "position": {
+          "x": -173,
+          "y": 96
+        },
+        "z": 1,
+        "parent": "2d179af4-c61b-44c0-adaa-c31df48da299",
+        "embeds": [
+          "4aabb978-1d4a-4b8f-a711-552b3664632f",
+          "6a50d886-ed7e-4a74-804e-a35c11dd1546",
+          "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24",
+          "d1d82c42-82be-4ccf-984b-c5ed98f4b838",
+          "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        ]
+      },
+      "2d179af4-c61b-44c0-adaa-c31df48da299": {
+        "size": {
+          "width": 720,
+          "height": 280
+        },
+        "position": {
+          "x": -290,
+          "y": 80
+        },
+        "z": 0,
+        "embeds": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146",
+          "2584f912-0400-47bb-9429-bedf64d51c58",
+          "5cb5bf3f-d7b3-4708-8860-7c9b3e375443",
+          "3118bc0d-5f32-4dd0-95a3-01104149d043"
+        ]
+      },
+      "2a1abf80-6581-4c1e-83a3-abf012946269": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 510,
+          "y": 280
+        },
+        "z": 0,
+        "embeds": []
+      },
+      "d6c7c9d2-c5fb-44d2-9bc4-dc52dbe9d728": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+        },
+        "z": 3
+      },
+      "c5ec73cf-1e31-46eb-95ff-e993a97c45a8": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+        },
+        "z": 4
+      },
+      "45e659b6-c22b-4bde-a83b-957e787fb816": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+        },
+        "z": 5
+      },
+      "3a3d5ab1-894e-40f9-8c0c-1435a8fc8f50": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "adb107a8-2301-4607-afe3-0deb3aafdf9b"
+        },
+        "z": 6
+      },
+      "fb222de1-3415-4513-a516-1d1b385d8dbc": {
+        "source": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 7
+      },
+      "28652f4e-8dd4-423b-9438-956f47ed3482": {
+        "source": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 8
+      },
+      "41627ca9-f4ae-4529-b9bc-8d0300d2ebc5": {
+        "source": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 9
+      },
+      "590671c3-4bff-4665-be83-300f53813e31": {
+        "source": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 10
+      },
+      "7bd0dbaa-9a1a-4374-b4ac-a703081fa358": {
+        "source": {
+          "id": "2a1abf80-6581-4c1e-83a3-abf012946269"
+        },
+        "target": {
+          "id": "2d179af4-c61b-44c0-adaa-c31df48da299"
+        },
+        "z": 0
+      },
+      "5cb5bf3f-d7b3-4708-8860-7c9b3e375443": {
+        "size": {
+          "width": 140,
+          "height": 140
+        },
+        "position": {
+          "x": 270,
+          "y": 140
+        },
+        "z": 1,
+        "parent": "2d179af4-c61b-44c0-adaa-c31df48da299",
+        "embeds": [
+          "f6af709a-d125-4e24-ab7c-1ba926452562"
+        ]
+      },
+      "f6af709a-d125-4e24-ab7c-1ba926452562": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 310,
+          "y": 190
+        },
+        "z": 2,
+        "parent": "5cb5bf3f-d7b3-4708-8860-7c9b3e375443",
+        "embeds": [],
+        "references": [
+          "2a1abf80-6581-4c1e-83a3-abf012946269"
+        ],
+        "dependson": [
+          "7bd0dbaa-9a1a-4374-b4ac-a703081fa358"
+        ]
+      },
+      "11e05bcb-29f8-420b-8b2c-6aaaf50f0744": {
+        "source": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "target": {
+          "id": "2a1abf80-6581-4c1e-83a3-abf012946269"
+        },
+        "z": 3
+      },
+      "e2c29e4b-a8bb-4e90-b6c3-5c1e29eb0965": {
+        "source": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "target": {
+          "id": "7bd0dbaa-9a1a-4374-b4ac-a703081fa358"
+        },
+        "z": 4
+      },
+      "cd50f840-8cee-4ce2-8f84-5e744c8fcccc": {
+        "source": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        },
+        "target": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "z": 5
+      },
+      "1fa48bd9-6c67-4f24-b533-10d877582662": {
+        "source": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        },
+        "target": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "z": 6
+      },
+      "0a16645f-8022-44e8-912c-62a971f9c51e": {
+        "source": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        },
+        "target": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "z": 7
+      },
+      "925b5b55-3d1b-4a58-b5f8-591e0f07796f": {
+        "source": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        },
+        "target": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "z": 8
+      },
+      "5ace05b2-c300-4231-a17d-52b1bf776fb0": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "z": 9
+      },
+      "c68e2ab1-3403-4fbb-857c-b82232553b19": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "z": 10
+      },
+      "a51daf4e-d286-4c1d-a688-1541a318f1d6": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "z": 11
+      },
+      "98fb4d7c-0d34-48c9-8625-04d12e5942bd": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        },
+        "z": 12
+      },
+      "a858c5aa-810c-4486-93b6-e19166d9d691": {
+        "source": {
+          "id": "5cb5bf3f-d7b3-4708-8860-7c9b3e375443"
+        },
+        "target": {
+          "id": "3118bc0d-5f32-4dd0-95a3-01104149d043"
+        },
+        "z": 1
+      },
+      "f6721a7c-ed27-43dd-9f56-3d9f5b1e483f": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 3
+      },
+      "9c7d1281-f285-44b1-8f30-ac56baaf3e86": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 4
+      },
+      "7dcae582-98a3-4fd4-9e7f-79c3a5bf4aac": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 5
+      },
+      "8427e861-4e07-4ba8-a0a4-57e5e3cef713": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 6
+      },
+      "160f5471-ad78-4919-aa98-f3648c24b844": {
+        "source": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360",
+          "selector": "g:nth-child(1) g:nth-child(4) g:nth-child(3) circle:nth-child(1)     ",
+          "port": "AWS::MembershipLInk-AWS::EC2::SecurityGroup-SecurityGroupIds"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 8
+      },
+      "2584f912-0400-47bb-9429-bedf64d51c58": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": -270,
+          "y": 240
+        },
+        "z": 1,
+        "parent": "2d179af4-c61b-44c0-adaa-c31df48da299",
+        "embeds": [],
+        "dependson": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146"
+        ],
+        "isrelatedto": [
+          "cbe68e38-fa90-4c72-83f4-b34103430146"
+        ]
+      },
+      "8fdad668-2513-4793-bd1e-8ee837c73245": {
+        "source": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        },
+        "target": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "z": 3
+      },
+      "41103594-f01e-4014-bf49-99a400c0ba6b": {
+        "source": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        },
+        "target": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "z": 4
+      },
+      "6872d006-7482-4fc3-96cc-c2e06add9b9c": {
+        "source": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        },
+        "target": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "z": 5
+      },
+      "34558225-b63e-4f9d-921e-0da4fe6dd3a4": {
+        "source": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        },
+        "target": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "z": 6
+      },
+      "76d101f0-1918-4288-9e65-060b4f9c2371": {
+        "source": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        },
+        "target": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "z": 7
+      },
+      "51d73da4-df66-4d3d-9679-c1bc50bb69ee": {
+        "source": {
+          "id": "38e3c677-590a-4aae-bc65-69b8498d1702"
+        },
+        "target": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "z": 8
+      },
+      "9d7309f5-5c8e-4dfe-a89d-52d42e4ab232": {
+        "source": {
+          "id": "0e77f545-9754-4d16-89d1-56e85c9d6c21"
+        },
+        "target": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "z": 9
+      },
+      "88447695-b69d-4bac-a5a3-923f3664f507": {
+        "source": {
+          "id": "8b507c85-9e50-41a3-b012-d59557e02177"
+        },
+        "target": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "z": 10
+      },
+      "31c46600-4730-4507-b301-f9aa1f8e3a61": {
+        "source": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 3
+      },
+      "3149e239-c7ac-42db-9ad2-09bf060b4664": {
+        "source": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        },
+        "target": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        },
+        "z": 3
+      }
+    }
+  },
+  "Resources": {
+    "Validator01": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": {
+          "Ref": "Validator01InstanceType"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionBasedData",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Ref": "Validator01OperatingSystem"
+            }
+          ]
+        },
+        "NetworkInterfaces": [
+          {
+            "DeviceIndex": 0,
+            "AssociatePublicIpAddress": "True",
+            "PrivateIpAddress": {
+              "Fn::FindInMap": [
+                "ValidatorData",
+                "Validator01",
+                "IPaddress"
+              ]
+            },
+            "SubnetId": {
+              "Ref": "PublicSubnet"
+            },
+            "GroupSet": [
+              {
+                "Ref": "SGExternal"
+              },
+              {
+                "Ref": "SGInternal"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Validator",
+                  "01"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "NodeType",
+            "Value": "Validator"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "\n",
+                "# Setup Network\n",
+                "echo \"",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" > /etc/hostname\n",
+                "hostname ",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\n",
+                "echo \"127.0.0.1\tlocalhost localhost.",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "AgentData",
+                    "Agent01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "\n",
+                "# Create Users\n",
+                "adduser --disabled-password --gecos \"\" ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "echo -e \"",
+                {
+                  "Ref": "ValidatorPassword"
+                },
+                "\\n",
+                {
+                  "Ref": "ValidatorPassword"
+                },
+                "\" | passwd ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "usermod -a -G sudo ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "\n",
+                "# Enable Password-based SSH\n",
+                "perl -p -i -e 's/(PasswordAuthentication\\s+)no/$1yes/' /etc/ssh/sshd_config\n",
+                "service sshd restart\n",
+                "\n",
+                "# Install Packages\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator01OperatingSystem"
+                    },
+                    "evernym"
+                  ]
+                },
+                "\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator01OperatingSystem"
+                    },
+                    "indy"
+                  ]
+                },
+                "\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryEvernym",
+                    {
+                      "Ref": "Validator01OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryIndy",
+                    {
+                      "Ref": "Validator01OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
+                "\n",
+                "# Install and Configure Node\n",
+                "su - indy -c 'init_indy_node ",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator01NodePort"
+                },
+                " ",
+                {
+                  "Ref": "Validator01NodeClientPort"
+                },
+                "'\n",
+                "systemctl start indy-node\n",
+                "systemctl enable indy-node\n",
+                "systemctl status indy-node.service\n",
+                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "NodeNumber"
+                  ]
+                },
+                " --ips \\\"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\\\"\"\n",
+                "\n",
+                "# Bug Fixes\n",
+                "if grep -Fxq '[Install]' /etc/systemd/system/indy-node.service\n",
+                "then\n",
+                "  echo '[Install] section is present in indy-node target'\n",
+                "else\n",
+                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
+                "fi\n",
+                "chmod -x /etc/systemd/system/orientdb.service\n",
+                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
+                "then\n",
+                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
+                "else\n",
+                "  echo 'SendMonitorStats = False' > /etc/indy/indy_config.py\n",
+                "fi\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
+                "\n",
+                "# Clean Up\n",
+                "rm /etc/update-motd.d/10-help-text\n",
+                "rm /etc/update-motd.d/51-cloudguest\n",
+                "rm /etc/update-motd.d/97-overlayroot\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y\n",
+                "updatedb\n",
+                "shutdown -r now\n"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "8fc9ea52-83c8-44ad-a17d-cea3121c1360"
+        }
+      },
+      "DependsOn": [
+        "PublicRoute"
+      ]
+    },
+    "Validator02": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": {
+          "Ref": "Validator02InstanceType"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionBasedData",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Ref": "Validator02OperatingSystem"
+            }
+          ]
+        },
+        "NetworkInterfaces": [
+          {
+            "DeviceIndex": 0,
+            "AssociatePublicIpAddress": "True",
+            "PrivateIpAddress": {
+              "Fn::FindInMap": [
+                "ValidatorData",
+                "Validator02",
+                "IPaddress"
+              ]
+            },
+            "SubnetId": {
+              "Ref": "PublicSubnet"
+            },
+            "GroupSet": [
+              {
+                "Ref": "SGExternal"
+              },
+              {
+                "Ref": "SGInternal"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Validator",
+                  "02"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "NodeType",
+            "Value": "Validator"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "\n",
+                "# Setup Network\n",
+                "echo \"",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" > /etc/hostname\n",
+                "hostname ",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\n",
+                "echo \"127.0.0.1\tlocalhost localhost.",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "AgentData",
+                    "Agent01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "\n",
+                "# Create Users\n",
+                "adduser --disabled-password --gecos \"\" ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "echo -e \"",
+                {
+                  "Ref": "ValidatorPassword"
+                },
+                "\\n",
+                {
+                  "Ref": "ValidatorPassword"
+                },
+                "\" | passwd ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "usermod -a -G sudo ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "\n",
+                "# Enable Password-based SSH\n",
+                "perl -p -i -e 's/(PasswordAuthentication\\s+)no/$1yes/' /etc/ssh/sshd_config\n",
+                "service sshd restart\n",
+                "\n",
+                "# Install Packages\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator02OperatingSystem"
+                    },
+                    "evernym"
+                  ]
+                },
+                "\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator02OperatingSystem"
+                    },
+                    "indy"
+                  ]
+                },
+                "\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryEvernym",
+                    {
+                      "Ref": "Validator02OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryIndy",
+                    {
+                      "Ref": "Validator02OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
+                "\n",
+                "# Install and Configure Node\n",
+                "su - indy -c 'init_indy_node ",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator02NodePort"
+                },
+                " ",
+                {
+                  "Ref": "Validator02NodeClientPort"
+                },
+                "'\n",
+                "systemctl start indy-node\n",
+                "systemctl enable indy-node\n",
+                "systemctl status indy-node.service\n",
+                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "NodeNumber"
+                  ]
+                },
+                " --ips \\\"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\\\"\"\n",
+                "\n",
+                "# Bug Fixes\n",
+                "if grep -Fxq '[Install]' /etc/systemd/system/indy-node.service\n",
+                "then\n",
+                "  echo '[Install] section is present in indy-node target'\n",
+                "else\n",
+                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
+                "fi\n",
+                "chmod -x /etc/systemd/system/orientdb.service\n",
+                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
+                "then\n",
+                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
+                "else\n",
+                "  echo 'SendMonitorStats = False' > /etc/indy/indy_config.py\n",
+                "fi\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
+                "\n",
+                "# Clean Up\n",
+                "rm /etc/update-motd.d/10-help-text\n",
+                "rm /etc/update-motd.d/51-cloudguest\n",
+                "rm /etc/update-motd.d/97-overlayroot\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y\n",
+                "updatedb\n",
+                "shutdown -r now\n"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "d1d82c42-82be-4ccf-984b-c5ed98f4b838"
+        }
+      },
+      "DependsOn": [
+        "PublicRoute"
+      ]
+    },
+    "Validator03": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": {
+          "Ref": "Validator03InstanceType"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionBasedData",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Ref": "Validator03OperatingSystem"
+            }
+          ]
+        },
+        "NetworkInterfaces": [
+          {
+            "DeviceIndex": 0,
+            "AssociatePublicIpAddress": "True",
+            "PrivateIpAddress": {
+              "Fn::FindInMap": [
+                "ValidatorData",
+                "Validator03",
+                "IPaddress"
+              ]
+            },
+            "SubnetId": {
+              "Ref": "PublicSubnet"
+            },
+            "GroupSet": [
+              {
+                "Ref": "SGExternal"
+              },
+              {
+                "Ref": "SGInternal"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Validator",
+                  "03"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "NodeType",
+            "Value": "Validator"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "\n",
+                "# Setup Network\n",
+                "echo \"",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" > /etc/hostname\n",
+                "hostname ",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\n",
+                "echo \"127.0.0.1\tlocalhost localhost.",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "AgentData",
+                    "Agent01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "\n",
+                "# Create Users\n",
+                "adduser --disabled-password --gecos \"\" ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "echo -e \"",
+                {
+                  "Ref": "ValidatorPassword"
+                },
+                "\\n",
+                {
+                  "Ref": "ValidatorPassword"
+                },
+                "\" | passwd ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "usermod -a -G sudo ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "\n",
+                "# Enable Password-based SSH\n",
+                "perl -p -i -e 's/(PasswordAuthentication\\s+)no/$1yes/' /etc/ssh/sshd_config\n",
+                "service sshd restart\n",
+                "\n",
+                "# Install Packages\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator03OperatingSystem"
+                    },
+                    "evernym"
+                  ]
+                },
+                "\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator03OperatingSystem"
+                    },
+                    "indy"
+                  ]
+                },
+                "\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryEvernym",
+                    {
+                      "Ref": "Validator03OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryIndy",
+                    {
+                      "Ref": "Validator03OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
+                "\n",
+                "# Install and Configure Node\n",
+                "su - indy -c 'init_indy_node ",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator03NodePort"
+                },
+                " ",
+                {
+                  "Ref": "Validator03NodeClientPort"
+                },
+                "'\n",
+                "systemctl start indy-node\n",
+                "systemctl enable indy-node\n",
+                "systemctl status indy-node.service\n",
+                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "NodeNumber"
+                  ]
+                },
+                " --ips \\\"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\\\"\"\n",
+                "\n",
+                "# Bug Fixes\n",
+                "if grep -Fxq '[Install]' /etc/systemd/system/indy-node.service\n",
+                "then\n",
+                "  echo '[Install] section is present in indy-node target'\n",
+                "else\n",
+                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
+                "fi\n",
+                "chmod -x /etc/systemd/system/orientdb.service\n",
+                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
+                "then\n",
+                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
+                "else\n",
+                "  echo 'SendMonitorStats = False' > /etc/indy/indy_config.py\n",
+                "fi\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
+                "\n",
+                "# Clean Up\n",
+                "rm /etc/update-motd.d/10-help-text\n",
+                "rm /etc/update-motd.d/51-cloudguest\n",
+                "rm /etc/update-motd.d/97-overlayroot\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y\n",
+                "updatedb\n",
+                "shutdown -r now\n"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "dd58a2bf-9a16-45ba-b6ec-64cd16b01b24"
+        }
+      },
+      "DependsOn": [
+        "PublicRoute"
+      ]
+    },
+    "Validator04": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": {
+          "Ref": "Validator04InstanceType"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionBasedData",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Ref": "Validator04OperatingSystem"
+            }
+          ]
+        },
+        "NetworkInterfaces": [
+          {
+            "DeviceIndex": 0,
+            "AssociatePublicIpAddress": "True",
+            "PrivateIpAddress": {
+              "Fn::FindInMap": [
+                "ValidatorData",
+                "Validator04",
+                "IPaddress"
+              ]
+            },
+            "SubnetId": {
+              "Ref": "PublicSubnet"
+            },
+            "GroupSet": [
+              {
+                "Ref": "SGExternal"
+              },
+              {
+                "Ref": "SGInternal"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Validator",
+                  "04"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "NodeType",
+            "Value": "Validator"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "\n",
+                "# Setup Network\n",
+                "echo \"",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" > /etc/hostname\n",
+                "hostname ",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\n",
+                "echo \"127.0.0.1\tlocalhost localhost.",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "AgentData",
+                    "Agent01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "\n",
+                "# Create Users\n",
+                "adduser --disabled-password --gecos \"\" ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "echo -e \"",
+                {
+                  "Ref": "ValidatorPassword"
+                },
+                "\\n",
+                {
+                  "Ref": "ValidatorPassword"
+                },
+                "\" | passwd ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "usermod -a -G sudo ",
+                {
+                  "Ref": "ValidatorUsername"
+                },
+                "\n",
+                "\n",
+                "# Enable Password-based SSH\n",
+                "perl -p -i -e 's/(PasswordAuthentication\\s+)no/$1yes/' /etc/ssh/sshd_config\n",
+                "service sshd restart\n",
+                "\n",
+                "# Install Packages\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator04OperatingSystem"
+                    },
+                    "evernym"
+                  ]
+                },
+                "\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator04OperatingSystem"
+                    },
+                    "indy"
+                  ]
+                },
+                "\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryEvernym",
+                    {
+                      "Ref": "Validator04OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryIndy",
+                    {
+                      "Ref": "Validator04OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen indy-node tmux vim wget\n",
+                "\n",
+                "# Install and Configure Node\n",
+                "su - indy -c 'init_indy_node ",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator04NodePort"
+                },
+                " ",
+                {
+                  "Ref": "Validator04NodeClientPort"
+                },
+                "'\n",
+                "systemctl start indy-node\n",
+                "systemctl enable indy-node\n",
+                "systemctl status indy-node.service\n",
+                "su - indy -c \"generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum ",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "NodeNumber"
+                  ]
+                },
+                " --ips \\\"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\\\"\"\n",
+                "\n",
+                "# Bug Fixes\n",
+                "if grep -Fxq '[Install]' /etc/systemd/system/indy-node.service\n",
+                "then\n",
+                "  echo '[Install] section is present in indy-node target'\n",
+                "else\n",
+                "  perl -p -i -e 's/\\n\\n/[Install]\\nWantedBy=multi-user.target\\n/' /etc/systemd/system/indy-node.service\n",
+                "fi\n",
+                "chmod -x /etc/systemd/system/orientdb.service\n",
+                "if grep -Fxq 'SendMonitorStats' /etc/indy/indy_config.py\n",
+                "then\n",
+                "  echo 'SendMonitorStats is configured in indy_config.py'\n",
+                "else\n",
+                "  echo 'SendMonitorStats = False' > /etc/indy/indy_config.py\n",
+                "fi\n",
+                "chown indy:indy /etc/indy/indy_config.py\n",
+                "\n",
+                "# Clean Up\n",
+                "rm /etc/update-motd.d/10-help-text\n",
+                "rm /etc/update-motd.d/51-cloudguest\n",
+                "rm /etc/update-motd.d/97-overlayroot\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y\n",
+                "updatedb\n",
+                "shutdown -r now\n"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "6a50d886-ed7e-4a74-804e-a35c11dd1546"
+        }
+      },
+      "DependsOn": [
+        "PublicRoute"
+      ]
+    },
+    "Agent01": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": {
+          "Ref": "Agent01InstanceType"
+        },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionBasedData",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Ref": "Agent01OperatingSystem"
+            }
+          ]
+        },
+        "NetworkInterfaces": [
+          {
+            "DeviceIndex": 0,
+            "AssociatePublicIpAddress": "True",
+            "PrivateIpAddress": {
+              "Fn::FindInMap": [
+                "AgentData",
+                "Agent01",
+                "IPaddress"
+              ]
+            },
+            "SubnetId": {
+              "Ref": "PublicSubnet"
+            },
+            "GroupSet": [
+              {
+                "Ref": "SGExternal"
+              },
+              {
+                "Ref": "SGInternal"
+              }
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "-",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  "Agent",
+                  "01"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "NodeType",
+            "Value": "Agent"
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "\n",
+                "# Setup Network\n",
+                "echo \"",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" > /etc/hostname\n",
+                "hostname ",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\n",
+                "echo \"127.0.0.1\tlocalhost localhost.",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "AgentData",
+                    "Agent01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Agent01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator01Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator02Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator03Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "echo \"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\t",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                " ",
+                {
+                  "Ref": "Validator04Hostname"
+                },
+                ".",
+                {
+                  "Ref": "DomainName"
+                },
+                "\" >> /etc/hosts\n",
+                "\n",
+                "# Create Users\n",
+                "adduser --disabled-password --gecos \"\" ",
+                {
+                  "Ref": "AgentUsername"
+                },
+                "\n",
+                "echo -e \"",
+                {
+                  "Ref": "AgentPassword"
+                },
+                "\\n",
+                {
+                  "Ref": "AgentPassword"
+                },
+                "\" | passwd ",
+                {
+                  "Ref": "AgentUsername"
+                },
+                "\n",
+                "usermod -a -G sudo ",
+                {
+                  "Ref": "AgentUsername"
+                },
+                "\n",
+                "# Enable Password-based SSH\n",
+                "perl -p -i -e 's/(PasswordAuthentication\\s+)no/$1yes/' /etc/ssh/sshd_config\n",
+                "service sshd restart\n",
+                "\n",
+                "# Install Packages\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator01OperatingSystem"
+                    },
+                    "evernym"
+                  ]
+                },
+                "\n",
+                "apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryKeys",
+                    {
+                      "Ref": "Validator01OperatingSystem"
+                    },
+                    "indy"
+                  ]
+                },
+                "\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryEvernym",
+                    {
+                      "Ref": "Agent01OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "add-apt-repository \"",
+                {
+                  "Fn::FindInMap": [
+                    "RepositoryIndy",
+                    {
+                      "Ref": "Agent01OperatingSystem"
+                    },
+                    {
+                      "Ref": "CodeBase"
+                    }
+                  ]
+                },
+                "\"\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y debsigs debsig-verify apt-transport-https\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip python3-pip python3.5-dev libsodium18 unzip make screen tmux vim wget\n",
+                "\n",
+                "su - ",
+                {
+                  "Ref": "AgentUsername"
+                },
+                " -c \"generate_indy_pool_transactions --nodes 4 --clients 4 ",
+                " --ips \\\"",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator01",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator02",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator03",
+                    "IPaddress"
+                  ]
+                },
+                ",",
+                {
+                  "Fn::FindInMap": [
+                    "ValidatorData",
+                    "Validator04",
+                    "IPaddress"
+                  ]
+                },
+                "\\\"\"\n",
+                "\n",
+                "# Clean Up\n",
+                "rm /etc/update-motd.d/10-help-text\n",
+                "rm /etc/update-motd.d/51-cloudguest\n",
+                "rm /etc/update-motd.d/97-overlayroot\n",
+                "apt-get update\n",
+                "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y\n",
+                "updatedb\n",
+                "shutdown -r now\n"
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "4aabb978-1d4a-4b8f-a711-552b3664632f"
+        }
+      },
+      "DependsOn": [
+        "PublicRoute"
+      ]
+    },
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "2d179af4-c61b-44c0-adaa-c31df48da299"
+        }
+      }
+    },
+    "PublicSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "10.0.0.0/24",
+        "VpcId": {
+          "Ref": "VPC"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "3118bc0d-5f32-4dd0-95a3-01104149d043"
+        }
+      }
+    },
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {},
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "2a1abf80-6581-4c1e-83a3-abf012946269"
+        }
+      }
+    },
+    "EC2VPCG1BZYG": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "VpcId": {
+          "Ref": "VPC"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "7bd0dbaa-9a1a-4374-b4ac-a703081fa358"
+        }
+      }
+    },
+    "PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "VPC"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "5cb5bf3f-d7b3-4708-8860-7c9b3e375443"
+        }
+      }
+    },
+    "PublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "GatewayId": {
+          "Ref": "InternetGateway"
+        },
+        "DestinationCidrBlock": "0.0.0.0/0"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "f6af709a-d125-4e24-ab7c-1ba926452562"
+        }
+      },
+      "DependsOn": [
+        "EC2VPCG1BZYG"
+      ]
+    },
+    "EC2SRTA1OTBT": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "SubnetId": {
+          "Ref": "PublicSubnet"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "a858c5aa-810c-4486-93b6-e19166d9d691"
+        }
+      }
+    },
+    "SGInternal": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security Group for Internal Access",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "-1",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "SourceSecurityGroupId": {
+              "Ref": "SGExternal"
+            }
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "SourceSecurityGroupId": {
+              "Ref": "SGExternal"
+            }
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "2584f912-0400-47bb-9429-bedf64d51c58"
+        }
+      },
+      "DependsOn": [
+        "SGExternal"
+      ]
+    },
+    "SGExternal": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Security Group for External Access",
+        "VpcId": {
+          "Ref": "VPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "9700",
+            "ToPort": "9799",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "IpProtocol": "udp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "cbe68e38-fa90-4c72-83f4-b34103430146"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "Purpose": {
+      "Description": "The purpose of this stack",
+      "Type": "String"
+    },
+    "CodeBase": {
+      "Description": "Code branch to install",
+      "Type": "String",
+      "Default": "stable",
+      "AllowedValues": [
+        "stable",
+        "master"
+      ],
+      "ConstraintDescription": "Must be either `stable` or `test`"
+    },
+    "KeyPairName": {
+      "Description": "Key Pair to use for administrative login on all nodes",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "Must be a valid EC2 Key Pair in this region"
+    },
+    "ValidatorUsername": {
+      "Description": "Username for Validator login",
+      "Type": "String",
+      "Default": "indy",
+      "AllowedPattern": "[a-zA-Z0-9]{3,}",
+      "ConstraintDescription": "Must have at least 3 alphanumerics characters from the set [a-zA-Z0-9]; no special characters or whitespace are allowed"
+    },
+    "ValidatorPassword": {
+      "Description": "Password for all Validator login (minimum 8 alphanumerics)",
+      "Type": "String",
+      "NoEcho": "True",
+      "AllowedPattern": "[a-zA-Z0-9]{8,}",
+      "ConstraintDescription": "Must have at least 8 alphanumerics characters from the set [a-zA-Z0-9]; no special characters or whitespace are allowed"
+    },
+    "AgentUsername": {
+      "Description": "Username for Agent login",
+      "Type": "String",
+      "Default": "agent",
+      "AllowedPattern": "[a-zA-Z0-9]{3,}",
+      "ConstraintDescription": "Must have at least 3 alphanumerics characters from the set [a-zA-Z0-9]; no special characters or whitespace are allowed"
+    },
+    "AgentPassword": {
+      "Description": "Password for Agent login (minimum 8 alphanumerics)",
+      "Type": "String",
+      "NoEcho": "True",
+      "AllowedPattern": "[a-zA-Z0-9]{8,}",
+      "ConstraintDescription": "Must have at least 8 alphanumerics characters from the set [a-zA-Z0-9]; no special characters or whitespace are allowed"
+    },
+    "DomainName": {
+      "Description": "Domain name to append to all hostnames (no leading '.')",
+      "Type": "String",
+      "Default": "evernym.lab",
+      "AllowedPattern": "[a-zA-Z0-9][a-zA-Z0-9.]*",
+      "ConstraintDescription": "Must be formatted as a valid domain name without the leading '.'"
+    },
+    "Validator01Hostname": {
+      "Description": "Hostname for Validator #1",
+      "Type": "String",
+      "Default": "Node1",
+      "AllowedPattern": "[a-zA-Z0-9]+",
+      "ConstraintDescription": "Must be a valid hostname (not FQDN)"
+    },
+    "Validator01InstanceType": {
+      "Description": "Instance type for Validator #1",
+      "Type": "String",
+      "Default": "t2.small",
+      "AllowedValues": [
+        "t2.nano",
+        "t2.micro",
+        "t2.small",
+        "t2.medium"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 Instance Type"
+    },
+    "Validator01OperatingSystem": {
+      "Description": "Operating System for Validator #1",
+      "Type": "String",
+      "Default": "Ubuntu1604",
+      "AllowedValues": [
+        "Ubuntu1604"
+      ]
+    },
+    "Validator01NodePort": {
+      "Description": "Node port (TCP) for Validator #1",
+      "Type": "Number",
+      "Default": 9701,
+      "MinValue": 9700,
+      "MaxValue": 9799,
+      "ConstraintDescription": "Must be between 9700-9799"
+    },
+    "Validator01NodeClientPort": {
+      "Description": "Node client port (TCP) for Validator #1",
+      "Type": "Number",
+      "Default": 9702,
+      "MinValue": 9700,
+      "MaxValue": 9799,
+      "ConstraintDescription": "Must be between 9700-9799"
+    },
+    "Validator02Hostname": {
+      "Description": "Hostname for Validator #2",
+      "Type": "String",
+      "Default": "Node2",
+      "AllowedPattern": "[a-zA-Z0-9]+",
+      "ConstraintDescription": "Must be a valid hostname (not FQDN)"
+    },
+    "Validator02InstanceType": {
+      "Description": "Instance type for Validator #2",
+      "Type": "String",
+      "Default": "t2.small",
+      "AllowedValues": [
+        "t2.nano",
+        "t2.micro",
+        "t2.small",
+        "t2.medium"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 Instance Type"
+    },
+    "Validator02OperatingSystem": {
+      "Description": "Operating System for Validator #2",
+      "Type": "String",
+      "Default": "Ubuntu1604",
+      "AllowedValues": [
+        "Ubuntu1604"
+      ]
+    },
+    "Validator02NodePort": {
+      "Description": "Node port (TCP) for Validator #2",
+      "Type": "Number",
+      "Default": 9703,
+      "MinValue": 9700,
+      "MaxValue": 9799,
+      "ConstraintDescription": "Must be between 9700-9799"
+    },
+    "Validator02NodeClientPort": {
+      "Description": "Node client port (TCP) for Validator #2",
+      "Type": "Number",
+      "Default": 9704,
+      "MinValue": 9700,
+      "MaxValue": 9799,
+      "ConstraintDescription": "Must be between 9700-9799"
+    },
+    "Validator03Hostname": {
+      "Description": "Hostname for Validator #3",
+      "Type": "String",
+      "Default": "Node3",
+      "AllowedPattern": "[a-zA-Z0-9]+",
+      "ConstraintDescription": "Must be a valid hostname (not FQDN)"
+    },
+    "Validator03InstanceType": {
+      "Description": "Instance type for Validator #3",
+      "Type": "String",
+      "Default": "t2.small",
+      "AllowedValues": [
+        "t2.nano",
+        "t2.micro",
+        "t2.small",
+        "t2.medium"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 Instance Type"
+    },
+    "Validator03OperatingSystem": {
+      "Description": "Operating System for Validator #3",
+      "Type": "String",
+      "Default": "Ubuntu1604",
+      "AllowedValues": [
+        "Ubuntu1604"
+      ]
+    },
+    "Validator03NodePort": {
+      "Description": "Node port (TCP) for Validator #3",
+      "Type": "Number",
+      "Default": 9705,
+      "MinValue": 9700,
+      "MaxValue": 9799,
+      "ConstraintDescription": "Must be between 9700-9799"
+    },
+    "Validator03NodeClientPort": {
+      "Description": "Node client port (TCP) for Validator #3",
+      "Type": "Number",
+      "Default": 9706,
+      "MinValue": 9700,
+      "MaxValue": 9799,
+      "ConstraintDescription": "Must be between 9700-9799"
+    },
+    "Validator04Hostname": {
+      "Description": "Hostname for Validator #41",
+      "Type": "String",
+      "Default": "Node4",
+      "AllowedPattern": "[a-zA-Z0-9]+",
+      "ConstraintDescription": "Must be a valid hostname (not FQDN)"
+    },
+    "Validator04InstanceType": {
+      "Description": "Instance type for Validator #4",
+      "Type": "String",
+      "Default": "t2.small",
+      "AllowedValues": [
+        "t2.nano",
+        "t2.micro",
+        "t2.small",
+        "t2.medium"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 Instance Type"
+    },
+    "Validator04OperatingSystem": {
+      "Description": "Operating System for Validator #4",
+      "Type": "String",
+      "Default": "Ubuntu1604",
+      "AllowedValues": [
+        "Ubuntu1604"
+      ]
+    },
+    "Validator04NodePort": {
+      "Description": "Node port (TCP) for Validator #4",
+      "Type": "Number",
+      "Default": 9707,
+      "MinValue": 9700,
+      "MaxValue": 9799,
+      "ConstraintDescription": "Must be between 9700-9799"
+    },
+    "Validator04NodeClientPort": {
+      "Description": "Node client port (TCP) for Validator #4",
+      "Type": "Number",
+      "Default": 9708,
+      "MinValue": 9700,
+      "MaxValue": 9799,
+      "ConstraintDescription": "Must be between 9700-9799"
+    },
+    "Agent01Hostname": {
+      "Description": "Hostname for Agent #1",
+      "Type": "String",
+      "Default": "agent01",
+      "AllowedPattern": "[a-zA-Z0-9]+",
+      "ConstraintDescription": "Must be a valid hostname (not FQDN)"
+    },
+    "Agent01InstanceType": {
+      "Description": "Instance type for Agent #1",
+      "Type": "String",
+      "Default": "t2.nano",
+      "AllowedValues": [
+        "t2.nano",
+        "t2.micro",
+        "t2.small",
+        "t2.medium"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 Instance Type"
+    },
+    "Agent01OperatingSystem": {
+      "Description": "Operating System for Agent #1",
+      "Type": "String",
+      "Default": "Ubuntu1604",
+      "AllowedValues": [
+        "Ubuntu1604"
+      ]
+    }
+  },
+  "Mappings": {
+    "AgentData": {
+      "Agent01": {
+        "IPaddress": "10.0.0.201"
+      }
+    },
+//    "ClientCodePyPi": {
+//      "Ubuntu1604": {
+//        "stable": "indy-client",
+//        "master": "indy-client-dev"
+//      }
+//    },
+    "RegionBasedData": {
+      "ap-northeast-1": {
+        "Ubuntu1604": "ami-aae114cc"
+      },
+      "ap-northeast-2": {
+        "Ubuntu1604": "ami-d24e97bc"
+      },
+      "ap-southeast-1": {
+        "Ubuntu1604": "ami-e8da418b"
+      },
+      "ap-southeast-2": {
+        "Ubuntu1604": "ami-49b3aa2a"
+      },
+      "ca-central-1": {
+        "Ubuntu1604": "ami-b3cf71d7"
+      },
+      "eu-central-1": {
+        "Ubuntu1604": "ami-9c1db3f3"
+      },
+      "eu-west-1": {
+        "Ubuntu1604": "ami-016f9e78"
+      },
+      "eu-west-2": {
+        "Ubuntu1604": "ami-fde6f799"
+      },
+      "sa-east-1": {
+        "Ubuntu1604": "ami-7ad8ae16"
+      },
+      "us-east-1": {
+        "Ubuntu1604": "ami-b391b9c8"
+      },
+      "us-east-2": {
+        "Ubuntu1604": "ami-a7aa8ac2"
+      },
+      "us-west-1": {
+        "Ubuntu1604": "ami-8edbf0ee"
+      },
+      "us-west-2": {
+        "Ubuntu1604": "ami-9d04e4e5"
+      }
+    },
+    "RepositoryKeys": {
+      "Ubuntu1604": {
+        "evernym": "BD33704C",
+        "indy": "68DB5E88"
+      }
+    },
+    "RepositoryEvernym": {
+      "Ubuntu1604": {
+        "stable": "deb https://repo.evernym.com/deb xenial stable",
+        "master": "deb https://repo.evernym.com/deb xenial master"
+      }
+    },
+    "RepositoryIndy": {
+      "Ubuntu1604": {
+        "stable": "deb https://repo.sovrin.org/deb xenial stable",
+        "master": "deb https://repo.sovrin.org/deb xenial master"
+      }
+    },
+    "ValidatorData": {
+      "Validator01": {
+        "IPaddress": "10.0.0.101",
+        "NodeNumber": 1
+      },
+      "Validator02": {
+        "IPaddress": "10.0.0.102",
+        "NodeNumber": 2
+      },
+      "Validator03": {
+        "IPaddress": "10.0.0.103",
+        "NodeNumber": 3
+      },
+      "Validator04": {
+        "IPaddress": "10.0.0.104",
+        "NodeNumber": 4
+      }
+    }
+  }
+}

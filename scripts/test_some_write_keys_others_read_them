@@ -26,7 +26,7 @@ from datetime import datetime
 
 from stp_core.common.log import getlogger
 
-from sovrin_client.utils.user_scenarios import generateNymsData, \
+from indy_client.utils.user_scenarios import generateNymsData, \
     NymsCreationScenario, KeyRotationScenario, ForeignKeysReadScenario
 
 STEWARD1_SEED = b"000000000000000000000000Steward1"
@@ -83,7 +83,7 @@ def main(args):
             executor.submit(NymsCreationScenario.runInstance,
                             seed=STEWARD1_SEED,
                             nymsIdsAndVerkeys=usersIdsAndVerkeys,
-                            logFileName = os.path.join(
+                            logFileName=os.path.join(
                                 logDir,
                                 "nyms-creator-{}.log".format(
                                     STEWARD1_SEED.decode())))

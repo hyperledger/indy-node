@@ -3,22 +3,22 @@
 set -e
 set -x
 
-OUTPUT_PATH=${1:-.}
+OUTPUT_PATH="${1:-.}"
 
 function build_from_pypi {
-    PACKAGE_NAME=$1
+    PACKAGE_NAME="$1"
 
-    if [ -z $2 ]; then
+    if [ -z "$2" ]; then
         PACKAGE_VERSION=""
     else
         PACKAGE_VERSION="==$2"
     fi
-    POSTINST_TMP=postinst-${PACKAGE_NAME}
-    PREREM_TMP=prerm-${PACKAGE_NAME}
-    cp postinst ${POSTINST_TMP}
-    cp prerm ${PREREM_TMP}
-    sed -i 's/{package_name}/python3-'${PACKAGE_NAME}'/' ${POSTINST_TMP}
-    sed -i 's/{package_name}/python3-'${PACKAGE_NAME}'/' ${PREREM_TMP}
+    POSTINST_TMP="postinst-${PACKAGE_NAME}"
+    PREREM_TMP="prerm-${PACKAGE_NAME}"
+    cp postinst "${POSTINST_TMP}"
+    cp prerm "${PREREM_TMP}"
+    sed -i "s/{package_name}/python3-${PACKAGE_NAME}/" "${POSTINST_TMP}"
+    sed -i "s/{package_name}/python3-${PACKAGE_NAME}/" "${PREREM_TMP}"
 
     fpm --input-type "python" \
         --output-type "deb" \
@@ -29,15 +29,16 @@ function build_from_pypi {
         --exclude "*.pyc" \
         --exclude "*.pyo" \
         --maintainer "Hyperledger <hyperledger-indy@lists.hyperledger.org>" \
-        --after-install ${POSTINST_TMP} \
-        --before-remove ${PREREM_TMP} \
-        --package ${OUTPUT_PATH} \
-        ${PACKAGE_NAME}${PACKAGE_VERSION}
+        --after-install "${POSTINST_TMP}" \
+        --before-remove "${PREREM_TMP}" \
+        --package "${OUTPUT_PATH}" \
+        "${PACKAGE_NAME}${PACKAGE_VERSION}"
 
-    rm ${POSTINST_TMP}
-    rm ${PREREM_TMP}
+    rm "${POSTINST_TMP}"
+    rm "${PREREM_TMP}"
 }
 
+# build 3rd parties:
+#   build_from_pypi <pypi-name> <version>
+
 build_from_pypi timeout-decorator
-
-

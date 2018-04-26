@@ -3,63 +3,28 @@
 import shutil
 import os
 import argparse
-import re
+from indy_common.config_util import getConfig
+from indy_common.config_helper import ConfigHelper
 
 
-def pathList(*paths):
-    return {os.path.expanduser(path) for path in paths}
+def clean(config, full, network_name):
+    if network_name:
+        config.NETWORK_NAME = network_name
+    config_helper = ConfigHelper(config)
 
+    shutil.rmtree(config_helper.log_dir)
+    shutil.rmtree(config_helper.keys_dir)
+    shutil.rmtree(config_helper.genesis_dir)
 
-TARGET_DIRS = pathList(
-    "~/.sovrin",
-    "~/.plenum"
-)
-
-PATHS_TO_CLEAR = (
-    '/.*/role',
-    '/.*/verif_keys',
-    '/.*/sig_keys',
-    '/.*/public_keys',
-    '/.*/private_keys'
-)
-
-WHITE_LIST = pathList(
-    "~/.sovrin/sovrin_config.py",
-    "~/.plenum/plenum_config.py",
-    "~/.sovrin/.*log"
-).union(pathList(*{d+p for d in TARGET_DIRS for p in PATHS_TO_CLEAR}))
-
-
-def clean_files(full):
     if full:
-        for dir in TARGET_DIRS:
-            if os.path.exists(dir):
-                shutil.rmtree(dir)
-        return
-
-    files_to_keep = [re.compile(pattern) for pattern in WHITE_LIST]
-
-    def isOk(path):
-         return any(pattern.match(path) for pattern in files_to_keep)
-
-    for dir in TARGET_DIRS:
-        for root, dirs, files in os.walk(dir):
-            if not isOk(root):
-                for file in files:
-                    fullName = os.path.join(root, file)
-                    if not isOk(fullName):
-                        os.remove(fullName)
-                if not os.listdir(root):
-                    os.rmdir(root)
-            else:
-                dirs[:] = []
+        shutil.rmtree(config_helper.ledger_base_dir)
+        shutil.rmtree(config_helper.log_base_dir)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='Removes node data and configuration')
-    parser.add_argument('--full',
-                        action="store_true",
-                        help="remove configs and logs too")
+    parser = argparse.ArgumentParser(description='Removes node data and configuration')
+    parser.add_argument('--full', required=False, type=bool, default=False, help="remove configs and logs too")
+    parser.add_argument('--network', required=False, type=str, help="Network to clean")
     args = parser.parse_args()
-    clean_files(args.full)
+    config = getConfig()
+    clean(config, args.full, args.network)

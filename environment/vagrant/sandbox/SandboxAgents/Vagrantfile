@@ -1,0 +1,44 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Make sure to be using the vagrant-vbguest plugin
+
+agent_box        = 'bento/ubuntu-1604'
+agent_cpus       = '1'
+agent_memory     = '768'
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "master" do |master|
+    master.vm.box = agent_box
+    master.vm.host_name = "master.agent.sandbox.evernym.lab"
+    master.vm.network 'public_network'
+    master.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    master.ssh.insert_key = false
+    master.vm.provider "virtualbox" do |vb|
+      vb.name   = "sandbox-agent-master"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    master.vm.provision "indy", type: "shell", path: "scripts/agent-master.sh"
+  end
+
+  config.vm.define "stable" do |stable|
+    stable.vm.box = agent_box
+    stable.vm.host_name = "stable.agent.sandbox.evernym.lab"
+    stable.vm.network 'public_network'
+    stable.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    stable.ssh.insert_key = false
+    stable.vm.provider "virtualbox" do |vb|
+      vb.name   = "sandbox-agent-stable"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    stable.vm.provision "indy", type: "shell", path: "scripts/agent-stable.sh"
+  end
+
+end

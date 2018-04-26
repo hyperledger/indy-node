@@ -28,17 +28,15 @@ from plenum.test.helper import eventually
 from plenum.test.test_client import \
     getAcksFromInbox, getNacksFromInbox, getRepliesFromInbox
 
-from sovrin_common.constants import ATTRIB, GET_ATTR
-from sovrin_common.config_util import getConfig
-from sovrin_client.client.wallet.attribute import Attribute, LedgerStore
-from sovrin_client.client.wallet.wallet import Wallet
-from sovrin_client.client.client import Client
-from sovrin_common.identity import Identity
-from sovrin_common.constants import GET_NYM
+from indy_common.constants import ATTRIB, GET_ATTR
+from indy_client.client.wallet.attribute import Attribute, LedgerStore
+from indy_client.client.wallet.wallet import Wallet
+from indy_client.client.client import Client
+from indy_common.identity import Identity
+from indy_common.constants import GET_NYM
 
 
 logger = getlogger()
-config = getConfig()
 
 TTL = 120.0  # 60.0
 CONNECTION_TTL = 30.0
@@ -63,18 +61,19 @@ def parseArgs():
                         dest="numberOfRequests",
                         help="number of clients to use")
 
-    parser.add_argument("-t", "--request_type",
-                        action="store",
-                        type=str,
-                        default="NYM",
-                        dest="requestType",
-                        help="type of requests to send, supported = NYM, GET_NYM, ATTRIB")
+    parser.add_argument(
+        "-t",
+        "--request_type",
+        action="store",
+        type=str,
+        default="NYM",
+        dest="requestType",
+        help="type of requests to send, supported = NYM, GET_NYM, ATTRIB")
 
     parser.add_argument("--at-once",
                         action='store_true',
                         dest="atOnce",
                         help="if set client send all request at once")
-
 
     parser.add_argument("--timeout",
                         action="store",
@@ -85,7 +84,8 @@ def parseArgs():
 
     parser.add_argument("--clients-list",
                         action="store",
-                        default="{}/load_test_clients.list".format(os.getcwd()),
+                        default="{}/load_test_clients.list".format(
+                            os.getcwd()),
                         dest="clientsListFilePath",
                         help="path to file with list of client names and keys")
 
@@ -109,7 +109,6 @@ def createClientAndWalletWithSeed(name, seed, ha=None):
     if isinstance(seed, str):
         seed = seed.encode()
     if not ha:
-    # if not ha and not isLocalKeepSetup(name, config.baseDir):
         port = genHa()[1]
         ha = HA('0.0.0.0', port)
     wallet = Wallet(name)
@@ -136,6 +135,7 @@ class Rotator:
         self._index += 1
         return x
 
+
 class ClientPoll:
 
     def __init__(self, filePath, limit=-1, skip=0):
@@ -154,7 +154,7 @@ class ClientPoll:
     @staticmethod
     def randomRawAttr():
         d = {"{}_{}".format(randomString(20), randint(100, 1000000)): "{}_{}".
-            format(randint(1000000, 1000000000000), randomString(50))}
+             format(randint(1000000, 1000000000000), randomString(50))}
         return json.dumps(d)
 
     def submitNym(self, reqsPerClient=1):
@@ -219,7 +219,8 @@ class ClientPoll:
     def _readCredentials(self):
         with open(self.__filePath, "r") as file:
             creds = [line.strip().split(":") for i, line in enumerate(file)]
-            return map(lambda x: (x[0], str.encode(x[1])), creds[self.__skip:self.__skip+self.__limit])
+            return map(lambda x: (x[0], str.encode(x[1])),
+                       creds[self.__skip:self.__skip + self.__limit])
 
     def _spawnClient(self, name, seed, host='0.0.0.0'):
         self.__startPort += randint(100, 1000)
@@ -229,9 +230,18 @@ class ClientPoll:
         return createClientAndWalletWithSeed(name, seed, address)
 
 
-resultsRowFieldNames = ['signerName', 'signerId', 'dest', 'reqId', 'transactionType',
-                        'sentAt', 'quorumAt', 'latency', 'ackNodes',
-                        'nackNodes', 'replyNodes']
+resultsRowFieldNames = [
+    'signerName',
+    'signerId',
+    'dest',
+    'reqId',
+    'transactionType',
+    'sentAt',
+    'quorumAt',
+    'latency',
+    'ackNodes',
+    'nackNodes',
+    'replyNodes']
 ResultRow = namedtuple('ResultRow', resultsRowFieldNames)
 
 
@@ -270,7 +280,9 @@ async def checkReply(client, requestId, identifier):
     except KeyError:
         logger.info("No replies for {}:{} yet".format(identifier, requestId))
     except Exception as e:
-        logger.warn("Error occured during checking replies: {}".format(repr(e)))
+        logger.warn(
+            "Error occured during checking replies: {}".format(
+                repr(e)))
     finally:
         return hasConsensus, (hasConsensus, acks, nacks, replies)
 
@@ -283,7 +295,8 @@ async def checkReplyAndLogStat(client, wallet, request, sentAt, writeResultsRow,
                             )
 
     endTime = time.time()
-    quorumAt = endTime if hasConsensus else ""  # TODO: only first hasConsensus=True make sense
+    # TODO: only first hasConsensus=True make sense
+    quorumAt = endTime if hasConsensus else ""
     latency = endTime - sentAt
 
     row = ResultRow(signerName=wallet.name,
@@ -306,7 +319,7 @@ def checkIfConnectedToAll(client):
     connectedNodesNum = len(connectedNodes)
     totalNodes = len(client.nodeReg)
     logger.info("Connected {} / {} nodes".
-                 format(connectedNodesNum, totalNodes))
+                format(connectedNodesNum, totalNodes))
 
     if connectedNodesNum == 0:
         raise Exception("Not connected to any")
@@ -354,11 +367,13 @@ def main(args):
     def writeResultsRow(row):
         if not os.path.exists(resultFilePath):
             resultsFd = open(resultFilePath, "w")
-            resultsWriter = csv.DictWriter(resultsFd, fieldnames=resultsRowFieldNames)
+            resultsWriter = csv.DictWriter(
+                resultsFd, fieldnames=resultsRowFieldNames)
             resultsWriter.writeheader()
             resultsFd.close()
         resultsFd = open(resultFilePath, "a")
-        resultsWriter = csv.DictWriter(resultsFd, fieldnames=resultsRowFieldNames)
+        resultsWriter = csv.DictWriter(
+            resultsFd, fieldnames=resultsRowFieldNames)
         resultsWriter.writerow(row)
         resultsFd.close()
 
@@ -374,14 +389,15 @@ def main(args):
     clientPoll = ClientPoll(args.clientsListFilePath,
                             args.numberOfClients, args.numberOfClientsToSkip)
 
-    with Looper(debug=True) as looper:
+    with Looper() as looper:
 
         # connect
 
         connectionCoros = []
         for cli in clientPoll.clients:
             looper.add(cli)
-            connectionCoros.append(functools.partial(checkIfConnectedToAll, cli))
+            connectionCoros.append(
+                functools.partial(checkIfConnectedToAll, cli))
         for coro in connectionCoros:
             looper.run(eventually(coro,
                                   timeout=CONNECTION_TTL,
@@ -391,13 +407,12 @@ def main(args):
         testStartedAt = time.time()
         stats.clear()
 
-
         requestType = args.requestType
         sendRequests = {
-            "NYM":     clientPoll.submitNym,
+            "NYM": clientPoll.submitNym,
             "GET_NYM": clientPoll.submitGetNym,
-            "ATTRIB":  clientPoll.submitSetAttr,
-            "ATTR":    clientPoll.submitSetAttr
+            "ATTRIB": clientPoll.submitSetAttr,
+            "ATTR": clientPoll.submitSetAttr
         }.get(requestType)
 
         if sendRequests is None:
@@ -409,9 +424,9 @@ def main(args):
             coros = buildCoros(checkReplyAndLogStat, corosArgs)
             for coro in coros:
                 task = eventually(coro,
-                                      retryWait=RETRY_WAIT,
-                                      timeout=TTL,
-                                      verbose=False)
+                                  retryWait=RETRY_WAIT,
+                                  timeout=TTL,
+                                  verbose=False)
                 looper.run(task)
             printCurrentTestResults(stats, testStartedAt)
             logger.info("Sent and waited for {} {} requests"

@@ -15,10 +15,10 @@ from plenum.common.types import HA
 from stp_core.common.log import getlogger
 from plenum.test.helper import eventually, eventuallyAll
 
-from sovrin_common.config_util import getConfig
-from sovrin_common.constants import TRUST_ANCHOR
-from sovrin_client.client.client import Client
-from sovrin_client.client.wallet.wallet import Wallet
+from indy_common.config_util import getConfig
+from indy_common.constants import TRUST_ANCHOR
+from indy_client.client.client import Client
+from indy_client.client.wallet.wallet import Wallet
 
 
 logger = getlogger()
@@ -70,7 +70,7 @@ async def checkReply(client, requestId):
 async def doRequesting(client, wallet, op):
     signedOp = wallet.signOp(op)
     logger.info("Client {} sending request {}".format(client, op))
-    request = client.submitReqs(signedOp)[0]
+    request = client.submitReqs(signedOp)[0][0]
     requestId = request.reqId
     args = [client, requestId]
     await eventually(checkReply, *args, timeout=requestTTL)
@@ -94,14 +94,15 @@ def checkIfConnectedToAll(client):
 
 async def ensureConnectedToNodes(client):
     wait = 5
-    logger.info("waiting for {} seconds to check client connections to nodes...".format(wait))
-    await eventuallyAll(lambda : checkIfConnectedToAll(client), retryWait=.5, totalTimeout=wait)
+    logger.info(
+        "waiting for {} seconds to check client connections to nodes...".format(wait))
+    await eventuallyAll(lambda: checkIfConnectedToAll(client), retryWait=.5, totalTimeout=wait)
 
 
 def addNyms():
-    with Looper(debug=True) as looper:
+    with Looper(debug=getConfig().LOOPER_DEBUG) as looper:
 
-        from sovrin_client.test.helper import createNym
+        from indy_client.test.helper import createNym
 
         # Starting clients
         print("Spawning client")
@@ -122,13 +123,17 @@ def addNyms():
             # Sending requests
             print("Creating nym for seed {}".format(seed))
             try:
-                createNym(looper=looper, nym=nym, creatorClient=client,
-                          creatorWallet=wallet, verkey=verkey, role=TRUST_ANCHOR)
+                createNym(
+                    looper=looper,
+                    nym=nym,
+                    creatorClient=client,
+                    creatorWallet=wallet,
+                    verkey=verkey,
+                    role=TRUST_ANCHOR)
                 print("Successfully created nym for {}".format(seed))
             except Exception as ex:
                 bad.append(seed)
                 print("Failed to create nym for {}".format(seed))
-
 
         print("=======================")
         if not bad:
