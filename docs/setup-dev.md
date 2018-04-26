@@ -51,9 +51,7 @@ create a virtualenv to work in
 
 ### Setup Python
 
-One needs Python 3.5 to work with the code.
-
-You can use `dev-setup/ubuntu/setup_dev_python.sh` script for quick installation of Python 3.5, pip 
+One needs Python 3.5 to work with the code. You can use `dev-setup/ubuntu/setup_dev_python.sh` script for quick installation of Python 3.5, pip 
 and virtual environment on Ubuntu, or follow the detailed instructions below.
 
 
