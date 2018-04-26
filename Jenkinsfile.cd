@@ -90,4 +90,5 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 options = new TestAndPublishOptions()
 options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
+options.setPrContexts(["ci/hyperledger-jenkins/pr-merge"])
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
