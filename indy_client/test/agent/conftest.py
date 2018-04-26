@@ -6,7 +6,6 @@ from indy_client.test.agent.test_walleted_agent import TestWalletedAgent
 from indy_common.strict_types import strict_types
 from stp_core.network.port_dispenser import genHa
 
-
 strict_types.defaultShouldCheck = True
 
 # def pytest_configure(config):
@@ -36,7 +35,7 @@ from indy_client.test.agent.faber import create_faber, bootstrap_faber
 from indy_client.test.agent.helper import ensureAgentConnected, buildFaberWallet, \
     buildAcmeWallet, buildThriftWallet, startAgent
 from indy_client.test.agent.thrift import create_thrift
-from indy_node.test.helper import sdk_add_attribute_and_check
+from indy_node.test.helper import addAttributeAndCheck
 from indy_client.test.helper import createNym, TestClient
 
 # noinspection PyUnresolvedReferences
@@ -59,6 +58,7 @@ def walletBuilder():
         wallet = Wallet(name)
         wallet.addIdentifier(signer=DidSigner())
         return wallet
+
     return _
 
 
@@ -99,6 +99,7 @@ def agentBuilder(tdirWithClientPoolTxns):
                               port=port)
 
         return agent
+
     return _
 
 
@@ -385,7 +386,7 @@ def addAgent(looper, agent, steward, stewardWallet):
                        value=attributeData,
                        dest=agentNym,
                        ledgerStore=LedgerStore.RAW)
-    sdk_add_attribute_and_check(looper, agent.client, agent.wallet, attrib)
+    addAttributeAndCheck(looper, agent.client, agent.wallet, attrib)
     return attrib
 
 

@@ -64,14 +64,14 @@ def validUpgradeSentExpForceFalse(
         sdk_wallet_trustee,
         validUpgradeExpForceFalse):
     sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
-                            sdk_wallet_trustee, validUpgrade)
+                            sdk_wallet_trustee, validUpgradeExpForceFalse)
 
 
 @pytest.fixture(scope="module")
 def validUpgradeSentExpForceTrue(looper, nodeSet, tdir, sdk_pool_handle,
                                  sdk_wallet_trustee, validUpgradeExpForceTrue):
     sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
-                            sdk_wallet_trustee, validUpgrade)
+                            sdk_wallet_trustee, validUpgradeExpForceTrue)
 
 
 @pytest.fixture(scope="module")

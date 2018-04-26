@@ -49,9 +49,9 @@ from plenum.test.conftest import tdir, client_tdir, nodeReg, \
 from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
-from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
-    sdk_wallet_name, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data, sdk_wallet_client, \
-    sdk_client_seed, poolTxnClientData, poolTxnClientNames, poolTxnData
+from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_name, sdk_wallet_steward, \
+    sdk_wallet_handle, sdk_wallet_name, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data, \
+    sdk_wallet_client, sdk_client_seed, poolTxnClientData, poolTxnClientNames, poolTxnData
 
 Logger.setLogLevel(logging.DEBUG)
 
@@ -178,6 +178,11 @@ def updatedDomainTxnFile(tdirWithDomainTxnsUpdated, genesisTxns,
                          domainTxnOrderedFields, tconf):
     addTxnToGenesisFile(tdirWithDomainTxnsUpdated, tconf.domainTransactionsFile,
                         genesisTxns, domainTxnOrderedFields)
+
+
+@pytest.fixture(scope='module')
+def sdk_pool_handle(plenum_pool_handle, nodeSet):
+    return plenum_pool_handle
 
 
 @pytest.fixture(scope="module")
