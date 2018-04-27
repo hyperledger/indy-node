@@ -1,8 +1,12 @@
 - hosts: pool
+  gather_facts: no
 
   vars:
     pool_prefix: live_node
     pool_size: "{{ groups['pool']|count }}"
+    node_ver: 1.3.365
+    plenum_ver: 1.2.310
+    crypto_ver: 0.2.0
 
   tasks:
     - name: Identify node number
@@ -24,7 +28,7 @@
       run_once: yes
 
     - name: Install indy-node
-      apt: name=indy-node=1.3.382
+      apt: "name=indy-node={{ node_ver }},indy-plenum={{ plenum_ver }},libindy-crypto={{ crypto_ver }},python3-indy-crypto={{ crypto_ver }} force=yes"
       become: yes
 
     - name: Make pool data dir
@@ -37,8 +41,6 @@
 
     - name: Generate indy pool transactions
       shell: "generate_indy_pool_transactions --nodes {{ pool_size }} --clients 1 --nodeNum {{ node_num }} --ips '{{ node_ips }}'"
-      args:
-        creates: /var/lib/indy/sandbox/pool_transactions_genesis
       become: yes
       become_user: indy
 
@@ -48,3 +50,7 @@
         dest: ./
         flat: yes
       run_once: yes
+
+    - name: Start node service
+      service: name=indy-node state=started
+      become: yes
