@@ -1,0 +1,50 @@
+- hosts: pool
+
+  vars:
+    pool_prefix: live_node
+    pool_size: "{{ groups['pool']|count }}"
+
+  tasks:
+    - name: Identify node number
+      set_fact: node_num="{{ inventory_hostname|replace(pool_prefix,'') }}"
+
+    - name: Gather node IP list (step 1)
+      shell: "ssh -G {{ item }} | awk '/^hostname / { print $2 }'"
+      with_items: "{{ groups['pool'] }}"
+      connection: local
+      run_once: yes
+      register: node_ips
+
+    - name: Gather node IP list (step 2)
+      set_fact:
+        node_ips: "{% for ip in node_ips.results -%} {{ ip.stdout }}{% if not loop.last %},{% endif %} {%- endfor %}"
+
+    - name: List gathered node IPs
+      debug: var=node_ips
+      run_once: yes
+
+    - name: Install indy-node
+      apt: name=indy-node=1.3.382
+      become: yes
+
+    - name: Make pool data dir
+      file: path=/var/lib/indy/sandbox state=directory owner=indy group=indy
+      become: yes
+
+    - name: Make pool logs dir
+      file: path=/var/log/indy/sandbox state=directory owner=indy group=indy
+      become: yes
+
+    - name: Generate indy pool transactions
+      shell: "generate_indy_pool_transactions --nodes {{ pool_size }} --clients 1 --nodeNum {{ node_num }} --ips '{{ node_ips }}'"
+      args:
+        creates: /var/lib/indy/sandbox/pool_transactions_genesis
+      become: yes
+      become_user: indy
+
+    - name: Fetch genesis pool transactions
+      fetch:
+        src: /var/lib/indy/sandbox/pool_transactions_genesis
+        dest: ./
+        flat: yes
+      run_once: yes

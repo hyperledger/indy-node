@@ -136,8 +136,8 @@ def print_count(ledger):
 
 
 def print_all(ledger, serializer):
-    frm = int(args.frm)
-    to = int(args.to)
+    frm = int(args.frm) if args.frm else None
+    to = int(args.to) if args.to else None
     for txn in ledger.getAllTxn(frm=frm, to=to):
         txn = serializer.serialize(txn, toBytes=False)
         print(txn)

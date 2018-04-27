@@ -18,6 +18,11 @@
     * [NODE_UPGRADE](#node_upgrade)
     * [POOL_CONFIG](#pool_config)
 
+* [Action Transactions](#action-transactions)
+
+    * [POOL_RESTART](#pool_restrt)
+    * [VALIDATOR_INFO](#validator_info)
+
 ## General Information
 
 This doc is about supported transactions and their representation on the Ledger (that is internal one).
@@ -477,10 +482,11 @@ Command to change Pool's configuration
 }
 ```
 
+
 ## Action Transactions
 
 #### POOL_RESTART
-POOL_RESTART T is the command to restart all nodes at the time specified in field "datetime"(sent by Trustee).
+POOL_RESTART is the command to restart all nodes at the time specified in field "datetime"(sent by Trustee).
 
 - `datetime` (string):
 
@@ -497,11 +503,23 @@ POOL_RESTART T is the command to restart all nodes at the time specified in fiel
 ```
 {
      "reqId": 98262,
-     "isSuccess": True,
      "type": "118",
      "identifier": "M9BJDuS24bqbJNvBRsoGg3",
-     "msg": None,
      "datetime": "2018-03-29T15:38:34.464106+00:00",
      "action": "start"
+}
+```
+
+
+#### VALIDATOR_INFO
+Command provide info from all the connected nodes without need of consensus.
+
+**Example:**
+```
+{
+     'reqId': 83193,
+     'data': { <Json with node info> },
+     'type': '119',
+     'identifier': 'M9BJDuS24bqbJNvBRsoGg3'
 }
 ```

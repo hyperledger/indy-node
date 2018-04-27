@@ -132,11 +132,9 @@ def test_fail_pool_restart(
 
 
 def _comparison_reply(resp, req_obj):
-    assert resp[f.RESULT.nm][f.MSG.nm] is None
     assert resp["op"] == REPLY
     assert resp[f.RESULT.nm][f.IDENTIFIER.nm] == req_obj.identifier
     assert resp[f.RESULT.nm][f.REQ_ID.nm] == req_obj.reqId
-    assert resp[f.RESULT.nm][f.IS_SUCCESS.nm]
     assert resp[f.RESULT.nm][ACTION]
     assert resp[f.RESULT.nm][TXN_TYPE] == POOL_RESTART
 

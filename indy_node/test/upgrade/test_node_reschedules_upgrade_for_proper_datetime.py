@@ -6,15 +6,15 @@ from datetime import timedelta
 from indy_common.constants import SHA256, SCHEDULE
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import bumpVersion, checkUpgradeScheduled, \
-    ensureUpgradeSent
+    sdk_ensure_upgrade_sent
 from plenum.common.constants import VERSION, NAME
 from plenum.common.util import randomString
 from stp_core.loop.eventually import eventually
 
 
 def test_node_reschedules_upgrade_for_proper_datetime(
-        looper, tconf, nodeSet, validUpgrade, trustee, trusteeWallet):
-
+        looper, tconf, nodeSet, validUpgrade,
+        sdk_pool_handle, sdk_wallet_trustee):
     upgr1 = deepcopy(validUpgrade)
     # Upgrade 1 of each node will be scheduled for tomorrow
     for nodeId in upgr1[SCHEDULE]:
@@ -36,7 +36,8 @@ def test_node_reschedules_upgrade_for_proper_datetime(
         deltaDays += 1
 
     # Upgrade 1 is scheduled
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, upgr1)
     looper.run(
         eventually(
             checkUpgradeScheduled,
@@ -47,7 +48,8 @@ def test_node_reschedules_upgrade_for_proper_datetime(
 
     # Upgrade 2 cancels Upgrade 1 and is scheduled itself
     # according its own schedule
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr2)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, upgr2)
     looper.run(
         eventually(
             checkUpgradeScheduled,
