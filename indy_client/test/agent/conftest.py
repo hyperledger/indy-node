@@ -6,7 +6,6 @@ from indy_client.test.agent.test_walleted_agent import TestWalletedAgent
 from indy_common.strict_types import strict_types
 from stp_core.network.port_dispenser import genHa
 
-
 strict_types.defaultShouldCheck = True
 
 # def pytest_configure(config):
@@ -59,6 +58,7 @@ def walletBuilder():
         wallet = Wallet(name)
         wallet.addIdentifier(signer=DidSigner())
         return wallet
+
     return _
 
 
@@ -99,6 +99,7 @@ def agentBuilder(tdirWithClientPoolTxns):
                               port=port)
 
         return agent
+
     return _
 
 

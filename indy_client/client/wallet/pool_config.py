@@ -1,3 +1,5 @@
+import random
+
 from stp_core.types import Identifier
 from plenum.common.constants import TXN_TYPE, FORCE, CURRENT_PROTOCOL_VERSION
 from indy_common.generates_request import GeneratesRequest
@@ -28,4 +30,5 @@ class PoolConfig(GeneratesRequest):
         if not self.seqNo:
             return Request(identifier=self.trustee,
                            operation=self._op(),
-                           protocolVersion=CURRENT_PROTOCOL_VERSION)
+                           protocolVersion=CURRENT_PROTOCOL_VERSION,
+                           reqId=random.randint(10, 100000))

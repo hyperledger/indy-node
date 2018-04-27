@@ -107,6 +107,7 @@ ENDPOINT = "endpoint"
 
 # Roles
 TRUST_ANCHOR = Roles.TRUST_ANCHOR.value
+TRUST_ANCHOR_STRING = 'TRUST_ANCHOR'
 TGB = Roles.TGB.value
 
 # client transaction types
@@ -130,6 +131,7 @@ GET_REVOC_REG_DELTA = IndyTransactions.GET_REVOC_REG_DELTA.value
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
 POOL_RESTART = IndyTransactions.POOL_RESTART.value
+VALIDATOR_INFO = IndyTransactions.VALIDATOR_INFO.value
 
 POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
 

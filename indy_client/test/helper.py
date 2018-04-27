@@ -92,6 +92,7 @@ def submitPoolUpgrade(
 
     def check():
         assert senderWallet._upgrades[upgrade.key].seqNo
+
     timeout = waits.expectedTransactionExecutionTime(
         len(senderClient.nodeReg)
     )
@@ -135,27 +136,7 @@ def checkAccpets(client, reqId, nodeCount=4):
                   nodeCount=nodeCount)
 
 
-def submitAndCheckRejects(
-        looper,
-        client,
-        wallet,
-        op,
-        identifier,
-        contains='UnauthorizedClientRequest',
-        check_func=checkRejects):
-
-    reqId = submit(wallet, op, identifier, client)
-    timeout = waits.expectedReqNAckQuorumTime()
-    looper.run(eventually(check_func,
-                          client,
-                          reqId,
-                          contains,
-                          retryWait=1,
-                          timeout=timeout))
-
-
 def submitAndCheckAccepts(looper, client, wallet, op, identifier):
-
     reqId = submit(wallet, op, identifier, client)
     timeout = waits.expectedReqNAckQuorumTime()
     looper.run(eventually(checkAccpets,
@@ -182,7 +163,7 @@ def genTestClient(nodes=None,
                   peerHA: Union[HA, Tuple[str, int]] = None,
                   testClientClass=TestClient,
                   usePoolLedger=False,
-                  name: str=None) -> (TestClient, Wallet):
+                  name: str = None) -> (TestClient, Wallet):
     testClient, wallet = genPlenumTestClient(nodes,
                                              nodeReg,
                                              tmpdir,
@@ -343,7 +324,7 @@ class ScriptRunner:
                 self._cli_builder(cli_str,
                                   looper=self._looper,
                                   unique_name=cli_str + '-' +
-                                  self._cur_context_name))
+                                              self._cur_context_name))
         self._be(self.cur_ctx().clis[cli_str])
 
     def _handleBe(self, match):
