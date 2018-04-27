@@ -5,9 +5,11 @@ from indy.did import create_and_store_my_did, replace_keys_start, replace_keys_a
 from indy.ledger import build_get_nym_request
 from indy_common.constants import TRUST_ANCHOR_STRING
 from indy_node.test.helper import sdk_add_attribute_and_check
+from plenum.common.exceptions import RequestRejectedException
+from plenum.common.util import randomString
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, \
-    prepare_nym_request
+    prepare_nym_request, sdk_add_new_nym
 
 TRUST_ANCHOR_SEED = 'TRUST0NO0ONE00000000000000000001'
 
@@ -29,6 +31,29 @@ def trust_anchor_did_verkey(looper, sdk_wallet_client):
     named_did, verkey = looper.loop.run_until_complete(
         create_and_store_my_did(wh, json.dumps({'seed': TRUST_ANCHOR_SEED})))
     return named_did, verkey
+
+
+def test_pool_nodes_started(nodeSet):
+    pass
+
+
+def test_send_same_nyms_only_first_gets_written(
+        looper, do, sdk_pool_handle, sdk_wallet_steward):
+    wh, _ = sdk_wallet_steward
+    seed = randomString(32)
+    did, verkey = looper.loop.run_until_complete(
+        create_and_store_my_did(wh, json.dumps({'seed': seed})))
+
+    # request 1
+    _, did1 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, dest=did, verkey=verkey)
+
+    seed = randomString(32)
+    _, verkey = looper.loop.run_until_complete(
+        create_and_store_my_did(wh, json.dumps({'seed': seed})))
+    # request 2
+    with pytest.raises(RequestRejectedException) as e:
+        _, did2 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, dest=did, verkey=verkey)
+    e.match('is neither Trustee nor owner of')
 
 
 def get_nym(looper, sdk_pool_handle, sdk_wallet_steward, t_did):
