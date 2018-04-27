@@ -1,32 +1,24 @@
-import pytest
 from indy_node.test import waits
+from plenum.test.pool_transactions.helper import demote_node
 from stp_core.loop.eventually import eventually
-from plenum.common.constants import ALIAS, SERVICES, VERSION
+from plenum.common.constants import VERSION
 from indy_common.constants import SCHEDULE
-from indy_node.test.upgrade.helper import ensureUpgradeSent, checkUpgradeScheduled
-
-# TODO: sdk integration
-# from plenum.test.pool_transactions.helper import updateNodeData
-from plenum.test.conftest import pool_txn_stewards_data, stewards_and_wallets
+from indy_node.test.upgrade.helper import checkUpgradeScheduled, sdk_ensure_upgrade_sent
 
 
-@pytest.mark.skip(reason="sdk integration")
 def test_update_with_demoted_node(looper, nodeSet, validUpgrade,
-                                  stewards_and_wallets, trustee, trusteeWallet):
+                                  sdk_pool_handle, sdk_wallet_stewards,
+                                  sdk_wallet_trustee):
     # demote one node
-    node_steward_cl, steward_wallet = stewards_and_wallets[3]
-    node_data = {
-        ALIAS: nodeSet[3].name,
-        SERVICES: []
-    }
-    updateNodeData(looper, node_steward_cl, steward_wallet, nodeSet[3], node_data)
+    demote_node(looper, sdk_wallet_stewards[3], sdk_pool_handle, nodeSet[3])
 
     # remove demoted node from upgrade schedule
     upgr = validUpgrade
     del upgr[SCHEDULE][nodeSet[3].id]
 
     # send upgrade
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, upgr)
 
     # check upg scheduled
     looper.run(eventually(checkUpgradeScheduled, nodeSet[:3], upgr[VERSION], retryWait=1,

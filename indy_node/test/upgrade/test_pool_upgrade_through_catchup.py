@@ -8,13 +8,9 @@ from plenum.common.util import randomString
 from plenum.test.test_node import checkNodesConnected
 from indy_common.constants import SHA256, CANCEL, ACTION
 from indy_common.test.conftest import tconf
-from indy_client.test.conftest import testNodeClass
-from indy_client.test.conftest import testClientClass
-from plenum.test.conftest import allPluginsPath
 from indy_node.test.helper import TestNode
-from indy_node.test.upgrade.helper import bumpVersion, sendUpgrade, \
-    ensureUpgradeSent, checkUpgradeScheduled, get_valid_code_hash
-from plenum.test import waits as plenumWaits
+from indy_node.test.upgrade.helper import bumpVersion, \
+    checkUpgradeScheduled, sdk_ensure_upgrade_sent
 
 whitelist = ['Failed to upgrade node']
 
@@ -29,8 +25,8 @@ def txnPoolNodeSet(tconf, nodeSet):
 
 @pytest.mark.skip(reason='SOV-559')
 def testUpgradeLatestUncancelledVersion(looper,
-                                        txnPoolNodeSet, tconf, nodeThetaAdded,
-                                        validUpgrade, trustee, trusteeWallet,
+                                        txnPoolNodeSet, tconf, sdk_node_theta_added,
+                                        validUpgrade, sdk_pool_handle, sdk_wallet_trustee,
                                         tdirWithPoolTxns, allPluginsPath):
     """
     A node starts and finds several upgrades but selects the latest one which
@@ -38,7 +34,7 @@ def testUpgradeLatestUncancelledVersion(looper,
     since 1.5 is cancelled, it selects 1.4
     """
     nodeSet = txnPoolNodeSet
-    newSteward, newStewardWallet, newNode = nodeThetaAdded
+    _, newNode = sdk_node_theta_added
     for node in nodeSet[:-1]:
         node.nodestack.removeRemoteByName(newNode.nodestack.name)
         newNode.nodestack.removeRemoteByName(node.nodestack.name)
@@ -63,35 +59,33 @@ def testUpgradeLatestUncancelledVersion(looper,
     upgr4 = deepcopy(upgr3)
     upgr4[ACTION] = CANCEL
 
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle, sdk_wallet_trustee, upgr1)
     looper.run(eventually(checkUpgradeScheduled,
                           nodeSet[:-1],
                           upgr1[VERSION],
                           retryWait=1,
                           timeout=waits.expectedUpgradeScheduled()))
 
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr2)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle, sdk_wallet_trustee, upgr2)
     looper.run(eventually(checkUpgradeScheduled,
                           nodeSet[:-1],
                           upgr2[VERSION],
                           retryWait=1,
                           timeout=waits.expectedUpgradeScheduled()))
 
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr3)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle, sdk_wallet_trustee, upgr3)
     looper.run(eventually(checkUpgradeScheduled,
                           nodeSet[:-1],
                           upgr3[VERSION],
                           retryWait=1,
                           timeout=waits.expectedUpgradeScheduled()))
 
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr4)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle, sdk_wallet_trustee, upgr4)
     looper.run(eventually(checkUpgradeScheduled,
                           nodeSet[:-1],
                           upgr2[VERSION],
                           retryWait=1,
                           timeout=waits.expectedUpgradeScheduled()))
-
-    trustee.stopRetrying()
 
     newNode = TestNode(newNode.name, basedirpath=tdirWithPoolTxns, base_data_dir=tdirWithPoolTxns,
                        config=tconf, pluginPaths=allPluginsPath,
