@@ -32,3 +32,4 @@ class IndyTransactions(Transactions):
     GET_REVOC_REG_DELTA = "117"
 
     POOL_RESTART = "118"
+    VALIDATOR_INFO = "119"

@@ -6,7 +6,8 @@ import shutil
 import time
 
 from stp_core.loop.eventually import eventually
-from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, composeUpgradeMessage, sendUpgradeMessage, nodeControlGeneralMonkeypatching
+from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
+    sendUpgradeMessage, nodeControlGeneralMonkeypatching
 from indy_node.server.upgrader import Upgrader
 
 m = multiprocessing.Manager()

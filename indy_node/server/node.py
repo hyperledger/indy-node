@@ -185,7 +185,8 @@ class Node(PlenumNode, HasPoolManager):
         return ActionReqHandler(self.getIdrCache(),
                                 self.restarter,
                                 self.poolManager,
-                                self.poolCfg)
+                                self.poolCfg,
+                                self._info_tool)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
         pass
