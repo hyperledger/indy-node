@@ -43,7 +43,7 @@ def request_handler(bls_store):
                             idrCache=cache,
                             attributeStore=attr_store,
                             bls_store=bls_store,
-                            tsRevoc_store=None)
+                            ts_store=None)
 
 
 def extract_proof(result, expected_multi_sig):
