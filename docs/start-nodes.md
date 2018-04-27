@@ -67,9 +67,9 @@ There is a script that can generate keys and corresponding test genesis files to
 ```
 - `--nodes` specifies a total number of nodes in the pool
 - `--clients` specifies a number of pre-configured clients in the pool (in `domain_transactions_file_{network_name}_genesis`)
-- `--nodeNum` specifies a number of this particular node (from 1 to `-nodes` value), that is a number of the Node to create private keys locally for.
+- `--nodeNum` specifies a number of this particular node (from 1 to `-nodes` value), that is a number of the Node to create private keys locally for 
 - `--ip` specifies IP addresses for all nodes in the pool (if not specified, then `localhost` is used) 
-- `--network` specifies a Network generate transaction files and keys for. `sandbox` is used by default.
+- `--network` specifies a Network generate transaction files and keys for. `sandbox` is used by default 
  
 We can run the script multiple times for different networks. 
 
