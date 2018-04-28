@@ -4,6 +4,9 @@ import sys
 import shutil
 import traceback
 import tarfile
+import pwd
+import grp
+import stat
 
 from stp_core.common.log import getlogger
 from storage.kv_store_leveldb import KeyValueStorageLeveldb
@@ -21,6 +24,23 @@ ENV_FILE_PATH = "/etc/indy/indy.env"
 ledger_types = ['pool', 'domain', 'config']
 
 
+def set_own_perm(usr, dir):
+    uid = pwd.getpwnam(usr).pw_uid
+    gid = grp.getgrnam(usr).gr_gid
+    perm_mask_rw = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IWGRP
+    perm_mask_rwx = stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IWGRP | stat.S_IXGRP
+
+    os.chown(dir, uid, gid)
+    os.chmod(dir, perm_mask_rwx)
+    for croot, sub_dirs, cfiles in os.walk(dir):
+        for fs_name in sub_dirs:
+            os.chown(os.path.join(croot, fs_name), uid, gid)
+            os.chmod(os.path.join(croot, fs_name), perm_mask_rwx)
+        for fs_name in cfiles:
+            os.chown(os.path.join(croot, fs_name), uid, gid)
+            os.chmod(os.path.join(croot, fs_name), perm_mask_rw)
+
+
 def get_node_name():
     node_name = None
     node_name_key = 'NODE_NAME'
@@ -36,18 +56,19 @@ def get_node_name():
 
     return node_name
 
+
 def archive_leveldb_ledger(node_name, leveldb_ledger_dir):
-    _leveldb_ledger_archive_name = node_name + "_ledger_leveldb"
-    leveldb_ledger_archive_name = _leveldb_ledger_archive_name + ".tar.gz"
+    leveldb_ledger_archive_name = node_name + "_ledger_leveldb.tar.gz"
     leveldb_ledger_archive_path = os.path.join("/tmp", leveldb_ledger_archive_name)
     tar = tarfile.open(leveldb_ledger_archive_path, "w:gz")
-    tar.add(leveldb_ledger_dir, arcname=_leveldb_ledger_archive_name)
+    tar.add(leveldb_ledger_dir, arcname=node_name)
     tar.close()
     logger.info("Archive of LevelDB-based ledger created: {}"
-                 .format(leveldb_ledger_archive_path))
+                .format(leveldb_ledger_archive_path))
+
 
 def migrate_storage(level_db_dir, rocks_db_dir, db_name, is_db_int_keys):
-    if is_db_int_keys == True:
+    if is_db_int_keys is True:
         KeyValueStorageLeveldbCls = KeyValueStorageLeveldbIntKeys
         KeyValueStorageRocksdbCls = KeyValueStorageRocksdbIntKeys
     else:
@@ -79,6 +100,8 @@ def migrate_storage(level_db_dir, rocks_db_dir, db_name, is_db_int_keys):
     leveldb_storage.close()
     rocksdb_storage.close()
 
+    return True
+
 def migrate_storages(leveldb_ledger_dir, rocksdb_ledger_dir):
     # Migrate transaction logs, they use integer keys
     for ledger_type in ledger_types:
@@ -96,6 +119,7 @@ def migrate_storages(leveldb_ledger_dir, rocksdb_ledger_dir):
             return False
 
     return True
+
 
 def migrate_all():
     node_name = get_node_name()
@@ -149,14 +173,20 @@ def migrate_all():
         shutil.rmtree(rocksdb_ledger_dir)
         return False
 
+    ledger_dir = leveldb_ledger_dir
+
     try:
-        shutil.move(rocksdb_ledger_dir, leveldb_ledger_dir)
+        shutil.move(rocksdb_ledger_dir, ledger_dir)
     except Exception:
         logger.error(traceback.print_exc())
         logger.error("Could not rename temporary RocksDB-based ledger from '{}' to '{}'"
-                     .format(rocksdb_ledger_dir, leveldb_ledger_dir))
+                     .format(rocksdb_ledger_dir, ledger_dir))
         shutil.rmtree(rocksdb_ledger_dir)
         return False
+
+    set_own_perm("indy", ledger_dir)
+
+    return True
 
 
 if migrate_all():
