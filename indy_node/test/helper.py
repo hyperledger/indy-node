@@ -4,13 +4,15 @@ from contextlib import ExitStack
 from typing import Iterable
 import base58
 
+from indy.did import replace_keys_start, replace_keys_apply
+from indy.ledger import build_attrib_request
 from plenum.common.constants import REQACK, TXN_ID, DATA
+from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
 from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.util import getMaxFailures, runall
-from plenum.test.helper import TestNodeSet as PlenumTestNodeSet
+from plenum.common.util import getMaxFailures, runall, randomString
 from plenum.test.helper import waitForSufficientRepliesForRequests, \
-    checkLastClientReqForNode, buildCompletedTxnFromReply
+    checkLastClientReqForNode, buildCompletedTxnFromReply, sdk_get_and_check_replies
 from plenum.test.test_node import checkNodesAreReady, TestNodeCore
 from plenum.test.test_node import checkNodesConnected
 from plenum.test.testable import spyable
@@ -25,168 +27,7 @@ from indy_node.server.upgrader import Upgrader
 from stp_core.loop.eventually import eventually
 from stp_core.loop.looper import Looper
 
-
 logger = getlogger()
-
-
-class Scenario(ExitStack):
-    """
-    Test context
-    simple container to toss in a dynamic context to streamline testing
-    """
-
-    def __init__(self,
-                 nodeCount=None,
-                 nodeRegistry=None,
-                 nodeSet=None,
-                 looper=None,
-                 tmpdir=None):
-        super().__init__()
-
-        self.actor = None  # type: Organization
-
-        if nodeSet is None:
-            self.nodes = self.enter_context(TestNodeSet(count=nodeCount,
-                                                        nodeReg=nodeRegistry,
-                                                        tmpdir=tmpdir))
-        else:
-            self.nodes = nodeSet
-        self.nodeReg = self.nodes.nodeReg
-        if looper is None:
-            self.looper = self.enter_context(Looper(self.nodes))
-        else:
-            self.looper = looper
-        self.tmpdir = tmpdir
-        self.ran = []  # history of what has been run
-        self.userId = None
-        self.userNym = None
-        self.trustAnchor = None
-        self.trustAnchorNym = None
-        self.agent = None
-        self.agentNym = None
-
-    def run(self, *coros):
-        new = []
-        for c in coros:
-            if inspect.isfunction(c) or inspect.ismethod(c):
-                new.append(c(self))  # call it with this context
-            else:
-                new.append(c)
-        if new:
-            result = self.looper.run(*new)
-            self.ran.extend(coros)
-            return result
-
-    def ensureRun(self, *coros):
-        """
-        Ensures the coro gets run, in other words, this method optionally
-        runs the coro if it has not already been run in this scenario
-        :param coros:
-        :return:
-        """
-        unrun = [c for c in coros if c not in self.ran]
-        return self.run(*unrun)
-
-    async def start(self):
-        await checkNodesConnected(self.nodes)
-        timeout = plenumWaits.expectedPoolStartUpTimeout(len(self.nodes))
-        await eventually(checkNodesAreReady,
-                         self.nodes,
-                         retryWait=.25,
-                         timeout=timeout,
-                         ratchetSteps=10)
-
-    async def startClient(self, org=None):
-        org = org if org else self.actor
-        self.looper.add(org.client)
-        await org.client.ensureConnectedToNodes()
-
-    def copyOfInBox(self, org=None):
-        org = org if org else self.actor
-        return org.client.inBox.copy()
-
-    async def checkAcks(self, org=None, count=1, minusInBox=None):
-        org = org if org else self.actor
-        ib = self.copyOfInBox(org)
-        if minusInBox:
-            for x in minusInBox:
-                ib.remove(x)
-
-        timeout = plenumWaits.expectedReqAckQuorumTime()
-        for node in self.nodes:
-            await eventually(self.checkInboxForReAck,
-                             org.client.name,
-                             ib,
-                             REQACK,
-                             node,
-                             count,
-                             retryWait=.1,
-                             timeout=timeout,
-                             ratchetSteps=10)
-
-    @staticmethod
-    def checkInboxForReAck(clientName, clientInBox, op, fromNode,
-                           expectedCount: int):
-        actualCount = sum(
-            1 for x in clientInBox
-            if x[0]['op'] == op and x[1] == fromNode.clientstack.name)
-        assert actualCount == expectedCount
-
-    async def checkReplies(self,
-                           reqs,
-                           org=None,
-                           retryWait=.25,
-                           timeout=None,
-                           ratchetSteps=10):
-        org = org if org else self.actor
-        if not isinstance(reqs, Iterable):
-            reqs = [reqs]
-
-        nodeCount = sum(1 for _ in self.nodes)
-        f = getMaxFailures(nodeCount)
-        corogen = (eventually(waitForSufficientRepliesForRequests,
-                              org.client.inBox,
-                              r.reqId,
-                              f,
-                              retryWait=retryWait,
-                              timeout=timeout,
-                              ratchetSteps=ratchetSteps) for r in reqs)
-
-        return await runall(corogen)
-
-    async def send(self, op, org=None):
-        org = org if org else self.actor
-        req = org.client.submit(op)[0]
-        timeout = plenumWaits.expectedTransactionExecutionTime(
-            len(self.nodes))
-        for node in self.nodes:
-            await eventually(checkLastClientReqForNode,
-                             node,
-                             req,
-                             retryWait=1,
-                             timeout=timeout)
-        return req
-
-    async def sendAndCheckAcks(self, op, count: int = 1, org=None):
-        baseline = self.copyOfInBox()  # baseline of client inBox so we can
-        # net it out
-        req = await self.send(op, org)
-        await self.checkAcks(count=count, minusInBox=baseline)
-        return req
-
-    def genOrg(self):
-        cli = genTestClientProvider(nodes=self.nodes,
-                                    nodeReg=self.nodeReg.extractCliNodeReg(),
-                                    tmpdir=self.tmpdir)
-        return Organization(cli)
-
-    def addAgent(self):
-        self.agent = self.genOrg()
-        return self.agent
-
-    def addTrustAnchor(self):
-        self.trustAnchor = self.genOrg()
-        return self.trustAnchor
 
 
 class Organization:
@@ -202,7 +43,7 @@ class Organization:
             raise ValueError("No wallet exists for this user id")
 
     def addTxnsForCompletedRequestsInWallet(self, reqs: Iterable, wallet:
-                                            Wallet):
+    Wallet):
         for req in reqs:
             reply, status = self.client.getReply(req.reqId)
             if status == "CONFIRMED":
@@ -255,22 +96,6 @@ class TestNode(TempStorage, TestNodeCore, Node):
         super().onStopping(*args, **kwargs)
         if self.cleanupOnStopping:
             self.cleanupDataLocation()
-
-
-class TestNodeSet(PlenumTestNodeSet):
-    def __init__(self,
-                 names: Iterable[str] = None,
-                 count: int = None,
-                 nodeReg=None,
-                 tmpdir=None,
-                 keyshare=True,
-                 primaryDecider=None,
-                 pluginPaths: Iterable[str] = None,
-                 testNodeClass=TestNode):
-        super().__init__(names, count, nodeReg, tmpdir, keyshare,
-                         primaryDecider=primaryDecider,
-                         pluginPaths=pluginPaths,
-                         testNodeClass=testNodeClass)
 
 
 def checkSubmitted(looper, client, optype, txnsBefore):
@@ -350,17 +175,21 @@ def addAttributeAndCheck(looper, client, wallet, attrib):
     return wallet.getAttribute(attrib).seqNo
 
 
-def addRawAttribute(looper, client, wallet, name, value, dest=None,
-                    localName=None):
-    if not localName:
-        localName = name
+def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib, dest=None):
+    _, s_did = sdk_wallet_handle
+    t_did = dest or s_did
+    attrib_req = looper.loop.run_until_complete(
+        build_attrib_request(s_did, t_did, None, attrib, None))
+    request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_handle,
+                                                        sdk_pool_handle, attrib_req)
+    sdk_get_and_check_replies(looper, [request_couple])
+    return request_couple
+
+
+def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, value):
+    _, did = sdk_wallet_handle
     attrData = json.dumps({name: value})
-    attrib = Attribute(name=localName,
-                       origin=wallet.defaultId,
-                       value=attrData,
-                       dest=wallet.defaultId,
-                       ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, client, wallet, attrib)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrData)
 
 
 def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
@@ -368,7 +197,7 @@ def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
-        (data is not None and data.get(attrName) == attrValue)
+           (data is not None and data.get(attrName) == attrValue)
     return reply
 
 
@@ -393,6 +222,10 @@ def getAttribute(
                                  timeout=timeout))
 
 
+def sdk_get_attribute():
+    pass
+
+
 def buildStewardClient(looper, tdir, stewardWallet):
     s, _ = genTestClient(tmpdir=tdir, usePoolLedger=True)
     s.registerObserver(stewardWallet.handleIncomingReply)
@@ -402,8 +235,23 @@ def buildStewardClient(looper, tdir, stewardWallet):
     return s
 
 
-base58_alphabet = set(base58.alphabet)
+base58_alphabet = set(base58.alphabet.decode("utf-8"))
 
 
 def check_str_is_base58_compatible(str):
     return not (set(str) - base58_alphabet)
+
+
+def sdk_rotate_verkey(looper, sdk_pool_handle, wh,
+                      did_of_changer,
+                      did_of_changed, seed=None, verkey=None):
+    seed = seed or randomString(32)
+    verkey = looper.loop.run_until_complete(
+        replace_keys_start(wh, did_of_changed, json.dumps({'seed': seed})))
+
+    sdk_add_new_nym(looper, sdk_pool_handle,
+                    (wh, did_of_changer), dest=did_of_changed,
+                    verkey=verkey)
+    looper.loop.run_until_complete(
+        replace_keys_apply(wh, did_of_changed))
+    return verkey

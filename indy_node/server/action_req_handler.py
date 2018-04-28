@@ -6,14 +6,15 @@ from plenum.common.messages.node_messages import Reply
 from plenum.common.txn_util import reqToTxn
 from plenum.common.types import f
 from plenum.server.req_handler import RequestHandler
-from plenum.common.constants import TXN_TYPE
+from plenum.common.constants import TXN_TYPE, DATA
 from indy_common.auth import Authoriser
-from indy_common.constants import ACTION, POOL_RESTART, DATETIME
+from indy_common.constants import ACTION, POOL_RESTART, DATETIME, VALIDATOR_INFO
 from indy_common.roles import Roles
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.restarter import Restarter
 from indy_node.server.pool_config import PoolConfig
+from plenum.server.validator_info_tool import ValidatorNodeInfoTool
 from stp_core.common.log import getlogger
 
 
@@ -21,12 +22,14 @@ logger = getlogger()
 
 
 class ActionReqHandler(RequestHandler):
-    operation_types = {POOL_RESTART}
+    operation_types = {POOL_RESTART, VALIDATOR_INFO}
 
     def __init__(self, idrCache: IdrCache,
-                 restarter: Restarter, poolManager, poolCfg: PoolConfig):
+                 restarter: Restarter, poolManager, poolCfg: PoolConfig,
+                 info_tool: ValidatorNodeInfoTool):
         self.idrCache = idrCache
         self.restarter = restarter
+        self.info_tool = info_tool
         self.poolManager = poolManager
         self.poolCfg = poolCfg
 
@@ -68,23 +71,27 @@ class ActionReqHandler(RequestHandler):
                     Roles.nameFromValue(origin_role)))
 
     def apply(self, req: Request, cons_time: int = None):
-        if req.txn_type != POOL_RESTART:
-            raise InvalidClientRequest("{} is not type of action transaction"
-                                       .format(req.txn_type))
-        result = {}
+        logger.debug("Transaction {} with type {} started"
+                     .format(req.reqId, req.txn_type))
         try:
-            self.restarter.handleActionTxn(req)
-            result = self._generate_action_result(req)
+            if req.txn_type == POOL_RESTART:
+                self.restarter.handleActionTxn(req)
+                result = self._generate_action_result(req)
+            elif req.txn_type == VALIDATOR_INFO:
+                result = self._generate_action_result(req)
+                result[DATA] = self.info_tool.info
+            else:
+                raise InvalidClientRequest(
+                    "{} is not type of action transaction"
+                    .format(req.txn_type))
         except Exception as ex:
-            result = self._generate_action_result(req, False, ex.args[0])
-            logger.warning("Restart is failed")
-        finally:
-            return result
+            logger.warning("Operation is failed")
+            raise ex
+        logger.debug("Transaction {} with type {} finished"
+                     .format(req.reqId, req.txn_type))
+        return result
 
-    def _generate_action_result(self, request: Request, is_success=True,
-                                msg=None):
+    def _generate_action_result(self, request: Request):
         return {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
-            f.REQ_ID.nm: request.reqId,
-            f.IS_SUCCESS.nm: is_success,
-            f.MSG.nm: msg}}
+            f.REQ_ID.nm: request.reqId}}
