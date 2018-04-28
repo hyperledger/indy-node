@@ -122,6 +122,7 @@ def migrate_all():
         logger.info("All storages migrated successfully from LevelDB to RocksDB")
     else:
         logger.error("Storages migration from LevelDB to RocksDB failed!")
+        shutil.rmtree(rocksdb_ledger_dir)
         return False
 
     # Archiving LevelDB-based ledger
@@ -140,6 +141,7 @@ def migrate_all():
         logger.error(traceback.print_exc())
         logger.error("Could not remove LevelDB-based ledger: {}"
                      .format(leveldb_ledger_dir))
+        shutil.rmtree(rocksdb_ledger_dir)
         return False
 
     try:
@@ -148,6 +150,7 @@ def migrate_all():
         logger.error(traceback.print_exc())
         logger.error("Could not rename temporary RocksDB-based ledger from '{}' to '{}'"
                      .format(rocksdb_ledger_dir, leveldb_ledger_dir))
+        shutil.rmtree(rocksdb_ledger_dir)
         return False
 
 
