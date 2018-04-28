@@ -102,6 +102,7 @@ def migrate_storage(level_db_dir, rocks_db_dir, db_name, is_db_int_keys):
 
     return True
 
+
 def migrate_storages(leveldb_ledger_dir, rocksdb_ledger_dir):
     # Migrate transaction logs, they use integer keys
     for ledger_type in ledger_types:
