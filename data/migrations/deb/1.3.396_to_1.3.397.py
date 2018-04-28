@@ -68,8 +68,13 @@ def migrate_storage(level_db_dir, rocks_db_dir, db_name, is_db_int_keys):
         logger.error("Could not open rocksdb storage: {}".format(os.path.join(rocks_db_dir, db_name)))
         return False
 
-    for key, val in leveldb_storage.iterator():
-        rocksdb_storage.put(key, val)
+    try:
+        for key, val in leveldb_storage.iterator():
+            rocksdb_storage.put(key, val)
+    except Exception:
+        logger.error(traceback.print_exc())
+        logger.error("Could not put key/value to RocksDB storage '{}'".format(db_name))
+        return False
 
     leveldb_storage.close()
     rocksdb_storage.close()
