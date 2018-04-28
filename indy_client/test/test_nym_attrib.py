@@ -412,8 +412,8 @@ def testTrustAnchorDisclosesEncryptedAttribute(
     op = {
         TARGET_NYM: userSignerA.verstr,
         TXN_TYPE: ATTRIB,
-        NONCE: base58.b58encode(nonce),
-        ENC: base58.b58encode(boxedMsg)
+        NONCE: base58.b58encode(nonce).decode("utf-8"),
+        ENC: base58.b58encode(boxedMsg).decode("utf-8")
     }
     submitAndCheck(looper, trustAnchor, op,
                    identifier=trustAnchorSigner.verstr)

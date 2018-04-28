@@ -1363,7 +1363,7 @@ def newNodeVals():
         CLIENT_PORT: clientPort,
         ALIAS: randomString(6),
         SERVICES: [VALIDATOR],
-        BLS_KEY: base58.b58encode(randomString(128).encode())
+        BLS_KEY: base58.b58encode(randomString(128).encode()).decode("utf-8")
     }
 
     return {
