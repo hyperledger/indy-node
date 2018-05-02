@@ -1,86 +1,35 @@
-#------------------
-# Create a sample Docker File which has all the setup.cmd done
-#
-#   docker build -t indy-base -f ./indy-base-dockerfile .
-#
-# Simply run as
-#    docker run -it indy-base /bin/bash
-#
-# From inside docker container:
-#   To start server & return
-#       generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1
-#
-#   To start client cli
-#       indy
-#---------------------
-FROM ubuntu:16.04
-ENV DEBIAN_FRONTEND noninteractive
-ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+FROM solita/ubuntu-systemd:16.04
 
-RUN apt-get -y -qq update 
-RUN apt-get install -y -qq sudo wget curl git python3.5 python3-pip python-setuptools python3-venv 
-RUN apt-get install -y -qq ruby ruby-dev rubygems gcc make nano emacs vim apt-transport-https
-RUN ln -s /usr/bin/pip3 /usr/bin/pip
-
-#------------
-# Copy source to root home directory
-#------------
-WORKDIR /root
-ADD ./indy-node /root
-
-#--------------------------
-# Anon Credentials
-#--------------------------
-RUN git clone https://github.com/hyperledger/indy-anoncreds.git
-RUN cd indy-anoncreds && git checkout stable && ./setup-charm.sh && cd ..
-
-#--------------------------
-# Common Setup Instructions
-#--------------------------
-RUN apt-get -y update --fix-missing
-RUN apt-get -y install software-properties-common
-RUN apt-get -y update
-
-#-----------------------
-# Add key
-#
-#    -----BEGIN PGP PUBLIC KEY BLOCK-----
-#    Version: SKS 1.1.6
-#    Comment: Hostname: keyserver.ubuntu.com
-#    
-#    mI0ES/EY5AEEAOZl+6Cv7b0fOnXLj8lt1cZiNQHIuOkGRJaMUdvXdrSbtQ4v9GiMWFoFj+9g
-#    dFN9EjD9JKoXjJb/e/Q9P21uOi0/YmlOfkqWvqm1qsyBXTXTrGx1mghtALPSw0bvYoWZ3aZJ
-#    3c9VPT5sCdv9IYw6X/+4Z0HoQGvxymbfvRKH3J/xABEBAAG0EkxhdW5jaHBhZCBjaHJpc2xl
-#    YYi2BBMBAgAgBQJL8RjkAhsDBgsJCAcDAgQVAggDBBYCAwECHgECF4AACgkQuTFqe8eRexLB
-#    rAQAk9ux3R+k38+dY0f8p3B+0UESy/jNFL/S+t6Fdpw/2qMV1EZohAgJXUw/axmTdr1gKUoy
-#    GDtE13gebKGy+zqtzsIVo44V0ztC3Z7Kbd9bbiW+wMo7RT4yyi6kURMyE68RrqGbkenZveU6
-#    o2Urq4LW6bfn5fDLVeYQ5GNsrNdSS1k=
-#    =9f3N
-#    -----END PGP PUBLIC KEY BLOCK----
-#-----------------------
-RUN echo "deb http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" | tee /etc/apt/sources.list.d/docker.list
-RUN echo "deb-src http://ppa.launchpad.net/chris-lea/libsodium/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/docker.list
-RUN  echo  "-----BEGIN PGP PUBLIC KEY BLOCK-----\nVersion: SKS 1.1.6\nComment: Hostname: keyserver.ubuntu.com\n\nmI0ES/EY5AEEAOZl+6Cv7b0fOnXLj8lt1cZiNQHIuOkGRJaMUdvXdrSbtQ4v9GiMWFoFj+9g\ndFN9EjD9JKoXjJb/e/Q9P21uOi0/YmlOfkqWvqm1qsyBXTXTrGx1mghtALPSw0bvYoWZ3aZJ\n3c9VPT5sCdv9IYw6X/+4Z0HoQGvxymbfvRKH3J/xABEBAAG0EkxhdW5jaHBhZCBjaHJpc2xl\nYYi2BBMBAgAgBQJL8RjkAhsDBgsJCAcDAgQVAggDBBYCAwECHgECF4AACgkQuTFqe8eRexLB\nrAQAk9ux3R+k38+dY0f8p3B+0UESy/jNFL/S+t6Fdpw/2qMV1EZohAgJXUw/axmTdr1gKUoy\nGDtE13gebKGy+zqtzsIVo44V0ztC3Z7Kbd9bbiW+wMo7RT4yyi6kURMyE68RrqGbkenZveU6\no2Urq4LW6bfn5fDLVeYQ5GNsrNdSS1k=\n=9f3N\n-----END PGP PUBLIC KEY BLOCK----" | tee libsodium.key
-RUN apt-key add libsodium.key
-RUN apt-get update 
-RUN apt-get install -y -qq  libsodium13
-
-#----------------------------------------
-# As indy-node depends on indy-crypto, it also needs to be installed:
-#----------------------------------------
+# Install environment
+RUN apt-get update -y && apt-get install -y \ 
+    git \
+    wget \
+    python3.5 \
+    python3-pip \
+    python-setuptools \
+    python3-nacl \
+    apt-transport-https \
+    ca-certificates \
+    sudo \
+    nano \
+    emacs \
+    vim
+RUN pip3 install -U \ 
+    'pip<10.0.0' \
+    setuptools
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
-RUN add-apt-repository "deb https://repo.sovrin.org/deb xenial master"
-RUN apt-get update -y && apt-get install -y libindy-crypto
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
+RUN echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list
+RUN echo "deb https://repo.sovrin.org/sdk/deb xenial master" >> /etc/apt/sources.list
+RUN apt-get update -y && apt-get install -y indy-node libindy
+RUN pip3 install python3-indy
+WORKDIR /home/indy
+ADD . /home/indy
 
-#----------------------------------------
-# install required packages 
-#----------------------------------------
-RUN pip3 install -e .
+# Set NETWORK_NAME in indy_config.py to 'sandbox'
+RUN awk '{if (index($1, "NETWORK_NAME") != 0) {print("NETWORK_NAME = \"sandbox\"")} else print($0)}' /etc/indy/indy_config.py> /tmp/indy_config.py
+RUN mv /tmp/indy_config.py /etc/indy/indy_config.py
 
-
-
-
-
-
-
-
+RUN echo " " >> /etc/indy/indy_config.py
+RUN echo "logLevel=0" >> /etc/indy/indy_config.py
+RUN echo " " >> /etc/indy/indy_config.py

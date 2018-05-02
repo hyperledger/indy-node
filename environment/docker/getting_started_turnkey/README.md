@@ -10,7 +10,7 @@ With just four command lines executed you have the Indy Demo ready to use.
 $ git clone https://github.com/hyperledger/indy-node.git
 $ cd indy-node/environment/docker/getting_started_turnkey
 $ make indy-base
-$ make local run-demo
+$ make run-demo
 ```
 
 # Indy Docker
@@ -19,7 +19,7 @@ A Docker file is provided that creates and configures Indy nodes and clients. Th
 
 ## Dependencies
 
-While the Docker image that will be created below may run on many different versions of Docker, it was initially tested and verified on Docker v17.12.0-ce.  To see what version of Docker is currently installed on your system, run:
+While the Docker image that will be created below may run on many different versions of Docker, it was initially tested and verified on Docker v17.10.0-ce.  To see what version of Docker is currently installed on your system, run:
 
 ```
 $ docker --version
@@ -57,14 +57,10 @@ You can set up and run the **Alice Demo** using the **indy-base** Docker image f
 The **run-demo** target starts a four-node pool (Node1-Node4), sets up and runs the Faber, Acme and Thrift agents, and starts an Indy CLI.
 
 ```
-$ make local run-demo
+$ make run-demo
 ```
 
-The **Makefile** has a number of targets that perform many tasks. Using the **local** target before anything will set the IP addresses for the pool and agents to be local.  If you want to use a different IP address, you can pass the values at the command line. An example is shown below.
-
-```
-$ make run-demo IPS=10.0.1.12,10.0.1.12,10.0.1.12,10.0.1.12 IPFABER=10.0.1.12 IPACME=10.0.1.12 IPTHRIFT=10.0.1.12
-```
+The **Makefile** has a number of targets that perform many tasks. An attempt is made to determine the local IP address.  It can be checked using the **local** target.  If you want to use a different IP address, you can edit the Makefile and set the LOCAL variable.  
 
 To see what your local address is you can run the command with just the **local** target.
 
@@ -87,7 +83,7 @@ e26633e1d1f9        indy-base           "/bin/bash -c '   ..."   10 seconds ago 
 7e9f2f93f41e        indy-base           "/bin/bash -c 'ini..."   15 seconds ago      Up 16 seconds       0.0.0.0:9701-9702->9701-9702/tcp   Node1
 ```
 
-When the Indy container starts, it runs several Indy commands that set up the agents.  Once the agents are operational, you are at the **indy** prompt and the demo environment is ready for use.  You can now follow the **Alice Demo** scenario.  
+When the Indy container starts, it runs several Indy commands that set up the agents.  Once the agents are operational, you are at the **indy>** prompt and the demo environment is ready for use.  You can now follow the **Alice Demo** scenario.  
 
 The following commands are from the demo script and can be used to test that the demo environment is working correctly.
 
@@ -102,6 +98,15 @@ ALICE@sandbox> show claim Transcript
 ALICE@sandbox> request claim Transcript
 ALICE@sandbox> show claim Transcript
 ```
+
+The entire **Alice Demo** can be run using the **run-alice** target.  This does everything that the **run-demo** target does, plus executes the remaining Indy commands to run the entire demo.  
+
+You will be left at the **indy>** prompt, allowing you to explore additional commands.  To get a list of all Indy commands, enter **help**.  
+
+The **exit** command will exit the Indy command prompt and leave you at the bash shell command line.  You can explore the file system or run the Indy command prompt again by typing **indy**.
+
+There are several directories under **~/.indy-cli** that might be interesting to explore.  The network configuration is in the **~/.indy-cli/networks/sandbox** directory, and the wallets are in the **~/.indy-cli/wallets/sandbox** directory.
+
 
 ## Makefile Targets
 
@@ -141,28 +146,9 @@ The following **Makefile** targets can be used to start and stop the Docker cont
 
 ## Troubleshooting
 
-Some failures running through the demo can be due to failure to contact the various service endpoints.  Verify the IP addresses that the makefile is using.
+Some failures running through the demo can be due to failure to contact the various service endpoints.  Verify the IP addresses that the makefile is using and edit the Makefile LOCAL variable as necessary.
 
-If you are running all of the services locally and using the **local** make target in combination with other targets, the makefile will try to determine the correct local host IP address.  When this target is used on its own, you can see what the makefile thinks your local host address is.  It will not setup the demo but only show your local address.
 
-```
-$ make -f Makefile local
-Local IP is 192.168.1.130
-```
-
-If this IP address is not correct you can:
-
-1. Edit the **Makefile** and update them,
-2. Run the makefile from the command line and supply them.
- 
-The defaults in the **Makefile** are shown below.
-
-```
-IPS=10.0.1.12,10.0.1.12,10.0.1.12,10.0.1.12
-IPFABER=10.0.1.12
-IPACME=10.0.1.12
-IPTHRIFT=10.0.1.12
-```
 
 ## Using the Docker Image
 
