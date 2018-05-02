@@ -1,18 +1,19 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import partial
-from typing import Tuple, Union, Optional, Callable, Dict
+from typing import Union, Optional, Callable, Dict
 
 import dateutil.parser
 import dateutil.tz
 
 from indy_node.server.node_maintainer import NodeMaintainer, \
     NodeControlToolMessage
+from plenum.common.txn_util import is_forced, get_seq_no, get_type, get_payload_data
 from stp_core.common.log import getlogger
-from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
+from plenum.common.constants import TXN_TYPE, VERSION, IDENTIFIER
 from plenum.common.types import f
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
-    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, FORCE, \
+    CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
     UPGRADE_MESSAGE
 from indy_node.server.upgrade_log import UpgradeLog
 from ledger.util import F
@@ -42,8 +43,8 @@ class Upgrader(NodeMaintainer):
 
     @staticmethod
     def get_action_id(txn):
-        seq_no = txn.get(F.seqNo.name, '')
-        if txn.get(FORCE, None):
+        seq_no = get_seq_no(txn) or ''
+        if is_forced(txn):
             seq_no = ''
         return '{}{}'.format(txn[f.REQ_ID.nm], seq_no)
 
@@ -213,21 +214,22 @@ class Upgrader(NodeMaintainer):
         FINALIZING_EVENT_TYPES = [
             UpgradeLog.SUCCEEDED, UpgradeLog.FAILED]
 
-        if txn[TXN_TYPE] != POOL_UPGRADE:
+        if get_type(txn) != POOL_UPGRADE:
             return
 
         logger.info("Node '{}' handles upgrade txn {}".format(
             self.nodeName, txn))
-        action = txn[ACTION]
-        version = txn[VERSION]
-        justification = txn.get(JUSTIFICATION)
-        reinstall = txn.get(REINSTALL, False)
+        txn_data = get_payload_data(txn)
+        action = txn_data[ACTION]
+        version = txn_data[VERSION]
+        justification = txn_data.get(JUSTIFICATION)
+        reinstall = txn_data.get(REINSTALL, False)
         currentVersion = self.getVersion()
         upgrade_id = self.get_action_id(txn)
 
         if action == START:
             # forced txn could have partial schedule list
-            if self.nodeId not in txn[SCHEDULE]:
+            if self.nodeId not in txn_data[SCHEDULE]:
                 logger.info("Node '{}' disregards upgrade txn {}".format(
                     self.nodeName, txn))
                 return
@@ -240,8 +242,8 @@ class Upgrader(NodeMaintainer):
                         self.nodeName, upgrade_id, last_event))
                 return
 
-            when = txn[SCHEDULE][self.nodeId]
-            failTimeout = txn.get(TIMEOUT, self.defaultActionTimeout)
+            when = txn_data[SCHEDULE][self.nodeId]
+            failTimeout = txn_data.get(TIMEOUT, self.defaultActionTimeout)
 
             if not self.is_version_upgradable(
                     currentVersion, version, reinstall):

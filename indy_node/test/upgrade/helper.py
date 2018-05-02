@@ -9,6 +9,7 @@ from typing import List, Tuple
 
 import dateutil.tz
 from plenum.common.constants import TXN_TYPE, DATA, VERSION
+from plenum.common.txn_util import get_type, get_payload_data
 from plenum.common.types import f
 from plenum.common.util import randomString
 from plenum.test import waits as plenumWaits
@@ -228,15 +229,16 @@ def check_ledger_after_upgrade(
         assert len(node.configLedger) == ledger_size
         ids = set()
         for _, txn in node.configLedger.getAllTxn():
-            type = txn[TXN_TYPE]
+            type = get_type(txn)
             assert type in allowed_txn_types
-            data = txn
+            txn_data = get_payload_data(txn)
+            data = txn_data
             if type == NODE_UPGRADE:
-                data = txn[DATA]
+                data = txn_data[DATA]
 
             assert data[ACTION]
             assert data[ACTION] in allowed_actions
-            ids.add(txn[f.IDENTIFIER.nm])
+            ids.add(txn_data[f.IDENTIFIER.nm])
 
             assert data[VERSION]
             versions.add(data[VERSION])

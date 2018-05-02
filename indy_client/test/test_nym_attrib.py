@@ -9,6 +9,7 @@ from plenum.common.constants import ENC, REPLY, TXN_TIME, TXN_ID, \
     OP_FIELD_NAME, NYM, TARGET_NYM, \
     TXN_TYPE, ROLE, NONCE, VERKEY
 from plenum.common.signer_did import DidSigner
+from plenum.common.txn_util import get_type, get_payload_data
 from plenum.common.types import f
 from plenum.common.util import adict
 from plenum.test import waits
@@ -258,7 +259,7 @@ def nymsAddedInQuickSuccession(nodeSet, addedTrustAnchor, looper,
     count = 0
     for node in nodeSet:
         for seq, txn in node.domainLedger.getAllTxn():
-            if txn[TXN_TYPE] == NYM and txn[TARGET_NYM] == usigner.identifier:
+            if get_type(txn) == NYM and get_payload_data(txn)[TARGET_NYM] == usigner.identifier:
                 count += 1
 
     assert(count == len(nodeSet))

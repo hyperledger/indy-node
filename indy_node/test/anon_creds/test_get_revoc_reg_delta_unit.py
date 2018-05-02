@@ -1,5 +1,5 @@
 import pytest
-from plenum.common.txn_util import reqToTxn
+from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.types import f
 from indy_common.types import Request
 from plenum.common.constants import TXN_TIME
@@ -38,9 +38,8 @@ def add_another_reg_id(looper,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     looper.runFor(2)
     req_handler = node.getDomainReqHandler()
-    txn = reqToTxn(Request(**req))
-    txn[f.SEQ_NO.nm] = node.domainLedger.seqNo + 1
-    txn[TXN_TIME] = FIRST_ID_TS
+    txn = append_txn_metadata(reqToTxn(Request(**req), FIRST_ID_TS),
+                              seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocDef(txn)
     return req
 
@@ -56,9 +55,8 @@ def reg_entry_with_other_reg_id(looper,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     looper.runFor(2)
     req_handler = node.getDomainReqHandler()
-    txn = reqToTxn(Request(**req))
-    txn[f.SEQ_NO.nm] = node.domainLedger.seqNo + 1
-    txn[TXN_TIME] = FIRST_ID_TS
+    txn = append_txn_metadata(reqToTxn(Request(**req), FIRST_ID_TS),
+                              seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocRegEntry(txn)
     req_handler.tsRevoc_store.set(txn[TXN_TIME], req_handler.state.headHash)
     return txn
@@ -75,9 +73,8 @@ def test_get_delta_with_other_reg_def_in_state(looper,
     # need for different txnTime
     looper.runFor(2)
     req_handler = node.getDomainReqHandler()
-    txn = reqToTxn(entry_second_id)
-    txn[f.SEQ_NO.nm] = node.domainLedger.seqNo + 1
-    txn[TXN_TIME] = SECOND_TS_ID
+    txn = append_txn_metadata(reqToTxn(entry_second_id, SECOND_TS_ID),
+                              seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocRegEntry(txn)
     req_handler.tsRevoc_store.set(txn[TXN_TIME], req_handler.state.headHash)
 

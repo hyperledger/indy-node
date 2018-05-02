@@ -2,9 +2,9 @@ from typing import List
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
-from plenum.common.txn_util import reqToTxn, isTxnForced
+from plenum.common.txn_util import reqToTxn, is_forced
 from plenum.server.ledger_req_handler import LedgerRequestHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, DATA
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.auth import Authoriser
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE
 from indy_common.roles import Roles
@@ -112,7 +112,7 @@ class ConfigReqHandler(LedgerRequestHandler):
 
     def apply(self, req: Request, cons_time):
         txn = reqToTxn(req, cons_time)
-        (start, _), _ = self.ledger.appendTxns([txn])
+        (start, _), _ = self.ledger.appendTxns([txn], cons_time)
         return start, txn
 
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
@@ -122,7 +122,7 @@ class ConfigReqHandler(LedgerRequestHandler):
             # only in case it is not forced.
             # If it is forced then it was handled earlier
             # in applyForced method.
-            if not isTxnForced(txn):
+            if not is_forced(txn):
                 self.upgrader.handleActionTxn(txn)
                 self.poolCfg.handleConfigTxn(txn)
         return committedTxns
