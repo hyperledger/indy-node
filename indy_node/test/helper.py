@@ -97,6 +97,12 @@ class TestNode(TempStorage, TestNodeCore, Node):
         if self.cleanupOnStopping:
             self.cleanupDataLocation()
 
+    def schedule_node_status_dump(self):
+        pass
+
+    def dump_additional_info(self):
+        pass
+
 
 def checkSubmitted(looper, client, optype, txnsBefore):
     txnsAfter = []

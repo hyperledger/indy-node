@@ -158,7 +158,7 @@ def makeGetClaimDefRequest(client, wallet):
 
 @pytest.fixture
 def read_txn_and_get_latest_info(txnPoolNodesLooper, patched_dump_info_period,
-                                 client_and_wallet, info_path, node):
+                                 client_and_wallet, node):
     client, wallet = client_and_wallet
 
     def read_wrapped(txn_type):
@@ -195,18 +195,3 @@ def patched_dump_info_period(tconf):
     tconf.DUMP_VALIDATOR_INFO_PERIOD_SEC = PERIOD_SEC
     yield tconf.DUMP_VALIDATOR_INFO_PERIOD_SEC
     tconf.DUMP_VALIDATOR_INFO_PERIOD_SEC = old_period
-
-
-@pytest.fixture(scope='module')
-def info_path(patched_dump_info_period, txnPoolNodesLooper, txnPoolNodeSet, node):
-    path = os.path.join(node.node_info_dir, INFO_FILENAME)
-    txnPoolNodesLooper.runFor(patched_dump_info_period)
-    assert os.path.exists(path), '{} exists'.format(path)
-    return path
-
-
-def load_info(path):
-    with open(path) as fd:
-        info = json.load(fd)
-    return info
-
