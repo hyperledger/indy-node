@@ -70,25 +70,23 @@ class Restarter(NodeMaintainer):
         if txn[TXN_TYPE] != POOL_RESTART:
             return
 
-        when = txn[DATETIME] if DATETIME in txn.keys() else None
-        if isinstance(when, str) and when != "0":
-            when = dateutil.parser.parse(when)
-        now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        if when is None or when == "0" or now >= when:
-            msg = RestartMessage().toJson()
-            try:
-                asyncio.ensure_future(self._open_connection_and_send(msg))
-            except Exception as ex:
-                logger.warning(ex.args[0])
-            return
-
         action = txn[ACTION]
         if action == START:
+            when = txn[DATETIME] if DATETIME in txn.keys() else None
+            if isinstance(when, str) and when != "0":
+                when = dateutil.parser.parse(when)
+            now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+            if when is None or when == "0" or now >= when:
+                msg = RestartMessage().toJson()
+                try:
+                    asyncio.ensure_future(self._open_connection_and_send(msg))
+                except Exception as ex:
+                    logger.warning(ex.args[0])
+                return
+
             failTimeout = txn.get(TIMEOUT, self.defaultActionTimeout)
 
             if self.scheduledAction:
-                if isinstance(when, str):
-                    when = dateutil.parser.parse(when)
                 if self.scheduledAction == when:
                     logger.debug(
                         "Node {} already scheduled restart".format(
