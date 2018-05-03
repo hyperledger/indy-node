@@ -26,6 +26,7 @@ STATUS_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
 INFO_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
 
 
+
 def test_validator_info_file_schema_is_valid(info):
     assert isinstance(info, dict)
     assert 'config' in info['Node_info']['Metrics']['transaction-count']
