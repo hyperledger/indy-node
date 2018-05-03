@@ -12,7 +12,7 @@ from plenum.test.helper import check_sufficient_replies_received
 
 # noinspection PyUnresolvedReferences
 from plenum.test.validator_info.test_validator_info import \
-    info, load_latest_info, node  # qa
+    info, node  # qa
 
 from indy_common.constants import TXN_TYPE, DATA, GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE
 
@@ -60,9 +60,7 @@ def node_with_broken_info_tool(node):
 
 
 def test_validator_info_file_handle_fails(node_with_broken_info_tool,
-                                          load_latest_info,
                                           node):
-    # latest_info = load_latest_info()
     latest_info = node._info_tool.info
 
     assert 'Node_info' not in latest_info
@@ -157,7 +155,7 @@ def makeGetClaimDefRequest(client, wallet):
 
 
 @pytest.fixture
-def read_txn_and_get_latest_info(txnPoolNodesLooper, patched_dump_info_period,
+def read_txn_and_get_latest_info(txnPoolNodesLooper,
                                  client_and_wallet, node):
     client, wallet = client_and_wallet
 
@@ -180,18 +178,9 @@ def read_txn_and_get_latest_info(txnPoolNodesLooper, patched_dump_info_period,
             eventually(check_sufficient_replies_received,
                        client, reqs[0].identifier, reqs[0].reqId,
                        retryWait=1, timeout=timeout))
-        txnPoolNodesLooper.runFor(patched_dump_info_period)
         return node._info_tool.info
     return read_wrapped
 
 
 def reset_node_total_read_request_number(node):
     node.total_read_request_number = 0
-
-
-@pytest.fixture(scope='module')
-def patched_dump_info_period(tconf):
-    old_period = tconf.DUMP_VALIDATOR_INFO_PERIOD_SEC
-    tconf.DUMP_VALIDATOR_INFO_PERIOD_SEC = PERIOD_SEC
-    yield tconf.DUMP_VALIDATOR_INFO_PERIOD_SEC
-    tconf.DUMP_VALIDATOR_INFO_PERIOD_SEC = old_period
