@@ -2,7 +2,7 @@ from typing import List
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
-from plenum.common.txn_util import reqToTxn, is_forced
+from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.auth import Authoriser
@@ -84,14 +84,14 @@ class ConfigReqHandler(LedgerRequestHandler):
             # TODO: Some validation needed for making sure name and version
             # present
             txn = self.upgrader.get_upgrade_txn(
-                lambda txn: txn.get(
+                lambda txn: get_payload_data(txn).get(
                     NAME,
                     None) == req.operation.get(
                     NAME,
-                    None) and txn.get(VERSION) == req.operation.get(VERSION),
+                    None) and get_payload_data(txn).get(VERSION) == req.operation.get(VERSION),
                 reverse=True)
             if txn:
-                status = txn.get(ACTION, None)
+                status = get_payload_data(txn).get(ACTION, None)
 
             if status == START and action == START:
                 raise InvalidClientRequest(

@@ -6,6 +6,7 @@ import base58
 from anoncreds.protocol.utils import randomString
 
 from indy_node.server.node import Node
+from plenum.common.txn_util import get_payload_data
 from plenum.test.helper import waitForSufficientRepliesForRequests
 
 from plenum.test.test_node import checkNodesConnected
@@ -106,7 +107,7 @@ def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
     for name in poolTxnTrusteeNames:
         seed = updatedPoolTxnData["seeds"][name]
         txn = next(
-            (txn for txn in updatedPoolTxnData["txns"] if txn[ALIAS] == name),
+            (txn for txn in updatedPoolTxnData["txns"] if get_payload_data(txn)[ALIAS] == name),
             None)
         ret.append((name, seed.encode(), txn))
     return ret

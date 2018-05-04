@@ -66,11 +66,11 @@ class Restarter(NodeMaintainer):
 
         :param req:
         """
-        txn = req.operation
-        if txn[TXN_TYPE] != POOL_RESTART:
+        op = req.operation
+        if op[TXN_TYPE] != POOL_RESTART:
             return
 
-        when = txn[DATETIME] if DATETIME in txn.keys() else None
+        when = op[DATETIME] if DATETIME in op.keys() else None
         if isinstance(when, str) and when != "0":
             when = dateutil.parser.parse(when)
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
@@ -82,9 +82,9 @@ class Restarter(NodeMaintainer):
                 logger.warning(ex.args[0])
             return
 
-        action = txn[ACTION]
+        action = op[ACTION]
         if action == START:
-            failTimeout = txn.get(TIMEOUT, self.defaultActionTimeout)
+            failTimeout = op.get(TIMEOUT, self.defaultActionTimeout)
 
             if self.scheduledAction:
                 if isinstance(when, str):

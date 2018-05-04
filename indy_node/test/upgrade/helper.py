@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import List, Tuple
 
 import dateutil.tz
-from plenum.common.constants import TXN_TYPE, DATA, VERSION
+from plenum.common.constants import DATA, VERSION
 from plenum.common.txn_util import get_type, get_payload_data
 from plenum.common.types import f
 from plenum.common.util import randomString
@@ -18,7 +18,7 @@ from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
 from indy_client.client.wallet.upgrade import Upgrade
-from indy_common.constants import NODE_UPGRADE, ACTION, POOL_UPGRADE, \
+from indy_common.constants import NODE_UPGRADE, ACTION, \
     UPGRADE_MESSAGE, MESSAGE_TYPE
 from indy_common.config import controlServiceHost, controlServicePort
 from indy_node.server.upgrade_log import UpgradeLog

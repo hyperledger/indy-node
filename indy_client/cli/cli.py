@@ -64,6 +64,7 @@ from plenum.cli.helper import getClientGrams
 from plenum.cli.phrase_word_completer import PhraseWordCompleter
 from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE, RAW
 from plenum.common.exceptions import OperationError
+from plenum.common.member.member import Member
 from plenum.common.signer_did import DidSigner
 from plenum.common.txn_util import createGenesisTxnFile
 from plenum.common.util import randomString, getWalletFilePath
@@ -1982,13 +1983,11 @@ class IndyCli(PlenumCli):
         if matchedVars.get('add_genesis'):
             nym = matchedVars.get('dest_id')
             role = Identity.correctRole(self._getRole(matchedVars))
-            txn = {
-                TXN_TYPE: NYM,
-                TARGET_NYM: nym,
-                TXN_ID: sha256(randomString(6).encode()).hexdigest()
-            }
             if role:
-                txn[ROLE] = role.upper()
+                role = role.upper()
+            txn = Member.nym_txn(nym=nym,
+                                 role=role,
+                                 txn_id=sha256(randomString(6).encode()).hexdigest())
             # TODO: need to check if this needs to persist as well
             self.genesisTransactions.append(txn)
             self.print('Genesis transaction added.')

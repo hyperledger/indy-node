@@ -8,7 +8,7 @@ import dateutil.tz
 
 from indy_node.server.node_maintainer import NodeMaintainer, \
     NodeControlToolMessage
-from plenum.common.txn_util import is_forced, get_seq_no, get_type, get_payload_data
+from plenum.common.txn_util import is_forced, get_seq_no, get_type, get_payload_data, get_req_id, get_from
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, VERSION, IDENTIFIER
 from plenum.common.types import f
@@ -46,7 +46,7 @@ class Upgrader(NodeMaintainer):
         seq_no = get_seq_no(txn) or ''
         if is_forced(txn):
             seq_no = ''
-        return '{}{}'.format(txn[f.REQ_ID.nm], seq_no)
+        return '{}{}'.format(get_req_id(txn), seq_no)
 
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
@@ -127,7 +127,7 @@ class Upgrader(NodeMaintainer):
 
     def get_last_node_upgrade_txn(self, start_no: int = None):
         return self.get_upgrade_txn(
-            lambda txn: txn[TXN_TYPE] == NODE_UPGRADE and txn[IDENTIFIER] == self.nodeId,
+            lambda txn: get_type(txn) == NODE_UPGRADE and get_from(txn) == self.nodeId,
             start_no=start_no,
             reverse=True)
 
@@ -168,7 +168,7 @@ class Upgrader(NodeMaintainer):
         logger.debug(
             '{} processing config ledger for any upgrades'.format(self))
         last_pool_upgrade_txn_start = self.get_upgrade_txn(
-            lambda txn: txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == START, reverse=True)
+            lambda txn: get_type(txn) == POOL_UPGRADE and get_payload_data(txn)[ACTION] == START, reverse=True)
         if last_pool_upgrade_txn_start:
             logger.info('{} found upgrade START txn {}'.format(
                 self, last_pool_upgrade_txn_start))
@@ -177,8 +177,8 @@ class Upgrader(NodeMaintainer):
             # searching for CANCEL for this upgrade submitted after START txn
             last_pool_upgrade_txn_cancel = self.get_upgrade_txn(
                 lambda txn:
-                txn[TXN_TYPE] == POOL_UPGRADE and txn[ACTION] == CANCEL and
-                txn[VERSION] == last_pool_upgrade_txn_start[VERSION],
+                get_type(txn)[TXN_TYPE] == POOL_UPGRADE and get_payload_data(txn)[ACTION] == CANCEL and
+                get_payload_data(txn)[VERSION] == last_pool_upgrade_txn_start[VERSION],
                 start_no=last_pool_upgrade_txn_seq_no + 1)
             if last_pool_upgrade_txn_cancel:
                 logger.info('{} found upgrade CANCEL txn {}'.format(
