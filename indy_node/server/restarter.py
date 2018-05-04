@@ -73,19 +73,6 @@ class Restarter(NodeMaintainer):
         action = txn[ACTION]
         if action == START:
             when = txn[DATETIME] if DATETIME in txn.keys() else None
-            if isinstance(when, str) and when not in ["0", ""]:
-                when = dateutil.parser.parse(when)
-            now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-            if when is None or when in ["0", ""] or now >= when:
-                msg = RestartMessage().toJson()
-                try:
-                    asyncio.ensure_future(self._open_connection_and_send(msg))
-                except Exception as ex:
-                    logger.warning(ex.args[0])
-                return
-
-            failTimeout = txn.get(TIMEOUT, self.defaultActionTimeout)
-
             if self.scheduledAction:
                 if self.scheduledAction == when:
                     logger.debug(
@@ -98,10 +85,22 @@ class Restarter(NodeMaintainer):
                             self.nodeName))
                     self._cancelScheduledRestart()
 
+            if isinstance(when, str) and when not in ["0", ""]:
+                when = dateutil.parser.parse(when)
+            now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+            if when is None or when in ["0", ""] or now >= when:
+                msg = RestartMessage().toJson()
+                try:
+                    asyncio.ensure_future(self._open_connection_and_send(msg))
+                except Exception as ex:
+                    logger.warning(ex.args[0])
+                return
+
+            fail_timeout = txn.get(TIMEOUT, self.defaultActionTimeout)
             logger.info("Node '{}' schedules restart".format(
                 self.nodeName))
 
-            self._scheduleRestart(when, failTimeout)
+            self._scheduleRestart(when, fail_timeout)
             return
 
         if action == CANCEL:

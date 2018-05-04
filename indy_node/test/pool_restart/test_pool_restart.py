@@ -118,10 +118,6 @@ def pool_restart_now(op,
             port=tconf.controlServicePort
         )
     )
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-    }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
     req = sdk_sign_and_submit_req_obj(looper,
                                        sdk_pool_handle,
@@ -151,6 +147,100 @@ def test_fail_pool_restart(
     with pytest.raises(RequestRejectedException) as excinfo:
         sdk_get_and_check_replies(looper, [req], 100)
     assert excinfo.match("STEWARD cannot do restart")
+
+
+def test_pool_restarts_one_by_one(
+        sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
+    server, indicator = looper.loop.run_until_complete(
+        _createServer(
+            host=tconf.controlServiceHost,
+            port=tconf.controlServicePort
+        )
+    )
+
+    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+    first_start = str(datetime.isoformat(unow + timedelta(seconds=1000)))
+    op = {
+        TXN_TYPE: POOL_RESTART,
+        ACTION: START,
+        DATETIME: first_start
+    }
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                       sdk_pool_handle,
+                                       sdk_wallet_trustee,
+                                       req_obj)
+    second_start = str(datetime.isoformat(unow + timedelta(seconds=2000)))
+    op[DATETIME] = second_start
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    sdk_get_reply(looper, req, 100)
+    tmp = txnPoolNodeSet[0].restarter._actionLog
+    restart_log = []
+    for a in tmp:
+        restart_log.append(a)
+    restart_log.reverse()
+    _check_restart_log(restart_log[2], RestartLog.SCHEDULED, first_start)
+    _check_restart_log(restart_log[1], RestartLog.CANCELLED)
+    _check_restart_log(restart_log[0], RestartLog.SCHEDULED, second_start)
+    _stopServer(server)
+
+
+def test_pool_restarts_one_by_one_with_restart_now(
+        sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
+    server, indicator = looper.loop.run_until_complete(
+        _createServer(
+            host=tconf.controlServiceHost,
+            port=tconf.controlServicePort
+        )
+    )
+
+    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+    first_start = str(datetime.isoformat(unow + timedelta(seconds=1000)))
+    op = {
+        TXN_TYPE: POOL_RESTART,
+        ACTION: START,
+        DATETIME: first_start
+    }
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                       sdk_pool_handle,
+                                       sdk_wallet_trustee,
+                                       req_obj)
+    sdk_get_reply(looper, req, 100)
+    op[DATETIME] = "0"
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    sdk_get_reply(looper, req, 100)
+    txnPoolNodeSet[0].restarter._actionLog.appendSucceeded(unow)
+    second_start = str(datetime.isoformat(unow + timedelta(seconds=2000)))
+    op[DATETIME] = second_start
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    sdk_get_reply(looper, req, 100)
+    restart_log = []
+    for a in txnPoolNodeSet[0].restarter._actionLog:
+        restart_log.append(a)
+    restart_log.reverse()
+    _check_restart_log(restart_log[3], RestartLog.SCHEDULED, first_start)
+    _check_restart_log(restart_log[2], RestartLog.CANCELLED)
+    _check_restart_log(restart_log[1], RestartLog.SUCCEEDED)
+    _check_restart_log(restart_log[0], RestartLog.SCHEDULED, second_start)
+    _stopServer(server)
+
+
+def _check_restart_log(item, action, when=None):
+    assert item[1] == action and (
+            when is None or str(datetime.isoformat(item[2])) == when)
 
 
 def _comparison_reply(resp, req_obj):
