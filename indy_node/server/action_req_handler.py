@@ -39,7 +39,7 @@ class ActionReqHandler(RequestHandler):
             self._doStaticValidationPoolRestart(identifier, req_id, operation)
 
     def _doStaticValidationPoolRestart(self, identifier, req_id, operation):
-        if DATETIME in operation.keys() is None and not (
+        if DATETIME in operation.keys() and not (
                 operation[DATETIME] in ["0", ""]):
             try:
                 dateutil.parser.parse(operation[DATETIME])
