@@ -1,0 +1,35 @@
+FROM solita/ubuntu-systemd:16.04
+
+# Install environment
+RUN apt-get update -y && apt-get install -y \ 
+    git \
+    wget \
+    python3.5 \
+    python3-pip \
+    python-setuptools \
+    python3-nacl \
+    apt-transport-https \
+    ca-certificates \
+    sudo \
+    nano \
+    emacs \
+    vim
+RUN pip3 install -U \ 
+    'pip<10.0.0' \
+    setuptools
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
+RUN echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list
+RUN echo "deb https://repo.sovrin.org/sdk/deb xenial master" >> /etc/apt/sources.list
+RUN apt-get update -y && apt-get install -y indy-node libindy
+RUN pip3 install python3-indy
+WORKDIR /home/indy
+ADD . /home/indy
+
+# Set NETWORK_NAME in indy_config.py to 'sandbox'
+RUN awk '{if (index($1, "NETWORK_NAME") != 0) {print("NETWORK_NAME = \"sandbox\"")} else print($0)}' /etc/indy/indy_config.py> /tmp/indy_config.py
+RUN mv /tmp/indy_config.py /etc/indy/indy_config.py
+
+RUN echo " " >> /etc/indy/indy_config.py
+RUN echo "logLevel=0" >> /etc/indy/indy_config.py
+RUN echo " " >> /etc/indy/indy_config.py
