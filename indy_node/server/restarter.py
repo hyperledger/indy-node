@@ -72,7 +72,10 @@ class Restarter(NodeMaintainer):
 
         action = txn[ACTION]
         if action == START:
-            when = txn[DATETIME] if DATETIME in txn.keys() else None
+            when = None \
+                if DATETIME in txn.keys() and txn[DATETIME] in ["0", "", None] \
+                else dateutil.parser.parse(txn[DATETIME])
+
             if self.scheduledAction:
                 if self.scheduledAction == when:
                     logger.debug(
@@ -85,10 +88,8 @@ class Restarter(NodeMaintainer):
                             self.nodeName))
                     self._cancelScheduledRestart()
 
-            if isinstance(when, str) and when not in ["0", ""]:
-                when = dateutil.parser.parse(when)
             now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-            if when is None or when in ["0", ""] or now >= when:
+            if when is None or now >= when:
                 msg = RestartMessage().toJson()
                 try:
                     asyncio.ensure_future(self._open_connection_and_send(msg))
