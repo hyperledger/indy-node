@@ -218,23 +218,12 @@ def test_pool_restarts_one_by_one_with_restart_now(
                                       sdk_wallet_trustee,
                                       req_obj)
     sdk_get_reply(looper, req, 100)
-    txnPoolNodeSet[0].restarter._actionLog.appendSucceeded(unow)
-    second_start = str(datetime.isoformat(unow + timedelta(seconds=2000)))
-    op[DATETIME] = second_start
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                      sdk_pool_handle,
-                                      sdk_wallet_trustee,
-                                      req_obj)
-    sdk_get_reply(looper, req, 100)
     restart_log = []
     for a in txnPoolNodeSet[0].restarter._actionLog:
         restart_log.append(a)
     restart_log.reverse()
-    _check_restart_log(restart_log[3], RestartLog.SCHEDULED, first_start)
-    _check_restart_log(restart_log[2], RestartLog.CANCELLED)
-    _check_restart_log(restart_log[1], RestartLog.SUCCEEDED)
-    _check_restart_log(restart_log[0], RestartLog.SCHEDULED, second_start)
+    _check_restart_log(restart_log[1], RestartLog.SCHEDULED, first_start)
+    _check_restart_log(restart_log[0], RestartLog.CANCELLED)
     _stopServer(server)
 
 
