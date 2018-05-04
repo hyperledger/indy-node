@@ -72,9 +72,9 @@ class Restarter(NodeMaintainer):
 
         action = txn[ACTION]
         if action == START:
-            when = None \
-                if DATETIME in txn.keys() and txn[DATETIME] in ["0", "", None] \
-                else dateutil.parser.parse(txn[DATETIME])
+            when = dateutil.parser.parse(txn[DATETIME]) \
+                if DATETIME in txn.keys() and txn[DATETIME] not in ["0", "", None] \
+                else None
 
             if self.scheduledAction:
                 if self.scheduledAction == when:
