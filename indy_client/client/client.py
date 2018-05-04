@@ -162,8 +162,8 @@ class Client(PlenumClient):
         op = {
             TARGET_NYM: target,
             TXN_TYPE: DISCLO,
-            NONCE: b58encode(nonce),
-            DATA: b58encode(boxedMsg)
+            NONCE: b58encode(nonce).decode("utf-8"),
+            DATA: b58encode(boxedMsg).decode("utf-8")
         }
         self.submit(op, identifier=origin)
 

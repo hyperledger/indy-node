@@ -1,12 +1,6 @@
 import pytest
 
-from plenum.common.constants import STEWARD
-
-from indy_common.constants import START, FORCE
-from indy_node.test import waits
-from indy_node.test.pool_config.helper import ensurePoolConfigSent
-from indy_client.test.helper import getClientAddedWithRole
-from stp_core.loop.eventually import eventually
+from indy_node.test.pool_config.helper import sdk_ensure_pool_config_sent
 
 
 def genPoolConfig(writes: bool, force: bool):
@@ -34,5 +28,5 @@ def poolConfigWFFT():
 
 
 @pytest.fixture(scope="module")
-def poolConfigSent(looper, nodeSet, trustee, trusteeWallet, poolCfg):
-    ensurePoolConfigSent(looper, trustee, trusteeWallet, poolCfg)
+def poolConfigSent(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee, poolCfg):
+    sdk_ensure_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee, poolCfg)

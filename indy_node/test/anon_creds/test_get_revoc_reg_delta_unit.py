@@ -58,7 +58,7 @@ def reg_entry_with_other_reg_id(looper,
     txn = append_txn_metadata(reqToTxn(Request(**req), FIRST_ID_TS),
                               seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocRegEntry(txn)
-    req_handler.tsRevoc_store.set(get_txn_time(txn), req_handler.state.headHash)
+    req_handler.ts_store.set(get_txn_time(txn), req_handler.state.headHash)
     return txn
 
 
@@ -76,7 +76,7 @@ def test_get_delta_with_other_reg_def_in_state(looper,
     txn = append_txn_metadata(reqToTxn(entry_second_id, SECOND_TS_ID),
                               seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocRegEntry(txn)
-    req_handler.tsRevoc_store.set(get_txn_time(txn), req_handler.state.headHash)
+    req_handler.ts_store.set(get_txn_time(txn), req_handler.state.headHash)
 
     # timestamp beetween FIRST_ID_TS and SECOND_ID_TS
     delta_req['operation'][FROM] = FIRST_ID_TS + 10

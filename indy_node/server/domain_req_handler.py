@@ -46,11 +46,10 @@ class DomainReqHandler(PHandler):
     }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store, tsRevoc_store):
-        super().__init__(ledger, state, config, requestProcessor, bls_store)
+                 idrCache, attributeStore, bls_store, ts_store=None):
+        super().__init__(ledger, state, config, requestProcessor, bls_store, ts_store=ts_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
-        self.tsRevoc_store = tsRevoc_store
 
         self.static_validation_handlers = {}
         self.dynamic_validation_handlers = {}
@@ -72,13 +71,13 @@ class DomainReqHandler(PHandler):
 
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
-        self.onBatchCommitted(stateRoot, ppTime)
+        self.onBatchCommitted(stateRoot)
+
         return r
 
-    def update_idr_cache_and_ts_revoc_store(self, stateRoot, ppTime):
+    def update_idr_cache(self, stateRoot):
         stateRoot = base58.b58decode(stateRoot.encode())
         self.idrCache.onBatchCommitted(stateRoot)
-        self.tsRevoc_store.set(ppTime, stateRoot)
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -389,7 +388,7 @@ class DomainReqHandler(PHandler):
         self.post_batch_creation_handlers.append(handler)
 
     def _add_default_post_batch_commit_handlers(self):
-        self.add_post_batch_commit_handler(self.update_idr_cache_and_ts_revoc_store)
+        self.add_post_batch_commit_handler(self.update_idr_cache)
 
     def add_post_batch_commit_handler(self, handler: Callable):
         if handler in self.post_batch_commit_handlers:
@@ -503,7 +502,7 @@ class DomainReqHandler(PHandler):
         req_ts = request.operation.get(TIMESTAMP)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
         # Get root hash corresponding with given timestamp
-        past_root = self.tsRevoc_store.get_equal_or_prev(req_ts)
+        past_root = self.ts_store.get_equal_or_prev(req_ts)
         # Path to corresponding ACCUM record in state
         path = domain.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
         if past_root is None:
@@ -529,7 +528,7 @@ class DomainReqHandler(PHandler):
         seq_no = None
         last_update_time = None
         reg_entry_proof = None
-        past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
+        past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry)
             if encoded_entry:
@@ -546,7 +545,7 @@ class DomainReqHandler(PHandler):
         seq_no = None
         last_update_time = None
         reg_entry_accum_proof = None
-        past_root = self.tsRevoc_store.get_equal_or_prev(timestamp)
+        past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry_accum)
             if encoded_entry:
@@ -751,9 +750,9 @@ class DomainReqHandler(PHandler):
         for handler in self.post_batch_rejection_handlers:
             handler()
 
-    def onBatchCommitted(self, stateRoot, ppTime):
+    def onBatchCommitted(self, stateRoot):
         for handler in self.post_batch_commit_handlers:
-            handler(stateRoot, ppTime)
+            handler(stateRoot)
 
     def getAttr(self,
                 did: str,
