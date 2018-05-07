@@ -69,7 +69,7 @@ transaction specific data:
         },
     },
     "txnMetadata": {
-        "creationTime": <...>,
+        "txnTime": <...>,
         "seqNo": <...>,  
         "txnId": <...>
     },
@@ -137,7 +137,7 @@ transaction specific data:
             Transaction version to be able to evolve `txnMetadata`.
             The content of `txnMetadata` may depend on the version.  
         
-        - `creationTime` (integer as POSIX timestamp): 
+        - `txnTime` (integer as POSIX timestamp): 
             The time when transaction was written to the Ledger as POSIX timestamp.
             
         - `seqNo` (integer):
@@ -233,7 +233,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         },
     },
     "txnMetadata": {
-        "creationTime":1513945121,
+        "txnTime":1513945121,
         "seqNo": 10,
         "txnId": "N22KY2Dyvmuu2PyyqSFKue|01"
     },
@@ -297,7 +297,7 @@ Adds attribute to a NYM record
         },
     },
     "txnMetadata": {
-        "creationTime":1513945121,
+        "txnTime":1513945121,
         "seqNo": 10,  
         "txnId": "N22KY2Dyvmuu2PyyqSFKue|02"
     },
@@ -357,7 +357,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         },
     },
     "txnMetadata": {
-        "creationTime":1513945121,
+        "txnTime":1513945121,
         "seqNo": 10,  
         "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
     },
@@ -433,7 +433,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
         },
     },
     "txnMetadata": {
-        "creationTime":1513945121,
+        "txnTime":1513945121,
         "seqNo": 10,  
         "txnId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1|Degree1|CL|key1",
     },
@@ -528,7 +528,7 @@ There is no need to specify all other fields, and they will remain the same.
         },
     },
     "txnMetadata": {
-        "creationTime":1513945121,
+        "txnTime":1513945121,
         "seqNo": 10,  
         "txnId":"Delta",
     },
@@ -622,7 +622,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         },
     },
     "txnMetadata": {
-        "creationTime":1513945121,
+        "txnTime":1513945121,
         "seqNo": 10,  
     },
     "reqSignature": {
@@ -667,7 +667,7 @@ Status of each Node's upgrade (sent by each upgraded Node)
         },
     },
     "txnMetadata": {
-        "creationTime":1513945121,
+        "txnTime":1513945121,
         "seqNo": 10,  
         "txnId":"upgrade-13",
     },
@@ -720,7 +720,7 @@ Command to change Pool's configuration
         },
     },
     "txnMetadata": {
-        "creationTime":1513945121,
+        "txnTime":1513945121,
         "seqNo": 10,  
         "txnId":"1111",
     },
