@@ -88,7 +88,6 @@ def test_pool_restart_cancel(
         assert node.restarter.lastActionEventInfo[0] == RestartLog.CANCELLED
     _stopServer(server)
     _comparison_reply(resp, req_obj)
-    assert resp[f.RESULT.nm][DATETIME] == str(datetime.isoformat(cancel_at))
 
 
 def test_pool_restart_now_without_datetime(

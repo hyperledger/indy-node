@@ -282,7 +282,8 @@ class ClientPoolRestartOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_RESTART)),
         (ACTION, ChooseField(values=(START, CANCEL,))),
-        (DATETIME, DatetimeStringField(optional=True)),
+        (DATETIME, DatetimeStringField(exception_values=["0", ""],
+                                       optional=True)),
     )
 
 
