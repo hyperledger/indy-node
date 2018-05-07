@@ -66,7 +66,6 @@ setup(
     },
     tests_require=tests_require,
     scripts=['scripts/indy',
-             'scripts/change_node_ha',
              'scripts/add_new_node',
              'scripts/reset_client',
              'scripts/start_indy_node',
