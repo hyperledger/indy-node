@@ -42,6 +42,7 @@ def test_pool_restart(
     req_json, resp = sdk_get_reply(looper, req, 100)
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
+        assert resp[f.RESULT.nm][DATETIME] == str(datetime.isoformat(start_at))
     _stopServer(server)
     _comparison_reply(resp, req_obj)
 
@@ -68,13 +69,14 @@ def test_pool_restart_cancel(
                                        sdk_pool_handle,
                                        sdk_wallet_trustee,
                                        req_obj)
+    sdk_get_reply(looper, req, 100)
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
         cancel_at = start_at+timedelta(seconds=1000)
     op = {
         TXN_TYPE: POOL_RESTART,
         ACTION: CANCEL,
-        DATETIME: str(datetime.isoformat(cancel_at))
+        DATETIME: ""
     }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
     req = sdk_sign_and_submit_req_obj(looper,
