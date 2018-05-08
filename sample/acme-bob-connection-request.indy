@@ -1,0 +1,9 @@
+{
+  "connection-request": {
+    "name": "Acme Corp",
+    "identifier": "CzkavE58zgX7rUMrzSinLr",
+    "nonce": "810b78be79f29fc81335abaa4ee1c5e8",
+    "endpoint": "127.0.0.1:1213"
+  },
+  "sig": "asdfasdfasdfsadfasdf"
+}

@@ -1,0 +1,60 @@
+#! /usr/bin/env python3
+import argparse
+
+from stp_core.loop.looper import Looper
+from plenum.common.script_helper import changeHA
+from stp_core.types import HA
+from plenum.common.util import getMaxFailures
+from stp_core.loop.eventually import eventually
+from plenum.test.helper import checkSufficientRepliesRecvd
+
+from indy_common.config_util import getConfig
+
+
+# Below is an example script command line parameters to be passed to test it.
+# --nodeName Node1 --nodeSeed 000000000000000000000000000Node1 --stewardName steward1 --stewardSeed 000000000000000000000000Steward1 --newNodeHA 127.0.0.1:9665
+
+
+def parseArgs():
+    parser = argparse.ArgumentParser(
+        description="Change Ip and/or Port of existing node")
+
+    parser.add_argument('--nodeName', help='The Node name')
+    parser.add_argument('--nodeSeed', type=getBinary,
+                        help="node's ver key")
+    parser.add_argument('--newNodeHA', type=getHA,
+                        help="Node stack's new HA, format=> ip:port")
+    parser.add_argument('--stewardName', help="Node Stewards's name")
+    parser.add_argument('--stewardSeed', type=getBinary,
+                        help="Node Stewards's seed")
+    parser.add_argument('--newClientHA', type=getHA,
+                        help="client stack's new HA, format=> ip:port")
+
+    return parser.parse_args()
+
+
+def getBinary(s):
+    return s.encode()
+
+
+def getHA(s):
+    host, port = tuple(s.split(':'))
+    return HA(host, int(port))
+
+
+if __name__ == '__main__':
+    args = parseArgs()
+    config = getConfig()
+    with Looper(debug=config.LOOPER_DEBUG) as looper:
+        client, req = changeHA(looper,
+                               config,
+                               args.nodeName,
+                               args.nodeSeed,
+                               args.newNodeHA,
+                               args.stewardName,
+                               args.stewardSeed,
+                               args.newClientHA,
+                               )
+        f = getMaxFailures(len(client.nodeReg))
+        looper.run(eventually(checkSufficientRepliesRecvd, client.inBox,
+                              req.reqId, f, retryWait=1, timeout=8))

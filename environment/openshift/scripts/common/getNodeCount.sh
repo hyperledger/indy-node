@@ -1,0 +1,11 @@
+#!/bin/bash
+
+NODE_CSV="${1}"
+
+ORIGINAL_IFS=${IFS}
+IFS=","
+NODE_DATA=(${NODE_CSV})
+NODE_COUNT=${#NODE_DATA[@]}
+IFS=${ORIGINAL_IFS}
+
+echo ${NODE_COUNT}

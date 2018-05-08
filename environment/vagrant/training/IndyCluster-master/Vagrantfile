@@ -1,0 +1,151 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Make sure to be using the vagrant-vbguest plugin
+
+agent_box        = 'bento/ubuntu-1604'
+agent_cpus       = '1'
+agent_memory     = '768'
+validator_box    = 'bento/ubuntu-1604'
+validator_cpus   = '1'
+validator_memory = '1536'
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "agent01" do |agent01|
+    agent01.vm.box = agent_box
+    agent01.vm.host_name = "agent01.evernym.lab"
+    agent01.vm.network 'private_network', ip: "10.20.30.101"
+    agent01.vm.network 'public_network'
+    agent01.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    agent01.ssh.insert_key = false
+    agent01.vm.provider "virtualbox" do |vb|
+      vb.name   = "agent01"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    agent01.vm.provision "indy", type: "shell", path: "scripts/agent01.sh"
+  end
+
+  config.vm.define "agent02" do |agent02|
+    agent02.vm.box = agent_box
+    agent02.vm.host_name = "agent02.evernym.lab"
+    agent02.vm.network 'private_network', ip: "10.20.30.102"
+    agent02.vm.network 'public_network'
+    agent02.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    agent02.ssh.insert_key = false
+    agent02.vm.provider "virtualbox" do |vb|
+      vb.name   = "agent02"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    agent02.vm.provision "indy", type: "shell", path: "scripts/agent02.sh"
+  end
+
+  config.vm.define "agent03" do |agent03|
+    agent03.vm.box = agent_box
+    agent03.vm.host_name = "agent03.evernym.lab"
+    agent03.vm.network 'private_network', ip: "10.20.30.103"
+    agent03.vm.network 'public_network'
+    agent03.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    agent03.ssh.insert_key = false
+    agent03.vm.provider "virtualbox" do |vb|
+      vb.name   = "agent03"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    agent03.vm.provision "indy", type: "shell", path: "scripts/agent03.sh"
+  end
+
+  config.vm.define "agent04" do |agent04|
+    agent04.vm.box = agent_box
+    agent04.vm.host_name = "agent04.evernym.lab"
+    agent04.vm.network 'private_network', ip: "10.20.30.104"
+    agent04.vm.network 'public_network'
+    agent04.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    agent04.ssh.insert_key = false
+    agent04.vm.provider "virtualbox" do |vb|
+      vb.name   = "agent04"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    agent04.vm.provision "indy", type: "shell", path: "scripts/agent04.sh"
+  end
+
+  config.vm.define "validator01" do |validator01|
+    validator01.vm.box = agent_box
+    validator01.vm.host_name = "validator01.evernym.lab"
+    validator01.vm.network 'private_network', ip: "10.20.30.201"
+    validator01.vm.network 'public_network'
+    validator01.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    validator01.ssh.insert_key = false
+    validator01.vm.provider "virtualbox" do |vb|
+      vb.name   = "validator01"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    validator01.vm.provision "indy", type: "shell", path: "scripts/validator01.sh"
+  end
+
+  config.vm.define "validator02" do |validator02|
+    validator02.vm.box = agent_box
+    validator02.vm.host_name = "validator02.evernym.lab"
+    validator02.vm.network 'private_network', ip: "10.20.30.202"
+    validator02.vm.network 'public_network'
+    validator02.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    validator02.ssh.insert_key = false
+    validator02.vm.provider "virtualbox" do |vb|
+      vb.name   = "validator02"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    validator02.vm.provision "indy", type: "shell", path: "scripts/validator02.sh"
+  end
+
+  config.vm.define "validator03" do |validator03|
+    validator03.vm.box = agent_box
+    validator03.vm.host_name = "validator03.evernym.lab"
+    validator03.vm.network 'private_network', ip: "10.20.30.203"
+    validator03.vm.network 'public_network'
+    validator03.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    validator03.ssh.insert_key = false
+    validator03.vm.provider "virtualbox" do |vb|
+      vb.name   = "validator03"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    validator03.vm.provision "indy", type: "shell", path: "scripts/validator03.sh"
+  end
+
+  config.vm.define "validator04" do |validator04|
+    validator04.vm.box = agent_box
+    validator04.vm.host_name = "validator04.evernym.lab"
+    validator04.vm.network 'private_network', ip: "10.20.30.204"
+    validator04.vm.network 'public_network'
+    validator04.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    validator04.ssh.insert_key = false
+    validator04.vm.provider "virtualbox" do |vb|
+      vb.name   = "validator04"
+      vb.gui    = false
+      vb.memory = agent_memory
+      vb.cpus   = agent_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    validator04.vm.provision "indy", type: "shell", path: "scripts/validator04.sh"
+  end
+
+end

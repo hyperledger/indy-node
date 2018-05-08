@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+BACK="$(tput cub1)"
+
+echo -e "\nWhich repos:"
+echo -e "  0. All following repos"
+echo -e "  1. indy-common"
+echo -e "  2. indy-client"
+echo -e "  3. indy-node"
+echo -e "  4. plenum"
+echo -e "  5. ledger"
+echo -e "  6. anoncreds"
+read -ep $'Enter your choice (For example: 0 OR 1,2,5 etc): ' repos
+
+if [ "$repos" == "" ]; then
+    echo -e "\nInvalid choice, please re-run script with correct choice for repos"
+    exit
+fi;
+
+
+if [ "$repos" == "0" ]; then
+    repos="1,2,3,4,5,6"
+fi;
+
+echo -e "\nUpload to:"
+echo -e "  0. Both (pypi and pypitest)"
+echo -e "  1. Only pypi"
+echo -e "  2. Only pypitest"
+dest="0"
+read -p "Enter your choice: $dest$BACK" destinput
+dest="${destinput:-$dest}"
+
+echo -e "\nVerify:"
+echo -e "  Selected repos: $repos"
+echo -e "  Upload to choice: $dest"
+
+echo ""
+cont="n"
+read -p "Continue (Y/n)? $cont$BACK" continput
+cont="${continput:-$cont}"
+
+if [ $cont != "Y" ];then
+    exit
+fi;
+
+
+curDir=`pwd`
+scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+echo -e "Current script directory: $scriptDir"
+cd $scriptDir
+cd ../..
+allRepoParentDir=`pwd`
+
+export IFS=","
+for repo in $repos
+do
+    cd $allRepoParentDir
+
+    repoName=""
+    if [ $repo -eq "1" ]; then
+        repoName="indy-common"
+    elif [ $repo -eq "2" ]; then
+        repoName="indy-client"
+    elif [ $repo -eq "3" ]; then
+        repoName="indy-node"
+    elif [ $repo -eq "4" ]; then
+        repoName="plenum"
+    elif [ $repo -eq 5 ]; then
+        repoName="ledger"
+    elif [ $repo -eq 6 ]; then
+        repoName="anoncreds"
+    else
+        echo -e "This repo is not supported: $repo"
+        exit
+    fi
+    cd $repoName
+    cdir=`pwd`
+    echo -e "\n\nabout to start uploading $repoName... [cur dir: $cdir]"
+
+    if [[ "$dest" == "0" || "$dest" == "2" ]]; then
+        echo -e "About to upload to pypitest..."
+        python setup.py register -r pypitest
+        python setup.py sdist upload -r pypitest
+    fi;
+
+    if [[ "$dest" == "0" || "$dest" == "1" ]]; then
+        echo -e "About to upload to pypi..."
+        python setup.py register -r pypi
+        python setup.py sdist upload -r pypi
+    fi;
+
+    echo -e "finished uploading $repoName to pypi\n"
+done
+
+cd $curDir

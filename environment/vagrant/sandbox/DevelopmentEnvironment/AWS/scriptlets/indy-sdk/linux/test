@@ -1,0 +1,7 @@
+echo "Running indy-sdk tests..."
+cd /src/indy-sdk
+sudo /vagrant/common/indypool.py start
+#docker build -f ci/indy-pool.dockerfile -t indy_pool .
+#docker run -itd --name indy_pool -p 9701-9708:9701-9708 indy_pool
+cd /src/indy-sdk/libindy
+sudo -H -u ec2-user PYTHONPATH=$PYTHONPATH:/src/indy-sdk/wrappers/python LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib RUST_TEST_THREADS=1 /home/ec2-user/.cargo/bin/cargo test

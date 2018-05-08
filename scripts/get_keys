@@ -1,0 +1,57 @@
+#! /usr/bin/env python3
+
+# This script takes an argument which is either Node name or client name
+# and returns the public key & verification key
+
+import json
+import os
+import sys
+
+from plenum.common.sys_util import getLoggedInUser
+from stp_core.crypto.nacl_wrappers import Signer, Privateer
+
+
+def breakIt(message):
+    print(message)
+    sys.exit(1)
+
+
+if len(sys.argv) > 2:
+    breakIt('provide only one parameter which specifies node or client'
+            ' name')
+if len(sys.argv) < 2:
+    breakIt('provide the parameter which specifies node or client name')
+
+
+NODE_OR_CLIENT_NAME = sys.argv.pop(1)
+CURRENT_LOGGED_IN_USER = getLoggedInUser()
+
+path = "/home/{}/.indy/{}/role/local/role.json".\
+    format(CURRENT_LOGGED_IN_USER, NODE_OR_CLIENT_NAME)
+
+
+if not os.path.exists(path):
+    breakIt("Sorry, please check the client or node name you've entered")
+with open(path, "r") as f:
+    keyString = f.read().strip()
+try:
+    d = json.loads(keyString)
+except json.decoder.JSONDecodeError:
+    breakIt("Key file data is not in JSON. Cannot parse. Regenerate the keys.")
+
+# TODO: move the lines below to above try block and catch key errors
+if 'prihex' not in d:
+    breakIt("key not defined in given data")
+if 'sighex' not in d:
+    breakIt("key not defined in given data")
+
+
+prihex = d['prihex']
+sighex = d['sighex']
+privateer = Privateer(prihex)
+pubkey = privateer.pubhex.decode()
+signer = Signer(sighex)
+verifkey = signer.verhex.decode()
+
+print("Public key is : {}".format(pubkey))
+print("Verification key is : {}".format(verifkey))

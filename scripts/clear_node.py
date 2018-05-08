@@ -2,76 +2,29 @@
 
 import shutil
 import os
-import pyorient
 import argparse
-import re
+from indy_common.config_util import getConfig
+from indy_common.config_helper import ConfigHelper
 
 
-def pathList(*pathes):
-    return {os.path.expanduser(path) for path in pathes}
+def clean(config, full, network_name):
+    if network_name:
+        config.NETWORK_NAME = network_name
+    config_helper = ConfigHelper(config)
 
-TARGET_DIRS = pathList(
-    "~/.sovrin",
-    "~/.plenum"
-)
+    shutil.rmtree(config_helper.log_dir)
+    shutil.rmtree(config_helper.keys_dir)
+    shutil.rmtree(config_helper.genesis_dir)
 
-WHITE_LIST = pathList(
-    "~/.sovrin/sovrin_config.py",
-    "~/.plenum/plenum_config.py",
-    "~/.sovrin/.*/role",
-    "~/.plenum/.*/role",
-    "~/.sovrin/.*log"
-)
-
-ORIENTDB_HOST = "localhost"
-ORIENTDB_PORT = 2424
-ORIENTDB_USER = "root"
-ORIENTDB_PASSWORD = "password"
-
-
-def clean_orientdb():
-    client = pyorient.OrientDB(ORIENTDB_HOST, ORIENTDB_PORT)
-    client.connect(ORIENTDB_USER, ORIENTDB_PASSWORD)
-    names = [n for n in client.db_list().oRecordData['databases'].keys()]
-    for nm in names:
-        try:
-            client.db_drop(nm)
-        except:
-            continue
-
-
-def clean_files(full):
     if full:
-        for dir in TARGET_DIRS:
-            if os.path.exists(dir):
-                shutil.rmtree(dir)
-        return
+        shutil.rmtree(config_helper.ledger_base_dir)
+        shutil.rmtree(config_helper.log_base_dir)
 
-    files_to_keep = [re.compile(pattern) for pattern in WHITE_LIST]
-    def isOk(path):
-         return any(pattern.match(path) for pattern in files_to_keep)
-
-    for dir in TARGET_DIRS:
-        for root, dirs, files in os.walk(dir):
-            if not isOk(root):
-                for file in files:
-                    fullName = os.path.join(root, file)
-                    if not isOk(fullName):
-                        os.remove(fullName)
-                if not os.listdir(root):
-                    os.rmdir(root)
-            else:
-                dirs[:] = []
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='Removes node data and configuration')
-    parser.add_argument('--full',
-                        action="store_true",
-                        help="remove configs and logs too")
+    parser = argparse.ArgumentParser(description='Removes node data and configuration')
+    parser.add_argument('--full', required=False, type=bool, default=False, help="remove configs and logs too")
+    parser.add_argument('--network', required=False, type=str, help="Network to clean")
     args = parser.parse_args()
-    clean_files(args.full)
-    try:
-        clean_orientdb()
-    except Exception as ex:
-        print("Cleaning of data from orientdb failed:", ex)
+    config = getConfig()
+    clean(config, args.full, args.network)
