@@ -134,22 +134,6 @@ def pool_restart_now(op,
         _comparison_reply(resp, req_obj)
 
 
-def test_fail_pool_restart(
-        sdk_pool_handle, sdk_wallet_steward, looper):
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-    }
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_steward[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                      sdk_pool_handle,
-                                      sdk_wallet_steward,
-                                      req_obj)
-    with pytest.raises(RequestRejectedException) as excinfo:
-        sdk_get_and_check_replies(looper, [req], 100)
-    assert excinfo.match("STEWARD cannot do restart")
-
-
 def test_pool_restarts_one_by_one(
         sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
     server, indicator = looper.loop.run_until_complete(
