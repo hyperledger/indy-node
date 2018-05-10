@@ -91,7 +91,7 @@ def migrate_storage(level_db_dir, rocks_db_dir, db_name, is_db_int_keys):
 
     try:
         for key, val in leveldb_storage.iterator():
-            rocksdb_storage.put(key, val)
+            rocksdb_storage.put(bytes(key), bytes(val))
     except Exception:
         logger.error(traceback.print_exc())
         logger.error("Could not put key/value to RocksDB storage '{}'".format(db_name))
