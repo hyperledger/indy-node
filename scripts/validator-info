@@ -23,8 +23,9 @@ from stp_core.common.log import getlogger
 
 config = getConfig()
 
-logger = None  # to make flake8 happy
+logger = getlogger()  # to make flake8 happy
 clients = {}   # task -> (reader, writer)
+logger.disabled = True
 
 
 class BaseUnknown:
@@ -619,11 +620,6 @@ def main():
         help="Format output as JSON (ignores -v)"
     )
 
-    parser.add_argument(
-        "--short", action="store_true",
-        help="Print short output"
-    )
-
     statfile_group = parser.add_argument_group(
         "statfile", "settings for exploring validator stats from stat file"
     )
@@ -710,19 +706,30 @@ def main():
     #     loop.run_until_complete(server.wait_closed())
     #     loop.close()
     # else:
-    paths = glob(os.path.join(args.basedir, "*_info.json"))
-    paths.append(glob(os.path.join(args.basedir, "*_additional_info.json")))
-    if not paths:
+    all_paths = glob(os.path.join(args.basedir, "*_info.json"))
+    info_paths = []
+    additional_paths = []
+    for path in all_paths:
+        if path.find("additional") != -1:
+            additional_paths.append(path)
+        else:
+            info_paths.append(path)
+    if not info_paths:
         print('There are no info files in {}'.format(args.basedir))
         return
-    for file_path in paths:
+    for file_path in info_paths:
         logger.info("Reading file {} ...".format(file_path))
-        if args.short:
-            print(get_stats_from_file(file_path, args.verbose, args.json))
-        else:
+        if args.verbose:
             with open(file_path) as f_stats:
                 print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats))))
+        else:
+            print(get_stats_from_file(file_path, args.verbose, args.json))
+
         print('\n')
+    if args.verbose:
+        for file_path in additional_paths:
+            with open(file_path) as f_stats:
+                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats))))
 
     logger.info("Done")
 
