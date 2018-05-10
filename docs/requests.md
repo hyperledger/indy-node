@@ -106,14 +106,8 @@ Please find the format of each request-specific data for each type of request be
 
 ## Reply Structure for Write Requests
 
-Each Reply to write requests has a number of common metadata fields
-(we don't support State Proofs for write requests yet). Most of these fields are actually metadata fields 
+Each Reply to write requests has a number of common metadata fields. Most of these fields are actually metadata fields 
 of a transaction in the Ledger (see [transactions](transactions.md)).
-
-These common metadata values are added to result's JSON at the same level as real data.
-
-**TODO**: consider distinguishing and separating real transaction data and metadata into different levels.
- 
 
 ```
 {
