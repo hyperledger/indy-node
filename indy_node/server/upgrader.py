@@ -172,7 +172,7 @@ class Upgrader(NodeMaintainer):
         if last_pool_upgrade_txn_start:
             logger.info('{} found upgrade START txn {}'.format(
                 self, last_pool_upgrade_txn_start))
-            last_pool_upgrade_txn_seq_no = last_pool_upgrade_txn_start[F.seqNo.name]
+            last_pool_upgrade_txn_seq_no = get_seq_no(last_pool_upgrade_txn_start)
 
             # searching for CANCEL for this upgrade submitted after START txn
             last_pool_upgrade_txn_cancel = self.get_upgrade_txn(

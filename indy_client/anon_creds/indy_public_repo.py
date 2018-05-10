@@ -1,6 +1,7 @@
 import json
 from typing import Optional
 
+from plenum.common.txn_util import get_seq_no
 from plenum.common.types import f
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
@@ -49,7 +50,7 @@ def _getData(result, error):
 
 def _submitData(result, error):
     data = result.get(DATA)
-    seqNo = result.get(F.seqNo.name)
+    seqNo = get_seq_no(result)
     return data, seqNo
 
 

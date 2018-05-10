@@ -9,6 +9,7 @@ from typing import Optional
 from ledger.util import F
 from plenum.client.wallet import Wallet as PWallet
 from plenum.common.did_method import DidMethods
+from plenum.common.txn_util import get_seq_no
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, DATA, \
@@ -247,7 +248,7 @@ class Wallet(PWallet, TrustAnchoring):
     def _attribReply(self, result, preparedReq):
         _, attrKey = preparedReq
         attrib = self.getAttribute(AttributeKey(*attrKey))
-        attrib.seqNo = result[F.seqNo.name]
+        attrib.seqNo = get_seq_no(result)
 
     def _getAttrReply(self, result, preparedReq):
         # TODO: Confirm if we need to add the retrieved attribute to the wallet.
@@ -265,7 +266,7 @@ class Wallet(PWallet, TrustAnchoring):
         target = result[TARGET_NYM]
         idy = self._trustAnchored.get(target)
         if idy:
-            idy.seqNo = result[F.seqNo.name]
+            idy.seqNo = get_seq_no(result)
         else:
             logger.warning(
                 "Target {} not found in trust anchored".format(target))
@@ -273,17 +274,17 @@ class Wallet(PWallet, TrustAnchoring):
     def _nodeReply(self, result, preparedReq):
         _, nodeKey = preparedReq
         node = self.getNode(nodeKey)
-        node.seqNo = result[F.seqNo.name]
+        node.seqNo = get_seq_no(result)
 
     def _poolUpgradeReply(self, result, preparedReq):
         _, upgKey = preparedReq
         upgrade = self.getPoolUpgrade(upgKey)
-        upgrade.seqNo = result[F.seqNo.name]
+        upgrade.seqNo = get_seq_no(result)
 
     def _poolConfigReply(self, result, preparedReq):
         _, cfgKey = preparedReq
         pconf = self.getPoolConfig(cfgKey)
-        pconf.seqNo = result[F.seqNo.name]
+        pconf.seqNo = get_seq_no(result)
 
     def _getNymReply(self, result, preparedReq):
         jsonData = result.get(DATA)
