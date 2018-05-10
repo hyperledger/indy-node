@@ -96,7 +96,7 @@ def get_ledger(type_, ledger_data_dir):
         exit()
 
     hash_store = initHashStore(ledger_data_dir, type_, config, read_only=True)
-    return Ledger(CompactMerkleTree(hashStore=hash_store), dataDir=ledger_data_dir, fileName=ledger_name)
+    return Ledger(CompactMerkleTree(hashStore=hash_store), dataDir=ledger_data_dir, fileName=ledger_name, read_only=True)
 
 
 def print_txns(ledger, args):
