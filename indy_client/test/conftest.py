@@ -5,6 +5,7 @@ import base58
 
 from anoncreds.protocol.utils import randomString
 
+from plenum.common.member.member import Member
 from plenum.common.txn_util import get_payload_data
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.common.keygen_utils import initLocalKeys
@@ -90,13 +91,11 @@ def updatedPoolTxnData(poolTxnData):
     data = deepcopy(poolTxnData)
     trusteeSeed = 'thisistrusteeseednotsteward12345'
     signer = DidSigner(seed=trusteeSeed.encode())
-    t = {
-        TARGET_NYM: signer.identifier,
-        VERKEY: signer.verkey,
-        ROLE: TRUSTEE,
-        TYPE: NYM,
-        ALIAS: "Trustee1",
-        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"}
+    t = Member.nym_txn(nym=signer.identifier,
+                       name="Trustee1",
+                       verkey=signer.verkey,
+                       role=TRUSTEE,
+                       txn_id="6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a")
     data["seeds"]["Trustee1"] = trusteeSeed
     data["txns"].insert(0, t)
     return data
@@ -147,13 +146,12 @@ def steward(nodeSet, looper, tdirWithClientPoolTxns, stewardWallet):
 
 @pytest.fixture(scope="module")
 def genesisTxns(stewardWallet: Wallet, trusteeWallet: Wallet):
-    nym = stewardWallet.defaultId
-    return [{TXN_TYPE: NYM,
-             TARGET_NYM: nym,
-             TXN_ID: "9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
-             ROLE: STEWARD,
-             VERKEY: stewardWallet.getVerkey()},
-            ]
+    return [Member.nym_txn(
+        nym = stewardWallet.defaultId,
+        verkey=stewardWallet.getVerkey(),
+        role=STEWARD,
+        txn_id="9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    )]
 
 
 @pytest.fixture(scope="module")

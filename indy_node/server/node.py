@@ -349,7 +349,7 @@ class Node(PlenumNode, HasPoolManager):
                 ENC if (ENC in txn_data and txn_data[ENC] is not None) else \
                 None
             if key:
-                get_payload_data(txn_data)[key] = self.attributeStore.get(txn_data[key])
+                txn_data[key] = self.attributeStore.get(txn_data[key])
         return txn
 
     def closeAllKVStores(self):

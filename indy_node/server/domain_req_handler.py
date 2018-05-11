@@ -311,11 +311,11 @@ class DomainReqHandler(PHandler):
         validator = validator_cls(self.state)
         validator.validate(current_entry, req)
 
-    def updateNym(self, nym, data, isCommitted=True):
-        updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
-        txn_time = data.get(TXN_TIME)
+    def updateNym(self, nym, txn, isCommitted=True):
+        updatedData = super().updateNym(nym, txn, isCommitted=isCommitted)
+        txn_time = get_txn_time(txn)
         self.idrCache.set(nym,
-                          seqNo=data[f.SEQ_NO.nm],
+                          seqNo=get_seq_no(txn),
                           txnTime=txn_time,
                           ta=updatedData.get(f.IDENTIFIER.nm),
                           role=updatedData.get(ROLE),
@@ -700,7 +700,7 @@ class DomainReqHandler(PHandler):
             data[ROLE] = txn_data.get(ROLE)
         if VERKEY in txn_data:
             data[VERKEY] = txn_data.get(VERKEY)
-        self.updateNym(nym, data, isCommitted=isCommitted)
+        self.updateNym(nym, txn, isCommitted=isCommitted)
 
     def _addAttr(self, txn, isCommitted=False) -> None:
         """
