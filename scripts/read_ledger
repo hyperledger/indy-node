@@ -11,13 +11,12 @@ import shutil
 from pathlib import Path
 
 from common.serializers.json_serializer import JsonSerializer
-from ledger.compact_merkle_tree import CompactMerkleTree
 from plenum.common.ledger import Ledger
 from plenum.common.constants import HS_ROCKSDB
-from storage.helper import initHashStore
 
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper, NodeConfigHelper
+from common.serializers.serialization import ledger_txn_serializer
 
 
 logging.root.handlers = []
@@ -81,25 +80,29 @@ def get_ledger_dir(node_name, client_name, network):
     return ledger_data_dir
 
 
-def get_ledger(type_, ledger_data_dir):
+def get_storage(type_, ledger_data_dir):
     config = getConfig()
 
-    ledger_name = None
+    storage_name = None
     if type_ == 'pool':
-        ledger_name = config.poolTransactionsFile
+        storage_name = config.poolTransactionsFile
     elif type_ == 'domain':
-        ledger_name = config.domainTransactionsFile
+        storage_name = config.domainTransactionsFile
     elif type_ == 'config':
-        ledger_name = config.configTransactionsFile
+        storage_name = config.configTransactionsFile
     else:
         print("Unknown ledger type: {}".format(type_))
         exit()
 
-    hash_store = initHashStore(ledger_data_dir, type_, config, read_only=True)
-    return Ledger(CompactMerkleTree(hashStore=hash_store), dataDir=ledger_data_dir, fileName=ledger_name, read_only=True)
+    return Ledger._defaultStore(dataDir=ledger_data_dir,
+                                logName=storage_name,
+                                ensureDurability=True,
+                                open=True,
+                                config=config,
+                                read_only=True)
 
 
-def print_txns(ledger, args):
+def print_txns(storage, args):
     serializer = None
     if args.serializer == 'json':
         serializer = JsonSerializer()
@@ -110,22 +113,22 @@ def print_txns(ledger, args):
     # --count
     count = args.count
     if count:
-        print_count(ledger)
+        print_count(storage)
         return
 
     # --seq_no
     seq_no = args.seq_no
     if seq_no:
-        print_by_seq_no(ledger, seq_no, serializer)
+        print_by_seq_no(storage, seq_no, serializer)
         return
 
     # print all (--from --to)
-    print_all(ledger, serializer)
+    print_all(storage, serializer)
 
 
-def print_by_seq_no(ledger, seq_no, serializer):
+def print_by_seq_no(storage, seq_no, serializer):
     try:
-        txn = ledger.getBySeqNo(seq_no)
+        txn = storage.get(seq_no)
     except KeyError:
         print('No transactions found for seq_no={}'.format(seq_no))
         return
@@ -134,16 +137,16 @@ def print_by_seq_no(ledger, seq_no, serializer):
     return
 
 
-def print_count(ledger):
-    print(ledger.size)
+def print_count(storage):
+    print(storage.size)
 
 
-def print_all(ledger, serializer):
+def print_all(storage, serializer):
     frm = int(args.frm) if args.frm else None
     to = int(args.to) if args.to else None
-    for txn in ledger.getAllTxn(frm=frm, to=to):
-        txn = serializer.serialize(txn, toBytes=False)
-        print(txn)
+    for seqNo, txn in storage.iterator(start=frm, end=to):
+        txn = ledger_txn_serializer.deserialize(txn)
+        print(int(seqNo), serializer.serialize(txn, toBytes=False))
 
 
 def make_copy_of_ledger(data_dir):
@@ -174,8 +177,8 @@ if __name__ == '__main__':
 
             read_copy_ledger_data_dir = tmp
             ledger_data_dir = read_copy_ledger_data_dir
-        ledger = get_ledger(args.type, ledger_data_dir)
-        print_txns(ledger, args)
+        storage = get_storage(args.type, ledger_data_dir)
+        print_txns(storage, args)
     finally:
         if read_copy_ledger_data_dir:
             shutil.rmtree(read_copy_ledger_data_dir)
