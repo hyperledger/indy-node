@@ -562,7 +562,7 @@ def watch(fpath, verbose, _json):
 
 
 def format_key(key):
-    return "{:>15}".format('"{}": '.format(key))
+    return "{:15}".format('"{}": '.format(key))
 
 
 def make_indent(indent):
@@ -570,7 +570,7 @@ def make_indent(indent):
 
 
 def format_value(value):
-    return " {:<10}".format(str(value))
+    return " {:10}".format(str(value))
 
 
 def create_print_tree(stats: dict, indent=0, lines=[]):
