@@ -45,6 +45,10 @@ class BaseUnknown:
     def val(self):
         return self._val
 
+    @val.setter
+    def val(self, val):
+        self._val = val
+
 
 class NewEncoder(json.JSONEncoder):
     def default(self, o):
@@ -248,7 +252,7 @@ class BindingStats(BaseUnknown):
         self.val = ConnectionStatsOut([] if bindings is None else [
             dict(port=self.val, protocol=protocol, ip=ip)
             for protocol, ip in bindings
-        ], self._verbose)
+        ], False)
 
 
 class TransactionsStats(BaseStats):
