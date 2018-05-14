@@ -1,4 +1,5 @@
 - hosts: pool
+  gather_facts: no
   become: yes
 
   tasks:

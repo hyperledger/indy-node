@@ -14,6 +14,6 @@ RUN apt-get update -y && apt-get install -y \
 RUN pip3 install -U \ 
 	'pip<10.0.0' \
 	setuptools \
-	pep8 \
-	pep8-naming \
-	flake8
+	pep8==1.7.1 \
+	pep8-naming==0.6.1 \
+	flake8==3.5.0

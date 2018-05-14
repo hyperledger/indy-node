@@ -6,9 +6,9 @@ The scripts are in [dev-setup](https://github.com/hyperledger/indy-node/tree/mas
 **Note**: as of now, we provide scripts for Ubuntu only. It's not guaranteed that the code is working on Windows.
 
 - One needs Python 3.5 to work with the code 
-- We recommend using Python virtual environment for development.
+- We recommend using Python virtual environment for development
 - We use pytest for unit and integration testing
-- There are some dependencies that must be installed before being able to run the code.
+- There are some dependencies that must be installed before being able to run the code
 
 ## Quick Setup on Ubuntu 16.04:
 
@@ -20,9 +20,9 @@ You can also have a look at the scripts mentioned below to follow them and perfo
 1. Run `source ~/.bashrc` to apply virtual environment wrapper installation
 1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (charm-crypto, libindy, libindy-crypto, libsodium)
 1. Fork [indy-plenum](https://github.com/hyperledger/indy-plenum) and [indy-node](https://github.com/hyperledger/indy-node)
-1. Go to the destination folder for the project.
+1. Go to the destination folder for the project
 1. Run `init-dev-project.sh <github-name> <new-virtualenv-name>` to clone indy-plenum and indy-node projects and
-create a virtualenv to work in.
+create a virtualenv to work in
 1. Activate new virtualenv `workon <new-virtualenv-name>`
 1. [Optionally] Install Pycharm
 1. [Optionally] Open and configure projects in Pycharm:
@@ -31,7 +31,7 @@ create a virtualenv to work in.
     - Configure Project Interpreter to use just created virtualenv
         - Go to `Project: <name> -> Project Interpreter`
         - You’ll see indy-plenum and indy-node projects on the right side tab.
-        For each of them   
+        For each of them:   
             - Click on the project just beside “Project Interpreter” drop down, you’ll see one setting icon, click on it.
             - Select “Add Local”
             - Select existing virtualenv path as below: <virtual env path>/bin/python3.5
@@ -51,10 +51,8 @@ create a virtualenv to work in.
 
 ### Setup Python
 
-One needs Python 3.5 to work with the code.
-
-You can use `dev-setup/ubuntu/setup_dev_python.sh` script for Quick installation of Python 3.5, pip 
-and virtualenvironment on Ubuntu, or follow the detailed instructions below.
+One needs Python 3.5 to work with the code. You can use `dev-setup/ubuntu/setup_dev_python.sh` script for quick installation of Python 3.5, pip 
+and virtual environment on Ubuntu, or follow the detailed instructions below.
 
 
 ##### Ubuntu
@@ -112,7 +110,7 @@ Once you have homebrew installed, run ```brew install libsodium``` to install li
 
 ##### Windows
 
-1. Go to https://download.libsodium.org/libsodium/releases/ and download the latest libsodium package (libsodium-1.0.8-mingw.tar.gz is the latest version as of this writing)
+1. Go to https://download.libsodium.org/libsodium/releases/ and download the latest libsodium package (libsodium-1.0.8-mingw.tar.gz is the latest version as of this writing).
 
 1. When you extract the contents of the downloaded tar file, you will see 2 folders with the names libsodium-win32 and libsodium-win64.
 
@@ -194,7 +192,7 @@ And activate it by:
 source <name of virtual environment>/bin/activate
 ```
 
-Optionally you can install virtual environment wrapper as follows:
+Optionally, you can install virtual environment wrapper as follows:
 ```
 pip3 install virtualenvwrapper
 echo '' >> ~/.bashrc
@@ -220,7 +218,7 @@ Navigate to the root directory of the source (for each project) and install requ
 pip install -e .[tests]
 ```
 If you are working with both indy-plenum and indy-node, then please make sure that both projects are installed with -e option,
-and not from pypi (have a look at the sequence at `init-dev-project.sh`) 
+and not from pypi (have a look at the sequence at `init-dev-project.sh`). 
 
 Go to the folder with tests (either `indy-plenum`, `indy-node/indy_node`, `indy-node/indy_client` or `indy-node/indy_common`)
 and run tests
