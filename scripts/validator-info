@@ -587,7 +587,7 @@ def create_print_tree(stats: dict, indent=0, lines=[]):
             for line in value:
                 lines.append(make_indent(indent + 1) + format_value(line))
         else:
-            lines.append(make_indent(indent) + format_key(key) + format_value(value))
+            lines.append(make_indent(indent) + format_key(key) + format_value(value if value else 'n/a'))
     return lines
 
 
@@ -725,7 +725,7 @@ def main():
         logger.info("Reading file {} ...".format(file_path))
         if args.verbose:
             with open(file_path) as f_stats:
-                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats))))
+                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
         else:
             print(get_stats_from_file(file_path, args.verbose, args.json))
 
@@ -733,7 +733,7 @@ def main():
     if args.verbose:
         for file_path in additional_paths:
             with open(file_path) as f_stats:
-                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats))))
+                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
 
     logger.info("Done")
 
