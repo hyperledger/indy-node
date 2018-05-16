@@ -14,8 +14,8 @@ from sovrin_common.config_util import getConfig
 logger = getlogger()
 
 
-def __migrate_ledger(data_directory,
-                     old_ledger_file, new_ledger_file):
+def _migrate_ledger(data_directory,
+                    old_ledger_file, new_ledger_file):
     """
     Test for the directory, open old and new ledger, migrate data, rename directories
     """
@@ -40,7 +40,7 @@ def __migrate_ledger(data_directory,
     # add all txns into the new ledger
     for _, txn in old_ledger.getAllTxn():
         # remove all NULL values from there!
-        txn = __prepare_old_txn(txn)
+        txn = _prepare_old_txn(txn)
         print(txn)
         new_ledger.add(txn)
     logger.info("new size for {}: {}".format(
@@ -61,11 +61,11 @@ def __migrate_ledger(data_directory,
         os.path.join(data_directory, new_ledger_file)))
 
 
-def __prepare_old_txn(txn):
+def _prepare_old_txn(txn):
     return {k: v for k, v in txn.items() if v is not None}
 
 
-def __open_new_ledger(data_directory, new_ledger_file, hash_store_name):
+def _open_new_ledger(data_directory, new_ledger_file, hash_store_name):
     # open new Ledger with leveldb hash store (to re-init it)
     logger.info("Open new ledger folder: {}".format(
         os.path.join(data_directory, new_ledger_file)))
@@ -101,12 +101,12 @@ def migrate_domain_hash_stores(node_data_directory):
         logger.info('removed {}'.format(new_merkle_nodes_domain))
 
     # open new Ledgers
-    _, new_domain_ledger_name = __get_domain_ledger_file_names()
-    __open_new_ledger(node_data_directory,
-                      new_domain_ledger_name, 'domain')
+    _, new_domain_ledger_name = _get_domain_ledger_file_names()
+    _open_new_ledger(node_data_directory,
+                     new_domain_ledger_name, 'domain')
 
 
-def __get_domain_ledger_file_names():
+def _get_domain_ledger_file_names():
     config = getConfig()
     if config.domainTransactionsFile.startswith('domain'):
         old_name = config.domainTransactionsFile
@@ -120,10 +120,10 @@ def __get_domain_ledger_file_names():
 
 
 def migrate_domain_ledger_for_node(node_data_directory):
-    old_name, new_name = __get_domain_ledger_file_names()
-    __migrate_ledger(node_data_directory,
-                     old_name,
-                     new_name)
+    old_name, new_name = _get_domain_ledger_file_names()
+    _migrate_ledger(node_data_directory,
+                    old_name,
+                    new_name)
 
 
 def migrate_all_states(node_data_directory):
