@@ -20,9 +20,9 @@ config = getConfig()
 logger = getlogger()
 
 
-def __migrate_ledger(data_directory,
-                     old_ledger_file, new_ledger_file,
-                     serializer: MappingSerializer = None):
+def _migrate_ledger(data_directory,
+                    old_ledger_file, new_ledger_file,
+                    serializer: MappingSerializer = None):
     """
     Test for the directory, open old and new ledger, migrate data, rename directories
     """
@@ -72,8 +72,8 @@ def __migrate_ledger(data_directory,
         os.path.join(data_directory, old_ledger_file))
 
 
-def __open_old_ledger(data_directory, old_ledger_file,
-                      hash_store_name, serializer):
+def _open_old_ledger(data_directory, old_ledger_file,
+                     hash_store_name, serializer):
     # open old Ledger with leveldb hash store (to re-init it)
     old_txn_log_store = ChunkedFileStore(data_directory,
                                          old_ledger_file,
@@ -121,20 +121,20 @@ def migrate_all_hash_stores(node_data_directory):
 
     # open new Ledgers
     fields = getTxnOrderedFields()
-    __open_old_ledger(node_data_directory, config.poolTransactionsFile,
-                      'pool', serializer=JsonSerializer())
-    __open_old_ledger(node_data_directory, config.domainTransactionsFile,
-                      'domain', serializer=CompactSerializer(fields=fields))
-    __open_old_ledger(node_data_directory, config.configTransactionsFile,
-                      'config', serializer=JsonSerializer())
+    _open_old_ledger(node_data_directory, config.poolTransactionsFile,
+                     'pool', serializer=JsonSerializer())
+    _open_old_ledger(node_data_directory, config.domainTransactionsFile,
+                     'domain', serializer=CompactSerializer(fields=fields))
+    _open_old_ledger(node_data_directory, config.configTransactionsFile,
+                     'config', serializer=JsonSerializer())
 
 
 def migrate_all_ledgers_for_node(node_data_directory):
     # using default ledger names
-    __migrate_ledger(node_data_directory,
-                     config.poolTransactionsFile, config.poolTransactionsFile,
-                     serializer=JsonSerializer())
-    __migrate_ledger(
+    _migrate_ledger(node_data_directory,
+                    config.poolTransactionsFile, config.poolTransactionsFile,
+                    serializer=JsonSerializer())
+    _migrate_ledger(
         node_data_directory,
         config.configTransactionsFile,
         config.configTransactionsFile,
@@ -142,10 +142,10 @@ def migrate_all_ledgers_for_node(node_data_directory):
 
     # domain ledger uses custom CompactSerializer and old file name
     fields = getTxnOrderedFields()
-    __migrate_ledger(node_data_directory,
-                     config.domainTransactionsFile.replace(
-                         'domain_', ''), config.domainTransactionsFile,
-                     serializer=CompactSerializer(fields=fields))
+    _migrate_ledger(node_data_directory,
+                    config.domainTransactionsFile.replace('domain_', ''),
+                    config.domainTransactionsFile,
+                    serializer=CompactSerializer(fields=fields))
 
 
 def migrate_all_states(node_data_directory):
