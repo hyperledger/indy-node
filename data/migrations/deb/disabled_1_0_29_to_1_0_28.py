@@ -122,11 +122,11 @@ def migrate_all_hash_stores(node_data_directory):
     # open new Ledgers
     fields = getTxnOrderedFields()
     _open_old_ledger(node_data_directory, config.poolTransactionsFile,
-                      'pool', serializer=JsonSerializer())
+                     'pool', serializer=JsonSerializer())
     _open_old_ledger(node_data_directory, config.domainTransactionsFile,
-                      'domain', serializer=CompactSerializer(fields=fields))
+                     'domain', serializer=CompactSerializer(fields=fields))
     _open_old_ledger(node_data_directory, config.configTransactionsFile,
-                      'config', serializer=JsonSerializer())
+                     'config', serializer=JsonSerializer())
 
 
 def migrate_all_ledgers_for_node(node_data_directory):
@@ -143,8 +143,8 @@ def migrate_all_ledgers_for_node(node_data_directory):
     # domain ledger uses custom CompactSerializer and old file name
     fields = getTxnOrderedFields()
     _migrate_ledger(node_data_directory,
-                    config.domainTransactionsFile.replace(
-                         'domain_', ''), config.domainTransactionsFile,
+                    config.domainTransactionsFile.replace('domain_', ''),
+                    config.domainTransactionsFile,
                     serializer=CompactSerializer(fields=fields))
 
 
