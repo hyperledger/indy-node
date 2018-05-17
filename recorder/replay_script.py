@@ -1,21 +1,15 @@
 import importlib
+import json
 import os
 import shutil
 import tempfile
-from typing import Tuple
 
 from indy_common.test.conftest import _general_conf_tdir
 
-from storage.kv_store_rocksdb_int_keys import KeyValueStorageRocksdbIntKeys
-
-from storage.helper import initKeyValueStorageIntKeys
-
-from plenum.common.constants import CLIENT_STACK_SUFFIX, KeyValueStorageType
-
 from indy_common.config_helper import NodeConfigHelper
-from plenum.recorder.src.recorder import Recorder
 from plenum.recorder.src.replayer import patch_replaying_node_for_time, \
-    replay_patched_node
+    replay_patched_node, get_recorders_from_node_data_dir, \
+    prepare_node_for_replay_and_replay
 
 from stp_core.types import HA
 
@@ -28,8 +22,7 @@ from plenum.server.replicas import Replicas
 from plenum.server.replica import Replica
 
 from indy_common.config_util import getConfig
-from plenum.recorder.src.replayable_node import prepare_directory_for_replay, \
-    create_replayable_node_class
+from plenum.recorder.src.replayable_node import create_replayable_node_class
 
 RecordingZipFilePath = '/home/lovesh/rec.zip'
 
@@ -50,23 +43,6 @@ def setup_logging():
     pass
 
 
-def get_recorders_from_node_data_dir(node_data_dir, node_name) -> Tuple[Recorder, Recorder]:
-    node_rec_path = os.path.join(node_data_dir, node_name, 'recorder')
-    client_stack_name = node_name + CLIENT_STACK_SUFFIX
-    client_rec_path = os.path.join(node_data_dir, client_stack_name, 'recorder')
-    # TODO: Change to rocksdb
-    client_rec_kv_store = initKeyValueStorageIntKeys(KeyValueStorageType.Leveldb,
-                                                     client_rec_path,
-                                                     client_stack_name)
-    node_rec_kv_store = initKeyValueStorageIntKeys(
-        KeyValueStorageType.Leveldb,
-        node_rec_path,
-        node_name)
-
-    return Recorder(node_rec_kv_store, skip_metadata_write=True), \
-           Recorder(client_rec_kv_store, skip_metadata_write=True)
-
-
 def update_loaded_config(config):
     config.USE_WITH_STACK = 2
     import stp_zmq.kit_zstack
@@ -80,8 +56,8 @@ def update_loaded_config(config):
 
 
 def replay_node():
-    orig_node_dir = '/home/lovesh/Downloads/Node1.20180514141606/'
-    replaying_node_name = 'Node1'
+    orig_node_dir = '/home/lovesh/Downloads/Node5.20180516165513'
+    replaying_node_name = 'Node5'
 
     pool_name = 'sandbox'
 
@@ -92,7 +68,6 @@ def replay_node():
     config = getConfig(general_config_dir)
     update_loaded_config(config)
     pool_dir = os.path.join(replay_node_dir, pool_name)
-    data_dir = os.path.join(pool_dir, 'data')
     orig_node_pool_dir = os.path.join(orig_node_dir, pool_name)
 
     # for d in (pool_dir, data_dir):
@@ -107,6 +82,7 @@ def replay_node():
     # shutil.copytree(os.path.join(orig_node_dir, 'plugins'),
     #                 os.path.join(replay_node_dir, 'plugins'))
     trg_var_dir = os.path.join(replay_node_dir, 'var', 'lib', 'indy', pool_name)
+    orig_node_data_dir = os.path.join(orig_node_pool_dir, 'data')
     os.makedirs(trg_var_dir, exist_ok=True)
     # shutil.copytree(src_etc_dir, trg_etc_dir)
     for file in os.listdir(orig_node_pool_dir):
@@ -120,6 +96,9 @@ def replay_node():
 
     node_rec, client_rec = get_recorders_from_node_data_dir(
         os.path.join(orig_node_pool_dir, 'data'), replaying_node_name)
+    start_times_file = os.path.join(orig_node_data_dir, replaying_node_name, 'start_times')
+    with open(start_times_file, 'r') as f:
+        start_times = json.loads(f.read())
 
     replayable_node_class = create_replayable_node_class(Replica,
                                                          Replicas,
@@ -133,8 +112,11 @@ def replay_node():
         replaying_node = replayable_node_class(replaying_node_name,
                                                config_helper=node_config_helper,
                                                ha=node_ha, cliha=client_ha)
-        patch_replaying_node_for_time(replaying_node, node_rec)
-        replay_patched_node(looper, replaying_node, node_rec, client_rec)
+        replaying_node = prepare_node_for_replay_and_replay(looper,
+                                                            replaying_node,
+                                                            node_rec,
+                                                            client_rec,
+                                                            start_times)
         print('Replaying node, size: {}, root_hash: {}'.format(
             replaying_node.domainLedger.size,
             replaying_node.domainLedger.root_hash
