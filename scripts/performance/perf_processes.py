@@ -76,13 +76,13 @@ parser.add_argument('-t', '--timeout',
 
 parser.add_argument('-r', '--refresh',
                     help='Refresh stat rate in sec.'
-                         'Default value is 10',
-                    default=10, type=int, required=False, dest='refresh_rate')
+                         'Default value is 3',
+                    default=3, type=int, required=False, dest='refresh_rate')
 
 parser.add_argument('-b', '--bg_tasks',
                     help='Number of background tasks per process, sending and generating.'
-                         'Default value is 300',
-                    default=300, type=int, required=False, dest='bg_tasks')
+                         'Default value is 10',
+                    default=10, type=int, required=False, dest='bg_tasks')
 
 parser.add_argument('-d', '--directory',
                     help='Directory to save output files'
@@ -374,8 +374,11 @@ def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, r
     print("Start ", name)
 
     cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks)
-    asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed), loop=cln._loop)
-    cln._loop.run_forever()
+    try:
+        asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed), loop=cln._loop)
+        cln._loop.run_forever()
+    except Exception as e:
+        print("{} running error {}".format(cln._name, e))
     print("Stop {}".format(cln._name))
     stat = cln._stat.dump_stat(dump_all=True)
     return stat
@@ -402,6 +405,8 @@ class ClientRunner:
         return self.conn is None
 
     def refresh_stat(self, stat):
+        if not isinstance(stat, dict):
+            return
         self.last_refresh = time.perf_counter()
         self.total_sent = stat.get("total_sent", self.total_sent)
         self.total_succ = stat.get("total_succ", self.total_succ)
@@ -428,6 +433,8 @@ class TestRunner:
         assert self._total_f
         assert self._succ_f
         assert self._nacked_f
+        if not isinstance(stat, dict):
+            return
         reqs = stat.get("reqs", [])
         for (r_id, r_data) in reqs:
             # ["id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
@@ -445,10 +452,12 @@ class TestRunner:
                 print(r_id, r_data.get("req", ""), r_data.get("resp", ""), file=self._failed_f, sep=self._value_separator)
 
     def sig_handler(self, sig, name):
-        for cln in self._clients.values():
+        for prc, cln in self._clients.items():
             try:
                 if not cln.is_finished():
                     cln.conn.send(False)
+                if sig == signal.SIGTERM:
+                    prc.cancel()
             except Exception as e:
                 print("Sent stop to client {} error {}".format(cln.name, e))
 
@@ -483,9 +492,10 @@ class TestRunner:
             last_stat = client.result()
             self._clients[client].refresh_stat(last_stat)
             self.process_reqs(last_stat)
-            self._clients[client].stop_client()
         except Exception as e:
             print("Client Error", e)
+
+        self._clients[client].stop_client()
 
         is_closing = all([cln.is_finished() for cln in self._clients.values()])
 
@@ -572,7 +582,6 @@ class TestRunner:
 
         signal.signal(signal.SIGTERM, self.sig_handler)
         signal.signal(signal.SIGINT, self.sig_handler)
-        signal.signal(signal.SIGABRT, self.sig_handler)
 
         executor = concurrent.futures.ProcessPoolExecutor(proc_count)
         for i in range(0, proc_count):
