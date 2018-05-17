@@ -16,15 +16,13 @@ import libnacl
 from indy import pool, wallet, did, ledger
 
 
-parser = argparse.ArgumentParser(
-    description='This script will execute the test base on the '
-                'mode that user passes to system.')
+parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK.')
 
 parser.add_argument('-c', '--clients',
-                    help='Number of client you want to create. 0 or less means equal to number of available CPUs'
+                    help='Number of client you want to create. Each client is a separate process.'
+                         '0 or less means equal to number of available CPUs'
                          'Default value is 0',
-                    default=0, type=int, required=False,
-                    dest='clients')
+                    default=0, type=int, required=False, dest='clients')
 
 
 def check_fs(is_dir: bool, fs_name: str):
@@ -54,14 +52,12 @@ parser.add_argument('-s', '--seed',
                     help='Seed to generate submitter did'
                          'Default value is Trustee1',
                     default="000000000000000000000000Trustee1",
-                    type=check_seed, required=False,
-                    dest='seed')
+                    type=check_seed, required=False, dest='seed')
 
 parser.add_argument('-k', '--kind',
                     help='Kind of request kind to use. One of ["nym", "schema", "attribute", "claim", "rand"]'
                          'Default value is "nym"',
-                    default="nym",
-                    choices=['nym', 'schema', 'attribute', 'claim', 'rand'],
+                    default="nym", choices=['nym', 'schema', 'attribute', 'claim', 'rand'],
                     required=False, dest='req_kind')
 
 parser.add_argument('-n', '--num',
@@ -75,21 +71,19 @@ parser.add_argument('-t', '--timeout',
                     default=0, type=float, required=False, dest='batch_timeout')
 
 parser.add_argument('-r', '--refresh',
-                    help='Refresh stat rate in number of replied txns.'
+                    help='Number of replied txns to refresh statistics.'
                          'Default value is 100',
                     default=100, type=int, required=False, dest='refresh_rate')
 
 parser.add_argument('-b', '--bg_tasks',
                     help='Number of background tasks per process, sending and generating.'
-                         'Default value is 10',
-                    default=10, type=int, required=False, dest='bg_tasks')
+                         'Default value is 30',
+                    default=30, type=int, required=False, dest='bg_tasks')
 
 parser.add_argument('-d', '--directory',
                     help='Directory to save output files'
                          'Default value is "."',
-                    default=".",
-                    type=functools.partial(check_fs, True), required=False,
-                    dest='out_dir')
+                    default=".", type=functools.partial(check_fs, True), required=False, dest='out_dir')
 
 parser.add_argument('--sep',
                     help='Value separator used in result file'
