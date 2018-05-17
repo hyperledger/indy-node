@@ -287,7 +287,6 @@ class NodeStateReplayer():
         general_config_dir = create_config_dirs(replay_node_dir)
         config = getConfig(general_config_dir)
         self.update_loaded_config(config)
-        import pdb; pdb.set_trace()
         pool_dir = join(replay_node_dir, pool_name)
         orig_node_pool_dir = self.s1dir
 
@@ -321,9 +320,8 @@ class NodeStateReplayer():
                                           chroot=replay_node_dir)
 
         logFileName = os.path.join(node_config_helper.log_dir,
-                                   replaying_node_name + ".log")
+                                   node_name + ".log")
 
-        logger = getlogger()
         Logger().apply_config(config)
         Logger().enableFileLogging(logFileName)
 
@@ -348,6 +346,8 @@ class NodeStateReplayer():
 
             logger.debug('Final run of looper')
             looper.runFor(10)
+
+        logger._clearHandler('file')
 
 
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
