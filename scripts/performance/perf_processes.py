@@ -176,6 +176,7 @@ class ClientStatistic:
             ret_val["reqs"].append((r, self._reqs.pop(r)))
         return ret_val
 
+
 class LoadClient:
     def __init__(self, name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks):
         self._name = name
@@ -225,10 +226,10 @@ class LoadClient:
         force_close = False
         try:
             flag = self._pipe_conn.recv()
-            if isinstance(flag, bool) and flag == False:
-                if self._closing == False:
+            if isinstance(flag, bool) and flag is False:
+                if self._closing is False:
                     force_close = True
-            elif isinstance(flag, bool) and flag == True:
+            elif isinstance(flag, bool) and flag is True:
                 st = self._stat.dump_stat()
                 try:
                     self._pipe_conn.send(st)
@@ -253,7 +254,7 @@ class LoadClient:
 
     async def gen_signed_nym(self):
         # print("gen_signed_nym")
-        if self._closing == True:
+        if self._closing is True:
             return
 
         raw = libnacl.randombytes(16)
@@ -318,7 +319,7 @@ class LoadClient:
         if avail_sndrs <= 0:
             return
 
-        if self._sent_in_batch == None: # should wait for a timeout
+        if self._sent_in_batch is None:  # should wait for a timeout
             time_spent = time.perf_counter() - self._bg_send_last
             if time_spent >= self._batch_timeout:
                 self._sent_in_batch = 0
@@ -398,7 +399,7 @@ class ClientRunner:
         self.conn = None
 
     def is_finished(self):
-        return self.conn == None
+        return self.conn is None
 
     def refresh_stat(self, stat):
         self.last_refresh = time.perf_counter()
@@ -412,7 +413,7 @@ class ClientRunner:
 
 class TestRunner:
     def __init__(self):
-        self._clients = dict() # key rpocess future; value ClientRunner
+        self._clients = dict()  # key pocess future; value ClientRunner
         self._loop = asyncio.get_event_loop()
         self._refresh_rate = 0
         self._out_dir = ""
@@ -535,7 +536,6 @@ class TestRunner:
         print("id", "req", "resp", file=self._succ_f, sep=self._value_separator)
         print("id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply",
               file=self._total_f, sep=self._value_separator)
-
 
     def close_fs(self):
         assert self._failed_f
