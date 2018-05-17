@@ -75,9 +75,9 @@ parser.add_argument('-t', '--timeout',
                     default=0, type=float, required=False, dest='batch_timeout')
 
 parser.add_argument('-r', '--refresh',
-                    help='Refresh stat rate in sec.'
-                         'Default value is 3',
-                    default=3, type=int, required=False, dest='refresh_rate')
+                    help='Refresh stat rate in number of replied txns.'
+                         'Default value is 100',
+                    default=100, type=int, required=False, dest='refresh_rate')
 
 parser.add_argument('-b', '--bg_tasks',
                     help='Number of background tasks per process, sending and generating.'
@@ -178,8 +178,9 @@ class ClientStatistic:
 
 
 class LoadClient:
-    def __init__(self, name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks):
+    def __init__(self, name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh):
         self._name = name
+        self._refresh = refresh
         self._stat = ClientStatistic()
         self._gen_lim = bg_tasks // 2
         self._send_lim = bg_tasks // 2
@@ -228,13 +229,6 @@ class LoadClient:
             flag = self._pipe_conn.recv()
             if isinstance(flag, bool) and flag is False:
                 if self._closing is False:
-                    force_close = True
-            elif isinstance(flag, bool) and flag is True:
-                st = self._stat.dump_stat()
-                try:
-                    self._pipe_conn.send(st)
-                except Exception as e:
-                    print("{} stat send error {}".format(self._name, e))
                     force_close = True
         except Exception as e:
             print("{} Error {}".format(self._name, e))
@@ -308,8 +302,16 @@ class LoadClient:
 
     def done_submit(self, fut):
         self._send_q.remove(fut)
-
         self.watch_queues()
+        if self._stat._req_sent % self._refresh == 0:
+            self._loop.call_soon(self.send_stat)
+
+    def send_stat(self):
+        st = self._stat.dump_stat()
+        try:
+            self._pipe_conn.send(st)
+        except Exception as e:
+            print("{} stat send error {}".format(self._name, e))
 
     def req_send(self):
         if self._closing:
@@ -370,16 +372,13 @@ class LoadClient:
         self._loop.stop()
 
 
-def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, req_kind, bg_tasks):
-    print("Start ", name)
-
-    cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks)
+def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, req_kind, bg_tasks, refresh):
+    cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh)
     try:
         asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed), loop=cln._loop)
         cln._loop.run_forever()
     except Exception as e:
         print("{} running error {}".format(cln._name, e))
-    print("Stop {}".format(cln._name))
     stat = cln._stat.dump_stat(dump_all=True)
     return stat
 
@@ -388,6 +387,7 @@ class ClientRunner:
     def __init__(self, name, conn):
         self.name = name
         self.conn = conn
+        self.closed = False
 
         self.last_refresh = 0
 
@@ -399,10 +399,10 @@ class ClientRunner:
         self.total_server_time = 0
 
     def stop_client(self):
-        self.conn = None
+        self.closed = True
 
     def is_finished(self):
-        return self.conn is None
+        return self.closed
 
     def refresh_stat(self, stat):
         if not isinstance(stat, dict):
@@ -420,7 +420,6 @@ class TestRunner:
     def __init__(self):
         self._clients = dict()  # key pocess future; value ClientRunner
         self._loop = asyncio.get_event_loop()
-        self._refresh_rate = 0
         self._out_dir = ""
         self._succ_f = None
         self._failed_f = None
@@ -461,14 +460,6 @@ class TestRunner:
             except Exception as e:
                 print("Sent stop to client {} error {}".format(cln.name, e))
 
-    def request_stat(self):
-        for cln in self._clients.values():
-            try:
-                if not cln.is_finished():
-                    cln.conn.send(True)
-            except Exception as e:
-                print("Sent request_stat to client {} error {}".format(cln.name, e))
-
     def read_client_cb(self, prc):
         try:
             r_data = self._clients[prc].conn.recv()
@@ -476,16 +467,12 @@ class TestRunner:
                 self._clients[prc].refresh_stat(r_data)
                 self.process_reqs(r_data)
 
-                tprc = time.perf_counter()
-                all_updated = all([(tprc - cln.last_refresh < self._refresh_rate + 2) for cln in self._clients.values()])
-
-                if all_updated:
-                    self._loop.call_later(self._refresh_rate, self.request_stat)
-                    print(self.get_refresh_str(), end="\r")
+                print(self.get_refresh_str(), end="\r")
             else:
                 print("Recv garbage {} from {}".format(r_data, self._clients[prc].name))
         except Exception as e:
             print("{} read_client_cb error {}".format(self._clients[prc].name, e))
+            self._clients[prc].conn = None
 
     def client_done(self, client):
         try:
@@ -496,11 +483,12 @@ class TestRunner:
             print("Client Error", e)
 
         self._clients[client].stop_client()
+        self._loop.remove_reader(self._clients[client].conn)
 
         is_closing = all([cln.is_finished() for cln in self._clients.values()])
 
         if is_closing:
-            self._loop.stop()
+            self._loop.call_soon_threadsafe(self._loop.stop)
 
     def get_refresh_str(self):
         clients = 0
@@ -510,9 +498,9 @@ class TestRunner:
         total_failed = 0
         total_nack = 0
         total_reject = 0
-        cur_pc = time.perf_counter()
+
         for cln in self._clients.values():
-            if cur_pc - cln.last_refresh < self._refresh_rate + 2:
+            if not cln.is_finished():
                 clients += 1
             total_sent += cln.total_sent
             total_succ += cln.total_succ
@@ -559,7 +547,7 @@ class TestRunner:
 
     def test_run(self, args):
         proc_count = args.clients if args.clients > 0 else multiprocessing.cpu_count()
-        refresh = args.refresh_rate if args.refresh_rate > 0 else 10
+        refresh = args.refresh_rate if args.refresh_rate > 0 else 100
         bg_tasks = args.bg_tasks if args.bg_tasks > 0 else 300
         start_date = datetime.datetime.now()
         value_separator = args.val_sep if args.val_sep != "" else "|"
@@ -569,13 +557,12 @@ class TestRunner:
         print("Batch size               ", args.batch_size)
         print("Timeout between batches  ", args.batch_timeout)
         print("Request kind             ", args.req_kind)
-        print("Refresh rate             ", refresh)
+        print("Refresh rate, txns       ", refresh)
         print("Background tasks         ", bg_tasks)
         print("Output directory         ", args.out_dir)
         print("Value Separator          ", value_separator)
         print("Started At               ", start_date)
 
-        self._refresh_rate = refresh
         self._value_separator = value_separator
 
         self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")))
@@ -589,18 +576,16 @@ class TestRunner:
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(run_client, prc_name, args.genesis_path, wr,
                                   args.seed, args.batch_size, args.batch_timeout,
-                                  args.req_kind, bg_tasks)
+                                  args.req_kind, bg_tasks, refresh)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd)
 
-        self._loop.call_later(self._refresh_rate, self.request_stat)
         self._loop.run_forever()
-
-        self.close_fs()
 
         print("DONE")
         print(self.get_refresh_str())
+        self.close_fs()
 
 
 if __name__ == '__main__':
