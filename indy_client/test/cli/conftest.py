@@ -89,13 +89,13 @@ def newKeyPairCreated(cli):
 
 
 @pytest.fixture(scope="module")
-def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns,
                txnPoolNodesLooper, tconf, cliTempLogger):
     return getCliBuilder(
         tdir,
         tconf,
         tdirWithPoolTxns,
-        tdirWithDomainTxnsUpdated,
+        tdirWithDomainTxns,
         logFileName=cliTempLogger,
         def_looper=txnPoolNodesLooper)
 
@@ -1233,28 +1233,28 @@ def savedKeyringRestored():
 # TODO: Need to refactor following three fixture to reuse code
 @pytest.yield_fixture(scope="module")
 def cliForMultiNodePools(request, multiPoolNodesCreated, tdir,
-                         tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                         tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                          cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("susan")
 
 
 @pytest.yield_fixture(scope="module")
 def aliceMultiNodePools(request, multiPoolNodesCreated, tdir,
-                        tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                        tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                         cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("alice")
 
 
 @pytest.yield_fixture(scope="module")
 def earlMultiNodePools(request, multiPoolNodesCreated, tdir,
-                       tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                       tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                        cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("earl")
 
 

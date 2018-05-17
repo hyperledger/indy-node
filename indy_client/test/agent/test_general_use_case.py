@@ -13,7 +13,7 @@ from indy_node.pool.local_pool import create_local_pool
 
 # noinspection PyUnresolvedReferences
 from indy_node.test.conftest import tdir, nodeSet, tconf, \
-    updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet, poolTxnData, \
+    updatedPoolTxnData, txnPoolNodeSet, poolTxnData, \
     dirName, tdirWithDomainTxns, tdirWithPoolTxns, \
     domainTxnOrderedFields, genesisTxns, stewardWallet, poolTxnStewardData, \
     poolTxnStewardNames, trusteeWallet, trusteeData, poolTxnTrusteeNames, \
