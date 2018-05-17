@@ -25,7 +25,8 @@ from indy_client.test.conftest import trustAnchorWallet, \
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
-    tdirWithPoolTxns, tdirWithDomainTxns, tdirWithClientPoolTxns, txnPoolNodeSet, \
+    tdirWithPoolTxns, tdirWithDomainTxns as PTdirWithDomainTxns, \
+    tdirWithClientPoolTxns, txnPoolNodeSet, \
     poolTxnData, dirName, poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     patchPluginManager, txnPoolNodesLooper, warncheck, \

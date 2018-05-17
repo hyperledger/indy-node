@@ -31,7 +31,7 @@ from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 from plenum.test.conftest import txnPoolNodeSet, patchPluginManager, tdirWithNodeKeepInited
 from stp_core.loop.eventually import eventually
 from stp_core.common.log import getlogger
-from plenum.test.conftest import tdirWithPoolTxns, tdirWithDomainTxns
+from plenum.test.conftest import tdirWithPoolTxns
 from indy_client.cli.helper import USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
 from indy_client.test.helper import createNym, buildStewardClient
 from indy_common.constants import ENDPOINT, TRUST_ANCHOR

@@ -14,10 +14,10 @@ from indy_node.pool.local_pool import create_local_pool
 # noinspection PyUnresolvedReferences
 from indy_node.test.conftest import tdir, nodeSet, tconf, \
     updatedPoolTxnData, txnPoolNodeSet, poolTxnData, \
-    dirName, tdirWithDomainTxns, tdirWithPoolTxns, \
+    dirName, tdirWithPoolTxns, \
     domainTxnOrderedFields, genesisTxns, stewardWallet, poolTxnStewardData, \
     poolTxnStewardNames, trusteeWallet, trusteeData, poolTxnTrusteeNames, \
-    patchPluginManager, txnPoolNodesLooper, tdirWithPoolTxns, \
+    patchPluginManager, txnPoolNodesLooper, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, testNodeClass, \
     genesisTxns
 
