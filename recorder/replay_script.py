@@ -8,6 +8,7 @@ from indy_common.config_helper import NodeConfigHelper
 from indy_node.server.config_helper import create_config_dirs
 from plenum.recorder.src.replayer import get_recorders_from_node_data_dir, \
     prepare_node_for_replay_and_replay
+from stp_core.common.log import getlogger, Logger
 
 from stp_core.types import HA
 
@@ -54,8 +55,8 @@ def update_loaded_config(config):
 
 
 def replay_node():
-    orig_node_dir = '/home/lovesh/Downloads/Node5.20180516165513'
-    replaying_node_name = 'Node5'
+    orig_node_dir = '/home/lovesh/Downloads/Node1.20180517151326/'
+    replaying_node_name = 'Node1'
 
     pool_name = 'sandbox'
 
@@ -106,6 +107,19 @@ def replay_node():
 
     node_config_helper = NodeConfigHelper(replaying_node_name, config,
                                           chroot=replay_node_dir)
+
+    logFileName = os.path.join(node_config_helper.log_dir,
+                               replaying_node_name + ".log")
+
+    logger = getlogger()
+    Logger().apply_config(config)
+    Logger().enableFileLogging(logFileName)
+
+    # logger.setLevel(config.logLevel)
+    logger.setLevel(0)
+    logger.debug('Replay goes to {}'.format(replay_node_dir))
+    logger.debug("You can find logs in {}".format(logFileName))
+
     with Looper(debug=config.LOOPER_DEBUG) as looper:
         replaying_node = replayable_node_class(replaying_node_name,
                                                config_helper=node_config_helper,
@@ -115,12 +129,12 @@ def replay_node():
                                                             node_rec,
                                                             client_rec,
                                                             start_times)
-        print('Replaying node, size: {}, root_hash: {}'.format(
+        logger.info('Replaying node, size: {}, root_hash: {}'.format(
             replaying_node.domainLedger.size,
             replaying_node.domainLedger.root_hash
         ))
 
-        print('Final run of looper')
+        logger.debug('Final run of looper')
         looper.runFor(10)
 
 
