@@ -4,11 +4,9 @@ import os
 import shutil
 import tempfile
 
-from indy_common.test.conftest import _general_conf_tdir
-
 from indy_common.config_helper import NodeConfigHelper
-from plenum.recorder.src.replayer import patch_replaying_node_for_time, \
-    replay_patched_node, get_recorders_from_node_data_dir, \
+from indy_node.server.config_helper import create_config_dirs
+from plenum.recorder.src.replayer import get_recorders_from_node_data_dir, \
     prepare_node_for_replay_and_replay
 
 from stp_core.types import HA
@@ -64,7 +62,7 @@ def replay_node():
     replay_node_dir = tempfile.TemporaryDirectory().name
     print(replay_node_dir)
     # with tempfile.TemporaryDirectory() as replay_node_dir:
-    general_config_dir = _general_conf_tdir(replay_node_dir)
+    general_config_dir = create_config_dirs(replay_node_dir)
     config = getConfig(general_config_dir)
     update_loaded_config(config)
     pool_dir = os.path.join(replay_node_dir, pool_name)
