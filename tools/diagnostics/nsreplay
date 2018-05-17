@@ -28,7 +28,6 @@
 #    The above fix was taken from:
 #    https://www.anintegratedworld.com/mac-osx-fatal-error-opensslsha-h-file-not-found/
 
-
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
 from indy_node.server.config_helper import create_config_dirs
@@ -45,6 +44,7 @@ from plenum.server.replicas import Replicas
 from plenum.server.replica import Replica
 from storage.kv_store_rocksdb_int_keys import KeyValueStorageRocksdbIntKeys
 from storage.helper import initKeyValueStorageIntKeys
+from stp_core.common.log import getlogger, Logger
 from stp_core.loop.looper import Looper
 from stp_core.types import HA
 from typing import Tuple
@@ -319,6 +319,19 @@ class NodeStateReplayer():
 
         node_config_helper = NodeConfigHelper(node_name, config,
                                           chroot=replay_node_dir)
+
+        logFileName = os.path.join(node_config_helper.log_dir,
+                                   replaying_node_name + ".log")
+
+        logger = getlogger()
+        Logger().apply_config(config)
+        Logger().enableFileLogging(logFileName)
+
+        # logger.setLevel(config.logLevel)
+        logger.setLevel(0)
+        logger.debug('Replay goes to {}'.format(replay_node_dir))
+        logger.debug("You can find logs in {}".format(logFileName))
+
         with Looper(debug=config.LOOPER_DEBUG) as looper:
             replaying_node = replayable_node_class(node_name,
                                                    config_helper=node_config_helper,
