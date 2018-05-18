@@ -31,7 +31,7 @@ from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYP
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.constants import NYM, TRUST_ANCHOR
 from indy_common.constants import TXN_TYPE, TARGET_NYM, ROLE
-from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToGenesisFile
+from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnsToGenesisFile
 from indy_node.test.helper import makePendingTxnsRequest, buildStewardClient, \
     TestNode
 from indy_client.test.helper import addRole, genTestClient, TestClient, createNym, getClientAddedWithRole
@@ -39,7 +39,7 @@ from indy_client.test.helper import addRole, genTestClient, TestClient, createNy
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
-    tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
+    tdirWithDomainTxns as PTdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, patchPluginManager, tdirWithClientPoolTxns, \
@@ -166,18 +166,14 @@ def testClientClass():
 
 
 @pytest.fixture(scope="module")
-def tdirWithDomainTxnsUpdated(tdirWithDomainTxns, poolTxnTrusteeNames,
-                              trusteeData, tconf):
+def tdirWithDomainTxns(PTdirWithDomainTxns, poolTxnTrusteeNames,
+                       trusteeData, genesisTxns, domainTxnOrderedFields,
+                       tconf):
     addTrusteeTxnsToGenesis(poolTxnTrusteeNames, trusteeData,
-                            tdirWithDomainTxns, tconf.domainTransactionsFile)
-    return tdirWithDomainTxns
-
-
-@pytest.fixture(scope="module")
-def updatedDomainTxnFile(tdirWithDomainTxnsUpdated, genesisTxns,
-                         domainTxnOrderedFields, tconf):
-    addTxnToGenesisFile(tdirWithDomainTxnsUpdated, tconf.domainTransactionsFile,
-                        genesisTxns, domainTxnOrderedFields)
+                            PTdirWithDomainTxns, tconf.domainTransactionsFile)
+    addTxnsToGenesisFile(PTdirWithDomainTxns, tconf.domainTransactionsFile,
+                         genesisTxns, domainTxnOrderedFields)
+    return PTdirWithDomainTxns
 
 
 @pytest.fixture(scope='module')
@@ -186,7 +182,7 @@ def sdk_pool_handle(plenum_pool_handle, nodeSet):
 
 
 @pytest.fixture(scope="module")
-def nodeSet(tconf, updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet):
+def nodeSet(txnPoolNodeSet):
     return txnPoolNodeSet
 
 
