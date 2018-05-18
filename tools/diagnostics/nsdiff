@@ -11,45 +11,14 @@
 # 3. Both zip/tar files to be compared are on the filesystem where nsdiff is
 #    installed. In other words, nsdiff does not attempt to connect or collect
 #    state data from remote nodes.
-#
-# How to create the zip/tar file(s):
-# ----------------------------------
-#
-# TODO: use nscapture to create a tarfile
-# The following bash script is useful until it is ready:
-# #!/bin/bash -e
-# node="Node1"
-# pool="sandbox"
-# tmpdir=$(mktemp -d)
-# echo $tmpdir
-# sudo cp -rf /var/lib/indy/${pool}/* ${tmpdir}/
-# 
-# # Remove all but the node data we want
-# shopt -s extglob
-# sudo rm -rf ${tmpdir}/data/!(${node}*)
-# 
-# # Capture node logs
-# mkdir -p ${tmpdir}/log && sudo cp -rf /var/log/indy/${pool}/${node}* ${tmpdir}/log
-# 
-# # Capture configuration
-# mkdir -p ${tmpdir}/config && sudo cp -rf /etc/indy/* ${tmpdir}/config
-# 
-# # Capture additional useful information
-# mkdir -p ${tmpdir}/capture && pip3 freeze > ${tmpdir}/capture/pip3.freeze
-# mkdir -p ${tmpdir}/capture && python3 --version > ${tmpdir}/capture/python3.version
-# mkdir -p ${tmpdir}/capture && apt list --installed > ${tmpdir}/capture/apt.list.installed
-# 
-# # Chown tmpdir contents
-# chown -R ubuntu:ubuntu ${tmpdir}
-# 
-# # Tar up results pruning off the tmpdir from the path
-# tarfile_name=${node}.${pool}.$(date '+%Y%m%d%H%M%S').tar.gz 
-# sudo tar -zcvf ./${tarfile_name} -C ${tmpdir} .
-# sudo chown ubuntu:ubuntu ./${tarfile_name}
-# sudo rm -rf ${tmpdir}
+# 4. nscapture is/was used to capture state passed as state1 and state2
 #
 # Installation:
 # -------------
+#
+# If this script is used on a server or workstation that has indy-node installed
+# and indy-node is known to be working, you do not need to install anything.
+# Otherwise, the following information will be helpful.
 #
 # This script depends on leveldb/rocksdb python bindings which in turn rely on
 # the leveldb C runtime libs and headers. You must install leveldb/rocksdb
@@ -414,8 +383,6 @@ class NodeStateComparator():
                 continue
 
             if (is_leveldb_rocksdb_dir):
-                #if (filename == "config_merkleLeaves"):
-                #     import pdb; pdb.set_trace()
                 logger.debug("{} is a LevelDB/RocksDB directory!"
                     .format(dirName))
 

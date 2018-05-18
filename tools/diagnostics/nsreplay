@@ -15,9 +15,9 @@
 # Installation:
 # -------------
 #
-# This script should be runnable on any node that has indy-node installed and
-# known to start the indy-node service without error. Otherwise, you will need
-# to install indy-node an it's dependencies.
+# If this script is used on a server or workstation that has indy-node installed
+# and indy-node is known to be working, you do not need to install anything.
+# Otherwise, install indy-node and it's dependencies before running this script.
 #
 # TODO:
 # 
