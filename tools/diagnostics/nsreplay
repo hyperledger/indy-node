@@ -347,8 +347,6 @@ class NodeStateReplayer():
             logger.debug('Final run of looper')
             looper.runFor(10)
 
-        logger._clearHandler('file')
-
 
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module
