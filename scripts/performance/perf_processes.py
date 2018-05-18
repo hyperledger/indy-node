@@ -325,7 +325,6 @@ class LoadClient:
             else:
                 return
 
-        to_snd = None
         if 0 <= self._sent_in_batch < self._batch_size:
             to_snd = min(len(self._reqs), avail_sndrs, (self._batch_size - self._sent_in_batch))
             for i in range(0, to_snd):
