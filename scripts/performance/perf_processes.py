@@ -111,6 +111,9 @@ class ClientStatistic:
 
     def prepared(self, req_id):
         self._reqs.setdefault(req_id, dict())["client_prepared"] = time.time()
+
+    def signed(self, req_id):
+        self._reqs.setdefault(req_id, dict())["client_signed"] = time.time()
         self._req_prep += 1
 
     def sent(self, req_id, req):
@@ -248,19 +251,17 @@ class LoadClient:
             return
 
         shc_name = self.random_string(32)
+        schema_request = ""
 
         self._stat.preparing(shc_name)
         try:
-            (_, schema_json) = \
-                await anoncreds.issuer_create_schema(self._test_did, shc_name, "1.0",
-                                                     json.dumps(["name", "age", "sex", "height"]))
+            _, schema_json = await anoncreds.issuer_create_schema(
+                self._test_did, shc_name, "1.0", json.dumps(["name", "age", "sex", "height"]))
             schema_request = await ledger.build_schema_request(self._test_did, schema_json)
-            sig_req = await ledger.sign_request(self._wallet_handle, self._test_did, schema_request)
-            self._reqs.append((shc_name, sig_req))
             self._stat.prepared(shc_name)
         except Exception as e:
             self._stat.reply(shc_name, e)
-            print("{} prepare req error {}".format(self._name, e))
+        return (shc_name, schema_request)
 
     async def gen_signed_nym(self):
         # print("gen_signed_nym")
@@ -269,16 +270,31 @@ class LoadClient:
 
         raw = libnacl.randombytes(16)
         did = self.rawToFriendly(raw)
+        req = ""
 
         self._stat.preparing(did)
         try:
             req = await ledger.build_nym_request(self._test_did, did, None, None, None)
-            sig_req = await ledger.sign_request(self._wallet_handle, self._test_did, req)
-            self._reqs.append((did, sig_req))
             self._stat.prepared(did)
         except Exception as e:
             self._stat.reply(did, e)
-            print("{} prepare req error {}".format(self._name, e))
+        return (did, req)
+
+    async def gen_signed_req(self):
+        if self._closing is True:
+            return
+        try:
+            req_id, req = await self._req_generator()
+        except Exception as e:
+            print("{} generate req error {}".format(self._name, e))
+            return
+        try:
+            sig_req = await ledger.sign_request(self._wallet_handle, self._test_did, req)
+            self._stat.signed(req_id)
+            self._reqs.append((req_id, sig_req))
+        except Exception as e:
+            self._stat.reply(req_id, e)
+            print("{} sign req error {}".format(self._name, e))
 
     def watch_queues(self):
         if len(self._reqs) + len(self._gen_q) < self._batch_size:
@@ -305,7 +321,7 @@ class LoadClient:
 
         for i in range(0, min(avail_gens, self._batch_size)):
             try:
-                builder = self._loop.create_task(self._req_generator())
+                builder = self._loop.create_task(self.gen_signed_req())
                 builder.add_done_callback(self.check_batch_avail)
                 self._gen_q.append(builder)
             except Exception as e:
@@ -463,7 +479,7 @@ class TestRunner:
         for (r_id, r_data) in reqs:
             # ["id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
             status = r_data.get("status", "")
-            print(r_id, status, r_data.get("client_preparing", 0), r_data.get("client_prepared", 0),
+            print(r_id, status, r_data.get("client_preparing", 0), r_data.get("client_prepared", 0), r_data.get("client_signed", 0),
                   r_data.get("client_sent", 0), r_data.get("client_reply", 0), r_data.get("server_reply", 0),
                   file=self._total_f, sep=self._value_separator)
 
@@ -557,7 +573,7 @@ class TestRunner:
         print("id", "req", "resp", file=self._failed_f, sep=self._value_separator)
         print("id", "req", "resp", file=self._nacked_f, sep=self._value_separator)
         print("id", "req", "resp", file=self._succ_f, sep=self._value_separator)
-        print("id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply",
+        print("id", "status", "client_preparing", "client_prepared", "client_signed", "client_sent", "client_reply", "server_reply",
               file=self._total_f, sep=self._value_separator)
 
     def close_fs(self):
