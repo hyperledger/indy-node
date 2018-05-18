@@ -14,7 +14,7 @@ from plenum.test.node_catchup.helper import waitNodeDataEquality, ensure_all_nod
 from plenum.common.keygen_utils import init_bls_keys
 
 from indy.ledger import build_pool_upgrade_request
-from plenum.common.constants import DATA, VERSION
+from plenum.common.constants import DATA, VERSION, FORCE
 from plenum.common.txn_util import get_type, get_payload_data
 from plenum.common.types import f
 from plenum.common.util import randomString, hexToFriendly
