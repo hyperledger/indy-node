@@ -55,9 +55,9 @@ parser.add_argument('-s', '--seed',
                     type=check_seed, required=False, dest='seed')
 
 parser.add_argument('-k', '--kind',
-                    help='Kind of request kind to use. One of ["nym", "schema", "attribute", "claim", "rand"]'
+                    help='Kind of request kind to use. One of ["nym", "schema", "attrib", "claim", "rand"]'
                          'Default value is "nym"',
-                    default="nym", choices=['nym', 'schema', 'attribute', 'claim', 'rand'],
+                    default="nym", choices=['nym', 'schema', 'attrib', 'claim', 'rand'],
                     required=False, dest='req_kind')
 
 parser.add_argument('-n', '--num',
@@ -215,12 +215,14 @@ class LoadClient:
 
     def get_builder(self, req_kind):
         if req_kind == 'nym':
-            return self.gen_signed_nym
+            return self.gen_nym
         if req_kind == 'schema':
-            return self.gen_signed_schema
+            return self.gen_schema
         if req_kind == 'rand':
-            return self.gen_signed_nym
-        return self.gen_signed_nym
+            return self.gen_nym
+        if req_kind == 'attrib':
+            return self.gen_attrib
+        return self.gen_nym
 
     def read_cb(self):
         force_close = False
@@ -245,7 +247,24 @@ class LoadClient:
     def rawToFriendly(self, raw):
         return base58.b58encode(raw).decode("utf-8")
 
-    async def gen_signed_schema(self):
+    async def gen_attrib(self):
+        # print("gen_signed_nym")
+        if self._closing is True:
+            return
+
+        attr_name = self.random_string(32)
+        attr_request = ""
+
+        self._stat.preparing(attr_name)
+        try:
+            raw_attr = json.dumps({attr_name: attr_name})
+            attr_request = await ledger.build_attrib_request(self._test_did, self._test_did, None, raw_attr, None)
+            self._stat.prepared(attr_name)
+        except Exception as e:
+            self._stat.reply(attr_name, e)
+        return (attr_name, attr_request)
+
+    async def gen_schema(self):
         # print("gen_signed_nym")
         if self._closing is True:
             return
@@ -263,7 +282,7 @@ class LoadClient:
             self._stat.reply(shc_name, e)
         return (shc_name, schema_request)
 
-    async def gen_signed_nym(self):
+    async def gen_nym(self):
         # print("gen_signed_nym")
         if self._closing is True:
             return
