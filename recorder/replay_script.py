@@ -55,8 +55,8 @@ def update_loaded_config(config):
 
 
 def replay_node():
-    orig_node_dir = '/home/lovesh/Downloads/Node1.20180517151326/'
-    replaying_node_name = 'Node1'
+    orig_node_dir = '/home/lovesh/Downloads/Node3.20180517222134/'
+    replaying_node_name = 'Node3'
 
     pool_name = 'sandbox'
 
@@ -112,8 +112,8 @@ def replay_node():
                                replaying_node_name + ".log")
 
     logger = getlogger()
-    Logger().apply_config(config)
-    Logger().enableFileLogging(logFileName)
+    # Logger().apply_config(config)
+    # Logger().enableFileLogging(logFileName)
 
     # logger.setLevel(config.logLevel)
     logger.setLevel(0)

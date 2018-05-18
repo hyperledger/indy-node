@@ -31,7 +31,7 @@ def node_config_helper_class():
 
 
 def _general_conf_tdir(tmp_dir):
-    create_config_dirs(tmp_dir)
+    return create_config_dirs(tmp_dir)
 
 
 @pytest.fixture(scope='module')
