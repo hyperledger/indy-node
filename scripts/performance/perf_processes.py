@@ -282,9 +282,12 @@ class LoadClient:
             return
 
         for i in range(0, min(avail_gens, self._batch_size)):
-            builder = self._loop.create_task(self._req_generator())
-            builder.add_done_callback(self.check_batch_avail)
-            self._gen_q.append(builder)
+            try:
+                builder = self._loop.create_task(self._req_generator())
+                builder.add_done_callback(self.check_batch_avail)
+                self._gen_q.append(builder)
+            except Exception as e:
+                print("{} generate req error {}".format(self._name, e))
 
     async def submit_req_update(self, req_id, req):
         self._stat.sent(req_id, req)
@@ -349,21 +352,27 @@ class LoadClient:
             await asyncio.gather(*self._send_q, return_exceptions=True)
 
         try:
-            await wallet.close_wallet(self._wallet_handle)
+            if self._wallet_handle is not None:
+                await wallet.close_wallet(self._wallet_handle)
         except Exception as e:
             print("{} close_wallet exception: {}".format(self._name, e))
         try:
-            await pool.close_pool_ledger(self._pool_handle)
+            if self._pool_handle is not None:
+                await pool.close_pool_ledger(self._pool_handle)
         except Exception as e:
             print("{} close_pool_ledger exception: {}".format(self._name, e))
 
-        dirs_to_dlt = [os.path.join(os.path.expanduser("~/.indy_client/wallet"), self._wallet_name),
-                       os.path.join(os.path.expanduser("~/.indy_client/pool"), self._pool_name)]
+        self._loop.call_soon_threadsafe(self._loop.stop)
+
+        dirs_to_dlt = []
+        if self._wallet_name is not None and self._wallet_name != "":
+            dirs_to_dlt.append(os.path.join(os.path.expanduser("~/.indy_client/wallet"), self._wallet_name))
+        if self._pool_name is not None and self._pool_name != "":
+            dirs_to_dlt.append(os.path.join(os.path.expanduser("~/.indy_client/pool"), self._pool_name))
+
         for d in dirs_to_dlt:
             if os.path.isdir(d):
                 shutil.rmtree(d, ignore_errors=True)
-
-        self._loop.stop()
 
 
 def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, req_kind, bg_tasks, refresh):
@@ -373,6 +382,7 @@ def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, r
         cln._loop.run_forever()
     except Exception as e:
         print("{} running error {}".format(cln._name, e))
+    # cln._loop.close()
     stat = cln._stat.dump_stat(dump_all=True)
     return stat
 
@@ -444,7 +454,7 @@ class TestRunner:
             else:
                 print(r_id, r_data.get("req", ""), r_data.get("resp", ""), file=self._failed_f, sep=self._value_separator)
 
-    def sig_handler(self, sig, name):
+    def sig_handler(self, sig):
         for prc, cln in self._clients.items():
             try:
                 if not cln.is_finished():
@@ -561,8 +571,8 @@ class TestRunner:
 
         self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")))
 
-        signal.signal(signal.SIGTERM, self.sig_handler)
-        signal.signal(signal.SIGINT, self.sig_handler)
+        self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
+        self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
 
         executor = concurrent.futures.ProcessPoolExecutor(proc_count)
         for i in range(0, proc_count):
@@ -575,8 +585,14 @@ class TestRunner:
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd)
 
+        print("Started", proc_count, "processes")
+
         self._loop.run_forever()
 
+        self._loop.remove_signal_handler(signal.SIGTERM)
+        self._loop.remove_signal_handler(signal.SIGINT)
+
+        print("")
         print("DONE")
         print(self.get_refresh_str())
         self.close_fs()
