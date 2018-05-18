@@ -9,6 +9,8 @@ import time
 from collections import namedtuple
 import tempfile
 import subprocess
+import atexit
+import shutil
 
 from io import StringIO
 
@@ -17,6 +19,13 @@ from plenum.server.general_config import ubuntu_platform_config
 logger = logging.getLogger()
 
 ArchiveEntry = namedtuple('archive_entry', ['abs_fs_path', 'archive_path', 'include'])
+
+ENV_COLLECTION_CMD = [
+    ("python_version", ['python3', '-V']),
+    ("pip_freeze", ['pip3', 'freeze']),
+    ("app_install", ['apt', 'list', '--installed']),
+    ("validator_info", ['validator-info', '-v']),
+]
 
 
 # ***************
@@ -131,23 +140,12 @@ def _run_env_capture_cmd(output_file, cmd, entry):
 def collect_env(args):
     logger.info("Collecting Env Files")
     d = tempfile.mkdtemp()
+    TEMP_DIRS.append(d)
     rtn = ArchiveEntry(d, '/capture', [])
-
-    _run_env_capture_cmd(os.path.join(d, "python_version"),
-                         ['python3', '-V'],
-                         rtn)
-
-    _run_env_capture_cmd(os.path.join(d, "pip_freeze"),
-                         ['pip3', 'freeze'],
-                         rtn)
-
-    _run_env_capture_cmd(os.path.join(d, "app_install"),
-                         ['apt', 'list', '--installed'],
-                         rtn)
-
-    _run_env_capture_cmd(os.path.join(d, "validator_info"),
-                         ['validator-info', '-v'],
-                         rtn)
+    for filename, cmd in ENV_COLLECTION_CMD:
+        _run_env_capture_cmd(os.path.join(d, filename),
+                             cmd,
+                             rtn)
     logger.info("Collected %s files to captured", str(len(rtn.include)))
     return rtn
 
@@ -204,6 +202,19 @@ def collect_data(args):
     return rtn
 
 
+def collect_plugins(args):
+    d = indy_app_dir(args)
+    d = os.path.join(d, 'plugins')
+
+    def file_filter(f):
+        return True
+
+    logger.info("Collecting Plugins Files")
+    rtn = _collect_files('plugin data', d, '/plugins', file_filter, recursive=True)
+    logger.info("Collected %s files to captured", str(len(rtn.include)))
+    return rtn
+
+
 def collect_capture_files(args):
     rtn = []
     logger.info("Collecting file to be captured")
@@ -211,6 +222,7 @@ def collect_capture_files(args):
     rtn.append(collect_logs(args))
     rtn.append(collect_config(args))
     rtn.append(collect_data(args))
+    rtn.append(collect_plugins(args))
     logger.info("Collection complete")
     return rtn
 
@@ -294,6 +306,10 @@ def find_node_name(args):
         raise
 
     for pool in pool_dirs:
+        # ignore plugins dir - it is not a pool directory
+        if "plugins" == pool:
+            continue
+
         nodes.extend(find_nodes_in_pool_dir(pool))
 
     if args.node_name is None:
@@ -319,6 +335,17 @@ def find_node_name(args):
     logger.info("Capturing Node '%s' for pool '%s'", args.node_name, args.pool_name)
 
 
+TEMP_DIRS = []
+
+
+# Clean up anything that is created by this script (excluding the output file)
+def clean_up():
+    while TEMP_DIRS:
+        shutil.rmtree(TEMP_DIRS.pop())
+
+    # raise Exception("TEST")
+
+
 # ***************
 # *  Init Details
 # ***************
@@ -334,6 +361,8 @@ def init(args):
     logger.setLevel(args.log_level)
     logger.debug("args: %s", args)
     find_node_name(args)
+
+    atexit.register(clean_up)
 
 
 def build_archive_cmd(output_file, files):
@@ -402,8 +431,19 @@ def main(args):
         init(args)
     except:
         logger.error('Unable to initialize script')
-    files = collect_capture_files(args)
-    do_capture(args, files)
+        raise
+
+    try:
+        files = collect_capture_files(args)
+    except:
+        logger.error('Unable to collect the files for this capture')
+        raise
+
+    try:
+        do_capture(args, files)
+    except:
+        logger.error('Unable to build capture archive')
+        raise
 
 
 # ***************
@@ -415,8 +455,6 @@ def test():
 
 try:
     import unittest
-
-    import shutil
 
     def test():
         unittest.main(argv=['capture_test'])
@@ -434,14 +472,17 @@ try:
             sys.stderr = StringIO()
             logger.setLevel(sys.maxsize)
 
-        @staticmethod
-        def create_sample_dir(node_names=[], pool_name='sandbox'):
-            d = tempfile.TemporaryDirectory()
-            args = argparse.Namespace()
-            args.root_dir = d.name
+        @classmethod
+        def tearDownClass(cls):
+            clean_up()
 
-            if len(node_names) == 0:
-                node_names.append("Node1")
+        @staticmethod
+        def create_sample_dir(node_names=None, pool_name='sandbox'):
+            d = tempfile.TemporaryDirectory()
+            args = argparse.Namespace(root_dir=d.name)
+
+            if not node_names:
+                node_names = ["Node1"]
 
             for name in node_names:
                 app_dir = indy_app_dir(args)
