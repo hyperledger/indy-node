@@ -12,6 +12,7 @@ import signal
 import functools
 import base58
 import libnacl
+import random
 
 from indy import pool, wallet, did, ledger, anoncreds
 
@@ -55,9 +56,9 @@ parser.add_argument('-s', '--seed',
                     type=check_seed, required=False, dest='seed')
 
 parser.add_argument('-k', '--kind',
-                    help='Kind of request kind to use. One of ["nym", "schema", "attrib", "claim", "rand"]'
+                    help='Kind of request kind to use. One of ["nym", "schema", "attrib", "rand"]'
                          'Default value is "nym"',
-                    default="nym", choices=['nym', 'schema', 'attrib', 'claim', 'rand'],
+                    default="nym", choices=['nym', 'schema', 'attrib', 'rand'],
                     required=False, dest='req_kind')
 
 parser.add_argument('-n', '--num',
@@ -201,6 +202,7 @@ class LoadClient:
         assert self._req_generator is not None
         self._bg_send_last = 0
         self._sent_in_batch = None
+        random.seed()
 
     async def run_test(self, genesis_path, seed):
         pool_cfg = json.dumps({"genesis_txn": genesis_path})
@@ -219,7 +221,7 @@ class LoadClient:
         if req_kind == 'schema':
             return self.gen_schema
         if req_kind == 'rand':
-            return self.gen_nym
+            return self.gen_random
         if req_kind == 'attrib':
             return self.gen_attrib
         return self.gen_nym
@@ -246,6 +248,11 @@ class LoadClient:
     # Copied from Plenum
     def rawToFriendly(self, raw):
         return base58.b58encode(raw).decode("utf-8")
+
+    async def gen_random(self):
+        reqs = [self.gen_attrib, self.gen_nym, self.gen_schema]
+        idx = random.randint(0, 1000) % len(reqs)
+        return await reqs[idx]()
 
     async def gen_attrib(self):
         # print("gen_signed_nym")
