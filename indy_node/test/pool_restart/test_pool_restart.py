@@ -42,6 +42,7 @@ def test_pool_restart(
     req_json, resp = sdk_get_reply(looper, req, 100)
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
+        assert resp[f.RESULT.nm][DATETIME] == str(datetime.isoformat(start_at))
     _stopServer(server)
     _comparison_reply(resp, req_obj)
 
@@ -68,13 +69,14 @@ def test_pool_restart_cancel(
                                        sdk_pool_handle,
                                        sdk_wallet_trustee,
                                        req_obj)
+    sdk_get_reply(looper, req, 100)
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
         cancel_at = start_at+timedelta(seconds=1000)
     op = {
         TXN_TYPE: POOL_RESTART,
         ACTION: CANCEL,
-        DATETIME: str(datetime.isoformat(cancel_at))
+        DATETIME: ""
     }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
     req = sdk_sign_and_submit_req_obj(looper,
@@ -86,7 +88,6 @@ def test_pool_restart_cancel(
         assert node.restarter.lastActionEventInfo[0] == RestartLog.CANCELLED
     _stopServer(server)
     _comparison_reply(resp, req_obj)
-    assert resp[f.RESULT.nm][DATETIME] == str(datetime.isoformat(cancel_at))
 
 
 def test_pool_restart_now_without_datetime(
@@ -131,22 +132,6 @@ def pool_restart_now(op,
     _stopServer(server)
     if is_reply_received:
         _comparison_reply(resp, req_obj)
-
-
-def test_fail_pool_restart(
-        sdk_pool_handle, sdk_wallet_steward, looper):
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-    }
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_steward[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                      sdk_pool_handle,
-                                      sdk_wallet_steward,
-                                      req_obj)
-    with pytest.raises(RequestRejectedException) as excinfo:
-        sdk_get_and_check_replies(looper, [req], 100)
-    assert excinfo.match("STEWARD cannot do restart")
 
 
 def test_pool_restarts_one_by_one(
