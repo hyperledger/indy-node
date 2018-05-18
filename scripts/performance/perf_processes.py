@@ -13,7 +13,7 @@ import functools
 import base58
 import libnacl
 
-from indy import pool, wallet, did, ledger
+from indy import pool, wallet, did, ledger, anoncreds
 
 
 parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK.')
@@ -213,6 +213,8 @@ class LoadClient:
     def get_builder(self, req_kind):
         if req_kind == 'nym':
             return self.gen_signed_nym
+        if req_kind == 'schema':
+            return self.gen_signed_schema
         if req_kind == 'rand':
             return self.gen_signed_nym
         return self.gen_signed_nym
@@ -239,6 +241,26 @@ class LoadClient:
     # Copied from Plenum
     def rawToFriendly(self, raw):
         return base58.b58encode(raw).decode("utf-8")
+
+    async def gen_signed_schema(self):
+        # print("gen_signed_nym")
+        if self._closing is True:
+            return
+
+        shc_name = self.random_string(32)
+
+        self._stat.preparing(shc_name)
+        try:
+            (_, schema_json) = \
+                await anoncreds.issuer_create_schema(self._test_did, shc_name, "1.0",
+                                                     json.dumps(["name", "age", "sex", "height"]))
+            schema_request = await ledger.build_schema_request(self._test_did, schema_json)
+            sig_req = await ledger.sign_request(self._wallet_handle, self._test_did, schema_request)
+            self._reqs.append((shc_name, sig_req))
+            self._stat.prepared(shc_name)
+        except Exception as e:
+            self._stat.reply(shc_name, e)
+            print("{} prepare req error {}".format(self._name, e))
 
     async def gen_signed_nym(self):
         # print("gen_signed_nym")
