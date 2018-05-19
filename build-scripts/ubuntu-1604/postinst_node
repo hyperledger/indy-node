@@ -178,6 +178,7 @@ TEST_MODE=
 HOLD_EXT=
 EOF
 fi
+sed -ie '/HOLD_EXT/{ s/\\//g}' $GENERAL_CONFIG_DIR/node_control.conf
 
 mv /usr/local/bin/upgrade_indy_node_ubuntu1604.sh /usr/local/bin/upgrade_indy_node
 mv /usr/local/bin/upgrade_indy_node_ubuntu1604_test.sh /usr/local/bin/upgrade_indy_node_test
