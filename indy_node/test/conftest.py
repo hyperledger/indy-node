@@ -17,7 +17,7 @@ strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
 from indy_client.test.conftest import trustAnchorWallet, \
-    trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, \
+    trustAnchor, tdirWithDomainTxns, \
     stewardWallet, steward, genesisTxns, testClientClass, client_ledger_dir, \
     addedTrustAnchor, userWalletB, nodeSet, testNodeClass, updatedPoolTxnData, \
     trusteeData, trusteeWallet, trustee, warnfilters as client_warnfilters
@@ -25,7 +25,8 @@ from indy_client.test.conftest import trustAnchorWallet, \
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
-    tdirWithPoolTxns, tdirWithDomainTxns, tdirWithClientPoolTxns, txnPoolNodeSet, \
+    tdirWithPoolTxns, tdirWithDomainTxns as PTdirWithDomainTxns, \
+    tdirWithClientPoolTxns, txnPoolNodeSet, \
     poolTxnData, dirName, poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     patchPluginManager, txnPoolNodesLooper, warncheck, \
