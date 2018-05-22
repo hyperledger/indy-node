@@ -3,7 +3,7 @@ import copy
 from indy_common.constants import CRED_DEF_ID, ID, REVOC_TYPE, TAG, GET_REVOC_REG_DEF, \
     TXN_TYPE, TIMESTAMP, REVOC_REG_DEF_ID, VALUE, FROM, TO, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM
-from plenum.common.constants import TXN_TIME, STATE_PROOF
+from plenum.common.constants import TXN_TIME, STATE_PROOF, TXN_METADATA
 from indy_common.state import domain
 from plenum.common.util import randomString
 from indy_node.test.anon_creds.helper import check_valid_proof
@@ -30,10 +30,11 @@ def test_state_proof_returned_for_get_revoc_reg_def(looper,
     get_revoc_reg_def_req = sdk_sign_request_from_dict(looper,
                                                        sdk_wallet_steward,
                                                        get_revoc_reg_def_req)
-    _, reply = sdk_send_and_check([json.dumps(get_revoc_reg_def_req)],
+    sdk_reply = sdk_send_and_check([json.dumps(get_revoc_reg_def_req)],
                                  looper,
                                  txnPoolNodeSet,
-                                 sdk_pool_handle)[0]
+                                 sdk_pool_handle)
+    reply = sdk_reply[0][1]
     check_valid_proof(reply)
 
 
@@ -87,10 +88,11 @@ def test_state_proof_returned_for_get_revoc_reg_delta(looper,
         sdk_pool_handle)[0]
     reg_delta_req = copy.deepcopy(build_get_revoc_reg_delta)
     reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req1['operation'][REVOC_REG_DEF_ID]
-    reg_delta_req['operation'][FROM] = rev_reg_reply1['result'][TXN_TIME]
-    reg_delta_req['operation'][TO] = rev_reg_reply3['result'][TXN_TIME] + 1000
-    get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
-    check_valid_proof(get_reply)
+    reg_delta_req['operation'][FROM] = rev_reg_reply1['result'][TXN_METADATA][TXN_TIME]
+    reg_delta_req['operation'][TO] = rev_reg_reply3['result'][TXN_METADATA][TXN_TIME] + 1000
+    sdk_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+    reply = sdk_reply[0][1]
+    check_valid_proof(reply)
 
 
 def test_state_proof_returned_for_get_revoc_reg_delta_with_only_to(
@@ -105,8 +107,9 @@ def test_state_proof_returned_for_get_revoc_reg_delta_with_only_to(
     del reg_delta_req['operation'][FROM]
     reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req['operation'][REVOC_REG_DEF_ID]
     reg_delta_req['operation'][TO] = get_utc_epoch() + 1000
-    get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
-    check_valid_proof(get_reply)
+    sdk_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+    reply = sdk_reply[0][1]
+    check_valid_proof(reply)
 
 
 def test_state_proof_returned_for_delta_with_None_reply(
@@ -121,8 +124,9 @@ def test_state_proof_returned_for_delta_with_None_reply(
     del reg_delta_req['operation'][FROM]
     reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req['operation'][REVOC_REG_DEF_ID]
     reg_delta_req['operation'][TO] = get_utc_epoch() - 1000
-    get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
-    assert STATE_PROOF not in get_reply['result']
+    sdk_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+    reply = sdk_reply[0][1]
+    assert STATE_PROOF not in reply['result']
 
 
 def test_state_proof_returned_for_delta_with_from_earlier(
@@ -137,5 +141,6 @@ def test_state_proof_returned_for_delta_with_from_earlier(
     reg_delta_req['operation'][FROM] = get_utc_epoch() - 1000
     reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req['operation'][REVOC_REG_DEF_ID]
     reg_delta_req['operation'][TO] = get_utc_epoch() + 1000
-    get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
-    check_valid_proof(get_reply)
+    sdk_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+    reply = sdk_reply[0][1]
+    check_valid_proof(reply)

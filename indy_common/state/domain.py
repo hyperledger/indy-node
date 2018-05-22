@@ -194,6 +194,57 @@ def prepare_get_claim_def_for_state(reply):
     return path, value_bytes
 
 
+def prepare_get_revoc_def_for_state(reply):
+    author_did = reply.get(f.IDENTIFIER.nm)
+    cred_def_id = reply.get(DATA).get(CRED_DEF_ID)
+    revoc_def_type = reply.get(DATA).get(REVOC_TYPE)
+    revoc_def_tag = reply.get(DATA).get(TAG)
+    assert author_did
+    assert cred_def_id
+    assert revoc_def_type
+    assert revoc_def_tag
+    path = make_state_path_for_revoc_def(author_did,
+                                         cred_def_id,
+                                         revoc_def_type,
+                                         revoc_def_tag)
+    seq_no = reply[f.SEQ_NO.nm]
+    txn_time = reply[TXN_TIME]
+    assert seq_no
+    assert txn_time
+    value_bytes = encode_state_value(reply[DATA], seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_get_revoc_reg_entry_for_state(reply):
+    author_did = reply.get(f.IDENTIFIER.nm)
+    revoc_reg_def_id = reply.get(DATA).get(REVOC_REG_DEF_ID)
+    assert author_did
+    assert revoc_reg_def_id
+    path = make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
+
+    seq_no = reply[f.SEQ_NO.nm]
+    txn_time = reply[TXN_TIME]
+    assert seq_no
+    assert txn_time
+    value_bytes = encode_state_value(reply[DATA], seq_no, txn_time)
+    return path, value_bytes
+
+
+def prepare_get_revoc_reg_entry_accum_for_state(reply):
+    author_did = reply.get(f.IDENTIFIER.nm)
+    revoc_reg_def_id = reply.get(DATA).get(REVOC_REG_DEF_ID)
+    seq_no = reply[f.SEQ_NO.nm]
+    txn_time = reply[TXN_TIME]
+    assert author_did
+    assert revoc_reg_def_id
+    assert seq_no
+    assert txn_time
+    path = make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
+
+    value_bytes = encode_state_value(reply[DATA], seq_no, txn_time)
+    return path, value_bytes
+
+
 def prepare_schema_for_state(txn):
     origin = get_from(txn)
     txn_data = get_payload_data(txn)

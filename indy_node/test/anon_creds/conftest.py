@@ -13,7 +13,6 @@ from indy_common.state import domain
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.types import f, OPERATION
-from plenum.common.constants import TXN_TIME
 from plenum.test.helper import create_new_test_node
 
 
@@ -137,9 +136,9 @@ def build_txn_for_revoc_def_entry_by_demand(looper,
     revoc_def_req = add_revoc_def_by_demand
     path = ":".join([revoc_def_req[f.IDENTIFIER.nm],
                      domain.MARKER_REVOC_DEF,
-                     revoc_def_req[CRED_DEF_ID],
-                     revoc_def_req[REVOC_TYPE],
-                     revoc_def_req[TAG]])
+                     revoc_def_req[OPERATION][CRED_DEF_ID],
+                     revoc_def_req[OPERATION][REVOC_TYPE],
+                     revoc_def_req[OPERATION][TAG]])
     data = {
         REVOC_REG_DEF_ID: path,
         TXN_TYPE: REVOC_REG_ENTRY,

@@ -4,7 +4,7 @@ from plenum.common.util import get_utc_epoch
 from plenum.test.helper import sdk_send_and_check, sdk_sign_request_from_dict
 from indy_common.constants import REVOC_REG_DEF_ID, VALUE, FROM, TO, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, STATE_PROOF_FROM, ACCUM_TO, ACCUM_FROM, REVOC_TYPE
-from plenum.common.constants import TXN_TIME, DATA
+from plenum.common.constants import TXN_TIME, DATA, TXN_METADATA, TXN_PAYLOAD
 from plenum.common.types import f
 from plenum.common.util import randomString
 
@@ -82,11 +82,12 @@ def test_send_with_from_by_demand(looper,
         sdk_pool_handle)[0]
     reg_delta_req = copy.deepcopy(build_get_revoc_reg_delta)
     reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req1['operation'][REVOC_REG_DEF_ID]
-    reg_delta_req['operation'][FROM] = rev_reg_reply1['result'][TXN_TIME]
-    reg_delta_req['operation'][TO] = rev_reg_reply3['result'][TXN_TIME] + 1000
+    reg_delta_req['operation'][FROM] = rev_reg_reply1['result'][TXN_METADATA][TXN_TIME]
+    reg_delta_req['operation'][TO] = rev_reg_reply3['result'][TXN_METADATA][TXN_TIME] + 1000
     get_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0][1]
     assert get_reply['result'][DATA][STATE_PROOF_FROM]
     assert get_reply['result'][DATA][VALUE][REVOKED] == [1, 2, 3]
     assert get_reply['result'][DATA][VALUE][ISSUED] == [10, 11]
     assert get_reply['result'][DATA][VALUE][ACCUM_TO][VALUE][ACCUM] == rev_reg_req3['operation'][VALUE][ACCUM]
-    assert get_reply['result'][DATA][VALUE][ACCUM_FROM][VALUE][ACCUM] == rev_reg_reply1['result'][VALUE][ACCUM]
+    assert get_reply['result'][DATA][VALUE][ACCUM_FROM][VALUE][ACCUM] == \
+           rev_reg_reply1['result'][TXN_PAYLOAD][DATA][VALUE][ACCUM]

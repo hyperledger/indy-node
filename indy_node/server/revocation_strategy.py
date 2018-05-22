@@ -1,10 +1,12 @@
 from abc import abstractmethod, ABCMeta
+
+from copy import deepcopy
+
 from indy_common.state import domain
 from indy_common.types import Request
 from indy_common.constants import REVOC_REG_DEF_ID, VALUE, ACCUM, PREV_ACCUM, ISSUED, REVOKED
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.txn_util import get_from, get_req_id, get_payload_data
-from plenum.common.types import f
 
 
 class RevocationStrategy(metaclass=ABCMeta):
@@ -122,6 +124,7 @@ class RevokedStrategy(RevocationStrategy):
                                                                      indices))
 
     def write(self, current_reg_entry, txn):
+        txn = deepcopy(txn)
         txn_data = get_payload_data(txn)
         self.set_parameters_from_txn(author_did=get_from(txn),
                                      revoc_reg_def_id=txn_data.get(REVOC_REG_DEF_ID),
@@ -141,6 +144,7 @@ class RevokedStrategy(RevocationStrategy):
             txn_data[VALUE] = value_from_txn
         # contains already changed txn
         self.set_to_state(txn)
+        del txn
 
     @staticmethod
     def get_delta(to_dict, from_dict=None):
@@ -179,6 +183,7 @@ class IssuedStrategy(RevocationStrategy):
                                                                      indices))
 
     def write(self, current_reg_entry, txn):
+        txn = deepcopy(txn)
         txn_data = get_payload_data(txn)
         self.set_parameters_from_txn(author_did=get_from(txn),
                                      revoc_reg_def_id=txn_data.get(REVOC_REG_DEF_ID),
@@ -198,6 +203,7 @@ class IssuedStrategy(RevocationStrategy):
             txn_data[VALUE] = value_from_txn
         # contains already changed txn
         self.set_to_state(txn)
+        del txn
 
     @staticmethod
     def get_delta(to_dict, from_dict=None):
