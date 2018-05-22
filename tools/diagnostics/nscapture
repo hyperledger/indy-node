@@ -509,8 +509,8 @@ try:
     class TestCapture(unittest.TestCase):
         @classmethod
         def setUpClass(cls):
-            # sys.stderr = StringIO()
-            # logger.setLevel(sys.maxsize)
+            sys.stderr = StringIO()
+            logger.setLevel(sys.maxsize)
             pass
 
         @classmethod
