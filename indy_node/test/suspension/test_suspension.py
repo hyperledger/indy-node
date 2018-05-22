@@ -1,30 +1,25 @@
 import pytest
 
-from plenum.common.signer_did import DidSigner
-from indy_node.test.suspension.helper import sendChangeVerkey, checkIdentityRequestFailed, \
-    checkIdentityRequestSucceed, sendSuspendRole, changeVerkey, suspendRole
+from plenum.common.exceptions import RequestRejectedException
+from indy_node.test.suspension.helper import sdk_suspend_role
+from plenum.common.util import randomString
+from plenum.test.pool_transactions.helper import demote_node, sdk_add_new_nym
 from stp_core.loop.eventually import eventually
 from stp_core.common.log import getlogger
-from plenum.common.constants import TRUSTEE, STEWARD
-from plenum.common.util import randomString, hexToFriendly
-from plenum.test.pool_transactions.helper import suspendNode
+from plenum.common.constants import STEWARD_STRING, TRUSTEE_STRING
 from plenum.test.pool_transactions.test_suspend_node import \
     checkNodeNotInNodeReg
 from indy_client.test.helper import addRole, \
     getClientAddedWithRole
-from indy_common.constants import TGB, TRUST_ANCHOR
-
-whitelist = ['Observer threw an exception', 'while verifying message']
-
+from indy_common.constants import TGB, TRUST_ANCHOR_STRING
 
 logger = getlogger()
 
 
 @pytest.fixture(scope="module")
-def anotherTrustee(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
-                                  trustee, trusteeWallet, 'newTrustee',
-                                  role=TRUSTEE)
+def another_trustee(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
+    return sdk_add_new_nym(looper, sdk_pool_handle,
+                           sdk_wallet_trustee, 'newTrustee', TRUSTEE_STRING)
 
 
 @pytest.fixture(scope="module")
@@ -34,121 +29,84 @@ def anotherTGB(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
 
 
 @pytest.fixture(scope="module")
-def anotherSteward(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
-                                  trustee, trusteeWallet, 'newSteward',
-                                  role=STEWARD)
+def another_steward(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
+    return sdk_add_new_nym(looper, sdk_pool_handle,
+                           sdk_wallet_trustee, 'newSteward', STEWARD_STRING)
 
 
 @pytest.fixture(scope="module")
-def anotherSteward1(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
-                                  trustee, trusteeWallet, 'newSteward1',
-                                  role=STEWARD)
+def another_steward1(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
+    return sdk_add_new_nym(looper, sdk_pool_handle,
+                           sdk_wallet_trustee, 'newSteward1', STEWARD_STRING)
 
 
 @pytest.fixture(scope="module")
-def anotherTrustAnchor(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
-                                  trustee, trusteeWallet, 'newTrustAnchor',
-                                  role=TRUST_ANCHOR)
+def another_trust_anchor(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
+    return sdk_add_new_nym(looper, sdk_pool_handle,
+                           sdk_wallet_trustee, 'newTrustAnchor', TRUST_ANCHOR_STRING)
 
 
 @pytest.fixture(scope="module")
-def anotherTrustAnchor1(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
-                                  trustee, trusteeWallet, 'newTrustAnchor1',
-                                  role=TRUST_ANCHOR)
+def another_trust_anchor1(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
+    return sdk_add_new_nym(looper, sdk_pool_handle,
+                           sdk_wallet_trustee, 'newTrustAnchor1', TRUST_ANCHOR_STRING)
 
 
-def testTrusteeAddingAnotherTrustee(anotherTrustee):
+def testTrusteeAddingAnotherTrustee(another_trustee):
     pass
 
 
+# TODO: remove when delete TGB
 def testTrusteeAddingTGB(looper, anotherTGB):
     # The new TGB adds a NYM
     addRole(looper, *anotherTGB, name=randomString())
 
 
-def testTrusteeAddingSteward(looper, anotherSteward):
+def testTrusteeAddingSteward(looper, sdk_pool_handle, another_steward):
     # The new Steward adds a TRUST_ANCHOR
-    addRole(looper, *anotherSteward, name=randomString(), role=TRUST_ANCHOR)
+    sdk_add_new_nym(looper, sdk_pool_handle, another_steward, role=TRUST_ANCHOR_STRING)
 
 
-def testTrusteeAddingTrustAnchor(looper, anotherTrustAnchor):
+def testTrusteeAddingTrustAnchor(looper, sdk_pool_handle, another_trust_anchor):
     # The new TTrustAnchor adds a NYM
-    addRole(looper, *anotherTrustAnchor, name=randomString())
+    sdk_add_new_nym(looper, sdk_pool_handle, another_trust_anchor)
 
 
-def testTGBSuspensionByTrustee(looper, anotherTrustee, anotherTGB):
-    trClient, trWallet = anotherTrustee
-    _, tgbWallet = anotherTGB
-    suspendRole(looper, trClient, trWallet, tgbWallet.defaultId)
-    with pytest.raises(AssertionError):
-        addRole(looper, *anotherTGB, name=randomString())
-
-
-def testStewardSuspensionByTrustee(looper, anotherTrustee, anotherSteward):
-    trClient, trWallet = anotherTrustee
-    _, stWallet = anotherSteward
-    suspendRole(looper, trClient, trWallet, stWallet.defaultId)
-    with pytest.raises(AssertionError):
-        addRole(looper, *anotherSteward,
-                name=randomString(), role=TRUST_ANCHOR)
+def testStewardSuspensionByTrustee(looper, sdk_pool_handle,
+                                   another_trustee, another_steward):
+    _, did_stew = another_steward
+    sdk_suspend_role(looper, sdk_pool_handle, another_trustee, did_stew)
+    with pytest.raises(RequestRejectedException):
+        sdk_add_new_nym(looper, sdk_pool_handle,
+                        another_steward, role=TRUST_ANCHOR_STRING)
 
 
 def testTrustAnchorSuspensionByTrustee(
-        looper, anotherTrustee, anotherTrustAnchor):
-    trClient, trWallet = anotherTrustee
-    _, spWallet = anotherTrustAnchor
-    suspendRole(looper, trClient, trWallet, spWallet.defaultId)
-    with pytest.raises(AssertionError):
-        addRole(looper, *anotherTrustAnchor, name=randomString())
+        looper, sdk_pool_handle, another_trustee, another_trust_anchor):
+    _, did_ta = another_trust_anchor
+    sdk_suspend_role(looper, sdk_pool_handle, another_trustee, did_ta)
+    with pytest.raises(RequestRejectedException):
+        sdk_add_new_nym(looper, sdk_pool_handle,
+                        another_trust_anchor, alias=randomString())
 
 
-def testTrusteeSuspensionByTrustee(looper, trustee, trusteeWallet,
-                                   anotherTrustee, anotherSteward1):
+def testTrusteeSuspensionByTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,
+                                   another_trustee, another_steward1):
     # trustee suspension by trustee is succeed
-    trClient, trWallet = anotherTrustee
-    suspendRole(looper, trustee, trusteeWallet, trWallet.defaultId)
+    _, did = another_trustee
+    sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
 
     # trustee suspension by steward1 is failed
-    _, sWallet = anotherSteward1
-    suspendRole(looper, trClient, trWallet, sWallet.defaultId,
-                nAckReasonContains='is neither Trustee nor owner of')
-
-
-def testTrusteeCannotChangeVerkey(trustee, trusteeWallet, looper, nodeSet,
-                                  anotherTrustee, anotherTGB, anotherSteward,
-                                  anotherTrustAnchor):
-    for identity in (anotherTrustee, anotherTGB, anotherSteward,
-                     anotherTrustAnchor):
-        # Trustee cannot change verkey
-        _, wallet = identity
-        signer = DidSigner()
-        changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId,
-                     signer.verkey,
-                     nAckReasonContains='TRUSTEE cannot update verkey')
-        # Identity owner can change verkey
-        changeVerkey(looper, *identity, wallet.defaultId, signer.verkey)
-
-
-def testTrustAnchorSuspendingHimselfByVerkeyFlush(looper, trustee, trusteeWallet, anotherTrustAnchor1):
-    _, wallet = anotherTrustAnchor1
-    changeVerkey(looper, *anotherTrustAnchor1, wallet.defaultId, '')
-    signer = DidSigner()
-    changeVerkey(looper, *anotherTrustAnchor1, wallet.defaultId, signer.verkey,
-                 nAckReasonContains="CouldNotAuthenticate('Can not find verkey for")
-    # Now NYM creator should have permission to set verkey.
-    changeVerkey(looper, trustee, trusteeWallet, wallet.defaultId, signer.verkey)
+    _, did = sdk_wallet_trustee
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_suspend_role(looper, sdk_pool_handle, another_steward1, did)
+    e.match('is neither Trustee nor owner of')
 
 
 # Keep the test below at the end of the suite since it will make one of the
 # nodes inactive, unless you are planning to add new nodes.
-def testValidatorSuspensionByTrustee(trustee, trusteeWallet, looper, nodeSet):
+def testValidatorSuspensionByTrustee(sdk_wallet_trustee, sdk_pool_handle, looper, nodeSet):
     node = nodeSet[-1]
-    nodeNym = hexToFriendly(node.nodestack.verhex)
-    suspendNode(looper, trustee, trusteeWallet, nodeNym, node.name)
+    demote_node(looper, sdk_wallet_trustee, sdk_pool_handle, node)
     for n in nodeSet[:-1]:
         looper.run(eventually(checkNodeNotInNodeReg, n, node.name))
-    looper.run(eventually(checkNodeNotInNodeReg, trustee, node.name))

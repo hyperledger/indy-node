@@ -1,0 +1,9 @@
+- hosts: pool
+  gather_facts: no
+
+  tasks:
+  - name: Fetch node logs
+    synchronize:
+      src: /var/log/indy/sandbox/
+      dest: ./logs
+      mode: pull

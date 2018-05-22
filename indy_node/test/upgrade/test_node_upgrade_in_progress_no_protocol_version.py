@@ -18,7 +18,7 @@ def test_node_sent_upgrade_in_progress_no_protocol_version(looper, nodeSet, node
     '''
     version = validUpgrade['version']
     for node, node_id in zip(nodeSet, nodeIds):
-        node.upgrader.scheduledUpgrade = (version,
+        node.upgrader.scheduledAction = (version,
                                           validUpgrade['schedule'][node_id],
                                           "upgrade_id")
         node.notify_upgrade_start()

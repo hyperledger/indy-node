@@ -31,7 +31,7 @@ from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 from plenum.test.conftest import txnPoolNodeSet, patchPluginManager, tdirWithNodeKeepInited
 from stp_core.loop.eventually import eventually
 from stp_core.common.log import getlogger
-from plenum.test.conftest import tdirWithPoolTxns, tdirWithDomainTxns
+from plenum.test.conftest import tdirWithPoolTxns
 from indy_client.cli.helper import USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
 from indy_client.test.helper import createNym, buildStewardClient
 from indy_common.constants import ENDPOINT, TRUST_ANCHOR
@@ -89,13 +89,13 @@ def newKeyPairCreated(cli):
 
 
 @pytest.fixture(scope="module")
-def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns,
                txnPoolNodesLooper, tconf, cliTempLogger):
     return getCliBuilder(
         tdir,
         tconf,
         tdirWithPoolTxns,
-        tdirWithDomainTxnsUpdated,
+        tdirWithDomainTxns,
         logFileName=cliTempLogger,
         def_looper=txnPoolNodesLooper)
 
@@ -1233,28 +1233,28 @@ def savedKeyringRestored():
 # TODO: Need to refactor following three fixture to reuse code
 @pytest.yield_fixture(scope="module")
 def cliForMultiNodePools(request, multiPoolNodesCreated, tdir,
-                         tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                         tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                          cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("susan")
 
 
 @pytest.yield_fixture(scope="module")
 def aliceMultiNodePools(request, multiPoolNodesCreated, tdir,
-                        tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                        tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                         cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("alice")
 
 
 @pytest.yield_fixture(scope="module")
 def earlMultiNodePools(request, multiPoolNodesCreated, tdir,
-                       tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                       tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                        cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("earl")
 
 
@@ -1363,7 +1363,7 @@ def newNodeVals():
         CLIENT_PORT: clientPort,
         ALIAS: randomString(6),
         SERVICES: [VALIDATOR],
-        BLS_KEY: base58.b58encode(randomString(128).encode())
+        BLS_KEY: base58.b58encode(randomString(128).encode()).decode("utf-8")
     }
 
     return {

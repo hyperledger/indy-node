@@ -2,7 +2,7 @@ import os
 import logging
 from collections import OrderedDict
 
-from plenum.common.constants import ClientBootStrategy, HS_LEVELDB, KeyValueStorageType
+from plenum.common.constants import ClientBootStrategy, HS_ROCKSDB, HS_LEVELDB, KeyValueStorageType
 from plenum.config import pool_transactions_file_base, domain_transactions_file_base
 
 from indy_common.constants import Environment
@@ -39,20 +39,18 @@ outFilePath = "cli_output.log"
 clientBootStrategy = ClientBootStrategy.Custom
 
 hashStore = {
-    "type": HS_LEVELDB
+    "type": HS_ROCKSDB
 }
 
 primaryStorage = None
 
-configStateStorage = KeyValueStorageType.Leveldb
-idrCacheStorage = KeyValueStorageType.Leveldb
-attrStorage = KeyValueStorageType.Leveldb
-stateTsStorage = KeyValueStorageType.Rocksdb
+configStateStorage = KeyValueStorageType.Rocksdb
+idrCacheStorage = KeyValueStorageType.Rocksdb
+attrStorage = KeyValueStorageType.Rocksdb
 
 configStateDbName = 'config_state'
 attrDbName = 'attr_db'
 idrCacheDbName = 'idr_cache_db'
-stateTsDbName = "state_ts_db"
 
 
 PluginsToLoad = []
@@ -76,6 +74,7 @@ MinSepBetweenNodeUpgrades = 300
 
 
 upgradeLogFile = "upgrade_log"
+restartLogFile = "restart_log"
 
 lastVersionFilePath = "last_version_file"
 
