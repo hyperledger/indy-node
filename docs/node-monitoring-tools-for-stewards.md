@@ -53,16 +53,22 @@ If you get a email on your youremail@example.com then `sendmail` is working.
 
 ### Install
 
-`$ pip3 install indynotifieremail`
+`# pip3 install indynotifieremail`
 
 ### Configuration
+
+The spike detection and notification mechanisms should be enabled by appending of the following line to
+`indy_config.py` configuration file:
+
+`SpikeEventsEnabled=True`
 
 The package depends on two environment variables:
 
 - `INDY_NOTIFIER_EMAIL_RECIPIENTS` (required)
 - `INDY_NOTIFIER_EMAIL_SENDER` (optional)
 
-Add these variables to `/etc/indy/indy.env` environment file as you are required to set such system environment variables for indy-node service in form described below.
+Add these variables to `/etc/indy/indy.env` environment file as you are required to set such system environment
+variables for indy-node service in form described below.
 
 **INDY_NOTIFIER_EMAIL_RECIPIENTS**
 

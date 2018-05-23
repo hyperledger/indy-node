@@ -23,8 +23,9 @@ from stp_core.common.log import getlogger
 
 config = getConfig()
 
-logger = None  # to make flake8 happy
+logger = getlogger()  # to make flake8 happy
 clients = {}   # task -> (reader, writer)
+logger.disabled = True
 
 
 class BaseUnknown:
@@ -43,6 +44,10 @@ class BaseUnknown:
     @property
     def val(self):
         return self._val
+
+    @val.setter
+    def val(self, val):
+        self._val = val
 
 
 class NewEncoder(json.JSONEncoder):
@@ -247,7 +252,7 @@ class BindingStats(BaseUnknown):
         self.val = ConnectionStatsOut([] if bindings is None else [
             dict(port=self.val, protocol=protocol, ip=ip)
             for protocol, ip in bindings
-        ], self._verbose)
+        ], False)
 
 
 class TransactionsStats(BaseStats):
@@ -561,7 +566,7 @@ def watch(fpath, verbose, _json):
 
 
 def format_key(key):
-    return "{:>15}".format('"{}": '.format(key))
+    return "{:15}".format('"{}": '.format(key))
 
 
 def make_indent(indent):
@@ -569,7 +574,7 @@ def make_indent(indent):
 
 
 def format_value(value):
-    return " {:<10}".format(str(value))
+    return " {:10}".format(str(value))
 
 
 def create_print_tree(stats: dict, indent=0, lines=[]):
@@ -582,7 +587,7 @@ def create_print_tree(stats: dict, indent=0, lines=[]):
             for line in value:
                 lines.append(make_indent(indent + 1) + format_value(line))
         else:
-            lines.append(make_indent(indent) + format_key(key) + format_value(value))
+            lines.append(make_indent(indent) + format_key(key) + format_value(value if value else 'n/a'))
     return lines
 
 
@@ -617,11 +622,6 @@ def main():
     parser.add_argument(
         "--json", action="store_true",
         help="Format output as JSON (ignores -v)"
-    )
-
-    parser.add_argument(
-        "--short", action="store_true",
-        help="Print short output"
     )
 
     statfile_group = parser.add_argument_group(
@@ -710,19 +710,30 @@ def main():
     #     loop.run_until_complete(server.wait_closed())
     #     loop.close()
     # else:
-    paths = glob(os.path.join(args.basedir, "*_info.json"))
-    paths.append(glob(os.path.join(args.basedir, "*_additional_info.json")))
-    if not paths:
+    all_paths = glob(os.path.join(args.basedir, "*_info.json"))
+    info_paths = []
+    additional_paths = []
+    for path in all_paths:
+        if path.find("additional") != -1:
+            additional_paths.append(path)
+        else:
+            info_paths.append(path)
+    if not info_paths:
         print('There are no info files in {}'.format(args.basedir))
         return
-    for file_path in paths:
+    for file_path in info_paths:
         logger.info("Reading file {} ...".format(file_path))
-        if args.short:
-            print(get_stats_from_file(file_path, args.verbose, args.json))
-        else:
+        if args.verbose:
             with open(file_path) as f_stats:
-                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats))))
+                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
+        else:
+            print(get_stats_from_file(file_path, args.verbose, args.json))
+
         print('\n')
+    if args.verbose:
+        for file_path in additional_paths:
+            with open(file_path) as f_stats:
+                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
 
     logger.info("Done")
 

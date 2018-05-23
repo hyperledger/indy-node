@@ -192,7 +192,7 @@ def prompt_is(prompt):
     return x
 
 
-def addTxnToGenesisFile(dir, file, txns, fields=getTxnOrderedFields()):
+def addTxnsToGenesisFile(dir, file, txns, fields=getTxnOrderedFields()):
     ledger = create_genesis_txn_init_ledger(dir, file)
     for txn in txns:
         ledger.add(txn)
@@ -212,7 +212,7 @@ def addTrusteeTxnsToGenesis(trusteeList, trusteeData, txnDir, txnFileName):
             except StopIteration as e:
                 logger.debug(
                     '{} not found in trusteeData'.format(trusteeToAdd))
-        addTxnToGenesisFile(txnDir, txnFileName, txns)
+        addTxnsToGenesisFile(txnDir, txnFileName, txns)
     return added
 
 
