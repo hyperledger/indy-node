@@ -173,7 +173,7 @@ This is a friendly name for the connection that Alice has been invited to accept
 DID: not yet assigned
 ```
 
-**DID** (**distributed identifier**) is an opaque, unique sequences of bits, (like UUIDs or GUIDs) that get generated when a user tries to accept the connection request. That DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
+**DID** (**Decentralized Identifier**) is an opaque, unique sequences of bits, (like UUIDs or GUIDs) that get generated when a user tries to accept the connection request. That DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
  Each connection request on the Indy network establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within the Indy code base.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
 
 ```
