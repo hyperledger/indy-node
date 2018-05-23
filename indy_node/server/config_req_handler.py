@@ -112,7 +112,7 @@ class ConfigReqHandler(LedgerRequestHandler):
 
     def apply(self, req: Request, cons_time):
         txn = reqToTxn(req, cons_time)
-        (start, _), _ = self.ledger.appendTxns([txn], cons_time)
+        (start, _), _ = self.ledger.appendTxns([txn])
         return start, txn
 
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
