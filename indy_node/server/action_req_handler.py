@@ -22,7 +22,8 @@ logger = getlogger()
 
 
 class ActionReqHandler(RequestHandler):
-    operation_types = {POOL_RESTART, VALIDATOR_INFO}
+    unsigned_action_types = {VALIDATOR_INFO, }
+    signed_action_types = {POOL_RESTART, }
 
     def __init__(self, idrCache: IdrCache,
                  restarter: Restarter, poolManager, poolCfg: PoolConfig,
@@ -85,3 +86,7 @@ class ActionReqHandler(RequestHandler):
         return {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId}}
+
+    @property
+    def operation_types(self):
+        return self.signed_action_types.union(self.unsigned_action_types)
