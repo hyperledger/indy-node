@@ -9,7 +9,7 @@
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
 * [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
-* [Continues integration and delivery](#continues-integration-and-delivery)
+* [Continuous integration and delivery](#continues-integration-and-delivery)
 * [How to send a PR](#how-to-send-a-pr)
 * [Docs and links](#docs-and-links)
 
@@ -129,9 +129,9 @@ Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [co
 indy
 ```
 
-## Continues Integration and Delivery
+## Continuous Integration and Delivery
 
-Please have a look at [Continues integration/delivery](docs/ci-cd.md)
+Please have a look at [Continuous integration/delivery](docs/ci-cd.md)
 
 ## How to send a PR
 
@@ -181,9 +181,3 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 - [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
 - [Helper Scripts](docs/helper-scripts.md)
 - [Pool Upgrade](docs/pool-upgrade.md)
-
-
-
-
-
-

@@ -6,6 +6,8 @@ import base58
 
 from indy.did import replace_keys_start, replace_keys_apply
 from indy.ledger import build_attrib_request
+
+from indy_common.config_helper import NodeConfigHelper
 from plenum.common.constants import REQACK, TXN_ID, DATA
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
 from plenum.common.txn_util import get_type, get_txn_id
@@ -27,6 +29,7 @@ from indy_node.server.node import Node
 from indy_node.server.upgrader import Upgrader
 from stp_core.loop.eventually import eventually
 from stp_core.loop.looper import Looper
+from stp_core.types import HA
 
 logger = getlogger()
 
@@ -245,3 +248,17 @@ def sdk_rotate_verkey(looper, sdk_pool_handle, wh,
     looper.loop.run_until_complete(
         replace_keys_apply(wh, did_of_changed))
     return verkey
+
+
+def start_stopped_node(stopped_node, looper, tconf, tdir, allPluginsPath):
+    nodeHa, nodeCHa = HA(*
+                         stopped_node.nodestack.ha), HA(*
+                                                        stopped_node.clientstack.ha)
+    config_helper = NodeConfigHelper(stopped_node.name, tconf, chroot=tdir)
+    restarted_node = TestNode(stopped_node.name,
+                              config_helper=config_helper,
+                              config=tconf,
+                              ha=nodeHa, cliha=nodeCHa,
+                              pluginPaths=allPluginsPath)
+    looper.add(restarted_node)
+    return restarted_node

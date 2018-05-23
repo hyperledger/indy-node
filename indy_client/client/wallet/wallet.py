@@ -9,7 +9,7 @@ from typing import Optional
 from ledger.util import F
 from plenum.client.wallet import Wallet as PWallet
 from plenum.common.did_method import DidMethods
-from plenum.common.txn_util import get_seq_no
+from plenum.common.txn_util import get_seq_no, get_reply_itentifier, get_reply_txntype, get_reply_nym
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, DATA, \
@@ -235,11 +235,11 @@ class Wallet(PWallet, TrustAnchoring):
         replies
         :return:
         """
-        preparedReq = self._prepared.get((result[IDENTIFIER], reqId))
+        preparedReq = self._prepared.get(get_reply_itentifier(result), reqId)
         if not preparedReq:
             raise RuntimeError('no matching prepared value for {},{}'.
-                               format(result[IDENTIFIER], reqId))
-        typ = result.get(TXN_TYPE)
+                               format(get_reply_itentifier(result), reqId))
+        typ = get_reply_txntype(result)
         if typ and typ in self.replyHandler:
             self.replyHandler[typ](result, preparedReq)
             # else:
@@ -263,7 +263,7 @@ class Wallet(PWallet, TrustAnchoring):
             logger.debug("No attribute found")
 
     def _nymReply(self, result, preparedReq):
-        target = result[TARGET_NYM]
+        target = get_reply_nym(result)
         idy = self._trustAnchored.get(target)
         if idy:
             idy.seqNo = get_seq_no(result)

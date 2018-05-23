@@ -34,17 +34,7 @@ class ActionReqHandler(RequestHandler):
         self.poolCfg = poolCfg
 
     def doStaticValidation(self, request: Request):
-        identifier, req_id, operation = request.identifier, request.reqId, request.operation
-        if operation[TXN_TYPE] == POOL_RESTART:
-            self._doStaticValidationPoolRestart(identifier, req_id, operation)
-
-    def _doStaticValidationPoolRestart(self, identifier, req_id, operation):
-        if DATETIME in operation.keys() is None and operation[DATETIME] != "0":
-            try:
-                dateutil.parser.parse(operation[DATETIME])
-            except Exception:
-                raise InvalidClientRequest(identifier, req_id,
-                                           "time is not valid")
+        pass
 
     def validate(self, req: Request):
         status = None

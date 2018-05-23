@@ -61,7 +61,7 @@ class Authoriser:
         '{}_action_start_cancel'.format(POOL_UPGRADE):
             {TRUSTEE: [], TGB: []},
         '{}_action_<any>_<any>'.format(POOL_RESTART):
-            {TRUSTEE: [], TGB: []},
+            {TRUSTEE: []},
         '{}_action_<any>_<any>'.format(POOL_CONFIG):
             {TRUSTEE: [], TGB: []},
     }

@@ -33,7 +33,7 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
         self.config = config
         self.dataDir = dataDir
         self.ledger = ledger
-        self.scheduledAction = None  # type: Tuple[str, int, str]
+        self.scheduledAction = None
         self._notifier = notifier_plugin_manager.PluginManager()
         self._actionLog = actionLog if actionLog else \
             self._defaultLog(dataDir, config)

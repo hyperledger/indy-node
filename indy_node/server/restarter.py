@@ -66,29 +66,17 @@ class Restarter(NodeMaintainer):
 
         :param req:
         """
-        op = req.operation
-        if op[TXN_TYPE] != POOL_RESTART:
+        txn = req.operation
+        if txn[TXN_TYPE] != POOL_RESTART:
             return
 
-        when = op[DATETIME] if DATETIME in op.keys() else None
-        if isinstance(when, str) and when != "0":
-            when = dateutil.parser.parse(when)
-        now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        if when is None or when == "0" or now >= when:
-            msg = RestartMessage().toJson()
-            try:
-                asyncio.ensure_future(self._open_connection_and_send(msg))
-            except Exception as ex:
-                logger.warning(ex.args[0])
-            return
-
-        action = op[ACTION]
+        action = txn[ACTION]
         if action == START:
-            failTimeout = op.get(TIMEOUT, self.defaultActionTimeout)
+            when = dateutil.parser.parse(txn[DATETIME]) \
+                if DATETIME in txn.keys() and txn[DATETIME] not in ["0", "", None] \
+                else None
 
             if self.scheduledAction:
-                if isinstance(when, str):
-                    when = dateutil.parser.parse(when)
                 if self.scheduledAction == when:
                     logger.debug(
                         "Node {} already scheduled restart".format(
@@ -100,10 +88,20 @@ class Restarter(NodeMaintainer):
                             self.nodeName))
                     self._cancelScheduledRestart()
 
+            now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+            if when is None or now >= when:
+                msg = RestartMessage().toJson()
+                try:
+                    asyncio.ensure_future(self._open_connection_and_send(msg))
+                except Exception as ex:
+                    logger.warning(ex.args[0])
+                return
+
+            fail_timeout = txn.get(TIMEOUT, self.defaultActionTimeout)
             logger.info("Node '{}' schedules restart".format(
                 self.nodeName))
 
-            self._scheduleRestart(when, failTimeout)
+            self._scheduleRestart(when, fail_timeout)
             return
 
         if action == CANCEL:

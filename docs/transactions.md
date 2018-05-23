@@ -733,3 +733,31 @@ Command to change Pool's configuration
     }
 }
 ```
+
+
+## Action Transactions
+
+#### POOL_RESTART
+POOL_RESTART is the command to restart all nodes at the time specified in field "datetime"(sent by Trustee).
+
+- `datetime` (string):
+
+    Restart time in datetime frmat/
+    To restart as early as possible, send message without the "datetime" field or put in it value "0" or ""(empty string) or the past date on this place.
+    The restart is performed immediately and there is no guarantee of receiving an answer with Reply.
+
+
+- `action` (enum: `start` or `cancel`):
+
+    Starts or cancels the Restart.
+
+**Example:**
+```
+{
+     "reqId": 98262,
+     "type": "118",
+     "identifier": "M9BJDuS24bqbJNvBRsoGg3",
+     "datetime": "2018-03-29T15:38:34.464106+00:00",
+     "action": "start"
+}
+```
