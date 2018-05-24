@@ -431,10 +431,10 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         },
         "reqSignature": {
             "type": "ED25519",
-            "values": [
+            "values": [{
                 "from": "L5AD5g65TDQr1PPHHRoiGf",
                 "value": "49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba"
-            ]
+            }]
         }
 		
         'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
@@ -514,10 +514,10 @@ Adds attribute to a NYM record.
         },
         "reqSignature": {
             "type": "ED25519",
-            "values": [
+            "values": [{
                 "from": "L5AD5g65TDQr1PPHHRoiGf",
                 "value": "49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba"
-            ]
+            }]
         }    
     
         'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
@@ -589,10 +589,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         },
         "reqSignature": {
             "type": "ED25519",
-            "values": [
+            "values": [{
                 "from": "L5AD5g65TDQr1PPHHRoiGf",
                 "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
-            ]
+            }]
         }
  		
         'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
@@ -678,10 +678,10 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
         },
         "reqSignature": {
             "type": "ED25519",
-            "values": [
+            "values": [{
                 "from": "L5AD5g65TDQr1PPHHRoiGf",
                 "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
-            ]
+            }]
         }
     }
 }
@@ -781,10 +781,10 @@ There is no need to specify all other fields in `data`, and they will remain the
         },
         "reqSignature": {
             "type": "ED25519",
-            "values": [
+            "values": [{
                 "from": "21BPzYYrFzbuECcBV3M1FH",
                 "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
-            ]
+            }]
         }
  		
         'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
@@ -899,10 +899,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         },
         "reqSignature": {
             "type": "ED25519",
-            "values": [
+            "values": [{
                 "from": "21BPzYYrFzbuECcBV3M1FH",
                 "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
-            ]
+            }]
         }
     }
 }
@@ -971,10 +971,10 @@ Command to change Pool's configuration
         },
         "reqSignature": {
             "type": "ED25519",
-            "values": [
+            "values": [{
                 "from": "21BPzYYrFzbuECcBV3M1FH",
                 "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
-            ]
+            }]
         }
     }
 }
