@@ -61,9 +61,10 @@ class ActionReqHandler(RequestHandler):
             r, msg = Authoriser.authorised(typ, origin_role)
         if not r:
             raise UnauthorizedClientRequest(
-                req.identifier, req.reqId, "{} cannot do action with type = {}"
-                    .format(Roles.nameFromValue(origin_role),
-                            typ))
+                req.identifier, req.reqId,
+                "{} cannot do action with type = {}".format(
+                    Roles.nameFromValue(origin_role),
+                    typ))
 
     def apply(self, req: Request, cons_time: int = None):
         logger.debug("Transaction {} with type {} started"
