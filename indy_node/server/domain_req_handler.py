@@ -672,7 +672,7 @@ class DomainReqHandler(PHandler):
                                 update_time=lastUpdateTime,
                                 proof=proof)
 
-    def lookup(self, path, isCommitted=True) -> (str, int):
+    def lookup(self, path, isCommitted=True, get_proof=True) -> (str, int):
         """
         Queries state for data on specified path
 
@@ -680,8 +680,16 @@ class DomainReqHandler(PHandler):
         :return: data
         """
         assert path is not None
-        encoded = self.state.get(path, isCommitted)
-        proof = self.make_proof(path)
+        head_hash = self.state.committedHeadHash if isCommitted else self.state.headHash
+        rv = self.make_proof(path, head_hash=head_hash, get_value=True)
+        if isinstance(rv, dict):
+            # has proof hand value
+            encoded = rv.pop(VALUE, None)
+            proof = rv
+        else:
+            # has only value
+            encoded = rv
+
         if encoded is not None:
             value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
             return value, last_seq_no, last_update_time, proof
