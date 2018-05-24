@@ -75,10 +75,10 @@ transaction specific data:
     },
     "reqSignature": {
         "type": <...>,
-        "values": [
+        "values": [{
             "from": <...>,
             "value": <...>
-        ]
+        }]
     }
 }
 ```
@@ -175,12 +175,12 @@ Note that only trustees and stewards can create new trust anchors and trustee ca
 The transaction can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
 
-- `did` (base58-encoded string):
+- `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.
     It differs from `from` metadata field, where `from` is the DID of the submitter.
     
-    *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
+    *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
      
 - `role` (enum number as integer; optional): 
 
@@ -222,7 +222,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         
         "data": {
             "ver": 1,
-            "did":"GEzcdDLhCpGCYRHW82kjHd",
+            "dest":"GEzcdDLhCpGCYRHW82kjHd",
             "verkey":"~HmUWn928bnFT6Ephf65YXv",
             "role":101,
         },
@@ -239,10 +239,10 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     },
     "reqSignature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     }
 
 }
@@ -252,12 +252,12 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 Adds attribute to a NYM record
 
 
-- `did` (base58-encoded string):
+- `dest` (base58-encoded string):
 
     Target DID we set an attribute for as base58-encoded string for 16 or 32 bit DID value.
     It differs from `from` metadata field, where `from` is the DID of the submitter.
     
-    *Example*: `from` is a DID of a Trust Anchor setting an attribute for a DID, and `did` is the DID we set an attribute for.
+    *Example*: `from` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
     
 - `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
 
@@ -287,7 +287,7 @@ Adds attribute to a NYM record
         
         "data": {
             "ver":1,
-            "did":"GEzcdDLhCpGCYRHW82kjHd",
+            "dest":"GEzcdDLhCpGCYRHW82kjHd",
             "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
         },
         
@@ -303,10 +303,10 @@ Adds attribute to a NYM record
     },
     "reqSignature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     }
 }
 ```
@@ -318,21 +318,14 @@ Adds Claim's schema.
 It's not possible to update existing Schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
 
-- `schemaName` (string):
+- `data` (dict):
  
-    Schema's name string.
-
-- `schemaVersion` (string):
- 
-    Schema's version string
-
-- `value` (dict):
-
-    Schema's specific data
+     Dictionary with Schema's data:
+     
+    - `attr_names`: array of attribute name strings
+    - `name`: Schema's name string
+    - `version`: Schema's version string
     
-    - `attrNames` (array of strings):
-      Array of attribute name strings.
-
 
 **Example**:
 ```
@@ -344,11 +337,11 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         
         "data": {
             "ver":1,
-            "schemaName": "Degree",
-            "schemaVersion": "1.0",
-            "value": {
-                "attrNames": ["undergrad", "last_name", "first_name", "birth_date", "postgrad", "expiry_date"]
-            }
+            "data": {
+                "attr_names": ["undergrad","last_name","first_name","birth_date","postgrad","expiry_date"],
+                "name":"Degree",
+                "version":"1.0"
+            },
         },
         
         "metadata": {
@@ -363,10 +356,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     },
     "reqSignature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     }
    
 }
@@ -379,29 +372,21 @@ It's not possible to update `data` in existing Claim Def.
 So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
 a new Claim Def needs to be created for a new Issuer DID (`did`).
 
-- `type` (string):
+- `data` (dict):
+ 
+     Dictionary with Claim Definition's data:
+     
+    - `primary`: primary claim public key
+    - `revocation`: revocation claim public key
+        
+- `ref` (string):
+    
+    Sequence number of a Schema transaction the claim definition is created for.
+
+- `signature_type` (string):
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
 
-- `tag` (string):
-
-    A unique descriptive tag of the given CRED_DEF for the given Issuer and Schema. An Issuer may have multiple 
-    CRED_DEFs for the same Schema created with different tags. 
-
-- `schemaId` (string):
-    
-    ID of a Schema transaction the claim definition is created for.
-
-- `value` (dict):
-
-    Type-specific value:
-
-    - `publicKeys` (dict):
-     
-         Dictionary with Claim Definition's public keys:
-         
-        - `primary`: primary claim public key
-        - `revocation`: revocation claim public key
 
 **Example**:
 ```
@@ -413,18 +398,16 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
         
         "data": {
             "ver":1,
-            "type":"CL",
-            "tag": "key1",
-
-            "publicKeys": {
+            "data": {
                 "primary": {
                     ...
-                 },
+                },
                 "revocation": {
                     ...
                 }
             },
-            "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
+            "ref":12,
+            "signature_type":"CL",
         },
         
         "metadata": {
@@ -439,10 +422,10 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
     },
     "reqSignature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     }
 }
 ```
@@ -453,52 +436,36 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
 
 Adds a new node to the pool, or updates existing node in the pool
 
-- `did` (base58-encoded string):
+- `data` (dict):
+    
+    Data associated with the Node:
+    
+    - `alias` (string): Node's alias
+    - `blskey` (base58-encoded string; optional): BLS multi-signature key as base58-encoded string (it's needed for BLS signatures and state proofs support)
+    - `client_ip` (string; optional): Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)  
+    - `client_port` (string; optional): Node's client listener port, that is the port clients use to connect to the node when sending read and write requests (ZMQ with TCP)
+    - `node_ip` (string; optional): The IP address other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
+    - `node_port` (string; optional): The port other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
+    - `services` (array of strings; optional): the service of the Node. `VALIDATOR` is the only supported one now. 
+
+- `dest` (base58-encoded string):
 
     Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
-    It differs from `from` metadata field, where `from` is the DID of the transaction submitter (Steward's DID).
+    It differs from `identifier` metadata field, where `identifier` is the DID of the transaction submitter (Steward's DID).
     
-    *Example*: `from` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
+    *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the DID of this Node.
     
 - `verkey` (base58-encoded string; optional): 
 
     Target Node verification key as base58-encoded string.
-    It may absent if `did` is 32-bit cryptonym CID. 
-
-- `alias` (string): 
-    
-    Node's alias
-    
-- `blskey` (base58-encoded string; optional):
- 
-    BLS multi-signature key as base58-encoded string (it's needed for BLS signatures and state proofs support)
-    
-- `clientIp` (string; optional): 
-    
-    Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)
-      
-- `clientPort` (string; optional):
-
-    Node's client listener port, that is the port clients use to connect to the node when sending read and write requests (ZMQ with TCP)
-    
-- `nodeIp` (string; optional):
- 
-    The IP address other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
-    
-- `nodePort` (string; optional):
- 
-    The port other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
-    
-- `services` (array of strings; optional):
- 
-    The service of the Node. `VALIDATOR` is the only supported one now.
+    It may absent if `dest` is 32-bit cryptonym CID. 
      
 
-If there is no NODE transaction with the specified Node ID (`did`), then it can be considered as creation of a new NODE.
+If there is no NODE transaction with the specified Node ID (`dest`), then it can be considered as creation of a new NODE.
 
-If there is a NODE transaction with the specified Node ID (`did`), then this is update of existing NODE.
+If there is a NODE transaction with the specified Node ID (`dest`), then this is update of existing NODE.
 In this case we can specify only the values we would like to override. All unspecified values remain the same.
-So, if a Steward wants to rotate BLS key, then it's sufficient to send a NODE transaction with `did` and a new `blskey`.
+So, if a Steward wants to rotate BLS key, then it's sufficient to send a NODE transaction with `dest` and a new `blskey`.
 There is no need to specify all other fields, and they will remain the same.
 
 
@@ -511,15 +478,16 @@ There is no need to specify all other fields, and they will remain the same.
         "protocolVersion":1,
         
         "data": {
-            "ver":1,
-            "did":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
-            "alias":"Delta",
-            "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
-            "clientIp":"127.0.0.1",
-            "clientPort":7407,
-            "nodeIp":"127.0.0.1",
-            "nodePort":7406,
-            "services":["VALIDATOR"]
+            "data": {
+                "alias":"Delta",
+                "blskey":"4kkk7y7NQVzcfvY4SAe1HBMYnFohAJ2ygLeJd3nC77SFv2mJAmebH3BGbrGPHamLZMAFWQJNHEM81P62RfZjnb5SER6cQk1MNMeQCR3GVbEXDQRhhMQj2KqfHNFvDajrdQtyppc4MZ58r6QeiYH3R68mGSWbiWwmPZuiqgbSdSmweqc",
+                "client_ip":"127.0.0.1",
+                "client_port":7407,
+                "node_ip":"127.0.0.1",
+                "node_port":7406,
+                "services":["VALIDATOR"]
+            },
+            "dest":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
         },
         
         "metadata": {
@@ -534,10 +502,10 @@ There is no need to specify all other fields, and they will remain the same.
     },
     "reqSignature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     }
 }
 ```
@@ -627,10 +595,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     },
     "reqSignature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     }
 }
 ```
@@ -673,10 +641,10 @@ Status of each Node's upgrade (sent by each upgraded Node)
     },
     "reqSignature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     }
 }
 ```
@@ -726,10 +694,10 @@ Command to change Pool's configuration
     },
     "reqSignature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     }
 }
 ```

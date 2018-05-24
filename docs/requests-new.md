@@ -98,12 +98,10 @@ All write requests must be signed.
     
     "signature": {
         "type": <...>,
-        "ver": <...>,
-        "values": [
+        "values": [{
             "from": <...>,
             "value": <...>,
-        ],
-        "threshold": <...>
+        }]
     },
     
     "serialization": <...>,
@@ -411,11 +409,6 @@ Note that only trustees and stewards can create new trust anchors and trustee ca
 The request can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
 
-- `id` (string):
-
-    Nym's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
-    It must be equal (or be mapped to) the real key of the NYM state in the State Trie. 
-
 - `did` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 bit DID value.
@@ -463,10 +456,10 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     "signature": {
         "type": "ED25519",
         "ver": 1,
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     },
     "msg": {
         "type": 1,
@@ -475,7 +468,6 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         
         "data": {
             "ver":1,
-            "id": "N22KY2Dyvmuu2PyyqSFKue|01",
             "did": "N22KY2Dyvmuu2PyyqSFKue",
             "role": "101",
             "verkey": "~HmUWn928bnFT6Ephf65YXv"
@@ -504,7 +496,6 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
                                     
                     "data": {
                         "ver":1,
-                        "id": "N22KY2Dyvmuu2PyyqSFKue|01",
                         "did": "N22KY2Dyvmuu2PyyqSFKue",
                         "role": "101",
                         "verkey": "~HmUWn928bnFT6Ephf65YXv"
@@ -515,17 +506,16 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
                     },
                 },
                 "txnMetadata": {
-                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
+                    "txnId": "N22KY2Dyvmuu2PyyqSFKue|01"
                 },
                 "reqSignature": {
                     "type": "ED25519",
-                    "ver": 1,
-                    "values": [
+                    "values": [{
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                    ]
+                    }]
                 },
             },
              
@@ -562,11 +552,6 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 
 Adds attribute to a NYM record.
 
-- `id` (string):
-
-    Attr's ID as State Trie key (address or descriptive data). It must be unique within the ledger. 
-    It must be equal (or be mapped to) the real key of the ATTR state in the State Trie. 
-
 - `did` (base58-encoded string):
 
     Target DID we set an attribute for as base58-encoded string for 16 or 32 bit DID value.
@@ -594,11 +579,10 @@ Adds attribute to a NYM record.
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
-        "ver": 1,
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     },
     "msg": {
         "type": 100,
@@ -607,7 +591,6 @@ Adds attribute to a NYM record.
         
         "data": {
             "ver": 1,
-            "id": "N22KY2Dyvmuu2PyyqSFKue|02",
             "did": "N22KY2Dyvmuu2PyyqSFKue",
             "raw": "{"name": "Alice"}"
         },
@@ -635,7 +618,6 @@ Adds attribute to a NYM record.
                                     
                     "data": {
                         "ver": 1,
-                        "id": "N22KY2Dyvmuu2PyyqSFKue|02",
                         "did": "N22KY2Dyvmuu2PyyqSFKue",
                         "raw": "{"name": "Alice"}"
                     },
@@ -645,17 +627,16 @@ Adds attribute to a NYM record.
                     },
                 },
                 "txnMetadata": {
-                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
+                    "txnId": "N22KY2Dyvmuu2PyyqSFKue|02"
                 },
                 "reqSignature": {
                     "type": "ED25519",
-                    "ver": 1,
-                    "values": [
+                    "values": [{
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                    ]
+                    }]
                 },
             },
              
@@ -723,11 +704,10 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
-        "ver": 1,
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     },
     "msg": {
         "type": 101,
@@ -767,7 +747,6 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
                                     
                     "data": {
                         "ver": 1,
-                        "id":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
                         "version": "1.0",
                         "name": "Degree",
                         "value": {
@@ -780,17 +759,17 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
                     },
                 },
                 "txnMetadata": {
-                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
+                    "txnId":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
                 },
                 "reqSignature": {
                     "type": "ED25519",
                     "ver": 1,
-                    "values": [
+                    "values": [{
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                    ]
+                    }]
                 },
             },
              
@@ -868,11 +847,10 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
-        "ver": 1,
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     },
     "msg": {
         "type": 102,
@@ -914,7 +892,6 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
                                     
                     "data": {
                         "ver": 1,
-                        "id":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
                         "signatureType": "CL",
                         "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
                         "publicKeys": {
@@ -929,17 +906,16 @@ a new Claim Def needs to be created by a new Issuer DID (`did`).
                     },
                 },
                 "txnMetadata": {
-                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
+                    "txnId":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
                 },
                 "reqSignature": {
                     "type": "ED25519",
-                    "ver": 1,
-                    "values": [
+                    "values": [{
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                    ]
+                    }]
                 },
             },
              
@@ -1033,10 +1009,10 @@ There is no need to specify all other fields, and they will remain the same.
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     },
     "msg": {
         "type": 0,
@@ -1093,17 +1069,15 @@ There is no need to specify all other fields, and they will remain the same.
                     },
                 },
                 "txnMetadata": {
-                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
-                    "ver": 1,
-                    "values": [
+                    "values": [{
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                    ]
+                    }]
                 },
             },
              
@@ -1194,10 +1168,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     "serialization": "MSG_PACK",
     "signature": {
         "type": "ED25519",
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     },
     "msg": {
         "type": 109,
@@ -1252,17 +1226,15 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
                     },
                 },
                 "txnMetadata": {
-                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
-                    "ver": 1,
-                    "values": [
+                    "values": [{
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                    ]
+                    }]
                 },
             },
              
@@ -1325,10 +1297,10 @@ Command to change Pool's configuration
     "signature": {
         "type": "ED25519",
         "ver": 1,
-        "values": [
+        "values": [{
             "from": "L5AD5g65TDQr1PPHHRoiGf",
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-        ]
+        }]
     },
     "msg": {
         "type": 111,
@@ -1373,17 +1345,15 @@ Command to change Pool's configuration
                     },
                 },
                 "txnMetadata": {
-                    "ver": 1,
                     "creationTime": 1514211268,
                     "seqNo": 300,
                 },
                 "reqSignature": {
                     "type": "ED25519",
-                    "ver": 1,
-                    "values": [
+                    "values": [{
                         "from": "L5AD5g65TDQr1PPHHRoiGf",
                         "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                    ]
+                    }]
                 },
             },
              
@@ -1461,7 +1431,6 @@ Gets information about a DID (NYM).
                         
                         "data": {
                             "ver": 1,
-                            "id": "N22KY2Dyvmuu2PyyqSFKue|01",
                             "did": "N22KY2Dyvmuu2PyyqSFKue",
                             "role": "101",
                             "verkey": "~HmUWn928bnFT6Ephf65YXv"
@@ -1472,17 +1441,16 @@ Gets information about a DID (NYM).
                         },
                     },
                     "txnMetadata": {
-                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 300,
+                        "txnId": "N22KY2Dyvmuu2PyyqSFKue|01"
                     },
                     "reqSignature": {
                         "type": "ED25519",
-                        "ver": 1,
-                        "values": [
+                        "values": [{
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                        ]
+                        }]
                     },
                 },
                  
@@ -1576,7 +1544,6 @@ i.e. reply data contains requested value only.
                         
                         "data": {
                             "ver": 1,
-                            "id": "N22KY2Dyvmuu2PyyqSFKue|02",
                             "did": "N22KY2Dyvmuu2PyyqSFKue",
                             "raw": "{"name": "Alice"}"
                         },
@@ -1586,17 +1553,16 @@ i.e. reply data contains requested value only.
                         },
                     },
                     "txnMetadata": {
-                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 300,
+                        "txnId":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
                     },
                     "reqSignature": {
                         "type": "ED25519",
-                        "ver": 1,
-                        "values": [
+                        "values": [{
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                        ]
+                        }]
                     },
                 },
                  
@@ -1675,7 +1641,6 @@ Gets Claim's Schema.
                         
                         "data": {
                             "ver": 1,
-                            "id":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
                             "version": "1.0",
                             "name": "Degree",
                             "value": {
@@ -1688,17 +1653,16 @@ Gets Claim's Schema.
                         },
                     },
                     "txnMetadata": {
-                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 300,
+                        "txnId":"L5AD5g65TDQr1PPHHRoiGf:Degree:1.0",
                     },
                     "reqSignature": {
                         "type": "ED25519",
-                        "ver": 1,
-                        "values": [
+                        "values": [{
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                        ]
+                        }]
                     },
                 },
                  
@@ -1776,7 +1740,6 @@ Gets Claim Definition.
                         
                         "data": {
                             "ver": 1,
-                            "id":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
                             "signatureType": "CL",
                             "schemaRef":"L5AD5g65TDQr1PPHHRoiGf1Degree1",
                             "publicKeys": {
@@ -1791,17 +1754,16 @@ Gets Claim Definition.
                         },
                     },
                     "txnMetadata": {
-                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 300,
+                        "txnId":"HHAD5g65TDQr1PPHHRoiGf2L:5AD5g65TDQr1PPHHRoiGf:Degree:1.0:CL:key1",
                     },
                     "reqSignature": {
                         "type": "ED25519",
-                        "ver": 1,
-                        "values": [
+                        "values": [{
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                        ]
+                        }]
                     },
                 },
                  
@@ -1884,7 +1846,6 @@ A generic request to get a transaction from Ledger by its sequence number.
                         
                         "data": {
                             "ver": 1,
-                            "id": "2VkbBskPNNyWrLrZq7DBhk|\1"
                             "did": "2VkbBskPNNyWrLrZq7DBhk",
                             "role": "101",
                             "verkey": "31V83xQnJDkZTSvm796X4MnzZFtUc96Tq6GJtuVkFQBE"
@@ -1895,17 +1856,15 @@ A generic request to get a transaction from Ledger by its sequence number.
                         },
                     },
                     "txnMetadata": {
-                        "ver":1,
                         "creationTime": 1514211268,
                         "seqNo": 9,
                     },
                     "reqSignature": {
                         "type": "ED25519",
-                        "ver": 1,
-                        "values": [
+                        "values": [{
                             "from": "L5AD5g65TDQr1PPHHRoiGf",
                             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
-                        ]
+                        }]
                     },
                 },
                  
