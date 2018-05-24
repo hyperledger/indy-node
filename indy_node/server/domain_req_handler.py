@@ -8,7 +8,8 @@ from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
     GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, ATTR_NAMES, REVOC_TYPE, \
-    TIMESTAMP, ACCUM, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, REVOC_REG_ID, ACCUM_FROM, ACCUM_TO
+    TIMESTAMP, ACCUM, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, REVOC_REG_ID, ACCUM_FROM, ACCUM_TO, SEQ_NO_FROM, \
+    TXN_TIME_FROM
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
@@ -628,6 +629,8 @@ class DomainReqHandler(PHandler):
                 if req_ts_from and accum_from.value:
                     reply[STATE_PROOF_FROM] = accum_from.proof
                     reply[VALUE][ACCUM_FROM] = accum_from.value
+                    reply[VALUE][SEQ_NO_FROM] = accum_from.seq_no
+                    reply[VALUE][TXN_TIME_FROM] = accum_from.update_time
 
         if accum_to and entry_to:
             seq_no = accum_to.seq_no if entry_from.value else entry_to.seq_no

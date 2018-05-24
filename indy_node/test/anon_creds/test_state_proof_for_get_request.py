@@ -3,8 +3,9 @@ import copy
 from indy_common.constants import CRED_DEF_ID, ID, REVOC_TYPE, TAG, GET_REVOC_REG_DEF, \
     TXN_TYPE, TIMESTAMP, REVOC_REG_DEF_ID, VALUE, FROM, TO, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM
-from plenum.common.constants import TXN_TIME, STATE_PROOF, TXN_METADATA
+from plenum.common.constants import STATE_PROOF
 from indy_common.state import domain
+from plenum.common.txn_util import get_txn_time
 from plenum.common.util import randomString
 from indy_node.test.anon_creds.helper import check_valid_proof
 from plenum.test.helper import sdk_sign_request_from_dict
@@ -88,8 +89,8 @@ def test_state_proof_returned_for_get_revoc_reg_delta(looper,
         sdk_pool_handle)[0]
     reg_delta_req = copy.deepcopy(build_get_revoc_reg_delta)
     reg_delta_req['operation'][REVOC_REG_DEF_ID] = rev_reg_req1['operation'][REVOC_REG_DEF_ID]
-    reg_delta_req['operation'][FROM] = rev_reg_reply1['result'][TXN_METADATA][TXN_TIME]
-    reg_delta_req['operation'][TO] = rev_reg_reply3['result'][TXN_METADATA][TXN_TIME] + 1000
+    reg_delta_req['operation'][FROM] = get_txn_time(rev_reg_reply1['result'])
+    reg_delta_req['operation'][TO] = get_txn_time(rev_reg_reply3['result']) + 1000
     sdk_reply = sdk_send_and_check([json.dumps(reg_delta_req)], looper, txnPoolNodeSet, sdk_pool_handle)
     reply = sdk_reply[0][1]
     check_valid_proof(reply)
