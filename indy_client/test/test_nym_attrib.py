@@ -19,9 +19,8 @@ from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.test.helper import checkNacks, \
     genTestClient, createNym, checkRejects, makePendingTxnsRequest
-from indy_common.constants import SKEY, TRUST_ANCHOR_STRING
+from indy_common.constants import SKEY, TRUST_ANCHOR_STRING, ATTRIB, TRUST_ANCHOR
 from indy_common.identity import Identity
-from indy_common.txn_util import ATTRIB, TRUST_ANCHOR
 from indy_common.util import getSymmetricallyEncryptedVal
 from indy_node.test.helper import submitAndCheck, \
     makeAttribRequest, makeGetNymRequest, addAttributeAndCheck, TestNode, \

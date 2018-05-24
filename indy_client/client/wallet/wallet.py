@@ -9,11 +9,12 @@ from typing import Optional
 from ledger.util import F
 from plenum.client.wallet import Wallet as PWallet
 from plenum.common.did_method import DidMethods
-from plenum.common.txn_util import get_seq_no, get_reply_itentifier, get_reply_txntype, get_reply_nym
+from plenum.common.txn_util import get_seq_no, get_reply_itentifier, get_reply_txntype, get_reply_nym, get_payload_data, \
+    get_from
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, DATA, \
-    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN, CURRENT_PROTOCOL_VERSION
+    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN, CURRENT_PROTOCOL_VERSION, RAW
 from plenum.common.types import f
 
 from indy_client.client.wallet.attribute import Attribute, AttributeKey, \
@@ -245,9 +246,17 @@ class Wallet(PWallet, TrustAnchoring):
             # else:
             #    raise NotImplementedError('No handler for {}'.format(typ))
 
+    def _attrib_from_reply(self, result):
+        dest = get_payload_data(result)[TARGET_NYM]
+        origin = get_from(result)
+
+
     def _attribReply(self, result, preparedReq):
-        _, attrKey = preparedReq
-        attrib = self.getAttribute(AttributeKey(*attrKey))
+        dest = get_payload_data(result)[TARGET_NYM]
+        name = list(json.loads(get_payload_data(result)[RAW]).keys())[0]
+        origin = get_from(result)
+        # _, attrKey = preparedReq
+        attrib = self.getAttribute(AttributeKey(name=name, dest=dest, origin=origin))
         attrib.seqNo = get_seq_no(result)
 
     def _getAttrReply(self, result, preparedReq):
