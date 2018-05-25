@@ -1,3 +1,4 @@
+import copy
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
@@ -248,7 +249,7 @@ def prepare_get_revoc_reg_entry_accum_for_state(reply):
 def prepare_schema_for_state(txn):
     origin = get_from(txn)
     txn_data = get_payload_data(txn)
-    data = txn_data.get(DATA)
+    data = copy.deepcopy(txn_data.get(DATA))
     schema_name = data.pop(NAME)
     schema_version = data.pop(VERSION)
     path = make_state_path_for_schema(origin, schema_name, schema_version)
