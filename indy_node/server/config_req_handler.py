@@ -2,7 +2,7 @@ from typing import List
 
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
-from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data
+from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.auth import Authoriser
@@ -111,7 +111,8 @@ class ConfigReqHandler(LedgerRequestHandler):
                     Roles.nameFromValue(originRole), trname))
 
     def apply(self, req: Request, cons_time):
-        txn = reqToTxn(req, cons_time)
+        txn = append_txn_metadata(reqToTxn(req),
+                                  txn_time=cons_time)
         (start, _), _ = self.ledger.appendTxns([txn])
         return start, txn
 
