@@ -5,17 +5,10 @@ import base58
 
 from anoncreds.protocol.utils import randomString
 
-from indy_node.server.node import Node
-from plenum.test.helper import waitForSufficientRepliesForRequests
-
-from plenum.test.test_node import checkNodesConnected
-
-from plenum.test.node_catchup.helper import ensureClientConnectedToNodesAndPoolLedgerSame
-
+from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.common.keygen_utils import initLocalKeys
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import friendlyToRaw
-from plenum.test import waits as plenumWaits, waits
 from stp_core.common.log import Logger
 
 from stp_core.loop.eventually import eventually
@@ -38,7 +31,7 @@ from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYP
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.constants import NYM, TRUST_ANCHOR
 from indy_common.constants import TXN_TYPE, TARGET_NYM, ROLE
-from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToGenesisFile
+from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnsToGenesisFile
 from indy_node.test.helper import makePendingTxnsRequest, buildStewardClient, \
     TestNode
 from indy_client.test.helper import addRole, genTestClient, TestClient, createNym, getClientAddedWithRole
@@ -46,7 +39,7 @@ from indy_client.test.helper import addRole, genTestClient, TestClient, createNy
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
-    tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
+    tdirWithDomainTxns as PTdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, patchPluginManager, tdirWithClientPoolTxns, \
@@ -56,10 +49,17 @@ from plenum.test.conftest import tdir, client_tdir, nodeReg, \
 from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
-from plenum.test.conftest import sdk_pool_handle, sdk_pool_name, sdk_wallet_steward, sdk_wallet_handle, \
-    sdk_wallet_name, sdk_steward_seed
+from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_name, sdk_wallet_steward, \
+    sdk_wallet_handle, sdk_wallet_name, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data, \
+    sdk_wallet_client, sdk_client_seed, poolTxnClientData, poolTxnClientNames, poolTxnData
 
 Logger.setLogLevel(logging.DEBUG)
+
+
+@pytest.fixture(scope="module")
+def sdk_wallet_trust_anchor(looper, sdk_pool_handle, sdk_wallet_trustee):
+    return sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
+                           alias='TA-1', role='TRUST_ANCHOR')
 
 
 @pytest.fixture(scope="session")
@@ -68,6 +68,7 @@ def warnfilters(plenum_warnfilters):
         plenum_warnfilters()
         warnings.filterwarnings(
             'ignore', category=ResourceWarning, message='unclosed file')
+
     return _
 
 
@@ -165,22 +166,23 @@ def testClientClass():
 
 
 @pytest.fixture(scope="module")
-def tdirWithDomainTxnsUpdated(tdirWithDomainTxns, poolTxnTrusteeNames,
-                              trusteeData, tconf):
+def tdirWithDomainTxns(PTdirWithDomainTxns, poolTxnTrusteeNames,
+                       trusteeData, genesisTxns, domainTxnOrderedFields,
+                       tconf):
     addTrusteeTxnsToGenesis(poolTxnTrusteeNames, trusteeData,
-                            tdirWithDomainTxns, tconf.domainTransactionsFile)
-    return tdirWithDomainTxns
+                            PTdirWithDomainTxns, tconf.domainTransactionsFile)
+    addTxnsToGenesisFile(PTdirWithDomainTxns, tconf.domainTransactionsFile,
+                         genesisTxns, domainTxnOrderedFields)
+    return PTdirWithDomainTxns
+
+
+@pytest.fixture(scope='module')
+def sdk_pool_handle(plenum_pool_handle, nodeSet):
+    return plenum_pool_handle
 
 
 @pytest.fixture(scope="module")
-def updatedDomainTxnFile(tdirWithDomainTxnsUpdated, genesisTxns,
-                         domainTxnOrderedFields, tconf):
-    addTxnToGenesisFile(tdirWithDomainTxnsUpdated, tconf.domainTransactionsFile,
-                        genesisTxns, domainTxnOrderedFields)
-
-
-@pytest.fixture(scope="module")
-def nodeSet(tconf, updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet):
+def nodeSet(txnPoolNodeSet):
     return txnPoolNodeSet
 
 
@@ -190,7 +192,7 @@ def client1Signer():
     signer = DidSigner(seed=seed)
     testable_verkey = friendlyToRaw(signer.identifier)
     testable_verkey += friendlyToRaw(signer.verkey[1:])
-    testable_verkey = base58.b58encode(testable_verkey)
+    testable_verkey = base58.b58encode(testable_verkey).decode("utf-8")
     assert testable_verkey == '6JvpZp2haQgisbXEXE9NE6n3Tuv77MZb5HdF9jS5qY8m'
     return signer
 
@@ -218,7 +220,7 @@ def client1(clientAndWallet1, looper):
 
 @pytest.fixture(scope="module")
 def added_client_without_role(steward, stewardWallet, looper,
-                           wallet1):
+                              wallet1):
     createNym(looper,
               wallet1.defaultId,
               steward,
@@ -271,6 +273,14 @@ def userWalletA(nodeSet, addedTrustAnchor,
 
 
 @pytest.fixture(scope="module")
+def sdk_user_wallet_a(nodeSet, sdk_wallet_trust_anchor,
+                      sdk_pool_handle, looper, trustAnchor):
+    return sdk_add_new_nym(looper, sdk_pool_handle,
+                           sdk_wallet_trust_anchor, alias='userA',
+                           skipverkey=True)
+
+
+@pytest.fixture(scope="module")
 def userWalletB(nodeSet, addedTrustAnchor,
                 trustAnchorWallet, looper, trustAnchor):
     return addRole(looper, trustAnchor, trustAnchorWallet, 'userB',
@@ -318,56 +328,3 @@ def pytest_assertrepr_compare(op, left, right):
             mod = 'not ' if 'not' in op else ''
             lines = ['    ' + s for s in right.split('\n')]
             return ['"{}" should {}be in...'.format(left, mod)] + lines
-
-
-@pytest.fixture("module")
-def nodeThetaAdded(looper, nodeSet, tdirWithPoolTxns, tconf, steward,
-                   stewardWallet, allPluginsPath, testNodeClass,
-                   testClientClass, tdir):
-    newStewardName = "testClientSteward" + randomString(3)
-    newNodeName = "Theta"
-    newSteward, newStewardWallet = getClientAddedWithRole(
-        nodeSet, tdir, looper, steward, stewardWallet, newStewardName, STEWARD)
-
-    sigseed = randomString(32).encode()
-    nodeSigner = DidSigner(seed=sigseed)
-
-    (nodeIp, nodePort), (clientIp, clientPort) = genHa(2)
-
-    data = {
-        NODE_IP: nodeIp,
-        NODE_PORT: nodePort,
-        CLIENT_IP: clientIp,
-        CLIENT_PORT: clientPort,
-        ALIAS: newNodeName,
-        SERVICES: [VALIDATOR, ]
-    }
-
-    node = Node(nodeSigner.identifier, data, newStewardWallet.defaultId)
-    newStewardWallet.addNode(node)
-    reqs = newStewardWallet.preparePending()
-    req = newSteward.submitReqs(*reqs)[0][0]
-
-    waitForSufficientRepliesForRequests(looper, newSteward, requests=[req])
-
-    def chk():
-        assert newStewardWallet.getNode(node.id).seqNo is not None
-
-    timeout = waits.expectedTransactionExecutionTime(len(nodeSet))
-    looper.run(eventually(chk, retryWait=1, timeout=timeout))
-
-    initLocalKeys(newNodeName, tdirWithPoolTxns, sigseed, override=True)
-
-    newNode = testNodeClass(newNodeName, basedirpath=tdir, base_data_dir=tdir, config=tconf,
-                            ha=(nodeIp, nodePort), cliha=(
-                                clientIp, clientPort),
-                            pluginPaths=allPluginsPath)
-
-    nodeSet.append(newNode)
-    looper.add(newNode)
-    looper.run(checkNodesConnected(nodeSet))
-    ensureClientConnectedToNodesAndPoolLedgerSame(looper, steward,
-                                                  *nodeSet)
-    ensureClientConnectedToNodesAndPoolLedgerSame(looper, newSteward,
-                                                  *nodeSet)
-    return newSteward, newStewardWallet, newNode

@@ -3,14 +3,10 @@ from types import MethodType
 import logging
 import pytest
 
-from indy_client.client.client import Client
-from indy_client.client.wallet.wallet import Wallet
-from indy_common.identity import Identity
 from indy_node.server.node import Node
-from indy_client.test.conftest import nodeSet
 from plenum.common.batched import Batched
 from plenum.test.delayers import cDelay, lsDelay
-from plenum.test.helper import waitForSufficientRepliesForRequests
+from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.test_node import getNonPrimaryReplicas
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
@@ -49,8 +45,8 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
         tdirWithPoolTxns,
         tdirWithDomainTxns,
         nodeSet,
-        trustAnchor,
-        trustAnchorWallet,
+        sdk_pool_handle,
+        sdk_wallet_trust_anchor,
         allPluginsPath,
         tconf,
         disable_transport_batching):
@@ -89,8 +85,7 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
     slow_node.nodeIbStasher.delay(cDelay(300))
     slow_node.start_catchup = MethodType(patched_start_catchup, slow_node)
 
-    requests = send_random_requests(trustAnchorWallet, trustAnchor, 1)
-    waitForSufficientRepliesForRequests(looper, trustAnchor, requests=requests)
+    send_random_requests(looper, sdk_pool_handle, sdk_wallet_trust_anchor, 1)
 
     no_more_catchups_needed_call_times_before = \
         slow_node.spylog.count(Node.no_more_catchups_needed.__name__)
@@ -151,11 +146,7 @@ def patched_try_processing_ordered(self, msg):
             MethodType(Node.try_processing_ordered, self)
 
 
-def send_random_requests(wallet: Wallet, client: Client, count: int):
+def send_random_requests(looper, sdk_pool_handle, sdk_wallet_trust_anchor, count: int):
     logger.info('{} random requests will be sent'.format(count))
     for i in range(count):
-        idr, signer = wallet.addIdentifier()
-        idy = Identity(identifier=idr, verkey=signer.verkey)
-        wallet.addTrustAnchoredIdentity(idy)
-    requests = wallet.preparePending()
-    return client.submitReqs(*requests)[0]
+        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trust_anchor)

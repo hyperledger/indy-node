@@ -1,4 +1,3 @@
-import pytest
 from plenum.common.util import get_utc_epoch
 from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_node.persistence.idr_cache import IdrCache

@@ -23,8 +23,9 @@ from stp_core.common.log import getlogger
 
 config = getConfig()
 
-logger = None  # to make flake8 happy
+logger = getlogger()  # to make flake8 happy
 clients = {}   # task -> (reader, writer)
+logger.disabled = True
 
 
 class BaseUnknown:
@@ -43,6 +44,10 @@ class BaseUnknown:
     @property
     def val(self):
         return self._val
+
+    @val.setter
+    def val(self, val):
+        self._val = val
 
 
 class NewEncoder(json.JSONEncoder):
@@ -124,14 +129,6 @@ class BaseStats(OrderedDict):
         self._verbose = verbose
 
 
-class ConnectionStats(BaseStats):
-    shema = [
-        ("ip", BaseUnknown),
-        ("port", BaseUnknown),
-        ("protocol", BaseUnknown)
-    ]
-
-
 class ConnectionStatsOut:
 
     def __init__(self, bindings, verbose):
@@ -154,11 +151,7 @@ class ConnectionStatsOut:
         return ", ".join(data)
 
 
-class BindingsStats(BaseStats):
-    shema = [
-        ("node", ConnectionStats),
-        ("client", ConnectionStats)
-    ]
+class BindingStats(BaseUnknown):
 
     @staticmethod
     def explore_bindings(port):
@@ -247,20 +240,19 @@ class BindingsStats(BaseStats):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        for target, data in self.items():
-            # change schema: ignoring any data received except port,
-            # resolve it ourselves (requested in original task INDY-715)
-            # TODO refactor
+        # change schema: ignoring any data received except port,
+        # resolve it ourselves (requested in original task INDY-715)
+        # TODO refactor
 
-            bindings = self.explore_bindings(data['port'].val)
-            logger.info(
-                "Found the following bindings for target {} "
-                "with port {}: {}".format(target, data['port'], bindings)
-            )
-            self[target] = ConnectionStatsOut([] if bindings is None else [
-                dict(port=data['port'], protocol=protocol, ip=ip)
-                for protocol, ip in bindings
-            ], self._verbose)
+        bindings = self.explore_bindings(self.val)
+        logger.info(
+            "Found the following bindings "
+            "with port {}: {}".format(self.val, bindings)
+        )
+        self.val = ConnectionStatsOut([] if bindings is None else [
+            dict(port=self.val, protocol=protocol, ip=ip)
+            for protocol, ip in bindings
+        ], False)
 
 
 class TransactionsStats(BaseStats):
@@ -286,18 +278,24 @@ class MetricsStats(BaseStats):
     ]
 
 
-class NodesListStats(BaseStats):
+class NodeStats(BaseStats):
     shema = [
-        ("count", BaseUnknown),
-        ("list", NodesListUnknown)
+        ("Name", BaseUnknown),
+        ("did", BaseUnknown),
+        ("verkey", BaseUnknown),
+        ("Node_port", BindingStats),
+        ("Client_port", BindingStats),
+        ("Metrics", MetricsStats)
     ]
 
 
 class PoolStats(BaseStats):
     shema = [
-        ("total-count", BaseUnknown),
-        ("reachable", NodesListStats),
-        ("unreachable", NodesListStats)
+        ("Total_nodes_count", BaseUnknown),
+        ("Reachable_nodes", NodesListUnknown),
+        ("Reachable_nodes_count", BaseUnknown),
+        ("Unreachable_nodes", NodesListUnknown),
+        ("Unreachable_nodes_count", BaseUnknown)
     ]
 
 
@@ -338,19 +336,25 @@ class ValidatorStats(BaseStats):
     shema = [
         ("response-version", BaseUnknown),
         ("timestamp", TimestampUnknown),
-        ("alias", BaseUnknown),
+        ("Node_info", NodeStats),
         ("state", StateUnknown),
         ("enabled", BaseUnknown),
-        ("did", BaseUnknown),
-        ("verkey", BaseUnknown),
-        ("bindings", BindingsStats),
-        ("metrics", MetricsStats),
-        ("pool", PoolStats),
+        ("Pool_info", PoolStats),
         ("software", SoftwareStats)
     ]
 
     @staticmethod
     def get_process_state():
+        ctl = os.getenv('INDY_CONTROL', 'systemctl')
+        if ctl == "systemctl":
+           return ValidatorStats.get_process_state_via_systemctl()
+        elif ctl == "supervisorctl":
+           return ValidatorStats.get_process_state_via_supervisorctl()
+        else:
+           return "Invalid value for INDY_CONTROL environment variable: '%s'" % ctl
+
+    @staticmethod
+    def get_process_state_via_systemctl():
         ret = subprocess.check_output(
             'systemctl is-failed indy-node; exit 0',
             stderr=subprocess.STDOUT, shell=True
@@ -368,7 +372,35 @@ class ValidatorStats(BaseStats):
             return None
 
     @staticmethod
+    def get_process_state_via_supervisorctl():
+        ret = subprocess.check_output(
+            "supervisorctl status indy-node | awk '{print $2}'; exit 0",
+            stderr=subprocess.STDOUT, shell=True
+        )
+        ret = ret.decode().strip()
+        if ret == 'STOPPED':
+            return 'stopped'
+        elif ret == 'RUNNING':
+            return 'running'
+        else:
+            logger.info(
+                "Non-expected output for indy-node "
+                "status: {}".format(ret)
+            )
+            return None
+
+    @staticmethod
     def get_enabled_state():
+        ctl = os.getenv('INDY_CONTROL', 'systemctl')
+        if ctl == "systemctl":
+           return ValidatorStats.get_enabled_state_via_systemctl()
+        elif ctl == "supervisorctl":
+           return ValidatorStats.get_enabled_state_via_supervisorctl()
+        else:
+           return "Invalid value for INDY_CONTROL environment variable: '%s'" % ctl
+
+    @staticmethod
+    def get_enabled_state_via_systemctl():
         ret = subprocess.check_output(
             'systemctl is-enabled indy-node; exit 0',
             stderr=subprocess.STDOUT, shell=True
@@ -377,6 +409,24 @@ class ValidatorStats(BaseStats):
         if ret in ('enabled', 'static'):
             return True
         elif ret == 'disabled':
+            return False
+        else:
+            logger.info(
+                "Non-expected output for indy-node "
+                "is-enabled state: {}".format(ret)
+            )
+            return None
+
+    @staticmethod
+    def get_enabled_state_via_supervisorctl():
+        ret = subprocess.check_output(
+            "supervisorctl status indy-node | awk '{print $2}'; exit 0",
+            stderr=subprocess.STDOUT, shell=True
+        )
+        ret = ret.decode().strip()
+        if ret in ('RUNNING', 'BACKOFF', 'STARTING'):
+            return True
+        elif ret == 'STOPPED':
             return False
         else:
             logger.info(
@@ -398,40 +448,39 @@ class ValidatorStats(BaseStats):
     def __str__(self):
         # TODO moving parts to other classes seems reasonable but
         # will drop visibility of output
-
         lines = [
-            "Validator {} is {}".format(self['alias'], self['state']),
+            "Validator {} is {}".format(self['Node_info']['Name'], self['state']),
             "#Current time:     {}".format(self['timestamp']),
-            "Validator DID:    {}".format(self['did']),
-            "Verification Key: {}".format(self['verkey']),
-            "Node Port:        {}".format(self['bindings']['node']),
-            "Client Port:      {}".format(self['bindings']['client']),
+            "Validator DID:    {}".format(self['Node_info']['did']),
+            "Verification Key: {}".format(self['Node_info']['verkey']),
+            "Node Port:        {}".format(self['Node_info']['Node_port']),
+            "Client Port:      {}".format(self['Node_info']['Client_port']),
             "Metrics:",
-            "  Uptime: {}".format(self['metrics']['uptime']),
+            "  Uptime: {}".format(self['Node_info']['Metrics']['uptime']),
             "#  Total Config Transactions:  {}".format(
-                self['metrics']['transaction-count']['config']),
+                self['Node_info']['Metrics']['transaction-count']['config']),
             "  Total Ledger Transactions:  {}".format(
-                self['metrics']['transaction-count']['ledger']),
+                self['Node_info']['Metrics']['transaction-count']['ledger']),
             "  Total Pool Transactions:    {}".format(
-                self['metrics']['transaction-count']['pool']),
+                self['Node_info']['Metrics']['transaction-count']['pool']),
             "  Read Transactions/Seconds:  {}".format(
-                self['metrics']['average-per-second']['read-transactions']),
+                self['Node_info']['Metrics']['average-per-second']['read-transactions']),
             "  Write Transactions/Seconds: {}".format(
-                self['metrics']['average-per-second']['write-transactions']),
+                self['Node_info']['Metrics']['average-per-second']['write-transactions']),
             "Reachable Hosts:   {}/{}".format(
-                self['pool']['reachable']['count'],
-                self['pool']['total-count'])
+                self['Pool_info']['Reachable_nodes_count'],
+                self['Pool_info']['Total_nodes_count'])
         ] + [
             "#  {}".format(alias)
-            for alias in self['pool']['reachable']['list']
+            for alias in self['Pool_info']['Reachable_nodes']
         ] + [
             "Unreachable Hosts: {}/{}".format(
-                self['pool']['unreachable']['count'],
-                self['pool']['total-count']
+                self['Pool_info']['Unreachable_nodes_count'],
+                self['Pool_info']['Total_nodes_count']
             )
         ] + [
             "#  {}".format(alias)
-            for alias in self['pool']['unreachable']['list']
+            for alias in self['Pool_info']['Unreachable_nodes']
         ] + [
             "#Software Versions:"
         ] + [
@@ -514,6 +563,32 @@ def watch(fpath, verbose, _json):
         curses.wrapper(_watch)
     except KeyboardInterrupt:
         pass
+
+
+def format_key(key):
+    return "{:15}".format('"{}": '.format(key))
+
+
+def make_indent(indent):
+    return indent * "{:5}".format("")
+
+
+def format_value(value):
+    return " {:10}".format(str(value))
+
+
+def create_print_tree(stats: dict, indent=0, lines=[]):
+    for key, value in stats.items():
+        if isinstance(value, dict):
+            lines.append(make_indent(indent) + format_key(key))
+            create_print_tree(value, indent + 1, lines)
+        elif isinstance(value, list):
+            lines.append(make_indent(indent) + format_key(key))
+            for line in value:
+                lines.append(make_indent(indent + 1) + format_value(line))
+        else:
+            lines.append(make_indent(indent) + format_key(key) + format_value(value if value else 'n/a'))
+    return lines
 
 
 def main():
@@ -635,14 +710,30 @@ def main():
     #     loop.run_until_complete(server.wait_closed())
     #     loop.close()
     # else:
-    paths = glob(os.path.join(args.basedir, "*_info.json"))
-    if not paths:
+    all_paths = glob(os.path.join(args.basedir, "*_info.json"))
+    info_paths = []
+    additional_paths = []
+    for path in all_paths:
+        if path.find("additional") != -1:
+            additional_paths.append(path)
+        else:
+            info_paths.append(path)
+    if not info_paths:
         print('There are no info files in {}'.format(args.basedir))
         return
-    for file_path in paths:
+    for file_path in info_paths:
         logger.info("Reading file {} ...".format(file_path))
-        print(get_stats_from_file(file_path, args.verbose, args.json))
+        if args.verbose:
+            with open(file_path) as f_stats:
+                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
+        else:
+            print(get_stats_from_file(file_path, args.verbose, args.json))
+
         print('\n')
+    if args.verbose:
+        for file_path in additional_paths:
+            with open(file_path) as f_stats:
+                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
 
     logger.info("Done")
 

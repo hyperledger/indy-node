@@ -114,7 +114,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=$GENERAL_CONFIG_DIR/node_control.conf
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \$HOLD_EXT
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \${HOLD_EXT}
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
@@ -125,6 +125,49 @@ TimeoutSec=300
 WantedBy=multi-user.target
 EOF
 
+# add supervisord script
+cat <<EOF > /etc/supervisor/indy-node.conf
+[supervisord]
+nodaemon=true
+logfile=/var/log/indy/supervisord.log
+logfile_maxbytes=10MB
+loglevel=critical
+
+[supervisorctl]
+serverurl=http://127.0.0.1:9001
+
+[inet_http_server]
+port = 127.0.0.1:9001
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[program:indy-node]
+command=sh -ac '. $GENERAL_CONFIG_DIR/indy.env;/usr/bin/env python3 -O /usr/local/bin/start_indy_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}'
+user=indy
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+autorestart=true
+startsecs=15
+startretries=6
+stopasgroup=true
+killasgroup=true
+
+[program:indy-node-control]
+command=sh -ac '. $GENERAL_CONFIG_DIR/node_control.conf;/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \${TEST_MODE} --hold-ext "\${HOLD_EXT}"'
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+autorestart=true
+startsecs=15
+startretries=6
+stopasgroup=true
+killasgroup=true
+EOF
+
 HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/indy/node_control.conf)
 if [ ! -f $GENERAL_CONFIG_DIR/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
     cat <<EOF > $GENERAL_CONFIG_DIR/node_control.conf
@@ -132,9 +175,10 @@ if [ ! -f $GENERAL_CONFIG_DIR/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ];
 #TEST_MODE=--test
 
 TEST_MODE=
-HOLD_EXT=\"\"
+HOLD_EXT=
 EOF
 fi
+sed -ie '/HOLD_EXT/{ s/\\//g}' $GENERAL_CONFIG_DIR/node_control.conf
 
 mv /usr/local/bin/upgrade_indy_node_ubuntu1604.sh /usr/local/bin/upgrade_indy_node
 mv /usr/local/bin/upgrade_indy_node_ubuntu1604_test.sh /usr/local/bin/upgrade_indy_node_test

@@ -13,8 +13,23 @@ if [ $ret -ne 0 ] ; then
   exit 1
 fi
 
-echo "Stop indy-node"
-systemctl stop indy-node
+if [ "$INDY_CONTROL" = "" ]; then
+
+  echo "Stop indy-node"
+  systemctl stop indy-node
+
+elif [ "$INDY_CONTROL" = "supervisorctl" ]; then
+
+  echo "Stop indy-node"
+  supervisorctl stop indy-node
+
+else
+
+  echo "Invalid setting for 'INDY_CONTROL' environment variable: $INDY_CONTROL"
+  exit 1
+
+fi
+
 
 echo "Run indy upgrade to $deps"
 apt-get -y --allow-downgrades --allow-change-held-packages --reinstall install $deps

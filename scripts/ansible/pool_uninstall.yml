@@ -1,0 +1,20 @@
+- hosts: pool
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Stop indy node
+      service: name=indy-node state=stopped
+
+    - name: Stop indy node control
+      service: name=indy-node-control state=stopped
+
+    - name: Clear pool
+      shell: clear_node.py --full=true
+      ignore_errors: yes
+
+    - name: Clear pool data for sure
+      file: path=/var/lib/indy/sandbox state=absent
+
+    - name: Clear pool logs for sure
+      file: path=/var/log/indy/sandbox state=absent

@@ -36,11 +36,11 @@ def abbrevVerkey(wallet, abbrevIdr):
 
 @pf
 def noKeyIdr(wallet):
-    idr = base58.b58encode(b'1' * 16)
+    idr = base58.b58encode(b'1' * 16).decode("utf-8")
     return wallet.addIdentifier(identifier=idr)[0]
 
 
 @pf
 def fullKeyIdr(wallet):
-    idr = base58.b58encode(b'2' * 16)
+    idr = base58.b58encode(b'2' * 16).decode("utf-8")
     return wallet.addIdentifier(identifier=idr)[0]

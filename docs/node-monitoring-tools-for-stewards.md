@@ -18,7 +18,7 @@
 
 ## Plugin Manager
 
-Currently, indy-node emits different events via the Plugin Manager when certain criteria are met. The Plugin Manager tries to import all pip packages which names start with "sovrinnotifier*". Each of these packages is required to expose `send_message`; interface which is used to pass the event with the associated message to the package for further handling.
+Currently, indy-node emits different events via the Plugin Manager when certain criteria are met. The Plugin Manager tries to import all pip packages which names start with "indynotifier*". Each of these packages is required to expose `send_message`; interface which is used to pass the event with the associated message to the package for further handling.
 
 The Plugin Manager code is located at [here](https://github.com/hyperledger/indy-plenum/blob/master/plenum/server/notifier_plugin_manager.py#L23).
 
@@ -53,22 +53,26 @@ If you get a email on your youremail@example.com then `sendmail` is working.
 
 ### Install
 
-`$ pip3 install sovrinnotifieremail`
-
-`$ Add SOVRIN_NOTIFIER_EMAIL_RECIPIENTS=youremail@example.com to your /etc/environment`
-
-You are required to set system environment variable `SOVRIN_NOTIFIER_EMAIL_RECIPIENTS`.
+`# pip3 install indynotifieremail`
 
 ### Configuration
 
+The spike detection and notification mechanisms should be enabled by appending of the following line to
+`indy_config.py` configuration file:
+
+`SpikeEventsEnabled=True`
+
 The package depends on two environment variables:
 
-- `.SOVRIN_NOTIFIER_EMAIL_RECIPIENTS` (required)
-- `.SOVRIN_NOTIFIER_EMAIL_SENDER` (optional)
+- `INDY_NOTIFIER_EMAIL_RECIPIENTS` (required)
+- `INDY_NOTIFIER_EMAIL_SENDER` (optional)
 
-**SOVRIN_NOTIFIER_EMAIL_RECIPIENTS**
+Add these variables to `/etc/indy/indy.env` environment file as you are required to set such system environment
+variables for indy-node service in form described below.
 
-`SOVRIN_NOTIFIER_EMAIL_RECIPIENTS` should be a string in a format of:
+**INDY_NOTIFIER_EMAIL_RECIPIENTS**
+
+`INDY_NOTIFIER_EMAIL_RECIPIENTS` should be a string in a format of:
 
 `recipient1@adress.com [optional list of events the recipient is going to get],recipient2@adress.com [event list]`
 
@@ -80,13 +84,13 @@ This way steward1 is going to get notifications for event1 and event2, steward2 
 
 The current list of events can be found above.
 
-**SOVRIN_NOTIFIER_EMAIL_SENDER**
+**INDY_NOTIFIER_EMAIL_SENDER**
 
-By default every email notification is going to be from alert@noreply.com. You can change this by setting `SOVRIN_NOTIFIER_EMAIL_SENDER`. May be useful for email filters.
+By default every email notification is going to be from alert@noreply.com. You can change this by setting `INDY_NOTIFIER_EMAIL_SENDER`. May be useful for email filters.
 
 ### Email delivery frequency
 
-By default you will not get a email with the same topic more than once an hour. This is defined by `SILENCE_TIMEOUT`. It can be overridden by setting `SOVRIN_NOTIFIER_SILENCE_TIMEOUT` environment variable. Emails regarding update procedure are always delivered.
+By default you will not get a email with the same topic more than once an hour. This is defined by `SILENCE_TIMEOUT`. It can be overridden by setting `INDY_NOTIFIER_SILENCE_TIMEOUT` environment variable in `/etc/indy/indy.env` file. Emails regarding update procedure are always delivered.
 
 
 ## AWS SNS Plugin
