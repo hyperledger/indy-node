@@ -6,14 +6,17 @@ from collections import deque
 from typing import List
 from typing import Optional
 
+from indy_common.serialization import attrib_raw_data_serializer
+from indy_common.state import domain
 from ledger.util import F
 from plenum.client.wallet import Wallet as PWallet
 from plenum.common.did_method import DidMethods
-from plenum.common.txn_util import get_seq_no, get_reply_itentifier, get_reply_txntype, get_reply_nym
+from plenum.common.txn_util import get_seq_no, get_reply_itentifier, get_reply_txntype, get_reply_nym, get_payload_data, \
+    get_from
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, DATA, \
-    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN, CURRENT_PROTOCOL_VERSION
+    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN, CURRENT_PROTOCOL_VERSION, RAW, ENC, HASH
 from plenum.common.types import f
 
 from indy_client.client.wallet.attribute import Attribute, AttributeKey, \
@@ -245,22 +248,40 @@ class Wallet(PWallet, TrustAnchoring):
             # else:
             #    raise NotImplementedError('No handler for {}'.format(typ))
 
+    def _attrib_data_from_reply(self, result):
+        dt = get_payload_data(result)
+        dest = dt[TARGET_NYM]
+        origin = get_from(result)
+        val = None
+        if RAW in dt:
+            val = json.loads(dt[RAW])
+        elif ENC in dt:
+            val = dt[ENC]
+        elif HASH in dt:
+            val = dt[HASH]
+        return origin, dest, val
+
     def _attribReply(self, result, preparedReq):
-        _, attrKey = preparedReq
-        attrib = self.getAttribute(AttributeKey(*attrKey))
-        attrib.seqNo = get_seq_no(result)
+        origin, dest, val = self._attrib_data_from_reply(result)
+        for attrib in self.getAttributesForNym(dest):
+            attrib_val = attrib.value
+            if attrib.ledgerStore == LedgerStore.RAW:
+                attrib_val = json.loads(attrib_val)
+            if attrib.origin == origin and attrib_val == val:
+                attrib.seqNo = get_seq_no(result)
 
     def _getAttrReply(self, result, preparedReq):
         # TODO: Confirm if we need to add the retrieved attribute to the wallet.
         # If yes then change the graph query on node to return the sequence
         # number of the attribute txn too.
-        _, attrKey = preparedReq
-        attrib = self.getAttribute(AttributeKey(*attrKey))
-        if DATA in result:
-            attrib.value = result[DATA]
-            attrib.seqNo = result[F.seqNo.name]
-        else:
-            logger.debug("No attribute found")
+        attr_type, attr_key = domain._extract_attr_typed_value(result)
+        for attrib in self.getAttributesForNym(result[TARGET_NYM]):
+            if attrib.name == attr_key:
+                attrib.seqNo = result[f.SEQ_NO.nm]
+                attrib.value = result[DATA]
+                if attr_type == 'raw':
+                    attrib.value = attrib_raw_data_serializer.deserialize(attrib.value)
+                    attrib.value = attrib_raw_data_serializer.serialize(attrib.value, toBytes=False)
 
     def _nymReply(self, result, preparedReq):
         target = get_reply_nym(result)

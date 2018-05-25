@@ -1,7 +1,7 @@
 from hashlib import sha256
 from common.serializers.serialization import domain_state_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
-    TARGET_NYM, DATA, NAME, VERSION, ORIGIN
+    TARGET_NYM, DATA, NAME, VERSION, ORIGIN, TYPE
 from plenum.common.txn_util import get_type, get_payload_data, get_seq_no, get_txn_time, get_from
 from plenum.common.types import f
 from indy_common.serialization import attrib_raw_data_serializer
@@ -270,7 +270,7 @@ def prepare_get_attr_for_state(reply):
         data = reply.pop(DATA)
         reply[attr_type] = data
 
-        assert get_type(reply) == GET_ATTR
+        assert reply[TYPE] == GET_ATTR
         attr_type, attr_key, value = parse_attr_txn(reply)
         hashed_value = hash_of(value) if value else ''
         seq_no = reply[f.SEQ_NO.nm]
