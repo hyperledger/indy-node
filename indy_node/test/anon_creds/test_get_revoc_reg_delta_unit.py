@@ -38,7 +38,8 @@ def add_another_reg_id(looper,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     looper.runFor(2)
     req_handler = node.getDomainReqHandler()
-    txn = append_txn_metadata(reqToTxn(Request(**req), FIRST_ID_TS),
+    txn = append_txn_metadata(reqToTxn(Request(**req)),
+                              txn_time=FIRST_ID_TS,
                               seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocDef(txn)
     return req
@@ -55,7 +56,8 @@ def reg_entry_with_other_reg_id(looper,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     looper.runFor(2)
     req_handler = node.getDomainReqHandler()
-    txn = append_txn_metadata(reqToTxn(Request(**req), FIRST_ID_TS),
+    txn = append_txn_metadata(reqToTxn(Request(**req)),
+                              txn_time=FIRST_ID_TS,
                               seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocRegEntry(txn)
     req_handler.ts_store.set(get_txn_time(txn), req_handler.state.headHash)
@@ -73,7 +75,8 @@ def test_get_delta_with_other_reg_def_in_state(looper,
     # need for different txnTime
     looper.runFor(2)
     req_handler = node.getDomainReqHandler()
-    txn = append_txn_metadata(reqToTxn(entry_second_id, SECOND_TS_ID),
+    txn = append_txn_metadata(reqToTxn(entry_second_id),
+                              txn_time=SECOND_TS_ID,
                               seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocRegEntry(txn)
     req_handler.ts_store.set(get_txn_time(txn), req_handler.state.headHash)
