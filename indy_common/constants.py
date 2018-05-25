@@ -54,8 +54,6 @@ FROM = "from"
 TO = "to"
 STATE_PROOF_FROM = "stateProofFrom"
 REVOC_REG_ID = "revocRegId"
-SEQ_NO_FROM = "seqNoFrom"
-TXN_TIME_FROM = 'txnTimeFrom'
 
 NULL = 'null'
 OWNER = '<owner>'

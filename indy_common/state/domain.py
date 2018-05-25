@@ -1,12 +1,13 @@
+from copy import deepcopy
 from hashlib import sha256
+
 from common.serializers.serialization import domain_state_serializer
+from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID
+from indy_common.serialization import attrib_raw_data_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
     TARGET_NYM, DATA, NAME, VERSION, ORIGIN, TYPE
 from plenum.common.txn_util import get_type, get_payload_data, get_seq_no, get_txn_time, get_from
 from plenum.common.types import f
-from indy_common.serialization import attrib_raw_data_serializer
-from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID
-
 
 MARKER_ATTR = "\01"
 MARKER_SCHEMA = "\02"
@@ -29,7 +30,7 @@ def make_state_path_for_nym(did) -> bytes:
 
 def make_state_path_for_attr(did, attr_name, attr_is_hash=False) -> bytes:
     nameHash = sha256(attr_name.encode()).hexdigest() if not attr_is_hash else attr_name
-    return "{DID}:{MARKER}:{ATTR_NAME}"\
+    return "{DID}:{MARKER}:{ATTR_NAME}" \
         .format(DID=did,
                 MARKER=MARKER_ATTR,
                 ATTR_NAME=nameHash).encode()
@@ -116,7 +117,7 @@ def prepare_claim_def_for_state(txn):
     signature_type = txn_data.get(SIGNATURE_TYPE, 'CL')
     path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
     seq_no = get_seq_no(txn)
-    txn_time = get_txn_time( txn)
+    txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(data, seq_no, txn_time)
     return path, value_bytes
 
@@ -136,7 +137,7 @@ def prepare_revoc_def_for_state(txn):
                                          revoc_def_type,
                                          revoc_def_tag)
     seq_no = get_seq_no(txn)
-    txn_time = get_txn_time( txn)
+    txn_time = get_txn_time(txn)
     assert seq_no
     assert txn_time
     value_bytes = encode_state_value(txn_data, seq_no, txn_time)
@@ -152,9 +153,14 @@ def prepare_revoc_reg_entry_for_state(txn):
     path = make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
 
     seq_no = get_seq_no(txn)
-    txn_time = get_txn_time( txn)
+    txn_time = get_txn_time(txn)
     assert seq_no
     assert txn_time
+    # TODO: do not duplicate seqNo here
+    # doing this now just for backward-compatibility
+    txn_data = deepcopy(txn_data)
+    txn_data[f.SEQ_NO.nm] = seq_no
+    txn_data[TXN_TIME] = txn_time
     value_bytes = encode_state_value(txn_data, seq_no, txn_time)
     return path, value_bytes
 
@@ -164,13 +170,18 @@ def prepare_revoc_reg_entry_accum_for_state(txn):
     txn_data = get_payload_data(txn)
     revoc_reg_def_id = txn_data.get(REVOC_REG_DEF_ID)
     seq_no = get_seq_no(txn)
-    txn_time = get_txn_time( txn)
+    txn_time = get_txn_time(txn)
     assert author_did
     assert revoc_reg_def_id
     assert seq_no
     assert txn_time
     path = make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
 
+    # TODO: do not duplicate seqNo here
+    # doing this now just for backward-compatibility
+    txn_data = deepcopy(txn_data)
+    txn_data[f.SEQ_NO.nm] = seq_no
+    txn_data[TXN_TIME] = txn_time
     value_bytes = encode_state_value(txn_data, seq_no, txn_time)
     return path, value_bytes
 
@@ -216,9 +227,7 @@ def prepare_get_revoc_def_for_state(reply):
 
 
 def prepare_get_revoc_reg_entry_for_state(reply):
-    author_did = reply.get(f.IDENTIFIER.nm)
     revoc_reg_def_id = reply.get(DATA).get(REVOC_REG_DEF_ID)
-    assert author_did
     assert revoc_reg_def_id
     path = make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
 
@@ -231,11 +240,9 @@ def prepare_get_revoc_reg_entry_for_state(reply):
 
 
 def prepare_get_revoc_reg_entry_accum_for_state(reply):
-    author_did = reply.get(f.IDENTIFIER.nm)
     revoc_reg_def_id = reply.get(DATA).get(REVOC_REG_DEF_ID)
     seq_no = reply[f.SEQ_NO.nm]
     txn_time = reply[TXN_TIME]
-    assert author_did
     assert revoc_reg_def_id
     assert seq_no
     assert txn_time
@@ -253,7 +260,7 @@ def prepare_schema_for_state(txn):
     schema_version = data.pop(VERSION)
     path = make_state_path_for_schema(origin, schema_name, schema_version)
     seq_no = get_seq_no(txn)
-    txn_time = get_txn_time( txn)
+    txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(data, seq_no, txn_time)
     return path, value_bytes
 

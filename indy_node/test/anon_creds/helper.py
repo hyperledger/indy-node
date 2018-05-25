@@ -12,25 +12,17 @@ from state.pruning_state import PruningState
 from indy_common.state import domain
 
 
-def add_txn_specific_fileds(result):
-    result[TXN_PAYLOAD] = {TXN_PAYLOAD_METADATA: {TXN_PAYLOAD_METADATA_FROM: result[f.IDENTIFIER.nm]}}
-    result[TXN_PAYLOAD][TXN_PAYLOAD_DATA] = result[TXN_PAYLOAD_DATA]
-    result[TXN_METADATA] = {TXN_METADATA_SEQ_NO: result[TXN_METADATA_SEQ_NO]}
-    result[TXN_METADATA][TXN_METADATA_TIME] = result[TXN_METADATA_TIME]
-
-
 def prepare_for_state(result):
     request_type = result[TYPE]
-    add_txn_specific_fileds(result)
     if request_type == GET_REVOC_REG_DEF:
-        return domain.prepare_revoc_def_for_state(result)
+        return domain.prepare_get_revoc_def_for_state(result)
     if request_type == GET_REVOC_REG:
-        return domain.prepare_revoc_reg_entry_accum_for_state(result)
+        return domain.prepare_get_revoc_reg_entry_accum_for_state(result)
     if request_type == GET_REVOC_REG_DELTA:
         if ISSUED in result[DATA][VALUE]:
-            return domain.prepare_revoc_reg_entry_for_state(result)
+            return domain.prepare_get_revoc_reg_entry_for_state(result)
         else:
-            return domain.prepare_revoc_reg_entry_accum_for_state(result)
+            return domain.prepare_get_revoc_reg_entry_accum_for_state(result)
     raise ValueError("Cannot make state key for "
                      "request of type {}"
                      .format(request_type))
@@ -88,15 +80,13 @@ def check_valid_proof(reply):
             reply_from = {DATA: result[DATA][VALUE][ACCUM_FROM],
                           STATE_PROOF: result[DATA][STATE_PROOF_FROM],
                           TYPE: result[TYPE],
-                          f.IDENTIFIER.nm: result[f.IDENTIFIER.nm],
-                          f.SEQ_NO.nm: result[DATA][VALUE][f.SEQ_NO.nm + 'From'],
-                          TXN_TIME: result[DATA][VALUE][TXN_TIME + 'From']
+                          f.SEQ_NO.nm: result[DATA][VALUE][ACCUM_FROM][f.SEQ_NO.nm],
+                          TXN_TIME: result[DATA][VALUE][ACCUM_FROM][TXN_TIME]
                           }
             assert validate_proof(reply_from)
         reply_to = {DATA: result['data'][VALUE][ACCUM_TO],
                     STATE_PROOF: result[STATE_PROOF],
                     TYPE: result[TYPE],
-                    f.IDENTIFIER.nm: result[f.IDENTIFIER.nm],
                     f.SEQ_NO.nm: result[f.SEQ_NO.nm],
                     TXN_TIME: result[TXN_TIME]
                     }
