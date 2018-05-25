@@ -10,7 +10,7 @@ from plenum.common.constants import ENC, REPLY, TXN_TIME, TXN_ID, \
     TXN_TYPE, ROLE, NONCE, VERKEY
 from plenum.common.exceptions import RequestRejectedException, RequestNackedException
 from plenum.common.signer_did import DidSigner
-from plenum.common.txn_util import get_type, get_payload_data
+from plenum.common.txn_util import get_type, get_payload_data, get_req_id
 from plenum.common.types import f
 from plenum.common.util import adict
 from plenum.test import waits
@@ -242,8 +242,8 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(
     for msg, sender in reversed(trustAnchor.inBox):
         if msg[OP_FIELD_NAME] == REPLY:
             if not lastReqId:
-                lastReqId = msg[f.RESULT.nm][f.REQ_ID.nm]
-            if msg.get(f.RESULT.nm, {}).get(f.REQ_ID.nm) == lastReqId:
+                lastReqId = get_req_id(msg[f.RESULT.nm])
+            if get_req_id(msg[f.RESULT.nm]) == lastReqId:
                 replies[sender] = msg
             if len(replies) == len(nodeSet):
                 break
