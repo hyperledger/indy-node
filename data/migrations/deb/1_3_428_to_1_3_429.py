@@ -53,7 +53,7 @@ def get_node_name():
     return node_name
 
 
-def migrate_ledger(db_dir, db_name):
+def migrate_txn_log(db_dir, db_name):
     new_db_name = db_name + '_new'
     old_path = os.path.join(db_dir, db_name)
     new_path = os.path.join(db_dir, new_db_name)
@@ -88,7 +88,6 @@ def migrate_ledger(db_dir, db_name):
 
     # Remove old ledger
     try:
-
         shutil.rmtree(old_path)
     except Exception:
         logger.error(traceback.print_exc())
@@ -110,15 +109,53 @@ def migrate_ledger(db_dir, db_name):
     return True
 
 
-def migrate_ledgers(ledger_dir):
+def migrate_txn_logs(ledger_dir):
     # Migrate transaction logs, they use integer keys
     for ledger_type in ledger_types:
         db_name = ledger_type + "_transactions"
-        if not migrate_ledger(ledger_dir, db_name):
+        if not migrate_txn_log(ledger_dir, db_name):
             logger.error("Could not migrate {}, DB path: {}"
                          .format(db_name, os.path.join(ledger_dir, db_name)))
             return False
 
+    return True
+
+
+def migrate_hash_stores(ledger_dir):
+    for ledger_type in ledger_types:
+        leaves_db = os.path.join(ledger_dir, ledger_type + '_merkleLeaves')
+        nodes_db = os.path.join(ledger_dir, ledger_type + '_merkleNodes')
+        if os.path.exists(leaves_db):
+            os.remove(leaves_db)
+        if os.path.exists(nodes_db):
+            os.remove(nodes_db)
+    return True
+
+
+def migrate_states(ledger_dir):
+    # just remove, it will be re-created from txn log
+    for ledger_type in ledger_types:
+        db = os.path.join(ledger_dir, ledger_type + '_state')
+        if os.path.exists(db):
+            os.remove(db)
+    return True
+
+
+def migrate_ts_store(ledger_dir, config):
+    # just remove, since state root hash may be changed
+    for ledger_type in ledger_types:
+        db = os.path.join(ledger_dir, config.stateTsDbName)
+        if os.path.exists(db):
+            os.remove(db)
+    return True
+
+
+def migrate_bls_signature_store(ledger_dir, config):
+    # just remove, since state root hash may be changed
+    for ledger_type in ledger_types:
+        db = os.path.join(ledger_dir, config.stateSignatureDbName)
+        if os.path.exists(db):
+            os.remove(db)
     return True
 
 
@@ -128,7 +165,7 @@ def archive_old_ledger(node_name, ledger_dir):
     tar = tarfile.open(ledger_archive_path, "w:gz")
     tar.add(ledger_dir, arcname=node_name)
     tar.close()
-    logger.info("Archive of LevelDB-based ledger created: {}"
+    logger.info("Archive of old transaction format ledger created: {}"
                 .format(ledger_archive_path))
 
 
@@ -143,16 +180,45 @@ def migrate_all():
 
     ledger_dir = config_helper.ledger_dir
 
-    # Archiving old ledger
+    # 1. Archiving old ledger
     try:
         archive_old_ledger(node_name, ledger_dir)
     except Exception:
         logger.warning("Could not create an archive of old transactions ledger, proceed anyway")
 
-    if migrate_ledgers(ledger_dir):
-        logger.info("All ledgers migrated successfully from old to new transaction format")
+    # 2. migrate txn log
+    if migrate_txn_logs(ledger_dir):
+        logger.info("All txn logs migrated successfully from old to new transaction format")
     else:
-        logger.error("Ledger migration from old to new format failed!")
+        logger.error("Txn log migration from old to new format failed!")
+        return False
+
+    # 3. migrate hash store
+    if migrate_hash_stores(ledger_dir):
+        logger.info("All hash stores migrated successfully from old to new transaction format")
+    else:
+        logger.error("Hash store migration from old to new format failed!")
+        return False
+
+    # 4. migrate states
+    if migrate_states(ledger_dir):
+        logger.info("All states migrated successfully from old to new transaction format")
+    else:
+        logger.error("State migration from old to new format failed!")
+        return False
+
+    # 5. migrate ts store
+    if migrate_ts_store(ledger_dir, config):
+        logger.info("Timestamp store migrated successfully from old to new transaction format")
+    else:
+        logger.error("Timestamp store migration from old to new format failed!")
+        return False
+
+    # 6. migrate bls signature xtore
+    if migrate_bls_signature_store(ledger_dir, config):
+        logger.info("BLS signature store migrated successfully from old to new transaction format")
+    else:
+        logger.error("BLS signature store migration from old to new format failed!")
         return False
 
     return True
