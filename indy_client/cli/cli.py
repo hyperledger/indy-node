@@ -66,7 +66,7 @@ from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE, 
 from plenum.common.exceptions import OperationError
 from plenum.common.member.member import Member
 from plenum.common.signer_did import DidSigner
-from plenum.common.txn_util import createGenesisTxnFile
+from plenum.common.txn_util import createGenesisTxnFile, get_payload_data
 from plenum.common.util import randomString, getWalletFilePath
 from stp_core.crypto.signer import Signer
 from stp_core.crypto.util import cleanSeed
@@ -611,7 +611,7 @@ class IndyCli(PlenumCli):
             if error:
                 self.print("Error: {}".format(error), Token.BoldBlue)
             else:
-                self.print("Nym {} added".format(reply[TARGET_NYM]),
+                self.print("Nym {} added".format(get_payload_data(reply)[TARGET_NYM]),
                            Token.BoldBlue)
 
         self.looper.loop.call_later(.2,
@@ -646,7 +646,7 @@ class IndyCli(PlenumCli):
                 self.print("Error: {}".format(error), Token.BoldOrange)
             else:
                 self.print("Attribute added for nym {}".
-                           format(reply[TARGET_NYM]), Token.BoldBlue)
+                           format(get_payload_data(reply)[TARGET_NYM]), Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
                                     req.key, self.activeClient, out)
@@ -744,7 +744,7 @@ class IndyCli(PlenumCli):
             else:
                 self.print(
                     "Node request completed {}".format(
-                        reply[TARGET_NYM]),
+                        get_payload_data(reply)[TARGET_NYM]),
                     Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
@@ -1485,7 +1485,7 @@ class IndyCli(PlenumCli):
                 self.activeWallet.updateSigner(cur_id, signer)
                 self._saveActiveWallet()
                 self.print("Key changed for {}".format(
-                    reply[TARGET_NYM]), Token.BoldBlue)
+                    get_payload_data(reply)[TARGET_NYM]), Token.BoldBlue)
                 self.print("New verification key is {}".format(
                     signer.verkey), Token.BoldBlue)
 
