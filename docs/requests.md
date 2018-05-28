@@ -135,10 +135,10 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         },
         "reqSignature": {
             "type": <...>,
-            "values": [
+            "values": [{
                 "from": <...>,
                 "value": <...>
-            ]
+            }]
         }
     
         'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
