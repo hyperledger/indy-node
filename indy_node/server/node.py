@@ -224,7 +224,7 @@ class Node(PlenumNode, HasPoolManager):
         request = self.wallet.signRequest(
             Request(operation=op, protocolVersion=None))
 
-        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.startedProcessingReq(request.digest, self.nodestack.name)
         self.send(request)
         self.upgrader.notified_about_action_result()
 
@@ -246,7 +246,7 @@ class Node(PlenumNode, HasPoolManager):
         request = self.wallet.signRequest(
             Request(operation=op, protocolVersion=None))
 
-        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.startedProcessingReq(request.digest, self.nodestack.name)
         self.send(request)
 
     def processNodeRequest(self, request: Request, frm: str):
@@ -259,8 +259,8 @@ class Node(PlenumNode, HasPoolManager):
                 logger.warning('The request {} failed to authenticate {}'
                                .format(request, repr(ex)))
                 return
-        if not self.isProcessingReq(*request.key):
-            self.startedProcessingReq(*request.key, frm)
+        if not self.isProcessingReq(request.digest):
+            self.startedProcessingReq(request.digest, frm)
         # If not already got the propagate request(PROPAGATE) for the
         # corresponding client request(REQUEST)
         self.recordAndPropagate(request, frm)

@@ -25,8 +25,8 @@ def test_validator_info_handler(monkeypatch,
     }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
 
-    def is_ack(key, frm):
-        assert req_obj.key == key
+    def is_ack(digest, frm):
+        assert req_obj.digest == digest
 
     def is_reply_correct(resp, frm):
         _comparison_reply(resp, req_obj)
