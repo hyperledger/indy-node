@@ -8,6 +8,7 @@ import sys
 import tarfile
 import traceback
 
+from common.serializers.serialization import ledger_txn_serializer
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
 from plenum.common.txn_util import transform_to_new_format
@@ -76,7 +77,9 @@ def migrate_txn_log(db_dir, db_name):
     # put values from old ledger to the new one
     try:
         for key, val in src_storage.iterator():
+            val = ledger_txn_serializer.deserialize(val)
             new_val = transform_to_new_format(txn=val, seq_no=key)
+            new_val = ledger_txn_serializer.serialize(new_val)
             dest_storage.put(key, new_val)
     except Exception:
         logger.error(traceback.print_exc())
@@ -126,9 +129,9 @@ def migrate_hash_stores(ledger_dir):
         leaves_db = os.path.join(ledger_dir, ledger_type + '_merkleLeaves')
         nodes_db = os.path.join(ledger_dir, ledger_type + '_merkleNodes')
         if os.path.exists(leaves_db):
-            os.remove(leaves_db)
+            shutil.rmtree(leaves_db)
         if os.path.exists(nodes_db):
-            os.remove(nodes_db)
+            shutil.rmtree(nodes_db)
     return True
 
 
@@ -137,7 +140,7 @@ def migrate_states(ledger_dir):
     for ledger_type in ledger_types:
         db = os.path.join(ledger_dir, ledger_type + '_state')
         if os.path.exists(db):
-            os.remove(db)
+            shutil.rmtree(db)
     return True
 
 
@@ -146,7 +149,7 @@ def migrate_ts_store(ledger_dir, config):
     for ledger_type in ledger_types:
         db = os.path.join(ledger_dir, config.stateTsDbName)
         if os.path.exists(db):
-            os.remove(db)
+            shutil.rmtree(db)
     return True
 
 
@@ -155,7 +158,7 @@ def migrate_bls_signature_store(ledger_dir, config):
     for ledger_type in ledger_types:
         db = os.path.join(ledger_dir, config.stateSignatureDbName)
         if os.path.exists(db):
-            os.remove(db)
+            shutil.rmtree(db)
     return True
 
 
