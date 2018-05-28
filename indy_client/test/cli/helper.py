@@ -15,6 +15,7 @@ from indy_common.txn_util import getTxnOrderedFields
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 from plenum.common.constants import TARGET_NYM, ROLE, TXN_TYPE, ALIAS, TXN_ID, VALIDATOR, STEWARD
+from plenum.common.member.member import Member
 from plenum.common.member.steward import Steward
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
@@ -149,12 +150,13 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
                        (32 - len(newStewardAlias))).encode()
         data["seeds"][newStewardAlias] = stewardSeed
         stewardSigner = SimpleSigner(seed=stewardSeed)
-        data["txns"].append({
-            TARGET_NYM: stewardSigner.verkey,
-            ROLE: STEWARD, TXN_TYPE: NYM,
-            ALIAS: poolId + "Steward" + str(index),
-            TXN_ID: sha256("{}".format(stewardSigner.verkey).encode()).hexdigest()
-        })
+        data["txns"].append(
+            Member.nym_txn(nym=stewardSigner.identifier,
+                           verkey=stewardSigner.verkey,
+                           role=STEWARD,
+                           name=poolId + "Steward" + str(index),
+                           seq_no=index,
+                           txn_id=sha256("{}".format(stewardSigner.verkey).encode()).hexdigest()))
 
         newNodeAlias = n
         nodeSeed = (newNodeAlias + "0" * (32 - len(newNodeAlias))).encode()
@@ -430,7 +432,7 @@ def getWalletState(userCli):
 def doSendNodeCmd(do, nodeVals, expMsgs=None):
     expect = expMsgs or ['Node request completed']
     do('send NODE dest={newNodeIdr} data={newNodeData}',
-       within=8, expect=expect, mapper=nodeVals)
+       within=15, expect=expect, mapper=nodeVals)
 
 
 def createUuidIdentifier():
