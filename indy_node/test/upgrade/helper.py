@@ -15,8 +15,7 @@ from plenum.common.keygen_utils import init_bls_keys
 
 from indy.ledger import build_pool_upgrade_request
 from plenum.common.constants import DATA, VERSION, FORCE
-from plenum.common.txn_util import get_type, get_payload_data
-from plenum.common.types import f
+from plenum.common.txn_util import get_type, get_payload_data, get_from
 from plenum.common.util import randomString, hexToFriendly
 from plenum.test import waits as plenumWaits
 from plenum.test.helper import sdk_get_and_check_replies
@@ -248,7 +247,7 @@ def check_ledger_after_upgrade(
 
             assert data[ACTION]
             assert data[ACTION] in allowed_actions
-            ids.add(txn_data[f.IDENTIFIER.nm])
+            ids.add(get_from(txn))
 
             assert data[VERSION]
             versions.add(data[VERSION])
