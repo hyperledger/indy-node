@@ -177,7 +177,7 @@ class Upgrader(NodeMaintainer):
             # searching for CANCEL for this upgrade submitted after START txn
             last_pool_upgrade_txn_cancel = self.get_upgrade_txn(
                 lambda txn:
-                get_type(txn)[TXN_TYPE] == POOL_UPGRADE and get_payload_data(txn)[ACTION] == CANCEL and
+                get_type(txn) == POOL_UPGRADE and get_payload_data(txn)[ACTION] == CANCEL and
                 get_payload_data(txn)[VERSION] == get_payload_data(last_pool_upgrade_txn_start)[VERSION],
                 start_no=last_pool_upgrade_txn_seq_no + 1)
             if last_pool_upgrade_txn_cancel:
