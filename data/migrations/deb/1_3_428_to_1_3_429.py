@@ -78,7 +78,7 @@ def migrate_txn_log(db_dir, db_name):
     try:
         for key, val in src_storage.iterator():
             val = ledger_txn_serializer.deserialize(val)
-            new_val = transform_to_new_format(txn=val, seq_no=key)
+            new_val = transform_to_new_format(txn=val, seq_no=int(key))
             new_val = ledger_txn_serializer.serialize(new_val)
             dest_storage.put(key, new_val)
     except Exception:
