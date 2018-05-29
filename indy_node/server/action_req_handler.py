@@ -38,7 +38,7 @@ class ActionReqHandler(RequestHandler):
         status = None
         operation = req.operation
         typ = operation.get(TXN_TYPE)
-        if typ not in [POOL_RESTART]:
+        if typ not in self.operation_types:
             return
         origin = req.identifier
         try:
@@ -48,15 +48,21 @@ class ActionReqHandler(RequestHandler):
                 req.identifier,
                 req.reqId,
                 "Nym {} not added to the ledger yet".format(origin))
-        action = ""
+        r = False
         if typ == POOL_RESTART:
             action = operation.get(ACTION)
-        r, msg = Authoriser.authorised(
-            typ, origin_role, field=ACTION, oldVal=status, newVal=action)
+            r, msg = Authoriser.authorised(typ, origin_role,
+                                           field=ACTION,
+                                           oldVal=status,
+                                           newVal=action)
+        elif typ == VALIDATOR_INFO:
+            r, msg = Authoriser.authorised(typ, origin_role)
         if not r:
             raise UnauthorizedClientRequest(
-                req.identifier, req.reqId, "{} cannot do restart".format(
-                    Roles.nameFromValue(origin_role)))
+                req.identifier, req.reqId,
+                "{} cannot do action with type = {}".format(
+                    Roles.nameFromValue(origin_role),
+                    typ))
 
     def apply(self, req: Request, cons_time: int = None):
         logger.debug("Transaction {} with type {} started"
