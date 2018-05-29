@@ -17,6 +17,7 @@ from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
+from plenum.common.txn_util import get_type, get_payload_data, get_from, get_seq_no, get_txn_time, get_req_id
 from plenum.common.types import f
 from plenum.common.constants import TRUSTEE
 from plenum.server.domain_req_handler import DomainRequestHandler as PHandler
@@ -61,7 +62,7 @@ class DomainReqHandler(PHandler):
         self._add_default_handlers()
 
     def _updateStateWithSingleTxn(self, txn, isCommitted=False):
-        txn_type = txn.get(TXN_TYPE)
+        txn_type = get_type(txn)
         if txn_type in self.state_update_handlers:
             self.state_update_handlers[txn_type](txn, isCommitted)
         else:
@@ -311,11 +312,11 @@ class DomainReqHandler(PHandler):
         validator = validator_cls(self.state)
         validator.validate(current_entry, req)
 
-    def updateNym(self, nym, data, isCommitted=True):
-        updatedData = super().updateNym(nym, data, isCommitted=isCommitted)
-        txn_time = data.get(TXN_TIME)
+    def updateNym(self, nym, txn, isCommitted=True):
+        updatedData = super().updateNym(nym, txn, isCommitted=isCommitted)
+        txn_time = get_txn_time(txn)
         self.idrCache.set(nym,
-                          seqNo=data[f.SEQ_NO.nm],
+                          seqNo=get_seq_no(txn),
                           txnTime=txn_time,
                           ta=updatedData.get(f.IDENTIFIER.nm),
                           role=updatedData.get(ROLE),
@@ -692,17 +693,18 @@ class DomainReqHandler(PHandler):
         return None, None, None, proof
 
     def _addNym(self, txn, isCommitted=False) -> None:
-        nym = txn.get(TARGET_NYM)
+        txn_data = get_payload_data(txn)
+        nym = txn_data.get(TARGET_NYM)
         data = {
-            f.IDENTIFIER.nm: txn.get(f.IDENTIFIER.nm),
-            f.SEQ_NO.nm: txn.get(f.SEQ_NO.nm),
-            TXN_TIME: txn.get(TXN_TIME)
+            f.IDENTIFIER.nm: get_from(txn),
+            f.SEQ_NO.nm: get_seq_no(txn),
+            TXN_TIME: get_txn_time(txn)
         }
-        if ROLE in txn:
-            data[ROLE] = txn.get(ROLE)
-        if VERKEY in txn:
-            data[VERKEY] = txn.get(VERKEY)
-        self.updateNym(nym, data, isCommitted=isCommitted)
+        if ROLE in txn_data:
+            data[ROLE] = txn_data.get(ROLE)
+        if VERKEY in txn_data:
+            data[VERKEY] = txn_data.get(VERKEY)
+        self.updateNym(nym, txn, isCommitted=isCommitted)
 
     def _addAttr(self, txn, isCommitted=False) -> None:
         """
@@ -712,32 +714,32 @@ class DomainReqHandler(PHandler):
         If the attribute is HASH, then nothing is stored in attribute store,
         the trie stores a blank value for the key did+hash
         """
-        assert txn[TXN_TYPE] == ATTRIB
+        assert get_type(txn) == ATTRIB
         attr_type, path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
         self.state.set(path, value_bytes)
         if attr_type != HASH:
             self.attributeStore.set(hashed_value, value)
 
     def _addSchema(self, txn, isCommitted=False) -> None:
-        assert txn[TXN_TYPE] == SCHEMA
+        assert get_type(txn) == SCHEMA
         path, value_bytes = domain.prepare_schema_for_state(txn)
         self.state.set(path, value_bytes)
 
     def _addClaimDef(self, txn, isCommitted=False) -> None:
-        assert txn[TXN_TYPE] == CLAIM_DEF
+        assert get_type(txn) == CLAIM_DEF
         path, value_bytes = domain.prepare_claim_def_for_state(txn)
         self.state.set(path, value_bytes)
 
     def _addRevocDef(self, txn, isCommitted=False) -> None:
-        assert txn[TXN_TYPE] == REVOC_REG_DEF
+        assert get_type(txn) == REVOC_REG_DEF
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
 
     def _addRevocRegEntry(self, txn, isCommitted=False) -> None:
         current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
-            author_did=txn[f.IDENTIFIER.nm],
-            revoc_reg_def_id=txn[REVOC_REG_DEF_ID],
-            req_id=txn[f.REQ_ID.nm]
+            author_did=get_from(txn),
+            revoc_reg_def_id=get_payload_data(txn)[REVOC_REG_DEF_ID],
+            req_id=get_req_id(txn)
         )
         writer_cls = self.get_revocation_strategy(
             revoc_def[VALUE][ISSUANCE_TYPE])
@@ -856,7 +858,7 @@ class DomainReqHandler(PHandler):
         ledger, eg. storing certain payload in another data store and only its
         hash in the ledger
         """
-        if txn[TXN_TYPE] == ATTRIB:
+        if get_type(txn) == ATTRIB:
             txn = DomainReqHandler.transform_attrib_for_ledger(txn)
         return txn
 
@@ -868,8 +870,9 @@ class DomainReqHandler(PHandler):
         in the ledger but only the hash of it.
         """
         txn = deepcopy(txn)
-        attr_type, _, value = domain.parse_attr_txn(txn)
+        txn_data = get_payload_data(txn)
+        attr_type, _, value = domain.parse_attr_txn(txn_data)
         if attr_type in [RAW, ENC]:
-            txn[attr_type] = domain.hash_of(value) if value else ''
+            txn_data[attr_type] = domain.hash_of(value) if value else ''
 
         return txn

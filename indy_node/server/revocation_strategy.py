@@ -1,9 +1,12 @@
 from abc import abstractmethod, ABCMeta
+
+from copy import deepcopy
+
 from indy_common.state import domain
 from indy_common.types import Request
 from indy_common.constants import REVOC_REG_DEF_ID, VALUE, ACCUM, PREV_ACCUM, ISSUED, REVOKED
 from plenum.common.exceptions import InvalidClientRequest
-from plenum.common.types import f
+from plenum.common.txn_util import get_from, get_req_id, get_payload_data
 
 
 class RevocationStrategy(metaclass=ABCMeta):
@@ -75,7 +78,8 @@ class RevocationStrategy(metaclass=ABCMeta):
         path, value_bytes = domain.prepare_revoc_reg_entry_for_state(txn)
         self.state.set(path, value_bytes)
         # Set ACCUM from REVOC_REG_ENTRY
-        txn[VALUE] = {ACCUM: txn[VALUE][ACCUM]}
+        txn_data = get_payload_data(txn)
+        txn_data[VALUE] = {ACCUM: txn_data[VALUE][ACCUM]}
         path, value_bytes = domain.prepare_revoc_reg_entry_accum_for_state(txn)
         self.state.set(path, value_bytes)
 
@@ -120,14 +124,16 @@ class RevokedStrategy(RevocationStrategy):
                                                                      indices))
 
     def write(self, current_reg_entry, txn):
-        self.set_parameters_from_txn(author_did=txn.get(f.IDENTIFIER.nm),
-                                     revoc_reg_def_id=txn.get(REVOC_REG_DEF_ID),
-                                     req_id=txn.get(f.REQ_ID.nm))
+        txn = deepcopy(txn)
+        txn_data = get_payload_data(txn)
+        self.set_parameters_from_txn(author_did=get_from(txn),
+                                     revoc_reg_def_id=txn_data.get(REVOC_REG_DEF_ID),
+                                     req_id=get_req_id(txn))
         if current_reg_entry is not None:
             value_from_state = current_reg_entry.get(VALUE)
             assert value_from_state
             indices = value_from_state.get(REVOKED, [])
-            value_from_txn = txn.get(VALUE)
+            value_from_txn = txn_data.get(VALUE)
             issued_from_txn = value_from_txn.get(ISSUED, [])
             revoked_from_txn = value_from_txn.get(REVOKED, [])
             # set with all previous revoked minus issued from txn
@@ -135,9 +141,10 @@ class RevokedStrategy(RevocationStrategy):
             result_indicies.update(revoked_from_txn)
             value_from_txn[ISSUED] = []
             value_from_txn[REVOKED] = list(result_indicies)
-            txn[VALUE] = value_from_txn
+            txn_data[VALUE] = value_from_txn
         # contains already changed txn
         self.set_to_state(txn)
+        del txn
 
     @staticmethod
     def get_delta(to_dict, from_dict=None):
@@ -176,14 +183,16 @@ class IssuedStrategy(RevocationStrategy):
                                                                      indices))
 
     def write(self, current_reg_entry, txn):
-        self.set_parameters_from_txn(author_did=txn.get(f.IDENTIFIER.nm),
-                                     revoc_reg_def_id=txn.get(REVOC_REG_DEF_ID),
-                                     req_id=txn.get(f.REQ_ID.nm))
+        txn = deepcopy(txn)
+        txn_data = get_payload_data(txn)
+        self.set_parameters_from_txn(author_did=get_from(txn),
+                                     revoc_reg_def_id=txn_data.get(REVOC_REG_DEF_ID),
+                                     req_id=get_req_id(txn))
         if current_reg_entry is not None:
             value_from_state = current_reg_entry.get(VALUE)
             assert value_from_state
             indices = value_from_state.get(ISSUED, [])
-            value_from_txn = txn.get(VALUE)
+            value_from_txn = txn_data.get(VALUE)
             issued_from_txn = value_from_txn.get(ISSUED, [])
             revoked_from_txn = value_from_txn.get(REVOKED, [])
             # set with all previous issued minus revoked from txn
@@ -191,9 +200,10 @@ class IssuedStrategy(RevocationStrategy):
             result_indicies.update(issued_from_txn)
             value_from_txn[REVOKED] = []
             value_from_txn[ISSUED] = list(result_indicies)
-            txn[VALUE] = value_from_txn
+            txn_data[VALUE] = value_from_txn
         # contains already changed txn
         self.set_to_state(txn)
+        del txn
 
     @staticmethod
     def get_delta(to_dict, from_dict=None):
