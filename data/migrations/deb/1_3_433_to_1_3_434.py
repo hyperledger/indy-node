@@ -33,12 +33,14 @@ def get_node_name():
 
     return node_name
 
+
 def append_ips_to_env(node_ip):
     node_ip_key = 'NODE_IP'
     client_ip_key = 'CLIENT_IP'
     with open(ENV_FILE_PATH, "a") as fenv:
         fenv.write("\n{}={}\n".format(node_ip_key, node_ip))
         fenv.write("{}={}\n".format(client_ip_key, "0.0.0.0"))
+
 
 def migrate_all():
     node_name = get_node_name()
@@ -54,16 +56,16 @@ def migrate_all():
                     fileName=config.poolTransactionsFile, read_only=True)
     nodeReg, _, _ = TxnStackManager.parseLedgerForHaAndKeys(ledger)
 
-    if nodeReg == None:
+    if nodeReg is None:
         logger.error("Empty node registry returned by stack manager")
         return False
 
-    if not node_name in nodeReg:
+    if node_name not in nodeReg:
         logger.error("Node registry does not contain node {}".format(node_name))
         return False
 
     ha = nodeReg[node_name]
-    if ha == None:
+    if ha is None:
         logger.error("Empty HA for node {}".format(node_name))
         return False
 
@@ -77,6 +79,7 @@ def migrate_all():
         return False
 
     return True
+
 
 if migrate_all():
     logger.info("Migration complete: node and client IPs have been added to indy env file")
