@@ -30,9 +30,9 @@ def integrate(node_config_helper, node, logger):
     return node
 
 
-def run_node(config, name, node_port, client_port):
-    node_ha = HA("0.0.0.0", node_port)
-    client_ha = HA("0.0.0.0", client_port)
+def run_node(config, name, node_ip, node_port, client_ip, client_port):
+    node_ha = HA(node_ip, node_port)
+    client_ha = HA(client_ip, client_port)
 
     node_config_helper = NodeConfigHelper(name, config)
 
