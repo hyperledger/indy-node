@@ -580,7 +580,7 @@ def get_stats_from_file(fpath, verbose, _json, _nagios):
     if _json:
         return json.dumps(vstats, indent=2, cls=NewEncoder)
     if _nagios:
-       return nagios(vstats)
+        return nagios(vstats)
 
     return vstats
 
