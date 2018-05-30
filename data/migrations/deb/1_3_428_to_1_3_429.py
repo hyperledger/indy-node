@@ -7,11 +7,18 @@ import stat
 import sys
 import tarfile
 import traceback
+import copy
+from _sha256 import sha256
 
-from common.serializers.serialization import ledger_txn_serializer
+from common.serializers.serialization import ledger_txn_serializer, serialize_msg_for_signing
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
-from plenum.common.txn_util import transform_to_new_format
+from plenum.common.constants import TXN_TYPE, TXN_PAYLOAD, \
+    TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_DIGEST
+from plenum.common.txn_util import transform_to_new_format, get_from, get_req_id, get_payload_data, \
+    get_protocol_version, get_seq_no, get_type
+from plenum.common.types import f, OPERATION
+from storage.helper import initKeyValueStorage
 from storage.kv_store_rocksdb_int_keys import KeyValueStorageRocksdbIntKeys
 from stp_core.common.log import getlogger
 
@@ -19,6 +26,7 @@ logger = getlogger()
 
 ENV_FILE_PATH = "/etc/indy/indy.env"
 ledger_types = ['pool', 'domain', 'config']
+config = getConfig()
 
 
 def set_own_perm(usr, dir):
@@ -55,9 +63,39 @@ def get_node_name():
 
 
 def migrate_txn_log(db_dir, db_name):
+    def put_into_seq_no_db(txn):
+        # If there is no reqId, then it's genesis txn
+        if get_req_id(txn) is None:
+            return
+        txn_new = copy.deepcopy(txn)
+        operation = get_payload_data(txn_new)
+        operation[TXN_TYPE] = get_type(txn_new)
+        dct = {
+            f.IDENTIFIER.nm: get_from(txn_new),
+            f.REQ_ID.nm: get_req_id(txn_new),
+            OPERATION: operation,
+        }
+        if get_protocol_version(txn_new) is not None:
+            dct[f.PROTOCOL_VERSION.nm] = get_protocol_version(txn_new)
+        digest = sha256(serialize_msg_for_signing(dct)).hexdigest().encode()
+        seq_no = get_seq_no(txn_new).encode()
+        dest_seq_no_db_storage.put(digest, seq_no)
+        return digest
+
+
     new_db_name = db_name + '_new'
     old_path = os.path.join(db_dir, db_name)
     new_path = os.path.join(db_dir, new_db_name)
+    new_seqno_db_name = config.stateTsDbName + '_new'
+    # new_seq_no_path = os.path.join(db_dir, new_seqno_db_name)
+    try:
+        dest_seq_no_db_storage = initKeyValueStorage(config.reqIdToTxnStorage,
+                                                     db_dir,
+                                                     new_seqno_db_name)
+    except Exception:
+        logger.error(traceback.print_exc())
+        logger.error("Could not open new seq_no_db storage")
+        return False
 
     # open new and old ledgers
     try:
@@ -77,10 +115,15 @@ def migrate_txn_log(db_dir, db_name):
     # put values from old ledger to the new one
     try:
         for key, val in src_storage.iterator():
+            key = key.decode()
             val = ledger_txn_serializer.deserialize(val)
             new_val = transform_to_new_format(txn=val, seq_no=int(key))
+            digest = put_into_seq_no_db(new_val)
+            # add digest into txn
+            new_val[TXN_PAYLOAD][TXN_PAYLOAD_METADATA][TXN_PAYLOAD_METADATA_DIGEST] = digest
             new_val = ledger_txn_serializer.serialize(new_val)
             dest_storage.put(key, new_val)
+
     except Exception:
         logger.error(traceback.print_exc())
         logger.error("Could not put key/value to the new ledger '{}'".format(db_name))
@@ -88,6 +131,7 @@ def migrate_txn_log(db_dir, db_name):
 
     src_storage.close()
     dest_storage.close()
+    dest_seq_no_db_storage.close()
 
     # Remove old ledger
     try:
@@ -106,10 +150,28 @@ def migrate_txn_log(db_dir, db_name):
         logger.error("Could not rename temporary new ledger from '{}' to '{}'"
                      .format(new_path, old_path))
         return False
-
-    set_own_perm("indy", old_path)
+    try:
+        set_own_perm("indy", old_path)
+    except Exception:
+        pass
 
     return True
+
+
+def rename_seq_no_db(db_dir):
+    old_seqno_path = os.path.join(db_dir, config.stateTsDbName)
+    new_seqno_db_name = config.stateTsDbName + '_new'
+    new_seqno_path = os.path.join(db_dir, new_seqno_db_name)
+    try:
+        shutil.move(new_seqno_path, old_seqno_path)
+    except Exception:
+        logger.error(traceback.print_exc())
+        logger.error("Could not rename temporary new seq_no_db from '{}' to '{}'"
+                     .format(new_seqno_path, old_seqno_path))
+        return False
+
+    set_own_perm("indy", old_seqno_path)
+
 
 
 def migrate_txn_logs(ledger_dir):
@@ -144,7 +206,7 @@ def migrate_states(ledger_dir):
     return True
 
 
-def migrate_ts_store(ledger_dir, config):
+def migrate_ts_store(ledger_dir):
     # just remove, since state root hash may be changed
     for ledger_type in ledger_types:
         db = os.path.join(ledger_dir, config.stateTsDbName)
@@ -153,7 +215,7 @@ def migrate_ts_store(ledger_dir, config):
     return True
 
 
-def migrate_bls_signature_store(ledger_dir, config):
+def migrate_bls_signature_store(ledger_dir):
     # just remove, since state root hash may be changed
     for ledger_type in ledger_types:
         db = os.path.join(ledger_dir, config.stateSignatureDbName)
@@ -178,7 +240,6 @@ def migrate_all():
         logger.error("Could not get node name")
         return False
 
-    config = getConfig()
     config_helper = NodeConfigHelper(node_name, config)
 
     ledger_dir = config_helper.ledger_dir
@@ -196,6 +257,9 @@ def migrate_all():
         logger.error("Txn log migration from old to new format failed!")
         return False
 
+    # Rename new seq_no_db into old
+    # rename_seq_no_db(ledger_dir)
+
     # 3. migrate hash store
     if migrate_hash_stores(ledger_dir):
         logger.info("All hash stores migrated successfully from old to new transaction format")
@@ -211,14 +275,14 @@ def migrate_all():
         return False
 
     # 5. migrate ts store
-    if migrate_ts_store(ledger_dir, config):
+    if migrate_ts_store(ledger_dir):
         logger.info("Timestamp store migrated successfully from old to new transaction format")
     else:
         logger.error("Timestamp store migration from old to new format failed!")
         return False
 
     # 6. migrate bls signature xtore
-    if migrate_bls_signature_store(ledger_dir, config):
+    if migrate_bls_signature_store(ledger_dir):
         logger.info("BLS signature store migrated successfully from old to new transaction format")
     else:
         logger.error("BLS signature store migration from old to new format failed!")
