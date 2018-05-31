@@ -45,6 +45,7 @@ from plenum.recorder.src.replayer import get_recorders_from_node_data_dir, \
     prepare_node_for_replay_and_replay
 from plenum.server.replicas import Replicas
 from plenum.server.replica import Replica
+from plenum.server.general_config import ubuntu_platform_config
 from storage.kv_store_rocksdb_int_keys import KeyValueStorageRocksdbIntKeys
 from storage.helper import initKeyValueStorageIntKeys
 from stp_core.common.log import getlogger, Logger
@@ -64,6 +65,12 @@ import tempfile
 import zipfile
 
 logger = logging.getLogger()
+
+
+def get_system_dirs():
+    # TODO detect the system someday (help support windows)
+    return ubuntu_platform_config
+
 
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module?
@@ -302,18 +309,20 @@ class NodeStateReplayer():
         pool_dir = join(replay_node_dir, pool_name)
         orig_node_pool_dir = self.s1dir
 
-        trg_var_dir = join(replay_node_dir, 'var', 'lib', 'indy', pool_name)
+        # strip left '/' for proper path join
+        app_dir = join(replay_node_dir, get_system_dirs().NODE_INFO_DIR.lstrip('/'))
+        pool_dir = join(app_dir, pool_name)
         orig_node_data_dir = join(orig_node_pool_dir, 'data')
-        makedirs(trg_var_dir, exist_ok=True)
+        makedirs(pool_dir, exist_ok=True)
         # shutil.copytree(src_etc_dir, trg_etc_dir)
         for file in listdir(orig_node_pool_dir):
             if file.endswith('.json') or file.endswith('_genesis'):
-                shutil.copy(join(orig_node_pool_dir, file), trg_var_dir)
+                shutil.copy(join(orig_node_pool_dir, file), pool_dir)
 
         shutil.copytree(join(orig_node_pool_dir, 'keys'),
-                        join(trg_var_dir, 'keys'))
+                        join(pool_dir, 'keys'))
         shutil.copytree(join(self.s1dir, 'plugins'),
-                        join(join(replay_node_dir, 'var', 'lib', 'indy'),
+                        join(app_dir,
                         'plugins'))
 
         node_rec, client_rec = get_recorders_from_node_data_dir(
