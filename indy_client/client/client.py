@@ -129,8 +129,8 @@ class Client(PlenumClient):
     def requestConfirmed(self, identifier: str, reqId: int) -> bool:
         return self.txnLog.hasTxnWithReqId(identifier, reqId)
 
-    def hasConsensus(self, identifier: str, reqId: int) -> Optional[str]:
-        return super().hasConsensus(identifier, reqId)
+    def hasConsensus(self, key: str) -> Optional[str]:
+        return super().hasConsensus(key)
 
     def prepare_for_state(self, result):
         request_type = result[TYPE]
