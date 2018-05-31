@@ -1,0 +1,69 @@
+pool connect AS-01-02-steward-pool
+[1;32mPool "AS-01-02-steward-pool" has been connected[0m
+
+wallet open AS-01-02-steward-wallet key=testkey
+[1;32mWallet "AS-01-02-steward-wallet" has been opened[0m
+
+did use Mzcs3aMUHRQQwnW9bSdFgW
+[1;32mDid "Mzcs3aMUHRQQwnW9bSdFgW" has been set as active[0m
+
+ledger nym did=Mzcs3aMUHRQQwnW9bSdFgW verkey=~VkaLiUxDhNHN4sS3LGxbCP
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1523197886696176059 | 2018-04-08 14:31:26 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| Mzcs3aMUHRQQwnW9bSdFgW | ~VkaLiUxDhNHN4sS3LGxbCP | -    |
++------------------------+-------------------------+------+
+
+did new seed=0000000000000000000NewSteward121 metadata="new steward1"
+[1;32mDid "Mzcs3aMUHRQQwnW9bSdFgW" has been created with "~VkaLiUxDhNHN4sS3LGxbCP" verkey[0m
+[1;32mMetadata has been saved for DID "Mzcs3aMUHRQQwnW9bSdFgW"[0m
+
+wallet close
+[1;32mWallet "AS-01-02-steward-wallet" has been closed[0m
+
+pool disconnect
+[1;32mPool "AS-01-02-steward-pool" has been disconnected[0m
+
+wallet list
++-------------------------+-----------------------+---------+
+| Name                    | Associated pool name  | Type    |
++-------------------------+-----------------------+---------+
+| AS-01-wallet-1          | AS-pool               | default |
++-------------------------+-----------------------+---------+
+| AS-01-wallet-3          | AS-pool               | default |
++-------------------------+-----------------------+---------+
+| AS-01-identity-wallet-3 | AS-pool               | default |
++-------------------------+-----------------------+---------+
+| AS-01-02-trustee-wallet | AS-01-02-trustee-pool | default |
++-------------------------+-----------------------+---------+
+| AS-01-identity-wallet-2 | AS-pool               | default |
++-------------------------+-----------------------+---------+
+| AS-01-identity-wallet   | AS-pool               | default |
++-------------------------+-----------------------+---------+
+| AS-01-02-steward-wallet | AS-01-02-steward-pool | default |
++-------------------------+-----------------------+---------+
+| AS-01-wallet-2          | AS-pool               | default |
++-------------------------+-----------------------+---------+
+
+pool list
++-----------------------+
+| Pool                  |
++-----------------------+
+| AS-01-02-trustee-pool |
++-----------------------+
+| AS-pool               |
++-----------------------+
+| AS-01-02-steward-pool |
++-----------------------+
+
+exit
+
+[1;32mGoodbye...[0m
