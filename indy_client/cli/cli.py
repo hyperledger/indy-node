@@ -64,8 +64,9 @@ from plenum.cli.helper import getClientGrams
 from plenum.cli.phrase_word_completer import PhraseWordCompleter
 from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE, RAW
 from plenum.common.exceptions import OperationError
+from plenum.common.member.member import Member
 from plenum.common.signer_did import DidSigner
-from plenum.common.txn_util import createGenesisTxnFile
+from plenum.common.txn_util import createGenesisTxnFile, get_payload_data
 from plenum.common.util import randomString, getWalletFilePath
 from stp_core.crypto.signer import Signer
 from stp_core.crypto.util import cleanSeed
@@ -610,7 +611,7 @@ class IndyCli(PlenumCli):
             if error:
                 self.print("Error: {}".format(error), Token.BoldBlue)
             else:
-                self.print("Nym {} added".format(reply[TARGET_NYM]),
+                self.print("Nym {} added".format(get_payload_data(reply)[TARGET_NYM]),
                            Token.BoldBlue)
 
         self.looper.loop.call_later(.2,
@@ -645,7 +646,7 @@ class IndyCli(PlenumCli):
                 self.print("Error: {}".format(error), Token.BoldOrange)
             else:
                 self.print("Attribute added for nym {}".
-                           format(reply[TARGET_NYM]), Token.BoldBlue)
+                           format(get_payload_data(reply)[TARGET_NYM]), Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
                                     req.key, self.activeClient, out)
@@ -743,7 +744,7 @@ class IndyCli(PlenumCli):
             else:
                 self.print(
                     "Node request completed {}".format(
-                        reply[TARGET_NYM]),
+                        get_payload_data(reply)[TARGET_NYM]),
                     Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
@@ -1484,7 +1485,7 @@ class IndyCli(PlenumCli):
                 self.activeWallet.updateSigner(cur_id, signer)
                 self._saveActiveWallet()
                 self.print("Key changed for {}".format(
-                    reply[TARGET_NYM]), Token.BoldBlue)
+                    get_payload_data(reply)[TARGET_NYM]), Token.BoldBlue)
                 self.print("New verification key is {}".format(
                     signer.verkey), Token.BoldBlue)
 
@@ -1982,13 +1983,11 @@ class IndyCli(PlenumCli):
         if matchedVars.get('add_genesis'):
             nym = matchedVars.get('dest_id')
             role = Identity.correctRole(self._getRole(matchedVars))
-            txn = {
-                TXN_TYPE: NYM,
-                TARGET_NYM: nym,
-                TXN_ID: sha256(randomString(6).encode()).hexdigest()
-            }
             if role:
-                txn[ROLE] = role.upper()
+                role = role.upper()
+            txn = Member.nym_txn(nym=nym,
+                                 role=role,
+                                 txn_id=sha256(randomString(6).encode()).hexdigest())
             # TODO: need to check if this needs to persist as well
             self.genesisTransactions.append(txn)
             self.print('Genesis transaction added.')

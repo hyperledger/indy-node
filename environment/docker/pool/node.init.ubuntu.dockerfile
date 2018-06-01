@@ -2,7 +2,9 @@
 FROM indycore
 
 ARG nodename
+ARG nip
 ARG nport
+ARG cip
 ARG cport
 ARG ips
 ARG nodenum
@@ -18,7 +20,7 @@ RUN echo "logLevel=0" >> /etc/indy/indy_config.py
 RUN echo " " >> /etc/indy/indy_config.py
 
 # Init indy-node
-RUN init_indy_node $nodename $nport $cport
+RUN init_indy_node $nodename $nip $nport $cip $cport
 EXPOSE $nport $cport
 RUN if [ ! -z "$ips" ] && [ ! -z "$nodenum" ] && [ ! -z "$nodecnt" ]; then generate_indy_pool_transactions --nodes $nodecnt --clients $clicnt --nodeNum $nodenum --ips "$ips"; fi
 USER root

@@ -180,7 +180,7 @@ To start the docker image as an Indy node:
 ```
 $ docker run -it --rm indy-base /bin/bash
 # init_indy_keys --name Alpha
-# start_indy_node Alpha 9701 9702
+# start_indy_node Alpha 0.0.0.0 9701 0.0.0.0 9702
 ```
 
 You can connect to an existing node:

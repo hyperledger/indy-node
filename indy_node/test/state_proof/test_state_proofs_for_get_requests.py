@@ -10,6 +10,7 @@ from plenum.bls.bls_store import BlsStore
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
     IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
     STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID
+from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload_metadata
 from plenum.common.types import f
 from indy_common.constants import \
     ATTRIB, REF, SIGNATURE_TYPE, CLAIM_DEF, SCHEMA
@@ -96,9 +97,9 @@ def test_state_proofs_for_get_attr(request_handler):
         TXN_TYPE: ATTRIB,
         TARGET_NYM: nym,
         RAW: raw_attribute,
-        f.SEQ_NO.nm: seq_no,
-        TXN_TIME: txn_time,
     }
+    txn = append_txn_metadata(reqToTxn(Request(operation=txn)),
+                              seq_no=seq_no, txn_time=txn_time)
     request_handler._addAttr(txn)
     request_handler.state.commit()
     multi_sig = save_multi_sig(request_handler)
@@ -137,14 +138,14 @@ def test_state_proofs_for_get_claim_def(request_handler):
     key_components = '{"key_components": []}'
 
     txn = {
-        IDENTIFIER: nym,
         TXN_TYPE: CLAIM_DEF,
         TARGET_NYM: nym,
         REF: schema_seqno,
-        f.SEQ_NO.nm: seq_no,
-        DATA: key_components,
-        TXN_TIME: txn_time,
+        DATA: key_components
     }
+    txn = append_txn_metadata(reqToTxn(Request(operation=txn)),
+                              seq_no=seq_no, txn_time=txn_time)
+    txn = append_payload_metadata(txn, frm=nym)
 
     request_handler._addClaimDef(txn)
     request_handler.state.commit()
@@ -188,11 +189,11 @@ def test_state_proofs_for_get_schema(request_handler):
     data = {**schema_key, "Some_Attr": "Attr1"}
     txn = {
         TXN_TYPE: SCHEMA,
-        IDENTIFIER: nym,
-        f.SEQ_NO.nm: seq_no,
         DATA: data,
-        TXN_TIME: txn_time,
     }
+    txn = append_txn_metadata(reqToTxn(Request(operation=txn)),
+                              seq_no=seq_no, txn_time=txn_time)
+    txn = append_payload_metadata(txn, frm=nym)
 
     request_handler._addSchema(txn)
     request_handler.state.commit()
@@ -210,9 +211,10 @@ def test_state_proofs_for_get_schema(request_handler):
 
     result = request_handler.handleGetSchemaReq(request)
     proof = extract_proof(result, multi_sig)
-    result[DATA].pop(NAME)
-    result[DATA].pop(VERSION)
     assert result[DATA] == data
+
+    data.pop(NAME)
+    data.pop(VERSION)
 
     # Verifying signed state proof
     path = domain.make_state_path_for_schema(nym, schema_name, schema_version)
@@ -235,7 +237,10 @@ def test_state_proofs_for_get_nym(request_handler):
         f.SEQ_NO.nm: seq_no,
         TXN_TIME: txn_time,
     }
-    request_handler.updateNym(nym, data)
+    txn = append_txn_metadata(reqToTxn(Request(operation=data)),
+                              seq_no=seq_no, txn_time=txn_time)
+    txn = append_payload_metadata(txn, frm=nym)
+    request_handler.updateNym(nym, txn)
     request_handler.state.commit()
     multi_sig = save_multi_sig(request_handler)
 
@@ -279,7 +284,10 @@ def test_no_state_proofs_if_protocol_version_less(request_handler):
         f.SEQ_NO.nm: seq_no,
         TXN_TIME: txn_time,
     }
-    request_handler.updateNym(nym, data)
+    txn = append_txn_metadata(reqToTxn(Request(operation=data)),
+                              seq_no=seq_no, txn_time=txn_time)
+    txn = append_payload_metadata(txn, frm=nym)
+    request_handler.updateNym(nym, txn)
     request_handler.state.commit()
     multi_sig = save_multi_sig(request_handler)
 

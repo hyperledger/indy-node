@@ -1,5 +1,6 @@
 from plenum.common.constants import SERVICES, VALIDATOR, TARGET_NYM, DATA
 from indy_common.roles import Roles
+from plenum.common.txn_util import get_payload_data
 from stp_core.network.port_dispenser import genHa
 
 import pytest
@@ -64,8 +65,9 @@ def testSuspendNodeWhichWasNeverActive(be, do, trusteeCli, nymAddedOut,
 
     for node in poolNodesStarted.nodes.values():
         txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
-        assert txn[TARGET_NYM] == nodeId
-        assert SERVICES not in txn[DATA]
+        txn_data = get_payload_data(txn)
+        assert txn_data[TARGET_NYM] == nodeId
+        assert SERVICES not in txn_data[DATA]
 
     do('new key with seed {}'.format(trusteeMap['trusteeSeed']))
     newNodeVals['newNodeData'][SERVICES] = []
@@ -73,5 +75,6 @@ def testSuspendNodeWhichWasNeverActive(be, do, trusteeCli, nymAddedOut,
 
     for node in poolNodesStarted.nodes.values():
         txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
-        assert txn[TARGET_NYM] == nodeId
-        assert SERVICES in txn[DATA] and txn[DATA][SERVICES] == []
+        txn_data = get_payload_data(txn)
+        assert txn_data[TARGET_NYM] == nodeId
+        assert SERVICES in txn_data[DATA] and txn_data[DATA][SERVICES] == []

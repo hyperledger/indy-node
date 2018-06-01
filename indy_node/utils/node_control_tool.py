@@ -22,7 +22,7 @@ TIMEOUT = 300
 BACKUP_FORMAT = 'zip'
 DEPS = ['indy-plenum', 'indy-anoncreds', 'python3-indy-crypto']
 BACKUP_NUM = 10
-PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node python3-indy-crypto'
+PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node python3-indy-crypto libindy-crypto'
 TMP_DIR = '/tmp/.indy_tmp'
 
 
