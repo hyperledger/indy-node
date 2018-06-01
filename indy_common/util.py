@@ -78,12 +78,12 @@ def getNonce(length=32):
     return "".join([random.choice(hexChars) for i in range(length)])
 
 
-def get_reply_if_confirmed(client, identifier, request_id: int):
-    reply, status = client.getReply(identifier, request_id)
+def get_reply_if_confirmed(client, key: str):
+    reply, status = client.getReply(key)
     if status == 'CONFIRMED':
         return reply, None
     _, errors = \
-        client.reqRepStore.getAllReplies(identifier, request_id)
+        client.reqRepStore.getAllReplies(key)
     if not errors:
         return None, None
     sender, error_reason = errors.popitem()
@@ -100,7 +100,7 @@ def ensureReqCompleted(
         kwargs=None,
         cond=None):
 
-    reply, err = get_reply_if_confirmed(client, *reqKey)
+    reply, err = get_reply_if_confirmed(client, reqKey)
 
     if err is None and reply is None and (cond is None or not cond()):
         loop.call_later(.2, ensureReqCompleted, loop,

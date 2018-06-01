@@ -26,7 +26,7 @@ from indy_common.util import get_reply_if_confirmed
 
 
 def _ensureReqCompleted(reqKey, client, clbk):
-    reply, err = get_reply_if_confirmed(client, *reqKey)
+    reply, err = get_reply_if_confirmed(client, reqKey)
     if err:
         raise OperationError(err)
 

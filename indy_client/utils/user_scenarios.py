@@ -79,7 +79,7 @@ class UserScenario(metaclass=ABCMeta):
         self._client.submitReqs(req)
 
         def getRequestResult(reqKey):
-            reply, error = get_reply_if_confirmed(self._client, *reqKey)
+            reply, error = get_reply_if_confirmed(self._client, reqKey)
             if reply is None and error is None:
                 raise Exception("Request has not been completed yet")
             else:

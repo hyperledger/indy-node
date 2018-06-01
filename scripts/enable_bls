@@ -96,7 +96,7 @@ def __send_node_request(wallet, client,
 
 
 def _ensureReqCompleted(reqKey, client):
-    reply, err = get_reply_if_confirmed(client, *reqKey)
+    reply, err = get_reply_if_confirmed(client, reqKey)
     if err:
         raise OperationError(err)
 

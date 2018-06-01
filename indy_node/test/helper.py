@@ -48,7 +48,7 @@ class Organization:
     def addTxnsForCompletedRequestsInWallet(self, reqs: Iterable, wallet:
     Wallet):
         for req in reqs:
-            reply, status = self.client.getReply(req.reqId)
+            reply, status = self.client.getReply(req.key)
             if status == "CONFIRMED":
                 # TODO Figure out the actual implementation of
                 # TODO     `buildCompletedTxnFromReply`. This is just a stub
@@ -202,7 +202,7 @@ def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, valu
 
 
 def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
-    reply, status = trustAnchor.getReply(*reqKey)
+    reply, status = trustAnchor.getReply(reqKey)
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
