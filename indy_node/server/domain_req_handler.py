@@ -837,7 +837,7 @@ class DomainReqHandler(PHandler):
         assert revoc_reg_def_id
         path = domain.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
         try:
-            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=True)
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=isCommitted)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
