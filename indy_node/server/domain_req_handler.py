@@ -531,8 +531,8 @@ class DomainReqHandler(PHandler):
         past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry, reg_entry_proof = self.get_value_from_state(path_to_reg_entry,
-                                                             head_hash=past_root,
-                                                             with_proof=True)
+                                                                       head_hash=past_root,
+                                                                       with_proof=True)
             if encoded_entry:
                 reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
         return StateValue(root_hash=past_root,
