@@ -7,6 +7,7 @@ from indy_common.config_util import getConfig
 from indy_common.config_helper import NodeConfigHelper
 
 from ledger.compact_merkle_tree import CompactMerkleTree
+from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 
 from plenum.common.stack_manager import TxnStackManager
 from plenum.common.ledger import Ledger
@@ -36,10 +37,24 @@ def get_node_name():
 
 def append_ips_to_env(node_ip):
     node_ip_key = 'NODE_IP'
-    client_ip_key = 'CLIENT_IP'
+    client_ip_key = 'NODE_CLIENT_IP'
     with open(ENV_FILE_PATH, "a") as fenv:
         fenv.write("\n{}={}\n".format(node_ip_key, node_ip))
         fenv.write("{}={}\n".format(client_ip_key, "0.0.0.0"))
+
+
+def get_pool_ledger(node_name):
+    config = getConfig()
+    config_helper = NodeConfigHelper(node_name, config)
+
+    genesis_txn_initiator = GenesisTxnInitiatorFromFile(config_helper.genesis_dir,
+                                                        config.poolTransactionsFile)
+    hash_store = initHashStore(config_helper.ledger_dir, "pool", config)
+    return Ledger(CompactMerkleTree(hashStore=hash_store),
+                  dataDir=config_helper.ledger_dir,
+                  fileName=config.poolTransactionsFile,
+                  ensureDurability=config.EnsureLedgerDurability,
+                  genesis_txn_initiator=genesis_txn_initiator)
 
 
 def migrate_all():
@@ -48,12 +63,7 @@ def migrate_all():
         logger.error("Could not get node name")
         return False
 
-    config = getConfig()
-    config_helper = NodeConfigHelper(node_name, config)
-
-    hash_store = initHashStore(config_helper.ledger_dir, "pool", config, read_only=True)
-    ledger = Ledger(CompactMerkleTree(hashStore=hash_store), dataDir=config_helper.ledger_dir,
-                    fileName=config.poolTransactionsFile, read_only=True)
+    ledger = get_pool_ledger(node_name)
     nodeReg, _, _ = TxnStackManager.parseLedgerForHaAndKeys(ledger)
 
     if nodeReg is None:
