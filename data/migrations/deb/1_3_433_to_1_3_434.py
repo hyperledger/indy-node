@@ -94,6 +94,7 @@ def get_node_ip():
 
     ledger = get_pool_ledger(node_name)
     nodeReg, _, _ = TxnStackManager.parseLedgerForHaAndKeys(ledger)
+    ledger.stop()
 
     if nodeReg is None:
         raise RuntimeError("Empty node registry returned by stack manager")
