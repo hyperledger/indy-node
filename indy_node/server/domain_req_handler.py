@@ -221,7 +221,7 @@ class DomainReqHandler(PHandler):
             author=identifier,
             schemaName=schema_name,
             schemaVersion=schema_version,
-            get_proof=False
+            with_proof=False
         )
         if schema:
             raise InvalidClientRequest(identifier, req.reqId,
@@ -285,7 +285,7 @@ class DomainReqHandler(PHandler):
         cred_def_path = domain.make_state_path_for_claim_def(authors_did=tags[0],
                                                              signature_type=tags[2],
                                                              schema_seq_no=tags[3])
-        cred_def, _, _, _ = self.lookup(cred_def_path, isCommitted=False, get_proof=False)
+        cred_def, _, _, _ = self.lookup(cred_def_path, isCommitted=False, with_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
@@ -294,8 +294,8 @@ class DomainReqHandler(PHandler):
     def _get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
         assert revoc_reg_def_id
         current_entry, _, _, _ = self.getRevocDefEntry(revoc_reg_def_id=revoc_reg_def_id,
-                                                       isCommitted=False, get_proof=False)
-        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False, get_proof=False)
+                                                       isCommitted=False)
+        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False, with_proof=False)
         if revoc_def is None:
             raise InvalidClientRequest(author_did,
                                        req_id,
@@ -423,18 +423,17 @@ class DomainReqHandler(PHandler):
 
     def handleGetNymReq(self, request: Request):
         nym = request.operation[TARGET_NYM]
-        nymData = self.idrCache.getNym(nym, isCommitted=True)
         path = domain.make_state_path_for_nym(nym)
-        if nymData:
-            nymData[TARGET_NYM] = nym
-            data = self.stateSerializer.serialize(nymData)
-            seq_no = nymData[f.SEQ_NO.nm]
-            update_time = nymData[TXN_TIME]
-            proof = self.make_proof(path)
+        nym_data, proof = self.get_value_from_state(path, with_proof=True)
+        if nym_data:
+            nym_data = self.stateSerializer.deserialize(nym_data)
+            nym_data[TARGET_NYM] = nym
+            data = self.stateSerializer.serialize(nym_data)
+            seq_no = nym_data[f.SEQ_NO.nm]
+            update_time = nym_data[TXN_TIME]
         else:
             data = None
             seq_no = None
-            proof = self.make_proof(path)
             update_time = None
 
         # TODO: add update time here!
@@ -454,7 +453,8 @@ class DomainReqHandler(PHandler):
         schema, lastSeqNo, lastUpdateTime, proof = self.getSchema(
             author=author_did,
             schemaName=schema_name,
-            schemaVersion=schema_version
+            schemaVersion=schema_version,
+            with_proof=True
         )
         # TODO: we have to do this since SCHEMA has a bit different format than other txns
         # (it has NAME and VERSION inside DATA, and it's not part of the state value, but state key)
@@ -489,7 +489,7 @@ class DomainReqHandler(PHandler):
         state_path = request.operation.get(ID, None)
         assert state_path
         try:
-            keys, last_seq_no, last_update_time, proof = self.lookup(state_path, isCommitted=True)
+            keys, last_seq_no, last_update_time, proof = self.lookup(state_path, isCommitted=True, with_proof=True)
         except KeyError:
             keys, last_seq_no, last_update_time, proof = None, None, None, None
         result = self.make_result(request=request,
@@ -512,12 +512,12 @@ class DomainReqHandler(PHandler):
             last_update_time = None
             proof = None
         else:
-            encoded_entry = self.state.get_for_root_hash(past_root, path)
+            encoded_entry, proof = self.get_value_from_state(path,
+                                                             head_hash=past_root,
+                                                             with_proof=True)
             revoc_reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-
             reply_data = None if revoc_reg_entry_accum is None else revoc_reg_entry_accum
 
-            proof = self.make_proof(path, head_hash=past_root)
         return self.make_result(request=request,
                                 data=reply_data,
                                 last_seq_no=seq_no,
@@ -531,10 +531,11 @@ class DomainReqHandler(PHandler):
         reg_entry_proof = None
         past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
-            encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry)
+            encoded_entry, reg_entry_proof = self.get_value_from_state(path_to_reg_entry,
+                                                                       head_hash=past_root,
+                                                                       with_proof=True)
             if encoded_entry:
                 reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-                reg_entry_proof = self.make_proof(path_to_reg_entry, head_hash=past_root)
         return StateValue(root_hash=past_root,
                           value=reg_entry,
                           seq_no=seq_no,
@@ -548,10 +549,10 @@ class DomainReqHandler(PHandler):
         reg_entry_accum_proof = None
         past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
-            encoded_entry = self.state.get_for_root_hash(past_root, path_to_reg_entry_accum)
+            encoded_entry, reg_entry_accum_proof = self.get_value_from_state(
+                path_to_reg_entry_accum, head_hash=past_root, with_proof=True)
             if encoded_entry:
                 reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-                reg_entry_accum_proof = self.make_proof(path_to_reg_entry_accum, head_hash=past_root)
         return StateValue(root_hash=past_root,
                           value=reg_entry_accum,
                           seq_no=seq_no,
@@ -674,20 +675,19 @@ class DomainReqHandler(PHandler):
                                 update_time=lastUpdateTime,
                                 proof=proof)
 
-    def lookup(self, path, isCommitted=True, get_proof=True) -> (str, int):
+    def lookup(self, path, isCommitted=True, with_proof=False) -> (str, int):
         """
         Queries state for data on specified path
 
         :param path: path to data
         :param isCommitted: queries the committed state root if True else the uncommitted root
-        :param get_proof: creates proof if True
+        :param with_proof: creates proof if True
         :return: data
         """
         assert path is not None
-        encoded = self.state.get(path, isCommitted)
         head_hash = self.state.committedHeadHash if isCommitted else self.state.headHash
-        proof = self.make_proof(path, head_hash=head_hash) if get_proof else None
-        if encoded is not None:
+        encoded, proof = self.get_value_from_state(path, head_hash, with_proof=with_proof)
+        if encoded:
             value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
             return value, last_seq_no, last_update_time, proof
         return None, None, None, proof
@@ -768,7 +768,7 @@ class DomainReqHandler(PHandler):
         path = domain.make_state_path_for_attr(did, key, attr_type == HASH)
         try:
             hashed_val, lastSeqNo, lastUpdateTime, proof = \
-                self.lookup(path, isCommitted)
+                self.lookup(path, isCommitted, with_proof=True)
         except KeyError:
             return None, None, None, None
         if not hashed_val or hashed_val == '':
@@ -788,13 +788,13 @@ class DomainReqHandler(PHandler):
                   schemaName: str,
                   schemaVersion: str,
                   isCommitted=True,
-                  get_proof=True) -> (str, int, int, list):
+                  with_proof=True) -> (str, int, int, list):
         assert author is not None
         assert schemaName is not None
         assert schemaVersion is not None
         path = domain.make_state_path_for_schema(author, schemaName, schemaVersion)
         try:
-            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, get_proof=get_proof)
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=with_proof)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
@@ -808,7 +808,7 @@ class DomainReqHandler(PHandler):
         assert schemaSeqNo is not None
         path = domain.make_state_path_for_claim_def(author, schemaSeqNo, signatureType)
         try:
-            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=True)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
@@ -828,19 +828,18 @@ class DomainReqHandler(PHandler):
                                                     revoc_def_type,
                                                     revoc_def_tag)
         try:
-            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=True)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
 
     def getRevocDefEntry(self,
                          revoc_reg_def_id,
-                         isCommitted=True,
-                         get_proof=True) -> (str, int, int, list):
+                         isCommitted=True) -> (str, int, int, list):
         assert revoc_reg_def_id
         path = domain.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
         try:
-            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, get_proof=get_proof)
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=False)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
