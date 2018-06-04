@@ -58,13 +58,15 @@ IPS_ARRAY=($IPS)
 IFS=$ORIGINAL_IFS
 for i in `seq 1 $CNT`; do
         NODE_NAME="${BASE_NODE_NAME}${i}"
+        NIP=${IPS_ARRAY[i-1]}
         NPORT=$PORT
         ((PORT++))
+        CIP=${IPS_ARRAY[i-1]}
         CPORT=$PORT
         ((PORT++))
         NODE_IMAGE_TAG="$(echo "$NODE_NAME" | tr '[:upper:]' '[:lower:]')"
         POOL_DATA="${POOL_DATA},$NODE_IMAGE_TAG ${IPS_ARRAY[i-1]} $NPORT $CPORT"
-        $SCRIPT_DIR/node_build.sh $NODE_NAME $NPORT $CPORT $NODE_IMAGE_TAG  "${IPS}" $CNT $CLI_CNT $i
+        $SCRIPT_DIR/node_build.sh $NODE_NAME $NIP $NPORT $CIP $CPORT $NODE_IMAGE_TAG  "${IPS}" $CNT $CLI_CNT $i
 done
 POOL_DATA=${POOL_DATA:1}
 

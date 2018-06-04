@@ -8,6 +8,7 @@ from base58 import b58decode, b58encode
 
 from plenum.client.client import Client as PlenumClient
 from plenum.common.error import fault
+from plenum.common.txn_util import get_type
 from stp_core.common.log import getlogger
 from plenum.common.startable import Status
 
@@ -184,7 +185,7 @@ class Client(PlenumClient):
 
     def hasNym(self, nym):
         for txn in self.txnLog.getTxnsByType(NYM):
-            if txn.get(TXN_TYPE) == NYM:
+            if get_type(txn) == NYM:
                 return True
         return False
 

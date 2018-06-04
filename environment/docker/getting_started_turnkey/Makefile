@@ -73,10 +73,10 @@ info: local
 
 cluster:
 	@echo -e  $(BLUE_COLOR) CLUSTER: Create 4 Nodes at IPS $(IPS) $(NO_COLOR)
-	docker run --name Node1 -d -p 9701:9701 -p 9702:9702 indy-base /bin/bash -c "create_dirs.sh; init_indy_keys --name Node1; generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 --ips $(IPS); start_indy_node Node1 9701 9702"
-	docker run --name Node2 -d -p 9703:9703 -p 9704:9704 indy-base /bin/bash -c "create_dirs.sh; init_indy_keys --name Node2; generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 2 --ips $(IPS); start_indy_node Node2 9703 9704"
-	docker run --name Node3 -d -p 9705:9705 -p 9706:9706 indy-base /bin/bash -c "create_dirs.sh; init_indy_keys --name Node3; generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 3 --ips $(IPS); start_indy_node Node3 9705 9706"
-	docker run --name Node4 -d -p 9707:9707 -p 9708:9708 indy-base /bin/bash -c "create_dirs.sh; init_indy_keys --name Node4; generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 4 --ips $(IPS); start_indy_node Node4 9707 9708"
+	docker run --name Node1 -d -p 9701:9701 -p 9702:9702 indy-base /bin/bash -c "create_dirs.sh; init_indy_keys --name Node1; generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 --ips $(IPS); start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702"
+	docker run --name Node2 -d -p 9703:9703 -p 9704:9704 indy-base /bin/bash -c "create_dirs.sh; init_indy_keys --name Node2; generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 2 --ips $(IPS); start_indy_node Node2 0.0.0.0 9703 0.0.0.0 9704"
+	docker run --name Node3 -d -p 9705:9705 -p 9706:9706 indy-base /bin/bash -c "create_dirs.sh; init_indy_keys --name Node3; generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 3 --ips $(IPS); start_indy_node Node3 0.0.0.0 9705 0.0.0.0 9706"
+	docker run --name Node4 -d -p 9707:9707 -p 9708:9708 indy-base /bin/bash -c "create_dirs.sh; init_indy_keys --name Node4; generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 4 --ips $(IPS); start_indy_node Node4 0.0.0.0 9707 0.0.0.0 9708"
 	@echo -e  $(OK_COLOR) SUCCESS: Cluster 4 nodes success at IPS $(IPS) $(NO_COLOR)
 
 indy-cli: info
