@@ -1,4 +1,6 @@
 import base64
+import random
+
 import time
 
 import base58
@@ -18,7 +20,8 @@ from indy_common.types import Request
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.domain_req_handler import DomainReqHandler
-from plenum.common.util import get_utc_epoch
+from plenum.common.util import get_utc_epoch, friendlyToRaw, rawToFriendly, \
+    friendlyToHex, hexToFriendly
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_common.state import domain
@@ -223,11 +226,7 @@ def test_state_proofs_for_get_schema(request_handler):
                              data, seq_no, txn_time)
 
 
-def test_state_proofs_for_get_nym(request_handler):
-    nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
-    role = "2"
-    verkey = "~7TYfekw4GUagBnBVCqPjiC"
-    seq_no = 0
+def prep_multi_sig(request_handler, nym, role, verkey, seq_no):
     txn_time = int(time.time())
     # Adding nym
     data = {
@@ -243,8 +242,10 @@ def test_state_proofs_for_get_nym(request_handler):
     request_handler.updateNym(nym, txn)
     request_handler.state.commit()
     multi_sig = save_multi_sig(request_handler)
+    return data, multi_sig
 
-    # Getting nym
+
+def get_nym_verify_proof(request_handler, nym, data, multi_sig):
     request = Request(
         operation={
             TARGET_NYM: nym
@@ -255,19 +256,47 @@ def test_state_proofs_for_get_nym(request_handler):
     result = request_handler.handleGetNymReq(request)
     proof = extract_proof(result, multi_sig)
 
+    assert proof
+    if data:
+        assert result[DATA]
+        result_data = request_handler.stateSerializer.deserialize(result[DATA])
+        result_data.pop(TARGET_NYM, None)
+        assert result_data == data
+
+
     # Verifying signed state proof
     path = request_handler.nym_to_state_key(nym)
-    encoded_value = request_handler.stateSerializer.serialize(data)
+    # If the value does not exist, serialisation should be null and
+    # verify_state_proof needs to be given null (None). This is done to
+    # differentiate between absence of value and presence of empty string value
+    serialised_value = request_handler.stateSerializer.serialize(data) if data else None
     proof_nodes = base64.b64decode(proof[PROOF_NODES])
     root_hash = base58.b58decode(proof[ROOT_HASH])
-    verified = request_handler.state.verify_state_proof(
+    return request_handler.state.verify_state_proof(
         root_hash,
         path,
-        encoded_value,
+        serialised_value,
         proof_nodes,
         serialized=True
     )
-    assert verified
+
+
+def test_state_proofs_for_get_nym(request_handler):
+    nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
+    role = "2"
+    verkey = "~7TYfekw4GUagBnBVCqPjiC"
+    seq_no = 1
+    # Check for existing nym
+    data, multi_sig = prep_multi_sig(request_handler, nym, role, verkey, seq_no)
+    assert get_nym_verify_proof(request_handler, nym, data, multi_sig)
+
+    # Shuffle the bytes of nym
+    h = list(friendlyToHex(nym))
+    random.shuffle(h)
+    garbled_nym = hexToFriendly(bytes(h))
+    data[f.IDENTIFIER.nm] = garbled_nym
+    # `garbled_nym` does not exist, proof should verify but data is null
+    assert get_nym_verify_proof(request_handler, garbled_nym, None, multi_sig)
 
 
 def test_no_state_proofs_if_protocol_version_less(request_handler):
