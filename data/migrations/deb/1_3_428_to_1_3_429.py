@@ -13,11 +13,16 @@ from _sha256 import sha256
 from common.serializers.serialization import ledger_txn_serializer, serialize_msg_for_signing
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
+from indy_common.constants import CONFIG_LEDGER_ID
+from indy_node.server.config_req_handler import ConfigReqHandler
+from indy_node.server.domain_req_handler import DomainReqHandler
+from indy_node.server.pool_req_handler import PoolRequestHandler
 from plenum.common.constants import TXN_TYPE, TXN_PAYLOAD, \
-    TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_DIGEST
+    TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_DIGEST, POOL_LEDGER_ID, DOMAIN_LEDGER_ID
 from plenum.common.txn_util import transform_to_new_format, get_from, get_req_id, get_payload_data, \
     get_protocol_version, get_seq_no, get_type
 from plenum.common.types import f, OPERATION
+from plenum.persistence.req_id_to_txn import ReqIdrToTxn
 from storage.helper import initKeyValueStorage
 from storage.kv_store_rocksdb_int_keys import KeyValueStorageRocksdbIntKeys
 from stp_core.common.log import getlogger
@@ -62,7 +67,25 @@ def get_node_name():
     return node_name
 
 
+def get_ledger_id_by_txn_type(txn_type):
+
+    def get_types_for_req_handler(req_handler):
+        return list(req_handler.write_types) + list(req_handler.query_types)
+
+    if txn_type in get_types_for_req_handler(PoolRequestHandler):
+        return POOL_LEDGER_ID
+    elif txn_type in get_types_for_req_handler(DomainReqHandler):
+        return DOMAIN_LEDGER_ID
+    elif txn_type in get_types_for_req_handler(ConfigReqHandler):
+        return CONFIG_LEDGER_ID
+    else:
+        logger.error("Unknown txn_type: {}".format(txn_type))
+        logger.error("Cannot write txn into SeqNoDB, because cannot define ledger_id")
+        sys.exit(1)
+
+
 def migrate_txn_log(db_dir, db_name):
+
     def put_into_seq_no_db(txn):
         # If there is no reqId, then it's genesis txn
         if get_req_id(txn) is None:
@@ -79,9 +102,10 @@ def migrate_txn_log(db_dir, db_name):
             dct[f.PROTOCOL_VERSION.nm] = get_protocol_version(txn_new)
         digest = sha256(serialize_msg_for_signing(dct)).hexdigest().encode()
         seq_no = get_seq_no(txn_new).encode()
-        dest_seq_no_db_storage.put(digest, seq_no)
+        ledger_id = get_ledger_id_by_txn_type(operation[TXN_TYPE])
+        line_to_record = str(ledger_id) + ReqIdrToTxn.delimiter + str(seq_no)
+        dest_seq_no_db_storage.put(digest, line_to_record)
         return digest
-
 
     new_db_name = db_name + '_new'
     old_path = os.path.join(db_dir, db_name)
@@ -171,7 +195,6 @@ def rename_seq_no_db(db_dir):
         return False
 
     set_own_perm("indy", old_seqno_path)
-
 
 
 def migrate_txn_logs(ledger_dir):
