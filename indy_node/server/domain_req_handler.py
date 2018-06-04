@@ -687,7 +687,7 @@ class DomainReqHandler(PHandler):
         assert path is not None
         head_hash = self.state.committedHeadHash if isCommitted else self.state.headHash
         encoded, proof = self.get_value_from_state(path, head_hash, with_proof=with_proof)
-        if encoded is not None:
+        if encoded:
             value, last_seq_no, last_update_time = domain.decode_state_value(encoded)
             return value, last_seq_no, last_update_time, proof
         return None, None, None, proof
