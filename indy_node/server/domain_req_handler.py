@@ -221,7 +221,7 @@ class DomainReqHandler(PHandler):
             author=identifier,
             schemaName=schema_name,
             schemaVersion=schema_version,
-            get_proof=False
+            with_proof=False
         )
         if schema:
             raise InvalidClientRequest(identifier, req.reqId,
@@ -285,7 +285,7 @@ class DomainReqHandler(PHandler):
         cred_def_path = domain.make_state_path_for_claim_def(authors_did=tags[0],
                                                              signature_type=tags[2],
                                                              schema_seq_no=tags[3])
-        cred_def, _, _, _ = self.lookup(cred_def_path, isCommitted=False)
+        cred_def, _, _, _ = self.lookup(cred_def_path, isCommitted=False, with_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
@@ -295,7 +295,7 @@ class DomainReqHandler(PHandler):
         assert revoc_reg_def_id
         current_entry, _, _, _ = self.getRevocDefEntry(revoc_reg_def_id=revoc_reg_def_id,
                                                        isCommitted=False)
-        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False)
+        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False, with_proof=False)
         if revoc_def is None:
             raise InvalidClientRequest(author_did,
                                        req_id,
@@ -453,7 +453,8 @@ class DomainReqHandler(PHandler):
         schema, lastSeqNo, lastUpdateTime, proof = self.getSchema(
             author=author_did,
             schemaName=schema_name,
-            schemaVersion=schema_version
+            schemaVersion=schema_version,
+            with_proof=True
         )
         # TODO: we have to do this since SCHEMA has a bit different format than other txns
         # (it has NAME and VERSION inside DATA, and it's not part of the state value, but state key)
@@ -786,13 +787,14 @@ class DomainReqHandler(PHandler):
                   author: str,
                   schemaName: str,
                   schemaVersion: str,
-                  isCommitted=True) -> (str, int, int, list):
+                  isCommitted=True,
+                  with_proof=True) -> (str, int, int, list):
         assert author is not None
         assert schemaName is not None
         assert schemaVersion is not None
         path = domain.make_state_path_for_schema(author, schemaName, schemaVersion)
         try:
-            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=True)
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=with_proof)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
@@ -837,7 +839,7 @@ class DomainReqHandler(PHandler):
         assert revoc_reg_def_id
         path = domain.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
         try:
-            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=isCommitted)
+            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=False)
             return keys, seqno, lastUpdateTime, proof
         except KeyError:
             return None, None, None, None
