@@ -5,84 +5,57 @@
 # This script assumes:
 # --------------------
 #
-# 1. The entirety of a node's state is bundled as a zip or tar file
+# 1. The entirety of a node's state is bundled as a zip or tar file using
+#    nscapture.
 # 2. The zip/tar file has the name <node_name>.zip or <node_name>.tar.gz where
 #    <node_name> is the name of the node.
 # 3. Both zip/tar files to be compared are on the filesystem where nsdiff is
 #    installed. In other words, nsdiff does not attempt to connect or collect
 #    state data from remote nodes.
-# 4. nscapture is/was used to capture state passed as state1 and state2
+# 4. nsdiff will be used in a development or production environment where indy-node
+#    and it's dependencies are installed.
 #
-# Installation:
-# -------------
+# What is being compared?
+# -----------------------
+# The list of things (state) being compared depends on what nscapture is
+# capturing, but the following list is fairly representative of what is being
+# compared.
 #
-# If this script is used on a server or workstation that has indy-node installed
-# and indy-node is known to be working, you do not need to install anything.
-# Otherwise, the following information will be helpful.
+# Running nsdiff with a `-c False` will tell nsdiff not clean up temporary
+# directories.
 #
-# This script depends on leveldb/rocksdb python bindings which in turn rely on
-# the leveldb C runtime libs and headers. You must install leveldb/rocksdb
-# dependencies. See Installation > Prerequisites section below.
+# The output of nsdiff with optional switch `-c False` will look similar to the
+# following:
 #
-# Until further notice, assume Python 3.5.2 is required and all references to
-# python3 or pip3 imply Python 3.5.2.
-# 
-# Note that anytime pip/pip3 is used to install python packages, the
-# python/python3 environment is changed without the knowledge of package
-# managers (apt, yum, brew, etc.). Side-effects of pip installations and
-# os-controlled updates (i.e. automatic updates) to your system's python have
-# the potential to cause instability/breakage of either your system or
-# development environment. Most modern operating systems depend on Python. If
-# you would prefer not to make changes to your system python/python3, please
-# consider setting up a Python Virtual Environment (highly recommended):
-#   https://docs.python.org/3/tutorial/venv.html
+# Skipping removal of temp directory /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn/T/tmpl5i26zpm/./data/Node1
+# Skipping removal of temp directory /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn/T/tmp1mp5_t7u/./data/Node1
+# Skipping removal of transform and scrub temp directory /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn/T/tmpp0bybja8
+# Skipping removal of transform and scrub temp directory /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn/T/tmpcx5m4hjf
 #
-# Setting up a Python Virtualenv should be as easy as:
-# 1. Create a python virtual environment
-#    `python3.5 -m venv nsdiff-venv`
-# 2. Activate the virtual environment. This modifies a shell's environment.
-#    Therefore, must be run in each shell.
-#    `source nsdiff-venv/bin/activate`
-# 3. When the time comes to deactivate the environment
-#    `deactivate`
+# In the example output above directories
+# /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn and
+# /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn will contain a set of files. The
+# files represent a superset of things (state) that nsdiff is comparing.
 #
-# Prerequisites: Python 3.5.x - pre-3.5.x and post-3.5.x (i.e. 3.6.x) won't
-#                work. 3.5.2 is recommended until further notice.
-#
-#     1. Install core dependencies. rocksdb is only required, because we will be
-#        pip installing indy-plenum and indy-plenum depends on both leveldb and
-#        rocksdb
-#            MacOS:
-#            `brew install leveldb rocksdb`
-#            Ubuntu:
-#            `sudo apt-get install libleveldb1v5 librocksdb4.1 libleveldb-dev librocksdb-dev`
-#
-#     2. Clone indy-plenum
-#            `git clone git@github.com:hyperledger/indy-plenum.git -b <branch>`
-#
-#   -- All of the following steps can be done in a Python Virtual Environment --
-#
-#     3. Install indy-plenum module within the python virtual environment:
-#        It is recommended that you do an "editable" install. Doing so allows
-#        changes/updates to be made to a clone (VCS) of the codebase without the
-#        need to reinstall after changes/updates:
-#        https://pip.pypa.io/en/stable/reference/pip_install/#editable-installs
-#
-#        indy-plenum may require a few packages/modules be installed via pip.
-#        The following were required for a python 3.5.2 installation:
-#
-#        `pip install pytest-runner python-rocksdb Cython rlp==0.6.0`
-#        TODO: Why does the setup.py in indy-plenum not correctly install
-#              pytest-runner, python-rocksdb, Cython, and rlp? At first glance,
-#              in indy-plenum/setup.py, the 'install-requires' section appears
-#              to contain python-rocksdb, and the 'setup-requires' section
-#              appears to contain pytest-runner. Cython is not explicitly
-#              declared anywhere in indy-plenum/setup.py. rlp does not designate
-#              a specific version and therefore defaults to the latest released
-#              version (currently >= 1.0.1). rlp version 0.6.0 is the latest
-#              version that appears to work with indy-plenum.
-#
-#        `pip install -e ${PWD}/indy-plenum`
+# attr_db
+# config_merkleLeaves
+# config_merkleNodes
+# config_state
+# config_transactions
+# domain_merkleLeaves
+# domain_merkleNodes
+# domain_state
+# domain_transactions
+# idr_cache_db
+# log (this is derived from the latest log file containing view number and pre-prepare sequence number)
+# nodename
+# pool_merkleLeaves
+# pool_merkleNodes
+# pool_state
+# pool_transactions
+# seq_no_db
+# state_signature
+# state_ts_db
 
 from __future__ import print_function
 from enum import Enum
@@ -303,7 +276,317 @@ class NodeStateComparator():
                 pass
             else:
                 raise
-    
+
+
+    def is_db_dir(self, fileList):
+        # The set of filenames that must exist in a directory to be assumed a
+        # LevelDB/RocksDB instance. Will be used in the following for-loop.
+        leveldb_rocksdb_filenames = [ 'CURRENT', 'LOG' ]
+
+        for filename in leveldb_rocksdb_filenames:
+            if filename not in fileList:
+                return False
+
+        return True
+
+    # TODO: What parameters are (or should be) class data members?
+    def transform_db(self, dirName, sout, sname):
+        (dirname, filename, name, extension) = self.split_name(dirName)
+
+        # Use "nodename" in place of the node's name when a directory
+        # (dirName in this case) matches the node name (sname)
+        if sname == filename:
+            filename = "nodename"
+
+        if filename.endswith("_transactions"):
+            logger.debug("{} is a transaction LevelDB/RocksDB instance!"
+                .format(filename))
+            # utf-8 - call "getAllTxn()" in ledger.py in the ledger
+            #         module/package in indy-plenum.
+            # Create a Ledger domain object from the ledger directory
+            # 'filename' takes the form {fileNamePrefix}_transactions
+            # where fileNamePrefix is one of the following:
+            #    config, pool, domain
+            # FileHashStore requires a fileNamePrefix.
+            fileNamePrefix = filename.split("_")[0]
+            ledger = Ledger(
+                CompactMerkleTree(
+                    # The FileHashStore reads
+                    # {fileNamePrefix}_merkleLeaves and
+                    # {fileNamePrefix}_merkleNodes from dataDir
+                    hashStore=FileHashStore(
+                        dataDir=dirname,
+                        fileNamePrefix=fileNamePrefix
+                    )
+                ),
+                dataDir=dirname,
+                fileName=filename
+            )
+
+            out_filename = join(sout, filename)
+            with open(out_filename, "a") as file_handle:
+                for txn in ledger.getAllTxn():
+                    logger.info("Writing >txn={}< to {}".format(
+                        str(txn), out_filename))
+                    file_handle.write(str(txn))
+            ledger.stop()
+        else:
+            debug_msg = ("{} is NOT a transaction LevelDB/RocksDB"
+                         "instance!")
+            logger.debug(debug_msg.format(filename))
+            # Assume utf-8 decoding by default.
+            # utf-8 - use standard leveldb/rocksdb iterator() and utf-8
+            #         decoding.
+            opened = False
+            try:
+                debug_msg = ("Opening {} as a LevelDB instance with"
+                             " initKeyValueStorage...")
+                logger.debug(debug_msg.format(filename))
+                leveldb_rocksdb_handle = initKeyValueStorage(
+                    KeyValueStorageType.Leveldb, dirname, filename,
+                    read_only=True)
+                opened = True
+            except LevelDBError as e:
+                debug_message = ("Failed opening {} as a LevelDB"
+                                 " instance using initKeyValueStorageInt"
+                                 " with exeption {}")
+                logger.debug(debug_message.format(filename, e))
+                try:
+                    debug_message = ("Retry opening {} as a LevelDB"
+                                     " instance with"
+                                     " initKeyValueStorageIntKeys...")
+                    logger.debug(debug_message.format(filename))
+                    leveldb_rocksdb_handle = initKeyValueStorageIntKeys(
+                        KeyValueStorageType.Leveldb, dirname, filename,
+                        read_only=True)
+                    opened = True
+                except LevelDBError as e:
+                    debug_message = ("Failed opening {} as a LevelDB"
+                                     " instance using"
+                                     " initKeyValueStorageIntKeys with"
+                                     " exeption {}")
+                    logger.debug(debug_message.format(filename, e))
+                    opened = False
+
+            if not opened:
+                try:
+                    debug_message = ("Opening {} as a RocksDB instance"
+                                     " with initKeyValueStorage...")
+                    logger.debug(debug_message.format(filename))
+                    leveldb_rocksdb_handle = initKeyValueStorage(
+                        KeyValueStorageType.Rocksdb, dirname, filename,
+                        read_only=True)
+                    opened = True
+                except:
+                    # rocksdb.errors.InvalidArgument
+                    e = sys.exc_info()[0]
+                    debug_message = ("Failed opening {} as a"
+                                     " RocksDB instance using"
+                                     " initKeyValueStorage with"
+                                     " exception: {}")
+                    logger.debug(debug_message.format(filename, e))
+                    try:
+                        debug_message = ("Retry opening {} as a RocksDB"
+                                         " instance with"
+                                         " initKeyValueStorageIntKeys...")
+                        logger.debug(debug_message.format(filename))
+                        leveldb_rocksdb_handle = initKeyValueStorageIntKeys(
+                            KeyValueStorageType.Rocksdb, dirname,
+                            filename, read_only=True)
+                        opened = True
+                    except:
+                        e = sys.exc_info()[0]
+                        debug_message = ("Failed opening {} as a"
+                                         " RocksDB instance using"
+                                         " initKeyValueStorageIntKeys"
+                                         " with exeption {}")
+                        logger.debug(debug_message.format(filename, e))
+                        error_message = ("Failed to open {}/{} as a"
+                                         " LevelDB or RocksDB instance")
+                        logger.error(error_message.format(dirname,
+                            filename, e))
+                        opened = False
+
+
+            if opened:
+                debug_msg = ("Successfully opened LevelDB/RocksDB"
+                             " instance {}")
+                logger.debug(debug_msg.format(filename))
+                out_filename = join(sout, filename)
+                with open(out_filename, "a") as file_handle:
+                    if filename == "state_signature":
+                        for k, v in leveldb_rocksdb_handle.iterator():
+                            data=json.loads(v.decode('utf-8'))
+
+                            try:
+                                 k = bytes(k)
+                            except TypeError:
+                                 # k isn't convertable to bytes
+                                 pass
+
+                            # The 'participants' and 'signature' can
+                            # differ, but the 'value' must be the same.
+                            # Preserve only the 'value' element in v.
+                            file_handle.write("{} {}\n".format(k,
+                                json.dumps(data['value'])))
+                    elif filename.endswith("_state"):
+                        state = PruningState(leveldb_rocksdb_handle)
+                        # Traverse keys and write a key-value pair per
+                        # line.
+                        state_dict = state.as_dict
+
+                        for k, v in state_dict.items():
+                            try:
+                                 k = bytes(k)
+                            except TypeError:
+                                 # k isn't convertable to bytes
+                                 pass
+
+                            try:
+                                 v = bytes(v)
+                            except TypeError:
+                                 # v isn't convertable to bytes
+                                 pass
+
+                            logger.info(
+                                "Writing >key={} value={}< to {}"
+                                .format(k, v, out_filename))
+                            file_handle.write("{} {}".format(k, v))
+                    elif (filename.endswith("_merkleLeaves")
+                        or filename.endswith("_merkleNodes")):
+                        for k, v in leveldb_rocksdb_handle.iterator():
+                            try:
+                                 k = bytes(k)
+                            except TypeError:
+                                 # k isn't convertable to bytes
+                                 pass
+
+                            try:
+                                 v = bytes(v)
+                            except TypeError:
+                                 # v isn't convertable to bytes
+                                 pass
+
+                            logger.info("Writing >{} {}< to {}"
+                                .format(k, v, out_filename))
+                            file_handle.write("{} {}\n".format(k, v))
+                    else:
+                        for k, v in leveldb_rocksdb_handle.iterator():
+                            try:
+                                v = v.decode("utf-8")
+                            except UnicodeDecodeError:
+                                # v isn't utf-8 encoded
+                                pass
+
+                            try:
+                                 k = bytes(k)
+                            except TypeError:
+                                 # k isn't convertable to bytes
+                                 pass
+
+                            try:
+                                 v = bytes(v)
+                            except TypeError:
+                                 # v isn't convertable to bytes
+                                 pass
+
+                            logger.info("Writing >{} {}< to {}"
+                                .format(k, v, out_filename))
+                            file_handle.write("{} {}\n".format(k, v))
+                leveldb_rocksdb_handle.close()
+            else:
+                error_message = ("Failed to open LevelDB/RocksDB"
+                                 " instance {}")
+                logger.error(error_message.format(filename))
+                self._eprint(error_message.format(filename), exit=True)
+
+    def transform_dir(self, dirName, fileList, sout, sname):
+        (dirname, filename, name, extension) = self.split_name(dirName)
+
+        # Use "nodename" in place of the node's name when a directory
+        # (filename in this case) matches the node name (sname)
+        if sname == filename:
+            sout = join(sout, "nodename")
+        else:
+            sout = join(sout, filename)
+
+        # Make sure sout directory exists
+        self._mkdir_p(sout)
+
+        # Copy all files to sout and then walk each of the
+        # subdirectories (continue outer for loop (os.walk))
+        for fname in fileList:
+            if fname == "node_info":
+                # When comparing different nodes, only preserve "view"
+                # number for comparison. All other fields can differ.
+                with open(join(dirname, filename, fname),
+                          'r') as nodeInfo:
+                    data=nodeInfo.read()
+                    data=json.loads(data)
+                    out_filename = join(sout, fname)
+                    with open(out_filename, "a") as file_handle:
+                        file_handle.write("view: {}".format(
+                            data['view']))
+            else:
+                copyfile(join(abspath(dirName), fname), join(sout, fname))
+
+    def transform_logs(self, sin, sout):
+        # Check for a log file
+        (dirname, filename, name, extension) = self.split_name(sin)
+        log_filename = "{}.log".format(filename)
+        log_filepath = join(dirname, "../", "log", log_filename)
+        if os.path.exists(log_filepath):
+            # Extract (view no, ppSeqNo) tuple from log file(s)
+            # Last "batch ordered"
+            process_grep = subprocess.Popen(["grep", "-e"
+                                                      "{}:.* ordered batch request, view no".format(
+                filename), log_filepath], stdout=subprocess.PIPE, shell=False)
+            process_sort = subprocess.Popen(["sort"], stdin=process_grep.stdout, stdout=subprocess.PIPE, shell=False)
+            process_tail = subprocess.Popen(['tail', '-1'],
+                                            stdin=process_sort.stdout, stdout=subprocess.PIPE,
+                                            shell=False)
+            process_cut1 = subprocess.Popen(['cut', '-f', '5',
+                                              '-d', '|'], stdin=process_tail.stdout,
+                                            stdout=subprocess.PIPE, shell=False)
+            process_cut2 = subprocess.Popen(['cut', '-d', ',',
+                                              '-f', '2,3'], stdin=process_cut1.stdout,
+                                            stdout=subprocess.PIPE, shell=False)
+            process_grep.stdout.close()
+            process_sort.stdout.close()
+            process_tail.stdout.close()
+            process_cut1.stdout.close()
+
+            batch_ordered_tuple = process_cut2.communicate()[0]
+
+            # Last "batch executed"
+            process_grep = subprocess.Popen(["grep", "-e"
+                                                      "{} executing Ordered batch".format(
+                filename), log_filepath], stdout=subprocess.PIPE, shell=False)
+            process_sort = subprocess.Popen(["sort"], stdin=process_grep.stdout, stdout=subprocess.PIPE, shell=False)
+            process_tail = subprocess.Popen(['tail', '-1'],
+                                            stdin=process_sort.stdout, stdout=subprocess.PIPE,
+                                            shell=False)
+            process_cut1 = subprocess.Popen(['cut', '-f', '5',
+                                              '-d', '|'], stdin=process_tail.stdout,
+                                            stdout=subprocess.PIPE, shell=False)
+            process_cut2 = subprocess.Popen(['cut', '-d', ' ',
+                                              '-f', '6,7'], stdin=process_cut1.stdout,
+                                            stdout=subprocess.PIPE, shell=False)
+            process_grep.stdout.close()
+            process_sort.stdout.close()
+            process_tail.stdout.close()
+            process_cut1.stdout.close()
+
+            batch_executed_tuple = process_cut2.communicate()[0]
+            # Use the filename of "log" so that the *nix-diff can be done on a
+            # single directory.
+            out_filename = join(sout, "log")
+            with open(out_filename, "a") as file_handle:
+                file_handle.write("last batch ordered: {}".format(
+                    batch_ordered_tuple.decode()))
+                file_handle.write("last batch executed: {}".format(
+                    batch_executed_tuple.decode()))
+
     def transform_and_scrub(self, sname, sin, sout):
         """Convert all state data to a *nix diff-able form
     
@@ -341,10 +624,6 @@ class NodeStateComparator():
            5. All other files and directories are unaltered.
         """
         logger.debug("Transforming and scrubbing {} into {}".format(sin, sout))
-    
-        # The set of filenames that must exist in a directory to be assumed a
-        # LevelDB/RocksDB instance. Will be used in the following for-loop.
-        leveldb_rocksdb_filenames = [ 'CURRENT', 'LOG' ]
 
         # Traverse directory sin
         # TODO: 1. Optimize using multiprocessing module. At minimum, all
@@ -366,320 +645,24 @@ class NodeStateComparator():
             # Skip specific files
             fileList[:] = [x for x in fileList if x not in self.skipfiles]
     
-            # Check if all of the leveldb_rocksdb_filenames are found in
-            # fileList set is_leveldb_rocksdb_dir and break if any of the
-            # filenames are not found
-            is_leveldb_rocksdb_dir = True
-            for filename in leveldb_rocksdb_filenames:
-                if filename not in fileList:
-                    is_leveldb_rocksdb_dir = False
-                    break
-    
             (dirname, filename, name, extension) = self.split_name(dirName)
-            # Do not include recordings in diff
+
+            # Ignore 'recorder' artifacts. Should only exist in state captured
+            # from a replay
             if (filename == "recorder" and dirname.endswith(
                 "/{}".format(sname))):
                 subdirList[:] = []
                 continue
 
-            if (is_leveldb_rocksdb_dir):
-                logger.debug("{} is a LevelDB/RocksDB directory!"
-                    .format(dirName))
-
-                # Use "nodename" in place of the node's name when a directory
-                # (dirName in this case) matches the node name (sname)
-                if (sname == filename):
-                    filename = "nodename"
-
-                if (filename.endswith("_transactions")):
-                    logger.debug("{} is a transaction LevelDB/RocksDB instance!"
-                        .format(filename))
-                    # utf-8 - call "getAllTxn()" in ledger.py in the ledger
-                    #         module/package in indy-plenum.
-                    # Create a Ledger domain object from the ledger directory 
-                    # 'filename' takes the form {fileNamePrefix}_transactions
-                    # where fileNamePrefix is one of the following:
-                    #    config, pool, domain
-                    # FileHashStore requires a fileNamePrefix.
-                    fileNamePrefix = filename.split("_")[0]
-                    ledger = Ledger(
-                        CompactMerkleTree(
-                            # The FileHashStore reads
-                            # {fileNamePrefix}_merkleLeaves and
-                            # {fileNamePrefix}_merkleNodes from dataDir
-                            hashStore=FileHashStore(
-                                dataDir=dirname,
-                                fileNamePrefix=fileNamePrefix
-                            )
-                        ),
-                        dataDir=dirname,
-                        fileName=filename
-                    )
-
-                    out_filename = join(sout, filename)
-                    with open(out_filename, "a") as file_handle:
-                        for txn in ledger.getAllTxn():
-                            logger.info("Writing >txn={}< to {}".format(
-                                str(txn), out_filename))
-                            file_handle.write(str(txn))
-                    ledger.stop()
-                else:
-                    debug_msg = ("{} is NOT a transaction LevelDB/RocksDB"
-                                 "instance!")
-                    logger.debug(debug_msg.format(filename))
-                    # Assume utf-8 decoding by default.
-                    # utf-8 - use standard leveldb/rocksdb iterator() and utf-8
-                    #         decoding.
-                    opened = False
-                    try:
-                        debug_msg = ("Opening {} as a LevelDB instance with"
-                                     " initKeyValueStorage...")
-                        logger.debug(debug_msg.format(filename))
-                        leveldb_rocksdb_handle = initKeyValueStorage(
-                            KeyValueStorageType.Leveldb, dirname, filename,
-                            read_only=True)
-                        opened = True
-                    except LevelDBError as e:
-                        debug_message = ("Failed opening {} as a LevelDB"
-                                         " instance using initKeyValueStorageInt"
-                                         " with exeption {}")
-                        logger.debug(debug_message.format(filename, e))
-                        try:
-                            debug_message = ("Retry opening {} as a LevelDB"
-                                             " instance with"
-                                             " initKeyValueStorageIntKeys...")
-                            logger.debug(debug_message.format(filename))
-                            leveldb_rocksdb_handle = initKeyValueStorageIntKeys(
-                                KeyValueStorageType.Leveldb, dirname, filename,
-                                read_only=True)
-                            opened = True
-                        except LevelDBError as e:
-                            debug_message = ("Failed opening {} as a LevelDB"
-                                             " instance using"
-                                             " initKeyValueStorageIntKeys with"
-                                             " exeption {}")
-                            logger.debug(debug_message.format(filename, e))
-                            opened = False
-
-                    if not opened:
-                        try:
-                            debug_message = ("Opening {} as a RocksDB instance"
-                                             " with initKeyValueStorage...")
-                            logger.debug(debug_message.format(filename))
-                            leveldb_rocksdb_handle = initKeyValueStorage(
-                                KeyValueStorageType.Rocksdb, dirname, filename,
-                                read_only=True)
-                            opened = True
-                        except:
-                            # rocksdb.errors.InvalidArgument
-                            e = sys.exc_info()[0]
-                            debug_message = ("Failed opening {} as a"
-                                             " RocksDB instance using"
-                                             " initKeyValueStorage with"
-                                             " exception: {}")
-                            logger.debug(debug_message.format(filename, e))
-                            try:
-                                debug_message = ("Retry opening {} as a RocksDB"
-                                                 " instance with"
-                                                 " initKeyValueStorageIntKeys...")
-                                logger.debug(debug_message.format(filename))
-                                leveldb_rocksdb_handle = initKeyValueStorageIntKeys(
-                                    KeyValueStorageType.Rocksdb, dirname,
-                                    filename, read_only=True)
-                                opened = True
-                            except:
-                                e = sys.exc_info()[0]
-                                debug_message = ("Failed opening {} as a"
-                                                 " RocksDB instance using"
-                                                 " initKeyValueStorageIntKeys"
-                                                 " with exeption {}")
-                                logger.debug(debug_message.format(filename, e))
-                                error_message = ("Failed to open {}/{} as a"
-                                                 " LevelDB or RocksDB instance")
-                                logger.error(error_message.format(dirname,
-                                    filename, e))
-                                opened = False
-
-
-                    if opened:
-                        debug_msg = ("Successfully opened LevelDB/RocksDB"
-                                     " instance {}")
-                        logger.debug(debug_msg.format(filename))
-                        out_filename = join(sout, filename)
-                        with open(out_filename, "a") as file_handle:
-                            if (filename == "state_signature"):
-                                for k, v in leveldb_rocksdb_handle.iterator():
-                                    data=json.loads(v.decode('utf-8'))
-
-                                    try:
-                                         k = bytes(k)
-                                    except TypeError:
-                                         # k isn't convertable to bytes
-                                         pass
-
-                                    # The 'participants' and 'signature' can
-                                    # differ, but the 'value' must be the same.
-                                    # Preserve only the 'value' element in v.
-                                    file_handle.write("{} {}\n".format(k,
-                                        json.dumps(data['value'])))
-                            elif (filename.endswith("_state")):
-                                state = PruningState(leveldb_rocksdb_handle)
-                                # Traverse keys and write a key-value pair per
-                                # line.
-                                state_dict = state.as_dict
-
-                                for k, v in state_dict.items():
-                                    try:
-                                         k = bytes(k)
-                                    except TypeError:
-                                         # k isn't convertable to bytes
-                                         pass
-
-                                    try:
-                                         v = bytes(v)
-                                    except TypeError:
-                                         # v isn't convertable to bytes
-                                         pass
-
-                                    logger.info(
-                                        "Writing >key={} value={}< to {}"
-                                        .format(k, v, out_filename))
-                                    file_handle.write("{} {}".format(k, v))
-                            elif (filename.endswith("_merkleLeaves")
-                                or filename.endswith("_merkleNodes")):
-                                for k, v in leveldb_rocksdb_handle.iterator():
-                                    try:
-                                         k = bytes(k)
-                                    except TypeError:
-                                         # k isn't convertable to bytes
-                                         pass
-
-                                    try:
-                                         v = bytes(v)
-                                    except TypeError:
-                                         # v isn't convertable to bytes
-                                         pass
-
-                                    logger.info("Writing >{} {}< to {}"
-                                        .format(k, v, out_filename))
-                                    file_handle.write("{} {}\n".format(k, v))
-                            else:
-                                for k, v in leveldb_rocksdb_handle.iterator():
-                                    try:
-                                        v = v.decode("utf-8")
-                                    except UnicodeDecodeError:
-                                        # v isn't utf-8 encoded
-                                        pass
-    
-                                    try:
-                                         k = bytes(k)
-                                    except TypeError:
-                                         # k isn't convertable to bytes
-                                         pass
-
-                                    try:
-                                         v = bytes(v)
-                                    except TypeError:
-                                         # v isn't convertable to bytes
-                                         pass
-
-                                    logger.info("Writing >{} {}< to {}"
-                                        .format(k, v, out_filename))
-                                    file_handle.write("{} {}\n".format(k, v))
-                        leveldb_rocksdb_handle.close()
-                    else:
-                        error_message = ("Failed to open LevelDB/RocksDB"
-                                         " instance {}")
-                        logger.error(error_message.format(filename))
-                        self._eprint(error_message.format(filename), exit=True)
+            # Is the current directory a RocksDB/LevelDB database?
+            if (self.is_db_dir(fileList)):
+                logger.debug("{} is a LevelDB/RocksDB directory!".format(dirName))
+                # TODO: What parameters are (or should be) class data members?
+                self.transform_db(dirName, sout, sname)
             else:
-                # Use "nodename" in place of the node's name when a directory
-                # (filename in this case) matches the node name (sname)
-                if (sname == filename):
-                    sout = join(sout, "nodename")
-                else:
-                    sout = join(sout, filename)
+                self.transform_dir(dirName, fileList, sout, sname)
 
-                # Make sure sout directory exists
-                self._mkdir_p(sout)
-                
-                # Copy all files to sout and then walk each of the
-                # subdirectories (continue outer for loop (os.walk))
-                for fname in fileList:
-                    if (fname == "node_info"):
-                        # When comparing different nodes, only preserve "view"
-                        # number for comparison. All other fields can differ.
-                        with open(join(dirname, filename, fname),
-                            'r') as nodeInfo:
-                                data=nodeInfo.read()
-                                data=json.loads(data)
-                                out_filename = join(sout, fname)
-                                with open(out_filename, "a") as file_handle:
-                                    file_handle.write("view: {}".format(
-                                        data['view']))
-                    else:
-                        copyfile(join(abspath(dirName), fname), join(sout,
-                            fname))
-
-
-        # Check for a log file
-        (dirname, filename, name, extension) = self.split_name(sin)
-        log_filename = "{}.log".format(filename)
-        log_filepath = join(dirname, "../", "log", log_filename)
-        if (os.path.exists(log_filepath)):
-            # Extract (view no, ppSeqNo) tuple from log file(s)
-            # Last "batch ordered"
-            process_grep = subprocess.Popen([ "grep", "-e"
-                "{}:.* ordered batch request, view no".format(
-                filename), log_filepath],
-                stdout=subprocess.PIPE, shell=False)
-            # TODO: Must grep in all log files <node>.log* and not just
-            #       <node>.log. The logger keep N log files and rotates
-            #       when a logfile reaches a certain size. Therefore,
-            #       <node>.log is not guaranteed to have a hit using
-            #       grep.
-            process_tail = subprocess.Popen([ 'tail', '-1' ],
-                stdin=process_grep.stdout, stdout=subprocess.PIPE,
-                shell=False)
-            process_cut1 = subprocess.Popen([ 'cut', '-f', '5',
-                '-d', '|' ], stdin=process_tail.stdout,
-                stdout=subprocess.PIPE, shell=False)
-            process_cut2 = subprocess.Popen([ 'cut', '-d', ',',
-                '-f', '2,3' ], stdin=process_cut1.stdout,
-                stdout=subprocess.PIPE, shell=False)
-            process_grep.stdout.close()
-            process_tail.stdout.close()
-            process_cut1.stdout.close()
-
-            batch_ordered_tuple = process_cut2.communicate()[0]
-
-            # Last "batch executed"
-            process_grep = subprocess.Popen([ "grep", "-e"
-                "{} executing Ordered batch".format(
-                filename), log_filepath],
-                stdout=subprocess.PIPE, shell=False)
-            process_tail = subprocess.Popen([ 'tail', '-1' ],
-                stdin=process_grep.stdout, stdout=subprocess.PIPE,
-                shell=False)
-            process_cut1 = subprocess.Popen([ 'cut', '-f', '5',
-                '-d', '|' ], stdin=process_tail.stdout,
-                stdout=subprocess.PIPE, shell=False)
-            process_cut2 = subprocess.Popen([ 'cut', '-d', ' ',
-                '-f', '6,7' ], stdin=process_cut1.stdout,
-                stdout=subprocess.PIPE, shell=False)
-            process_grep.stdout.close()
-            process_tail.stdout.close()
-            process_cut1.stdout.close()
-
-            batch_executed_tuple = process_cut2.communicate()[0]
-            # Use the filename of "log" so that the *nix-diff can be done on a
-            # single directory.
-            out_filename = join(sout, "log")
-            with open(out_filename, "a") as file_handle:
-                file_handle.write("last batch ordered: {}".format(
-                    batch_ordered_tuple.decode()))
-                file_handle.write("last batch executed: {}".format(
-                    batch_executed_tuple.decode()))
+        self.transform_logs(sin, sout)
 
     def diff(self, s1, s2):
         """Perform a recursive *nix-diff on two directories"""
