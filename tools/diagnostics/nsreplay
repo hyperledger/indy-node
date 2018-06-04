@@ -423,7 +423,7 @@ if __name__ == '__main__':
         const=logging.WARNING, default=logging.WARNING, help=log_level_help)
 
     parser.add_argument('-o', '--output-dir', default=None,
-                        help='the directory where the recording will be replayed. Defaults to temp directory')
+                        help='the directory where the recording will be replayed. Defaults to crated temp directory')
 
     args = parser.parse_args()
 
