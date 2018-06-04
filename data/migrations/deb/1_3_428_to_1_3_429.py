@@ -13,7 +13,7 @@ from _sha256 import sha256
 from common.serializers.serialization import ledger_txn_serializer, serialize_msg_for_signing
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
-from indy_common.constants import POOL_UPGRADE, POOL_CONFIG, CONFIG_LEDGER_ID
+from indy_common.constants import CONFIG_LEDGER_ID
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.pool_req_handler import PoolRequestHandler
@@ -107,7 +107,6 @@ def migrate_txn_log(db_dir, db_name):
         dest_seq_no_db_storage.put(digest, line_to_record)
         return digest
 
-
     new_db_name = db_name + '_new'
     old_path = os.path.join(db_dir, db_name)
     new_path = os.path.join(db_dir, new_db_name)
@@ -196,7 +195,6 @@ def rename_seq_no_db(db_dir):
         return False
 
     set_own_perm("indy", old_seqno_path)
-
 
 
 def migrate_txn_logs(ledger_dir):
