@@ -720,7 +720,7 @@ try:
                 self.assertTrue(type(collection.abs_fs_path) is str)
                 self.assertTrue(type(collection.archive_path) is str)
                 self.assertEqual(4, len(collection.include))
-                self.assertEqual('data/test1/ledger.db', collection.include[0])
+                self.assertIn('data/test1/ledger.db', collection.include)
 
         def test_collect_data_no_client_dir(self):
             with self.create_sample_dir(node_names=['test1']) as d:
