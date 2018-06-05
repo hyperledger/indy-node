@@ -231,7 +231,7 @@ def migrate_states(ledger_dir):
 def migrate_ts_store(ledger_dir):
     # just remove, since state root hash may be changed
     for ledger_type in ledger_types:
-        db = os.path.join(ledger_dir, config.seqNoDbName)
+        db = os.path.join(ledger_dir, config.stateTsDbName)
         if os.path.exists(db):
             shutil.rmtree(db)
     return True
