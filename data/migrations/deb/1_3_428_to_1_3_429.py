@@ -110,8 +110,7 @@ def migrate_txn_log(db_dir, db_name):
     new_db_name = db_name + '_new'
     old_path = os.path.join(db_dir, db_name)
     new_path = os.path.join(db_dir, new_db_name)
-    new_seqno_db_name = config.stateTsDbName + '_new'
-    # new_seq_no_path = os.path.join(db_dir, new_seqno_db_name)
+    new_seqno_db_name = config.seqNoDbName + '_new'
     try:
         dest_seq_no_db_storage = initKeyValueStorage(config.reqIdToTxnStorage,
                                                      db_dir,
@@ -183,8 +182,8 @@ def migrate_txn_log(db_dir, db_name):
 
 
 def rename_seq_no_db(db_dir):
-    old_seqno_path = os.path.join(db_dir, config.stateTsDbName)
-    new_seqno_db_name = config.stateTsDbName + '_new'
+    old_seqno_path = os.path.join(db_dir, config.seqNoDbName)
+    new_seqno_db_name = config.seqNoDbName + '_new'
     new_seqno_path = os.path.join(db_dir, new_seqno_db_name)
     try:
         shutil.move(new_seqno_path, old_seqno_path)
@@ -232,7 +231,7 @@ def migrate_states(ledger_dir):
 def migrate_ts_store(ledger_dir):
     # just remove, since state root hash may be changed
     for ledger_type in ledger_types:
-        db = os.path.join(ledger_dir, config.stateTsDbName)
+        db = os.path.join(ledger_dir, config.seqNoDbName)
         if os.path.exists(db):
             shutil.rmtree(db)
     return True
@@ -281,7 +280,7 @@ def migrate_all():
         return False
 
     # Rename new seq_no_db into old
-    # rename_seq_no_db(ledger_dir)
+    rename_seq_no_db(ledger_dir)
 
     # 3. migrate hash store
     if migrate_hash_stores(ledger_dir):
