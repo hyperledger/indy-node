@@ -96,12 +96,15 @@ def test_state_proofs_for_get_attr(request_handler):
     raw_attribute = '{"last_name":"Anderson"}'
     seq_no = 0
     txn_time = int(time.time())
+    identifier = "6ouriXMZkLeHsuXrN1X1fd"
     txn = {
         TXN_TYPE: ATTRIB,
         TARGET_NYM: nym,
         RAW: raw_attribute,
     }
-    txn = append_txn_metadata(reqToTxn(Request(operation=txn)),
+    txn = append_txn_metadata(reqToTxn(Request(operation=txn,
+                                               protocolVersion=CURRENT_PROTOCOL_VERSION,
+                                               identifier=identifier)),
                               seq_no=seq_no, txn_time=txn_time)
     request_handler._addAttr(txn)
     request_handler.state.commit()
@@ -135,6 +138,7 @@ def test_state_proofs_for_get_claim_def(request_handler):
 
     seq_no = 0
     txn_time = int(time.time())
+    identifier = "6ouriXMZkLeHsuXrN1X1fd"
 
     schema_seqno = 0
     signature_type = 'CL'
@@ -146,7 +150,9 @@ def test_state_proofs_for_get_claim_def(request_handler):
         REF: schema_seqno,
         DATA: key_components
     }
-    txn = append_txn_metadata(reqToTxn(Request(operation=txn)),
+    txn = append_txn_metadata(reqToTxn(Request(operation=txn,
+                                               protocolVersion=CURRENT_PROTOCOL_VERSION,
+                                               identifier=identifier)),
                               seq_no=seq_no, txn_time=txn_time)
     txn = append_payload_metadata(txn, frm=nym)
 
@@ -184,6 +190,7 @@ def test_state_proofs_for_get_schema(request_handler):
 
     seq_no = 0
     txn_time = int(time.time())
+    identifier = "6ouriXMZkLeHsuXrN1X1fd"
 
     schema_name = "schema_a"
     schema_version = "1.0"
@@ -194,7 +201,9 @@ def test_state_proofs_for_get_schema(request_handler):
         TXN_TYPE: SCHEMA,
         DATA: data,
     }
-    txn = append_txn_metadata(reqToTxn(Request(operation=txn)),
+    txn = append_txn_metadata(reqToTxn(Request(operation=txn,
+                                               protocolVersion=CURRENT_PROTOCOL_VERSION,
+                                               identifier=identifier)),
                               seq_no=seq_no, txn_time=txn_time)
     txn = append_payload_metadata(txn, frm=nym)
 
@@ -228,6 +237,8 @@ def test_state_proofs_for_get_schema(request_handler):
 
 def prep_multi_sig(request_handler, nym, role, verkey, seq_no):
     txn_time = int(time.time())
+    identifier = "6ouriXMZkLeHsuXrN1X1fd"
+
     # Adding nym
     data = {
         f.IDENTIFIER.nm: nym,
@@ -236,7 +247,9 @@ def prep_multi_sig(request_handler, nym, role, verkey, seq_no):
         f.SEQ_NO.nm: seq_no,
         TXN_TIME: txn_time,
     }
-    txn = append_txn_metadata(reqToTxn(Request(operation=data)),
+    txn = append_txn_metadata(reqToTxn(Request(operation=data,
+                                               protocolVersion=CURRENT_PROTOCOL_VERSION,
+                                               identifier=identifier)),
                               seq_no=seq_no, txn_time=txn_time)
     txn = append_payload_metadata(txn, frm=nym)
     request_handler.updateNym(nym, txn)
@@ -303,6 +316,8 @@ def test_no_state_proofs_if_protocol_version_less(request_handler):
     nym = 'Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv'
     role = "2"
     verkey = "~7TYfekw4GUagBnBVCqPjiC"
+    identifier = "6ouriXMZkLeHsuXrN1X1fd"
+
     seq_no = 0
     txn_time = int(time.time())
     # Adding nym
@@ -313,7 +328,9 @@ def test_no_state_proofs_if_protocol_version_less(request_handler):
         f.SEQ_NO.nm: seq_no,
         TXN_TIME: txn_time,
     }
-    txn = append_txn_metadata(reqToTxn(Request(operation=data)),
+    txn = append_txn_metadata(reqToTxn(Request(operation=data,
+                                               protocolVersion=CURRENT_PROTOCOL_VERSION,
+                                               identifier=identifier)),
                               seq_no=seq_no, txn_time=txn_time)
     txn = append_payload_metadata(txn, frm=nym)
     request_handler.updateNym(nym, txn)
