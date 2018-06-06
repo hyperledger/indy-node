@@ -143,7 +143,8 @@ def migrate_txn_log(db_dir, db_name):
             new_val = transform_to_new_format(txn=val, seq_no=int(key))
             digest = put_into_seq_no_db(new_val)
             # add digest into txn
-            new_val[TXN_PAYLOAD][TXN_PAYLOAD_METADATA][TXN_PAYLOAD_METADATA_DIGEST] = digest
+            if get_req_id(new_val):
+                new_val[TXN_PAYLOAD][TXN_PAYLOAD_METADATA][TXN_PAYLOAD_METADATA_DIGEST] = digest
             new_val = ledger_txn_serializer.serialize(new_val)
             dest_storage.put(key, new_val)
 
