@@ -66,7 +66,7 @@ def send_node_txn(node_name, bls_key, steward_seed, node_dest):
         try:
             looper.run(
                 eventually(_ensureReqCompleted,
-                           req.key, client,
+                           (req.identifier, req.reqId), client,
                            timeout=20, retryWait=2))
             added = True
         except NoConsensusYet:
@@ -96,7 +96,7 @@ def __send_node_request(wallet, client,
 
 
 def _ensureReqCompleted(reqKey, client):
-    reply, err = get_reply_if_confirmed(client, reqKey)
+    reply, err = get_reply_if_confirmed(client, *reqKey)
     if err:
         raise OperationError(err)
 

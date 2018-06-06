@@ -27,7 +27,7 @@ from indy_common.util import get_reply_if_confirmed
 
 
 def _ensureReqCompleted(reqKey, client, clbk):
-    reply, err = get_reply_if_confirmed(client, reqKey)
+    reply, err = get_reply_if_confirmed(client, *reqKey)
     if err:
         raise OperationError(err)
 
@@ -221,7 +221,8 @@ class IndyPublicRepo(PublicRepo):
             # pass some other tests. The client was not getting a chance to
             # service its stack, we need to find a way to stop this starvation.
             resp = await eventually(_ensureReqCompleted,
-                                    req.key, self.client, clbk,
+                                    (req.identifier, req.reqId),
+                                    self.client, clbk,
                                     timeout=20, retryWait=2)
         except NoConsensusYet:
             raise TimeoutError('Request timed out')

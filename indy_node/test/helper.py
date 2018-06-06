@@ -186,7 +186,7 @@ def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, valu
 
 
 def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
-    reply, status = trustAnchor.getReply(reqKey)
+    reply, status = trustAnchor.getReply(*reqKey)
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
@@ -210,9 +210,9 @@ def getAttribute(
         attrib, sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
     timeout = waits.expectedTransactionExecutionTime(len(trustAnchor.nodeReg))
-    return looper.run(eventually(checkGetAttr, req.key, trustAnchor,
-                                 attributeName, attributeValue, retryWait=1,
-                                 timeout=timeout))
+    return looper.run(eventually(checkGetAttr, (req.identifier, req.reqId),
+                                 trustAnchor, attributeName, attributeValue,
+                                 retryWait=1, timeout=timeout))
 
 
 def sdk_get_attribute():
