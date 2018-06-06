@@ -266,7 +266,7 @@ async def eventuallyAny(coroFunc, *args, retryWait: float = 0.01,
     return data
 
 
-async def checkReply(client, requestId, identifier, digest):
+async def checkReply(client, requestId, identifier):
     hasConsensus = False
     acks, nacks, replies = [], [], []
     try:
@@ -276,7 +276,7 @@ async def checkReply(client, requestId, identifier, digest):
         acks = getAcksFromInbox(client, requestId)
         nacks = getNacksFromInbox(client, requestId)
         replies = getRepliesFromInbox(client, requestId)
-        hasConsensus = client.hasConsensus(digest)
+        hasConsensus = client.hasConsensus(identifier, requestId)
     except KeyError:
         logger.info("No replies for {}:{} yet".format(identifier, requestId))
     except Exception as e:
