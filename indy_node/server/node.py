@@ -10,6 +10,8 @@ from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
     ENC, RAW, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
+from plenum.common.messages.node_messages import Reply
+from plenum.common.txn_util import get_type, get_payload_data
 from plenum.common.types import f, \
     OPERATION
 from plenum.persistence.storage import initStorage
@@ -340,13 +342,14 @@ class Node(PlenumNode, HasPoolManager):
         :return:
         """
         # For RAW and ENC attributes, only hash is stored in the ledger.
-        if txn[TXN_TYPE] == ATTRIB:
+        if get_type(txn) == ATTRIB:
+            txn_data = get_payload_data(txn)
             # The key needs to be present and not None
-            key = RAW if (RAW in txn and txn[RAW] is not None) else \
-                ENC if (ENC in txn and txn[ENC] is not None) else \
+            key = RAW if (RAW in txn_data and txn_data[RAW] is not None) else \
+                ENC if (ENC in txn_data and txn_data[ENC] is not None) else \
                 None
             if key:
-                txn[key] = self.attributeStore.get(txn[key])
+                txn_data[key] = self.attributeStore.get(txn_data[key])
         return txn
 
     def closeAllKVStores(self):

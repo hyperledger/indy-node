@@ -1,8 +1,9 @@
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
 
-from indy_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM, POOL_CONFIG, SCHEMA, CLAIM_DEF, \
-    POOL_RESTART
+from indy_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM, \
+    POOL_CONFIG, SCHEMA, CLAIM_DEF, \
+    POOL_RESTART, VALIDATOR_INFO
 from indy_common.roles import Roles
 
 logger = getlogger()
@@ -64,6 +65,8 @@ class Authoriser:
             {TRUSTEE: []},
         '{}_action_<any>_<any>'.format(POOL_CONFIG):
             {TRUSTEE: [], TGB: []},
+        '{}_<any>_<any>_<any>'.format(VALIDATOR_INFO):
+            {TRUSTEE: [], STEWARD: []},
     }
 
     @staticmethod

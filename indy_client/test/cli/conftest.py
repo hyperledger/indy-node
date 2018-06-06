@@ -13,6 +13,7 @@ from indy_client.test.agent.faber import FABER_ID, FABER_VERKEY, FABER_SEED
 from indy_client.test.agent.thrift import THRIFT_ID, THRIFT_VERKEY, THRIFT_SEED
 from indy_common.config_helper import NodeConfigHelper
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
+from plenum.common.txn_util import get_type
 
 from stp_core.crypto.util import randomSeed
 from stp_core.network.port_dispenser import genHa
@@ -950,7 +951,7 @@ def custom_tdir_with_pool_txns(pool_txn_data, tdir_for_pool_txns, pool_transacti
     ledger = create_genesis_txn_init_ledger(tdir_for_pool_txns, pool_transactions_file_name)
 
     for item in pool_txn_data["txns"]:
-        if item.get(TXN_TYPE) == NODE:
+        if get_type(item) == NODE:
             ledger.add(item)
     ledger.stop()
     return tdir_for_pool_txns
@@ -961,7 +962,7 @@ def custom_tdir_with_domain_txns(pool_txn_data, tdir_for_domain_txns,
     ledger = create_genesis_txn_init_ledger(tdir_for_domain_txns, domain_transactions_file_name)
 
     for item in pool_txn_data["txns"]:
-        if item.get(TXN_TYPE) == NYM:
+        if get_type(item) == NYM:
             ledger.add(item)
     ledger.stop()
     return tdir_for_domain_txns

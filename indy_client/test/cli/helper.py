@@ -4,37 +4,31 @@ import re
 from _sha256 import sha256
 from typing import Dict
 
-from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from libnacl import randombytes
+
+from indy_client.cli.cli import IndyCli
+from indy_client.client.wallet.connection import Connection
+from indy_client.test.client.TestClient import TestClient
+from indy_common.constants import NYM
+from indy_common.roles import Roles
+from indy_common.txn_util import getTxnOrderedFields
+from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
-
+from plenum.common.constants import TARGET_NYM, ROLE, TXN_TYPE, ALIAS, TXN_ID, VALIDATOR, STEWARD
+from plenum.common.member.member import Member
+from plenum.common.member.steward import Steward
 from plenum.common.signer_did import DidSigner
-from plenum.common.util import rawToFriendly
-from plenum.config import pool_transactions_file_base, domain_transactions_file_base
-
-from plenum.test import waits
-from stp_core.loop.eventually import eventually
-from stp_core.loop.looper import Looper
-
-from stp_core.common.log import getlogger
-
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.constants import TARGET_NYM, ROLE, NODE, TXN_TYPE, DATA, \
-    CLIENT_PORT, NODE_PORT, NODE_IP, ALIAS, CLIENT_IP, TXN_ID, SERVICES, \
-    VALIDATOR, STEWARD, BLS_KEY
-from plenum.common.types import f
+from plenum.common.util import rawToFriendly
+from plenum.test import waits
 from plenum.test.cli.helper import TestCliCore, assertAllNodesCreated, \
     waitAllNodesStarted, newCLI as newPlenumCLI
 from plenum.test.helper import initDirWithGenesisTxns
 from plenum.test.testable import spyable
-from indy_client.cli.cli import IndyCli
-from indy_client.client.wallet.connection import Connection
-from indy_common.constants import Environment
+from stp_core.common.log import getlogger
+from stp_core.loop.eventually import eventually
+from stp_core.loop.looper import Looper
 from stp_core.network.port_dispenser import genHa
-from indy_common.constants import NYM
-from indy_client.test.client.TestClient import TestClient
-from indy_common.txn_util import getTxnOrderedFields
-from indy_common.roles import Roles
 
 logger = getlogger()
 
@@ -117,7 +111,7 @@ def ensureNymAdded(be, do, cli, nym, role=None):
 
 
 def ensureNodesCreated(cli, nodeNames):
-    #cli.enterCmd("new node all")
+    # cli.enterCmd("new node all")
     # TODO: Why 2 different interfaces one with list and one with varags
     assertAllNodesCreated(cli, nodeNames)
     waitAllNodesStarted(cli, *nodeNames)
@@ -156,36 +150,35 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
                        (32 - len(newStewardAlias))).encode()
         data["seeds"][newStewardAlias] = stewardSeed
         stewardSigner = SimpleSigner(seed=stewardSeed)
-        data["txns"].append({
-            TARGET_NYM: stewardSigner.verkey,
-            ROLE: STEWARD, TXN_TYPE: NYM,
-            ALIAS: poolId + "Steward" + str(index),
-            TXN_ID: sha256("{}".format(stewardSigner.verkey).encode()).hexdigest()
-        })
+        data["txns"].append(
+            Member.nym_txn(nym=stewardSigner.identifier,
+                           verkey=stewardSigner.verkey,
+                           role=STEWARD,
+                           name=poolId + "Steward" + str(index),
+                           seq_no=index,
+                           txn_id=sha256("{}".format(stewardSigner.verkey).encode()).hexdigest()))
 
         newNodeAlias = n
         nodeSeed = (newNodeAlias + "0" * (32 - len(newNodeAlias))).encode()
         data["seeds"][newNodeAlias] = nodeSeed
         nodeSigner = SimpleSigner(seed=nodeSeed)
-        node_txn = {
-            TARGET_NYM: nodeSigner.verkey,
-            TXN_TYPE: NODE,
-            f.IDENTIFIER.nm: stewardSigner.verkey,
-            DATA: {
-                CLIENT_IP: "127.0.0.1",
-                ALIAS: newNodeAlias,
-                NODE_IP: "127.0.0.1",
-                NODE_PORT: genHa()[1],
-                CLIENT_PORT: genHa()[1],
-                SERVICES: [VALIDATOR],
-            },
-            TXN_ID: sha256("{}".format(nodeSigner.verkey).encode()).hexdigest()
-        }
 
         _, bls_key = create_default_bls_crypto_factory().generate_bls_keys(
             seed=data['seeds'][n])
-        node_txn[DATA][BLS_KEY] = bls_key
         data['nodesWithBls'][n] = True
+
+        node_txn = Steward.node_txn(
+            steward_nym=stewardSigner.verkey,
+            node_name=newNodeAlias,
+            nym=nodeSigner.verkey,
+            ip="127.0.0.1",
+            node_port=genHa()[1],
+            client_port=genHa()[1],
+            client_ip="127.0.0.1",
+            blskey=bls_key,
+            services=[VALIDATOR],
+            txn_id=sha256("{}".format(nodeSigner.verkey).encode()).hexdigest()
+        )
 
         data["txns"].append(node_txn)
 
@@ -195,8 +188,9 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
 def prompt_is(prompt):
     def x(cli):
         assert cli.currPromptText == prompt, \
-            "expected prompt: {}, actual prompt: {}".\
-            format(prompt, cli.currPromptText)
+            "expected prompt: {}, actual prompt: {}". \
+                format(prompt, cli.currPromptText)
+
     return x
 
 
@@ -283,6 +277,7 @@ def getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxns,
                        agent=agent,
                        nodes_chroot=tdir)
             return c
+
         if not looper:
             looper = def_looper
         if looper:
@@ -290,6 +285,7 @@ def getCliBuilder(tdir, tconf, tdirWithPoolTxns, tdirWithDomainTxns,
         else:
             with Looper(debug=False) as looper:
                 yield new()
+
     return _
 
 
@@ -307,7 +303,7 @@ def check_wallet(cli,
                  within=None):
     async def check():
         actualLinks = len(cli.activeWallet._connections)
-        assert (totalLinks is None or (totalLinks == actualLinks)),\
+        assert (totalLinks is None or (totalLinks == actualLinks)), \
             'connections expected to be {} but is {}'.format(
                 totalLinks, actualLinks)
 
@@ -317,8 +313,8 @@ def check_wallet(cli,
 
         assert (totalAvailableClaims is None or
                 totalAvailableClaims == tac), \
-            'available claims {} must be equal to {}'.\
-            format(tac, totalAvailableClaims)
+            'available claims {} must be equal to {}'. \
+                format(tac, totalAvailableClaims)
 
         if cli.agent.prover is None:
             assert (totalSchemas + totalClaimsRcvd) == 0
@@ -326,9 +322,9 @@ def check_wallet(cli,
             w = cli.agent.prover.wallet
             actualSchemas = len(await w.getAllSchemas())
             assert (totalSchemas is None or
-                    totalSchemas == actualSchemas),\
-                'schemas expected to be {} but is {}'.\
-                format(totalSchemas, actualSchemas)
+                    totalSchemas == actualSchemas), \
+                'schemas expected to be {} but is {}'. \
+                    format(totalSchemas, actualSchemas)
 
             assert (totalClaimsRcvd is None or
                     totalClaimsRcvd == len((await w.getAllClaimsSignatures()).keys()))
@@ -412,6 +408,7 @@ def getTotalSchemas(userCli):
     async def getTotalSchemasCoro():
         return 0 if userCli.agent.prover is None \
             else len(await userCli.agent.prover.wallet.getAllSchemas())
+
     return userCli.looper.run(getTotalSchemasCoro)
 
 
@@ -419,6 +416,7 @@ def getTotalClaimsRcvd(userCli):
     async def getTotalClaimsRcvdCoro():
         return 0 if userCli.agent.prover is None \
             else len((await userCli.agent.prover.wallet.getAllClaimsSignatures()).keys())
+
     return userCli.looper.run(getTotalClaimsRcvdCoro)
 
 
@@ -434,7 +432,7 @@ def getWalletState(userCli):
 def doSendNodeCmd(do, nodeVals, expMsgs=None):
     expect = expMsgs or ['Node request completed']
     do('send NODE dest={newNodeIdr} data={newNodeData}',
-       within=8, expect=expect, mapper=nodeVals)
+       within=15, expect=expect, mapper=nodeVals)
 
 
 def createUuidIdentifier():

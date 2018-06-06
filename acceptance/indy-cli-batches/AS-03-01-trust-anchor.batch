@@ -1,15 +1,15 @@
-* setup environment
+# setup environment
 - pool create AS-0301-anchor gen_txn_file=./pool_transactions_genesis
 pool connect AS-0301-anchor
-- wallet create AS-03-wallet-anchor pool_name=AS-0301-anchor
-wallet open AS-03-wallet-anchor
-* setup section
+- wallet create AS-03-wallet-anchor pool_name=AS-0301-anchor key=testkey
+wallet open AS-03-wallet-anchor key=testkey
+# setup section
 did new seed=000000000000000000000000Trustee1 metadata="Default Trustee"
 did new seed=TestTrustAnchorTrustee1000000002 metadata="Trustee 1"
 did new seed=TestTrustAnchorTrustee2000000002 metadata="Trustee 2"
 did new seed=TestTrustAnchorSteward1000000002 metadata="Steward 1"
 did new seed=TestTrustAnchorSteward2000000002 metadata="Steward 2"
-* did new seed=TestTrustAnchorSteward3000000002 metadata="Steward 3"
+# did new seed=TestTrustAnchorSteward3000000002 metadata="Steward 3"
 did new seed=TestTrustAnchorCreateTrustAncho1 metadata="Trust Anchor 1"
 did new seed=TestTrustAnchorCreateTrustAncho2 metadata="Trust Anchor 2"
 did new seed=TestTrustAnchorCreateTrustAncho3 metadata="Trust Anchor 3"
@@ -17,63 +17,63 @@ did new seed=TestTrustAnchorCreateTrustAncho4 metadata="Trust Anchor 4"
 did new seed=TestTrustAnchorRandomUser1000002 metadata="Random User 1"
 did new seed=TestTrustAnchorRandomUser2000002 metadata="Random User 2"
 did new seed=TestTrustAnchorRandomUser3000002 metadata="Random User 3"
-* AS Trustee CREATE Steward (steward1)
+# AS Trustee CREATE Steward (steward1)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=23LxaWGVajU7vMn7zcrHGK role=STEWARD verkey=~UgkZ1ktZV2DQg1sJn3tjdP
 ledger get-nym did=23LxaWGVajU7vMn7zcrHGK
-* AS Trustee CREATE TrustAnchor (trustanchor1)
+# AS Trustee CREATE TrustAnchor (trustanchor1)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=TRUST_ANCHOR verkey=~5izgZjWpw3gxeDB9KRS7BN
 ledger get-nym did=T6XTs3nSU3J7ptAcxSnaVo
-* AS Trustee CREATE TrustAnchor (trustanchor2)
+# AS Trustee CREATE TrustAnchor (trustanchor2)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=TRUST_ANCHOR verkey=~ANMdNhQ3uuyXDmn7cxi8df
 ledger get-nym did=TPrMRHHSunP3cEtpkY8gi7
-* test section
-* #1 AS TrustAnchor CREATE IdentityOwner (user1) (PASS)
+# test section
+# #1 AS TrustAnchor CREATE IdentityOwner (user1) (PASS)
 did use T6XTs3nSU3J7ptAcxSnaVo
 ledger nym did=MXYSvpB5e549z6nqa1nTEh verkey=~PR7BXc75UwtiPvKjtDn26N
 ledger get-nym did=MXYSvpB5e549z6nqa1nTEh
-* #2.1 AS TrustAnchor REMOVE Trustee (FAIL)
+# #2.1 AS TrustAnchor REMOVE Trustee (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=V4SGRU86Z58d6TV7PBUe6f role=
-* #2.2 CHECK Trustee IS VALID
+# #2.2 CHECK Trustee IS VALID
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=KY4VDKjHUPTnxtF2zfJnNP role=TRUSTEE verkey=~WUktVVQHL7saxaNochggZR
 ledger get-nym did=KY4VDKjHUPTnxtF2zfJnNP
-* #3 AS TrustAnchor CREATE Trustee (trustee1) (FAIL)
+# #3 AS TrustAnchor CREATE Trustee (trustee1) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=HUBDajRyCvTGR18ETzEGEB role=TRUSTEE verkey=~DriCN8uMxoA8tiBazmkBWk
 - ledger get-nym did=HUBDajRyCvTGR18ETzEGEB
-* #4.1 AS TrustAnchor REMOVE Steward (steward1) (FAIL)
+# #4.1 AS TrustAnchor REMOVE Steward (steward1) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=23LxaWGVajU7vMn7zcrHGK role=
-* #4.2 CHECK Steward IS VALID
+# #4.2 CHECK Steward IS VALID
 did use 23LxaWGVajU7vMn7zcrHGK
 ledger nym did=3KghQejG1HZU5MbpQL5Cuk role=TRUST_ANCHOR verkey=~6DWoz55wzC77CDEYkZzytR
 ledger get-nym did=3KghQejG1HZU5MbpQL5Cuk
-* #5 AS TrustAnchor CREATE Steward (steward2) (FAIL)
+# #5 AS TrustAnchor CREATE Steward (steward2) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=BhJXbKYGm9ZkHF3jjhDrPJ role=STEWARD verkey=~R7RAboPbpw5ycURytkcASB
 - ledger get-nym did=BhJXbKYGm9ZkHF3jjhDrPJ
-* #6.1 AS TrustAnchor REMOVE TrustAnchor (trustanchor2) (FAIL)
+# #6.1 AS TrustAnchor REMOVE TrustAnchor (trustanchor2) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=
-* #6.2 CHECK TrustAnchor IS VALID
+# #6.2 CHECK TrustAnchor IS VALID
 did use TPrMRHHSunP3cEtpkY8gi7
 ledger nym did=3B1g9f3vC4pR8bTfi21z91 verkey=~5RtP3dPmQdNmz75TvQPK9k
 ledger get-nym did=3B1g9f3vC4pR8bTfi21z91
-* #7 AS TrustAnchor CREATE TrustAnchor (trustanchor3) (FAIL)
+# #7 AS TrustAnchor CREATE TrustAnchor (trustanchor3) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=Xw1QKjyG938oV5gUnLoBhm role=TRUST_ANCHOR verkey=~3iC9GEndzoEYcruyhTLWDc
 - ledger get-nym did=Xw1QKjyG938oV5gUnLoBhm
-* #8.1 AS TrustAnchor REMOVE self (FAIL)
+# #8.1 AS TrustAnchor REMOVE self (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=
-* #8.2 CHECK TrustAnchor IS VALID
+# #8.2 CHECK TrustAnchor IS VALID
 ledger nym did=WDLETDtBugFiJvtkghHoH verkey=~QdAhvFaZ81ZZ1DxwqZ5i8i
 ledger get-nym did=WDLETDtBugFiJvtkghHoH
-* #9 check that can't add roles back when don't have necessary permissions
+# #9 check that can't add roles back when don't have necessary permissions
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=WDLETDtBugFiJvtkghHoH role=TRUST_ANCHOR
 - ledger nym did=WDLETDtBugFiJvtkghHoH role=STEWARD
