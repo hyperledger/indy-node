@@ -291,7 +291,6 @@ async def checkReplyAndLogStat(client, wallet, request, sentAt, writeResultsRow,
     hasConsensus, ackNodes, nackNodes, replyNodes = \
         await eventuallyAny(checkReply, client,
                             request.reqId, wallet.defaultId,
-                            request.digest,
                             retryWait=RETRY_WAIT, timeout=TTL
                             )
 

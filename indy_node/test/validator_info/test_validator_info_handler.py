@@ -1,20 +1,9 @@
-import asyncio
-from datetime import datetime, timedelta
-
-import dateutil
 import pytest
-import multiprocessing
 
-from indy_common.types import Request
-from plenum.common.exceptions import RequestRejectedException
-
-from indy_common.constants import POOL_RESTART, ACTION, START, DATETIME, CANCEL, \
-    VALIDATOR_INFO
-from indy_node.test.pool_restart.helper import _createServer, _stopServer
-from plenum.common.constants import REPLY, TXN_TYPE, DATA
+from indy_common.constants import VALIDATOR_INFO
+from plenum.common.constants import TXN_TYPE, DATA
 from plenum.common.types import f
-from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
-    sdk_get_reply
+from plenum.test.helper import sdk_gen_request
 
 
 def test_validator_info_handler(monkeypatch,
@@ -26,7 +15,7 @@ def test_validator_info_handler(monkeypatch,
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
 
     def is_ack(digest, frm):
-        assert req_obj.digest == digest
+        assert (req_obj.identifier, req_obj.reqId) == digest
 
     def is_reply_correct(resp, frm):
         _comparison_reply(resp, req_obj)
