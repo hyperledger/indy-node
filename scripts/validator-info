@@ -15,6 +15,8 @@ import subprocess
 from collections import OrderedDict
 from glob import glob
 import re
+import pwd
+import pathlib
 
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper
@@ -25,7 +27,7 @@ config = getConfig()
 
 logger = getlogger()  # to make flake8 happy
 clients = {}   # task -> (reader, writer)
-logger.disabled = True
+INDY_USER = "indy"
 
 
 class BaseUnknown:
@@ -534,14 +536,53 @@ def accept_client(client_reader, client_writer):
     task.add_done_callback(client_done)
 
 
-def get_stats_from_file(fpath, verbose, _json):
+def nagios(vstats):
+    state = '2'
+    running = "{}".format(vstats['state'])
+    if "running" == running:
+        state = '0'
+
+    lines = [
+        "{} {}_Total_Config_Transactions config_transactions={} {} Total Config Transactions".format(
+                state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count']['config'],vstats['Node_info']['Name'])
+    ] + [
+        "{} {}_Total_Ledger_Transactions ledger_transactions={} {} Total Ledger Transactions".format(
+            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count']['ledger'],vstats['Node_info']['Name'])
+    ] + [
+        "{} {}_Total_Pool_Transactions pool_transactions={} {} Total Pool Transactions".format(
+            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count']['pool'],vstats['Node_info']['Name'])
+    ] + [
+        "{} {}_Read_Transactions_per_second read_transactions_per_second={} {} Read Transactions/Second".format(
+            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['average-per-second']['read-transactions'],vstats['Node_info']['Name'])
+    ] + [
+        "{} {}_Write_Transactions_per_second write_transactions_per_second={} {} Write Transactions/Second".format(
+            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['average-per-second']['write-transactions'],vstats['Node_info']['Name'])
+    ] + [
+        "{} {}_Number_of_Validators number_of_validators={} {} Number of Validators".format(
+            state,vstats['Node_info']['Name'],vstats['Pool_info']['Total_nodes_count'],vstats['Node_info']['Name'])
+    ] + [
+        "{} {}_Reachable_Validators reachable_validators={} {} Reachable Validators".format(
+            state,vstats['Node_info']['Name'],vstats['Pool_info']['Reachable_nodes_count'],vstats['Node_info']['Name'])
+    ] + [
+        "{} {}_Unreachable_Validators unreachable_validators={} {} Unreachable Validators".format(
+            state,vstats['Node_info']['Name'],vstats['Pool_info']['Unreachable_nodes_count'],vstats['Node_info']['Name'])
+    ]
+    return "\n".join(lines);
+
+
+def get_stats_from_file(fpath, verbose, _json, _nagios):
     with open(fpath) as f:
         stats = json.loads(f.read())
 
     logger.debug("Data {}".format(stats))
     vstats = ValidatorStats(stats, verbose)
 
-    return (json.dumps(vstats, indent=2, cls=NewEncoder) if _json else vstats)
+    if _json:
+        return json.dumps(vstats, indent=2, cls=NewEncoder)
+    if _nagios:
+        return nagios(vstats) 
+
+    return vstats
 
 
 def watch(fpath, verbose, _json):
@@ -591,6 +632,35 @@ def create_print_tree(stats: dict, indent=0, lines=[]):
     return lines
 
 
+def set_log_owner(log_path):
+    def set_own():
+        try:
+            os.chown(log_path, indy_uid, indy_gid)
+        except PermissionError as e:
+            print("Cannot set owner of {} file to indy".format(log_path))
+            print("The owner of {} must be {}:{}".format(log_path, INDY_USER, INDY_USER))
+            sys.exit(1)
+
+    indy_ids = pwd.getpwnam(INDY_USER)
+    indy_uid = indy_ids.pw_uid
+    indy_gid = indy_ids.pw_gid
+    if os.path.exists(log_path):
+        f_stat = os.stat(log_path)
+        if f_stat.st_uid != indy_uid or f_stat.st_gid != indy_gid:
+            set_own()
+    else:
+        pathlib.Path(log_path).touch()
+        set_own()
+
+
+def remove_log_handlers():
+    for hndl in logger.root.handlers:
+        logger.root.removeHandler(hndl)
+
+    for hndl in logger.handlers:
+        logger.removeHandler(hndl)
+
+
 def main():
     global logger
 
@@ -622,6 +692,10 @@ def main():
     parser.add_argument(
         "--json", action="store_true",
         help="Format output as JSON (ignores -v)"
+    )
+    parser.add_argument(
+        "--nagios", action="store_true",
+        help="Format output as NAGIOS output (ignores -v)"
     )
 
     statfile_group = parser.add_argument_group(
@@ -668,14 +742,13 @@ def main():
         ),
         help="Path to log file")
 
-    other_group.add_argument("--stdlog", action="store_true",
-                             help="Enable logging to stdout")
-
     args = parser.parse_args()
 
-    config.enableStdOutLogging = args.stdlog
+    remove_log_handlers()
 
-    logger = getlogger()
+    if args.log:
+        set_log_owner(args.log)
+
     Logger().enableFileLogging(args.log)
 
     logger.debug("Cmd line arguments: {}".format(args))
@@ -727,7 +800,7 @@ def main():
             with open(file_path) as f_stats:
                 print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
         else:
-            print(get_stats_from_file(file_path, args.verbose, args.json))
+            print(get_stats_from_file(file_path, args.verbose, args.json, args.nagios))
 
         print('\n')
     if args.verbose:

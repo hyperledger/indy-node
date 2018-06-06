@@ -43,7 +43,7 @@ There are a number of scripts which can help in generation of keys and running a
 ###### For deb installation
 The following script should be used to generate both ed25519 and BLS keys for a node named `Alpha` with node port `9701` and client port `9702`:
 ```
-init_indy_node Alpha 9701 9702 [--seed 111111111111111111111111111Alpha]
+init_indy_node Alpha 0.0.0.0 9701 0.0.0.0 9702 [--seed 111111111111111111111111111Alpha]
 ```
 Also this script generates indy-node environment file needed for systemd service config and indy-node iptables setup script.
 
@@ -81,10 +81,12 @@ Instructions related to iptables setup can be found [here](https://github.com/hy
 
 The following script will start a Node process which can communicate with other Nodes and Clients:
 ```
-start_indy_node Alpha 9701 9702
+start_indy_node Alpha 0.0.0.0 9701 0.0.0.0 9702
 ```
 The node uses separate TCP channels for communicating with nodes and clients.
-The first port number is for the node-to-node communication channel and the second is for node-to-client communication channel.
+The first IP/port pair is for the node-to-node communication channel and the second IP/port pair is for node-to-client communication channel.
+IP addresses may be changed according to hardware configuration.
+Different IP addresses for node-to-node and node-to-client communication may be used.
 
 ## Local Test Network Example 
 
@@ -101,16 +103,16 @@ Node4 will use ports 9707 and 9708 for nodestack and clientstack respectively
 
 Now you can run the 4 nodes as
 ```
-start_indy_node Node1 9701 9702
+start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702
 ```
 ```
-start_indy_node Node2 9703 9704
+start_indy_node Node2 0.0.0.0 9703 0.0.0.0 9704
 ```
 ```
-start_indy_node Node3 9705 9706
+start_indy_node Node3 0.0.0.0 9705 0.0.0.0 9706
 ```
 ```
-start_indy_node Node4 9707 9708
+start_indy_node Node4 0.0.0.0 9707 0.0.0.0 9708
 ```
 
 ## Remote Test Network Example 
@@ -147,14 +149,14 @@ This node with name Node4 will use ports 9707 and 9708 for nodestack and clients
 
 Now you can run the 4 nodes as
 ```
-start_indy_node Node1 9701 9702
+start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702
 ```
 ```
-start_indy_node Node2 9703 9704
+start_indy_node Node2 0.0.0.0 9703 0.0.0.0 9704
 ```
 ```
-start_indy_node Node3 9705 9706
+start_indy_node Node3 0.0.0.0 9705 0.0.0.0 9706
 ```
 ```
-start_indy_node Node4 9707 9708
+start_indy_node Node4 0.0.0.0 9707 0.0.0.0 9708
 ```

@@ -14,8 +14,8 @@ from plenum.test.node_catchup.helper import waitNodeDataEquality, ensure_all_nod
 from plenum.common.keygen_utils import init_bls_keys
 
 from indy.ledger import build_pool_upgrade_request
-from plenum.common.constants import TXN_TYPE, DATA, VERSION, FORCE
-from plenum.common.types import f
+from plenum.common.constants import DATA, VERSION, FORCE
+from plenum.common.txn_util import get_type, get_payload_data, get_from
 from plenum.common.util import randomString, hexToFriendly
 from plenum.test import waits as plenumWaits
 from plenum.test.helper import sdk_get_and_check_replies
@@ -238,15 +238,16 @@ def check_ledger_after_upgrade(
         assert len(node.configLedger) == ledger_size
         ids = set()
         for _, txn in node.configLedger.getAllTxn():
-            type = txn[TXN_TYPE]
+            type = get_type(txn)
             assert type in allowed_txn_types
-            data = txn
+            txn_data = get_payload_data(txn)
+            data = txn_data
             if type == NODE_UPGRADE:
-                data = txn[DATA]
+                data = txn_data[DATA]
 
             assert data[ACTION]
             assert data[ACTION] in allowed_actions
-            ids.add(txn[f.IDENTIFIER.nm])
+            ids.add(get_from(txn))
 
             assert data[VERSION]
             versions.add(data[VERSION])

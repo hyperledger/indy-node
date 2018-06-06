@@ -1,6 +1,7 @@
 import json
 from typing import Optional
 
+from plenum.common.txn_util import get_seq_no, get_from, get_payload_data, get_type
 from plenum.common.types import f
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
@@ -49,7 +50,7 @@ def _getData(result, error):
 
 def _submitData(result, error):
     data = result.get(DATA)
-    seqNo = result.get(F.seqNo.name)
+    seqNo = get_seq_no(result)
     return data, seqNo
 
 
@@ -84,9 +85,9 @@ class IndyPublicRepo(PublicRepo):
                 DATA: id.schemaId
             }
             res, seqNo = await self._sendGetReq(op)
-            if res and res[TXN_TYPE] == SCHEMA:
-                issuer_id = res[IDENTIFIER]
-                data = res[DATA]
+            if res and get_type(res) == SCHEMA:
+                issuer_id = get_from(res)
+                data = get_payload_data(res)[DATA]
 
         if not data or ATTR_NAMES not in data:
             raise SchemaNotFoundError(

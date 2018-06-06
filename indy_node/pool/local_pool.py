@@ -5,6 +5,7 @@ from collections import deque
 from plenum.common.constants import TYPE, NODE, NYM
 from plenum.common.member.steward import Steward
 from plenum.common.test_network_setup import TestNetworkSetup
+from plenum.common.txn_util import get_type
 from plenum.common.util import adict, randomString
 from indy_client.agent.walleted_agent import WalletedAgent
 from indy_client.client.client import Client
@@ -126,9 +127,9 @@ class LocalPool(Pool, Looper):
         pool_txns = deque()
         domain_txns = deque()
         for txn in self.genesis_txns:
-            if txn[TYPE] in [NODE]:
+            if get_type(txn) in [NODE]:
                 pool_txns.appendleft(txn)
-            elif txn[TYPE] in [NYM]:
+            elif get_type(txn) in [NYM]:
                 domain_txns.appendleft(txn)
             else:
                 raise NotImplementedError("txn type '{}' not supported")

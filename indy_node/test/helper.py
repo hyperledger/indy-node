@@ -10,6 +10,7 @@ from indy.ledger import build_attrib_request
 from indy_common.config_helper import NodeConfigHelper
 from plenum.common.constants import REQACK, TXN_ID, DATA
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
+from plenum.common.txn_util import get_type, get_txn_id
 from stp_core.common.log import getlogger
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import getMaxFailures, runall, randomString
@@ -44,23 +45,6 @@ class Organization:
             del self.userWallets[userId]
         else:
             raise ValueError("No wallet exists for this user id")
-
-    def addTxnsForCompletedRequestsInWallet(self, reqs: Iterable, wallet:
-    Wallet):
-        for req in reqs:
-            reply, status = self.client.getReply(req.key)
-            if status == "CONFIRMED":
-                # TODO Figure out the actual implementation of
-                # TODO     `buildCompletedTxnFromReply`. This is just a stub
-                # TODO     implementation
-                txn = buildCompletedTxnFromReply(req, reply)
-                # TODO Move this logic in wallet
-                if txn['txnType'] == ATTRIB and txn['data'] is not None:
-                    attr = list(txn['data'].keys())[0]
-                    if attr in wallet.attributeEncKeys:
-                        key = wallet.attributeEncKeys.pop(attr)
-                        txn['secretKey'] = key
-                wallet.addCompletedTxn(txn)
 
 
 @spyable(methods=[Upgrader.processLedger])
@@ -119,8 +103,8 @@ def checkSubmitted(looper, client, optype, txnsBefore):
     timeout = plenumWaits.expectedReqAckQuorumTime()
     looper.run(eventually(checkTxnCountAdvanced, retryWait=1,
                           timeout=timeout))
-    txnIdsBefore = [txn[TXN_ID] for txn in txnsBefore]
-    txnIdsAfter = [txn[TXN_ID] for txn in txnsAfter]
+    txnIdsBefore = [get_txn_id(txn) for txn in txnsBefore]
+    txnIdsAfter = [get_txn_id(txn) for txn in txnsAfter]
     logger.debug("old and new txnids {} {}".format(txnIdsBefore, txnIdsAfter))
     return list(set(txnIdsAfter) - set(txnIdsBefore))
 
