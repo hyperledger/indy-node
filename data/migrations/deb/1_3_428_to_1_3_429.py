@@ -100,7 +100,7 @@ def migrate_txn_log(db_dir, db_name):
         }
         if get_protocol_version(txn_new) is not None:
             dct[f.PROTOCOL_VERSION.nm] = get_protocol_version(txn_new)
-        digest = sha256(serialize_msg_for_signing(dct)).hexdigest().encode()
+        digest = sha256(serialize_msg_for_signing(dct)).hexdigest()
         seq_no = get_seq_no(txn_new)
         ledger_id = get_ledger_id_by_txn_type(operation[TXN_TYPE])
         line_to_record = str(ledger_id) + ReqIdrToTxn.delimiter + str(seq_no)
