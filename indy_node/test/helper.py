@@ -64,6 +64,10 @@ class TestUpgrader(Upgrader):
              Node.onBatchCreated, Node.onBatchRejected])
 class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
+        from plenum.common.stacks import nodeStackClass, clientStackClass
+        self.NodeStackClass = nodeStackClass
+        self.ClientStackClass = clientStackClass
+
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
         self.cleanupOnStopping = True

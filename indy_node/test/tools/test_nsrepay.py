@@ -3,6 +3,7 @@ import os
 
 import logging
 import pytest
+from plenum.test.recorder.helper import reload_modules_for_recorder, _reload_module
 from stp_core.common.log import getlogger, Logger
 
 from indy_node.test.catchup.conftest import some_transactions_done
@@ -25,10 +26,26 @@ def test_nscapture_unit_tests():
 def setup_logging(tdir, tconf):
     Logger().apply_config(tconf)
     log_file_name = os.path.join(tdir, 'var', 'log', 'indy', 'sandbox',
-                               'Alpha' + ".log")
+                                 'Alpha' + ".log")
     Logger().enableFileLogging(log_file_name)
     logger = getlogger()
     logger.setLevel(tconf.logLevel)
+
+#
+# @pytest.fixture(autouse=True)
+# def turn_recorder(tconf):
+#     reload_modules_for_recorder(tconf)
+#
+
+@pytest.fixture(scope="module")
+def tconf(tconf):
+    tconf.STACK_COMPANION = 1
+    reload_modules_for_recorder(tconf)
+    import indy_node.server.node
+    import indy_node.test.helper
+    _reload_module(indy_node.server.node)
+    _reload_module(indy_node.test.helper)
+    return tconf
 
 
 def test_end_to_end_replay(looper,

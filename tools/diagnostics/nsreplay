@@ -38,10 +38,10 @@ from indy_node.server.node import Node
 from os.path import abspath, basename, dirname, isfile, isdir, join, splitext
 from os import listdir, makedirs
 from plenum.common.constants import CLIENT_STACK_SUFFIX, KeyValueStorageType
-from plenum.recorder.src.recorder import Recorder
-from plenum.recorder.src.replayable_node import prepare_directory_for_replay, \
+from plenum.recorder.recorder import Recorder
+from plenum.recorder.replayable_node import prepare_directory_for_replay, \
     create_replayable_node_class
-from plenum.recorder.src.replayer import get_recorders_from_node_data_dir, \
+from plenum.recorder.replayer import get_recorders_from_node_data_dir, \
     prepare_node_for_replay_and_replay
 from plenum.server.replicas import Replicas
 from plenum.server.replica import Replica
