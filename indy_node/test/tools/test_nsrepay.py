@@ -1,7 +1,7 @@
 import subprocess
 import os
 
-import logging
+import importlib
 import pytest
 from plenum.test.recorder.helper import reload_modules_for_recorder, _reload_module
 from stp_core.common.log import getlogger, Logger
@@ -45,6 +45,10 @@ def tconf(tconf):
     import indy_node.test.helper
     _reload_module(indy_node.server.node)
     _reload_module(indy_node.test.helper)
+    import indy_client.test.conftest
+    importlib.reload(indy_client.test.conftest)
+    import indy_node.test.conftest
+    importlib.reload(indy_node.test.conftest)
     return tconf
 
 

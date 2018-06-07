@@ -94,6 +94,14 @@ class TestNode(TempStorage, TestNodeCore, Node):
     def dump_additional_info(self):
         pass
 
+    @property
+    def nodeStackClass(self):
+        return self.NodeStackClass
+
+    @property
+    def clientStackClass(self):
+        return self.ClientStackClass
+
 
 def checkSubmitted(looper, client, optype, txnsBefore):
     txnsAfter = []
