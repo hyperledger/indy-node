@@ -347,7 +347,7 @@ def find_node_name(args):
             args.node_name = node_name
             args.pool_name = pool
         elif len(nodes) == 0:
-            logger.error("No nodes where found. Check root dir?", nodes)
+            logger.error("No nodes where found. Check root dir?")
             sys.exit(-1)
         else:
             logger.error("Found more than one node and a node name was not specified! Found -- %s", nodes)
