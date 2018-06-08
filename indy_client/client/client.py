@@ -22,7 +22,7 @@ from stp_zmq.simple_zstack import SimpleZStack
 
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, GET_NYM, ROLE, \
     NYM, GET_TXNS, LAST_TXN, TXNS, SCHEMA, CLAIM_DEF, SKEY, DISCLO, \
-    GET_ATTR, TRUST_ANCHOR, GET_CLAIM_DEF, GET_SCHEMA, SIGNATURE_TYPE, REF
+    GET_ATTR, TRUST_ANCHOR, GET_CLAIM_DEF, GET_SCHEMA
 
 from indy_client.persistence.client_req_rep_store_file import ClientReqRepStoreFile
 from indy_client.persistence.client_txn_log import ClientTxnLog

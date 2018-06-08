@@ -1,5 +1,5 @@
 import pytest
-from indy_common.types import SchemaField, ClientGetSchemaOperation, GetSchemaField
+from indy_common.types import SchemaValueField, ClientGetSchemaOperation, GetSchemaField
 from collections import OrderedDict
 from plenum.common.messages.fields import ConstantField, IdentifierField, VersionField, LimitedLengthStringField
 

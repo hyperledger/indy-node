@@ -7,13 +7,14 @@ from common.serializers import serialization
 from common.serializers.serialization import state_roots_serializer
 from crypto.bls.bls_multi_signature import MultiSignature, MultiSignatureValue
 from plenum.bls.bls_store import BlsStore
-from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, ORIGIN, \
+from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, \
     IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
     STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, TXN_TIME, CURRENT_PROTOCOL_VERSION, DOMAIN_LEDGER_ID
 from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload_metadata
 from plenum.common.types import f
 from indy_common.constants import \
-    ATTRIB, REF, SIGNATURE_TYPE, CLAIM_DEF, SCHEMA
+    ATTRIB, REF, CLAIM_DEF, SCHEMA, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, \
+    CLAIM_DEF_PUBLIC_KEYS
 from indy_common.types import Request
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
@@ -140,8 +141,8 @@ def test_state_proofs_for_get_claim_def(request_handler):
     txn = {
         TXN_TYPE: CLAIM_DEF,
         TARGET_NYM: nym,
-        REF: schema_seqno,
-        DATA: key_components
+        CLAIM_DEF_SCHEMA_REF: schema_seqno,
+        CLAIM_DEF_PUBLIC_KEYS: key_components
     }
     txn = append_txn_metadata(reqToTxn(Request(operation=txn)),
                               seq_no=seq_no, txn_time=txn_time)
@@ -155,9 +156,9 @@ def test_state_proofs_for_get_claim_def(request_handler):
     request = Request(
         operation={
             IDENTIFIER: nym,
-            ORIGIN: nym,
-            REF: schema_seqno,
-            SIGNATURE_TYPE: signature_type
+            CLAIM_DEF_FROM: nym,
+            CLAIM_DEF_SCHEMA_REF: schema_seqno,
+            CLAIM_DEF_SIGNATURE_TYPE: signature_type
         },
         signatures={},
         protocolVersion=CURRENT_PROTOCOL_VERSION

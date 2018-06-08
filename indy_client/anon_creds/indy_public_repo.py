@@ -11,11 +11,13 @@ from stp_core.loop.eventually import eventually
 from plenum.common.exceptions import NoConsensusYet, OperationError
 from stp_core.common.log import getlogger
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, DATA, NAME, \
-    VERSION, TYPE, ORIGIN, IDENTIFIER, CURRENT_PROTOCOL_VERSION, \
+    VERSION, CURRENT_PROTOCOL_VERSION, \
     DOMAIN_LEDGER_ID
 
-from indy_common.constants import GET_SCHEMA, SCHEMA, ATTR_NAMES, \
-    GET_CLAIM_DEF, REF, CLAIM_DEF, PRIMARY, REVOCATION, GET_TXNS
+from indy_common.constants import GET_SCHEMA, SCHEMA, \
+    GET_CLAIM_DEF, CLAIM_DEF, PRIMARY, REVOCATION, GET_TXNS, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
+    CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_TAG, CLAIM_DEF_TAG_DEFAULT, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    SCHEMA_ATTR_NAMES, CLAIM_DEF_PUBLIC_KEYS
 
 from anoncreds.protocol.repo.public_repo import PublicRepo
 from anoncreds.protocol.types import Schema, ID, PublicKey, \
@@ -38,7 +40,7 @@ def _ensureReqCompleted(reqKey, client, clbk):
 
 
 def _getData(result, error):
-    data = result.get(DATA) if result.get(DATA) else {}
+    data = result.get(DATA) or {}
     # TODO: we have an old txn in the live pool where DATA is stored a json string.
     # We can get rid of the code above once we create a versioning support in
     # txns
@@ -69,11 +71,11 @@ class IndyPublicRepo(PublicRepo):
         if id.schemaKey:
             issuer_id = id.schemaKey.issuerId
             op = {
-                TARGET_NYM: issuer_id,
+                SCHEMA_FROM: issuer_id,
                 TXN_TYPE: GET_SCHEMA,
                 DATA: {
-                    NAME: id.schemaKey.name,
-                    VERSION: id.schemaKey.version,
+                    SCHEMA_NAME: id.schemaKey.name,
+                    SCHEMA_VERSION: id.schemaKey.version,
                 }
             }
             data, seqNo = await self._sendGetReq(op)
@@ -89,7 +91,7 @@ class IndyPublicRepo(PublicRepo):
                 issuer_id = get_from(res)
                 data = get_payload_data(res)[DATA]
 
-        if not data or ATTR_NAMES not in data:
+        if not data or SCHEMA_ATTR_NAMES not in data:
             raise SchemaNotFoundError(
                 'No schema with ID={} and key={}'.format(
                     id.schemaId,
@@ -97,16 +99,17 @@ class IndyPublicRepo(PublicRepo):
 
         return Schema(name=data[NAME],
                       version=data[VERSION],
-                      attrNames=data[ATTR_NAMES],
+                      attrNames=data[SCHEMA_ATTR_NAMES],
                       issuerId=issuer_id,
                       seqId=seqNo)
 
     async def getPublicKey(self, id: ID = None, signatureType='CL') -> Optional[PublicKey]:
         op = {
             TXN_TYPE: GET_CLAIM_DEF,
-            REF: id.schemaId,
-            ORIGIN: id.schemaKey.issuerId,
-            SIGNATURE_TYPE: signatureType
+            CLAIM_DEF_SCHEMA_REF: id.schemaId,
+            CLAIM_DEF_FROM: id.schemaKey.issuerId,
+            CLAIM_DEF_SIGNATURE_TYPE: signatureType,
+            CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
         }
 
         data, seqNo = await self._sendGetReq(op)
@@ -122,9 +125,10 @@ class IndyPublicRepo(PublicRepo):
                                      signatureType='CL') -> Optional[RevocationPublicKey]:
         op = {
             TXN_TYPE: GET_CLAIM_DEF,
-            REF: id.schemaId,
-            ORIGIN: id.schemaKey.issuerId,
-            SIGNATURE_TYPE: signatureType
+            CLAIM_DEF_SCHEMA_REF: id.schemaId,
+            CLAIM_DEF_FROM: id.schemaKey.issuerId,
+            CLAIM_DEF_SIGNATURE_TYPE: signatureType,
+            CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
         }
         data, seqNo = await self._sendGetReq(op)
         if not data:
@@ -151,9 +155,9 @@ class IndyPublicRepo(PublicRepo):
     async def submitSchema(self,
                            schema: Schema) -> Schema:
         data = {
-            NAME: schema.name,
-            VERSION: schema.version,
-            ATTR_NAMES: schema.attrNames
+            SCHEMA_NAME: schema.name,
+            SCHEMA_VERSION: schema.version,
+            SCHEMA_ATTR_NAMES: schema.attrNames
         }
         op = {
             TXN_TYPE: SCHEMA,
@@ -180,9 +184,10 @@ class IndyPublicRepo(PublicRepo):
 
         op = {
             TXN_TYPE: CLAIM_DEF,
-            REF: id.schemaId,
-            DATA: data,
-            SIGNATURE_TYPE: signatureType
+            CLAIM_DEF_SCHEMA_REF: id.schemaId,
+            CLAIM_DEF_PUBLIC_KEYS: data,
+            CLAIM_DEF_SIGNATURE_TYPE: signatureType,
+            CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
         }
 
         _, seqNo = await self._sendSubmitReq(op)

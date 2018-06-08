@@ -4,19 +4,22 @@ from typing import List, Callable
 import base58
 
 from indy_common.auth import Authoriser
-from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
+from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
-    GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, ATTR_NAMES, REVOC_TYPE, \
-    TIMESTAMP, ACCUM, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, REVOC_REG_ID, ACCUM_FROM, ACCUM_TO
+    GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, REVOC_TYPE, \
+    TIMESTAMP, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, ACCUM_FROM, ACCUM_TO, CLAIM_DEF_TAG_DEFAULT
+from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
+    get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
+    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
-    VERKEY, DATA, NAME, VERSION, ORIGIN, \
+    VERKEY, NAME, VERSION, ORIGIN, \
     TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
+    UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.txn_util import get_type, get_payload_data, get_from, get_seq_no, get_txn_time, get_req_id
 from plenum.common.types import f
 from plenum.common.constants import TRUSTEE
@@ -214,9 +217,8 @@ class DomainReqHandler(PHandler):
         # we can not add a Schema with already existent NAME and VERSION
         # sine a Schema needs to be identified by seqNo
         identifier = req.identifier
-        operation = req.operation
-        schema_name = operation[DATA][NAME]
-        schema_version = operation[DATA][VERSION]
+        schema_name = get_write_schema_name(req)
+        schema_version = get_write_schema_version(req)
         schema, _, _, _ = self.getSchema(
             author=identifier,
             schemaName=schema_name,
@@ -448,9 +450,9 @@ class DomainReqHandler(PHandler):
         return result
 
     def handleGetSchemaReq(self, request: Request):
-        author_did = request.operation[TARGET_NYM]
-        schema_name = request.operation[DATA][NAME]
-        schema_version = request.operation[DATA][VERSION]
+        author_did = get_read_schema_from(request)
+        schema_name = get_read_schema_name(request)
+        schema_version = get_read_schema_version(request)
         schema, lastSeqNo, lastUpdateTime, proof = self.getSchema(
             author=author_did,
             schemaName=schema_name,
@@ -471,18 +473,22 @@ class DomainReqHandler(PHandler):
                                 proof=proof)
 
     def handleGetClaimDefReq(self, request: Request):
-        signatureType = request.operation[SIGNATURE_TYPE]
+        frm = get_read_claim_def_from(request)
+        signature_type = get_read_claim_def_signature_type(request)
+        schema_ref = get_read_claim_def_schema_ref(request)
+        tag = get_read_claim_def_tag(request)
         keys, lastSeqNo, lastUpdateTime, proof = self.getClaimDef(
-            author=request.operation[ORIGIN],
-            schemaSeqNo=request.operation[REF],
-            signatureType=signatureType
+            author=frm,
+            schemaSeqNo=schema_ref,
+            signatureType=signature_type,
+            tag=tag
         )
         result = self.make_result(request=request,
                                   data=keys,
                                   last_seq_no=lastSeqNo,
                                   update_time=lastUpdateTime,
                                   proof=proof)
-        result[SIGNATURE_TYPE] = signatureType
+        result[CLAIM_DEF_SIGNATURE_TYPE] = signature_type
         return result
 
     def handleGetRevocRegDefReq(self, request: Request):
@@ -802,11 +808,12 @@ class DomainReqHandler(PHandler):
     def getClaimDef(self,
                     author: str,
                     schemaSeqNo: str,
-                    signatureType='CL',
+                    signatureType,
+                    tag,
                     isCommitted=True) -> (str, int, int, list):
         assert author is not None
         assert schemaSeqNo is not None
-        path = domain.make_state_path_for_claim_def(author, schemaSeqNo, signatureType)
+        path = domain.make_state_path_for_claim_def(author, schemaSeqNo, signatureType, tag)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted)
             return keys, seqno, lastUpdateTime, proof
