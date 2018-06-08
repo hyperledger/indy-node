@@ -55,13 +55,15 @@ PORT=$START_PORT
 ORIGINAL_IFS=$IFS
 IFS=','
 IPS_ARRAY=($IPS)
+
+NIP="0.0.0.0"
+CIP="0.0.0.0"
+
 IFS=$ORIGINAL_IFS
 for i in `seq 1 $CNT`; do
         NODE_NAME="${BASE_NODE_NAME}${i}"
-        NIP=${IPS_ARRAY[i-1]}
         NPORT=$PORT
         ((PORT++))
-        CIP=${IPS_ARRAY[i-1]}
         CPORT=$PORT
         ((PORT++))
         NODE_IMAGE_TAG="$(echo "$NODE_NAME" | tr '[:upper:]' '[:lower:]')"
