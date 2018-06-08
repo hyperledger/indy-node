@@ -47,8 +47,6 @@ def tconf(tconf):
     _reload_module(indy_node.test.helper)
     import indy_client.test.conftest
     importlib.reload(indy_client.test.conftest)
-    import indy_node.test.conftest
-    importlib.reload(indy_node.test.conftest)
     return tconf
 
 
