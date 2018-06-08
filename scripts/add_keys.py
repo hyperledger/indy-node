@@ -56,7 +56,7 @@ def spawnClient(clientName, port, signerSeed, host='0.0.0.0'):
 
 
 async def checkReply(client, request_key):
-    _, status = client.getReply(request_key)
+    _, status = client.getReply(*request_key)
     logger.info("Number of received messages {}".format(len(client.inBox)))
     groups = groupby(client.inBox, key=lambda x: x[0])
     for key, group in groups:
@@ -71,7 +71,7 @@ async def doRequesting(client, wallet, op):
     signedOp = wallet.signOp(op)
     logger.info("Client {} sending request {}".format(client, op))
     request = client.submitReqs(signedOp)[0][0]
-    args = request.key
+    args = (request.identifier, request.reqId)
     await eventually(checkReply, *args, timeout=requestTTL)
 
 
