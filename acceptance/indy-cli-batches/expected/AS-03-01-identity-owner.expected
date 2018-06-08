@@ -1,0 +1,323 @@
+- pool create AS-0301-owner gen_txn_file=./pool_transactions_genesis
+[1;32mPool config "AS-0301-owner" has been created[0m
+
+pool connect AS-0301-owner
+[1;32mPool "AS-0301-owner" has been connected[0m
+
+- wallet create AS-03-wallet-owner pool_name=AS-0301-owner key=testkey
+[1;32mWallet "AS-03-wallet-owner" has been created[0m
+
+wallet open AS-03-wallet-owner key=testkey
+[1;32mWallet "AS-03-wallet-owner" has been opened[0m
+
+did new seed=000000000000000000000000Trustee1 metadata="Default Trustee"
+[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey[0m
+[1;32mMetadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"[0m
+
+did new seed=TestTrustee100000000000000000003 metadata="test trustee 1"
+[1;32mDid "FiAsNdcWnpB2L22ZUGyKHa" has been created with "~BZHjLX8NYwJXPTE746hn6Y" verkey[0m
+[1;32mMetadata has been saved for DID "FiAsNdcWnpB2L22ZUGyKHa"[0m
+
+did new seed=TestTrustee200000000000000000003 metadata="test trustee 2"
+[1;32mDid "CYdQe2tmSwhv2XdicegoAn" has been created with "~E7MjQHm14YnmZD9RErTBsi" verkey[0m
+[1;32mMetadata has been saved for DID "CYdQe2tmSwhv2XdicegoAn"[0m
+
+did new seed=TestSteward100000000000000000003 metadata="test steward 1"
+[1;32mDid "AhqUV2zHYdNaWLFCCe7xCn" has been created with "~YUY2ChUGWJovtU6XTn61D8" verkey[0m
+[1;32mMetadata has been saved for DID "AhqUV2zHYdNaWLFCCe7xCn"[0m
+
+did new seed=TestSteward200000000000000000003 metadata="test steward 2"
+[1;32mDid "CbPwHxKEibPhV4pgXWpu26" has been created with "~MviYa49QADQXAM68WSiLPD" verkey[0m
+[1;32mMetadata has been saved for DID "CbPwHxKEibPhV4pgXWpu26"[0m
+
+did new seed=TestTrustAnchor10000000000000003 metadata="test trust anchor 1"
+[1;32mDid "DriVwCMbtEgkmoEHKin6Ah" has been created with "~YPZot1kM4DLwvsX6mtcKd9" verkey[0m
+[1;32mMetadata has been saved for DID "DriVwCMbtEgkmoEHKin6Ah"[0m
+
+did new seed=TestTrustAnchor20000000000000003 metadata="test trust anchor 2"
+[1;32mDid "2b6xTx2HniDU77nxHm6zWB" has been created with "~HF34ymwfTJngb8zFDmCyvX" verkey[0m
+[1;32mMetadata has been saved for DID "2b6xTx2HniDU77nxHm6zWB"[0m
+
+did new seed=TestTrustAnchor30000000000000003 metadata="test trust anchor 3"
+[1;32mDid "4xuWDwsQSqzQmYSheSWFyg" has been created with "~BmnEpJMi6kJHUcxcVJa2R4" verkey[0m
+[1;32mMetadata has been saved for DID "4xuWDwsQSqzQmYSheSWFyg"[0m
+
+did new seed=RandomUser1000000000000000000003 metadata="test identity 1"
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been created with "~3ZvjdaYs4cdFYXAwNGR85p" verkey[0m
+[1;32mMetadata has been saved for DID "LBbKEeczA9iL21p4Kgxcuf"[0m
+
+did new seed=RandomUser2000000000000000000003 metadata="test identity 2"
+[1;32mDid "Fk9ENxnz1ztDgdivQBJTCZ" has been created with "~NT9ANFeDhCLKDg5PNKZXKK" verkey[0m
+[1;32mMetadata has been saved for DID "Fk9ENxnz1ztDgdivQBJTCZ"[0m
+
+did new seed=RandomUser3000000000000000000003 metadata="test identity 3"
+[1;32mDid "Q8uxmCGdXgLHHtaTwYtVJG" has been created with "~UpRqa9gQ1jsbUBvKYPtWSo" verkey[0m
+[1;32mMetadata has been saved for DID "Q8uxmCGdXgLHHtaTwYtVJG"[0m
+
+did use V4SGRU86Z58d6TV7PBUe6f
+[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been set as active[0m
+
+ledger nym did=AhqUV2zHYdNaWLFCCe7xCn role=STEWARD verkey=~YUY2ChUGWJovtU6XTn61D8
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527785783319568525 | 2018-05-31 16:56:23 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| AhqUV2zHYdNaWLFCCe7xCn | ~YUY2ChUGWJovtU6XTn61D8 | STEWARD |
++------------------------+-------------------------+---------+
+
+ledger get-nym did=AhqUV2zHYdNaWLFCCe7xCn
+[1;32mFollowing NYM has been received.[0m
+[1;32mMetadata:[0m
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1543            | 1527785783577751656 | 2018-05-31 16:56:23 |
++-----------------+---------------------+---------------------+
+[1;32mData:[0m
++------------------------+------------------------+-------------------------+---------+
+| Identifier             | Dest                   | Verkey                  | Role    |
++------------------------+------------------------+-------------------------+---------+
+| V4SGRU86Z58d6TV7PBUe6f | AhqUV2zHYdNaWLFCCe7xCn | ~YUY2ChUGWJovtU6XTn61D8 | STEWARD |
++------------------------+------------------------+-------------------------+---------+
+
+did use V4SGRU86Z58d6TV7PBUe6f
+[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been set as active[0m
+
+ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=TRUST_ANCHOR verkey=~YPZot1kM4DLwvsX6mtcKd9
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527785783602098010 | 2018-05-31 16:56:23 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| DriVwCMbtEgkmoEHKin6Ah | ~YPZot1kM4DLwvsX6mtcKd9 | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+ledger get-nym did=DriVwCMbtEgkmoEHKin6Ah
+[1;32mFollowing NYM has been received.[0m
+[1;32mMetadata:[0m
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1544            | 1527785783867186316 | 2018-05-31 16:56:23 |
++-----------------+---------------------+---------------------+
+[1;32mData:[0m
++------------------------+------------------------+-------------------------+--------------+
+| Identifier             | Dest                   | Verkey                  | Role         |
++------------------------+------------------------+-------------------------+--------------+
+| V4SGRU86Z58d6TV7PBUe6f | DriVwCMbtEgkmoEHKin6Ah | ~YPZot1kM4DLwvsX6mtcKd9 | TRUST_ANCHOR |
++------------------------+------------------------+-------------------------+--------------+
+
+did use V4SGRU86Z58d6TV7PBUe6f
+[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been set as active[0m
+
+ledger nym did=LBbKEeczA9iL21p4Kgxcuf verkey=~3ZvjdaYs4cdFYXAwNGR85p
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527785783935342283 | 2018-05-31 16:56:23 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| LBbKEeczA9iL21p4Kgxcuf | ~3ZvjdaYs4cdFYXAwNGR85p | -    |
++------------------------+-------------------------+------+
+
+ledger get-nym did=LBbKEeczA9iL21p4Kgxcuf
+[1;32mFollowing NYM has been received.[0m
+[1;32mMetadata:[0m
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1545            | 1527785784172976111 | 2018-05-31 16:56:23 |
++-----------------+---------------------+---------------------+
+[1;32mData:[0m
++------------------------+------------------------+-------------------------+------+
+| Identifier             | Dest                   | Verkey                  | Role |
++------------------------+------------------------+-------------------------+------+
+| V4SGRU86Z58d6TV7PBUe6f | LBbKEeczA9iL21p4Kgxcuf | ~3ZvjdaYs4cdFYXAwNGR85p | -    |
++------------------------+------------------------+-------------------------+------+
+
+did use LBbKEeczA9iL21p4Kgxcuf
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been set as active[0m
+
+- ledger nym did=V4SGRU86Z58d6TV7PBUe6f role= 
+[1;31mTransaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of V4SGRU86Z58d6TV7PBUe6f[0m
+
+did use V4SGRU86Z58d6TV7PBUe6f
+[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been set as active[0m
+
+ledger nym did=CYdQe2tmSwhv2XdicegoAn role=TRUSTEE verkey=~E7MjQHm14YnmZD9RErTBsi
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527785784338845476 | 2018-05-31 16:56:24 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| CYdQe2tmSwhv2XdicegoAn | ~E7MjQHm14YnmZD9RErTBsi | TRUSTEE |
++------------------------+-------------------------+---------+
+
+ledger get-nym did=CYdQe2tmSwhv2XdicegoAn
+[1;32mFollowing NYM has been received.[0m
+[1;32mMetadata:[0m
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1546            | 1527785784635000940 | 2018-05-31 16:56:24 |
++-----------------+---------------------+---------------------+
+[1;32mData:[0m
++------------------------+------------------------+-------------------------+---------+
+| Identifier             | Dest                   | Verkey                  | Role    |
++------------------------+------------------------+-------------------------+---------+
+| V4SGRU86Z58d6TV7PBUe6f | CYdQe2tmSwhv2XdicegoAn | ~E7MjQHm14YnmZD9RErTBsi | TRUSTEE |
++------------------------+------------------------+-------------------------+---------+
+
+did use LBbKEeczA9iL21p4Kgxcuf
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been set as active[0m
+
+- ledger nym did=FiAsNdcWnpB2L22ZUGyKHa role=TRUSTEE verkey=~BZHjLX8NYwJXPTE746hn6Y
+[1;31mTransaction has been rejected: None role cannot add TRUSTEE[0m
+
+- ledger get-nym did=FiAsNdcWnpB2L22ZUGyKHa
+[1;31mNYM not found[0m
+
+did use LBbKEeczA9iL21p4Kgxcuf
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been set as active[0m
+
+- ledger nym did=AhqUV2zHYdNaWLFCCe7xCn role=
+[1;31mTransaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of AhqUV2zHYdNaWLFCCe7xCn[0m
+
+did use AhqUV2zHYdNaWLFCCe7xCn
+[1;32mDid "AhqUV2zHYdNaWLFCCe7xCn" has been set as active[0m
+
+ledger nym did=4xuWDwsQSqzQmYSheSWFyg role=TRUST_ANCHOR verkey=~BmnEpJMi6kJHUcxcVJa2R4
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527785785023047740 | 2018-05-31 16:56:25 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| 4xuWDwsQSqzQmYSheSWFyg | ~BmnEpJMi6kJHUcxcVJa2R4 | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+ledger get-nym did=4xuWDwsQSqzQmYSheSWFyg
+[1;32mFollowing NYM has been received.[0m
+[1;32mMetadata:[0m
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1547            | 1527785785336313986 | 2018-05-31 16:56:25 |
++-----------------+---------------------+---------------------+
+[1;32mData:[0m
++------------------------+------------------------+-------------------------+--------------+
+| Identifier             | Dest                   | Verkey                  | Role         |
++------------------------+------------------------+-------------------------+--------------+
+| AhqUV2zHYdNaWLFCCe7xCn | 4xuWDwsQSqzQmYSheSWFyg | ~BmnEpJMi6kJHUcxcVJa2R4 | TRUST_ANCHOR |
++------------------------+------------------------+-------------------------+--------------+
+
+did use LBbKEeczA9iL21p4Kgxcuf
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been set as active[0m
+
+- ledger nym did=CbPwHxKEibPhV4pgXWpu26 role=STEWARD verkey=~MviYa49QADQXAM68WSiLPD
+[1;31mTransaction has been rejected: None role cannot add STEWARD[0m
+
+- ledger get-nym did=CbPwHxKEibPhV4pgXWpu26
+[1;31mNYM not found[0m
+
+did use LBbKEeczA9iL21p4Kgxcuf
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been set as active[0m
+
+- ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=
+[1;31mTransaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of DriVwCMbtEgkmoEHKin6Ah[0m
+
+did use DriVwCMbtEgkmoEHKin6Ah
+[1;32mDid "DriVwCMbtEgkmoEHKin6Ah" has been set as active[0m
+
+ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG verkey=~UpRqa9gQ1jsbUBvKYPtWSo
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527785785741808392 | 2018-05-31 16:56:25 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| Q8uxmCGdXgLHHtaTwYtVJG | ~UpRqa9gQ1jsbUBvKYPtWSo | -    |
++------------------------+-------------------------+------+
+
+ledger get-nym did=Q8uxmCGdXgLHHtaTwYtVJG
+[1;32mFollowing NYM has been received.[0m
+[1;32mMetadata:[0m
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1548            | 1527785786048913143 | 2018-05-31 16:56:25 |
++-----------------+---------------------+---------------------+
+[1;32mData:[0m
++------------------------+------------------------+-------------------------+------+
+| Identifier             | Dest                   | Verkey                  | Role |
++------------------------+------------------------+-------------------------+------+
+| DriVwCMbtEgkmoEHKin6Ah | Q8uxmCGdXgLHHtaTwYtVJG | ~UpRqa9gQ1jsbUBvKYPtWSo | -    |
++------------------------+------------------------+-------------------------+------+
+
+did use LBbKEeczA9iL21p4Kgxcuf
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been set as active[0m
+
+- ledger nym did=2b6xTx2HniDU77nxHm6zWB role=TRUST_ANCHOR verkey=~HF34ymwfTJngb8zFDmCyvX
+[1;31mTransaction has been rejected: None role cannot add TRUST_ANCHOR[0m
+
+- ledger get-nym did=2b6xTx2HniDU77nxHm6zWB
+[1;31mNYM not found[0m
+
+did use LBbKEeczA9iL21p4Kgxcuf
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been set as active[0m
+
+- ledger nym did=Fk9ENxnz1ztDgdivQBJTCZ verkey=~NT9ANFeDhCLKDg5PNKZXKK
+[1;31mTransaction has been rejected: None role cannot add None role[0m
+
+- ledger get-nym did=Fk9ENxnz1ztDgdivQBJTCZ
+[1;31mNYM not found[0m
+
+did use LBbKEeczA9iL21p4Kgxcuf
+[1;32mDid "LBbKEeczA9iL21p4Kgxcuf" has been set as active[0m
+
+- ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUST_ANCHOR
+[1;31mTransaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of Q8uxmCGdXgLHHtaTwYtVJG[0m
+
+- ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=STEWARD
+[1;31mTransaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of Q8uxmCGdXgLHHtaTwYtVJG[0m
+
+- ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUSTEE
+[1;31mTransaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of Q8uxmCGdXgLHHtaTwYtVJG[0m
+
+[1;32mPool "AS-0301-owner" has been connected[0m
+[1;32mWallet "AS-03-wallet-owner" has been closed[0m
+[1;32mGoodbye...[0m
