@@ -48,7 +48,7 @@ def get_read_schema_from(req: Request):
 # CLAIM DEF
 
 def get_write_claim_def_signature_type(req: Request):
-    return req.operation[CLAIM_DEF_SIGNATURE_TYPE]
+    return req.operation.get(CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_CL)
 
 
 def get_write_claim_def_schema_ref(req: Request):
@@ -56,7 +56,7 @@ def get_write_claim_def_schema_ref(req: Request):
 
 
 def get_write_claim_def_tag(req: Request):
-    return req.operation[CLAIM_DEF_TAG]
+    return req.operation.get(CLAIM_DEF_TAG, CLAIM_DEF_TAG_DEFAULT)
 
 
 def get_write_claim_def_public_keys(req: Request):
@@ -64,7 +64,7 @@ def get_write_claim_def_public_keys(req: Request):
 
 
 def get_txn_claim_def_signature_type(txn):
-    return get_payload_data(txn)[CLAIM_DEF_SIGNATURE_TYPE]
+    return get_payload_data(txn).get(CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_CL)
 
 
 def get_txn_claim_def_schema_ref(txn):
@@ -72,7 +72,7 @@ def get_txn_claim_def_schema_ref(txn):
 
 
 def get_txn_claim_def_tag(txn):
-    return get_payload_data(txn)[CLAIM_DEF_TAG]
+    return get_payload_data(txn).get(CLAIM_DEF_TAG, CLAIM_DEF_TAG_DEFAULT)
 
 
 def get_txn_claim_def_public_keys(txn):
