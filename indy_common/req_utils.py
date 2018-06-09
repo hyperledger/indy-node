@@ -5,20 +5,25 @@ from indy_common.types import Request
 
 # SCHEMA
 from plenum.common.constants import DATA
+from plenum.common.types import OPERATION
 
 
 def get_write_schema_name(req):
     if isinstance(req, Request):
-        req = req.as_dict()
-    return req.operation[DATA][SCHEMA_NAME]
+        req = req.as_dict
+    return req[OPERATION][DATA][SCHEMA_NAME]
 
 
 def get_write_schema_version(req: Request):
-    return req.operation[DATA][SCHEMA_VERSION]
+    if isinstance(req, Request):
+        req = req.as_dict
+    return req[OPERATION][DATA][SCHEMA_VERSION]
 
 
 def get_write_schema_attr_names(req: Request):
-    return req.operation[DATA][SCHEMA_ATTR_NAMES]
+    if isinstance(req, Request):
+        req = req.as_dict
+    return req[OPERATION][DATA][SCHEMA_ATTR_NAMES]
 
 
 def get_read_schema_name(req: Request):
@@ -36,19 +41,27 @@ def get_read_schema_from(req: Request):
 # CLAIM DEF
 
 def get_write_claim_def_signature_type(req: Request):
-    return req.operation[CLAIM_DEF_SIGNATURE_TYPE]
+    if isinstance(req, Request):
+        req = req.as_dict
+    return req[OPERATION][CLAIM_DEF_SIGNATURE_TYPE]
 
 
 def get_write_claim_def_schema_ref(req: Request):
-    return req.operation[CLAIM_DEF_SCHEMA_REF]
+    if isinstance(req, Request):
+        req = req.as_dict
+    return req[OPERATION][CLAIM_DEF_SCHEMA_REF]
 
 
 def get_write_claim_def_tag(req: Request):
-    return req.operation[CLAIM_DEF_TAG]
+    if isinstance(req, Request):
+        req = req.as_dict
+    return req[OPERATION][CLAIM_DEF_TAG]
 
 
 def get_write_claim_def_public_keys(req: Request):
-    return req.operation[CLAIM_DEF_PUBLIC_KEYS]
+    if isinstance(req, Request):
+        req = req.as_dict
+    return req[OPERATION][CLAIM_DEF_PUBLIC_KEYS]
 
 
 def get_read_claim_def_signature_type(req: Request):

@@ -6,8 +6,8 @@ from indy_common.req_utils import get_write_claim_def_signature_type, \
 from indy_common.types import SafeRequest
 
 
-@pytest.fixture(scope="module")
-def write_claim_def_request():
+@pytest.fixture(scope="module", params=['dict', 'Request'])
+def write_claim_def_request(request):
     req = {
         'operation': {
             'type': '102',
@@ -25,6 +25,8 @@ def write_claim_def_request():
         'protocolVersion': 1,
         'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
     }
+    if request.param == 'dict':
+        return req
     return SafeRequest(**req)
 
 

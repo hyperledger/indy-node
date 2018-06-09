@@ -5,8 +5,8 @@ from indy_common.req_utils import get_write_schema_name, get_write_schema_versio
 from indy_common.types import SafeRequest
 
 
-@pytest.fixture(scope="module")
-def write_schema_request():
+@pytest.fixture(scope="module", params=['dict', 'Request'])
+def write_schema_request(request):
     req = {
         'operation': {
             'type': '101',
@@ -22,6 +22,8 @@ def write_schema_request():
         'protocolVersion': 1,
         'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
     }
+    if request.param == 'dict':
+        return req
     return SafeRequest(**req)
 
 
