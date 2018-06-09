@@ -587,7 +587,8 @@ class IndyCli(PlenumCli):
                            Token.BoldOrange)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, getNymReply)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, getNymReply)
 
     def _addNym(self, nym, role, newVerKey=None,
                 otherClientName=None, custom_clb=None):
@@ -616,7 +617,7 @@ class IndyCli(PlenumCli):
 
         self.looper.loop.call_later(.2,
                                     self._ensureReqCompleted,
-                                    req.key,
+                                    (req.identifier, req.reqId),
                                     self.activeClient,
                                     custom_clb or out)
         return True
@@ -649,7 +650,8 @@ class IndyCli(PlenumCli):
                            format(get_payload_data(reply)[TARGET_NYM]), Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, out)
 
     def _getAttr(self, nym, raw, enc, hsh):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1
@@ -686,7 +688,8 @@ class IndyCli(PlenumCli):
                 self.print("Attr not found")
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, getAttrReply)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, getAttrReply)
 
     def _getSchema(self, nym, name, version):
         req = self.activeWallet.requestSchema(
@@ -706,7 +709,8 @@ class IndyCli(PlenumCli):
                 self.print('"data" must be in proper format', Token.Error)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, getSchema)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, getSchema)
 
     def _getClaimDef(self, seqNo, signature):
         req = self.activeWallet.requestClaimDef(
@@ -726,7 +730,8 @@ class IndyCli(PlenumCli):
                 self.print('"data" must be in proper format', Token.Error)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, getClaimDef)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, getClaimDef)
 
     def _sendNodeTxn(self, nym, data):
         node = Node(nym, data, self.activeDID)
@@ -748,7 +753,8 @@ class IndyCli(PlenumCli):
                     Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, out)
 
     def _sendPoolUpgTxn(
             self,
@@ -788,7 +794,8 @@ class IndyCli(PlenumCli):
                            Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, out)
 
     def _sendPoolConfigTxn(self, writes, force=False):
         poolConfig = PoolConfig(trustee=self.activeDID,
@@ -808,7 +815,8 @@ class IndyCli(PlenumCli):
                 self.print("Pool config successful", Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, out)
 
     @staticmethod
     def parseAttributeString(attrs):

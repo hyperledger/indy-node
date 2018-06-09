@@ -21,7 +21,7 @@ RUN echo " " >> /etc/indy/indy_config.py
 
 # Init indy-node
 RUN init_indy_node $nodename $nip $nport $cip $cport
-EXPOSE $nip $nport $cip $cport
+EXPOSE $nport $cport
 RUN if [ ! -z "$ips" ] && [ ! -z "$nodenum" ] && [ ! -z "$nodecnt" ]; then generate_indy_pool_transactions --nodes $nodecnt --clients $clicnt --nodeNum $nodenum --ips "$ips"; fi
 USER root
 CMD ["/bin/bash", "-c", "exec /sbin/init --log-target=journal 3>&1"]

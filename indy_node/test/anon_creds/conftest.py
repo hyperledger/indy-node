@@ -188,6 +188,7 @@ def send_claim_def(looper,
     sdk_send_and_check([json.dumps(req)], looper, txnPoolNodeSet, sdk_pool_handle)
     return req
 
+
 @pytest.fixture(scope="module")
 def build_revoc_def_by_default(looper, sdk_wallet_steward):
     data = {

@@ -239,10 +239,10 @@ class Wallet(PWallet, TrustAnchoring):
         replies
         :return:
         """
-        preparedReq = self._prepared.get(get_reply_itentifier(result), reqId)
+        preparedReq = self._prepared.get(get_reply_identifier(result), reqId)
         if not preparedReq:
             raise RuntimeError('no matching prepared value for {},{}'.
-                               format(get_reply_itentifier(result), reqId))
+                               format(get_reply_identifier(result), reqId))
         typ = get_reply_txntype(result)
         if typ and typ in self.replyHandler:
             self.replyHandler[typ](result, preparedReq)
