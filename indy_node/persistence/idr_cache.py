@@ -1,15 +1,10 @@
-from collections import OrderedDict
-
-import base58
 import rlp
 
-from common.serializers.serialization import domain_state_serializer
+from indy_common.constants import ROLE, TGB, TRUST_ANCHOR
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX, \
     TXN_TIME
 from plenum.common.types import f
 from storage.kv_store import KeyValueStorage
-
-from indy_common.constants import ROLE, TGB, TRUST_ANCHOR
 from storage.optimistic_kv_store import OptimisticKVStore
 from stp_core.common.log import getlogger
 
@@ -181,8 +176,3 @@ class IdrCache(OptimisticKVStore):
                 return nymData[f.IDENTIFIER.nm]
             return nym
         logger.error('Nym {} not found'.format(nym))
-
-print(base58.b58encode(b'\xa2\xbe\xac\x13\x19\xe6\xe8zC\x8f\xe4\xc1\xf1\x92\xd7\'\xc5\x16\x0e"\xfa\x04\x02\xb7\x86\xdb\xbe$ /\xa9\x84'))
-
-a = OrderedDict([('reqSignature', OrderedDict([('type', 'ED25519'), ('values', [OrderedDict([('from', 'V4SGRU86Z58d6TV7PBUe6f'), ('value', '5fVnhJihXQAULFFQJSfjVagEDJ1Dprbs6HWMuSRgZ4J1QWGdQV6M2QEYwGf6Tnwo6fM1BRPdfKXxjQmhzimkdzR1')])])])), ('txn', OrderedDict([('data', OrderedDict([('dest', '3fyKjNLV6foqDxoEbBiQhY'), ('verkey', 'urSwH7znmSfnf2eYbfVaj4R7XXw9mRMrbNpko8Kxw8R')])), ('metadata', OrderedDict([('digest', 'b26c93b262bdeffc32f668a2a910a5a680bad23269f9bd01b26ad88a1b8a28b5'), ('from', 'V4SGRU86Z58d6TV7PBUe6f'), ('reqId', 1528193846322408393)])), ('type', '1')])), ('txnMetadata', OrderedDict([('seqNo', 25), ('txnTime', 1528193846)])), ('ver', '1')])
-print(domain_state_serializer.serialize(a, toBytes=False))

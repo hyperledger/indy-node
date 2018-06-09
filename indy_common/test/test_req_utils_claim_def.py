@@ -125,7 +125,7 @@ def test_get_txn_claim_def_tag_default(write_claim_def_request_no_tag):
 def test_get_txn_claim_public_keys(write_claim_def_request):
     txn = reqToTxn(write_claim_def_request)
     assert {'primary': {'primaryKey1': 'a'}, 'revocation': {'revocationKey1': 'b'}} == \
-           get_txn_claim_def_public_keys(txn)
+        get_txn_claim_def_public_keys(txn)
 
 
 def test_get_read_claim_def_signature_type(read_claim_def_request):

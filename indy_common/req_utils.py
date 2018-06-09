@@ -58,6 +58,7 @@ def get_reply_schema_version(reply):
 def get_reply_schema_attr_names(reply):
     return reply[DATA][SCHEMA_ATTR_NAMES]
 
+
 def get_reply_schema_from(reply):
     return reply[SCHEMA_FROM]
 

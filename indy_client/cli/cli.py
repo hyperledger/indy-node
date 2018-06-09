@@ -48,7 +48,7 @@ from indy_common.auth import Authoriser
 from indy_common.config_util import getConfig
 from indy_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, START, JUSTIFICATION, NULL, WRITES, \
-    REINSTALL
+    REINSTALL, SCHEMA_ATTR_NAMES
 from indy_common.exceptions import InvalidConnectionException, ConnectionAlreadyExists, \
     ConnectionNotFound, NotConnectedToNetwork
 from indy_common.identity import Identity
