@@ -33,3 +33,5 @@ def test_make_state_path_for_revoc_reg_entry_accum():
     assert b'6:did1:4:did1:3:18:CL:tag:CL_ACCUM:tag' == \
            make_state_path_for_revoc_reg_entry_accum('did1:4:did1:3:18:CL:tag:CL_ACCUM:tag')
 
+def test_prepare_attr_for_state():
+    pass

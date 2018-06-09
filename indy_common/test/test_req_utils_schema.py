@@ -1,11 +1,13 @@
 import pytest
 
 from indy_common.req_utils import get_write_schema_name, get_write_schema_version, get_write_schema_attr_names, \
-    get_read_schema_version, get_read_schema_name, get_read_schema_from
+    get_read_schema_version, get_read_schema_name, get_read_schema_from, get_txn_schema_name, get_txn_schema_version, \
+    get_txn_schema_attr_names
 from indy_common.types import SafeRequest
+from plenum.common.txn_util import reqToTxn
 
 
-@pytest.fixture(scope="module", params=['dict', 'Request'])
+@pytest.fixture(scope="module")
 def write_schema_request(request):
     req = {
         'operation': {
@@ -22,8 +24,6 @@ def write_schema_request(request):
         'protocolVersion': 1,
         'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
     }
-    if request.param == 'dict':
-        return req
     return SafeRequest(**req)
 
 
@@ -57,6 +57,22 @@ def test_get_write_schema_version(write_schema_request):
 def test_get_write_schema_attr_names(write_schema_request):
     assert ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad',
             'expiry_date'] == get_write_schema_attr_names(write_schema_request)
+
+
+def test_get_txn_schema_name(write_schema_request):
+    txn = reqToTxn(write_schema_request)
+    assert 'Degree' == get_txn_schema_name(txn)
+
+
+def test_get_txn_schema_version(write_schema_request):
+    txn = reqToTxn(write_schema_request)
+    assert '1.0' == get_txn_schema_version(txn)
+
+
+def test_get_txn_schema_attr_names(write_schema_request):
+    txn = reqToTxn(write_schema_request)
+    assert ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad',
+            'expiry_date'] == get_txn_schema_attr_names(txn)
 
 
 def test_get_read_schema_name(read_schema_request):

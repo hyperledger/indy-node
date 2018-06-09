@@ -2,11 +2,13 @@ import pytest
 
 from indy_common.req_utils import get_write_claim_def_signature_type, \
     get_write_claim_def_schema_ref, get_write_claim_def_tag, get_write_claim_def_public_keys, \
-    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag, get_read_claim_def_from
+    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag, get_read_claim_def_from, \
+    get_txn_claim_def_public_keys, get_txn_claim_def_tag, get_txn_claim_def_schema_ref, get_txn_claim_def_signature_type
 from indy_common.types import SafeRequest
+from plenum.common.txn_util import reqToTxn
 
 
-@pytest.fixture(scope="module", params=['dict', 'Request'])
+@pytest.fixture(scope="module")
 def write_claim_def_request(request):
     req = {
         'operation': {
@@ -25,8 +27,6 @@ def write_claim_def_request(request):
         'protocolVersion': 1,
         'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
     }
-    if request.param == 'dict':
-        return req
     return SafeRequest(**req)
 
 
@@ -63,6 +63,27 @@ def test_get_write_claim_def_tag(write_claim_def_request):
 def test_get_write_claim_public_keys(write_claim_def_request):
     assert {'primary': {'primaryKey1': 'a'}, 'revocation': {'revocationKey1': 'b'}} == \
            get_write_claim_def_public_keys(write_claim_def_request)
+
+
+def test_get_txn_claim_def_signature_type(write_claim_def_request):
+    txn = reqToTxn(write_claim_def_request)
+    assert 'CL' == get_txn_claim_def_signature_type(txn)
+
+
+def test_get_txn_claim_def_schema_ref(write_claim_def_request):
+    txn = reqToTxn(write_claim_def_request)
+    assert 18 == get_txn_claim_def_schema_ref(txn)
+
+
+def test_get_txn_claim_def_tag(write_claim_def_request):
+    txn = reqToTxn(write_claim_def_request)
+    assert 'key111' == get_txn_claim_def_tag(txn)
+
+
+def test_get_txn_claim_public_keys(write_claim_def_request):
+    txn = reqToTxn(write_claim_def_request)
+    assert {'primary': {'primaryKey1': 'a'}, 'revocation': {'revocationKey1': 'b'}} == \
+           get_txn_claim_def_public_keys(txn)
 
 
 def test_get_read_claim_def_signature_type(read_claim_def_request):
