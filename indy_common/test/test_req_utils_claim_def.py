@@ -94,7 +94,7 @@ def test_get_write_claim_def_tag_default(write_claim_def_request_no_tag):
 
 def test_get_write_claim_public_keys(write_claim_def_request):
     assert {'primary': {'primaryKey1': 'a'}, 'revocation': {'revocationKey1': 'b'}} == \
-           get_write_claim_def_public_keys(write_claim_def_request)
+        get_write_claim_def_public_keys(write_claim_def_request)
 
 
 def test_get_txn_claim_def_signature_type(write_claim_def_request):
