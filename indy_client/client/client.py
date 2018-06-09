@@ -127,8 +127,8 @@ class Client(PlenumClient):
         if OP_FIELD_NAME not in msg:
             logger.error("Op absent in message {}".format(msg))
 
-    def requestConfirmed(self, identifier: str, reqId: int) -> bool:
-        return self.txnLog.hasTxnWithReqId(identifier, reqId)
+    def requestConfirmed(self, key) -> bool:
+        return self.txnLog.hasTxnWithReqId(key)
 
     def hasConsensus(self, identifier: str, reqId: int) -> Optional[str]:
         return super().hasConsensus(identifier, reqId)

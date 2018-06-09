@@ -49,7 +49,7 @@ def _getData(result, error):
 
 
 def _submitData(result, error):
-    data = result.get(DATA)
+    data = get_payload_data(result)
     seqNo = get_seq_no(result)
     return data, seqNo
 
@@ -221,7 +221,8 @@ class IndyPublicRepo(PublicRepo):
             # pass some other tests. The client was not getting a chance to
             # service its stack, we need to find a way to stop this starvation.
             resp = await eventually(_ensureReqCompleted,
-                                    req.key, self.client, clbk,
+                                    (req.identifier, req.reqId),
+                                    self.client, clbk,
                                     timeout=20, retryWait=2)
         except NoConsensusYet:
             raise TimeoutError('Request timed out')
