@@ -222,9 +222,9 @@ def getAttribute(
         attrib, sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
     timeout = waits.expectedTransactionExecutionTime(len(trustAnchor.nodeReg))
-    return looper.run(eventually(checkGetAttr, req.key, trustAnchor,
-                                 attributeName, attributeValue, retryWait=1,
-                                 timeout=timeout))
+    return looper.run(eventually(checkGetAttr, (req.identifier, req.reqId),
+                                 trustAnchor, attributeName, attributeValue,
+                                 retryWait=1, timeout=timeout))
 
 
 def sdk_get_attribute():

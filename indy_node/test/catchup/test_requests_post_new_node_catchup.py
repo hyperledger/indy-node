@@ -2,10 +2,12 @@ from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.util import randomString
 from plenum.test.node_catchup.helper import checkNodeDataForEquality, \
     waitNodeDataEquality
-from plenum.test.pool_transactions.helper import sdk_add_new_nym
+from plenum.test.pool_transactions.helper import sdk_add_new_nym, \
+    sdk_pool_refresh, disconnect_node_and_ensure_disconnected
 from plenum.test.test_node import ensure_node_disconnected, checkNodesConnected
 from indy_node.test.conftest import sdk_node_theta_added
-from indy_node.test.helper import TestNode, sdk_add_raw_attribute
+from indy_node.test.helper import TestNode, sdk_add_raw_attribute, \
+    start_stopped_node
 from indy_common.config_helper import NodeConfigHelper
 
 
@@ -75,10 +77,14 @@ def test_new_node_catchup_update_projection(looper,
     fill_counters(old_ledger_sizes, old_projection_sizes, old_seq_no_map_sizes,
                   other_nodes)
     new_node.cleanupOnStopping = False
-    new_node.stop()
-    looper.removeProdable(new_node)
-    ensure_node_disconnected(looper, new_node, other_nodes)
+    # new_node.stop()
+    # looper.removeProdable(new_node)
+    # ensure_node_disconnected(looper, new_node, other_nodes)
 
+    disconnect_node_and_ensure_disconnected(looper,
+                                            nodeSet,
+                                            new_node.name)
+    looper.removeProdable(name=new_node.name)
     trust_anchors = []
     attributes = []
     for i in range(ta_count):
@@ -100,19 +106,14 @@ def test_new_node_catchup_update_projection(looper,
     # The size difference should be same as number of new NYM txns
     check_sizes(other_nodes)
 
-    config_helper = NodeConfigHelper(new_node.name, tconf, chroot=tdir)
-    new_node = TestNode(
-        new_node.name,
-        config_helper=config_helper,
-        config=tconf,
-        pluginPaths=allPluginsPath,
-        ha=new_node.nodestack.ha,
-        cliha=new_node.clientstack.ha)
-    looper.add(new_node)
+    new_node = start_stopped_node(new_node, looper, tconf,
+                                  tdir, allPluginsPath)
     nodeSet[-1] = new_node
+
     fill_counters(old_ledger_sizes, old_projection_sizes, old_seq_no_map_sizes,
                   [new_node])
     looper.run(checkNodesConnected(nodeSet))
+    sdk_pool_refresh(looper, sdk_pool_handle)
     waitNodeDataEquality(looper, new_node, *other_nodes)
     fill_counters(new_ledger_sizes, new_projection_sizes, new_seq_no_map_sizes,
                   [new_node])
