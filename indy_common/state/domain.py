@@ -13,9 +13,9 @@ from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
 from plenum.common.txn_util import get_type, get_payload_data, get_seq_no, get_txn_time, get_from
 from plenum.common.types import f
 
-MARKER_ATTR = "\01"
-MARKER_SCHEMA = "\02"
-MARKER_CLAIM_DEF = "\03"
+MARKER_ATTR = "1"
+MARKER_SCHEMA = "2"
+MARKER_CLAIM_DEF = "3"
 # TODO: change previous markers in "request refactoring" sprint
 MARKER_REVOC_DEF = "4"
 MARKER_REVOC_REG_ENTRY = "5"
