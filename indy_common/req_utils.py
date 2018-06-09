@@ -7,6 +7,8 @@ from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data
 
 
+# TODO: use data classes instead
+
 # SCHEMA
 
 def get_write_schema_name(req):
@@ -43,6 +45,21 @@ def get_read_schema_version(req: Request):
 
 def get_read_schema_from(req: Request):
     return req.operation[SCHEMA_FROM]
+
+
+def get_reply_schema_name(reply):
+    return reply[DATA][SCHEMA_NAME]
+
+
+def get_reply_schema_version(reply):
+    return reply[DATA][SCHEMA_VERSION]
+
+
+def get_reply_schema_attr_names(reply):
+    return reply[DATA][SCHEMA_ATTR_NAMES]
+
+def get_reply_schema_from(reply):
+    return reply[SCHEMA_FROM]
 
 
 # CLAIM DEF

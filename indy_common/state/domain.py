@@ -2,14 +2,15 @@ from copy import deepcopy
 from hashlib import sha256
 
 from common.serializers.serialization import domain_state_serializer
-from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID, \
-    CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_PUBLIC_KEYS, SCHEMA_ATTR_NAMES
+from indy_common.constants import ATTRIB, GET_ATTR, SIGNATURE_TYPE, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID, \
+    CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_PUBLIC_KEYS, SCHEMA_ATTR_NAMES, CLAIM_DEF_FROM, CLAIM_DEF_TAG, \
+    CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL
 from indy_common.req_utils import get_txn_schema_name, get_txn_claim_def_schema_ref, \
     get_txn_claim_def_public_keys, get_txn_claim_def_signature_type, get_txn_claim_def_tag, get_txn_schema_version, \
     get_txn_schema_attr_names
 from indy_common.serialization import attrib_raw_data_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
-    TARGET_NYM, DATA, NAME, VERSION, ORIGIN, TYPE
+    TARGET_NYM, DATA, NAME, VERSION, TYPE
 from plenum.common.txn_util import get_type, get_payload_data, get_seq_no, get_txn_time, get_from
 from plenum.common.types import f
 
@@ -192,18 +193,19 @@ def prepare_revoc_reg_entry_accum_for_state(txn):
 
 
 def prepare_get_claim_def_for_state(reply):
-    origin = reply.get(ORIGIN)
-    schema_seq_no = reply.get(REF)
+    origin = reply.get(CLAIM_DEF_FROM)
+    schema_seq_no = reply.get(CLAIM_DEF_SCHEMA_REF)
     if schema_seq_no is None:
         raise ValueError("'{}' field is absent, "
-                         "but it must contain schema seq no".format(REF))
+                         "but it must contain schema seq no".format(CLAIM_DEF_SCHEMA_REF))
 
-    signature_type = reply.get(SIGNATURE_TYPE, 'CL')
-    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
+    signature_type = reply.get(SIGNATURE_TYPE, CLAIM_DEF_CL)
+    tag = reply.get(CLAIM_DEF_TAG, CLAIM_DEF_TAG_DEFAULT)
+    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type, tag)
     seq_no = reply[f.SEQ_NO.nm]
 
     value_bytes = None
-    data = reply.get(DATA)
+    data = reply.get(CLAIM_DEF_PUBLIC_KEYS)
     if data is not None:
         txn_time = reply[TXN_TIME]
         value_bytes = encode_state_value(data, seq_no, txn_time)
