@@ -49,7 +49,7 @@ def _getData(result, error):
 
 
 def _submitData(result, error):
-    data = result.get(DATA)
+    data = get_payload_data(result)
     seqNo = get_seq_no(result)
     return data, seqNo
 
