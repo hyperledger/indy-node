@@ -8,7 +8,8 @@ from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
     GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, REVOC_TYPE, \
-    TIMESTAMP, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, ACCUM_FROM, ACCUM_TO, CLAIM_DEF_TAG_DEFAULT
+    TIMESTAMP, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, ACCUM_FROM, ACCUM_TO, \
+    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION
 from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
     get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
     get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
@@ -16,7 +17,7 @@ from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
-    VERKEY, NAME, VERSION, ORIGIN, \
+    VERKEY, \
     TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest, UnknownIdentifier
@@ -278,16 +279,7 @@ class DomainReqHandler(PHandler):
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
-        tags = cred_def_id.split(":")
-        if len(tags) != 4:
-            raise InvalidClientRequest(req.identifier,
-                                       req.reqId,
-                                       "Format of {} field is not acceptable. "
-                                       "Expected: 'did:marker:signature_type:seq_no'".format(CRED_DEF_ID))
-        cred_def_path = domain.make_state_path_for_claim_def(authors_did=tags[0],
-                                                             signature_type=tags[2],
-                                                             schema_seq_no=tags[3])
-        cred_def, _, _, _ = self.lookup(cred_def_path, isCommitted=False, get_proof=False)
+        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, get_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
@@ -463,8 +455,8 @@ class DomainReqHandler(PHandler):
         if schema is None:
             schema = {}
         schema.update({
-            NAME: schema_name,
-            VERSION: schema_version
+            SCHEMA_NAME: schema_name,
+            SCHEMA_VERSION: schema_version
         })
         return self.make_result(request=request,
                                 data=schema,
