@@ -411,10 +411,10 @@ def program_args():
     parser = argparse.ArgumentParser()
 
     graceful = argparse.ArgumentParser(add_help=False)
-    recording_help=(".zip, .tar.gz, .tgz file or directory name containing a"
-                    " recording. nscapture can be used to capture the result of a"
-                    " recording. A recording is accomplished by setting `STACK_COMPANION=1` "
-                    " in `/etc/indy/indy_config.py`")
+    recording_help = (".zip, .tar.gz, .tgz file or directory name containing a"
+                      " recording. nscapture can be used to capture the result of a"
+                      " recording. A recording is accomplished by setting `USE_WITH_STACK=1` "
+                      " in `/etc/indy/indy_config.py`")
     parser.add_argument("recording", help=recording_help)
 
     cleanup_help = ("Cleanup temporary files/directories?"
