@@ -80,6 +80,7 @@ import sys
 import tarfile
 import tempfile
 import zipfile
+import errno
 
 logger = logging.getLogger()
 
@@ -805,8 +806,9 @@ def loglevel(v):
         raise argparse.ArgumentTypeError(
             'Expected one of the following: {}.'.format(
                 ', '.join(levels.keys())))
-    
-if __name__ == '__main__':
+
+
+def program_args():
     parser = argparse.ArgumentParser()
 
     graceful = argparse.ArgumentParser(add_help=False)
@@ -845,14 +847,34 @@ if __name__ == '__main__':
     parser.add_argument("-S", '--skip-dir', action='append',
         help=skip_dir_help)
 
-    args = parser.parse_args()
-  
-    # Require at least two arguments
-    if len(sys.argv) < 3:
-        parser.print_help(sys.stderr)
+    return parser
+
+
+def parse_args(argv=None, parser=program_args()):
+    # Require at least one argument
+    # if len(argv) < 2:
+    #     parser.print_help(sys.stderr)
+    #     raise Exception
+
+    return parser.parse_args(args=argv)
+
+
+def main(args):
+    comparator = NodeStateComparator(log_level=args.log_level,
+                                     datadir=args.datadir,
+                                     cleanup=args.cleanup,
+                                     skipfiles=args.skip_file,
+                                     skipdirs=args.skip_dir)
+    comparator.ndiff(args.state1, args.state2)
+    return 0
+
+if __name__ == '__main__':
+    try:
+        arguments = parse_args()
+    except:
         sys.exit(1)
 
-    comparator = NodeStateComparator(log_level=args.log_level,
-        datadir=args.datadir, cleanup=args.cleanup, skipfiles=args.skip_file,
-        skipdirs=args.skip_dir)
-    comparator.ndiff(args.state1, args.state2)
+    sys.exit(main(arguments))
+
+
+

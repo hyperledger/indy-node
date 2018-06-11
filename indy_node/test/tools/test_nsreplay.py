@@ -1,10 +1,10 @@
-import subprocess
 import os
 
 import importlib
 import pytest
 from plenum.test.recorder.helper import reload_modules_for_recorder, _reload_module
 from stp_core.common.log import getlogger, Logger
+import tempfile
 
 from indy_node.test.catchup.conftest import some_transactions_done
 
@@ -16,10 +16,40 @@ def find_ns_script_dir():
     return path
 
 
+def load_script(temp_file, script_name):
+    spec = importlib.util.spec_from_file_location(script_name, temp_file)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def run_script(script_name, args):
+    cmd_path = os.path.join(find_ns_script_dir(), script_name)
+    with open(cmd_path, 'r+b') as r_file:
+        file_content = r_file.read()
+        with tempfile.NamedTemporaryFile('w+b', suffix=".py") as w_file:
+            w_file.write(file_content)
+            w_file.flush()
+
+            mod = load_script(w_file.name, script_name)
+
+            args = mod.parse_args(argv=args)
+            rtn = mod.main(args)
+            return rtn
+
+
 def test_nscapture_unit_tests():
-    path = os.path.join(find_ns_script_dir(), 'nscapture')
-    rtn = subprocess.run([path, '-t'])
-    assert rtn.returncode == 0, "The internal unit test did not pass"
+    cmd_path = os.path.join(find_ns_script_dir(), 'nscapture')
+    with open(cmd_path, 'r+b') as r_file:
+        file_content = r_file.read()
+        with tempfile.NamedTemporaryFile('w+b', suffix=".py") as w_file:
+            w_file.write(file_content)
+            w_file.flush()
+
+            mod = load_script(w_file.name, 'nscapture')
+
+            rtn = mod.test(None, mod)
+            assert rtn == 0, "The internal unit test did not pass"
 
 
 @pytest.fixture(autouse=True)
@@ -31,11 +61,6 @@ def setup_logging(tdir, tconf):
     logger = getlogger()
     logger.setLevel(tconf.logLevel)
 
-#
-# @pytest.fixture(autouse=True)
-# def turn_recorder(tconf):
-#     reload_modules_for_recorder(tconf)
-#
 
 @pytest.fixture(scope="module")
 def tconf(tconf):
@@ -69,30 +94,28 @@ def test_end_to_end_replay(looper,
     # root_dir = '/home/devin/temp/B6/test/0'
 
     #  Capture the original
-    capture_cmd_path = os.path.join(find_ns_script_dir(), 'nscapture')
-    rtn = subprocess.run([capture_cmd_path, '-r', root_dir, '-n', 'Alpha', '-o', tdir])
-    assert rtn.returncode == 0, "Capture did not run successfully"
+    rtn = run_script('nscapture', ['-r', root_dir, '-n', 'Alpha', '-o', tdir])
+    assert rtn == 0, "Capture did not run successfully"
 
     recording = list(filter(lambda x: x.startswith('Alpha'), os.listdir(tdir)))
     assert len(recording) == 1
     recording = recording.pop()
 
     #  Replay recording
-    replay_cmd_path = os.path.join(find_ns_script_dir(), 'nsreplay')
     replay_path = os.path.join(tdir, 'replayed', '0')
-    rtn = subprocess.run([replay_cmd_path, '-o', replay_path, os.path.join(tdir, recording)])
-    assert rtn.returncode == 0, "Replay did not run successfully"
+    rtn = run_script('nsreplay', ['-o', replay_path, os.path.join(tdir, recording)])
+    assert rtn == 0, "Replay did not run successfully"
 
     #  Capture the replay
-    rtn = subprocess.run([capture_cmd_path, '-r', replay_path, '-n', 'Alpha', '-o', tdir])
-    assert rtn.returncode == 0, "Capture did not run successfully"
+    rtn = run_script('nscapture', ['-r', replay_path, '-n', 'Alpha', '-o', tdir])
+    assert rtn == 0, "Capture did not run successfully"
 
     captures_archives = list(filter(lambda x: x.startswith('Alpha'), os.listdir(tdir)))
     assert len(captures_archives) == 2
 
-    diff_cmd_path = os.path.join(find_ns_script_dir(), 'nsdiff')
-    cmd = [diff_cmd_path]
-    cmd.extend(captures_archives)
-    rtn = subprocess.run(cmd, cwd=tdir)
-    assert rtn.returncode == 0, "Recording and replay were not identical"
+    args = []
+    for archive in captures_archives:
+        args.append(os.path.join(tdir, archive))
+    rtn = run_script('nsdiff', args)
+    assert rtn == 0, "Recording and replay were not identical"
     pass

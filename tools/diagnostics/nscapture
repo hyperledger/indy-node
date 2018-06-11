@@ -27,6 +27,8 @@ ENV_COLLECTION_CMD = [
     ("validator_info", ['validator-info', '-v']),
 ]
 
+DEFAULT_ROOT_DIR = '/'
+
 
 # ***************
 # *  Command-line Argument Parsing
@@ -76,8 +78,8 @@ def program_args():
                         help='the directory where the captured file will be writen to. Default: CWD')
     parser.add_argument('-n', '--node-name',
                         help='The name of the node to be captured, required if the script finds more than one node.')
-    parser.add_argument('-r', '--root-dir', default='/',
-                        help='The root to look for node artifacts. Default: /')
+    parser.add_argument('-r', '--root-dir', default=DEFAULT_ROOT_DIR,
+                        help='The root to look for node artifacts. Default: ' + DEFAULT_ROOT_DIR)
 
     parser.add_argument('-x', '--exclude-recording', action='store_true',
                         help='Will exclude recording data from capture.')
@@ -318,7 +320,6 @@ def find_node_name(args):
                 possible_nodes.remove(a_name + 'C')
             node_names.add((a_name, pool_name))
 
-
         return node_names
 
     def is_dir_check(base_dir):
@@ -456,10 +457,10 @@ def do_capture(args, files):
         _log_capture(files)
         return
     else:
-        # if os.getuid() is not 0:
-        # TODO Need to be more clever, only need to be super user when on a bare metal box
-        # logger.error("Must be run as super user (sudo) to capture all files.")
-        # raise Exception("Not Super User")
+        if args.root_dir == DEFAULT_ROOT_DIR and os.getuid() is not 0:
+            logger.error("Must be run as super user (sudo) to capture all files.")
+            raise Exception("Not Super User")
+
         run_cmd(cmd)
 
 
@@ -482,21 +483,24 @@ def main(args):
         logger.error('Unable to build capture archive')
         raise
 
+    return 0
+
 
 # ***************
 # *  UNIT TESTS !!!!! (use -t to run them)
 # ***************
 def test():
     print("The 'unittest' module is not available!\nUnable to run tests!")
-    sys.exit(0)
+    return 0
 
 
 try:
     import unittest
 
 
-    def test(arguments):
-        sys.exit(unittest.main(argv=['capture_test']))
+    def test(args, module='__main__'):
+        t = unittest.main(argv=['capture_test'], module=module, exit=False, verbosity=10)
+        return int(not t.result.wasSuccessful())
 
 
     def _touch(path, content):
@@ -777,6 +781,7 @@ if __name__ == '__main__':
     arguments = parse_args()
 
     if arguments.test:
-        test(arguments)
+        exit_code = test(arguments)
+        sys.exit(exit_code)
     else:
-        main(arguments)
+        sys.exit(main(arguments))
