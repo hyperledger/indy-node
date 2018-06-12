@@ -20,10 +20,10 @@
 # Otherwise, install indy-node and it's dependencies before running this script.
 #
 # TODO:
-# 
+#
 # 1. Create an issue in indy-node stating that the following must be done on
 #    macos for pbc to compile (pbc has a dependency on openssl headers)
-#    > cd /usr/local/include 
+#    > cd /usr/local/include
 #    > ln -s ../opt/openssl/include/openssl .
 #    The above fix was taken from:
 #    https://www.anintegratedworld.com/mac-osx-fatal-error-opensslsha-h-file-not-found/
@@ -407,7 +407,6 @@ def loglevel(v):
 def program_args():
     parser = argparse.ArgumentParser()
 
-    graceful = argparse.ArgumentParser(add_help=False)
     recording_help = (".zip, .tar.gz, .tgz file or directory name containing a"
                       " recording. nscapture can be used to capture the result of a"
                       " recording. A recording is accomplished by setting `STACK_COMPANION=1` "
@@ -433,11 +432,6 @@ def program_args():
 
 
 def parse_args(argv=None, parser=program_args()):
-    # Require at least one argument
-    # if len(argv) < 1:
-    #     parser.print_help(sys.stderr)
-    #     raise Exception
-
     return parser.parse_args(args=argv)
 
 
@@ -448,10 +442,6 @@ def main(args):
 
 
 if __name__ == '__main__':
-    try:
-        arguments = parse_args()
-    except:
-        sys.exit(1)
+    arguments = parse_args()
 
     sys.exit(main(arguments))
-

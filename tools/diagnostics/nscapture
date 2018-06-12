@@ -467,19 +467,19 @@ def do_capture(args, files):
 def main(args):
     try:
         init(args)
-    except:
+    except Exception:
         logger.error('Unable to initialize script')
         raise
 
     try:
         files = collect_capture_files(args)
-    except:
+    except Exception:
         logger.error('Unable to collect the files for this capture')
         raise
 
     try:
         do_capture(args, files)
-    except:
+    except Exception:
         logger.error('Unable to build capture archive')
         raise
 
@@ -497,18 +497,15 @@ def test():
 try:
     import unittest
 
-
     def test(args, module='__main__'):
         t = unittest.main(argv=['capture_test'], module=module, exit=False, verbosity=10)
         return int(not t.result.wasSuccessful())
-
 
     def _touch(path, content):
         d = os.path.dirname(path)
         os.makedirs(d, exist_ok=True)
         with open(path, 'w') as f:
             f.write(content)
-
 
     class TestCapture(unittest.TestCase):
         @classmethod
@@ -774,7 +771,7 @@ try:
                 cmd = build_archive_cmd("/test/test/", [collection])
                 self.assertTrue(cmd[-1].endswith('plugins/'))
 
-except:
+except ImportError:
     pass
 
 if __name__ == '__main__':

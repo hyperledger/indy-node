@@ -202,7 +202,7 @@ def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
-           (data is not None and data.get(attrName) == attrValue)
+        (data is not None and data.get(attrName) == attrValue)
     return reply
 
 

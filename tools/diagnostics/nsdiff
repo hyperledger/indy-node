@@ -384,7 +384,7 @@ class NodeStateComparator:
                         KeyValueStorageType.Rocksdb, dirname, filename,
                         read_only=True)
                     opened = True
-                except:
+                except Exception:
                     # rocksdb.errors.InvalidArgument
                     e = sys.exc_info()[0]
                     debug_message = ("Failed opening {} as a"
@@ -401,7 +401,7 @@ class NodeStateComparator:
                             KeyValueStorageType.Rocksdb, dirname,
                             filename, read_only=True)
                         opened = True
-                    except:
+                    except Exception:
                         e = sys.exc_info()[0]
                         debug_message = ("Failed opening {} as a"
                                          " RocksDB instance using"
@@ -460,8 +460,7 @@ class NodeStateComparator:
                                                                          out_filename)
                             )
                             file_handle.write("{} {}".format(k, v))
-                    elif (filename.endswith("_merkleLeaves")
-                          or filename.endswith("_merkleNodes")):
+                    elif filename.endswith("_merkleLeaves") or filename.endswith("_merkleNodes"):
                         for k, v in leveldb_rocksdb_handle.iterator():
                             try:
                                 k = bytes(k)
@@ -633,18 +632,18 @@ class NodeStateComparator:
 
     def transform_and_scrub(self, sname, sin, sout):
         """Convert all state data to a *nix diff-able form
-    
+
         Keyword arguments:
         sin -- A directory containing indy-node/plenum state data
         sout -- A directory in which to write *nix-diff-able/friendly output
-    
+
         Detect all LevelDB/RocksDB directories. The LevelDB directory structure
         is described here:
-            https://github.com/google/leveldb/blob/master/doc/impl.md 
+            https://github.com/google/leveldb/blob/master/doc/impl.md
 
             Each database is represented by a set of files stored in a
             directory.
-       
+
             By default, LevelDB/RocksDB uses a BytewiseComparator, which is the
             expected outcome when calling initKeyValueStorage to create a
             LevelDB/RocksDB instance/directory. initKeyValueStorageIntKeys
@@ -652,7 +651,7 @@ class NodeStateComparator:
             LevelDB/RocksDB instances/directories may require one or the other.
             First Attempt to open with initKeyValueStorage. If that throws an
             error,try again with initKeyValueStorageIntKeys.
-       
+
         Transform and scrub data in preparation for *nix diff
            1. Marshall/Transform data from LevelDB/RocksDB directories to flat
               files.  Use domain objects where possible to decode key/value
@@ -856,7 +855,6 @@ def loglevel(v):
 def program_args():
     parser = argparse.ArgumentParser()
 
-    graceful = argparse.ArgumentParser(add_help=False)
     parser.add_argument("state1",
                         help=".zip, .tar.gz, .tgz file or directory name")
     parser.add_argument("state2",
@@ -896,10 +894,6 @@ def program_args():
 
 
 def parse_args(argv=None, parser=program_args()):
-    # Require at least one argument
-    # if len(argv) < 2:
-    #     parser.print_help(sys.stderr)
-    #     raise Exception
 
     return parser.parse_args(args=argv)
 
@@ -915,9 +909,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-    try:
-        arguments = parse_args()
-    except:
-        sys.exit(1)
-
+    arguments = parse_args()
     sys.exit(main(arguments))
