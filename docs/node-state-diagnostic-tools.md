@@ -79,7 +79,7 @@ codebase.
 The following is a simple but hopefully a common workflow for using these tools.
 ## Steps
 ### Step #1 - Configure recording
-Add USE_WITH_STACK to indy_config.py and set to the value to 1 (numeric value,
+Add STACK_COMPANION to indy_config.py and set to the value to 1 (numeric value,
 NOT a String). 
 
 The value 0 will DISABLE recording.

@@ -5,7 +5,7 @@
 # This script assumes:
 # --------------------
 #
-# 1. `USE_WITH_STACK=1` was set in `/etc/indy/indy_config.py` on the node where
+# 1. `STACK_COMPANION=1` was set in `/etc/indy/indy_config.py` on the node where
 #     the recording took place.
 # 2. The 'recording' passed as the argument to this script has been captured by
 #    running `nscapture` AFTER stopping the node (indy-node service). There are
@@ -280,7 +280,7 @@ class NodeStateReplayer:
             Recorder(client_rec_kv_store, skip_metadata_write=True)
 
     def update_loaded_config(self, config):
-        config.USE_WITH_STACK = 2
+        config.STACK_COMPANION = 2
         import stp_zmq.kit_zstack
         importlib.reload(stp_zmq.kit_zstack)
         import plenum.common.stacks
@@ -413,7 +413,7 @@ def program_args():
     graceful = argparse.ArgumentParser(add_help=False)
     recording_help = (".zip, .tar.gz, .tgz file or directory name containing a"
                       " recording. nscapture can be used to capture the result of a"
-                      " recording. A recording is accomplished by setting `USE_WITH_STACK=1` "
+                      " recording. A recording is accomplished by setting `STACK_COMPANION=1` "
                       " in `/etc/indy/indy_config.py`")
     parser.add_argument("recording", help=recording_help)
 
