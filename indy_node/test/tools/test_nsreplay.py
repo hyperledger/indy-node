@@ -34,7 +34,10 @@ def run_script(script_name, args):
             mod = load_script(w_file.name, script_name)
 
             args = mod.parse_args(argv=args)
-            rtn = mod.main(args)
+            try:
+                rtn = mod.main(args)
+            except SystemExit:
+                return -1
             return rtn
 
 
