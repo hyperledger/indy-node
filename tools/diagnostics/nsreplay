@@ -368,9 +368,6 @@ class NodeStateReplayer:
                 replaying_node.domainLedger.root_hash
             ))
 
-            logger.debug('Final run of looper')
-            looper.runFor(10)
-
 
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module

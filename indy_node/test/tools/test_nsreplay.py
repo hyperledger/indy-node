@@ -27,7 +27,7 @@ def run_script(script_name, args):
     cmd_path = os.path.join(find_ns_script_dir(), script_name)
     with open(cmd_path, 'r+b') as r_file:
         file_content = r_file.read()
-        with tempfile.NamedTemporaryFile('w+b', suffix=".py") as w_file:
+        with tempfile.NamedTemporaryFile('w+b', suffix=".py", delete=False) as w_file:
             w_file.write(file_content)
             w_file.flush()
 

@@ -720,15 +720,14 @@ class NodeStateComparator:
         # call("diff -r {} {}".format(s1, s2))
 
         # Try 3:
-        result = subprocess.run(['diff', '-r', s1, s2], stderr=subprocess.PIPE,
-                                stdout=subprocess.PIPE)
+        result = subprocess.run(['diff', '-r', s1, s2])
+
         if result.returncode == 0:
             print("Identical state!")
         else:
             self._eprint("State differs!")
             self._eprint("Return code of {} from command: diff -r {} {}".format(
-                result.returncode, s1, s2))
-            self._eprint(result.stdout.decode('utf-8'), exit=True)
+                result.returncode, s1, s2), exit=True)
 
     def ndiff(self, s1, s2):
         logger.debug("Performing node state diff on {} and {}".format(s1, s2))
@@ -922,4 +921,3 @@ if __name__ == '__main__':
         sys.exit(1)
 
     sys.exit(main(arguments))
-
