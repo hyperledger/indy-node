@@ -8,6 +8,8 @@ import tempfile
 
 from indy_node.test.catchup.conftest import some_transactions_done
 
+whitelist = ['cannot find remote with name']
+
 
 def find_ns_script_dir():
     path = os.path.dirname(__file__)
