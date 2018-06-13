@@ -387,7 +387,11 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
 
+- `tag` (string, optional):
 
+    A unique tag to have multiple public keys for the same Schema and type issued by the same DID.
+    A default tag `tag` will be used if not specified. 
+    
 **Example**:
 ```
 {
@@ -408,6 +412,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
             },
             "ref":12,
             "signature_type":"CL",
+            'tag': 'some_tag'
         },
         
         "metadata": {
