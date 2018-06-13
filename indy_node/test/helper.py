@@ -64,6 +64,10 @@ class TestUpgrader(Upgrader):
              Node.onBatchCreated, Node.onBatchRejected])
 class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
+        from plenum.common.stacks import nodeStackClass, clientStackClass
+        self.NodeStackClass = nodeStackClass
+        self.ClientStackClass = clientStackClass
+
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
         self.cleanupOnStopping = True
@@ -89,6 +93,14 @@ class TestNode(TempStorage, TestNodeCore, Node):
 
     def dump_additional_info(self):
         pass
+
+    @property
+    def nodeStackClass(self):
+        return self.NodeStackClass
+
+    @property
+    def clientStackClass(self):
+        return self.ClientStackClass
 
 
 def checkSubmitted(looper, client, optype, txnsBefore):
@@ -190,7 +202,7 @@ def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
-           (data is not None and data.get(attrName) == attrValue)
+        (data is not None and data.get(attrName) == attrValue)
     return reply
 
 
