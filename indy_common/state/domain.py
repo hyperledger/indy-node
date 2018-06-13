@@ -280,10 +280,11 @@ def prepare_get_schema_for_state(reply):
     schema_version = get_reply_schema_version(reply)
     path = make_state_path_for_schema(origin, schema_name, schema_version)
     value_bytes = None
-    data = {
-        SCHEMA_ATTR_NAMES: get_reply_schema_attr_names(reply)
-    }
-    if len(data) != 0:
+    attr_names = get_reply_schema_attr_names(reply)
+    if attr_names:
+        data = {
+            SCHEMA_ATTR_NAMES: attr_names
+        }
         seq_no = reply[f.SEQ_NO.nm]
         txn_time = reply[TXN_TIME]
         value_bytes = encode_state_value(data, seq_no, txn_time)

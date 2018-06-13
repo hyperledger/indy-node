@@ -5,12 +5,11 @@ from plenum.common.txn_util import get_seq_no, get_from, get_payload_data, get_t
 from plenum.common.types import f
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
-from common.serializers.json_serializer import JsonSerializer
 from ledger.util import F
 from stp_core.loop.eventually import eventually
 from plenum.common.exceptions import NoConsensusYet, OperationError
 from stp_core.common.log import getlogger
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, DATA, NAME, \
+from plenum.common.constants import TXN_TYPE, DATA, NAME, \
     VERSION, CURRENT_PROTOCOL_VERSION, \
     DOMAIN_LEDGER_ID
 
@@ -24,7 +23,6 @@ from anoncreds.protocol.types import Schema, ID, PublicKey, \
     RevocationPublicKey, AccumulatorPublicKey, \
     Accumulator, Tails, TimestampType
 from indy_common.types import Request
-from indy_common.constants import SIGNATURE_TYPE
 from indy_common.util import get_reply_if_confirmed
 
 
