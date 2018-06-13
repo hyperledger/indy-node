@@ -1,6 +1,6 @@
-import pytest
-from indy_common.types import ClientSchemaOperation, SchemaValueField
 from collections import OrderedDict
+
+from indy_common.types import ClientSchemaOperation, SchemaField
 from plenum.common.messages.fields import ConstantField, VersionField, IterableField, LimitedLengthStringField
 
 EXPECTED_ORDERED_FIELDS_SCHEMA = OrderedDict([
@@ -11,19 +11,19 @@ EXPECTED_ORDERED_FIELDS_SCHEMA = OrderedDict([
 
 
 def test_has_expected_fields_s():
-    actual_field_names = OrderedDict(SchemaValueField.schema).keys()
+    actual_field_names = OrderedDict(SchemaField.schema).keys()
     assert actual_field_names == EXPECTED_ORDERED_FIELDS_SCHEMA.keys()
 
 
 def test_has_expected_validators_s():
-    schema = dict(SchemaValueField.schema)
+    schema = dict(SchemaField.schema)
     for field, validator in EXPECTED_ORDERED_FIELDS_SCHEMA.items():
         assert isinstance(schema[field], validator)
 
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
-    ("data", SchemaValueField),
+    ("data", SchemaField),
 ])
 
 

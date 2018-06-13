@@ -1,13 +1,12 @@
-import pytest
-from indy_common.types import SchemaValueField, ClientGetSchemaOperation, GetSchemaField
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, IdentifierField, VersionField, LimitedLengthStringField
 
+from indy_common.types import ClientGetSchemaOperation, GetSchemaField
+from plenum.common.messages.fields import ConstantField, IdentifierField, VersionField, LimitedLengthStringField
 
 EXPECTED_ORDERED_FIELDS_SCHEMA = OrderedDict([
     ("name", LimitedLengthStringField),
     ("version", VersionField),
-    ('origin', LimitedLengthStringField),
+    ('origin', IdentifierField),
 ])
 
 

@@ -15,7 +15,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE
+    VERSION, FORCE, ORIGIN
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
@@ -70,6 +70,7 @@ class GetSchemaField(MessageValidator):
     schema = (
         (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (ORIGIN, IdentifierField(optional=True))
     )
 
 
