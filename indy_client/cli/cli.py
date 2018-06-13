@@ -19,7 +19,7 @@ from prompt_toolkit.layout.lexers import SimpleLexer
 from pygments.token import Token
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
-from anoncreds.protocol.globals import KEYS
+from anoncreds.protocol.globals import KEYS, ATTR_NAMES
 from anoncreds.protocol.types import Schema, ID, ProofRequest
 from indy_client.agent.constants import EVENT_NOTIFY_MSG, EVENT_POST_ACCEPT_INVITE, \
     EVENT_NOT_CONNECTED_TO_ANY_ENV
@@ -48,7 +48,7 @@ from indy_common.auth import Authoriser
 from indy_common.config_util import getConfig
 from indy_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, START, JUSTIFICATION, NULL, WRITES, \
-    REINSTALL, ATTR_NAMES
+    REINSTALL, SCHEMA_ATTR_NAMES
 from indy_common.exceptions import InvalidConnectionException, ConnectionAlreadyExists, \
     ConnectionNotFound, NotConnectedToNetwork
 from indy_common.identity import Identity
@@ -699,7 +699,7 @@ class IndyCli(PlenumCli):
 
         def getSchema(reply, err, *args):
             try:
-                if reply and reply[DATA] and ATTR_NAMES in reply[DATA]:
+                if reply and reply[DATA] and SCHEMA_ATTR_NAMES in reply[DATA]:
                     self.print(
                         "Found schema {}"
                         .format(reply[DATA]))

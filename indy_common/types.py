@@ -2,39 +2,36 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
+from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
+    DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+    POOL_UPGRADE, POOL_CONFIG, \
+    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, SHA256, \
+    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, START, CANCEL, \
+    REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
+    TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
+    REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
+    GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
+    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
+    CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, ORIGIN, FORCE
-from plenum.common.messages.node_message_factory import node_message_factory
-
-from plenum.common.messages.message_base import MessageValidator
-from plenum.common.request import Request as PRequest
-from plenum.common.types import OPERATION
-from plenum.common.messages.node_messages import NonNegativeNumberField
+    VERSION, FORCE, ORIGIN
+from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
+from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
     LimitedLengthStringField, TxnSeqNoField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
     ChooseField, IntegerField, IterableField, \
     AnyMapField, NonEmptyStringField, DatetimeStringField
-from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
-from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
+from plenum.common.messages.message_base import MessageValidator
+from plenum.common.messages.node_messages import NonNegativeNumberField
+from plenum.common.request import Request as PRequest
+from plenum.common.types import OPERATION
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
-    NONCE_FIELD_LIMIT, ORIGIN_FIELD_LIMIT, \
+    NONCE_FIELD_LIMIT, \
     ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
-    HASH_FIELD_LIMIT, VERSION_FIELD_LIMIT, DATETIME_LIMIT
-
-from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
-    DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
-    DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, \
-    SIGNATURE_TYPE, SCHEDULE, SHA256, \
-    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY, \
-    START, CANCEL, \
-    REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
-    TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
-    REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
-    GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
-    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO
+    VERSION_FIELD_LIMIT
 
 
 class Request(PRequest):
@@ -71,17 +68,17 @@ class ClientDiscloOperation(MessageValidator):
 
 class GetSchemaField(MessageValidator):
     schema = (
-        (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
-        (ORIGIN, LimitedLengthStringField(max_length=ORIGIN_FIELD_LIMIT, optional=True)),
+        (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (ORIGIN, IdentifierField(optional=True))
     )
 
 
 class SchemaField(MessageValidator):
     schema = (
-        (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
-        (ATTR_NAMES, IterableField(
+        (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (SCHEMA_ATTR_NAMES, IterableField(
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1)),
     )
@@ -89,8 +86,8 @@ class SchemaField(MessageValidator):
 
 class ClaimDefField(MessageValidator):
     schema = (
-        (PRIMARY, AnyMapField()),
-        (REVOCATION, AnyMapField(optional=True)),
+        (CLAIM_DEF_PRIMARY, AnyMapField()),
+        (CLAIM_DEF_REVOCATION, AnyMapField(optional=True)),
     )
 
 
@@ -143,7 +140,7 @@ class ClientSchemaOperation(MessageValidator):
 class ClientGetSchemaOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_SCHEMA)),
-        (TARGET_NYM, IdentifierField()),
+        (SCHEMA_FROM, IdentifierField()),
         (DATA, GetSchemaField()),
     )
 
@@ -222,18 +219,20 @@ class ClientGetAttribOperation(ClientAttribOperation):
 class ClientClaimDefSubmitOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(CLAIM_DEF)),
-        (REF, TxnSeqNoField()),
-        (DATA, ClaimDefField()),
-        (SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (CLAIM_DEF_SCHEMA_REF, TxnSeqNoField()),
+        (CLAIM_DEF_PUBLIC_KEYS, ClaimDefField()),
+        (CLAIM_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (CLAIM_DEF_TAG, LimitedLengthStringField(max_length=256, optional=True)),
     )
 
 
 class ClientClaimDefGetOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_CLAIM_DEF)),
-        (REF, TxnSeqNoField()),
-        (ORIGIN, IdentifierField()),
-        (SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (CLAIM_DEF_SCHEMA_REF, TxnSeqNoField()),
+        (CLAIM_DEF_FROM, IdentifierField()),
+        (CLAIM_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (CLAIM_DEF_TAG, LimitedLengthStringField(max_length=256, optional=True)),
     )
 
 
@@ -302,7 +301,6 @@ class ClientPoolConfigOperation(MessageValidator):
 
 
 class ClientOperationField(PClientOperationField):
-
     _specific_operations = {
         SCHEMA: ClientSchemaOperation(),
         ATTRIB: ClientAttribOperation(),
@@ -331,7 +329,6 @@ class ClientOperationField(PClientOperationField):
 
 
 class ClientMessageValidator(PClientMessageValidator):
-
     # extend operation field
     schema = tuple(
         map(lambda x: (x[0], ClientOperationField()) if x[0] == OPERATION else x,
@@ -358,7 +355,6 @@ class ClientMessageValidator(PClientMessageValidator):
 
 
 class SafeRequest(Request, ClientMessageValidator):
-
     def __init__(self, **kwargs):
         ClientMessageValidator.__init__(self, operation_schema_is_strict=True,
                                         schema_is_strict=False)

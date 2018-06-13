@@ -2,16 +2,22 @@ from copy import deepcopy
 from hashlib import sha256
 
 from common.serializers.serialization import domain_state_serializer
-from indy_common.constants import ATTRIB, GET_ATTR, REF, SIGNATURE_TYPE, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID
+from indy_common.constants import ATTRIB, GET_ATTR, SIGNATURE_TYPE, REVOC_TYPE, TAG, CRED_DEF_ID, REVOC_REG_DEF_ID, \
+    CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_PUBLIC_KEYS, SCHEMA_ATTR_NAMES, CLAIM_DEF_FROM, CLAIM_DEF_TAG, \
+    CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL
+from indy_common.req_utils import get_txn_schema_name, get_txn_claim_def_schema_ref, \
+    get_txn_claim_def_public_keys, get_txn_claim_def_signature_type, get_txn_claim_def_tag, get_txn_schema_version, \
+    get_txn_schema_attr_names, get_reply_schema_from, get_reply_schema_name, get_reply_schema_version, \
+    get_reply_schema_attr_names
 from indy_common.serialization import attrib_raw_data_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
-    TARGET_NYM, DATA, NAME, VERSION, ORIGIN, TYPE
+    TARGET_NYM, DATA, TYPE
 from plenum.common.txn_util import get_type, get_payload_data, get_seq_no, get_txn_time, get_from
 from plenum.common.types import f
 
-MARKER_ATTR = "\01"
-MARKER_SCHEMA = "\02"
-MARKER_CLAIM_DEF = "\03"
+MARKER_ATTR = "1"
+MARKER_SCHEMA = "2"
+MARKER_CLAIM_DEF = "3"
 # TODO: change previous markers in "request refactoring" sprint
 MARKER_REVOC_DEF = "4"
 MARKER_REVOC_REG_ENTRY = "5"
@@ -44,12 +50,13 @@ def make_state_path_for_schema(authors_did, schema_name, schema_version) -> byte
                 SCHEMA_VERSION=schema_version).encode()
 
 
-def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type) -> bytes:
-    return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}" \
+def make_state_path_for_claim_def(authors_did, schema_seq_no, signature_type, tag) -> bytes:
+    return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}:{TAG}" \
         .format(DID=authors_did,
                 MARKER=MARKER_CLAIM_DEF,
                 SIGNATURE_TYPE=signature_type,
-                SCHEMA_SEQ_NO=schema_seq_no).encode()
+                SCHEMA_SEQ_NO=schema_seq_no,
+                TAG=tag).encode()
 
 
 def make_state_path_for_revoc_def(authors_did, cred_def_id, revoc_def_type, revoc_def_tag) -> bytes:
@@ -103,19 +110,19 @@ def prepare_attr_for_state(txn):
 
 
 def prepare_claim_def_for_state(txn):
-    txn_data = get_payload_data(txn)
     origin = get_from(txn)
-    schema_seq_no = txn_data.get(REF)
+    schema_seq_no = get_txn_claim_def_schema_ref(txn)
     if schema_seq_no is None:
         raise ValueError("'{}' field is absent, "
-                         "but it must contain schema seq no".format(REF))
-    data = txn_data.get(DATA)
+                         "but it must contain schema seq no".format(CLAIM_DEF_SCHEMA_REF))
+    data = get_txn_claim_def_public_keys(txn)
     if data is None:
         raise ValueError("'{}' field is absent, "
                          "but it must contain components of keys"
-                         .format(DATA))
-    signature_type = txn_data.get(SIGNATURE_TYPE, 'CL')
-    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
+                         .format(CLAIM_DEF_PUBLIC_KEYS))
+    signature_type = get_txn_claim_def_signature_type(txn)
+    tag = get_txn_claim_def_tag(txn)
+    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type, tag)
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(data, seq_no, txn_time)
@@ -187,18 +194,19 @@ def prepare_revoc_reg_entry_accum_for_state(txn):
 
 
 def prepare_get_claim_def_for_state(reply):
-    origin = reply.get(ORIGIN)
-    schema_seq_no = reply.get(REF)
+    origin = reply.get(CLAIM_DEF_FROM)
+    schema_seq_no = reply.get(CLAIM_DEF_SCHEMA_REF)
     if schema_seq_no is None:
         raise ValueError("'{}' field is absent, "
-                         "but it must contain schema seq no".format(REF))
+                         "but it must contain schema seq no".format(CLAIM_DEF_SCHEMA_REF))
 
-    signature_type = reply.get(SIGNATURE_TYPE, 'CL')
-    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type)
+    signature_type = reply.get(SIGNATURE_TYPE, CLAIM_DEF_CL)
+    tag = reply.get(CLAIM_DEF_TAG, CLAIM_DEF_TAG_DEFAULT)
+    path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type, tag)
     seq_no = reply[f.SEQ_NO.nm]
 
     value_bytes = None
-    data = reply.get(DATA)
+    data = reply.get(CLAIM_DEF_PUBLIC_KEYS)
     if data is not None:
         txn_time = reply[TXN_TIME]
         value_bytes = encode_state_value(data, seq_no, txn_time)
@@ -254,25 +262,29 @@ def prepare_get_revoc_reg_entry_accum_for_state(reply):
 
 def prepare_schema_for_state(txn):
     origin = get_from(txn)
-    txn_data = get_payload_data(txn)
-    data = deepcopy(txn_data.get(DATA))
-    schema_name = data.pop(NAME)
-    schema_version = data.pop(VERSION)
+    schema_name = get_txn_schema_name(txn)
+    schema_version = get_txn_schema_version(txn)
+    value = {
+        SCHEMA_ATTR_NAMES: get_txn_schema_attr_names(txn)
+    }
     path = make_state_path_for_schema(origin, schema_name, schema_version)
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
-    value_bytes = encode_state_value(data, seq_no, txn_time)
+    value_bytes = encode_state_value(value, seq_no, txn_time)
     return path, value_bytes
 
 
 def prepare_get_schema_for_state(reply):
-    origin = reply.get(TARGET_NYM)
-    data = reply[DATA].copy()
-    schema_name = data.pop(NAME)
-    schema_version = data.pop(VERSION)
+    origin = get_reply_schema_from(reply)
+    schema_name = get_reply_schema_name(reply)
+    schema_version = get_reply_schema_version(reply)
     path = make_state_path_for_schema(origin, schema_name, schema_version)
     value_bytes = None
-    if len(data) != 0:
+    attr_names = get_reply_schema_attr_names(reply)
+    if attr_names:
+        data = {
+            SCHEMA_ATTR_NAMES: attr_names
+        }
         seq_no = reply[f.SEQ_NO.nm]
         txn_time = reply[TXN_TIME]
         value_bytes = encode_state_value(data, seq_no, txn_time)

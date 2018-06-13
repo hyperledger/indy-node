@@ -4,8 +4,8 @@ from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, NAME, \
 
 from indy_client.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_replies
-from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, \
-    REF, SIGNATURE_TYPE, ATTR_NAMES
+from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, \
+    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES
 
 # fixtures, do not remove
 from indy_client.test.test_nym_attrib import \
@@ -73,8 +73,8 @@ def test_state_proof_returned_for_missing_schema(looper,
         TARGET_NYM: dest,
         TXN_TYPE: GET_SCHEMA,
         DATA: {
-            NAME: schema_name,
-            VERSION: schema_version,
+            SCHEMA_NAME: schema_name,
+            SCHEMA_VERSION: schema_version,
         }
     }
     replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
@@ -82,7 +82,7 @@ def test_state_proof_returned_for_missing_schema(looper,
                                                    get_schema_operation)
     for reply in replies:
         result = reply[1][f.RESULT.nm]
-        assert ATTR_NAMES not in result[DATA]
+        assert SCHEMA_ATTR_NAMES not in result[DATA]
         check_valid_proof(reply[1])
 
 
@@ -95,10 +95,10 @@ def test_state_proof_returned_for_missing_claim_def(looper,
     """
     _, dest = sdk_wallet_trust_anchor
     get_claim_def_operation = {
-        ORIGIN: dest,
+        CLAIM_DEF_FROM: dest,
         TXN_TYPE: GET_CLAIM_DEF,
-        REF: 12,
-        SIGNATURE_TYPE: 'CL'
+        CLAIM_DEF_SCHEMA_REF: 12,
+        CLAIM_DEF_SIGNATURE_TYPE: 'CL'
     }
     replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
                                                    sdk_wallet_trust_anchor,
