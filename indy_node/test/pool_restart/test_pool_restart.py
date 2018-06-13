@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 import dateutil
 import pytest
+from jsonpickle import json
 
 from indy_node.server.restart_log import RestartLog
 from plenum.common.exceptions import RequestRejectedException
@@ -15,6 +16,7 @@ from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
     sdk_get_reply, sdk_get_and_check_replies
 from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
     nodeControlGeneralMonkeypatching
+from plenum.test.pool_transactions.helper import sdk_send_restart
 
 
 def test_pool_restart(
@@ -29,22 +31,16 @@ def test_pool_restart(
 
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     start_at = unow + timedelta(seconds=1000)
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-        DATETIME: str(datetime.isoformat(start_at))
-    }
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                       sdk_pool_handle,
-                                       sdk_wallet_trustee,
-                                       req_obj)
-    req_json, resp = sdk_get_reply(looper, req, 100)
+    req_obj, responses = sdk_send_restart(looper,
+                           sdk_wallet_trustee,
+                           sdk_pool_handle,
+                           action=START,
+                           datetime=str(datetime.isoformat(start_at)))
+
+    _stopServer(server)
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
-        assert resp[f.RESULT.nm][DATETIME] == str(datetime.isoformat(start_at))
-    _stopServer(server)
-    _comparison_reply(resp, req_obj)
+    _comparison_reply(responses, req_obj)
 
 
 def test_pool_restart_cancel(
@@ -59,79 +55,56 @@ def test_pool_restart_cancel(
 
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     start_at = unow + timedelta(seconds=1000)
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-        DATETIME: str(datetime.isoformat(start_at))
-    }
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                       sdk_pool_handle,
-                                       sdk_wallet_trustee,
-                                       req_obj)
-    sdk_get_reply(looper, req, 100)
+    req_obj, responses = sdk_send_restart(looper,
+                                          sdk_wallet_trustee,
+                                          sdk_pool_handle,
+                                          action=START,
+                                          datetime=str(datetime.isoformat(start_at)))
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
-        cancel_at = start_at+timedelta(seconds=1000)
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: CANCEL,
-        DATETIME: ""
-    }
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                      sdk_pool_handle,
-                                      sdk_wallet_trustee,
-                                      req_obj)
-    req_json, resp = sdk_get_reply(looper, req, 100)
+    _comparison_reply(responses, req_obj)
+
+    req_obj, responses = sdk_send_restart(looper,
+                                     sdk_wallet_trustee,
+                                     sdk_pool_handle,
+                                     action=CANCEL,
+                                     datetime="")
+    _stopServer(server)
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.CANCELLED
-    _stopServer(server)
-    _comparison_reply(resp, req_obj)
+    _comparison_reply(responses, req_obj)
 
 
 def test_pool_restart_now_without_datetime(
         sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf):
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-    }
-    pool_restart_now(op, sdk_pool_handle, sdk_wallet_trustee, looper,
-                     tdir, tconf)
+    pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
+                     tdir, tconf, START)
 
 
 def test_pool_restart_now_with_empty_datetime(
         sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf):
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-        DATETIME: ""
-    }
-    pool_restart_now(op, sdk_pool_handle, sdk_wallet_trustee, looper,
-                     tdir, tconf)
+    pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
+                     tdir, tconf, START, "")
 
 
-def pool_restart_now(op,
-        sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf):
+def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
+                     action, datetime=None):
     server, indicator = looper.loop.run_until_complete(
         _createServer(
             host=tconf.controlServiceHost,
             port=tconf.controlServicePort
         )
     )
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                       sdk_pool_handle,
-                                       sdk_wallet_trustee,
-                                       req_obj)
-    is_reply_received = False
+    _stopServer(server)
     try:
-        req_json, resp = sdk_get_reply(looper, req, 100)
+        req_obj, resp = sdk_send_restart(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         action=action,
+                                         datetime=datetime)
+        _comparison_reply(resp, req_obj)
     except Exception as ex:
         assert "Timeout" in ex.args
-    _stopServer(server)
-    if is_reply_received:
-        _comparison_reply(resp, req_obj)
 
 
 def test_pool_restarts_one_by_one(
@@ -145,24 +118,19 @@ def test_pool_restarts_one_by_one(
 
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     first_start = str(datetime.isoformat(unow + timedelta(seconds=1000)))
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-        DATETIME: first_start
-    }
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                       sdk_pool_handle,
-                                       sdk_wallet_trustee,
-                                       req_obj)
+    req_obj, resp = sdk_send_restart(looper,
+                                     sdk_wallet_trustee,
+                                     sdk_pool_handle,
+                                     action=START,
+                                     datetime=first_start)
+
     second_start = str(datetime.isoformat(unow + timedelta(seconds=2000)))
-    op[DATETIME] = second_start
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                      sdk_pool_handle,
-                                      sdk_wallet_trustee,
-                                      req_obj)
-    sdk_get_reply(looper, req, 100)
+    req_obj, resp = sdk_send_restart(looper,
+                                     sdk_wallet_trustee,
+                                     sdk_pool_handle,
+                                     action=START,
+                                     datetime=second_start)
+    _comparison_reply(resp, req_obj)
     tmp = txnPoolNodeSet[0].restarter._actionLog
     restart_log = []
     for a in tmp:
@@ -185,24 +153,19 @@ def test_pool_restarts_one_by_one_with_restart_now(
 
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     first_start = str(datetime.isoformat(unow + timedelta(seconds=1000)))
-    op = {
-        TXN_TYPE: POOL_RESTART,
-        ACTION: START,
-        DATETIME: first_start
-    }
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                       sdk_pool_handle,
-                                       sdk_wallet_trustee,
-                                       req_obj)
-    sdk_get_reply(looper, req, 100)
-    op[DATETIME] = "0"
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
-    req = sdk_sign_and_submit_req_obj(looper,
-                                      sdk_pool_handle,
-                                      sdk_wallet_trustee,
-                                      req_obj)
-    sdk_get_reply(looper, req, 100)
+    req_obj, resp = sdk_send_restart(looper,
+                                     sdk_wallet_trustee,
+                                     sdk_pool_handle,
+                                     action=START,
+                                     datetime=first_start)
+    _comparison_reply(resp, req_obj)
+    second_start = "0"
+    req_obj, resp = sdk_send_restart(looper,
+                                     sdk_wallet_trustee,
+                                     sdk_pool_handle,
+                                     action=START,
+                                     datetime=second_start)
+    _comparison_reply(resp, req_obj)
     restart_log = []
     for a in txnPoolNodeSet[0].restarter._actionLog:
         restart_log.append(a)
@@ -217,9 +180,11 @@ def _check_restart_log(item, action, when=None):
             when is None or str(datetime.isoformat(item[2])) == when)
 
 
-def _comparison_reply(resp, req_obj):
-    assert resp["op"] == REPLY
-    assert resp[f.RESULT.nm][f.IDENTIFIER.nm] == req_obj.identifier
-    assert resp[f.RESULT.nm][f.REQ_ID.nm] == req_obj.reqId
-    assert resp[f.RESULT.nm][ACTION]
-    assert resp[f.RESULT.nm][TXN_TYPE] == POOL_RESTART
+def _comparison_reply(responses, req_obj):
+    for json_resp in responses.values():
+        resp = json.loads(json_resp)
+        assert resp["op"] == REPLY
+        assert resp[f.RESULT.nm][f.IDENTIFIER.nm] == req_obj[f.IDENTIFIER.nm]
+        assert resp[f.RESULT.nm][f.REQ_ID.nm] == req_obj[f.REQ_ID.nm]
+        assert resp[f.RESULT.nm][ACTION]
+        assert resp[f.RESULT.nm][TXN_TYPE] == POOL_RESTART
