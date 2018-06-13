@@ -227,7 +227,7 @@ the "Faber College" agent process.
 
 ````sh
 $ vagrant ssh agent01
-vagrant@agent01:~$ python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/faber.py  --port 5555 --network <network_name>
+vagrant@agent01:~$ python3 /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/faber.py  --port 5555 --network <network_name>
 ````
 
 You will see logging output to the screen.  In another term window (or tab),
@@ -235,7 +235,7 @@ ssh into agent02 and bring up the "Acme Corp" agent process:
 
 ````sh
 $ vagrant ssh agent02
-vagrant@agent02:~$ python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/acme.py  --port 6666 --network <network_name>
+vagrant@agent02:~$ python3 /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/acme.py  --port 6666 --network <network_name>
 ````
 
 In another term window (or tab), ssh into agent03 and bring up the "Thrift
@@ -243,7 +243,7 @@ Bank" agent process:
 
 ```sh
 $ vagrant ssh agent03
-vagrant@agent03:~$ python /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/thrift.py  --port 7777 --network <network_name>
+vagrant@agent03:~$ python3 /usr/local/lib/python3.5/dist-packages/indy_client/test/agent/thrift.py  --port 7777 --network <network_name>
 ```
 
 Congratulations!  Your Indy four-validator cluster, along with agent nodes as
