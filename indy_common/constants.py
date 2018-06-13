@@ -10,7 +10,7 @@ Environment = NamedTuple("Environment", [
     ("domainLedger", str)
 ])
 
-# SCHEMAty
+# SCHEMA
 SCHEMA_NAME = "name"
 SCHEMA_VERSION = "version"
 SCHEMA_ATTR_NAMES = "attr_names"

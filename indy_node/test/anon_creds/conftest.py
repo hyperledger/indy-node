@@ -233,11 +233,12 @@ def send_revoc_reg_def_by_default(looper,
     _, author_did = sdk_wallet_steward
     claim_def_req = send_claim_def
     revoc_reg = build_revoc_def_by_default
-    revoc_reg['operation'][CRED_DEF_ID] = make_state_path_for_claim_def(author_did,
-                                                                        str(claim_def_req['operation'][CLAIM_DEF_SCHEMA_REF]),
-                                                                        claim_def_req['operation'][CLAIM_DEF_SIGNATURE_TYPE],
-                                                                        claim_def_req['operation'][CLAIM_DEF_TAG]
-                                                                        ).decode()
+    revoc_reg['operation'][CRED_DEF_ID] =\
+        make_state_path_for_claim_def(author_did,
+                                      str(claim_def_req['operation'][CLAIM_DEF_SCHEMA_REF]),
+                                      claim_def_req['operation'][CLAIM_DEF_SIGNATURE_TYPE],
+                                      claim_def_req['operation'][CLAIM_DEF_TAG]
+                                      ).decode()
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
     _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
     return revoc_req, revoc_reply
