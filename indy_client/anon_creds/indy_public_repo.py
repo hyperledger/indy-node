@@ -5,24 +5,24 @@ from plenum.common.txn_util import get_seq_no, get_from, get_payload_data, get_t
 from plenum.common.types import f
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
-from common.serializers.json_serializer import JsonSerializer
 from ledger.util import F
 from stp_core.loop.eventually import eventually
 from plenum.common.exceptions import NoConsensusYet, OperationError
 from stp_core.common.log import getlogger
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, DATA, NAME, \
-    VERSION, TYPE, ORIGIN, IDENTIFIER, CURRENT_PROTOCOL_VERSION, \
+from plenum.common.constants import TXN_TYPE, DATA, NAME, \
+    VERSION, CURRENT_PROTOCOL_VERSION, \
     DOMAIN_LEDGER_ID
 
-from indy_common.constants import GET_SCHEMA, SCHEMA, ATTR_NAMES, \
-    GET_CLAIM_DEF, REF, CLAIM_DEF, PRIMARY, REVOCATION, GET_TXNS
+from indy_common.constants import GET_SCHEMA, SCHEMA, \
+    GET_CLAIM_DEF, CLAIM_DEF, PRIMARY, REVOCATION, GET_TXNS, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
+    CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_TAG, CLAIM_DEF_TAG_DEFAULT, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    SCHEMA_ATTR_NAMES, CLAIM_DEF_PUBLIC_KEYS
 
 from anoncreds.protocol.repo.public_repo import PublicRepo
 from anoncreds.protocol.types import Schema, ID, PublicKey, \
     RevocationPublicKey, AccumulatorPublicKey, \
     Accumulator, Tails, TimestampType
 from indy_common.types import Request
-from indy_common.constants import SIGNATURE_TYPE
 from indy_common.util import get_reply_if_confirmed
 
 
@@ -38,7 +38,7 @@ def _ensureReqCompleted(reqKey, client, clbk):
 
 
 def _getData(result, error):
-    data = result.get(DATA) if result.get(DATA) else {}
+    data = result.get(DATA, {})
     # TODO: we have an old txn in the live pool where DATA is stored a json string.
     # We can get rid of the code above once we create a versioning support in
     # txns
@@ -49,7 +49,7 @@ def _getData(result, error):
 
 
 def _submitData(result, error):
-    data = result.get(DATA)
+    data = get_payload_data(result)
     seqNo = get_seq_no(result)
     return data, seqNo
 
@@ -69,11 +69,11 @@ class IndyPublicRepo(PublicRepo):
         if id.schemaKey:
             issuer_id = id.schemaKey.issuerId
             op = {
-                TARGET_NYM: issuer_id,
+                SCHEMA_FROM: issuer_id,
                 TXN_TYPE: GET_SCHEMA,
                 DATA: {
-                    NAME: id.schemaKey.name,
-                    VERSION: id.schemaKey.version,
+                    SCHEMA_NAME: id.schemaKey.name,
+                    SCHEMA_VERSION: id.schemaKey.version,
                 }
             }
             data, seqNo = await self._sendGetReq(op)
@@ -89,7 +89,7 @@ class IndyPublicRepo(PublicRepo):
                 issuer_id = get_from(res)
                 data = get_payload_data(res)[DATA]
 
-        if not data or ATTR_NAMES not in data:
+        if not data or SCHEMA_ATTR_NAMES not in data:
             raise SchemaNotFoundError(
                 'No schema with ID={} and key={}'.format(
                     id.schemaId,
@@ -97,16 +97,17 @@ class IndyPublicRepo(PublicRepo):
 
         return Schema(name=data[NAME],
                       version=data[VERSION],
-                      attrNames=data[ATTR_NAMES],
+                      attrNames=data[SCHEMA_ATTR_NAMES],
                       issuerId=issuer_id,
                       seqId=seqNo)
 
     async def getPublicKey(self, id: ID = None, signatureType='CL') -> Optional[PublicKey]:
         op = {
             TXN_TYPE: GET_CLAIM_DEF,
-            REF: id.schemaId,
-            ORIGIN: id.schemaKey.issuerId,
-            SIGNATURE_TYPE: signatureType
+            CLAIM_DEF_SCHEMA_REF: id.schemaId,
+            CLAIM_DEF_FROM: id.schemaKey.issuerId,
+            CLAIM_DEF_SIGNATURE_TYPE: signatureType,
+            CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
         }
 
         data, seqNo = await self._sendGetReq(op)
@@ -122,9 +123,10 @@ class IndyPublicRepo(PublicRepo):
                                      signatureType='CL') -> Optional[RevocationPublicKey]:
         op = {
             TXN_TYPE: GET_CLAIM_DEF,
-            REF: id.schemaId,
-            ORIGIN: id.schemaKey.issuerId,
-            SIGNATURE_TYPE: signatureType
+            CLAIM_DEF_SCHEMA_REF: id.schemaId,
+            CLAIM_DEF_FROM: id.schemaKey.issuerId,
+            CLAIM_DEF_SIGNATURE_TYPE: signatureType,
+            CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
         }
         data, seqNo = await self._sendGetReq(op)
         if not data:
@@ -151,9 +153,9 @@ class IndyPublicRepo(PublicRepo):
     async def submitSchema(self,
                            schema: Schema) -> Schema:
         data = {
-            NAME: schema.name,
-            VERSION: schema.version,
-            ATTR_NAMES: schema.attrNames
+            SCHEMA_NAME: schema.name,
+            SCHEMA_VERSION: schema.version,
+            SCHEMA_ATTR_NAMES: schema.attrNames
         }
         op = {
             TXN_TYPE: SCHEMA,
@@ -180,9 +182,10 @@ class IndyPublicRepo(PublicRepo):
 
         op = {
             TXN_TYPE: CLAIM_DEF,
-            REF: id.schemaId,
-            DATA: data,
-            SIGNATURE_TYPE: signatureType
+            CLAIM_DEF_SCHEMA_REF: id.schemaId,
+            CLAIM_DEF_PUBLIC_KEYS: data,
+            CLAIM_DEF_SIGNATURE_TYPE: signatureType,
+            CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
         }
 
         _, seqNo = await self._sendSubmitReq(op)
@@ -221,7 +224,8 @@ class IndyPublicRepo(PublicRepo):
             # pass some other tests. The client was not getting a chance to
             # service its stack, we need to find a way to stop this starvation.
             resp = await eventually(_ensureReqCompleted,
-                                    req.key, self.client, clbk,
+                                    (req.identifier, req.reqId),
+                                    self.client, clbk,
                                     timeout=20, retryWait=2)
         except NoConsensusYet:
             raise TimeoutError('Request timed out')

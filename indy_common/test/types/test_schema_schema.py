@@ -1,6 +1,6 @@
-import pytest
-from indy_common.types import ClientSchemaOperation, SchemaField
 from collections import OrderedDict
+
+from indy_common.types import ClientSchemaOperation, SchemaField
 from plenum.common.messages.fields import ConstantField, VersionField, IterableField, LimitedLengthStringField
 
 EXPECTED_ORDERED_FIELDS_SCHEMA = OrderedDict([

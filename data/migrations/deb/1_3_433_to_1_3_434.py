@@ -1,41 +1,15 @@
 #!/usr/bin/python3.5
-import os
 import sys
 import traceback
 
-from indy_common.config_util import getConfig
-from indy_common.config_helper import NodeConfigHelper
-
-from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
-
-from plenum.common.stack_manager import TxnStackManager
-from plenum.common.ledger import Ledger
 from stp_core.common.log import getlogger
-from storage.helper import initHashStore
 
 logger = getlogger()
 
 ENV_FILE_PATH = "/etc/indy/indy.env"
 
-node_name_key = 'NODE_NAME'
 node_ip_key = 'NODE_IP'
 client_ip_key = 'NODE_CLIENT_IP'
-
-
-def get_node_name():
-    node_name = None
-
-    if os.path.exists(ENV_FILE_PATH):
-        with open(ENV_FILE_PATH, "r") as fenv:
-            for line in fenv.readlines():
-                if line.find(node_name_key) != -1:
-                    node_name = line.split('=')[1].strip()
-                    break
-    else:
-        logger.error("Path to env file does not exist")
-
-    return node_name
 
 
 def are_ips_present_in_env():
@@ -73,60 +47,13 @@ def append_ips_to_env(node_ip, client_ip):
             fenv.write("{}\n".format(line))
 
 
-def get_pool_ledger(node_name):
-    config = getConfig()
-    config_helper = NodeConfigHelper(node_name, config)
-
-    genesis_txn_initiator = GenesisTxnInitiatorFromFile(config_helper.genesis_dir,
-                                                        config.poolTransactionsFile)
-    hash_store = initHashStore(config_helper.ledger_dir, "pool", config)
-    return Ledger(CompactMerkleTree(hashStore=hash_store),
-                  dataDir=config_helper.ledger_dir,
-                  fileName=config.poolTransactionsFile,
-                  ensureDurability=config.EnsureLedgerDurability,
-                  genesis_txn_initiator=genesis_txn_initiator)
-
-
-def get_node_ip():
-    node_name = get_node_name()
-    if node_name is None:
-        raise RuntimeError("Could not get node name")
-
-    ledger = get_pool_ledger(node_name)
-    nodeReg, _, _ = TxnStackManager.parseLedgerForHaAndKeys(ledger)
-    ledger.stop()
-
-    if nodeReg is None:
-        raise RuntimeError("Empty node registry returned by stack manager")
-
-    if node_name not in nodeReg:
-        raise ValueError("Node registry does not contain node {}".format(node_name))
-
-    ha = nodeReg[node_name]
-    if ha is None:
-        raise ValueError("Empty HA for node {}".format(node_name))
-
-    logger.info("HA for {}: {}".format(node_name, ha))
-
-    return ha.host
-
-
 def migrate_all():
     node_ip = None
     client_ip = None
     node_ip_present, client_ip_present = are_ips_present_in_env()
 
     if not node_ip_present:
-        logger.info("Could not find {} in env file, try to get it from pool ledger".format(node_ip_key))
-
-        try:
-            node_ip = get_node_ip()
-        except Exception:
-            logger.error(traceback.print_exc())
-            logger.error("Could not get node IP from pool ledger")
-            return False
-
-        logger.info("Got node ip from pool ledger: {}".format(node_ip))
+        node_ip = "0.0.0.0"
 
     if not client_ip_present:
         client_ip = "0.0.0.0"
