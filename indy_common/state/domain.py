@@ -7,10 +7,11 @@ from indy_common.constants import ATTRIB, GET_ATTR, SIGNATURE_TYPE, REVOC_TYPE, 
     CLAIM_DEF_TAG_DEFAULT, CLAIM_DEF_CL
 from indy_common.req_utils import get_txn_schema_name, get_txn_claim_def_schema_ref, \
     get_txn_claim_def_public_keys, get_txn_claim_def_signature_type, get_txn_claim_def_tag, get_txn_schema_version, \
-    get_txn_schema_attr_names
+    get_txn_schema_attr_names, get_reply_schema_from, get_reply_schema_name, get_reply_schema_version, \
+    get_reply_schema_attr_names
 from indy_common.serialization import attrib_raw_data_serializer
 from plenum.common.constants import RAW, ENC, HASH, TXN_TIME, \
-    TARGET_NYM, DATA, NAME, VERSION, TYPE
+    TARGET_NYM, DATA, TYPE
 from plenum.common.txn_util import get_type, get_payload_data, get_seq_no, get_txn_time, get_from
 from plenum.common.types import f
 
@@ -274,12 +275,14 @@ def prepare_schema_for_state(txn):
 
 
 def prepare_get_schema_for_state(reply):
-    origin = reply.get(TARGET_NYM)
-    data = reply[DATA].copy()
-    schema_name = data.pop(NAME)
-    schema_version = data.pop(VERSION)
+    origin = get_reply_schema_from(reply)
+    schema_name = get_reply_schema_name(reply)
+    schema_version = get_reply_schema_version(reply)
     path = make_state_path_for_schema(origin, schema_name, schema_version)
     value_bytes = None
+    data = {
+        SCHEMA_ATTR_NAMES: get_reply_schema_attr_names(reply)
+    }
     if len(data) != 0:
         seq_no = reply[f.SEQ_NO.nm]
         txn_time = reply[TXN_TIME]

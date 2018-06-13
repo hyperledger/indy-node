@@ -279,6 +279,13 @@ class DomainReqHandler(PHandler):
         assert cred_def_id
         assert revoc_def_tag
         assert revoc_def_type
+        tags = cred_def_id.split(":")
+        if len(tags) != 4 and len(tags) != 5:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "Format of {} field is not acceptable. "
+                                       "Expected: 'did:marker:signature_type:schema_ref' or "
+                                       "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
         cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, with_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
