@@ -625,6 +625,10 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
 
+- `tag` (string, optional):
+
+    A unique tag to have multiple public keys for the same Schema and type issued by the same DID.
+    A default tag `tag` will be used if not specified. 
 
 *Request Example*:
 ```
@@ -632,7 +636,8 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     'operation': {
         'type': '102',
         'signature_type': 'CL',
-        'ref': 10,    
+        'ref': 10,
+        'tag': 'some_tag',    
         'data': {
             'primary': ....,
             'revocation': ....
@@ -660,6 +665,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
                 "ver":1,
                 "signature_type":"CL",
                 'ref': 10,    
+                'tag': 'some_tag',
                 'data': {
                     'primary': ....,
                     'revocation': ....
@@ -1208,6 +1214,10 @@ Gets Claim Definition.
 
     Type of the claim definition (that is claim signature). `CL` (Camenisch-Lysyanskaya) is the only supported type now.
 
+- `tag` (string, optional):
+
+    A unique tag to have multiple public keys for the same Schema and type issued by the same DID.
+    A default tag `tag` will be used if not specified. 
 
 *Request Example*:
 ```
@@ -1216,7 +1226,8 @@ Gets Claim Definition.
         'type': '108'
         'signature_type': 'CL',
         'origin': '2VkbBskPNNyWrLrZq7DBhk',
-        'ref': 10
+        'ref': 10,
+        'tag': 'some_tag',
     },
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
@@ -1259,7 +1270,8 @@ Gets Claim Definition.
         
         'signature_type': 'CL',
         'origin': '2VkbBskPNNyWrLrZq7DBhk',
-        'ref': 10
+        'ref': 10,
+        'tag': 'some_tag'
     }
 }
 ```
