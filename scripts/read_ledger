@@ -173,6 +173,7 @@ if __name__ == '__main__':
     try:
         # RocksDB supports real read-only mode and does not need to have a ledger copy.
         if config.hashStore['type'].lower() != HS_ROCKSDB:
+            config.db_transactions_config = None
             # NOTE: such approach works well only for small ledgers.
             tmp = make_copy_of_ledger(ledger_data_dir)
 
@@ -184,6 +185,9 @@ if __name__ == '__main__':
 
             read_copy_ledger_data_dir = tmp
             ledger_data_dir = read_copy_ledger_data_dir
+        elif config.db_transactions_config is not None:
+            # This allows to avoid debug logs creation on each read_ledger run
+            config.db_transactions_config['db_log_dir'] = '/dev/null'
         storage = get_storage(args.type, ledger_data_dir)
         print_txns(storage, args)
     finally:
