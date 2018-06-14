@@ -9,14 +9,13 @@ from indy_node.server.restart_log import RestartLog
 from plenum.common.exceptions import RequestRejectedException
 
 from indy_common.constants import POOL_RESTART, ACTION, START, DATETIME, CANCEL
-from indy_node.test.pool_restart.helper import _createServer, _stopServer
+from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_send_restart
 from plenum.common.constants import REPLY, TXN_TYPE
 from plenum.common.types import f
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
     sdk_get_reply, sdk_get_and_check_replies
 from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
     nodeControlGeneralMonkeypatching
-from plenum.test.pool_transactions.helper import sdk_send_restart
 
 
 def test_pool_restart(

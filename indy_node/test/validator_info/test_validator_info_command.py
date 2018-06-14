@@ -9,12 +9,11 @@ from plenum.common.exceptions import RequestRejectedException
 
 from indy_common.constants import POOL_RESTART, ACTION, START, DATETIME, CANCEL, \
     VALIDATOR_INFO
-from indy_node.test.pool_restart.helper import _createServer, _stopServer
+from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_get_validator_info
 from plenum.common.constants import REPLY, TXN_TYPE, DATA
 from plenum.common.types import f
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
     sdk_get_reply, sdk_send_signed_requests, sdk_get_and_check_replies
-from plenum.test.pool_transactions.helper import sdk_get_validator_info
 
 
 def test_validator_info_command(
