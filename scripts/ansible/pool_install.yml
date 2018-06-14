@@ -6,8 +6,8 @@
     pool_size: "{{ groups['pool']|count }}"
     node_ver: 1.3.448
     plenum_ver: 1.2.390
-    crypto_ver: 0.4.1
-    libindy_ver: 0.4.0
+    python_indy_crypto_ver: 0.4.1
+    libindy_crypto_ver: 0.4.1
 
   tasks:
     - name: Identify node number
@@ -29,7 +29,7 @@
       run_once: yes
 
     - name: Install indy-node
-      apt: "name=indy-node={{ node_ver }},indy-plenum={{ plenum_ver }},libindy-crypto={{ libindy_ver }},python3-indy-crypto={{ crypto_ver }} force=yes update_cache=yes"
+      apt: "name=indy-node={{ node_ver }},indy-plenum={{ plenum_ver }},libindy-crypto={{ libindy_crypto_ver }},python3-indy-crypto={{ python_indy_crypto_ver }} force=yes update_cache=yes"
       become: yes
 
     - name: Make pool data dir
