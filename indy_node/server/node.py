@@ -157,7 +157,8 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache = IdrCache(self.name,
                                      initKeyValueStorage(self.config.idrCacheStorage,
                                                          self.dataLocation,
-                                                         self.config.idrCacheDbName)
+                                                         self.config.idrCacheDbName,
+                                                         db_config=self.config.db_idr_cache_db_config)
                                      )
         return self.idrCache
 
@@ -166,7 +167,8 @@ class Node(PlenumNode, HasPoolManager):
             initKeyValueStorage(
                 self.config.attrStorage,
                 self.dataLocation,
-                self.config.attrDbName)
+                self.config.attrDbName,
+                db_config=self.config.db_attr_db_config)
         )
 
     def setup_config_req_handler(self):
