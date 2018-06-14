@@ -10,10 +10,26 @@ Environment = NamedTuple("Environment", [
     ("domainLedger", str)
 ])
 
+# SCHEMA
+SCHEMA_NAME = "name"
+SCHEMA_VERSION = "version"
+SCHEMA_ATTR_NAMES = "attr_names"
+SCHEMA_FROM = "dest"
+
+# CLAIM DEF
+CLAIM_DEF_SIGNATURE_TYPE = "signature_type"
+CLAIM_DEF_SCHEMA_REF = "ref"
+CLAIM_DEF_TAG = "tag"
+CLAIM_DEF_PUBLIC_KEYS = "data"
+CLAIM_DEF_FROM = "origin"
+CLAIM_DEF_PRIMARY = "primary"
+CLAIM_DEF_REVOCATION = "revocation"
+CLAIM_DEF_TAG_DEFAULT = "tag"
+CLAIM_DEF_CL = "CL"
+
 ROLE = 'role'
 NONCE = 'nonce'
 ATTRIBUTES = "attributes"
-ATTR_NAMES = "attr_names"
 ACTION = 'action'
 SCHEDULE = 'schedule'
 DATETIME = 'datetime'
@@ -27,10 +43,10 @@ FAIL = 'fail'
 JUSTIFICATION = 'justification'
 REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
+TAG = 'tag'
 
 REVOC_TYPE = "revocDefType"
 ID = "id"
-TAG = "tag"
 CRED_DEF_ID = "credDefId"
 ISSUANCE_TYPE = "issuanceType"
 MAX_CRED_NUM = "maxCredNum"
@@ -134,17 +150,6 @@ POOL_RESTART = IndyTransactions.POOL_RESTART.value
 VALIDATOR_INFO = IndyTransactions.VALIDATOR_INFO.value
 
 POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
-
-# TXN_TYPE -> (requireds, optionals)
-fields = {NYM: ([TARGET_NYM], [ROLE]),
-          ATTRIB: ([], [RAW, ENC, HASH]),
-          SCHEMA: ([NAME, VERSION, ATTR_NAMES]),
-          GET_SCHEMA: ([], []),
-          CLAIM_DEF: ([REF, DATA, SIGNATURE_TYPE]),
-          GET_CLAIM_DEF: ([REF, ORIGIN, SIGNATURE_TYPE]),
-          REVOC_REG_DEF: ([ID, TYPE, TAG, CRED_DEF_ID, VALUE]),
-          REVOC_REG_ENTRY: ([REVOC_REG_DEF_ID, TYPE, VALUE]),
-          }
 
 CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, POOL_RESTART}
 IDENTITY_TXN_TYPES = {NYM,

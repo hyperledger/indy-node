@@ -31,7 +31,8 @@ from indy_common.exceptions import ConnectionNotFound
 from indy_common.types import Request
 from indy_common.identity import Identity
 from indy_common.constants import ATTRIB, GET_TXNS, GET_ATTR, \
-    GET_NYM, POOL_UPGRADE, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE, POOL_CONFIG
+    GET_NYM, POOL_UPGRADE, GET_SCHEMA, GET_CLAIM_DEF, POOL_CONFIG, CLAIM_DEF_TAG, \
+    CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, CLAIM_DEF_TAG_DEFAULT
 from stp_core.types import Identifier
 
 ENCODING = "utf-8"
@@ -377,9 +378,10 @@ class Wallet(PWallet, TrustAnchoring):
         :return: req object
         """
         operation = {TXN_TYPE: GET_CLAIM_DEF,
-                     ORIGIN: sender,
-                     REF: seqNo,
-                     SIGNATURE_TYPE: signature
+                     CLAIM_DEF_FROM: sender,
+                     CLAIM_DEF_SCHEMA_REF: seqNo,
+                     CLAIM_DEF_SIGNATURE_TYPE: signature,
+                     CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
                      }
 
         req = Request(sender,
