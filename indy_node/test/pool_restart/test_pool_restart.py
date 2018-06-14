@@ -2,13 +2,11 @@ import asyncio
 from datetime import datetime, timedelta
 
 import dateutil
-import pytest
 from jsonpickle import json
 
 from indy_node.server.restart_log import RestartLog
-from plenum.common.exceptions import RequestRejectedException
 
-from indy_common.constants import POOL_RESTART, ACTION, START, DATETIME, CANCEL
+from indy_common.constants import POOL_RESTART, ACTION, START, CANCEL
 from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_send_restart
 from plenum.common.constants import REPLY, TXN_TYPE
 from plenum.common.types import f
@@ -80,12 +78,6 @@ def test_pool_restart_now_without_datetime(
                      tdir, tconf, START)
 
 
-def test_pool_restart_now_with_empty_datetime(
-        sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf):
-    pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
-                     tdir, tconf, START, "")
-
-
 def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
                      action, datetime=None):
     server, indicator = looper.loop.run_until_complete(
@@ -95,83 +87,13 @@ def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
         )
     )
     _stopServer(server)
-    try:
-        req_obj, resp = sdk_send_restart(looper,
-                                         sdk_wallet_trustee,
-                                         sdk_pool_handle,
-                                         action=action,
-                                         datetime=datetime)
-        _comparison_reply(resp, req_obj)
-    except Exception as ex:
-        assert "Timeout" in ex.args
 
-
-def test_pool_restarts_one_by_one(
-        sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
-    server, indicator = looper.loop.run_until_complete(
-        _createServer(
-            host=tconf.controlServiceHost,
-            port=tconf.controlServicePort
-        )
-    )
-
-    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    first_start = str(datetime.isoformat(unow + timedelta(seconds=1000)))
     req_obj, resp = sdk_send_restart(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle,
-                                     action=START,
-                                     datetime=first_start)
-
-    second_start = str(datetime.isoformat(unow + timedelta(seconds=2000)))
-    req_obj, resp = sdk_send_restart(looper,
-                                     sdk_wallet_trustee,
-                                     sdk_pool_handle,
-                                     action=START,
-                                     datetime=second_start)
+                                     action=action,
+                                     datetime=datetime)
     _comparison_reply(resp, req_obj)
-    tmp = txnPoolNodeSet[0].restarter._actionLog
-    restart_log = []
-    for a in tmp:
-        restart_log.append(a)
-    restart_log.reverse()
-    _check_restart_log(restart_log[2], RestartLog.SCHEDULED, first_start)
-    _check_restart_log(restart_log[1], RestartLog.CANCELLED)
-    _check_restart_log(restart_log[0], RestartLog.SCHEDULED, second_start)
-    _stopServer(server)
-
-
-def test_pool_restarts_one_by_one_with_restart_now(
-        sdk_pool_handle, sdk_wallet_trustee, looper, tconf, txnPoolNodeSet):
-    server, indicator = looper.loop.run_until_complete(
-        _createServer(
-            host=tconf.controlServiceHost,
-            port=tconf.controlServicePort
-        )
-    )
-
-    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    first_start = str(datetime.isoformat(unow + timedelta(seconds=1000)))
-    req_obj, resp = sdk_send_restart(looper,
-                                     sdk_wallet_trustee,
-                                     sdk_pool_handle,
-                                     action=START,
-                                     datetime=first_start)
-    _comparison_reply(resp, req_obj)
-    second_start = "0"
-    req_obj, resp = sdk_send_restart(looper,
-                                     sdk_wallet_trustee,
-                                     sdk_pool_handle,
-                                     action=START,
-                                     datetime=second_start)
-    _comparison_reply(resp, req_obj)
-    restart_log = []
-    for a in txnPoolNodeSet[0].restarter._actionLog:
-        restart_log.append(a)
-    restart_log.reverse()
-    _check_restart_log(restart_log[1], RestartLog.SCHEDULED, first_start)
-    _check_restart_log(restart_log[0], RestartLog.CANCELLED)
-    _stopServer(server)
 
 
 def _check_restart_log(item, action, when=None):

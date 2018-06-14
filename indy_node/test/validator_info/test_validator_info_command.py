@@ -1,15 +1,10 @@
-import asyncio
-from datetime import datetime, timedelta
-
-import dateutil
 import pytest
-from jsonpickle import json
+import json
 
+from indy_node.test.validator_info.helper import sdk_get_validator_info
 from plenum.common.exceptions import RequestRejectedException
 
-from indy_common.constants import POOL_RESTART, ACTION, START, DATETIME, CANCEL, \
-    VALIDATOR_INFO
-from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_get_validator_info
+from indy_common.constants import VALIDATOR_INFO
 from plenum.common.constants import REPLY, TXN_TYPE, DATA
 from plenum.common.types import f
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
