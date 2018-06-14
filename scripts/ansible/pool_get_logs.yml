@@ -19,6 +19,12 @@
       path: "/tmp/jctl.xz"
       state: absent
 
+  - name: Fetch node info
+    synchronize:
+      src: /var/lib/indy/sandbox/node*.json
+      dest: ./logs/node_info
+      mode: pull
+
   - name: Fetch node logs
     synchronize:
       src: /var/log/indy/sandbox/
