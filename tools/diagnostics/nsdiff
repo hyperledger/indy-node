@@ -335,7 +335,7 @@ class NodeStateComparator:
                 for txn in ledger.getAllTxn():
                     logger.info("Writing >txn={}< to {}".format(
                         str(txn), out_filename))
-                    file_handle.write(str(txn))
+                    file_handle.write(str(json.dumps(txn))+'\n')
             ledger.stop()
         else:
             debug_msg = ("{} is NOT a transaction LevelDB/RocksDB"
@@ -459,7 +459,7 @@ class NodeStateComparator:
                                                                          v,
                                                                          out_filename)
                             )
-                            file_handle.write("{} {}".format(k, v))
+                            file_handle.write("{} {}\n".format(k, v))
                     elif filename.endswith("_merkleLeaves") or filename.endswith("_merkleNodes"):
                         for k, v in leveldb_rocksdb_handle.iterator():
                             try:
@@ -719,7 +719,7 @@ class NodeStateComparator:
         # call("diff -r {} {}".format(s1, s2))
 
         # Try 3:
-        result = subprocess.run(['diff', '-r', s1, s2])
+        result = subprocess.run(['diff', '--color=always', '-r', s1, s2])
 
         if result.returncode == 0:
             print("Identical state!")
@@ -809,8 +809,8 @@ class NodeStateComparator:
         # Create temp directory for s1 and s2 in which to store all scrubbed and
         # transformed files. A recursive *nix diff will be peformed on these
         # directories.
-        self.s1_transformed_and_scrubbed = tempfile.mkdtemp()
-        self.s2_transformed_and_scrubbed = tempfile.mkdtemp()
+        self.s1_transformed_and_scrubbed = tempfile.mkdtemp(prefix=strip_archive_file_type(s1_filename)+".")
+        self.s2_transformed_and_scrubbed = tempfile.mkdtemp(prefix=strip_archive_file_type(s2_filename)+".")
 
         # Transform and scrub state directories
         self.transform_and_scrub(s1_name, self.s1dir, self.s1_transformed_and_scrubbed)
@@ -831,6 +831,10 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError(
             'Boolean value (yes, no, true, false, y, n, 1, or 0) expected.')
+
+
+def strip_archive_file_type(file_name):
+    return file_name.rstrip('.tar.gz').rstrip('.zip')
 
 
 levels = {
