@@ -152,8 +152,8 @@ class ClientStatistic:
             elif resp["op"] == "REPLY":
                 self._req_succ += 1
                 status = "succ"
-                srv_tm = resp['result'].get('txnTime', False) or\
-                         resp['result'].get('txnMetadata', {}).get('txnTime', False)
+                srv_tm = \
+                    resp['result'].get('txnTime', False) or resp['result'].get('txnMetadata', {}).get('txnTime', False)
                 server_time = int(srv_tm)
                 self._client_stat_reqs[req_id]["server_reply"] = server_time
                 self._server_min_txn_time = min(self._server_min_txn_time, server_time)
@@ -227,7 +227,7 @@ class RequestGenerator(metaclass=ABCMeta):
 
 
 class RGSeqReqs(RequestGenerator):
-    def __init__(self, *args, reqs = list(), next_random: bool = False, **kwargs):
+    def __init__(self, *args, reqs=list(), next_random: bool=False, **kwargs):
         super().__init__(*args, **kwargs)
         self._req_idx = -1
         self._next_idx = self._rand_idx if next_random else self._seq_idx
@@ -332,8 +332,9 @@ class RGDefinition(RequestGenerator):
         schema_request = await ledger.build_schema_request(submitter_did, self._default_schema_json)
         resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, schema_request)
         resp = json.loads(resp)
-        seqno = resp.get('result', {}).get('seqNo', None) or\
-                resp.get('result', {}).get('txnMetadata', {}).get('seqNo', None)
+        seqno =\
+            resp.get('result', {}).get('seqNo', None) or\
+            resp.get('result', {}).get('txnMetadata', {}).get('seqNo', None)
         self._default_schema_json = json.loads(self._default_schema_json)
         self._default_schema_json['seqNo'] = seqno
         self._default_schema_json = json.dumps(self._default_schema_json)
@@ -370,7 +371,7 @@ class RGDefRevoc(RGDefinition):
         _, revoc_reg_def_json, revoc_reg_entry_json = await anoncreds.issuer_create_and_store_revoc_reg(
             self._wallet_handle, submit_did, "CL_ACCUM", req_data,
             json.loads(self._default_definition_json)['id'],
-            json.dumps({"max_cred_num":5,  "issuance_type":"ISSUANCE_BY_DEFAULT"}),
+            json.dumps({"max_cred_num": 5, "issuance_type": "ISSUANCE_BY_DEFAULT"}),
             tails_writer)
         return await ledger.build_revoc_reg_def_request(submit_did, revoc_reg_def_json)
 
@@ -420,7 +421,7 @@ class RGEntryRevoc(RGDefRevoc):
             self._wallet_handle, cred_offer_json, cred_req_json, self._default_cred_values_json,
             self._default_revoc_reg_def_id, self._blob_storage_reader_cfg_handle)
         return await ledger.build_revoc_reg_entry_request(
-            submit_did, self._default_revoc_reg_def_id,"CL_ACCUM", revoc_reg_delta_json)
+            submit_did, self._default_revoc_reg_def_id, "CL_ACCUM", revoc_reg_delta_json)
 
 
 def create_req_generator(req_kind_arg):
@@ -506,8 +507,6 @@ class LoadClient:
             await wallet.create_wallet(self._pool_name, self._wallet_name, None, None, wallet_credential)
             self._wallet_handle = await wallet.open_wallet(self._wallet_name, None, wallet_credential)
             self._test_did, self._test_verk = await did.create_and_store_my_did(self._wallet_handle, json.dumps({'seed': seed}))
-
-
             await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle,
                                                      self._test_did, max_cred_num=self._batch_size)
         except Exception as ex:
