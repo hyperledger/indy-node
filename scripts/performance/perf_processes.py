@@ -1,3 +1,5 @@
+from abc import ABCMeta, abstractmethod
+import copy
 import shutil
 import json
 import time
@@ -14,7 +16,7 @@ import base58
 import libnacl
 import random
 
-from indy import pool, wallet, did, ledger, anoncreds
+from indy import pool, wallet, did, ledger, anoncreds, blob_storage
 
 
 parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK.')
@@ -56,10 +58,9 @@ parser.add_argument('-s', '--seed',
                     type=check_seed, required=False, dest='seed')
 
 parser.add_argument('-k', '--kind',
-                    help='Kind of request kind to use. One of ["nym", "schema", "attrib", "rand"]'
-                         'Default value is "nym"',
-                    default="nym", choices=['nym', 'schema', 'attrib', 'rand'],
-                    required=False, dest='req_kind')
+                    help='Kind of request to send. One of ["nym", "schema", "attrib", "get_nym"] '
+                         'Default value is "nym". Could be combined in form of "{req_type1: num, ...}" ',
+                    default="nym", type=str, required=False, dest='req_kind')
 
 parser.add_argument('-n', '--num',
                     help='How many transactions to submit.'
@@ -91,6 +92,10 @@ parser.add_argument('--sep',
                          'Default value is "|"',
                     default="|", type=str, required=False, dest='val_sep')
 
+parser.add_argument('-w', '--wallet_key',
+                    help='Wallet encryption key. Default value is "key"',
+                    default="key", type=str, required=False, dest='wallet_key')
+
 
 class ClientStatistic:
     def __init__(self):
@@ -105,31 +110,33 @@ class ClientStatistic:
         self._server_min_txn_time = 253370764800
         self._server_max_txn_time = 0
 
-        self._reqs = dict()
+        self._client_stat_reqs = dict()
+
+    def sent_count(self):
+        return self._req_sent
 
     def preparing(self, req_id):
-        self._reqs.setdefault(req_id, dict())["client_preparing"] = time.time()
+        self._client_stat_reqs.setdefault(req_id, dict())["client_preparing"] = time.time()
 
     def prepared(self, req_id):
-        self._reqs.setdefault(req_id, dict())["client_prepared"] = time.time()
+        self._client_stat_reqs.setdefault(req_id, dict())["client_prepared"] = time.time()
 
     def signed(self, req_id):
-        self._reqs.setdefault(req_id, dict())["client_signed"] = time.time()
+        self._client_stat_reqs.setdefault(req_id, dict())["client_signed"] = time.time()
         self._req_prep += 1
 
     def sent(self, req_id, req):
-        self._reqs.setdefault(req_id, dict())["client_sent"] = time.time()
-        self._reqs[req_id]["req"] = req
+        self._client_stat_reqs.setdefault(req_id, dict())["client_sent"] = time.time()
+        self._client_stat_reqs[req_id]["req"] = req
         self._req_sent += 1
 
     def reply(self, req_id, reply_or_exception):
-        self._reqs.setdefault(req_id, dict())["client_reply"] = time.time()
+        self._client_stat_reqs.setdefault(req_id, dict())["client_reply"] = time.time()
         resp = reply_or_exception
         if isinstance(reply_or_exception, str):
             try:
                 resp = json.loads(reply_or_exception)
             except Exception as e:
-                print("Cannot parse response", e)
                 resp = e
 
         if isinstance(resp, Exception):
@@ -145,8 +152,10 @@ class ClientStatistic:
             elif resp["op"] == "REPLY":
                 self._req_succ += 1
                 status = "succ"
-                server_time = int(resp['result']['txnTime'])
-                self._reqs[req_id]["server_reply"] = server_time
+                srv_tm = resp['result'].get('txnTime', False) or\
+                         resp['result'].get('txnMetadata', {}).get('txnTime', False)
+                server_time = int(srv_tm)
+                self._client_stat_reqs[req_id]["server_reply"] = server_time
                 self._server_min_txn_time = min(self._server_min_txn_time, server_time)
                 self._server_max_txn_time = max(self._server_max_txn_time, server_time)
             else:
@@ -155,8 +164,8 @@ class ClientStatistic:
         else:
             self._req_fail += 1
             status = "fail"
-        self._reqs[req_id]["status"] = status
-        self._reqs[req_id]["resp"] = resp
+        self._client_stat_reqs[req_id]["status"] = status
+        self._client_stat_reqs[req_id]["resp"] = resp
 
     def dump_stat(self, dump_all: bool = False):
         ret_val = {}
@@ -169,10 +178,293 @@ class ClientStatistic:
         srv_time = self._server_max_txn_time - self._server_min_txn_time
         ret_val["server_time"] = srv_time if srv_time >= 0 else 0
         ret_val["reqs"] = []
-        reqs = [k for k, v in self._reqs.items() if "status" in v or dump_all]
+        reqs = [k for k, v in self._client_stat_reqs.items() if "status" in v or dump_all]
         for r in reqs:
-            ret_val["reqs"].append((r, self._reqs.pop(r)))
+            ret_val["reqs"].append((r, self._client_stat_reqs.pop(r)))
         return ret_val
+
+
+class RequestGenerator(metaclass=ABCMeta):
+    def __init__(self, client_stat: ClientStatistic, **kwargs):
+        self._client_stat = client_stat
+        if not isinstance(self._client_stat, ClientStatistic):
+            raise RuntimeError("Bad Statistic obj")
+        random.seed()
+
+    # Copied from Plenum
+    def random_string(self, sz: int) -> str:
+        assert (sz > 0), "Expected random string size cannot be less than 1"
+        rv = libnacl.randombytes(sz // 2).hex()
+        return rv if sz % 2 == 0 else rv + hex(libnacl.randombytes_uniform(15))[-1]
+
+    # Copied from Plenum
+    def rawToFriendly(self, raw):
+        return base58.b58encode(raw).decode("utf-8")
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def _gen_req_data(self):
+        pass
+
+    @abstractmethod
+    async def _gen_req(self, submit_did, req_data):
+        pass
+
+    async def generate_request(self, submit_did):
+        req_data = self._gen_req_data()
+        self._client_stat.preparing(req_data)
+
+        try:
+            req = await self._gen_req(submit_did, req_data)
+            self._client_stat.prepared(req_data)
+        except Exception as ex:
+            self._client_stat.reply(req_data, ex)
+            raise ex
+
+        return req_data, req
+
+
+class RGSeqReqs(RequestGenerator):
+    def __init__(self, *args, reqs = list(), next_random: bool = False, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._req_idx = -1
+        self._next_idx = self._rand_idx if next_random else self._seq_idx
+        if not isinstance(reqs, list):
+            raise RuntimeError("Bad Requests sequence provided")
+        self._reqs_collection = []
+        for reqc, prms in reqs:
+            if not issubclass(reqc, RequestGenerator):
+                raise RuntimeError("Bad Request class provided")
+            cnt = 1
+            param = {}
+            if isinstance(prms, int) and prms > 0:
+                cnt = prms
+            elif isinstance(prms, dict):
+                cnt = prms.get('count', 1)
+                param = prms
+            else:
+                raise RuntimeError("Bad Request params provided")
+            for i in range(0, cnt):
+                self._reqs_collection.append(reqc(*args, **param, **kwargs))
+        if len(self._reqs_collection) == 0:
+            raise RuntimeError("At least one class should be provided")
+
+    def _seq_idx(self):
+        return (self._req_idx + 1) % len(self._reqs_collection)
+
+    def _rand_idx(self):
+        return random.randint(0, len(self._reqs_collection) - 1)
+
+    def _gen_req_data(self):
+        self._req_idx = self._next_idx()
+        return self._reqs_collection[self._req_idx]._gen_req_data()
+
+    async def _gen_req(self, submit_did, req_data):
+        return await self._reqs_collection[self._req_idx]._gen_req(submit_did, req_data)
+
+
+class RGNym(RequestGenerator):
+    def _gen_req_data(self):
+        raw = libnacl.randombytes(16)
+        req_did = self.rawToFriendly(raw)
+        return req_did
+
+    async def _gen_req(self, submit_did, req_data):
+        return await ledger.build_nym_request(submit_did, req_data, None, None, None)
+
+
+class RGGetNym(RequestGenerator):
+    def _gen_req_data(self):
+        raw = libnacl.randombytes(16)
+        req_did = self.rawToFriendly(raw)
+        return req_did
+
+    async def _gen_req(self, submit_did, req_data):
+        return await ledger.build_get_nym_request(submit_did, req_data)
+
+
+class RGSchema(RequestGenerator):
+    def _gen_req_data(self):
+        return self.random_string(32)
+
+    async def _gen_req(self, submit_did, req_data):
+        _, schema_json = await anoncreds.issuer_create_schema(submit_did, req_data,
+                                                              "1.0", json.dumps(["name", "age", "sex", "height"]))
+        schema_request = await ledger.build_schema_request(submit_did, schema_json)
+        return schema_request
+
+
+class RGAttrib(RequestGenerator):
+    def _gen_req_data(self):
+        return self.random_string(32)
+
+    async def _gen_req(self, submit_did, req_data):
+        raw_attr = json.dumps({req_data: req_data})
+        attr_request = await ledger.build_attrib_request(submit_did, submit_did, None, raw_attr, None)
+        return attr_request
+
+
+class RGGetAttrib(RequestGenerator):
+    def _gen_req_data(self):
+        return self.random_string(32)
+
+    async def _gen_req(self, submit_did, req_data):
+        target_did = 'V4SGRU86Z58d6TV7PBUe61'
+        raw = None
+        xhash = None
+        enc = 'aa3f41f619aa7e5e6b6d0d'
+        req = await ledger.build_get_attrib_request(submit_did, target_did, raw, xhash, enc)
+        return req
+
+
+class RGDefinition(RequestGenerator):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._wallet_handle = None
+        self._default_schema_json = None
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        self._wallet_handle = wallet_handle
+        _, self._default_schema_json = await anoncreds.issuer_create_schema(
+            submitter_did, self.random_string(32), "1.0", json.dumps(["name", "age", "sex", "height"]))
+        schema_request = await ledger.build_schema_request(submitter_did, self._default_schema_json)
+        resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, schema_request)
+        resp = json.loads(resp)
+        seqno = resp.get('result', {}).get('seqNo', None) or\
+                resp.get('result', {}).get('txnMetadata', {}).get('seqNo', None)
+        self._default_schema_json = json.loads(self._default_schema_json)
+        self._default_schema_json['seqNo'] = seqno
+        self._default_schema_json = json.dumps(self._default_schema_json)
+
+    def _gen_req_data(self):
+        return self.random_string(32)
+
+    async def _gen_req(self, submit_did, req_data):
+        _, definition_json = await anoncreds.issuer_create_and_store_credential_def(
+            self._wallet_handle, submit_did, self._default_schema_json,
+            req_data, "CL", json.dumps({"support_revocation": True}))
+        return await ledger.build_cred_def_request(submit_did, definition_json)
+
+
+class RGDefRevoc(RGDefinition):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._default_definition_id = None
+        self._default_definition_json = None
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+
+        self._default_definition_id, self._default_definition_json =\
+            await anoncreds.issuer_create_and_store_credential_def(
+                wallet_handle, submitter_did, self._default_schema_json,
+                self.random_string(32), "CL", json.dumps({"support_revocation": True}))
+        definition_request = await ledger.build_cred_def_request(submitter_did, self._default_definition_json)
+        await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, definition_request)
+
+    async def _gen_req(self, submit_did, req_data):
+        tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
+        tails_writer = await blob_storage.open_writer('default', tails_writer_config)
+        _, revoc_reg_def_json, revoc_reg_entry_json = await anoncreds.issuer_create_and_store_revoc_reg(
+            self._wallet_handle, submit_did, "CL_ACCUM", req_data,
+            json.loads(self._default_definition_json)['id'],
+            json.dumps({"max_cred_num":5,  "issuance_type":"ISSUANCE_BY_DEFAULT"}),
+            tails_writer)
+        return await ledger.build_revoc_reg_def_request(submit_did, revoc_reg_def_json)
+
+
+class RGEntryRevoc(RGDefRevoc):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._default_revoc_reg_def_id = None
+        self._default_revoc_reg_def_json = None
+        self._default_revoc_reg_entry_json = None
+        self._blob_storage_reader_cfg_handle = None
+        self._default_cred_values_json = json.dumps({
+            "name": {"raw": "value1", "encoded": "123"},
+            "age": {"raw": "value1", "encoded": "456"},
+            "sex": {"raw": "value1", "encoded": "123"},
+            "height": {"raw": "value1", "encoded": "456"}
+        })
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+        max_cred_num = kwargs["max_cred_num"] if "max_cred_num" in kwargs else 100
+
+        tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
+        tails_writer = await blob_storage.open_writer('default', tails_writer_config)
+        self._blob_storage_reader_cfg_handle = await blob_storage.open_reader('default', tails_writer_config)
+        self._default_revoc_reg_def_id, self._default_revoc_reg_def_json, self._default_revoc_reg_entry_json =\
+            await anoncreds.issuer_create_and_store_revoc_reg(
+                wallet_handle, submitter_did, "CL_ACCUM", self.random_string(32),
+                json.loads(self._default_definition_json)['id'],
+                json.dumps({"max_cred_num": max_cred_num, "issuance_type": "ISSUANCE_ON_DEMAND"}),
+                tails_writer)
+        def_revoc_request = await ledger.build_revoc_reg_def_request(submitter_did, self._default_revoc_reg_def_json)
+        await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, def_revoc_request)
+
+        entry_revoc_request = await ledger.build_revoc_reg_entry_request(
+            submitter_did, self._default_revoc_reg_def_id, "CL_ACCUM", self._default_revoc_reg_entry_json)
+        await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, entry_revoc_request)
+
+    async def _gen_req(self, submit_did, req_data):
+        cred_offer_json = await anoncreds.issuer_create_credential_offer(
+            self._wallet_handle, self._default_definition_id)
+        master_secret_id = await anoncreds.prover_create_master_secret(
+            self._wallet_handle, master_secret_name='')
+        cred_req_json, _ = await anoncreds.prover_create_credential_req(
+            self._wallet_handle, submit_did, cred_offer_json, self._default_definition_json, master_secret_id)
+        _, _, revoc_reg_delta_json = await anoncreds.issuer_create_credential(
+            self._wallet_handle, cred_offer_json, cred_req_json, self._default_cred_values_json,
+            self._default_revoc_reg_def_id, self._blob_storage_reader_cfg_handle)
+        return await ledger.build_revoc_reg_entry_request(
+            submit_did, self._default_revoc_reg_def_id,"CL_ACCUM", revoc_reg_delta_json)
+
+
+def create_req_generator(req_kind_arg):
+    supported_requests = {"nym": RGNym, "schema": RGSchema, "attrib": RGAttrib,
+                          "get_nym": RGGetNym, "definition": RGDefinition,
+                          "def_revoc": RGDefRevoc, "entry_revoc": RGEntryRevoc, "get_attrib": RGGetAttrib}
+    if req_kind_arg in supported_requests:
+        return supported_requests[req_kind_arg], {}
+    try:
+        reqs = json.loads(req_kind_arg)
+    except Exception as e:
+        raise RuntimeError("Invalid parameter format")
+
+    def _parse_single(req_kind, prms):
+        if req_kind is None and isinstance(prms, dict):
+            req_crt = [k for k in prms.keys() if k in supported_requests]
+            if len(req_crt) == 1:
+                tmp_params = copy.copy(prms)
+                tmp_params.pop(req_crt[0])
+                return supported_requests[req_crt[0]], tmp_params
+        if isinstance(req_kind, str) and req_kind in supported_requests:
+            return supported_requests[req_kind], prms
+        if isinstance(req_kind, str) and req_kind not in supported_requests:
+            return _parse_single(None, prms)
+        if isinstance(req_kind, dict) and len(req_kind.keys()) == 1:
+            k = list(req_kind)[0]
+            v = req_kind[k]
+            return _parse_single(k, v)
+        raise RuntimeError("Invalid parameter format")
+
+    ret_reqs = []
+    randomizing = False
+    if isinstance(reqs, dict):
+        randomizing = True
+        for k, v in reqs.items():
+            ret_reqs.append(_parse_single(k, v))
+    elif isinstance(reqs, list):
+        randomizing = False
+        for r in reqs:
+            ret_reqs.append(_parse_single(r, {}))
+    if len(ret_reqs) == 1:
+        return ret_reqs[0]
+    else:
+        return RGSeqReqs, {'next_random': randomizing, 'reqs': ret_reqs}
 
 
 class LoadClient:
@@ -191,40 +483,39 @@ class LoadClient:
         self._wallet_handle = None
         self._test_did = None
         self._test_verk = None
-        self._reqs = []
+        self._load_client_reqs = []
         self._loop.add_reader(self._pipe_conn, self.read_cb)
         self._closing = False
         self._batch_size = batch_size
         self._batch_timeout = batch_timeout
         self._gen_q = []
         self._send_q = []
-        self._req_generator = self.get_builder(req_kind)
+        req_class, params = create_req_generator(req_kind)
+        self._req_generator = req_class(**params, client_stat=self._stat)
         assert self._req_generator is not None
         self._bg_send_last = 0
         self._sent_in_batch = None
-        random.seed()
 
-    async def run_test(self, genesis_path, seed):
-        pool_cfg = json.dumps({"genesis_txn": genesis_path})
-        await pool.create_pool_ledger_config(self._pool_name, pool_cfg)
-        self._pool_handle = await pool.open_pool_ledger(self._pool_name, None)
-        self._wallet_name = "{}_wallet".format(self._pool_name)
-        await wallet.create_wallet(self._pool_name, self._wallet_name, None, None, None)
-        self._wallet_handle = await wallet.open_wallet(self._wallet_name, None, None)
-        self._test_did, self._test_verk = await did.create_and_store_my_did(self._wallet_handle, json.dumps({'seed': seed}))
+    async def run_test(self, genesis_path, seed, w_key):
+        try:
+            pool_cfg = json.dumps({"genesis_txn": genesis_path})
+            await pool.create_pool_ledger_config(self._pool_name, pool_cfg)
+            self._pool_handle = await pool.open_pool_ledger(self._pool_name, None)
+            self._wallet_name = "{}_wallet".format(self._pool_name)
+            wallet_credential = json.dumps({"key": w_key})
+            await wallet.create_wallet(self._pool_name, self._wallet_name, None, None, wallet_credential)
+            self._wallet_handle = await wallet.open_wallet(self._wallet_name, None, wallet_credential)
+            self._test_did, self._test_verk = await did.create_and_store_my_did(self._wallet_handle, json.dumps({'seed': seed}))
+
+
+            await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle,
+                                                     self._test_did, max_cred_num=self._batch_size)
+        except Exception as ex:
+            print("{} run_test error {}".format(self._name, ex))
+            self._loop.stop()
+            raise ex
 
         self.gen_reqs()
-
-    def get_builder(self, req_kind):
-        if req_kind == 'nym':
-            return self.gen_nym
-        if req_kind == 'schema':
-            return self.gen_schema
-        if req_kind == 'rand':
-            return self.gen_random
-        if req_kind == 'attrib':
-            return self.gen_attrib
-        return self.gen_nym
 
     def read_cb(self):
         force_close = False
@@ -239,99 +530,32 @@ class LoadClient:
         if force_close:
             self._loop.create_task(self.stop_test())
 
-    # Copied from Plenum
-    def random_string(self, sz: int) -> str:
-        assert (sz > 0), "Expected random string size cannot be less than 1"
-        rv = libnacl.randombytes(sz // 2).hex()
-        return rv if sz % 2 == 0 else rv + hex(libnacl.randombytes_uniform(15))[-1]
-
-    # Copied from Plenum
-    def rawToFriendly(self, raw):
-        return base58.b58encode(raw).decode("utf-8")
-
-    async def gen_random(self):
-        reqs = [self.gen_attrib, self.gen_nym, self.gen_schema]
-        idx = random.randint(0, 1000) % len(reqs)
-        return await reqs[idx]()
-
-    async def gen_attrib(self):
-        # print("gen_signed_nym")
-        if self._closing is True:
-            return
-
-        attr_name = self.random_string(32)
-        attr_request = ""
-
-        self._stat.preparing(attr_name)
-        try:
-            raw_attr = json.dumps({attr_name: attr_name})
-            attr_request = await ledger.build_attrib_request(self._test_did, self._test_did, None, raw_attr, None)
-            self._stat.prepared(attr_name)
-        except Exception as e:
-            self._stat.reply(attr_name, e)
-        return (attr_name, attr_request)
-
-    async def gen_schema(self):
-        # print("gen_signed_nym")
-        if self._closing is True:
-            return
-
-        shc_name = self.random_string(32)
-        schema_request = ""
-
-        self._stat.preparing(shc_name)
-        try:
-            _, schema_json = await anoncreds.issuer_create_schema(
-                self._test_did, shc_name, "1.0", json.dumps(["name", "age", "sex", "height"]))
-            schema_request = await ledger.build_schema_request(self._test_did, schema_json)
-            self._stat.prepared(shc_name)
-        except Exception as e:
-            self._stat.reply(shc_name, e)
-        return (shc_name, schema_request)
-
-    async def gen_nym(self):
-        # print("gen_signed_nym")
-        if self._closing is True:
-            return
-
-        raw = libnacl.randombytes(16)
-        did = self.rawToFriendly(raw)
-        req = ""
-
-        self._stat.preparing(did)
-        try:
-            req = await ledger.build_nym_request(self._test_did, did, None, None, None)
-            self._stat.prepared(did)
-        except Exception as e:
-            self._stat.reply(did, e)
-        return (did, req)
-
     async def gen_signed_req(self):
         if self._closing is True:
             return
         try:
-            req_id, req = await self._req_generator()
+            req_id, req = await self._req_generator.generate_request(self._test_did)
         except Exception as e:
             print("{} generate req error {}".format(self._name, e))
-            return
+            self._loop.stop()
+            raise e
         try:
             sig_req = await ledger.sign_request(self._wallet_handle, self._test_did, req)
             self._stat.signed(req_id)
-            self._reqs.append((req_id, sig_req))
+            self._load_client_reqs.append((req_id, sig_req))
         except Exception as e:
             self._stat.reply(req_id, e)
-            print("{} sign req error {}".format(self._name, e))
+            self._loop.stop()
+            raise e
 
     def watch_queues(self):
-        if len(self._reqs) + len(self._gen_q) < self._batch_size:
+        if len(self._load_client_reqs) + len(self._gen_q) < self._batch_size:
             self._loop.call_soon(self.gen_reqs)
-
-        if len(self._reqs) > 0 and len(self._send_q) < self._send_lim:
+        if len(self._load_client_reqs) > 0 and len(self._send_q) < self._send_lim:
             self._loop.call_soon(self.req_send)
 
     def check_batch_avail(self, fut):
         self._gen_q.remove(fut)
-
         self.watch_queues()
 
     def max_in_bg(self):
@@ -342,16 +566,13 @@ class LoadClient:
             return
 
         avail_gens = self._gen_lim - len(self._gen_q)
-        if avail_gens <= 0 or len(self._gen_q) + len(self._reqs) > self.max_in_bg():
+        if avail_gens <= 0 or len(self._gen_q) + len(self._load_client_reqs) > self.max_in_bg():
             return
 
         for i in range(0, min(avail_gens, self._batch_size)):
-            try:
-                builder = self._loop.create_task(self.gen_signed_req())
-                builder.add_done_callback(self.check_batch_avail)
-                self._gen_q.append(builder)
-            except Exception as e:
-                print("{} generate req error {}".format(self._name, e))
+            builder = self._loop.create_task(self.gen_signed_req())
+            builder.add_done_callback(self.check_batch_avail)
+            self._gen_q.append(builder)
 
     async def submit_req_update(self, req_id, req):
         self._stat.sent(req_id, req)
@@ -364,7 +585,7 @@ class LoadClient:
     def done_submit(self, fut):
         self._send_q.remove(fut)
         self.watch_queues()
-        if self._stat._req_sent % self._refresh == 0:
+        if self._stat.sent_count() % self._refresh == 0:
             self._loop.call_soon(self.send_stat)
 
     def send_stat(self):
@@ -373,6 +594,7 @@ class LoadClient:
             self._pipe_conn.send(st)
         except Exception as e:
             print("{} stat send error {}".format(self._name, e))
+            raise e
 
     def req_send(self):
         if self._closing:
@@ -390,15 +612,12 @@ class LoadClient:
                 return
 
         if 0 <= self._sent_in_batch < self._batch_size:
-            to_snd = min(len(self._reqs), avail_sndrs, (self._batch_size - self._sent_in_batch))
+            to_snd = min(len(self._load_client_reqs), avail_sndrs, (self._batch_size - self._sent_in_batch))
             for i in range(0, to_snd):
-                req_id, req = self._reqs.pop()
-                try:
-                    sender = self._loop.create_task(self.submit_req_update(req_id, req))
-                    sender.add_done_callback(self.done_submit)
-                    self._send_q.append(sender)
-                except Exception as e:
-                    print("{} submit err {}".format(self._name, e))
+                req_id, req = self._load_client_reqs.pop()
+                sender = self._loop.create_task(self.submit_req_update(req_id, req))
+                sender.add_done_callback(self.done_submit)
+                self._send_q.append(sender)
                 self._sent_in_batch += 1
 
         if self._sent_in_batch >= self._batch_size:
@@ -438,14 +657,13 @@ class LoadClient:
                 shutil.rmtree(d, ignore_errors=True)
 
 
-def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, req_kind, bg_tasks, refresh):
+def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, req_kind, bg_tasks, refresh, wallet_key):
     cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh)
     try:
-        asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed), loop=cln._loop)
+        asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
         cln._loop.run_forever()
     except Exception as e:
         print("{} running error {}".format(cln._name, e))
-    # cln._loop.close()
     stat = cln._stat.dump_stat(dump_all=True)
     return stat
 
@@ -455,9 +673,7 @@ class ClientRunner:
         self.name = name
         self.conn = conn
         self.closed = False
-
         self.last_refresh = 0
-
         self.total_sent = 0
         self.total_succ = 0
         self.total_failed = 0
@@ -628,6 +844,7 @@ class TestRunner:
         print("Background tasks         ", bg_tasks)
         print("Output directory         ", args.out_dir)
         print("Value Separator          ", value_separator)
+        print("Wallet Key               ", args.wallet_key)
         print("Started At               ", start_date)
 
         self._value_separator = value_separator
@@ -643,7 +860,7 @@ class TestRunner:
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(run_client, prc_name, args.genesis_path, wr,
                                   args.seed, args.batch_size, args.batch_timeout,
-                                  args.req_kind, bg_tasks, refresh)
+                                  args.req_kind, bg_tasks, refresh, args.wallet_key)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd)
@@ -656,7 +873,7 @@ class TestRunner:
         self._loop.remove_signal_handler(signal.SIGINT)
 
         print("")
-        print("DONE")
+        print("DONE At", datetime.datetime.now())
         print(self.get_refresh_str())
         self.close_fs()
 
