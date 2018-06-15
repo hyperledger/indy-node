@@ -95,5 +95,9 @@ setup(
              'scripts/create_dirs.sh',
              'scripts/indy_old_cli_export_dids',
              'scripts/setup_iptables',
-             'scripts/setup_indy_node_iptables']
+             'scripts/setup_indy_node_iptables',
+             'tools/diagnostics/nscapture',
+             'tools/diagnostics/nsdiff',
+             'tools/diagnostics/nsreplay',
+             ]
 )
