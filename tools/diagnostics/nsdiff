@@ -719,7 +719,13 @@ class NodeStateComparator:
         # call("diff -r {} {}".format(s1, s2))
 
         # Try 3:
-        result = subprocess.run(['diff', '--color=always', '-r', s1, s2])
+        cmd = ['diff']
+        if diff_supports_color():
+            cmd.append('--color=always')
+        cmd.append('-r')
+        cmd.append(s1)
+        cmd.append(s2)
+        result = subprocess.run(cmd)
 
         if result.returncode == 0:
             print("Identical state!")
@@ -835,6 +841,15 @@ def str2bool(v):
 
 def strip_archive_file_type(file_name):
     return file_name.rstrip('.tar.gz').rstrip('.zip')
+
+
+def diff_supports_color():
+    try:
+        help_rtn = subprocess.check_output(['diff', '--help'])
+        help_rtn = help_rtn.decode()
+        return '--color' in help_rtn
+    except Exception:
+        return False
 
 
 levels = {
