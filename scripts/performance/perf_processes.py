@@ -32,9 +32,10 @@ def check_fs(is_dir: bool, fs_name: str):
     pp = os.path.expanduser(fs_name)
     rights = os.W_OK if is_dir else os.R_OK
     chk_func = os.path.isdir if is_dir else os.path.isfile
-    if chk_func(pp) and os.access(pp, rights):
+    size_check = True if is_dir else os.path.getsize(pp) > 0
+    if chk_func(pp) and os.access(pp, rights) and size_check:
         return pp
-    raise argparse.ArgumentTypeError("{} not found or access error".format(pp))
+    raise argparse.ArgumentTypeError("{} not found or access error or file empty".format(pp))
 
 
 parser.add_argument('-g', '--genesis',
@@ -190,7 +191,9 @@ class RequestGenerator(metaclass=ABCMeta):
         if not isinstance(self._client_stat, ClientStatistic):
             raise RuntimeError("Bad Statistic obj")
         random.seed()
-        self.file_name = check_fs(is_dir=False, fs_name=file_name) if file_name is not None else None
+        self._data_file = None
+        if file_name is not None:
+            self._data_file = open(check_fs(is_dir=False, fs_name=file_name), "rt")
 
     # Copied from Plenum
     def random_string(self, sz: int) -> str:
@@ -212,12 +215,12 @@ class RequestGenerator(metaclass=ABCMeta):
         return file_str
 
     def _gen_req_data(self):
-        if self.file_name is not None:
-            with open(self.file_name, "rt") as data_file:
-                while True:
-                    data_file.seek(0)
-                    for file_str in data_file:
-                        yield self._from_file_str_data(file_str)
+        if self._data_file is not None:
+            file_str = self._data_file.readline()
+            if not file_str:
+                self._data_file.seek(0)
+                file_str = self._data_file.readline()
+            return self._from_file_str_data(file_str)
         else:
             return self._rand_data()
 
