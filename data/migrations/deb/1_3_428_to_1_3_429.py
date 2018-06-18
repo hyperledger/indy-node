@@ -13,7 +13,9 @@ from _sha256 import sha256
 from common.serializers.serialization import ledger_txn_serializer, serialize_msg_for_signing
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
-from indy_common.constants import CONFIG_LEDGER_ID
+from indy_common.constants import CONFIG_LEDGER_ID, REVOC_REG_DEF, CRED_DEF_ID, \
+    CLAIM_DEF_TAG_DEFAULT
+from indy_common.state import domain
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.pool_req_handler import PoolRequestHandler
@@ -84,6 +86,25 @@ def get_ledger_id_by_txn_type(txn_type):
         sys.exit(1)
 
 
+def add_tag_into_cred_def_id(val):
+    new_val = copy.deepcopy(val)
+    old_cred_def_id = new_val.get(CRED_DEF_ID, None)
+    if old_cred_def_id:
+        path_elems = old_cred_def_id.split(':')
+        if len(path_elems) == 4:
+            did, marker, sig_type, schema_seq_no = path_elems
+            new_cred_def_id = domain.make_state_path_for_claim_def(authors_did=did,
+                                                                   schema_seq_no=schema_seq_no,
+                                                                   signature_type=sig_type,
+                                                                   tag=CLAIM_DEF_TAG_DEFAULT)
+            new_val[CRED_DEF_ID] = new_cred_def_id.decode()
+        else:
+            return False
+    else:
+        return False
+    return new_val
+
+
 def migrate_txn_log(db_dir, db_name):
 
     def put_into_seq_no_db(txn):
@@ -140,6 +161,10 @@ def migrate_txn_log(db_dir, db_name):
         for key, val in src_storage.iterator():
             key = key.decode()
             val = ledger_txn_serializer.deserialize(val)
+            if val.get(TXN_TYPE) == REVOC_REG_DEF:
+                val = add_tag_into_cred_def_id(val)
+                if val is False:
+                    return False
             new_val = transform_to_new_format(txn=val, seq_no=int(key))
             digest = put_into_seq_no_db(new_val)
             # add digest into txn
