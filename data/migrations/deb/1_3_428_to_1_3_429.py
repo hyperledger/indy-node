@@ -163,6 +163,8 @@ def migrate_txn_log(db_dir, db_name):
             val = ledger_txn_serializer.deserialize(val)
             if val.get(TXN_TYPE) == REVOC_REG_DEF:
                 val = add_tag_into_cred_def_id(val)
+                if val == False:
+                    return False
             new_val = transform_to_new_format(txn=val, seq_no=int(key))
             digest = put_into_seq_no_db(new_val)
             # add digest into txn
