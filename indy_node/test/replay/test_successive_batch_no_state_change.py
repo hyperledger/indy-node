@@ -89,8 +89,7 @@ def test_successive_batch_do_no_change_state(looper,
     # request ids
     for _ in range(3):
         verkey = sdk_rotate_verkey(looper, sdk_pool_handle,
-                                   wh, new_did, new_did,
-                                   seed)
+                                   wh, new_did, new_did)
         logger.debug('{} rotates his key to {}'.
                      format(new_did, verkey))
 
@@ -113,18 +112,18 @@ def test_successive_batch_do_no_change_state(looper,
 
     x_seed = randomString(32)
     verkey = sdk_rotate_verkey(looper, sdk_pool_handle, wh,
-                               new_client_did, new_client_did, x_seed)
+                               new_client_did, new_client_did)
     logger.debug('{} rotates his key to {}'.
                  format(new_client_did, verkey))
 
     y_seed = randomString(32)
     sdk_rotate_verkey(looper, sdk_pool_handle, wh,
-                      new_client_did, new_client_did, y_seed)
+                      new_client_did, new_client_did)
     logger.debug('{} rotates his key to {}'.
                  format(new_client_did, verkey))
 
-    sdk_rotate_verkey(looper, sdk_pool_handle, wh,
-                      new_client_did, new_client_did, x_seed)
+    verkey = sdk_rotate_verkey(looper, sdk_pool_handle, wh,
+                      new_client_did, new_client_did)
     logger.debug('{} rotates his key to {}'.
                  format(new_client_did, verkey))
 
@@ -207,7 +206,7 @@ def test_successive_batch_do_no_change_state(looper,
         reqs.append(
             sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                                sdk_pool_handle, nym_request))
-        looper.runFor(.01)
+        looper.runFor(1)
 
     # Correct number of uncommitted entries
     looper.run(eventually(check_uncommitted, 3, retryWait=1))
