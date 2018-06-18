@@ -185,11 +185,12 @@ class ClientStatistic:
 
 
 class RequestGenerator(metaclass=ABCMeta):
-    def __init__(self, client_stat: ClientStatistic, **kwargs):
+    def __init__(self, file_name: str = None, client_stat: ClientStatistic = None, **kwargs):
         self._client_stat = client_stat
         if not isinstance(self._client_stat, ClientStatistic):
             raise RuntimeError("Bad Statistic obj")
         random.seed()
+        self.file_name = check_fs(is_dir=False, fs_name=file_name) if file_name is not None else None
 
     # Copied from Plenum
     def random_string(self, sz: int) -> str:
@@ -204,9 +205,21 @@ class RequestGenerator(metaclass=ABCMeta):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         pass
 
-    @abstractmethod
+    def _rand_data(self):
+        return self.random_string(32)
+
+    def _from_file_str_data(self, file_str):
+        return file_str
+
     def _gen_req_data(self):
-        pass
+        if self.file_name is not None:
+            with open(self.file_name, "rt") as data_file:
+                while True:
+                    data_file.seek(0)
+                    for file_str in data_file:
+                        yield self._from_file_str_data(file_str)
+        else:
+            return self._rand_data()
 
     @abstractmethod
     async def _gen_req(self, submit_did, req_data):
@@ -266,7 +279,7 @@ class RGSeqReqs(RequestGenerator):
 
 
 class RGNym(RequestGenerator):
-    def _gen_req_data(self):
+    def _rand_data(self):
         raw = libnacl.randombytes(16)
         req_did = self.rawToFriendly(raw)
         return req_did
@@ -276,7 +289,7 @@ class RGNym(RequestGenerator):
 
 
 class RGGetNym(RequestGenerator):
-    def _gen_req_data(self):
+    def _rand_data(self):
         raw = libnacl.randombytes(16)
         req_did = self.rawToFriendly(raw)
         return req_did
@@ -286,9 +299,6 @@ class RGGetNym(RequestGenerator):
 
 
 class RGSchema(RequestGenerator):
-    def _gen_req_data(self):
-        return self.random_string(32)
-
     async def _gen_req(self, submit_did, req_data):
         _, schema_json = await anoncreds.issuer_create_schema(submit_did, req_data,
                                                               "1.0", json.dumps(["name", "age", "sex", "height"]))
@@ -297,9 +307,6 @@ class RGSchema(RequestGenerator):
 
 
 class RGAttrib(RequestGenerator):
-    def _gen_req_data(self):
-        return self.random_string(32)
-
     async def _gen_req(self, submit_did, req_data):
         raw_attr = json.dumps({req_data: req_data})
         attr_request = await ledger.build_attrib_request(submit_did, submit_did, None, raw_attr, None)
@@ -307,9 +314,6 @@ class RGAttrib(RequestGenerator):
 
 
 class RGGetAttrib(RequestGenerator):
-    def _gen_req_data(self):
-        return self.random_string(32)
-
     async def _gen_req(self, submit_did, req_data):
         target_did = 'V4SGRU86Z58d6TV7PBUe61'
         raw = None
@@ -338,9 +342,6 @@ class RGDefinition(RequestGenerator):
         self._default_schema_json = json.loads(self._default_schema_json)
         self._default_schema_json['seqNo'] = seqno
         self._default_schema_json = json.dumps(self._default_schema_json)
-
-    def _gen_req_data(self):
-        return self.random_string(32)
 
     async def _gen_req(self, submit_did, req_data):
         _, definition_json = await anoncreds.issuer_create_and_store_credential_def(
