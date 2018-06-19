@@ -87,7 +87,7 @@ new node all
 <each node reports genesis transactions>
 new client steward with DID <nym> (nym matches the genesis transactions)
 client steward add bob (cli creates a signer and an ADDNYM for that signer's
-cryptonym, and then an alias for bobto that cryptonym.)
+cryptonym, and then an alias for bob to that cryptonym.)
 new client bob (cli uses the signer previously stored for this client)
 """
 

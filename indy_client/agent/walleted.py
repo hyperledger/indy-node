@@ -294,7 +294,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         ha = link.getRemoteEndpoint(required=False)
         name = link.name
         if not ha:
-            # if not remote address is present, then it's upcominh link, so we may have no
+            # if not remote address is present, then it's upcoming link, so we may have no
             # explicit connection (wrk in a listener mode).
             # PulicKey is used as a name in this case
             name = link.remotePubkey

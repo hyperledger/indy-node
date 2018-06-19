@@ -689,7 +689,7 @@ def testSendAttribFailsForRawWithEndpointBeingEmptyString(
        mapper=parameters, expect=ERROR, within=2)
 
 
-def testSendAttribFailsIfRawContainsMulipleAttrs(
+def testSendAttribFailsIfRawContainsMultipleAttrs(
         be, do, poolNodesStarted, trusteeCli):
 
     uuidIdentifier = createUuidIdentifier()

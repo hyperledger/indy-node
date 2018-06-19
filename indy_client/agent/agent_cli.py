@@ -58,7 +58,7 @@ class AgentCli(IndyCli):
     def printSuggestion(self, msgs):
         self.print("\n")
         # TODO: as of now we are not printing the suggestion (msg)
-        # because, those suggestion may not be intented or may not work
+        # because, those suggestion may not be intended or may not work
         # correctly for agents, so when such requirement will come,
         # we can look this again.
 

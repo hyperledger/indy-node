@@ -106,7 +106,7 @@ def sdk_node_theta_added(looper,
     request_couple = sdk_sign_and_send_prepared_request(looper, new_steward_wallet,
                                                         sdk_pool_handle, node_request)
 
-    # waitng for replies
+    # waiting for replies
     sdk_get_and_check_replies(looper, [request_couple])
 
     new_node = create_and_start_new_node(looper, new_node_name, tdir, sigseed,

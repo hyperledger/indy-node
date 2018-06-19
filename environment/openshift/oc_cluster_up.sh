@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # ==============================================================================
-# Script for setting up an OpenShift cluter in Docker for Windows
+# Script for setting up an OpenShift cluster in Docker for Windows
 #
 # * Requires the OpenShift Origin CLI
 # ------------------------------------------------------------------------------
 #
-# Usage on WIndows:
+# Usage on Windows:
 #  
 # MSYS_NO_PATHCONV=1 ./oc_cluster_up.sh
 #

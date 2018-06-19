@@ -161,7 +161,7 @@ def migrate_all():
     except Exception:
         logger.warning("Could not create an archive of LevelDB-based ledger, proceed anyway")
 
-    # TODO: it whould be nice to open new RocksDB-based ledger
+    # TODO: it would be nice to open new RocksDB-based ledger
     # and compare root hashes with LevelDB-based ledger here
 
     # Remove LevelDB-based ledger

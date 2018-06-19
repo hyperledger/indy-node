@@ -139,7 +139,7 @@ echo
 # ===========================================================================
 
 # ===========================================================================
-# Sovin Agent Deployment Configuration(s)
+# Sovrin Agent Deployment Configuration(s)
 # ---------------------------------------------------------------------------
 # ToDo:
 # * Get this information from a list like the nodes with pool_data.

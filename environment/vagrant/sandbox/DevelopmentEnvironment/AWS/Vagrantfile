@@ -41,7 +41,7 @@ require 'set'
 #  3. Add a Vagrant box for use by this Vagrantfile
 #     Option 1: (recommended/default) Use the vagrant-aws plugin provided box.
 #       This option requires that you specifying all the AWS provider details
-#       within the config.vm.profider block.
+#       within the config.vm.provider block.
 # 
 #       $ vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
 #
@@ -103,7 +103,7 @@ require 'set'
 #       Key pairs are also region specific. Set the <KEY PAIR NAME> for each
 #       region you configure. The <KEY PAIR NAME> key must be defined in
 #       NETWORK & SECURITY in the EC2 Management Console. If you don't have a
-#       key pair defined, run ssh-kegen on your workstation and upload the
+#       key pair defined, run ssh-keygen on your workstation and upload the
 #       public key to NETWORK & SECURITY > Key Pairs in the EC2 Management
 #       Console in the target region. You will set the SSH private key path in
 #       the SSH step below.
@@ -156,7 +156,7 @@ require 'set'
 #     reserved for use by tests. On 'vagrant up' or 'vagrant reload', Vagrant
 #     will rsync them to /vagrant on the AWS vm(s). You will be prompted for the
 #     genesis file when bundling Lambdas if you do not define the genesis file for
-#     a given repo that requires it. Rememver that they will be rsync-ed to
+#     a given repo that requires it. Remember that they will be rsync-ed to
 #     /vargrant in the AWS Amazon Linux EC2 instance.
 #
 #
@@ -172,7 +172,7 @@ require 'set'
 # Some details to be aware of:
 #  1. All files and folders in the Vagrant project folder show up as shared
 #     resources in /vagrant on all Vagrant VM(s)/guests instantiated by this
-#     Vagrantfile. This is a design descision made by the Vagrant folks.
+#     Vagrantfile. This is a design decision made by the Vagrant folks.
 #  2. Source code will be cloned into this Vagrant project folder using the git
 #     project name and then shared in /src/<git project name> in the Vagrant
 #     guest VM(s). The .gitignore file in this Vagrant project folder ignores
@@ -571,7 +571,7 @@ development_repos.each { |key|
   end
 }
 
-# At least one property was modified. Reload perperties and repopulate
+# At least one property was modified. Reload properties and repopulate
 # development_repos.
 if modified_property
   properties = load_properties(properties_filename)
@@ -648,7 +648,7 @@ Vagrant.configure("2") do |config|
     # key pair (keypair_name). Therefore, add all private keys to the
     # override.ssh.private_key_path array.
     #
-    # Varant will try them in the order they appear in private_key_path until
+    # Vagrant will try them in the order they appear in private_key_path until
     # one works or it runs out of keys.
     #
     # The insecure_private_key is vagrant's default key and should NOT be

@@ -333,7 +333,7 @@ class Node(PlenumNode, HasPoolManager):
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        return self.default_executer(DOMAIN_LEDGER_ID, ppTime, reqs,
+        return self.default_executor(DOMAIN_LEDGER_ID, ppTime, reqs,
                                      stateRoot, txnRoot)
 
     def update_txn_with_extra_data(self, txn):

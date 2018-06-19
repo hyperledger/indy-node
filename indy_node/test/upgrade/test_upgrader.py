@@ -2,15 +2,15 @@
 from indy_node.server.upgrader import Upgrader
 
 
-def comparator_test(lower_versrion, higher_version):
-    assert Upgrader.compareVersions(lower_versrion, higher_version) == 1
-    assert Upgrader.compareVersions(higher_version, lower_versrion) == -1
+def comparator_test(lower_version, higher_version):
+    assert Upgrader.compareVersions(lower_version, higher_version) == 1
+    assert Upgrader.compareVersions(higher_version, lower_version) == -1
     assert Upgrader.compareVersions(higher_version, higher_version) == 0
     assert not Upgrader.is_version_upgradable(higher_version, higher_version)
     assert Upgrader.is_version_upgradable(
         higher_version, higher_version, reinstall=True)
-    assert Upgrader.is_version_upgradable(lower_versrion, higher_version)
-    assert not Upgrader.is_version_upgradable(higher_version, lower_versrion)
+    assert Upgrader.is_version_upgradable(lower_version, higher_version)
+    assert not Upgrader.is_version_upgradable(higher_version, lower_version)
 
 
 def test_versions():

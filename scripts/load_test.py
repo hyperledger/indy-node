@@ -281,7 +281,7 @@ async def checkReply(client, requestId, identifier):
         logger.info("No replies for {}:{} yet".format(identifier, requestId))
     except Exception as e:
         logger.warn(
-            "Error occured during checking replies: {}".format(
+            "Error occurred during checking replies: {}".format(
                 repr(e)))
     finally:
         return hasConsensus, (hasConsensus, acks, nacks, replies)

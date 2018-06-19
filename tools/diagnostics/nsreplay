@@ -80,7 +80,7 @@ class Error(Exception):
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module?
 class ArchiveError(Error):
-    """Exception raised for errors encounterd while identifying and extracting
+    """Exception raised for errors encountered while identifying and extracting
     tarfiles and zipfiles.
 
     Attributes:
@@ -199,7 +199,7 @@ class NodeStateReplayer:
 
     # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
     #       Create base class with _extract_archive function?
-    # Extract a tarball/zipfile into a temprary directory
+    # Extract a tarball/zipfile into a temporary directory
     def _extract_archive(self, file):
         logger.debug("Extracting archive {}".format(file))
         # Is the file a tarfile (tar, gz2, zip, tar.gz, etc.) or zipfile?

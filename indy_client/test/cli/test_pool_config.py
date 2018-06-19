@@ -7,9 +7,9 @@ from plenum.common.constants import VERSION
 
 def testPoolConfigInvalidSyntax(be, do, trusteeCli):
     be(trusteeCli)
-    do('send POOL_CONFIG wites=True force=False', expect=INVALID_SYNTAX, within=10)
+    do('send POOL_CONFIG writes=True force=False', expect=INVALID_SYNTAX, within=10)
     do('send POOL_CONFIG writes=Tue force=False', expect=INVALID_SYNTAX, within=10)
-    do('send POOL_CONFIG writes=True froce=False',
+    do('send POOL_CONFIG writes=True force=False',
        expect=INVALID_SYNTAX, within=10)
     do('send POOL_CONFIG writes=True force=1', expect=INVALID_SYNTAX, within=10)
 

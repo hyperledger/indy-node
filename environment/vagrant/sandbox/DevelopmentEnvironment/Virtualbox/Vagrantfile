@@ -77,7 +77,7 @@ development_run_cleanup = 'N'
 # If you do not want to develop one or more of the following repos, you can
 # "Skip" the repo when prompted.
 #
-# TODO: Decide how to chain dependendencies. For example, AWS Lambda code deps
+# TODO: Decide how to chain dependenies. For example, AWS Lambda code deps
 #       indy-sdk. Perhaps this is where a providing both .deb and .rpm will help
 #       if a dependency isn't being cloned and built from source, then a bundled
 #       .deb or .rpm will be installed to provide the dependency?
@@ -173,7 +173,7 @@ development_repos.each_pair { |key, value|
         require 'open3'
         stdout, stderr, status = Open3.capture3("ln -sf #{absolute_path} #{directory}")
         if status.exitstatus != 0
-          $stderr.puts "Failed to create sybolic link"
+          $stderr.puts "Failed to create symbolic link"
           $stderr.puts stderr
           exit 1
         end

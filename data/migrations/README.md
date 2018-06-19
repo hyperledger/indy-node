@@ -8,7 +8,7 @@ Example:
 ```
 0_3_100_to_0_3_101.py
 ```
-If several upgrades were skipped and you migrate from A to D, when B and C are available several migration script will be applied. Scipts to apply are picked by the following predicate:
+If several upgrades were skipped and you migrate from A to D, when B and C are available several migration script will be applied. Scripts to apply are picked by the following predicate:
 ```
 (script's first version >= a version we're migrating from) and (script's second version <= a version we're migrating to)
 ```

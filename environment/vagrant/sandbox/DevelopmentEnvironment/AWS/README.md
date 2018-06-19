@@ -4,7 +4,7 @@ before running `vagrant up`.
 ## TODO
 3. All "Dependencies" are built from source. See "Dependencies" section in
    config.properties. Modify the dependencies list (comma separated list) to
-   accept a comma sepparated list of <dep>=<version> strings. When "=<version>"
+   accept a comma separated list of <dep>=<version> strings. When "=<version>"
    is present, install the specific version of the package via the package
    manager instead of building it from source.
 

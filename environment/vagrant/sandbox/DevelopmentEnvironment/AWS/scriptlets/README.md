@@ -1,5 +1,5 @@
 Build up a provisioning script composed of scriptlets encapsulating discrete, 
-resusable units of work.
+reusable units of work.
 
 The scriptlets must be written in a language compatible with the target       
 operating system. For example, bash or sh for Linux, and powershell for Windows.
@@ -51,7 +51,7 @@ deposit | CI/CD | Deposit tested and bundled artifacts. This scriptlet may need 
 deploy | CI/CD | Deploy tested, bundled, and optionally deposited artifacts (Continuous Deployment)
 post | CI/CD | Any cleanup needed to keep the build environment footprint small, but still have a functional development/build environment. For example, delete third party source files needed to build a dependency. Perhaps this target can be used to run smoke tests on deployed artifacts?
 
-The following depicts this project's scriptlets directory. The elipses (...)
+The following depicts this project's scriptlets directory. The ellipses (...)
 are added for brevity.
 
 ```

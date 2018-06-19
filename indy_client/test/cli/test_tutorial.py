@@ -462,13 +462,13 @@ def test_alice_accept_faber_request_again(
         do,
         aliceCli,
         faberMap,
-        unsyced_already_accepted_request_accepted_out,
+        unsynced_already_accepted_request_accepted_out,
         alice_accepted_faber_request):
     li = aliceCli.activeWallet.getConnectionBy(remote=faberMap['remote'])
     li.connection_status = None
     be(aliceCli)
     accept_request(be, do, aliceCli, faberMap,
-                   unsyced_already_accepted_request_accepted_out)
+                   unsynced_already_accepted_request_accepted_out)
     li.connection_status = constant.CONNECTION_STATUS_ACCEPTED
 
 
@@ -595,14 +595,14 @@ def testShowAcmeConnection(
 
 @pytest.fixture(scope="module")
 def aliceAcceptedAcmeJobInvitation(aliceCli, be, do,
-                                   unsycedAcceptedInviteWithoutClaimOut,
+                                   unsyncedAcceptedInviteWithoutClaimOut,
                                    preRequisite,
                                    aliceRequestedTranscriptClaim,
                                    acmeInviteLoadedByAlice,
                                    acmeMap):
     be(aliceCli)
     accept_request(be, do, aliceCli, acmeMap,
-                   unsycedAcceptedInviteWithoutClaimOut)
+                   unsyncedAcceptedInviteWithoutClaimOut)
     return aliceCli
 
 
@@ -1039,7 +1039,7 @@ def assertReqAvailClaims(be, do, userCli, agentMap,
 def testBobReqAvailClaimsFromAgents(
         be, do, bobCli, loadInviteOut, faberMap, acmeMap, thriftMap,
         syncedInviteAcceptedWithClaimsOut,
-        unsycedAcceptedInviteWithoutClaimOut):
+        unsyncedAcceptedInviteWithoutClaimOut):
     userCli = bobCli
 
     # When new user/cli requests available claims from Faber,
@@ -1059,7 +1059,7 @@ def testBobReqAvailClaimsFromAgents(
                          'invite': 'sample/acme-bob-connection-request.indy',
                          'nonce': '810b78be79f29fc81335abaa4ee1c5e8'})
     assertReqAvailClaims(be, do, userCli, bob_acme_map,
-                         loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)
+                         loadInviteOut, unsyncedAcceptedInviteWithoutClaimOut)
 
     # When new user/cli requests available claims from Thrift,
     # No claims should be sent as available claims.
@@ -1068,4 +1068,4 @@ def testBobReqAvailClaimsFromAgents(
                            'invite': 'sample/thrift-bob-connection-request.indy',
                            'nonce': 'ousezru20ic4yz3j074trcgthwlsnfsef'})
     assertReqAvailClaims(be, do, userCli, bob_thrift_map,
-                         loadInviteOut, unsycedAcceptedInviteWithoutClaimOut)
+                         loadInviteOut, unsyncedAcceptedInviteWithoutClaimOut)

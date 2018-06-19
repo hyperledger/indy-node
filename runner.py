@@ -55,7 +55,7 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
     totalPassed = 0
     totalFailed = 0
     totalSkipped = 0
-    totalErros = 0
+    totalErrors = 0
     runsCount = 0
     allFailedTests = []
     allErrorTests = []
@@ -132,12 +132,12 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
             retVal += r
             totalPassed += passed
             totalFailed += failed
-            totalErros += errors
+            totalErrors += errors
             totalSkipped += skipped
         runsCount += 1
 
         if repeatUntilFailure:
-            if totalFailed or totalErros:
+            if totalFailed or totalErrors:
                 break  # repeatUntilFailure set and failures happened
             else:
                 logSuccess('Run #{} was successful'.format(runsCount))
@@ -147,7 +147,7 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
             break  # just one run
 
     summaryMsg = 'Total {} runs {} passed, {} failed, {} errors, {} skipped'.\
-        format(runsCount, totalPassed, totalFailed, totalErros, totalSkipped)
+        format(runsCount, totalPassed, totalFailed, totalErrors, totalSkipped)
     log(summaryMsg)
 
     if totalFailed:
@@ -155,7 +155,7 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
         for fm, fn in allFailedTests:
             log('{}:{}'.format(fm, fn))
 
-    if totalErros:
+    if totalErrors:
         log("Error in tests:")
         for fm, fn in allErrorTests:
             log('{}:{}'.format(fm, fn))

@@ -1,5 +1,5 @@
 # Running a Simulation of a Indy Cluster and Agents
-One way to run through the [Indy Getting Started Guide](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) is to set up a simulation of a Indy Validator Cluster.  This simulation resides in a single process on a single PC, but it sets up multiple asynchronous call-backs, one for each node being simulated.  These call-backs are handled sequentially in an event loop.  This gives the approximate performance of nultiple Indy Validator, Agent and CLI client nodes, but all running within a single process.  These instructions will configure the simulation, leaving you at the end with a CLI command-line prompt that you can use to complete the Getting Started Guide.
+One way to run through the [Indy Getting Started Guide](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) is to set up a simulation of a Indy Validator Cluster.  This simulation resides in a single process on a single PC, but it sets up multiple asynchronous call-backs, one for each node being simulated.  These call-backs are handled sequentially in an event loop.  This gives the approximate performance of multiple Indy Validator, Agent and CLI client nodes, but all running within a single process.  These instructions will configure the simulation, leaving you at the end with a CLI command-line prompt that you can use to complete the Getting Started Guide.
 
 ## Install the Indy Client Software
 
@@ -40,7 +40,7 @@ Type this command:
 >>> start_getting_started()
 ```
 
-This command will start up a local pool of validator "nodes". This can take a few mintues and will produce a lot of console
+This command will start up a local pool of validator "nodes". This can take a few minutes and will produce a lot of console
 output. This output contains the initial communication between 4 nodes. This output can be ignored for this exercise.
 
 After starting up the local indy pool, three agents will be launched in virtual "nodes". During this this exercise we will be interacting

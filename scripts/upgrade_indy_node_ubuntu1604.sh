@@ -5,7 +5,7 @@ if [ -z "$deps" ] ; then
   exit 1
 fi
 
-echo "Try to donwload indy version $deps"
+echo "Try to download indy version $deps"
 apt-get -y update && apt-get --download-only -y --allow-downgrades --allow-change-held-packages install $deps
 ret=$?
 if [ $ret -ne 0 ] ; then

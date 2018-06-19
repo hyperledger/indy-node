@@ -1,5 +1,5 @@
 #!/usr/bin/python3                                                              
-# Generate a DID/verkey pair in the same way the Sovin CLI does
+# Generate a DID/verkey pair in the same way the Sovrin CLI does
 
 from libnacl import randombytes                                                 
 from stp_core.crypto.util import cleanSeed                                      

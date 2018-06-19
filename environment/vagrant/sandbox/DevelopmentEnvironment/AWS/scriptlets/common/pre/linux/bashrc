@@ -39,7 +39,7 @@ unset_repo() {
 help_repo() {
   echo "Usage: userepo <repo> - set repo context"
   echo "Usage: helprepo - print usage and help information"
-  echo "Usage: *repo - CI/CD targets - see Aavailable commands below"
+  echo "Usage: *repo - CI/CD targets - see Available commands below"
   echo ""
   echo "Available commands:"
   echo "-------------------"

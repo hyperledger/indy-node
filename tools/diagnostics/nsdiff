@@ -90,7 +90,7 @@ class Error(Exception):
 
 
 class ArchiveError(Error):
-    """Exception raised for errors encounterd while identifying and extracting
+    """Exception raised for errors encountered while identifying and extracting
     tarfiles and zipfiles.
 
     Attributes:
@@ -253,7 +253,7 @@ class NodeStateComparator:
             raise ArchiveError(s.format(file))
         return tempdir
 
-    # Extract a tarball/zipfile into a temprary directory
+    # Extract a tarball/zipfile into a temporary directory
     def _extract_archive(self, file):
         logger.debug("Extracting archive {}".format(file))
         # Is the file a tarfile (tar, gz2, zip, tar.gz, etc.) or zipfile?
@@ -356,7 +356,7 @@ class NodeStateComparator:
             except LevelDBError as e:
                 debug_message = ("Failed opening {} as a LevelDB"
                                  " instance using initKeyValueStorageInt"
-                                 " with exeption {}")
+                                 " with exception {}")
                 logger.debug(debug_message.format(filename, e))
                 try:
                     debug_message = ("Retry opening {} as a LevelDB"
@@ -371,7 +371,7 @@ class NodeStateComparator:
                     debug_message = ("Failed opening {} as a LevelDB"
                                      " instance using"
                                      " initKeyValueStorageIntKeys with"
-                                     " exeption {}")
+                                     " exception {}")
                     logger.debug(debug_message.format(filename, e))
                     opened = False
 
@@ -406,7 +406,7 @@ class NodeStateComparator:
                         debug_message = ("Failed opening {} as a"
                                          " RocksDB instance using"
                                          " initKeyValueStorageIntKeys"
-                                         " with exeption {}")
+                                         " with exception {}")
                         logger.debug(debug_message.format(filename, e))
                         error_message = ("Failed to open {}/{} as a"
                                          " LevelDB or RocksDB instance")
@@ -427,7 +427,7 @@ class NodeStateComparator:
                             try:
                                 k = bytes(k)
                             except TypeError:
-                                # k isn't convertable to bytes
+                                # k isn't convertible to bytes
                                 pass
 
                             # The 'participants' and 'signature' can
@@ -445,13 +445,13 @@ class NodeStateComparator:
                             try:
                                 k = bytes(k)
                             except TypeError:
-                                # k isn't convertable to bytes
+                                # k isn't convertible to bytes
                                 pass
 
                             try:
                                 v = bytes(v)
                             except TypeError:
-                                # v isn't convertable to bytes
+                                # v isn't convertible to bytes
                                 pass
 
                             logger.info(
@@ -465,13 +465,13 @@ class NodeStateComparator:
                             try:
                                 k = bytes(k)
                             except TypeError:
-                                # k isn't convertable to bytes
+                                # k isn't convertible to bytes
                                 pass
 
                             try:
                                 v = bytes(v)
                             except TypeError:
-                                # v isn't convertable to bytes
+                                # v isn't convertible to bytes
                                 pass
 
                             logger.info("Writing >{} {}< to {}"
@@ -488,13 +488,13 @@ class NodeStateComparator:
                             try:
                                 k = bytes(k)
                             except TypeError:
-                                # k isn't convertable to bytes
+                                # k isn't convertible to bytes
                                 pass
 
                             try:
                                 v = bytes(v)
                             except TypeError:
-                                # v isn't convertable to bytes
+                                # v isn't convertible to bytes
                                 pass
 
                             logger.info("Writing >{} {}< to {}"
@@ -807,7 +807,7 @@ class NodeStateComparator:
                              s2_extension))
 
         # Create temp directory for s1 and s2 in which to store all scrubbed and
-        # transformed files. A recursive *nix diff will be peformed on these
+        # transformed files. A recursive *nix diff will be performed on these
         # directories.
         self.s1_transformed_and_scrubbed = tempfile.mkdtemp()
         self.s2_transformed_and_scrubbed = tempfile.mkdtemp()

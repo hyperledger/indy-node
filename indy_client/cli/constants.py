@@ -17,7 +17,7 @@ CLIENT_GRAMS_CLIENT_ADD_FORMATTED_REG_EX = getPipedRegEx(
 CLIENT_GRAMS_USE_KEYPAIR_FORMATTED_REG_EX = getPipedRegEx(
     CLIENT_GRAMS_USE_KEYPAIR_REG_EX)
 
-# TODO we can genericize the other TXN types in the same way
+# TODO we can generalize the other TXN types in the same way
 TXN_NYM = "(\s* (?P<{{cmdName}}>{{cmd}}\s+{nym}) " \
           "\s+ (?P<dest>dest=) \s* (?P<dest_id>[A-Za-z0-9+=/]*)" \
           "(\s+ (?P<role_key>role=) \s* (?P<role>{trustee}|{tgb}|{trustAnchor}|{steward}|))?" \
@@ -210,4 +210,4 @@ SEND_POOL_UPG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_UPG_REG_EX)
 SEND_POOL_CONFIG_FORMATTED_REG_EX = getPipedRegEx(SEND_POOL_CONFIG_REG_EX)
 REQ_AVAIL_CLAIMS_FORMATTED_REG_EX = getPipedRegEx(REQ_AVAIL_CLAIMS_REG_EX)
 NEW_ID_FORMATTED_REG_EX = getPipedRegEx(NEW_ID_REG_EX)
-CHANGE_CURENT_KEY_FORMATTED_REG_EX = getPipedRegEx(CHANGE_CURENT_KEY_REG_EX)
+CHANGE_CURRENT_KEY_FORMATTED_REG_EX = getPipedRegEx(CHANGE_CURENT_KEY_REG_EX)

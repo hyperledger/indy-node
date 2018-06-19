@@ -15,7 +15,7 @@ $ make run-demo
 
 # Indy Docker
 
-A Docker file is provided that creates and configures Indy nodes and clients. The resulting Docker image can be used to instantiate the particants in the **Alice Demo** that are described in the [Sovrin's Getting Started Guide](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md).
+A Docker file is provided that creates and configures Indy nodes and clients. The resulting Docker image can be used to instantiate the participants in the **Alice Demo** that are described in the [Sovrin's Getting Started Guide](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md).
 
 ## Dependencies
 

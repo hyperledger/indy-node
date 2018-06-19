@@ -35,7 +35,7 @@ If POOL_RESTART was successfully received, then the reply will be as follows:
 }
 ```
 If there are any problems at the stage of static validation, will send REQNACK  with a description of the problem.
-If an error is detected during the processing of the command, Reply will contains field "isSuccess=Flase" and field "msg" will contains information about the error.
-Reply will sended before node restart.
+If an error is detected during the processing of the command, Reply will contains field "isSuccess=False" and field "msg" will contains information about the error.
+Reply will send before node restart.
 
 For reference: [INDY-1173](https://jira.hyperledger.org/browse/INDY-1173)

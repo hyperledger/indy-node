@@ -84,7 +84,7 @@ def getProofRequestsCount(userCli, target):
 @pytest.fixture(scope='module')
 def aliceAcceptedAcmeInvitationNoProofReq(
         acmeAgentCliRunning, be, do, aliceCLI, acmeMap, loadInviteOut,
-        unsycedAcceptedInviteWithoutClaimOut,
+        unsyncedAcceptedInviteWithoutClaimOut,
         syncConnectionOutWithEndpoint, newKeyringOut):
     def _(invitationFile, wallet):
         be(aliceCLI)
@@ -105,7 +105,7 @@ def aliceAcceptedAcmeInvitationNoProofReq(
         do('accept request from {inviter}',
            within=15,
            mapper=acmeMap,
-           expect=unsycedAcceptedInviteWithoutClaimOut)
+           expect=unsyncedAcceptedInviteWithoutClaimOut)
 
         proofRequestsBefore = getProofRequestsCount(
             aliceCLI, acmeMap['remote'])

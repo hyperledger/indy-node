@@ -70,7 +70,7 @@ At this point you are ready to build your environment.
 
 ## Start nodes
 
-So, if you run the setupEnvironent.sh script, you should see a whole lot of output of the nodes and transactions being created.
+So, if you run the setupEnvironment.sh script, you should see a whole lot of output of the nodes and transactions being created.
 
 At this point you are now ready to start the nodes.
 

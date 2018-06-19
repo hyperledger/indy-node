@@ -80,10 +80,10 @@ def ensureConnectedToTestEnv(be, do, cli):
         connect_and_check_output(do, cli.txn_dir, timeout)
 
 
-def connect_and_check_output(do, netwotk, timeout=3, expect=None, mapper=None):
+def connect_and_check_output(do, network, timeout=3, expect=None, mapper=None):
     if expect is None:
-        expect = 'Connected to {}'.format(netwotk)
-    do('connect {}'.format(netwotk), within=timeout,
+        expect = 'Connected to {}'.format(network)
+    do('connect {}'.format(network), within=timeout,
        expect=expect, mapper=mapper)
 
 

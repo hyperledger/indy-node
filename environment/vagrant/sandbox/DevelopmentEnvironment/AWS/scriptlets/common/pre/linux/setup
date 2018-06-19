@@ -60,15 +60,15 @@ echo "Setup default .vimrc ..."
 echo ":set colorcolumn=80" >> /home/ec2-user/.vimrc
 
 #--------------------------------------------------------
-# Ammend the Vagrant and root user .bashrc
+# Amend the Vagrant and root user .bashrc
 #  - Add convenience aliases for managing repos CI/CD targets
 if [ -f /vagrant/scriptlets/common/pre/linux/bashrc ]; then
   if ! grep -q "package_manager" /home/ec2-user/.bashrc; then
-    echo "Ammending .bashrc for user vagrant"
+    echo "Amending .bashrc for user vagrant"
     cat /vagrant/scriptlets/common/pre/linux/bashrc >> /home/ec2-user/.bashrc
   fi 
   if ! grep -q "package_manager" /root/.bashrc; then
-    echo "Ammending .bashrc for user root"
+    echo "Amending .bashrc for user root"
     cat /vagrant/scriptlets/common/pre/linux/bashrc >> /root/.bashrc
   fi 
 fi
@@ -103,7 +103,7 @@ make
 make install
 
 #--------------------------------------------------------
-# Indy Client - Prerequsites
+# Indy Client - Prerequisites
 echo "Install Indy CLI prerequisites..."
 mkdir -p /home/$USER/indy-cli && cd /home/$USER/indy-cli
 if [ ! -d ./indy-anoncreds ]; then

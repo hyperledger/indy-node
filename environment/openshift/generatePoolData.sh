@@ -69,7 +69,7 @@ for i in `seq 1 $NODE_COUNT`; do
 done
 
 POOL_DATA=${POOL_DATA:1}
-echo "Writing node pool data to ${POOL_DATA_FILE} for referance ..."
+echo "Writing node pool data to ${POOL_DATA_FILE} for reference ..."
 echo "${POOL_DATA}" > ${POOL_DATA_FILE}
 echo "Node pool data created."
 echo

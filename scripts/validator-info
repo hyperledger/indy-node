@@ -108,14 +108,14 @@ class NodesListUnknown(BaseUnknown):
 
 
 class BaseStats(OrderedDict):
-    shema = []
+    schema = []
 
     def __init__(self, stats, verbose=False):
         if stats is None:
             logger.debug(
                 "{} no stats found".format(type(self).__name__))
 
-        for k, cls in self.shema:
+        for k, cls in self.schema:
             val = None if stats is None else stats.get(k)
             try:
                 if issubclass(cls, BaseStats):
@@ -258,7 +258,7 @@ class BindingStats(BaseUnknown):
 
 
 class TransactionsStats(BaseStats):
-    shema = [
+    schema = [
         ("config", BaseUnknown),
         ("ledger", BaseUnknown),
         ("pool", BaseUnknown)
@@ -266,14 +266,14 @@ class TransactionsStats(BaseStats):
 
 
 class AverageStats(BaseStats):
-    shema = [
+    schema = [
         ("read-transactions", FloatUnknown),
         ("write-transactions", FloatUnknown)
     ]
 
 
 class MetricsStats(BaseStats):
-    shema = [
+    schema = [
         ("uptime", UptimeUnknown),
         ("transaction-count", TransactionsStats),
         ("average-per-second", AverageStats)
@@ -281,7 +281,7 @@ class MetricsStats(BaseStats):
 
 
 class NodeStats(BaseStats):
-    shema = [
+    schema = [
         ("Name", BaseUnknown),
         ("did", BaseUnknown),
         ("verkey", BaseUnknown),
@@ -292,7 +292,7 @@ class NodeStats(BaseStats):
 
 
 class PoolStats(BaseStats):
-    shema = [
+    schema = [
         ("Total_nodes_count", BaseUnknown),
         ("Reachable_nodes", NodesListUnknown),
         ("Reachable_nodes_count", BaseUnknown),
@@ -302,7 +302,7 @@ class PoolStats(BaseStats):
 
 
 class SoftwareStats(BaseStats):
-    shema = [
+    schema = [
         ("indy-node", BaseUnknown),
         ("sovrin", BaseUnknown)
     ]
@@ -335,7 +335,7 @@ class SoftwareStats(BaseStats):
 
 
 class ValidatorStats(BaseStats):
-    shema = [
+    schema = [
         ("response-version", BaseUnknown),
         ("timestamp", TimestampUnknown),
         ("Node_info", NodeStats),

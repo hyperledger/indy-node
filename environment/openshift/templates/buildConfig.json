@@ -7,7 +7,7 @@
     "annotations":
     {
       "description": "A template for docker builds for the Alice indy example application in OpenShift.",
-      "tags": "alice,sorin,indy",
+      "tags": "alice,sovrin,indy",
       "iconClass": "icon-github"
     }
   },
@@ -197,8 +197,8 @@
     },
     {
       "name": "GIT_REF",
-      "displayName": "Git Referance",
-      "description": "The git referance or branch.",
+      "displayName": "Git Reference",
+      "description": "The git reference or branch.",
       "required": true,
       "value": "master"
     },

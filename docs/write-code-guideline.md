@@ -67,7 +67,7 @@ If it's not possible to use indy-sdk for some reasons
  and put a TODO comment in the test.
 - Use `txnPoolNodeSet`, not `nodeSet` fixture. `nodeSet` will be deprecated soon.
 - Importing fixtures
-    - Fixture imports are not highlighted by IDEs, that’s why they can be accidently removed by someone. To avoid this try to move fixture to conftest of the containing package or conftest of some of higher-level package - this allows fixture to be resolved automatically.
+    - Fixture imports are not highlighted by IDEs, that’s why they can be accidentally removed by someone. To avoid this try to move fixture to conftest of the containing package or conftest of some of higher-level package - this allows fixture to be resolved automatically.
     If you still import fixtures, mark such the imports with the following hint for IDE not to mark them as unused and not to remove them when optimizing imports:
     
         `# noinspection PyUnresolvedReferences`

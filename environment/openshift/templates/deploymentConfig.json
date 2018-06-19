@@ -241,7 +241,7 @@
     {
       "name": "APPLICATION_HOSTNAME",
       "displayName": "Application Hostname",
-      "description": "The exposed hostname that will route to the coresponding service, if left blank a value will be defaulted.",
+      "description": "The exposed hostname that will route to the corresponding service, if left blank a value will be defaulted.",
       "value": ""
     },
     {

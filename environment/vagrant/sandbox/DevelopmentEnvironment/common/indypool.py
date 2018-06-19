@@ -55,7 +55,7 @@ def getImage(path, dockerfile, tag):
             eprint("Failed to build docker image")
             raise exc
         except TypeError as exc:
-            eprint("You must give a path to the build environemnt.")
+            eprint("You must give a path to the build environment.")
             raise exc
         except APIError as exc:
             eprint("Unhandled error while building image", tag)
@@ -89,7 +89,7 @@ def runContainer(image, **kwargs):
 def getContainer(name_or_id):
     '''Get the container with the given name or ID (str). No side effects.
     Idempotent. Returns None if the container does not exist. Otherwise, the
-    continer is returned'''
+    container is returned'''
     require_str("name_or_id", name_or_id)
 
     container = None

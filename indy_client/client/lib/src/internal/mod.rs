@@ -70,7 +70,7 @@ pub fn string_from_c_ptr(cstr: *const c_char) -> Option<String> {
 
         // Catch any panics that may happen inside Rust over the next few lines of logic, so we don't
         // attempt to propagate the panics across a lib boundary; that would yield undefined behavior.
-        // This mechanis is not foolproof--some panics in Rust abort a process instead of unwinding
+        // This mechanism is not foolproof--some panics in Rust abort a process instead of unwinding
         // the stack. It is not intended to work like a generic try...catch. But it does make our
         // library more robust. See http://bit.ly/2koEXss.
         let result = panic::catch_unwind(|| {

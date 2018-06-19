@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==============================================================================
-# Script for taking down an OpenShift cluter in Docker for Windows
+# Script for taking down an OpenShift cluster in Docker for Windows
 #
 # * Requires the OpenShift Origin CLI
 # ------------------------------------------------------------------------------

@@ -32,7 +32,7 @@ Anoncreds protocol links:
     1. CredDef Issuer needs to be able to create multiple CredDefs by the same issuer DID.
     1. CredDef Issuer needs to be able to create multiple CredDefs for the same Schema by the same issuer DID.
     1. We need to keep reputation for CredDef's Issuer DID.
-1. Creation of Revocation Registry (Def and Enteries):
+1. Creation of Revocation Registry (Def and Entries):
     1. RevocReg Issuer may not be the same as Schema Author and CredDef issuer. 
     1. RevocReg Issuer needs to be able to create multiple RevocRegs for the same issuer DID.
     1. RevocReg Issuer needs to be able to create multiple RevocReg for the same CredDef by the same issuer DID.
@@ -499,7 +499,7 @@ possibly long ago in the past;
 #### Changes in Anoncreds Protocol
 
 If want to support Requirement 6, then the following changes are required in the
-anoncerds protocol:
+Anoncreds protocol:
 
 * Each Credential must have a reserved mandatory attribute: `issuanceTime`.
     * It's set by the Issuer to specify the time of Issuance.
