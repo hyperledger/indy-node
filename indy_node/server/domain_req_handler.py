@@ -73,6 +73,34 @@ class DomainReqHandler(PHandler):
             logger.debug(
                 'Cannot apply request of type {} to state'.format(txn_type))
 
+    def gen_txn_path(self, txn):
+        txn_type = get_type(txn)
+        if txn_type not in self.state_update_handlers:
+            logger.error('Cannot generate id for txn of type {}'.format(txn_type))
+            return None
+
+        if txn_type == NYM:
+            nym = get_payload_data(txn).get(TARGET_NYM)
+            return domain.make_state_path_for_nym(nym)
+        elif txn_type == ATTRIB:
+            _, path, _, _, _ = domain.prepare_attr_for_state(txn)
+            return path
+        elif txn_type == SCHEMA:
+            path, _ = domain.prepare_schema_for_state(txn)
+            return path
+        elif txn_type == CLAIM_DEF:
+            path, _ = domain.prepare_claim_def_for_state(txn)
+            return path
+        elif txn_type == REVOC_REG_DEF:
+            path, _ = domain.prepare_revoc_def_for_state(txn)
+            return path
+        elif txn_type == REVOC_REG_ENTRY:
+            path, _ = domain.prepare_revoc_reg_entry_for_state(txn)
+            return path
+
+        raise NotImplementedError("path construction is not implemented for type {}".format(txn_type))
+
+
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
         self.onBatchCommitted(stateRoot)
