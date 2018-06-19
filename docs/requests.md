@@ -129,7 +129,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             },
         },
         "txnMetadata": {
-            "creationTime": <...>,
+            "txnTime": <...>,
             "seqNo": <...>,  
             "txnId": <...>
         },
@@ -193,23 +193,18 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - `reqId` (integer): 
             Unique ID number of the request with transaction.
   
-    - `txnMetadata` (dict):
+- `txnMetadata` (dict):
+
+    Metadata attached to the transaction.
     
-        Metadata attached to the transaction.    
+    - `txnTime` (integer as POSIX timestamp):
+        The time when transaction was written to the Ledger as POSIX timestamp.
         
-         - `version` (integer):
-            Transaction version to be able to evolve `txnMetadata`.
-            The content of `txnMetadata` may depend on the version.  
+    - `seqNo` (integer):
+        A unique sequence number of the transaction on Ledger
         
-        - `txnTime` (integer as POSIX timestamp): 
-            The time when transaction was written to the Ledger as POSIX timestamp.
-            
-        - `seqNo` (integer):
-            A unique sequence number of the transaction on Ledger
-            
-        - `txnId` (string):
-            Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger.
-            
+    - `txnId` (string):
+        Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger.
   
 - `reqSignature` (dict):
 
