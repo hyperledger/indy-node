@@ -7,7 +7,7 @@ from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiat
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.messages.node_messages import Reply
@@ -224,9 +224,8 @@ class Node(PlenumNode, HasPoolManager):
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
 
-        # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
         self.startedProcessingReq(request.key, self.nodestack.name)
         self.send(request)
@@ -248,7 +247,7 @@ class Node(PlenumNode, HasPoolManager):
 
         # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
         self.startedProcessingReq(request.key,
                                   self.nodestack.name)
