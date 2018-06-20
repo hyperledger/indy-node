@@ -406,7 +406,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     'result': {
         "ver": 1,
         "txn": {
-            "type":1,
+            "type":"1",
             "protocolVersion":1,
             
             "data": {
@@ -490,7 +490,7 @@ Adds attribute to a NYM record.
     'result': {
         "ver": 1,
         "txn": {
-            "type":100,
+            "type":"100",
             "protocolVersion":1,
             
             "data": {

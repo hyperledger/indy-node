@@ -91,7 +91,7 @@ transaction specific data:
     
     Transaction-specific payload (data)
 
-    - `type` (enum number as integer): 
+    - `type` (enum number as string):
     
         Supported transaction type:
         
@@ -219,7 +219,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 {
     "ver": 1,
     "txn": {
-        "type":1,
+        "type":"1",
         "protocolVersion":1,
         
         "data": {
@@ -284,7 +284,7 @@ Adds attribute to a NYM record
 {
     "ver": 1,
     "txn": {
-        "type":100,
+        "type":"100",
         "protocolVersion":1,
         
         "data": {

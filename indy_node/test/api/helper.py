@@ -1,3 +1,4 @@
+import json
 import base58
 
 
@@ -48,6 +49,20 @@ def is_verkey(v):
     return is_base58_str(v) and len(base58.b58decode(v)) == key_len
 
 
+def is_json(v):
+    try:
+        json.loads(v)
+        return True
+    except:
+        return False
+
+
+def is_sha256(v):
+    return is_str(v) \
+           and all(c in '0123456789abcdef' for c in v) \
+           and len(v) == 256 // 4
+
+
 # Basic requirement checkers
 
 def require(d, k, t):
@@ -61,7 +76,6 @@ def optional(d, k, t):
 
 
 # Generic validators
-
 
 def validate_txn(txn):
     require(txn, 'type', is_number_str)
@@ -112,10 +126,21 @@ def validate_write_reply(reply):
 # Specific txn validators
 
 def validate_nym_txn(txn):
-    require(txn, 'type', is_one_of("1"))
+    require(txn, 'type', is_one_of('1'))
 
     data = txn['data']
     require(data, 'dest', is_did)
-    optional(data, 'role', is_one_of(None, "0", "2", "101"))
+    optional(data, 'role', is_one_of(None, '0', '2', '101'))
     optional(data, 'verkey', is_verkey)
     optional(data, 'alias', is_str)
+
+
+def validate_attrib_txn(txn):
+    require(txn, 'type', is_one_of('100'))
+
+    data = txn['data']
+    require(data, 'dest', is_did)
+    optional(data, 'raw', is_json)
+    optional(data, 'hash', is_sha256)
+    optional(data, 'enc', is_str)
+    assert sum(1 for k in data.keys() if k in ['raw', 'hash', 'enc']) == 1
