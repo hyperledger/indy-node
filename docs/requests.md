@@ -657,7 +657,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     'result': {
         "ver": 1,
         "txn": {
-            "type":102,
+            "type":"102",
             "protocolVersion":1,
             
             "data": {

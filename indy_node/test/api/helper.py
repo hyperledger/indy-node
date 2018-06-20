@@ -1,6 +1,9 @@
 import json
 import base58
 
+from indy.anoncreds import issuer_create_schema
+from indy.ledger import build_schema_request, sign_request, submit_request
+
 
 # Utility predicates
 
@@ -157,3 +160,29 @@ def validate_schema_txn(txn):
     require(data, 'version', is_str)
     require(data, 'attr_names', is_list)
     assert all(is_str(n) for n in data['attr_names'])
+
+
+def validate_claim_def_txn(txn):
+    require(txn, 'type', is_one_of('102'))
+
+    data = txn['data']
+    require(data, 'data', is_dict)
+    require(data['data'], 'primary', is_str)
+    require(data['data'], 'revocation', is_str)
+    require(data, 'ref', is_int)
+    require(data, 'signature_type', is_one_of('CL'))
+    optional(data, 'tag', is_str)
+
+
+# Misc utility
+
+def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward, name, attr_names):
+    wallet_handle, identifier = sdk_wallet_steward
+
+    _, schema_json = looper.loop.run_until_complete(
+        issuer_create_schema(identifier, name, "1.0", json.dumps(attr_names)))
+    request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+    req_signed = looper.loop.run_until_complete(sign_request(wallet_handle, identifier, request))
+    reply = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+
+    return schema_json, reply
