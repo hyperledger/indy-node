@@ -34,6 +34,20 @@ def is_number_str(v):
     return is_str(v) and v.isdigit()
 
 
+def is_did(v):
+    return is_base58_str(v) and len(base58.b58decode(v)) in [16, 32]
+
+
+def is_verkey(v):
+    if not is_str(v):
+        return False
+    key_len = 32
+    if v.startswith('~'):
+        key_len = 16
+        v = v[1:]
+    return is_base58_str(v) and len(base58.b58decode(v)) == key_len
+
+
 # Basic requirement checkers
 
 def require(d, k, t):
@@ -46,7 +60,8 @@ def optional(d, k, t):
         assert t(d[k])
 
 
-# Validators
+# Generic validators
+
 
 def validate_txn(txn):
     require(txn, 'type', is_number_str)
@@ -55,7 +70,7 @@ def validate_txn(txn):
     optional(txn, 'protocolVersion', is_int)
 
     metadata = txn['metadata']
-    require(metadata, 'from', is_base58_str)
+    require(metadata, 'from', is_did)
     require(metadata, 'reqId', is_int)
 
 
@@ -70,7 +85,7 @@ def validate_req_signature(req_signature):
     require(req_signature, 'values', is_list)
     for value in req_signature['values']:
         assert is_dict(value)
-        require(value, 'from', is_base58_str)
+        require(value, 'from', is_did)
         require(value, 'value', is_base58_str)
 
 
@@ -92,3 +107,15 @@ def validate_write_reply(reply):
     require(reply, 'op', is_one_of('REPLY'))
     require(reply, 'result', is_dict)
     validate_write_result(reply['result'])
+
+
+# Specific txn validators
+
+def validate_nym_txn(txn):
+    require(txn, 'type', is_one_of("1"))
+
+    data = txn['data']
+    require(data, 'dest', is_did)
+    optional(data, 'role', is_one_of(None, "0", "2", "101"))
+    optional(data, 'verkey', is_verkey)
+    optional(data, 'alias', is_str)

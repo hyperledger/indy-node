@@ -184,7 +184,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
 
         - `from` (base58-encoded string):
              Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-             for 16 or 32 bit DID value.
+             for 16 or 32 byte DID value.
              It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
              target identifier (for example, a newly created DID identifier).
              
@@ -218,7 +218,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     - `values` (list): 
         
         - `from` (base58-encoded string):
-        Identifier (DID) of signer as base58-encoded string for 16 or 32 bit DID value.
+        Identifier (DID) of signer as base58-encoded string for 16 or 32 byte DID value.
         
         - `value` (base58-encoded string):
          signature value
@@ -344,7 +344,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
@@ -360,9 +360,11 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
-- `verkey` (base58-encoded string; optional): 
+- `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
-    Target verification key as base58-encoded string. If not set, then either the target identifier
+    Target verification key as base58-encoded string. It can start with "~", which means tha
+    it's abbreviated verkey and should be 16 bytes long when decoded, otherwise it's a full verkey
+    which should be 32 bytes long when decoded. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
     (doesnt owns the identifier yet).
     Verkey can be changed to None by owner, it means that this user goes back under guardianship.
@@ -409,7 +411,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
             
             "data": {
                 "ver": 1,
-                "did":"GEzcdDLhCpGCYRHW82kjHd",
+                "dest":"GEzcdDLhCpGCYRHW82kjHd",
                 "verkey":"~HmUWn928bnFT6Ephf65YXv",
                 "role":101,
             },
@@ -448,7 +450,7 @@ Adds attribute to a NYM record.
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
@@ -493,7 +495,7 @@ Adds attribute to a NYM record.
             
             "data": {
                 "ver":1,
-                "did":"N22KY2Dyvmuu2PyyqSFKue",
+                "dest":"N22KY2Dyvmuu2PyyqSFKue",
                 'raw': '{"name":"Alice"}'
             },
             
@@ -705,12 +707,12 @@ Adds a new node to the pool, or updates existing node in the pool.
 
 - `dest` (base58-encoded string):
 
-    Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
+    Target Node's DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the transaction submitter (Steward's DID).
     
     *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the DID of this Node.
     
-- `verkey` (base58-encoded string; optional): 
+- `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
     Target Node verification key as base58-encoded string.
     It may absent if `dest` is 32-bit cryptonym CID. 
@@ -988,7 +990,7 @@ Gets information about a DID (NYM).
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of the read request sender, and `dest` is the requested DID.
@@ -1050,7 +1052,7 @@ i.e. reply data contains requested value only.
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of read request sender, and `dest` is the DID we get an attribute for.
@@ -1124,7 +1126,7 @@ Gets Claim's Schema.
 
 - `dest` (base58-encoded string):
 
-    Schema Issuer's DID as base58-encoded string for 16 or 32 bit DID value.
+    Schema Issuer's DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of the read request sender, and `dest` is the DID of the Schema's Issuer.
@@ -1199,7 +1201,7 @@ Gets Claim Definition.
 
 - `origin` (base58-encoded string):
 
-    Claim Definition Issuer's DID as base58-encoded string for 16 or 32 bit DID value.
+    Claim Definition Issuer's DID as base58-encoded string for 16 or 32 byte DID value.
         
 - `ref` (string):
     
