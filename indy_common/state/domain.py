@@ -92,7 +92,7 @@ def prepare_get_nym_for_state(reply):
     return key, value
 
 
-def prepare_attr_for_state(txn):
+def prepare_attr_for_state(txn, path_only=False):
     """
     Make key(path)-value pair for state from ATTRIB or GET_ATTR
     :return: state path, state value, value for attribute store
@@ -101,15 +101,17 @@ def prepare_attr_for_state(txn):
     txn_data = get_payload_data(txn)
     nym = txn_data[TARGET_NYM]
     attr_type, attr_key, value = parse_attr_txn(txn_data)
+    path = make_state_path_for_attr(nym, attr_key, attr_type == HASH)
+    if path_only:
+        return path
     hashed_value = hash_of(value) if value else ''
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(hashed_value, seq_no, txn_time)
-    path = make_state_path_for_attr(nym, attr_key, attr_type == HASH)
     return attr_type, path, value, hashed_value, value_bytes
 
 
-def prepare_claim_def_for_state(txn):
+def prepare_claim_def_for_state(txn, path_only=False):
     origin = get_from(txn)
     schema_seq_no = get_txn_claim_def_schema_ref(txn)
     if schema_seq_no is None:
@@ -123,13 +125,15 @@ def prepare_claim_def_for_state(txn):
     signature_type = get_txn_claim_def_signature_type(txn)
     tag = get_txn_claim_def_tag(txn)
     path = make_state_path_for_claim_def(origin, schema_seq_no, signature_type, tag)
+    if path_only:
+        return path
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(data, seq_no, txn_time)
     return path, value_bytes
 
 
-def prepare_revoc_def_for_state(txn):
+def prepare_revoc_def_for_state(txn, path_only=False):
     author_did = get_from(txn)
     txn_data = get_payload_data(txn)
     cred_def_id = txn_data.get(CRED_DEF_ID)
@@ -143,6 +147,8 @@ def prepare_revoc_def_for_state(txn):
                                          cred_def_id,
                                          revoc_def_type,
                                          revoc_def_tag)
+    if path_only:
+        return path
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
     assert seq_no
@@ -151,13 +157,15 @@ def prepare_revoc_def_for_state(txn):
     return path, value_bytes
 
 
-def prepare_revoc_reg_entry_for_state(txn):
+def prepare_revoc_reg_entry_for_state(txn, path_only=False):
     author_did = get_from(txn)
     txn_data = get_payload_data(txn)
     revoc_reg_def_id = txn_data.get(REVOC_REG_DEF_ID)
     assert author_did
     assert revoc_reg_def_id
     path = make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
+    if path_only:
+        return path
 
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
@@ -260,7 +268,7 @@ def prepare_get_revoc_reg_entry_accum_for_state(reply):
     return path, value_bytes
 
 
-def prepare_schema_for_state(txn):
+def prepare_schema_for_state(txn, path_only=False):
     origin = get_from(txn)
     schema_name = get_txn_schema_name(txn)
     schema_version = get_txn_schema_version(txn)
@@ -268,6 +276,8 @@ def prepare_schema_for_state(txn):
         SCHEMA_ATTR_NAMES: get_txn_schema_attr_names(txn)
     }
     path = make_state_path_for_schema(origin, schema_name, schema_version)
+    if path_only:
+        return path
     seq_no = get_seq_no(txn)
     txn_time = get_txn_time(txn)
     value_bytes = encode_state_value(value, seq_no, txn_time)
