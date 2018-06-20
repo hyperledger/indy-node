@@ -9,20 +9,21 @@ import tarfile
 import traceback
 import copy
 from _sha256 import sha256
+from binascii import hexlify
 
 from common.serializers.serialization import ledger_txn_serializer, serialize_msg_for_signing
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
 from indy_common.constants import CONFIG_LEDGER_ID, REVOC_REG_DEF, CRED_DEF_ID, \
-    CLAIM_DEF_TAG_DEFAULT
+    CLAIM_DEF_TAG_DEFAULT, NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_ENTRY
 from indy_common.state import domain
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.pool_req_handler import PoolRequestHandler
 from plenum.common.constants import TXN_TYPE, TXN_PAYLOAD, \
-    TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_DIGEST, POOL_LEDGER_ID, DOMAIN_LEDGER_ID
+    TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_DIGEST, POOL_LEDGER_ID, DOMAIN_LEDGER_ID, TARGET_NYM
 from plenum.common.txn_util import transform_to_new_format, get_from, get_req_id, get_payload_data, \
-    get_protocol_version, get_seq_no, get_type
+    get_protocol_version, get_seq_no, get_type, append_txn_metadata
 from plenum.common.types import f, OPERATION
 from plenum.persistence.req_id_to_txn import ReqIdrToTxn
 from storage.helper import initKeyValueStorage
@@ -105,6 +106,32 @@ def add_tag_into_cred_def_id(val):
     return new_val
 
 
+def gen_txn_path(txn):
+    txn_type = get_type(txn)
+    if txn_type not in DomainReqHandler.write_types:
+        return None
+
+    if txn_type == NYM:
+        nym = get_payload_data(txn).get(TARGET_NYM)
+        binary_digest = domain.make_state_path_for_nym(nym)
+        return hexlify(binary_digest).decode()
+    elif txn_type == ATTRIB:
+        _, path, _, _, _ = domain.prepare_attr_for_state(txn)
+        return path.decode()
+    elif txn_type == SCHEMA:
+        path, _ = domain.prepare_schema_for_state(txn)
+        return path.decode()
+    elif txn_type == CLAIM_DEF:
+        path, _ = domain.prepare_claim_def_for_state(txn)
+        return path.decode()
+    elif txn_type == REVOC_REG_DEF:
+        path, _ = domain.prepare_revoc_def_for_state(txn)
+        return path.decode()
+    elif txn_type == REVOC_REG_ENTRY:
+        path, _ = domain.prepare_revoc_reg_entry_for_state(txn)
+        return path.decode()
+
+
 def migrate_txn_log(db_dir, db_name):
 
     def put_into_seq_no_db(txn):
@@ -170,6 +197,10 @@ def migrate_txn_log(db_dir, db_name):
             # add digest into txn
             if get_req_id(new_val):
                 new_val[TXN_PAYLOAD][TXN_PAYLOAD_METADATA][TXN_PAYLOAD_METADATA_DIGEST] = digest
+                txn_id = gen_txn_path(new_val)
+                if txn_id:
+                    append_txn_metadata(new_val,
+                                        txn_id=txn_id)
             new_val = ledger_txn_serializer.serialize(new_val)
             dest_storage.put(key, new_val)
 
