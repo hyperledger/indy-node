@@ -87,19 +87,19 @@ class DomainReqHandler(PHandler):
             binary_digest = domain.make_state_path_for_nym(nym)
             return hexlify(binary_digest).decode()
         elif txn_type == ATTRIB:
-            _, path, _, _, _ = domain.prepare_attr_for_state(txn)
+            path = domain.prepare_attr_for_state(txn, path_only=True)
             return path.decode()
         elif txn_type == SCHEMA:
-            path, _ = domain.prepare_schema_for_state(txn)
+            path = domain.prepare_schema_for_state(txn, path_only=True)
             return path.decode()
         elif txn_type == CLAIM_DEF:
-            path, _ = domain.prepare_claim_def_for_state(txn)
+            path = domain.prepare_claim_def_for_state(txn, path_only=True)
             return path.decode()
         elif txn_type == REVOC_REG_DEF:
-            path, _ = domain.prepare_revoc_def_for_state(txn)
+            path = domain.prepare_revoc_def_for_state(txn, path_only=True)
             return path.decode()
         elif txn_type == REVOC_REG_ENTRY:
-            path, _ = domain.prepare_revoc_reg_entry_for_state(txn)
+            path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
             return path.decode()
 
         raise NotImplementedError("path construction is not implemented for type {}".format(txn_type))
