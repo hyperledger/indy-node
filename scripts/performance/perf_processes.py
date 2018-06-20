@@ -19,13 +19,13 @@ import random
 from indy import pool, wallet, did, ledger, anoncreds, blob_storage
 
 
-parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK.')
+parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK. '
+                                 'Detailed description: https://github.com/hyperledger/indy-node/docs/process-based-load-script.md')
 
-parser.add_argument('-c', '--clients',
-                    help='Number of client you want to create. Each client is a separate process.'
-                         '0 or less means equal to number of available CPUs'
-                         'Default value is 0',
-                    default=0, type=int, required=False, dest='clients')
+parser.add_argument('-c', '--clients', default=0, type=int, required=False, dest='clients',
+                    help='Number of client you want to create. '
+                         '0 or less means equal to number of available CPUs. '
+                         'Default value is 0')
 
 
 def check_fs(is_dir: bool, fs_name: str):
@@ -38,12 +38,10 @@ def check_fs(is_dir: bool, fs_name: str):
     raise argparse.ArgumentTypeError("{} not found or access error or file empty".format(pp))
 
 
-parser.add_argument('-g', '--genesis',
-                    help='Path to genesis txns file'
+parser.add_argument('-g', '--genesis', required=False, dest='genesis_path', type=functools.partial(check_fs, False),
+                    help='Path to genesis txns file. '
                          'Default value is ~/.indy-cli/networks/sandbox/pool_transactions_genesis',
-                    default="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
-                    type=functools.partial(check_fs, False), required=False,
-                    dest='genesis_path')
+                    default="~/.indy-cli/networks/sandbox/pool_transactions_genesis")
 
 
 def check_seed(seed: str):
@@ -52,50 +50,38 @@ def check_seed(seed: str):
     raise argparse.ArgumentTypeError("Seed must be 32 characters long but provided {}".format(len(seed)))
 
 
-parser.add_argument('-s', '--seed',
-                    help='Seed to generate submitter did'
-                         'Default value is Trustee1',
-                    default="000000000000000000000000Trustee1",
-                    type=check_seed, required=False, dest='seed')
+parser.add_argument('-s', '--seed', type=check_seed, required=False, dest='seed',
+                    help='Seed to generate submitter did. Default value is Trustee1',
+                    default="000000000000000000000000Trustee1")
 
-parser.add_argument('-k', '--kind',
-                    help='Kind of request to send. One of ["nym", "schema", "attrib", "get_nym"] '
-                         'Default value is "nym". Could be combined in form of "{req_type1: num, ...}" ',
-                    default="nym", type=str, required=False, dest='req_kind')
+parser.add_argument('-k', '--kind', default="nym", type=str, required=False, dest='req_kind',
+                    help='Request to send. One of '
+                         'nym, schema, attrib, cred_def, revoc_reg_def, revoc_reg_entry, get_nym, '
+                         'get_attrib, get_schema, get_cred_def, get_revoc_reg_def, get_revoc_reg, '
+                         'get_revoc_reg_delta. '
+                         'Default value is "nym". Could be combined in form of JSON array or JSON obj')
 
-parser.add_argument('-n', '--num',
-                    help='How many transactions to submit.'
-                         'Default value is 100',
-                    default=100, type=int, required=False, dest='batch_size')
+parser.add_argument('-n', '--num', default=100, type=int, required=False, dest='batch_size',
+                    help='Number of transactions to submit. Default value is 100')
 
-parser.add_argument('-t', '--timeout',
-                    help='Timeout between batches.'
-                         'Default value is 0 - send once and finish',
-                    default=0, type=float, required=False, dest='batch_timeout')
+parser.add_argument('-t', '--timeout', default=0, type=float, required=False, dest='batch_timeout',
+                    help='Timeout between batches. Default value is 0')
 
-parser.add_argument('-r', '--refresh',
-                    help='Number of replied txns to refresh statistics.'
-                         'Default value is 100',
-                    default=100, type=int, required=False, dest='refresh_rate')
+parser.add_argument('-r', '--refresh', default=100, type=int, required=False, dest='refresh_rate',
+                    help='Number of replied txns to refresh statistics. Default value is 100')
 
-parser.add_argument('-b', '--bg_tasks',
-                    help='Number of background tasks per process, sending and generating.'
-                         'Default value is 30',
-                    default=30, type=int, required=False, dest='bg_tasks')
+parser.add_argument('-b', '--bg_tasks', default=30, type=int, required=False, dest='bg_tasks',
+                    help='Number of background tasks. Default value is 30')
 
-parser.add_argument('-d', '--directory',
-                    help='Directory to save output files'
-                         'Default value is "."',
-                    default=".", type=functools.partial(check_fs, True), required=False, dest='out_dir')
+parser.add_argument('-d', '--directory', default=".", required=False, dest='out_dir',
+                    type=functools.partial(check_fs, True),
+                    help='Directory to save output files. Default value is "."')
 
-parser.add_argument('--sep',
-                    help='Value separator used in result file'
-                         'Default value is "|"',
-                    default="|", type=str, required=False, dest='val_sep')
+parser.add_argument('--sep', default="|", type=str, required=False, dest='val_sep',
+                    help='csv file separator. Default value is "|"')
 
-parser.add_argument('-w', '--wallet_key',
-                    help='Wallet encryption key. Default value is "key"',
-                    default="key", type=str, required=False, dest='wallet_key')
+parser.add_argument('-w', '--wallet_key', default="key", type=str, required=False, dest='wallet_key',
+                    help='Wallet encryption key. Default value is "key"')
 
 
 class ClientStatistic:
@@ -186,14 +172,20 @@ class ClientStatistic:
 
 
 class RequestGenerator(metaclass=ABCMeta):
-    def __init__(self, file_name: str = None, client_stat: ClientStatistic = None, **kwargs):
+    def __init__(self, file_name: str = None, ignore_first_line: bool = True, file_sep: str = "|",
+                 client_stat: ClientStatistic = None, **kwargs):
         self._client_stat = client_stat
         if not isinstance(self._client_stat, ClientStatistic):
             raise RuntimeError("Bad Statistic obj")
         random.seed()
         self._data_file = None
+        self._file_start_pos = 0
+        self._file_sep = file_sep if file_sep else "|"
         if file_name is not None:
             self._data_file = open(check_fs(is_dir=False, fs_name=file_name), "rt")
+            if ignore_first_line:
+                self._data_file.readline()
+                self._file_start_pos = self._data_file.tell()
 
     # Copied from Plenum
     def random_string(self, sz: int) -> str:
@@ -212,14 +204,17 @@ class RequestGenerator(metaclass=ABCMeta):
         return self.random_string(32)
 
     def _from_file_str_data(self, file_str):
-        return file_str
+        req_id, req_json, reply_json = file_str.split(self._file_sep)
+        return reply_json
 
     def _gen_req_data(self):
         if self._data_file is not None:
             file_str = self._data_file.readline()
             if not file_str:
-                self._data_file.seek(0)
+                self._data_file.seek(self._file_start_pos)
                 file_str = self._data_file.readline()
+                if not file_str:
+                    raise RuntimeError("Data file is empty")
             return self._from_file_str_data(file_str)
         else:
             return self._rand_data()
@@ -287,16 +282,16 @@ class RGNym(RequestGenerator):
         req_did = self.rawToFriendly(raw)
         return req_did
 
+    def _from_file_str_data(self, file_str):
+        req_json = super()._from_file_str_data(file_str)
+        req_did = json.loads(req_json)['result']['txn']['data']['did']
+        return req_did
+
     async def _gen_req(self, submit_did, req_data):
         return await ledger.build_nym_request(submit_did, req_data, None, None, None)
 
 
-class RGGetNym(RequestGenerator):
-    def _rand_data(self):
-        raw = libnacl.randombytes(16)
-        req_did = self.rawToFriendly(raw)
-        return req_did
-
+class RGGetNym(RGNym):
     async def _gen_req(self, submit_did, req_data):
         return await ledger.build_get_nym_request(submit_did, req_data)
 
@@ -308,6 +303,26 @@ class RGSchema(RequestGenerator):
         schema_request = await ledger.build_schema_request(submit_did, schema_json)
         return schema_request
 
+    def _from_file_str_data(self, file_str):
+        req_json = super()._from_file_str_data(file_str)
+        schema_id = json.loads(req_json)['result']['txnMetadata']['txnId']
+        return schema_id
+
+
+class RGGetSchema(RGSchema):
+    def _rand_data(self):
+        raw = libnacl.randombytes(16)
+        target_did = self.rawToFriendly(raw)
+        schema_marker = '02'
+        name = super()._rand_data()
+        version = '1.0'
+        schema_id = ':'.join([target_did,schema_marker,name,version])
+        return schema_id
+
+    async def _gen_req(self, submit_did, req_data):
+        req = await ledger.build_get_schema_request(submit_did, req_data)
+        return req
+
 
 class RGAttrib(RequestGenerator):
     async def _gen_req(self, submit_did, req_data):
@@ -315,22 +330,46 @@ class RGAttrib(RequestGenerator):
         attr_request = await ledger.build_attrib_request(submit_did, submit_did, None, raw_attr, None)
         return attr_request
 
+    def _from_file_str_data(self, file_str):
+        req_json = super()._from_file_str_data(file_str)
+        raw = json.loads(req_json)['result']['txn']['data']['raw']
+        return raw
 
-class RGGetAttrib(RequestGenerator):
+
+class RGGetAttrib(RGAttrib):
     async def _gen_req(self, submit_did, req_data):
-        target_did = 'V4SGRU86Z58d6TV7PBUe61'
-        raw = None
-        xhash = None
-        enc = 'aa3f41f619aa7e5e6b6d0d'
-        req = await ledger.build_get_attrib_request(submit_did, target_did, raw, xhash, enc)
+        req = await ledger.build_get_attrib_request(submit_did, submit_did, req_data, None, None)
         return req
 
 
-class RGDefinition(RequestGenerator):
+class RGGetDefinition(RequestGenerator):
+    def _rand_data(self):
+        raw = libnacl.randombytes(16)
+        origin = self.rawToFriendly(raw)
+        cred_def_marker = '03'
+        signature_type = 'CL'
+        schema_id = '1'
+        cred_def_id = ':'.join([origin, cred_def_marker, signature_type, schema_id])
+        return cred_def_id
+
+    def _from_file_str_data(self, file_str):
+        req_json = super()._from_file_str_data(file_str)
+        cred_def_id = json.loads(req_json)['result']['txnMetadata']['txnId']
+        return cred_def_id
+
+    async def _gen_req(self, submit_did, req_data):
+        req = await ledger.build_get_cred_def_request(submit_did, req_data)
+        return req
+
+
+class RGDefinition(RGGetDefinition):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._wallet_handle = None
         self._default_schema_json = None
+
+    def _rand_data(self):
+        return self.random_string(32)
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         self._wallet_handle = wallet_handle
@@ -378,6 +417,25 @@ class RGDefRevoc(RGDefinition):
             json.dumps({"max_cred_num": 5, "issuance_type": "ISSUANCE_BY_DEFAULT"}),
             tails_writer)
         return await ledger.build_revoc_reg_def_request(submit_did, revoc_reg_def_json)
+
+
+class RGGetDefRevoc(RGGetDefinition):
+    def _rand_data(self):
+        raw = libnacl.randombytes(16)
+        submitter_did = self.rawToFriendly(raw)
+        cred_def_marker = '03'
+        signature_type = 'CL'
+        schema_id = '1'
+        cred_def_id = ':'.join([submitter_did,cred_def_marker,signature_type,schema_id])
+        revoc_reg_marker = '04'
+        revoc_def_type = 'CL_ACCUM'
+        revoc_def_tag = 'reg1'
+        def_revoc_id = ':'.join([submitter_did, revoc_reg_marker, cred_def_id, revoc_def_type, revoc_def_tag])
+        return def_revoc_id
+
+    async def _gen_req(self, submit_did, req_data):
+        req = await ledger.build_get_revoc_reg_def_request(submit_did, req_data)
+        return req
 
 
 class RGEntryRevoc(RGDefRevoc):
@@ -428,10 +486,42 @@ class RGEntryRevoc(RGDefRevoc):
             submit_did, self._default_revoc_reg_def_id, "CL_ACCUM", revoc_reg_delta_json)
 
 
+class RGGetEntryRevoc(RGGetDefinition):
+    def _rand_data(self):
+        raw = libnacl.randombytes(16)
+        submitter_did = self.rawToFriendly(raw)
+        cred_def_marker = '03'
+        signature_type = 'CL'
+        schema_id = str(random.randint(1, 100))
+        cred_def_id = ':'.join([submitter_did, cred_def_marker, signature_type, schema_id])
+        revoc_reg_marker = '04'
+        revoc_def_type = 'CL_ACCUM'
+        revoc_def_tag = 'reg1'
+        def_revoc_id = ':'.join([submitter_did, revoc_reg_marker, cred_def_id, revoc_def_type, revoc_def_tag])
+        entry_revoc_marker = '05'
+        entry_revoc_id = ':'.join([submitter_did, entry_revoc_marker, def_revoc_id])
+        return entry_revoc_id
+
+    async def _gen_req(self, submit_did, req_data):
+        timestamp = int (time.time())
+        req = await ledger.build_get_revoc_reg_request(submit_did, req_data, timestamp)
+        return req
+
+
+class RGGetRevocRegDelta(RGGetEntryRevoc):
+   async def _gen_req(self, submit_did, req_data):
+       req = await ledger.build_get_revoc_reg_delta_request(submit_did, req_data, None, int(time.time()))
+       return req
+
+
 def create_req_generator(req_kind_arg):
     supported_requests = {"nym": RGNym, "schema": RGSchema, "attrib": RGAttrib,
-                          "get_nym": RGGetNym, "definition": RGDefinition,
-                          "def_revoc": RGDefRevoc, "entry_revoc": RGEntryRevoc, "get_attrib": RGGetAttrib}
+                          "cred_def": RGDefinition, "revoc_reg_def": RGDefRevoc,
+                          "revoc_reg_entry": RGEntryRevoc,
+                          "get_nym": RGGetNym, "get_attrib": RGGetAttrib,
+                          "get_schema": RGGetSchema, "get_cred_def": RGGetDefinition,
+                          "get_revoc_reg_def": RGGetDefRevoc,"get_revoc_reg": RGGetEntryRevoc,
+                          "get_revoc_reg_delta": RGGetRevocRegDelta}
     if req_kind_arg in supported_requests:
         return supported_requests[req_kind_arg], {}
     try:
@@ -504,6 +594,10 @@ class LoadClient:
     async def run_test(self, genesis_path, seed, w_key):
         try:
             pool_cfg = json.dumps({"genesis_txn": genesis_path})
+
+            # TODO: remove after latest changes committed
+            await pool.set_protocol_version(2)
+
             await pool.create_pool_ledger_config(self._pool_name, pool_cfg)
             self._pool_handle = await pool.open_pool_ledger(self._pool_name, None)
             self._wallet_name = "{}_wallet".format(self._pool_name)
@@ -704,7 +798,7 @@ class ClientRunner:
 
 class TestRunner:
     def __init__(self):
-        self._clients = dict()  # key pocess future; value ClientRunner
+        self._clients = dict()  # key process future; value ClientRunner
         self._loop = asyncio.get_event_loop()
         self._out_dir = ""
         self._succ_f = None
