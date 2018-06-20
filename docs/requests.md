@@ -155,7 +155,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     
     Transaction-specific payload (data)
 
-    - `type` (enum number as integer): 
+    - `type` (enum number as string):
     
         Supported transaction type:
         
