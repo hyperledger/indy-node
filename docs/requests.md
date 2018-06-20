@@ -564,14 +564,16 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     'result': {
         "ver": 1,
         "txn": {
-            "type":101,
+            "type":"101",
             "protocolVersion":1,
             
             "data": {
                 "ver":1,
-                "name": "Degree",
-                "version": "1.0",
-                'attr_names': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+                "data": {
+                    "name": "Degree",
+                    "version": "1.0",
+                    'attr_names': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+                }
             },
             
             "metadata": {

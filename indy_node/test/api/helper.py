@@ -144,3 +144,16 @@ def validate_attrib_txn(txn):
     optional(data, 'hash', is_sha256)
     optional(data, 'enc', is_str)
     assert sum(1 for k in data.keys() if k in ['raw', 'hash', 'enc']) == 1
+
+
+def validate_schema_txn(txn):
+    require(txn, 'type', is_one_of('101'))
+
+    data = txn['data']
+    require(data, 'data', is_dict)
+
+    data = data['data']
+    require(data, 'name', is_str)
+    require(data, 'version', is_str)
+    require(data, 'attr_names', is_list)
+    assert all(is_str(n) for n in data['attr_names'])

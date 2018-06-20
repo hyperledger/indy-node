@@ -29,7 +29,7 @@ def test_attrib_raw_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
     validate_attrib_txn(reply['result']['txn'])
 
 
-def test_attib_enc_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
+def test_attrib_enc_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
     reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward,
                                None, None, "amgine")
 
