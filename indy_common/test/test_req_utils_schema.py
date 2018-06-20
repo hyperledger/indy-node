@@ -1,4 +1,5 @@
 import pytest
+from plenum.common.constants import CURRENT_PROTOCOL_VERSION
 
 from indy_common.req_utils import get_write_schema_name, get_write_schema_version, get_write_schema_attr_names, \
     get_read_schema_version, get_read_schema_name, get_read_schema_from, get_txn_schema_name, get_txn_schema_version, \
@@ -22,7 +23,7 @@ def write_schema_request(request):
 
         'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
         'reqId': 1514280215504647,
-        'protocolVersion': 1,
+        'protocolVersion': CURRENT_PROTOCOL_VERSION,
         'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
     }
     return SafeRequest(**req)
@@ -42,7 +43,7 @@ def read_schema_request():
 
         'identifier': 'E5AD5g65TDQr1PPHHRoiGf',
         'reqId': 1514280215504647,
-        'protocolVersion': 1
+        'protocolVersion': CURRENT_PROTOCOL_VERSION
     }
     return SafeRequest(**req)
 
@@ -60,7 +61,7 @@ def get_schema_reply():
 
         'identifier': 'E5AD5g65TDQr1PPHHRoiGf',
         'reqId': 1514280215504647,
-        'protocolVersion': 1,
+        'protocolVersion': CURRENT_PROTOCOL_VERSION,
 
         'seqNo': 10,
         'txnTime': 1514214795,
