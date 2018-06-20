@@ -100,7 +100,6 @@ class DomainReqHandler(PHandler):
 
         raise NotImplementedError("path construction is not implemented for type {}".format(txn_type))
 
-
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
         self.onBatchCommitted(stateRoot)
