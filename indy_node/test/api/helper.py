@@ -1,8 +1,4 @@
-import json
 import base58
-
-from indy.ledger import build_nym_request, sign_request, submit_request, build_attrib_request
-from indy_client.test.cli.helper import createHalfKeyIdentifierAndAbbrevVerkey, logger
 
 
 # Utility predicates
@@ -73,6 +69,7 @@ def validate_req_signature(req_signature):
     require(req_signature, 'type', is_one_of('ED25519', 'ED25519_MULTI'))
     require(req_signature, 'values', is_list)
     for value in req_signature['values']:
+        assert is_dict(value)
         require(value, 'from', is_base58_str)
         require(value, 'value', is_base58_str)
 
@@ -91,15 +88,7 @@ def validate_write_result(result):
     validate_req_signature(result['reqSignature'])
 
 
-# Tests
-
-def test_nym_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
-    idr, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
-
-    wallet_handle, identifier = sdk_wallet_steward
-
-    request = looper.loop.run_until_complete(build_nym_request(identifier, idr, verkey, None, None))
-    req_signed = looper.loop.run_until_complete(sign_request(wallet_handle, identifier, request))
-    reply = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
-
+def validate_write_reply(reply):
+    require(reply, 'op', is_one_of('REPLY'))
+    require(reply, 'result', is_dict)
     validate_write_result(reply['result'])
