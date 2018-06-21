@@ -176,17 +176,15 @@ def validate_claim_def_txn(txn):
 
 # Misc utility
 
-def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward, name, attr_names):
+def sdk_sign_and_submit(looper, sdk_pool_handle, sdk_wallet_steward, request):
     wallet_handle, identifier = sdk_wallet_steward
-
-    _, schema_json = looper.loop.run_until_complete(
-        issuer_create_schema(identifier, name, "1.0", json.dumps(attr_names)))
-    request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
     req_signed = looper.loop.run_until_complete(sign_request(wallet_handle, identifier, request))
-    reply = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+    return json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
 
-    schema_json = json.loads(schema_json)
-    schema_json["seqNo"] = reply["result"]["txnMetadata"]["seqNo"]
-    schema_json = json.dumps(schema_json)
 
-    return schema_json, reply
+def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward):
+    _, identifier = sdk_wallet_steward
+    _, schema_json = looper.loop.run_until_complete(
+        issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
+    request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+    return schema_json, sdk_sign_and_submit(looper, sdk_pool_handle, sdk_wallet_steward, request)
