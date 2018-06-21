@@ -258,8 +258,9 @@ class RGSeqReqs(RequestGenerator):
                 param = prms
             else:
                 raise RuntimeError("Bad Request params provided")
+            new_req = reqc(*args, **param, **kwargs)
             for i in range(0, cnt):
-                self._reqs_collection.append(reqc(*args, **param, **kwargs))
+                self._reqs_collection.append(new_req)
         if len(self._reqs_collection) == 0:
             raise RuntimeError("At least one class should be provided")
 
@@ -558,7 +559,9 @@ def create_req_generator(req_kind_arg):
         for r in reqs:
             ret_reqs.append(_parse_single(r, {}))
     if len(ret_reqs) == 1:
-        return ret_reqs[0]
+        req = ret_reqs[0][0]
+        par = {} if isinstance(ret_reqs[0][1], int) else ret_reqs[0][1]
+        return req, par
     else:
         return RGSeqReqs, {'next_random': randomizing, 'reqs': ret_reqs}
 
