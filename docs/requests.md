@@ -613,8 +613,8 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
  
      Dictionary with Claim Definition's data:
      
-    - `primary`: primary claim public key
-    - `revocation`: revocation claim public key
+    - `primary` (dict): primary claim public key
+    - `revocation` (dict): revocation claim public key
         
 - `ref` (string):
     

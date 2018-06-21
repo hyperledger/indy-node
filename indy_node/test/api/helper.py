@@ -167,8 +167,8 @@ def validate_claim_def_txn(txn):
 
     data = txn['data']
     require(data, 'data', is_dict)
-    require(data['data'], 'primary', is_str)
-    require(data['data'], 'revocation', is_str)
+    require(data['data'], 'primary', is_dict)
+    require(data['data'], 'revocation', is_dict)
     require(data, 'ref', is_int)
     require(data, 'signature_type', is_one_of('CL'))
     optional(data, 'tag', is_str)
@@ -184,5 +184,9 @@ def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward, name, attr_nam
     request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
     req_signed = looper.loop.run_until_complete(sign_request(wallet_handle, identifier, request))
     reply = json.loads(looper.loop.run_until_complete(submit_request(sdk_pool_handle, req_signed)))
+
+    schema_json = json.loads(schema_json)
+    schema_json["seqNo"] = reply["result"]["txnMetadata"]["seqNo"]
+    schema_json = json.dumps(schema_json)
 
     return schema_json, reply
