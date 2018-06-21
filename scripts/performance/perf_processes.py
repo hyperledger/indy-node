@@ -701,7 +701,7 @@ class LoadClient:
             self._rest_to_sent = self._batch_size
 
         avail_sndrs = self._send_lim - len(self._send_q)
-        if avail_sndrs <= 0:
+        if avail_sndrs <= 0 or self._rest_to_sent <= 0:
             return
 
         if self._rest_to_sent > 0:
@@ -711,13 +711,13 @@ class LoadClient:
                 sender = self._loop.create_task(self.submit_req_update(req_id, req))
                 sender.add_done_callback(self.done_submit)
                 self._send_q.append(sender)
-                self._rest_to_sent -= 1
+            self._rest_to_sent -= to_snd
 
         if self._rest_to_sent <= 0:
             if self._batch_timeout == 0:
                 self._loop.create_task(self.stop_test())
             else:
-                self._loop.call_later(self._batch_timeout, functools.partial(self.req_send, True))
+                self._loop.call_later(self._batch_timeout, functools.partial(self.req_send, start_new_batch=True))
 
     async def stop_test(self):
         self._closing = True
@@ -764,7 +764,6 @@ class ClientRunner:
         self.name = name
         self.conn = conn
         self.closed = False
-        self.last_refresh = 0
         self.total_sent = 0
         self.total_succ = 0
         self.total_failed = 0
@@ -781,7 +780,6 @@ class ClientRunner:
     def refresh_stat(self, stat):
         if not isinstance(stat, dict):
             return
-        self.last_refresh = time.perf_counter()
         self.total_sent = stat.get("total_sent", self.total_sent)
         self.total_succ = stat.get("total_succ", self.total_succ)
         self.total_failed = stat.get("total_fail", self.total_failed)
