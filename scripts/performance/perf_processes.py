@@ -148,6 +148,7 @@ class ClientStatistic:
             else:
                 self._req_fail += 1
                 status = "fail"
+            resp = json.dumps(resp)
         else:
             self._req_fail += 1
             status = "fail"
@@ -284,7 +285,7 @@ class RGNym(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        req_did = json.loads(req_json)['result']['txn']['data']['did']
+        req_did = json.loads(req_json)['result']['txn']['data']['dest']
         return req_did
 
     async def _gen_req(self, submit_did, req_data):
