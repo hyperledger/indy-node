@@ -129,7 +129,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             },
         },
         "txnMetadata": {
-            "creationTime": <...>,
+            "txnTime": <...>,
             "seqNo": <...>,  
             "txnId": <...>
         },
@@ -155,7 +155,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     
     Transaction-specific payload (data)
 
-    - `type` (enum number as integer): 
+    - `type` (enum number as string):
     
         Supported transaction type:
         
@@ -184,7 +184,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
 
         - `from` (base58-encoded string):
              Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-             for 16 or 32 bit DID value.
+             for 16 or 32 byte DID value.
              It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
              target identifier (for example, a newly created DID identifier).
              
@@ -193,23 +193,18 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
         - `reqId` (integer): 
             Unique ID number of the request with transaction.
   
-    - `txnMetadata` (dict):
+- `txnMetadata` (dict):
+
+    Metadata attached to the transaction.
     
-        Metadata attached to the transaction.    
+    - `txnTime` (integer as POSIX timestamp):
+        The time when transaction was written to the Ledger as POSIX timestamp.
         
-         - `version` (integer):
-            Transaction version to be able to evolve `txnMetadata`.
-            The content of `txnMetadata` may depend on the version.  
+    - `seqNo` (integer):
+        A unique sequence number of the transaction on Ledger
         
-        - `txnTime` (integer as POSIX timestamp): 
-            The time when transaction was written to the Ledger as POSIX timestamp.
-            
-        - `seqNo` (integer):
-            A unique sequence number of the transaction on Ledger
-            
-        - `txnId` (string):
-            Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger.
-            
+    - `txnId` (string):
+        Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger.
   
 - `reqSignature` (dict):
 
@@ -223,7 +218,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
     - `values` (list): 
         
         - `from` (base58-encoded string):
-        Identifier (DID) of signer as base58-encoded string for 16 or 32 bit DID value.
+        Identifier (DID) of signer as base58-encoded string for 16 or 32 byte DID value.
         
         - `value` (base58-encoded string):
          signature value
@@ -349,7 +344,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
@@ -365,9 +360,11 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
-- `verkey` (base58-encoded string; optional): 
+- `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
-    Target verification key as base58-encoded string. If not set, then either the target identifier
+    Target verification key as base58-encoded string. It can start with "~", which means that
+    it's abbreviated verkey and should be 16 bytes long when decoded, otherwise it's a full verkey
+    which should be 32 bytes long when decoded. If not set, then either the target identifier
     (`dest`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
     (doesnt owns the identifier yet).
     Verkey can be changed to None by owner, it means that this user goes back under guardianship.
@@ -409,12 +406,12 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     'result': {
         "ver": 1,
         "txn": {
-            "type":1,
+            "type":"1",
             "protocolVersion":1,
             
             "data": {
                 "ver": 1,
-                "did":"GEzcdDLhCpGCYRHW82kjHd",
+                "dest":"GEzcdDLhCpGCYRHW82kjHd",
                 "verkey":"~HmUWn928bnFT6Ephf65YXv",
                 "role":101,
             },
@@ -453,7 +450,7 @@ Adds attribute to a NYM record.
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
@@ -493,12 +490,12 @@ Adds attribute to a NYM record.
     'result': {
         "ver": 1,
         "txn": {
-            "type":100,
+            "type":"100",
             "protocolVersion":1,
             
             "data": {
                 "ver":1,
-                "did":"N22KY2Dyvmuu2PyyqSFKue",
+                "dest":"N22KY2Dyvmuu2PyyqSFKue",
                 'raw': '{"name":"Alice"}'
             },
             
@@ -567,14 +564,16 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
     'result': {
         "ver": 1,
         "txn": {
-            "type":101,
+            "type":"101",
             "protocolVersion":1,
             
             "data": {
                 "ver":1,
-                "name": "Degree",
-                "version": "1.0",
-                'attr_names': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+                "data": {
+                    "name": "Degree",
+                    "version": "1.0",
+                    'attr_names': ['undergrad', 'last_name', 'first_name', 'birth_date', 'postgrad', 'expiry_date']
+                }
             },
             
             "metadata": {
@@ -614,8 +613,8 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
  
      Dictionary with Claim Definition's data:
      
-    - `primary`: primary claim public key
-    - `revocation`: revocation claim public key
+    - `primary` (dict): primary claim public key
+    - `revocation` (dict): revocation claim public key
         
 - `ref` (string):
     
@@ -658,7 +657,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     'result': {
         "ver": 1,
         "txn": {
-            "type":102,
+            "type":"102",
             "protocolVersion":1,
             
             "data": {
@@ -710,12 +709,12 @@ Adds a new node to the pool, or updates existing node in the pool.
 
 - `dest` (base58-encoded string):
 
-    Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
+    Target Node's DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the transaction submitter (Steward's DID).
     
     *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the DID of this Node.
     
-- `verkey` (base58-encoded string; optional): 
+- `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
     Target Node verification key as base58-encoded string.
     It may absent if `dest` is 32-bit cryptonym CID. 
@@ -993,7 +992,7 @@ Gets information about a DID (NYM).
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of the read request sender, and `dest` is the requested DID.
@@ -1055,7 +1054,7 @@ i.e. reply data contains requested value only.
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of read request sender, and `dest` is the DID we get an attribute for.
@@ -1129,7 +1128,7 @@ Gets Claim's Schema.
 
 - `dest` (base58-encoded string):
 
-    Schema Issuer's DID as base58-encoded string for 16 or 32 bit DID value.
+    Schema Issuer's DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the submitter.
     
     *Example*: `identifier` is a DID of the read request sender, and `dest` is the DID of the Schema's Issuer.
@@ -1204,7 +1203,7 @@ Gets Claim Definition.
 
 - `origin` (base58-encoded string):
 
-    Claim Definition Issuer's DID as base58-encoded string for 16 or 32 bit DID value.
+    Claim Definition Issuer's DID as base58-encoded string for 16 or 32 byte DID value.
         
 - `ref` (string):
     
