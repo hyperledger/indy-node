@@ -14,24 +14,27 @@ def execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, xhash, raw, 
 
 
 def test_attrib_xhash_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
-    reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward,
-                               sha256("Hello, world".encode()).hexdigest(), None, None)
+    xhash = sha256("Hello, world".encode()).hexdigest()
+    reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, xhash, None, None)
 
     validate_write_reply(reply)
     validate_attrib_txn(reply['result']['txn'])
+    assert reply['result']['txn']['data']['hash'] == xhash
 
 
 def test_attrib_raw_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
-    reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward,
-                               None, json.dumps({'answer': 42}), None)
+    raw = json.dumps({'answer': 42})
+    reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, None, raw, None)
 
     validate_write_reply(reply)
     validate_attrib_txn(reply['result']['txn'])
+    assert json.loads(reply['result']['txn']['data']['raw']) == json.loads(raw)
 
 
 def test_attrib_enc_reply_is_valid(looper, sdk_pool_handle, sdk_wallet_steward):
-    reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward,
-                               None, None, "amgine")
+    enc = "amgine"
+    reply = execute_attrib_txn(looper, sdk_pool_handle, sdk_wallet_steward, None, None, enc)
 
     validate_write_reply(reply)
     validate_attrib_txn(reply['result']['txn'])
+    assert reply['result']['txn']['data']['enc'] == enc

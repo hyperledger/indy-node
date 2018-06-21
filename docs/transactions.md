@@ -195,7 +195,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
   
 - `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
-    Target verification key as base58-encoded string. It can start with "~", which means tha
+    Target verification key as base58-encoded string. It can start with "~", which means that
     it's abbreviated verkey and should be 16 bytes long when decoded, otherwise it's a full verkey
     which should be 32 bytes long when decoded. If not set, then either the target identifier
     (`did`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
