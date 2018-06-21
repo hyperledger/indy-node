@@ -589,8 +589,7 @@ class LoadClient:
         req_class, params = create_req_generator(req_kind)
         self._req_generator = req_class(**params, client_stat=self._stat)
         assert self._req_generator is not None
-        self._bg_send_last = 0
-        self._sent_in_batch = None
+        self._rest_to_sent = batch_size
 
     async def run_test(self, genesis_path, seed, w_key):
         try:
@@ -694,37 +693,31 @@ class LoadClient:
             print("{} stat send error {}".format(self._name, e))
             raise e
 
-    def req_send(self):
+    def req_send(self, start_new_batch: bool = False):
         if self._closing:
             return
+
+        if start_new_batch:
+            self._rest_to_sent = self._batch_size
 
         avail_sndrs = self._send_lim - len(self._send_q)
         if avail_sndrs <= 0:
             return
 
-        if self._sent_in_batch is None:  # should wait for a timeout
-            time_spent = time.perf_counter() - self._bg_send_last
-            if time_spent >= self._batch_timeout:
-                self._sent_in_batch = 0
-            else:
-                return
-
-        if 0 <= self._sent_in_batch < self._batch_size:
-            to_snd = min(len(self._load_client_reqs), avail_sndrs, (self._batch_size - self._sent_in_batch))
+        if self._rest_to_sent > 0:
+            to_snd = min(len(self._load_client_reqs), avail_sndrs, self._rest_to_sent)
             for i in range(0, to_snd):
                 req_id, req = self._load_client_reqs.pop()
                 sender = self._loop.create_task(self.submit_req_update(req_id, req))
                 sender.add_done_callback(self.done_submit)
                 self._send_q.append(sender)
-                self._sent_in_batch += 1
+                self._rest_to_sent -= 1
 
-        if self._sent_in_batch >= self._batch_size:
-            self._sent_in_batch = None
-            self._bg_send_last = time.perf_counter()
+        if self._rest_to_sent <= 0:
             if self._batch_timeout == 0:
                 self._loop.create_task(self.stop_test())
             else:
-                self._loop.call_later(self._batch_timeout, self.req_send)
+                self._loop.call_later(self._batch_timeout, functools.partial(self.req_send, True))
 
     async def stop_test(self):
         self._closing = True
@@ -929,7 +922,7 @@ class TestRunner:
     def test_run(self, args):
         proc_count = args.clients if args.clients > 0 else multiprocessing.cpu_count()
         refresh = args.refresh_rate if args.refresh_rate > 0 else 100
-        bg_tasks = args.bg_tasks if args.bg_tasks > 0 else 300
+        bg_tasks = args.bg_tasks if args.bg_tasks > 1 else 300
         start_date = datetime.datetime.now()
         value_separator = args.val_sep if args.val_sep != "" else "|"
         print("Number of client         ", proc_count)
