@@ -120,16 +120,17 @@ def add_cred_def_id_into_entry(val):
     old_revoc_reg_def_id = new_val.get(REVOC_REG_DEF_ID, None)
     if old_revoc_reg_def_id:
         path_elems = old_revoc_reg_def_id.split(':')
-        if len(path_elems) == 5:
-            did, marker, cred_def_id, rev_type, rev_tag = path_elems
-            new_revoc_reg_def_id = domain.make_state_path_for_revoc_def(authors_did=did,
-                                                                        cred_def_id="{}:{}".format(cred_def_id,
-                                                                                                   CLAIM_DEF_TAG_DEFAULT),
-                                                                        revoc_def_type=rev_type,
-                                                                        revoc_def_tag=rev_tag)
-            new_val[REVOC_REG_DEF_ID] = new_revoc_reg_def_id.decode()
-        else:
-            return False
+        did = path_elems[0]
+        marker = path_elems[1]
+        cred_def_id = ":".join(path_elems[2:-2])
+        rev_tag = path_elems[-1]
+        rev_type = path_elems[-2]
+        new_revoc_reg_def_id = domain.make_state_path_for_revoc_def(authors_did=did,
+                                                                    cred_def_id="{}:{}".format(cred_def_id,
+                                                                                               CLAIM_DEF_TAG_DEFAULT),
+                                                                    revoc_def_type=rev_type,
+                                                                    revoc_def_tag=rev_tag)
+        new_val[REVOC_REG_DEF_ID] = new_revoc_reg_def_id.decode()
     else:
         return False
     return new_val
@@ -145,19 +146,19 @@ def gen_txn_path(txn):
         binary_digest = domain.make_state_path_for_nym(nym)
         return hexlify(binary_digest).decode()
     elif txn_type == ATTRIB:
-        _, path, _, _, _ = domain.prepare_attr_for_state(txn)
+        path = domain.prepare_attr_for_state(txn, path_only=True)
         return path.decode()
     elif txn_type == SCHEMA:
-        path, _ = domain.prepare_schema_for_state(txn)
+        path = domain.prepare_schema_for_state(txn, path_only=True)
         return path.decode()
     elif txn_type == CLAIM_DEF:
-        path, _ = domain.prepare_claim_def_for_state(txn)
+        path = domain.prepare_claim_def_for_state(txn, path_only=True)
         return path.decode()
     elif txn_type == REVOC_REG_DEF:
-        path, _ = domain.prepare_revoc_def_for_state(txn)
+        path = domain.prepare_revoc_def_for_state(txn, path_only=True)
         return path.decode()
     elif txn_type == REVOC_REG_ENTRY:
-        path, _ = domain.prepare_revoc_reg_entry_for_state(txn)
+        path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
         return path.decode()
 
 
