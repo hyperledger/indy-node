@@ -93,7 +93,7 @@ Parameters for data file processing
 
 'file_sep' - csv separator, default is "|".
 
-'label' - name of the txn configuration in "total" result file, default is the name the txn.
+'label' - name of the txn configuration in "total" result file, default is the txn name.
 
 
 ## Examples
