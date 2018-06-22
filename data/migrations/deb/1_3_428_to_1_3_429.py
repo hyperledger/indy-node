@@ -121,7 +121,6 @@ def add_cred_def_id_into_entry(val):
     if old_revoc_reg_def_id:
         path_elems = old_revoc_reg_def_id.split(':')
         did = path_elems[0]
-        marker = path_elems[1]
         cred_def_id = ":".join(path_elems[2:-2])
         rev_tag = path_elems[-1]
         rev_type = path_elems[-2]
