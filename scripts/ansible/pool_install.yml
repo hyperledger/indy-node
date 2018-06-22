@@ -1,0 +1,57 @@
+- hosts: pool
+  gather_facts: no
+
+  vars:
+    pool_prefix: live_node
+    pool_size: "{{ groups['pool']|count }}"
+    node_ver: 1.3.448
+    plenum_ver: 1.2.390
+    python_indy_crypto_ver: 0.4.1
+    libindy_crypto_ver: 0.4.1
+
+  tasks:
+    - name: Identify node number
+      set_fact: node_num="{{ inventory_hostname|replace(pool_prefix,'') }}"
+
+    - name: Gather node IP list (step 1)
+      shell: "ssh -G {{ item }} | awk '/^hostname / { print $2 }'"
+      with_items: "{{ groups['pool'] }}"
+      connection: local
+      run_once: yes
+      register: node_ips
+
+    - name: Gather node IP list (step 2)
+      set_fact:
+        node_ips: "{% for ip in node_ips.results -%} {{ ip.stdout }}{% if not loop.last %},{% endif %} {%- endfor %}"
+
+    - name: List gathered node IPs
+      debug: var=node_ips
+      run_once: yes
+
+    - name: Install indy-node
+      apt: "name=indy-node={{ node_ver }},indy-plenum={{ plenum_ver }},libindy-crypto={{ libindy_crypto_ver }},python3-indy-crypto={{ python_indy_crypto_ver }} force=yes update_cache=yes"
+      become: yes
+
+    - name: Make pool data dir
+      file: path=/var/lib/indy/sandbox state=directory owner=indy group=indy
+      become: yes
+
+    - name: Make pool logs dir
+      file: path=/var/log/indy/sandbox state=directory owner=indy group=indy
+      become: yes
+
+    - name: Generate indy pool transactions
+      shell: "generate_indy_pool_transactions --nodes {{ pool_size }} --clients 1 --nodeNum {{ node_num }} --ips '{{ node_ips }}'"
+      become: yes
+      become_user: indy
+
+    - name: Fetch genesis pool transactions
+      fetch:
+        src: /var/lib/indy/sandbox/pool_transactions_genesis
+        dest: ./
+        flat: yes
+      run_once: yes
+
+    - name: Start node service
+      service: name=indy-node state=started
+      become: yes

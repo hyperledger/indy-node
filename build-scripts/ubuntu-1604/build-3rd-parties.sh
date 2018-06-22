@@ -41,4 +41,5 @@ function build_from_pypi {
 # build 3rd parties:
 #   build_from_pypi <pypi-name> <version>
 
-build_from_pypi timeout-decorator
+build_from_pypi timeout-decorator 0.4.0
+

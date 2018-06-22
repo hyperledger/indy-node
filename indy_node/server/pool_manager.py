@@ -6,15 +6,11 @@ from indy_node.server.pool_req_handler import PoolRequestHandler
 
 class HasPoolManager(PHasPoolManager):
     # noinspection PyUnresolvedReferences, PyTypeChecker
-    def __init__(self, nodeRegistry=None, ha=None, cliname=None, cliha=None):
-        if not nodeRegistry:
-            self.poolManager = TxnPoolManager(self, ha=ha, cliname=cliname,
-                                              cliha=cliha)
-            self.requestExecuter[POOL_LEDGER_ID] = \
-                self.poolManager.executePoolTxnBatch
-        else:
-            super().__init__(nodeRegistry=nodeRegistry, ha=ha, cliname=cliname,
-                             cliha=cliha)
+    def __init__(self, ha=None, cliname=None, cliha=None):
+        self.poolManager = TxnPoolManager(self, ha=ha, cliname=cliname,
+                                          cliha=cliha)
+        self.requestExecuter[POOL_LEDGER_ID] = \
+            self.poolManager.executePoolTxnBatch
 
 
 class TxnPoolManager(PTxnPoolManager):

@@ -1,19 +1,29 @@
 @echo off
 
 SET NODE_NAME=%1
-SET NODE_PORT=%2
-SET CLI_PORT=%3
-SET USER=%4
-SET PASSWORD=%5
-SET RUN_MODE=%6
-SET TEST_MODE=%7
+SET NODE_IP=%2
+SET NODE_PORT=%3
+SET CLI_IP=%4
+SET CLI_PORT=%5
+SET USER=%6
+SET PASSWORD=%7
+SET RUN_MODE=%8
+SET TEST_MODE=%9
 
 IF NOT DEFINED NODE_NAME (
 	echo "NODE_NAME argument is required"
   exit /B 1
 )
+IF NOT DEFINED NODE_IP (
+	echo "NODE_IP argument is required"
+  exit /B 1
+)
 IF NOT DEFINED NODE_PORT (
 	echo "NODE_PORT argument is required"
+  exit /B 1
+)
+IF NOT DEFINED CLI_IP (
+	echo "CLI_IP argument is required"
   exit /B 1
 )
 IF NOT DEFINED CLI_PORT (
@@ -49,7 +59,7 @@ nssm set IndyNodeUpgradeAgent AppParameters "%CURR_DIR%node_control_tool.py %TES
 echo "Creating service for node"
 nssm install IndyNode "%PYTHONPATH%"
 nssm set IndyNode AppDirectory %CURR_DIR%
-nssm set IndyNode AppParameters "%CURR_DIR%start_indy_node %NODE_NAME% %NODE_PORT% %CLI_PORT%"
+nssm set IndyNode AppParameters "%CURR_DIR%start_indy_node %NODE_NAME% %NODE_IP% %NODE_PORT% %CLI_IP% %CLI_PORT%"
 nssm set IndyNode ObjectName ".\%USER%" "%PASSWORD%"
 echo "Creating agent restart task"
 SchTasks /Create /TN RestartIndyNodeUpgradeAgent /TR "%CURR_DIR%restart_upgrade_agent.bat" /SC ONSTART /F

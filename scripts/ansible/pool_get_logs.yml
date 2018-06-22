@@ -1,0 +1,32 @@
+- hosts: pool
+  gather_facts: no
+
+  tasks:
+  - name: Save journalctl log
+    shell: "journalctl > /tmp/jctl"
+
+  - name: Compress journalctl log
+    shell: "xz -f /tmp/jctl"
+
+  - name: Fetch journalctl log
+    fetch:
+      src: "/tmp/jctl.xz"
+      dest: "./logs/jctl/{{ inventory_hostname }}.jctl.xz"
+      flat: yes
+
+  - name: Delete journalctl log
+    file:
+      path: "/tmp/jctl.xz"
+      state: absent
+
+  - name: Fetch node info
+    synchronize:
+      src: /var/lib/indy/sandbox/node*.json
+      dest: ./logs/node_info
+      mode: pull
+
+  - name: Fetch node logs
+    synchronize:
+      src: /var/log/indy/sandbox/
+      dest: ./logs
+      mode: pull

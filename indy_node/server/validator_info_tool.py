@@ -10,15 +10,18 @@ class ValidatorNodeInfoTool(PlenumValidatorNodeInfoTool):
     @property
     def info(self):
         info = super().info
-        info['metrics']['transaction-count'].update(
-            config=self.__config_ledger_size
-        )
-        info.update(
-            software={
-                'indy-node': self.__node_pkg_version,
-                'sovrin': self.__sovrin_pkg_version,
-            }
-        )
+        if 'Node_info' in info:
+            if 'Metrics' in info['Node_info']:
+                info['Node_info']['Metrics']['transaction-count'].update(
+                    config=self.__config_ledger_size
+                )
+        if 'Software' in info:
+            info['Software'].update(
+                {
+                    'indy-node': self.__node_pkg_version,
+                    'sovrin': self.__sovrin_pkg_version,
+                }
+            )
         return info
 
     @property

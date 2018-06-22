@@ -36,7 +36,7 @@ BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 LOG_DIR = os.path.join(BASE_DIR, "log")
 CONFIG_FILE = os.path.join(BASE_DIR, "indy_config.py")
 
-tests_require = ['pytest', 'pytest-xdist', 'python3-indy==1.3.1-dev-469']
+tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy==1.4.0-dev-586']
 
 setup(
     name='indy-node',
@@ -66,7 +66,6 @@ setup(
     },
     tests_require=tests_require,
     scripts=['scripts/indy',
-             'scripts/change_node_ha',
              'scripts/add_new_node',
              'scripts/reset_client',
              'scripts/start_indy_node',
@@ -96,5 +95,9 @@ setup(
              'scripts/create_dirs.sh',
              'scripts/indy_old_cli_export_dids',
              'scripts/setup_iptables',
-             'scripts/setup_indy_node_iptables']
+             'scripts/setup_indy_node_iptables',
+             'tools/diagnostics/nscapture',
+             'tools/diagnostics/nsdiff',
+             'tools/diagnostics/nsreplay',
+             ]
 )
