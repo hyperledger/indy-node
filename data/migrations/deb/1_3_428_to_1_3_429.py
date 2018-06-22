@@ -15,7 +15,7 @@ from common.serializers.serialization import ledger_txn_serializer, serialize_ms
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
 from indy_common.constants import CONFIG_LEDGER_ID, REVOC_REG_DEF, CRED_DEF_ID, \
-    CLAIM_DEF_TAG_DEFAULT, NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_ENTRY
+    CLAIM_DEF_TAG_DEFAULT, NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_ENTRY, REVOC_REG_DEF_ID, REVOC_TYPE, TAG, ID
 from indy_common.state import domain
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
@@ -99,6 +99,35 @@ def add_tag_into_cred_def_id(val):
                                                                    signature_type=sig_type,
                                                                    tag=CLAIM_DEF_TAG_DEFAULT)
             new_val[CRED_DEF_ID] = new_cred_def_id.decode()
+            rev_type = new_val.get(REVOC_TYPE)
+            rev_tag = new_val.get(TAG)
+            if not all([rev_type, rev_tag]):
+                return False
+            new_revoc_reg_def_id = domain.make_state_path_for_revoc_def(authors_did=did,
+                                                                        cred_def_id=new_cred_def_id.decode(),
+                                                                        revoc_def_type=rev_type,
+                                                                        revoc_def_tag=rev_tag)
+            new_val[ID] = new_revoc_reg_def_id
+        else:
+            return False
+    else:
+        return False
+    return new_val
+
+
+def add_cred_def_id_into_entry(val):
+    new_val = copy.deepcopy(val)
+    old_revoc_reg_def_id = new_val.get(REVOC_REG_DEF_ID, None)
+    if old_revoc_reg_def_id:
+        path_elems = old_revoc_reg_def_id.split(':')
+        if len(path_elems) == 5:
+            did, marker, cred_def_id, rev_type, rev_tag = path_elems
+            new_revoc_reg_def_id = domain.make_state_path_for_revoc_def(authors_did=did,
+                                                                        cred_def_id="{}:{}".format(cred_def_id,
+                                                                                                   CLAIM_DEF_TAG_DEFAULT),
+                                                                        revoc_def_type=rev_type,
+                                                                        revoc_def_tag=rev_tag)
+            new_val[REVOC_REG_DEF_ID] = new_revoc_reg_def_id.decode()
         else:
             return False
     else:
@@ -190,6 +219,10 @@ def migrate_txn_log(db_dir, db_name):
             val = ledger_txn_serializer.deserialize(val)
             if val.get(TXN_TYPE) == REVOC_REG_DEF:
                 val = add_tag_into_cred_def_id(val)
+                if val is False:
+                    return False
+            if val.get(TXN_TYPE) == REVOC_REG_ENTRY:
+                val = add_cred_def_id_into_entry(val)
                 if val is False:
                     return False
             new_val = transform_to_new_format(txn=val, seq_no=int(key))
