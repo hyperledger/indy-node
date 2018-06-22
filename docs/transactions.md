@@ -91,7 +91,7 @@ transaction specific data:
     
     Transaction-specific payload (data)
 
-    - `type` (enum number as integer): 
+    - `type` (enum number as string):
     
         Supported transaction type:
         
@@ -120,7 +120,7 @@ transaction specific data:
 
         - `from` (base58-encoded string):
              Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
-             for 16 or 32 bit DID value.
+             for 16 or 32 byte DID value.
              It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
              target identifier (for example, a newly created DID identifier).
              
@@ -159,7 +159,7 @@ transaction specific data:
     - `values` (list): 
         
         - `from` (base58-encoded string):
-        Identifier (DID) of signer as base58-encoded string for 16 or 32 bit DID value.
+        Identifier (DID) of signer as base58-encoded string for 16 or 32 byte DID value.
         
         - `value` (base58-encoded string):
          signature value
@@ -177,7 +177,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 
 - `dest` (base58-encoded string):
 
-    Target DID as base58-encoded string for 16 or 32 bit DID value.
+    Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `from` metadata field, where `from` is the DID of the submitter.
     
     *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
@@ -193,9 +193,11 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     
   A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
-- `verkey` (base58-encoded string; optional): 
+- `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
-    Target verification key as base58-encoded string. If not set, then either the target identifier
+    Target verification key as base58-encoded string. It can start with "~", which means that
+    it's abbreviated verkey and should be 16 bytes long when decoded, otherwise it's a full verkey
+    which should be 32 bytes long when decoded. If not set, then either the target identifier
     (`did`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
     (doesnt owns the identifier yet).
     Verkey can be changed to None by owner, it means that this user goes back under guardianship.
@@ -217,7 +219,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 {
     "ver": 1,
     "txn": {
-        "type":1,
+        "type":"1",
         "protocolVersion":1,
         
         "data": {
@@ -254,7 +256,7 @@ Adds attribute to a NYM record
 
 - `dest` (base58-encoded string):
 
-    Target DID we set an attribute for as base58-encoded string for 16 or 32 bit DID value.
+    Target DID we set an attribute for as base58-encoded string for 16 or 32 byte DID value.
     It differs from `from` metadata field, where `from` is the DID of the submitter.
     
     *Example*: `from` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
@@ -282,7 +284,7 @@ Adds attribute to a NYM record
 {
     "ver": 1,
     "txn": {
-        "type":100,
+        "type":"100",
         "protocolVersion":1,
         
         "data": {
@@ -376,8 +378,8 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
  
      Dictionary with Claim Definition's data:
      
-    - `primary`: primary claim public key
-    - `revocation`: revocation claim public key
+    - `primary` (dict): primary claim public key
+    - `revocation` (dict): revocation claim public key
         
 - `ref` (string):
     
@@ -455,12 +457,12 @@ Adds a new node to the pool, or updates existing node in the pool
 
 - `dest` (base58-encoded string):
 
-    Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
+    Target Node's DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the transaction submitter (Steward's DID).
     
     *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the DID of this Node.
     
-- `verkey` (base58-encoded string; optional): 
+- `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
     Target Node verification key as base58-encoded string.
     It may absent if `dest` is 32-bit cryptonym CID. 

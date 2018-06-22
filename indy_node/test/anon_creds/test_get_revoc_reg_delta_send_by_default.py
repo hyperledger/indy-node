@@ -22,9 +22,8 @@ def test_send_with_wrong_rev_reg_id_default(looper, txnPoolNodeSet,
     sdk_reply = sdk_send_and_check([json.dumps(get_revoc_reg_delta)], looper,
                                    txnPoolNodeSet, sdk_pool_handle)
     reply = sdk_reply[0][1]
-    assert reply['result'][DATA][REVOC_REG_DEF_ID] == get_revoc_reg_delta['operation'][REVOC_REG_DEF_ID]
-    assert VALUE not in reply['result'][DATA]
-    assert REVOC_TYPE not in reply['result'][DATA]
+    assert DATA in reply['result']
+    assert reply['result'][DATA] is None
 
 
 def test_send_with_only_to_by_default(looper,
@@ -57,9 +56,8 @@ def test_send_earlier_then_first_entry_by_default(
     get_revoc_reg_delta['operation'][TO] = get_utc_epoch() - 1000
     sdk_reply = sdk_send_and_check([json.dumps(get_revoc_reg_delta)], looper, txnPoolNodeSet, sdk_pool_handle)
     reply = sdk_reply[0][1]
-    assert reply['result'][DATA][REVOC_REG_DEF_ID] == rev_entry_req['operation'][REVOC_REG_DEF_ID]
-    assert VALUE not in reply['result'][DATA]
-    assert REVOC_TYPE not in reply['result'][DATA]
+    assert DATA in reply['result']
+    assert reply['result'][DATA] is None
     assert reply['result'][f.SEQ_NO.nm] is None
     assert reply['result'][TXN_TIME] is None
 

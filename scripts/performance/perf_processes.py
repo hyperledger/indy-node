@@ -390,6 +390,7 @@ class RGDefinition(RGGetDefinition):
             resp.get('result', {}).get('seqNo', None) or\
             resp.get('result', {}).get('txnMetadata', {}).get('seqNo', None)
         self._default_schema_json = json.loads(self._default_schema_json)
+        # TODO: Instead of manually patching schema json GET_SCHEMA should be used
         self._default_schema_json['seqNo'] = seqno
         self._default_schema_json = json.dumps(self._default_schema_json)
 
