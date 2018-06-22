@@ -102,8 +102,9 @@ class ClientStatistic:
     def sent_count(self):
         return self._req_sent
 
-    def preparing(self, req_id):
+    def preparing(self, req_id, test_label: str = ""):
         self._client_stat_reqs.setdefault(req_id, dict())["client_preparing"] = time.time()
+        self._client_stat_reqs[req_id]["label"] = test_label
 
     def prepared(self, req_id):
         self._client_stat_reqs.setdefault(req_id, dict())["client_prepared"] = time.time()
@@ -173,8 +174,9 @@ class ClientStatistic:
 
 
 class RequestGenerator(metaclass=ABCMeta):
-    def __init__(self, file_name: str = None, ignore_first_line: bool = True, file_sep: str = "|",
+    def __init__(self, label: str = "", file_name: str = None, ignore_first_line: bool = True, file_sep: str = "|",
                  client_stat: ClientStatistic = None, **kwargs):
+        self._test_label = label
         self._client_stat = client_stat
         if not isinstance(self._client_stat, ClientStatistic):
             raise RuntimeError("Bad Statistic obj")
@@ -187,6 +189,9 @@ class RequestGenerator(metaclass=ABCMeta):
             if ignore_first_line:
                 self._data_file.readline()
                 self._file_start_pos = self._data_file.tell()
+
+    def get_label(self):
+        return self._test_label
 
     # Copied from Plenum
     def random_string(self, sz: int) -> str:
@@ -226,7 +231,7 @@ class RequestGenerator(metaclass=ABCMeta):
 
     async def generate_request(self, submit_did):
         req_data = self._gen_req_data()
-        self._client_stat.preparing(req_data)
+        self._client_stat.preparing(req_data, self.get_label())
 
         try:
             req = await self._gen_req(submit_did, req_data)
@@ -264,6 +269,10 @@ class RGSeqReqs(RequestGenerator):
         if len(self._reqs_collection) == 0:
             raise RuntimeError("At least one class should be provided")
 
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        for req_builder in set(self._reqs_collection):
+            await req_builder.on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+
     def _seq_idx(self):
         return (self._req_idx + 1) % len(self._reqs_collection)
 
@@ -273,6 +282,9 @@ class RGSeqReqs(RequestGenerator):
     def _gen_req_data(self):
         self._req_idx = self._next_idx()
         return self._reqs_collection[self._req_idx]._gen_req_data()
+
+    def get_label(self):
+        return self._reqs_collection[self._req_idx].get_label()
 
     async def _gen_req(self, submit_did, req_data):
         return await self._reqs_collection[self._req_idx]._gen_req(submit_did, req_data)
@@ -526,11 +538,21 @@ def create_req_generator(req_kind_arg):
                           "get_revoc_reg_def": RGGetDefRevoc, "get_revoc_reg": RGGetEntryRevoc,
                           "get_revoc_reg_delta": RGGetRevocRegDelta}
     if req_kind_arg in supported_requests:
-        return supported_requests[req_kind_arg], {}
+        return supported_requests[req_kind_arg], {"label": req_kind_arg}
     try:
         reqs = json.loads(req_kind_arg)
     except Exception as e:
         raise RuntimeError("Invalid parameter format")
+
+    def add_label(cls_name, param):
+        ret_dict = param
+        if isinstance(param, int):
+            ret_dict = {}
+            ret_dict["count"] = param
+        lbl = [k for k, v in supported_requests.items() if v == cls_name]
+        if "label" not in ret_dict:
+            ret_dict["label"] = lbl[0]
+        return cls_name, ret_dict
 
     def _parse_single(req_kind, prms):
         if req_kind is None and isinstance(prms, dict):
@@ -538,9 +560,9 @@ def create_req_generator(req_kind_arg):
             if len(req_crt) == 1:
                 tmp_params = copy.copy(prms)
                 tmp_params.pop(req_crt[0])
-                return supported_requests[req_crt[0]], tmp_params
+                return add_label(supported_requests[req_crt[0]], tmp_params)
         if isinstance(req_kind, str) and req_kind in supported_requests:
-            return supported_requests[req_kind], prms
+            return add_label(supported_requests[req_kind], prms)
         if isinstance(req_kind, str) and req_kind not in supported_requests:
             return _parse_single(None, prms)
         if isinstance(req_kind, dict) and len(req_kind.keys()) == 1:
@@ -561,8 +583,7 @@ def create_req_generator(req_kind_arg):
             ret_reqs.append(_parse_single(r, {}))
     if len(ret_reqs) == 1:
         req = ret_reqs[0][0]
-        par = {} if isinstance(ret_reqs[0][1], int) else ret_reqs[0][1]
-        return req, par
+        return add_label(req, ret_reqs[0][1])
     else:
         return RGSeqReqs, {'next_random': randomizing, 'reqs': ret_reqs}
 
@@ -812,9 +833,9 @@ class TestRunner:
             return
         reqs = stat.get("reqs", [])
         for (r_id, r_data) in reqs:
-            # ["id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
+            # ["label", "id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
             status = r_data.get("status", "")
-            print(r_id, status, r_data.get("client_preparing", 0), r_data.get("client_prepared", 0), r_data.get("client_signed", 0),
+            print(r_data.get("label", ""), r_id, status, r_data.get("client_preparing", 0), r_data.get("client_prepared", 0), r_data.get("client_signed", 0),
                   r_data.get("client_sent", 0), r_data.get("client_reply", 0), r_data.get("server_reply", 0),
                   file=self._total_f, sep=self._value_separator)
 
@@ -908,7 +929,8 @@ class TestRunner:
         print("id", "req", "resp", file=self._failed_f, sep=self._value_separator)
         print("id", "req", "resp", file=self._nacked_f, sep=self._value_separator)
         print("id", "req", "resp", file=self._succ_f, sep=self._value_separator)
-        print("id", "status", "client_preparing", "client_prepared", "client_signed", "client_sent", "client_reply", "server_reply",
+        print("label", "id", "status", "client_preparing", "client_prepared",
+              "client_signed", "client_sent", "client_reply", "server_reply",
               file=self._total_f, sep=self._value_separator)
 
     def close_fs(self):
