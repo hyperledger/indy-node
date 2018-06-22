@@ -25,6 +25,7 @@ def test_get_revoc_reg_entry_without_any_entry_return_none(send_revoc_reg_def_by
     assert result[DATA] is None
     assert result[f.SEQ_NO.nm] is None
     assert result[TXN_TIME] is None
-    assert STATE_PROOF not in result
+    assert STATE_PROOF in result
+    assert result[STATE_PROOF] is not None
 
 

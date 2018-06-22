@@ -547,6 +547,7 @@ class DomainReqHandler(PHandler):
             encoded_entry, proof = self.get_value_from_state(path,
                                                              head_hash=past_root,
                                                              with_proof=True)
+            entry_state.proof = proof
             if encoded_entry:
                 revoc_reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
                 entry_state = StateValue(root_hash=past_root,
