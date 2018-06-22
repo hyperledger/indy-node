@@ -2,27 +2,21 @@ import pytest
 import time
 import json
 from contextlib import ExitStack
+
+from indy_common.state.domain import make_state_path_for_claim_def
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
-    CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, GET_REVOC_REG_DEF, \
+    CRED_DEF_ID, VALUE, TAG, ISSUANCE_ON_DEMAND, CLAIM_DEF, ID, \
     TXN_TYPE, REVOC_TYPE, ISSUANCE_TYPE, MAX_CRED_NUM, TAILS_HASH, TAILS_LOCATION, PUBLIC_KEYS, \
-    GET_REVOC_REG_DELTA, GET_REVOC_REG, TIMESTAMP, FROM, TO
+    GET_REVOC_REG_DELTA, GET_REVOC_REG, TIMESTAMP, FROM, TO, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, \
+    CLAIM_DEF_TAG
 from indy_common.types import Request
 from indy_common.state import domain
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
-from plenum.common.txn_util import reqToTxn
-from plenum.common.types import f
-from plenum.common.constants import TXN_TIME
+from plenum.common.txn_util import reqToTxn, append_txn_metadata
+from plenum.common.types import f, OPERATION
 from plenum.test.helper import create_new_test_node
-
-
-def build_path_for_claim_def(did, sig_type, seq_no):
-    return "{DID}:{MARKER}:{SIGNATURE_TYPE}:{SCHEMA_SEQ_NO}" \
-        .format(DID=did,
-                MARKER="3",
-                SIGNATURE_TYPE=sig_type,
-                SCHEMA_SEQ_NO=seq_no)
 
 
 @pytest.fixture(scope="module")
@@ -68,24 +62,23 @@ def add_revoc_def_by_default(create_node_and_not_start,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
     req_handler = node.getDomainReqHandler()
-    txn = reqToTxn(Request(**req))
-    txn[f.SEQ_NO.nm] = node.domainLedger.seqNo + 1
-    txn[TXN_TIME] = int(time.time())
+    txn = append_txn_metadata(reqToTxn(Request(**req)),
+                              txn_time=int(time.time()),
+                              seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocDef(txn)
     return req
 
 def build_revoc_reg_entry_for_given_revoc_reg_def(
-        revoc_def_txn):
-    revoc_def_txn = reqToTxn(revoc_def_txn)
-    path = ":".join([revoc_def_txn[f.IDENTIFIER.nm],
+        revoc_def_req):
+    path = ":".join([revoc_def_req[f.IDENTIFIER.nm],
                      domain.MARKER_REVOC_DEF,
-                     revoc_def_txn[CRED_DEF_ID],
-                     revoc_def_txn[REVOC_TYPE],
-                     revoc_def_txn[TAG]])
+                     revoc_def_req[OPERATION][CRED_DEF_ID],
+                     revoc_def_req[OPERATION][REVOC_TYPE],
+                     revoc_def_req[OPERATION][TAG]])
     data = {
         REVOC_REG_DEF_ID: path,
         TXN_TYPE: REVOC_REG_ENTRY,
-        REVOC_TYPE: revoc_def_txn[REVOC_TYPE],
+        REVOC_TYPE: revoc_def_req[OPERATION][REVOC_TYPE],
         VALUE: {
             PREV_ACCUM: randomString(10),
             ACCUM: randomString(10),
@@ -100,8 +93,8 @@ def build_revoc_reg_entry_for_given_revoc_reg_def(
 def build_txn_for_revoc_def_entry_by_default(looper,
                                   sdk_wallet_steward,
                                   add_revoc_def_by_default):
-    revoc_def_txn = add_revoc_def_by_default
-    data = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_txn)
+    revoc_def_req = add_revoc_def_by_default
+    data = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     return req
 
@@ -127,9 +120,9 @@ def add_revoc_def_by_demand(create_node_and_not_start,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
     req_handler = node.getDomainReqHandler()
-    txn = reqToTxn(Request(**req))
-    txn[f.SEQ_NO.nm] = node.domainLedger.seqNo + 1
-    txn[TXN_TIME] = int(time.time())
+    txn = append_txn_metadata(reqToTxn(Request(**req)),
+                              txn_time=int(time.time()),
+                              seq_no=node.domainLedger.seqNo + 1)
     req_handler._addRevocDef(txn)
     return req
 
@@ -137,13 +130,12 @@ def add_revoc_def_by_demand(create_node_and_not_start,
 def build_txn_for_revoc_def_entry_by_demand(looper,
                                   sdk_wallet_steward,
                                   add_revoc_def_by_demand):
-    revoc_def_txn = add_revoc_def_by_demand
-    revoc_def_txn = reqToTxn(revoc_def_txn)
-    path = ":".join([revoc_def_txn[f.IDENTIFIER.nm],
+    revoc_def_req = add_revoc_def_by_demand
+    path = ":".join([revoc_def_req[f.IDENTIFIER.nm],
                      domain.MARKER_REVOC_DEF,
-                     revoc_def_txn[CRED_DEF_ID],
-                     revoc_def_txn[REVOC_TYPE],
-                     revoc_def_txn[TAG]])
+                     revoc_def_req[OPERATION][CRED_DEF_ID],
+                     revoc_def_req[OPERATION][REVOC_TYPE],
+                     revoc_def_req[OPERATION][TAG]])
     data = {
         REVOC_REG_DEF_ID: path,
         TXN_TYPE: REVOC_REG_ENTRY,
@@ -164,6 +156,7 @@ def claim_def():
         "type": CLAIM_DEF,
         "ref": 1,
         "signature_type": "CL",
+        "tag": "some_tag",
         "data": {
             "primary": {
                 "n": "94759924268422840873493186881483285628376767714620627055233230078254863658476446487556117977593248501523199451418346650764648601684276437772084327637083000213497377603495837360299641742248892290843802071224822481683143989223918276185323177379400413928352871249494885563503003839960930062341074783742062464846448855510814252519824733234277681749977392772900212293652238651538092092030867161752390937372967233462027620699196724949212432236376627703446877808405786247217818975482797381180714523093913559060716447170497587855871901716892114835713057965087473682457896508094049813280368069805661739141591558517233009123957",
@@ -190,6 +183,7 @@ def send_claim_def(looper,
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, claim_def)
     sdk_send_and_check([json.dumps(req)], looper, txnPoolNodeSet, sdk_pool_handle)
     return req
+
 
 @pytest.fixture(scope="module")
 def build_revoc_def_by_default(looper, sdk_wallet_steward):
@@ -239,9 +233,12 @@ def send_revoc_reg_def_by_default(looper,
     _, author_did = sdk_wallet_steward
     claim_def_req = send_claim_def
     revoc_reg = build_revoc_def_by_default
-    revoc_reg['operation'][CRED_DEF_ID] = build_path_for_claim_def(author_did,
-                                                                   claim_def_req['operation']["signature_type"],
-                                                                   str(claim_def_req['operation']["ref"]))
+    revoc_reg['operation'][CRED_DEF_ID] =\
+        make_state_path_for_claim_def(author_did,
+                                      str(claim_def_req['operation'][CLAIM_DEF_SCHEMA_REF]),
+                                      claim_def_req['operation'][CLAIM_DEF_SIGNATURE_TYPE],
+                                      claim_def_req['operation'][CLAIM_DEF_TAG]
+                                      ).decode()
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
     _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
     return revoc_req, revoc_reply
@@ -256,9 +253,11 @@ def send_revoc_reg_def_by_demand(looper,
     _, author_did = sdk_wallet_steward
     claim_def_req = send_claim_def
     revoc_reg = build_revoc_def_by_demand
-    revoc_reg['operation'][CRED_DEF_ID] = build_path_for_claim_def(author_did,
-                                                                   claim_def_req['operation']["signature_type"],
-                                                                   str(claim_def_req['operation']["ref"]))
+    revoc_reg['operation'][CRED_DEF_ID] = make_state_path_for_claim_def(author_did,
+                                                                        str(claim_def_req['operation'][CLAIM_DEF_SCHEMA_REF]),
+                                                                        claim_def_req['operation'][CLAIM_DEF_SIGNATURE_TYPE],
+                                                                        claim_def_req['operation'][CLAIM_DEF_TAG]
+                                                                        ).decode()
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, revoc_reg['operation'])
     sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)
     return revoc_req

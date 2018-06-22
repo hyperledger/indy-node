@@ -7,6 +7,12 @@ However, being test nodes, sometimes they aren’t, or sometimes you just want t
 
 This guide describes the process of setting up a local 4 node cluster and attaching the 3 Agents required [use the Indy CLI](https://github.com/hyperledger/indy-node/blob/master/getting-started.md#using-the-indy-cli) and impersonate Alice.
 
+**WARNING:** This script is not intended way to start the pool. You can install a test network in one of several ways:
+
+ - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
+ - **Docker:** [Start Pool and Client with Docker](environment/docker/pool/StartIndyAgents.md).
+
+
 
 ## Requirements
 
@@ -70,10 +76,10 @@ At this point you are now ready to start the nodes.
 
 Open up 4 new terminal windows and in each one run one of the following commands (one in each window):
 ```
-start_indy_node Node1 9701 9702
-start_indy_node Node2 9703 9704
-start_indy_node Node3 9705 9706
-start_indy_node Node4 9707 9708
+start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702
+start_indy_node Node2 0.0.0.0 9703 0.0.0.0 9704
+start_indy_node Node3 0.0.0.0 9705 0.0.0.0 9706
+start_indy_node Node4 0.0.0.0 9707 0.0.0.0 9708
 ```
 
 This will start each node which should connect to each other, do their handshaking and will elect a master and backup.

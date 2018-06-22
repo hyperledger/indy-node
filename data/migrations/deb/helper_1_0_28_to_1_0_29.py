@@ -149,8 +149,8 @@ def migrate_all_ledgers_for_node(node_data_directory):
     # domain ledger uses custom CompactSerializer and old file name
     fields = getTxnOrderedFields()
     _migrate_ledger(node_data_directory,
-                    config.domainTransactionsFile.replace('domain_', ''),
-                    config.domainTransactionsFile,
+                    config.domainTransactionsFile.replace(
+                        'domain_', ''), config.domainTransactionsFile,
                     serializer=CompactSerializer(fields=fields))
 
 

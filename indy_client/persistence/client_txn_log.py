@@ -1,6 +1,6 @@
 from typing import List
 
-from plenum.common.constants import TXN_TYPE
+from plenum.common.txn_util import get_type
 from plenum.common.util import updateFieldsWithSeqNo
 from plenum.persistence.client_txn_log import ClientTxnLog as PClientTxnLog
 
@@ -20,6 +20,6 @@ class ClientTxnLog(PClientTxnLog):
                                                 include_value=True):
             txn = self.serializer.deserialize(
                 val, fields=self.txnFieldOrdering)
-            if txn.get(TXN_TYPE) == txnType:
+            if get_type(txn) == txnType:
                 txns.append(txn)
         return txns

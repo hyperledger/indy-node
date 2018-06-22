@@ -12,7 +12,7 @@ def test_node_sent_upgrade_in_progress(looper, nodeSet, nodeIds, validUpgrade):
     version = validUpgrade['version']
     for node in nodeSet:
         node_id = node.poolManager.get_nym_by_name(node.name)
-        node.upgrader.scheduledUpgrade = (version,
+        node.upgrader.scheduledAction = (version,
                                  validUpgrade['schedule'][node_id],
                                  "upgrade_id")
         node.notify_upgrade_start()

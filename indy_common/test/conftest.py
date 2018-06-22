@@ -5,11 +5,9 @@ import logging
 from indy_common import strict_types
 from indy_common.config_util import getConfig
 from indy_common.txn_util import getTxnOrderedFields
+from indy_node.server.config_helper import create_config_dirs
 from stp_core.common.log import getlogger
-from indy_common.config import GENERAL_CONFIG_FILE
 from indy_common.config_helper import ConfigHelper, NodeConfigHelper
-import indy_node.general_config.general_config as general_config
-import indy_node.general_config.ubuntu_platform_config as platform_config
 
 # typecheck during tests
 strict_types.defaultShouldCheck = True
@@ -33,27 +31,7 @@ def node_config_helper_class():
 
 
 def _general_conf_tdir(tmp_dir):
-    general_config_dir = os.path.join(tmp_dir, GENERAL_CONFIG_DIR)
-    os.makedirs(general_config_dir)
-    general_config_path = os.path.join(general_config_dir, GENERAL_CONFIG_FILE)
-
-    general_config_file = open(general_config.__file__, 'r')
-    platform_config_file = open(platform_config.__file__, 'r')
-
-    general_config_result_file = open(general_config_path, 'w')
-
-    lines = general_config_file.readlines()
-    for line in lines:
-        if line.startswith('NETWORK_NAME'):
-            line = 'NETWORK_NAME = \'sandbox\'\n'
-        general_config_result_file.write(line)
-    general_config_result_file.write(platform_config_file.read())
-
-    general_config_file.close()
-    platform_config_file.close()
-    general_config_result_file.close()
-
-    return general_config_dir
+    return create_config_dirs(tmp_dir)
 
 
 @pytest.fixture(scope='module')

@@ -1,22 +1,21 @@
+import json
 import types
 
 import pytest
 
-from indy_client.test.helper import genTestClient
+from indy.did import create_and_store_my_did
 from indy_node.persistence.idr_cache import IdrCache
 from plenum.common.constants import VERKEY, DOMAIN_LEDGER_ID
-from plenum.common.signer_simple import SimpleSigner
-from plenum.common.messages.node_messages import PrePrepare, Commit
-from plenum.common.signer_did import DidSigner
+from plenum.common.messages.node_messages import Commit
 from plenum.common.util import randomString
-from plenum.test.helper import waitForSufficientRepliesForRequests
+from plenum.test.helper import sdk_get_and_check_replies
+from indy_node.test.helper import sdk_rotate_verkey
 from plenum.test.node_catchup.helper import waitNodeDataEquality
 from plenum.test.delayers import icDelay
-from indy_client.client.wallet.wallet import Wallet
-from indy_common.identity import Identity
+from plenum.test.pool_transactions.helper import sdk_add_new_nym, prepare_nym_request, \
+    sdk_sign_and_send_prepared_request
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
-
 
 logger = getlogger()
 
@@ -35,10 +34,10 @@ def tconf(tconf, request):
 
 
 def test_successive_batch_do_no_change_state(looper,
-                                             tdirWithDomainTxnsUpdated,
-                                             tdirWithClientPoolTxns,
-                                             tconf, nodeSet, trustee,
-                                             trusteeWallet, monkeypatch):
+                                             tconf, nodeSet,
+                                             sdk_pool_handle,
+                                             sdk_wallet_trustee,
+                                             monkeypatch):
     """
     Send 2 NYM txns in different batches such that the second batch does not
     change state so that state root remains same, but keep the identifier
@@ -47,7 +46,6 @@ def test_successive_batch_do_no_change_state(looper,
     Also check reject and commit
     :return:
     """
-    all_reqs = []
 
     # Disable view change during this test
     for n in nodeSet:
@@ -60,31 +58,6 @@ def test_successive_batch_do_no_change_state(looper,
         msg, sender = wrappedMsg
         if isinstance(msg, Commit) and msg.instId == 0:
             return delay_cm_duration
-
-    def new_identity():
-        wallet = Wallet(randomString(5))
-        signer = DidSigner()
-        new_idr, _ = wallet.addIdentifier(signer=signer)
-        verkey = wallet.getVerkey(new_idr)
-        idy = Identity(identifier=new_idr,
-                       verkey=verkey,
-                       role=None)
-        return idy, wallet
-
-    def submit_id_req(idy, wallet=None, client=None):
-        nonlocal all_reqs
-        wallet = wallet if wallet is not None else trusteeWallet
-        client = client if client is not None else trustee
-        wallet.updateTrustAnchoredIdentity(idy)
-        reqs = wallet.preparePending()
-        all_reqs.extend(reqs)
-        client.submitReqs(*reqs)
-        return reqs
-
-    def submit_id_req_and_wait(idy, wallet=None, client=None):
-        reqs = submit_id_req(idy, wallet=wallet, client=client)
-        looper.runFor(.2)
-        return reqs
 
     def check_verkey(i, vk):
         for node in nodeSet:
@@ -100,83 +73,64 @@ def test_successive_batch_do_no_change_state(looper,
             monkeypatch.setattr(rpl, '_request_missing_three_phase_messages',
                                 lambda *x, **y: None)
 
-    idy, new_wallet = new_identity()
-    new_idr = idy.identifier
-    verkey = idy.verkey
+    wh, did = sdk_wallet_trustee
+    seed = randomString(32)
+    (new_did, verkey) = looper.loop.run_until_complete(
+        create_and_store_my_did(wh, json.dumps({'seed': seed})))
 
-    submit_id_req(idy)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=all_reqs[-1:],
-                                        add_delay_to_timeout=delay_cm_duration)
+    sdk_add_new_nym(looper, sdk_pool_handle,
+                    sdk_wallet_trustee, dest=new_did,
+                    verkey=verkey)
 
     for node in nodeSet:
         node.nodeIbStasher.delay(delay_commits)
 
-    new_client, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns,
-                                  usePoolLedger=True)
-    looper.add(new_client)
-    looper.run(new_client.ensureConnectedToNodes(count=len(nodeSet)))
-    new_client.registerObserver(new_wallet.handleIncomingReply, name='temp')
-    idy.seqNo = None
-
     # Setting the same verkey thrice but in different batches with different
-    #  request ids
+    # request ids
     for _ in range(3):
-        req, = submit_id_req_and_wait(idy, wallet=new_wallet, client=new_client)
-        logger.debug('{} sent request {} to change verkey'.
-                     format(new_client, req))
-
-    waitForSufficientRepliesForRequests(looper, new_client,
-                                        requests=all_reqs[-3:],
-                                        add_delay_to_timeout=delay_cm_duration)
+        verkey = sdk_rotate_verkey(looper, sdk_pool_handle,
+                                   wh, new_did, new_did)
+        logger.debug('{} rotates his key to {}'.
+                     format(new_did, verkey))
 
     # Number of uncommitted entries is 0
     looper.run(eventually(check_uncommitted, 0))
 
-    check_verkey(new_idr, verkey)
-
-    new_client.deregisterObserver(name='temp')
+    check_verkey(new_did, verkey)
 
     # Setting the verkey to `x`, then `y` and then back to `x` but in different
     # batches with different request ids. The idea is to change
     # state root to `t` then `t'` and then back to `t` and observe that no
     # errors are encountered
 
-    idy, new_wallet = new_identity()
-    submit_id_req(idy)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=all_reqs[-1:],
-                                        add_delay_to_timeout=delay_cm_duration)
+    seed = randomString(32)
+    (new_client_did, verkey) = looper.loop.run_until_complete(
+        create_and_store_my_did(wh, json.dumps({'seed': seed})))
+    sdk_add_new_nym(looper, sdk_pool_handle,
+                    sdk_wallet_trustee, dest=new_client_did,
+                    verkey=verkey)
 
-    new_client.registerObserver(new_wallet.handleIncomingReply)
+    x_seed = randomString(32)
+    verkey = sdk_rotate_verkey(looper, sdk_pool_handle, wh,
+                               new_client_did, new_client_did)
+    logger.debug('{} rotates his key to {}'.
+                 format(new_client_did, verkey))
 
-    idy.seqNo = None
-    x_signer = SimpleSigner(identifier=idy.identifier)
-    idy.verkey = x_signer.verkey
-    req, = submit_id_req_and_wait(idy, wallet=new_wallet, client=new_client)
-    new_wallet.updateSigner(idy.identifier, x_signer)
-    logger.debug('{} sent request {} to change verkey'.
-                 format(new_client, req))
+    y_seed = randomString(32)
+    sdk_rotate_verkey(looper, sdk_pool_handle, wh,
+                      new_client_did, new_client_did)
+    logger.debug('{} rotates his key to {}'.
+                 format(new_client_did, verkey))
 
-    y_signer = SimpleSigner(identifier=idy.identifier)
-    idy.verkey = y_signer.verkey
-    req, = submit_id_req_and_wait(idy, wallet=new_wallet, client=new_client)
-    new_wallet.updateSigner(idy.identifier, y_signer)
-    logger.debug('{} sent request {} to change verkey'.
-                 format(new_client, req))
-
-    idy.verkey = x_signer.verkey
-    req, = submit_id_req_and_wait(idy, wallet=new_wallet, client=new_client)
-    new_wallet.updateSigner(idy.identifier, x_signer)
-    logger.debug('{} sent request {} to change verkey'.
-                 format(new_client, req))
-
-    waitForSufficientRepliesForRequests(looper, new_client,
-                                        requests=all_reqs[-3:],
-                                        add_delay_to_timeout=delay_cm_duration)
+    verkey = sdk_rotate_verkey(looper, sdk_pool_handle, wh,
+                      new_client_did, new_client_did)
+    logger.debug('{} rotates his key to {}'.
+                 format(new_client_did, verkey))
 
     # Number of uncommitted entries is 0
     looper.run(eventually(check_uncommitted, 0))
 
-    check_verkey(new_idr, verkey)
+    check_verkey(new_client_did, verkey)
     monkeypatch.undo()
 
     # Delay COMMITs so that IdrCache can be checked for correct
@@ -185,7 +139,7 @@ def test_successive_batch_do_no_change_state(looper,
     uncommitteds = {}
     methods = {}
     for node in nodeSet:
-        cache = node.idrCache   # type: IdrCache
+        cache = node.idrCache  # type: IdrCache
         uncommitteds[cache._name] = []
         # Since the post batch creation handler is registered (added to a list),
         # find it and patch it
@@ -218,18 +172,22 @@ def test_successive_batch_do_no_change_state(looper,
     # Set verkey of multiple identities
     more = 5
     keys = {}
+    reqs = []
     for _ in range(more):
-        idy, _ = new_identity()
-        keys[idy.identifier] = idy.verkey
-        submit_id_req(idy)
+        seed = randomString(32)
+        nym_request, new_did = looper.loop.run_until_complete(
+            prepare_nym_request(sdk_wallet_trustee, seed,
+                                None, None))
+        keys[new_did] = json.loads(nym_request)['operation']['verkey']
+        reqs.append(
+            sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
+                                               sdk_pool_handle, nym_request))
         looper.runFor(.01)
 
     # Correct number of uncommitted entries
     looper.run(eventually(check_uncommitted, more, retryWait=1))
 
-    waitForSufficientRepliesForRequests(looper, trustee,
-                                        requests=all_reqs[-more:],
-                                        add_delay_to_timeout=delay_cm_duration)
+    sdk_get_and_check_replies(looper, reqs)
 
     # Number of uncommitted entries is 0
     looper.run(eventually(check_uncommitted, 0))
@@ -240,12 +198,15 @@ def test_successive_batch_do_no_change_state(looper,
 
     waitNodeDataEquality(looper, nodeSet[0], *nodeSet[1:])
 
-    keys = {}
     for _ in range(3):
-        idy, _ = new_identity()
-        keys[idy.identifier] = idy.verkey
-        submit_id_req(idy)
-        looper.runFor(.01)
+        seed = randomString(32)
+        nym_request, new_did = looper.loop.run_until_complete(
+            prepare_nym_request(sdk_wallet_trustee, seed,
+                                None, None))
+        reqs.append(
+            sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
+                                               sdk_pool_handle, nym_request))
+        looper.runFor(1)
 
     # Correct number of uncommitted entries
     looper.run(eventually(check_uncommitted, 3, retryWait=1))

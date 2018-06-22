@@ -8,25 +8,27 @@ import pytest
 from plenum.common.constants import ENC, REPLY, TXN_TIME, TXN_ID, \
     OP_FIELD_NAME, NYM, TARGET_NYM, \
     TXN_TYPE, ROLE, NONCE, VERKEY
+from plenum.common.exceptions import RequestRejectedException, RequestNackedException
 from plenum.common.signer_did import DidSigner
+from plenum.common.txn_util import get_type, get_payload_data, get_req_id
 from plenum.common.types import f
 from plenum.common.util import adict
 from plenum.test import waits
 from indy_client.client.client import Client
 from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.client.wallet.wallet import Wallet
-from indy_client.test.helper import checkNacks, submitAndCheckRejects, \
+from indy_client.test.helper import checkNacks, \
     genTestClient, createNym, checkRejects, makePendingTxnsRequest
-from indy_common.constants import SKEY
+from indy_common.constants import SKEY, TRUST_ANCHOR_STRING, ATTRIB, TRUST_ANCHOR
 from indy_common.identity import Identity
-from indy_common.txn_util import ATTRIB, TRUST_ANCHOR
 from indy_common.util import getSymmetricallyEncryptedVal
 from indy_node.test.helper import submitAndCheck, \
     makeAttribRequest, makeGetNymRequest, addAttributeAndCheck, TestNode, \
-    getAttribute
+    getAttribute, sdk_add_attribute_and_check
+from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_bad_response
+from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
-
 
 logger = getlogger()
 
@@ -65,6 +67,14 @@ def addedRawAttribute(userWalletA: Wallet, trustAnchor: Client,
                        ledgerStore=LedgerStore.RAW)
     addAttributeAndCheck(looper, trustAnchor, trustAnchorWallet, attrib)
     return attrib
+
+
+@pytest.fixture(scope="module")
+def sdk_added_raw_attribute(sdk_pool_handle, sdk_user_wallet_a,
+                            sdk_wallet_trust_anchor, attributeData, looper):
+    _, did_cl = sdk_user_wallet_a
+    req_couple = sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, attributeData, did_cl)
+    return req_couple[0]
 
 
 @pytest.fixture(scope="module")
@@ -143,95 +153,44 @@ def add_nym_operation(signer=None, seed=None, role=None):
 
 
 def test_non_steward_cannot_create_trust_anchor(
-        nodeSet, trustAnchor, addedTrustAnchor, client1, looper):
-
-    with whitelistextras("UnknownIdentifier"):
-        non_permission = Wallet()
-        signer = DidSigner()
-        non_permission.addIdentifier(signer=signer)
-
-        createNym(looper,
-                  non_permission.defaultId,
-                  trustAnchor,
-                  addedTrustAnchor,
-                  role=None,
-                  verkey=non_permission.getVerkey())
-
-        op = add_nym_operation(
-            seed=b'a secret trust anchor seed......', role=TRUST_ANCHOR)
-
-        submitAndCheckRejects(
-            looper=looper,
-            client=client1,
-            wallet=non_permission,
-            op=op,
-            identifier=non_permission.defaultId,
-            contains="UnauthorizedClientRequest")
+        nodeSet, looper, sdk_pool_handle, sdk_wallet_steward):
+    sdk_wallet_client = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward)
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_client, role=TRUST_ANCHOR_STRING)
+    e.match('None role cannot')
 
 
-def testStewardCreatesATrustAnchor(steward, addedTrustAnchor):
-    pass
+def testStewardCreatesATrustAnchor(looper, sdk_pool_handle, sdk_wallet_steward):
+    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, role=TRUST_ANCHOR_STRING)
 
 
-@pytest.mark.skip(
-    reason="SOV-560. Cannot create another sponsor with same nym")
-def testStewardCreatesAnotherTrustAnchor(
-        nodeSet,
-        steward,
-        stewardWallet,
-        looper,
-        trustAnchorWallet):
-    createNym(looper, trustAnchorWallet.defaultId, steward, stewardWallet,
-              TRUST_ANCHOR)
-    return trustAnchorWallet
+def testStewardCreatesAnotherTrustAnchor(looper, sdk_pool_handle, sdk_wallet_steward):
+    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, role=TRUST_ANCHOR_STRING)
 
 
 def test_non_trust_anchor_cannot_create_user(
-        nodeSet, looper, trustAnchor, addedTrustAnchor, client1):
-    with whitelistextras("UnknownIdentifier"):
-        non_trust_anchor = Wallet()
-        signer = DidSigner()
-        non_trust_anchor.addIdentifier(signer=signer)
-
-        createNym(looper,
-                  non_trust_anchor.defaultId,
-                  trustAnchor,
-                  addedTrustAnchor,
-                  role=None,
-                  verkey=non_trust_anchor.getVerkey())
-
-        op = add_nym_operation(seed=b'a secret trust anchor seed......')
-
-        submitAndCheckRejects(
-            looper=looper,
-            client=client1,
-            wallet=non_trust_anchor,
-            op=op,
-            identifier=non_trust_anchor.defaultId,
-            contains="UnauthorizedClientRequest")
+        nodeSet, looper, sdk_pool_handle, sdk_wallet_steward):
+    sdk_wallet_client = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward)
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_client)
+    e.match('None role cannot')
 
 
-def testTrustAnchorCreatesAUser(steward, userWalletA):
+def testTrustAnchorCreatesAUser(sdk_user_wallet_a):
     pass
 
 
-def test_nym_addition_fails_with_empty_verkey(looper, addedTrustAnchor,
-                                              trustAnchor, trustAnchorWallet):
-
+def test_nym_addition_fails_with_empty_verkey(looper, sdk_pool_handle,
+                                              sdk_wallet_trustee):
     op = add_nym_operation(seed=b'a secret trust anchor seed......')
     op[VERKEY] = ''
-    submitAndCheckRejects(
-        looper=looper,
-        client=trustAnchor,
-        wallet=trustAnchorWallet,
-        op=op,
-        identifier=trustAnchorWallet.defaultId,
-        contains='Neither a full verkey nor an abbreviated one',
-        check_func=checkNacks)
+    req = sdk_sign_and_submit_op(looper, sdk_pool_handle, sdk_wallet_trustee, op)
+    sdk_get_bad_response(looper, [req], RequestNackedException,
+                         'Neither a full verkey nor an abbreviated one')
 
 
 @pytest.fixture(scope="module")
-def nymsAddedInQuickSuccession(nodeSet, addedTrustAnchor, looper,
+def nymsAddedInQuickSuccession(looper, nodeSet, sdk_added_raw_attribute,
                                trustAnchor, trustAnchorWallet):
     usigner = DidSigner()
     nym = usigner.verkey
@@ -258,13 +217,13 @@ def nymsAddedInQuickSuccession(nodeSet, addedTrustAnchor, looper,
     count = 0
     for node in nodeSet:
         for seq, txn in node.domainLedger.getAllTxn():
-            if txn[TXN_TYPE] == NYM and txn[TARGET_NYM] == usigner.identifier:
+            if get_type(txn) == NYM and get_payload_data(txn)[TARGET_NYM] == usigner.identifier:
                 count += 1
 
-    assert(count == len(nodeSet))
+    assert (count == len(nodeSet))
 
 
-def testTrustAnchorAddsAttributeForUser(addedRawAttribute):
+def testTrustAnchorAddsAttributeForUser(sdk_added_raw_attribute):
     pass
 
 
@@ -283,8 +242,8 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(
     for msg, sender in reversed(trustAnchor.inBox):
         if msg[OP_FIELD_NAME] == REPLY:
             if not lastReqId:
-                lastReqId = msg[f.RESULT.nm][f.REQ_ID.nm]
-            if msg.get(f.RESULT.nm, {}).get(f.REQ_ID.nm) == lastReqId:
+                lastReqId = get_req_id(msg[f.RESULT.nm])
+            if get_req_id(msg[f.RESULT.nm]) == lastReqId:
                 replies[sender] = msg
             if len(replies) == len(nodeSet):
                 break
@@ -317,7 +276,7 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(
             replies[node.clientstack.name][f.RESULT.nm].pop(TXN_TIME, None)
             result.result.pop(TXN_TIME, None)
 
-            assert {k: v for k, v in result.result.items() if v is not None}.items() <=\
+            assert {k: v for k, v in result.result.items() if v is not None}.items() <= \
                    replies[node.clientstack.name][f.RESULT.nm].items()
 
     timeout = waits.expectedTransactionExecutionTime(len(nodeSet))
@@ -453,8 +412,8 @@ def testTrustAnchorDisclosesEncryptedAttribute(
     op = {
         TARGET_NYM: userSignerA.verstr,
         TXN_TYPE: ATTRIB,
-        NONCE: base58.b58encode(nonce),
-        ENC: base58.b58encode(boxedMsg)
+        NONCE: base58.b58encode(nonce).decode("utf-8"),
+        ENC: base58.b58encode(boxedMsg).decode("utf-8")
     }
     submitAndCheck(looper, trustAnchor, op,
                    identifier=trustAnchorSigner.verstr)
@@ -488,7 +447,6 @@ def testLatestAttrIsReceived(
         looper,
         trustAnchor,
         userIdA):
-
     attr1 = json.dumps({'name': 'Mario'})
     attrib = Attribute(name='name',
                        origin=trustAnchorWallet.defaultId,

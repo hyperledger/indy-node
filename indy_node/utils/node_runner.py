@@ -30,9 +30,9 @@ def integrate(node_config_helper, node, logger):
     return node
 
 
-def run_node(config, name, node_port, client_port):
-    node_ha = HA("0.0.0.0", node_port)
-    client_ha = HA("0.0.0.0", client_port)
+def run_node(config, name, node_ip, node_port, client_ip, client_port):
+    node_ha = HA(node_ip, node_port)
+    client_ha = HA(client_ip, client_port)
 
     node_config_helper = NodeConfigHelper(name, config)
 
@@ -49,7 +49,7 @@ def run_node(config, name, node_port, client_port):
     logger.debug("Indy related env vars: {}".format(vars))
 
     with Looper(debug=config.LOOPER_DEBUG) as looper:
-        node = Node(name, nodeRegistry=None,
+        node = Node(name,
                     config_helper=node_config_helper,
                     ha=node_ha, cliha=client_ha)
         node = integrate(node_config_helper, node, logger)

@@ -608,7 +608,8 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
                 self.notifyMsgListener(
                     "    DID is not yet written to Indy")
 
-        self.loop.call_later(.2, ensureReqCompleted, self.loop, req.key,
+        self.loop.call_later(.2, ensureReqCompleted, self.loop,
+                             (req.identifier, req.reqId),
                              self.client, getNymReply, (availableClaims, li))
 
     def notifyResponseFromMsg(self, linkName, reqId=None):
@@ -711,8 +712,8 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
 
     def _sendToIndyAndDo(self, req, clbk=None, *args, **kwargs):
         self.client.submitReqs(req)
-        ensureReqCompleted(self.loop, req.key, self.client,
-                           clbk, *args, **kwargs)
+        ensureReqCompleted(self.loop, (req.identifier, req.reqId),
+                           self.client, clbk, *args, **kwargs)
 
     def newAvailableClaimsPostClaimVerif(self, claimName):
         raise NotImplementedError
@@ -991,7 +992,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         self.loop.call_later(.2,
                              ensureReqCompleted,
                              self.loop,
-                             req.key,
+                             (req.identifier, req.reqId),
                              self.client,
                              self._handleSyncResp(link, None))
 
@@ -1007,7 +1008,7 @@ class Walleted(AgentIssuer, AgentProver, AgentVerifier):
         self.loop.call_later(.2,
                              ensureReqCompleted,
                              self.loop,
-                             req.key,
+                             (req.identifier, req.reqId),
                              self.client,
                              self._handleSyncResp(link, doneCallback))
 

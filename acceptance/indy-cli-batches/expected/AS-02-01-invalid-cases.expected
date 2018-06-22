@@ -1,0 +1,33 @@
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+[1;31mPool config "AS-pool" already exists[0m
+
+pool connect AS-pool
+[1;32mPool "AS-pool" has been connected[0m
+
+- wallet create AS-02-wallet pool_name=AS-pool key=testkey
+[1;31mWallet "AS-02-wallet" already exists[0m
+
+wallet open AS-02-wallet key=testkey
+[1;32mWallet "AS-02-wallet" has been opened[0m
+
+did use V4SGRU86Z58d6TV7PBUe6f
+[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been set as active[0m
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey=2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R
+[1;31mTransaction has been rejected: V4SGRU86Z58d6TV7PBUe6f is not a steward so cannot add a new node[0m
+
+did use Rhx2qwaeiGyhU9vn4ynHSS
+[1;32mDid "Rhx2qwaeiGyhU9vn4ynHSS" has been set as active[0m
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey=2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R
+[1;31mTransaction has been rejected: Rhx2qwaeiGyhU9vn4ynHSS is not a steward so cannot add a new node[0m
+
+did use 5qhSKMkpqui6taGLTecwqf
+[1;32mDid "5qhSKMkpqui6taGLTecwqf" has been set as active[0m
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey=2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R
+[1;31mTransaction has been rejected: 5qhSKMkpqui6taGLTecwqf is not a steward so cannot add a new node[0m
+
+[1;32mWallet "AS-02-wallet" has been closed[0m
+[1;32mPool "AS-pool" has been connected[0m
+[1;32mGoodbye...[0m
