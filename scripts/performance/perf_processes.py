@@ -102,8 +102,9 @@ class ClientStatistic:
     def sent_count(self):
         return self._req_sent
 
-    def preparing(self, req_id):
+    def preparing(self, req_id, test_label: str = ""):
         self._client_stat_reqs.setdefault(req_id, dict())["client_preparing"] = time.time()
+        self._client_stat_reqs[req_id]["test_label"] = test_label
 
     def prepared(self, req_id):
         self._client_stat_reqs.setdefault(req_id, dict())["client_prepared"] = time.time()
@@ -173,8 +174,9 @@ class ClientStatistic:
 
 
 class RequestGenerator(metaclass=ABCMeta):
-    def __init__(self, file_name: str = None, ignore_first_line: bool = True, file_sep: str = "|",
+    def __init__(self, label: str = "", file_name: str = None, ignore_first_line: bool = True, file_sep: str = "|",
                  client_stat: ClientStatistic = None, **kwargs):
+        self._test_label = label
         self._client_stat = client_stat
         if not isinstance(self._client_stat, ClientStatistic):
             raise RuntimeError("Bad Statistic obj")
@@ -226,7 +228,7 @@ class RequestGenerator(metaclass=ABCMeta):
 
     async def generate_request(self, submit_did):
         req_data = self._gen_req_data()
-        self._client_stat.preparing(req_data)
+        self._client_stat.preparing(req_data, self._test_label)
 
         try:
             req = await self._gen_req(submit_did, req_data)
@@ -263,6 +265,10 @@ class RGSeqReqs(RequestGenerator):
                 self._reqs_collection.append(new_req)
         if len(self._reqs_collection) == 0:
             raise RuntimeError("At least one class should be provided")
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        for req_builder in set(self._reqs_collection):
+            await req_builder.on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
 
     def _seq_idx(self):
         return (self._req_idx + 1) % len(self._reqs_collection)
@@ -811,9 +817,9 @@ class TestRunner:
             return
         reqs = stat.get("reqs", [])
         for (r_id, r_data) in reqs:
-            # ["id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
+            # ["label", "id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
             status = r_data.get("status", "")
-            print(r_id, status, r_data.get("client_preparing", 0), r_data.get("client_prepared", 0), r_data.get("client_signed", 0),
+            print(r_data.get("test_label", ""), r_id, status, r_data.get("client_preparing", 0), r_data.get("client_prepared", 0), r_data.get("client_signed", 0),
                   r_data.get("client_sent", 0), r_data.get("client_reply", 0), r_data.get("server_reply", 0),
                   file=self._total_f, sep=self._value_separator)
 
@@ -907,7 +913,8 @@ class TestRunner:
         print("id", "req", "resp", file=self._failed_f, sep=self._value_separator)
         print("id", "req", "resp", file=self._nacked_f, sep=self._value_separator)
         print("id", "req", "resp", file=self._succ_f, sep=self._value_separator)
-        print("id", "status", "client_preparing", "client_prepared", "client_signed", "client_sent", "client_reply", "server_reply",
+        print("label", "id", "status", "client_preparing", "client_prepared",
+              "client_signed", "client_sent", "client_reply", "server_reply",
               file=self._total_f, sep=self._value_separator)
 
     def close_fs(self):
