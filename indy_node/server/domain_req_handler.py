@@ -547,6 +547,7 @@ class DomainReqHandler(PHandler):
             encoded_entry, proof = self.get_value_from_state(path,
                                                              head_hash=past_root,
                                                              with_proof=True)
+            entry_state.proof = proof
             if encoded_entry:
                 revoc_reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
                 entry_state = StateValue(root_hash=past_root,
@@ -613,9 +614,7 @@ class DomainReqHandler(PHandler):
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
-        reply = {
-            REVOC_REG_DEF_ID: revoc_reg_def_id,
-        }
+        reply = None
         """
         Get root hash for "to" timestamp
         Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"

@@ -107,7 +107,7 @@ def add_tag_into_cred_def_id(val):
                                                                         cred_def_id=new_cred_def_id.decode(),
                                                                         revoc_def_type=rev_type,
                                                                         revoc_def_tag=rev_tag)
-            new_val[ID] = new_revoc_reg_def_id
+            new_val[ID] = new_revoc_reg_def_id.decode()
         else:
             return False
     else:

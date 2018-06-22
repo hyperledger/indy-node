@@ -318,7 +318,7 @@ class RGGetSchema(RGSchema):
         schema_marker = '02'
         name = super()._rand_data()
         version = '1.0'
-        schema_id = ':'.join([target_did,schema_marker,name,version])
+        schema_id = ':'.join([target_did, schema_marker, name, version])
         return schema_id
 
     async def _gen_req(self, submit_did, req_data):
@@ -429,7 +429,7 @@ class RGGetDefRevoc(RGGetDefinition):
         cred_def_marker = '03'
         signature_type = 'CL'
         schema_id = '1'
-        cred_def_id = ':'.join([submitter_did,cred_def_marker,signature_type,schema_id])
+        cred_def_id = ':'.join([submitter_did, cred_def_marker, signature_type, schema_id])
         revoc_reg_marker = '04'
         revoc_def_type = 'CL_ACCUM'
         revoc_def_tag = 'reg1'
@@ -506,15 +506,15 @@ class RGGetEntryRevoc(RGGetDefinition):
         return entry_revoc_id
 
     async def _gen_req(self, submit_did, req_data):
-        timestamp = int (time.time())
+        timestamp = int(time.time())
         req = await ledger.build_get_revoc_reg_request(submit_did, req_data, timestamp)
         return req
 
 
 class RGGetRevocRegDelta(RGGetEntryRevoc):
-   async def _gen_req(self, submit_did, req_data):
-       req = await ledger.build_get_revoc_reg_delta_request(submit_did, req_data, None, int(time.time()))
-       return req
+    async def _gen_req(self, submit_did, req_data):
+        req = await ledger.build_get_revoc_reg_delta_request(submit_did, req_data, None, int(time.time()))
+        return req
 
 
 def create_req_generator(req_kind_arg):
@@ -523,7 +523,7 @@ def create_req_generator(req_kind_arg):
                           "revoc_reg_entry": RGEntryRevoc,
                           "get_nym": RGGetNym, "get_attrib": RGGetAttrib,
                           "get_schema": RGGetSchema, "get_cred_def": RGGetDefinition,
-                          "get_revoc_reg_def": RGGetDefRevoc,"get_revoc_reg": RGGetEntryRevoc,
+                          "get_revoc_reg_def": RGGetDefRevoc, "get_revoc_reg": RGGetEntryRevoc,
                           "get_revoc_reg_delta": RGGetRevocRegDelta}
     if req_kind_arg in supported_requests:
         return supported_requests[req_kind_arg], {}
