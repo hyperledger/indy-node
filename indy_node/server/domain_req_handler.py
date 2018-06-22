@@ -614,9 +614,7 @@ class DomainReqHandler(PHandler):
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
-        reply = {
-            REVOC_REG_DEF_ID: revoc_reg_def_id,
-        }
+        reply = None
         """
         Get root hash for "to" timestamp
         Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"
