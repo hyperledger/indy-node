@@ -4,8 +4,8 @@
   vars:
     pool_prefix: live_node
     pool_size: "{{ groups['pool']|count }}"
-    node_ver: 1.4.470
-    plenum_ver: 1.4.413
+    node_ver: 1.4.478
+    plenum_ver: 1.4.418
     python_indy_crypto_ver: 0.4.1
     libindy_crypto_ver: 0.4.0
 
