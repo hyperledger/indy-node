@@ -25,9 +25,13 @@ def tconf(tconf, request):
     # Delaying performance checks since delaying 3PC messages in the test
     old_freq = tconf.PerfCheckFreq
     tconf.PerfCheckFreq = 50
+    old_bt = tconf.Max3PCBatchWait = .01
+    old_bs = tconf.Max3PCBatchSize = 1
 
     def reset():
         tconf.PerfCheckFreq = old_freq
+        tconf.Max3PCBatchWait = old_bt
+        tconf.Max3PCBatchSize = old_bs
 
     request.addfinalizer(reset)
     return tconf
@@ -182,7 +186,7 @@ def test_successive_batch_do_no_change_state(looper,
         reqs.append(
             sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                                sdk_pool_handle, nym_request))
-        looper.runFor(.01)
+        looper.runFor(tconf.Max3PCBatchWait + 0.1)
 
     # Correct number of uncommitted entries
     looper.run(eventually(check_uncommitted, more, retryWait=1))
@@ -206,7 +210,7 @@ def test_successive_batch_do_no_change_state(looper,
         reqs.append(
             sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                                sdk_pool_handle, nym_request))
-        looper.runFor(1)
+        looper.runFor(tconf.Max3PCBatchWait + 0.1)
 
     # Correct number of uncommitted entries
     looper.run(eventually(check_uncommitted, 3, retryWait=1))
