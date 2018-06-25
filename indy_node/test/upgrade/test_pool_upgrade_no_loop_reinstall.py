@@ -1,14 +1,12 @@
 from copy import deepcopy
 
-import pytest
-
 from indy_node.test import waits
 from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION
 from indy_common.constants import REINSTALL
 
 from indy_node.test.upgrade.helper import bumpedVersion, checkUpgradeScheduled, \
-    ensureUpgradeSent, check_no_loop
+    check_no_loop, sdk_ensure_upgrade_sent
 from indy_node.server.upgrade_log import UpgradeLog
 import indy_node
 
@@ -18,8 +16,8 @@ def test_upgrade_does_not_get_into_loop_if_reinstall(
         tconf,
         nodeSet,
         validUpgrade,
-        trustee,
-        trusteeWallet,
+        sdk_pool_handle,
+        sdk_wallet_trustee,
         monkeypatch):
     new_version = bumpedVersion()
     upgr1 = deepcopy(validUpgrade)
@@ -27,7 +25,7 @@ def test_upgrade_does_not_get_into_loop_if_reinstall(
     upgr1[REINSTALL] = True
 
     # An upgrade scheduled, it should pass
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle, sdk_wallet_trustee, upgr1)
     looper.run(
         eventually(
             checkUpgradeScheduled,
@@ -38,4 +36,4 @@ def test_upgrade_does_not_get_into_loop_if_reinstall(
 
     # here we make nodes think they have upgraded successfully
     monkeypatch.setattr(indy_node.__metadata__, '__version__', new_version)
-    check_no_loop(nodeSet, UpgradeLog.UPGRADE_SUCCEEDED)
+    check_no_loop(nodeSet, UpgradeLog.SUCCEEDED)

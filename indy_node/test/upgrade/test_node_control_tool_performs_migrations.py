@@ -9,7 +9,7 @@ from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, sendUp
 m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
-def testNodeControlPerformsMigrations(monkeypatch, tdir, looper):
+def testNodeControlPerformsMigrations(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
     migrationFile = 'migrationProof'

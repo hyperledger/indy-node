@@ -13,6 +13,7 @@ from indy_client.test.agent.faber import FABER_ID, FABER_VERKEY, FABER_SEED
 from indy_client.test.agent.thrift import THRIFT_ID, THRIFT_VERKEY, THRIFT_SEED
 from indy_common.config_helper import NodeConfigHelper
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
+from plenum.common.txn_util import get_type
 
 from stp_core.crypto.util import randomSeed
 from stp_core.network.port_dispenser import genHa
@@ -31,7 +32,7 @@ from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 from plenum.test.conftest import txnPoolNodeSet, patchPluginManager, tdirWithNodeKeepInited
 from stp_core.loop.eventually import eventually
 from stp_core.common.log import getlogger
-from plenum.test.conftest import tdirWithPoolTxns, tdirWithDomainTxns
+from plenum.test.conftest import tdirWithPoolTxns
 from indy_client.cli.helper import USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
 from indy_client.test.helper import createNym, buildStewardClient
 from indy_common.constants import ENDPOINT, TRUST_ANCHOR
@@ -89,13 +90,13 @@ def newKeyPairCreated(cli):
 
 
 @pytest.fixture(scope="module")
-def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns,
                txnPoolNodesLooper, tconf, cliTempLogger):
     return getCliBuilder(
         tdir,
         tconf,
         tdirWithPoolTxns,
-        tdirWithDomainTxnsUpdated,
+        tdirWithDomainTxns,
         logFileName=cliTempLogger,
         def_looper=txnPoolNodesLooper)
 
@@ -950,7 +951,7 @@ def custom_tdir_with_pool_txns(pool_txn_data, tdir_for_pool_txns, pool_transacti
     ledger = create_genesis_txn_init_ledger(tdir_for_pool_txns, pool_transactions_file_name)
 
     for item in pool_txn_data["txns"]:
-        if item.get(TXN_TYPE) == NODE:
+        if get_type(item) == NODE:
             ledger.add(item)
     ledger.stop()
     return tdir_for_pool_txns
@@ -961,7 +962,7 @@ def custom_tdir_with_domain_txns(pool_txn_data, tdir_for_domain_txns,
     ledger = create_genesis_txn_init_ledger(tdir_for_domain_txns, domain_transactions_file_name)
 
     for item in pool_txn_data["txns"]:
-        if item.get(TXN_TYPE) == NYM:
+        if get_type(item) == NYM:
             ledger.add(item)
     ledger.stop()
     return tdir_for_domain_txns
@@ -1233,28 +1234,28 @@ def savedKeyringRestored():
 # TODO: Need to refactor following three fixture to reuse code
 @pytest.yield_fixture(scope="module")
 def cliForMultiNodePools(request, multiPoolNodesCreated, tdir,
-                         tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                         tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                          cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("susan")
 
 
 @pytest.yield_fixture(scope="module")
 def aliceMultiNodePools(request, multiPoolNodesCreated, tdir,
-                        tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                        tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                         cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("alice")
 
 
 @pytest.yield_fixture(scope="module")
 def earlMultiNodePools(request, multiPoolNodesCreated, tdir,
-                       tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                       tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                        cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("earl")
 
 
@@ -1363,7 +1364,7 @@ def newNodeVals():
         CLIENT_PORT: clientPort,
         ALIAS: randomString(6),
         SERVICES: [VALIDATOR],
-        BLS_KEY: base58.b58encode(randomString(128).encode())
+        BLS_KEY: base58.b58encode(randomString(128).encode()).decode("utf-8")
     }
 
     return {

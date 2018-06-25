@@ -7,24 +7,31 @@ import subprocess
 from datetime import datetime
 from typing import List, Tuple
 
+import base58
 import dateutil.tz
-from plenum.common.constants import TXN_TYPE, DATA, VERSION
-from plenum.common.types import f
-from plenum.common.util import randomString
+from plenum.test.node_catchup.helper import waitNodeDataEquality, ensure_all_nodes_have_same_data
+
+from plenum.common.keygen_utils import init_bls_keys
+
+from indy.ledger import build_pool_upgrade_request
+from plenum.common.constants import DATA, VERSION, FORCE
+from plenum.common.txn_util import get_type, get_payload_data, get_from
+from plenum.common.util import randomString, hexToFriendly
 from plenum.test import waits as plenumWaits
-from plenum.test.helper import waitForSufficientRepliesForRequests
+from plenum.test.helper import sdk_get_and_check_replies
+from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_send_update_node, \
+    sdk_pool_refresh, sdk_add_new_nym
 from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
-from indy_client.client.wallet.upgrade import Upgrade
-from indy_common.constants import NODE_UPGRADE, ACTION
+from indy_common.constants import NODE_UPGRADE, ACTION, \
+    UPGRADE_MESSAGE, MESSAGE_TYPE
 from indy_common.config import controlServiceHost, controlServicePort
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.server.upgrader import Upgrader
 from indy_node.test.helper import TestNode
 from indy_node.utils.node_control_tool import NodeControlTool
 from indy_common.config_helper import NodeConfigHelper
-
 
 logger = getlogger()
 
@@ -36,40 +43,44 @@ class TestNodeNoProtocolVersion(TestNode):
         super().processNodeRequest(request, frm)
 
 
-def sendUpgrade(client, wallet, upgradeData):
-    upgrade = Upgrade(**upgradeData, trustee=wallet.defaultId)
-    wallet.doPoolUpgrade(upgrade)
-    reqs = wallet.preparePending()
-    req = client.submitReqs(*reqs)[0][0]
-    return upgrade, req
+def sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_trustee, upgrade_data):
+    _, did = sdk_wallet_trustee
+    req = get_req_from_update(looper, did, upgrade_data)
+    return sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
+                                              sdk_pool_handle, req)
 
 
-def ensureUpgradeSent(looper, trustee, trusteeWallet, upgradeData):
-    upgrade, req = sendUpgrade(trustee, trusteeWallet, upgradeData)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=[req])
+def sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, upgrade_data):
+    req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_trustee, upgrade_data)
+    sdk_get_and_check_replies(looper, [req])
 
-    def check():
-        assert trusteeWallet.getPoolUpgrade(upgrade.key).seqNo
 
-    timeout = plenumWaits.expectedReqAckQuorumTime()
-    looper.run(eventually(check, retryWait=1, timeout=timeout))
-    return upgrade
+def get_req_from_update(looper, did, nup):
+    req = looper.loop.run_until_complete(
+        build_pool_upgrade_request(did, nup['name'], nup['version'], nup['action'], nup['sha256'],
+                                   nup['timeout'],
+                                   json.dumps(nup['schedule']) if 'schedule' in nup else None,
+                                   nup['justification'] if 'justification' in nup else 'null',
+                                   nup['reinstall'] if 'reinstall' in nup else None,
+                                   nup[FORCE] if FORCE in nup else None))
+    return req
 
 
 def checkUpgradeScheduled(nodes, version, schedule=None):
     for node in nodes:
         assert len(node.upgrader.aqStash) == 1
-        assert node.upgrader.scheduledUpgrade
-        assert node.upgrader.scheduledUpgrade[0] == version
+        assert node.upgrader.scheduledAction
+        assert node.upgrader.scheduledAction[0] == version
         if schedule:
-            assert node.upgrader.scheduledUpgrade[1] == \
+            assert node.upgrader.scheduledAction[1] == \
                    dateutil.parser.parse(schedule[node.id])
 
 
 def checkNoUpgradeScheduled(nodes):
     for node in nodes:
         assert len(node.upgrader.aqStash) == 0
-        assert node.upgrader.scheduledUpgrade is None
+        assert node.upgrader.scheduledAction is None
 
 
 def codeVersion():
@@ -129,7 +140,7 @@ class NodeControlToolExecutor:
 
 
 def composeUpgradeMessage(version):
-    return (json.dumps({"version": version})).encode()
+    return (json.dumps({"version": version, MESSAGE_TYPE: UPGRADE_MESSAGE})).encode()
 
 
 def sendUpgradeMessage(version):
@@ -227,15 +238,16 @@ def check_ledger_after_upgrade(
         assert len(node.configLedger) == ledger_size
         ids = set()
         for _, txn in node.configLedger.getAllTxn():
-            type = txn[TXN_TYPE]
+            type = get_type(txn)
             assert type in allowed_txn_types
-            data = txn
+            txn_data = get_payload_data(txn)
+            data = txn_data
             if type == NODE_UPGRADE:
-                data = txn[DATA]
+                data = txn_data[DATA]
 
             assert data[ACTION]
             assert data[ACTION] in allowed_actions
-            ids.add(txn[f.IDENTIFIER.nm])
+            ids.add(get_from(txn))
 
             assert data[VERSION]
             versions.add(data[VERSION])
@@ -250,16 +262,44 @@ def check_ledger_after_upgrade(
 def check_no_loop(nodeSet, event):
     for node in nodeSet:
         # mimicking upgrade start
-        node.upgrader._upgradeLog.appendStarted(datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc()),
-                                                node.upgrader.scheduledUpgrade[0],
-                                                node.upgrader.scheduledUpgrade[2])
+        node.upgrader._actionLog.appendStarted(datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc()),
+                                               node.upgrader.scheduledAction[0],
+                                               node.upgrader.scheduledAction[2])
         node.notify_upgrade_start()
         # mimicking upgrader's initialization after restart
-        node.upgrader.process_upgrade_log_for_first_run()
+        node.upgrader.process_action_log_for_first_run()
 
-        node.upgrader.scheduledUpgrade = None
-        assert node.upgrader._upgradeLog.lastEvent[1] == event
+        node.upgrader.scheduledAction = None
+        assert node.upgrader._actionLog.lastEvent[1] == event
         # mimicking node's catchup after restart
         node.postConfigLedgerCaughtUp()
-        assert node.upgrader.scheduledUpgrade is None
-        assert node.upgrader._upgradeLog.lastEvent[1] == event
+        assert node.upgrader.scheduledAction is None
+        assert node.upgrader._actionLog.lastEvent[1] == event
+
+
+def sdk_change_bls_key(looper, txnPoolNodeSet,
+                       node,
+                       sdk_pool_handle,
+                       sdk_wallet_steward,
+                       add_wrong=False,
+                       new_bls=None):
+    new_blspk = init_bls_keys(node.keys_dir, node.name)
+    key_in_txn = new_bls or new_blspk \
+        if not add_wrong \
+        else base58.b58encode(randomString(128).encode())
+    node_dest = hexToFriendly(node.nodestack.verhex)
+    sdk_send_update_node(looper, sdk_wallet_steward,
+                         sdk_pool_handle,
+                         node_dest, node.name,
+                         None, None,
+                         None, None,
+                         bls_key=key_in_txn,
+                         services=None)
+    poolSetExceptOne = list(txnPoolNodeSet)
+    poolSetExceptOne.remove(node)
+    waitNodeDataEquality(looper, node, *poolSetExceptOne)
+    sdk_pool_refresh(looper, sdk_pool_handle)
+    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward,
+                    alias=randomString(5))
+    ensure_all_nodes_have_same_data(looper, txnPoolNodeSet)
+    return new_blspk

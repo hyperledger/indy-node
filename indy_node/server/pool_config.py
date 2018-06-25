@@ -1,5 +1,5 @@
-from plenum.common.constants import TXN_TYPE
 from indy_common.constants import POOL_CONFIG, WRITES
+from plenum.common.txn_util import get_type, get_payload_data
 
 from stp_core.common.log import getlogger
 
@@ -20,8 +20,8 @@ class PoolConfig:
 
         :param txn:
         """
-        if txn[TXN_TYPE] == POOL_CONFIG:
-            self.writes = txn[WRITES]
+        if get_type(txn) == POOL_CONFIG:
+            self.writes = get_payload_data(txn)[WRITES]
 
     # TODO: config ledger is read from the start to the end. Think about optimization
     # TODO: PoolConfig and Updater both read config ledger independently
@@ -34,5 +34,5 @@ class PoolConfig:
         logger.debug('{} processing config ledger for any POOL_CONFIGs'.format(
             self), extra={"tags": ["pool-config"]})
         for _, txn in self.ledger.getAllTxn():
-            if txn[TXN_TYPE] == POOL_CONFIG:
+            if get_type(txn) == POOL_CONFIG:
                 self.handleConfigTxn(txn)

@@ -3,50 +3,50 @@ from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, NAME, \
     VERSION, ORIGIN
 
 from indy_client.test.state_proof.helper import check_valid_proof, \
-    submit_operation_and_get_replies
-from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF,\
-    REF, SIGNATURE_TYPE, ATTR_NAMES
+    sdk_submit_operation_and_get_replies
+from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, \
+    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES
 
 # fixtures, do not remove
 from indy_client.test.test_nym_attrib import \
-    addedRawAttribute, attributeName, attributeValue, attributeData
+    sdk_added_raw_attribute, attributeName, attributeValue, attributeData
 
 
-def check_no_data_and_valid_proof(client, replies):
+def check_no_data_and_valid_proof(replies):
     for reply in replies:
-        result = reply[f.RESULT.nm]
+        result = reply[1][f.RESULT.nm]
         assert result.get(DATA) is None
-        check_valid_proof(reply, client)
+        check_valid_proof(reply[1])
 
 
 def test_state_proof_returned_for_missing_attr(looper,
                                                attributeName,
-                                               trustAnchor,
-                                               trustAnchorWallet):
+                                               sdk_pool_handle,
+                                               sdk_wallet_trust_anchor):
     """
     Tests that state proof is returned in the reply for GET_ATTR transactions
     """
-    client = trustAnchor
+    _, dest = sdk_wallet_trust_anchor
+
     get_attr_operation = {
-        TARGET_NYM: trustAnchorWallet.defaultId,
+        TARGET_NYM: dest,
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }
-    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor, get_attr_operation)
-    check_no_data_and_valid_proof(client, replies)
+    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
+                                                   sdk_wallet_trust_anchor, get_attr_operation)
+    check_no_data_and_valid_proof(replies)
 
 
 def test_state_proof_returned_for_missing_nym(looper,
-                                              trustAnchor,
-                                              trustAnchorWallet,
-                                              userWalletA):
+                                              sdk_pool_handle,
+                                              sdk_wallet_trust_anchor,
+                                              sdk_user_wallet_a):
     """
     Tests that state proof is returned in the reply for GET_NYM transactions
     """
-    client = trustAnchor
     # Make not existing id
-    dest = userWalletA.defaultId
+    _, dest = sdk_user_wallet_a
     dest = dest[:-3]
     dest += "fff"
 
@@ -55,54 +55,52 @@ def test_state_proof_returned_for_missing_nym(looper,
         TXN_TYPE: GET_NYM
     }
 
-    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor, get_nym_operation)
-    check_no_data_and_valid_proof(client, replies)
+    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
+                                                   sdk_wallet_trust_anchor, get_nym_operation)
+    check_no_data_and_valid_proof(replies)
 
 
 def test_state_proof_returned_for_missing_schema(looper,
-                                                 trustAnchor,
-                                                 trustAnchorWallet):
+                                                 sdk_pool_handle,
+                                                 sdk_wallet_trust_anchor):
     """
     Tests that state proof is returned in the reply for GET_SCHEMA transactions
     """
-    client = trustAnchor
-    dest = trustAnchorWallet.defaultId
+    _, dest = sdk_wallet_trust_anchor
     schema_name = "test_schema"
     schema_version = "1.0"
     get_schema_operation = {
         TARGET_NYM: dest,
         TXN_TYPE: GET_SCHEMA,
         DATA: {
-            NAME: schema_name,
-            VERSION: schema_version,
+            SCHEMA_NAME: schema_name,
+            SCHEMA_VERSION: schema_version,
         }
     }
-    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor,
-                                               get_schema_operation)
+    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
+                                                   sdk_wallet_trust_anchor,
+                                                   get_schema_operation)
     for reply in replies:
-        result = reply[f.RESULT.nm]
-        assert ATTR_NAMES not in result[DATA]
-        check_valid_proof(reply, client)
+        result = reply[1][f.RESULT.nm]
+        assert SCHEMA_ATTR_NAMES not in result[DATA]
+        check_valid_proof(reply[1])
 
 
 def test_state_proof_returned_for_missing_claim_def(looper,
-                                                    trustAnchor,
-                                                    trustAnchorWallet):
+                                                    sdk_pool_handle,
+                                                    sdk_wallet_trust_anchor):
     """
     Tests that state proof is returned in the reply for GET_CLAIM_DEF
     transactions
     """
-    client = trustAnchor
-    dest = trustAnchorWallet.defaultId
+    _, dest = sdk_wallet_trust_anchor
     get_claim_def_operation = {
-        ORIGIN: dest,
+        CLAIM_DEF_FROM: dest,
         TXN_TYPE: GET_CLAIM_DEF,
-        REF: 12,
-        SIGNATURE_TYPE: 'CL'
+        CLAIM_DEF_SCHEMA_REF: 12,
+        CLAIM_DEF_SIGNATURE_TYPE: 'CL'
     }
-    replies = submit_operation_and_get_replies(looper, trustAnchorWallet,
-                                               trustAnchor,
-                                               get_claim_def_operation)
-    check_no_data_and_valid_proof(client, replies)
+    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
+                                                   sdk_wallet_trust_anchor,
+                                                   get_claim_def_operation)
+    check_no_data_and_valid_proof(replies)
