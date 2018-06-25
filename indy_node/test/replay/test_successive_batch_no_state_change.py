@@ -24,9 +24,11 @@ logger = getlogger()
 def tconf(tconf, request):
     # Delaying performance checks since delaying 3PC messages in the test
     old_freq = tconf.PerfCheckFreq
+    old_bt = tconf.Max3PCBatchWait
+    old_bs = tconf.Max3PCBatchSize
     tconf.PerfCheckFreq = 50
-    old_bt = tconf.Max3PCBatchWait = .01
-    old_bs = tconf.Max3PCBatchSize = 1
+    tconf.Max3PCBatchWait = .01
+    tconf.Max3PCBatchSize = 1
 
     def reset():
         tconf.PerfCheckFreq = old_freq
