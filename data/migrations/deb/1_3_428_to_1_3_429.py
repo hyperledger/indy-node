@@ -17,11 +17,13 @@ from indy_common.config_util import getConfig
 from indy_common.constants import CONFIG_LEDGER_ID, REVOC_REG_DEF, CRED_DEF_ID, \
     CLAIM_DEF_TAG_DEFAULT, NYM, ATTRIB, SCHEMA, CLAIM_DEF, REVOC_REG_ENTRY, REVOC_REG_DEF_ID, REVOC_TYPE, TAG, ID
 from indy_common.state import domain
+from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.pool_req_handler import PoolRequestHandler
 from plenum.common.constants import TXN_TYPE, TXN_PAYLOAD, \
-    TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_DIGEST, POOL_LEDGER_ID, DOMAIN_LEDGER_ID, TARGET_NYM
+    TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_DIGEST, POOL_LEDGER_ID, DOMAIN_LEDGER_ID, TARGET_NYM, RAW, \
+    TXN_PAYLOAD_DATA, ENC, HASH
 from plenum.common.txn_util import transform_to_new_format, get_from, get_req_id, get_payload_data, \
     get_protocol_version, get_seq_no, get_type, append_txn_metadata
 from plenum.common.types import f, OPERATION
@@ -120,22 +122,22 @@ def add_cred_def_id_into_entry(val):
     old_revoc_reg_def_id = new_val.get(REVOC_REG_DEF_ID, None)
     if old_revoc_reg_def_id:
         path_elems = old_revoc_reg_def_id.split(':')
-        if len(path_elems) == 5:
-            did, marker, cred_def_id, rev_type, rev_tag = path_elems
-            new_revoc_reg_def_id = domain.make_state_path_for_revoc_def(authors_did=did,
-                                                                        cred_def_id="{}:{}".format(cred_def_id,
-                                                                                                   CLAIM_DEF_TAG_DEFAULT),
-                                                                        revoc_def_type=rev_type,
-                                                                        revoc_def_tag=rev_tag)
-            new_val[REVOC_REG_DEF_ID] = new_revoc_reg_def_id.decode()
-        else:
-            return False
+        did = path_elems[0]
+        cred_def_id = ":".join(path_elems[2:-2])
+        rev_tag = path_elems[-1]
+        rev_type = path_elems[-2]
+        new_revoc_reg_def_id = domain.make_state_path_for_revoc_def(authors_did=did,
+                                                                    cred_def_id="{}:{}".format(cred_def_id,
+                                                                                               CLAIM_DEF_TAG_DEFAULT),
+                                                                    revoc_def_type=rev_type,
+                                                                    revoc_def_tag=rev_tag)
+        new_val[REVOC_REG_DEF_ID] = new_revoc_reg_def_id.decode()
     else:
         return False
     return new_val
 
 
-def gen_txn_path(txn):
+def gen_txn_path(txn, attr_store):
     txn_type = get_type(txn)
     if txn_type not in DomainReqHandler.write_types:
         return None
@@ -145,19 +147,29 @@ def gen_txn_path(txn):
         binary_digest = domain.make_state_path_for_nym(nym)
         return hexlify(binary_digest).decode()
     elif txn_type == ATTRIB:
-        _, path, _, _, _ = domain.prepare_attr_for_state(txn)
-        return path.decode()
+        attr_data = get_payload_data(txn)
+        if RAW in attr_data or ENC in attr_data:
+            attr_type = RAW if RAW in attr_data else ENC
+            attr = attr_store.get(attr_data[attr_type])
+            copy_txn = copy.deepcopy(txn)
+            copy_txn[TXN_PAYLOAD][TXN_PAYLOAD_DATA][attr_type] = attr
+            path = domain.prepare_attr_for_state(copy_txn, path_only=True)
+            return path.decode()
+        if HASH in attr_data:
+            path = domain.prepare_attr_for_state(txn, path_only=True)
+            return path.decode()
+
     elif txn_type == SCHEMA:
-        path, _ = domain.prepare_schema_for_state(txn)
+        path = domain.prepare_schema_for_state(txn, path_only=True)
         return path.decode()
     elif txn_type == CLAIM_DEF:
-        path, _ = domain.prepare_claim_def_for_state(txn)
+        path = domain.prepare_claim_def_for_state(txn, path_only=True)
         return path.decode()
     elif txn_type == REVOC_REG_DEF:
-        path, _ = domain.prepare_revoc_def_for_state(txn)
+        path = domain.prepare_revoc_def_for_state(txn, path_only=True)
         return path.decode()
     elif txn_type == REVOC_REG_ENTRY:
-        path, _ = domain.prepare_revoc_reg_entry_for_state(txn)
+        path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
         return path.decode()
 
 
@@ -188,6 +200,12 @@ def migrate_txn_log(db_dir, db_name):
     old_path = os.path.join(db_dir, db_name)
     new_path = os.path.join(db_dir, new_db_name)
     new_seqno_db_name = config.seqNoDbName + '_new'
+    attr_store = AttributeStore(
+        initKeyValueStorage(
+            config.attrStorage,
+            db_dir,
+            config.attrDbName,
+            db_config=config.db_attr_db_config))
     try:
         dest_seq_no_db_storage = initKeyValueStorage(config.reqIdToTxnStorage,
                                                      db_dir,
@@ -230,7 +248,7 @@ def migrate_txn_log(db_dir, db_name):
             # add digest into txn
             if get_req_id(new_val):
                 new_val[TXN_PAYLOAD][TXN_PAYLOAD_METADATA][TXN_PAYLOAD_METADATA_DIGEST] = digest
-                txn_id = gen_txn_path(new_val)
+                txn_id = gen_txn_path(new_val, attr_store=attr_store)
                 if txn_id:
                     append_txn_metadata(new_val,
                                         txn_id=txn_id)
@@ -245,6 +263,7 @@ def migrate_txn_log(db_dir, db_name):
     src_storage.close()
     dest_storage.close()
     dest_seq_no_db_storage.close()
+    attr_store.close()
 
     # Remove old ledger
     try:
