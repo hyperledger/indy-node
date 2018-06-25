@@ -6,6 +6,8 @@ import socket
 import subprocess
 from typing import List
 
+from indy_common.constants import ACTION, POOL_RESTART, POOL_UPGRADE, \
+    UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
 from stp_core.common.log import getlogger
 
 from indy_common.config_util import getConfig
@@ -20,7 +22,7 @@ TIMEOUT = 300
 BACKUP_FORMAT = 'zip'
 DEPS = ['indy-plenum', 'indy-anoncreds', 'python3-indy-crypto']
 BACKUP_NUM = 10
-PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node python3-indy-crypto'
+PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node python3-indy-crypto libindy-crypto'
 TMP_DIR = '/tmp/.indy_tmp'
 
 
@@ -53,7 +55,8 @@ class NodeControlTool:
         self.deps = deps
 
         _files_to_preserve = [self.config.lastRunVersionFile, self.config.nextVersionFile,
-                              self.config.upgradeLogFile, self.config.lastVersionFilePath]
+                              self.config.upgradeLogFile, self.config.lastVersionFilePath,
+                              self.config.restartLogFile]
 
         self.files_to_preserve = files_to_preserve or _files_to_preserve
         self.backup_num = backup_num
@@ -236,13 +239,22 @@ class NodeControlTool:
             if rollback:
                 self._upgrade(current_version, rollback=False)
 
+    def _restart(self):
+        try:
+            self._call_restart_node_script()
+        except Exception as ex:
+            logger.error("Restart fail: " + ex.args[0])
+
     def _process_data(self, data):
         import json
         try:
             command = json.loads(data.decode("utf-8"))
             logger.debug("Decoded ", command)
-            new_version = command['version']
-            self._upgrade(new_version)
+            if command[MESSAGE_TYPE] == UPGRADE_MESSAGE:
+                new_version = command['version']
+                self._upgrade(new_version)
+            elif command[MESSAGE_TYPE] == RESTART_MESSAGE:
+                self._restart()
         except json.decoder.JSONDecodeError as e:
             logger.error("JSON decoding failed: {}".format(e))
         except Exception as e:

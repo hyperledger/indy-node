@@ -1,10 +1,10 @@
 import rlp
+
+from indy_common.constants import ROLE, TGB, TRUST_ANCHOR
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX, \
     TXN_TIME
 from plenum.common.types import f
 from storage.kv_store import KeyValueStorage
-
-from indy_common.constants import ROLE, TGB, TRUST_ANCHOR
 from storage.optimistic_kv_store import OptimisticKVStore
 from stp_core.common.log import getlogger
 

@@ -1,28 +1,31 @@
-from typing import Iterable, Any, List
+from typing import Iterable, List
 
+from indy_node.server.action_req_handler import ActionReqHandler
+from indy_node.server.restarter import Restarter
 from ledger.compact_merkle_tree import CompactMerkleTree
 from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiatorFromFile
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
+from plenum.common.messages.node_messages import Reply
+from plenum.common.txn_util import get_type, get_payload_data
 from plenum.common.types import f, \
     OPERATION
 from plenum.persistence.storage import initStorage
-from storage.kv_store_leveldb_int_keys import KeyValueStorageLeveldbIntKeys
 from plenum.server.node import Node as PlenumNode
 from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG,\
+    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
     IN_PROGRESS
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
-from indy_node.persistence.state_ts_store import StateTsDbStorage
+from storage.state_ts_store import StateTsDbStorage
 from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
@@ -43,7 +46,6 @@ class Node(PlenumNode, HasPoolManager):
 
     def __init__(self,
                  name,
-                 nodeRegistry=None,
                  clientAuthNr=None,
                  ha=None,
                  cliname=None,
@@ -71,12 +73,11 @@ class Node(PlenumNode, HasPoolManager):
         # TODO: 4 ugly lines ahead, don't know how to avoid
         self.idrCache = None
         self.attributeStore = None
-        self.stateTsDbStorage = None
         self.upgrader = None
+        self.restarter = None
         self.poolCfg = None
 
         super().__init__(name=name,
-                         nodeRegistry=nodeRegistry,
                          clientAuthNr=clientAuthNr,
                          ha=ha,
                          cliname=cliname,
@@ -101,8 +102,8 @@ class Node(PlenumNode, HasPoolManager):
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)
 
-    def initPoolManager(self, nodeRegistry, ha, cliname, cliha):
-        HasPoolManager.__init__(self, nodeRegistry, ha, cliname, cliha)
+    def initPoolManager(self, ha, cliname, cliha):
+        HasPoolManager.__init__(self, ha, cliname, cliha)
 
     def getPrimaryStorage(self):
         """
@@ -130,8 +131,14 @@ class Node(PlenumNode, HasPoolManager):
                         self.dataLocation,
                         self.config,
                         self.configLedger,
-                        upgradeFailedCallback=self.postConfigLedgerCaughtUp,
-                        upgrade_start_callback=self.notify_upgrade_start)
+                        actionFailedCallback=self.postConfigLedgerCaughtUp,
+                        action_start_callback=self.notify_upgrade_start)
+
+    def getRestarter(self):
+        return Restarter(self.id,
+                         self.name,
+                         self.dataLocation,
+                         self.config)
 
     def getDomainReqHandler(self):
         if self.attributeStore is None:
@@ -150,30 +157,23 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache = IdrCache(self.name,
                                      initKeyValueStorage(self.config.idrCacheStorage,
                                                          self.dataLocation,
-                                                         self.config.idrCacheDbName)
+                                                         self.config.idrCacheDbName,
+                                                         db_config=self.config.db_idr_cache_db_config)
                                      )
         return self.idrCache
-
-    def getStateTsDbStorage(self):
-        if self.stateTsDbStorage is None:
-            self.stateTsDbStorage = StateTsDbStorage(
-                self.name,
-                initKeyValueStorageIntKeys(self.config.stateTsStorage,
-                                           self.dataLocation,
-                                           self.config.stateTsDbName)
-            )
-        return self.stateTsDbStorage
 
     def loadAttributeStore(self):
         return AttributeStore(
             initKeyValueStorage(
                 self.config.attrStorage,
                 self.dataLocation,
-                self.config.attrDbName)
+                self.config.attrDbName,
+                db_config=self.config.db_attr_db_config)
         )
 
     def setup_config_req_handler(self):
         self.upgrader = self.getUpgrader()
+        self.restarter = self.getRestarter()
         self.poolCfg = self.getPoolConfig()
         super().setup_config_req_handler()
 
@@ -184,6 +184,13 @@ class Node(PlenumNode, HasPoolManager):
                                 self.upgrader,
                                 self.poolManager,
                                 self.poolCfg)
+
+    def get_action_req_handler(self):
+        return ActionReqHandler(self.getIdrCache(),
+                                self.restarter,
+                                self.poolManager,
+                                self.poolCfg,
+                                self._info_tool)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
         pass
@@ -204,7 +211,7 @@ class Node(PlenumNode, HasPoolManager):
     def acknowledge_upgrade(self):
         if not self.upgrader.should_notify_about_upgrade_result():
             return
-        lastUpgradeVersion = self.upgrader.lastUpgradeEventInfo[2]
+        lastUpgradeVersion = self.upgrader.lastActionEventInfo[2]
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
         logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
             self, action, lastUpgradeVersion))
@@ -217,16 +224,15 @@ class Node(PlenumNode, HasPoolManager):
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
 
-        # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
-        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.startedProcessingReq(request.key, self.nodestack.name)
         self.send(request)
-        self.upgrader.notified_about_upgrade_result()
+        self.upgrader.notified_about_action_result()
 
     def notify_upgrade_start(self):
-        scheduled_upgrade_version = self.upgrader.scheduledUpgrade[0]
+        scheduled_upgrade_version = self.upgrader.scheduledAction[0]
         action = IN_PROGRESS
         logger.info('{} is about to be upgraded, '
                     'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))
@@ -241,9 +247,10 @@ class Node(PlenumNode, HasPoolManager):
 
         # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
-        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.startedProcessingReq(request.key,
+                                  self.nodestack.name)
         self.send(request)
 
     def processNodeRequest(self, request: Request, frm: str):
@@ -256,8 +263,8 @@ class Node(PlenumNode, HasPoolManager):
                 logger.warning('The request {} failed to authenticate {}'
                                .format(request, repr(ex)))
                 return
-        if not self.isProcessingReq(*request.key):
-            self.startedProcessingReq(*request.key, frm)
+        if not self.isProcessingReq(request.key):
+            self.startedProcessingReq(request.key, frm)
         # If not already got the propagate request(PROPAGATE) for the
         # corresponding client request(REQUEST)
         self.recordAndPropagate(request, frm)
@@ -289,12 +296,15 @@ class Node(PlenumNode, HasPoolManager):
     async def prod(self, limit: int = None) -> int:
         c = await super().prod(limit)
         c += self.upgrader.service()
+        c += self.restarter.service()
         return c
 
     def processRequest(self, request: Request, frm: str):
         if self.is_query(request.operation[TXN_TYPE]):
             self.process_query(request, frm)
             self.total_read_request_number += 1
+        elif self.is_action(request.operation[TXN_TYPE]):
+            self.process_action(request, frm)
         else:
             # forced request should be processed before consensus
             if (request.operation[TXN_TYPE] in [
@@ -302,10 +312,12 @@ class Node(PlenumNode, HasPoolManager):
                 self.configReqHandler.validate(request)
                 self.configReqHandler.applyForced(request)
             # here we should have write transactions that should be processed
+            # pool_restart should not be written to ledger
             # only on writable pool
             if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
                     POOL_UPGRADE, POOL_CONFIG]):
                 super().processRequest(request, frm)
+
             else:
                 raise InvalidClientRequest(
                     request.identifier,
@@ -332,13 +344,14 @@ class Node(PlenumNode, HasPoolManager):
         :return:
         """
         # For RAW and ENC attributes, only hash is stored in the ledger.
-        if txn[TXN_TYPE] == ATTRIB:
+        if get_type(txn) == ATTRIB:
+            txn_data = get_payload_data(txn)
             # The key needs to be present and not None
-            key = RAW if (RAW in txn and txn[RAW] is not None) else \
-                ENC if (ENC in txn and txn[ENC] is not None) else \
+            key = RAW if (RAW in txn_data and txn_data[RAW] is not None) else \
+                ENC if (ENC in txn_data and txn_data[ENC] is not None) else \
                 None
             if key:
-                txn[key] = self.attributeStore.get(txn[key])
+                txn_data[key] = self.attributeStore.get(txn_data[key])
         return txn
 
     def closeAllKVStores(self):
@@ -347,5 +360,3 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache.close()
         if self.attributeStore:
             self.attributeStore.close()
-        if self.stateTsDbStorage:
-            self.stateTsDbStorage.close()

@@ -9,7 +9,7 @@
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
 * [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
-* [Continues integration and delivery](#continues-integration-and-delivery)
+* [Continuous integration and delivery](#continues-integration-and-delivery)
 * [How to send a PR](#how-to-send-a-pr)
 * [Docs and links](#docs-and-links)
 
@@ -31,9 +31,7 @@ with a different network, using whatever conventions a community chooses.
 
 ##### Getting Started Guide
 
-- Today, documentation for Indy is sparse. Most materials that exist were written for Sovrin. Therefore,
-we recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/hyperledger/indy-node/blob/stable/getting-started.md) to learn about Indy Node basics. In the future, documentation
-will be part of [indy-sdk](https://github.com/hyperledger/indy-sdk).
+- We recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md) to learn about Indy basics.
 
 ##### Hyperledger Wiki-Indy
 
@@ -109,10 +107,13 @@ The described process is automated in one of the ways below (it allow to install
  - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
 
  - **Docker** [Start Pool and Client with Docker](environment/docker/pool/README.md)
- 
- - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
+
+ - **Docker-based pool using with new libindy-based CLI**:
+   - [Start Pool Locally](https://github.com/hyperledger/indy-sdk/blob/master/README.md#how-to-start-local-nodes-pool-with-docker)
+   - [Get Started with Libindy](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md)
 
  - **Also coming soon:** Create virtual machines in AWS.
+
 
 
 ## How to Start Working with the Code
@@ -128,9 +129,9 @@ Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [co
 indy
 ```
 
-## Continues Integration and Delivery
+## Continuous Integration and Delivery
 
-Please have a look at [Continues integration/delivery](docs/ci-cd.md)
+Please have a look at [Continuous integration/delivery](docs/ci-cd.md)
 
 ## How to send a PR
 
@@ -180,9 +181,3 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 - [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
 - [Helper Scripts](docs/helper-scripts.md)
 - [Pool Upgrade](docs/pool-upgrade.md)
-
-
-
-
-
-

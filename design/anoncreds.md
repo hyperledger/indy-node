@@ -326,10 +326,10 @@ So, it can be sent each time a new claim is issued/revoked.
         "revocRegDefId": "MMAD5g65TDQr1PPHHRoiGf:3:HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1Degree1CLkey1:CL_ACCUM:reg1",
         "revocDefType":"CL_ACCUM",
         "value": {
-            "prevAccum":"<prev_accum_value>",
+            "prevAccum":"<prev_accum_value>", (optional)
             "accum":"<accum_value>",
             "issued": [], (optional)
-            "revoked": [],
+            "revoked": [], (optional)
         }
     },
     
@@ -461,7 +461,10 @@ Reply:
 ```
 Notes:
 * accum_to and accum_from it's a transactions from ledger "as-is", 
-like reply for for GET_REVOC_REG query.  
+like reply for for GET_REVOC_REG query.
+* general STATE_PROOF in reply is:
+  * STATE_PROOF for "to" accum value if "from" was found.
+  * STATE_PROOF for REG_ENTRY transaction if "from" was not found or not presented in request
 
 See next sections on how to get the state for the given timestamp. 
 
