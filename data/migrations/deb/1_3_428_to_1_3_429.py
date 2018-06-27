@@ -295,6 +295,13 @@ def rename_seq_no_db(db_dir):
     new_seqno_db_name = config.seqNoDbName + '_new'
     new_seqno_path = os.path.join(db_dir, new_seqno_db_name)
     try:
+        shutil.rmtree(old_seqno_path)
+    except Exception:
+        logger.error(traceback.print_exc())
+        logger.error("Could not remove old seq_no_db: {}"
+                     .format(old_seqno_path))
+        return False
+    try:
         shutil.move(new_seqno_path, old_seqno_path)
     except Exception:
         logger.error(traceback.print_exc())
