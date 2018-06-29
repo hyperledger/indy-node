@@ -9,7 +9,6 @@ import sys
 import asyncio
 import argparse
 import multiprocessing
-import concurrent
 import signal
 import functools
 import base58
@@ -173,6 +172,13 @@ class ClientStatistic:
         return ret_val
 
 
+# Copied from Plenum
+def random_string(sz: int) -> str:
+    assert (sz > 0), "Expected random string size cannot be less than 1"
+    rv = libnacl.randombytes(sz // 2).hex()
+    return rv if sz % 2 == 0 else rv + hex(libnacl.randombytes_uniform(15))[-1]
+
+
 class RequestGenerator(metaclass=ABCMeta):
     def __init__(self, label: str = "", file_name: str = None, ignore_first_line: bool = True, file_sep: str = "|",
                  client_stat: ClientStatistic = None, **kwargs):
@@ -194,12 +200,6 @@ class RequestGenerator(metaclass=ABCMeta):
         return self._test_label
 
     # Copied from Plenum
-    def random_string(self, sz: int) -> str:
-        assert (sz > 0), "Expected random string size cannot be less than 1"
-        rv = libnacl.randombytes(sz // 2).hex()
-        return rv if sz % 2 == 0 else rv + hex(libnacl.randombytes_uniform(15))[-1]
-
-    # Copied from Plenum
     def rawToFriendly(self, raw):
         return base58.b58encode(raw).decode("utf-8")
 
@@ -207,7 +207,7 @@ class RequestGenerator(metaclass=ABCMeta):
         pass
 
     def _rand_data(self):
-        return self.random_string(32)
+        return random_string(32)
 
     def _from_file_str_data(self, file_str):
         req_id, req_json, reply_json = file_str.split(self._file_sep)
@@ -596,7 +596,7 @@ class LoadClient:
         self._gen_lim = bg_tasks // 2
         self._send_lim = bg_tasks // 2
         self._pipe_conn = pipe_conn
-        self._pool_name = "pool_{}".format(os.getpid())
+        self._pool_name = "pool_{}_{}".format(random_string(16), os.getpid())
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
         self._pool_handle = None
@@ -671,9 +671,9 @@ class LoadClient:
             raise e
 
     def watch_queues(self):
-        if len(self._load_client_reqs) + len(self._gen_q) < self._batch_size:
+        if len(self._gen_q) < self._gen_lim:
             self._loop.call_soon(self.gen_reqs)
-        if len(self._load_client_reqs) > 0 and len(self._send_q) < self._send_lim:
+        if len(self._send_q) < self._send_lim:
             self._loop.call_soon(self.req_send)
 
     def check_batch_avail(self, fut):
@@ -710,8 +710,8 @@ class LoadClient:
         if self._stat.sent_count() % self._refresh == 0:
             self._loop.call_soon(self.send_stat)
 
-    def send_stat(self):
-        st = self._stat.dump_stat()
+    def send_stat(self, dump_all=False):
+        st = self._stat.dump_stat(dump_all=dump_all)
         try:
             self._pipe_conn.send(st)
         except Exception as e:
@@ -780,27 +780,20 @@ def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, r
         cln._loop.run_forever()
     except Exception as e:
         print("{} running error {}".format(cln._name, e))
-    stat = cln._stat.dump_stat(dump_all=True)
-    return stat
+    cln.send_stat(dump_all=True)
+    return 0
 
 
 class ClientRunner:
     def __init__(self, name, conn):
         self.name = name
         self.conn = conn
-        self.closed = False
         self.total_sent = 0
         self.total_succ = 0
         self.total_failed = 0
         self.total_nack = 0
         self.total_reject = 0
         self.total_server_time = 0
-
-    def stop_client(self):
-        self.closed = True
-
-    def is_finished(self):
-        return self.closed
 
     def refresh_stat(self, stat):
         if not isinstance(stat, dict):
@@ -815,7 +808,7 @@ class ClientRunner:
 
 class TestRunner:
     def __init__(self):
-        self._clients = dict()  # key process future; value ClientRunner
+        self._clients = dict()  # key process process; value ClientRunner
         self._loop = asyncio.get_event_loop()
         self._out_dir = ""
         self._succ_f = None
@@ -850,10 +843,10 @@ class TestRunner:
     def sig_handler(self, sig):
         for prc, cln in self._clients.items():
             try:
-                if not cln.is_finished():
+                if cln.conn:
                     cln.conn.send(False)
                 if sig == signal.SIGTERM:
-                    prc.cancel()
+                    prc.terminate()
             except Exception as e:
                 print("Sent stop to client {} error {}".format(cln.name, e))
 
@@ -869,23 +862,21 @@ class TestRunner:
                 print("Recv garbage {} from {}".format(r_data, self._clients[prc].name))
         except Exception as e:
             print("{} read_client_cb error {}".format(self._clients[prc].name, e))
+            self._loop.remove_reader(self._clients[prc].conn)
             self._clients[prc].conn = None
 
-    def client_done(self, client):
-        try:
-            last_stat = client.result()
-            self._clients[client].refresh_stat(last_stat)
-            self.process_reqs(last_stat)
-        except Exception as e:
-            print("Client Error", e)
+    def client_done(self):
+        for prc, cln in self._clients.items():
+            if not prc.is_alive() and cln.conn:
+                self._loop.remove_reader(cln.conn)
+                cln.conn = None
+            elif prc.is_alive() and not cln.conn:
+                prc.terminate()
 
-        self._clients[client].stop_client()
-        self._loop.remove_reader(self._clients[client].conn)
-
-        is_closing = all([cln.is_finished() for cln in self._clients.values()])
-
-        if is_closing:
+        if all([not p.is_alive() for p in self._clients.keys()]):
             self._loop.call_soon_threadsafe(self._loop.stop)
+        else:
+            self._loop.call_later(1, self.client_done)
 
     def get_refresh_str(self):
         clients = 0
@@ -897,7 +888,7 @@ class TestRunner:
         total_reject = 0
 
         for cln in self._clients.values():
-            if not cln.is_finished():
+            if cln.conn:
                 clients += 1
             total_sent += cln.total_sent
             total_succ += cln.total_succ
@@ -969,16 +960,18 @@ class TestRunner:
         self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
         self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
 
-        executor = concurrent.futures.ProcessPoolExecutor(proc_count)
         for i in range(0, proc_count):
             rd, wr = multiprocessing.Pipe()
             prc_name = "LoadClient_{}".format(i)
-            prc = executor.submit(run_client, prc_name, args.genesis_path, wr,
-                                  args.seed, args.batch_size, args.batch_timeout,
-                                  args.req_kind, bg_tasks, refresh, args.wallet_key)
-            prc.add_done_callback(self.client_done)
+            prc = multiprocessing.Process(target=run_client,
+                                          args=(prc_name, args.genesis_path, wr,
+                                                args.seed, args.batch_size, args.batch_timeout,
+                                                args.req_kind, bg_tasks, refresh, args.wallet_key))
+            prc.start()
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd)
+
+        self._loop.call_later(1, self.client_done)
 
         print("Started", proc_count, "processes")
 
@@ -986,6 +979,9 @@ class TestRunner:
 
         self._loop.remove_signal_handler(signal.SIGTERM)
         self._loop.remove_signal_handler(signal.SIGINT)
+
+        for p in self._clients.keys():
+            p.join(timeout=2)
 
         print("")
         print("DONE At", datetime.datetime.now())
