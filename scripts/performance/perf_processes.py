@@ -639,7 +639,6 @@ class LoadClient:
         except Exception as ex:
             print("{} run_test error {}".format(self._name, ex))
             self._loop.stop()
-            raise ex
 
         self.gen_reqs()
 
