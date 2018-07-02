@@ -68,6 +68,9 @@ Supported txns:
 * get_revoc_reg - Get revocation registry entry
 * get_revoc_reg_delta - Get revocation registry delta
 
+'-m', '--mode' : Specifies the way each client will be run with. It could be a process - 'p' or thread - 't'.
+Default value is 'p''.
+
 ## Transaction data
 Each txn can read predefined data from file or generate random data.
 Default mode for each txn is to generate random data.
