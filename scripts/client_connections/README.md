@@ -21,6 +21,6 @@
     - this script will try to create 110 simultaneous connections to pool.    
  - As default, indy-sdk has a connection timeout about 50 seconds. In that case, we expect, that limited count of client will be connected to the pool and 
  other not. When 50 second was left, process with client connection will return error 307 (PoolLedgerTimeout).
- Each of clients is run from different process. 
+ Each of clients is run in a different process. 
    
     
