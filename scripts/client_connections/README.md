@@ -4,10 +4,14 @@
  - Using scrips from environment/docker/pool start up the pool:
     - ``$ cd environment/docker/pool``
     - ``$ ./pool_start.sh``
-    - ``$ docker exec -it -u root node1 setup_indy_node_iptables && setup_iptables 9702 100``
-    - ``$ docker exec -it -u root node2 setup_indy_node_iptables && setup_iptables 9704 100``
-    - ``$ docker exec -it -u root node3 setup_indy_node_iptables && setup_iptables 9706 100``
-    - ``$ docker exec -it -u root node4 setup_indy_node_iptables && setup_iptables 9708 100``
+    - ``$ docker exec -it -u root node1 setup_indy_node_iptables``
+    - ``$ docker exec -it -u root node1 setup_iptables 9702 100``
+    - ``$ docker exec -it -u root node2 setup_indy_node_iptables``
+    - ``$ docker exec -it -u root node2 setup_iptables 9704 100``
+    - ``$ docker exec -it -u root node3 setup_indy_node_iptables``
+    - ``$ docker exec -it -u root node3 setup_iptables 9706 100``
+    - ``$ docker exec -it -u root node4 setup_indy_node_iptables``
+    - ``$ docker exec -it -u root node4 setup_iptables 9708 100``
     
  - Start another docker container, which contains script for creating N simultaneous client connection:
     - ``docker run -itd --privileged --name indy-cli --net=pool-network node1 bash``

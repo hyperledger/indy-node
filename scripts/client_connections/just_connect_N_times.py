@@ -13,6 +13,9 @@ import functools
 import sys
 from indy import pool
 
+count_of_connected = 0
+count_of_not_connected = 0
+
 
 def run_client(genesis_path, pipe_conn, client_number):
 
@@ -25,18 +28,17 @@ def run_client(genesis_path, pipe_conn, client_number):
             await pool.set_protocol_version(2)
 
             await pool.create_pool_ledger_config(pool_name, pool_cfg)
-            pipe_conn.send("Client with number: {}. Trying to connect ....".format(client_number))
             await pool.open_pool_ledger(pool_name, None)
-            pipe_conn.send("Client with number: {} is connected".format(client_number))
+            pipe_conn.send((0, client_number))
             time.sleep(100000)
         except Exception:
-            pipe_conn.send("{} Client with number: {} is not connected".format(pool_name, client_number))
+            pipe_conn.send((1, client_number))
             loop.call_soon(loop.stop)
             return
 
     async def periodically_print():
         while True:
-            pipe_conn.send("Client with number: {}. Trying to connect ....".format(client_number))
+            print("Client with number: {}. Trying to connect ....".format(client_number))
             await asyncio.sleep(5)
 
     loop = asyncio.new_event_loop()
@@ -49,17 +51,31 @@ def run_client(genesis_path, pipe_conn, client_number):
     except Exception as e:
         pipe_conn.send(e)
 
+
 def read_cb(pipe_conn):
-    print(pipe_conn.recv())
+    global count_of_connected
+    global count_of_not_connected
+    res = pipe_conn.recv()
+    if isinstance(res, tuple):
+        code, cl_number = res
+        if code == 0:
+            print("Client with number {} is connected".format(cl_number))
+            count_of_connected += 1
+        elif code == 1:
+            print("Client with number {} is not connected".format(cl_number))
+            count_of_not_connected += 1
+        print("Count of connected clients: {}".format(count_of_connected))
+        print("Count of not connected clients: {}".format(count_of_not_connected))
+    else:
+        print(res)
 
 
 async def start_all_procs(args, wr):
     processes = []
-    for client_number in range(args.clients + 1):
+    for client_number in range(args.clients):
         process = Process(target=run_client, args=(args.genesis_path, wr, client_number))
         processes.append(process)
         process.start()
-    processes
 
 
 parser = argparse.ArgumentParser(description="Create N simultaneous connection to pool ")
