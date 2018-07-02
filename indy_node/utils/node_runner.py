@@ -19,13 +19,10 @@ def integrate(node_config_helper, node, logger):
                           format(plugin_root))
     enabled_plugins = node_config_helper.config.ENABLED_PLUGINS
     for plugin_name in enabled_plugins:
-        plugin_path = os.path.join(plugin_root.__path__[0],
-                                   plugin_name, 'main.py')
-        spec = spec_from_file_location('main.py', plugin_path)
-        main = module_from_spec(spec)
-        spec.loader.exec_module(main)
+        importlib.import_module(plugin_name)
+        main = importlib.import_module('{}.main'.format(plugin_name))
         logger.info('Going to integrate plugin: {}'.format(plugin_name))
-        node = main.__dict__['integrate_plugin_in_node'](node)
+        node = main.integrate_plugin_in_node(node)
         logger.info('Integrated plugin: {}'.format(plugin_name))
     return node
 
