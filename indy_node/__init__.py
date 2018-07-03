@@ -1,10 +1,14 @@
 import os   # noqa
 import importlib    # noqa
+import sys
 from importlib.util import module_from_spec, spec_from_file_location    # noqa: E402
+
+import pip
 
 import indy_node.server.plugin     # noqa: E402
 
 from indy_common.config_util import getConfigOnce   # noqa: E402
+from plenum import find_and_load_plugin
 
 PLUGIN_LEDGER_IDS = set()
 PLUGIN_CLIENT_REQUEST_FIELDS = {}
@@ -26,14 +30,13 @@ def setup_plugins():
     except ImportError:
         raise ImportError('Incorrect plugin root {}. No such package found'.
                           format(plugin_root))
+    sys.path.insert(0, plugin_root.__path__[0])
     enabled_plugins = config.ENABLED_PLUGINS
+    installed_packages = {p.project_name: p for p in pip.get_installed_distributions()}
     for plugin_name in enabled_plugins:
-        plugin_path = os.path.join(plugin_root.__path__[0],
-                                   plugin_name, '__init__.py')
-        spec = spec_from_file_location('__init__.py', plugin_path)
-        init = module_from_spec(spec)
-        spec.loader.exec_module(init)
-        plugin_globals = init.__dict__
+        plugin = find_and_load_plugin(plugin_name, plugin_root, installed_packages)
+        plugin_globals = plugin.__dict__
+        # The following lines are idempotent so loading the same plugin twice is not the problem.
         if 'LEDGER_IDS' in plugin_globals:
             PLUGIN_LEDGER_IDS.update(plugin_globals['LEDGER_IDS'])
         if 'CLIENT_REQUEST_FIELDS' in plugin_globals:
