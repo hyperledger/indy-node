@@ -24,10 +24,16 @@ logger = getlogger()
 def tconf(tconf, request):
     # Delaying performance checks since delaying 3PC messages in the test
     old_freq = tconf.PerfCheckFreq
+    old_bt = tconf.Max3PCBatchWait
+    old_bs = tconf.Max3PCBatchSize
     tconf.PerfCheckFreq = 50
+    tconf.Max3PCBatchWait = .01
+    tconf.Max3PCBatchSize = 1
 
     def reset():
         tconf.PerfCheckFreq = old_freq
+        tconf.Max3PCBatchWait = old_bt
+        tconf.Max3PCBatchSize = old_bs
 
     request.addfinalizer(reset)
     return tconf
@@ -89,8 +95,7 @@ def test_successive_batch_do_no_change_state(looper,
     # request ids
     for _ in range(3):
         verkey = sdk_rotate_verkey(looper, sdk_pool_handle,
-                                   wh, new_did, new_did,
-                                   seed)
+                                   wh, new_did, new_did)
         logger.debug('{} rotates his key to {}'.
                      format(new_did, verkey))
 
@@ -113,18 +118,18 @@ def test_successive_batch_do_no_change_state(looper,
 
     x_seed = randomString(32)
     verkey = sdk_rotate_verkey(looper, sdk_pool_handle, wh,
-                               new_client_did, new_client_did, x_seed)
+                               new_client_did, new_client_did)
     logger.debug('{} rotates his key to {}'.
                  format(new_client_did, verkey))
 
     y_seed = randomString(32)
     sdk_rotate_verkey(looper, sdk_pool_handle, wh,
-                      new_client_did, new_client_did, y_seed)
+                      new_client_did, new_client_did)
     logger.debug('{} rotates his key to {}'.
                  format(new_client_did, verkey))
 
-    sdk_rotate_verkey(looper, sdk_pool_handle, wh,
-                      new_client_did, new_client_did, x_seed)
+    verkey = sdk_rotate_verkey(looper, sdk_pool_handle, wh,
+                      new_client_did, new_client_did)
     logger.debug('{} rotates his key to {}'.
                  format(new_client_did, verkey))
 
@@ -183,7 +188,7 @@ def test_successive_batch_do_no_change_state(looper,
         reqs.append(
             sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                                sdk_pool_handle, nym_request))
-        looper.runFor(.01)
+        looper.runFor(tconf.Max3PCBatchWait + 0.1)
 
     # Correct number of uncommitted entries
     looper.run(eventually(check_uncommitted, more, retryWait=1))
@@ -207,7 +212,7 @@ def test_successive_batch_do_no_change_state(looper,
         reqs.append(
             sdk_sign_and_send_prepared_request(looper, sdk_wallet_trustee,
                                                sdk_pool_handle, nym_request))
-        looper.runFor(.01)
+        looper.runFor(tconf.Max3PCBatchWait + 0.1)
 
     # Correct number of uncommitted entries
     looper.run(eventually(check_uncommitted, 3, retryWait=1))

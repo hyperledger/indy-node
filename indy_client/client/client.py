@@ -22,7 +22,7 @@ from stp_zmq.simple_zstack import SimpleZStack
 
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, GET_NYM, ROLE, \
     NYM, GET_TXNS, LAST_TXN, TXNS, SCHEMA, CLAIM_DEF, SKEY, DISCLO, \
-    GET_ATTR, TRUST_ANCHOR, GET_CLAIM_DEF, GET_SCHEMA, SIGNATURE_TYPE, REF
+    GET_ATTR, TRUST_ANCHOR, GET_CLAIM_DEF, GET_SCHEMA
 
 from indy_client.persistence.client_req_rep_store_file import ClientReqRepStoreFile
 from indy_client.persistence.client_txn_log import ClientTxnLog
@@ -127,8 +127,8 @@ class Client(PlenumClient):
         if OP_FIELD_NAME not in msg:
             logger.error("Op absent in message {}".format(msg))
 
-    def requestConfirmed(self, identifier: str, reqId: int) -> bool:
-        return self.txnLog.hasTxnWithReqId(identifier, reqId)
+    def requestConfirmed(self, key) -> bool:
+        return self.txnLog.hasTxnWithReqId(key)
 
     def hasConsensus(self, identifier: str, reqId: int) -> Optional[str]:
         return super().hasConsensus(identifier, reqId)

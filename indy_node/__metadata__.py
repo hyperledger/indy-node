@@ -1,7 +1,7 @@
 """
 indy-node package metadata
 """
-__version_info__ = (1, 3)
+__version_info__ = (1, 4)
 __version__ = '.'.join(map(str, __version_info__))
 __author__ = "Hyperledger"
 __license__ = "Apache 2.0"

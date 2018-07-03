@@ -11,7 +11,7 @@ from indy_common.state import domain
 from ledger.util import F
 from plenum.client.wallet import Wallet as PWallet
 from plenum.common.did_method import DidMethods
-from plenum.common.txn_util import get_seq_no, get_reply_itentifier, get_reply_txntype, get_reply_nym, get_payload_data, \
+from plenum.common.txn_util import get_seq_no, get_reply_identifier, get_reply_txntype, get_reply_nym, get_payload_data, \
     get_from
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
@@ -31,7 +31,8 @@ from indy_common.exceptions import ConnectionNotFound
 from indy_common.types import Request
 from indy_common.identity import Identity
 from indy_common.constants import ATTRIB, GET_TXNS, GET_ATTR, \
-    GET_NYM, POOL_UPGRADE, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE, POOL_CONFIG
+    GET_NYM, POOL_UPGRADE, GET_SCHEMA, GET_CLAIM_DEF, POOL_CONFIG, CLAIM_DEF_TAG, \
+    CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, CLAIM_DEF_TAG_DEFAULT
 from stp_core.types import Identifier
 
 ENCODING = "utf-8"
@@ -238,10 +239,10 @@ class Wallet(PWallet, TrustAnchoring):
         replies
         :return:
         """
-        preparedReq = self._prepared.get(get_reply_itentifier(result), reqId)
+        preparedReq = self._prepared.get(get_reply_identifier(result), reqId)
         if not preparedReq:
             raise RuntimeError('no matching prepared value for {},{}'.
-                               format(get_reply_itentifier(result), reqId))
+                               format(get_reply_identifier(result), reqId))
         typ = get_reply_txntype(result)
         if typ and typ in self.replyHandler:
             self.replyHandler[typ](result, preparedReq)
@@ -377,9 +378,10 @@ class Wallet(PWallet, TrustAnchoring):
         :return: req object
         """
         operation = {TXN_TYPE: GET_CLAIM_DEF,
-                     ORIGIN: sender,
-                     REF: seqNo,
-                     SIGNATURE_TYPE: signature
+                     CLAIM_DEF_FROM: sender,
+                     CLAIM_DEF_SCHEMA_REF: seqNo,
+                     CLAIM_DEF_SIGNATURE_TYPE: signature,
+                     CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
                      }
 
         req = Request(sender,

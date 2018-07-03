@@ -3,7 +3,7 @@ import logging
 from collections import OrderedDict
 
 from plenum.common.constants import ClientBootStrategy, HS_ROCKSDB, HS_LEVELDB, KeyValueStorageType
-from plenum.config import pool_transactions_file_base, domain_transactions_file_base
+from plenum.config import rocksdb_default_config
 
 from indy_common.constants import Environment
 
@@ -51,6 +51,15 @@ attrStorage = KeyValueStorageType.Rocksdb
 configStateDbName = 'config_state'
 attrDbName = 'attr_db'
 idrCacheDbName = 'idr_cache_db'
+
+rocksdb_attr_db_config = rocksdb_default_config.copy()
+# Change attr_db config here if you fully understand what's going on
+
+rocksdb_idr_cache_db_config = rocksdb_default_config.copy()
+# Change idr_cache_db config here if you fully understand what's going on
+
+db_attr_db_config = rocksdb_attr_db_config
+db_idr_cache_db_config = rocksdb_idr_cache_db_config
 
 
 PluginsToLoad = []

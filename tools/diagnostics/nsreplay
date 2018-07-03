@@ -5,7 +5,7 @@
 # This script assumes:
 # --------------------
 #
-# 1. `USE_WITH_STACK=1` was set in `/etc/indy/indy_config.py` on the node where
+# 1. `STACK_COMPANION=1` was set in `/etc/indy/indy_config.py` on the node where
 #     the recording took place.
 # 2. The 'recording' passed as the argument to this script has been captured by
 #    running `nscapture` AFTER stopping the node (indy-node service). There are
@@ -15,36 +15,38 @@
 # Installation:
 # -------------
 #
-# This script should be runnable on any node that has indy-node installed and
-# known to start the indy-node service without error. Otherwise, you will need
-# to install indy-node an it's dependencies.
+# If this script is used on a server or workstation that has indy-node installed
+# and indy-node is known to be working, you do not need to install anything.
+# Otherwise, install indy-node and it's dependencies before running this script.
 #
 # TODO:
-# 
+#
 # 1. Create an issue in indy-node stating that the following must be done on
 #    macos for pbc to compile (pbc has a dependency on openssl headers)
-#    > cd /usr/local/include 
+#    > cd /usr/local/include
 #    > ln -s ../opt/openssl/include/openssl .
 #    The above fix was taken from:
 #    https://www.anintegratedworld.com/mac-osx-fatal-error-opensslsha-h-file-not-found/
-
+#    Prehaps adding the above two lines between `brew install openssl` and the
+#    "# PBC" section of https://github.com/hyperledger/indy-anoncreds/blob/master/setup-charm-homebrew.sh
+#    would be sufficient?
 
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
 from indy_node.server.config_helper import create_config_dirs
 from indy_node.server.node import Node
-from os.path import abspath, basename, dirname, isfile, isdir, join, splitext
+from os.path import abspath, basename, dirname, isfile, isdir, join
 from os import listdir, makedirs
 from plenum.common.constants import CLIENT_STACK_SUFFIX, KeyValueStorageType
-from plenum.recorder.src.recorder import Recorder
-from plenum.recorder.src.replayable_node import prepare_directory_for_replay, \
-    create_replayable_node_class
-from plenum.recorder.src.replayer import get_recorders_from_node_data_dir, \
+from plenum.recorder.recorder import Recorder
+from plenum.recorder.replayable_node import create_replayable_node_class
+from plenum.recorder.replayer import get_recorders_from_node_data_dir, \
     prepare_node_for_replay_and_replay
 from plenum.server.replicas import Replicas
 from plenum.server.replica import Replica
-from storage.kv_store_rocksdb_int_keys import KeyValueStorageRocksdbIntKeys
+from plenum.server.general_config import ubuntu_platform_config
 from storage.helper import initKeyValueStorageIntKeys
+from stp_core.common.log import Logger
 from stp_core.loop.looper import Looper
 from stp_core.types import HA
 from typing import Tuple
@@ -62,11 +64,18 @@ import zipfile
 
 logger = logging.getLogger()
 
+
+def get_system_dirs():
+    # TODO detect the system someday (help support windows)
+    return ubuntu_platform_config
+
+
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module?
 class Error(Exception):
     """Base class for exceptions in this module."""
     pass
+
 
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module?
@@ -77,12 +86,15 @@ class ArchiveError(Error):
     Attributes:
         message -- explanation of the error
     """
+
     def __init__(self, message):
         self.message = message
 
-class NodeStateReplayer():
+
+class NodeStateReplayer:
     logger = None
     cleanup = True
+    replay_dir = None
     log_level = logging.WARNING
 
     s1 = "zipfile/tarfile"
@@ -93,9 +105,13 @@ class NodeStateReplayer():
     s1_name = None
     s1_extension = None
 
-    def __init__(self, log_level=0, cleanup=True):
+    def __init__(self, log_level=0, cleanup=True, replay_dir=None):
         logger.setLevel(log_level)
         self.cleanup = cleanup
+        if replay_dir:
+            path = os.path.abspath(replay_dir)
+            os.makedirs(path, exist_ok=True)
+            self.replay_dir = replay_dir
         logger.debug("Initializing NodeStateReplayer...")
 
     # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
@@ -106,7 +122,7 @@ class NodeStateReplayer():
         if self.s1_is_temp:
             if self.cleanup:
                 logger.info("Removing temp dir {} containing {} contents"
-                    .format(self.s1tempdir, self.s1))
+                            .format(self.s1tempdir, self.s1))
                 shutil.rmtree(self.s1tempdir)
             else:
                 logger.debug("Skipping removal of temp directory {}".format(
@@ -136,14 +152,14 @@ class NodeStateReplayer():
     # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
     #       Create base class with print_directory function?
     # Print the contents of a directory
-    def print_directory(self, dir):
-        onlyfiles = [f for f in listdir(dir) if isfile(join(dir, f))]
-        onlydirs = [f for f in listdir(dir) if isdir(join(dir, f))]
-        logger.debug("In {}:".format(dir))
-        for file in onlyfiles:
+    def print_directory(self, d):
+        only_files = [f for f in listdir(d) if isfile(join(d, f))]
+        only_dirs = [f for f in listdir(d) if isdir(join(d, f))]
+        logger.debug("In {}:".format(d))
+        for file in only_files:
             logger.debug("\t{}".format(file))
-        for dirent in onlydirs:
-            self.print_directory(join(dir, dirent))
+        for dir_ent in only_dirs:
+            self.print_directory(join(d, dir_ent))
 
     # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
     #       Create base class with _extract_tarball function?
@@ -152,9 +168,11 @@ class NodeStateReplayer():
         tempdir = None
         logger.debug("Extracting tarball {}".format(file))
         if self.log_level <= logging.INFO:
-            self.print_tarfile(file)
+            # TODO create print_tarfile method
+            # self.print_tarfile(file)
+            pass
         tempdir = tempfile.mkdtemp()
-        if ( tempdir ):
+        if tempdir:
             with tarfile.open(file, "r") as tar:
                 tar.extractall(tempdir)
         else:
@@ -171,9 +189,9 @@ class NodeStateReplayer():
         if self.log_level <= logging.INFO:
             self.print_zipfile(file)
         tempdir = tempfile.mkdtemp()
-        if ( tempdir ):
-            with zipfile.ZipFile(file, 'r') as zip:
-                zip.extractall(tempdir)
+        if tempdir:
+            with zipfile.ZipFile(file, 'r') as zip_f:
+                zip_f.extractall(tempdir)
         else:
             s = "Failed to create tempdir in which to unpack {}"
             raise ArchiveError(s.format(file))
@@ -194,15 +212,15 @@ class NodeStateReplayer():
 
     def split_name(self, file):
         abs_file = abspath(file)
-        baseName = basename(abs_file)
-        baseNameElements = baseName.split('.')
-        fileName = None
-        fileExtension = None
-        if len(baseNameElements) > 0:
-            fileName = baseNameElements[0]
-        if len(baseNameElements) > 1:
-            fileExtension = ".".join(baseNameElements[1:])
-        return ( dirname(abs_file), baseName, fileName, fileExtension )
+        base_name = basename(abs_file)
+        base_name_elements = base_name.split('.')
+        file_name = None
+        file_extension = None
+        if len(base_name_elements) > 0:
+            file_name = base_name_elements[0]
+        if len(base_name_elements) > 1:
+            file_extension = ".".join(base_name_elements[1:])
+        return dirname(abs_file), base_name, file_name, file_extension
 
     def unpack_recording(self, s1=None):
         # Validate inputs
@@ -214,7 +232,7 @@ class NodeStateReplayer():
          self.s1_extension) = self.split_name(s1)
 
         # s1 must either be a tarball, zipfile, or a directory
-        if ( isfile(s1) ):
+        if isfile(s1):
             # If s1 is a file, it must be a tarball or a zipfile
             # Extract s1 contents into a temporary directory
             try:
@@ -225,7 +243,7 @@ class NodeStateReplayer():
                 self.s1tempdir = tempdir
                 self.s1dir = tempdir
                 self.s1_is_temp = True
-        elif ( isdir(s1) ):
+        elif isdir(s1):
             if self.log_level <= logging.INFO:
                 self.print_directory(s1)
             self.s1dir = s1
@@ -259,10 +277,10 @@ class NodeStateReplayer():
             node_name)
 
         return Recorder(node_rec_kv_store, skip_metadata_write=True), \
-               Recorder(client_rec_kv_store, skip_metadata_write=True)
+            Recorder(client_rec_kv_store, skip_metadata_write=True)
 
     def update_loaded_config(self, config):
-        config.USE_WITH_STACK = 2
+        config.STACK_COMPANION = 2
         import stp_zmq.kit_zstack
         importlib.reload(stp_zmq.kit_zstack)
         import plenum.common.stacks
@@ -280,30 +298,35 @@ class NodeStateReplayer():
         # replay.
         pool_name = 'sandbox'
 
-        replay_node_dir = tempfile.TemporaryDirectory().name
-        logger.debug("Temporary replay node directory {}".format(
+        if self.replay_dir:
+            replay_node_dir = self.replay_dir
+        else:
+            replay_node_dir = tempfile.TemporaryDirectory().name
+
+        logger.info("Replay node directory {}".format(
             replay_node_dir))
         # with tempfile.TemporaryDirectory() as replay_node_dir:
         general_config_dir = create_config_dirs(replay_node_dir)
         config = getConfig(general_config_dir)
         self.update_loaded_config(config)
-        import pdb; pdb.set_trace()
         pool_dir = join(replay_node_dir, pool_name)
         orig_node_pool_dir = self.s1dir
 
-        trg_var_dir = join(replay_node_dir, 'var', 'lib', 'indy', pool_name)
+        # strip left '/' for proper path join
+        app_dir = join(replay_node_dir, get_system_dirs().NODE_INFO_DIR.lstrip('/'))
+        pool_dir = join(app_dir, pool_name)
         orig_node_data_dir = join(orig_node_pool_dir, 'data')
-        makedirs(trg_var_dir, exist_ok=True)
+        makedirs(pool_dir, exist_ok=True)
         # shutil.copytree(src_etc_dir, trg_etc_dir)
         for file in listdir(orig_node_pool_dir):
             if file.endswith('.json') or file.endswith('_genesis'):
-                shutil.copy(join(orig_node_pool_dir, file), trg_var_dir)
+                shutil.copy(join(orig_node_pool_dir, file), pool_dir)
 
         shutil.copytree(join(orig_node_pool_dir, 'keys'),
-                        join(trg_var_dir, 'keys'))
+                        join(pool_dir, 'keys'))
         shutil.copytree(join(self.s1dir, 'plugins'),
-                        join(join(replay_node_dir, 'var', 'lib', 'indy'),
-                        'plugins'))
+                        join(app_dir,
+                             'plugins'))
 
         node_rec, client_rec = get_recorders_from_node_data_dir(
             join(orig_node_pool_dir, 'data'), node_name)
@@ -317,8 +340,20 @@ class NodeStateReplayer():
         node_ha = HA("0.0.0.0", 9701)
         client_ha = HA("0.0.0.0", 9702)
 
+        config.STACK_COMPANION = 2
         node_config_helper = NodeConfigHelper(node_name, config,
-                                          chroot=replay_node_dir)
+                                              chroot=replay_node_dir)
+
+        log_file_name = os.path.join(node_config_helper.log_dir,
+                                     node_name + ".log")
+
+        Logger().apply_config(config)
+        Logger().enableFileLogging(log_file_name)
+
+        logger.setLevel(config.logLevel)
+        logger.debug('Replay goes to {}'.format(replay_node_dir))
+        logger.debug("You can find logs in {}".format(log_file_name))
+
         with Looper(debug=config.LOOPER_DEBUG) as looper:
             replaying_node = replayable_node_class(node_name,
                                                    config_helper=node_config_helper,
@@ -333,9 +368,6 @@ class NodeStateReplayer():
                 replaying_node.domainLedger.root_hash
             ))
 
-            logger.debug('Final run of looper')
-            looper.runFor(10)
-
 
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module
@@ -348,16 +380,18 @@ def str2bool(v):
         raise argparse.ArgumentTypeError(
             'Boolean value (yes, no, true, false, y, n, 1, or 0) expected.')
 
+
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module
 levels = {
-   'notset': logging.NOTSET,
-   'debug': logging.DEBUG,
-   'info': logging.INFO,
-   'warning': logging.WARNING,
-   'error': logging.ERROR,
-   'critical': logging.CRITICAL
+    'notset': logging.NOTSET,
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warning': logging.WARNING,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL
 }
+
 
 # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
 #       Move to common module
@@ -369,34 +403,45 @@ def loglevel(v):
             'Expected one of the following: {}.'.format(
                 ', '.join(levels.keys())))
 
-if __name__ == '__main__':
+
+def program_args():
     parser = argparse.ArgumentParser()
 
-    graceful = argparse.ArgumentParser(add_help=False)
-    recording_help=(".zip, .tar.gz, .tgz file or directory name containing a"
-        " recording. nscapture can be used to capture the result of a"
-        " recording. A recording is accomplished by setting `USE_WITH_STACK=1` "
-        " in `/etc/indy/indy_config.py`")
+    recording_help = (".zip, .tar.gz, .tgz file or directory name containing a"
+                      " recording. nscapture can be used to capture the result of a"
+                      " recording. A recording is accomplished by setting `STACK_COMPANION=1` "
+                      " in `/etc/indy/indy_config.py`")
     parser.add_argument("recording", help=recording_help)
 
-    cleanup_help=("Cleanup temporary files/directories?"
-                  " [CLEANUP]: yes, no, y, n, true, false, t, f, 1, 0"
-                  " Default: True")
+    cleanup_help = ("Cleanup temporary files/directories?"
+                    " [CLEANUP]: yes, no, y, n, true, false, t, f, 1, 0"
+                    " Default: True")
     parser.add_argument("-c", "--cleanup", type=str2bool, nargs='?', const=True,
-        default=True, help=cleanup_help)
+                        default=True, help=cleanup_help)
 
-    log_level_help=("Logging level."
-                    " [LOG-LEVEL]: notset, debug, info, warning, error,"
-                    " critical Default: notset")
+    log_level_help = ("Logging level."
+                      " [LOG-LEVEL]: notset, debug, info, warning, error,"
+                      " critical Default: notset")
     parser.add_argument("-l", "--log-level", type=loglevel, nargs='?',
-        const=logging.WARNING, default=logging.WARNING, help=log_level_help)
+                        const=logging.WARNING, default=logging.WARNING, help=log_level_help)
 
-    args = parser.parse_args()
+    parser.add_argument('-o', '--output-dir', default=None,
+                        help='the directory where the recording will be replayed. Defaults to crated temp directory')
 
-    # Require at least one argument
-    if len(sys.argv) < 2:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
+    return parser
 
-    replayer = NodeStateReplayer(log_level=args.log_level)
+
+def parse_args(argv=None, parser=program_args()):
+    return parser.parse_args(args=argv)
+
+
+def main(args):
+    replayer = NodeStateReplayer(log_level=args.log_level, replay_dir=args.output_dir)
     replayer.replay_node(args.recording)
+    return 0
+
+
+if __name__ == '__main__':
+    arguments = parse_args()
+
+    sys.exit(main(arguments))

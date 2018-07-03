@@ -64,6 +64,10 @@ class TestUpgrader(Upgrader):
              Node.onBatchCreated, Node.onBatchRejected])
 class TestNode(TempStorage, TestNodeCore, Node):
     def __init__(self, *args, **kwargs):
+        from plenum.common.stacks import nodeStackClass, clientStackClass
+        self.NodeStackClass = nodeStackClass
+        self.ClientStackClass = clientStackClass
+
         Node.__init__(self, *args, **kwargs)
         TestNodeCore.__init__(self, *args, **kwargs)
         self.cleanupOnStopping = True
@@ -89,6 +93,14 @@ class TestNode(TempStorage, TestNodeCore, Node):
 
     def dump_additional_info(self):
         pass
+
+    @property
+    def nodeStackClass(self):
+        return self.NodeStackClass
+
+    @property
+    def clientStackClass(self):
+        return self.ClientStackClass
 
 
 def checkSubmitted(looper, client, optype, txnsBefore):
@@ -190,7 +202,7 @@ def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
     assert reply
     data = json.loads(reply.get(DATA))
     assert status == "CONFIRMED" and \
-           (data is not None and data.get(attrName) == attrValue)
+        (data is not None and data.get(attrName) == attrValue)
     return reply
 
 
@@ -210,9 +222,9 @@ def getAttribute(
         attrib, sender=trustAnchorWallet.defaultId)
     trustAnchor.submitReqs(req)
     timeout = waits.expectedTransactionExecutionTime(len(trustAnchor.nodeReg))
-    return looper.run(eventually(checkGetAttr, req.key, trustAnchor,
-                                 attributeName, attributeValue, retryWait=1,
-                                 timeout=timeout))
+    return looper.run(eventually(checkGetAttr, (req.identifier, req.reqId),
+                                 trustAnchor, attributeName, attributeValue,
+                                 retryWait=1, timeout=timeout))
 
 
 def sdk_get_attribute():
@@ -237,10 +249,9 @@ def check_str_is_base58_compatible(str):
 
 def sdk_rotate_verkey(looper, sdk_pool_handle, wh,
                       did_of_changer,
-                      did_of_changed, seed=None, verkey=None):
-    seed = seed or randomString(32)
+                      did_of_changed):
     verkey = looper.loop.run_until_complete(
-        replace_keys_start(wh, did_of_changed, json.dumps({'seed': seed})))
+        replace_keys_start(wh, did_of_changed, json.dumps({})))
 
     sdk_add_new_nym(looper, sdk_pool_handle,
                     (wh, did_of_changer), dest=did_of_changed,

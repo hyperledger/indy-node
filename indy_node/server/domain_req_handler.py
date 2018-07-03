@@ -1,22 +1,27 @@
+from binascii import hexlify
 from copy import deepcopy
 from typing import List, Callable
 
 import base58
 
 from indy_common.auth import Authoriser
-from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, REF, \
-    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, SIGNATURE_TYPE, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
+from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
-    GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, ATTR_NAMES, REVOC_TYPE, \
-    TIMESTAMP, ACCUM, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, REVOC_REG_ID, ACCUM_FROM, ACCUM_TO
+    GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, REVOC_TYPE, \
+    TIMESTAMP, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, ACCUM_FROM, ACCUM_TO, \
+    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION
+from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
+    get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
+    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
 from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
-    VERKEY, DATA, NAME, VERSION, ORIGIN, \
+    VERKEY, \
     TXN_TIME
 from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest, UnknownIdentifier, InvalidClientMessageException
+    UnauthorizedClientRequest, UnknownIdentifier
 from plenum.common.txn_util import get_type, get_payload_data, get_from, get_seq_no, get_txn_time, get_req_id
 from plenum.common.types import f
 from plenum.common.constants import TRUSTEE
@@ -68,6 +73,36 @@ class DomainReqHandler(PHandler):
         else:
             logger.debug(
                 'Cannot apply request of type {} to state'.format(txn_type))
+
+    def gen_txn_path(self, txn):
+
+        """Return path to state as 'str' type or None"""
+        txn_type = get_type(txn)
+        if txn_type not in self.state_update_handlers:
+            logger.error('Cannot generate id for txn of type {}'.format(txn_type))
+            return None
+
+        if txn_type == NYM:
+            nym = get_payload_data(txn).get(TARGET_NYM)
+            binary_digest = domain.make_state_path_for_nym(nym)
+            return hexlify(binary_digest).decode()
+        elif txn_type == ATTRIB:
+            path = domain.prepare_attr_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == SCHEMA:
+            path = domain.prepare_schema_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == CLAIM_DEF:
+            path = domain.prepare_claim_def_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == REVOC_REG_DEF:
+            path = domain.prepare_revoc_def_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == REVOC_REG_ENTRY:
+            path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
+            return path.decode()
+
+        raise NotImplementedError("path construction is not implemented for type {}".format(txn_type))
 
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
@@ -214,9 +249,8 @@ class DomainReqHandler(PHandler):
         # we can not add a Schema with already existent NAME and VERSION
         # sine a Schema needs to be identified by seqNo
         identifier = req.identifier
-        operation = req.operation
-        schema_name = operation[DATA][NAME]
-        schema_version = operation[DATA][VERSION]
+        schema_name = get_write_schema_name(req)
+        schema_version = get_write_schema_version(req)
         schema, _, _, _ = self.getSchema(
             author=identifier,
             schemaName=schema_name,
@@ -277,15 +311,13 @@ class DomainReqHandler(PHandler):
         assert revoc_def_tag
         assert revoc_def_type
         tags = cred_def_id.split(":")
-        if len(tags) != 4:
+        if len(tags) != 4 and len(tags) != 5:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
                                        "Format of {} field is not acceptable. "
-                                       "Expected: 'did:marker:signature_type:seq_no'".format(CRED_DEF_ID))
-        cred_def_path = domain.make_state_path_for_claim_def(authors_did=tags[0],
-                                                             signature_type=tags[2],
-                                                             schema_seq_no=tags[3])
-        cred_def, _, _, _ = self.lookup(cred_def_path, isCommitted=False, with_proof=False)
+                                       "Expected: 'did:marker:signature_type:schema_ref' or "
+                                       "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
+        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, with_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
@@ -447,9 +479,9 @@ class DomainReqHandler(PHandler):
         return result
 
     def handleGetSchemaReq(self, request: Request):
-        author_did = request.operation[TARGET_NYM]
-        schema_name = request.operation[DATA][NAME]
-        schema_version = request.operation[DATA][VERSION]
+        author_did = get_read_schema_from(request)
+        schema_name = get_read_schema_name(request)
+        schema_version = get_read_schema_version(request)
         schema, lastSeqNo, lastUpdateTime, proof = self.getSchema(
             author=author_did,
             schemaName=schema_name,
@@ -461,8 +493,8 @@ class DomainReqHandler(PHandler):
         if schema is None:
             schema = {}
         schema.update({
-            NAME: schema_name,
-            VERSION: schema_version
+            SCHEMA_NAME: schema_name,
+            SCHEMA_VERSION: schema_version
         })
         return self.make_result(request=request,
                                 data=schema,
@@ -471,18 +503,22 @@ class DomainReqHandler(PHandler):
                                 proof=proof)
 
     def handleGetClaimDefReq(self, request: Request):
-        signatureType = request.operation[SIGNATURE_TYPE]
+        frm = get_read_claim_def_from(request)
+        signature_type = get_read_claim_def_signature_type(request)
+        schema_ref = get_read_claim_def_schema_ref(request)
+        tag = get_read_claim_def_tag(request)
         keys, lastSeqNo, lastUpdateTime, proof = self.getClaimDef(
-            author=request.operation[ORIGIN],
-            schemaSeqNo=request.operation[REF],
-            signatureType=signatureType
+            author=frm,
+            schemaSeqNo=schema_ref,
+            signatureType=signature_type,
+            tag=tag
         )
         result = self.make_result(request=request,
                                   data=keys,
                                   last_seq_no=lastSeqNo,
                                   update_time=lastUpdateTime,
                                   proof=proof)
-        result[SIGNATURE_TYPE] = signatureType
+        result[CLAIM_DEF_SIGNATURE_TYPE] = signature_type
         return result
 
     def handleGetRevocRegDefReq(self, request: Request):
@@ -506,23 +542,25 @@ class DomainReqHandler(PHandler):
         past_root = self.ts_store.get_equal_or_prev(req_ts)
         # Path to corresponding ACCUM record in state
         path = domain.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
-        if past_root is None:
-            reply_data = None
-            seq_no = None
-            last_update_time = None
-            proof = None
-        else:
+        entry_state = StateValue()
+        if past_root is not None:
             encoded_entry, proof = self.get_value_from_state(path,
                                                              head_hash=past_root,
                                                              with_proof=True)
-            revoc_reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-            reply_data = None if revoc_reg_entry_accum is None else revoc_reg_entry_accum
+            entry_state.proof = proof
+            if encoded_entry:
+                revoc_reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+                entry_state = StateValue(root_hash=past_root,
+                                         value=revoc_reg_entry_accum,
+                                         seq_no=seq_no,
+                                         update_time=last_update_time,
+                                         proof=proof)
 
         return self.make_result(request=request,
-                                data=reply_data,
-                                last_seq_no=seq_no,
-                                update_time=last_update_time,
-                                proof=proof)
+                                data=entry_state.value,
+                                last_seq_no=entry_state.seq_no,
+                                update_time=entry_state.update_time,
+                                proof=entry_state.proof)
 
     def _get_reg_entry_by_timestamp(self, timestamp, path_to_reg_entry):
         reg_entry = None
@@ -576,9 +614,7 @@ class DomainReqHandler(PHandler):
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
-        reply = {
-            REVOC_REG_DEF_ID: revoc_reg_def_id,
-        }
+        reply = None
         """
         Get root hash for "to" timestamp
         Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"
@@ -802,11 +838,12 @@ class DomainReqHandler(PHandler):
     def getClaimDef(self,
                     author: str,
                     schemaSeqNo: str,
-                    signatureType='CL',
+                    signatureType,
+                    tag,
                     isCommitted=True) -> (str, int, int, list):
         assert author is not None
         assert schemaSeqNo is not None
-        path = domain.make_state_path_for_claim_def(author, schemaSeqNo, signatureType)
+        path = domain.make_state_path_for_claim_def(author, schemaSeqNo, signatureType, tag)
         try:
             keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=True)
             return keys, seqno, lastUpdateTime, proof

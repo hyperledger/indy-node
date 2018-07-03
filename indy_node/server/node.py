@@ -7,7 +7,7 @@ from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiat
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.messages.node_messages import Reply
@@ -157,7 +157,8 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache = IdrCache(self.name,
                                      initKeyValueStorage(self.config.idrCacheStorage,
                                                          self.dataLocation,
-                                                         self.config.idrCacheDbName)
+                                                         self.config.idrCacheDbName,
+                                                         db_config=self.config.db_idr_cache_db_config)
                                      )
         return self.idrCache
 
@@ -166,7 +167,8 @@ class Node(PlenumNode, HasPoolManager):
             initKeyValueStorage(
                 self.config.attrStorage,
                 self.dataLocation,
-                self.config.attrDbName)
+                self.config.attrDbName,
+                db_config=self.config.db_attr_db_config)
         )
 
     def setup_config_req_handler(self):
@@ -222,11 +224,10 @@ class Node(PlenumNode, HasPoolManager):
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
 
-        # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
-        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.startedProcessingReq(request.key, self.nodestack.name)
         self.send(request)
         self.upgrader.notified_about_action_result()
 
@@ -246,9 +247,10 @@ class Node(PlenumNode, HasPoolManager):
 
         # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
-        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.startedProcessingReq(request.key,
+                                  self.nodestack.name)
         self.send(request)
 
     def processNodeRequest(self, request: Request, frm: str):
@@ -261,8 +263,8 @@ class Node(PlenumNode, HasPoolManager):
                 logger.warning('The request {} failed to authenticate {}'
                                .format(request, repr(ex)))
                 return
-        if not self.isProcessingReq(*request.key):
-            self.startedProcessingReq(*request.key, frm)
+        if not self.isProcessingReq(request.key):
+            self.startedProcessingReq(request.key, frm)
         # If not already got the propagate request(PROPAGATE) for the
         # corresponding client request(REQUEST)
         self.recordAndPropagate(request, frm)
