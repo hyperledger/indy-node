@@ -79,8 +79,10 @@ codebase.
 The following is a simple but hopefully a common workflow for using these tools.
 ## Steps
 ### Step #1 - Configure recording
-Add STACK_COMPANION to indy_config.py and set to the value to 1 (numeric value,
-NOT a String). 
+Add STACK_COMPANION to
+	/etc/indy/indy_config.py if using indy-node version >= 1.4.485
+	/etc/indy/plenum_config.py otherwise
+and set to the value to 1 (numeric value, NOT a String).
 
 The value 0 will DISABLE recording.
 
