@@ -17,10 +17,13 @@
     - ``docker exec -it -u root indy-cli apt update``
     - ``docker exec -it -u root indy-cli apt install libindy -y``
     - ``docker exec -it -u root indy-cli pip install --upgrade python3-indy``
-    - ``docker exec -it -u root indy-cli python3 just_connect_N_times.py -g /tmp/pool_transactions_genesis -c 110``
-    - this script will try to create 110 simultaneous connections to pool.    
+    - ``docker exec -it -u root indy-cli python3 just_connect_N_times.py -g /tmp/pool_transactions_genesis -c 150``
+    - this script will try to create 150 simultaneous connections to pool.    
  - As default, indy-sdk has a connection timeout about 50 seconds. In that case, we expect, that limited count of client will be connected to the pool and 
- other not. When 50 second was left, process with client connection will return error 307 (PoolLedgerTimeout).
- Each of clients is run in a different process. 
+ other not. When 50 second is left, process with client connection will return error 307 (PoolLedgerTimeout).
+ Each of client is run in a different process.
+ For now, new indy-sdk client is marked as connected to a pool if it is connected to n-f pool nodes. In that case, max possible connected clients can be evaluated as:
+ 
+ max_connected_clients = limit * n / (n-f), and in this test with n=4 and limit=100, maximum number of successfully connected clients can be between 100 and 132.   
    
     
