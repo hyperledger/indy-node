@@ -184,7 +184,9 @@ def random_string(sz: int) -> str:
 
 
 class RequestGenerator(metaclass=ABCMeta):
-    def __init__(self, label: str = "", file_name: str = None, ignore_first_line: bool = True, file_sep: str = "|",
+    def __init__(self, label: str = "",
+                 file_name: str = None, ignore_first_line: bool = True,
+                 file_sep: str = "|", file_max_split: int = 2, file_field: int = 2,
                  client_stat: ClientStatistic = None, **kwargs):
         self._test_label = label
         self._client_stat = client_stat
@@ -194,6 +196,8 @@ class RequestGenerator(metaclass=ABCMeta):
         self._data_file = None
         self._file_start_pos = 0
         self._file_sep = file_sep if file_sep else "|"
+        self._file_max_split = file_max_split
+        self._file_field = file_field
         if file_name is not None:
             self._data_file = open(check_fs(is_dir=False, fs_name=file_name), "rt")
             if ignore_first_line:
@@ -214,18 +218,23 @@ class RequestGenerator(metaclass=ABCMeta):
         return random_string(32)
 
     def _from_file_str_data(self, file_str):
-        req_id, req_json, reply_json = file_str.split(self._file_sep)
-        return reply_json
+        line_vals = file_str.split(self._file_sep, maxsplit=self._file_max_split)
+        if self._file_field < len(line_vals):
+            return line_vals[self._file_field]
+        return None
 
     def _gen_req_data(self):
         if self._data_file is not None:
-            file_str = self._data_file.readline()
-            if not file_str:
-                self._data_file.seek(self._file_start_pos)
+            while True:
                 file_str = self._data_file.readline()
                 if not file_str:
-                    raise RuntimeError("Data file is empty")
-            return self._from_file_str_data(file_str)
+                    self._data_file.seek(self._file_start_pos)
+                    file_str = self._data_file.readline()
+                    if not file_str:
+                        raise RuntimeError("Data file does not contain valid entries")
+                tmp = self._from_file_str_data(file_str)
+                if tmp is not None:
+                    return tmp
         else:
             return self._rand_data()
 
@@ -302,8 +311,13 @@ class RGNym(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        req_did = json.loads(req_json)['result']['txn']['data']['dest']
-        return req_did
+        if req_json is None:
+            return None
+        tmp = json.loads(req_json)
+        txn = tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})
+        if txn.get('type', None) not in ["1", "105"]:
+            return None
+        return txn.get('data', {}).get('dest', None)
 
     async def _gen_req(self, submit_did, req_data):
         return await ledger.build_nym_request(submit_did, req_data, None, None, None)
@@ -323,7 +337,13 @@ class RGSchema(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        schema_id = json.loads(req_json)['result']['txnMetadata']['txnId']
+        if req_json is None:
+            return None
+        tmp = json.loads(req_json)
+        txn_type = (tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})).get('type', None)
+        if txn_type not in ["101", "107"]:
+            return None
+        schema_id = (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
         return schema_id
 
 
@@ -350,8 +370,13 @@ class RGAttrib(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        raw = json.loads(req_json)['result']['txn']['data']['raw']
-        return raw
+        if req_json is None:
+            return None
+        tmp = json.loads(req_json)
+        txn = tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})
+        if txn.get('type', None) not in ["100", "104"]:
+            return None
+        return txn.get('data', {}).get('raw', None)
 
 
 class RGGetAttrib(RGAttrib):
@@ -372,7 +397,13 @@ class RGGetDefinition(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        cred_def_id = json.loads(req_json)['result']['txnMetadata']['txnId']
+        if req_json is None:
+            return None
+        tmp = json.loads(req_json)
+        txn_type = (tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})).get('type', None)
+        if txn_type not in ["102", "108"]:
+            return None
+        cred_def_id = (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
         return cred_def_id
 
     async def _gen_req(self, submit_did, req_data):
@@ -437,8 +468,19 @@ class RGDefRevoc(RGDefinition):
             tails_writer)
         return await ledger.build_revoc_reg_def_request(submit_did, revoc_reg_def_json)
 
+    def _from_file_str_data(self, file_str):
+        req_json = super()._from_file_str_data(file_str)
+        if req_json is None:
+            return None
+        tmp = json.loads(req_json)
+        txn_type = (tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})).get('type', None)
+        if txn_type not in ["113", "115"]:
+            return None
+        cred_def_id = (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
+        return cred_def_id
 
-class RGGetDefRevoc(RGGetDefinition):
+
+class RGGetDefRevoc(RGDefRevoc):
     def _rand_data(self):
         raw = libnacl.randombytes(16)
         submitter_did = self.rawToFriendly(raw)
@@ -504,8 +546,19 @@ class RGEntryRevoc(RGDefRevoc):
         return await ledger.build_revoc_reg_entry_request(
             submit_did, self._default_revoc_reg_def_id, "CL_ACCUM", revoc_reg_delta_json)
 
+    def _from_file_str_data(self, file_str):
+        req_json = super()._from_file_str_data(file_str)
+        if req_json is None:
+            return None
+        tmp = json.loads(req_json)
+        txn_type = (tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})).get('type', None)
+        if txn_type not in ["114", "116", "117"]:
+            return None
+        cred_def_id = (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
+        return cred_def_id
 
-class RGGetEntryRevoc(RGGetDefinition):
+
+class RGGetEntryRevoc(RGEntryRevoc):
     def _rand_data(self):
         raw = libnacl.randombytes(16)
         submitter_did = self.rawToFriendly(raw)
