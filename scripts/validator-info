@@ -570,9 +570,7 @@ def nagios(vstats):
     return "\n".join(lines);
 
 
-def get_stats_from_file(fpath, verbose, _json, _nagios):
-    with open(fpath) as f:
-        stats = json.loads(f.read())
+def get_stats_from_file(stats, verbose, _json, _nagios):
 
     logger.debug("Data {}".format(stats))
     vstats = ValidatorStats(stats, verbose)
@@ -628,7 +626,10 @@ def create_print_tree(stats: dict, indent=0, lines=[]):
             for line in value:
                 lines.append(make_indent(indent + 1) + format_value(line))
         else:
-            lines.append(make_indent(indent) + format_key(key) + format_value(value if value else 'n/a'))
+            if isinstance(value, dict) and not value or \
+                isinstance(value, list) and not value:
+                value = 'n/a'
+            lines.append(make_indent(indent) + format_key(key) + format_value(value))
     return lines
 
 
@@ -659,6 +660,26 @@ def remove_log_handlers():
 
     for hndl in logger.handlers:
         logger.removeHandler(hndl)
+
+
+def read_json(f_path):
+    with open(f_path) as f_stats:
+        raw_data = f_stats.read()
+        try:
+            json_data = json.loads(raw_data)
+        except json.JSONDecodeError:
+            print("File {} has an invalid json format".format(f_path))
+            return {}
+        return json_data
+
+
+def compile_json_ouput(file_paths):
+    output_data = {}
+    for file_path in file_paths:
+        json_data = read_json(file_path)
+        if json_data:
+            output_data.update(json_data)
+    return output_data
 
 
 def main():
@@ -794,19 +815,27 @@ def main():
     if not info_paths:
         print('There are no info files in {}'.format(args.basedir))
         return
+
+    if args.json:
+        out_json = compile_json_ouput(info_paths + additional_paths)
+        if out_json:
+            print(out_json)
+            sys.exit(0)
+
     for file_path in info_paths:
-        logger.info("Reading file {} ...".format(file_path))
-        if args.verbose:
-            with open(file_path) as f_stats:
-                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
-        else:
-            print(get_stats_from_file(file_path, args.verbose, args.json, args.nagios))
+        json_data = read_json(file_path)
+        if json_data:
+            if args.verbose:
+                    print("{}".format(os.linesep).join(create_print_tree(json_data, lines=[])))
+            else:
+                print(get_stats_from_file(json_data, args.verbose, args.json, args.nagios))
 
         print('\n')
     if args.verbose:
         for file_path in additional_paths:
-            with open(file_path) as f_stats:
-                print("{}".format(os.linesep).join(create_print_tree(json.load(f_stats), lines=[])))
+            json_data = read_json(file_path)
+            if json_data:
+                print("{}".format(os.linesep).join(create_print_tree(json_data, lines=[])))
 
     logger.info("Done")
 
