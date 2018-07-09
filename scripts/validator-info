@@ -662,6 +662,26 @@ def remove_log_handlers():
         logger.removeHandler(hndl)
 
 
+def read_json(f_path):
+    with open(f_path) as f_stats:
+        raw_data = f_stats.read()
+        try:
+            json_data = json.loads(raw_data)
+        except json.JSONDecodeError:
+            print("File {} has an invalid json format".format(f_path))
+            return {}
+        return json_data
+
+
+def compile_json_ouput(file_paths):
+    output_data = {}
+    for file_path in file_paths:
+        json_data = read_json(file_path)
+        if json_data:
+            output_data.update(json_data)
+    return output_data
+
+
 def main():
     global logger
 
@@ -795,31 +815,16 @@ def main():
     if not info_paths:
         print('There are no info files in {}'.format(args.basedir))
         return
+
     if args.json:
-        output_data = {}
-        for file_path in info_paths + additional_paths:
-            with open(file_path) as f_stats:
-                logger.info("Reading file {} ...".format(file_path))
-                raw_data = f_stats.read()
-                try:
-                    json_data = json.loads(raw_data)
-                except json.JSONDecodeError:
-                    print("File {} has an invalid json format".format(file_path))
-                    continue
-                output_data.update(json_data)
-        if output_data:
-            print(json.dumps(output_data))
-        sys.exit(0)
+        out_json = compile_json_ouput(info_paths + additional_paths)
+        if out_json:
+            print(out_json)
+            sys.exit(0)
 
     for file_path in info_paths:
-        with open(file_path) as f_stats:
-            logger.info("Reading file {} ...".format(file_path))
-            raw_data = f_stats.read()
-            try:
-                json_data = json.loads(raw_data)
-            except json.JSONDecodeError:
-                print("File {} has an invalid json format".format(file_path))
-                continue
+        json_data = read_json(file_path)
+        if json_data:
             if args.verbose:
                     print("{}".format(os.linesep).join(create_print_tree(json_data, lines=[])))
             else:
@@ -828,13 +833,8 @@ def main():
         print('\n')
     if args.verbose:
         for file_path in additional_paths:
-            with open(file_path) as f_stats:
-                raw_data = f_stats.read()
-                try:
-                    json_data = json.loads(raw_data)
-                except json.JSONDecodeError:
-                    print("File {} has an invalid json format".format(file_path))
-                    sys.exit(1)
+            json_data = read_json(file_path)
+            if json_data:
                 print("{}".format(os.linesep).join(create_print_tree(json_data, lines=[])))
 
     logger.info("Done")
