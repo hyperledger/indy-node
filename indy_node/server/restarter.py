@@ -40,10 +40,8 @@ class Restarter(NodeMaintainer):
         (event_type, when) = self.lastActionEventInfo
 
         if event_type != RestartLog.STARTED:
-            logger.debug(
-                'Restart for node {} was not scheduled. '
-                'Last event is {}:{}'.format(
-                    self.nodeName, event_type, when))
+            logger.info('Restart for node {} was not scheduled. Last event is {}:{}'.
+                        format(self.nodeName, event_type, when))
             return False
 
         return True
