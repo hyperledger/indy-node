@@ -20,27 +20,6 @@ from plenum.test.helper import create_new_test_node
 
 
 @pytest.fixture(scope="module")
-def create_node_and_not_start(testNodeClass,
-                              node_config_helper_class,
-                              tconf,
-                              tdir,
-                              allPluginsPath,
-                              looper,
-                              tdirWithPoolTxns,
-                              tdirWithDomainTxns,
-                              tdirWithNodeKeepInited):
-    with ExitStack() as exitStack:
-        node = exitStack.enter_context(create_new_test_node(testNodeClass,
-                                node_config_helper_class,
-                                "Alpha",
-                                tconf,
-                                tdir,
-                                allPluginsPath))
-        yield node
-        node.stop()
-
-
-@pytest.fixture(scope="module")
 def add_revoc_def_by_default(create_node_and_not_start,
                   looper,
                   sdk_wallet_steward):
