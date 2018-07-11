@@ -819,7 +819,7 @@ def main():
     if args.json:
         out_json = compile_json_ouput(info_paths + additional_paths)
         if out_json:
-            print(out_json)
+            print(json.dumps(out_json))
             sys.exit(0)
 
     for file_path in info_paths:
