@@ -2107,7 +2107,7 @@ class IndyCli(PlenumCli):
 
     def cmdHandlerToCmdMappings(self):
         # The 'key' of 'mappings' dictionary is action handler function name
-        # without leading underscore sign. Each such funcation name should be
+        # without leading underscore sign. Each such function name should be
         # mapped here, its other thing that if you don't want to display it
         # in help, map it to None, but mapping should be present, that way it
         # will force developer to either write help message for those cli
@@ -2150,7 +2150,7 @@ class IndyCli(PlenumCli):
 
         # TODO: These seems to be obsolete, so either we need to remove these
         # command handlers or let it point to None
-        mappings['addGenesisAction'] = None  # overriden by addGenTxnAction
+        mappings['addGenesisAction'] = None  # overridden by addGenTxnAction
 
         return mappings
 

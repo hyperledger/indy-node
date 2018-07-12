@@ -30,7 +30,7 @@ ALL_ATR_KEYS = [RAW, ENC, HASH]
 
 
 def make_state_path_for_nym(did) -> bytes:
-    # TODO: This is duplicated in plenum.DimainRequestHandler
+    # TODO: This is duplicated in plenum.DomainRequestHandler
     return sha256(did.encode()).digest()
 
 
@@ -309,8 +309,8 @@ def encode_state_value(value, seqNo, txnTime):
     })
 
 
-def decode_state_value(ecnoded_value):
-    decoded = domain_state_serializer.deserialize(ecnoded_value)
+def decode_state_value(encoded_value):
+    decoded = domain_state_serializer.deserialize(encoded_value)
     value = decoded.get(VALUE)
     last_seq_no = decoded.get(LAST_SEQ_NO)
     last_update_time = decoded.get(LAST_UPDATE_TIME)

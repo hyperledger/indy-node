@@ -81,7 +81,7 @@ def test_get_delta_with_other_reg_def_in_state(looper,
     req_handler._addRevocRegEntry(txn)
     req_handler.ts_store.set(get_txn_time(txn), req_handler.state.headHash)
 
-    # timestamp beetween FIRST_ID_TS and SECOND_ID_TS
+    # timestamp between FIRST_ID_TS and SECOND_ID_TS
     delta_req['operation'][FROM] = FIRST_ID_TS + 10
     path_to_reg_entry = domain.make_state_path_for_revoc_reg_entry(
         revoc_reg_def_id=entry_second_id['operation'][REVOC_REG_DEF_ID])

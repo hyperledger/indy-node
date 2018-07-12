@@ -7,7 +7,7 @@
     "annotations":
     {
       "description": "A deployment template for the Alice indy example application in OpenShift.",
-      "tags": "alice,sorin,indy",
+      "tags": "alice,sovrin,indy",
       "iconClass": "icon-github"
     }
   },

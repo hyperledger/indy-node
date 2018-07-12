@@ -315,7 +315,7 @@ The filters can be applied in the following order: `submitterDid` -> `credDefId`
 
 <b>Reqs 3, 4, 8</b>
 
-The RevocReg entry containing the new accumulator value and issued/revoked indices. This is juat a delta of indices, not 
+The RevocReg entry containing the new accumulator value and issued/revoked indices. This is just a delta of indices, not 
 the whole list.
 So, it can be sent each time a new claim is issued/revoked.
 

@@ -27,7 +27,7 @@ class PoolConfig:
     # TODO: PoolConfig and Updater both read config ledger independently
     def processLedger(self) -> None:
         """
-        Checks ledger config txns and performes recent one
+        Checks ledger config txns and performs recent one
 
         :return:
         """

@@ -43,7 +43,7 @@
 # //Some details to be aware of://
 #  1. All files and folders in the Vagrant project folder show up as shared
 #     resources in /vagrant on all Vagrant VM(s)/guests instantiated by this
-#     Vagrantfile. This is a design descision made by the Vagrant folks.
+#     Vagrantfile. This is a design decision made by the Vagrant folks.
 #  2. Source code will be cloned into this Vagrant project folder using the git
 #     project name and then shared in /src/<git project name> in the Vagrant
 #     guest VM(s). The .gitignore file in this Vagrant project folder ignores
