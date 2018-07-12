@@ -1,4 +1,5 @@
 import pytest
+from plenum.common.constants import CURRENT_PROTOCOL_VERSION
 
 from indy_common.req_utils import get_write_claim_def_signature_type, \
     get_write_claim_def_schema_ref, get_write_claim_def_tag, get_write_claim_def_public_keys, \
@@ -24,7 +25,7 @@ def write_claim_def_request(request):
 
         'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
         'reqId': 1514280215504647,
-        'protocolVersion': 1,
+        'protocolVersion': CURRENT_PROTOCOL_VERSION,
         'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
     }
     return SafeRequest(**req)
@@ -55,7 +56,7 @@ def read_claim_def_request():
 
         'identifier': 'E5AD5g65TDQr1PPHHRoiGf',
         'reqId': 1514280215504647,
-        'protocolVersion': 1
+        'protocolVersion': CURRENT_PROTOCOL_VERSION
     }
     return SafeRequest(**req)
 

@@ -52,7 +52,7 @@ from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNa
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
 from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_name, sdk_wallet_steward, \
-    sdk_wallet_handle, sdk_wallet_name, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data, \
+    sdk_wallet_handle, sdk_wallet_data, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data, \
     sdk_wallet_client, sdk_client_seed, poolTxnClientData, poolTxnClientNames, poolTxnData
 
 Logger.setLogLevel(logging.DEBUG)

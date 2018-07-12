@@ -1,3 +1,4 @@
+from binascii import hexlify
 from copy import deepcopy
 from typing import List, Callable
 
@@ -72,6 +73,36 @@ class DomainReqHandler(PHandler):
         else:
             logger.debug(
                 'Cannot apply request of type {} to state'.format(txn_type))
+
+    def gen_txn_path(self, txn):
+
+        """Return path to state as 'str' type or None"""
+        txn_type = get_type(txn)
+        if txn_type not in self.state_update_handlers:
+            logger.error('Cannot generate id for txn of type {}'.format(txn_type))
+            return None
+
+        if txn_type == NYM:
+            nym = get_payload_data(txn).get(TARGET_NYM)
+            binary_digest = domain.make_state_path_for_nym(nym)
+            return hexlify(binary_digest).decode()
+        elif txn_type == ATTRIB:
+            path = domain.prepare_attr_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == SCHEMA:
+            path = domain.prepare_schema_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == CLAIM_DEF:
+            path = domain.prepare_claim_def_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == REVOC_REG_DEF:
+            path = domain.prepare_revoc_def_for_state(txn, path_only=True)
+            return path.decode()
+        elif txn_type == REVOC_REG_ENTRY:
+            path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
+            return path.decode()
+
+        raise NotImplementedError("path construction is not implemented for type {}".format(txn_type))
 
     def commit(self, txnCount, stateRoot, txnRoot, ppTime) -> List:
         r = super().commit(txnCount, stateRoot, txnRoot, ppTime)
@@ -511,23 +542,25 @@ class DomainReqHandler(PHandler):
         past_root = self.ts_store.get_equal_or_prev(req_ts)
         # Path to corresponding ACCUM record in state
         path = domain.make_state_path_for_revoc_reg_entry_accum(revoc_reg_def_id=revoc_reg_def_id)
-        if past_root is None:
-            reply_data = None
-            seq_no = None
-            last_update_time = None
-            proof = None
-        else:
+        entry_state = StateValue()
+        if past_root is not None:
             encoded_entry, proof = self.get_value_from_state(path,
                                                              head_hash=past_root,
                                                              with_proof=True)
-            revoc_reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
-            reply_data = None if revoc_reg_entry_accum is None else revoc_reg_entry_accum
+            entry_state.proof = proof
+            if encoded_entry:
+                revoc_reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
+                entry_state = StateValue(root_hash=past_root,
+                                         value=revoc_reg_entry_accum,
+                                         seq_no=seq_no,
+                                         update_time=last_update_time,
+                                         proof=proof)
 
         return self.make_result(request=request,
-                                data=reply_data,
-                                last_seq_no=seq_no,
-                                update_time=last_update_time,
-                                proof=proof)
+                                data=entry_state.value,
+                                last_seq_no=entry_state.seq_no,
+                                update_time=entry_state.update_time,
+                                proof=entry_state.proof)
 
     def _get_reg_entry_by_timestamp(self, timestamp, path_to_reg_entry):
         reg_entry = None
@@ -581,9 +614,7 @@ class DomainReqHandler(PHandler):
         req_ts_from = request.operation.get(FROM, None)
         req_ts_to = request.operation.get(TO)
         revoc_reg_def_id = request.operation.get(REVOC_REG_DEF_ID)
-        reply = {
-            REVOC_REG_DEF_ID: revoc_reg_def_id,
-        }
+        reply = None
         """
         Get root hash for "to" timestamp
         Get REVOC_REG_ENTRY and ACCUM record for timestamp "to"

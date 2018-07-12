@@ -303,7 +303,7 @@ class NodeStateReplayer:
         else:
             replay_node_dir = tempfile.TemporaryDirectory().name
 
-        logger.debug("Temporary replay node directory {}".format(
+        logger.info("Replay node directory {}".format(
             replay_node_dir))
         # with tempfile.TemporaryDirectory() as replay_node_dir:
         general_config_dir = create_config_dirs(replay_node_dir)

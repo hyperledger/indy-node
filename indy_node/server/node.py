@@ -7,11 +7,11 @@ from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiat
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
 from plenum.common.messages.node_messages import Reply
-from plenum.common.txn_util import get_type, get_payload_data
+from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
     OPERATION
 from plenum.persistence.storage import initStorage
@@ -41,7 +41,8 @@ logger = getlogger()
 
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_indy_keys"
-    _client_request_class = SafeRequest
+    client_request_class = SafeRequest
+    TxnUtilConfig.client_request_class = Request
     _info_tool_class = ValidatorNodeInfoTool
 
     def __init__(self,
@@ -224,9 +225,8 @@ class Node(PlenumNode, HasPoolManager):
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
 
-        # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
         self.startedProcessingReq(request.key, self.nodestack.name)
         self.send(request)
@@ -248,7 +248,7 @@ class Node(PlenumNode, HasPoolManager):
 
         # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
         self.startedProcessingReq(request.key,
                                   self.nodestack.name)
@@ -275,7 +275,7 @@ class Node(PlenumNode, HasPoolManager):
         if all(attr in msg.keys()
                for attr in [OPERATION, f.IDENTIFIER.nm, f.REQ_ID.nm]) \
                 and msg.get(OPERATION, {}).get(TXN_TYPE) == NODE_UPGRADE:
-            cls = self._client_request_class
+            cls = self.client_request_class
             cMsg = cls(**msg)
             return cMsg, frm
         else:

@@ -3,7 +3,7 @@ from plenum.common.util import randomString
 from plenum.test.node_catchup.helper import checkNodeDataForEquality, \
     waitNodeDataEquality
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, \
-    sdk_pool_refresh, disconnect_node_and_ensure_disconnected
+    disconnect_node_and_ensure_disconnected
 from plenum.test.test_node import ensure_node_disconnected, checkNodesConnected
 from indy_node.test.conftest import sdk_node_theta_added
 from indy_node.test.helper import TestNode, sdk_add_raw_attribute, \
@@ -113,7 +113,6 @@ def test_new_node_catchup_update_projection(looper,
     fill_counters(old_ledger_sizes, old_projection_sizes, old_seq_no_map_sizes,
                   [new_node])
     looper.run(checkNodesConnected(nodeSet))
-    sdk_pool_refresh(looper, sdk_pool_handle)
     waitNodeDataEquality(looper, new_node, *other_nodes)
     fill_counters(new_ledger_sizes, new_projection_sizes, new_seq_no_map_sizes,
                   [new_node])
