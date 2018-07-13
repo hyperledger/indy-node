@@ -103,6 +103,5 @@ default logging level for node
 '''
 logLevel = logging.INFO
 
-DEFAULT_SENDER_QUOTA = 1000
 ZMQ_CLIENT_QUEUE_SIZE = 3000  # messages (0 - no limit)
 ZMQ_NODE_QUEUE_SIZE = 20000  # messages (0 - no limit)
