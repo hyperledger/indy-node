@@ -111,9 +111,7 @@ class NodeControlTool:
                                 .format(self.packages_to_hold,
                                         cmd,
                                         ret.returncode))
-
-                logger.info('Successfully put {} packages on hold'.format(
-                    self.packages_to_hold))
+            logger.info('Successfully put {} packages on hold'.format(self.packages_to_hold))
         else:
             logger.info('Skipping packages holding')
 
@@ -175,7 +173,7 @@ class NodeControlTool:
                             self.backup_format, self.backup_target)
 
     def _restore_from_backup(self, version):
-        logger.debug('Restoring from backup for {}'.format(version))
+        logger.info('Restoring from backup for {}'.format(version))
         for file_path in self.files_to_preserve:
             try:
                 shutil.copy2(os.path.join(self.backup_target, file_path),
@@ -202,7 +200,7 @@ class NodeControlTool:
         return sorted(files, key=os.path.getmtime, reverse=True)
 
     def _remove_old_backups(self):
-        logger.debug('Removing old backups')
+        logger.display('Removing old backups')
         files = self._get_backups()
         if len(files):
             files = files[self.backup_num:]

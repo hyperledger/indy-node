@@ -40,7 +40,7 @@ from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNa
 from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_name, sdk_wallet_steward, \
     sdk_wallet_handle, sdk_wallet_data, sdk_steward_seed, sdk_wallet_client, sdk_wallet_trustee, \
     sdk_trustee_seed, trustee_data, sdk_client_seed, poolTxnClientData, poolTxnClientNames, \
-    sdk_wallet_stewards
+    sdk_wallet_stewards, create_node_and_not_start
 
 Logger.setLogLevel(logging.NOTSET)
 
