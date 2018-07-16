@@ -106,6 +106,9 @@ class Node(PlenumNode, HasPoolManager):
     def initPoolManager(self, ha, cliname, cliha):
         HasPoolManager.__init__(self, ha, cliname, cliha)
 
+    def on_inconsistent_3pc_state(self):
+        self.getRestarter().requestRestart()
+
     def getPrimaryStorage(self):
         """
         This is usually an implementation of Ledger
