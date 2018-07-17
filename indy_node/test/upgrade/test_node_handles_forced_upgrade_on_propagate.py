@@ -16,7 +16,7 @@ def test_node_handles_forced_upgrade_on_propagate(
     """
     slow_node = getNonPrimaryReplicas(nodeSet, instId=0)[-1].node
 
-    # Stash all except propagates from Alpha
+    # Stash all except PROPAGATEs from Gamma
     slow_node.clientIbStasher.delay(req_delay())
     slow_node.nodeIbStasher.delay(ppgDelay(sender_filter='Alpha'))
     slow_node.nodeIbStasher.delay(ppgDelay(sender_filter='Beta'))
