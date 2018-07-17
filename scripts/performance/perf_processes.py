@@ -631,8 +631,9 @@ class LoadClient:
             self._pool_handle = await pool.open_pool_ledger(self._pool_name, None)
             self._wallet_name = "{}_wallet".format(self._pool_name)
             wallet_credential = json.dumps({"key": w_key})
-            await wallet.create_wallet(self._pool_name, self._wallet_name, None, None, wallet_credential)
-            self._wallet_handle = await wallet.open_wallet(self._wallet_name, None, wallet_credential)
+            wallet_config = json.dumps({"id": self._wallet_name})
+            await wallet.create_wallet(wallet_config, wallet_credential)
+            self._wallet_handle = await wallet.open_wallet(wallet_config, wallet_credential)
             self._test_did, self._test_verk = await did.create_and_store_my_did(self._wallet_handle, json.dumps({'seed': seed}))
             await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle,
                                                      self._test_did, max_cred_num=self._batch_size)
