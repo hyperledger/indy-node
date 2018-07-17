@@ -386,13 +386,17 @@ class RGGetAttrib(RGAttrib):
 
 
 class RGGetDefinition(RequestGenerator):
-    def _rand_data(self):
-        raw = libnacl.randombytes(16)
-        origin = self.rawToFriendly(raw)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._submitter_did = None
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        self._submitter_did = submitter_did
+
+    def _make_cred_def_id(self, shcema_id, tag):
         cred_def_marker = '03'
         signature_type = 'CL'
-        schema_id = '1'
-        cred_def_id = ':'.join([origin, cred_def_marker, signature_type, schema_id])
+        cred_def_id = ':'.join([self._submitter_did, cred_def_marker, signature_type, str(shcema_id), tag])
         return cred_def_id
 
     def _from_file_str_data(self, file_str):
@@ -407,8 +411,11 @@ class RGGetDefinition(RequestGenerator):
         return cred_def_id
 
     async def _gen_req(self, submit_did, req_data):
-        req = await ledger.build_get_cred_def_request(submit_did, req_data)
-        return req
+        if self._data_file is not None:
+            dt = req_data
+        else:
+            dt = self._make_cred_def_id('1', req_data)
+        return await ledger.build_get_cred_def_request(submit_did, dt)
 
 
 class RGDefinition(RGGetDefinition):
@@ -416,11 +423,11 @@ class RGDefinition(RGGetDefinition):
         super().__init__(*args, **kwargs)
         self._wallet_handle = None
         self._default_schema_json = None
-
-    def _rand_data(self):
-        return random_string(32)
+        self._default_definition_id = None
+        self._default_definition_json = None
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
         self._wallet_handle = wallet_handle
         _, self._default_schema_json = await anoncreds.issuer_create_schema(
             submitter_did, random_string(32), "1.0", json.dumps(["name", "age", "sex", "height"]))
@@ -431,41 +438,38 @@ class RGDefinition(RGGetDefinition):
             resp.get('result', {}).get('seqNo', None) or\
             resp.get('result', {}).get('txnMetadata', {}).get('seqNo', None)
         self._default_schema_json = json.loads(self._default_schema_json)
-        # TODO: Instead of manually patching schema json GET_SCHEMA should be used
         self._default_schema_json['seqNo'] = seqno
-        self._default_schema_json = json.dumps(self._default_schema_json)
+        self._default_definition_id, self._default_definition_json = \
+            await anoncreds.issuer_create_and_store_credential_def(
+                wallet_handle, submitter_did, json.dumps(self._default_schema_json),
+                random_string(32), "CL", json.dumps({"support_revocation": True}))
+        self._default_definition_json = json.loads(self._default_definition_json)
 
     async def _gen_req(self, submit_did, req_data):
-        _, definition_json = await anoncreds.issuer_create_and_store_credential_def(
-            self._wallet_handle, submit_did, self._default_schema_json,
-            req_data, "CL", json.dumps({"support_revocation": True}))
-        return await ledger.build_cred_def_request(submit_did, definition_json)
+        if self._data_file is not None:
+            dt = req_data
+        else:
+            self._default_definition_id = self._make_cred_def_id(self._default_schema_json['seqNo'], req_data)
+            self._default_definition_json["id"] = self._default_definition_id
+            self._default_definition_json["schemaId"] = str(self._default_schema_json['seqNo'])
+            self._default_definition_json["tag"] = req_data
+            dt = json.dumps(self._default_definition_json)
+        return await ledger.build_cred_def_request(submit_did, dt)
 
 
 class RGDefRevoc(RGDefinition):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._default_definition_id = None
-        self._default_definition_json = None
-
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
-
-        self._default_definition_id, self._default_definition_json =\
-            await anoncreds.issuer_create_and_store_credential_def(
-                wallet_handle, submitter_did, self._default_schema_json,
-                random_string(32), "CL", json.dumps({"support_revocation": True}))
-        definition_request = await ledger.build_cred_def_request(submitter_did, self._default_definition_json)
-        await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, definition_request)
+        self._wallet_handle = wallet_handle
+        dr = await ledger.build_cred_def_request(submitter_did, json.dumps(self._default_definition_json))
+        await ledger.sign_and_submit_request(pool_handle, self._wallet_handle, submitter_did, dr)
 
     async def _gen_req(self, submit_did, req_data):
         tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
         tails_writer = await blob_storage.open_writer('default', tails_writer_config)
         _, revoc_reg_def_json, revoc_reg_entry_json = await anoncreds.issuer_create_and_store_revoc_reg(
-            self._wallet_handle, submit_did, "CL_ACCUM", req_data,
-            json.loads(self._default_definition_json)['id'],
-            json.dumps({"max_cred_num": 5, "issuance_type": "ISSUANCE_BY_DEFAULT"}),
-            tails_writer)
+            self._wallet_handle, submit_did, "CL_ACCUM", req_data, self._default_definition_id,
+            json.dumps({"max_cred_num": 5, "issuance_type": "ISSUANCE_BY_DEFAULT"}), tails_writer)
         return await ledger.build_revoc_reg_def_request(submit_did, revoc_reg_def_json)
 
     def _from_file_str_data(self, file_str):
