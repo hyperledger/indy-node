@@ -104,8 +104,6 @@ to understand what needs to be done to create a Network, initialize and start No
 
 The described process is automated in one of the ways below (it allow to install a test Network):
 
- - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
-
  - **Docker** [Start Pool and Client with Docker](environment/docker/pool/README.md)
 
  - **Docker-based pool using with new libindy-based CLI**:
