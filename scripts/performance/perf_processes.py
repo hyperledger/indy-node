@@ -255,6 +255,9 @@ class RequestGenerator(metaclass=ABCMeta):
 
         return req_data, req
 
+    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+        pass
+
 
 class RGSeqReqs(RequestGenerator):
     def __init__(self, *args, reqs=list(), next_random: bool=False, **kwargs):
@@ -301,6 +304,9 @@ class RGSeqReqs(RequestGenerator):
 
     async def _gen_req(self, submit_did, req_data):
         return await self._reqs_collection[self._req_idx]._gen_req(submit_did, req_data)
+
+    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+        return await self._reqs_collection[self._req_idx].on_batch_completed(pool_handle, wallet_handle, submitter_did)
 
 
 class RGNym(RequestGenerator):
@@ -460,7 +466,6 @@ class RGDefinition(RGGetDefinition):
 class RGDefRevoc(RGDefinition):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
-        self._wallet_handle = wallet_handle
         dr = await ledger.build_cred_def_request(submitter_did, json.dumps(self._default_definition_json))
         await ledger.sign_and_submit_request(pool_handle, self._wallet_handle, submitter_did, dr)
 
@@ -516,39 +521,60 @@ class RGEntryRevoc(RGDefRevoc):
             "sex": {"raw": "value1", "encoded": "123"},
             "height": {"raw": "value1", "encoded": "456"}
         })
+        self._max_cred_num = None
+        self._submitter_did = None
+        self._pool_handle = None
+        self._cred_offer_json = None
+        self._tails_writer = None
+
+    async def _upd_revoc_reg(self):
+        while True:
+            try:
+                self._default_revoc_reg_def_id, self._default_revoc_reg_def_json, self._default_revoc_reg_entry_json = \
+                    await anoncreds.issuer_create_and_store_revoc_reg(
+                        self._wallet_handle, self._submitter_did, "CL_ACCUM", random_string(32),
+                        self._default_definition_id,
+                        json.dumps({"max_cred_num": self._max_cred_num, "issuance_type": "ISSUANCE_ON_DEMAND"}),
+                        self._tails_writer)
+                def_revoc_request = await ledger.build_revoc_reg_def_request(
+                    self._submitter_did, self._default_revoc_reg_def_json)
+                await ledger.sign_and_submit_request(
+                    self._pool_handle, self._wallet_handle, self._submitter_did, def_revoc_request)
+                entry_revoc_request = await ledger.build_revoc_reg_entry_request(
+                    self._submitter_did, self._default_revoc_reg_def_id, "CL_ACCUM", self._default_revoc_reg_entry_json)
+                await ledger.sign_and_submit_request(
+                    self._pool_handle, self._wallet_handle, self._submitter_did, entry_revoc_request)
+                break
+            except Exception as ex:
+                print("WARNING: _upd_revoc_reg {}".format(ex))
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
-        max_cred_num = kwargs["max_cred_num"] if "max_cred_num" in kwargs else 100
-
+        self._max_cred_num = kwargs["max_cred_num"] if "max_cred_num" in kwargs else 100
+        self._wallet_handle = wallet_handle
+        self._submitter_did = submitter_did
+        self._pool_handle = pool_handle
+        self._cred_offer_json = await anoncreds.issuer_create_credential_offer(
+            self._wallet_handle, self._default_definition_id)
+        self._master_secret_id = await anoncreds.prover_create_master_secret(
+            self._wallet_handle, master_secret_name='')
         tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
-        tails_writer = await blob_storage.open_writer('default', tails_writer_config)
+        self._tails_writer = await blob_storage.open_writer('default', tails_writer_config)
         self._blob_storage_reader_cfg_handle = await blob_storage.open_reader('default', tails_writer_config)
-        self._default_revoc_reg_def_id, self._default_revoc_reg_def_json, self._default_revoc_reg_entry_json =\
-            await anoncreds.issuer_create_and_store_revoc_reg(
-                wallet_handle, submitter_did, "CL_ACCUM", random_string(32),
-                json.loads(self._default_definition_json)['id'],
-                json.dumps({"max_cred_num": max_cred_num, "issuance_type": "ISSUANCE_ON_DEMAND"}),
-                tails_writer)
-        def_revoc_request = await ledger.build_revoc_reg_def_request(submitter_did, self._default_revoc_reg_def_json)
-        await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, def_revoc_request)
-
-        entry_revoc_request = await ledger.build_revoc_reg_entry_request(
-            submitter_did, self._default_revoc_reg_def_id, "CL_ACCUM", self._default_revoc_reg_entry_json)
-        await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, entry_revoc_request)
+        await self._upd_revoc_reg()
 
     async def _gen_req(self, submit_did, req_data):
-        cred_offer_json = await anoncreds.issuer_create_credential_offer(
-            self._wallet_handle, self._default_definition_id)
-        master_secret_id = await anoncreds.prover_create_master_secret(
-            self._wallet_handle, master_secret_name='')
         cred_req_json, _ = await anoncreds.prover_create_credential_req(
-            self._wallet_handle, submit_did, cred_offer_json, self._default_definition_json, master_secret_id)
+            self._wallet_handle, submit_did, self._cred_offer_json,
+            json.dumps(self._default_definition_json), self._master_secret_id)
         _, _, revoc_reg_delta_json = await anoncreds.issuer_create_credential(
-            self._wallet_handle, cred_offer_json, cred_req_json, self._default_cred_values_json,
+            self._wallet_handle, self._cred_offer_json, cred_req_json, self._default_cred_values_json,
             self._default_revoc_reg_def_id, self._blob_storage_reader_cfg_handle)
         return await ledger.build_revoc_reg_entry_request(
             submit_did, self._default_revoc_reg_def_id, "CL_ACCUM", revoc_reg_delta_json)
+
+    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+        await self._upd_revoc_reg()
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
@@ -676,6 +702,7 @@ class LoadClient:
         self._req_generator = req_class(**params, client_stat=self._stat)
         assert self._req_generator is not None
         self._rest_to_sent = batch_size
+        self._generated_cnt = 0
 
     async def run_test(self, genesis_path, seed, w_key):
         try:
@@ -731,6 +758,11 @@ class LoadClient:
             self._loop.stop()
             raise e
 
+        self._generated_cnt += 1
+        if self._generated_cnt >= self._batch_size:
+            await self._req_generator.on_batch_completed(self._pool_handle, self._wallet_handle, self._test_did)
+            self._generated_cnt = 0
+
     def watch_queues(self):
         if len(self._load_client_reqs) + len(self._gen_q) < self._batch_size:
             self._loop.call_soon(self.gen_reqs)
@@ -756,6 +788,7 @@ class LoadClient:
             builder = self._loop.create_task(self.gen_signed_req())
             builder.add_done_callback(self.check_batch_avail)
             self._gen_q.append(builder)
+            self._generated_cnt += 1
 
     async def submit_req_update(self, req_id, req):
         self._stat.sent(req_id, req)
@@ -809,6 +842,8 @@ class LoadClient:
         self._closing = True
         if len(self._send_q) > 0:
             await asyncio.gather(*self._send_q, return_exceptions=True)
+        if len(self._gen_q) > 0:
+            await asyncio.gather(*self._gen_q, return_exceptions=True)
 
         try:
             if self._wallet_handle is not None:
