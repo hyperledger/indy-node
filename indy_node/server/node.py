@@ -297,7 +297,7 @@ class Node(PlenumNode, HasPoolManager):
         c += self.restarter.service()
         return c
 
-    def is_txn_writable(self, txn_type):
+    def can_write_txn(self, txn_type):
         return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE, POOL_CONFIG]
 
     def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
