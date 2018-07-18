@@ -56,7 +56,7 @@ class Restarter(NodeMaintainer):
             "Restart of node '{}' scheduled on {} "
             "completed successfully".format(self.nodeName, when))
 
-    def handleActionTxn(self, req: Request) -> None:
+    def handleRestartRequest(self, req: Request) -> None:
         """
         Handles transaction of type POOL_RESTART
         Can schedule or cancel restart to a newer

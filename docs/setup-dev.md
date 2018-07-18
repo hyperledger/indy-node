@@ -16,7 +16,7 @@ This is a Quick Setup for development on a clean Ubuntu 16.04 machine.
 You can also have a look at the scripts mentioned below to follow them and perform setup manually.
 
 1. Get scripts from [dev-setup-ubuntu](https://github.com/hyperledger/indy-node/tree/master/dev-setup/ubuntu)
-1. Run `setup_dev_python.sh` to setup Python3.5, pip and virtualenv
+1. Run `setup-dev-python.sh` to setup Python3.5, pip and virtualenv
 1. Run `source ~/.bashrc` to apply virtual environment wrapper installation
 1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (charm-crypto, libindy, libindy-crypto, libsodium)
 1. Fork [indy-plenum](https://github.com/hyperledger/indy-plenum) and [indy-node](https://github.com/hyperledger/indy-node)
