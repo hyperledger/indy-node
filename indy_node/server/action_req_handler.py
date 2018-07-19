@@ -69,7 +69,7 @@ class ActionReqHandler(RequestHandler):
                      .format(req.reqId, req.txn_type))
         try:
             if req.txn_type == POOL_RESTART:
-                self.restarter.handleActionTxn(req)
+                self.restarter.handleRestartRequest(req)
                 result = self._generate_action_result(req)
             elif req.txn_type == VALIDATOR_INFO:
                 result = self._generate_action_result(req)

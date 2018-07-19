@@ -54,7 +54,7 @@ from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
     faberWallet, acmeWallet, thriftWallet, agentIpAddress, \
     faberAgentPort, acmeAgentPort, thriftAgentPort, faberAgent, acmeAgent, \
     thriftAgent, faberBootstrap, acmeBootstrap
-from indy_client.test.cli.helper import connect_and_check_output
+from indy_client.test.cli.helper import connect_and_check_output, disconnect_and_check_output
 from indy_common.config_helper import ConfigHelper
 from stp_core.crypto.util import randomSeed
 
@@ -1414,11 +1414,6 @@ def newStewardCli(be, do, poolNodesStarted, trusteeCli,
 @pytest.fixture(scope="module")
 def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
                  newNodeVals):
-    be(philCli)
-
-    if not philCli._isConnectedToAnyEnv():
-        connect_and_check_output(do, philCli.txn_dir)
-
     be(newStewardCli)
     doSendNodeCmd(do, newNodeVals)
     newNodeData = newNodeVals["newNodeData"]
@@ -1432,13 +1427,23 @@ def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
             name = newNodeData[ALIAS]
             assert name in node.nodeReg
 
+    # Reconnect steward's CLI to get new pool membership info.
+    disconnect_and_check_output(do)
+    connect_and_check_output(do, newStewardCli.txn_dir)
+
     timeout = waits.expectedClientToPoolConnectionTimeout(
-        util.getMaxFailures(len(philCli.nodeReg))
-    )
+        len(newStewardCli.activeClient.nodeReg))
 
     newStewardCli.looper.run(eventually(checkClientConnected,
                                         newStewardCli.activeClient,
                                         timeout=timeout))
+
+    be(philCli)
+
+    # Reconnect Phil's CLI if needed to get new pool membership info.
+    if philCli._isConnectedToAnyEnv():
+        disconnect_and_check_output(do)
+    connect_and_check_output(do, philCli.txn_dir)
 
     philCli.looper.run(eventually(checkClientConnected,
                                   philCli.activeClient,

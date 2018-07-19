@@ -501,14 +501,15 @@ def testSendNodeFailsIfServicesIsEmptyString(
     ensurePoolIsOperable(be, do, newStewardCli)
 
 
-def testSendNodeFailsIfDataContainsUnknownField(
+def testSendNodeSuccessIfDataContainsUnknownField(
         be, do, poolNodesStarted, newStewardCli, newNodeVals):
 
+    newNodeVals['newNodeData'][SERVICES] = []
     newNodeVals['newNodeData']['extra'] = 42
 
     be(newStewardCli)
     do('send NODE dest={newNodeIdr} data={newNodeData}',
-       mapper=newNodeVals, expect=NODE_REQUEST_FAILED, within=8)
+       mapper=newNodeVals, expect=NODE_REQUEST_COMPLETED, within=8)
 
     ensurePoolIsOperable(be, do, newStewardCli)
 

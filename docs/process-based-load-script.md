@@ -68,6 +68,9 @@ Supported txns:
 * get_revoc_reg - Get revocation registry entry
 * get_revoc_reg_delta - Get revocation registry delta
 
+'-m', '--mode' : Specifies the way each client will be run with. It could be a process - 'p' or thread - 't'.
+Default value is 'p''.
+
 ## Transaction data
 Each txn can read predefined data from file or generate random data.
 Default mode for each txn is to generate random data.
@@ -151,7 +154,7 @@ Each tnx to send will be chosen randomly in proportion 3:5 of TXN_TYPE1 and TXN_
 
 * To send txns of several types randomly with data read from file use JSON obj:
 ```
-python3 perf_processes.py -k "{{\"TXN_TYPE1\": {\"file_name\": \"/path/to/file\", \"count\": 3}}, \"TXN_TYPE2\": 5, ...}"
+python3 perf_processes.py -k "{\"TXN_TYPE1\": {\"file_name\": \"/path/to/file\", \"count\": 3}}, \"TXN_TYPE2\": 5, ...}"
 ```
 where TXN_TYPE1 and TXN_TYPE2 are ones from the list above. TXN_TYPE1 and TXN_TYPE2 MUST be different.
 Each tnx to send will be chosen randomly in proportion 3:5 of TXN_TYPE1 and TXN_TYPE2.

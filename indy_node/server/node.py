@@ -8,15 +8,13 @@ from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
     ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION
-from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.ledger import Ledger
-from plenum.common.messages.node_messages import Reply
-from plenum.common.txn_util import get_type, get_payload_data
+from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
     OPERATION
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
-from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
+from storage.helper import initKeyValueStorage
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
@@ -25,7 +23,6 @@ from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
-from storage.state_ts_store import StateTsDbStorage
 from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
@@ -41,7 +38,8 @@ logger = getlogger()
 
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_indy_keys"
-    _client_request_class = SafeRequest
+    client_request_class = SafeRequest
+    TxnUtilConfig.client_request_class = Request
     _info_tool_class = ValidatorNodeInfoTool
 
     def __init__(self,
@@ -104,6 +102,9 @@ class Node(PlenumNode, HasPoolManager):
 
     def initPoolManager(self, ha, cliname, cliha):
         HasPoolManager.__init__(self, ha, cliname, cliha)
+
+    def on_inconsistent_3pc_state(self):
+        self.getRestarter().requestRestart()
 
     def getPrimaryStorage(self):
         """
@@ -274,7 +275,7 @@ class Node(PlenumNode, HasPoolManager):
         if all(attr in msg.keys()
                for attr in [OPERATION, f.IDENTIFIER.nm, f.REQ_ID.nm]) \
                 and msg.get(OPERATION, {}).get(TXN_TYPE) == NODE_UPGRADE:
-            cls = self._client_request_class
+            cls = self.client_request_class
             cMsg = cls(**msg)
             return cMsg, frm
         else:
@@ -299,30 +300,8 @@ class Node(PlenumNode, HasPoolManager):
         c += self.restarter.service()
         return c
 
-    def processRequest(self, request: Request, frm: str):
-        if self.is_query(request.operation[TXN_TYPE]):
-            self.process_query(request, frm)
-            self.total_read_request_number += 1
-        elif self.is_action(request.operation[TXN_TYPE]):
-            self.process_action(request, frm)
-        else:
-            # forced request should be processed before consensus
-            if (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
-                self.configReqHandler.validate(request)
-                self.configReqHandler.applyForced(request)
-            # here we should have write transactions that should be processed
-            # pool_restart should not be written to ledger
-            # only on writable pool
-            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG]):
-                super().processRequest(request, frm)
-
-            else:
-                raise InvalidClientRequest(
-                    request.identifier,
-                    request.reqId,
-                    'Pool is in readonly mode, try again in 60 seconds')
+    def can_write_txn(self, txn_type):
+        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE, POOL_CONFIG]
 
     def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
                           txnRoot) -> List:
