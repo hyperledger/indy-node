@@ -104,6 +104,7 @@ class Node(PlenumNode, HasPoolManager):
         HasPoolManager.__init__(self, ha, cliname, cliha)
 
     def on_inconsistent_3pc_state(self):
+        logger.warning("Suspecting inconsistent 3PC state, going to restart")
         self.getRestarter().requestRestart()
 
     def getPrimaryStorage(self):
