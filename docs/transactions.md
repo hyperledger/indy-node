@@ -206,7 +206,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 
     NYM's alias.
 
-If there is no NYM transaction for the specified DID (`did`) yes, then this can be considered as the creation of a new DID.
+If there has not yet been a NYM transaction for the specified DID (`did`), then this can be considered the creation of a new DID.
 
 If there is already a NYM transaction with the specified DID (`did`),  then this is is considered an update of that DID.
 In this case we can specify only the values we would like to update. All unspecified values remain unchanged.
