@@ -151,20 +151,8 @@ class Agent(Motor, AgentNet):
                                  name, ha, clbk, *args)
 
     def sendMessage(self, msg, name: str = None, ha: Tuple = None):
-
-        def _send(msg):
-            nonlocal name, ha
-            self.endpoint.send(msg, name, ha)
-            logger.debug("Message sent (to -> {}): {}".format(ha, msg))
-
-        # TODO: if we call following isConnectedTo method by ha,
-        # there was a case it found more than one remote, so for now,
-        # I have changed it to call by remote name (which I am not sure
-        # fixes the issue), need to come back to this.
-        if not self.endpoint.isConnectedTo(name=name, ha=ha):
-            self.ensureConnectedToDest(name, ha, _send, msg)
-        else:
-            _send(msg)
+        self.endpoint.send(msg, name, ha)
+        logger.debug("Message sent (to -> {}): {}".format(ha, msg))
 
     def registerEventListener(self, eventName, listener):
         cur = self._eventListeners.get(eventName)

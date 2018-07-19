@@ -15,7 +15,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
@@ -356,7 +356,7 @@ class ClientMessageValidator(PClientMessageValidator):
 
 class SafeRequest(Request, ClientMessageValidator):
     def __init__(self, **kwargs):
-        ClientMessageValidator.__init__(self, operation_schema_is_strict=True,
-                                        schema_is_strict=False)
+        ClientMessageValidator.__init__(self,
+                                        operation_schema_is_strict=OPERATION_SCHEMA_IS_STRICT)
         self.validate(kwargs)
         Request.__init__(self, **kwargs)
