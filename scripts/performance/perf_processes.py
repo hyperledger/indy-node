@@ -83,6 +83,9 @@ parser.add_argument('--sep', default="|", type=str, required=False, dest='val_se
 parser.add_argument('-w', '--wallet_key', default="key", type=str, required=False, dest='wallet_key',
                     help='Wallet encryption key. Default value is "key"')
 
+parser.add_argument('-m', '--mode', default="p", choices=['p', 't'], required=False, dest='mode',
+                    help='Whether to create clients via processes or threads. Default "p"')
+
 
 class ClientStatistic:
     def __init__(self):
@@ -173,6 +176,13 @@ class ClientStatistic:
         return ret_val
 
 
+# Copied from Plenum
+def random_string(sz: int) -> str:
+    assert (sz > 0), "Expected random string size cannot be less than 1"
+    rv = libnacl.randombytes(sz // 2).hex()
+    return rv if sz % 2 == 0 else rv + hex(libnacl.randombytes_uniform(15))[-1]
+
+
 class RequestGenerator(metaclass=ABCMeta):
     def __init__(self, label: str = "", file_name: str = None, ignore_first_line: bool = True, file_sep: str = "|",
                  client_stat: ClientStatistic = None, **kwargs):
@@ -194,12 +204,6 @@ class RequestGenerator(metaclass=ABCMeta):
         return self._test_label
 
     # Copied from Plenum
-    def random_string(self, sz: int) -> str:
-        assert (sz > 0), "Expected random string size cannot be less than 1"
-        rv = libnacl.randombytes(sz // 2).hex()
-        return rv if sz % 2 == 0 else rv + hex(libnacl.randombytes_uniform(15))[-1]
-
-    # Copied from Plenum
     def rawToFriendly(self, raw):
         return base58.b58encode(raw).decode("utf-8")
 
@@ -207,7 +211,7 @@ class RequestGenerator(metaclass=ABCMeta):
         pass
 
     def _rand_data(self):
-        return self.random_string(32)
+        return random_string(32)
 
     def _from_file_str_data(self, file_str):
         req_id, req_json, reply_json = file_str.split(self._file_sep)
@@ -383,12 +387,12 @@ class RGDefinition(RGGetDefinition):
         self._default_schema_json = None
 
     def _rand_data(self):
-        return self.random_string(32)
+        return random_string(32)
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         self._wallet_handle = wallet_handle
         _, self._default_schema_json = await anoncreds.issuer_create_schema(
-            submitter_did, self.random_string(32), "1.0", json.dumps(["name", "age", "sex", "height"]))
+            submitter_did, random_string(32), "1.0", json.dumps(["name", "age", "sex", "height"]))
         schema_request = await ledger.build_schema_request(submitter_did, self._default_schema_json)
         resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, schema_request)
         resp = json.loads(resp)
@@ -419,7 +423,7 @@ class RGDefRevoc(RGDefinition):
         self._default_definition_id, self._default_definition_json =\
             await anoncreds.issuer_create_and_store_credential_def(
                 wallet_handle, submitter_did, self._default_schema_json,
-                self.random_string(32), "CL", json.dumps({"support_revocation": True}))
+                random_string(32), "CL", json.dumps({"support_revocation": True}))
         definition_request = await ledger.build_cred_def_request(submitter_did, self._default_definition_json)
         await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, definition_request)
 
@@ -476,7 +480,7 @@ class RGEntryRevoc(RGDefRevoc):
         self._blob_storage_reader_cfg_handle = await blob_storage.open_reader('default', tails_writer_config)
         self._default_revoc_reg_def_id, self._default_revoc_reg_def_json, self._default_revoc_reg_entry_json =\
             await anoncreds.issuer_create_and_store_revoc_reg(
-                wallet_handle, submitter_did, "CL_ACCUM", self.random_string(32),
+                wallet_handle, submitter_did, "CL_ACCUM", random_string(32),
                 json.loads(self._default_definition_json)['id'],
                 json.dumps({"max_cred_num": max_cred_num, "issuance_type": "ISSUANCE_ON_DEMAND"}),
                 tails_writer)
@@ -596,7 +600,7 @@ class LoadClient:
         self._gen_lim = bg_tasks // 2
         self._send_lim = bg_tasks // 2
         self._pipe_conn = pipe_conn
-        self._pool_name = "pool_{}".format(os.getpid())
+        self._pool_name = "pool_{}".format(random_string(24))
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
         self._pool_handle = None
@@ -635,7 +639,6 @@ class LoadClient:
         except Exception as ex:
             print("{} run_test error {}".format(self._name, ex))
             self._loop.stop()
-            raise ex
 
         self.gen_reqs()
 
@@ -961,6 +964,7 @@ class TestRunner:
         print("Value Separator          ", value_separator)
         print("Wallet Key               ", args.wallet_key)
         print("Started At               ", start_date)
+        print("Mode                     ", "processes" if args.mode == 'p' else "threads")
 
         self._value_separator = value_separator
 
@@ -969,7 +973,10 @@ class TestRunner:
         self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
         self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
 
-        executor = concurrent.futures.ProcessPoolExecutor(proc_count)
+        if args.mode == 'p':
+            executor = concurrent.futures.ProcessPoolExecutor(proc_count)
+        else:
+            executor = concurrent.futures.ThreadPoolExecutor(proc_count)
         for i in range(0, proc_count):
             rd, wr = multiprocessing.Pipe()
             prc_name = "LoadClient_{}".format(i)
@@ -980,7 +987,7 @@ class TestRunner:
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd)
 
-        print("Started", proc_count, "processes")
+        print("Started", proc_count, "clients")
 
         self._loop.run_forever()
 

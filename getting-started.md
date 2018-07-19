@@ -3,8 +3,6 @@
 
 ## A Developer Guide for an Implementation of the Indy Code Base
 
-**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](https://github.com/hyperledger/indy-node/blob/master/environment/vagrant/sandbox/DevelopmentEnvironment/Virtualbox/Vagrantfile) instead.
-
 ![logo](collateral/logos/indy-logo.png)
 
 * [Getting Started with Indy](#getting-started-with-indy)
@@ -59,8 +57,6 @@ For this guide, however, we’ll be using a command-line interface instead of an
 ## Install Indy
 
 You can install a test network in one of several ways:
-
- - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
 
  - **Docker:** [Start Pool and Client with Docker](environment/docker/pool/StartIndyAgents.md).
 

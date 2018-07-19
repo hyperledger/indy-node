@@ -185,7 +185,7 @@ class Upgrader(NodeMaintainer):
                     self, last_pool_upgrade_txn_cancel))
                 return
 
-            self.handleActionTxn(last_pool_upgrade_txn_start)
+            self.handleUpgradeTxn(last_pool_upgrade_txn_start)
 
     @property
     def didLastExecutedUpgradeSucceeded(self) -> bool:
@@ -203,7 +203,7 @@ class Upgrader(NodeMaintainer):
             return self.compareVersions(currentVersion, scheduledVersion) == 0
         return False
 
-    def handleActionTxn(self, txn) -> None:
+    def handleUpgradeTxn(self, txn) -> None:
         """
         Handles transaction of type POOL_UPGRADE
         Can schedule or cancel upgrade to a newer

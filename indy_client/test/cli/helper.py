@@ -87,6 +87,12 @@ def connect_and_check_output(do, netwotk, timeout=3, expect=None, mapper=None):
        expect=expect, mapper=mapper)
 
 
+def disconnect_and_check_output(do, timeout=3, expect=None, mapper=None):
+    if expect is None:
+        expect = 'Disconnected from'
+    do('disconnect', within=timeout, expect=expect, mapper=mapper)
+
+
 def ensureNymAdded(be, do, cli, nym, role=None):
     ensureConnectedToTestEnv(be, do, cli)
     cmd = "send NYM {dest}={nym}".format(dest=TARGET_NYM, nym=nym)
