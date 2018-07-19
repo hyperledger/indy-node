@@ -125,12 +125,12 @@ class ConfigReqHandler(LedgerRequestHandler):
             # If it is forced then it was handled earlier
             # in applyForced method.
             if not is_forced(txn):
-                self.upgrader.handleActionTxn(txn)
+                self.upgrader.handleUpgradeTxn(txn)
                 self.poolCfg.handleConfigTxn(txn)
         return committedTxns
 
     def applyForced(self, req: Request):
-        if req.isForced():
-            txn = reqToTxn(req)
-            self.upgrader.handleActionTxn(txn)
-            self.poolCfg.handleConfigTxn(txn)
+        super().applyForced(req)
+        txn = reqToTxn(req)
+        self.upgrader.handleUpgradeTxn(txn)
+        self.poolCfg.handleConfigTxn(txn)

@@ -175,4 +175,4 @@ class IdrCache(OptimisticKVStore):
             if nymData.get(VERKEY) is None:
                 return nymData[f.IDENTIFIER.nm]
             return nym
-        logger.error('Nym {} not found'.format(nym))
+        logger.info('Nym {} not found'.format(nym))
