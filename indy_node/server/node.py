@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+import dateutil.tz
+
 from typing import Iterable, List
 
 from indy_node.server.action_req_handler import ActionReqHandler
@@ -104,8 +107,12 @@ class Node(PlenumNode, HasPoolManager):
         HasPoolManager.__init__(self, ha, cliname, cliha)
 
     def on_inconsistent_3pc_state(self):
-        logger.warning("Suspecting inconsistent 3PC state, going to restart")
-        self.getRestarter().requestRestart()
+        timeout = self.config.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT
+        logger.warning("Suspecting inconsistent 3PC state, going to restart in {} seconds".format(timeout))
+
+        now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+        when = now + timedelta(seconds=timeout)
+        self.getRestarter().requestRestart(when)
 
     def getPrimaryStorage(self):
         """
