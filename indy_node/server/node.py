@@ -112,7 +112,7 @@ class Node(PlenumNode, HasPoolManager):
 
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
         when = now + timedelta(seconds=timeout)
-        self.getRestarter().requestRestart(when)
+        self.restarter.requestRestart(when)
 
     def getPrimaryStorage(self):
         """
