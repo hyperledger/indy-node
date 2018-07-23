@@ -15,7 +15,7 @@ from plenum.common.ledger import Ledger
 from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
     OPERATION
-from plenum.common.util import get_utc_epoch
+from plenum.common.util import get_utc_datetime
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
 from storage.helper import initKeyValueStorage
@@ -111,7 +111,7 @@ class Node(PlenumNode, HasPoolManager):
         timeout = self.config.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT
         logger.warning("Suspecting inconsistent 3PC state, going to restart in {} seconds".format(timeout))
 
-        now = get_utc_epoch()
+        now = get_utc_datetime()
         when = now + timedelta(seconds=timeout)
         self.restarter.requestRestart(when)
 
