@@ -82,6 +82,7 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
         _cancelScheduledAction
 
         """
+        logger.trace("{} unscheduling actions".format(self))
         self.aqStash = deque()
         self.scheduledAction = None
 

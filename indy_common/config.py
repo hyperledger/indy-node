@@ -102,3 +102,5 @@ agentLoggingLevel = logging.INFO
 default logging level for node
 '''
 logLevel = logging.INFO
+
+INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
