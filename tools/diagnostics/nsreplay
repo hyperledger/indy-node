@@ -111,7 +111,7 @@ class NodeStateReplayer:
         if replay_dir:
             path = os.path.abspath(replay_dir)
             os.makedirs(path, exist_ok=True)
-            self.replay_dir = replay_dir
+            self.replay_dir = path
         logger.debug("Initializing NodeStateReplayer...")
 
     # TODO: Promote code reuse between nscapture, nsreplay, and nsdiff.
@@ -294,30 +294,33 @@ class NodeStateReplayer:
         self.unpack_recording(s1)
         node_name = self.s1_name
 
-        # Hardcode pool name. We just need an arbitrary pool name to use during
-        # replay.
-        pool_name = 'sandbox'
-
         if self.replay_dir:
             replay_node_dir = self.replay_dir
         else:
             replay_node_dir = tempfile.TemporaryDirectory().name
 
-        logger.info("Replay node directory {}".format(
-            replay_node_dir))
-        # with tempfile.TemporaryDirectory() as replay_node_dir:
+        logger.info("Replay node directory {}".format(replay_node_dir))
+
+        orig_node_pool_dir = self.s1dir
+
         general_config_dir = create_config_dirs(replay_node_dir)
+
+        recording_config_path = join(orig_node_pool_dir, 'config')
+        for filename in os.listdir(recording_config_path):
+            if os.path.isfile(join(recording_config_path, filename)):
+                shutil.copy(join(recording_config_path, filename), general_config_dir)
+
         config = getConfig(general_config_dir)
         self.update_loaded_config(config)
-        pool_dir = join(replay_node_dir, pool_name)
-        orig_node_pool_dir = self.s1dir
+
+        pool_name = config.NETWORK_NAME
 
         # strip left '/' for proper path join
         app_dir = join(replay_node_dir, get_system_dirs().NODE_INFO_DIR.lstrip('/'))
         pool_dir = join(app_dir, pool_name)
         orig_node_data_dir = join(orig_node_pool_dir, 'data')
         makedirs(pool_dir, exist_ok=True)
-        # shutil.copytree(src_etc_dir, trg_etc_dir)
+
         for file in listdir(orig_node_pool_dir):
             if file.endswith('.json') or file.endswith('_genesis'):
                 shutil.copy(join(orig_node_pool_dir, file), pool_dir)
