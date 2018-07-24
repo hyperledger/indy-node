@@ -86,6 +86,9 @@ parser.add_argument('-w', '--wallet_key', default="key", type=str, required=Fals
 parser.add_argument('-m', '--mode', default="p", choices=['p', 't'], required=False, dest='mode',
                     help='Whether to create clients via processes or threads. Default "p"')
 
+parser.add_argument('-p', '--pool_config', default="", type=str, required=False, dest='pool_config',
+                    help='Configuration of pool as JSON. The value will be passed to open_pool call. Default value is empty')
+
 
 class ClientStatistic:
     def __init__(self):
@@ -665,7 +668,7 @@ def create_req_generator(req_kind_arg):
 
 
 class LoadClient:
-    def __init__(self, name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh):
+    def __init__(self, name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh, pool_config):
         self._name = name
         self._refresh = refresh
         self._stat = ClientStatistic()
@@ -692,6 +695,7 @@ class LoadClient:
         assert self._req_generator is not None
         self._rest_to_sent = batch_size
         self._generated_cnt = 0
+        self._pool_config = pool_config if isinstance(pool_config, dict) and pool_config else None
 
     async def run_test(self, genesis_path, seed, w_key):
         try:
@@ -701,7 +705,7 @@ class LoadClient:
             await pool.set_protocol_version(2)
 
             await pool.create_pool_ledger_config(self._pool_name, pool_cfg)
-            self._pool_handle = await pool.open_pool_ledger(self._pool_name, None)
+            self._pool_handle = await pool.open_pool_ledger(self._pool_name, self._pool_config)
             self._wallet_name = "{}_wallet".format(self._pool_name)
             wallet_credential = json.dumps({"key": w_key})
             wallet_config = json.dumps({"id": self._wallet_name})
@@ -858,7 +862,8 @@ class LoadClient:
                 shutil.rmtree(d, ignore_errors=True)
 
 
-def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout, req_kind, bg_tasks, refresh, wallet_key):
+def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout,
+               req_kind, bg_tasks, refresh, wallet_key, pool_config):
     cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh)
     try:
         asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
@@ -1048,6 +1053,15 @@ class TestRunner:
         print("Started At               ", start_date)
         print("Mode                     ", "processes" if args.mode == 'p' else "threads")
 
+        pool_config = None
+        if args.pool_config:
+            try:
+                pool_config = json.loads(args.pool_config)
+            except Exception as ex:
+                raise RuntimeError("pool_config param is ill-formed JSON: {}".format(ex))
+
+        print("Pool config              ", pool_config)
+
         self._value_separator = value_separator
 
         self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")))
@@ -1062,9 +1076,8 @@ class TestRunner:
         for i in range(0, proc_count):
             rd, wr = multiprocessing.Pipe()
             prc_name = "LoadClient_{}".format(i)
-            prc = executor.submit(run_client, prc_name, args.genesis_path, wr,
-                                  args.seed, args.batch_size, args.batch_timeout,
-                                  args.req_kind, bg_tasks, refresh, args.wallet_key)
+            prc = executor.submit(run_client, prc_name, args.genesis_path, wr, args.seed, args.batch_size,
+                                  args.batch_timeout, args.req_kind, bg_tasks, refresh, args.wallet_key, pool_config)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd)

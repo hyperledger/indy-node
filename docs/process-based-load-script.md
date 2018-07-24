@@ -73,6 +73,8 @@ Note: At the moment revoc_reg_entry requests could be used only with batch size 
 '-m', '--mode' : Specifies the way each client will be run with. It could be a process - 'p' or thread - 't'.
 Default value is 'p''.
 
+'-p', '--pool_config' : Pool config in form of JSON. The value will be passed to open_pool_ledger call. Default value is empty. Parameters description depends on libindy version and could be found in official sdk documentation.
+
 ## Transaction data
 Each txn can read predefined data from file or generate random data.
 Default mode for each txn is to generate random data.
