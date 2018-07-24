@@ -75,6 +75,32 @@ codebase.
 
 **Other Notes**
 
+When using nsdiff to compare a node and it's replayed state, you will be required to do the following:
+
+1. Run nscapture on a node. This will produce a ```*.tar.gz``` file.
+
+```bash
+$ nscapture
+```
+
+2. Run nsreplay on the Node State Archive (```*.tar.gz```) captured in step 1, explicitly defining an output directory in which to write replayed state. Note that nsreplay does not have to be run on the node where the Node State Archive was captured. An equivalent development environment with compatible versions of indy-node, indy-plenum, etc. is recommended, because you will also have visual debug tools available (i.e. PyCharm)
+
+```bash
+$ nsreplay -o <OUTPUT_DIR> <step 1 *.tar.gz>
+```
+
+3. Run nscapture with step 2 ```<OUTPUT_DIR>``` as the ROOT_DIR to capture the replayed state. This will create another ```*.tar.gz```
+
+```bash
+$ nscapture -r <step 2 OUTPUT_DIR>
+```
+
+4. nsdiff the two Node State Archives
+
+```bash
+$ nsdiff <step 1 *.tar.gz> <step 3 *.tar.gz>
+```
+
 # Workflow
 The following is a simple but hopefully a common workflow for using these tools.
 ## Steps
