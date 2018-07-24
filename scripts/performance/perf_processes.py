@@ -695,7 +695,7 @@ class LoadClient:
         assert self._req_generator is not None
         self._rest_to_sent = batch_size
         self._generated_cnt = 0
-        self._pool_config = pool_config if isinstance(pool_config, dict) and pool_config else None
+        self._pool_config = json.dumps(pool_config) if isinstance(pool_config, dict) and pool_config else None
 
     async def run_test(self, genesis_path, seed, w_key):
         try:
