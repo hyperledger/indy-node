@@ -11,7 +11,7 @@
     * libindy >= 1.4.0~626 (master repo)
 
 * python lib
-    * python3-indy >= 1.4.0.dev626
+    * python3-indy >= 1.5.0.dev626
     * libnacl == 1.6.1
     
 ## Parameters description
