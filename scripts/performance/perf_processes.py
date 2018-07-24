@@ -184,6 +184,8 @@ def random_string(sz: int) -> str:
 
 
 class RequestGenerator(metaclass=ABCMeta):
+    _req_types = []
+
     def __init__(self, label: str = "",
                  file_name: str = None, ignore_first_line: bool = True,
                  file_sep: str = "|", file_max_split: int = 2, file_field: int = 2,
@@ -220,7 +222,9 @@ class RequestGenerator(metaclass=ABCMeta):
     def _from_file_str_data(self, file_str):
         line_vals = file_str.split(self._file_sep, maxsplit=self._file_max_split)
         if self._file_field < len(line_vals):
-            return line_vals[self._file_field]
+            tmp = json.loads(line_vals[self._file_field])
+            if self._req_types and (self.get_type_field(tmp) in self._req_types):
+                return tmp
         return None
 
     def _gen_req_data(self):
@@ -257,6 +261,17 @@ class RequestGenerator(metaclass=ABCMeta):
 
     async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
         pass
+
+    def get_txn_field(self, txn_dict):
+        tmp = txn_dict or {}
+        return tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})
+
+    def get_type_field(self, txn_dict):
+        return self.get_txn_field(txn_dict).get('type', None)
+
+    def get_txnid_field(self, txn_dict):
+        tmp = txn_dict or {}
+        return (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
 
 
 class RGSeqReqs(RequestGenerator):
@@ -310,6 +325,8 @@ class RGSeqReqs(RequestGenerator):
 
 
 class RGNym(RequestGenerator):
+    _req_types = ["1", "105"]
+
     def _rand_data(self):
         raw = libnacl.randombytes(16)
         req_did = self.rawToFriendly(raw)
@@ -317,12 +334,7 @@ class RGNym(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        if req_json is None:
-            return None
-        tmp = json.loads(req_json)
-        txn = tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})
-        if txn.get('type', None) not in ["1", "105"]:
-            return None
+        txn = self.get_txn_field(req_json)
         return txn.get('data', {}).get('dest', None)
 
     async def _gen_req(self, submit_did, req_data):
@@ -335,6 +347,8 @@ class RGGetNym(RGNym):
 
 
 class RGSchema(RequestGenerator):
+    _req_types = ["101", "107"]
+
     async def _gen_req(self, submit_did, req_data):
         _, schema_json = await anoncreds.issuer_create_schema(submit_did, req_data,
                                                               "1.0", json.dumps(["name", "age", "sex", "height"]))
@@ -343,14 +357,7 @@ class RGSchema(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        if req_json is None:
-            return None
-        tmp = json.loads(req_json)
-        txn_type = (tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})).get('type', None)
-        if txn_type not in ["101", "107"]:
-            return None
-        schema_id = (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
-        return schema_id
+        return self.get_txnid_field(req_json)
 
 
 class RGGetSchema(RGSchema):
@@ -369,6 +376,8 @@ class RGGetSchema(RGSchema):
 
 
 class RGAttrib(RequestGenerator):
+    _req_types = ["100", "104"]
+
     async def _gen_req(self, submit_did, req_data):
         raw_attr = json.dumps({req_data: req_data})
         attr_request = await ledger.build_attrib_request(submit_did, submit_did, None, raw_attr, None)
@@ -376,12 +385,7 @@ class RGAttrib(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        if req_json is None:
-            return None
-        tmp = json.loads(req_json)
-        txn = tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})
-        if txn.get('type', None) not in ["100", "104"]:
-            return None
+        txn = self.get_txn_field(req_json)
         return txn.get('data', {}).get('raw', None)
 
 
@@ -392,6 +396,8 @@ class RGGetAttrib(RGAttrib):
 
 
 class RGGetDefinition(RequestGenerator):
+    _req_types = ["102", "108"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._submitter_did = None
@@ -407,14 +413,7 @@ class RGGetDefinition(RequestGenerator):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        if req_json is None:
-            return None
-        tmp = json.loads(req_json)
-        txn_type = (tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})).get('type', None)
-        if txn_type not in ["102", "108"]:
-            return None
-        cred_def_id = (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
-        return cred_def_id
+        return self.get_txnid_field(req_json)
 
     async def _gen_req(self, submit_did, req_data):
         if self._data_file is not None:
@@ -464,6 +463,8 @@ class RGDefinition(RGGetDefinition):
 
 
 class RGDefRevoc(RGDefinition):
+    _req_types = ["113", "115"]
+
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
         dr = await ledger.build_cred_def_request(submitter_did, json.dumps(self._default_definition_json))
@@ -479,14 +480,7 @@ class RGDefRevoc(RGDefinition):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        if req_json is None:
-            return None
-        tmp = json.loads(req_json)
-        txn_type = (tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})).get('type', None)
-        if txn_type not in ["113", "115"]:
-            return None
-        cred_def_id = (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
-        return cred_def_id
+        return self.get_txnid_field(req_json)
 
 
 class RGGetDefRevoc(RGDefRevoc):
@@ -509,6 +503,8 @@ class RGGetDefRevoc(RGDefRevoc):
 
 
 class RGEntryRevoc(RGDefRevoc):
+    _req_types = ["114", "116", "117"]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._default_revoc_reg_def_id = None
@@ -578,14 +574,7 @@ class RGEntryRevoc(RGDefRevoc):
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
-        if req_json is None:
-            return None
-        tmp = json.loads(req_json)
-        txn_type = (tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})).get('type', None)
-        if txn_type not in ["114", "116", "117"]:
-            return None
-        cred_def_id = (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
-        return cred_def_id
+        return self.get_txnid_field(req_json)
 
 
 class RGGetEntryRevoc(RGEntryRevoc):

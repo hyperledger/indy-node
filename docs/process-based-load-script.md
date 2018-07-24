@@ -68,7 +68,7 @@ Supported txns:
 * get_revoc_reg - Get revocation registry entry
 * get_revoc_reg_delta - Get revocation registry delta
 
-Note: At the moment revoc_reg_entry requests could be used only with batch size equal to 1.
+Note: At the moment revoc_reg_entry requests could be used only with batch size equal to 1. After each entry write request revoc registery is recreated. So each entry req generates 3 request to ledger in total.
 
 '-m', '--mode' : Specifies the way each client will be run with. It could be a process - 'p' or thread - 't'.
 Default value is 'p''.
