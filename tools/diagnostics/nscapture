@@ -24,7 +24,7 @@ ENV_COLLECTION_CMD = [
     ("python_version", ['python3', '-V']),
     ("pip_freeze", ['pip3', 'freeze']),
     ("app_install", ['apt', 'list', '--installed']),
-    ("validator_info", ['validator-info', '-v']),
+    ("validator_info", ['validator-info', '-v', '--json']),
 ]
 
 DEFAULT_ROOT_DIR = '/'

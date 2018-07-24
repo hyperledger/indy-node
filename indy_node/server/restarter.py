@@ -127,7 +127,7 @@ class Restarter(NodeMaintainer):
         :param when: restart time
         """
         assert isinstance(when, (str, datetime))
-        logger.info("{}'s restartr processing restart"
+        logger.info("{}'s restarter processing restart"
                     .format(self))
         if isinstance(when, str):
             when = dateutil.parser.parse(when)

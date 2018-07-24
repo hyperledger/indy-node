@@ -3,8 +3,10 @@ import pytest
 import logging
 
 from indy_common import strict_types
+from indy_common.config import GENERAL_CONFIG_FILE
 from indy_common.config_util import getConfig
 from indy_common.txn_util import getTxnOrderedFields
+from indy_node.general_config import ubuntu_platform_config, windows_platform_config, general_config
 from indy_node.server.config_helper import create_config_dirs
 from stp_core.common.log import getlogger
 from indy_common.config_helper import ConfigHelper, NodeConfigHelper
@@ -30,8 +32,32 @@ def node_config_helper_class():
     return NodeConfigHelper
 
 
+def _populate_config_file(config_file, platform='ubuntu'):
+    if platform == 'ubuntu':
+        platform_config = ubuntu_platform_config
+    elif platform == 'windows':
+        platform_config = windows_platform_config
+    else:
+        raise RuntimeError('Unknown platform {}. Cannot load config'.format(platform))
+
+    with open(general_config.__file__, 'r') as general_config_file:
+        lines = general_config_file.readlines()
+        with open(platform_config.__file__, 'r') as platform_config_file:
+            with open(config_file,
+                      'w') as general_config_result_file:
+                for line in lines:
+                    if line.startswith('NETWORK_NAME'):
+                        line = 'NETWORK_NAME = \'sandbox\'\n'
+                    general_config_result_file.write(line)
+                general_config_result_file.write(
+                    platform_config_file.read())
+
+
 def _general_conf_tdir(tmp_dir):
-    return create_config_dirs(tmp_dir)
+    cdir = create_config_dirs(tmp_dir)
+    config_file = os.path.join(cdir, GENERAL_CONFIG_FILE)
+    _populate_config_file(config_file)
+    return cdir
 
 
 @pytest.fixture(scope='module')
