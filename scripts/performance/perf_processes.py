@@ -864,7 +864,7 @@ class LoadClient:
 
 def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout,
                req_kind, bg_tasks, refresh, wallet_key, pool_config):
-    cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh)
+    cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh, pool_config)
     try:
         asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
         cln._loop.run_forever()
