@@ -104,3 +104,6 @@ default logging level for node
 logLevel = logging.INFO
 
 INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
+
+#Top level packet to be updated via pool upgrade command
+UPGRADE_ENTRY = 'indy-node'
