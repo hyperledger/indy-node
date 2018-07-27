@@ -46,7 +46,6 @@ class NodeControlTool:
 
         assert self.config.UPGRADE_ENTRY
         self.ext_upgrade = self.config.UPGRADE_ENTRY not in PACKAGES_TO_HOLD
-        self._update_package_cache()
 
         self.test_mode = test_mode
         self.timeout = timeout or TIMEOUT
@@ -57,8 +56,8 @@ class NodeControlTool:
 
         self.tmp_dir = TMP_DIR
         self.backup_format = backup_format
-        self.ext_ver, ext_deps = self._ext_info()
-        self.deps = ext_deps + deps
+        self.ext_ver = None
+        self.deps = deps
 
         _files_to_preserve = [self.config.lastRunVersionFile, self.config.nextVersionFile,
                               self.config.upgradeLogFile, self.config.lastVersionFilePath,
@@ -70,8 +69,7 @@ class NodeControlTool:
         _backup_name_prefix = '{}_backup_'.format(self.config.NETWORK_NAME)
 
         self.backup_name_prefix = backup_name_prefix or _backup_name_prefix
-        holds = set([self.config.UPGRADE_ENTRY] + ext_deps + ("{} {}".format(PACKAGES_TO_HOLD, hold_ext)).split(" "))
-        self.packages_to_hold = ' '.join(list(holds))
+        self.packages_to_hold = ' '.join([PACKAGES_TO_HOLD, hold_ext])
 
         # Create a TCP/IP socket
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -87,6 +85,14 @@ class NodeControlTool:
 
         # Listen for incoming connections
         self.server.listen(1)
+
+    def _ext_init(self):
+        self.ext_upgrade = self.config.UPGRADE_ENTRY not in PACKAGES_TO_HOLD
+        self._update_package_cache()
+        self.ext_ver, ext_deps = self._ext_info()
+        self.deps = ext_deps + self.deps
+        holds = set([self.config.UPGRADE_ENTRY] + ext_deps + self.packages_to_hold.split(" "))
+        self.packages_to_hold = ' '.join(list(holds))
 
     @classmethod
     def _get_ext_info(cls, package):
@@ -322,6 +328,7 @@ class NodeControlTool:
                               timeout=timeout)
 
     def start(self):
+        self._ext_init()
         self._hold_packages()
 
         # Sockets from which we expect to read
