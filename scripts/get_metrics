@@ -1,0 +1,159 @@
+#! /usr/bin/env python3
+"""
+Convenience script for gathering metrics data
+
+"""
+import argparse
+import logging
+import os
+import shutil
+from datetime import datetime
+
+from indy_common.config_util import getConfig
+from plenum.common.constants import KeyValueStorageType
+from plenum.common.metrics_collector import KvStoreMetricsFormat, MetricsType
+from plenum.common.metrics_stats import MetricsStats
+from storage.helper import initKeyValueStorage
+
+logging.root.handlers = []
+logger = logging.getLogger()
+logger.propagate = False
+logger.disabled = True
+
+
+def read_args():
+    parser = argparse.ArgumentParser(description="Process metrics")
+
+    parser.add_argument('--node_name', required=False, help="Node's name")
+    parser.add_argument('--network', required=False, help="Network name to read ledger from")
+
+    parser.add_argument(
+        '--frm',
+        type=datetime,
+        required=False,
+        default=None,
+        help="process all metrics starting from given timestamp (beginning by default)")
+    parser.add_argument(
+        '--to',
+        type=datetime,
+        required=False,
+        default=None,
+        help="process all metrics till given timestamp (end by default)")
+
+    return parser.parse_args()
+
+
+def get_data_dir(node_name=None, network=None):
+    config = getConfig()
+    _network = network if network else config.NETWORK_NAME
+    data_dir = os.path.join(config.LEDGER_DIR, _network, 'data')
+
+    if not os.path.exists(data_dir):
+        print("No such file or directory: {}".format(data_dir))
+        print("Please check, that network: '{}' was used ".format(_network))
+        exit()
+
+    if not node_name:
+        dirs = os.listdir(data_dir)
+        if len(dirs) == 0:
+            print("Node's 'data' folder not found: {}".format(data_dir))
+            exit()
+        node_name = dirs[0]
+
+    return os.path.join(data_dir, node_name)
+
+
+def make_copy_of_data(data_dir):
+    read_copy_data_dir = data_dir + '-read-copy'
+    if os.path.exists(read_copy_data_dir):
+        shutil.rmtree(read_copy_data_dir)
+    shutil.copytree(data_dir, read_copy_data_dir)
+    return read_copy_data_dir
+
+
+if __name__ == '__main__':
+    args = read_args()
+    config = getConfig()
+
+    data_dir = get_data_dir(args.node_name, args.network)
+    data_is_copied = False
+    try:
+        if config.METRICS_KV_STORAGE != KeyValueStorageType.Rocksdb
+            data_dir = make_copy_of_data(data_dir)
+            data_is_copied = True
+
+        storage = initKeyValueStorage(
+                    config.METRICS_KV_STORAGE,
+                    data_dir,
+                    config.METRICS_KV_DB_NAME)
+
+        stats = MetricsStats()
+
+        for k, v in storage.iterator():
+            id, ts = KvStoreMetricsFormat.decode_key(k)
+            if args.frm is not None and ts < args.frm:
+                continue
+            if args.to is not None and ts > args.frm:
+                continue
+            stats.add(id, KvStoreMetricsFormat.decode_value(v))
+
+        print("Number of node messages processed in one looper run:")
+        print("   {}".format(stats.get(MetricsType.NODE_STACK_MESSAGES_PROCESSED)))
+        print("")
+
+        print("Number of client messages processed in one looper run:")
+        print("   {}".format(stats.get(MetricsType.CLIENT_STACK_MESSAGES_PROCESSED)))
+        print("")
+
+        print("Seconds passed between looper runs:")
+        print("   {}".format(stats.get(MetricsType.LOOPER_RUN_TIME_SPENT)))
+        print("")
+
+        print("Number of requests in one 3PC batch:")
+        print("   {}".format(stats.get(MetricsType.THREE_PC_BATCH_SIZE)))
+        print("")
+
+        print("Number of messages in one tranport batch:")
+        print("   {}".format(stats.get(MetricsType.TRANSPORT_BATCH_SIZE)))
+        print("")
+
+        print("Incoming node message size, bytes:")
+        print("   {}".format(stats.get(MetricsType.INCOMING_NODE_MESSAGE_SIZE)))
+        print("")
+
+        print("Outgoing node message size, bytes:")
+        print("   {}".format(stats.get(MetricsType.OUTGOING_NODE_MESSAGE_SIZE)))
+        print("")
+
+        print("Incoming client message size, bytes:")
+        print("   {}".format(stats.get(MetricsType.INCOMING_CLIENT_MESSAGE_SIZE)))
+        print("")
+
+        print("Outgoing client message size, bytes:")
+        print("   {}".format(stats.get(MetricsType.OUTGOING_CLIENT_MESSAGE_SIZE)))
+        print("")
+
+        print("Additional statistics:")
+        three_pc = stats.get(MetricsType.THREE_PC_BATCH_SIZE)
+        node_in = stats.get(MetricsType.INCOMING_NODE_MESSAGE_SIZE)
+        node_out = stats.get(MetricsType.OUTGOING_NODE_MESSAGE_SIZE)
+        client_in = stats.get(MetricsType.INCOMING_CLIENT_MESSAGE_SIZE)
+        client_out = stats.get(MetricsType.OUTGOING_CLIENT_MESSAGE_SIZE)
+        node_messages = node_in.count + node_out.count
+        node_traffic = node_in.sum + node_out.sum
+        client_messages = (client_in.count + client_out.count)
+        client_traffic = (client_in.sum + client_out.sum)
+        print("   Node incoming/outgoing: {} messages, {} traffic"
+              .format(node_in.count/node_out.count, node_in.sum/node_out.sum))
+        print("   Client incoming/outgoing: {} messages, {} traffic"
+              .format(client_in.count/client_out.count, client_in.sum/client_out.sum))
+        print("   Node/client: {} messages, {} traffic"
+              .format(node_messages / client_messages, node_traffic / client_traffic)
+        print("   Node messages per batch: {}".format(node_messages / three_pc.count))
+        print("   Node traffic per batch: {}".format(node_traffic / three_pc.count))
+        print("   Node messages per request: {}".format(node_messages / three_pc.sum))
+        print("   Node traffic per request: {}".format(node_traffic / three_pc.sum))
+
+    finally:
+        if data_is_copied:
+            shutil.rmtree(data_dir)
