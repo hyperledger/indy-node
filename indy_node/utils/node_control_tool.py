@@ -44,7 +44,7 @@ class NodeControlTool:
             config=None):
         self.config = config or getConfig()
 
-        assert self.config.UPGRADE_ENTRY
+        assert self.config.UPGRADE_ENTRY, "UPGRADE_ENTRY config parameter must be set"
         self.ext_upgrade = self.config.UPGRADE_ENTRY not in PACKAGES_TO_HOLD
 
         self.test_mode = test_mode
