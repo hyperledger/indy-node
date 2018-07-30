@@ -1,7 +1,7 @@
 # setup environment
 - pool create AS-0301-anchor gen_txn_file=./pool_transactions_genesis
 pool connect AS-0301-anchor
-- wallet create AS-03-wallet-anchor pool_name=AS-0301-anchor key=testkey
+- wallet create AS-03-wallet-anchor key=testkey storage_config={"pool":"AS-0301-anchor"}
 wallet open AS-03-wallet-anchor key=testkey
 # setup section
 did new seed=000000000000000000000000Trustee1 metadata="Default Trustee"
