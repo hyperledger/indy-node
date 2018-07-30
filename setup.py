@@ -56,7 +56,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.5.479',
+    install_requires=['indy-plenum-dev==1.5.481',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator==0.4.0'],
@@ -72,6 +72,7 @@ setup(
              'scripts/start_node_control_tool',
              'scripts/clear_node.py',
              'scripts/get_keys',
+             'scripts/get_metrics',
              'scripts/generate_indy_pool_transactions',
              'scripts/init_indy_keys',
              'scripts/upgrade_indy_node_ubuntu1604.sh',
