@@ -6,8 +6,8 @@ from plenum.test.helper import randomText
 m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
 
-def testNodeControlResolvesDependencies(monkeypatch):
-    nct = NodeControlTool()
+def testNodeControlResolvesDependencies(monkeypatch, tconf):
+    nct = NodeControlTool(config=tconf)
     node_package = ('indy-node', '0.0.1')
     anoncreds_package = ('indy-anoncreds', '0.0.2')
     plenum_package = ('indy-plenum', '0.0.3')
