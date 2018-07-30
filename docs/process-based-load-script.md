@@ -8,10 +8,10 @@
 ## Requirements
 
 * native libs
-    * libindy >= 1.4.0~588 (master repo)
+    * libindy >= 1.4.0~626 (master repo)
 
 * python lib
-    * python3-indy >= 1.4.0.dev588
+    * python3-indy >= 1.5.0.dev626
     * libnacl == 1.6.1
     
 ## Parameters description
@@ -68,8 +68,12 @@ Supported txns:
 * get_revoc_reg - Get revocation registry entry
 * get_revoc_reg_delta - Get revocation registry delta
 
+Note: At the moment revoc_reg_entry requests could be used only with batch size equal to 1. After each entry write request revoc registery is recreated. So each entry req generates 3 request to ledger in total.
+
 '-m', '--mode' : Specifies the way each client will be run with. It could be a process - 'p' or thread - 't'.
 Default value is 'p''.
+
+'-p', '--pool_config' : Pool config in form of JSON. The value will be passed to open_pool_ledger call. Default value is empty. Parameters description depends on libindy version and could be found in official sdk documentation.
 
 ## Transaction data
 Each txn can read predefined data from file or generate random data.
@@ -97,6 +101,10 @@ Parameters for data file processing
 'file_sep' - csv separator, default is "|".
 
 'label' - name of the txn configuration in "total" result file, default is the txn name.
+
+'file_max_split' - max number of splits to be done with 'file_sep' separator. Default is 2.
+
+'file_field' - split number to be used to run test with. Default is 2.
 
 
 ## Examples
@@ -165,3 +173,14 @@ python3 perf_processes.py -k "{\"test_1\": {\"TXN_TYPE1\":{\"count\": 3, \"file_
 ```
 where TXN_TYPE1 and TXN_TYPE2 are ones from the list above. TXN_TYPE1 met twice.
 Each tnx to send will be chosen randomly in proportion 3:5:7 of TXN_TYPE1 with file1 and TXN_TYPE1 with file2 and TXN_TYPE2.
+
+At the moment two types of files supported: "succesfull" and "read ledger".
+"successful" file format is default one, so providing "file_name" only is enough. Example with all settings shown below
+```
+python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", \"file_max_split\": 2, \"file_field\": 2, \"ignore_first_line\": true, \"file_sep\": \"|\"}}"
+```
+
+"read ledger" file is the output of the command read_ledger. Test settings shown below
+```
+python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", \"file_max_split\": 1, \"file_field\": 1, \"ignore_first_line\": false, \"file_sep\": \" \"}}"
+```

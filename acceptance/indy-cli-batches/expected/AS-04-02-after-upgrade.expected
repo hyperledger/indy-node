@@ -37,7 +37,7 @@ ledger get-schema did=V4SGRU86Z58d6TV7PBUe6f name=Degree version=1.0
 | Degree | 1.0     | "postgrad","first_name","last_name","birth_date","undergrad","expiry_date" |
 +--------+---------+----------------------------------------------------------------------------+
 
-ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f
+ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f tag="1"
 [1;32mFollowing Credential Definition has been received.[0m
 [1;32mMetadata:[0m
 +------------------------+-----------------+---------------------+---------------------+
