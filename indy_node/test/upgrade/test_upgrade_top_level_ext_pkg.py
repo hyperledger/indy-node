@@ -1,19 +1,19 @@
 import pytest
 from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
     nodeControlGeneralMonkeypatching
+from indy_node.utils.node_control_tool import DEPS, PACKAGES_TO_HOLD
 
 
 EXT_PKT_VERSION = '7.88.999'
 EXT_PKT_NAME = 'SomeTopLevelPkt'
-EXT_PKT_DEPS = ['aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg', 'hh']
+EXT_PKT_DEPS = ['aa0', 'bb1', 'cc2', 'dd3', 'ee4', 'ff5', 'gg6', 'hh7']
 PACKAGE_MNG_EXT_PTK_OUTPUT = "Package: {}\nStatus: install ok installed\nPriority: extra\nSection: default\n" \
                              "Installed-Size: 21\nMaintainer: EXT_PKT_NAME-fond\nArchitecture: amd64\nVersion: {}\n" \
                              "Depends: {}, {} (= 1.1.1), {} (< 1.1.1), {} (<= 1.1.1), {} (> 1.1.1), {} (>= 1.1.1)," \
                              " {} (<< 1.1.1), {} (>> 1.1.1)\nDescription: EXT_PKT_DEPS-desc\n" \
                              "License: EXT_PKT_DEPS-lic\nVendor: none\n".\
-    format(EXT_PKT_NAME, EXT_PKT_VERSION, EXT_PKT_DEPS[0], EXT_PKT_DEPS[1],
-           EXT_PKT_DEPS[2], EXT_PKT_DEPS[3], EXT_PKT_DEPS[4], EXT_PKT_DEPS[5],
-           EXT_PKT_DEPS[6], EXT_PKT_DEPS[7], EXT_PKT_DEPS[7])
+    format(EXT_PKT_NAME, EXT_PKT_VERSION, EXT_PKT_DEPS[0], EXT_PKT_DEPS[1], EXT_PKT_DEPS[2],
+           EXT_PKT_DEPS[3], EXT_PKT_DEPS[4], EXT_PKT_DEPS[5], EXT_PKT_DEPS[6], EXT_PKT_DEPS[7])
 
 
 @pytest.fixture(scope="module")
@@ -31,5 +31,11 @@ def test_upg_ext_info(tdir, monkeypatch, tconf):
     nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
         assert EXT_PKT_VERSION, EXT_PKT_DEPS == nct.tool._ext_info()
+        nct.tool._ext_init()
+        assert nct.tool.ext_upgrade is True
+        assert nct.tool.ext_ver == EXT_PKT_VERSION
+        assert nct.tool.deps == EXT_PKT_DEPS + DEPS
+        hlds = set([EXT_PKT_NAME] + EXT_PKT_DEPS + DEPS + (PACKAGES_TO_HOLD.strip(" ")).split(" "))
+        assert nct.tool.packages_to_hold.strip(" ") == " ".join(list(hlds))
     finally:
         nct.stop()
