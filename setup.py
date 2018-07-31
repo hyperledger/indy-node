@@ -72,6 +72,7 @@ setup(
              'scripts/start_node_control_tool',
              'scripts/clear_node.py',
              'scripts/get_keys',
+             'scripts/get_metrics',
              'scripts/generate_indy_pool_transactions',
              'scripts/init_indy_keys',
              'scripts/upgrade_indy_node_ubuntu1604.sh',
