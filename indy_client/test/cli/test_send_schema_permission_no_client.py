@@ -4,6 +4,7 @@ import pytest
 from indy.anoncreds import issuer_create_schema
 from indy.ledger import build_schema_request
 
+from indy_common.auth import Authoriser
 from plenum.common.exceptions import RequestRejectedException
 
 from plenum.test.helper import sdk_get_bad_response, sdk_sign_and_submit_req, sdk_get_and_check_replies
@@ -11,12 +12,15 @@ from plenum.test.helper import sdk_get_bad_response, sdk_sign_and_submit_req, sd
 
 @pytest.fixture(scope="module")
 def tconf(tconf):
+    # We need to reset authorization map to set new authorization rules
+    Authoriser.auth_map = None
     OLD_WRITES_REQUIRE_TRUST_ANCHOR = tconf.WRITES_REQUIRE_TRUST_ANCHOR
     tconf.WRITES_REQUIRE_TRUST_ANCHOR = True
 
     yield tconf
 
     tconf.WRITES_REQUIRE_TRUST_ANCHOR = OLD_WRITES_REQUIRE_TRUST_ANCHOR
+    Authoriser.auth_map = None
 
 
 def test_client_cant_send_schema(looper,
