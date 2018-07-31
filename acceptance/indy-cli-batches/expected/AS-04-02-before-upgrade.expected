@@ -4,7 +4,7 @@
 pool connect AS-pool
 [1;32mPool "AS-pool" has been connected[0m
 
-wallet create AS-04-wallet pool_name=AS-pool key=testkey
+wallet create AS-04-wallet key=testkey storage_config={"pool":"AS-pool"}
 [1;32mWallet "AS-04-wallet" has been created[0m
 
 wallet open AS-04-wallet key=testkey
