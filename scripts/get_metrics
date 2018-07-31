@@ -92,18 +92,18 @@ def process_storage(storage, args):
             "avg_outgoing_node_message_size",
             "avg_incoming_client_message_size",
             "avg_outgoing_client_message_size",
-            "node_stack_messages_processed",
-            "client_stack_messages_processed",
-            "three_pc_batch_count",
-            "requests_count",
-            "incoming_node_messages",
-            "incoming_node_traffic",
-            "outgoing_node_messages",
-            "outgoing_node_traffic",
-            "incoming_client_messages",
-            "incoming_client_traffic",
-            "outgoing_client_messages",
-            "outgoing_client_traffic"
+            "node_stack_messages_processed_per_sec",
+            "client_stack_messages_processed_per_sec",
+            "three_pc_batch_count_per_sec",
+            "requests_count_per_sec",
+            "incoming_node_messages_per_sec",
+            "incoming_node_traffic_per_sec",
+            "outgoing_node_messages_per_sec",
+            "outgoing_node_traffic_per_sec",
+            "incoming_client_messages_per_sec",
+            "incoming_client_traffic_per_sec",
+            "outgoing_client_messages_per_sec",
+            "outgoing_client_traffic_per_sec"
         ]
         f.write(",".join(columns))
         f.write("\n")
