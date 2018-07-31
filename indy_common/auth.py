@@ -13,8 +13,8 @@ logger = getlogger()
 # TODO: make this class the only point of authorization and checking permissions!
 # There are some duplicates of this logic in *_req_handler classes
 
-def initialize_auth_map():
-    Authoriser.auth_map = {
+def initialize_auth_map(valid_roles):
+    auth_map = {
         '{}_role__{}'.format(NYM, TRUSTEE):
             {TRUSTEE: []},
         '{}_role__{}'.format(NYM, TGB):
@@ -38,7 +38,7 @@ def initialize_auth_map():
         '{}_<any>_<any>_<any>'.format(CLAIM_DEF):
             {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
         '{}_verkey_<any>_<any>'.format(NYM):
-            {r: [OWNER] for r in Authoriser.ValidRoles},
+            {r: [OWNER] for r in valid_roles},
         '{}_services__[VALIDATOR]'.format(NODE):
             {STEWARD: [OWNER, ]},
         # INDY-410 - steward allowed to demote/promote its validator
@@ -68,8 +68,9 @@ def initialize_auth_map():
             {TRUSTEE: [], STEWARD: []},
     }
     if not getConfig().WRITES_REQUIRE_TRUST_ANCHOR:
-        Authoriser.auth_map['{}_<any>_<any>_<any>'.format(SCHEMA)][None] = []
-        Authoriser.auth_map['{}_<any>_<any>_<any>'.format(CLAIM_DEF)][None] = [OWNER]
+        auth_map['{}_<any>_<any>_<any>'.format(SCHEMA)][None] = []
+        auth_map['{}_<any>_<any>_<any>'.format(CLAIM_DEF)][None] = [OWNER]
+    return auth_map
 
 
 class Authoriser:
@@ -103,7 +104,7 @@ class Authoriser:
     def authorised(typ, actorRole, field=None, oldVal=None, newVal=None,
                    isActorOwnerOfSubject=None) -> (bool, str):
         if not Authoriser.auth_map:
-            initialize_auth_map()
+            Authoriser.auth_map = initialize_auth_map(Authoriser.ValidRoles)
         field = field if field is not None else ""
         oldVal = '' if oldVal is None else \
             str(oldVal).replace('"', '').replace("'", '')
