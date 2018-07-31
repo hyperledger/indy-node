@@ -91,7 +91,7 @@ class NodeControlTool:
         self._update_package_cache()
         self.ext_ver, ext_deps = self._ext_info()
         self.deps = ext_deps + self.deps
-        holds = set([self.config.UPGRADE_ENTRY] + ext_deps + self.packages_to_hold.split(" "))
+        holds = set([self.config.UPGRADE_ENTRY] + ext_deps + self.packages_to_hold.strip(" ").split(" "))
         self.packages_to_hold = ' '.join(list(holds))
 
     @classmethod
