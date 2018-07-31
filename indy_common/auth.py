@@ -13,7 +13,7 @@ logger = getlogger()
 # TODO: make this class the only point of authorization and checking permissions!
 # There are some duplicates of this logic in *_req_handler classes
 
-def initialize_auth_map(valid_roles):
+def generate_auth_map(valid_roles, need_permission=None):
     auth_map = {
         '{}_role__{}'.format(NYM, TRUSTEE):
             {TRUSTEE: []},
@@ -67,7 +67,7 @@ def initialize_auth_map(valid_roles):
         '{}_<any>_<any>_<any>'.format(VALIDATOR_INFO):
             {TRUSTEE: [], STEWARD: []},
     }
-    if not getConfig().WRITES_REQUIRE_TRUST_ANCHOR:
+    if need_permission is False or (need_permission is None and not getConfig().WRITES_REQUIRE_TRUST_ANCHOR):
         auth_map['{}_<any>_<any>_<any>'.format(SCHEMA)][None] = []
         auth_map['{}_<any>_<any>_<any>'.format(CLAIM_DEF)][None] = [OWNER]
     return auth_map
@@ -104,7 +104,7 @@ class Authoriser:
     def authorised(typ, actorRole, field=None, oldVal=None, newVal=None,
                    isActorOwnerOfSubject=None) -> (bool, str):
         if not Authoriser.auth_map:
-            Authoriser.auth_map = initialize_auth_map(Authoriser.ValidRoles)
+            Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles)
         field = field if field is not None else ""
         oldVal = '' if oldVal is None else \
             str(oldVal).replace('"', '').replace("'", '')
