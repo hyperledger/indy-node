@@ -104,3 +104,4 @@ default logging level for node
 logLevel = logging.INFO
 
 INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
+WRITES_REQUIRE_TRUST_ANCHOR = True
