@@ -56,7 +56,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.5.480',
+    install_requires=['indy-plenum-dev==1.5.482',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator==0.4.0'],
