@@ -1,3 +1,4 @@
+from indy_common.config_util import getConfig
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
 
@@ -12,10 +13,8 @@ logger = getlogger()
 # TODO: make this class the only point of authorization and checking permissions!
 # There are some duplicates of this logic in *_req_handler classes
 
-class Authoriser:
-    ValidRoles = (TRUSTEE, TGB, STEWARD, TRUST_ANCHOR, None)
-
-    AuthMap = {
+def initialize_auth_map():
+    Authoriser.auth_map = {
         '{}_role__{}'.format(NYM, TRUSTEE):
             {TRUSTEE: []},
         '{}_role__{}'.format(NYM, TGB):
@@ -39,7 +38,7 @@ class Authoriser:
         '{}_<any>_<any>_<any>'.format(CLAIM_DEF):
             {TRUSTEE: [OWNER, ], STEWARD: [OWNER, ], TRUST_ANCHOR: [OWNER, ]},
         '{}_verkey_<any>_<any>'.format(NYM):
-            {r: [OWNER] for r in ValidRoles},
+            {r: [OWNER] for r in Authoriser.ValidRoles},
         '{}_services__[VALIDATOR]'.format(NODE):
             {STEWARD: [OWNER, ]},
         # INDY-410 - steward allowed to demote/promote its validator
@@ -68,6 +67,15 @@ class Authoriser:
         '{}_<any>_<any>_<any>'.format(VALIDATOR_INFO):
             {TRUSTEE: [], STEWARD: []},
     }
+    if not getConfig().WRITES_REQUIRE_TRUST_ANCHOR:
+        Authoriser.auth_map['{}_<any>_<any>_<any>'.format(SCHEMA)][None] = []
+        Authoriser.auth_map['{}_<any>_<any>_<any>'.format(CLAIM_DEF)][None] = [OWNER]
+
+
+class Authoriser:
+    ValidRoles = (TRUSTEE, TGB, STEWARD, TRUST_ANCHOR, None)
+
+    auth_map = None
 
     @staticmethod
     def isValidRole(role) -> bool:
@@ -94,17 +102,19 @@ class Authoriser:
     @staticmethod
     def authorised(typ, actorRole, field=None, oldVal=None, newVal=None,
                    isActorOwnerOfSubject=None) -> (bool, str):
+        if not Authoriser.auth_map:
+            initialize_auth_map()
         field = field if field is not None else ""
         oldVal = '' if oldVal is None else \
             str(oldVal).replace('"', '').replace("'", '')
         newVal = '' if newVal is None else \
             str(newVal).replace('"', '').replace("'", '')
         key = '_'.join([typ, field, oldVal, newVal])
-        if key not in Authoriser.AuthMap:
+        if key not in Authoriser.auth_map:
             any_value = '_'.join([typ, field, '<any>', '<any>'])
-            if any_value not in Authoriser.AuthMap:
+            if any_value not in Authoriser.auth_map:
                 any_field = '_'.join([typ, "<any>", '<any>', '<any>'])
-                if any_field not in Authoriser.AuthMap:
+                if any_field not in Authoriser.auth_map:
                     msg = "key '{}' not found in authorized map".format(key)
                     logger.debug(msg)
                     return False, msg
@@ -112,10 +122,10 @@ class Authoriser:
                     key = any_field
             else:
                 key = any_value
-        roles = Authoriser.AuthMap[key]
+        roles = Authoriser.auth_map[key]
         if actorRole not in roles:
             roles_as_str = [Roles.nameFromValue(role) for role in roles.keys()]
-            return False, '{} not in allowed roles {}'.\
+            return False, '{} not in allowed roles {}'. \
                 format(Roles.nameFromValue(actorRole), roles_as_str)
         roleDetails = roles[actorRole]
         if len(roleDetails) == 0:

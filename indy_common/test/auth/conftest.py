@@ -3,6 +3,8 @@ from plenum.common.constants import STEWARD, TRUSTEE
 
 from indy_common.constants import TRUST_ANCHOR, TGB
 
+from plenum.test.conftest import tdir, client_tdir
+
 
 @pytest.fixture(scope='function', params=[STEWARD, TRUSTEE, TRUST_ANCHOR, TGB, None])
 def role(request):
