@@ -1,10 +1,6 @@
-import multiprocessing
 from indy_node.utils.node_control_tool import NodeControlTool
 from plenum.test.helper import randomText
 
-
-m = multiprocessing.Manager()
-whitelist = ['Unexpected error in _upgrade test']
 
 def testNodeControlResolvesDependencies(monkeypatch, tconf):
     nct = NodeControlTool(config=tconf)
@@ -14,27 +10,17 @@ def testNodeControlResolvesDependencies(monkeypatch, tconf):
     node_package_with_version = '{}={}'.format(*node_package)
     plenum_package_with_version = '{}={}'.format(*plenum_package)
     anoncreds_package_with_version = '{}={}'.format(*anoncreds_package)
-    mock_info = {
-        node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(
-            randomText(100),
-            *plenum_package,
-            randomText(100),
-            *anoncreds_package,
-            randomText(100)),
-        plenum_package_with_version: '{}'.format(
-            randomText(100)),
-        anoncreds_package_with_version: '{}'.format(
-            randomText(100))}
+    mock_info = {node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(
+        randomText(100), *plenum_package, randomText(100), *anoncreds_package, randomText(100)),
+        plenum_package_with_version: '{}'.format(randomText(100)),
+        anoncreds_package_with_version: '{}'.format(randomText(100))
+    }
 
     def mock_get_info_from_package_manager(self, package):
         return mock_info.get(package, None)
 
-    monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager',
-                        mock_get_info_from_package_manager)
-    monkeypatch.setattr(
-        nct.__class__, '_update_package_cache', lambda *x: None)
+    monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager', mock_get_info_from_package_manager)
+    monkeypatch.setattr(nct.__class__, '_update_package_cache', lambda *x: None)
     ret = nct._get_deps_list(node_package_with_version)
-    assert ret.split() == [
-        anoncreds_package_with_version,
-        plenum_package_with_version,
-        node_package_with_version]
+    nct.server.close()
+    assert ret.split() == [anoncreds_package_with_version, plenum_package_with_version, node_package_with_version]
