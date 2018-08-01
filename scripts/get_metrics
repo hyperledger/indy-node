@@ -31,13 +31,11 @@ def read_args():
 
     parser.add_argument(
         '--min_ts',
-        type=datetime,
         required=False,
         default=None,
         help="Process all metrics starting from given timestamp (beginning by default)")
     parser.add_argument(
         '--max_ts',
-        type=datetime,
         required=False,
         default=None,
         help="Process all metrics till given timestamp (end by default)")
@@ -81,13 +79,17 @@ def make_copy_of_data(data_dir):
 
 
 def process_storage(storage, args):
-    stats = load_metrics_from_kv_store(storage, args.min_ts, args.max_ts, timedelta(seconds=args.step))
+    fmt = "%Y-%m-%d %H:%M:%S"
+    min_ts = datetime.strptime(args.min_ts, fmt) if args.min_ts else None
+    max_ts = datetime.strptime(args.max_ts, fmt) if args.max_ts else None
+    stats = load_metrics_from_kv_store(storage, min_ts, max_ts, timedelta(seconds=args.step))
 
     with open(args.output, 'w') as f:
         columns = [
             "timestamp",
             "avg_looper_run_time_spent",
             "avg_three_pc_batch_size",
+            "avg_transport_batch_size",
             "avg_incoming_node_message_size",
             "avg_outgoing_node_message_size",
             "avg_incoming_client_message_size",
@@ -112,6 +114,7 @@ def process_storage(storage, args):
                 ts.replace(microsecond=0),
                 frame.get(MetricsName.LOOPER_RUN_TIME_SPENT).avg,
                 frame.get(MetricsName.THREE_PC_BATCH_SIZE).avg,
+                frame.get(MetricsName.TRANSPORT_BATCH_SIZE).avg,
                 frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).avg,
                 frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).avg,
                 frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).avg,
