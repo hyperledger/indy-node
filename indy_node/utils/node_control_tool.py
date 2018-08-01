@@ -159,7 +159,7 @@ class NodeControlTool:
             logger.info('Skipping packages holding')
 
     def _get_deps_list(self, package):
-        def __get_deps(package, include):
+        def _get_deps(package, include):
             package_info = self._get_info_from_package_manager(package)
             ret = [package]
             deps = []
@@ -171,23 +171,23 @@ class NodeControlTool:
                         dep_version = match.group(1)
                         dep_package = '{}={}'.format(dep, dep_version)
                         deps.append(dep_package)
-                        deps_deps.append(__get_deps(dep_package, include))
+                        deps_deps.append(_get_deps(dep_package, include))
             ret.append(deps)
             ret.append(deps_deps)
             return ret
 
-        def __dep_tree_traverse(dep_tree, deps_so_far):
+        def _dep_tree_traverse(dep_tree, deps_so_far):
             if isinstance(dep_tree, str) and dep_tree not in deps_so_far:
                 deps_so_far.append(dep_tree)
             elif isinstance(dep_tree, list) and dep_tree:
                 for d in reversed(dep_tree):
-                    __dep_tree_traverse(d, deps_so_far)
+                    _dep_tree_traverse(d, deps_so_far)
 
         logger.info('Getting dependencies for {}'.format(package))
         self._update_package_cache()
-        dep_tree = __get_deps(package, self.deps)
+        dep_tree = _get_deps(package, self.deps)
         ret = []
-        __dep_tree_traverse(dep_tree, ret)
+        _dep_tree_traverse(dep_tree, ret)
         return " ".join(ret)
 
     def _call_upgrade_script(self, version):
