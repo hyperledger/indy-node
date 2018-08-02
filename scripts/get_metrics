@@ -27,7 +27,8 @@ def read_args():
     parser.add_argument('--data_dir', required=False, help="Path to metrics data, replaces a")
     parser.add_argument('--node_name', required=False, help="Node's name")
     parser.add_argument('--network', required=False, help="Network name to read metrics from")
-    parser.add_argument('--output', required=False, default="metrics.csv", help="Output CSV file name with metrics")
+    parser.add_argument('--output', required=False, default=None, help="Output CSV file name with metrics")
+    parser.add_argument('--ts_fmt', required=False, default="%Y-%m-%d %H:%M:%S", help="Output timestamp format")
 
     parser.add_argument(
         '--min_ts',
@@ -84,56 +85,57 @@ def process_storage(storage, args):
     max_ts = datetime.strptime(args.max_ts, fmt) if args.max_ts else None
     stats = load_metrics_from_kv_store(storage, min_ts, max_ts, timedelta(seconds=args.step))
 
-    with open(args.output, 'w') as f:
-        columns = [
-            "timestamp",
-            "avg_looper_run_time_spent",
-            "avg_three_pc_batch_size",
-            "avg_transport_batch_size",
-            "avg_incoming_node_message_size",
-            "avg_outgoing_node_message_size",
-            "avg_incoming_client_message_size",
-            "avg_outgoing_client_message_size",
-            "node_stack_messages_processed_per_sec",
-            "client_stack_messages_processed_per_sec",
-            "three_pc_batch_count_per_sec",
-            "requests_count_per_sec",
-            "incoming_node_messages_per_sec",
-            "incoming_node_traffic_per_sec",
-            "outgoing_node_messages_per_sec",
-            "outgoing_node_traffic_per_sec",
-            "incoming_client_messages_per_sec",
-            "incoming_client_traffic_per_sec",
-            "outgoing_client_messages_per_sec",
-            "outgoing_client_traffic_per_sec"
-        ]
-        f.write(",".join(columns))
-        f.write("\n")
-        for ts, frame in sorted(stats.frames(), key=lambda v: v[0]):
-            row = [
-                ts.replace(microsecond=0),
-                frame.get(MetricsName.LOOPER_RUN_TIME_SPENT).avg,
-                frame.get(MetricsName.THREE_PC_BATCH_SIZE).avg,
-                frame.get(MetricsName.TRANSPORT_BATCH_SIZE).avg,
-                frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).avg,
-                frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).avg,
-                frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).avg,
-                frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).avg,
-                frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsName.THREE_PC_BATCH_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsName.THREE_PC_BATCH_SIZE).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds()
+    if args.output is not None:
+        with open(args.output, 'w') as f:
+            columns = [
+                "timestamp",
+                "avg_looper_run_time_spent",
+                "avg_three_pc_batch_size",
+                "avg_transport_batch_size",
+                "avg_incoming_node_message_size",
+                "avg_outgoing_node_message_size",
+                "avg_incoming_client_message_size",
+                "avg_outgoing_client_message_size",
+                "node_stack_messages_processed_per_sec",
+                "client_stack_messages_processed_per_sec",
+                "three_pc_batch_count_per_sec",
+                "requests_count_per_sec",
+                "incoming_node_messages_per_sec",
+                "incoming_node_traffic_per_sec",
+                "outgoing_node_messages_per_sec",
+                "outgoing_node_traffic_per_sec",
+                "incoming_client_messages_per_sec",
+                "incoming_client_traffic_per_sec",
+                "outgoing_client_messages_per_sec",
+                "outgoing_client_traffic_per_sec"
             ]
-            f.write(",".join(str(v if v else "0") for v in row))
+            f.write(",".join(columns))
             f.write("\n")
+            for ts, frame in sorted(stats.frames(), key=lambda v: v[0]):
+                row = [
+                    ts.replace(microsecond=0).strftime(args.ts_fmt),
+                    frame.get(MetricsName.LOOPER_RUN_TIME_SPENT).avg,
+                    frame.get(MetricsName.THREE_PC_BATCH_SIZE).avg,
+                    frame.get(MetricsName.TRANSPORT_BATCH_SIZE).avg,
+                    frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).avg,
+                    frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).avg,
+                    frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).avg,
+                    frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).avg,
+                    frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.THREE_PC_BATCH_SIZE).count / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.THREE_PC_BATCH_SIZE).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds()
+                ]
+                f.write(",".join(str(v if v else "0") for v in row))
+                f.write("\n")
 
     print("Start time: {}".format(stats.min_ts))
     print("End time: {}".format(stats.max_ts))
