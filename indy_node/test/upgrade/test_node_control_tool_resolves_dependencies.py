@@ -16,7 +16,7 @@ def testNodeControlResolvesDependencies(monkeypatch, tconf):
         anoncreds_package_with_version: '{}'.format(randomText(100))
     }
 
-    def mock_get_info_from_package_manager(self, package):
+    def mock_get_info_from_package_manager(package):
         return mock_info.get(package, None)
 
     monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager', mock_get_info_from_package_manager)

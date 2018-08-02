@@ -6,13 +6,15 @@ from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.auth import Authoriser
-from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE
+from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
+from indy_node.utils.node_control_tool import get_deps_tree, dep_tree_traverse, pkt_get_curr_info, \
+    parse_version_deps_from_pkt_mgr_output
 
 
 class ConfigReqHandler(LedgerRequestHandler):
@@ -70,6 +72,21 @@ class ConfigReqHandler(LedgerRequestHandler):
                 req.reqId,
                 "Nym {} not added to the ledger yet".format(origin))
         if typ == POOL_UPGRADE:
+            pkt_to_upgrade = req.operation.get(PACKAGE, "")
+            if pkt_to_upgrade:
+                version, deps = parse_version_deps_from_pkt_mgr_output(pkt_get_curr_info(pkt_to_upgrade))
+                if not version:
+                    raise InvalidClientRequest(req.identifier, req.reqId,
+                                               "Packet {} is not installed and cannot be upgraded".format(
+                                                   pkt_to_upgrade))
+                # if
+
+                deps = []
+                dep_tree_traverse(get_deps_tree(pkt_to_upgrade, ["indy-node", "indy-plenum"]), deps)
+                if not deps:
+                    raise InvalidClientRequest(req.identifier, req.reqId,
+                                               "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
+
             currentVersion = Upgrader.getVersion()
             targetVersion = req.operation[VERSION]
             if Upgrader.compareVersions(currentVersion, targetVersion) < 0:

@@ -103,8 +103,8 @@ class NodeControlTool:
                             .format(cmd, ret.returncode))
         return ret.stdout.strip()
 
-    def _ext_info(self):
-
+    @classmethod
+    def parse_version_deps_from_pkt_mgr_output(cls, output):
         def _parse_deps(deps: str):
             ret = []
             pkgs = deps.split(",")
@@ -114,11 +114,7 @@ class NodeControlTool:
                 ret.append(name)
             return ret
 
-        if not self.ext_upgrade:
-            return None, []
-
-        package_info = self._get_ext_info(self.config.UPGRADE_ENTRY)
-        out_lines = package_info.split("\n")
+        out_lines = output.split("\n")
         ver = None
         ext_deps = []
         for l in out_lines:
@@ -127,6 +123,13 @@ class NodeControlTool:
             if l.startswith("Depends:"):
                 ext_deps = _parse_deps(l.split(":", maxsplit=1)[1].strip(" \n"))
         return ver, ext_deps
+
+    def _ext_info(self):
+        if not self.ext_upgrade:
+            return None, []
+
+        package_info = self._get_ext_info(self.config.UPGRADE_ENTRY)
+        return self.parse_version_deps_from_pkt_mgr_output(package_info)
 
     @classmethod
     def _get_info_from_package_manager(cls, package):
@@ -158,36 +161,38 @@ class NodeControlTool:
         else:
             logger.info('Skipping packages holding')
 
+    @classmethod
+    def get_deps_tree(cls, package, include):
+        package_info = cls._get_info_from_package_manager(package)
+        ret = [package]
+        deps = []
+        deps_deps = []
+        for dep in include:
+            if dep in package_info:
+                match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep), package_info)
+                if match:
+                    dep_version = match.group(1)
+                    dep_package = '{}={}'.format(dep, dep_version)
+                    deps.append(dep_package)
+                    deps_deps.append(cls.get_deps_tree(dep_package, include))
+        ret.append(deps)
+        ret.append(deps_deps)
+        return ret
+
+    @classmethod
+    def dep_tree_traverse(cls, dep_tree, deps_so_far):
+        if isinstance(dep_tree, str) and dep_tree not in deps_so_far:
+            deps_so_far.append(dep_tree)
+        elif isinstance(dep_tree, list) and dep_tree:
+            for d in reversed(dep_tree):
+                cls.dep_tree_traverse(d, deps_so_far)
+
     def _get_deps_list(self, package):
-        def _get_deps(package, include):
-            package_info = self._get_info_from_package_manager(package)
-            ret = [package]
-            deps = []
-            deps_deps = []
-            for dep in include:
-                if dep in package_info:
-                    match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep), package_info)
-                    if match:
-                        dep_version = match.group(1)
-                        dep_package = '{}={}'.format(dep, dep_version)
-                        deps.append(dep_package)
-                        deps_deps.append(_get_deps(dep_package, include))
-            ret.append(deps)
-            ret.append(deps_deps)
-            return ret
-
-        def _dep_tree_traverse(dep_tree, deps_so_far):
-            if isinstance(dep_tree, str) and dep_tree not in deps_so_far:
-                deps_so_far.append(dep_tree)
-            elif isinstance(dep_tree, list) and dep_tree:
-                for d in reversed(dep_tree):
-                    _dep_tree_traverse(d, deps_so_far)
-
         logger.info('Getting dependencies for {}'.format(package))
         self._update_package_cache()
-        dep_tree = _get_deps(package, self.deps)
+        dep_tree = self.get_deps_tree(package, self.deps)
         ret = []
-        _dep_tree_traverse(dep_tree, ret)
+        self.dep_tree_traverse(dep_tree, ret)
         return " ".join(ret)
 
     def _call_upgrade_script(self, version):
@@ -376,3 +381,9 @@ class NodeControlTool:
                                      .format(s.fileno()))
                         readers.remove(s)
                         s.close()
+
+
+get_deps_tree = NodeControlTool.get_deps_tree
+dep_tree_traverse = NodeControlTool.dep_tree_traverse
+pkt_get_curr_info = NodeControlTool._get_ext_info
+parse_version_deps_from_pkt_mgr_output = NodeControlTool.parse_version_deps_from_pkt_mgr_output

@@ -44,6 +44,7 @@ JUSTIFICATION = 'justification'
 REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 TAG = 'tag'
+PACKAGE = 'package'
 
 REVOC_TYPE = "revocDefType"
 ID = "id"

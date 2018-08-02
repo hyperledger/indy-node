@@ -1,4 +1,5 @@
 import os
+import asyncio
 from datetime import datetime
 from functools import partial
 from typing import Union, Optional, Callable, Dict
@@ -17,7 +18,7 @@ from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     UPGRADE_MESSAGE
 from indy_node.server.upgrade_log import UpgradeLog
 from ledger.util import F
-import asyncio
+from indy_node.utils.node_control_tool import pkt_get_curr_info, parse_version_deps_from_pkt_mgr_output
 
 logger = getlogger()
 
@@ -32,7 +33,11 @@ class Upgrader(NodeMaintainer):
                          actionFailedCallback, action_start_callback)
 
     @staticmethod
-    def getVersion():
+    def getVersion(pkg: str = None):
+        if pkg:
+            ver, _ = parse_version_deps_from_pkt_mgr_output(pkt_get_curr_info(pkg))
+            return ver
+
         from indy_node.__metadata__ import __version__
         return __version__
 

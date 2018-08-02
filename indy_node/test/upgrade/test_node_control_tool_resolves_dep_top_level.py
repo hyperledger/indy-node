@@ -44,7 +44,7 @@ def test_node_as_depend(monkeypatch, tconf):
         top_level_package_dep2_with_version: '{}{} (= {})'.format(randomText(100), *node_package)
     }
 
-    def mock_get_info_from_package_manager(self, package):
+    def mock_get_info_from_package_manager(package):
         return mock_info.get(package, None)
 
     monkeypatch.setattr(nct.__class__, '_get_ext_info', lambda *x: PACKAGE_MNG_EXT_PTK_OUTPUT)
