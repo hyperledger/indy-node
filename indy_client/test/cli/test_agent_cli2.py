@@ -41,21 +41,6 @@ def acmeAgentCliRunning(acmeWithEndpointAdded, acmeAgentCli, looper):
     return acmeAgentCli
 
 
-def test_acme_cli_started_successfully(be, acmeAgentCliRunning):
-    be(acmeAgentCliRunning)
-    assert acmeAgentCliRunning.currPromptText == 'Acme-Agent'
-
-
-def testAgentCliHelp(be, do, acmeAgentCliRunning):
-    be(acmeAgentCliRunning)
-    do('help', expect=[getAgentCliHelpString()])
-
-
-def testAgentCliForInvalidCommand(be, do, acmeAgentCliRunning):
-    be(acmeAgentCliRunning)
-    do('set Attr1 to Value1', expect=[
-        "Invalid command: 'set Attr1 to Value1'",
-        getAgentCliHelpString()])
 
 
 def sendProofRequest(be, do, agentCli, userMap):
@@ -117,14 +102,15 @@ def aliceAcceptedAcmeInvitationNoProofReq(
         proofRequestsAfter = getProofRequestsCount(aliceCLI, acmeMap['remote'])
 
         return proofRequestsBefore, proofRequestsAfter
-
     return _
 
 
-def test_acme_cli_send_proof_request(
+
+def test_acme_cli_send_proof_request_already_exist(
         be, do, acmeAgentCliRunning, aliceCLI, acmeMap,
         aliceAcceptedAcmeInvitationNoProofReq):
-    proofRequestsBefore, proofRequestsAfter = aliceAcceptedAcmeInvitationNoProofReq(
-        acmeMap['invite-no-pr'], 'aliceNoPR')
 
-    assert proofRequestsBefore + 1 == proofRequestsAfter
+    proofRequestsBefore, proofRequestsAfter = aliceAcceptedAcmeInvitationNoProofReq(
+        acmeMap['invite'], 'aliceWithPR')
+
+    assert proofRequestsBefore == proofRequestsAfter
