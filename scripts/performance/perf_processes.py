@@ -500,6 +500,12 @@ class RGGetDefRevoc(RGDefRevoc):
         def_revoc_id = ':'.join([submitter_did, revoc_reg_marker, cred_def_id, revoc_def_type, revoc_def_tag])
         return def_revoc_id
 
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        pass
+
+    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+        pass
+
     async def _gen_req(self, submit_did, req_data):
         req = await ledger.build_get_revoc_reg_def_request(submit_did, req_data)
         return req
@@ -596,6 +602,12 @@ class RGGetEntryRevoc(RGEntryRevoc):
         entry_revoc_id = ':'.join([submitter_did, entry_revoc_marker, def_revoc_id])
         return entry_revoc_id
 
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        pass
+
+    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+        pass
+
     async def _gen_req(self, submit_did, req_data):
         timestamp = int(time.time())
         req = await ledger.build_get_revoc_reg_request(submit_did, req_data, timestamp)
@@ -606,6 +618,12 @@ class RGGetRevocRegDelta(RGGetEntryRevoc):
     async def _gen_req(self, submit_did, req_data):
         req = await ledger.build_get_revoc_reg_delta_request(submit_did, req_data, None, int(time.time()))
         return req
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        pass
+
+    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+        pass
 
 
 def create_req_generator(req_kind_arg):
