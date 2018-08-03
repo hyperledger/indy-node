@@ -72,22 +72,25 @@ class ConfigReqHandler(LedgerRequestHandler):
                 req.reqId,
                 "Nym {} not added to the ledger yet".format(origin))
         if typ == POOL_UPGRADE:
-            pkt_to_upgrade = req.operation.get(PACKAGE, "")
+            pkt_to_upgrade = req.operation.get(PACKAGE, "") or
             if pkt_to_upgrade:
-                version, deps = parse_version_deps_from_pkt_mgr_output(pkt_get_curr_info(pkt_to_upgrade))
+                version, cur_deps = parse_version_deps_from_pkt_mgr_output(pkt_get_curr_info(pkt_to_upgrade))
                 if not version:
                     raise InvalidClientRequest(req.identifier, req.reqId,
                                                "Packet {} is not installed and cannot be upgraded".format(
                                                    pkt_to_upgrade))
-                # if
-
+                if all(["indy-node" not in d for d in cur_deps]):
+                    raise InvalidClientRequest(req.identifier, req.reqId,
+                                               "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
                 deps = []
-                dep_tree_traverse(get_deps_tree(pkt_to_upgrade, ["indy-node", "indy-plenum"]), deps)
+                dep_tree_traverse(get_deps_tree("{}={}".format(pkt_to_upgrade, version),
+                                                ["indy-node", "indy-plenum"]),
+                                  deps)
                 if not deps:
                     raise InvalidClientRequest(req.identifier, req.reqId,
                                                "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
 
-            currentVersion = Upgrader.getVersion()
+            currentVersion = Upgrader.getVersion(pkt_to_upgrade)
             targetVersion = req.operation[VERSION]
             if Upgrader.compareVersions(currentVersion, targetVersion) < 0:
                 # currentVersion > targetVersion
