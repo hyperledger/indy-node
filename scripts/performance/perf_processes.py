@@ -12,10 +12,14 @@ import multiprocessing
 import concurrent
 import signal
 import functools
+from collections import deque
+from ctypes import CDLL
+
 import base58
 import libnacl
 import random
 
+from indy import payment
 from indy import pool, wallet, did, ledger, anoncreds, blob_storage
 
 
@@ -90,6 +94,33 @@ parser.add_argument('-p', '--pool_config', default="", type=str, required=False,
                     help='Configuration of pool as JSON. The value will be passed to open_pool call. Default value is empty')
 
 
+def ensure_is_reply(resp):
+    resp_obj = json.loads(resp)
+    if "op" not in resp_obj or resp_obj["op"] != "REPLY":
+        raise Exception("Response is not a successful reply: {}".format(resp))
+
+
+libsovtoken_initiated = False
+
+
+def init_libsovtoken_once():
+    global libsovtoken_initiated
+    if not libsovtoken_initiated:
+        try:
+            libsovtoken = CDLL("libsovtoken.so")
+            res = libsovtoken.sovtoken_init()
+            if res != 0:
+                raise Exception("sovtoken_init returned result code {}".format(res))
+            libsovtoken_initiated = True
+        except Exception as ex:
+            print("libsovtoken initialization failed: {}".format(ex))
+            raise ex
+
+
+class NoReqDataAvailableException(Exception):
+    pass
+
+
 class ClientStatistic:
     def __init__(self):
         self._req_prep = 0
@@ -108,24 +139,27 @@ class ClientStatistic:
     def sent_count(self):
         return self._req_sent
 
-    def preparing(self, req_id, test_label: str = ""):
-        self._client_stat_reqs.setdefault(req_id, dict())["client_preparing"] = time.time()
-        self._client_stat_reqs[req_id]["label"] = test_label
+    def preparing(self, req_data, test_label: str = ""):
+        req_data_repr = repr(req_data)
+        self._client_stat_reqs.setdefault(req_data_repr, dict())["client_preparing"] = time.time()
+        self._client_stat_reqs[req_data_repr]["label"] = test_label
 
-    def prepared(self, req_id):
-        self._client_stat_reqs.setdefault(req_id, dict())["client_prepared"] = time.time()
+    def prepared(self, req_data):
+        self._client_stat_reqs.setdefault(repr(req_data), dict())["client_prepared"] = time.time()
 
-    def signed(self, req_id):
-        self._client_stat_reqs.setdefault(req_id, dict())["client_signed"] = time.time()
+    def signed(self, req_data):
+        self._client_stat_reqs.setdefault(repr(req_data), dict())["client_signed"] = time.time()
         self._req_prep += 1
 
-    def sent(self, req_id, req):
-        self._client_stat_reqs.setdefault(req_id, dict())["client_sent"] = time.time()
-        self._client_stat_reqs[req_id]["req"] = req
+    def sent(self, req_data, req):
+        req_data_repr = repr(req_data)
+        self._client_stat_reqs.setdefault(req_data_repr, dict())["client_sent"] = time.time()
+        self._client_stat_reqs[req_data_repr]["req"] = req
         self._req_sent += 1
 
-    def reply(self, req_id, reply_or_exception):
-        self._client_stat_reqs.setdefault(req_id, dict())["client_reply"] = time.time()
+    def reply(self, req_data, reply_or_exception):
+        req_data_repr = repr(req_data)
+        self._client_stat_reqs.setdefault(req_data_repr, dict())["client_reply"] = time.time()
         resp = reply_or_exception
         if isinstance(reply_or_exception, str):
             try:
@@ -149,7 +183,7 @@ class ClientStatistic:
                 srv_tm = \
                     resp['result'].get('txnTime', False) or resp['result'].get('txnMetadata', {}).get('txnTime', False)
                 server_time = int(srv_tm)
-                self._client_stat_reqs[req_id]["server_reply"] = server_time
+                self._client_stat_reqs[req_data_repr]["server_reply"] = server_time
                 self._server_min_txn_time = min(self._server_min_txn_time, server_time)
                 self._server_max_txn_time = max(self._server_max_txn_time, server_time)
             else:
@@ -159,8 +193,8 @@ class ClientStatistic:
         else:
             self._req_fail += 1
             status = "fail"
-        self._client_stat_reqs[req_id]["status"] = status
-        self._client_stat_reqs[req_id]["resp"] = resp
+        self._client_stat_reqs[req_data_repr]["status"] = status
+        self._client_stat_reqs[req_data_repr]["resp"] = resp
 
     def dump_stat(self, dump_all: bool = False):
         ret_val = {}
@@ -263,6 +297,9 @@ class RequestGenerator(metaclass=ABCMeta):
         return req_data, req
 
     async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+        pass
+
+    async def on_request_replied(self, req, resp_or_exp):
         pass
 
     def get_txn_field(self, txn_dict):
@@ -608,6 +645,157 @@ class RGGetRevocRegDelta(RGGetEntryRevoc):
         return req
 
 
+class RGPayment(RequestGenerator):
+    PAYMENT_METHOD = "sov"
+    PAYMENT_ADDRESSES_COUNT = 10
+    AMOUNT_LIMIT = 100
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        init_libsovtoken_once()
+
+        self._pool_handle = None
+        self._wallet_handle = None
+        self._submitter_did = None
+
+        self._payment_addresses = []
+        self._payment_sources = deque()
+        self._req_source_infos = {}
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+
+        self._pool_handle = pool_handle
+        self._wallet_handle = wallet_handle
+        self._submitter_did = submitter_did
+
+        additional_trustees_dids = await self.__create_additional_trustees()
+        await self.__create_payment_addresses()
+        await self.__mint_sources(trustees_dids=[self._submitter_did, *additional_trustees_dids])
+        await self.__retrieve_minted_sources()
+
+    async def __create_additional_trustees(self):
+        trustee_dids = []
+
+        for i in range(3):
+            tr_did, tr_verkey = await did.create_and_store_my_did(self._wallet_handle, '{}')
+
+            nym_req = await ledger.build_nym_request(self._submitter_did, tr_did, tr_verkey, None, "TRUSTEE")
+            nym_resp = await ledger.sign_and_submit_request(self._pool_handle,
+                                                            self._wallet_handle,
+                                                            self._submitter_did, nym_req)
+            ensure_is_reply(nym_resp)
+
+            trustee_dids.append(tr_did)
+
+        return trustee_dids
+
+    async def __create_payment_addresses(self):
+        for i in range(RGPayment.PAYMENT_ADDRESSES_COUNT):
+            self._payment_addresses.append(
+                await payment.create_payment_address(self._wallet_handle, RGPayment.PAYMENT_METHOD, '{}'))
+
+    async def __mint_sources(self, trustees_dids):
+        outputs = []
+        for payment_address in self._payment_addresses:
+            outputs.append({"recipient": payment_address, "amount": random.randint(1, RGPayment.AMOUNT_LIMIT)})
+
+        mint_req, _ = await payment.build_mint_req(self._wallet_handle,
+                                                   self._submitter_did,
+                                                   json.dumps(outputs),
+                                                   None)
+
+        for trustee_did in trustees_dids:
+            mint_req = await ledger.multi_sign_request(self._wallet_handle, trustee_did, mint_req)
+
+        mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
+        ensure_is_reply(mint_resp)
+
+    async def __retrieve_minted_sources(self):
+        for payment_address in self._payment_addresses:
+            get_payment_sources_req, _ = \
+                await payment.build_get_payment_sources_request(self._wallet_handle,
+                                                                self._submitter_did,
+                                                                payment_address)
+            get_payment_sources_resp = \
+                await ledger.sign_and_submit_request(self._pool_handle,
+                                                     self._wallet_handle,
+                                                     self._submitter_did,
+                                                     get_payment_sources_req)
+            ensure_is_reply(get_payment_sources_resp)
+
+            source_infos_json = \
+                await payment.parse_get_payment_sources_response(RGPayment.PAYMENT_METHOD,
+                                                                 get_payment_sources_resp)
+            source_infos = json.loads(source_infos_json)
+            source_info = source_infos[0]
+            source, amount = source_info["source"], source_info["amount"]
+
+            self._payment_sources.append((source, amount))
+
+    def _gen_req_data(self):
+        if len(self._payment_sources) == 0:
+            raise NoReqDataAvailableException()
+
+        source, amount = self._payment_sources.popleft()
+        address = random.choice(self._payment_addresses)
+
+        inputs = [source]
+        outputs = [{"recipient": address, "amount": amount}]
+
+        return inputs, outputs
+
+    def _rand_data(self):
+        raise NotImplementedError()
+
+    async def _gen_req(self, submit_did, req_data):
+        inputs, outputs = req_data
+        req, _ = await payment.build_payment_req(self._wallet_handle,
+                                                 self._submitter_did,
+                                                 json.dumps(inputs),
+                                                 json.dumps(outputs),
+                                                 None)
+
+        req_obj = json.loads(req)
+        req_id = req_obj["reqId"]
+        source = inputs[0]
+        amount = outputs[0]["amount"]
+        self._req_source_infos[req_id] = source, amount
+
+        return req
+
+    async def on_request_replied(self, req, resp_or_exp):
+        if isinstance(resp_or_exp, Exception):
+            return
+
+        resp = resp_or_exp
+
+        try:
+            req_obj = json.loads(req)
+            req_id = req_obj["reqId"]
+            req_source_info = self._req_source_infos.pop(req_id)
+
+            resp_obj = json.loads(resp)
+
+            if not "op" in resp_obj:
+                raise Exception("Response does not contain op field.")
+
+            if resp_obj["op"] == "REQNACK" or resp_obj["op"] == "REJECT":
+                source, amount = req_source_info
+                self._payment_sources.append((source, amount))
+            elif resp_obj["op"] == "REPLY":
+                receipt_infos_json = await payment.parse_payment_response(RGPayment.PAYMENT_METHOD, resp)
+                receipt_infos = json.loads(receipt_infos_json)
+                receipt_info = receipt_infos[0]
+                receipt = receipt_info["receipt"]
+                amount = receipt_info["amount"]
+                self._payment_sources.append((receipt, amount))
+
+        except Exception as e:
+            print("Error on payment txn postprocessing: {}".format(e))
+
+
 def create_req_generator(req_kind_arg):
     supported_requests = {"nym": RGNym, "schema": RGSchema, "attrib": RGAttrib,
                           "cred_def": RGDefinition, "revoc_reg_def": RGDefRevoc,
@@ -615,7 +803,7 @@ def create_req_generator(req_kind_arg):
                           "get_nym": RGGetNym, "get_attrib": RGGetAttrib,
                           "get_schema": RGGetSchema, "get_cred_def": RGGetDefinition,
                           "get_revoc_reg_def": RGGetDefRevoc, "get_revoc_reg": RGGetEntryRevoc,
-                          "get_revoc_reg_delta": RGGetRevocRegDelta}
+                          "get_revoc_reg_delta": RGGetRevocRegDelta, "payment": RGPayment}
     if req_kind_arg in supported_requests:
         return supported_requests[req_kind_arg], {"label": req_kind_arg}
     try:
@@ -737,17 +925,20 @@ class LoadClient:
         if self._closing is True:
             return
         try:
-            req_id, req = await self._req_generator.generate_request(self._test_did)
+            req_data, req = await self._req_generator.generate_request(self._test_did)
+        except NoReqDataAvailableException:
+            print("Cannot generate request since no req data are available.")
+            return
         except Exception as e:
             print("{} generate req error {}".format(self._name, e))
             self._loop.stop()
             raise e
         try:
             sig_req = await ledger.sign_request(self._wallet_handle, self._test_did, req)
-            self._stat.signed(req_id)
-            self._load_client_reqs.append((req_id, sig_req))
+            self._stat.signed(req_data)
+            self._load_client_reqs.append((req_data, sig_req))
         except Exception as e:
-            self._stat.reply(req_id, e)
+            self._stat.reply(req_data, e)
             self._loop.stop()
             raise e
 
@@ -783,13 +974,14 @@ class LoadClient:
             self._gen_q.append(builder)
             self._generated_cnt += 1
 
-    async def submit_req_update(self, req_id, req):
-        self._stat.sent(req_id, req)
+    async def submit_req_update(self, req_data, req):
+        self._stat.sent(req_data, req)
         try:
             resp_or_exp = await ledger.submit_request(self._pool_handle, req)
         except Exception as e:
             resp_or_exp = e
-        self._stat.reply(req_id, resp_or_exp)
+        self._stat.reply(req_data, resp_or_exp)
+        await self._req_generator.on_request_replied(req, resp_or_exp)
 
     def done_submit(self, fut):
         self._send_q.remove(fut)
@@ -819,8 +1011,8 @@ class LoadClient:
         if self._rest_to_sent > 0:
             to_snd = min(len(self._load_client_reqs), avail_sndrs, self._rest_to_sent)
             for i in range(0, to_snd):
-                req_id, req = self._load_client_reqs.pop()
-                sender = self._loop.create_task(self.submit_req_update(req_id, req))
+                req_data, req = self._load_client_reqs.pop()
+                sender = self._loop.create_task(self.submit_req_update(req_data, req))
                 sender.add_done_callback(self.done_submit)
                 self._send_q.append(sender)
             self._rest_to_sent -= to_snd
