@@ -12,7 +12,7 @@ import multiprocessing
 import concurrent
 import signal
 import functools
-from collections import deque
+from collections import deque, Sequence
 from ctypes import CDLL
 
 import base58
@@ -95,9 +95,14 @@ parser.add_argument('-p', '--pool_config', default="", type=str, required=False,
 
 
 def ensure_is_reply(resp):
-    resp_obj = json.loads(resp)
-    if "op" not in resp_obj or resp_obj["op"] != "REPLY":
+    if isinstance(resp, str):
+        resp = json.loads(resp)
+    if "op" not in resp or resp["op"] != "REPLY":
         raise Exception("Response is not a successful reply: {}".format(resp))
+
+
+def divide_sequence_into_chunks(seq: Sequence, chunk_size: int):
+    return (seq[shift:shift + chunk_size] for shift in range(0, len(seq), chunk_size))
 
 
 libsovtoken_initiated = False
@@ -646,11 +651,20 @@ class RGGetRevocRegDelta(RGGetEntryRevoc):
 
 
 class RGPayment(RequestGenerator):
-    PAYMENT_METHOD = "sov"
-    PAYMENT_ADDRESSES_COUNT = 10
+    TRUSTEE_ROLE_CODE = "0"
+
+    DEFAULT_PAYMENT_METHOD = "sov"
+    DEFAULT_PAYMENT_ADDRS_COUNT = 10
+
+    NUMBER_OF_TRUSTEES_FOR_MINT = 4
+    MINT_RECIPIENTS_LIMIT = 100
     AMOUNT_LIMIT = 100
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args,
+                 payment_method=DEFAULT_PAYMENT_METHOD,
+                 payment_addrs_count=DEFAULT_PAYMENT_ADDRS_COUNT,
+                 **kwargs):
+
         super().__init__(*args, **kwargs)
 
         init_libsovtoken_once()
@@ -659,6 +673,8 @@ class RGPayment(RequestGenerator):
         self._wallet_handle = None
         self._submitter_did = None
 
+        self._payment_method = payment_method
+        self._payment_addrs_count = payment_addrs_count
         self._payment_addresses = []
         self._payment_sources = deque()
         self._req_source_infos = {}
@@ -670,15 +686,30 @@ class RGPayment(RequestGenerator):
         self._wallet_handle = wallet_handle
         self._submitter_did = submitter_did
 
+        await self.__ensure_submitter_is_trustee()
         additional_trustees_dids = await self.__create_additional_trustees()
         await self.__create_payment_addresses()
-        await self.__mint_sources(trustees_dids=[self._submitter_did, *additional_trustees_dids])
+        for payment_addrs_chunk in divide_sequence_into_chunks(self._payment_addresses, RGPayment.MINT_RECIPIENTS_LIMIT):
+            await self.__mint_sources(payment_addrs_chunk, [self._submitter_did, *additional_trustees_dids])
         await self.__retrieve_minted_sources()
+
+    async def __ensure_submitter_is_trustee(self):
+        get_nym_req = await ledger.build_get_nym_request(self._submitter_did, self._submitter_did)
+        get_nym_resp = await ledger.sign_and_submit_request(self._pool_handle,
+                                                            self._wallet_handle,
+                                                            self._submitter_did,
+                                                            get_nym_req)
+        get_nym_resp_obj = json.loads(get_nym_resp)
+        ensure_is_reply(get_nym_resp_obj)
+        res_data = json.loads(get_nym_resp_obj["result"]["data"])
+        if res_data["role"] != RGPayment.TRUSTEE_ROLE_CODE:
+            raise Exception("Submitter role must be TRUSTEE since "
+                            "submitter have to create additional trustees to mint sources.")
 
     async def __create_additional_trustees(self):
         trustee_dids = []
 
-        for i in range(3):
+        for i in range(RGPayment.NUMBER_OF_TRUSTEES_FOR_MINT - 1):
             tr_did, tr_verkey = await did.create_and_store_my_did(self._wallet_handle, '{}')
 
             nym_req = await ledger.build_nym_request(self._submitter_did, tr_did, tr_verkey, None, "TRUSTEE")
@@ -692,13 +723,13 @@ class RGPayment(RequestGenerator):
         return trustee_dids
 
     async def __create_payment_addresses(self):
-        for i in range(RGPayment.PAYMENT_ADDRESSES_COUNT):
+        for i in range(self._payment_addrs_count):
             self._payment_addresses.append(
-                await payment.create_payment_address(self._wallet_handle, RGPayment.PAYMENT_METHOD, '{}'))
+                await payment.create_payment_address(self._wallet_handle, self._payment_method, '{}'))
 
-    async def __mint_sources(self, trustees_dids):
+    async def __mint_sources(self, payment_addresses, trustees_dids):
         outputs = []
-        for payment_address in self._payment_addresses:
+        for payment_address in payment_addresses:
             outputs.append({"recipient": payment_address, "amount": random.randint(1, RGPayment.AMOUNT_LIMIT)})
 
         mint_req, _ = await payment.build_mint_req(self._wallet_handle,
@@ -726,7 +757,7 @@ class RGPayment(RequestGenerator):
             ensure_is_reply(get_payment_sources_resp)
 
             source_infos_json = \
-                await payment.parse_get_payment_sources_response(RGPayment.PAYMENT_METHOD,
+                await payment.parse_get_payment_sources_response(self._payment_method,
                                                                  get_payment_sources_resp)
             source_infos = json.loads(source_infos_json)
             source_info = source_infos[0]
@@ -785,7 +816,7 @@ class RGPayment(RequestGenerator):
                 source, amount = req_source_info
                 self._payment_sources.append((source, amount))
             elif resp_obj["op"] == "REPLY":
-                receipt_infos_json = await payment.parse_payment_response(RGPayment.PAYMENT_METHOD, resp)
+                receipt_infos_json = await payment.parse_payment_response(self._payment_method, resp)
                 receipt_infos = json.loads(receipt_infos_json)
                 receipt_info = receipt_infos[0]
                 receipt = receipt_info["receipt"]
@@ -927,7 +958,8 @@ class LoadClient:
         try:
             req_data, req = await self._req_generator.generate_request(self._test_did)
         except NoReqDataAvailableException:
-            print("Cannot generate request since no req data are available.")
+            print("{} | Cannot generate request since no req data are available."
+                  .format(datetime.datetime.now()))
             return
         except Exception as e:
             print("{} generate req error {}".format(self._name, e))
