@@ -11,14 +11,12 @@ from indy_node.server.node_maintainer import NodeMaintainer, \
     NodeControlToolMessage
 from plenum.common.txn_util import is_forced, get_seq_no, get_type, get_payload_data, get_req_id, get_from
 from stp_core.common.log import getlogger
-from plenum.common.constants import TXN_TYPE, VERSION, IDENTIFIER
-from plenum.common.types import f
+from plenum.common.constants import VERSION
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
-    UPGRADE_MESSAGE
+    UPGRADE_MESSAGE, PACKAGE
 from indy_node.server.upgrade_log import UpgradeLog
-from ledger.util import F
-from indy_node.utils.node_control_tool import pkt_get_curr_info, parse_version_deps_from_pkt_mgr_output
+from indy_node.utils.node_control_utils import NodeControlUtil
 
 logger = getlogger()
 
@@ -34,8 +32,8 @@ class Upgrader(NodeMaintainer):
 
     @staticmethod
     def getVersion(pkg: str = None):
-        if pkg:
-            ver, _ = parse_version_deps_from_pkt_mgr_output(pkt_get_curr_info(pkg))
+        if pkg and pkg != "indy-node":
+            ver, _ = NodeControlUtil.curr_pkt_info(pkg)
             return ver
 
         from indy_node.__metadata__ import __version__
@@ -84,38 +82,36 @@ class Upgrader(NodeMaintainer):
 
     def _is_action_started(self):
         if not self.lastActionEventInfo:
-            logger.debug('Node {} has no upgrade events'
-                         .format(self.nodeName))
+            logger.debug('Node {} has no upgrade events'.format(self.nodeName))
             return False
 
-        (event_type, when, version, upgrade_id) = self.lastActionEventInfo
+        (event_type, when, version, upgrade_id, pkg_name) = self.lastActionEventInfo
 
         if event_type != UpgradeLog.STARTED:
             logger.debug(
-                'Upgrade for node {} was not scheduled. Last event is {}:{}:{}:{}'.format(
-                    self.nodeName, event_type, when, version, upgrade_id))
+                'Upgrade for node {} was not scheduled. Last event is {}:{}:{}:{}:{}'.format(
+                    self.nodeName, event_type, when, version, upgrade_id, pkg_name))
             return False
 
         return True
 
     def _update_action_log_for_started_action(self):
-        (event_type, when, version, upgrade_id) = self.lastActionEventInfo
+        (event_type, when, version, upgrade_id, pkg_name) = self.lastActionEventInfo
         self._should_notify_about_upgrade = True
         if not self.didLastExecutedUpgradeSucceeded:
-            self._actionLog.appendFailed(when, version, upgrade_id)
+            self._actionLog.appendFailed(when, version, upgrade_id, pkg_name)
             self._action_failed(version=version,
                                 scheduled_on=when,
                                 upgrade_id=upgrade_id,
                                 external_reason=True)
             return
 
-        self._actionLog.appendSucceeded(when, version, upgrade_id)
-        logger.info("Node '{}' successfully upgraded to version {}"
-                    .format(self.nodeName, version))
+        self._actionLog.appendSucceeded(when, version, upgrade_id, pkg_name)
+        logger.info("Node '{}' successfully upgraded to version {}".format(self.nodeName, version))
         self._notifier.sendMessageUponNodeUpgradeComplete(
-            "Upgrade of node '{}' to version {} scheduled on {} "
+            "Upgrade of packet {} on node '{}' to version {} scheduled on {} "
             " with upgrade_id {} completed successfully"
-            .format(self.nodeName, version, when, upgrade_id))
+            .format(pkg_name, self.nodeName, version, when, upgrade_id))
 
     def should_notify_about_upgrade_result(self):
         # do not rely on NODE_UPGRADE txn in config ledger, since in
@@ -203,7 +199,7 @@ class Upgrader(NodeMaintainer):
         """
         lastEventInfo = self.lastActionEventInfo
         if lastEventInfo:
-            currentVersion = self.getVersion()
+            currentVersion = self.getVersion(lastEventInfo[4])
             scheduledVersion = lastEventInfo[2]
             return self.compareVersions(currentVersion, scheduledVersion) == 0
         return False
@@ -216,20 +212,19 @@ class Upgrader(NodeMaintainer):
 
         :param txn:
         """
-        FINALIZING_EVENT_TYPES = [
-            UpgradeLog.SUCCEEDED, UpgradeLog.FAILED]
+        FINALIZING_EVENT_TYPES = [UpgradeLog.SUCCEEDED, UpgradeLog.FAILED]
 
         if get_type(txn) != POOL_UPGRADE:
             return
 
-        logger.info("Node '{}' handles upgrade txn {}".format(
-            self.nodeName, txn))
+        logger.info("Node '{}' handles upgrade txn {}".format(self.nodeName, txn))
         txn_data = get_payload_data(txn)
         action = txn_data[ACTION]
         version = txn_data[VERSION]
         justification = txn_data.get(JUSTIFICATION)
         reinstall = txn_data.get(REINSTALL, False)
-        currentVersion = self.getVersion()
+        pkg_name = txn_data.get(PACKAGE, self.config.UPGRADE_ENTRY)
+        currentVersion = self.getVersion(pkg_name)
         upgrade_id = self.get_action_id(txn)
 
         if action == START:
@@ -257,7 +252,7 @@ class Upgrader(NodeMaintainer):
             if self.scheduledAction:
                 if isinstance(when, str):
                     when = dateutil.parser.parse(when)
-                if self.scheduledAction == (version, when, upgrade_id):
+                if self.scheduledAction == (version, when, upgrade_id, pkg_name):
                     logger.debug("Node {} already scheduled upgrade to version '{}' ".format(
                         self.nodeName, version))
                     return
@@ -267,11 +262,9 @@ class Upgrader(NodeMaintainer):
                             self.nodeName, version))
                     self._cancelScheduledUpgrade(justification)
 
-            logger.info("Node '{}' schedules upgrade to {}".format(
-                self.nodeName, version))
+            logger.info("Node '{}' schedules upgrade to {}".format(self.nodeName, version))
 
-            self._scheduleUpgrade(
-                version, when, failTimeout, upgrade_id)
+            self._scheduleUpgrade(version, when, failTimeout, upgrade_id, pkg_name)
             return
 
         if action == CANCEL:
@@ -289,32 +282,32 @@ class Upgrader(NodeMaintainer):
                          version,
                          when: Union[datetime, str],
                          failTimeout,
-                         upgrade_id) -> None:
+                         upgrade_id,
+                         pkg_name) -> None:
         """
         Schedules node upgrade to a newer version
 
         :param version: version to upgrade to
         :param when: upgrade time
         :param upgrade_id: upgrade identifier (req_id+seq_no) of a txn that started the upgrade
+        :param pkg_name: packet to be upgraded
         """
         assert isinstance(when, (str, datetime))
-        logger.info("{}'s upgrader processing upgrade for version {}"
-                    .format(self, version))
+        logger.info("{}'s upgrader processing upgrade for version {}={}".format(self, pkg_name, version))
         if isinstance(when, str):
             when = dateutil.parser.parse(when)
         now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
 
         self._notifier.sendMessageUponNodeUpgradeScheduled(
-            "Upgrade of node '{}' to version {} has been scheduled on {}".format(
-                self.nodeName, version, when))
-        self._actionLog.appendScheduled(when, version, upgrade_id)
+            "Upgrade of packet {} on node '{}' to version {} has been scheduled on {}".format(
+                pkg_name, self.nodeName, version, when))
+        self._actionLog.appendScheduled(when, version, upgrade_id, pkg_name)
 
-        callAgent = partial(self._callUpgradeAgent, when,
-                            version, failTimeout, upgrade_id)
+        callAgent = partial(self._callUpgradeAgent, when, version, failTimeout, upgrade_id, pkg_name)
         delay = 0
         if now < when:
             delay = (when - now).total_seconds()
-        self.scheduledAction = (version, when, upgrade_id)
+        self.scheduledAction = (version, when, upgrade_id, pkg_name)
         self._schedule(callAgent, delay)
 
     def _cancelScheduledUpgrade(self, justification=None) -> None:
@@ -332,28 +325,28 @@ class Upgrader(NodeMaintainer):
                 why_prefix = ", "
                 why = "cancellation reason not specified"
 
-            (version, when, upgrade_id) = self.scheduledAction
+            (version, when, upgrade_id, pkg_name) = self.scheduledAction
             logger.info("Cancelling upgrade {upgrade_id}"
                         " of node {node}"
+                        " of packet {packet}"
                         " to version {version}"
                         " scheduled on {when}"
                         "{why_prefix}{why}"
                         .format(upgrade_id=upgrade_id,
                                 node=self.nodeName,
+                                packet=pkg_name,
                                 version=version,
                                 when=when,
                                 why_prefix=why_prefix,
                                 why=why))
 
             self._unscheduleAction()
-            self._actionLog.appendCancelled(when, version, upgrade_id)
+            self._actionLog.appendCancelled(when, version, upgrade_id, pkg_name)
             self._notifier.sendMessageUponPoolUpgradeCancel(
-                "Upgrade of node '{}' to version {} "
-                "has been cancelled due to {}".format(
-                    self.nodeName, version, why))
+                "Upgrade of packet {} on node '{}' to version {} "
+                "has been cancelled due to {}".format(pkg_name, self.nodeName, version, why))
 
-    def _callUpgradeAgent(self, when, version, failTimeout,
-                          upgrade_id) -> None:
+    def _callUpgradeAgent(self, when, version, failTimeout, upgrade_id, pkg_name) -> None:
         """
         Callback which is called when upgrade time come.
         Writes upgrade record to upgrade log and asks
@@ -364,36 +357,33 @@ class Upgrader(NodeMaintainer):
         """
 
         logger.info("{}'s upgrader calling agent for upgrade".format(self))
-        self._actionLog.appendStarted(when, version, upgrade_id)
+        self._actionLog.appendStarted(when, version, upgrade_id, pkg_name)
         self._action_start_callback()
         self.scheduledAction = None
         asyncio.ensure_future(
-            self._sendUpgradeRequest(when, version, upgrade_id, failTimeout))
+            self._sendUpgradeRequest(when, version, upgrade_id, failTimeout, pkg_name))
 
-    async def _sendUpgradeRequest(self, when, version, upgrade_id, failTimeout):
+    async def _sendUpgradeRequest(self, when, version, upgrade_id, failTimeout, pkg_name):
         retryLimit = self.retry_limit
         while retryLimit:
             try:
-                msg = UpgradeMessage(version=version).toJson()
+                msg = UpgradeMessage(version=version, pkg_name=pkg_name).toJson()
                 logger.info("Sending message to control tool: {}".format(msg))
                 await self._open_connection_and_send(msg)
                 break
             except Exception as ex:
-                logger.warning("Failed to communicate to control tool: {}"
-                               .format(ex))
+                logger.warning("Failed to communicate to control tool: {}".format(ex))
                 asyncio.sleep(self.retry_timeout)
                 retryLimit -= 1
         if not retryLimit:
             self._action_failed(version=version,
                                 scheduled_on=when,
                                 upgrade_id=upgrade_id,
-                                reason="problems in communication with "
-                                       "node control service")
+                                reason="problems in communication with node control service")
             self._unscheduleAction()
             self._actionFailedCallback()
         else:
-            logger.info("Waiting {} minutes for upgrade to be performed"
-                        .format(failTimeout))
+            logger.info("Waiting {} minutes for upgrade to be performed".format(failTimeout))
             timesUp = partial(self._declareTimeoutExceeded, when, version, upgrade_id)
             self._schedule(timesUp, self.get_timeout(failTimeout))
 
@@ -478,9 +468,10 @@ class UpgradeMessage(NodeControlToolMessage):
     Data structure that represents request for node update
     """
 
-    def __init__(self, version: str):
+    def __init__(self, version: str, pkg_name: str):
         super().__init__(UPGRADE_MESSAGE)
         self.version = version
+        self.pkg_name = pkg_name
 
     def toJson(self):
         import json

@@ -25,6 +25,6 @@ def test_scheduled_once_after_view_change(nodeSet, validUpgrade, upgradeSchedule
     for node in nodeSet:
         node_id = node.poolManager.get_nym_by_name(node.name)
         when = dateutil.parser.parse(validUpgrade['schedule'][node_id])
-        assert node.upgrader.scheduledAction == (version, when, upgrade_id)
+        assert node.upgrader.scheduledAction == (version, when, upgrade_id, "indy-node")
         assert len(node.upgrader._actionLog) == 1
-        assert node.upgrader.lastActionEventInfo == (UpgradeLog.SCHEDULED, when, version, upgrade_id)
+        assert node.upgrader.lastActionEventInfo == (UpgradeLog.SCHEDULED, when, version, upgrade_id, "indy-node")

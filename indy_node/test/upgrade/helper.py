@@ -139,14 +139,14 @@ class NodeControlToolExecutor:
         logger.debug("NCTProcess must be stopped, with pid: {}".format(self.p.pid))
 
 
-def composeUpgradeMessage(version):
-    return (json.dumps({"version": version, MESSAGE_TYPE: UPGRADE_MESSAGE})).encode()
+def composeUpgradeMessage(version, pkg_name: str = "indy-node"):
+    return (json.dumps({"version": version, "pkg_name": pkg_name, MESSAGE_TYPE: UPGRADE_MESSAGE})).encode()
 
 
-def sendUpgradeMessage(version):
+def sendUpgradeMessage(version, pkg_name: str = "indy-node"):
     sock = socket.create_connection(
         (controlServiceHost, controlServicePort))
-    sock.sendall(composeUpgradeMessage(version))
+    sock.sendall(composeUpgradeMessage(version, pkg_name=pkg_name))
     sock.close()
 
 
@@ -170,15 +170,15 @@ def get_valid_code_hash():
 
 
 def populate_log_with_upgrade_events(
-        pool_txn_node_names, tdir, tconf, version: Tuple[str, str, str]):
+        pool_txn_node_names, tdir, tconf, version: Tuple[str, str, str], pkg_name: str = "indy-node"):
     for nm in pool_txn_node_names:
         config_helper = NodeConfigHelper(nm, tconf, chroot=tdir)
         ledger_dir = config_helper.ledger_dir
         os.makedirs(ledger_dir)
         log = UpgradeLog(os.path.join(ledger_dir, tconf.upgradeLogFile))
         when = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        log.appendScheduled(when, version, randomString(10))
-        log.appendStarted(when, version, randomString(10))
+        log.appendScheduled(when, version, randomString(10), pkg_name)
+        log.appendStarted(when, version, randomString(10), pkg_name)
 
 
 def check_node_sent_acknowledges_upgrade(
@@ -259,12 +259,13 @@ def check_ledger_after_upgrade(
     assert list(versions)[0] == expected_version
 
 
-def check_no_loop(nodeSet, event):
+def check_no_loop(nodeSet, event, pkg_name: str = "indy-node"):
     for node in nodeSet:
         # mimicking upgrade start
         node.upgrader._actionLog.appendStarted(datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc()),
                                                node.upgrader.scheduledAction[0],
-                                               node.upgrader.scheduledAction[2])
+                                               node.upgrader.scheduledAction[2],
+                                               pkg_name)
         node.notify_upgrade_start()
         # mimicking upgrader's initialization after restart
         node.upgrader.process_action_log_for_first_run()

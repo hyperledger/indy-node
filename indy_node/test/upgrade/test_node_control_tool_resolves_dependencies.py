@@ -1,5 +1,6 @@
 from indy_node.utils.node_control_tool import NodeControlTool
 from plenum.test.helper import randomText
+from indy_node.utils.node_control_utils import NodeControlUtil
 
 
 def testNodeControlResolvesDependencies(monkeypatch, tconf):
@@ -19,8 +20,9 @@ def testNodeControlResolvesDependencies(monkeypatch, tconf):
     def mock_get_info_from_package_manager(package):
         return mock_info.get(package, None)
 
-    monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager', mock_get_info_from_package_manager)
-    monkeypatch.setattr(nct.__class__, '_update_package_cache', lambda *x: None)
+    monkeypatch.setattr(NodeControlUtil, 'update_package_cache', lambda *x: None)
+    monkeypatch.setattr(NodeControlUtil, '_get_info_from_package_manager',
+                        lambda x: mock_get_info_from_package_manager(x))
     ret = nct._get_deps_list(node_package_with_version)
     nct.server.close()
     assert ret.split() == [anoncreds_package_with_version, plenum_package_with_version, node_package_with_version]

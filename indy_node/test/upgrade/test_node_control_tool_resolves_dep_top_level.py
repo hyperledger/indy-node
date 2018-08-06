@@ -1,6 +1,7 @@
 import pytest
 from indy_node.utils.node_control_tool import NodeControlTool
 from plenum.test.helper import randomText
+from indy_node.utils.node_control_utils import NodeControlUtil
 
 
 EXT_PKT_VERSION = '7.88.999'
@@ -47,9 +48,10 @@ def test_node_as_depend(monkeypatch, tconf):
     def mock_get_info_from_package_manager(package):
         return mock_info.get(package, None)
 
-    monkeypatch.setattr(nct.__class__, '_get_ext_info', lambda *x: PACKAGE_MNG_EXT_PTK_OUTPUT)
-    monkeypatch.setattr(nct.__class__, '_get_info_from_package_manager', mock_get_info_from_package_manager)
-    monkeypatch.setattr(nct.__class__, '_update_package_cache', lambda *x: None)
+    monkeypatch.setattr(NodeControlUtil, 'update_package_cache', lambda *x: None)
+    monkeypatch.setattr(NodeControlUtil, '_get_info_from_package_manager',
+                        lambda x: mock_get_info_from_package_manager(x))
+    monkeypatch.setattr(NodeControlUtil, '_get_curr_info', lambda *x: PACKAGE_MNG_EXT_PTK_OUTPUT)
     nct._ext_init()
     ret = nct._get_deps_list(top_level_package_with_version)
     nct.server.close()

@@ -43,6 +43,7 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch):
         looper.run(node.upgrader._sendUpgradeRequest(when,
                                                      version,
                                                      None,
-                                                     timeout))
+                                                     timeout,
+                                                     "indy-node"))
 
     looper.run(eventually(chk))
