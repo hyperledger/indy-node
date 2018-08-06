@@ -7,7 +7,7 @@ whitelist = ['Failed to upgrade node',
              'This problem may have external reasons, check syslog for more information']
 
 
-def testTimeoutWorks(nodeSet, looper, monkeypatch):
+def testTimeoutWorks(nodeSet, looper, monkeypatch, tconf):
     """
     Checks that after some timeout upgrade is marked as failed if
     it not started
@@ -44,6 +44,6 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch):
                                                      version,
                                                      None,
                                                      timeout,
-                                                     "indy-node"))
+                                                     tconf.UPGRADE_ENTRY))
 
     looper.run(eventually(chk))
