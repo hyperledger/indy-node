@@ -89,7 +89,7 @@ class NodeControlTool:
         holds = set([self.upgrade_entry] + ext_deps + self.packages_to_hold.strip(" ").split(" "))
         self.packages_to_hold = ' '.join(list(holds))
 
-    def _ext_info(self, pkg = None):
+    def _ext_info(self, pkg=None):
         pkg_name = pkg or self.upgrade_entry
         return NodeControlUtil.curr_pkt_info(pkg_name)
 

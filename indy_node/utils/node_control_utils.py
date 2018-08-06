@@ -7,6 +7,7 @@ from indy_common.util import compose_cmd
 logger = getlogger()
 TIMEOUT = 300
 
+
 class NodeControlUtil:
     @classmethod
     def run_shell_command(cls, command, timeout):
