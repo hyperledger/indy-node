@@ -2,12 +2,15 @@ from datetime import datetime, timedelta
 
 import dateutil.tz
 import pytest
+
+from indy_node.utils.node_control_utils import NodeControlUtil
 from plenum.common.constants import VERSION
 
-from indy_common.constants import START, FORCE
+from indy_common.constants import START, FORCE, APP_NAME
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import bumpedVersion, \
     checkUpgradeScheduled, bumpVersion, sdk_ensure_upgrade_sent
+from plenum.test.helper import randomText
 from stp_core.loop.eventually import eventually
 
 
@@ -16,8 +19,10 @@ def nodeIds(nodeSet):
     return nodeSet[0].poolManager.nodeIds
 
 
-@pytest.fixture(scope='module')
-def validUpgrade(nodeIds, tconf):
+EXT_PKT_NAME = 'SomeTopLevelPkt'
+
+@pytest.fixture(scope='function', params=[EXT_PKT_NAME, APP_NAME])
+def validUpgrade(nodeIds, tconf, monkeypatch, request):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     startAt = unow + timedelta(seconds=100)
@@ -25,14 +30,55 @@ def validUpgrade(nodeIds, tconf):
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff + 3)
-    return dict(name='upgrade-13', version=bumpedVersion(), action=START,
-                schedule=schedule,
-                # sha256=get_valid_code_hash(),
+
+    vers = None
+
+    if request.param != APP_NAME:
+        EXT_PKT_VERSION = '7.88.999'
+        node_package = (APP_NAME, '0.0.1')
+        EXT_TOP_PKT_DEPS = [("aa", "1.1.1"), ("bb", "2.2.2")]
+        PACKAGE_MNG_EXT_PTK_OUTPUT = "Package: {}\nStatus: install ok installed\nPriority: extra\nSection: default\n" \
+                                     "Installed-Size: 21\nMaintainer: EXT_PKT_NAME-fond\nArchitecture: amd64\nVersion: {}\n" \
+                                     "Depends: {}, {} (= {}), {} (= {})\nDescription: EXT_PKT_DEPS-desc\n" \
+                                     "License: EXT_PKT_DEPS-lic\nVendor: none\n". \
+            format(EXT_PKT_NAME, EXT_PKT_VERSION, APP_NAME, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1])
+        top_level_package = (EXT_PKT_NAME, EXT_PKT_VERSION)
+        anoncreds_package = ('indy-anoncreds', '0.0.2')
+        plenum_package = ('indy-plenum', '0.0.3')
+        top_level_package_with_version = '{}={}'.format(*top_level_package)
+        top_level_package_dep1_with_version = '{}={}'.format(*EXT_TOP_PKT_DEPS[0])
+        top_level_package_dep2_with_version = '{}={}'.format(*EXT_TOP_PKT_DEPS[1])
+        node_package_with_version = '{}={}'.format(*node_package)
+        plenum_package_with_version = '{}={}'.format(*plenum_package)
+        anoncreds_package_with_version = '{}={}'.format(*anoncreds_package)
+        mock_info = {
+            top_level_package_with_version: "{}{} (= {}) {} (= {}), {} (= {})".format(
+                randomText(100), *node_package, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1]),
+            node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(
+                randomText(100), *plenum_package, randomText(100), *anoncreds_package, randomText(100)),
+            plenum_package_with_version: '{}'.format(randomText(100)),
+            anoncreds_package_with_version: '{}'.format(randomText(100)),
+            top_level_package_dep1_with_version: '{}{} (= {})'.format(randomText(100), *plenum_package),
+            top_level_package_dep2_with_version: '{}{} (= {})'.format(randomText(100), *node_package)
+        }
+        vers = EXT_PKT_VERSION
+
+        def mock_get_info_from_package_manager(package):
+            if package.startswith(EXT_PKT_NAME):
+                return mock_info.get(top_level_package_with_version, "")
+            return mock_info.get(package, "")
+
+        monkeypatch.setattr(NodeControlUtil, 'update_package_cache', lambda *x: None)
+        monkeypatch.setattr(NodeControlUtil, '_get_info_from_package_manager',
+                            lambda x: mock_get_info_from_package_manager(x))
+        monkeypatch.setattr(NodeControlUtil, '_get_curr_info', lambda *x: PACKAGE_MNG_EXT_PTK_OUTPUT)
+
+    return dict(name='upgrade-{}'.format(randomText(3)), version=bumpedVersion(vers), action=START, schedule=schedule,
                 sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55',
-                timeout=1)
+                timeout=1, package=request.param)
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def validUpgradeExpForceFalse(validUpgrade):
     nup = validUpgrade.copy()
     nup.update({FORCE: False})
@@ -40,7 +86,7 @@ def validUpgradeExpForceFalse(validUpgrade):
     return nup
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def validUpgradeExpForceTrue(validUpgradeExpForceFalse):
     nup = validUpgradeExpForceFalse.copy()
     nup.update({FORCE: True})
@@ -48,14 +94,14 @@ def validUpgradeExpForceTrue(validUpgradeExpForceFalse):
     return nup
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='function')
 def validUpgradeSent(looper, nodeSet, tdir, sdk_pool_handle, sdk_wallet_trustee,
                      validUpgrade):
     sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
                             sdk_wallet_trustee, validUpgrade)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='function')
 def validUpgradeSentExpForceFalse(
         looper,
         nodeSet,
@@ -67,14 +113,14 @@ def validUpgradeSentExpForceFalse(
                             sdk_wallet_trustee, validUpgradeExpForceFalse)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='function')
 def validUpgradeSentExpForceTrue(looper, nodeSet, tdir, sdk_pool_handle,
                                  sdk_wallet_trustee, validUpgradeExpForceTrue):
     sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
                             sdk_wallet_trustee, validUpgradeExpForceTrue)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='function')
 def upgradeScheduled(validUpgradeSent, looper, nodeSet, validUpgrade):
     looper.run(
         eventually(
@@ -85,7 +131,7 @@ def upgradeScheduled(validUpgradeSent, looper, nodeSet, validUpgrade):
             timeout=waits.expectedUpgradeScheduled()))
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='function')
 def upgradeScheduledExpForceFalse(validUpgradeSentExpForceFalse, looper,
                                   nodeSet, validUpgradeExpForceFalse):
     looper.run(eventually(checkUpgradeScheduled, nodeSet,
@@ -93,7 +139,7 @@ def upgradeScheduledExpForceFalse(validUpgradeSentExpForceFalse, looper,
                           timeout=waits.expectedUpgradeScheduled()))
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope='function')
 def upgradeScheduledExpForceTrue(validUpgradeSentExpForceTrue, looper, nodeSet,
                                  validUpgradeExpForceTrue):
     looper.run(eventually(checkUpgradeScheduled, nodeSet,
@@ -101,8 +147,9 @@ def upgradeScheduledExpForceTrue(validUpgradeSentExpForceTrue, looper, nodeSet,
                           timeout=waits.expectedUpgradeScheduled()))
 
 
-@pytest.fixture(scope='module')
-def invalidUpgrade(nodeIds, tconf):
+@pytest.fixture(scope='function')
+def invalidUpgrade(nodeIds, tconf, validUpgrade):
+    nup = validUpgrade.copy()
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     startAt = unow + timedelta(seconds=60)
@@ -110,8 +157,8 @@ def invalidUpgrade(nodeIds, tconf):
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff - 3)
-    return dict(name='upgrade-14', version=bumpedVersion(), action=START,
-                schedule=schedule,
-                # sha256=get_valid_code_hash(),
-                sha256='46c715a90b1067142d548cb1f1405b0486b32b1a27d418ef3a52bd976e9fae50',
-                timeout=10)
+    nup.update(dict(name='upgrade-14', version=bumpedVersion(), action=START,
+                    schedule=schedule,
+                    sha256='46c715a90b1067142d548cb1f1405b0486b32b1a27d418ef3a52bd976e9fae50',
+                    timeout=10))
+    return nup

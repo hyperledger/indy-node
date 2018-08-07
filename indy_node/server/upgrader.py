@@ -14,7 +14,7 @@ from stp_core.common.log import getlogger
 from plenum.common.constants import VERSION
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
-    UPGRADE_MESSAGE, PACKAGE
+    UPGRADE_MESSAGE, PACKAGE, APP_NAME
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.utils.node_control_utils import NodeControlUtil
 
@@ -32,7 +32,7 @@ class Upgrader(NodeMaintainer):
 
     @staticmethod
     def getVersion(pkg: str = None):
-        if pkg and pkg != "indy-node":
+        if pkg and pkg != APP_NAME:
             ver, _ = NodeControlUtil.curr_pkt_info(pkg)
             return ver
 
@@ -222,9 +222,7 @@ class Upgrader(NodeMaintainer):
         action = txn_data[ACTION]
         version = txn_data[VERSION]
         justification = txn_data.get(JUSTIFICATION)
-        reinstall = txn_data.get(REINSTALL, False)
         pkg_name = txn_data.get(PACKAGE, self.config.UPGRADE_ENTRY)
-        currentVersion = self.getVersion(pkg_name)
         upgrade_id = self.get_action_id(txn)
 
         if action == START:
@@ -244,10 +242,6 @@ class Upgrader(NodeMaintainer):
 
             when = txn_data[SCHEDULE][self.nodeId]
             failTimeout = txn_data.get(TIMEOUT, self.defaultActionTimeout)
-
-            if not self.is_version_upgradable(
-                    currentVersion, version, reinstall):
-                return
 
             if self.scheduledAction:
                 if isinstance(when, str):

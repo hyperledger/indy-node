@@ -171,3 +171,5 @@ validTxnTypes.update(CONFIG_TXN_TYPES)
 
 CONFIG_LEDGER_ID = 2
 JUSTIFICATION_MAX_SIZE = 1000
+
+APP_NAME = "indy-node"

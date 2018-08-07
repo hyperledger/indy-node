@@ -1,4 +1,6 @@
 import pytest
+
+from indy_common.constants import APP_NAME
 from indy_node.utils.node_control_tool import NodeControlTool
 from plenum.test.helper import randomText
 from indy_node.utils.node_control_utils import NodeControlUtil
@@ -6,13 +8,13 @@ from indy_node.utils.node_control_utils import NodeControlUtil
 
 EXT_PKT_VERSION = '7.88.999'
 EXT_PKT_NAME = 'SomeTopLevelPkt'
-node_package = ('indy-node', '0.0.1')
+node_package = (APP_NAME, '0.0.1')
 EXT_TOP_PKT_DEPS = [("aa", "1.1.1"), ("bb", "2.2.2")]
 PACKAGE_MNG_EXT_PTK_OUTPUT = "Package: {}\nStatus: install ok installed\nPriority: extra\nSection: default\n" \
                              "Installed-Size: 21\nMaintainer: EXT_PKT_NAME-fond\nArchitecture: amd64\nVersion: {}\n" \
                              "Depends: {}, {} (= {}), {} (= {})\nDescription: EXT_PKT_DEPS-desc\n" \
                              "License: EXT_PKT_DEPS-lic\nVendor: none\n".\
-    format(EXT_PKT_NAME, EXT_PKT_VERSION, "indy-node", *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1])
+    format(EXT_PKT_NAME, EXT_PKT_VERSION, APP_NAME, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1])
 
 
 @pytest.fixture(scope="module")

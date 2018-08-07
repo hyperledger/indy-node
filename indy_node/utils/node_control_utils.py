@@ -21,9 +21,12 @@ class NodeControlUtil:
     @classmethod
     def _get_curr_info(cls, package):
         cmd = compose_cmd(['dpkg', '-s', package])
-        ret = cls.run_shell_command(cmd, TIMEOUT)
+        try:
+            ret = cls.run_shell_command(cmd, TIMEOUT)
+        except Exception as ex:
+            return ""
         if ret.returncode != 0:
-            raise Exception('cannot get package info since {} returned {}'.format(cmd, ret.returncode))
+            return ""
         return ret.stdout.strip()
 
     @classmethod
@@ -55,9 +58,12 @@ class NodeControlUtil:
     @classmethod
     def _get_info_from_package_manager(cls, package):
         cmd = compose_cmd(['apt-cache', 'show', package])
-        ret = cls.run_shell_command(cmd, TIMEOUT)
+        try:
+            ret = cls.run_shell_command(cmd, TIMEOUT)
+        except Exception as ex:
+            return ""
         if ret.returncode != 0:
-            raise Exception('cannot get package info since {} returned {}'.format(cmd, ret.returncode))
+            return ""
         return ret.stdout.strip()
 
     @classmethod

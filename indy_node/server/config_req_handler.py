@@ -7,7 +7,8 @@ from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.auth import Authoriser
-from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE
+from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
+    APP_NAME, REINSTALL
 from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
@@ -58,13 +59,13 @@ class ConfigReqHandler(LedgerRequestHandler):
         # TODO: Check if cancel is submitted before start
 
     def curr_pkt_info(self, pkg_name):
-        if pkg_name == "indy-node":
-            return Upgrader.getVersion(), ["indy-node"]
+        if pkg_name == APP_NAME:
+            return Upgrader.getVersion(), [APP_NAME]
         return NodeControlUtil.curr_pkt_info(pkg_name)
 
     def get_dependencies(self, pkg_name, version):
-        base_deps = ["indy-node", "indy-plenum"]
-        if pkg_name == "indy-node":
+        base_deps = [APP_NAME, "indy-plenum"]
+        if pkg_name == APP_NAME:
             return base_deps
         deps = []
         NodeControlUtil.dep_tree_traverse(
@@ -93,23 +94,17 @@ class ConfigReqHandler(LedgerRequestHandler):
                     raise InvalidClientRequest(req.identifier, req.reqId,
                                                "Packet {} is not installed and cannot be upgraded".
                                                format(pkt_to_upgrade))
-                if all(["indy-node" not in d for d in cur_deps]):
-                    raise InvalidClientRequest(req.identifier, req.reqId,
-                                               "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
-                deps = self.get_dependencies(pkt_to_upgrade, currentVersion)
-                if not deps:
+                if all([APP_NAME not in d for d in cur_deps]):
                     raise InvalidClientRequest(req.identifier, req.reqId,
                                                "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
             else:
                 raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade packet name is empty")
 
             targetVersion = req.operation[VERSION]
-            if Upgrader.compareVersions(currentVersion, targetVersion) < 0:
+            reinstall = req.operation.get(REINSTALL, False)
+            if not Upgrader.is_version_upgradable(currentVersion, targetVersion, reinstall):
                 # currentVersion > targetVersion
-                raise InvalidClientRequest(
-                    req.identifier,
-                    req.reqId,
-                    "Upgrade to lower version is not allowed")
+                raise InvalidClientRequest(req.identifier, req.reqId, "Version is not upgradable")
 
             trname = IndyTransactions.POOL_UPGRADE.name
             action = operation.get(ACTION)

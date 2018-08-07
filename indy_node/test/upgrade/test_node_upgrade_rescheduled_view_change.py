@@ -1,7 +1,8 @@
 import dateutil
 
+from indy_common.constants import APP_NAME
 from indy_node.server.upgrade_log import UpgradeLog
-from indy_node.test.upgrade.helper import emulate_view_change_pool_for_upgrade
+from indy_node.test.upgrade.helper import emulate_view_change_pool_for_upgrade, count_action_log_entries
 
 whitelist = ['unable to send message']
 
@@ -25,6 +26,8 @@ def test_scheduled_once_after_view_change(nodeSet, validUpgrade, upgradeSchedule
     for node in nodeSet:
         node_id = node.poolManager.get_nym_by_name(node.name)
         when = dateutil.parser.parse(validUpgrade['schedule'][node_id])
-        assert node.upgrader.scheduledAction == (version, when, upgrade_id, "indy-node")
-        assert len(node.upgrader._actionLog) == 1
-        assert node.upgrader.lastActionEventInfo == (UpgradeLog.SCHEDULED, when, version, upgrade_id, "indy-node")
+        assert node.upgrader.scheduledAction == (version, when, upgrade_id, validUpgrade['package'])
+        assert count_action_log_entries(list(node.upgrader._actionLog),
+                                        lambda entry: entry[5] == validUpgrade['package']) == 1
+        assert node.upgrader.lastActionEventInfo == (UpgradeLog.SCHEDULED, when, version,
+                                                     upgrade_id, validUpgrade['package'])

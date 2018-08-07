@@ -40,11 +40,13 @@ def test_forced_upgrade_handled_once_if_request_received_after_propagate(
     slow_node.nodeMsgRouter.routes[Propagate] = patched_process_propagate
     slow_node.clientMsgRouter.routes[Request] = patched_process_request
 
+    init_len = len(list(slow_node.upgrader._actionLog))
+
     sdk_ensure_upgrade_sent(looper, sdk_pool_handle, sdk_wallet_trustee,
                             validUpgradeExpForceTrue)
 
     looper.runFor(waits.expectedUpgradeScheduled())
 
     checkUpgradeScheduled([slow_node], validUpgradeExpForceTrue[VERSION])
-    assert len(list(slow_node.upgrader._actionLog)) == 1
+    assert len(list(slow_node.upgrader._actionLog)) > init_len
     assert slow_node.upgrader._actionLog.lastEvent[1] == UpgradeLog.SCHEDULED
