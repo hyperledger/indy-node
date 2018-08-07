@@ -914,7 +914,9 @@ def create_req_generator(req_kind_arg):
                           "get_nym": RGGetNym, "get_attrib": RGGetAttrib,
                           "get_schema": RGGetSchema, "get_cred_def": RGGetDefinition,
                           "get_revoc_reg_def": RGGetDefRevoc, "get_revoc_reg": RGGetEntryRevoc,
-                          "get_revoc_reg_delta": RGGetRevocRegDelta, "payment": RGPayment}
+                          "get_revoc_reg_delta": RGGetRevocRegDelta,
+                          "get_payment_sources": RGGetPaymentSources, "payment": RGPayment,
+                          "verify_payment": RGVerifyPayment}
     if req_kind_arg in supported_requests:
         return supported_requests[req_kind_arg], {"label": req_kind_arg}
     try:
