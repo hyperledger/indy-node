@@ -108,4 +108,4 @@ INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
 # Top level packet to be updated via pool upgrade command
 UPGRADE_ENTRY = 'indy-node'
 
-WRITES_REQUIRE_TRUST_ANCHOR = True
+ANYONE_CAN_WRITE = False

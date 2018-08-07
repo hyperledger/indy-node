@@ -23,4 +23,4 @@ def old_values(request):
 
 @pytest.fixture(scope='module')
 def initialized_auth_map():
-    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, True)
+    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, False)
