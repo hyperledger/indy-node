@@ -77,9 +77,9 @@ def testManual(do, be, poolNodesStarted, poolTxnStewardData, philCli,
 
     # Add nym and endpoint for Faber, Acme and Thrift
     agentIpAddress = "127.0.0.1"
-    faberAgentPort = 5555
-    acmeAgentPort = 6666
-    thriftAgentPort = 7777
+    faberAgentPort = 7777
+    acmeAgentPort = 8888
+    thriftAgentPort = 9999
 
     faberHa = "{}:{}".format(agentIpAddress, faberAgentPort)
     acmeHa = "{}:{}".format(agentIpAddress, acmeAgentPort)
