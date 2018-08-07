@@ -115,11 +115,11 @@ python3 perf_processes.py -n 1000 -k "{\"get_nym\": {\"file_name\": \"./load_tes
 Default is "sov".
 
 'payment_addrs_count' - count of payment addresses. Applicable for payment, verify_payment and get_payment_sources
-request types. Default is 10. _The count of payment addresses actually also determines the count of initial payment sources
-(one payment source per payment address). Please note, the count of initial payment sources serves as a buffer for
-payment request generator because new payments use receipts of previous payments as sources. In case there is
-no available sources in the buffer, payment request generator prints a message to stdout that a next request cannot
-be generated since no req data are available._
+request types. Default is 100. _The count of payment addresses actually also determines the count of initial
+payment sources (one payment source per payment address). Please note, the count of initial payment sources serves
+as a buffer for payment request generator because new payments use receipts of previous payments as sources.
+In case there is no available sources in the buffer, payment request generator prints a message to stdout that
+a next request cannot be generated since no req data are available._
 
 
 ## Examples
@@ -200,7 +200,7 @@ python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", 
 python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", \"file_max_split\": 1, \"file_field\": 1, \"ignore_first_line\": false, \"file_sep\": \" \"}}"
 ```
 
-* To send payment txns using 100 payment addresses / initial payment sources:
+* To send payment txns using 1000 payment addresses / initial payment sources:
 ```
-python3 perf_processes.py -k "{\"payment\": {\"payment_addrs_count\": 100}}"
+python3 perf_processes.py -k "{\"payment\": {\"payment_addrs_count\": 1000}}"
 ```
