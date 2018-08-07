@@ -34,7 +34,7 @@ def test_claim_def_adding_with_some_field(initialized_auth_map):
 
 
 def test_client_can_send_claim_def():
-    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, False)
+    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, True)
 
     r, msg = Authoriser.authorised(typ=CLAIM_DEF,
                                    actorRole=None,
@@ -44,7 +44,7 @@ def test_client_can_send_claim_def():
 
 
 def test_client_cant_send_claim_def():
-    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, True)
+    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, False)
 
     r, msg = Authoriser.authorised(typ=CLAIM_DEF,
                                    actorRole=None,

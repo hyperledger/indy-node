@@ -19,14 +19,14 @@ def test_schema_adding_without_permission(initialized_auth_map):
 
 
 def test_client_can_send_claim_def():
-    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, False)
+    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, True)
 
     r, msg = _authorised_for_schemas(None)
     assert r and not msg
 
 
 def test_client_cant_send_claim_def():
-    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, True)
+    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, False)
 
     r, msg = _authorised_for_schemas(None)
     assert not r and "None role not in allowed roles" in msg
