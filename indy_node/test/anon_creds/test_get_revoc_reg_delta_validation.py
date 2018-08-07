@@ -10,7 +10,8 @@ from plenum.common.exceptions import InvalidClientRequest
 def test_revoc_reg_delta_schema_validation_wrong_type(build_get_revoc_reg_delta):
     req = copy.deepcopy(build_get_revoc_reg_delta)
     req['operation'][FROM] = "10"
-    with pytest.raises(TypeError, match="expected types 'int', got 'str'"):
+    with pytest.raises(TypeError, match="expected types "
+                                        "'int', got 'str'"):
         SafeRequest(**req)
 
 
