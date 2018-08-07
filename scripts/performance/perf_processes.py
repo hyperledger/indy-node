@@ -841,7 +841,7 @@ class RGPayment(RGBasePayment):
 
             resp_obj = json.loads(resp)
 
-            if not "op" in resp_obj:
+            if "op" not in resp_obj:
                 raise Exception("Response does not contain op field.")
 
             if resp_obj["op"] == "REQNACK" or resp_obj["op"] == "REJECT":
