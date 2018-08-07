@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from indy_common.config_util import getConfig
 from plenum.common.constants import KeyValueStorageType
-from plenum.common.metrics_collector import MetricsType
+from plenum.common.metrics_collector import MetricsName
 from plenum.common.metrics_stats import load_metrics_from_kv_store
 from storage.helper import initKeyValueStorage
 
@@ -110,24 +110,24 @@ def process_storage(storage, args):
         for ts, frame in sorted(stats.frames(), key=lambda v: v[0]):
             row = [
                 ts.replace(microsecond=0),
-                frame.get(MetricsType.LOOPER_RUN_TIME_SPENT).avg,
-                frame.get(MetricsType.THREE_PC_BATCH_SIZE).avg,
-                frame.get(MetricsType.INCOMING_NODE_MESSAGE_SIZE).avg,
-                frame.get(MetricsType.OUTGOING_NODE_MESSAGE_SIZE).avg,
-                frame.get(MetricsType.INCOMING_CLIENT_MESSAGE_SIZE).avg,
-                frame.get(MetricsType.OUTGOING_CLIENT_MESSAGE_SIZE).avg,
-                frame.get(MetricsType.NODE_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsType.CLIENT_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsType.THREE_PC_BATCH_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsType.THREE_PC_BATCH_SIZE).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsType.INCOMING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsType.INCOMING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsType.OUTGOING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsType.OUTGOING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsType.INCOMING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsType.INCOMING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                frame.get(MetricsType.OUTGOING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                frame.get(MetricsType.OUTGOING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds()
+                frame.get(MetricsName.LOOPER_RUN_TIME_SPENT).avg,
+                frame.get(MetricsName.THREE_PC_BATCH_SIZE).avg,
+                frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).avg,
+                frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).avg,
+                frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).avg,
+                frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).avg,
+                frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
+                frame.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
+                frame.get(MetricsName.THREE_PC_BATCH_SIZE).count / stats.timestep.total_seconds(),
+                frame.get(MetricsName.THREE_PC_BATCH_SIZE).sum / stats.timestep.total_seconds(),
+                frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
+                frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
+                frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
+                frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
+                frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
+                frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
+                frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
+                frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds()
             ]
             f.write(",".join(str(v if v else "0") for v in row))
             f.write("\n")
@@ -140,47 +140,47 @@ def process_storage(storage, args):
     total = stats.total
 
     print("Number of node messages processed in one looper run:")
-    print("   {}".format(total.get(MetricsType.NODE_STACK_MESSAGES_PROCESSED)))
+    print("   {}".format(total.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED)))
     print("")
 
     print("Number of client messages processed in one looper run:")
-    print("   {}".format(total.get(MetricsType.CLIENT_STACK_MESSAGES_PROCESSED)))
+    print("   {}".format(total.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED)))
     print("")
 
     print("Seconds passed between looper runs:")
-    print("   {}".format(total.get(MetricsType.LOOPER_RUN_TIME_SPENT)))
+    print("   {}".format(total.get(MetricsName.LOOPER_RUN_TIME_SPENT)))
     print("")
 
     print("Number of requests in one 3PC batch:")
-    print("   {}".format(total.get(MetricsType.THREE_PC_BATCH_SIZE)))
+    print("   {}".format(total.get(MetricsName.THREE_PC_BATCH_SIZE)))
     print("")
 
     print("Number of messages in one tranport batch:")
-    print("   {}".format(total.get(MetricsType.TRANSPORT_BATCH_SIZE)))
+    print("   {}".format(total.get(MetricsName.TRANSPORT_BATCH_SIZE)))
     print("")
 
     print("Incoming node message size, bytes:")
-    print("   {}".format(total.get(MetricsType.INCOMING_NODE_MESSAGE_SIZE)))
+    print("   {}".format(total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)))
     print("")
 
     print("Outgoing node message size, bytes:")
-    print("   {}".format(total.get(MetricsType.OUTGOING_NODE_MESSAGE_SIZE)))
+    print("   {}".format(total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)))
     print("")
 
     print("Incoming client message size, bytes:")
-    print("   {}".format(total.get(MetricsType.INCOMING_CLIENT_MESSAGE_SIZE)))
+    print("   {}".format(total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)))
     print("")
 
     print("Outgoing client message size, bytes:")
-    print("   {}".format(total.get(MetricsType.OUTGOING_CLIENT_MESSAGE_SIZE)))
+    print("   {}".format(total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)))
     print("")
 
     print("Additional statistics:")
-    three_pc = total.get(MetricsType.THREE_PC_BATCH_SIZE)
-    node_in = total.get(MetricsType.INCOMING_NODE_MESSAGE_SIZE)
-    node_out = total.get(MetricsType.OUTGOING_NODE_MESSAGE_SIZE)
-    client_in = total.get(MetricsType.INCOMING_CLIENT_MESSAGE_SIZE)
-    client_out = total.get(MetricsType.OUTGOING_CLIENT_MESSAGE_SIZE)
+    three_pc = total.get(MetricsName.THREE_PC_BATCH_SIZE)
+    node_in = total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)
+    node_out = total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)
+    client_in = total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)
+    client_out = total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)
     node_messages = node_in.count + node_out.count
     node_traffic = node_in.sum + node_out.sum
     client_messages = (client_in.count + client_out.count)

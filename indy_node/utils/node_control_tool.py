@@ -43,6 +43,10 @@ class NodeControlTool:
             hold_ext: str = '',
             config=None):
         self.config = config or getConfig()
+
+        assert self.config.UPGRADE_ENTRY, "UPGRADE_ENTRY config parameter must be set"
+        self.ext_upgrade = self.config.UPGRADE_ENTRY not in PACKAGES_TO_HOLD
+
         self.test_mode = test_mode
         self.timeout = timeout or TIMEOUT
 
@@ -52,6 +56,7 @@ class NodeControlTool:
 
         self.tmp_dir = TMP_DIR
         self.backup_format = backup_format
+        self.ext_ver = None
         self.deps = deps
 
         _files_to_preserve = [self.config.lastRunVersionFile, self.config.nextVersionFile,
@@ -81,6 +86,48 @@ class NodeControlTool:
         # Listen for incoming connections
         self.server.listen(1)
 
+    def _ext_init(self):
+        self.ext_upgrade = self.config.UPGRADE_ENTRY not in PACKAGES_TO_HOLD
+        self._update_package_cache()
+        self.ext_ver, ext_deps = self._ext_info()
+        self.deps = ext_deps + self.deps
+        holds = set([self.config.UPGRADE_ENTRY] + ext_deps + self.packages_to_hold.strip(" ").split(" "))
+        self.packages_to_hold = ' '.join(list(holds))
+
+    @classmethod
+    def _get_ext_info(cls, package):
+        cmd = compose_cmd(['dpkg', '-s', package])
+        ret = cls._run_shell_command(cmd)
+        if ret.returncode != 0:
+            raise Exception('cannot get package info since {} returned {}'
+                            .format(cmd, ret.returncode))
+        return ret.stdout.strip()
+
+    def _ext_info(self):
+
+        def _parse_deps(deps: str):
+            ret = []
+            pkgs = deps.split(",")
+            for pkg in pkgs:
+                name_ver = pkg.strip(" ").split(" ", maxsplit=1)
+                name = name_ver[0].strip(" \n")
+                ret.append(name)
+            return ret
+
+        if not self.ext_upgrade:
+            return None, []
+
+        package_info = self._get_ext_info(self.config.UPGRADE_ENTRY)
+        out_lines = package_info.split("\n")
+        ver = None
+        ext_deps = []
+        for l in out_lines:
+            if l.startswith("Version:"):
+                ver = l.split(":", maxsplit=1)[1].strip(" \n")
+            if l.startswith("Depends:"):
+                ext_deps = _parse_deps(l.split(":", maxsplit=1)[1].strip(" \n"))
+        return ver, ext_deps
+
     @classmethod
     def _get_info_from_package_manager(cls, package):
         cmd = compose_cmd(['apt-cache', 'show', package])
@@ -96,9 +143,7 @@ class NodeControlTool:
         ret = cls._run_shell_command(cmd)
         if ret.returncode != 0:
             raise Exception('cannot update package cache since {} returned {}'
-                            .format(cmd,
-                                    ret.returncode))
-
+                            .format(cmd, ret.returncode))
         return ret.stdout.strip()
 
     def _hold_packages(self):
@@ -108,38 +153,48 @@ class NodeControlTool:
             if ret.returncode != 0:
                 raise Exception('cannot mark {} packages for hold '
                                 'since {} returned {}'
-                                .format(self.packages_to_hold,
-                                        cmd,
-                                        ret.returncode))
+                                .format(self.packages_to_hold, cmd, ret.returncode))
             logger.info('Successfully put {} packages on hold'.format(self.packages_to_hold))
         else:
             logger.info('Skipping packages holding')
 
     def _get_deps_list(self, package):
+        def _get_deps(package, include):
+            package_info = self._get_info_from_package_manager(package)
+            ret = [package]
+            deps = []
+            deps_deps = []
+            for dep in include:
+                if dep in package_info:
+                    match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep), package_info)
+                    if match:
+                        dep_version = match.group(1)
+                        dep_package = '{}={}'.format(dep, dep_version)
+                        deps.append(dep_package)
+                        deps_deps.append(_get_deps(dep_package, include))
+            ret.append(deps)
+            ret.append(deps_deps)
+            return ret
+
+        def _dep_tree_traverse(dep_tree, deps_so_far):
+            if isinstance(dep_tree, str) and dep_tree not in deps_so_far:
+                deps_so_far.append(dep_tree)
+            elif isinstance(dep_tree, list) and dep_tree:
+                for d in reversed(dep_tree):
+                    _dep_tree_traverse(d, deps_so_far)
+
         logger.info('Getting dependencies for {}'.format(package))
-        ret = ''
         self._update_package_cache()
-        package_info = self._get_info_from_package_manager(package)
-
-        for dep in self.deps:
-            if dep in package_info:
-                match = re.search(
-                    '.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep),
-                    package_info)
-                if match:
-                    dep_version = match.group(1)
-                    dep_package = '{}={}'.format(dep, dep_version)
-                    dep_tree = self._get_deps_list(dep_package)
-                    ret = '{} {}'.format(dep_tree, ret)
-
-        ret = '{} {}'.format(ret, package)
-        return ret
+        dep_tree = _get_deps(package, self.deps)
+        ret = []
+        _dep_tree_traverse(dep_tree, ret)
+        return " ".join(ret)
 
     def _call_upgrade_script(self, version):
         logger.info('Upgrading indy node to version {}, test_mode {}'.format(
             version, int(self.test_mode)))
 
-        deps = self._get_deps_list('indy-node={}'.format(version))
+        deps = self._get_deps_list('{}={}'.format(self.config.UPGRADE_ENTRY, version))
         deps = '"{}"'.format(deps)
 
         cmd_file = 'upgrade_indy_node'
@@ -220,13 +275,14 @@ class NodeControlTool:
         self._remove_old_backups()
 
     def _upgrade(self, new_version, migrate=True, rollback=True):
-        current_version = Upgrader.getVersion()
+        current_version = self.ext_ver if self.ext_ver else Upgrader.getVersion()
         try:
             logger.info('Trying to upgrade from {} to {}'
                         .format(current_version, new_version))
             self._call_upgrade_script(new_version)
             if migrate:
-                self._do_migration(current_version, new_version)
+                # migration should only be called with current version from Upgrader!
+                self._do_migration(Upgrader.getVersion(), new_version)
             self._call_restart_node_script()
         except Exception as ex:
             self._declare_upgrade_failed(from_version=current_version,
@@ -284,6 +340,7 @@ class NodeControlTool:
                               timeout=timeout)
 
     def start(self):
+        self._ext_init()
         self._hold_packages()
 
         # Sockets from which we expect to read
