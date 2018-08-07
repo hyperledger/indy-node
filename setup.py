@@ -97,6 +97,8 @@ setup(
              'scripts/indy_old_cli_export_dids',
              'scripts/setup_iptables',
              'scripts/setup_indy_node_iptables',
+             'scripts/current_validators',
+             'scripts/node_address_list',
              'tools/diagnostics/nscapture',
              'tools/diagnostics/nsdiff',
              'tools/diagnostics/nsreplay',
