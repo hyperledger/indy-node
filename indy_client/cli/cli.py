@@ -48,7 +48,7 @@ from indy_common.auth import Authoriser
 from indy_common.config_util import getConfig
 from indy_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, START, JUSTIFICATION, NULL, WRITES, \
-    REINSTALL, SCHEMA_ATTR_NAMES
+    REINSTALL, SCHEMA_ATTR_NAMES, PACKAGE, APP_NAME
 from indy_common.exceptions import InvalidConnectionException, ConnectionAlreadyExists, \
     ConnectionNotFound, NotConnectedToNetwork
 from indy_common.identity import Identity
@@ -766,7 +766,8 @@ class IndyCli(PlenumCli):
             justification=None,
             timeout=None,
             force=False,
-            reinstall=False):
+            reinstall=False,
+            pkg_name=APP_NAME):
         upgrade = Upgrade(
             name,
             version,
@@ -777,7 +778,8 @@ class IndyCli(PlenumCli):
             timeout=timeout,
             justification=justification,
             force=force,
-            reinstall=reinstall)
+            reinstall=reinstall,
+            package=pkg_name)
         self.activeWallet.doPoolUpgrade(upgrade)
         reqs = self.activeWallet.preparePending()
         req = self.activeClient.submitReqs(*reqs)[0][0]
@@ -922,6 +924,7 @@ class IndyCli(PlenumCli):
             justification = matchedVars.get(JUSTIFICATION)
             force = matchedVars.get(FORCE, "False")
             reinstall = matchedVars.get(REINSTALL, "False")
+            package = matchedVars.get(PACKAGE, APP_NAME)
             force = force == "True"
             reinstall = reinstall == "True"
             if action == START:
@@ -944,7 +947,7 @@ class IndyCli(PlenumCli):
             self._sendPoolUpgTxn(name, version, action, sha256,
                                  schedule=schedule, timeout=timeout,
                                  justification=justification, force=force,
-                                 reinstall=reinstall)
+                                 reinstall=reinstall, pkg_name=package)
             return True
 
     def _sendPoolConfigAction(self, matchedVars):
