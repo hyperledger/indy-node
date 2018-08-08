@@ -100,9 +100,8 @@ def test_force_false_upgrade(
 
 def send_force_true_upgrade_cmd(do, expect, upgrade_data):
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} schedule={schedule} timeout={timeout} force=True',
-       within=10,
-       expect=expect, mapper=upgrade_data)
+       'action={action} schedule={schedule} timeout={timeout} force=True package={package}',
+       within=10, expect=expect, mapper=upgrade_data)
 
 
 def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
@@ -128,13 +127,11 @@ def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
 
 def send_reinstall_true_upgrade_cmd(do, expect, upgrade_data):
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} schedule={schedule} timeout={timeout} reinstall=True',
-       within=10,
-       expect=expect, mapper=upgrade_data)
+       'action={action} schedule={schedule} timeout={timeout} reinstall=True package={package}',
+       within=10, expect=expect, mapper=upgrade_data)
 
 
 def send_reinstall_false_upgrade_cmd(do, expect, upgrade_data):
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} schedule={schedule} timeout={timeout} reinstall=False',
-       within=10,
-       expect=expect, mapper=upgrade_data)
+       'action={action} schedule={schedule} timeout={timeout} reinstall=False package={package}',
+       within=10, expect=expect, mapper=upgrade_data)
