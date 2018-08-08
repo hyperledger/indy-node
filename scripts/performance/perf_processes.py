@@ -3,7 +3,6 @@ import copy
 import shutil
 import json
 import time
-import datetime
 import os
 import sys
 import asyncio
@@ -14,6 +13,7 @@ import signal
 import functools
 from collections import deque, Sequence
 from ctypes import CDLL
+from datetime import datetime
 
 import base58
 import libnacl
@@ -105,23 +105,6 @@ def divide_sequence_into_chunks(seq: Sequence, chunk_size: int):
     return (seq[shift:shift + chunk_size] for shift in range(0, len(seq), chunk_size))
 
 
-libsovtoken_initiated = False
-
-
-def init_libsovtoken_once():
-    global libsovtoken_initiated
-    if not libsovtoken_initiated:
-        try:
-            libsovtoken = CDLL("libsovtoken.so")
-            res = libsovtoken.sovtoken_init()
-            if res != 0:
-                raise Exception("sovtoken_init returned result code {}".format(res))
-            libsovtoken_initiated = True
-        except Exception as ex:
-            print("libsovtoken initialization failed: {}".format(ex))
-            raise ex
-
-
 class NoReqDataAvailableException(Exception):
     pass
 
@@ -135,7 +118,7 @@ class ClientStatistic:
         self._req_nack = 0
         self._req_rejc = 0
 
-        # inited as something big (datetime.datetime(9999, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
+        # inited as something big (datetime(9999, 1, 1) - datetime(1970, 1, 1)).total_seconds()
         self._server_min_txn_time = 253370764800
         self._server_max_txn_time = 0
 
@@ -377,7 +360,7 @@ class RGSeqReqs(RequestGenerator):
     async def on_request_replied(self, req, resp_or_exp):
         req_obj = json.loads(req)
         req_id = req_obj["reqId"]
-        self._req_id_to_req_gen.pop(req_id).on_request_replied(req, resp_or_exp)
+        await self._req_id_to_req_gen.pop(req_id).on_request_replied(req, resp_or_exp)
 
 
 class RGNym(RequestGenerator):
@@ -683,11 +666,33 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
     TRUSTEE_ROLE_CODE = "0"
 
     DEFAULT_PAYMENT_METHOD = "sov"
-    DEFAULT_PAYMENT_ADDRS_COUNT = 10
+    DEFAULT_PAYMENT_ADDRS_COUNT = 100
 
     NUMBER_OF_TRUSTEES_FOR_MINT = 4
     MINT_RECIPIENTS_LIMIT = 100
     AMOUNT_LIMIT = 100
+
+    PLUGINS = {
+        "sov": ("libsovtoken.so", "sovtoken_init")
+    }
+
+    __initiated_payment_methods = set()
+
+    @staticmethod
+    def __init_plugin_once(payment_method):
+        if payment_method not in RGBasePayment.__initiated_payment_methods:
+            try:
+                plugin_lib_name, init_func_name = RGBasePayment.PLUGINS[payment_method]
+                plugin_lib = CDLL(plugin_lib_name)
+                init_func = getattr(plugin_lib, init_func_name)
+                res = init_func()
+                if res != 0:
+                    raise RuntimeError(
+                        "Initialization function returned result code {}".format(res))
+                RGBasePayment.__initiated_payment_methods.add(payment_method)
+            except Exception as ex:
+                print("Payment plugin initialization failed: {}".format(repr(ex)))
+                raise ex
 
     def __init__(self, *args,
                  payment_method=DEFAULT_PAYMENT_METHOD,
@@ -696,7 +701,7 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
 
         super().__init__(*args, **kwargs)
 
-        init_libsovtoken_once()
+        RGBasePayment.__init_plugin_once(payment_method)
 
         self._pool_handle = None
         self._wallet_handle = None
@@ -794,10 +799,10 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
 
 class RGGetPaymentSources(RGBasePayment):
     def _gen_req_data(self):
-        return random.choice(self._payment_addresses)
+        return (datetime.now().isoformat(), random.choice(self._payment_addresses))
 
     async def _gen_req(self, submit_did, req_data):
-        payment_address = req_data
+        _, payment_address = req_data
         req, _ = await payment.build_get_payment_sources_request(self._wallet_handle,
                                                                  self._submitter_did,
                                                                  payment_address)
@@ -915,10 +920,10 @@ class RGVerifyPayment(RGBasePayment):
         self._receipts.append(receipt_info["receipt"])
 
     def _gen_req_data(self):
-        return random.choice(self._receipts)
+        return (datetime.now().isoformat(), random.choice(self._receipts))
 
     async def _gen_req(self, submit_did, req_data):
-        receipt = req_data
+        _, receipt = req_data
         req, _ = await payment.build_verify_payment_req(self._wallet_handle,
                                                         self._submitter_did,
                                                         receipt)
@@ -1059,7 +1064,7 @@ class LoadClient:
             req_data, req = await self._req_generator.generate_request(self._test_did)
         except NoReqDataAvailableException:
             print("{} | Cannot generate request since no req data are available."
-                  .format(datetime.datetime.now()))
+                  .format(datetime.now()))
             return
         except Exception as e:
             print("{} generate req error {}".format(self._name, e))
@@ -1361,7 +1366,7 @@ class TestRunner:
         proc_count = args.clients if args.clients > 0 else multiprocessing.cpu_count()
         refresh = args.refresh_rate if args.refresh_rate > 0 else 100
         bg_tasks = args.bg_tasks if args.bg_tasks > 1 else 300
-        start_date = datetime.datetime.now()
+        start_date = datetime.now()
         value_separator = args.val_sep if args.val_sep != "" else "|"
         print("Number of client         ", proc_count)
         print("Path to genesis txns file", args.genesis_path)
@@ -1414,7 +1419,7 @@ class TestRunner:
         self._loop.remove_signal_handler(signal.SIGINT)
 
         print("")
-        print("DONE At", datetime.datetime.now())
+        print("DONE At", datetime.now())
         print(self.get_refresh_str())
         self.close_fs()
 
