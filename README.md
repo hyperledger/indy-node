@@ -23,7 +23,7 @@ collapse into this one, except for [indy-sdk](https://github.com/hyperledger/ind
 Indy has its own distributed ledger based on RBFT.
 
 ##### Relationship with Sovrin
-This code is independent from but commonly associated with [Sovrin](https://sovrin.org). Sovrin is a public utility
+This code is independent from but commonly associated with [The Sovrin Foundation](https://sovrin.org). The Sovrin Foundation is a public utility
 for identity, built on top of this codebase. People who install sovrin packages (e.g., with
 `sudo apt install sovrin`) get prepackaged genesis transactions that integrate
 with an Indy validator pool using [Sovrin's governance and trust framework](https://sovrin.org/wp-content/uploads/2017/06/SovrinProvisionalTrustFramework2017-03-22.pdf). However, it is possible to use Indy Node
