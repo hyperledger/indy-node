@@ -97,6 +97,11 @@ def process_storage(storage, args):
                 "avg_incoming_client_message_size",
                 "avg_outgoing_client_message_size",
                 "avg_master_validation_time",
+                "avg_master_validation_time_per_req",
+                "avg_monitor_avg_throughput",
+                "avg_monitor_avg_latency",
+                "avg_master_monitor_avg_throughput",
+                "avg_master_monitor_avg_latency",
                 "avg_node_stack_messages_processed",
                 "avg_client_stack_messages_processed",
                 "node_stack_messages_processed_per_sec",
@@ -112,7 +117,19 @@ def process_storage(storage, args):
                 "incoming_client_messages_per_sec",
                 "incoming_client_traffic_per_sec",
                 "outgoing_client_messages_per_sec",
-                "outgoing_client_traffic_per_sec"
+                "outgoing_client_traffic_per_sec",
+                "AVG_NODE_PROD_TIME",
+                "AVG_SERVICE_REPLICAS_TIME",
+                "AVG_SERVICE_NODE_MSGS_TIME",
+                "AVG_SERVICE_CLIENT_MSGS_TIME",
+                "AVG_SERVICE_ACTIONS_TIME",
+                "AVG_SERVICE_LEDGER_MANAGER_TIME",
+                "AVG_SERVICE_VIEW_CHANGER_TIME",
+                "AVG_SERVICE_OBSERVABLE_TIME",
+                "AVG_SERVICE_OBSERVER_TIME",
+                "AVG_FLUSH_OUTBOXES_TIME",
+                "AVG_SERVICE_NODE_LIFECYCLE_TIME",
+                "AVG_SERVICE_CLIENT_STACK_TIME"
             ]
             f.write(",".join(columns))
             f.write("\n")
@@ -127,6 +144,11 @@ def process_storage(storage, args):
                     frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).avg,
                     frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).avg,
                     frame.get(MetricsName.MASTER_REQUEST_PROCESSING_TIME).avg,
+                    frame.get(MetricsName.MASTER_REQUEST_PROCESSING_TIME).sum / (frame.get(MetricsName.MASTER_ORDERED_BATCH_SIZE).sum + 0.01),
+                    frame.get(MetricsName.MONITOR_AVG_THROUGHPUT).avg,
+                    frame.get(MetricsName.MONITOR_AVG_LATENCY).avg,
+                    frame.get(MetricsName.MASTER_MONITOR_AVG_THROUGHPUT).avg,
+                    frame.get(MetricsName.MASTER_MONITOR_AVG_LATENCY).avg,
                     frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).avg,
                     frame.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).avg,
                     frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
@@ -142,7 +164,19 @@ def process_storage(storage, args):
                     frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
                     frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
                     frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds()
+                    frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.NODE_PROD_TIME).avg,
+                    frame.get(MetricsName.SERVICE_REPLICAS_TIME).avg,
+                    frame.get(MetricsName.SERVICE_NODE_MSGS_TIME).avg,
+                    frame.get(MetricsName.SERVICE_CLIENT_MSGS_TIME).avg,
+                    frame.get(MetricsName.SERVICE_ACTIONS_TIME).avg,
+                    frame.get(MetricsName.SERVICE_LEDGER_MANAGER_TIME).avg,
+                    frame.get(MetricsName.SERVICE_VIEW_CHANGER_TIME).avg,
+                    frame.get(MetricsName.SERVICE_OBSERVABLE_TIME).avg,
+                    frame.get(MetricsName.SERVICE_OBSERVER_TIME).avg,
+                    frame.get(MetricsName.FLUSH_OUTBOXES_TIME).avg,
+                    frame.get(MetricsName.SERVICE_NODE_LIFECYCLE_TIME).avg,
+                    frame.get(MetricsName.SERVICE_CLIENT_STACK_TIME).avg
                 ]
                 f.write(",".join(str(v if v else "0") for v in row))
                 f.write("\n")
@@ -154,16 +188,22 @@ def process_storage(storage, args):
 
     total = stats.total
 
+    print("Seconds passed between looper runs:")
+    print("   {}".format(total.get(MetricsName.LOOPER_RUN_TIME_SPENT)))
+    print("")
+
+    print("Profiling info:")
+    for i in range(MetricsName.NODE_PROD_TIME, MetricsName.SERVICE_CLIENT_STACK_TIME):
+        mn = MetricsName(i)
+        print("   {} : {}".format(str(mn), total.get(mn)))
+    print("")
+
     print("Number of node messages processed in one looper run:")
     print("   {}".format(total.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED)))
     print("")
 
     print("Number of client messages processed in one looper run:")
     print("   {}".format(total.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED)))
-    print("")
-
-    print("Seconds passed between looper runs:")
-    print("   {}".format(total.get(MetricsName.LOOPER_RUN_TIME_SPENT)))
     print("")
 
     print("Number of messages in one tranport batch:")
