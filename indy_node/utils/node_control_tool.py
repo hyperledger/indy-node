@@ -1,20 +1,17 @@
 import os
-import re
 import select
 import shutil
 import socket
-import subprocess
 from typing import List
 
-from indy_common.constants import ACTION, POOL_RESTART, POOL_UPGRADE, \
-    UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
+from indy_common.constants import UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
 from stp_core.common.log import getlogger
 
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper
 from indy_common.util import compose_cmd
-from indy_node.server.upgrader import Upgrader
 from indy_node.utils.migration_tool import migrate
+from indy_node.utils.node_control_utils import NodeControlUtil
 
 logger = getlogger()
 
@@ -45,7 +42,7 @@ class NodeControlTool:
         self.config = config or getConfig()
 
         assert self.config.UPGRADE_ENTRY, "UPGRADE_ENTRY config parameter must be set"
-        self.ext_upgrade = self.config.UPGRADE_ENTRY not in PACKAGES_TO_HOLD
+        self.upgrade_entry = self.config.UPGRADE_ENTRY
 
         self.test_mode = test_mode
         self.timeout = timeout or TIMEOUT
@@ -79,77 +76,27 @@ class NodeControlTool:
         # Bind the socket to the port
         self.server_address = ('localhost', 30003)
 
-        logger.info('Node control tool is starting up on {} port {}'.format(
-            *self.server_address))
+        logger.info('Node control tool is starting up on {} port {}'.format(*self.server_address))
         self.server.bind(self.server_address)
 
         # Listen for incoming connections
         self.server.listen(1)
 
     def _ext_init(self):
-        self.ext_upgrade = self.config.UPGRADE_ENTRY not in PACKAGES_TO_HOLD
-        self._update_package_cache()
+        NodeControlUtil.update_package_cache()
         self.ext_ver, ext_deps = self._ext_info()
         self.deps = ext_deps + self.deps
-        holds = set([self.config.UPGRADE_ENTRY] + ext_deps + self.packages_to_hold.strip(" ").split(" "))
+        holds = set([self.upgrade_entry] + ext_deps + self.packages_to_hold.strip(" ").split(" "))
         self.packages_to_hold = ' '.join(list(holds))
 
-    @classmethod
-    def _get_ext_info(cls, package):
-        cmd = compose_cmd(['dpkg', '-s', package])
-        ret = cls._run_shell_command(cmd)
-        if ret.returncode != 0:
-            raise Exception('cannot get package info since {} returned {}'
-                            .format(cmd, ret.returncode))
-        return ret.stdout.strip()
-
-    def _ext_info(self):
-
-        def _parse_deps(deps: str):
-            ret = []
-            pkgs = deps.split(",")
-            for pkg in pkgs:
-                name_ver = pkg.strip(" ").split(" ", maxsplit=1)
-                name = name_ver[0].strip(" \n")
-                ret.append(name)
-            return ret
-
-        if not self.ext_upgrade:
-            return None, []
-
-        package_info = self._get_ext_info(self.config.UPGRADE_ENTRY)
-        out_lines = package_info.split("\n")
-        ver = None
-        ext_deps = []
-        for l in out_lines:
-            if l.startswith("Version:"):
-                ver = l.split(":", maxsplit=1)[1].strip(" \n")
-            if l.startswith("Depends:"):
-                ext_deps = _parse_deps(l.split(":", maxsplit=1)[1].strip(" \n"))
-        return ver, ext_deps
-
-    @classmethod
-    def _get_info_from_package_manager(cls, package):
-        cmd = compose_cmd(['apt-cache', 'show', package])
-        ret = cls._run_shell_command(cmd)
-        if ret.returncode != 0:
-            raise Exception('cannot get package info since {} returned {}'
-                            .format(cmd, ret.returncode))
-        return ret.stdout.strip()
-
-    @classmethod
-    def _update_package_cache(cls):
-        cmd = compose_cmd(['apt', 'update'])
-        ret = cls._run_shell_command(cmd)
-        if ret.returncode != 0:
-            raise Exception('cannot update package cache since {} returned {}'
-                            .format(cmd, ret.returncode))
-        return ret.stdout.strip()
+    def _ext_info(self, pkg=None):
+        pkg_name = pkg or self.upgrade_entry
+        return NodeControlUtil.curr_pkt_info(pkg_name)
 
     def _hold_packages(self):
         if shutil.which("apt-mark"):
             cmd = compose_cmd(['apt-mark', 'hold', self.packages_to_hold])
-            ret = self._run_shell_command(cmd)
+            ret = NodeControlUtil.run_shell_command(cmd, TIMEOUT)
             if ret.returncode != 0:
                 raise Exception('cannot mark {} packages for hold '
                                 'since {} returned {}'
@@ -159,42 +106,17 @@ class NodeControlTool:
             logger.info('Skipping packages holding')
 
     def _get_deps_list(self, package):
-        def _get_deps(package, include):
-            package_info = self._get_info_from_package_manager(package)
-            ret = [package]
-            deps = []
-            deps_deps = []
-            for dep in include:
-                if dep in package_info:
-                    match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep), package_info)
-                    if match:
-                        dep_version = match.group(1)
-                        dep_package = '{}={}'.format(dep, dep_version)
-                        deps.append(dep_package)
-                        deps_deps.append(_get_deps(dep_package, include))
-            ret.append(deps)
-            ret.append(deps_deps)
-            return ret
-
-        def _dep_tree_traverse(dep_tree, deps_so_far):
-            if isinstance(dep_tree, str) and dep_tree not in deps_so_far:
-                deps_so_far.append(dep_tree)
-            elif isinstance(dep_tree, list) and dep_tree:
-                for d in reversed(dep_tree):
-                    _dep_tree_traverse(d, deps_so_far)
-
         logger.info('Getting dependencies for {}'.format(package))
-        self._update_package_cache()
-        dep_tree = _get_deps(package, self.deps)
+        NodeControlUtil.update_package_cache()
+        dep_tree = NodeControlUtil.get_deps_tree(package, self.deps)
         ret = []
-        _dep_tree_traverse(dep_tree, ret)
+        NodeControlUtil.dep_tree_traverse(dep_tree, ret)
         return " ".join(ret)
 
     def _call_upgrade_script(self, version):
-        logger.info('Upgrading indy node to version {}, test_mode {}'.format(
-            version, int(self.test_mode)))
+        logger.info('Upgrading indy node to version {}, test_mode {}'.format(version, int(self.test_mode)))
 
-        deps = self._get_deps_list('{}={}'.format(self.config.UPGRADE_ENTRY, version))
+        deps = self._get_deps_list('{}={}'.format(self.upgrade_entry, version))
         deps = '"{}"'.format(deps)
 
         cmd_file = 'upgrade_indy_node'
@@ -202,18 +124,16 @@ class NodeControlTool:
             cmd_file = 'upgrade_indy_node_test'
 
         cmd = compose_cmd([cmd_file, deps])
-        ret = self._run_shell_script(cmd, self.timeout)
+        ret = NodeControlUtil.run_shell_script(cmd, self.timeout)
         if ret.returncode != 0:
-            raise Exception('upgrade script failed, exit code is {}'
-                            .format(ret.returncode))
+            raise Exception('upgrade script failed, exit code is {}'.format(ret.returncode))
 
     def _call_restart_node_script(self):
         logger.info('Restarting indy')
         cmd = compose_cmd(['restart_indy_node'])
-        ret = self._run_shell_script(cmd, self.timeout)
+        ret = NodeControlUtil.run_shell_script(cmd, self.timeout)
         if ret.returncode != 0:
-            raise Exception('restart failed: script returned {}'
-                            .format(ret.returncode))
+            raise Exception('restart failed: script returned {}'.format(ret.returncode))
 
     def _backup_name(self, version):
         return os.path.join(self.backup_dir, '{}{}'.format(
@@ -274,15 +194,17 @@ class NodeControlTool:
             raise e
         self._remove_old_backups()
 
-    def _upgrade(self, new_version, migrate=True, rollback=True):
-        current_version = self.ext_ver if self.ext_ver else Upgrader.getVersion()
+    def _upgrade(self, new_version, pkg_name, migrate=True, rollback=True):
+        self.upgrade_entry = pkg_name
+        current_version, _ = self._ext_info()
         try:
-            logger.info('Trying to upgrade from {} to {}'
-                        .format(current_version, new_version))
+            from indy_node.server.upgrader import Upgrader
+            node_cur_version = Upgrader.getVersion()
+            logger.info('Trying to upgrade from {}={} to {}'.format(pkg_name, current_version, new_version))
             self._call_upgrade_script(new_version)
             if migrate:
-                # migration should only be called with current version from Upgrader!
-                self._do_migration(Upgrader.getVersion(), new_version)
+                node_new_version = Upgrader.getVersion()
+                self._do_migration(node_cur_version, node_new_version)
             self._call_restart_node_script()
         except Exception as ex:
             self._declare_upgrade_failed(from_version=current_version,
@@ -291,7 +213,7 @@ class NodeControlTool:
             logger.error("Trying to rollback to the previous version {}"
                          .format(ex, current_version))
             if rollback:
-                self._upgrade(current_version, rollback=False)
+                self._upgrade(current_version, pkg_name, rollback=False)
 
     def _restart(self):
         try:
@@ -306,7 +228,8 @@ class NodeControlTool:
             logger.debug("Decoded ", command)
             if command[MESSAGE_TYPE] == UPGRADE_MESSAGE:
                 new_version = command['version']
-                self._upgrade(new_version)
+                pkg_name = command['pkg_name']
+                self._upgrade(new_version, pkg_name)
             elif command[MESSAGE_TYPE] == RESTART_MESSAGE:
                 self._restart()
         except json.decoder.JSONDecodeError as e:
@@ -323,21 +246,6 @@ class NodeControlTool:
                       to_version=to_version,
                       reason=reason)
         logger.error(msg)
-
-    @classmethod
-    def _run_shell_command(cls, command):
-        return subprocess.run(command,
-                              shell=True,
-                              check=True,
-                              universal_newlines=True,
-                              stdout=subprocess.PIPE,
-                              timeout=TIMEOUT)
-
-    @classmethod
-    def _run_shell_script(cls, command, timeout):
-        return subprocess.run(command,
-                              shell=True,
-                              timeout=timeout)
 
     def start(self):
         self._ext_init()

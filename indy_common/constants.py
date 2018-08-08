@@ -44,6 +44,7 @@ JUSTIFICATION = 'justification'
 REINSTALL = 'reinstall'
 SIGNATURE_TYPE = 'signature_type'
 TAG = 'tag'
+PACKAGE = 'package'
 
 REVOC_TYPE = "revocDefType"
 ID = "id"
@@ -170,3 +171,5 @@ validTxnTypes.update(CONFIG_TXN_TYPES)
 
 CONFIG_LEDGER_ID = 2
 JUSTIFICATION_MAX_SIZE = 1000
+
+APP_NAME = "indy-node"

@@ -9,7 +9,6 @@ def test_upg_default_cfg(tdir, monkeypatch, tconf):
 
     nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
-        assert nct.tool.ext_upgrade is False
         assert nct.tool.ext_ver is None
         assert nct.tool.deps == DEPS
         assert nct.tool.packages_to_hold.strip(" ") == PACKAGES_TO_HOLD.strip(" ")
