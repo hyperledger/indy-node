@@ -18,7 +18,7 @@ def send_upgrade_cmd(do, expect, upgrade_data):
        expect=expect, mapper=upgrade_data)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def poolUpgradeSubmitted(be, do, trusteeCli, validUpgrade):
     be(trusteeCli)
     send_upgrade_cmd(do,
@@ -27,7 +27,7 @@ def poolUpgradeSubmitted(be, do, trusteeCli, validUpgrade):
                      validUpgrade)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def poolUpgradeScheduled(poolUpgradeSubmitted, poolNodesStarted, validUpgrade):
     nodes = poolNodesStarted.nodes.values()
     timeout = waits.expectedUpgradeScheduled()
@@ -36,7 +36,7 @@ def poolUpgradeScheduled(poolUpgradeSubmitted, poolNodesStarted, validUpgrade):
                    validUpgrade[VERSION], retryWait=1, timeout=timeout))
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def poolUpgradeCancelled(poolUpgradeScheduled, be, do, trusteeCli,
                          validUpgrade):
     cancelUpgrade = copy(validUpgrade)
@@ -109,7 +109,7 @@ def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
                        validUpgradeExpForceTrue):
     nodes = poolNodesStarted.nodes.values()
     for node in nodes:
-        if node.name in ["Delta", "Gamma"]:
+        if node.name in ["Delta", "Gamma"] and node in poolNodesStarted.looper.prodables:
             node.stop()
             poolNodesStarted.looper.removeProdable(node)
     be(trusteeCli)

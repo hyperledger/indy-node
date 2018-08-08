@@ -14,7 +14,7 @@ def testPoolUpgradeFailsIfVersionIsLowerThanCurrent(
     upgrade[VERSION] = loweredVersion()
 
     err_msg = "Pool upgrade failed: client request invalid: " \
-              "InvalidClientRequest('Upgrade to lower version is not allowed'"
+              "InvalidClientRequest('Version is not upgradable'"
 
     be(trusteeCli)
     do(
