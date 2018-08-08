@@ -96,10 +96,15 @@ def process_storage(storage, args):
                 "avg_outgoing_node_message_size",
                 "avg_incoming_client_message_size",
                 "avg_outgoing_client_message_size",
+                "avg_master_validation_time",
+                "avg_node_stack_messages_processed",
+                "avg_client_stack_messages_processed",
                 "node_stack_messages_processed_per_sec",
                 "client_stack_messages_processed_per_sec",
-                "three_pc_batch_count_per_sec",
-                "requests_count_per_sec",
+                "master_three_pc_batch_count_per_sec",
+                "master_requests_count_per_sec",
+                "master_ordered_three_pc_batch_count_per_sec",
+                "master_ordered_requests_count_per_sec",
                 "incoming_node_messages_per_sec",
                 "incoming_node_traffic_per_sec",
                 "outgoing_node_messages_per_sec",
@@ -121,10 +126,15 @@ def process_storage(storage, args):
                     frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).avg,
                     frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).avg,
                     frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).avg,
+                    frame.get(MetricsName.MASTER_REQUEST_PROCESSING_TIME).avg,
+                    frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).avg,
+                    frame.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).avg,
                     frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
                     frame.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.THREE_PC_BATCH_SIZE).count / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.THREE_PC_BATCH_SIZE).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.MASTER_3PC_BATCH_SIZE).count / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.MASTER_3PC_BATCH_SIZE).sum / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.MASTER_ORDERED_BATCH_SIZE).count / stats.timestep.total_seconds(),
+                    frame.get(MetricsName.MASTER_ORDERED_BATCH_SIZE).sum / stats.timestep.total_seconds(),
                     frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
                     frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
                     frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
@@ -156,12 +166,32 @@ def process_storage(storage, args):
     print("   {}".format(total.get(MetricsName.LOOPER_RUN_TIME_SPENT)))
     print("")
 
+    print("Number of messages in one tranport batch:")
+    print("   {}".format(total.get(MetricsName.TRANSPORT_BATCH_SIZE)))
+    print("")
+
     print("Number of requests in one 3PC batch:")
     print("   {}".format(total.get(MetricsName.THREE_PC_BATCH_SIZE)))
     print("")
 
-    print("Number of messages in one tranport batch:")
-    print("   {}".format(total.get(MetricsName.TRANSPORT_BATCH_SIZE)))
+    print("Number of requests ordered:")
+    print("   {}".format(total.get(MetricsName.ORDERED_BATCH_SIZE)))
+    print("")
+
+    print("Time spent on requests processing:")
+    print("   {}".format(total.get(MetricsName.REQUEST_PROCESSING_TIME)))
+    print("")
+
+    print("Number of requests in one 3PC batch on master instance:")
+    print("   {}".format(total.get(MetricsName.MASTER_3PC_BATCH_SIZE)))
+    print("")
+
+    print("Number of requests ordered on master instance:")
+    print("   {}".format(total.get(MetricsName.MASTER_ORDERED_BATCH_SIZE)))
+    print("")
+
+    print("Time spent on requests processing on master instance:")
+    print("   {}".format(total.get(MetricsName.MASTER_REQUEST_PROCESSING_TIME)))
     print("")
 
     print("Incoming node message size, bytes:")
@@ -181,7 +211,8 @@ def process_storage(storage, args):
     print("")
 
     print("Additional statistics:")
-    three_pc = total.get(MetricsName.THREE_PC_BATCH_SIZE)
+    three_pc = total.get(MetricsName.MASTER_ORDERED_BATCH_SIZE)
+    process = total.get(MetricsName.MASTER_REQUEST_PROCESSING_TIME)
     node_in = total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)
     node_out = total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)
     client_in = total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)
@@ -200,6 +231,7 @@ def process_storage(storage, args):
     print("   Node traffic per batch: {:.2f}".format(node_traffic / three_pc.count))
     print("   Node messages per request: {:.2f}".format(node_messages / three_pc.sum))
     print("   Node traffic per request: {:.2f}".format(node_traffic / three_pc.sum))
+    print("   Request processing time: {:.2f} ms".format(1000.0 * process.sum / three_pc.sum))
 
 
 if __name__ == '__main__':
@@ -219,9 +251,9 @@ if __name__ == '__main__':
             data_is_copied = True
 
         storage = initKeyValueStorage(
-                    config.METRICS_KV_STORAGE,
-                    data_dir,
-                    config.METRICS_KV_DB_NAME)
+            config.METRICS_KV_STORAGE,
+            data_dir,
+            config.METRICS_KV_DB_NAME)
 
         process_storage(storage, args)
     finally:
