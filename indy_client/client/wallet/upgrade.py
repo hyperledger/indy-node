@@ -2,14 +2,14 @@ from stp_core.types import Identifier
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, CURRENT_PROTOCOL_VERSION
 from indy_common.generates_request import GeneratesRequest
 from indy_common.constants import POOL_UPGRADE, ACTION, SCHEDULE, \
-    SHA256, TIMEOUT, START, JUSTIFICATION, REINSTALL
+    SHA256, TIMEOUT, START, JUSTIFICATION, REINSTALL, APP_NAME, PACKAGE
 from indy_common.types import Request
 
 
 class Upgrade(GeneratesRequest):
     def __init__(self, name: str, version: str, action: str, sha256: str,
                  trustee: Identifier, schedule: dict=None, timeout=None,
-                 justification=None, force=False, reinstall=False):
+                 justification=None, force=False, reinstall=False, package=APP_NAME):
         self.name = name
         self.version = version
         self.action = action
@@ -21,6 +21,7 @@ class Upgrade(GeneratesRequest):
         self.seqNo = None
         self.force = force
         self.reinstall = reinstall
+        self.package = package
 
     def _op(self):
         op = {
@@ -29,7 +30,8 @@ class Upgrade(GeneratesRequest):
             VERSION: self.version,
             ACTION: self.action,
             SHA256: self.sha256,
-            FORCE: self.force
+            FORCE: self.force,
+            PACKAGE: self.package
         }
         if self.action == START:
             op.update({
