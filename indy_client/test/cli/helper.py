@@ -169,7 +169,7 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
         data["seeds"][newNodeAlias] = nodeSeed
         nodeSigner = SimpleSigner(seed=nodeSeed)
 
-        _, bls_key = create_default_bls_crypto_factory().generate_bls_keys(
+        _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys(
             seed=data['seeds'][n])
         data['nodesWithBls'][n] = True
 
@@ -182,6 +182,7 @@ def getPoolTxnData(poolId, newPoolTxnNodeNames):
             client_port=genHa()[1],
             client_ip="127.0.0.1",
             blskey=bls_key,
+            bls_key_proof=key_proof,
             services=[VALIDATOR],
             txn_id=sha256("{}".format(nodeSigner.verkey).encode()).hexdigest()
         )
