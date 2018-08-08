@@ -1,7 +1,6 @@
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.test import waits
-from indy_node.test.upgrade.helper import checkUpgradeScheduled, \
-    sdk_ensure_upgrade_sent
+from indy_node.test.upgrade.helper import checkUpgradeScheduled, sdk_ensure_upgrade_sent
 from plenum.common.constants import VERSION
 from plenum.common.messages.node_messages import Propagate
 from plenum.common.request import Request
@@ -48,5 +47,11 @@ def test_forced_upgrade_handled_once_if_request_received_after_propagate(
     looper.runFor(waits.expectedUpgradeScheduled())
 
     checkUpgradeScheduled([slow_node], validUpgradeExpForceTrue[VERSION])
-    assert len(list(slow_node.upgrader._actionLog)) > init_len
+    if init_len ==0:
+        # first upgrade - should be only one scheduled
+        assert len(list(slow_node.upgrader._actionLog)) == 1
+    else:
+        # one upgrade were already scheduled. we should cancel it and schedule new one
+        # so action log should be increased by 2
+        assert len(list(slow_node.upgrader._actionLog)) == init_len + 2
     assert slow_node.upgrader._actionLog.lastEvent[1] == UpgradeLog.SCHEDULED

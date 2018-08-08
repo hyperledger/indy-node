@@ -325,3 +325,7 @@ def count_action_log_entries(upg_log, func):
         if func(upg_rec):
             ret += 1
     return ret
+
+
+def count_action_log_package(upg_log, pkg_name):
+    return count_action_log_entries(upg_log, lambda entry: entry[5] == pkg_name)

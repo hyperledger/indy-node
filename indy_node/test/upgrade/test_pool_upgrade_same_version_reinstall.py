@@ -13,7 +13,7 @@ def test_do_upgrade_to_the_same_version_if_reinstall(looper, tconf, nodeSet,
                                                      validUpgrade, sdk_pool_handle,
                                                      sdk_wallet_trustee):
     upgr1 = deepcopy(validUpgrade)
-    upgr1[VERSION] = upgr1[VERSION] = lowerVersion(validUpgrade['version'])
+    upgr1[VERSION] = lowerVersion(validUpgrade['version'])
     upgr1[REINSTALL] = True
 
     # An upgrade scheduled, it should pass

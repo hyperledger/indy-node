@@ -1,7 +1,7 @@
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import checkUpgradeScheduled, \
-    sdk_ensure_upgrade_sent, count_action_log_entries
+    sdk_ensure_upgrade_sent, count_action_log_package
 from plenum.common.constants import VERSION
 from plenum.test.delayers import req_delay
 from plenum.test.test_node import getNonPrimaryReplicas
@@ -32,6 +32,5 @@ def test_forced_upgrade_handled_once_if_ordered_and_then_request_received(
     looper.runFor(waits.expectedUpgradeScheduled())
 
     checkUpgradeScheduled([slow_node], validUpgradeExpForceTrue[VERSION])
-    assert count_action_log_entries(list(slow_node.upgrader._actionLog),
-                                    lambda entry: entry[5] == validUpgradeExpForceTrue['package']) == 1
+    assert count_action_log_package(list(slow_node.upgrader._actionLog), validUpgradeExpForceTrue['package']) == 1
     assert slow_node.upgrader._actionLog.lastEvent[1] == UpgradeLog.SCHEDULED

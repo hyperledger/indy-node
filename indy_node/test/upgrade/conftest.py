@@ -20,29 +20,19 @@ def nodeIds(nodeSet):
 
 
 EXT_PKT_NAME = 'SomeTopLevelPkt'
+EXT_PKT_VERSION = '7.88.999'
 
-@pytest.fixture(scope='function', params=[EXT_PKT_NAME, APP_NAME])
-def validUpgrade(nodeIds, tconf, monkeypatch, request):
-    schedule = {}
-    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=100)
-    acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
-    for i in nodeIds:
-        schedule[i] = datetime.isoformat(startAt)
-        startAt = startAt + timedelta(seconds=acceptableDiff + 3)
 
-    vers = None
-
-    if request.param != APP_NAME:
-        EXT_PKT_VERSION = '7.88.999'
+def patch_packet_mgr_output(monkeypatch, pkg_name, pkg_version):
+    if pkg_name != APP_NAME:
         node_package = (APP_NAME, '0.0.1')
         EXT_TOP_PKT_DEPS = [("aa", "1.1.1"), ("bb", "2.2.2")]
         PACKAGE_MNG_EXT_PTK_OUTPUT = "Package: {}\nStatus: install ok installed\nPriority: extra\nSection: default\n" \
                                      "Installed-Size: 21\nMaintainer: EXT_PKT_NAME-fond\nArchitecture: amd64\nVersion: {}\n" \
                                      "Depends: {}, {} (= {}), {} (= {})\nDescription: EXT_PKT_DEPS-desc\n" \
                                      "License: EXT_PKT_DEPS-lic\nVendor: none\n". \
-            format(EXT_PKT_NAME, EXT_PKT_VERSION, APP_NAME, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1])
-        top_level_package = (EXT_PKT_NAME, EXT_PKT_VERSION)
+            format(pkg_name, pkg_version, APP_NAME, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1])
+        top_level_package = (pkg_name, pkg_version)
         anoncreds_package = ('indy-anoncreds', '0.0.2')
         plenum_package = ('indy-plenum', '0.0.3')
         top_level_package_with_version = '{}={}'.format(*top_level_package)
@@ -61,10 +51,9 @@ def validUpgrade(nodeIds, tconf, monkeypatch, request):
             top_level_package_dep1_with_version: '{}{} (= {})'.format(randomText(100), *plenum_package),
             top_level_package_dep2_with_version: '{}{} (= {})'.format(randomText(100), *node_package)
         }
-        vers = EXT_PKT_VERSION
 
         def mock_get_info_from_package_manager(package):
-            if package.startswith(EXT_PKT_NAME):
+            if package.startswith(pkg_name):
                 return mock_info.get(top_level_package_with_version, "")
             return mock_info.get(package, "")
 
@@ -73,9 +62,22 @@ def validUpgrade(nodeIds, tconf, monkeypatch, request):
                             lambda x: mock_get_info_from_package_manager(x))
         monkeypatch.setattr(NodeControlUtil, '_get_curr_info', lambda *x: PACKAGE_MNG_EXT_PTK_OUTPUT)
 
-    return dict(name='upgrade-{}'.format(randomText(3)), version=bumpedVersion(vers), action=START, schedule=schedule,
-                sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55',
-                timeout=1, package=request.param)
+
+@pytest.fixture(scope='function', params=[(EXT_PKT_NAME, EXT_PKT_VERSION), (APP_NAME, None)])
+def validUpgrade(nodeIds, tconf, monkeypatch, request):
+    schedule = {}
+    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+    startAt = unow + timedelta(seconds=100)
+    acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
+    for i in nodeIds:
+        schedule[i] = datetime.isoformat(startAt)
+        startAt = startAt + timedelta(seconds=acceptableDiff + 3)
+
+    patch_packet_mgr_output(monkeypatch, request.param[0], request.param[1])
+
+    return dict(name='upgrade-{}'.format(randomText(3)), version=bumpedVersion(request.param[1]),
+                action=START, schedule=schedule, timeout=1, package=request.param[0],
+                sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55')
 
 
 @pytest.fixture(scope='function')
