@@ -32,7 +32,6 @@ def test_upg_ext_info(tdir, monkeypatch, tconf):
     try:
         assert EXT_PKT_VERSION, EXT_PKT_DEPS == nct.tool._ext_info()
         nct.tool._ext_init()
-        assert nct.tool.ext_upgrade is True
         assert nct.tool.ext_ver == EXT_PKT_VERSION
         assert nct.tool.deps == EXT_PKT_DEPS + DEPS
         hlds = list(set([EXT_PKT_NAME] + EXT_PKT_DEPS + PACKAGES_TO_HOLD.strip(" ").split(" "))).sort()

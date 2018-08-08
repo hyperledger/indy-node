@@ -7,7 +7,7 @@ from indy_client.test.cli.test_pool_upgrade import poolUpgradeScheduled
 from indy_node.test.upgrade.conftest import validUpgrade as _validUpgrade
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def validUpgrade(_validUpgrade):
     # Add 5 days to the time of the upgrade of each node in schedule parameter
     # of send POOL_UPGRADE command
