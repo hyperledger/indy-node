@@ -4,7 +4,7 @@
 pool connect AS-0301-owner
 [1;32mPool "AS-0301-owner" has been connected[0m
 
-- wallet create AS-03-wallet-owner pool_name=AS-0301-owner key=testkey
+- wallet create AS-03-wallet-owner key=testkey storage_config={"pool":"AS-0301-owner"}
 [1;32mWallet "AS-03-wallet-owner" has been created[0m
 
 wallet open AS-03-wallet-owner key=testkey

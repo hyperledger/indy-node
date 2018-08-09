@@ -8,10 +8,10 @@
 ## Requirements
 
 * native libs
-    * libindy >= 1.4.0~588 (master repo)
+    * libindy >= 1.4.0~626 (master repo)
 
 * python lib
-    * python3-indy >= 1.4.0.dev588
+    * python3-indy >= 1.5.0.dev626
     * libnacl == 1.6.1
     
 ## Parameters description
@@ -67,9 +67,16 @@ Supported txns:
 * get_revoc_reg_def - Get revocation registry
 * get_revoc_reg - Get revocation registry entry
 * get_revoc_reg_delta - Get revocation registry delta
+* get_payment_sources - Get payment sources
+* payment - Perform payment
+* verify_payment - Verify performed payment
+
+Note: At the moment revoc_reg_entry requests could be used only with batch size equal to 1. After each entry write request revoc registery is recreated. So each entry req generates 3 request to ledger in total.
 
 '-m', '--mode' : Specifies the way each client will be run with. It could be a process - 'p' or thread - 't'.
 Default value is 'p''.
+
+'-p', '--pool_config' : Pool config in form of JSON. The value will be passed to open_pool_ledger call. Default value is empty. Parameters description depends on libindy version and could be found in official sdk documentation.
 
 ## Transaction data
 Each txn can read predefined data from file or generate random data.
@@ -88,7 +95,7 @@ This file could be used to run script to read all those 1000 nyms
 ```
 python3 perf_processes.py -n 1000 -k "{\"get_nym\": {\"file_name\": \"./load_test_20180620_150354/successful\"}}"
 ```
-Parameters for data file processing
+####Parameters for data file processing
 
 'file_name' - name of the file.
 
@@ -97,6 +104,22 @@ Parameters for data file processing
 'file_sep' - csv separator, default is "|".
 
 'label' - name of the txn configuration in "total" result file, default is the txn name.
+
+'file_max_split' - max number of splits to be done with 'file_sep' separator. Default is 2.
+
+'file_field' - split number to be used to run test with. Default is 2.
+
+####Parameters for specific request types
+
+'payment_method' - payment methods. Applicable for payment, verify_payment and get_payment_sources request types.
+Default is "sov".
+
+'payment_addrs_count' - count of payment addresses. Applicable for payment, verify_payment and get_payment_sources
+request types. Default is 100. _The count of payment addresses actually also determines the count of initial
+payment sources (one payment source per payment address). Please note, the count of initial payment sources serves
+as a buffer for payment request generator because new payments use receipts of previous payments as sources.
+In case there is no available sources in the buffer, payment request generator prints a message to stdout that
+a next request cannot be generated since no req data are available._
 
 
 ## Examples
@@ -165,3 +188,19 @@ python3 perf_processes.py -k "{\"test_1\": {\"TXN_TYPE1\":{\"count\": 3, \"file_
 ```
 where TXN_TYPE1 and TXN_TYPE2 are ones from the list above. TXN_TYPE1 met twice.
 Each tnx to send will be chosen randomly in proportion 3:5:7 of TXN_TYPE1 with file1 and TXN_TYPE1 with file2 and TXN_TYPE2.
+
+At the moment two types of files supported: "succesfull" and "read ledger".
+"successful" file format is default one, so providing "file_name" only is enough. Example with all settings shown below
+```
+python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", \"file_max_split\": 2, \"file_field\": 2, \"ignore_first_line\": true, \"file_sep\": \"|\"}}"
+```
+
+"read ledger" file is the output of the command read_ledger. Test settings shown below
+```
+python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", \"file_max_split\": 1, \"file_field\": 1, \"ignore_first_line\": false, \"file_sep\": \" \"}}"
+```
+
+* To send payment txns using 1000 payment addresses / initial payment sources:
+```
+python3 perf_processes.py -k "{\"payment\": {\"payment_addrs_count\": 1000}}"
+```

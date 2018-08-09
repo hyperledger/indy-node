@@ -1,0 +1,67 @@
+#!/usr/bin/python3
+
+import string
+import json
+import logging
+import argparse
+import sys
+import fileinput
+import csv
+import collections
+
+logging.basicConfig(
+         format='%(asctime)s %(levelname)-8s %(message)s',
+         level=logging.INFO,
+         filename='node_address_list.log',
+         datefmt='%Y-%m-%d %H:%M:%S')
+
+
+
+def getCurrentValidatorsAddressPort():
+    logging.info("extracting addresses and ports of current validators")
+    validatorsAddressPort = collections.OrderedDict()
+    jsonStr = input()
+    logging.info(jsonStr)
+    validators = json.loads(jsonStr)
+    for validator in validators:
+        if 'VALIDATOR' in validator['services']:
+            validatorsAddressPort[validator["alias"]] = {"address": validator["node_ip"], "port": validator["node_port"]}
+    return validatorsAddressPort
+
+def writeResult(validatorsAddressPort, outputFormat):
+    if outputFormat == 'json':
+        logging.info("Serializing validators' address and port to json")
+        print(json.dumps(validatorsAddressPort))
+    elif outputFormat == 'aws':
+        logging.info("Writing a string suitable for a source string for an AWS security group")
+        addressOnly = []
+        for key in validatorsAddressPort.keys():
+            addressOnly.append(validatorsAddressPort[key]['address'])
+        conjunction = '/32,'
+        print(conjunction.join(addressOnly) + '/32')
+    else:
+        logging.info("Serializing validators' address and port to csv")
+        fieldnames = ['alias', 'address', 'port']
+        writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
+        writer.writeheader()
+        for key in validatorsAddressPort.keys():
+            validatorsAddressPort[key]["alias"] = key
+            writer.writerow(validatorsAddressPort[key])
+
+def parseInputs():
+    parser = argparse.ArgumentParser(description = 'This script accepts validator JSON data on stdin, and extracts the node address and port information from it.')
+    parser.add_argument('--outFormat', help='May be json, csv, or aws. (Default: the output is csv.)')
+    args = parser.parse_args()
+    if args.outFormat == None:
+        return 'csv'
+    elif args.outFormat in ['csv', 'json', 'aws']:
+        return args.outFormat
+    else:
+        print('Invalid output format selected: {}'.format(args.outFormat))
+        exit(1)
+
+
+if __name__ == '__main__':
+    outputFormat = parseInputs()
+    validatorsAddressPort = getCurrentValidatorsAddressPort()
+    writeResult = writeResult(validatorsAddressPort, outputFormat)

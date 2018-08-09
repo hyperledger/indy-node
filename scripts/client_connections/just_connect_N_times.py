@@ -15,6 +15,9 @@ from indy import pool
 
 count_of_connected = 0
 count_of_not_connected = 0
+client_connections_node_limit = 100
+pool_size = 4
+max_failure_tolerance = 1
 
 
 def run_client(genesis_path, pipe_conn, client_number):
@@ -36,25 +39,25 @@ def run_client(genesis_path, pipe_conn, client_number):
             loop.call_soon(loop.stop)
             return
 
-    async def periodically_print():
-        while True:
-            print("Client with number: {}. Trying to connect ....".format(client_number))
-            await asyncio.sleep(5)
-
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(asyncio.gather(
-            periodically_print(),
             run_test(genesis_path, loop, pipe_conn)
         ))
     except Exception as e:
         pipe_conn.send(e)
 
 
+def get_max_connected_clients_without_stack_restart(limit, N, F):
+    return int(limit * (N / (N - F)))
+
+
 def read_cb(pipe_conn):
     global count_of_connected
     global count_of_not_connected
+    global max_connected_clients_without_stack_restart
+    global arg_clients_num
     res = pipe_conn.recv()
     if isinstance(res, tuple):
         code, cl_number = res
@@ -64,15 +67,29 @@ def read_cb(pipe_conn):
         elif code == 1:
             print("Client with number {} is not connected".format(cl_number))
             count_of_not_connected += 1
-        print("Count of connected clients: {}".format(count_of_connected))
+        print("===============================================")
+        print("Count of connected clients:     {}".format(count_of_connected))
         print("Count of not connected clients: {}".format(count_of_not_connected))
+        print("===============================================")
+        if count_of_connected + count_of_not_connected == arg_clients_num:
+            result_str = "\n===== TEST {}: connected clients {}, not connected clients {}, max(limit, N, F) {} =====".\
+                format("PASSED" if count_of_connected > max_connected_clients_without_stack_restart else "FAILED",
+                       count_of_connected,
+                       count_of_not_connected,
+                       max_connected_clients_without_stack_restart)
+            print(result_str)
+
     else:
         print(res)
 
 
 async def start_all_procs(args, wr):
+    global client_connections_node_limit
     processes = []
     for client_number in range(args.clients):
+        if client_number == client_connections_node_limit:
+            # Give a chance all clients that fit the limit to connect
+            time.sleep(10)
         process = Process(target=run_client, args=(args.genesis_path, wr, client_number))
         processes.append(process)
         process.start()
@@ -86,12 +103,18 @@ parser.add_argument('-g', '--genesis', required=True, dest='genesis_path', type=
                          'Default value is ~/.indy-cli/networks/sandbox/pool_transactions_genesis')
 
 args = parser.parse_args()
+arg_clients_num = args.clients
+
 count_failed_clients = 0
+max_connected_clients_without_stack_restart = \
+    get_max_connected_clients_without_stack_restart(
+        client_connections_node_limit, pool_size, max_failure_tolerance)
+
 rd, wr = multiprocessing.Pipe()
 main_loop = asyncio.get_event_loop()
 main_loop.add_reader(rd, functools.partial(read_cb, rd))
+print("Connecting clients...")
 asyncio.run_coroutine_threadsafe(start_all_procs(args, wr), loop=main_loop)
-print("All the processes are started")
 try:
     main_loop.run_forever()
 except KeyboardInterrupt:
