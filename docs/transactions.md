@@ -20,36 +20,36 @@
 
 ## General Information
 
-This doc is about supported transactions and their representation on the Ledger (that is internal one).
-If you are interested in the format of client's Request (both write and read ones), then have a look at [requests](requests.md).
+This doc is about supported transactions and their representation on the Ledger (that is, the internal one).
+If you are interested in the format of a client's request (both write and read), then have a look at [requests](requests.md).
 
-- All transactions are stored in a distributed Ledger (replicated on all Nodes) 
-- The ledger is based on Merkle Tree
+- All transactions are stored in a distributed ledger (replicated on all nodes) 
+- The ledger is based on a [Merkle Tree](https://en.wikipedia.org/wiki/Merkle_tree)
 - The ledger consists of two things:
     - transactions log as a sequence of key-value pairs 
 where key is a sequence number of the transaction and value is the serialized transaction
     - merkle tree (where hashes for leaves and nodes are persisted)
 - Each transaction has a sequence number (no gaps) - keys in transactions log
-- So, this can be considered as a blockchain where each block size equals to 1
+- So, this can be considered a blockchain where each block's size is equal to 1
 - There are multiple ledgers by default:
     - *pool ledger*: transactions related to pool/network configuration (listing all nodes, their keys and addresses)
-    - *config ledger*: transactions for pool configuration plus transactions related to Pool Upgrade
+    - *config ledger*: transactions for pool configuration plus transactions related to pool upgrade
     - *domain ledger*: all main domain and application specific transactions (including NYM transactions for DID)
 - All transactions are serialized to MsgPack format
-- All transactions (both transaction log and merkle tree hash stores) are stored in LevelDB
-- One can use `read_ledger` script to get transactions for a specified ledger in a readable (JSON) format
-- See [roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0) on the roles and who can create each type of transactions
+- All transactions (both transaction log and merkle tree hash stores) are stored in a LevelDB
+- One can use the `read_ledger` script to get transactions for a specified ledger in a readable format (JSON)
+- See [roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0) for a list of roles and they type of transactions they can create.
 
 Below you can find the format and description of all supported transactions.
 
 ## Genesis Transactions
-As Indy is Public **Permissioned** blockchain, each ledger may have a number of pre-defined 
-transactions defining the Pool and the Network.
-- pool genesis transactions defining initial trusted Nodes in the Pool
-- domain genesis transactions defining initial trusted Trustees and Stewards
+As Indy is a public **permissioned** blockchain, each ledger may have a number of pre-defined 
+transactions defining the initial pool and network.
+- pool genesis transactions define initial trusted nodes in the pool
+- domain genesis transactions define initial trusted trustees and stewards
 
 ## Common Structure
-Each transaction has the following structure containing of metadata values (common for all transaction types) and 
+Each transaction has the following structure consisting of metadata values (common for all transaction types) and 
 transaction specific data:
 ```
 {
@@ -85,7 +85,7 @@ transaction specific data:
 - `ver` (string):
 
     Transaction version to be able to evolve content.
-    The content of all sub-fields may depend on the version.       
+    The content of all sub-fields may depend on this version.       
 
 - `txn` (dict):
     
@@ -93,7 +93,7 @@ transaction specific data:
 
     - `type` (enum number as string):
     
-        Supported transaction type:
+        Supported transaction types:
         
         - NODE = 0
         - NYM = 1
@@ -106,17 +106,17 @@ transaction specific data:
 
     - `protocolVersion` (integer; optional): 
     
-        The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in Requests/Replies/Data.
-        Since clients and different Nodes may be at different versions, we need this field to support backward compatibility
+        The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in requests/replies/data.
+        Since clients and different nodes may be at different versions, we need this field to support backward compatibility
         between clients and nodes.     
      
     - `data` (dict):
 
-        Transaction-specific data fields (see next sections for each transaction description).  
+        Transaction-specific data fields (see following sections for each transaction's description).  
        
     - `metadata` (dict):
     
-        Metadata as came from the Request.
+        Metadata as came from the request.
 
         - `from` (base58-encoded string):
              Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
@@ -170,7 +170,7 @@ Please note that all these metadata fields may be absent for genesis transaction
 
 #### NYM
 Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and trustee can be created only by other trusties (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
+Note that only trustees and stewards can create new trust anchors and a trustee can be created only by other trustees (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
 
 The transaction can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -178,38 +178,38 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
-    It differs from `from` metadata field, where `from` is the DID of the submitter.
+    It differs from the `from` metadata field, where `from` is the DID of the submitter.
     
     *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
      
 - `role` (enum number as integer; optional): 
 
-    Role of a user NYM record being created for. One of the following numbers
+    Role of a user that the NYM record is being created for. One of the following values
     
     - None (common USER)
     - 0 (TRUSTEE)
     - 2 (STEWARD)
     - 101 (TRUST_ANCHOR)
     
-  A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
+  A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)).
   
 - `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
     Target verification key as base58-encoded string. It can start with "~", which means that
-    it's abbreviated verkey and should be 16 bytes long when decoded, otherwise it's a full verkey
+    it's an abbreviated verkey and should be 16 bytes long when decoded, otherwise it's a full verkey
     which should be 32 bytes long when decoded. If not set, then either the target identifier
     (`did`) is 32-bit cryptonym CID (this is deprecated), or this is a user under guardianship
-    (doesnt owns the identifier yet).
-    Verkey can be changed to None by owner, it means that this user goes back under guardianship.
+    (doesn't own the identifier yet).
+    Verkey can be changed to "None" by owner, it means that this user goes back under guardianship.
 
 - `alias` (string; optional): 
 
     NYM's alias.
 
-If there is no NYM transaction with the specified DID (`did`), then it can be considered as creation of a new DID.
+If there is no NYM transaction for the specified DID (`did`) yes, then this can be considered as the creation of a new DID.
 
-If there is a NYM transaction with the specified DID (`did`),  then this is update of existing DID.
-In this case we can specify only the values we would like to override. All unspecified values remain the same.
+If there is already a NYM transaction with the specified DID (`did`),  then this is is considered an update of that DID.
+In this case we can specify only the values we would like to update. All unspecified values remain unchanged.
 So, if key rotation needs to be performed, the owner of the DID needs to send a NYM request with
 `did` and `verkey` only. `role` and `alias` will stay the same.
 
@@ -251,7 +251,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
 ```
 
 #### ATTRIB
-Adds attribute to a NYM record
+Adds an attribute to a NYM record
 
 
 - `dest` (base58-encoded string):
@@ -264,19 +264,19 @@ Adds attribute to a NYM record
 - `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
 
     Hash of the raw attribute data. 
-    Raw data is represented as json, where key is attribute name and value is attribute value.
-    The ledger contains hash of the raw data only; the real raw data is stored in a separate 
+    Raw data is represented as JSON, where the key is the attribute name and the value is the attribute value.
+    The ledger only stores a hash of the raw data; the real (unhashed) raw data is stored in a separate 
     attribute store.
 
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
 
     Hash of attribute data (as sent by the client).
-    The ledger contains this hash; nothing is stored in an attribute store.
+    The ledger stores this hash; nothing is stored in an attribute store.
 
 - `enc` (sha256 hash string; mutually exclusive with `raw` and `hash`):
 
     Hash of encrypted attribute data.
-    The ledger contains hash only; the real encrypted data is stored in a separate 
+    The ledger contains the hash only; the real encrypted data is stored in a separate 
     attribute store. 
 
 **Example**:
@@ -315,10 +315,10 @@ Adds attribute to a NYM record
 
 
 #### SCHEMA
-Adds Claim's schema.
+Adds a Claim's schema.
 
-It's not possible to update existing Schema.
-So, if the Schema needs to be evolved, a new Schema with a new version or name needs to be created.
+It's not possible to update an existing schema.
+So, if the Schema needs to be evolved, a new Schema with a new version or new name needs to be created.
 
 - `data` (dict):
  
@@ -368,22 +368,21 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 ```
 
 #### CLAIM_DEF
-Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular Claim Schema.
+Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular claim schema.
 
-It's not possible to update `data` in existing Claim Def.
-So, if a Claim Def needs to be evolved (for example, a key needs to be rotated), then
-a new Claim Def needs to be created for a new Issuer DID (`did`).
+It's not possible to update `data` in an existing claim definition.
+Therefore if an existing claim defintion needs to be evolved (for example, a key needs to be rotated), a new claim definition needs to be created for a new Issuer DID (`did`).
 
 - `data` (dict):
  
-     Dictionary with Claim Definition's data:
+     Dictionary with claim definition's data:
      
     - `primary` (dict): primary claim public key
     - `revocation` (dict): revocation claim public key
         
 - `ref` (string):
     
-    Sequence number of a Schema transaction the claim definition is created for.
+    Sequence number of a schema transaction the claim definition is created for.
 
 - `signature_type` (string):
 
@@ -441,7 +440,7 @@ a new Claim Def needs to be created for a new Issuer DID (`did`).
 
 #### NODE
 
-Adds a new node to the pool, or updates existing node in the pool
+Adds a new node to the pool or updates an existing node in the pool
 
 - `data` (dict):
     

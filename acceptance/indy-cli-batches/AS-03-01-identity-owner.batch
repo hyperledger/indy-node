@@ -1,7 +1,7 @@
 # setup environment
 - pool create AS-0301-owner gen_txn_file=./pool_transactions_genesis
 pool connect AS-0301-owner
-- wallet create AS-03-wallet-owner pool_name=AS-0301-owner key=testkey
+- wallet create AS-03-wallet-owner key=testkey storage_config={"pool":"AS-0301-owner"}
 wallet open AS-03-wallet-owner key=testkey
 # setup section
 did new seed=000000000000000000000000Trustee1 metadata="Default Trustee"

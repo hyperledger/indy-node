@@ -4,7 +4,7 @@
 pool connect AS-0301-anchor
 [1;32mPool "AS-0301-anchor" has been connected[0m
 
-- wallet create AS-03-wallet-anchor pool_name=AS-0301-anchor key=testkey
+- wallet create AS-03-wallet-anchor key=testkey storage_config={"pool":"AS-0301-anchor"}
 [1;32mWallet "AS-03-wallet-anchor" has been created[0m
 
 wallet open AS-03-wallet-anchor key=testkey
