@@ -130,6 +130,11 @@ class ClientGetStat:
     pass
 
 
+class ClientSend:
+    def __init__(self, cnt: int = 10):
+        self.cnt = cnt
+
+
 class ClientStatistic:
     def __init__(self):
         self._req_prep = 0
@@ -1095,6 +1100,9 @@ class LoadClient:
                     self._loop.call_soon(self.req_send)
             elif isinstance(flag, ClientGetStat):
                 self._loop.call_soon(self.send_stat)
+            elif isinstance(flag, ClientSend):
+                if self._send_mode == LoadClient.SendSync:
+                    self.req_send(flag.cnt)
         except Exception as e:
             print("{} Error {}".format(self._name, e))
             force_close = True
@@ -1175,21 +1183,23 @@ class LoadClient:
             print("{} stat send error {}".format(self._name, e))
             raise e
 
-    def req_send(self):
+    def req_send(self, cnt: int = None):
         if self._closing:
             return
 
-        if len(self._load_client_reqs) < self._batch_size:
-            print("WARNING send", self._name, self._batch_size, len(self._load_client_reqs))
+        if self._send_mode == LoadClient.SendTime:
+            self._loop.call_later(self._batch_timeout, self.req_send)
 
-        for i in range(min(len(self._load_client_reqs), self._batch_size)):
+        to_snd = cnt or self._batch_size
+
+        if len(self._load_client_reqs) < to_snd:
+            print("WARNING send", self._name, to_snd, len(self._load_client_reqs))
+
+        for i in range(min(len(self._load_client_reqs), to_snd)):
             req_data, req = self._load_client_reqs.pop()
             sender = self._loop.create_task(self.submit_req_update(req_data, req))
             sender.add_done_callback(self.done_submit)
             self._send_q.append(sender)
-
-        if self._send_mode == LoadClient.SendTime:
-            self._loop.call_later(self._batch_timeout, self.req_send)
 
     async def stop_test(self):
         self._closing = True
