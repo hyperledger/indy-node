@@ -1,7 +1,7 @@
 #setup environment
 - pool create AS-pool gen_txn_file=./pool_transactions_genesis
 pool connect AS-pool
-wallet create AS-01-wallet-1 pool_name=AS-pool key=testkey
+wallet create AS-01-wallet-1 key=testkey storage_config={"pool":"AS-pool"}
 wallet open AS-01-wallet-1 key=testkey
 #check that general actions work
 did new seed=000000000000000000000000Trustee1 metadata="default trustee"
@@ -13,7 +13,7 @@ did rotate-key
 ledger nym did=NyLkggDnCtZY6ngkfNqzg2 verkey=~LTar8Y3uzcQEt3HdhgqtSz
 - ledger get-nym did=NyLkggDnCtZY6ngkfNqzg2
 did list
-wallet create AS-01-identity-wallet pool_name=AS-pool key=testkey
+wallet create AS-01-identity-wallet key=testkey storage_config={"pool":"AS-pool"}
 wallet open AS-01-identity-wallet key=testkey
 did new seed=00000000000000000000000Identity1 metadata="new identity"
 did use NyLkggDnCtZY6ngkfNqzg2

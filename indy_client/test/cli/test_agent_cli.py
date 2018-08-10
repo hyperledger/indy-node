@@ -1,6 +1,6 @@
-import pytest
-
 from functools import partial
+
+import pytest
 
 from plenum.test.cli.helper import TestCliCore
 from plenum.test.testable import spyable
@@ -117,6 +117,7 @@ def aliceAcceptedAcmeInvitationNoProofReq(
         proofRequestsAfter = getProofRequestsCount(aliceCLI, acmeMap['remote'])
 
         return proofRequestsBefore, proofRequestsAfter
+
     return _
 
 
@@ -127,13 +128,3 @@ def test_acme_cli_send_proof_request(
         acmeMap['invite-no-pr'], 'aliceNoPR')
 
     assert proofRequestsBefore + 1 == proofRequestsAfter
-
-
-def test_acme_cli_send_proof_request_already_exist(
-        be, do, acmeAgentCliRunning, aliceCLI, acmeMap,
-        aliceAcceptedAcmeInvitationNoProofReq):
-
-    proofRequestsBefore, proofRequestsAfter = aliceAcceptedAcmeInvitationNoProofReq(
-        acmeMap['invite'], 'aliceWithPR')
-
-    assert proofRequestsBefore == proofRequestsAfter
