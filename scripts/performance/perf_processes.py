@@ -1222,9 +1222,9 @@ class LoadClient:
                 shutil.rmtree(d, ignore_errors=True)
 
 
-def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout,
+def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_rate,
                req_kind, buff_req, wallet_key, pool_config, send_mode):
-    cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, buff_req, pool_config, send_mode)
+    cln = LoadClient(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode)
     try:
         asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
         cln._loop.run_forever()
@@ -1487,7 +1487,6 @@ class TestRunner:
             rd, wr = multiprocessing.Pipe()
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(run_client, prc_name, args.genesis_path, wr, args.seed, args.batch_size,
-                                  # args.batch_timeout, args.req_kind, buff_req, args.wallet_key, pool_config,
                                   1 / load_rate, args.req_kind, buff_req, args.wallet_key, pool_config,
                                   LoadClient.SendTime)
             prc.add_done_callback(self.client_done)
