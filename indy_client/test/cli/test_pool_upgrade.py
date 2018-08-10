@@ -43,8 +43,8 @@ def poolUpgradeCancelled(poolUpgradeScheduled, be, do, trusteeCli,
     cancelUpgrade[ACTION] = CANCEL
     cancelUpgrade[JUSTIFICATION] = '"not gonna give you one"'
     be(trusteeCli)
-    do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} justification={justification}',
+    do('send POOL_UPGRADE name={name} version={version} sha256={sha256} action={action} '
+       'justification={justification} schedule={schedule} timeout={timeout} ',
        within=10,
        expect=['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'],
        mapper=cancelUpgrade)
