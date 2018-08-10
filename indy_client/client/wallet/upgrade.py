@@ -37,7 +37,7 @@ class Upgrade(GeneratesRequest):
             JUSTIFICATION: self.justification,
             REINSTALL: self.reinstall,
         }
-        
+
         return op
 
     @property
