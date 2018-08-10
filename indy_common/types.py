@@ -13,7 +13,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
     GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
-    CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM
+    CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
     VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
@@ -274,6 +274,7 @@ class ClientPoolUpgradeOperation(MessageValidator):
         (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (FORCE, BooleanField(optional=True)),
         (REINSTALL, BooleanField(optional=True)),
+        (PACKAGE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT, optional=True)),
     )
 
 

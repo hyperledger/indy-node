@@ -4,7 +4,7 @@
 pool connect AS-0301-trustee
 [1;32mPool "AS-0301-trustee" has been connected[0m
 
-- wallet create AS-03-wallet-trustee pool_name=AS-0301-trustee key=testkey
+- wallet create AS-03-wallet-trustee key=testkey storage_config={"pool":"AS-0301-trustee"}
 [1;32mWallet "AS-03-wallet-trustee" has been created[0m
 
 wallet open AS-03-wallet-trustee key=testkey
