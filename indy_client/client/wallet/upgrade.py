@@ -31,15 +31,12 @@ class Upgrade(GeneratesRequest):
             ACTION: self.action,
             SHA256: self.sha256,
             FORCE: self.force,
-            PACKAGE: self.package
+            PACKAGE: self.package,
+            SCHEDULE: self.schedule,
+            TIMEOUT: self.timeout,
+            JUSTIFICATION: self.justification,
+            REINSTALL: self.reinstall,
         }
-        if self.action == START:
-            op.update({
-                SCHEDULE: self.schedule,
-                TIMEOUT: self.timeout,
-                JUSTIFICATION: self.justification,
-                REINSTALL: self.reinstall,
-            })
 
         return op
 
