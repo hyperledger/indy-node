@@ -20,7 +20,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys BD33704C
 RUN echo "deb https://repo.sovrin.org/deb xenial master" >> /etc/apt/sources.list
 RUN echo "deb https://repo.sovrin.org/sdk/deb xenial master" >> /etc/apt/sources.list
 RUN useradd -ms /bin/bash -l -u $uid indy
-RUN apt-get update -y && apt-get install -y indy-node libindy
+RUN apt-get update -y && apt-get install -y python3-indy-crypto=0.4.1 indy-node libindy
 RUN pip3 install python3-indy
 USER indy
 WORKDIR /home/indy
