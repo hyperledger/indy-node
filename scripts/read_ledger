@@ -153,7 +153,7 @@ def print_all(storage, serializer):
     to = int(args.to) if args.to else None
     for seqNo, txn in storage.iterator(start=frm, end=to):
         txn = ledger_txn_serializer.deserialize(txn)
-        print(int(seqNo), serializer.serialize(txn, toBytes=False))
+        print(serializer.serialize(txn, toBytes=False))
 
 
 def make_copy_of_ledger(data_dir):
