@@ -63,11 +63,8 @@ parser.add_argument('-k', '--kind', default="nym", type=str, required=False, des
                          'get_revoc_reg_delta. '
                          'Default value is "nym". Could be combined in form of JSON array or JSON obj')
 
-parser.add_argument('-n', '--num', default=100, type=int, required=False, dest='batch_size',
-                    help='Number of transactions to submit. Default value is 100')
-
-parser.add_argument('-t', '--timeout', default=0, type=float, required=False, dest='batch_timeout',
-                    help='Timeout between batches. Default value is 0')
+parser.add_argument('-n', '--num', default=10, type=int, required=False, dest='batch_size',
+                    help='Number of transactions to submit in one batch. Default value is 10')
 
 parser.add_argument('-r', '--refresh', default=10, type=float, required=False, dest='refresh_rate',
                     help='Statistics refresh rate in sec. Default value is 10')
@@ -91,7 +88,7 @@ parser.add_argument('-m', '--mode', default="p", choices=['p', 't'], required=Fa
 parser.add_argument('-p', '--pool_config', default="", type=str, required=False, dest='pool_config',
                     help='Configuration of pool as JSON. The value will be passed to open_pool call. Default value is empty')
 
-parser.add_argument('-y', '--sync_mode', default="freeflow", choices=['freeflow', 'all_ps', 'one_ps', 'wait_resp'],
+parser.add_argument('-y', '--sync_mode', default="freeflow", choices=['freeflow', 'all', 'one'],
                     required=False, dest='sync_mode',
                     help='Configuration of pool as JSON. The value will be passed to open_pool call. Default value is freeflow')
 
@@ -1027,8 +1024,6 @@ class LoadClient:
         self._stat = ClientStatistic()
         self._send_mode = send_mode
         self._buff_reqs = buff_req
-        self._gen_lim = 50 # bg_tasks // 2
-        self._send_lim = 50 # bg_tasks // 2
         self._pipe_conn = pipe_conn
         self._pool_name = "pool_{}".format(random_string(24))
         self._loop = asyncio.new_event_loop()
@@ -1042,13 +1037,12 @@ class LoadClient:
         self._loop.add_reader(self._pipe_conn, self.read_cb)
         self._closing = False
         self._batch_size = batch_size
-        self._batch_timeout = batch_rate
+        self._batch_rate = batch_rate
         self._gen_q = []
         self._send_q = []
         req_class, params = create_req_generator(req_kind)
         self._req_generator = req_class(**params, client_stat=self._stat)
         assert self._req_generator is not None
-        self._rest_to_sent = batch_size
         self._generated_cnt = 0
         self._pool_config = json.dumps(pool_config) if isinstance(pool_config, dict) and pool_config else None
         if self._send_mode == LoadClient.SendResp and self._batch_size > 1:
@@ -1084,8 +1078,6 @@ class LoadClient:
         except Exception as e:
             print("{} Ready send error {}".format(self._name, e))
             raise e
-
-        # self.gen_reqs()
 
     def read_cb(self):
         force_close = False
@@ -1148,8 +1140,9 @@ class LoadClient:
         return 3 * self._buff_reqs
 
     async def pregen_reqs(self):
-        for i in range(self._buff_reqs):
-            await self.gen_signed_req()
+        if self._send_mode != LoadClient.SendResp:
+            for i in range(self._buff_reqs):
+                await self.gen_signed_req()
 
     def gen_reqs(self):
         if self._closing:
@@ -1188,7 +1181,7 @@ class LoadClient:
             return
 
         if self._send_mode == LoadClient.SendTime:
-            self._loop.call_later(self._batch_timeout, self.req_send)
+            self._loop.call_later(self._batch_rate, self.req_send)
 
         to_snd = cnt or self._batch_size
 
@@ -1309,6 +1302,9 @@ class TestRunner:
         self._refresh_rate = 10
         self._start_sync = True
         self._start_counter = time.perf_counter()
+        self._sync_mode = None
+        self._batch_rate = None
+        self._batch_size = None
 
     def process_reqs(self, stat, name:str = ""):
         assert self._failed_f
@@ -1344,12 +1340,38 @@ class TestRunner:
             except Exception as e:
                 print("Sent stop to client {} error {}".format(cln.name, e))
 
+    def _tick_all(self):
+        self._loop.call_later(self._batch_rate, self._tick_all)
+        for cln in self._clients.values():
+            try:
+                if cln.status == ClientRunner.ClientRun and cln.conn:
+                    cln.conn.send(ClientSend(self._batch_size))
+            except Exception as e:
+                print("Sent stop to client {} error {}".format(cln.name, e))
+
+    def _tick_one(self, idx : int = 0):
+        i = idx % len(self._clients)
+        self._loop.call_later(self._batch_rate, self._tick_one, i + 1)
+        key = list(self._clients)[i]
+        cln = self._clients[key]
+        try:
+            if cln.status == ClientRunner.ClientRun and cln.conn:
+                cln.conn.send(ClientSend(self._batch_size))
+        except Exception as e:
+            print("Sent stop to client {} error {}".format(cln.name, e))
+
     def start_clients(self):
         to_start = [c for c in self._clients.values() if c.status == ClientRunner.ClientReady]
         if self._start_sync and len(to_start) != len(self._clients):
             return
         for cln in to_start:
             cln.run_client()
+
+        all_run = all([c.status == ClientRunner.ClientRun for c in self._clients.values()])
+        if all_run and self._sync_mode == 'all':
+            self._tick_all()
+        elif all_run and self._sync_mode == 'one':
+            self._tick_one(0)
 
     def request_stat(self):
         for cln in self._clients.values():
@@ -1405,7 +1427,8 @@ class TestRunner:
             total_reject += cln.total_reject
             total_server_time = max(total_server_time, cln.total_server_time)
         print_str = "Time {:.2f} Clients {}/{} Sent: {} Succ: {} Failed: {} Nacked: {} Rejected: {}".format(
-            time.perf_counter()- self._start_counter, clients, len(self._clients), total_sent, total_succ, total_failed, total_nack, total_reject)
+            time.perf_counter()- self._start_counter, clients, len(self._clients),
+            total_sent, total_succ, total_failed, total_nack, total_reject)
         return print_str
 
     def prepare_fs(self, out_dir, test_dir_name):
@@ -1453,13 +1476,13 @@ class TestRunner:
         buff_req = args.buff_req if args.buff_req > 1 else 30
         start_date = datetime.now()
         value_separator = args.val_sep if args.val_sep != "" else "|"
+        self._batch_size = args.batch_size if args.batch_size > 0 else 10
         print("Number of client         ", proc_count)
         print("Path to genesis txns file", args.genesis_path)
         print("Seed                     ", args.seed)
-        print("Batch size               ", args.batch_size)
-        print("Timeout between batches  ", args.batch_timeout)
+        print("Batch size               ", self._batch_size)
         print("Request kind             ", args.req_kind)
-        print("Refresh rate, txns       ", self._refresh_rate)
+        print("Refresh rate, sec        ", self._refresh_rate)
         print("Pregenerated reqs cnt    ", buff_req)
         print("Output directory         ", args.out_dir)
         print("Value Separator          ", value_separator)
@@ -1478,11 +1501,20 @@ class TestRunner:
         print("Pool config              ", pool_config)
 
         load_rate = args.load_rate if args.load_rate > 0 else 10
-
+        self._batch_rate = 1 / load_rate
         print("Load rate txn per sec    ", load_rate)
 
         self._value_separator = value_separator
-        self._start_sync = args.sync_mode in ['all_ps', 'one_ps']
+
+        self._sync_mode = args.sync_mode
+        self._start_sync = args.sync_mode in ['all', 'one']
+        load_client_mode = LoadClient.SendTime
+        if self._sync_mode in ['all', 'one']:
+            load_client_mode = LoadClient.SendSync
+        elif self._sync_mode == 'wait_resp':
+            load_client_mode = LoadClient.SendResp
+
+        print("load_client_mode", load_client_mode)
 
         self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")))
 
@@ -1496,9 +1528,9 @@ class TestRunner:
         for i in range(0, proc_count):
             rd, wr = multiprocessing.Pipe()
             prc_name = "LoadClient_{}".format(i)
-            prc = executor.submit(run_client, prc_name, args.genesis_path, wr, args.seed, args.batch_size,
-                                  1 / load_rate, args.req_kind, buff_req, args.wallet_key, pool_config,
-                                  LoadClient.SendTime)
+            prc = executor.submit(run_client, prc_name, args.genesis_path, wr, args.seed, self._batch_size,
+                                  self._batch_rate, args.req_kind, buff_req, args.wallet_key, pool_config,
+                                  load_client_mode)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd)
