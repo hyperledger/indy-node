@@ -116,7 +116,8 @@ def get_additional_storages(ledger_data_dir):
     postfix = config.transactions_file_base_postfix
 
     additional_storages = []
-    dir_names = [name for name in os.listdir(ledger_data_dir) if os.path.isdir(os.path.join(ledger_data_dir, name))]
+    dir_names = [name for name in os.listdir(ledger_data_dir)
+                 if os.path.isdir(os.path.join(ledger_data_dir, name))]
     for dir_name in dir_names:
         if postfix in dir_name:
             additional_storages.append(dir_name[:dir_name.find(postfix)])
