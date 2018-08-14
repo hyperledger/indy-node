@@ -109,3 +109,5 @@ INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
 UPGRADE_ENTRY = 'indy-node'
 
 ANYONE_CAN_WRITE = False
+
+transactions_file_base_postfix = '_transactions'
