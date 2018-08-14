@@ -20,27 +20,27 @@ did new seed=TestTrustAnchorRandomUser3000002 metadata="Random User 3"
 # AS Trustee CREATE Steward (steward1)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=23LxaWGVajU7vMn7zcrHGK role=STEWARD verkey=~UgkZ1ktZV2DQg1sJn3tjdP
-ledger get-nym did=23LxaWGVajU7vMn7zcrHGK
+- ledger get-nym did=23LxaWGVajU7vMn7zcrHGK
 # AS Trustee CREATE TrustAnchor (trustanchor1)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=TRUST_ANCHOR verkey=~5izgZjWpw3gxeDB9KRS7BN
-ledger get-nym did=T6XTs3nSU3J7ptAcxSnaVo
+- ledger get-nym did=T6XTs3nSU3J7ptAcxSnaVo
 # AS Trustee CREATE TrustAnchor (trustanchor2)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=TRUST_ANCHOR verkey=~ANMdNhQ3uuyXDmn7cxi8df
-ledger get-nym did=TPrMRHHSunP3cEtpkY8gi7
+- ledger get-nym did=TPrMRHHSunP3cEtpkY8gi7
 # test section
 # #1 AS TrustAnchor CREATE IdentityOwner (user1) (PASS)
 did use T6XTs3nSU3J7ptAcxSnaVo
 ledger nym did=MXYSvpB5e549z6nqa1nTEh verkey=~PR7BXc75UwtiPvKjtDn26N
-ledger get-nym did=MXYSvpB5e549z6nqa1nTEh
+- ledger get-nym did=MXYSvpB5e549z6nqa1nTEh
 # #2.1 AS TrustAnchor REMOVE Trustee (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=V4SGRU86Z58d6TV7PBUe6f role=
 # #2.2 CHECK Trustee IS VALID
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=KY4VDKjHUPTnxtF2zfJnNP role=TRUSTEE verkey=~WUktVVQHL7saxaNochggZR
-ledger get-nym did=KY4VDKjHUPTnxtF2zfJnNP
+- ledger get-nym did=KY4VDKjHUPTnxtF2zfJnNP
 # #3 AS TrustAnchor CREATE Trustee (trustee1) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=HUBDajRyCvTGR18ETzEGEB role=TRUSTEE verkey=~DriCN8uMxoA8tiBazmkBWk
@@ -51,7 +51,7 @@ did use T6XTs3nSU3J7ptAcxSnaVo
 # #4.2 CHECK Steward IS VALID
 did use 23LxaWGVajU7vMn7zcrHGK
 ledger nym did=3KghQejG1HZU5MbpQL5Cuk role=TRUST_ANCHOR verkey=~6DWoz55wzC77CDEYkZzytR
-ledger get-nym did=3KghQejG1HZU5MbpQL5Cuk
+- ledger get-nym did=3KghQejG1HZU5MbpQL5Cuk
 # #5 AS TrustAnchor CREATE Steward (steward2) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=BhJXbKYGm9ZkHF3jjhDrPJ role=STEWARD verkey=~R7RAboPbpw5ycURytkcASB
@@ -62,7 +62,7 @@ did use T6XTs3nSU3J7ptAcxSnaVo
 # #6.2 CHECK TrustAnchor IS VALID
 did use TPrMRHHSunP3cEtpkY8gi7
 ledger nym did=3B1g9f3vC4pR8bTfi21z91 verkey=~5RtP3dPmQdNmz75TvQPK9k
-ledger get-nym did=3B1g9f3vC4pR8bTfi21z91
+- ledger get-nym did=3B1g9f3vC4pR8bTfi21z91
 # #7 AS TrustAnchor CREATE TrustAnchor (trustanchor3) (FAIL)
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=Xw1QKjyG938oV5gUnLoBhm role=TRUST_ANCHOR verkey=~3iC9GEndzoEYcruyhTLWDc
@@ -72,9 +72,36 @@ did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=
 # #8.2 CHECK TrustAnchor IS VALID
 ledger nym did=WDLETDtBugFiJvtkghHoH verkey=~QdAhvFaZ81ZZ1DxwqZ5i8i
-ledger get-nym did=WDLETDtBugFiJvtkghHoH
+- ledger get-nym did=WDLETDtBugFiJvtkghHoH
 # #9 check that can't add roles back when don't have necessary permissions
 did use T6XTs3nSU3J7ptAcxSnaVo
 - ledger nym did=WDLETDtBugFiJvtkghHoH role=TRUST_ANCHOR
 - ledger nym did=WDLETDtBugFiJvtkghHoH role=STEWARD
 - ledger nym did=WDLETDtBugFiJvtkghHoH role=TRUSTEE
+### Additional cases ###
+did use V4SGRU86Z58d6TV7PBUe6f
+did new seed=RandomAttribOwner000000000000002
+ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT role=TRUST_ANCHOR
+did new seed=RandomUserForRotateKey0000000002
+ledger nym did=ETcbLj612u9oXr7adZSWZV verkey=~UUMiscx15SsxekQtLfVVLh role=TRUST_ANCHOR
+# Only owner can edit existing NYMs
+did use LoZB9o2PFfSjrpnkugqunZ
+did rotate-key seed=RandomUserForRotateKey0NewKey002
+# Not owner can't edit existing NYMs (FAIL)
+did use ETcbLj612u9oXr7adZSWZV
+- ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT
+# Only owners can create ATTRIBs
+did use LoZB9o2PFfSjrpnkugqunZ
+ledger attrib did=LoZB9o2PFfSjrpnkugqunZ raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Only owners can edit ATTRIBs
+ledger attrib did=LoZB9o2PFfSjrpnkugqunZ raw={"endpoint":{"ha":"127.0.0.1:6666"}}
+# Not owner can't create attrib (FAIL)
+did use LoZB9o2PFfSjrpnkugqunZ
+- ledger attrib did=ETcbLj612u9oXr7adZSWZV raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Not owner can't edit attrib (FAIL)
+did use ETcbLj612u9oXr7adZSWZV
+- ledger attrib did=LoZB9o2PFfSjrpnkugqunZ raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# TrustAnchor can create SCHEMA:
+ledger schema name=TrustAnchorSchema version=1.0 attr_names=name,age
+# TrustAnchor can create CLAIM_DEF:
+ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=2
