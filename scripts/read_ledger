@@ -24,6 +24,9 @@ logger.propagate = False
 logger.disabled = True
 _DATA = 'data'
 
+# TODO: Replace with constant from config
+postfix = '_transactions'
+
 
 def read_args():
     parser = argparse.ArgumentParser(
@@ -88,7 +91,6 @@ def get_ledger_dir(node_name, client_name, network):
 
 def get_storage(type_, ledger_data_dir):
     config = getConfig()
-    postfix = config.transactions_file_base_postfix
 
     storage_name = None
     if type_ == 'pool':
@@ -112,16 +114,8 @@ def get_storage(type_, ledger_data_dir):
 
 
 def get_additional_storages(ledger_data_dir):
-    config = getConfig()
-    postfix = config.transactions_file_base_postfix
-
-    additional_storages = []
-    dir_names = [name for name in os.listdir(ledger_data_dir)
-                 if os.path.isdir(os.path.join(ledger_data_dir, name))]
-    for dir_name in dir_names:
-        if postfix in dir_name:
-            additional_storages.append(dir_name[:dir_name.find(postfix)])
-
+    additional_storages = \
+        [name[:name.find(postfix)] for name in os.listdir(ledger_data_dir) if postfix in name]
     return additional_storages
 
 
