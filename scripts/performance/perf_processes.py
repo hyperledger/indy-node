@@ -665,43 +665,40 @@ class RGGetRevocRegDelta(RGGetEntryRevoc):
 class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
     TRUSTEE_ROLE_CODE = "0"
 
-    DEFAULT_PAYMENT_METHOD = "sov"
     DEFAULT_PAYMENT_ADDRS_COUNT = 100
 
     NUMBER_OF_TRUSTEES_FOR_MINT = 4
     MINT_RECIPIENTS_LIMIT = 100
     AMOUNT_LIMIT = 100
 
-    PLUGINS = {
-        "sov": ("libsovtoken.so", "sovtoken_init")
-    }
-
-    __initiated_payment_methods = set()
+    __initiated_plugins = set()
 
     @staticmethod
-    def __init_plugin_once(payment_method):
-        if payment_method not in RGBasePayment.__initiated_payment_methods:
+    def __init_plugin_once(plugin_lib_name, init_func_name):
+        if (plugin_lib_name, init_func_name) not in RGBasePayment.__initiated_plugins:
             try:
-                plugin_lib_name, init_func_name = RGBasePayment.PLUGINS[payment_method]
                 plugin_lib = CDLL(plugin_lib_name)
                 init_func = getattr(plugin_lib, init_func_name)
                 res = init_func()
                 if res != 0:
                     raise RuntimeError(
                         "Initialization function returned result code {}".format(res))
-                RGBasePayment.__initiated_payment_methods.add(payment_method)
+                RGBasePayment.__initiated_plugins.add((plugin_lib_name, init_func_name))
             except Exception as ex:
                 print("Payment plugin initialization failed: {}".format(repr(ex)))
                 raise ex
 
     def __init__(self, *args,
-                 payment_method=DEFAULT_PAYMENT_METHOD,
+                 payment_method,
+                 plugin_lib,
+                 plugin_init_func,
                  payment_addrs_count=DEFAULT_PAYMENT_ADDRS_COUNT,
                  **kwargs):
 
         super().__init__(*args, **kwargs)
 
-        RGBasePayment.__init_plugin_once(payment_method)
+        RGBasePayment.__init_plugin_once(plugin_lib,
+                                         plugin_init_func)
 
         self._pool_handle = None
         self._wallet_handle = None
