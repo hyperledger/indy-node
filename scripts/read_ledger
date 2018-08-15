@@ -18,12 +18,14 @@ from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper, NodeConfigHelper
 from common.serializers.serialization import ledger_txn_serializer
 
-
 logging.root.handlers = []
 logger = logging.getLogger()
 logger.propagate = False
 logger.disabled = True
 _DATA = 'data'
+
+# TODO: Replace with constant from config
+postfix = '_transactions'
 
 
 def read_args():
@@ -97,6 +99,8 @@ def get_storage(type_, ledger_data_dir):
         storage_name = config.domainTransactionsFile
     elif type_ == 'config':
         storage_name = config.configTransactionsFile
+    elif type_ in get_additional_storages(ledger_data_dir):
+        storage_name = type_ + postfix
     else:
         print("Unknown ledger type: {}".format(type_))
         exit()
@@ -107,6 +111,12 @@ def get_storage(type_, ledger_data_dir):
                                 open=True,
                                 config=config,
                                 read_only=True)
+
+
+def get_additional_storages(ledger_data_dir):
+    additional_storages = \
+        [name[:name.find(postfix)] for name in os.listdir(ledger_data_dir) if postfix in name]
+    return additional_storages
 
 
 def print_txns(storage, args):
@@ -153,7 +163,7 @@ def print_all(storage, serializer):
     to = int(args.to) if args.to else None
     for seqNo, txn in storage.iterator(start=frm, end=to):
         txn = ledger_txn_serializer.deserialize(txn)
-        print(int(seqNo), serializer.serialize(txn, toBytes=False))
+        print(serializer.serialize(txn, toBytes=False))
 
 
 def make_copy_of_ledger(data_dir):
