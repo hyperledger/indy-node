@@ -88,7 +88,7 @@ parser.add_argument('-m', '--mode', default="p", choices=['p', 't'], required=Fa
 parser.add_argument('-p', '--pool_config', default="", type=str, required=False, dest='pool_config',
                     help='Configuration of pool as JSON. The value will be passed to open_pool call. Default value is empty')
 
-parser.add_argument('-y', '--sync_mode', default="freeflow", choices=['freeflow', 'all', 'one'],
+parser.add_argument('-y', '--sync_mode', default="freeflow", choices=['freeflow', 'all', 'one', 'wait_resp'],
                     required=False, dest='sync_mode',
                     help='Configuration of pool as JSON. The value will be passed to open_pool call. Default value is freeflow')
 
@@ -307,10 +307,10 @@ class RequestGenerator(metaclass=ABCMeta):
 
         return req_data, req
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+    async def on_request_generated(self, req_data, gen_req):
         pass
 
-    async def on_request_replied(self, req, resp_or_exp):
+    async def on_request_replied(self, req_data, gen_req, resp_or_exp):
         pass
 
     def get_txn_field(self, txn_dict):
@@ -333,7 +333,6 @@ class RGSeqReqs(RequestGenerator):
         if not isinstance(reqs, list):
             raise RuntimeError("Bad Requests sequence provided")
         self._reqs_collection = []
-        self._req_id_to_req_gen = {}
         for reqc, prms in reqs:
             if not issubclass(reqc, RequestGenerator):
                 raise RuntimeError("Bad Request class provided")
@@ -371,19 +370,15 @@ class RGSeqReqs(RequestGenerator):
 
     async def _gen_req(self, submit_did, req_data):
         req_gen = self._reqs_collection[self._req_idx]
-        req = await req_gen._gen_req(submit_did, req_data)
-        req_obj = json.loads(req)
-        req_id = req_obj["reqId"]
-        self._req_id_to_req_gen[req_id] = req_gen
-        return req
+        return await req_gen._gen_req(submit_did, req_data)
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
-        return await self._reqs_collection[self._req_idx].on_batch_completed(pool_handle, wallet_handle, submitter_did)
+    async def on_request_generated(self, req_data, gen_req):
+        for r in self._reqs_collection:
+            await r.on_request_generated(req_data, gen_req)
 
-    async def on_request_replied(self, req, resp_or_exp):
-        req_obj = json.loads(req)
-        req_id = req_obj["reqId"]
-        await self._req_id_to_req_gen.pop(req_id).on_request_replied(req, resp_or_exp)
+    async def on_request_replied(self, req_data, req, resp_or_exp):
+        for r in self._reqs_collection:
+            await r.on_request_replied(req_data, req, resp_or_exp)
 
 
 class RGNym(RequestGenerator):
@@ -562,7 +557,10 @@ class RGGetDefRevoc(RGDefRevoc):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         pass
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+    async def on_request_generated(self, req_data, gen_req):
+        pass
+
+    async def on_request_replied(self, req_data, gen_req, resp_or_exp):
         pass
 
     async def _gen_req(self, submit_did, req_data):
@@ -590,6 +588,10 @@ class RGEntryRevoc(RGDefRevoc):
         self._pool_handle = None
         self._cred_offer_json = None
         self._tails_writer = None
+        self._master_secret_id = None
+
+        self._old_reqs = set()
+        self._old_reqs_cnt = 0
 
     async def _upd_revoc_reg(self):
         while True:
@@ -637,8 +639,22 @@ class RGEntryRevoc(RGDefRevoc):
         return await ledger.build_revoc_reg_entry_request(
             submit_did, self._default_revoc_reg_def_id, "CL_ACCUM", revoc_reg_delta_json)
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
-        await self._upd_revoc_reg()
+    def _gen_req_data(self):
+        req_data = super()._gen_req_data()
+        self._old_reqs.add(req_data)
+        return req_data
+
+    async def on_request_generated(self, req_data, gen_req):
+        if req_data in self._old_reqs:
+            self._old_reqs_cnt += 1
+            self._old_reqs.remove(req_data)
+
+        if self._old_reqs_cnt >= self._max_cred_num:
+            self._old_reqs_cnt = 0
+            await self._upd_revoc_reg()
+
+    async def on_request_replied(self, req_data, gen_req, resp_or_exp):
+        pass
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
@@ -664,7 +680,7 @@ class RGGetEntryRevoc(RGEntryRevoc):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         pass
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+    async def on_request_generated(self, req_data, gen_req):
         pass
 
     async def _gen_req(self, submit_did, req_data):
@@ -681,7 +697,7 @@ class RGGetRevocRegDelta(RGGetEntryRevoc):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         pass
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+    async def on_request_generated(self, req_data, gen_req):
         pass
 
 
@@ -837,6 +853,7 @@ class RGPayment(RGBasePayment):
         super().__init__(*args, **kwargs)
         self._sources_amounts = deque()
         self.__req_id_to_source_amount = {}
+        self._old_reqs = set()
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
@@ -872,17 +889,23 @@ class RGPayment(RGBasePayment):
         amount = outputs[0]["amount"]
         self.__req_id_to_source_amount[req_id] = source, amount
 
+        self._old_reqs.add(req_id)
+
         return req
 
-    async def on_request_replied(self, req, resp_or_exp):
+    async def on_request_replied(self, req_data, req, resp_or_exp):
+        req_obj = json.loads(req)
+        req_id = req_obj.get("reqId", None)
+        if req_id not in self._old_reqs:
+            return
+        self._old_reqs.remove(req_id)
+
         if isinstance(resp_or_exp, Exception):
             return
 
         resp = resp_or_exp
 
         try:
-            req_obj = json.loads(req)
-            req_id = req_obj["reqId"]
             source, amount = self.__req_id_to_source_amount.pop(req_id)
 
             resp_obj = json.loads(resp)
@@ -1043,7 +1066,6 @@ class LoadClient:
         req_class, params = create_req_generator(req_kind)
         self._req_generator = req_class(**params, client_stat=self._stat)
         assert self._req_generator is not None
-        self._generated_cnt = 0
         self._pool_config = json.dumps(pool_config) if isinstance(pool_config, dict) and pool_config else None
         if self._send_mode == LoadClient.SendResp and self._batch_size > 1:
             raise RuntimeError("Batch size cannot be greater than 1 in response waiting mode")
@@ -1122,11 +1144,7 @@ class LoadClient:
             self._stat.reply(req_data, e)
             self._loop.stop()
             raise e
-
-        self._generated_cnt += 1
-        if self._generated_cnt >= self._batch_size:
-            await self._req_generator.on_batch_completed(self._pool_handle, self._wallet_handle, self._test_did)
-            self._generated_cnt = 0
+        await self._req_generator.on_request_generated(req_data, sig_req)
 
     def watch_queues(self):
         if len(self._load_client_reqs) + len(self._gen_q) < self.max_in_bg():
@@ -1134,7 +1152,10 @@ class LoadClient:
 
     def check_batch_avail(self, fut):
         self._gen_q.remove(fut)
-        self.watch_queues()
+        if self._send_mode != LoadClient.SendResp:
+            self.watch_queues()
+        else:
+            self.req_send(1)
 
     def max_in_bg(self):
         return 3 * self._buff_reqs
@@ -1148,7 +1169,7 @@ class LoadClient:
         if self._closing:
             return
 
-        if len(self._gen_q) + len(self._load_client_reqs) > self.max_in_bg():
+        if self._send_mode != LoadClient.SendResp and len(self._gen_q) + len(self._load_client_reqs) > self.max_in_bg():
             return
 
         builder = self._loop.create_task(self.gen_signed_req())
@@ -1162,11 +1183,14 @@ class LoadClient:
         except Exception as e:
             resp_or_exp = e
         self._stat.reply(req_data, resp_or_exp)
-        await self._req_generator.on_request_replied(req, resp_or_exp)
+        await self._req_generator.on_request_replied(req_data, req, resp_or_exp)
+        if self._send_mode == LoadClient.SendResp:
+            self.gen_reqs()
 
     def done_submit(self, fut):
         self._send_q.remove(fut)
-        self.watch_queues()
+        if self._send_mode != LoadClient.SendResp:
+            self.watch_queues()
 
     def send_stat(self):
         st = self._stat.dump_stat()
@@ -1473,7 +1497,7 @@ class TestRunner:
     def test_run(self, args):
         proc_count = args.clients if args.clients > 0 else multiprocessing.cpu_count()
         self._refresh_rate = args.refresh_rate if args.refresh_rate > 0 else 10
-        buff_req = args.buff_req if args.buff_req > 1 else 30
+        buff_req = args.buff_req if args.buff_req >= 0 else 30
         start_date = datetime.now()
         value_separator = args.val_sep if args.val_sep != "" else "|"
         self._batch_size = args.batch_size if args.batch_size > 0 else 10
@@ -1502,7 +1526,7 @@ class TestRunner:
 
         load_rate = args.load_rate if args.load_rate > 0 else 10
         self._batch_rate = 1 / load_rate
-        print("Load rate txn per sec    ", load_rate)
+        print("Load rate batches per sec", load_rate)
 
         self._value_separator = value_separator
 
@@ -1513,6 +1537,9 @@ class TestRunner:
             load_client_mode = LoadClient.SendSync
         elif self._sync_mode == 'wait_resp':
             load_client_mode = LoadClient.SendResp
+            self._batch_size = 1
+            buff_req = 0
+
 
         print("load_client_mode", load_client_mode)
 
