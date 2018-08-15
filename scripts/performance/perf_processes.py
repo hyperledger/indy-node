@@ -90,7 +90,7 @@ parser.add_argument('-p', '--pool_config', default="", type=str, required=False,
 
 parser.add_argument('-y', '--sync_mode', default="freeflow", choices=['freeflow', 'all', 'one', 'wait_resp'],
                     required=False, dest='sync_mode',
-                    help='Configuration of pool as JSON. The value will be passed to open_pool call. Default value is freeflow')
+                    help='Client sync mode. Default value is freeflow')
 
 parser.add_argument('-l', '--load_rate', default=10, type=float, required=False, dest='load_rate',
                     help='Batches per sec. Default value is 10')
@@ -953,17 +953,17 @@ class RGVerifyPayment(RGBasePayment):
                                                              json.dumps(outputs),
                                                              None)
 
-        payment_resp = await ledger.sign_and_submit_request(self._pool_handle,
-                                                            self._wallet_handle,
-                                                            self._submitter_did,
-                                                            payment_req)
-        ensure_is_reply(payment_resp)
+            payment_resp = await ledger.sign_and_submit_request(self._pool_handle,
+                                                                self._wallet_handle,
+                                                                self._submitter_did,
+                                                                payment_req)
+            ensure_is_reply(payment_resp)
 
-        receipt_infos_json = await payment.parse_payment_response(self._payment_method, payment_resp)
-        receipt_infos = json.loads(receipt_infos_json)
-        receipt_info = receipt_infos[0]
+            receipt_infos_json = await payment.parse_payment_response(self._payment_method, payment_resp)
+            receipt_infos = json.loads(receipt_infos_json)
+            receipt_info = receipt_infos[0]
 
-        self._receipts.append(receipt_info["receipt"])
+            self._receipts.append(receipt_info["receipt"])
 
     def _gen_req_data(self):
         return (datetime.now().isoformat(), random.choice(self._receipts))
