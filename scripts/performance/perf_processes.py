@@ -96,7 +96,10 @@ parser.add_argument('-l', '--load_rate', default=10, type=float, required=False,
                     help='Batches per sec. Default value is 10')
 
 parser.add_argument('-o', '--out', default="", type=str, required=False, dest='out_file',
-                    help='Output file. Default value is cout')
+                    help='Output file. Default value is stdout')
+
+parser.add_argument('--load_time', default=0, type=float, required=False, dest='load_time',
+                    help='Work no longer then load_time sec. Default value is 0')
 
 
 def ensure_is_reply(resp):
@@ -1334,6 +1337,7 @@ class TestRunner:
         self._batch_rate = None
         self._batch_size = None
         self._out_file = sys.stdout
+        self._stop_sec = 0
 
     def process_reqs(self, stat, name:str = ""):
         assert self._failed_f
@@ -1416,6 +1420,8 @@ class TestRunner:
             self._tick_all()
         elif all_run and self._sync_mode == 'one':
             self._tick_one(0)
+
+        self.schedule_stop()
 
     def request_stat(self):
         for cln in self._clients.values():
@@ -1529,6 +1535,10 @@ class TestRunner:
             self._out_file.flush()
         self._loop.call_later(self._refresh_rate, self.screen_stat)
 
+    def schedule_stop(self):
+        if self._stop_sec > 0:
+            self._loop.call_later(self._stop_sec, self.sig_handler, signal.SIGINT)
+
     def test_run(self, args):
         proc_count = args.clients if args.clients > 0 else multiprocessing.cpu_count()
         self._refresh_rate = args.refresh_rate if args.refresh_rate > 0 else 10
@@ -1536,6 +1546,7 @@ class TestRunner:
         start_date = datetime.now()
         value_separator = args.val_sep if args.val_sep != "" else "|"
         self._batch_size = args.batch_size if args.batch_size > 0 else 10
+        self._stop_sec = args.load_time if args.load_time > 0 else 0
 
         self._out_file = self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")),
                                          args.out_file)

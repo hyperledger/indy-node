@@ -79,7 +79,9 @@ Note: batches are evenly distributed, but txs inside one batch are sent as fast 
 "all" - all clients send a batch each load rate tick, "one" - only one client sends a batch each load rate tick,
 "wait_resp" - next request will be sent only after response received, no sync, batch size ignored, no pregenerated reqs. Default is "freeflow".
 
-'-o', '--out' : Output file name. If specified nothing will be printed to stdout. Default is stdout. 
+'-o', '--out' : Output file name. If specified nothing will be printed to stdout. Default is stdout.
+
+'--load_time' : Work no longer then load_time sec. Zero value means work always. Default value is 0.
 
 ## Transaction data
 Each txn can read predefined data from file or generate random data.
