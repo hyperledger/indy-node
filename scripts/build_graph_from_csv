@@ -7,69 +7,65 @@ import pandas as pd
 import argparse
 
 
+def add_subplot(index, name, items, data, log_scale=False, show_timestamps=False):
+    timestamp = list(map(lambda x: x.replace("2018-", ""), data.timestamp))
+    numbers = range(len(timestamp))
+    ax = plt.subplot(index)
+    if log_scale:
+        ax.set_yscale("log")
+    for i in items:
+        data_y_axis = data[i]
+        plt.plot(numbers, data_y_axis, label=i)
+        plt.xticks(numbers, timestamp)
+        if show_timestamps:
+            for label in list(filter(lambda x: ax.xaxis.get_ticklabels().index(x) % 10 != 0, ax.xaxis.get_ticklabels())):
+                label.set_visible(False)
+        else:
+            for label in ax.xaxis.get_ticklabels():
+                label.set_visible(False)
+
+        for label in list(filter(lambda x: ax.xaxis.get_major_ticks().index(x) % 10 != 0, ax.xaxis.get_major_ticks())):
+            label.set_visible(False)
+        plt.legend(bbox_to_anchor=(1, 1), loc=2, prop={'size': 8}, borderaxespad=0.)
+        plt.title(name)
+        plt.xticks(rotation=15)
+        plt.tick_params(axis='x', which='minor')
+        plt.gca().grid(True)
+
+
+def build_default_graph(file):
+    add_subplot(411, "Throughput", ["client_stack_messages_processed_per_sec", "ordered_batch_size_per_sec"], file)
+    add_subplot(412, "Latency", ["avg_monitor_avg_latency", "avg_backup_monitor_avg_latency"], file)
+    add_subplot(413, "Queues", ["avg_node_stack_messages_processed", "avg_client_stack_messages_processed"], file)
+
+    looper_list = ["avg_node_prod_time", "avg_service_replicas_time", "avg_service_node_msgs_time",
+                   "avg_service_node_actions_time", "avg_service_monitor_actions_time", "avg_service_view_changer_time"]
+    add_subplot(414, "Looper", looper_list, file, log_scale=True, show_timestamps=True)
+
+
+def build_custom_graph(file, graphs):
+    pass
+
+
 def build_graph():
     parser = argparse.ArgumentParser(description='Gets file path and graph name to build a graph')
     parser.add_argument('filepath', type=str, help='the csv file absolute path')
+    parser.add_argument('--graphs', required=False, help='comma-separated graph list')
     args = parser.parse_args()
     file_path = args.filepath
-    try:
-        file = pd.read_csv(file_path)
-    except IOError:
-        assert False, "Could not find a path!"
-    subplot_value = 411
-    for i in ["Throughput", "Latency", "Queues"]:
-            multi_line_plot(i, file, subplot_value)
-            subplot_value += 1
-    separate_single_line_plots(file)
+    file = pd.read_csv(file_path)
+
+    if args.graphs:
+        build_custom_graph(file, args.graphs)
+    else:
+        build_default_graph(file)
+
     mng = plt.get_current_fig_manager()
     mng.resize(*mng.window.maxsize())
     plt.gca().grid(True)
     plt.subplots_adjust(left=0.05, right=0.85)
     plt.suptitle(file_path)
     plt.show()
-
-
-def multi_line_plot(graph_name, file, subplot_value):
-    graph_data_dict = {"Throughput": ["client_stack_messages_processed_per_sec", "ordered_batch_size_per_sec"]
-                       , "Latency": ["avg_monitor_avg_latency", "avg_backup_monitor_avg_latency"]
-                       , "Queues": ["avg_node_stack_messages_processed", "avg_client_stack_messages_processed"]
-                       }
-    timestamp = list(map(lambda x: x.replace("2018-", ""), file.timestamp))
-    numbers = range(len(timestamp))
-    looper_list = graph_data_dict[graph_name]
-    ax = plt.subplot(subplot_value)
-    for i in looper_list:
-        data_y_axis = file[i]
-        plt.plot(numbers, data_y_axis, label=i.upper())
-        plt.xticks(numbers, timestamp)
-        for label in ax.xaxis.get_ticklabels():
-            label.set_visible(False)
-        for label in list(filter(lambda x: ax.xaxis.get_major_ticks().index(x) % 10 != 0, ax.xaxis.get_major_ticks())):
-            label.set_visible(False)
-        plt.legend(bbox_to_anchor=(1, 1), loc=2, prop={'size': 8}, borderaxespad=0.)
-        plt.title(graph_name)
-        plt.gca().grid(True)
-
-
-def separate_single_line_plots(file):
-    timestamp = list(map(lambda x: x.replace("2018-", ""), file.timestamp))
-    numbers = range(len(timestamp))
-    looper_list = ["avg_node_prod_time", "avg_service_replicas_time", "avg_service_node_msgs_time",
-                   "avg_service_node_actions_time", "avg_service_monitor_actions_time", "avg_service_view_changer_time"]
-    ax = plt.subplot(414)
-    ax.set_yscale("log")
-    for i in looper_list:
-        data_y_axis = file[i]
-        plt.plot(numbers, data_y_axis, label=i)
-        plt.xticks(numbers, timestamp)
-        plt.legend(bbox_to_anchor=(1, 1), loc=2, prop={'size': 8}, borderaxespad=0.)
-        for label in list(filter(lambda x: ax.xaxis.get_ticklabels().index(x) % 10 != 0, ax.xaxis.get_ticklabels())):
-            label.set_visible(False)
-        for label in list(filter(lambda x: ax.xaxis.get_major_ticks().index(x) % 10 != 0, ax.xaxis.get_major_ticks())):
-            label.set_visible(False)
-        plt.xticks(rotation=15)
-        plt.tick_params(axis='x', which='minor')
-        plt.title("Looper")
 
 
 if __name__ == '__main__':
