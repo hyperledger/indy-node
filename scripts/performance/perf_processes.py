@@ -95,6 +95,9 @@ parser.add_argument('-y', '--sync_mode', default="freeflow", choices=['freeflow'
 parser.add_argument('-l', '--load_rate', default=10, type=float, required=False, dest='load_rate',
                     help='Batches per sec. Default value is 10')
 
+parser.add_argument('-o', '--out', default="", type=str, required=False, dest='out_file',
+                    help='Output file. Default value is cout')
+
 
 def ensure_is_reply(resp):
     if isinstance(resp, str):
@@ -132,6 +135,11 @@ class ClientSend:
         self.cnt = cnt
 
 
+class ClientMsg:
+    def __init__(self, msg: str, *args):
+        self.msg = msg.format(*args)
+
+
 class ClientStatistic:
     def __init__(self):
         self._req_prep = 0
@@ -140,10 +148,6 @@ class ClientStatistic:
         self._req_fail = 0
         self._req_nack = 0
         self._req_rejc = 0
-
-        # inited as something big (datetime(9999, 1, 1) - datetime(1970, 1, 1)).total_seconds()
-        self._server_min_txn_time = 253370764800
-        self._server_max_txn_time = 0
 
         self._client_stat_reqs = dict()
 
@@ -195,8 +199,6 @@ class ClientStatistic:
                     resp['result'].get('txnTime', False) or resp['result'].get('txnMetadata', {}).get('txnTime', False)
                 server_time = int(srv_tm)
                 self._client_stat_reqs[req_data_repr]["server_reply"] = server_time
-                self._server_min_txn_time = min(self._server_min_txn_time, server_time)
-                self._server_max_txn_time = max(self._server_max_txn_time, server_time)
             else:
                 self._req_fail += 1
                 status = "fail"
@@ -215,8 +217,6 @@ class ClientStatistic:
         ret_val["total_succ"] = self._req_succ
         ret_val["total_nacked"] = self._req_nack
         ret_val["total_rejected"] = self._req_rejc
-        srv_time = self._server_max_txn_time - self._server_min_txn_time
-        ret_val["server_time"] = srv_time if srv_time >= 0 else 0
         ret_val["reqs"] = []
         reqs = [k for k, v in self._client_stat_reqs.items() if "status" in v or dump_all]
         for r in reqs:
@@ -1072,6 +1072,12 @@ class LoadClient:
         if self._send_mode == LoadClient.SendResp and buff_req != 0:
             raise RuntimeError("Cannot pregenerate reqs in response waiting mode")
 
+    def msg(self, fmt: str, *args):
+        try:
+            self._pipe_conn.send(ClientMsg(fmt, *args))
+        except Exception as e:
+            print("{} Ready send error {}".format(self._name, e))
+
     async def run_test(self, genesis_path, seed, w_key):
         try:
             pool_cfg = json.dumps({"genesis_txn": genesis_path})
@@ -1090,7 +1096,7 @@ class LoadClient:
             await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle,
                                                      self._test_did, max_cred_num=self._batch_size)
         except Exception as ex:
-            print("{} run_test error {}".format(self._name, ex))
+            self.msg("{} run_test error {}", self._name, ex)
             self._loop.stop()
 
         await self.pregen_reqs()
@@ -1118,7 +1124,7 @@ class LoadClient:
                 if self._send_mode == LoadClient.SendSync:
                     self.req_send(flag.cnt)
         except Exception as e:
-            print("{} Error {}".format(self._name, e))
+            self.msg("{} Error {}", self._name, e)
             force_close = True
         if force_close:
             self._loop.create_task(self.stop_test())
@@ -1129,11 +1135,10 @@ class LoadClient:
         try:
             req_data, req = await self._req_generator.generate_request(self._test_did)
         except NoReqDataAvailableException:
-            print("{} | Cannot generate request since no req data are available."
-                  .format(datetime.now()))
+            self.msg("{} | Cannot generate request since no req data are available.", datetime.now())
             return
         except Exception as e:
-            print("{} generate req error {}".format(self._name, e))
+            self.msg("{} generate req error {}", self._name, e)
             self._loop.stop()
             raise e
         try:
@@ -1158,7 +1163,7 @@ class LoadClient:
             self.req_send(1)
 
     def max_in_bg(self):
-        return 3 * self._buff_reqs
+        return self._buff_reqs
 
     async def pregen_reqs(self):
         if self._send_mode != LoadClient.SendResp:
@@ -1210,7 +1215,7 @@ class LoadClient:
         to_snd = cnt or self._batch_size
 
         if len(self._load_client_reqs) < to_snd:
-            print("WARNING send", self._name, to_snd, len(self._load_client_reqs))
+            self.msg("WARNING need to send {}, but have {}", to_snd, len(self._load_client_reqs))
 
         for i in range(min(len(self._load_client_reqs), to_snd)):
             req_data, req = self._load_client_reqs.pop()
@@ -1229,12 +1234,12 @@ class LoadClient:
             if self._wallet_handle is not None:
                 await wallet.close_wallet(self._wallet_handle)
         except Exception as e:
-            print("{} close_wallet exception: {}".format(self._name, e))
+            self.msg("{} close_wallet exception: {}", self._name, e)
         try:
             if self._pool_handle is not None:
                 await pool.close_pool_ledger(self._pool_handle)
         except Exception as e:
-            print("{} close_pool_ledger exception: {}".format(self._name, e))
+            self.msg("{} close_pool_ledger exception: {}", self._name, e)
 
         self._loop.call_soon_threadsafe(self._loop.stop)
 
@@ -1268,7 +1273,7 @@ class ClientRunner:
     ClientRun = 3
     ClientStopped = 4
 
-    def __init__(self, name, conn):
+    def __init__(self, name, conn, out_file):
         self.status = ClientRunner.ClientCreated
         self.name = name
         self.conn = conn
@@ -1277,7 +1282,7 @@ class ClientRunner:
         self.total_failed = 0
         self.total_nack = 0
         self.total_reject = 0
-        self.total_server_time = 0
+        self._out_file = out_file
 
     def stop_client(self):
         self.status = ClientRunner.ClientStopped
@@ -1293,7 +1298,6 @@ class ClientRunner:
         self.total_failed = stat.get("total_fail", self.total_failed)
         self.total_nack = stat.get("total_nacked", self.total_nack)
         self.total_reject = stat.get("total_rejected", self.total_reject)
-        self.total_server_time = stat.get("server_time", self.total_server_time)
 
     def run_client(self):
         try:
@@ -1301,7 +1305,7 @@ class ClientRunner:
                 self.conn.send(ClientRun())
                 self.status = ClientRunner.ClientRun
         except Exception as e:
-            print("Sent Run to client {} error {}".format(self.name, e))
+            print("Sent Run to client {} error {}".format(self.name, e), file=self._out_file)
             self.status = ClientRunner.ClientError
 
     def req_stats(self):
@@ -1309,7 +1313,7 @@ class ClientRunner:
             if self.conn and self.status == ClientRunner.ClientRun:
                 self.conn.send(ClientGetStat())
         except Exception as e:
-            print("Sent ClientGetStat to client {} error {}".format(self.name, e))
+            print("Sent ClientGetStat to client {} error {}".format(self.name, e), file=self._out_file)
             self.status = ClientRunner.ClientError
 
 
@@ -1329,6 +1333,7 @@ class TestRunner:
         self._sync_mode = None
         self._batch_rate = None
         self._batch_size = None
+        self._out_file = sys.stdout
 
     def process_reqs(self, stat, name:str = ""):
         assert self._failed_f
@@ -1338,31 +1343,46 @@ class TestRunner:
         if not isinstance(stat, dict):
             return
         reqs = stat.get("reqs", [])
+        tot = []
+        suc = []
+        nack = []
+        fails = []
         for (r_id, r_data) in reqs:
-            # ["label", "id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
+            # ["client", "label", "id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
             status = r_data.get("status", "")
-            print(name, r_data.get("label", ""), r_id, status, r_data.get("client_preparing", 0),
-                  r_data.get("client_prepared", 0), r_data.get("client_signed", 0),
-                  r_data.get("client_sent", 0), r_data.get("client_reply", 0), r_data.get("server_reply", 0),
-                  file=self._total_f, sep=self._value_separator)
+            tot.append(self._value_separator.join(
+                [name, r_data.get("label", ""), str(r_id), status,
+                 str(r_data.get("client_preparing", 0)), str(r_data.get("client_prepared", 0)),
+                 str(r_data.get("client_signed", 0)), str(r_data.get("client_sent", 0)),
+                 str(r_data.get("client_reply", 0)), str(r_data.get("server_reply", 0))]))
 
             # ["id", "req", "resp"]
+            val = self._value_separator.join([str(r_id), r_data.get("req", ""), r_data.get("resp", "")])
             if status == "succ":
-                print(r_id, r_data.get("req", ""), r_data.get("resp", ""), file=self._succ_f, sep=self._value_separator)
+                suc.append(val)
             elif status in ["nack", "reject"]:
-                print(r_id, r_data.get("req", ""), r_data.get("resp", ""), file=self._nacked_f, sep=self._value_separator)
+                nack.append(val)
             else:
-                print(r_id, r_data.get("req", ""), r_data.get("resp", ""), file=self._failed_f, sep=self._value_separator)
+                fails.append(val)
+
+        if tot:
+            self._total_f.write("\n".join(tot + [""]))
+        if suc:
+            self._succ_f.write("\n".join(suc + [""]))
+        if nack:
+            self._nacked_f.write("\n".join(nack + [""]))
+        if fails:
+            self._failed_f.write("\n".join(fails + [""]))
 
     def sig_handler(self, sig):
         for prc, cln in self._clients.items():
             try:
-                if not cln.is_finished():
+                if not cln.is_finished() and cln.conn:
                     cln.conn.send(ClientStop())
                 if sig == signal.SIGTERM:
                     prc.cancel()
             except Exception as e:
-                print("Sent stop to client {} error {}".format(cln.name, e))
+                print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
 
     def _tick_all(self):
         self._loop.call_later(self._batch_rate, self._tick_all)
@@ -1371,7 +1391,7 @@ class TestRunner:
                 if cln.status == ClientRunner.ClientRun and cln.conn:
                     cln.conn.send(ClientSend(self._batch_size))
             except Exception as e:
-                print("Sent stop to client {} error {}".format(cln.name, e))
+                print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
 
     def _tick_one(self, idx : int = 0):
         i = idx % len(self._clients)
@@ -1382,7 +1402,7 @@ class TestRunner:
             if cln.status == ClientRunner.ClientRun and cln.conn:
                 cln.conn.send(ClientSend(self._batch_size))
         except Exception as e:
-            print("Sent stop to client {} error {}".format(cln.name, e))
+            print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
 
     def start_clients(self):
         to_start = [c for c in self._clients.values() if c.status == ClientRunner.ClientReady]
@@ -1410,11 +1430,13 @@ class TestRunner:
             elif isinstance(r_data, ClientReady):
                 self._clients[prc].status = ClientRunner.ClientReady
                 self.start_clients()
+            elif isinstance(r_data, ClientMsg):
+                print("{} : {}".format(self._clients[prc].name, r_data.msg), file=self._out_file)
             else:
-                print("Recv garbage {} from {}".format(r_data, self._clients[prc].name))
+                print("Recv garbage {} from {}".format(r_data, self._clients[prc].name), file=self._out_file)
         except Exception as e:
-            print("{} read_client_cb error {}".format(self._clients[prc].name, e))
-            self._clients[prc].conn = None
+            print("{} read_client_cb error {}".format(self._clients[prc].name, e), file=self._out_file)
+            # self._clients[prc].conn = None
 
     def client_done(self, client):
         try:
@@ -1422,7 +1444,7 @@ class TestRunner:
             self._clients[client].refresh_stat(last_stat)
             self.process_reqs(last_stat, self._clients[client].name)
         except Exception as e:
-            print("Client Error", e)
+            print("Client Error", e, file=self._out_file)
 
         self._clients[client].stop_client()
         self._loop.remove_reader(self._clients[client].conn)
@@ -1434,7 +1456,6 @@ class TestRunner:
 
     def get_refresh_str(self):
         clients = 0
-        total_server_time = 0
         total_sent = 0
         total_succ = 0
         total_failed = 0
@@ -1449,13 +1470,12 @@ class TestRunner:
             total_failed += cln.total_failed
             total_nack += cln.total_nack
             total_reject += cln.total_reject
-            total_server_time = max(total_server_time, cln.total_server_time)
         print_str = "Time {:.2f} Clients {}/{} Sent: {} Succ: {} Failed: {} Nacked: {} Rejected: {}".format(
             time.perf_counter()- self._start_counter, clients, len(self._clients),
             total_sent, total_succ, total_failed, total_nack, total_reject)
         return print_str
 
-    def prepare_fs(self, out_dir, test_dir_name):
+    def prepare_fs(self, out_dir, test_dir_name, out_file):
         self._out_dir = os.path.join(out_dir, test_dir_name)
         if not os.path.exists(self._out_dir):
             os.makedirs(self._out_dir)
@@ -1479,6 +1499,12 @@ class TestRunner:
               "client_signed", "client_sent", "client_reply", "server_reply",
               file=self._total_f, sep=self._value_separator)
 
+        ret_out = sys.stdout
+        if out_file:
+            ret_out = open(os.path.join(self._out_dir, out_file), "w")
+        return ret_out
+
+
     def close_fs(self):
         assert self._failed_f
         assert self._total_f
@@ -1488,10 +1514,19 @@ class TestRunner:
         self._total_f.close()
         self._succ_f.close()
         self._nacked_f.close()
+        if self._out_file != sys.stdout:
+            self._out_file.close()
 
     def screen_stat(self):
-        print(self.get_refresh_str(), end="\r")
+        ends = "\n" if self._out_file != sys.stdout else "\r"
+        print(self.get_refresh_str(), end=ends, file=self._out_file)
         self.request_stat()
+        self._total_f.flush()
+        self._failed_f.flush()
+        self._succ_f.flush()
+        self._nacked_f.flush()
+        if self._out_file != sys.stdout:
+            self._out_file.flush()
         self._loop.call_later(self._refresh_rate, self.screen_stat)
 
     def test_run(self, args):
@@ -1501,19 +1536,23 @@ class TestRunner:
         start_date = datetime.now()
         value_separator = args.val_sep if args.val_sep != "" else "|"
         self._batch_size = args.batch_size if args.batch_size > 0 else 10
-        print("Number of client         ", proc_count)
-        print("Path to genesis txns file", args.genesis_path)
-        print("Seed                     ", args.seed)
-        print("Batch size               ", self._batch_size)
-        print("Request kind             ", args.req_kind)
-        print("Refresh rate, sec        ", self._refresh_rate)
-        print("Pregenerated reqs cnt    ", buff_req)
-        print("Output directory         ", args.out_dir)
-        print("Value Separator          ", value_separator)
-        print("Wallet Key               ", args.wallet_key)
-        print("Started At               ", start_date)
-        print("Mode                     ", "processes" if args.mode == 'p' else "threads")
-        print("Sync mode                ", args.sync_mode)
+
+        self._out_file = self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")),
+                                         args.out_file)
+
+        print("Number of client         ", proc_count, file=self._out_file)
+        print("Path to genesis txns file", args.genesis_path, file=self._out_file)
+        print("Seed                     ", args.seed, file=self._out_file)
+        print("Batch size               ", self._batch_size, file=self._out_file)
+        print("Request kind             ", args.req_kind, file=self._out_file)
+        print("Refresh rate, sec        ", self._refresh_rate, file=self._out_file)
+        print("Pregenerated reqs cnt    ", buff_req, file=self._out_file)
+        print("Output directory         ", args.out_dir, file=self._out_file)
+        print("Value Separator          ", value_separator, file=self._out_file)
+        print("Wallet Key               ", args.wallet_key, file=self._out_file)
+        print("Started At               ", start_date, file=self._out_file)
+        print("Mode                     ", "processes" if args.mode == 'p' else "threads", file=self._out_file)
+        print("Sync mode                ", args.sync_mode, file=self._out_file)
 
         pool_config = None
         if args.pool_config:
@@ -1522,11 +1561,11 @@ class TestRunner:
             except Exception as ex:
                 raise RuntimeError("pool_config param is ill-formed JSON: {}".format(ex))
 
-        print("Pool config              ", pool_config)
+        print("Pool config              ", pool_config, file=self._out_file)
 
         load_rate = args.load_rate if args.load_rate > 0 else 10
         self._batch_rate = 1 / load_rate
-        print("Load rate batches per sec", load_rate)
+        print("Load rate batches per sec", load_rate, file=self._out_file)
 
         self._value_separator = value_separator
 
@@ -1541,9 +1580,7 @@ class TestRunner:
             buff_req = 0
 
 
-        print("load_client_mode", load_client_mode)
-
-        self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")))
+        print("load_client_mode", load_client_mode, file=self._out_file)
 
         self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
         self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
@@ -1560,9 +1597,9 @@ class TestRunner:
                                   load_client_mode)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
-            self._clients[prc] = ClientRunner(prc_name, rd)
+            self._clients[prc] = ClientRunner(prc_name, rd, self._out_file)
 
-        print("Created", proc_count, "clients")
+        print("Created", proc_count, "clients", file=self._out_file)
 
         self.screen_stat()
 
@@ -1571,9 +1608,9 @@ class TestRunner:
         self._loop.remove_signal_handler(signal.SIGTERM)
         self._loop.remove_signal_handler(signal.SIGINT)
 
-        print("")
-        print("DONE At", datetime.now())
-        print(self.get_refresh_str())
+        print("", file=self._out_file)
+        print("DONE At", datetime.now(), file=self._out_file)
+        print(self.get_refresh_str(), file=self._out_file)
         self.close_fs()
 
 
