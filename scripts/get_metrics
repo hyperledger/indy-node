@@ -112,13 +112,13 @@ class Timestamp(Column):
 
 class MetricsValue(Column):
     def __init__(self, name: MetricsName, param: str = 'avg'):
-        super().__init__(self.gen_title(name, param))
+        super().__init__(self._gen_title(name, param))
         self._name = name
         self._param = param
 
     def value(self, context, data):
-        frame = data.frame.get(self._name)
-        result = getattr(frame, self._param)
+        acc = data.frame.get(self._name)
+        result = getattr(acc, self._param)
         if not result:
             return 0
         if self._param in ['sum', 'count']:
@@ -126,12 +126,12 @@ class MetricsValue(Column):
         return result
 
     @staticmethod
-    def gen_title(name: MetricsName, param: str):
+    def _gen_title(name: MetricsName, param: str):
         title = str(name).split('.')[-1].lower()
         if param == 'sum':
             return "{}_per_sec".format(title)
         if param == 'count':
-            return "{}_num_per_sec".format(title.rsplit('_', maxsplit=1)[0])
+            return "{}_count_per_sec".format(title)
         return "{}_{}".format(param, title)
 
 
@@ -148,7 +148,9 @@ def process_storage(storage, args):
                 columns.append(MetricsValue(m, 'sum'))
                 columns.append(MetricsValue(m, 'count'))
             columns.append(MetricsValue(m, 'min'))
+            columns.append(MetricsValue(m, 'lo'))
             columns.append(MetricsValue(m, 'avg'))
+            columns.append(MetricsValue(m, 'hi'))
             columns.append(MetricsValue(m, 'max'))
 
         with open(args.output, 'w') as f:
