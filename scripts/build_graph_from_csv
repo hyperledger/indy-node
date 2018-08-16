@@ -30,8 +30,8 @@ def build_graph():
 
 
 def multi_line_plot(graph_name, file, subplot_value):
-    graph_data_dict = {"Throughput": ["client_stack_messages_processed_per_sec", "master_ordered_requests_count_per_sec"]
-                       , "Latency": ["avg_master_monitor_avg_latency", "avg_monitor_avg_latency"]
+    graph_data_dict = {"Throughput": ["client_stack_messages_processed_per_sec", "ordered_batch_size_per_sec"]
+                       , "Latency": ["avg_monitor_avg_latency", "avg_backup_monitor_avg_latency"]
                        , "Queues": ["avg_node_stack_messages_processed", "avg_client_stack_messages_processed"]
                        }
     timestamp = list(map(lambda x: x.replace("2018-", ""), file.timestamp))
@@ -54,8 +54,8 @@ def multi_line_plot(graph_name, file, subplot_value):
 def separate_single_line_plots(file):
     timestamp = list(map(lambda x: x.replace("2018-", ""), file.timestamp))
     numbers = range(len(timestamp))
-    looper_list = ["AVG_NODE_PROD_TIME", "AVG_SERVICE_REPLICAS_TIME", "AVG_SERVICE_NODE_MSGS_TIME",
-                   "AVG_SERVICE_ACTIONS_TIME", "AVG_SERVICE_ACTIONS_TIME", "AVG_SERVICE_VIEW_CHANGER_TIME"]
+    looper_list = ["avg_node_prod_time", "avg_service_replicas_time", "avg_service_node_msgs_time",
+                   "avg_service_node_actions_time", "avg_service_monitor_actions_time", "avg_service_view_changer_time"]
     ax = plt.subplot(414)
     ax.set_yscale("log")
     for i in looper_list:

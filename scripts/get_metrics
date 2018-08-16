@@ -7,12 +7,15 @@ import argparse
 import logging
 import os
 import shutil
+from abc import ABC, abstractmethod
+from collections import namedtuple
 from datetime import datetime, timedelta
+from typing import NamedTuple
 
 from indy_common.config_util import getConfig
 from plenum.common.constants import KeyValueStorageType
 from plenum.common.metrics_collector import MetricsName
-from plenum.common.metrics_stats import load_metrics_from_kv_store
+from plenum.common.metrics_stats import load_metrics_from_kv_store, MetricsStats, MetricsStatsFrame
 from plenum.common.value_accumulator import ValueAccumulator
 from storage.helper import initKeyValueStorage
 
@@ -87,6 +90,51 @@ def short_stats(acc: ValueAccumulator, div: float = 1.0):
         format(acc.min / div, acc.avg / div, acc.max / div, acc.stddev / div)
 
 
+class Column(ABC):
+    Context = namedtuple('Context', 'args stats')
+    Data = namedtuple('Data', 'ts frame')
+
+    def __init__(self, title):
+        self.title = title
+
+    @abstractmethod
+    def value(self, context: Context, data: Data):
+        pass
+
+
+class Timestamp(Column):
+    def __init__(self):
+        super().__init__("timestamp")
+
+    def value(self, context, data):
+        return data.ts.replace(microsecond=0).strftime(context.args.ts_fmt)
+
+
+class MetricsValue(Column):
+    def __init__(self, name: MetricsName, param: str = 'avg'):
+        super().__init__(self.gen_title(name, param))
+        self._name = name
+        self._param = param
+
+    def value(self, context, data):
+        frame = data.frame.get(self._name)
+        result = getattr(frame, self._param)
+        if not result:
+            return 0
+        if self._param in ['sum', 'count']:
+            result /= context.stats.timestep.total_seconds()
+        return result
+
+    @staticmethod
+    def gen_title(name: MetricsName, param: str):
+        title = str(name).split('.')[-1].lower()
+        if param == 'sum':
+            return "{}_per_sec".format(title)
+        if param == 'count':
+            return "{}_num_per_sec".format(title.rsplit('_', maxsplit=1)[0])
+        return "{}_{}".format(param, title)
+
+
 def process_storage(storage, args):
     fmt = "%Y-%m-%d %H:%M:%S"
     min_ts = datetime.strptime(args.min_ts, fmt) if args.min_ts else None
@@ -94,178 +142,100 @@ def process_storage(storage, args):
     stats = load_metrics_from_kv_store(storage, min_ts, max_ts, timedelta(seconds=args.step))
 
     if args.output is not None:
+        columns = [Timestamp()]
+        for m in MetricsName:
+            if m < MetricsName.BACKUP_MONITOR_AVG_THROUGHPUT:
+                columns.append(MetricsValue(m, 'sum'))
+                columns.append(MetricsValue(m, 'count'))
+            columns.append(MetricsValue(m, 'min'))
+            columns.append(MetricsValue(m, 'avg'))
+            columns.append(MetricsValue(m, 'max'))
+
         with open(args.output, 'w') as f:
-            columns = [
-                "timestamp",
-                "avg_looper_run_time_spent",
-                "avg_three_pc_batch_size",
-                "avg_transport_batch_size",
-                "avg_incoming_node_message_size",
-                "avg_outgoing_node_message_size",
-                "avg_incoming_client_message_size",
-                "avg_outgoing_client_message_size",
-                "avg_master_validation_time",
-                "avg_master_validation_time_per_req",
-                "avg_monitor_avg_throughput",
-                "avg_monitor_avg_latency",
-                "avg_master_monitor_avg_throughput",
-                "avg_master_monitor_avg_latency",
-                "avg_node_stack_messages_processed",
-                "avg_client_stack_messages_processed",
-                "node_stack_messages_processed_per_sec",
-                "client_stack_messages_processed_per_sec",
-                "master_three_pc_batch_count_per_sec",
-                "master_requests_count_per_sec",
-                "master_ordered_three_pc_batch_count_per_sec",
-                "master_ordered_requests_count_per_sec",
-                "incoming_node_messages_per_sec",
-                "incoming_node_traffic_per_sec",
-                "outgoing_node_messages_per_sec",
-                "outgoing_node_traffic_per_sec",
-                "incoming_client_messages_per_sec",
-                "incoming_client_traffic_per_sec",
-                "outgoing_client_messages_per_sec",
-                "outgoing_client_traffic_per_sec",
-                "AVG_NODE_PROD_TIME",
-                "AVG_SERVICE_REPLICAS_TIME",
-                "AVG_SERVICE_NODE_MSGS_TIME",
-                "AVG_SERVICE_CLIENT_MSGS_TIME",
-                "AVG_SERVICE_ACTIONS_TIME",
-                "AVG_SERVICE_LEDGER_MANAGER_TIME",
-                "AVG_SERVICE_VIEW_CHANGER_TIME",
-                "AVG_SERVICE_OBSERVABLE_TIME",
-                "AVG_SERVICE_OBSERVER_TIME",
-                "AVG_FLUSH_OUTBOXES_TIME",
-                "AVG_SERVICE_NODE_LIFECYCLE_TIME",
-                "AVG_SERVICE_CLIENT_STACK_TIME"
-            ]
-            f.write(",".join(columns))
+            f.write(",".join(c.title for c in columns))
             f.write("\n")
+            context = Column.Context(args=args, stats=stats)
             for ts, frame in sorted(stats.frames(), key=lambda v: v[0]):
-                row = [
-                    ts.replace(microsecond=0).strftime(args.ts_fmt),
-                    frame.get(MetricsName.LOOPER_RUN_TIME_SPENT).avg,
-                    frame.get(MetricsName.BACKUP_THREE_PC_BATCH_SIZE).avg,
-                    frame.get(MetricsName.TRANSPORT_BATCH_SIZE).avg,
-                    frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).avg,
-                    frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).avg,
-                    frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).avg,
-                    frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).avg,
-                    frame.get(MetricsName.REQUEST_PROCESSING_TIME).avg,
-                    frame.get(MetricsName.REQUEST_PROCESSING_TIME).sum / (
-                            frame.get(MetricsName.ORDERED_BATCH_SIZE).sum + 0.01),
-                    frame.get(MetricsName.BACKUP_MONITOR_AVG_THROUGHPUT).avg,
-                    frame.get(MetricsName.BACKUP_MONITOR_AVG_LATENCY).avg,
-                    frame.get(MetricsName.MONITOR_AVG_THROUGHPUT).avg,
-                    frame.get(MetricsName.MONITOR_AVG_LATENCY).avg,
-                    frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).avg,
-                    frame.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).avg,
-                    frame.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.THREE_PC_BATCH_SIZE).count / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.THREE_PC_BATCH_SIZE).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.ORDERED_BATCH_SIZE).count / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.ORDERED_BATCH_SIZE).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).count / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).sum / stats.timestep.total_seconds(),
-                    frame.get(MetricsName.NODE_PROD_TIME).avg,
-                    frame.get(MetricsName.SERVICE_REPLICAS_TIME).avg,
-                    frame.get(MetricsName.SERVICE_NODE_MSGS_TIME).avg,
-                    frame.get(MetricsName.SERVICE_CLIENT_MSGS_TIME).avg,
-                    frame.get(MetricsName.SERVICE_NODE_ACTIONS_TIME).avg,
-                    frame.get(MetricsName.SERVICE_LEDGER_MANAGER_TIME).avg,
-                    frame.get(MetricsName.SERVICE_VIEW_CHANGER_TIME).avg,
-                    frame.get(MetricsName.SERVICE_OBSERVABLE_TIME).avg,
-                    frame.get(MetricsName.SERVICE_OBSERVER_TIME).avg,
-                    frame.get(MetricsName.FLUSH_OUTBOXES_TIME).avg,
-                    frame.get(MetricsName.SERVICE_NODE_LIFECYCLE_TIME).avg,
-                    frame.get(MetricsName.SERVICE_CLIENT_STACK_TIME).avg
-                ]
-                f.write(",".join(str(v if v else "0") for v in row))
+                data = Column.Data(ts=ts, frame=frame)
+                f.write(",".join(str(c.value(context, data)) for c in columns))
                 f.write("\n")
 
-    print("Start time: {}".format(stats.min_ts))
-    print("End time: {}".format(stats.max_ts))
-    print("Duration: {}".format(stats.max_ts - stats.min_ts))
-    print("")
+        print("Start time: {}".format(stats.min_ts))
+        print("End time: {}".format(stats.max_ts))
+        print("Duration: {}".format(stats.max_ts - stats.min_ts))
+        print("")
 
-    total = stats.total
+        total = stats.total
 
-    print("Number of messages processed in one looper run:")
-    print("   Node:   {}".format(total.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED)))
-    print("   Client: {}".format(total.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED)))
-    print("")
+        print("Number of messages processed in one looper run:")
+        print("   Node:   {}".format(total.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED)))
+        print("   Client: {}".format(total.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED)))
+        print("")
 
-    print("Seconds passed between looper runs:")
-    print("   {}".format(total.get(MetricsName.LOOPER_RUN_TIME_SPENT)))
-    print("")
+        print("Seconds passed between looper runs:")
+        print("   {}".format(total.get(MetricsName.LOOPER_RUN_TIME_SPENT)))
+        print("")
 
-    print("Number of messages in one transport batch:")
-    print("   {}".format(total.get(MetricsName.TRANSPORT_BATCH_SIZE)))
-    print("")
+        print("Number of messages in one transport batch:")
+        print("   {}".format(total.get(MetricsName.TRANSPORT_BATCH_SIZE)))
+        print("")
 
-    print("Node message size, bytes:")
-    print("   Outgoing: {}".format(total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)))
-    print("   Incoming: {}".format(total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)))
-    print("")
+        print("Node message size, bytes:")
+        print("   Outgoing: {}".format(total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)))
+        print("   Incoming: {}".format(total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)))
+        print("")
 
-    print("Client message size, bytes:")
-    print("   Outgoing: {}".format(total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)))
-    print("   Incoming: {}".format(total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)))
-    print("")
+        print("Client message size, bytes:")
+        print("   Outgoing: {}".format(total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)))
+        print("   Incoming: {}".format(total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)))
+        print("")
 
-    print("Number of requests in one 3PC batch:")
-    print("   Created: {}".format(total.get(MetricsName.THREE_PC_BATCH_SIZE)))
-    print("   Ordered: {}".format(total.get(MetricsName.ORDERED_BATCH_SIZE)))
-    print("")
+        print("Number of requests in one 3PC batch:")
+        print("   Created: {}".format(total.get(MetricsName.THREE_PC_BATCH_SIZE)))
+        print("   Ordered: {}".format(total.get(MetricsName.ORDERED_BATCH_SIZE)))
+        print("")
 
-    print("Time spent on write request processing, ms:")
-    print("   {}".format(short_stats(total.get(MetricsName.REQUEST_PROCESSING_TIME)), 0.001))
-    print("")
+        print("Time spent on write request processing, ms:")
+        print("   {}".format(short_stats(total.get(MetricsName.REQUEST_PROCESSING_TIME)), 0.001))
+        print("")
 
-    print("Monitor throughput, TPS")
-    print("   Master: {}".format(short_stats(total.get(MetricsName.MONITOR_AVG_THROUGHPUT))))
-    print("   Backup: {}".format(short_stats(total.get(MetricsName.BACKUP_MONITOR_AVG_THROUGHPUT))))
-    print("")
+        print("Monitor throughput, TPS")
+        print("   Master: {}".format(short_stats(total.get(MetricsName.MONITOR_AVG_THROUGHPUT))))
+        print("   Backup: {}".format(short_stats(total.get(MetricsName.BACKUP_MONITOR_AVG_THROUGHPUT))))
+        print("")
 
-    print("Monitor latency, seconds")
-    print("   Master: {}".format(short_stats(total.get(MetricsName.MONITOR_AVG_LATENCY))))
-    print("   Backup: {}".format(short_stats(total.get(MetricsName.BACKUP_MONITOR_AVG_LATENCY))))
-    print("")
+        print("Monitor latency, seconds")
+        print("   Master: {}".format(short_stats(total.get(MetricsName.MONITOR_AVG_LATENCY))))
+        print("   Backup: {}".format(short_stats(total.get(MetricsName.BACKUP_MONITOR_AVG_LATENCY))))
+        print("")
 
-    print("RAM info:")
-    print("   Available, Mb: {}".format(short_stats(total.get(MetricsName.AVAILABLE_RAM_SIZE), 1024 * 1024)))
-    print("   Node RSS, Mb: {}".format(short_stats(total.get(MetricsName.NODE_RSS_SIZE), 1024 * 1024)))
-    print("   Node VMS, Mb: {}".format(short_stats(total.get(MetricsName.NODE_VMS_SIZE), 1024 * 1024)))
-    print("")
+        print("RAM info:")
+        print("   Available, Mb: {}".format(short_stats(total.get(MetricsName.AVAILABLE_RAM_SIZE), 1024 * 1024)))
+        print("   Node RSS, Mb: {}".format(short_stats(total.get(MetricsName.NODE_RSS_SIZE), 1024 * 1024)))
+        print("   Node VMS, Mb: {}".format(short_stats(total.get(MetricsName.NODE_VMS_SIZE), 1024 * 1024)))
+        print("")
 
-    print("Additional statistics:")
-    three_pc = total.get(MetricsName.ORDERED_BATCH_SIZE)
-    node_in = total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)
-    node_out = total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)
-    client_in = total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)
-    client_out = total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)
-    node_traffic = node_in.sum + node_out.sum
-    client_traffic = (client_in.sum + client_out.sum)
-    print("   Client incoming/outgoing: {:.2f} messages, {:.2f} traffic"
-          .format(client_in.count / client_out.count, client_in.sum / client_out.sum))
-    print("   Node incoming/outgoing traffic: {:.2f}".format(node_in.sum / node_out.sum))
-    print("   Node/client traffic: {:.2f}".format(node_traffic / client_traffic))
-    print("   Node traffic per batch: {:.2f}".format(node_traffic / three_pc.count))
-    print("   Node traffic per request: {:.2f}".format(node_traffic / three_pc.sum))
-    print("")
+        print("Additional statistics:")
+        three_pc = total.get(MetricsName.ORDERED_BATCH_SIZE)
+        node_in = total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)
+        node_out = total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)
+        client_in = total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)
+        client_out = total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)
+        node_traffic = node_in.sum + node_out.sum
+        client_traffic = (client_in.sum + client_out.sum)
+        print("   Client incoming/outgoing: {:.2f} messages, {:.2f} traffic"
+              .format(client_in.count / client_out.count, client_in.sum / client_out.sum))
+        print("   Node incoming/outgoing traffic: {:.2f}".format(node_in.sum / node_out.sum))
+        print("   Node/client traffic: {:.2f}".format(node_traffic / client_traffic))
+        print("   Node traffic per batch: {:.2f}".format(node_traffic / three_pc.count))
+        print("   Node traffic per request: {:.2f}".format(node_traffic / three_pc.sum))
+        print("")
 
-    print("Profiling info:")
-    for i in MetricsName:
-        if i < MetricsName.NODE_PROD_TIME:
-            continue
-        print("   {} : {}".format(str(i), total.get(i)))
+        print("Profiling info:")
+        for m in MetricsName:
+            if m < MetricsName.NODE_PROD_TIME:
+                continue
+            print("   {} : {}".format(str(m).split('.')[-1], total.get(m)))
 
 
 if __name__ == '__main__':
