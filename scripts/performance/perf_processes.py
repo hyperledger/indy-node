@@ -1339,7 +1339,7 @@ class TestRunner:
         self._out_file = sys.stdout
         self._stop_sec = 0
 
-    def process_reqs(self, stat, name:str = ""):
+    def process_reqs(self, stat, name: str = ""):
         assert self._failed_f
         assert self._total_f
         assert self._succ_f
@@ -1397,7 +1397,7 @@ class TestRunner:
             except Exception as e:
                 print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
 
-    def _tick_one(self, idx : int = 0):
+    def _tick_one(self, idx: int = 0):
         i = idx % len(self._clients)
         self._loop.call_later(self._batch_rate, self._tick_one, i + 1)
         key = list(self._clients)[i]
@@ -1477,7 +1477,7 @@ class TestRunner:
             total_nack += cln.total_nack
             total_reject += cln.total_reject
         print_str = "Time {:.2f} Clients {}/{} Sent: {} Succ: {} Failed: {} Nacked: {} Rejected: {}".format(
-            time.perf_counter()- self._start_counter, clients, len(self._clients),
+            time.perf_counter() - self._start_counter, clients, len(self._clients),
             total_sent, total_succ, total_failed, total_nack, total_reject)
         return print_str
 
@@ -1509,7 +1509,6 @@ class TestRunner:
         if out_file:
             ret_out = open(os.path.join(self._out_dir, out_file), "w")
         return ret_out
-
 
     def close_fs(self):
         assert self._failed_f
@@ -1589,7 +1588,6 @@ class TestRunner:
             load_client_mode = LoadClient.SendResp
             self._batch_size = 1
             buff_req = 0
-
 
         print("load_client_mode", load_client_mode, file=self._out_file)
 
