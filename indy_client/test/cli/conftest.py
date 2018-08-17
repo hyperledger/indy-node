@@ -1353,12 +1353,18 @@ def newStewardVals():
     }
 
 
+@pytest.fixture(scope='function')
+def new_bls_keys():
+    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
+    return bls_key, key_proof
+
+
 @pytest.fixture(scope='module')
-def newNodeVals():
+def newNodeVals(new_bls_keys):
     newNodeSeed = randomSeed()
     nodeIp, nodePort = genHa()
     clientIp, clientPort = genHa()
-    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
+    bls_key, key_proof = new_bls_keys
 
     newNodeData = {
         NODE_IP: nodeIp,
