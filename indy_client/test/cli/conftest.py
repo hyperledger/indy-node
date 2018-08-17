@@ -1360,11 +1360,11 @@ def new_bls_keys():
 
 
 @pytest.fixture(scope='module')
-def newNodeVals(new_bls_keys):
+def newNodeVals():
     newNodeSeed = randomSeed()
     nodeIp, nodePort = genHa()
     clientIp, clientPort = genHa()
-    bls_key, key_proof = new_bls_keys
+    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
 
     newNodeData = {
         NODE_IP: nodeIp,
