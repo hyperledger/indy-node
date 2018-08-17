@@ -43,13 +43,14 @@ def test_add_same_node_without_any_change_by_trustee(be, do, trusteeCli,
 
 def test_add_same_node_with_changed_bls_by_trustee(be, do, trusteeCli,
                                                    newNodeVals, newNodeAdded,
-                                                   nodeValsEmptyData):
+                                                   nodeValsEmptyData,
+                                                   new_bls_keys):
     '''
     Checks that it's not possible to add the same node with different BLS key by Trustee
     '''
     be(trusteeCli)
     node_vals = newNodeVals
-    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
+    bls_key, key_proof = new_bls_keys
     node_vals['newNodeData'][BLS_KEY] = bls_key
     node_vals['newNodeData'][BLS_KEY_PROOF] = key_proof
     doSendNodeCmd(do, node_vals,
@@ -104,14 +105,15 @@ def test_update_ports_and_ips(be, do, newStewardCli,
 
 def test_update_bls(be, do, newStewardCli,
                     newNodeVals, newNodeAdded,
-                    nodeValsEmptyData):
+                    nodeValsEmptyData,
+                    new_bls_keys):
     '''
     Checks that it's possible to update BLS keys by owner (just alias and new key are required)
     '''
     be(newStewardCli)
 
     node_vals = nodeValsEmptyData
-    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
+    bls_key, key_proof = new_bls_keys
     node_vals['newNodeData'][BLS_KEY] = bls_key
     node_vals['newNodeData'][BLS_KEY_PROOF] = key_proof
     node_vals['newNodeData'][ALIAS] = newNodeVals['newNodeData'][ALIAS]
@@ -123,14 +125,15 @@ def test_update_bls(be, do, newStewardCli,
 
 def test_update_bls_by_trustee(be, do, trusteeCli,
                                newNodeVals, newNodeAdded,
-                               nodeValsEmptyData):
+                               nodeValsEmptyData,
+                               new_bls_keys):
     '''
     Checks that it's not possible to update BLS keys by Trustee (just alias and new key are required)
     '''
     be(trusteeCli)
 
     node_vals = nodeValsEmptyData
-    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
+    bls_key, key_proof = new_bls_keys
     node_vals['newNodeData'][BLS_KEY] = bls_key
     node_vals['newNodeData'][BLS_KEY_PROOF] = key_proof
     node_vals['newNodeData'][ALIAS] = newNodeVals['newNodeData'][ALIAS]
