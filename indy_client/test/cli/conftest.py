@@ -6,6 +6,7 @@ from typing import List
 
 import base58
 import pytest
+from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 from plenum.common.signer_did import DidSigner
 from indy_client.test.agent.acme import ACME_ID, ACME_SEED
 from indy_client.test.agent.acme import ACME_VERKEY
@@ -21,7 +22,8 @@ from stp_core.network.port_dispenser import genHa
 import plenum
 from plenum.common import util
 from plenum.common.constants import ALIAS, NODE_IP, NODE_PORT, CLIENT_IP, \
-    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, TXN_TYPE, NODE, NYM
+    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, TXN_TYPE, NODE, NYM, \
+    BLS_KEY_PROOF
 from plenum.common.constants import CLIENT_STACK_SUFFIX
 from plenum.common.exceptions import BlowUp
 from plenum.common.signer_simple import SimpleSigner
@@ -1356,6 +1358,7 @@ def newNodeVals():
     newNodeSeed = randomSeed()
     nodeIp, nodePort = genHa()
     clientIp, clientPort = genHa()
+    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
 
     newNodeData = {
         NODE_IP: nodeIp,
@@ -1364,7 +1367,8 @@ def newNodeVals():
         CLIENT_PORT: clientPort,
         ALIAS: randomString(6),
         SERVICES: [VALIDATOR],
-        BLS_KEY: base58.b58encode(randomString(128).encode()).decode("utf-8")
+        BLS_KEY: bls_key,
+        BLS_KEY_PROOF: key_proof
     }
 
     return {
