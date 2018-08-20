@@ -44,7 +44,7 @@ def get_node_name():
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Generate BLS keys proof of possession.")
+        description="Generating proof of possession for the Node's BLS key.")
 
     parser.add_argument('--name', required=False, help='node name')
     args = parser.parse_args()
