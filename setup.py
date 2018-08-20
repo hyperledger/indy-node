@@ -98,7 +98,6 @@ setup(
              'scripts/setup_iptables',
              'scripts/setup_indy_node_iptables',
              'scripts/current_validators',
-             'scripts/generate_bls_proof_of_possession',
              'scripts/node_address_list',
              'tools/diagnostics/nscapture',
              'tools/diagnostics/nsdiff',
