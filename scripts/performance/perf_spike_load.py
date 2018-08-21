@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
-"""This script uses another load script (perf_processes.py) running it with different parameters"""
+"""This script uses another load script (perf_processes.py) running it with different parameters which are
+provided in config_perf_spike_load.yml file"""
 
 
 from datetime import timedelta, datetime
@@ -19,23 +20,23 @@ def create_subprocess_args(config, sub_process_type, folder_count, log_folder_na
         common_args.update(config["write_txns"])
     for dict_key in common_args:
         if dict_key == "directory":
-            output_folder = str(common_args[dict_key]) + log_folder_name + "/" + \
-                            sub_process_type + "_" + str(folder_count)
+            output_folder = os.path.join(str(common_args[dict_key]), log_folder_name,
+                                         "{}_{}".format(sub_process_type, str(folder_count)))
             if not os.path.isdir(output_folder):
                 os.makedirs(output_folder)
-            args.append("--" + dict_key + "=" + output_folder)
+            args.append("--{}={}".format(dict_key, output_folder))
         else:
-            args.append("--" + dict_key + "=" + str(common_args[dict_key]))
+            args.append("--{}={}".format(dict_key, str(common_args[dict_key])))
     if "background" in sub_process_type:
-        args.append("--load_time=" + str(config["perf_spike"]["overall_time_in_seconds"]))
+        args.append("--load_time={}".format(str(config["perf_spike"]["overall_time_in_seconds"])))
     elif "spike" in sub_process_type:
-        args.append("--load_time=" + str(config["perf_spike"]["spike_time_in_seconds"]))
+        args.append("--load_time={}".format(str(config["perf_spike"]["spike_time_in_seconds"])))
     return args
 
 
 def start_profile():
     folder_count = 0  # ordering number of the spike which goes to logs folder name
-    root_log_folder_name = "Spike_log %s" % time.strftime("%m-%d-%y %H-%M-%S")
+    root_log_folder_name = "Spike_log {}".format(time.strftime("%m-%d-%y %H-%M-%S"))
     with open("config_perf_spike_load.yml") as file:
         config = yaml.load(file)
     if config["perf_spike"]["read_mode"] == 'permanent':
