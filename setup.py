@@ -99,6 +99,7 @@ setup(
              'scripts/setup_indy_node_iptables',
              'scripts/current_validators',
              'scripts/node_address_list',
+             'scripts/generate_bls_proof_of_possession',
              'tools/diagnostics/nscapture',
              'tools/diagnostics/nsdiff',
              'tools/diagnostics/nsreplay',
