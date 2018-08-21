@@ -74,6 +74,10 @@ class ActionReqHandler(RequestHandler):
             elif req.txn_type == VALIDATOR_INFO:
                 result = self._generate_action_result(req)
                 result[DATA] = self.info_tool.info
+                result[DATA].update(self.info_tool.__memory_profiler)
+                result[DATA].update(self.info_tool.__software_info)
+                result[DATA].update(self.info_tool.__extractions)
+                result[DATA].update(self.info_tool.__node_disk_size)
             else:
                 raise InvalidClientRequest(
                     "{} is not type of action transaction"
