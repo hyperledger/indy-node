@@ -21,16 +21,16 @@ def create_subprocess_args(config, sub_process_type, folder_count, log_folder_na
     for dict_key in common_args:
         if dict_key == "directory":
             output_folder = os.path.join(str(common_args[dict_key]), log_folder_name,
-                                         "{}_{}".format(sub_process_type, str(folder_count)))
+                                         "{}_{}".format(sub_process_type, folder_count))
             if not os.path.isdir(output_folder):
                 os.makedirs(output_folder)
             args.append("--{}={}".format(dict_key, output_folder))
         else:
-            args.append("--{}={}".format(dict_key, str(common_args[dict_key])))
+            args.append("--{}={}".format(dict_key, common_args[dict_key]))
     if "background" in sub_process_type:
-        args.append("--load_time={}".format(str(config["perf_spike"]["overall_time_in_seconds"])))
+        args.append("--load_time={}".format(config["perf_spike"]["overall_time_in_seconds"]))
     elif "spike" in sub_process_type:
-        args.append("--load_time={}".format(str(config["perf_spike"]["spike_time_in_seconds"])))
+        args.append("--load_time={}".format(config["perf_spike"]["spike_time_in_seconds"]))
     return args
 
 
