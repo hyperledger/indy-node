@@ -1,3 +1,8 @@
+#! /usr/bin/env python3
+
+"""This script uses another load script (perf_processes.py) running it with different parameters"""
+
+
 import time
 from datetime import timedelta, datetime
 import subprocess
@@ -37,11 +42,12 @@ def start_profile():
             # start profile with reading transactions for x minutes
             subprocess_args = create_subprocess_args(config, "read_spike")
             subprocess.Popen(subprocess_args, stdin=None, stdout=None, stderr=None, close_fds=True)
-            time.sleep(2) # log folders cannot be created for 2 scripts launched at the same time
+            time.sleep(2)  # log folders cannot be created for 2 scripts launched at the same time
         # start profile with writing transactions for x minutes
         subprocess_args = create_subprocess_args(config, "write_spike")
         subprocess.Popen(subprocess_args, stdin=None, stdout=None, stderr=None, close_fds=True)
-        time.sleep(int(config["perf_spike"]["spike_time_in_seconds"]) + int(config["perf_spike"]["rest_time_in_seconds"]))
+        time.sleep(int(config["perf_spike"]["spike_time_in_seconds"]) +
+                   int(config["perf_spike"]["rest_time_in_seconds"]))
 
 
 if __name__ == '__main__':
