@@ -1,0 +1,27 @@
+# perf_spike_load.py arguments
+perf_spike:
+    read_mode: spike #permanent = background reading operation with writing spikes, spike = reading and writing spikes with 0 load in between 
+    spike_time_in_seconds: 30
+    rest_time_in_seconds: 30
+    overall_time_in_seconds: 300
+# Arguments perf_processes.py will be called with during perf_spike_load.py execution.
+common: 
+    clients: 1
+    seed: 000000000000000000000000Trustee1
+    num: 1
+    refresh: 100
+    buff_req: 100
+    sep: "|"
+    wallet_key: key
+    mode: t
+    pool_config: ""
+    sync_mode: all
+    out: ""
+    genesis: /home/me/Documents/genesis 
+    directory: /home/me/Documents/spike_logs/ 
+read_txns:
+    kind: get_nym
+    load_rate: 5
+write_txns:
+    kind: nym
+    load_rate: 2
