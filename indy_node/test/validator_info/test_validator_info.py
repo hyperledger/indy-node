@@ -30,19 +30,18 @@ INFO_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
 def test_validator_info_file_schema_is_valid(info):
     assert isinstance(info, dict)
     assert 'config' in info['Node_info']['Metrics']['transaction-count']
-    assert 'Software' in info
-    assert 'indy-node' in info['Software']
-    assert 'sovrin' in info['Software']
 
 
 def test_validator_info_file_metrics_count_ledger_field_valid(info):
     assert info['Node_info']['Metrics']['transaction-count']['config'] == 0
 
 
+@pytest.mark.skip(reason="info will not be included by default")
 def test_validator_info_file_software_indy_node_valid(info):
     assert info['Software']['indy-node'] == node_pgk_version
 
 
+@pytest.mark.skip(reason="info will not be included by default")
 def test_validator_info_file_software_sovrin_valid(info):
     try:
         pkg = importlib.import_module('sovrin')
