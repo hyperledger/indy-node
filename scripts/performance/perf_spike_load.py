@@ -44,6 +44,21 @@ def start_profile():
     with open("config_perf_spike_load.yml") as file:
         config = yaml.load(file)
     if config["perf_spike"]["read_mode"] == 'permanent':
+        print("""
+        ==========================================================================================
+        The script creates writing transaction spikes, during intervals there is a background load 
+        of reading transactions
+        ==========================================================================================""")
+    elif config["perf_spike"]["read_mode"] == 'spike':
+        print("""
+        ============================================================================================
+        The script creates reading and writing transaction spikes, during intervals there is no load
+        ============================================================================================""")
+    print("Reading transactions mode:          ", config["perf_spike"]["read_mode"])
+    print("Every spike time in seconds:        ", config["perf_spike"]["spike_time_in_seconds"])
+    print("Interval between spikes in seconds: ", config["perf_spike"]["rest_time_in_seconds"])
+    print("Overall time in minutes:            ", config["perf_spike"]["overall_time_in_seconds"] / 60)
+    if config["perf_spike"]["read_mode"] == 'permanent':
         subprocess_args = create_subprocess_args(config, "read_background", folder_count, root_log_folder_name)
         subprocess.Popen(subprocess_args, close_fds=True)
     end_time = datetime.now() + timedelta(seconds=int(config["perf_spike"]["overall_time_in_seconds"]))
