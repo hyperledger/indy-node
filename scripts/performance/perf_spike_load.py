@@ -22,6 +22,10 @@ def create_subprocess_args(config, sub_process_type, folder_count, log_folder_na
         if dict_key == "directory":
             output_folder = os.path.join(str(common_args[dict_key]), log_folder_name,
                                          "{}_{}".format(sub_process_type, folder_count))
+            try:
+                output_folder = os.path.expanduser(output_folder)
+            except OSError:
+                raise ValueError("Bad output log folder pathname!")
             if not os.path.isdir(output_folder):
                 os.makedirs(output_folder)
             args.append("--{}={}".format(dict_key, output_folder))
