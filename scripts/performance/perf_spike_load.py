@@ -22,6 +22,10 @@ def create_subprocess_args(config, sub_process_type, folder_count, log_folder_na
         if dict_key == "directory":
             output_folder = os.path.join(str(common_args[dict_key]), log_folder_name,
                                          "{}_{}".format(sub_process_type, folder_count))
+            try:
+                output_folder = os.path.expanduser(output_folder)
+            except OSError:
+                raise ValueError("Bad output log folder pathname!")
             if not os.path.isdir(output_folder):
                 os.makedirs(output_folder)
             args.append("--{}={}".format(dict_key, output_folder))
@@ -39,6 +43,21 @@ def start_profile():
     root_log_folder_name = "Spike_log {}".format(time.strftime("%m-%d-%y %H-%M-%S"))
     with open("config_perf_spike_load.yml") as file:
         config = yaml.load(file)
+    if config["perf_spike"]["read_mode"] == 'permanent':
+        print("""
+              ==========================================================================================
+              The script creates writing transaction spikes, during intervals there is a background load
+              of reading transactions
+              ==========================================================================================""")
+    elif config["perf_spike"]["read_mode"] == 'spike':
+        print("""
+              ============================================================================================
+              The script creates reading and writing transaction spikes, during intervals there is no load
+              ============================================================================================""")
+    print("Reading transactions mode:          ", config["perf_spike"]["read_mode"])
+    print("Every spike time in seconds:        ", config["perf_spike"]["spike_time_in_seconds"])
+    print("Interval between spikes in seconds: ", config["perf_spike"]["rest_time_in_seconds"])
+    print("Overall time in minutes:            ", config["perf_spike"]["overall_time_in_seconds"] / 60)
     if config["perf_spike"]["read_mode"] == 'permanent':
         subprocess_args = create_subprocess_args(config, "read_background", folder_count, root_log_folder_name)
         subprocess.Popen(subprocess_args, close_fds=True)
