@@ -27,9 +27,7 @@ Default value is 0.
 
 '-w', '--wallet_key' : Key to access encrypted wallet. Default value is "key".
 
-'-n', '--num' : Number or txns in one batch. Default value is 100.
-
-'-t', '--timeout' : Timeout between batches. If omitted only one batch will be sent. Default value is 0.
+'-n', '--num' : Number or txns in one batch. Default value is 10.
 
 '-d', '--directory' : Directory to store output csv files. Default value is ".".
 
@@ -43,14 +41,9 @@ Files to be stored:
 '--sep' : Separator that will be used in output csv file.
 Do not use "," - it will be in conflict with JSON values. Default value is "|".
 
-'-b', '--bg_tasks' : Number of event loop tasks each process will create.
-If one runs huge amount of processes from a single machine this param could be decreased to reduces amount of used memory.
-Should not be less than 2. Default value is 30.
+'-b', '--buff_req' : Number of pregenereted reqs each client will prepare before test starts. Default value is 30.
 
-'-r', '--refresh' : Specifies the rate overall statistics is being updated in number of processed txns.
-If one runs huge amount of processes from a single machine this param could be decreased to reduces amount of used memory.
-Small values require lots of input/output.
-Should not be less than 10. Default value is 100.
+'-r', '--refresh' : Specifies the rate overall statistics is being updated in sec. Small values require lots of input/output. Default value is 10.
 
 '-k', '--kind' : Specifies the type of requests to be sent to pool. Default value is "nym".
 Supported txns:
@@ -77,6 +70,18 @@ Note: At the moment revoc_reg_entry requests could be used only with batch size 
 Default value is 'p''.
 
 '-p', '--pool_config' : Pool config in form of JSON. The value will be passed to open_pool_ledger call. Default value is empty. Parameters description depends on libindy version and could be found in official sdk documentation.
+
+'-l', '--load_rate' : Batch send rate in txns per sec. Batches will be evenly distributed within second. Default 10.
+
+Note: batches are evenly distributed, but txs inside one batch are sent as fast as possible.
+
+'-y', '--sync_mode' : Clients synchronization mode. Supported modes: "freeflow" - no sync, each client manage itself to handle load rate,
+"all" - all clients send a batch each load rate tick, "one" - only one client sends a batch each load rate tick,
+"wait_resp" - next request will be sent only after response received, no sync, batch size ignored, no pregenerated reqs. Default is "freeflow".
+
+'-o', '--out' : Output file name. If specified nothing will be printed to stdout. Default is stdout.
+
+'--load_time' : Work no longer then load_time sec. Zero value means work always. Default value is 0.
 
 ## Transaction data
 Each txn can read predefined data from file or generate random data.
