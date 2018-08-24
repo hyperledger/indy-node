@@ -207,7 +207,7 @@ python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", 
 python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", \"file_max_split\": 1, \"file_field\": 1, \"ignore_first_line\": false, \"file_sep\": \" \"}}"
 ```
 
-* To send payment txns using null payment method and 1000 payment addresses / initial payment sources:
+* To send payment txns using 1000 payment addresses / initial payment sources (NOTE: payment method specific arguments should be substituted):
 ```
-python3 perf_processes.py -k "{\"payment\": {\"payment_addrs_count\": 1000, \"payment_method\": \"null\", \"payment_lib\": \"libnullpay.so\", \"payment_init_func\": \"nullpay_init\"}}""
+python3 perf_processes.py -k "{\"payment\": {\"payment_addrs_count\": 1000, \"payment_method\": \"<PAYMENT_METHOD>\", \"payment_lib\": \"<PAYMENT_LIB>\", \"payment_init_func\": \"<PAYMENT_INIT_FUNC>\"}}""
 ```
