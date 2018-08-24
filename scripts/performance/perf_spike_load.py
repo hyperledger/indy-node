@@ -45,15 +45,15 @@ def start_profile():
         config = yaml.load(file)
     if config["perf_spike"]["read_mode"] == 'permanent':
         print("""
-        ==========================================================================================
-        The script creates writing transaction spikes, during intervals there is a background load 
-        of reading transactions
-        ==========================================================================================""")
+              ==========================================================================================
+              The script creates writing transaction spikes, during intervals there is a background load
+              of reading transactions
+              ==========================================================================================""")
     elif config["perf_spike"]["read_mode"] == 'spike':
         print("""
-        ============================================================================================
-        The script creates reading and writing transaction spikes, during intervals there is no load
-        ============================================================================================""")
+              ============================================================================================
+              The script creates reading and writing transaction spikes, during intervals there is no load
+              ============================================================================================""")
     print("Reading transactions mode:          ", config["perf_spike"]["read_mode"])
     print("Every spike time in seconds:        ", config["perf_spike"]["spike_time_in_seconds"])
     print("Interval between spikes in seconds: ", config["perf_spike"]["rest_time_in_seconds"])
