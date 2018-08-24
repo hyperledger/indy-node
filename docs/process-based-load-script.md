@@ -100,7 +100,7 @@ This file could be used to run script to read all those 1000 nyms
 ```
 python3 perf_processes.py -n 1000 -k "{\"get_nym\": {\"file_name\": \"./load_test_20180620_150354/successful\"}}"
 ```
-####Parameters for data file processing
+#### Parameters for data file processing
 
 'file_name' - name of the file.
 
@@ -114,17 +114,19 @@ python3 perf_processes.py -n 1000 -k "{\"get_nym\": {\"file_name\": \"./load_tes
 
 'file_field' - split number to be used to run test with. Default is 2.
 
-####Parameters for specific request types
+#### Parameters for specific request types
 
-'payment_method' - payment methods. Applicable for payment, verify_payment and get_payment_sources request types.
-Default is "sov".
-
-'payment_addrs_count' - count of payment addresses. Applicable for payment, verify_payment and get_payment_sources
-request types. Default is 100. _The count of payment addresses actually also determines the count of initial
+'payment_addrs_count' - count of payment addresses. Default is 100. The count of payment addresses actually also determines the count of initial
 payment sources (one payment source per payment address). Please note, the count of initial payment sources serves
 as a buffer for payment request generator because new payments use receipts of previous payments as sources.
 In case there is no available sources in the buffer, payment request generator prints a message to stdout that
-a next request cannot be generated since no req data are available._
+a next request cannot be generated since no req data are available. _Applicable for: payment, verify_payment, get_payment_sources_
+
+'payment_method' - payment method. _Applicable for: payment, verify_payment, get_payment_sources_
+
+'plugin_lib' - name of payment library file. _Applicable for: payment, verify_payment, get_payment_sources_
+
+'plugin_init_func' - name of payment library initialization function. _Applicable for: payment, verify_payment, get_payment_sources_
 
 
 ## Examples
@@ -205,7 +207,7 @@ python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", 
 python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", \"file_max_split\": 1, \"file_field\": 1, \"ignore_first_line\": false, \"file_sep\": \" \"}}"
 ```
 
-* To send payment txns using 1000 payment addresses / initial payment sources:
+* To send payment txns using null payment method and 1000 payment addresses / initial payment sources:
 ```
-python3 perf_processes.py -k "{\"payment\": {\"payment_addrs_count\": 1000}}"
+python3 perf_processes.py -k "{\"payment\": {\"payment_addrs_count\": 1000, \"payment_method\": \"null\", \"payment_lib\": \"libnullpay.so\", \"payment_init_func\": \"nullpay_init\"}}""
 ```
