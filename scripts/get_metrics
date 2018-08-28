@@ -10,7 +10,6 @@ import shutil
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from datetime import datetime, timedelta
-from typing import NamedTuple
 
 from indy_common.config_util import getConfig
 from plenum.common.constants import KeyValueStorageType
@@ -83,13 +82,6 @@ def make_copy_of_data(data_dir):
     return read_copy_data_dir
 
 
-def short_stats(acc: ValueAccumulator, div: float = 1.0):
-    if acc.count == 0:
-        return "no samples"
-    return "{:.2f}/{:.2f}/{:.2f} min/avg/max, {:.2f} stddev". \
-        format(acc.min / div, acc.avg / div, acc.max / div, acc.stddev / div)
-
-
 class Column(ABC):
     Context = namedtuple('Context', 'args stats')
     Data = namedtuple('Data', 'ts frame')
@@ -141,12 +133,96 @@ def process_storage(storage, args):
     max_ts = datetime.strptime(args.max_ts, fmt) if args.max_ts else None
     stats = load_metrics_from_kv_store(storage, min_ts, max_ts, timedelta(seconds=args.step))
 
+    print("Start time: {}".format(stats.min_ts))
+    print("End time: {}".format(stats.max_ts))
+    print("Duration: {}".format(stats.max_ts - stats.min_ts))
+    print("")
+
+    total = stats.total
+
+    print("Number of messages processed in one looper run:")
+    print("   Node:   {}".format(total.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED).to_str()))
+    print("   Client: {}".format(total.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED).to_str()))
+    print("")
+
+    print("Seconds passed between looper runs:")
+    print("   {}".format(total.get(MetricsName.LOOPER_RUN_TIME_SPENT).to_str()))
+    print("")
+
+    print("Number of messages in one transport batch:")
+    print("   {}".format(total.get(MetricsName.TRANSPORT_BATCH_SIZE).to_str()))
+    print("")
+
+    print("Node message size, bytes:")
+    print("   Outgoing: {}".format(total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE).to_str()))
+    print("   Incoming: {}".format(total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE).to_str()))
+    print("")
+
+    print("Client message size, bytes:")
+    print("   Outgoing: {}".format(total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE).to_str()))
+    print("   Incoming: {}".format(total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE).to_str()))
+    print("")
+
+    print("Number of requests in one 3PC batch:")
+    print("   Created: {}".format(total.get(MetricsName.THREE_PC_BATCH_SIZE).to_str()))
+    print("   Ordered: {}".format(total.get(MetricsName.ORDERED_BATCH_SIZE).to_str()))
+    print("")
+
+    print("Time spent on write request processing, ms:")
+    print("   {}".format(total.get(MetricsName.REQUEST_PROCESSING_TIME).
+                         to_str(show_sums=False, stats_mul=1000.0, stats_unit="ms")))
+    print("")
+
+    print("Monitor throughput, TPS")
+    print("   Master: {}".format(total.get(MetricsName.MONITOR_AVG_THROUGHPUT).to_str(show_sums=False)))
+    print("   Backup: {}".format(total.get(MetricsName.BACKUP_MONITOR_AVG_THROUGHPUT).to_str(show_sums=False)))
+    print("")
+
+    print("Monitor latency, seconds")
+    print("   Master: {}".format(total.get(MetricsName.MONITOR_AVG_LATENCY).to_str(show_sums=False)))
+    print("   Backup: {}".format(total.get(MetricsName.BACKUP_MONITOR_AVG_LATENCY).to_str(show_sums=False)))
+    print("")
+
+    print("RAM info:")
+    print("   Available, Mb: {}".format(
+        total.get(MetricsName.AVAILABLE_RAM_SIZE).to_str(show_sums=False, stats_mul=1.0 / 1024 / 1024)))
+    print("   Node RSS, Mb: {}".format(
+        total.get(MetricsName.NODE_RSS_SIZE).to_str(show_sums=False, stats_mul=1.0 / 1024 / 1024)))
+    print("   Node VMS, Mb: {}".format(
+        total.get(MetricsName.NODE_VMS_SIZE).to_str(show_sums=False, stats_mul=1.0 / 1024 / 1024)))
+    print("")
+
+    print("Additional statistics:")
+    three_pc = total.get(MetricsName.ORDERED_BATCH_SIZE)
+    node_in = total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)
+    node_out = total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)
+    client_in = total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)
+    client_out = total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)
+    node_traffic = node_in.sum + node_out.sum
+    client_traffic = (client_in.sum + client_out.sum)
+    print("   Client incoming/outgoing: {:.2f} messages, {:.2f} traffic"
+          .format(client_in.count / client_out.count, client_in.sum / client_out.sum))
+    print("   Node incoming/outgoing traffic: {:.2f}".format(node_in.sum / node_out.sum))
+    print("   Node/client traffic: {:.2f}".format(node_traffic / client_traffic))
+    print("   Node traffic per batch: {:.2f}".format(node_traffic / three_pc.count))
+    print("   Node traffic per request: {:.2f}".format(node_traffic / three_pc.sum))
+    print("")
+
+    print("Profiling info:")
+    for m in MetricsName:
+        if m < MetricsName.NODE_PROD_TIME and \
+                m not in {MetricsName.REQUEST_PROCESSING_TIME,
+                          MetricsName.BACKUP_REQUEST_PROCESSING_TIME}:
+            continue
+        acc = total.get(m)
+        print("   {} : {}".format(str(m).split('.')[-1],
+                                  acc.to_str(sums_unit='seconds', stats_unit='ms', stats_mul=1000)))
+
     if args.output is not None:
         columns = [Timestamp()]
         for m in MetricsName:
-            if m < MetricsName.BACKUP_MONITOR_AVG_THROUGHPUT:
-                columns.append(MetricsValue(m, 'sum'))
-                columns.append(MetricsValue(m, 'count'))
+            columns.append(MetricsValue(m, 'sum'))
+            columns.append(MetricsValue(m, 'count'))
             columns.append(MetricsValue(m, 'min'))
             columns.append(MetricsValue(m, 'lo'))
             columns.append(MetricsValue(m, 'avg'))
@@ -161,83 +237,6 @@ def process_storage(storage, args):
                 data = Column.Data(ts=ts, frame=frame)
                 f.write(",".join(str(c.value(context, data)) for c in columns))
                 f.write("\n")
-
-        print("Start time: {}".format(stats.min_ts))
-        print("End time: {}".format(stats.max_ts))
-        print("Duration: {}".format(stats.max_ts - stats.min_ts))
-        print("")
-
-        total = stats.total
-
-        print("Number of messages processed in one looper run:")
-        print("   Node:   {}".format(total.get(MetricsName.NODE_STACK_MESSAGES_PROCESSED)))
-        print("   Client: {}".format(total.get(MetricsName.CLIENT_STACK_MESSAGES_PROCESSED)))
-        print("")
-
-        print("Seconds passed between looper runs:")
-        print("   {}".format(total.get(MetricsName.LOOPER_RUN_TIME_SPENT)))
-        print("")
-
-        print("Number of messages in one transport batch:")
-        print("   {}".format(total.get(MetricsName.TRANSPORT_BATCH_SIZE)))
-        print("")
-
-        print("Node message size, bytes:")
-        print("   Outgoing: {}".format(total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)))
-        print("   Incoming: {}".format(total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)))
-        print("")
-
-        print("Client message size, bytes:")
-        print("   Outgoing: {}".format(total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)))
-        print("   Incoming: {}".format(total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)))
-        print("")
-
-        print("Number of requests in one 3PC batch:")
-        print("   Created: {}".format(total.get(MetricsName.THREE_PC_BATCH_SIZE)))
-        print("   Ordered: {}".format(total.get(MetricsName.ORDERED_BATCH_SIZE)))
-        print("")
-
-        print("Time spent on write request processing, ms:")
-        print("   {}".format(short_stats(total.get(MetricsName.REQUEST_PROCESSING_TIME)), 0.001))
-        print("")
-
-        print("Monitor throughput, TPS")
-        print("   Master: {}".format(short_stats(total.get(MetricsName.MONITOR_AVG_THROUGHPUT))))
-        print("   Backup: {}".format(short_stats(total.get(MetricsName.BACKUP_MONITOR_AVG_THROUGHPUT))))
-        print("")
-
-        print("Monitor latency, seconds")
-        print("   Master: {}".format(short_stats(total.get(MetricsName.MONITOR_AVG_LATENCY))))
-        print("   Backup: {}".format(short_stats(total.get(MetricsName.BACKUP_MONITOR_AVG_LATENCY))))
-        print("")
-
-        print("RAM info:")
-        print("   Available, Mb: {}".format(short_stats(total.get(MetricsName.AVAILABLE_RAM_SIZE), 1024 * 1024)))
-        print("   Node RSS, Mb: {}".format(short_stats(total.get(MetricsName.NODE_RSS_SIZE), 1024 * 1024)))
-        print("   Node VMS, Mb: {}".format(short_stats(total.get(MetricsName.NODE_VMS_SIZE), 1024 * 1024)))
-        print("")
-
-        print("Additional statistics:")
-        three_pc = total.get(MetricsName.ORDERED_BATCH_SIZE)
-        node_in = total.get(MetricsName.INCOMING_NODE_MESSAGE_SIZE)
-        node_out = total.get(MetricsName.OUTGOING_NODE_MESSAGE_SIZE)
-        client_in = total.get(MetricsName.INCOMING_CLIENT_MESSAGE_SIZE)
-        client_out = total.get(MetricsName.OUTGOING_CLIENT_MESSAGE_SIZE)
-        node_traffic = node_in.sum + node_out.sum
-        client_traffic = (client_in.sum + client_out.sum)
-        print("   Client incoming/outgoing: {:.2f} messages, {:.2f} traffic"
-              .format(client_in.count / client_out.count, client_in.sum / client_out.sum))
-        print("   Node incoming/outgoing traffic: {:.2f}".format(node_in.sum / node_out.sum))
-        print("   Node/client traffic: {:.2f}".format(node_traffic / client_traffic))
-        print("   Node traffic per batch: {:.2f}".format(node_traffic / three_pc.count))
-        print("   Node traffic per request: {:.2f}".format(node_traffic / three_pc.sum))
-        print("")
-
-        print("Profiling info:")
-        for m in MetricsName:
-            if m < MetricsName.NODE_PROD_TIME:
-                continue
-            print("   {} : {}".format(str(m).split('.')[-1], total.get(m)))
 
 
 if __name__ == '__main__':

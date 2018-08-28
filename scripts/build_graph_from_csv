@@ -113,13 +113,11 @@ def build_graph():
             PlotInfo(title="Queues", log_scale=False,
                      items=["avg_node_stack_messages_processed",
                             "avg_client_stack_messages_processed"]),
+            PlotInfo(title="Memory", log_scale=False,
+                     items=["avg_node_rss_size"]),
             PlotInfo(title="Looper", log_scale=True,
-                     items=["avg_node_prod_time",
-                            "avg_service_replicas_time",
-                            "avg_service_node_msgs_time",
-                            "avg_service_node_actions_time",
-                            "avg_service_monitor_actions_time",
-                            "avg_service_view_changer_time"])]
+                     items=["avg_looper_run_time_spent",
+                            "avg_node_prod_time"])]
 
     idx = len(plot_list) * 100 + 11
     last_idx = len(plot_list) * 101 + 10
