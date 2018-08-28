@@ -752,6 +752,7 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
         self._payment_method = payment_method
         self._payment_addrs_count = payment_addrs_count
         self._payment_addresses = []
+        self._additional_trustees_dids = []
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
@@ -761,11 +762,14 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
         self._submitter_did = submitter_did
 
         await self.__ensure_submitter_is_trustee()
-        additional_trustees_dids = await self.__create_additional_trustees()
+
+        self._additional_trustees_dids = await self.__create_additional_trustees()
+
         await self.__create_payment_addresses()
+
         for payment_addrs_chunk in divide_sequence_into_chunks(self._payment_addresses,
                                                                RGBasePayment.MINT_RECIPIENTS_LIMIT):
-            await self.__mint_sources(payment_addrs_chunk, [self._submitter_did, *additional_trustees_dids])
+            await self.__mint_sources(payment_addrs_chunk, [self._submitter_did, *self._additional_trustees_dids])
 
     async def __ensure_submitter_is_trustee(self):
         get_nym_req = await ledger.build_get_nym_request(self._submitter_did, self._submitter_did)
@@ -784,13 +788,14 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
         trustee_dids = []
 
         for i in range(RGBasePayment.NUMBER_OF_TRUSTEES_FOR_MINT - 1):
-            tr_did, tr_verkey = await did.create_and_store_my_did(self._wallet_handle, '{}')
+            tr_seed = "Trustee{}".format(2 + i)
+            tr_seed = "{}{}".format(tr_seed, "0" * (32 - len(tr_seed)))
+            tr_did, tr_verkey = await did.create_and_store_my_did(self._wallet_handle, json.dumps({'seed': tr_seed}))
 
             nym_req = await ledger.build_nym_request(self._submitter_did, tr_did, tr_verkey, None, "TRUSTEE")
-            nym_resp = await ledger.sign_and_submit_request(self._pool_handle,
-                                                            self._wallet_handle,
-                                                            self._submitter_did, nym_req)
-            ensure_is_reply(nym_resp)
+            nym_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._submitter_did, nym_req)
+
+            # ensure_is_reply(nym_resp)
 
             trustee_dids.append(tr_did)
 
@@ -799,7 +804,7 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
     async def __create_payment_addresses(self):
         for i in range(self._payment_addrs_count):
             self._payment_addresses.append(
-                await payment.create_payment_address(self._wallet_handle, self._payment_method, '{}'))
+                await payment.create_payment_address(self._wallet_handle, self._payment_method, "{}"))
 
     async def __mint_sources(self, payment_addresses, trustees_dids):
         outputs = []
@@ -979,6 +984,77 @@ class RGVerifyPayment(RGBasePayment):
         return req
 
 
+class RGFeesNym(RGBasePayment):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._sources_amounts = {}
+        self._last_used = None
+
+    async def __retrieve_minted_sources(self):
+        for payment_address in self._payment_addresses:
+            self._sources_amounts[payment_address] = []
+            self._sources_amounts[payment_address].extend(await self._get_payment_sources(payment_address))
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+        await self.__retrieve_minted_sources()
+
+        fees_req = await payment.build_set_txn_fees_req(wallet_handle, submitter_did, RGBasePayment.DEFAULT_PAYMENT_METHOD,
+                                                        json.dumps({"1": 1}))
+        for trustee_did in [self._submitter_did, *self._additional_trustees_dids]:
+            fees_req = await ledger.multi_sign_request(self._wallet_handle, trustee_did, fees_req)
+
+        resp = await ledger.submit_request(self._pool_handle, fees_req)
+        ensure_is_reply(resp)
+
+    def _rand_data(self):
+        raw = libnacl.randombytes(16)
+        req_did = self.rawToFriendly(raw)
+        return req_did
+
+    def _from_file_str_data(self, file_str):
+        raise NotImplementedError("ne _from_file_str_data")
+
+    async def _gen_req(self, submit_did, req_data):
+        req = await ledger.build_nym_request(submit_did, req_data, None, None, None)
+
+        for ap in self._sources_amounts:
+            if self._sources_amounts[ap]:
+                (source, amount) = self._sources_amounts[ap].pop()
+                address = ap
+                inputs = [source]
+                outputs = [{"recipient": address, "amount": amount - 1}]
+                req_fees = await payment.add_request_fees(self._wallet_handle, submit_did, req,
+                                                          json.dumps(inputs),
+                                                          json.dumps(outputs), None)
+                return req_fees[0]
+        raise RuntimeError("Test Finished: All generated")
+
+    async def on_request_replied(self, req_data, req, resp_or_exp):
+        if isinstance(resp_or_exp, Exception):
+            return
+
+        resp = resp_or_exp
+
+        try:
+            resp_obj = json.loads(resp)
+
+            if "op" not in resp_obj:
+                raise Exception("Response does not contain op field.")
+
+            if resp_obj["op"] == "REQNACK" or resp_obj["op"] == "REJECT":
+                return
+                # self._sources_amounts.append((source, amount))
+            elif resp_obj["op"] == "REPLY":
+                receipt_infos_json = await payment.parse_response_with_fees(self._payment_method, resp)
+                receipt_infos = json.loads(receipt_infos_json)
+                receipt_info = receipt_infos[0]
+                self._sources_amounts[receipt_info["recipient"]].append((receipt_info["receipt"], receipt_info["amount"]))
+
+        except Exception as e:
+            print("Error on payment txn postprocessing: {}".format(e))
+
+
 def create_req_generator(req_kind_arg):
     supported_requests = {"nym": RGNym, "schema": RGSchema, "attrib": RGAttrib,
                           "cred_def": RGDefinition, "revoc_reg_def": RGDefRevoc,
@@ -988,7 +1064,7 @@ def create_req_generator(req_kind_arg):
                           "get_revoc_reg_def": RGGetDefRevoc, "get_revoc_reg": RGGetEntryRevoc,
                           "get_revoc_reg_delta": RGGetRevocRegDelta,
                           "get_payment_sources": RGGetPaymentSources, "payment": RGPayment,
-                          "verify_payment": RGVerifyPayment}
+                          "verify_payment": RGVerifyPayment, "fees_nym": RGFeesNym}
     if req_kind_arg in supported_requests:
         return supported_requests[req_kind_arg], {"label": req_kind_arg}
     try:
@@ -1361,7 +1437,7 @@ class TestRunner:
                  str(r_data.get("client_reply", 0)), str(r_data.get("server_reply", 0))]))
 
             # ["id", "req", "resp"]
-            val = self._value_separator.join([str(r_id), r_data.get("req", ""), r_data.get("resp", "")])
+            val = self._value_separator.join([str(r_id), r_data.get("req", ""), str(r_data.get("resp", ""))])
             if status == "succ":
                 suc.append(val)
             elif status in ["nack", "reject"]:
