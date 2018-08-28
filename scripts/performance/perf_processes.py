@@ -996,7 +996,7 @@ class RGFeesNym(RGBasePayment):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
         await self.__retrieve_minted_sources()
 
-        fees_req = await payment.build_set_txn_fees_req(wallet_handle, submitter_did, RGBasePayment.DEFAULT_PAYMENT_METHOD,
+        fees_req = await payment.build_set_txn_fees_req(wallet_handle, submitter_did, self._payment_method,
                                                         json.dumps({"1": 1}))
         for trustee_did in [self._submitter_did, *self._additional_trustees_dids]:
             fees_req = await ledger.multi_sign_request(self._wallet_handle, trustee_did, fees_req)
@@ -1025,7 +1025,7 @@ class RGFeesNym(RGBasePayment):
                                                           json.dumps(inputs),
                                                           json.dumps(outputs), None)
                 return req_fees[0]
-        raise RuntimeError("Test Finished: All generated")
+        raise NoReqDataAvailableException()
 
     async def on_request_replied(self, req_data, req, resp_or_exp):
         if isinstance(resp_or_exp, Exception):
@@ -1244,7 +1244,11 @@ class LoadClient:
     async def pregen_reqs(self):
         if self._send_mode != LoadClient.SendResp:
             for i in range(self._buff_reqs):
-                await self.gen_signed_req()
+                try:
+                    await self.gen_signed_req()
+                except NoReqDataAvailableException:
+                    self.msg("{} cannot prepare more reqs. Done {}/{}", self._name, i, self._buff_reqs)
+                    return
 
     def gen_reqs(self):
         if self._closing:
