@@ -790,8 +790,9 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
             tr_did, tr_verkey = await did.create_and_store_my_did(self._wallet_handle, json.dumps({'seed': tr_seed}))
 
             nym_req = await ledger.build_nym_request(self._submitter_did, tr_did, tr_verkey, None, "TRUSTEE")
-            nym_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._submitter_did, nym_req)
+            await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._submitter_did, nym_req)
 
+            # nym_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._submitter_did, nym_req)
             # ensure_is_reply(nym_resp)
 
             trustee_dids.append(tr_did)
