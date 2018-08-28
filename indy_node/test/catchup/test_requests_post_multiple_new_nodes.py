@@ -4,6 +4,8 @@ from indy_node.test.helper import TestNode
 from indy_common.config_helper import NodeConfigHelper
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
+whitelist = ["is not connected - message will not be sent immediately."]
+
 
 def test_requests_post_multiple_new_nodes(
         looper,
