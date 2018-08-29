@@ -12,6 +12,7 @@ from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
 logger = getlogger()
+whitelist = ["is not connected - message will not be sent immediately."]
 
 
 @pytest.fixture(scope="module")
