@@ -1053,6 +1053,36 @@ class RGFeesNym(RGBasePayment):
             print("Error on payment txn postprocessing: {}".format(e))
 
 
+class RGFeesSchema(RGFeesNym):
+    async def _gen_req(self, submit_did, req_data):
+        _, schema_json = await anoncreds.issuer_create_schema(submit_did, req_data,
+                                                              "1.0", json.dumps(["name", "age", "sex", "height"]))
+        schema_request = await ledger.build_schema_request(submit_did, schema_json)
+
+        for ap in self._sources_amounts:
+            if self._sources_amounts[ap]:
+                (source, amount) = self._sources_amounts[ap].pop()
+                address = ap
+                inputs = [source]
+                outputs = [{"recipient": address, "amount": amount - 1}]
+                req_fees = await payment.add_request_fees(self._wallet_handle, submit_did, schema_request,
+                                                          json.dumps(inputs),
+                                                          json.dumps(outputs), None)
+                return req_fees[0]
+        raise NoReqDataAvailableException()
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+
+        fees_req = await payment.build_set_txn_fees_req(wallet_handle, submitter_did, self._payment_method,
+                                                        json.dumps({"101": 1}))
+        for trustee_did in [self._submitter_did, *self._additional_trustees_dids]:
+            fees_req = await ledger.multi_sign_request(self._wallet_handle, trustee_did, fees_req)
+
+        resp = await ledger.submit_request(self._pool_handle, fees_req)
+        ensure_is_reply(resp)
+
+
 def create_req_generator(req_kind_arg):
     supported_requests = {"nym": RGNym, "schema": RGSchema, "attrib": RGAttrib,
                           "cred_def": RGDefinition, "revoc_reg_def": RGDefRevoc,
@@ -1062,7 +1092,8 @@ def create_req_generator(req_kind_arg):
                           "get_revoc_reg_def": RGGetDefRevoc, "get_revoc_reg": RGGetEntryRevoc,
                           "get_revoc_reg_delta": RGGetRevocRegDelta,
                           "get_payment_sources": RGGetPaymentSources, "payment": RGPayment,
-                          "verify_payment": RGVerifyPayment, "fees_nym": RGFeesNym}
+                          "verify_payment": RGVerifyPayment, "fees_nym": RGFeesNym,
+                          "fees_schema": RGFeesSchema}
     if req_kind_arg in supported_requests:
         return supported_requests[req_kind_arg], {"label": req_kind_arg}
     try:
