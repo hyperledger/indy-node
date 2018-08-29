@@ -10,8 +10,6 @@ from indy_node.test.helper import TestNode, sdk_add_raw_attribute, \
     start_stopped_node
 from indy_common.config_helper import NodeConfigHelper
 
-whitelist = ["is not connected - message will not be sent immediately."]
-
 
 def test_new_node_catchup_update_projection(looper,
                                             nodeSet, tconf, tdir,
