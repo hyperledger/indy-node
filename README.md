@@ -9,7 +9,7 @@
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
 * [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
-* [Continuous integration and delivery](#continues-integration-and-delivery)
+* [Continuous integration and delivery](https://github.com/hyperledger/indy-node/blob/master/docs/ci-cd.md)
 * [How to send a PR](#how-to-send-a-pr)
 * [Docs and links](#docs-and-links)
 
@@ -179,3 +179,4 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 - [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
 - [Helper Scripts](docs/helper-scripts.md)
 - [Pool Upgrade](docs/pool-upgrade.md)
+- [Node Addition](docs/add-node.md)
