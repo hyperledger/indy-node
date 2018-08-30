@@ -29,3 +29,7 @@ write_txns:
     clients: 1
     kind: "{\"get_nym\": 9, \"get_schema\": 4, \"get_cred_def\": 4, \"get_attrib\": 3}"
     load_rate: 10
+stepwise_load:
+    step_time_in_seconds = 0 # for stepwize testing, 0 means stable load without increasing
+    step_txns_per_second = 0 # additional load rate per step
+    step_initial_load_rate = 0 # initial load rate per spike

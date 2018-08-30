@@ -61,9 +61,11 @@ def start_profile():
     if config["perf_spike"]["read_mode"] == 'permanent' and config["read_txns"]["step_time_in_seconds"] != 0:
         subprocess_args = create_subprocess_args(config, "read_background", folder_count, root_log_folder_name)
         subprocess.Popen(subprocess_args, close_fds=True)
-    elif config["perf_spike"]["read_mode"] == 'permanent' and config["read_txns"]["step_time_in_seconds"] != 0:
+    elif config["perf_spike"]["read_mode"] == 'permanent' and config["read_txns"]["step_time_in_seconds"] == 0:
         steps_number = int(config["perf_spike"]["spike_time_in_seconds"] / config["read_txns"]["step_time_in_seconds"])
-        
+        for i in range(0, steps_number):
+            subprocess_args = create_subprocess_args(config, "read_background", folder_count, root_log_folder_name)
+            subprocess.Popen(subprocess_args, close_fds=True)
     end_time = datetime.now() + timedelta(seconds=int(config["perf_spike"]["overall_time_in_seconds"]))
     while datetime.now() < end_time:
         folder_count += 1
