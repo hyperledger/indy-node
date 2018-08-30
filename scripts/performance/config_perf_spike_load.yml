@@ -1,29 +1,31 @@
 # perf_spike_load.py arguments
 perf_spike:
-    read_mode: permanent #permanent = background reading operation with writing spikes, spike = reading and writing spikes with 0 load in between 
-    spike_time_in_seconds: 180
-    rest_time_in_seconds: 180
-    overall_time_in_seconds: 3600 # 1h = 3600 sec, 24h = 86400
+    read_mode: spike # permanent = background reading operation with writing spikes, spike = reading and writing spikes with 0 load in between 
+    spike_time_in_seconds: 600
+    rest_time_in_seconds: 600
+    overall_time_in_seconds: 600 # 1h = 3600 sec, 24h = 86400
+
 # perf_processes.py will be called with arguments provided below  during perf_spike_load.py execution. You may move arguments between common and _txns sections:
 # e.g. if you want to define different clients number for reading and writing transactions, just copy "clients" to read_ and write_txns sections and provide values. 
 # The script takes the most specific arguments (for transactions rather than common) in case of a duplication.
 common: 
-    clients: 1
     seed: 000000000000000000000000Trustee1
     num: 1
     refresh: 100
-    buff_req: 100
+    buff_req: 300
     sep: "|"
     wallet_key: key
-    mode: t
+    mode: p
     pool_config: ""
     sync_mode: all
-    out: ""
-    genesis: ~/pool_transactions_genesis
-    directory: . 
+    out: "/home/me/Documents/permanent.log"
+    genesis: /home/me/Documents/stab_nodes_genesis
+    directory: ~/Documents/
 read_txns:
-    kind: get_nym
-    load_rate: 5
+    clients: 10
+    kind: "{\"schema\": 2, \"cred_def\": 2, \"nym\": 14, \"attrib\": 2}"
+    load_rate: 10
 write_txns:
-    kind: nym
-    load_rate: 2
+    clients: 1
+    kind: "{\"get_nym\": 9, \"get_schema\": 4, \"get_cred_def\": 4, \"get_attrib\": 3}"
+    load_rate: 10
