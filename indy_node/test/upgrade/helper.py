@@ -9,6 +9,7 @@ from typing import List, Tuple
 
 import base58
 import dateutil.tz
+from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 from plenum.test.node_catchup.helper import waitNodeDataEquality, ensure_all_nodes_have_same_data
 
 from plenum.common.keygen_utils import init_bls_keys
@@ -296,11 +297,14 @@ def sdk_change_bls_key(looper, txnPoolNodeSet,
                        sdk_pool_handle,
                        sdk_wallet_steward,
                        add_wrong=False,
-                       new_bls=None):
-    new_blspk = init_bls_keys(node.keys_dir, node.name)
-    key_in_txn = new_bls or new_blspk \
-        if not add_wrong \
-        else base58.b58encode(randomString(128).encode())
+                       new_bls=None,
+                       new_key_proof=None):
+    if add_wrong:
+        _, new_blspk, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
+    else:
+        new_blspk, key_proof = init_bls_keys(node.keys_dir, node.name)
+    key_in_txn = new_bls or new_blspk
+    bls_key_proof = new_key_proof or key_proof
     node_dest = hexToFriendly(node.nodestack.verhex)
     sdk_send_update_node(looper, sdk_wallet_steward,
                          sdk_pool_handle,
@@ -308,7 +312,8 @@ def sdk_change_bls_key(looper, txnPoolNodeSet,
                          None, None,
                          None, None,
                          bls_key=key_in_txn,
-                         services=None)
+                         services=None,
+                         key_proof=bls_key_proof)
     poolSetExceptOne = list(txnPoolNodeSet)
     poolSetExceptOne.remove(node)
     waitNodeDataEquality(looper, node, *poolSetExceptOne)
