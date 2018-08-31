@@ -10,11 +10,11 @@ pool connect AS-pool
 wallet open AS-02-wallet key=testkey
 [1;32mWallet "AS-02-wallet" has been opened[0m
 
-did use FBQ5W7LxRp8bLeVNEafjpd
-[1;32mDid "FBQ5W7LxRp8bLeVNEafjpd" has been set as active[0m
+did use XhYtvJqezMUKfF6KVNaGmT
+[1;32mDid "XhYtvJqezMUKfF6KVNaGmT" has been set as active[0m
 
 - ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=
-[1;31mTransaction has been rejected: Missing some of {'client_ip', 'node_ip', 'alias', 'node_port', 'client_port'}[0m
+[1;31mTransaction has been rejected: XhYtvJqezMUKfF6KVNaGmT is not a steward of node 6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G[0m
 
 did use Rhx2qwaeiGyhU9vn4ynHSS
 [1;32mDid "Rhx2qwaeiGyhU9vn4ynHSS" has been set as active[0m
@@ -28,11 +28,11 @@ did use 5qhSKMkpqui6taGLTecwqf
 - ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc alias=Node5 services=
 [1;31mTransaction has been rejected: Missing some of {'client_ip', 'node_ip', 'client_port', 'node_port', 'alias'}[0m
 
-did use FBQ5W7LxRp8bLeVNEafjpd
-[1;32mDid "FBQ5W7LxRp8bLeVNEafjpd" has been set as active[0m
+did use XhYtvJqezMUKfF6KVNaGmT
+[1;32mDid "XhYtvJqezMUKfF6KVNaGmT" has been set as active[0m
 
 - ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=VALIDATOR
-[1;31mTransaction has been rejected: Missing some of {'client_ip', 'node_ip', 'alias', 'node_port', 'client_port'}[0m
+[1;31mTransaction has been rejected: XhYtvJqezMUKfF6KVNaGmT is not a steward of node 6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G[0m
 
 did use Rhx2qwaeiGyhU9vn4ynHSS
 [1;32mDid "Rhx2qwaeiGyhU9vn4ynHSS" has been set as active[0m

@@ -85,7 +85,7 @@ def sdk_node_theta_added(looper,
                                          alias=new_steward_name,
                                          role=STEWARD_STRING)
 
-    sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort = \
+    sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof = \
         prepare_new_node_data(tconf, tdir, new_node_name,
                               configClass=node_config_helper_class)
 
@@ -100,7 +100,8 @@ def sdk_node_theta_added(looper,
                              nodePort=nodePort,
                              bls_key=bls_key,
                              sigseed=sigseed,
-                             services=[VALIDATOR]))
+                             services=[VALIDATOR],
+                             key_proof=key_proof))
 
     # sending request using 'sdk_' functions
     request_couple = sdk_sign_and_send_prepared_request(looper, new_steward_wallet,

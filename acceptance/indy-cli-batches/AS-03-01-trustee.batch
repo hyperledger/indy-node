@@ -24,28 +24,28 @@ ledger nym did=QQMQmb1mrBRJR3vx6GP4kg role=TRUSTEE verkey=~7Cj2MTAjyAbHdAiuafgCU
 # #1.1 AS Trustee (default) CREATE Trustee (trustee1) (PASS)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=CDBcM7hSAmQuenmEnE8dXG role=TRUSTEE verkey=~JsqrSipV963hwbojxwR2fg
-ledger get-nym did=CDBcM7hSAmQuenmEnE8dXG
+- ledger get-nym did=CDBcM7hSAmQuenmEnE8dXG
 # #1.2 CHECK Trustee (trustee1) IS VALID
 did use CDBcM7hSAmQuenmEnE8dXG
 ledger nym did=3JauiZvnHv6oSBi4DTikg4 role=STEWARD verkey=~5EhgzbpoKEH6f7rQgyUbjJ
-ledger get-nym did=3JauiZvnHv6oSBi4DTikg4
+- ledger get-nym did=3JauiZvnHv6oSBi4DTikg4
 # #2.1 AS Trustee (default) REMOVE Trustee (trustee1) (PASS)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=CDBcM7hSAmQuenmEnE8dXG role=
 # #2.2. CHECK Trustee (trustee1) IS INVALID
 did use CDBcM7hSAmQuenmEnE8dXG 
-- ledger nym did=6nnZTxQ18EkVEjVV6hBMeT verkey=~2TBdyJLgAhkbogxjpUfPJD
+- ledger nym did=6nnZTxQ18EkVEjVV6hBMeT verkey=~2TBdyJLgAhkbogxjpUfPJD role=TRUSTEE
 # #3.1 AS Trustee (default) RESTORE Trustee (trustee1) (PASS)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=CDBcM7hSAmQuenmEnE8dXG role=TRUSTEE
 # #3.2. CHECK Trustee (trustee1) IS VALID
 did use CDBcM7hSAmQuenmEnE8dXG 
 ledger nym did=VNHim6zQkiNEF1yPL6xVev verkey=~Xih8tdRvVQiudPEB3M2ypc
-ledger get-nym did=VNHim6zQkiNEF1yPL6xVev
+- ledger get-nym did=VNHim6zQkiNEF1yPL6xVev
 # #4 AS Trustee (default) CREATE Steward (PASS)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=YLs2LfEvHoSdS6euixMAe8 role=STEWARD verkey=~UEjom7C2wcysFHkHqXVtSo
-ledger get-nym did=YLs2LfEvHoSdS6euixMAe8
+- ledger get-nym did=YLs2LfEvHoSdS6euixMAe8
 # #5.1 AS Trustee (default) REMOVE Steward (PASS)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=YLs2LfEvHoSdS6euixMAe8 role=
@@ -59,19 +59,19 @@ ledger nym did=YLs2LfEvHoSdS6euixMAe8 role=STEWARD
 # #6.2 CHECK Steward IS VALID
 did use YLs2LfEvHoSdS6euixMAe8 
 ledger nym did=EAvxCBmoYzkojBtgX1SVh8 role=TRUST_ANCHOR verkey=~HXn8bHcAYuaDAsCdjdLxLc
-ledger get-nym did=EAvxCBmoYzkojBtgX1SVh8
+- ledger get-nym did=EAvxCBmoYzkojBtgX1SVh8
 # #7.1 AS Trustee (default) CREATE TrustAnchor (trustanchor1) (PASS)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=AWwweaRGGCa4hfvW9WLmeb role=TRUST_ANCHOR verkey=~D8gYyv77VvdkXguu7mHKfR
-ledger get-nym did=AWwweaRGGCa4hfvW9WLmeb
+- ledger get-nym did=AWwweaRGGCa4hfvW9WLmeb
 # #7.2 CHECK TrustAnchor IS VALID
 did use AWwweaRGGCa4hfvW9WLmeb
 ledger nym did=FZp8ZoqiKrp9uuAujE38xA verkey=~2unRfj35pEJ9qRpWJyBAvz
-ledger get-nym did=FZp8ZoqiKrp9uuAujE38xA
+- ledger get-nym did=FZp8ZoqiKrp9uuAujE38xA
 # #8.1 AS Trustee (default) REMOVE TrustAnchor (trustanchor1) (PASS)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=AWwweaRGGCa4hfvW9WLmeb role=
-# #8.2 CHECK TrustAnchor IS INVALID
+# #8.2 CHECK TrustAnchor IS INVALID (note that with ANYONE_CAN_WRITE TrustAnchor is the same as IdentityOwner and it's impossible to check that role was removed by txns sending)
 did use AWwweaRGGCa4hfvW9WLmeb 
 - ledger nym did=NhF3hPZyV715sfmvsjhj1h verkey=~EjjPJGQcnFGhuyS35bVMGA
 - ledger get-nym did=NhF3hPZyV715sfmvsjhj1h
@@ -81,13 +81,40 @@ ledger nym did=AWwweaRGGCa4hfvW9WLmeb role=TRUST_ANCHOR
 # #9.2 CHECK TrustAnchor IS VALID
 did use AWwweaRGGCa4hfvW9WLmeb 
 ledger nym did=NhF3hPZyV715sfmvsjhj1h verkey=~EjjPJGQcnFGhuyS35bVMGA
-ledger get-nym did=NhF3hPZyV715sfmvsjhj1h
+- ledger get-nym did=NhF3hPZyV715sfmvsjhj1h
 # #10 AS Trustee (default) CREATE IdentityOwner (PASS)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=6nnZTxQ18EkVEjVV6hBMeT verkey=~2TBdyJLgAhkbogxjpUfPJD
-ledger get-nym did=6nnZTxQ18EkVEjVV6hBMeT
+- ledger get-nym did=6nnZTxQ18EkVEjVV6hBMeT
 # #11 AS Trustee (trustee2) REMOVE self (trustee2) (PASS)
 did use QQMQmb1mrBRJR3vx6GP4kg
 ledger nym did=QQMQmb1mrBRJR3vx6GP4kg role=
 - ledger nym did=X25X1vKgEkwRDNgj1zJ1Xg verkey=~5TR49msrun2AgCKQZsstRX
 - ledger get-nym did=X25X1vKgEkwRDNgj1zJ1Xg
+### Additional cases ###
+did use V4SGRU86Z58d6TV7PBUe6f
+did new seed=RandomAttribOwner000000000000000
+ledger nym did=QbvWTyhmZmDF8Ms82wC2JD verkey=~55hsLZb8uixk46gRPPZHF8 role=TRUSTEE
+did new seed=RandomUserForRotateKey0000000000
+ledger nym did=484PvcK1gUqwWEWCkumDzA verkey=~VNugjiSF2G22QKfYvESPf3 role=TRUSTEE
+# Only owner can edit existing NYMs
+did use QbvWTyhmZmDF8Ms82wC2JD
+did rotate-key seed=RandomUserForRotateKey0NewKey000
+# Not owner can't edit existing NYMs (FAIL)
+did use 484PvcK1gUqwWEWCkumDzA
+- ledger nym did=QbvWTyhmZmDF8Ms82wC2JD verkey=~55hsLZb8uixk46gRPPZHF8
+# Only owners can create ATTRIBs
+did use QbvWTyhmZmDF8Ms82wC2JD
+ledger attrib did=QbvWTyhmZmDF8Ms82wC2JD raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Only owners can edit ATTRIBs
+ledger attrib did=QbvWTyhmZmDF8Ms82wC2JD raw={"endpoint":{"ha":"127.0.0.1:6666"}}
+# Not owner can't create attrib (FAIL)
+did use QbvWTyhmZmDF8Ms82wC2JD
+- ledger attrib did=484PvcK1gUqwWEWCkumDzA raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Not owner can't edit attrib (FAIL)
+did use 484PvcK1gUqwWEWCkumDzA
+- ledger attrib did=QbvWTyhmZmDF8Ms82wC2JD raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Trustee can create SCHEMA:
+ledger schema name=TrusteeSchema version=1.0 attr_names=name,age
+# Trustee can create CLAIM_DEF:
+ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=10
