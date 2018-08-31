@@ -1,35 +1,53 @@
 # perf_spike_load.py arguments
-perf_spike:
-    read_mode: spike # permanent = background reading operation with writing spikes, spike = reading and writing spikes with 0 load in between 
-    spike_time_in_seconds: 600
-    rest_time_in_seconds: 600
-    overall_time_in_seconds: 600 # 1h = 3600 sec, 24h = 86400
+profile:
+  mode: stress # permanent = background reading operation with writing spikes, 
+               # spike = reading and writing spikes with 0 load in between, 
+               # stress = one stepwise increasing spike for beaking point checking scenario 
+  spike_time_in_seconds: 600
+  rest_time_in_seconds: 600
+  overall_time_in_seconds: 60 # 1h = 3600 sec, 24h = 86400
+
 
 # perf_processes.py will be called with arguments provided below  during perf_spike_load.py execution. You may move arguments between common and _txns sections:
 # e.g. if you want to define different clients number for reading and writing transactions, just copy "clients" to read_ and write_txns sections and provide values. 
 # The script takes the most specific arguments (for transactions rather than common) in case of a duplication.
 common: 
-    seed: 000000000000000000000000Trustee1
-    num: 1
-    refresh: 100
-    buff_req: 300
-    sep: "|"
-    wallet_key: key
-    mode: p
-    pool_config: ""
-    sync_mode: all
-    out: "/home/me/Documents/permanent.log"
-    genesis: /home/me/Documents/stab_nodes_genesis
-    directory: ~/Documents/
-read_txns:
+  seed: 000000000000000000000000Trustee1
+  num: 1
+  refresh: 60
+  buff_req: 300
+  sep: "|"
+  wallet_key: key
+  mode: p
+  pool_config: ""
+  sync_mode: all
+  out: ""
+  genesis: /home/me/Documents/stab_nodes_genesis
+  directory: ~/Documents/
+
+background:                                   # is used in permanent and stress modes
+  clients: 1
+  kind: get_nym
+  load_rate: 10
+  stepwise: 
+    step_time_in_seconds: 10               # for stepwise testing, 0 means stable load without growing
+    step_txns_per_second: 2                # additional load rate per step
+    step_initial_load_rate: 2              # initial load rate per spike
+
+spikes:                                       # is used in permanent and spike modes
+  spike1:
     clients: 10
-    kind: "{\"schema\": 2, \"cred_def\": 2, \"nym\": 14, \"attrib\": 2}"
+    kind: nym
     load_rate: 10
-write_txns:
+    stepwise: 
+      step_time_in_seconds: 10               # for stepwise testing, 0 means stable load without growing
+      step_txns_per_second: 2                # additional load rate per step
+      step_initial_load_rate: 2              # initial load rate per spike
+  spike2:
     clients: 1
-    kind: "{\"get_nym\": 9, \"get_schema\": 4, \"get_cred_def\": 4, \"get_attrib\": 3}"
+    kind: nym
     load_rate: 10
-stepwise_load:
-    step_time_in_seconds = 0 # for stepwize testing, 0 means stable load without increasing
-    step_txns_per_second = 0 # additional load rate per step
-    step_initial_load_rate = 0 # initial load rate per spike
+    stepwise: 
+      step_time_in_seconds: 10               # for stepwise testing, 0 means stable load without growing
+      step_txns_per_second: 1                # additional load rate per step
+      step_initial_load_rate: 1              # initial load rate per spike
