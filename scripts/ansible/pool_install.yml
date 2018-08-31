@@ -4,8 +4,8 @@
   vars:
     pool_prefix: live_node
     pool_size: "{{ groups['pool']|count }}"
-    node_ver: 1.4.478
-    plenum_ver: 1.4.418
+    node_ver: 1.6.563
+    plenum_ver: 1.6.501
     python_indy_crypto_ver: 0.4.1
     libindy_crypto_ver: 0.4.0
 
@@ -30,6 +30,14 @@
 
     - name: Install indy-node
       apt: "name=indy-node={{ node_ver }},indy-plenum={{ plenum_ver }},libindy-crypto={{ libindy_crypto_ver }},python3-indy-crypto={{ python_indy_crypto_ver }} force=yes update_cache=yes"
+      become: yes
+    
+    - name: Make indy config dir
+      file: path=/etc/indy state=directory owner=indy group=indy
+      become: yes
+
+    - name: Set our default config
+      copy: src=indy_config_default.py dest=/etc/indy/indy_config.py owner=indy group=indy
       become: yes
 
     - name: Make pool data dir

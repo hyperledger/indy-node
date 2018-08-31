@@ -14,11 +14,9 @@ import functools
 from collections import deque, Sequence
 from ctypes import CDLL
 from datetime import datetime
-
 import base58
 import libnacl
 import random
-
 from indy import payment
 from indy import pool, wallet, did, ledger, anoncreds, blob_storage
 
@@ -65,17 +63,14 @@ parser.add_argument('-k', '--kind', default="nym", type=str, required=False, des
                          'get_revoc_reg_delta. '
                          'Default value is "nym". Could be combined in form of JSON array or JSON obj')
 
-parser.add_argument('-n', '--num', default=100, type=int, required=False, dest='batch_size',
-                    help='Number of transactions to submit. Default value is 100')
+parser.add_argument('-n', '--num', default=10, type=int, required=False, dest='batch_size',
+                    help='Number of transactions to submit in one batch. Default value is 10')
 
-parser.add_argument('-t', '--timeout', default=0, type=float, required=False, dest='batch_timeout',
-                    help='Timeout between batches. Default value is 0')
+parser.add_argument('-r', '--refresh', default=10, type=float, required=False, dest='refresh_rate',
+                    help='Statistics refresh rate in sec. Default value is 10')
 
-parser.add_argument('-r', '--refresh', default=100, type=int, required=False, dest='refresh_rate',
-                    help='Number of replied txns to refresh statistics. Default value is 100')
-
-parser.add_argument('-b', '--bg_tasks', default=30, type=int, required=False, dest='bg_tasks',
-                    help='Number of background tasks. Default value is 30')
+parser.add_argument('-b', '--buff_req', default=30, type=int, required=False, dest='buff_req',
+                    help='Number of pregenerated reqs before start. Default value is 30')
 
 parser.add_argument('-d', '--directory', default=".", required=False, dest='out_dir',
                     type=functools.partial(check_fs, True),
@@ -93,6 +88,19 @@ parser.add_argument('-m', '--mode', default="p", choices=['p', 't'], required=Fa
 parser.add_argument('-p', '--pool_config', default="", type=str, required=False, dest='pool_config',
                     help='Configuration of pool as JSON. The value will be passed to open_pool call. Default value is empty')
 
+parser.add_argument('-y', '--sync_mode', default="freeflow", choices=['freeflow', 'all', 'one', 'wait_resp'],
+                    required=False, dest='sync_mode',
+                    help='Client sync mode. Default value is freeflow')
+
+parser.add_argument('-l', '--load_rate', default=10, type=float, required=False, dest='load_rate',
+                    help='Batches per sec. Default value is 10')
+
+parser.add_argument('-o', '--out', default="", type=str, required=False, dest='out_file',
+                    help='Output file. Default value is stdout')
+
+parser.add_argument('--load_time', default=0, type=float, required=False, dest='load_time',
+                    help='Work no longer then load_time sec. Default value is 0')
+
 
 def ensure_is_reply(resp):
     if isinstance(resp, str):
@@ -109,6 +117,32 @@ class NoReqDataAvailableException(Exception):
     pass
 
 
+class ClientReady:
+    pass
+
+
+class ClientRun:
+    pass
+
+
+class ClientStop:
+    pass
+
+
+class ClientGetStat:
+    pass
+
+
+class ClientSend:
+    def __init__(self, cnt: int = 10):
+        self.cnt = cnt
+
+
+class ClientMsg:
+    def __init__(self, msg: str, *args):
+        self.msg = msg.format(*args)
+
+
 class ClientStatistic:
     def __init__(self):
         self._req_prep = 0
@@ -117,10 +151,6 @@ class ClientStatistic:
         self._req_fail = 0
         self._req_nack = 0
         self._req_rejc = 0
-
-        # inited as something big (datetime(9999, 1, 1) - datetime(1970, 1, 1)).total_seconds()
-        self._server_min_txn_time = 253370764800
-        self._server_max_txn_time = 0
 
         self._client_stat_reqs = dict()
 
@@ -172,8 +202,6 @@ class ClientStatistic:
                     resp['result'].get('txnTime', False) or resp['result'].get('txnMetadata', {}).get('txnTime', False)
                 server_time = int(srv_tm)
                 self._client_stat_reqs[req_data_repr]["server_reply"] = server_time
-                self._server_min_txn_time = min(self._server_min_txn_time, server_time)
-                self._server_max_txn_time = max(self._server_max_txn_time, server_time)
             else:
                 self._req_fail += 1
                 status = "fail"
@@ -192,8 +220,6 @@ class ClientStatistic:
         ret_val["total_succ"] = self._req_succ
         ret_val["total_nacked"] = self._req_nack
         ret_val["total_rejected"] = self._req_rejc
-        srv_time = self._server_max_txn_time - self._server_min_txn_time
-        ret_val["server_time"] = srv_time if srv_time >= 0 else 0
         ret_val["reqs"] = []
         reqs = [k for k, v in self._client_stat_reqs.items() if "status" in v or dump_all]
         for r in reqs:
@@ -284,10 +310,10 @@ class RequestGenerator(metaclass=ABCMeta):
 
         return req_data, req
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+    async def on_request_generated(self, req_data, gen_req):
         pass
 
-    async def on_request_replied(self, req, resp_or_exp):
+    async def on_request_replied(self, req_data, gen_req, resp_or_exp):
         pass
 
     def get_txn_field(self, txn_dict):
@@ -310,7 +336,6 @@ class RGSeqReqs(RequestGenerator):
         if not isinstance(reqs, list):
             raise RuntimeError("Bad Requests sequence provided")
         self._reqs_collection = []
-        self._req_id_to_req_gen = {}
         for reqc, prms in reqs:
             if not issubclass(reqc, RequestGenerator):
                 raise RuntimeError("Bad Request class provided")
@@ -348,19 +373,15 @@ class RGSeqReqs(RequestGenerator):
 
     async def _gen_req(self, submit_did, req_data):
         req_gen = self._reqs_collection[self._req_idx]
-        req = await req_gen._gen_req(submit_did, req_data)
-        req_obj = json.loads(req)
-        req_id = req_obj["reqId"]
-        self._req_id_to_req_gen[req_id] = req_gen
-        return req
+        return await req_gen._gen_req(submit_did, req_data)
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
-        return await self._reqs_collection[self._req_idx].on_batch_completed(pool_handle, wallet_handle, submitter_did)
+    async def on_request_generated(self, req_data, gen_req):
+        for r in self._reqs_collection:
+            await r.on_request_generated(req_data, gen_req)
 
-    async def on_request_replied(self, req, resp_or_exp):
-        req_obj = json.loads(req)
-        req_id = req_obj["reqId"]
-        await self._req_id_to_req_gen.pop(req_id).on_request_replied(req, resp_or_exp)
+    async def on_request_replied(self, req_data, req, resp_or_exp):
+        for r in self._reqs_collection:
+            await r.on_request_replied(req_data, req, resp_or_exp)
 
 
 class RGNym(RequestGenerator):
@@ -539,7 +560,10 @@ class RGGetDefRevoc(RGDefRevoc):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         pass
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+    async def on_request_generated(self, req_data, gen_req):
+        pass
+
+    async def on_request_replied(self, req_data, gen_req, resp_or_exp):
         pass
 
     async def _gen_req(self, submit_did, req_data):
@@ -567,6 +591,10 @@ class RGEntryRevoc(RGDefRevoc):
         self._pool_handle = None
         self._cred_offer_json = None
         self._tails_writer = None
+        self._master_secret_id = None
+
+        self._old_reqs = set()
+        self._old_reqs_cnt = 0
 
     async def _upd_revoc_reg(self):
         while True:
@@ -614,8 +642,22 @@ class RGEntryRevoc(RGDefRevoc):
         return await ledger.build_revoc_reg_entry_request(
             submit_did, self._default_revoc_reg_def_id, "CL_ACCUM", revoc_reg_delta_json)
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
-        await self._upd_revoc_reg()
+    def _gen_req_data(self):
+        req_data = super()._gen_req_data()
+        self._old_reqs.add(req_data)
+        return req_data
+
+    async def on_request_generated(self, req_data, gen_req):
+        if req_data in self._old_reqs:
+            self._old_reqs_cnt += 1
+            self._old_reqs.remove(req_data)
+
+        if self._old_reqs_cnt >= self._max_cred_num:
+            self._old_reqs_cnt = 0
+            await self._upd_revoc_reg()
+
+    async def on_request_replied(self, req_data, gen_req, resp_or_exp):
+        pass
 
     def _from_file_str_data(self, file_str):
         req_json = super()._from_file_str_data(file_str)
@@ -641,7 +683,7 @@ class RGGetEntryRevoc(RGEntryRevoc):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         pass
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+    async def on_request_generated(self, req_data, gen_req):
         pass
 
     async def _gen_req(self, submit_did, req_data):
@@ -658,50 +700,47 @@ class RGGetRevocRegDelta(RGGetEntryRevoc):
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         pass
 
-    async def on_batch_completed(self, pool_handle, wallet_handle, submitter_did):
+    async def on_request_generated(self, req_data, gen_req):
         pass
 
 
 class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
     TRUSTEE_ROLE_CODE = "0"
 
-    DEFAULT_PAYMENT_METHOD = "sov"
     DEFAULT_PAYMENT_ADDRS_COUNT = 100
 
     NUMBER_OF_TRUSTEES_FOR_MINT = 4
     MINT_RECIPIENTS_LIMIT = 100
     AMOUNT_LIMIT = 100
 
-    PLUGINS = {
-        "sov": ("libsovtoken.so", "sovtoken_init")
-    }
-
-    __initiated_payment_methods = set()
+    __initiated_plugins = set()
 
     @staticmethod
-    def __init_plugin_once(payment_method):
-        if payment_method not in RGBasePayment.__initiated_payment_methods:
+    def __init_plugin_once(plugin_lib_name, init_func_name):
+        if (plugin_lib_name, init_func_name) not in RGBasePayment.__initiated_plugins:
             try:
-                plugin_lib_name, init_func_name = RGBasePayment.PLUGINS[payment_method]
                 plugin_lib = CDLL(plugin_lib_name)
                 init_func = getattr(plugin_lib, init_func_name)
                 res = init_func()
                 if res != 0:
                     raise RuntimeError(
                         "Initialization function returned result code {}".format(res))
-                RGBasePayment.__initiated_payment_methods.add(payment_method)
+                RGBasePayment.__initiated_plugins.add((plugin_lib_name, init_func_name))
             except Exception as ex:
                 print("Payment plugin initialization failed: {}".format(repr(ex)))
                 raise ex
 
     def __init__(self, *args,
-                 payment_method=DEFAULT_PAYMENT_METHOD,
+                 payment_method,
+                 plugin_lib,
+                 plugin_init_func,
                  payment_addrs_count=DEFAULT_PAYMENT_ADDRS_COUNT,
                  **kwargs):
 
         super().__init__(*args, **kwargs)
 
-        RGBasePayment.__init_plugin_once(payment_method)
+        RGBasePayment.__init_plugin_once(plugin_lib,
+                                         plugin_init_func)
 
         self._pool_handle = None
         self._wallet_handle = None
@@ -710,6 +749,7 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
         self._payment_method = payment_method
         self._payment_addrs_count = payment_addrs_count
         self._payment_addresses = []
+        self._additional_trustees_dids = []
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
@@ -719,11 +759,14 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
         self._submitter_did = submitter_did
 
         await self.__ensure_submitter_is_trustee()
-        additional_trustees_dids = await self.__create_additional_trustees()
+
+        self._additional_trustees_dids = await self.__create_additional_trustees()
+
         await self.__create_payment_addresses()
+
         for payment_addrs_chunk in divide_sequence_into_chunks(self._payment_addresses,
                                                                RGBasePayment.MINT_RECIPIENTS_LIMIT):
-            await self.__mint_sources(payment_addrs_chunk, [self._submitter_did, *additional_trustees_dids])
+            await self.__mint_sources(payment_addrs_chunk, [self._submitter_did, *self._additional_trustees_dids])
 
     async def __ensure_submitter_is_trustee(self):
         get_nym_req = await ledger.build_get_nym_request(self._submitter_did, self._submitter_did)
@@ -742,13 +785,15 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
         trustee_dids = []
 
         for i in range(RGBasePayment.NUMBER_OF_TRUSTEES_FOR_MINT - 1):
-            tr_did, tr_verkey = await did.create_and_store_my_did(self._wallet_handle, '{}')
+            tr_seed = "Trustee{}".format(2 + i)
+            tr_seed = "{}{}".format(tr_seed, "0" * (32 - len(tr_seed)))
+            tr_did, tr_verkey = await did.create_and_store_my_did(self._wallet_handle, json.dumps({'seed': tr_seed}))
 
             nym_req = await ledger.build_nym_request(self._submitter_did, tr_did, tr_verkey, None, "TRUSTEE")
-            nym_resp = await ledger.sign_and_submit_request(self._pool_handle,
-                                                            self._wallet_handle,
-                                                            self._submitter_did, nym_req)
-            ensure_is_reply(nym_resp)
+            await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._submitter_did, nym_req)
+
+            # nym_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._submitter_did, nym_req)
+            # ensure_is_reply(nym_resp)
 
             trustee_dids.append(tr_did)
 
@@ -757,7 +802,7 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
     async def __create_payment_addresses(self):
         for i in range(self._payment_addrs_count):
             self._payment_addresses.append(
-                await payment.create_payment_address(self._wallet_handle, self._payment_method, '{}'))
+                await payment.create_payment_address(self._wallet_handle, self._payment_method, "{}"))
 
     async def __mint_sources(self, payment_addresses, trustees_dids):
         outputs = []
@@ -814,6 +859,7 @@ class RGPayment(RGBasePayment):
         super().__init__(*args, **kwargs)
         self._sources_amounts = deque()
         self.__req_id_to_source_amount = {}
+        self._old_reqs = set()
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
         await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
@@ -849,17 +895,23 @@ class RGPayment(RGBasePayment):
         amount = outputs[0]["amount"]
         self.__req_id_to_source_amount[req_id] = source, amount
 
+        self._old_reqs.add(req_id)
+
         return req
 
-    async def on_request_replied(self, req, resp_or_exp):
+    async def on_request_replied(self, req_data, req, resp_or_exp):
+        req_obj = json.loads(req)
+        req_id = req_obj.get("reqId", None)
+        if req_id not in self._old_reqs:
+            return
+        self._old_reqs.remove(req_id)
+
         if isinstance(resp_or_exp, Exception):
             return
 
         resp = resp_or_exp
 
         try:
-            req_obj = json.loads(req)
-            req_id = req_obj["reqId"]
             source, amount = self.__req_id_to_source_amount.pop(req_id)
 
             resp_obj = json.loads(resp)
@@ -907,17 +959,17 @@ class RGVerifyPayment(RGBasePayment):
                                                              json.dumps(outputs),
                                                              None)
 
-        payment_resp = await ledger.sign_and_submit_request(self._pool_handle,
-                                                            self._wallet_handle,
-                                                            self._submitter_did,
-                                                            payment_req)
-        ensure_is_reply(payment_resp)
+            payment_resp = await ledger.sign_and_submit_request(self._pool_handle,
+                                                                self._wallet_handle,
+                                                                self._submitter_did,
+                                                                payment_req)
+            ensure_is_reply(payment_resp)
 
-        receipt_infos_json = await payment.parse_payment_response(self._payment_method, payment_resp)
-        receipt_infos = json.loads(receipt_infos_json)
-        receipt_info = receipt_infos[0]
+            receipt_infos_json = await payment.parse_payment_response(self._payment_method, payment_resp)
+            receipt_infos = json.loads(receipt_infos_json)
+            receipt_info = receipt_infos[0]
 
-        self._receipts.append(receipt_info["receipt"])
+            self._receipts.append(receipt_info["receipt"])
 
     def _gen_req_data(self):
         return (datetime.now().isoformat(), random.choice(self._receipts))
@@ -930,6 +982,107 @@ class RGVerifyPayment(RGBasePayment):
         return req
 
 
+class RGFeesNym(RGBasePayment):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._sources_amounts = {}
+        self._last_used = None
+
+    async def __retrieve_minted_sources(self):
+        for payment_address in self._payment_addresses:
+            self._sources_amounts[payment_address] = []
+            self._sources_amounts[payment_address].extend(await self._get_payment_sources(payment_address))
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+        await self.__retrieve_minted_sources()
+
+        fees_req = await payment.build_set_txn_fees_req(wallet_handle, submitter_did, self._payment_method,
+                                                        json.dumps({"1": 1}))
+        for trustee_did in [self._submitter_did, *self._additional_trustees_dids]:
+            fees_req = await ledger.multi_sign_request(self._wallet_handle, trustee_did, fees_req)
+
+        resp = await ledger.submit_request(self._pool_handle, fees_req)
+        ensure_is_reply(resp)
+
+    def _rand_data(self):
+        raw = libnacl.randombytes(16)
+        req_did = self.rawToFriendly(raw)
+        return req_did
+
+    def _from_file_str_data(self, file_str):
+        raise NotImplementedError("ne _from_file_str_data")
+
+    async def _gen_req(self, submit_did, req_data):
+        req = await ledger.build_nym_request(submit_did, req_data, None, None, None)
+
+        for ap in self._sources_amounts:
+            if self._sources_amounts[ap]:
+                (source, amount) = self._sources_amounts[ap].pop()
+                address = ap
+                inputs = [source]
+                outputs = [{"recipient": address, "amount": amount - 1}]
+                req_fees = await payment.add_request_fees(self._wallet_handle, submit_did, req,
+                                                          json.dumps(inputs),
+                                                          json.dumps(outputs), None)
+                return req_fees[0]
+        raise NoReqDataAvailableException()
+
+    async def on_request_replied(self, req_data, req, resp_or_exp):
+        if isinstance(resp_or_exp, Exception):
+            return
+
+        resp = resp_or_exp
+
+        try:
+            resp_obj = json.loads(resp)
+
+            if "op" not in resp_obj:
+                raise Exception("Response does not contain op field.")
+
+            if resp_obj["op"] == "REQNACK" or resp_obj["op"] == "REJECT":
+                return
+                # self._sources_amounts.append((source, amount))
+            elif resp_obj["op"] == "REPLY":
+                receipt_infos_json = await payment.parse_response_with_fees(self._payment_method, resp)
+                receipt_infos = json.loads(receipt_infos_json)
+                receipt_info = receipt_infos[0]
+                self._sources_amounts[receipt_info["recipient"]].append((receipt_info["receipt"], receipt_info["amount"]))
+
+        except Exception as e:
+            print("Error on payment txn postprocessing: {}".format(e))
+
+
+class RGFeesSchema(RGFeesNym):
+    async def _gen_req(self, submit_did, req_data):
+        _, schema_json = await anoncreds.issuer_create_schema(submit_did, req_data,
+                                                              "1.0", json.dumps(["name", "age", "sex", "height"]))
+        schema_request = await ledger.build_schema_request(submit_did, schema_json)
+
+        for ap in self._sources_amounts:
+            if self._sources_amounts[ap]:
+                (source, amount) = self._sources_amounts[ap].pop()
+                address = ap
+                inputs = [source]
+                outputs = [{"recipient": address, "amount": amount - 1}]
+                req_fees = await payment.add_request_fees(self._wallet_handle, submit_did, schema_request,
+                                                          json.dumps(inputs),
+                                                          json.dumps(outputs), None)
+                return req_fees[0]
+        raise NoReqDataAvailableException()
+
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+
+        fees_req = await payment.build_set_txn_fees_req(wallet_handle, submitter_did, self._payment_method,
+                                                        json.dumps({"101": 1}))
+        for trustee_did in [self._submitter_did, *self._additional_trustees_dids]:
+            fees_req = await ledger.multi_sign_request(self._wallet_handle, trustee_did, fees_req)
+
+        resp = await ledger.submit_request(self._pool_handle, fees_req)
+        ensure_is_reply(resp)
+
+
 def create_req_generator(req_kind_arg):
     supported_requests = {"nym": RGNym, "schema": RGSchema, "attrib": RGAttrib,
                           "cred_def": RGDefinition, "revoc_reg_def": RGDefRevoc,
@@ -939,7 +1092,8 @@ def create_req_generator(req_kind_arg):
                           "get_revoc_reg_def": RGGetDefRevoc, "get_revoc_reg": RGGetEntryRevoc,
                           "get_revoc_reg_delta": RGGetRevocRegDelta,
                           "get_payment_sources": RGGetPaymentSources, "payment": RGPayment,
-                          "verify_payment": RGVerifyPayment}
+                          "verify_payment": RGVerifyPayment, "fees_nym": RGFeesNym,
+                          "fees_schema": RGFeesSchema}
     if req_kind_arg in supported_requests:
         return supported_requests[req_kind_arg], {"label": req_kind_arg}
     try:
@@ -992,12 +1146,15 @@ def create_req_generator(req_kind_arg):
 
 
 class LoadClient:
-    def __init__(self, name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh, pool_config):
+    SendResp = 0
+    SendTime = 1
+    SendSync = 2
+
+    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode):
         self._name = name
-        self._refresh = refresh
         self._stat = ClientStatistic()
-        self._gen_lim = bg_tasks // 2
-        self._send_lim = bg_tasks // 2
+        self._send_mode = send_mode
+        self._buff_reqs = buff_req
         self._pipe_conn = pipe_conn
         self._pool_name = "pool_{}".format(random_string(24))
         self._loop = asyncio.new_event_loop()
@@ -1011,15 +1168,23 @@ class LoadClient:
         self._loop.add_reader(self._pipe_conn, self.read_cb)
         self._closing = False
         self._batch_size = batch_size
-        self._batch_timeout = batch_timeout
+        self._batch_rate = batch_rate
         self._gen_q = []
         self._send_q = []
         req_class, params = create_req_generator(req_kind)
         self._req_generator = req_class(**params, client_stat=self._stat)
         assert self._req_generator is not None
-        self._rest_to_sent = batch_size
-        self._generated_cnt = 0
         self._pool_config = json.dumps(pool_config) if isinstance(pool_config, dict) and pool_config else None
+        if self._send_mode == LoadClient.SendResp and self._batch_size > 1:
+            raise RuntimeError("Batch size cannot be greater than 1 in response waiting mode")
+        if self._send_mode == LoadClient.SendResp and buff_req != 0:
+            raise RuntimeError("Cannot pregenerate reqs in response waiting mode")
+
+    def msg(self, fmt: str, *args):
+        try:
+            self._pipe_conn.send(ClientMsg(fmt, *args))
+        except Exception as e:
+            print("{} Ready send error {}".format(self._name, e))
 
     async def run_test(self, genesis_path, seed, w_key):
         try:
@@ -1039,20 +1204,35 @@ class LoadClient:
             await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle,
                                                      self._test_did, max_cred_num=self._batch_size)
         except Exception as ex:
-            print("{} run_test error {}".format(self._name, ex))
+            self.msg("{} run_test error {}", self._name, ex)
             self._loop.stop()
 
-        self.gen_reqs()
+        await self.pregen_reqs()
+
+        try:
+            self._pipe_conn.send(ClientReady())
+        except Exception as e:
+            print("{} Ready send error {}".format(self._name, e))
+            raise e
 
     def read_cb(self):
         force_close = False
         try:
             flag = self._pipe_conn.recv()
-            if isinstance(flag, bool) and flag is False:
+            if isinstance(flag, ClientStop):
                 if self._closing is False:
                     force_close = True
+            elif isinstance(flag, ClientRun):
+                self.gen_reqs()
+                if self._send_mode == LoadClient.SendTime:
+                    self._loop.call_soon(self.req_send)
+            elif isinstance(flag, ClientGetStat):
+                self._loop.call_soon(self.send_stat)
+            elif isinstance(flag, ClientSend):
+                if self._send_mode == LoadClient.SendSync:
+                    self.req_send(flag.cnt)
         except Exception as e:
-            print("{} Error {}".format(self._name, e))
+            self.msg("{} Error {}", self._name, e)
             force_close = True
         if force_close:
             self._loop.create_task(self.stop_test())
@@ -1063,11 +1243,10 @@ class LoadClient:
         try:
             req_data, req = await self._req_generator.generate_request(self._test_did)
         except NoReqDataAvailableException:
-            print("{} | Cannot generate request since no req data are available."
-                  .format(datetime.now()))
+            self.msg("{} | Cannot generate request since no req data are available.", datetime.now())
             return
         except Exception as e:
-            print("{} generate req error {}".format(self._name, e))
+            self.msg("{} generate req error {}", self._name, e)
             self._loop.stop()
             raise e
         try:
@@ -1078,38 +1257,41 @@ class LoadClient:
             self._stat.reply(req_data, e)
             self._loop.stop()
             raise e
-
-        self._generated_cnt += 1
-        if self._generated_cnt >= self._batch_size:
-            await self._req_generator.on_batch_completed(self._pool_handle, self._wallet_handle, self._test_did)
-            self._generated_cnt = 0
+        await self._req_generator.on_request_generated(req_data, sig_req)
 
     def watch_queues(self):
-        if len(self._load_client_reqs) + len(self._gen_q) < self._batch_size:
+        if len(self._load_client_reqs) + len(self._gen_q) < self.max_in_bg():
             self._loop.call_soon(self.gen_reqs)
-        if len(self._load_client_reqs) > 0 and len(self._send_q) < self._send_lim:
-            self._loop.call_soon(self.req_send)
 
     def check_batch_avail(self, fut):
         self._gen_q.remove(fut)
-        self.watch_queues()
+        if self._send_mode != LoadClient.SendResp:
+            self.watch_queues()
+        else:
+            self.req_send(1)
 
     def max_in_bg(self):
-        return min(500, 3 * self._batch_size)
+        return self._buff_reqs
+
+    async def pregen_reqs(self):
+        if self._send_mode != LoadClient.SendResp:
+            for i in range(self._buff_reqs):
+                try:
+                    await self.gen_signed_req()
+                except NoReqDataAvailableException:
+                    self.msg("{} cannot prepare more reqs. Done {}/{}", self._name, i, self._buff_reqs)
+                    return
 
     def gen_reqs(self):
         if self._closing:
             return
 
-        avail_gens = self._gen_lim - len(self._gen_q)
-        if avail_gens <= 0 or len(self._gen_q) + len(self._load_client_reqs) > self.max_in_bg():
+        if self._send_mode != LoadClient.SendResp and len(self._gen_q) + len(self._load_client_reqs) > self.max_in_bg():
             return
 
-        for i in range(0, min(avail_gens, self._batch_size)):
-            builder = self._loop.create_task(self.gen_signed_req())
-            builder.add_done_callback(self.check_batch_avail)
-            self._gen_q.append(builder)
-            self._generated_cnt += 1
+        builder = self._loop.create_task(self.gen_signed_req())
+        builder.add_done_callback(self.check_batch_avail)
+        self._gen_q.append(builder)
 
     async def submit_req_update(self, req_data, req):
         self._stat.sent(req_data, req)
@@ -1118,13 +1300,14 @@ class LoadClient:
         except Exception as e:
             resp_or_exp = e
         self._stat.reply(req_data, resp_or_exp)
-        await self._req_generator.on_request_replied(req, resp_or_exp)
+        await self._req_generator.on_request_replied(req_data, req, resp_or_exp)
+        if self._send_mode == LoadClient.SendResp:
+            self.gen_reqs()
 
     def done_submit(self, fut):
         self._send_q.remove(fut)
-        self.watch_queues()
-        if self._stat.sent_count() % self._refresh == 0:
-            self._loop.call_soon(self.send_stat)
+        if self._send_mode != LoadClient.SendResp:
+            self.watch_queues()
 
     def send_stat(self):
         st = self._stat.dump_stat()
@@ -1134,31 +1317,23 @@ class LoadClient:
             print("{} stat send error {}".format(self._name, e))
             raise e
 
-    def req_send(self, start_new_batch: bool = False):
+    def req_send(self, cnt: int = None):
         if self._closing:
             return
 
-        if start_new_batch:
-            self._rest_to_sent = self._batch_size
+        if self._send_mode == LoadClient.SendTime:
+            self._loop.call_later(self._batch_rate, self.req_send)
 
-        avail_sndrs = self._send_lim - len(self._send_q)
-        if avail_sndrs <= 0 or self._rest_to_sent <= 0:
-            return
+        to_snd = cnt or self._batch_size
 
-        if self._rest_to_sent > 0:
-            to_snd = min(len(self._load_client_reqs), avail_sndrs, self._rest_to_sent)
-            for i in range(0, to_snd):
-                req_data, req = self._load_client_reqs.pop()
-                sender = self._loop.create_task(self.submit_req_update(req_data, req))
-                sender.add_done_callback(self.done_submit)
-                self._send_q.append(sender)
-            self._rest_to_sent -= to_snd
+        if len(self._load_client_reqs) < to_snd:
+            self.msg("WARNING need to send {}, but have {}", to_snd, len(self._load_client_reqs))
 
-        if self._rest_to_sent <= 0:
-            if self._batch_timeout == 0:
-                self._loop.create_task(self.stop_test())
-            else:
-                self._loop.call_later(self._batch_timeout, functools.partial(self.req_send, start_new_batch=True))
+        for i in range(min(len(self._load_client_reqs), to_snd)):
+            req_data, req = self._load_client_reqs.pop()
+            sender = self._loop.create_task(self.submit_req_update(req_data, req))
+            sender.add_done_callback(self.done_submit)
+            self._send_q.append(sender)
 
     async def stop_test(self):
         self._closing = True
@@ -1171,12 +1346,12 @@ class LoadClient:
             if self._wallet_handle is not None:
                 await wallet.close_wallet(self._wallet_handle)
         except Exception as e:
-            print("{} close_wallet exception: {}".format(self._name, e))
+            self.msg("{} close_wallet exception: {}", self._name, e)
         try:
             if self._pool_handle is not None:
                 await pool.close_pool_ledger(self._pool_handle)
         except Exception as e:
-            print("{} close_pool_ledger exception: {}".format(self._name, e))
+            self.msg("{} close_pool_ledger exception: {}", self._name, e)
 
         self._loop.call_soon_threadsafe(self._loop.stop)
 
@@ -1191,9 +1366,9 @@ class LoadClient:
                 shutil.rmtree(d, ignore_errors=True)
 
 
-def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout,
-               req_kind, bg_tasks, refresh, wallet_key, pool_config):
-    cln = LoadClient(name, pipe_conn, batch_size, batch_timeout, req_kind, bg_tasks, refresh, pool_config)
+def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_rate,
+               req_kind, buff_req, wallet_key, pool_config, send_mode):
+    cln = LoadClient(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode)
     try:
         asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
         cln._loop.run_forever()
@@ -1204,22 +1379,28 @@ def run_client(name, genesis_path, pipe_conn, seed, batch_size, batch_timeout,
 
 
 class ClientRunner:
-    def __init__(self, name, conn):
+    ClientError = 0
+    ClientCreated = 1
+    ClientReady = 2
+    ClientRun = 3
+    ClientStopped = 4
+
+    def __init__(self, name, conn, out_file):
+        self.status = ClientRunner.ClientCreated
         self.name = name
         self.conn = conn
-        self.closed = False
         self.total_sent = 0
         self.total_succ = 0
         self.total_failed = 0
         self.total_nack = 0
         self.total_reject = 0
-        self.total_server_time = 0
+        self._out_file = out_file
 
     def stop_client(self):
-        self.closed = True
+        self.status = ClientRunner.ClientStopped
 
     def is_finished(self):
-        return self.closed
+        return self.status == ClientRunner.ClientStopped
 
     def refresh_stat(self, stat):
         if not isinstance(stat, dict):
@@ -1229,7 +1410,23 @@ class ClientRunner:
         self.total_failed = stat.get("total_fail", self.total_failed)
         self.total_nack = stat.get("total_nacked", self.total_nack)
         self.total_reject = stat.get("total_rejected", self.total_reject)
-        self.total_server_time = stat.get("server_time", self.total_server_time)
+
+    def run_client(self):
+        try:
+            if self.conn and self.status == ClientRunner.ClientReady:
+                self.conn.send(ClientRun())
+                self.status = ClientRunner.ClientRun
+        except Exception as e:
+            print("Sent Run to client {} error {}".format(self.name, e), file=self._out_file)
+            self.status = ClientRunner.ClientError
+
+    def req_stats(self):
+        try:
+            if self.conn and self.status == ClientRunner.ClientRun:
+                self.conn.send(ClientGetStat())
+        except Exception as e:
+            print("Sent ClientGetStat to client {} error {}".format(self.name, e), file=self._out_file)
+            self.status = ClientRunner.ClientError
 
 
 class TestRunner:
@@ -1242,8 +1439,16 @@ class TestRunner:
         self._total_f = None
         self._nacked_f = None
         self._value_separator = "|"
+        self._refresh_rate = 10
+        self._start_sync = True
+        self._start_counter = time.perf_counter()
+        self._sync_mode = None
+        self._batch_rate = None
+        self._batch_size = None
+        self._out_file = sys.stdout
+        self._stop_sec = 0
 
-    def process_reqs(self, stat):
+    def process_reqs(self, stat, name: str = ""):
         assert self._failed_f
         assert self._total_f
         assert self._succ_f
@@ -1251,52 +1456,110 @@ class TestRunner:
         if not isinstance(stat, dict):
             return
         reqs = stat.get("reqs", [])
+        tot = []
+        suc = []
+        nack = []
+        fails = []
         for (r_id, r_data) in reqs:
-            # ["label", "id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
+            # ["client", "label", "id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
             status = r_data.get("status", "")
-            print(r_data.get("label", ""), r_id, status, r_data.get("client_preparing", 0), r_data.get("client_prepared", 0), r_data.get("client_signed", 0),
-                  r_data.get("client_sent", 0), r_data.get("client_reply", 0), r_data.get("server_reply", 0),
-                  file=self._total_f, sep=self._value_separator)
+            tot.append(self._value_separator.join(
+                [name, r_data.get("label", ""), str(r_id), status,
+                 str(r_data.get("client_preparing", 0)), str(r_data.get("client_prepared", 0)),
+                 str(r_data.get("client_signed", 0)), str(r_data.get("client_sent", 0)),
+                 str(r_data.get("client_reply", 0)), str(r_data.get("server_reply", 0))]))
 
             # ["id", "req", "resp"]
+            val = self._value_separator.join([str(r_id), r_data.get("req", ""), str(r_data.get("resp", ""))])
             if status == "succ":
-                print(r_id, r_data.get("req", ""), r_data.get("resp", ""), file=self._succ_f, sep=self._value_separator)
+                suc.append(val)
             elif status in ["nack", "reject"]:
-                print(r_id, r_data.get("req", ""), r_data.get("resp", ""), file=self._nacked_f, sep=self._value_separator)
+                nack.append(val)
             else:
-                print(r_id, r_data.get("req", ""), r_data.get("resp", ""), file=self._failed_f, sep=self._value_separator)
+                fails.append(val)
+
+        if tot:
+            self._total_f.write("\n".join(tot + [""]))
+        if suc:
+            self._succ_f.write("\n".join(suc + [""]))
+        if nack:
+            self._nacked_f.write("\n".join(nack + [""]))
+        if fails:
+            self._failed_f.write("\n".join(fails + [""]))
 
     def sig_handler(self, sig):
         for prc, cln in self._clients.items():
             try:
-                if not cln.is_finished():
-                    cln.conn.send(False)
+                if not cln.is_finished() and cln.conn:
+                    cln.conn.send(ClientStop())
                 if sig == signal.SIGTERM:
                     prc.cancel()
             except Exception as e:
-                print("Sent stop to client {} error {}".format(cln.name, e))
+                print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
+
+    def _tick_all(self):
+        self._loop.call_later(self._batch_rate, self._tick_all)
+        for cln in self._clients.values():
+            try:
+                if cln.status == ClientRunner.ClientRun and cln.conn:
+                    cln.conn.send(ClientSend(self._batch_size))
+            except Exception as e:
+                print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
+
+    def _tick_one(self, idx: int = 0):
+        i = idx % len(self._clients)
+        self._loop.call_later(self._batch_rate, self._tick_one, i + 1)
+        key = list(self._clients)[i]
+        cln = self._clients[key]
+        try:
+            if cln.status == ClientRunner.ClientRun and cln.conn:
+                cln.conn.send(ClientSend(self._batch_size))
+        except Exception as e:
+            print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
+
+    def start_clients(self):
+        to_start = [c for c in self._clients.values() if c.status == ClientRunner.ClientReady]
+        if self._start_sync and len(to_start) != len(self._clients):
+            return
+        for cln in to_start:
+            cln.run_client()
+
+        all_run = all([c.status == ClientRunner.ClientRun for c in self._clients.values()])
+        if all_run and self._sync_mode == 'all':
+            self._tick_all()
+        elif all_run and self._sync_mode == 'one':
+            self._tick_one(0)
+
+        self.schedule_stop()
+
+    def request_stat(self):
+        for cln in self._clients.values():
+            cln.req_stats()
 
     def read_client_cb(self, prc):
         try:
             r_data = self._clients[prc].conn.recv()
             if isinstance(r_data, dict):
                 self._clients[prc].refresh_stat(r_data)
-                self.process_reqs(r_data)
-
-                print(self.get_refresh_str(), end="\r")
+                self.process_reqs(r_data, self._clients[prc].name)
+            elif isinstance(r_data, ClientReady):
+                self._clients[prc].status = ClientRunner.ClientReady
+                self.start_clients()
+            elif isinstance(r_data, ClientMsg):
+                print("{} : {}".format(self._clients[prc].name, r_data.msg), file=self._out_file)
             else:
-                print("Recv garbage {} from {}".format(r_data, self._clients[prc].name))
+                print("Recv garbage {} from {}".format(r_data, self._clients[prc].name), file=self._out_file)
         except Exception as e:
-            print("{} read_client_cb error {}".format(self._clients[prc].name, e))
-            self._clients[prc].conn = None
+            print("{} read_client_cb error {}".format(self._clients[prc].name, e), file=self._out_file)
+            # self._clients[prc].conn = None
 
     def client_done(self, client):
         try:
             last_stat = client.result()
             self._clients[client].refresh_stat(last_stat)
-            self.process_reqs(last_stat)
+            self.process_reqs(last_stat, self._clients[client].name)
         except Exception as e:
-            print("Client Error", e)
+            print("Client Error", e, file=self._out_file)
 
         self._clients[client].stop_client()
         self._loop.remove_reader(self._clients[client].conn)
@@ -1308,7 +1571,6 @@ class TestRunner:
 
     def get_refresh_str(self):
         clients = 0
-        total_server_time = 0
         total_sent = 0
         total_succ = 0
         total_failed = 0
@@ -1316,19 +1578,19 @@ class TestRunner:
         total_reject = 0
 
         for cln in self._clients.values():
-            if not cln.is_finished():
+            if cln.status == ClientRunner.ClientRun:
                 clients += 1
             total_sent += cln.total_sent
             total_succ += cln.total_succ
             total_failed += cln.total_failed
             total_nack += cln.total_nack
             total_reject += cln.total_reject
-            total_server_time = max(total_server_time, cln.total_server_time)
-        print_str = "Server Time: {} Sent: {} Succ: {} Failed: {} Nacked: {} Rejected: {} Clients Alive {}".format(
-            total_server_time, total_sent, total_succ, total_failed, total_nack, total_reject, clients)
+        print_str = "Time {:.2f} Clients {}/{} Sent: {} Succ: {} Failed: {} Nacked: {} Rejected: {}".format(
+            time.perf_counter() - self._start_counter, clients, len(self._clients),
+            total_sent, total_succ, total_failed, total_nack, total_reject)
         return print_str
 
-    def prepare_fs(self, out_dir, test_dir_name):
+    def prepare_fs(self, out_dir, test_dir_name, out_file):
         self._out_dir = os.path.join(out_dir, test_dir_name)
         if not os.path.exists(self._out_dir):
             os.makedirs(self._out_dir)
@@ -1348,9 +1610,14 @@ class TestRunner:
         print("id", "req", "resp", file=self._failed_f, sep=self._value_separator)
         print("id", "req", "resp", file=self._nacked_f, sep=self._value_separator)
         print("id", "req", "resp", file=self._succ_f, sep=self._value_separator)
-        print("label", "id", "status", "client_preparing", "client_prepared",
+        print("client", "label", "id", "status", "client_preparing", "client_prepared",
               "client_signed", "client_sent", "client_reply", "server_reply",
               file=self._total_f, sep=self._value_separator)
+
+        ret_out = sys.stdout
+        if out_file:
+            ret_out = open(os.path.join(self._out_dir, out_file), "w")
+        return ret_out
 
     def close_fs(self):
         assert self._failed_f
@@ -1361,26 +1628,50 @@ class TestRunner:
         self._total_f.close()
         self._succ_f.close()
         self._nacked_f.close()
+        if self._out_file != sys.stdout:
+            self._out_file.close()
+
+    def screen_stat(self):
+        ends = "\n" if self._out_file != sys.stdout else "\r"
+        print(self.get_refresh_str(), end=ends, file=self._out_file)
+        self.request_stat()
+        self._total_f.flush()
+        self._failed_f.flush()
+        self._succ_f.flush()
+        self._nacked_f.flush()
+        if self._out_file != sys.stdout:
+            self._out_file.flush()
+        self._loop.call_later(self._refresh_rate, self.screen_stat)
+
+    def schedule_stop(self):
+        if self._stop_sec > 0:
+            self._loop.call_later(self._stop_sec, self.sig_handler, signal.SIGINT)
 
     def test_run(self, args):
         proc_count = args.clients if args.clients > 0 else multiprocessing.cpu_count()
-        refresh = args.refresh_rate if args.refresh_rate > 0 else 100
-        bg_tasks = args.bg_tasks if args.bg_tasks > 1 else 300
+        self._refresh_rate = args.refresh_rate if args.refresh_rate > 0 else 10
+        buff_req = args.buff_req if args.buff_req >= 0 else 30
         start_date = datetime.now()
         value_separator = args.val_sep if args.val_sep != "" else "|"
-        print("Number of client         ", proc_count)
-        print("Path to genesis txns file", args.genesis_path)
-        print("Seed                     ", args.seed)
-        print("Batch size               ", args.batch_size)
-        print("Timeout between batches  ", args.batch_timeout)
-        print("Request kind             ", args.req_kind)
-        print("Refresh rate, txns       ", refresh)
-        print("Background tasks         ", bg_tasks)
-        print("Output directory         ", args.out_dir)
-        print("Value Separator          ", value_separator)
-        print("Wallet Key               ", args.wallet_key)
-        print("Started At               ", start_date)
-        print("Mode                     ", "processes" if args.mode == 'p' else "threads")
+        self._batch_size = args.batch_size if args.batch_size > 0 else 10
+        self._stop_sec = args.load_time if args.load_time > 0 else 0
+
+        self._out_file = self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")),
+                                         args.out_file)
+
+        print("Number of client         ", proc_count, file=self._out_file)
+        print("Path to genesis txns file", args.genesis_path, file=self._out_file)
+        print("Seed                     ", args.seed, file=self._out_file)
+        print("Batch size               ", self._batch_size, file=self._out_file)
+        print("Request kind             ", args.req_kind, file=self._out_file)
+        print("Refresh rate, sec        ", self._refresh_rate, file=self._out_file)
+        print("Pregenerated reqs cnt    ", buff_req, file=self._out_file)
+        print("Output directory         ", args.out_dir, file=self._out_file)
+        print("Value Separator          ", value_separator, file=self._out_file)
+        print("Wallet Key               ", args.wallet_key, file=self._out_file)
+        print("Started At               ", start_date, file=self._out_file)
+        print("Mode                     ", "processes" if args.mode == 'p' else "threads", file=self._out_file)
+        print("Sync mode                ", args.sync_mode, file=self._out_file)
 
         pool_config = None
         if args.pool_config:
@@ -1389,11 +1680,25 @@ class TestRunner:
             except Exception as ex:
                 raise RuntimeError("pool_config param is ill-formed JSON: {}".format(ex))
 
-        print("Pool config              ", pool_config)
+        print("Pool config              ", pool_config, file=self._out_file)
+
+        load_rate = args.load_rate if args.load_rate > 0 else 10
+        self._batch_rate = 1 / load_rate
+        print("Load rate batches per sec", load_rate, file=self._out_file)
 
         self._value_separator = value_separator
 
-        self.prepare_fs(args.out_dir, "load_test_{}".format(start_date.strftime("%Y%m%d_%H%M%S")))
+        self._sync_mode = args.sync_mode
+        self._start_sync = args.sync_mode in ['all', 'one']
+        load_client_mode = LoadClient.SendTime
+        if self._sync_mode in ['all', 'one']:
+            load_client_mode = LoadClient.SendSync
+        elif self._sync_mode == 'wait_resp':
+            load_client_mode = LoadClient.SendResp
+            self._batch_size = 1
+            buff_req = 0
+
+        print("load_client_mode", load_client_mode, file=self._out_file)
 
         self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
         self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
@@ -1405,22 +1710,25 @@ class TestRunner:
         for i in range(0, proc_count):
             rd, wr = multiprocessing.Pipe()
             prc_name = "LoadClient_{}".format(i)
-            prc = executor.submit(run_client, prc_name, args.genesis_path, wr, args.seed, args.batch_size,
-                                  args.batch_timeout, args.req_kind, bg_tasks, refresh, args.wallet_key, pool_config)
+            prc = executor.submit(run_client, prc_name, args.genesis_path, wr, args.seed, self._batch_size,
+                                  self._batch_rate, args.req_kind, buff_req, args.wallet_key, pool_config,
+                                  load_client_mode)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
-            self._clients[prc] = ClientRunner(prc_name, rd)
+            self._clients[prc] = ClientRunner(prc_name, rd, self._out_file)
 
-        print("Started", proc_count, "clients")
+        print("Created", proc_count, "clients", file=self._out_file)
+
+        self.screen_stat()
 
         self._loop.run_forever()
 
         self._loop.remove_signal_handler(signal.SIGTERM)
         self._loop.remove_signal_handler(signal.SIGINT)
 
-        print("")
-        print("DONE At", datetime.now())
-        print(self.get_refresh_str())
+        print("", file=self._out_file)
+        print("DONE At", datetime.now(), file=self._out_file)
+        print(self.get_refresh_str(), file=self._out_file)
         self.close_fs()
 
 
