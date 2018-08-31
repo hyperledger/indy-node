@@ -7,7 +7,7 @@ ARG venv=venv
 
 RUN apt-get update -y && apt-get install -y \
     python3-nacl \
-    libindy-crypto=0.4.1~46 \
+    libindy-crypto=0.4.3 \
     libindy=1.6.1~683 \
 # rocksdb python wrapper
     libbz2-dev \

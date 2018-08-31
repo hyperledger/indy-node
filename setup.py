@@ -56,7 +56,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum==1.6.50',
+    install_requires=['indy-plenum==1.6.51',
                       'indy-anoncreds==1.0.11',
                       'python-dateutil',
                       'timeout-decorator==0.4.0'],
@@ -99,6 +99,7 @@ setup(
              'scripts/setup_indy_node_iptables',
              'scripts/current_validators',
              'scripts/node_address_list',
+             'scripts/generate_bls_proof_of_possession',
              'tools/diagnostics/nscapture',
              'tools/diagnostics/nsdiff',
              'tools/diagnostics/nsreplay',

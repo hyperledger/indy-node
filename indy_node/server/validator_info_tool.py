@@ -15,13 +15,14 @@ class ValidatorNodeInfoTool(PlenumValidatorNodeInfoTool):
                 info['Node_info']['Metrics']['transaction-count'].update(
                     config=self.__config_ledger_size
                 )
+        return info
+
+    @property
+    @none_on_fail
+    def software_info(self):
+        info = super().software_info
         if 'Software' in info:
-            info['Software'].update(
-                {
-                    'indy-node': self.__node_pkg_version,
-                    'sovrin': self.__sovrin_pkg_version,
-                }
-            )
+            info['Software'].update({'indy-node': self.__node_pkg_version})
         return info
 
     @property
@@ -33,8 +34,3 @@ class ValidatorNodeInfoTool(PlenumValidatorNodeInfoTool):
     @none_on_fail
     def __node_pkg_version(self):
         return node_pgk_version
-
-    @property
-    @none_on_fail
-    def __sovrin_pkg_version(self):
-        return importlib.import_module('sovrin').__version__
