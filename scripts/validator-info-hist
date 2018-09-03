@@ -618,7 +618,8 @@ def compile_json_ouput(file_paths):
     for file_path in file_paths:
         json_data = read_json_data(file_path)
         if json_data:
-            output_data.update(json_data)
+            for json_obj in json_data:
+                output_data.update(json_obj)
     return output_data
 
 
@@ -642,18 +643,6 @@ def get_info_paths(node_names, basedir):
 
 
 def parse_args():
-    def check_unsigned(s):
-        res = None
-        try:
-            res = int(s)
-        except ValueError:
-            pass
-        if res is None or res <= 0:
-            raise argparse.ArgumentTypeError(("{!r} is incorrect, "
-                                              "should be int > 0").format(s,))
-        else:
-            return res
-
     config_helper = ConfigHelper(config)
 
     parser = argparse.ArgumentParser(
@@ -758,12 +747,6 @@ def main():
         print("No storages found")
         return -1
 
-    if args.json:
-        out_json = compile_json_ouput(info_paths)
-        if out_json:
-            print(json.dumps(out_json))
-            return 0
-
     for info_path in info_paths:
         json_data = read_json_data(info_path, args.num, args.from_start, args.frm, args.to)
         if json_data:
@@ -771,13 +754,14 @@ def main():
             print(json_data[0]['Node_info']['Name'])
             print("====================================================")
             for json_obj in json_data:
-                if args.verbose:
-                        print("{}".format(os.linesep).join(create_print_tree(json_obj, lines=[])))
+                if args.json:
+                    stats = json.dumps(json_obj)
+                elif args.verbose:
+                    stats = "{}".format(os.linesep).join(create_print_tree(json_obj, lines=[]))
                 else:
-                    print(get_validator_stats(json_obj, args.verbose, args.json))
+                    stats = get_validator_stats(json_obj, args.verbose, args.json)
+                print(stats)
                 print('----------------------------------------------------')
-    if args.verbose:
-        pass
 
     logger.info("Done")
 
