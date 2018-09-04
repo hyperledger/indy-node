@@ -665,28 +665,40 @@ def parse_args():
 
     parser.add_argument(
         "--names", metavar="Node1,Node2",
+        default=None,
         help=("Comma-separated list of nodes to print records for.")
     )
 
     parser.add_argument(
         "--frm", metavar="TIMESTAMP", type=int,
         default=None,
-        help=("Print records from timestamp (-n and -s ignored)")
+        help=("Print records from timestamp (ignores -n and -s)")
     )
 
     parser.add_argument(
         "--to", metavar="TIMESTAMP", type=int,
         default=None,
-        help=("Print records to timestamp (-n and -s ignored)")
+        help=("Print records to timestamp (ignores -n and -s)")
     )
 
-    parser.add_argument(
-        "-v", "--verbose", action="store_true",
-        help="Verbose mode (command line)"
+    output_group = parser.add_argument_group(
+        "output", "specify output formatting"
     )
-    parser.add_argument(
+
+    output_group.add_argument(
+        "--fields", metavar="Path.To.Field1,Path.To.Fie.ld2",
+        default=None,
+        help=("Comma-separated list of JSON nodes to print (ignores -v and --json, case-sensitive).")
+    )
+
+    output_group.add_argument(
         "--json", action="store_true",
         help="Format output as JSON (ignores -v)"
+    )
+
+    output_group.add_argument(
+        "-v", "--verbose", action="store_true",
+        help="Verbose mode (command line)"
     )
 
     db_group = parser.add_argument_group(
@@ -747,6 +759,10 @@ def main():
         print("No storages found")
         return -1
 
+    fields_paths = None
+    if args.fields:
+        fields_paths = args.fields.split(",")
+
     for info_path in info_paths:
         json_data = read_json_data(info_path, args.num, args.from_start, args.frm, args.to)
         if json_data:
@@ -754,7 +770,17 @@ def main():
             print(json_data[0]['Node_info']['Name'])
             print("====================================================")
             for json_obj in json_data:
-                if args.json:
+                if fields_paths:
+                    stats = ""
+                    for fields_path in fields_paths:
+                        path = fields_path.split(".")
+                        _obj = json_obj
+                        for node in path:
+                            _obj = _obj[node]
+                        if stats != "":
+                            stats += "\n"
+                        stats += "{}: {}".format(fields_path, _obj)
+                elif args.json:
                     stats = json.dumps(json_obj)
                 elif args.verbose:
                     stats = "{}".format(os.linesep).join(create_print_tree(json_obj, lines=[]))
