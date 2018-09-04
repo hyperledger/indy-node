@@ -1,0 +1,24 @@
+---
+scenario:
+  name: cleanup
+
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+
+platforms:
+  - name: instance
+
+driver:
+  name: delegated
+
+lint:
+  name: yamllint
+  options:
+    config-file: ../common/.yamllint
+
+verifier:
+  name: testinfra
+  lint:
+    name: flake8
