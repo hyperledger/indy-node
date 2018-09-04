@@ -1,0 +1,6 @@
+---
+- name: Install pool
+  gather_facts: false
+  hosts: nodes
+  roles:
+    - role: pool_install

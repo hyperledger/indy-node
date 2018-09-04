@@ -1,0 +1,17 @@
+---
+- name: Check if python is installed
+  raw: test -e /usr/bin/python
+  register: test_python
+  failed_when: false
+  changed_when: false
+
+- name: Install python for Ansible
+  raw: apt -y update && apt install -y python-minimal
+  when: test_python.rc != 0
+  become: true
+
+- name: Add sovrin key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 3B75B82CF342D9FB
+  become: true

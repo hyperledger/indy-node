@@ -1,0 +1,24 @@
+---
+- name: Add sovrin repositories
+  apt_repository:
+    repo: "deb https://repo.sovrin.org/deb xenial {{ channel }}"
+    state: present
+  become: true
+
+- name: Install indy node
+  apt:
+    name: "{{ item }}"
+    update_cache: true
+    force: true
+  become: true
+  with_items:
+    - "indy-node={{ indy_node_ver }}"
+    - "indy-plenum={{ indy_plenum_ver }}"
+    - "libindy-crypto={{ libindy_crypto_ver }}"
+    - "python3-indy-crypto={{ python_indy_crypto_ver }}"
+
+- name: Enable node service
+  service:
+    name: indy-node
+    enabled: true
+  become: true

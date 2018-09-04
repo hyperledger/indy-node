@@ -1,0 +1,10 @@
+[{{ group_name }}]
+{% for item in ec2.results %}
+{% set inst = item.tagged_instances[0] %}
+{% set tags = inst.tags %}
+{{ tag_namespace }}_{{ tag_role }}_{{ tags.id }} tag_id={{ tags.id }} ansible_host={{ inst.public_ip }}
+{% endfor %}
+
+[{{ group_name }}:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file={% raw %}{{ inventory_dir }}/key{% endraw %}
