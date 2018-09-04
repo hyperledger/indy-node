@@ -776,7 +776,11 @@ def main():
                         path = fields_path.split(".")
                         _obj = json_obj
                         for node in path:
-                            _obj = _obj[node]
+                            try:
+                                _obj = _obj[node]
+                            except KeyError:
+                                print("Incorrect fields path '{}': there is no such key '{}'".format(fields_path, node))
+                                return -1
                         if stats != "":
                             stats += "\n"
                         stats += "{}: {}".format(fields_path, _obj)
