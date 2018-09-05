@@ -21,9 +21,7 @@ args = parser.parse_args()
 
 
 def create_output_directory(folder_path):
-    output_folder = ""
-    for folder in folder_path:
-        output_folder = os.path.join(output_folder, folder)
+    output_folder = os.path.join(folder_path[0], *folder_path[1:])
     try:
         output_folder = os.path.expanduser(output_folder)
     except OSError:
@@ -96,7 +94,7 @@ def collect_delays(function_parameters, time_interval, spike_delay=0):
 
 
 def collect_processes(config):
-    root_log_folder_name = "Stress_log_{}".format(time.strftime("%m-%d-%y_%H-%M-%S"))
+    root_log_folder_name = "Spike_log_{}".format(time.strftime("%m-%d-%y_%H-%M-%S"))
     processes = list(config["processes"].keys())
     functions = {}
     for process_name in processes:
