@@ -84,7 +84,6 @@ def collect_delays(function_parameters, time_interval, spike_delay=0):
                 args_copy.append("--load_rate={}".format(step_initial_load))
             delay.append(spike_delay + time_interval - load_time)
             args_to_send.append(args_copy)
-            step_number += 1
     else:
         delay.append(spike_delay)
         args_copy.append("--load_time={}".format(time_interval))
@@ -123,7 +122,7 @@ def start_profile():
     args_list = []
     background_plot = []
     processes_dict = collect_processes(config)
-    if "background" in list(processes_dict.keys()):
+    if "background" in processes_dict.keys():
         delays_args_list = collect_delays(processes_dict["background"], overall_time_in_seconds)
         delays_list.extend(delays_args_list[0])
         args_list.extend(delays_args_list[1])
@@ -131,12 +130,13 @@ def start_profile():
 
     spike_plots_list = []
     time_count = 0
-    spikes_list = filter(lambda i: "background" not in i, list(processes_dict.keys()))
     spike_number = 0
-    for spike in spikes_list:
+    for spike, spike_args in processes_dict.items():
+        if spike == "background":
+            continue
         while time_count < overall_time_in_seconds:
             spike_delay = (spike_time + rest_time) * spike_number
-            delays_args_list = (collect_delays(processes_dict[spike], spike_time, spike_delay))
+            delays_args_list = (collect_delays(spike_args, spike_time, spike_delay))
             delays_list.extend(delays_args_list[0])
             args_list.extend(delays_args_list[1])
             spike_plots_list.append(prepare_plot_values(delays_args_list))
@@ -172,8 +172,8 @@ def add_plot(ax, args_dict, color):
     step_count = 1
     time_ax = []
     load_rate = []
-    for delay in args_dict.keys():
-        step_load_rate = args_dict[delay]
+    for delay, args_for_plot in args_dict.items():
+        step_load_rate = args_for_plot
         time_ax.append(delay)
         if step_count != 1:
             load_rate.append(load_rate[0] + step_load_rate * (step_count - 1))
