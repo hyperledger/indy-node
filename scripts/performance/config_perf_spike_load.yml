@@ -1,29 +1,42 @@
 # perf_spike_load.py arguments
-perf_spike:
-    read_mode: permanent #permanent = background reading operation with writing spikes, spike = reading and writing spikes with 0 load in between 
-    spike_time_in_seconds: 180
-    rest_time_in_seconds: 180
-    overall_time_in_seconds: 3600 # 1h = 3600 sec, 24h = 86400
-# perf_processes.py will be called with arguments provided below  during perf_spike_load.py execution. You may move arguments between common and _txns sections:
-# e.g. if you want to define different clients number for reading and writing transactions, just copy "clients" to read_ and write_txns sections and provide values. 
-# The script takes the most specific arguments (for transactions rather than common) in case of a duplication.
+profile:
+  spike_time_in_seconds: 60
+  rest_time_in_seconds: 20
+  overall_time_in_seconds: 600 # 1h = 3600 sec, 24h = 86400
+
+# perf_processes.py will be called with arguments provided below  during perf_spike_load.py execution. You may move arguments between common and processes sections:
+# e.g. if you want to define different clients number for reading and writing transactions, just copy "clients" to any of processes sections and provide values. 
+# The script takes the most specific arguments (for processes rather than common) in case of a duplication.
 common: 
-    clients: 1
-    seed: 000000000000000000000000Trustee1
-    num: 1
-    refresh: 100
-    buff_req: 100
-    sep: "|"
-    wallet_key: key
-    mode: t
-    pool_config: ""
-    sync_mode: all
-    out: ""
-    genesis: ~/pool_transactions_genesis
-    directory: . 
-read_txns:
+  clients: 1
+  seed: 000000000000000000000000Trustee1
+  num: 1
+  refresh: 60
+  buff_req: 300
+  sep: "|"
+  wallet_key: key
+  mode: p
+  pool_config: ""
+  sync_mode: all
+  out: "load_script_output.txt"
+  genesis: /home/me/Documents/genesis
+  directory: ~/Documents/
+
+processes:
+  background:                               # set all step_* parameters values to 0 if background load is not needed
     kind: get_nym
-    load_rate: 5
-write_txns:
+    step_time_in_seconds: 10                # for stepwise testing, 0 means stable load without growing
+    step_initial_load_rate: 0               # initial load rate per spike (and stable load rate if not stepwise)
+    step_final_load_rate: 100               # additional load rate per step
+
+  spikes:                                   # set all step_* parameters values to 0 if background load is not needed
     kind: nym
-    load_rate: 2
+    step_time_in_seconds: 0                 # for stepwise testing, 0 means stable load without growing
+    step_initial_load_rate: 30              # initial load rate per spike (and stable load rate if not stepwise)
+    step_final_load_rate: 90                # final load rate per spike
+
+  spike2:                                   # remove additional spikes if not needed
+    kind: nym
+    step_time_in_seconds: 0                # for stepwise testing, 0 means stable load without growing
+    step_initial_load_rate: 10              # initial load rate per spike (and stable load rate if not stepwise)
+    step_final_load_rate: 20                # final load rate per spike
