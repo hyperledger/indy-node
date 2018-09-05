@@ -49,13 +49,11 @@ def get_args(config, process_type, directory_arg):
 
 
 def order_processes(delays, args_for_script):
-    processed_delays = []
+    assert len(delays) == len(args_for_script), 'Can not order the processes as a list of delays length is not equal ' \
+                                                'to a list of arguments length.'
+    unique_delays = set(delays)
     processes_dictionary = {}
-    for delay in delays:
-        if delay in processed_delays:
-            continue
-        else:
-            processed_delays.append(delay)
+    for delay in unique_delays:
         delays_indices = [i for i, e in enumerate(delays) if e == delay]
         args_list = []
         for index in delays_indices:

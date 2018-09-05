@@ -18,7 +18,7 @@ common:
   mode: p
   pool_config: ""
   sync_mode: all
-  out: ""
+  out: "load_script_output.txt"
   genesis: /home/me/Documents/genesis
   directory: ~/Documents/
 
@@ -31,12 +31,12 @@ processes:
 
   spikes:                                   # set all step_* parameters values to 0 if background load is not needed
     kind: nym
-    step_time_in_seconds: 5                 # for stepwise testing, 0 means stable load without growing
+    step_time_in_seconds: 0                 # for stepwise testing, 0 means stable load without growing
     step_initial_load_rate: 30              # initial load rate per spike (and stable load rate if not stepwise)
     step_final_load_rate: 90                # final load rate per spike
 
   spike2:                                   # remove additional spikes if not needed
     kind: nym
-    step_time_in_seconds: 20                # for stepwise testing, 0 means stable load without growing
+    step_time_in_seconds: 0                # for stepwise testing, 0 means stable load without growing
     step_initial_load_rate: 10              # initial load rate per spike (and stable load rate if not stepwise)
     step_final_load_rate: 20                # final load rate per spike
