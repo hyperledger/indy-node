@@ -64,16 +64,6 @@ class FloatUnknown(BaseUnknown):
         return "{:.2f}".format(self.val)
 
 
-class TimestampUnknown(BaseUnknown):
-    def _str(self):
-        return "{} ({})".format(
-            datetime.datetime.fromtimestamp(self.val).strftime(
-                "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
-                    '#' if os.name == 'nt' else '-')),
-            self.val
-        )
-
-
 class UptimeUnknown(BaseUnknown):
     def _str(self):
         days, remainder = divmod(self.val, 86400)
@@ -335,7 +325,7 @@ class SoftwareStats(BaseStats):
 class ValidatorStats(BaseStats):
     shema = [
         ("response-version", BaseUnknown),
-        ("timestamp", TimestampUnknown),
+        ("timestamp", BaseUnknown),
         ("Node_info", NodeStats),
         ("state", StateUnknown),
         ("enabled", BaseUnknown),
@@ -450,7 +440,7 @@ class ValidatorStats(BaseStats):
         # will drop visibility of output
         lines = [
             "Validator {} is {}".format(self['Node_info']['Name'], self['state']),
-            "Current time:     {}".format(self['timestamp']),
+            "Timestamp:        {}".format(self['timestamp']),
             "Validator DID:    {}".format(self['Node_info']['did']),
             "Verification Key: {}".format(self['Node_info']['verkey']),
             "Node Port:        {}".format(self['Node_info']['Node_port']),
@@ -494,6 +484,10 @@ class ValidatorStats(BaseStats):
             [l[(1 if l[0] == '#' else 0):]
                 for l in lines if self._verbose or l[0] != '#'])
         )
+
+
+def str_from_timestamp(ts):
+    return datetime.datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def get_validator_stats(stats, verbose, _json):
@@ -575,6 +569,13 @@ def read_json_data(info_path, num: int = 1, from_start = False, _from: int = Non
 
     if _from != None:
         it.seek_for_prev(db.to_byte_repr(_from))
+        # Handle the case when 'from' timestamp is ahead from the first record
+        try:
+            # Try to make a step forward and back
+            _ = next(it)
+            _ = next(reversed(it))
+        except StopIteration:
+            it.seek_to_first()
     elif _to != None or from_start:
         it.seek_to_first()
     else:
@@ -591,11 +592,12 @@ def read_json_data(info_path, num: int = 1, from_start = False, _from: int = Non
             print("DB '{}' contains invalid records".format(info_path))
             return None
 
-        obj['timestamp'] = int(ts)
+        ts = int(ts)
+        obj['timestamp'] = "{} ({})".format(str_from_timestamp(ts), ts)
 
         if _from != None or _to != None:
-            if _from == None or _from <= obj['timestamp']:
-                if _to == None or obj['timestamp'] <= _to:
+            if _from == None or _from <= ts:
+                if _to == None or ts <= _to:
                     json_data.append(obj)
                 else:
                     break
@@ -642,6 +644,30 @@ def get_info_paths(node_names, basedir):
     return info_paths
 
 
+def check_unsigned(s):
+    res = None
+    try:
+        res = int(s)
+    except ValueError:
+        pass
+    if res is None or res < 0:
+        raise argparse.ArgumentTypeError(("{!r} is incorrect, "
+                                          "should be int >= 0").format(s,))
+    else:
+        return res
+
+def check_N_arg(s):
+    res = None
+    try:
+        res = int(s)
+    except ValueError:
+        pass
+    if res is None or (res <= 0 and res != -1):
+        raise argparse.ArgumentTypeError(("{!r} is incorrect, "
+                                          "should be int > 0 or -1").format(s,))
+    else:
+        return res
+
 def parse_args():
     config_helper = ConfigHelper(config)
 
@@ -653,7 +679,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-n", "--num", metavar="NUM", type=int,
+        "-n", "--num", metavar="NUM", type=check_N_arg,
         default=1,
         help=("Number of records to print (from the end by default), -1 means all records")
     )
@@ -670,13 +696,13 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--frm", metavar="TIMESTAMP", type=int,
+        "--frm", metavar="TIMESTAMP", type=check_unsigned,
         default=None,
         help=("Print records from timestamp (ignores -n and -s)")
     )
 
     parser.add_argument(
-        "--to", metavar="TIMESTAMP", type=int,
+        "--to", metavar="TIMESTAMP", type=check_unsigned,
         default=None,
         help=("Print records to timestamp (ignores -n and -s)")
     )
@@ -727,8 +753,8 @@ def parse_args():
 
 
 def check_args(args):
-    if args.num <= 0 and args.num != -1:
-        print("Number of records to print must be greater than 0 or equal to -1")
+    if args.frm != None and args.to != None and args.frm > args.to:
+        print("'From' timestamp can not be greater that 'to' timestamp")
         return False
 
     return True
