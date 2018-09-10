@@ -54,9 +54,10 @@ def spikes(test_config, spike_fn):
     total_test_time = test_config["profile"]["total_time_in_seconds"]
     spike_time = test_config["profile"]["spike_time_in_seconds"]
     interval = 0
-    if spike_fn == "run_stepwise_process":
+    spike_mode = test_config["processes"]["spike"]["mode"]
+    if spike_mode == "stepwise":
         interval = test_config["profile"]["rest_time_in_seconds"]
-    elif spike_fn == "run_stable_process":
+    elif spike_mode == "stable":
         interval = test_config["profile"]["rest_time_in_seconds"] + spike_time
     if total_test_time == 0:
         while True:
