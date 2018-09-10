@@ -13,7 +13,7 @@ parser.add_argument('--file', required=False, default="./spike_log.csv",
 
 def get_spike_length(values):
     first_spike_start = values[0][3]
-    for i in range(0, len(values)):
+    for i in range(1, len(values)):
         if values[i][3] == first_spike_start:
             return i
     return len(values)
