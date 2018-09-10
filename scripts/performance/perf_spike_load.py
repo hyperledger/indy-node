@@ -80,7 +80,7 @@ def run_stepwise_process(process_name, test_config, process_time, interval=0):
         start_load_script(script_args, initial_rate, process_time)
         logging.info(",{},{},{}".format(process_name, initial_rate, process_time))
         process_time_count -= step_time
-        step_count += 1
+        step_count = 1
         time.sleep(step_time)
     else:
         process_time_count = process_time
