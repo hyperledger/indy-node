@@ -21,8 +21,7 @@ def create_output_directory(folder_path):
         raise ValueError("Bad output log folder pathname!")
     if not os.path.isdir(output_folder):
         os.makedirs(output_folder)
-    directory = "--directory={}".format(output_folder)
-    return directory
+    return output_folder
 
 
 def get_args(test_config, process_name):
@@ -32,7 +31,7 @@ def get_args(test_config, process_name):
     for dict_key, dict_value in common_args.items():
         if dict_key == "directory":
             directory = create_output_directory([test_config["common"]["directory"], "Spike_log", process_name])
-            args_for_script.append(directory)
+            args_for_script.append("--directory={}".format(directory))
         elif "step" in dict_key or "mode" in dict_key:
             continue
         else:
@@ -73,7 +72,7 @@ def run_stepwise_process(process_name, test_config, process_time, interval=0):
     step_count = 0
     if initial_rate != 0:
         start_load_script(script_args, initial_rate, process_time)
-        logging.info("{},{},{},{}".format(process_name, initial_rate, process_time, step_time))
+        logging.info(",{},{},{}".format(process_name, initial_rate, process_time))
         process_time_count -= step_time
         step_count += 1
         time.sleep(step_time)
@@ -83,7 +82,7 @@ def run_stepwise_process(process_name, test_config, process_time, interval=0):
     while process_time_count > 0:
         start_load_script(script_args, step_value, process_time_count)
         sleep = min(step_time, process_time - step_time * step_count)
-        logging.info("{},{},{},{}".format(process_name, step_value, process_time_count, sleep))
+        logging.info(",{},{},{}".format(process_name, step_value, process_time_count))
         process_time_count -= step_time
         time.sleep(sleep)
         step_count += 1
@@ -94,7 +93,7 @@ def run_stable_process(process_name, config, process_time, interval=0):
     initial_rate = config["processes"][process_name]["step_initial_load_rate"]
     script_args = get_args(config, process_name)
     start_load_script(script_args, initial_rate, process_time)
-    logging.info("{},{},{},{}".format(process_name, initial_rate, process_time, interval))
+    logging.info(",{},{},{}".format(process_name, initial_rate, process_time))
     time.sleep(interval)
 
 
@@ -102,7 +101,8 @@ def start_profile():
 
     with open("config_perf_spike_load.yml") as file:
         test_config = yaml.load(file)
-    logging_file_path = os.path.join(test_config["common"]["directory"], "Spike_log", args.log_file)
+    logging_folder = create_output_directory([test_config["common"]["directory"], "Spike_log"])
+    logging_file_path = os.path.join(logging_folder, args.log_file)
     logging.basicConfig(filename=logging_file_path, level=logging.INFO,
                         format='%(asctime)s%(message)s', datefmt='%m-%d-%y %H:%M:%S')
     background_mode = test_config["processes"]["background"]["mode"]

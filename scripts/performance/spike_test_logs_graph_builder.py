@@ -45,7 +45,7 @@ def build_graph():
     for row in input_values.values:
         process_name = row[1]
         length = row[3]
-        time_start = datetime.datetime.strptime(row[0], '%m-%d-%Y %H:%M:%S')
+        time_start = datetime.datetime.strptime(row[0], '%m-%d-%y %H:%M:%S')
         time_end = time_start + datetime.timedelta(seconds=length)
         load_rate = row[2]
         if process_name == "background":
@@ -54,6 +54,7 @@ def build_graph():
             spike_values.append([time_start, time_end, load_rate, length])
     add_graph(background_values, 'blue')
     add_graph(spike_values, 'green')
+    plt.xticks(rotation=15)
     plt.show()
 
 
