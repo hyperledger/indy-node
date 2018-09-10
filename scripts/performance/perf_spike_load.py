@@ -110,6 +110,7 @@ def start_profile():
     logging_file_path = os.path.join(logging_folder, args.log_file)
     logging.basicConfig(filename=logging_file_path, filemode='w', level=logging.INFO,
                         format='%(asctime)s%(message)s', datefmt='%m-%d-%y %H:%M:%S')
+    logging.Formatter.converter = time.gmtime
     background_mode = test_config["processes"]["background"]["mode"]
     spike_mode = test_config["processes"]["spike"]["mode"]
     if background_mode == "stepwise":
