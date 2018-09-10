@@ -13,10 +13,9 @@ parser.add_argument('--file', required=False, default="./spike_log.csv",
 
 def get_spike_length(values):
     first_spike_start = values[0][3]
-    for i in range(1, len(values)):
+    for i in range(0, len(values)):
         if values[i][3] == first_spike_start:
             return i
-        i += 1
     return len(values)
 
 
@@ -56,8 +55,10 @@ def build_graph():
             background_values.append([time_start, time_end, load_rate, length])
         elif process_name == "spike":
             spike_values.append([time_start, time_end, load_rate, length])
-    add_graph(background_values, 'blue')
-    add_graph(spike_values, 'green')
+    if len(background_values) != 0:
+        add_graph(background_values, 'blue')
+    if len(spike_values) != 0:
+        add_graph(spike_values, 'green')
     plt.xticks(rotation=15)
     plt.show()
 
