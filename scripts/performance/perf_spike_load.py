@@ -47,7 +47,11 @@ def start_load_script(args_for_script, rate, load_time):
 
 def background(test_config, background_fn):
     total_test_time = test_config["profile"]["total_time_in_seconds"]
+    background_mode = test_config["processes"]["background"]["mode"]
     background_fn("background", test_config, total_test_time)
+    if total_test_time == 0 and background_mode == "stepwise":
+        while True:
+            background_fn("background", test_config, total_test_time)
 
 
 def spikes(test_config, spike_fn):
@@ -73,25 +77,30 @@ def run_stepwise_process(process_name, test_config, process_time, interval=0):
     initial_rate = test_config["processes"][process_name]["step_initial_load_rate"]
     step_value = test_config["processes"][process_name]["step_value"]
     step_time = test_config["processes"][process_name]["step_time_in_seconds"]
-    process_time_count = process_time
     script_args = get_args(test_config, process_name)
-    step_count = 0
-    if initial_rate != 0:
-        start_load_script(script_args, initial_rate, process_time)
-        logging.info(",{},{},{}".format(process_name, initial_rate, process_time))
-        process_time_count -= step_time
-        step_count = 1
-        time.sleep(step_time)
-    else:
+    if process_time != 0:
         process_time_count = process_time
-    while process_time_count > 0:
-        start_load_script(script_args, step_value, process_time_count)
-        sleep = min(step_time, process_time - step_time * step_count)
-        logging.info(",{},{},{}".format(process_name, step_value, process_time_count))
-        process_time_count -= step_time
-        time.sleep(sleep)
-        step_count += 1
-    time.sleep(interval)
+        step_count = 0
+        if initial_rate != 0:
+            start_load_script(script_args, initial_rate, process_time)
+            logging.info(",{},{},{}".format(process_name, initial_rate, process_time))
+            process_time_count -= step_time
+            step_count = 1
+            time.sleep(step_time)
+        else:
+            process_time_count = process_time
+        while process_time_count > 0:
+            start_load_script(script_args, step_value, process_time_count)
+            sleep = min(step_time, process_time - step_time * step_count)
+            logging.info(",{},{},{}".format(process_name, step_value, process_time_count))
+            process_time_count -= step_time
+            time.sleep(sleep)
+            step_count += 1
+        time.sleep(interval)
+    else:
+        start_load_script(script_args, step_value, process_time)
+        logging.info(",{},{},{}".format(process_name, step_value, process_time))
+        time.sleep(step_time)
 
 
 def run_stable_process(process_name, config, process_time, interval=0):
