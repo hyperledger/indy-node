@@ -103,7 +103,7 @@ def start_profile():
         test_config = yaml.load(file)
     logging_folder = create_output_directory([test_config["common"]["directory"], "Spike_log"])
     logging_file_path = os.path.join(logging_folder, args.log_file)
-    logging.basicConfig(filename=logging_file_path, level=logging.INFO,
+    logging.basicConfig(filename=logging_file_path, filemode='w', level=logging.INFO,
                         format='%(asctime)s%(message)s', datefmt='%m-%d-%y %H:%M:%S')
     background_mode = test_config["processes"]["background"]["mode"]
     spike_mode = test_config["processes"]["spike"]["mode"]
