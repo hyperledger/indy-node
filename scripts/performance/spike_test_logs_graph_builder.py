@@ -25,16 +25,20 @@ def add_graph(values, color):
     time_ax = []
     load_ax = []
     spike_length = get_spike_length(values)
+    initial_rate = values[0][2]
     for i in range(0, len(values)):
         if i % spike_length == 0:
             load_coefficient = 0
-        time_ax.extend([values[i][0], values[i][0]])
-        load_ax.append(values[i][2] * load_coefficient)
-        load_coefficient += 1
-        load_ax.append(values[i][2] * load_coefficient)
+            time_ax.extend([values[i][0], values[i][0]])
+            load_ax.extend([0, initial_rate])
+        else:
+            time_ax.extend([values[i][0], values[i][0]])
+            load_ax.append(initial_rate + values[i][2] * load_coefficient)
+            load_coefficient += 1
+            load_ax.append(initial_rate + values[i][2] * load_coefficient)
         if (i + 1) % spike_length == 0:
             time_ax.extend([values[i][1], values[i][1]])
-            load_ax.extend([values[i][2] * load_coefficient, 0])
+            load_ax.extend([initial_rate + values[i][2] * load_coefficient, 0])
     plt.fill_between(time_ax, load_ax, facecolor=color, alpha=0.4)
 
 

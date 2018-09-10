@@ -53,6 +53,7 @@ def background(test_config, background_fn):
 def spikes(test_config, spike_fn):
     total_test_time = test_config["profile"]["total_time_in_seconds"]
     spike_time = test_config["profile"]["spike_time_in_seconds"]
+    rest_time = test_config["profile"]["rest_time_in_seconds"]
     interval = 0
     spike_mode = test_config["processes"]["spike"]["mode"]
     if spike_mode == "stepwise":
@@ -65,7 +66,7 @@ def spikes(test_config, spike_fn):
     else:
         while total_test_time > 0:
             spike_fn("spike", test_config, spike_time, interval)
-            total_test_time -= (interval + spike_time)
+            total_test_time -= (spike_time + rest_time)
 
 
 def run_stepwise_process(process_name, test_config, process_time, interval=0):
@@ -81,7 +82,6 @@ def run_stepwise_process(process_name, test_config, process_time, interval=0):
         process_time_count -= step_time
         step_count += 1
         time.sleep(step_time)
-
     else:
         process_time_count = process_time
     while process_time_count > 0:
@@ -103,7 +103,6 @@ def run_stable_process(process_name, config, process_time, interval=0):
 
 
 def start_profile():
-
     with open("config_perf_spike_load.yml") as file:
         test_config = yaml.load(file)
     logging_folder = create_output_directory([test_config["common"]["directory"], "Spike_log"])
@@ -113,18 +112,24 @@ def start_profile():
     logging.Formatter.converter = time.gmtime
     background_mode = test_config["processes"]["background"]["mode"]
     spike_mode = test_config["processes"]["spike"]["mode"]
+    thread1 = None
+    thread2 = None
     if background_mode == "stepwise":
-        thread = threading.Thread(target=background, args=(test_config, run_stepwise_process))
-        thread.start()
+        thread1 = threading.Thread(target=background, args=(test_config, run_stepwise_process))
+        thread1.start()
     elif background_mode == "stable":
-        thread = threading.Thread(target=background, args=(test_config, run_stable_process))
-        thread.start()
+        thread1 = threading.Thread(target=background, args=(test_config, run_stable_process))
+        thread1.start()
     if spike_mode == "stepwise":
-        thread = threading.Thread(target=spikes, args=(test_config, run_stepwise_process))
-        thread.start()
+        thread2 = threading.Thread(target=spikes, args=(test_config, run_stepwise_process))
+        thread2.start()
     elif spike_mode == "stable":
-        thread = threading.Thread(target=spikes, args=(test_config, run_stable_process))
-        thread.start()
+        thread2 = threading.Thread(target=spikes, args=(test_config, run_stable_process))
+        thread2.start()
+    if thread1:
+        thread1.join()
+    if thread2:
+        thread2.join()
 
 
 if __name__ == '__main__':
