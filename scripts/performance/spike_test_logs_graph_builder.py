@@ -32,7 +32,7 @@ def add_graph(values, color):
         load_ax.append(values[i][2] * load_coefficient)
         load_coefficient += 1
         load_ax.append(values[i][2] * load_coefficient)
-        if (i + 1) % spike_length == 0 and i != 0:
+        if (i + 1) % spike_length == 0:
             time_ax.extend([values[i][1], values[i][1]])
             load_ax.extend([values[i][2] * load_coefficient, 0])
     plt.fill_between(time_ax, load_ax, facecolor=color, alpha=0.4)
