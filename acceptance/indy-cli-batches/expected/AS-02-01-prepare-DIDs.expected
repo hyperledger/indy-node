@@ -1,0 +1,117 @@
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+[1;31mPool config "AS-pool" already exists[0m
+
+pool connect AS-pool
+[1;32mPool "AS-pool" has been connected[0m
+
+- wallet create AS-02-wallet key=testkey storage_config={"pool":"AS-pool"}
+[1;31mWallet "AS-02-wallet" already exists[0m
+
+wallet open AS-02-wallet key=testkey
+[1;32mWallet "AS-02-wallet" has been opened[0m
+
+did new seed=StewardNode500000000000000000000 metadata="node5 steward"
+[1;32mDid "XhYtvJqezMUKfF6KVNaGmT" has been created with "~RmCt3RtDvKDfQBSKxo4qvy" verkey[0m
+[1;32mMetadata has been saved for DID "XhYtvJqezMUKfF6KVNaGmT"[0m
+
+did new seed=StewardNode600000000000000000000 metadata="node6 steward"
+[1;32mDid "FBQ5W7LxRp8bLeVNEafjpd" has been created with "~2a4KepmnVVAPGo5gNA3P3p" verkey[0m
+[1;32mMetadata has been saved for DID "FBQ5W7LxRp8bLeVNEafjpd"[0m
+
+did new seed=TestAddNodeWithTrustAnchor000000 metadata="trust anchor"
+[1;32mDid "Rhx2qwaeiGyhU9vn4ynHSS" has been created with "~RTJS62PRHurqHJnbnT1Hgi" verkey[0m
+[1;32mMetadata has been saved for DID "Rhx2qwaeiGyhU9vn4ynHSS"[0m
+
+did new seed=TestAddNodeWithIdentityOwner0000 metadata="identity owner"
+[1;32mDid "5qhSKMkpqui6taGLTecwqf" has been created with "~UWK9xwiKsqMQSBmymYpR5v" verkey[0m
+[1;32mMetadata has been saved for DID "5qhSKMkpqui6taGLTecwqf"[0m
+
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey[0m
+[1;32mMetadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"[0m
+
+did new seed=TrusteeTest080000000000000000000 metadata="custom trustee"
+[1;32mDid "WnynyXyqjNFXeGELaR81Gh" has been created with "~XKXdGyymBGos1Hz2JPCEkM" verkey[0m
+[1;32mMetadata has been saved for DID "WnynyXyqjNFXeGELaR81Gh"[0m
+
+did use V4SGRU86Z58d6TV7PBUe6f
+[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been set as active[0m
+
+ledger nym did=XhYtvJqezMUKfF6KVNaGmT role=STEWARD verkey=~RmCt3RtDvKDfQBSKxo4qvy 
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527783431507539137 | 2018-05-31 16:17:11 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| XhYtvJqezMUKfF6KVNaGmT | ~RmCt3RtDvKDfQBSKxo4qvy | STEWARD |
++------------------------+-------------------------+---------+
+
+ledger nym did=FBQ5W7LxRp8bLeVNEafjpd role=STEWARD verkey=~2a4KepmnVVAPGo5gNA3P3p 
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527783431763862559 | 2018-05-31 16:17:11 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| FBQ5W7LxRp8bLeVNEafjpd | ~2a4KepmnVVAPGo5gNA3P3p | STEWARD |
++------------------------+-------------------------+---------+
+
+ledger nym did=Rhx2qwaeiGyhU9vn4ynHSS role=TRUST_ANCHOR verkey=~RTJS62PRHurqHJnbnT1Hgi 
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527783432009906066 | 2018-05-31 16:17:12 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| Rhx2qwaeiGyhU9vn4ynHSS | ~RTJS62PRHurqHJnbnT1Hgi | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+ledger nym did=5qhSKMkpqui6taGLTecwqf verkey=~UWK9xwiKsqMQSBmymYpR5v
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527783432265453030 | 2018-05-31 16:17:12 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| 5qhSKMkpqui6taGLTecwqf | ~UWK9xwiKsqMQSBmymYpR5v | -    |
++------------------------+-------------------------+------+
+
+ledger nym did=WnynyXyqjNFXeGELaR81Gh role=TRUSTEE verkey=~XKXdGyymBGos1Hz2JPCEkM
+[1;32mNym request has been sent to Ledger.[0m
+[1;32mMetadata:[0m
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527783432528814452 | 2018-05-31 16:17:12 |
++---------------------+---------------------+
+[1;32mData:[0m
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| WnynyXyqjNFXeGELaR81Gh | ~XKXdGyymBGos1Hz2JPCEkM | TRUSTEE |
++------------------------+-------------------------+---------+
+
+[1;32mPool "AS-pool" has been connected[0m
+[1;32mWallet "AS-02-wallet" has been closed[0m
+[1;32mGoodbye...[0m

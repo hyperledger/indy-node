@@ -40,7 +40,7 @@ sendGetNymCmd = Command(
 sendAttribCmd = Command(
     id="send {attrib}".format(attrib=attribName),
     title="Adds attributes to existing DID",
-    usage="send {attrib} dest=<target DID> [raw={{<json-data>}}] [hash=<hashed-data>] [enc: <encrypted-data>]".format(
+    usage="send {attrib} dest=<target DID> [raw={{<json-data>}}] [hash=<hashed-data>] [enc=<encrypted-data>]".format(
         attrib=attribName),
     examples='send {attrib} dest=33A18XMqWqTzDpLHXLR5nT raw={{"endpoint": "127.0.0.1:5555"}}'.format(attrib=attribName))
 
@@ -48,7 +48,7 @@ sendGetAttrCmd = Command(
     id="send {getAttr}".format(
         getAttr=getAttrName),
     title="Get ATTR from indy",
-    usage="send {getAttr} dest=<target DID> raw=<name>".format(
+    usage="send {getAttr} dest=<target DID> [raw=<name>] [hash=<hashed-data>] [enc=<encrypted-data>]".format(
         getAttr=getAttrName),
     examples="send {getAttr} dest=33A18XMqWqTzDpLHXLR5nT raw=endpoint".format(
         getAttr=getAttrName))
@@ -67,7 +67,7 @@ sendNodeCmd = Command(
 sendPoolUpgCmd = Command(
     id="send {poolUpgrade}".format(poolUpgrade=poolUpgradeName),
     title="Sends instructions to nodes to update themselves",
-    usage="send {poolUpgrade} name=<name> version=<version> sha256=<sha256> action=<action> schedule=<schedule> timeout=<timeout> force=<force> reinstall=<reinstall>".format(
+    usage="send {poolUpgrade} name=<name> version=<version> sha256=<sha256> action=<action> schedule=<schedule> timeout=<timeout> force=<force> reinstall=<reinstall> package=<pkg-name>".format(
         poolUpgrade=poolUpgradeName),
     examples="send {poolUpgrade} name=upgrade-01 "
              "version=0.0.1 sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 action=start "
@@ -80,8 +80,9 @@ sendPoolUpgCmd = Command(
              "'DG5M4zFm33Shrhjj6JB7nmx9BoNJUq219UXDfvwBDPe2': "
              "'2017-01-25T12:38:57.258870+00:00'}} "
              "timeout=10 "
-             "force=False"
-             "reinstall=False".format(poolUpgrade=poolUpgradeName))
+             "force=False "
+             "reinstall=False "
+             "package=indy-node".format(poolUpgrade=poolUpgradeName))
 
 sendSchemaCmd = Command(
     id="send {schema}".format(

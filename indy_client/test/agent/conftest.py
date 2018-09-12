@@ -2,11 +2,9 @@ from indy_client.test import waits
 
 from plenum.common.signer_did import DidSigner
 
-from indy_client.agent.endpoint import REndpoint
 from indy_client.test.agent.test_walleted_agent import TestWalletedAgent
 from indy_common.strict_types import strict_types
 from stp_core.network.port_dispenser import genHa
-
 
 strict_types.defaultShouldCheck = True
 
@@ -41,8 +39,7 @@ from indy_node.test.helper import addAttributeAndCheck
 from indy_client.test.helper import createNym, TestClient
 
 # noinspection PyUnresolvedReferences
-from indy_node.test.conftest import nodeSet, updatedDomainTxnFile, \
-    genesisTxns
+from indy_node.test.conftest import nodeSet, genesisTxns
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import poolTxnStewardData, poolTxnStewardNames
@@ -60,6 +57,7 @@ def walletBuilder():
         wallet = Wallet(name)
         wallet.addIdentifier(signer=DidSigner())
         return wallet
+
     return _
 
 
@@ -100,6 +98,7 @@ def agentBuilder(tdirWithClientPoolTxns):
                               port=port)
 
         return agent
+
     return _
 
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # it should be fixed
+ENABLE_STDOUT_LOGGING="enableStdOutLogging"
 GENERAL_CONFIG_DIR="/etc/indy"
 GENERAL_DATA_DIR="/var/lib/indy"
 GENERAL_LOG_DIR="/var/log/indy"
@@ -10,6 +11,12 @@ CLI_NETWORKS_DIR="$CLI_BASE_DIR/networks"
 CLI_WALLETS_DIR="$CLI_BASE_DIR/wallets"
 
 INSTALL_DIR='/usr/local/lib/python3.5/dist-packages'
+
+NOFILES_SOFT_LIMIT=65536
+NOFILES_HARD_LIMIT=131072
+
+CLIENT_CONNECTIONS_LIMIT=10000
+
 
 # workaround when .indy become regular file
 if [ -f $CLI_BASE_DIR ]; then
@@ -26,6 +33,10 @@ mkdir -p $GENERAL_LOG_DIR
 # create indy node config if does not exist
 if [ ! -f $GENERAL_CONFIG_DIR/indy_config.py ]; then
     cp $INSTALL_DIR/indy_node/general_config/indy_config.py $GENERAL_CONFIG_DIR
+else
+    if [ -z "$(grep $ENABLE_STDOUT_LOGGING $GENERAL_CONFIG_DIR/indy_config.py)" ]; then
+        printf "\n%s\n%s\n" "# Disable stdout logging" "$ENABLE_STDOUT_LOGGING = False" >> $GENERAL_CONFIG_DIR/indy_config.py
+    fi
 fi
 
 chmod -R ug+rwx $GENERAL_CONFIG_DIR
@@ -44,11 +55,13 @@ chmod -R ug+rwx $CLI_BASE_DIR
 cat <<EOF > /usr/local/bin/init_indy_node
 #!/bin/bash
 
-if [ \$# -lt 3 ]; then
+if [ \$# -lt 5 ]; then
     echo ""
-    echo "Usage: \$0 name port client_port [seed]";
+    echo "Usage: \$0 name ip port client_ip client_port [seed]";
     echo "  name        - node name";
+    echo "  ip          - node IP";
     echo "  port        - node port";
+    echo "  client_ip   - node client IP";
     echo "  client_port - node client port";
     echo "  seed        - node seed";
     echo ""
@@ -56,13 +69,16 @@ if [ \$# -lt 3 ]; then
 fi
 
 echo "NODE_NAME=\$1" > $GENERAL_CONFIG_DIR/indy.env
-echo "NODE_PORT=\$2" >> $GENERAL_CONFIG_DIR/indy.env
-echo "NODE_CLIENT_PORT=\$3" >> $GENERAL_CONFIG_DIR/indy.env
+echo "NODE_IP=\$2" >> $GENERAL_CONFIG_DIR/indy.env
+echo "NODE_PORT=\$3" >> $GENERAL_CONFIG_DIR/indy.env
+echo "NODE_CLIENT_IP=\$4" >> $GENERAL_CONFIG_DIR/indy.env
+echo "NODE_CLIENT_PORT=\$5" >> $GENERAL_CONFIG_DIR/indy.env
+echo "CLIENT_CONNECTIONS_LIMIT=$CLIENT_CONNECTIONS_LIMIT" >> $GENERAL_CONFIG_DIR/indy.env
 
-if [ -z \$4 ]; then
+if [ -z \$6 ]; then
     init_indy_keys --name \$1
 else
-    init_indy_keys --name \$1 --seed \$4
+    init_indy_keys --name \$1 --seed \$6
 fi
 EOF
 
@@ -76,7 +92,7 @@ Requires=indy-node-control.service
 
 [Service]
 EnvironmentFile=$GENERAL_CONFIG_DIR/indy.env
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_indy_node \${NODE_NAME} \${NODE_PORT} \${NODE_CLIENT_PORT}
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_indy_node \${NODE_NAME} \${NODE_IP} \${NODE_PORT} \${NODE_CLIENT_IP} \${NODE_CLIENT_PORT}
 User=indy
 Group=indy
 Restart=on-failure
@@ -84,6 +100,7 @@ RestartSec=10
 StartLimitBurst=10
 StartLimitInterval=200
 TimeoutSec=300
+LimitNOFILE=$NOFILES_SOFT_LIMIT:$NOFILES_HARD_LIMIT
 
 [Install]
 WantedBy=multi-user.target
@@ -100,7 +117,7 @@ After=network.target
 [Service]
 Type=simple
 EnvironmentFile=$GENERAL_CONFIG_DIR/node_control.conf
-ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \$HOLD_EXT
+ExecStart=/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \$TEST_MODE --hold-ext \${HOLD_EXT}
 Restart=on-failure
 RestartSec=10
 StartLimitBurst=10
@@ -111,6 +128,49 @@ TimeoutSec=300
 WantedBy=multi-user.target
 EOF
 
+# add supervisord script
+cat <<EOF > /etc/supervisor/indy-node.conf
+[supervisord]
+nodaemon=true
+logfile=/var/log/indy/supervisord.log
+logfile_maxbytes=10MB
+loglevel=critical
+
+[supervisorctl]
+serverurl=http://127.0.0.1:9001
+
+[inet_http_server]
+port = 127.0.0.1:9001
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[program:indy-node]
+command=sh -ac '. $GENERAL_CONFIG_DIR/indy.env;/usr/bin/env python3 -O /usr/local/bin/start_indy_node \${NODE_NAME} \${NODE_IP} \${NODE_PORT} \${NODE_CLIENT_IP} \${NODE_CLIENT_PORT}'
+user=indy
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+autorestart=true
+startsecs=15
+startretries=6
+stopasgroup=true
+killasgroup=true
+
+[program:indy-node-control]
+command=sh -ac '. $GENERAL_CONFIG_DIR/node_control.conf;/usr/bin/env python3 -O /usr/local/bin/start_node_control_tool \${TEST_MODE} --hold-ext "\${HOLD_EXT}"'
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+autorestart=true
+startsecs=15
+startretries=6
+stopasgroup=true
+killasgroup=true
+EOF
+
 HOLD_EXT_ADDED=$(grep HOLD_EXT /etc/indy/node_control.conf)
 if [ ! -f $GENERAL_CONFIG_DIR/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ]; then
     cat <<EOF > $GENERAL_CONFIG_DIR/node_control.conf
@@ -118,9 +178,10 @@ if [ ! -f $GENERAL_CONFIG_DIR/node_control.conf ] || [ -z "${HOLD_EXT_ADDED}" ];
 #TEST_MODE=--test
 
 TEST_MODE=
-HOLD_EXT=\"\"
+HOLD_EXT=
 EOF
 fi
+sed -ie '/HOLD_EXT/{ s/\\//g}' $GENERAL_CONFIG_DIR/node_control.conf
 
 mv /usr/local/bin/upgrade_indy_node_ubuntu1604.sh /usr/local/bin/upgrade_indy_node
 mv /usr/local/bin/upgrade_indy_node_ubuntu1604_test.sh /usr/local/bin/upgrade_indy_node_test

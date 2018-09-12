@@ -21,7 +21,7 @@ CLIENT_GRAMS_USE_KEYPAIR_FORMATTED_REG_EX = getPipedRegEx(
 TXN_NYM = "(\s* (?P<{{cmdName}}>{{cmd}}\s+{nym}) " \
           "\s+ (?P<dest>dest=) \s* (?P<dest_id>[A-Za-z0-9+=/]*)" \
           "(\s+ (?P<role_key>role=) \s* (?P<role>{trustee}|{tgb}|{trustAnchor}|{steward}|))?" \
-          "(\s+ (?P<ver_key>verkey=) \s* (?P<new_ver_key>[~A-Za-z0-9+=/]+))?)".format(nym=IndyTransactions.NYM.name,
+          "(\s+ (?P<ver_key>verkey=) \s* (?P<new_ver_key>[~A-Za-z0-9+=/]*))?)".format(nym=IndyTransactions.NYM.name,
                                                                                       trustee=Roles.TRUSTEE.name,
                                                                                       tgb=Roles.TGB.name,
                                                                                       trustAnchor=Roles.TRUST_ANCHOR.name,
@@ -44,13 +44,13 @@ GET_NYM_REG_EX = "(\s* (?P<send_get_nym>send\s+{getNym}) " \
 GET_ATTR_REG_EX = \
     "(\s* (?P<send_get_attr>send\s+{attrib}) " \
     "\s+ dest=\s*(?P<dest_id>[A-Za-z0-9+=/]+) " \
-    "\s+ raw=(?P<raw>[A-Za-z0-9+=/]+) \s*) ".format(
+    "\s+ ((raw=(?P<raw>[A-Za-z0-9+=/]+))|(hash=(?P<hash>[A-Fa-f0-9]+))|(enc=(?P<enc>[A-Za-z0-9+=/]+)) \s*) \s*) ".format(
         attrib=IndyTransactions.GET_ATTR.name)
 
 ADD_ATTRIB_REG_EX = \
     "(\s* (?P<send_attrib>send\s+{attrib}) " \
     "\s+ dest=\s*(?P<dest_id>[A-Za-z0-9+=/]+) " \
-    "\s+ raw=(?P<raw>\{{\s*.*\}}) \s*) ".format(
+    "\s+ ((raw=(?P<raw>\{{\s*.*\}}))|(hash=(?P<hash>[A-Fa-f0-9]+))|(enc=(?P<enc>[A-Za-z0-9+=/]+))) \s*) ".format(
         attrib=IndyTransactions.ATTRIB.name)
 
 SEND_SCHEMA_REG_EX = "(\s*(?P<send_schema>send\s+{schema})" \
@@ -159,7 +159,8 @@ SEND_POOL_UPG_REG_EX = "(\s*(?P<send_pool_upg>send\s+{poolUpgrade})" \
                        "(\s+ (?P<schedule_key>schedule=)\s*(?P<schedule>\{{\s*.*\}}) \s*)? " \
                        "(\s+ (?P<timeout_key>timeout=)\s*(?P<timeout>[0-9+]+))?)" \
                        "(\s+ (?P<force_key>force=)\s*(?P<force>True|False))?" \
-                       "(\s+ (?P<reinstall_key>reinstall=)\s*(?P<reinstall>True|False))?".format(
+                       "(\s+ (?P<reinstall_key>reinstall=)\s*(?P<reinstall>True|False))?" \
+                       "(\s+ (?P<package_key>package=)\s*(?P<package>.+))?".format(
                            poolUpgrade=IndyTransactions.POOL_UPGRADE.name)
 
 

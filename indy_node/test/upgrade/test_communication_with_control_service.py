@@ -1,5 +1,6 @@
 import asyncio
 import time
+
 from indy_node.server.upgrader import Upgrader, UpgradeMessage
 from stp_core.loop.eventually import eventuallySoon
 
@@ -71,11 +72,10 @@ def testScheduleNodeUpgrade(tconf, nodeSet):
                         dataDir=node.dataLocation,
                         config=tconf,
                         ledger=None)
-    upgrader._callUpgradeAgent(
-        time.time(), "1.2", failTimeout=1000, upgrade_id=None)
+    upgrader._callUpgradeAgent(time.time(), "1.2", 1000, None, tconf.UPGRADE_ENTRY)
 
     result = loop.run_until_complete(eventuallySoon(_checkFuture(indicator)))
-    expectedResult = UpgradeMessage(version)
+    expectedResult = UpgradeMessage(version, tconf.UPGRADE_ENTRY)
     assert result == expectedResult.toJson()
 
 

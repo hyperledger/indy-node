@@ -5,6 +5,7 @@ from collections import deque
 from plenum.common.constants import TYPE, NODE, NYM
 from plenum.common.member.steward import Steward
 from plenum.common.test_network_setup import TestNetworkSetup
+from plenum.common.txn_util import get_type
 from plenum.common.util import adict, randomString
 from indy_client.agent.walleted_agent import WalletedAgent
 from indy_client.client.client import Client
@@ -39,12 +40,14 @@ def create_local_pool(node_base_dir, cli_base_dir, config=None, node_size=4):
                          ha=('127.0.0.1', 9700 + (i * 2)),
                          cliha=('127.0.0.1', 9700 + (i * 2) + 1))
 
-        n_verkey, n_bls_key = initialize_node_environment(name=n_config.name,
-                                                          node_config_helper=node_config_helper,
-                                                          override_keep=True,
-                                                          sigseed=randomSeed())
+        n_verkey, n_bls_key, n_bls_key_proof = \
+            initialize_node_environment(name=n_config.name,
+                                        node_config_helper=node_config_helper,
+                                        override_keep=True,
+                                        sigseed=randomSeed())
 
-        s.set_node(n_config, verkey=n_verkey, blskey=n_bls_key)
+        s.set_node(n_config, verkey=n_verkey, blskey=n_bls_key,
+                   blsley_proof=n_bls_key_proof)
 
         node_conf.append(n_config)
 
@@ -126,9 +129,9 @@ class LocalPool(Pool, Looper):
         pool_txns = deque()
         domain_txns = deque()
         for txn in self.genesis_txns:
-            if txn[TYPE] in [NODE]:
+            if get_type(txn) in [NODE]:
                 pool_txns.appendleft(txn)
-            elif txn[TYPE] in [NYM]:
+            elif get_type(txn) in [NYM]:
                 domain_txns.appendleft(txn)
             else:
                 raise NotImplementedError("txn type '{}' not supported")

@@ -1,0 +1,29 @@
+---
+- name: Ensure inventory dir exists
+  file:
+    path: "{{ inventory_dir }}"
+    state: directory
+
+- name: Create key-pair
+  expect:
+    command: "ssh-keygen -f {{ inventory_dir }}/key"
+    creates: "{{ inventory_dir }}/key"
+    responses:
+      passphrase: ""
+
+- name: Upload public key
+  ec2_key:
+    name: "{{ aws_keyname }}"
+    key_material: "{{ lookup('file', '{{ inventory_dir }}/key.pub') }}"
+
+- name: Create AWS security group
+  ec2_group:
+    name: "{{ aws_group }}"
+    region: "{{ aws_region }}"
+    description: "Security group for {{ tag_role }} in {{ tag_namespace }}"
+    rules:
+      - proto: all
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: all
+        cidr_ip: 0.0.0.0/0

@@ -19,7 +19,7 @@ from prompt_toolkit.layout.lexers import SimpleLexer
 from pygments.token import Token
 
 from anoncreds.protocol.exceptions import SchemaNotFoundError
-from anoncreds.protocol.globals import KEYS
+from anoncreds.protocol.globals import KEYS, ATTR_NAMES
 from anoncreds.protocol.types import Schema, ID, ProofRequest
 from indy_client.agent.constants import EVENT_NOTIFY_MSG, EVENT_POST_ACCEPT_INVITE, \
     EVENT_NOT_CONNECTED_TO_ANY_ENV
@@ -48,7 +48,7 @@ from indy_common.auth import Authoriser
 from indy_common.config_util import getConfig
 from indy_common.constants import TARGET_NYM, ROLE, TXN_TYPE, NYM, REF, \
     ACTION, SHA256, TIMEOUT, SCHEDULE, START, JUSTIFICATION, NULL, WRITES, \
-    REINSTALL, ATTR_NAMES
+    REINSTALL, SCHEMA_ATTR_NAMES, PACKAGE, APP_NAME
 from indy_common.exceptions import InvalidConnectionException, ConnectionAlreadyExists, \
     ConnectionNotFound, NotConnectedToNetwork
 from indy_common.identity import Identity
@@ -62,9 +62,11 @@ from plenum.cli.cli import Cli as PlenumCli
 from plenum.cli.constants import PROMPT_ENV_SEPARATOR, NO_ENV
 from plenum.cli.helper import getClientGrams
 from plenum.cli.phrase_word_completer import PhraseWordCompleter
-from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE
+from plenum.common.constants import NAME, VERSION, VERKEY, DATA, TXN_ID, FORCE, RAW
+from plenum.common.exceptions import OperationError
+from plenum.common.member.member import Member
 from plenum.common.signer_did import DidSigner
-from plenum.common.txn_util import createGenesisTxnFile
+from plenum.common.txn_util import createGenesisTxnFile, get_payload_data
 from plenum.common.util import randomString, getWalletFilePath
 from stp_core.crypto.signer import Signer
 from stp_core.crypto.util import cleanSeed
@@ -585,7 +587,8 @@ class IndyCli(PlenumCli):
                            Token.BoldOrange)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, getNymReply)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, getNymReply)
 
     def _addNym(self, nym, role, newVerKey=None,
                 otherClientName=None, custom_clb=None):
@@ -609,12 +612,12 @@ class IndyCli(PlenumCli):
             if error:
                 self.print("Error: {}".format(error), Token.BoldBlue)
             else:
-                self.print("Nym {} added".format(reply[TARGET_NYM]),
+                self.print("Nym {} added".format(get_payload_data(reply)[TARGET_NYM]),
                            Token.BoldBlue)
 
         self.looper.loop.call_later(.2,
                                     self._ensureReqCompleted,
-                                    req.key,
+                                    (req.identifier, req.reqId),
                                     self.activeClient,
                                     custom_clb or out)
         return True
@@ -644,10 +647,11 @@ class IndyCli(PlenumCli):
                 self.print("Error: {}".format(error), Token.BoldOrange)
             else:
                 self.print("Attribute added for nym {}".
-                           format(reply[TARGET_NYM]), Token.BoldBlue)
+                           format(get_payload_data(reply)[TARGET_NYM]), Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, out)
 
     def _getAttr(self, nym, raw, enc, hsh):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1
@@ -671,16 +675,21 @@ class IndyCli(PlenumCli):
 
         def getAttrReply(reply, err, *args):
             if reply and reply[DATA]:
-                data = json.loads(reply[DATA])
-                if data:
-                    self.print(
-                        "Found attribute {}"
-                        .format(json.dumps(data)))
+                data_to_print = None
+                if RAW in reply:
+                    data = json.loads(reply[DATA])
+                    if data:
+                        data_to_print = json.dumps(data)
+                else:
+                    data_to_print = reply[DATA]
+                if data_to_print:
+                    self.print("Found attribute {}".format(data_to_print))
             else:
                 self.print("Attr not found")
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, getAttrReply)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, getAttrReply)
 
     def _getSchema(self, nym, name, version):
         req = self.activeWallet.requestSchema(
@@ -690,7 +699,7 @@ class IndyCli(PlenumCli):
 
         def getSchema(reply, err, *args):
             try:
-                if reply and reply[DATA] and ATTR_NAMES in reply[DATA]:
+                if reply and reply[DATA] and SCHEMA_ATTR_NAMES in reply[DATA]:
                     self.print(
                         "Found schema {}"
                         .format(reply[DATA]))
@@ -700,7 +709,8 @@ class IndyCli(PlenumCli):
                 self.print('"data" must be in proper format', Token.Error)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, getSchema)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, getSchema)
 
     def _getClaimDef(self, seqNo, signature):
         req = self.activeWallet.requestClaimDef(
@@ -720,7 +730,8 @@ class IndyCli(PlenumCli):
                 self.print('"data" must be in proper format', Token.Error)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, getClaimDef)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, getClaimDef)
 
     def _sendNodeTxn(self, nym, data):
         node = Node(nym, data, self.activeDID)
@@ -738,11 +749,12 @@ class IndyCli(PlenumCli):
             else:
                 self.print(
                     "Node request completed {}".format(
-                        reply[TARGET_NYM]),
+                        get_payload_data(reply)[TARGET_NYM]),
                     Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, out)
 
     def _sendPoolUpgTxn(
             self,
@@ -754,7 +766,8 @@ class IndyCli(PlenumCli):
             justification=None,
             timeout=None,
             force=False,
-            reinstall=False):
+            reinstall=False,
+            pkg_name=APP_NAME):
         upgrade = Upgrade(
             name,
             version,
@@ -765,7 +778,8 @@ class IndyCli(PlenumCli):
             timeout=timeout,
             justification=justification,
             force=force,
-            reinstall=reinstall)
+            reinstall=reinstall,
+            package=pkg_name)
         self.activeWallet.doPoolUpgrade(upgrade)
         reqs = self.activeWallet.preparePending()
         req = self.activeClient.submitReqs(*reqs)[0][0]
@@ -782,7 +796,8 @@ class IndyCli(PlenumCli):
                            Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, out)
 
     def _sendPoolConfigTxn(self, writes, force=False):
         poolConfig = PoolConfig(trustee=self.activeDID,
@@ -802,7 +817,8 @@ class IndyCli(PlenumCli):
                 self.print("Pool config successful", Token.BoldBlue)
 
         self.looper.loop.call_later(.2, self._ensureReqCompleted,
-                                    req.key, self.activeClient, out)
+                                    (req.identifier, req.reqId),
+                                    self.activeClient, out)
 
     @staticmethod
     def parseAttributeString(attrs):
@@ -842,12 +858,9 @@ class IndyCli(PlenumCli):
             if not self.canMakeIndyRequest:
                 return True
             nym = matchedVars.get('dest_id')
-            raw = matchedVars.get('raw') \
-                if matchedVars.get('raw') else None
-            enc = ast.literal_eval(matchedVars.get('enc')) \
-                if matchedVars.get('enc') else None
-            hsh = matchedVars.get('hash') \
-                if matchedVars.get('hash') else None
+            raw = matchedVars.get('raw', None)
+            enc = matchedVars.get('enc', None)
+            hsh = matchedVars.get('hash', None)
             self._addAttribToNym(nym, raw, enc, hsh)
             return True
 
@@ -858,12 +871,9 @@ class IndyCli(PlenumCli):
             if not self.canMakeIndyRequest:
                 return True
             nym = matchedVars.get('dest_id')
-            raw = matchedVars.get('raw') \
-                if matchedVars.get('raw') else None
-            enc = ast.literal_eval(matchedVars.get('enc')) \
-                if matchedVars.get('enc') else None
-            hsh = matchedVars.get('hash') \
-                if matchedVars.get('hash') else None
+            raw = matchedVars.get('raw', None)
+            enc = matchedVars.get('enc', None)
+            hsh = matchedVars.get('hash', None)
             self._getAttr(nym, raw, enc, hsh)
             return True
 
@@ -914,6 +924,7 @@ class IndyCli(PlenumCli):
             justification = matchedVars.get(JUSTIFICATION)
             force = matchedVars.get(FORCE, "False")
             reinstall = matchedVars.get(REINSTALL, "False")
+            package = matchedVars.get(PACKAGE, APP_NAME)
             force = force == "True"
             reinstall = reinstall == "True"
             if action == START:
@@ -936,7 +947,7 @@ class IndyCli(PlenumCli):
             self._sendPoolUpgTxn(name, version, action, sha256,
                                  schedule=schedule, timeout=timeout,
                                  justification=justification, force=force,
-                                 reinstall=reinstall)
+                                 reinstall=reinstall, pkg_name=package)
             return True
 
     def _sendPoolConfigAction(self, matchedVars):
@@ -960,10 +971,15 @@ class IndyCli(PlenumCli):
         if not self.canMakeIndyRequest:
             return True
 
-        schema = await self.agent.issuer.genSchema(
-            name=matchedVars.get(NAME),
-            version=matchedVars.get(VERSION),
-            attrNames=[s.strip() for s in matchedVars.get(KEYS).split(",")])
+        try:
+            schema = await self.agent.issuer.genSchema(
+                name=matchedVars.get(NAME),
+                version=matchedVars.get(VERSION),
+                attrNames=[s.strip() for s in matchedVars.get(KEYS).split(",")])
+        except OperationError as ex:
+            self.print("Can not add SCHEMA {}".format(ex),
+                       Token.BoldOrange)
+            return False
 
         self.print("The following schema is published "
                    "to the Indy distributed ledger\n", Token.BoldBlue,
@@ -1480,7 +1496,7 @@ class IndyCli(PlenumCli):
                 self.activeWallet.updateSigner(cur_id, signer)
                 self._saveActiveWallet()
                 self.print("Key changed for {}".format(
-                    reply[TARGET_NYM]), Token.BoldBlue)
+                    get_payload_data(reply)[TARGET_NYM]), Token.BoldBlue)
                 self.print("New verification key is {}".format(
                     signer.verkey), Token.BoldBlue)
 
@@ -1978,13 +1994,11 @@ class IndyCli(PlenumCli):
         if matchedVars.get('add_genesis'):
             nym = matchedVars.get('dest_id')
             role = Identity.correctRole(self._getRole(matchedVars))
-            txn = {
-                TXN_TYPE: NYM,
-                TARGET_NYM: nym,
-                TXN_ID: sha256(randomString(6).encode()).hexdigest()
-            }
             if role:
-                txn[ROLE] = role.upper()
+                role = role.upper()
+            txn = Member.nym_txn(nym=nym,
+                                 role=role,
+                                 txn_id=sha256(randomString(6).encode()).hexdigest())
             # TODO: need to check if this needs to persist as well
             self.genesisTransactions.append(txn)
             self.print('Genesis transaction added.')

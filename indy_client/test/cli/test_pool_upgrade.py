@@ -18,7 +18,7 @@ def send_upgrade_cmd(do, expect, upgrade_data):
        expect=expect, mapper=upgrade_data)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def poolUpgradeSubmitted(be, do, trusteeCli, validUpgrade):
     be(trusteeCli)
     send_upgrade_cmd(do,
@@ -27,7 +27,7 @@ def poolUpgradeSubmitted(be, do, trusteeCli, validUpgrade):
                      validUpgrade)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def poolUpgradeScheduled(poolUpgradeSubmitted, poolNodesStarted, validUpgrade):
     nodes = poolNodesStarted.nodes.values()
     timeout = waits.expectedUpgradeScheduled()
@@ -36,15 +36,15 @@ def poolUpgradeScheduled(poolUpgradeSubmitted, poolNodesStarted, validUpgrade):
                    validUpgrade[VERSION], retryWait=1, timeout=timeout))
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def poolUpgradeCancelled(poolUpgradeScheduled, be, do, trusteeCli,
                          validUpgrade):
     cancelUpgrade = copy(validUpgrade)
     cancelUpgrade[ACTION] = CANCEL
     cancelUpgrade[JUSTIFICATION] = '"not gonna give you one"'
     be(trusteeCli)
-    do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} justification={justification}',
+    do('send POOL_UPGRADE name={name} version={version} sha256={sha256} action={action} '
+       'justification={justification} schedule={schedule} timeout={timeout} ',
        within=10,
        expect=['Sending pool upgrade', 'Pool Upgrade Transaction Scheduled'],
        mapper=cancelUpgrade)
@@ -100,16 +100,15 @@ def test_force_false_upgrade(
 
 def send_force_true_upgrade_cmd(do, expect, upgrade_data):
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} schedule={schedule} timeout={timeout} force=True',
-       within=10,
-       expect=expect, mapper=upgrade_data)
+       'action={action} schedule={schedule} timeout={timeout} force=True package={package}',
+       within=10, expect=expect, mapper=upgrade_data)
 
 
 def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
                        validUpgradeExpForceTrue):
     nodes = poolNodesStarted.nodes.values()
     for node in nodes:
-        if node.name in ["Delta", "Gamma"]:
+        if node.name in ["Delta", "Gamma"] and node in poolNodesStarted.looper.prodables:
             node.stop()
             poolNodesStarted.looper.removeProdable(node)
     be(trusteeCli)
@@ -119,8 +118,8 @@ def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
     def checksched():
         for node in nodes:
             if node.name not in ["Delta", "Gamma"]:
-                assert node.upgrader.scheduledUpgrade
-                assert node.upgrader.scheduledUpgrade[0] == validUpgradeExpForceTrue[VERSION]
+                assert node.upgrader.scheduledAction
+                assert node.upgrader.scheduledAction[0] == validUpgradeExpForceTrue[VERSION]
 
     poolNodesStarted.looper.run(eventually(
         checksched, retryWait=1, timeout=10))
@@ -128,13 +127,11 @@ def test_force_upgrade(be, do, trusteeCli, poolNodesStarted,
 
 def send_reinstall_true_upgrade_cmd(do, expect, upgrade_data):
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} schedule={schedule} timeout={timeout} reinstall=True',
-       within=10,
-       expect=expect, mapper=upgrade_data)
+       'action={action} schedule={schedule} timeout={timeout} reinstall=True package={package}',
+       within=10, expect=expect, mapper=upgrade_data)
 
 
 def send_reinstall_false_upgrade_cmd(do, expect, upgrade_data):
     do('send POOL_UPGRADE name={name} version={version} sha256={sha256} '
-       'action={action} schedule={schedule} timeout={timeout} reinstall=False',
-       within=10,
-       expect=expect, mapper=upgrade_data)
+       'action={action} schedule={schedule} timeout={timeout} reinstall=False package={package}',
+       within=10, expect=expect, mapper=upgrade_data)

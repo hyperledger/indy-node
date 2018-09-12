@@ -1,0 +1,61 @@
+---
+- name: Define valid ids
+  set_fact:
+    valid_ids: "{{ range(1, instance_count+1) | map('string') | list }}"
+    inventory_dir: "{{ tag_namespace }}_{{ group_name }}"
+
+- name: Pre-Up
+  include_tasks: "{{ role_path }}/tasks/pre_up.yml"
+  when: instance_count > 0
+
+- name: Gather information on all existing instances
+  ec2_instance_facts:
+    region: "{{ item }}"
+    filters:
+      "tag:namespace": "{{ tag_namespace }}"
+      "tag:role": "{{ tag_role }}"
+  register: ec2
+  with_items: "{{ aws_regions }}"
+
+- name: Destroy excess instances
+  ec2_instance:
+    region: "{{ item }}"
+    instance_ids: |
+      {% set tmp = ec2.results |
+         selectattr('item', 'eq', item) |
+         first %}
+      {{ tmp.instances |
+         rejectattr('state.name', 'eq', 'terminated') |
+         rejectattr('tags.id', 'in', valid_ids) |
+         map(attribute='instance_id') |
+         list }}
+    state: absent
+  with_items: "{{ aws_regions }}"
+
+- name: Ensure needed instances are running
+  ec2:
+    instance_type: "{{ aws_type }}"
+    image: "{{ aws_image }}"
+    key_name: "{{ aws_keyname }}"
+    group: "{{ aws_group }}"
+    exact_count: 1
+    instance_tags:
+      namespace: "{{ tag_namespace }}"
+      role: "{{ tag_role }}"
+      id: "{{ item }}"
+    count_tag:
+      namespace: "{{ tag_namespace }}"
+      role: "{{ tag_role }}"
+      id: "{{ item }}"
+    region: "{{ aws_region }}"
+    wait: true
+  with_items: "{{ valid_ids }}"
+  register: ec2
+
+- name: Post-Up
+  include_tasks: "{{ role_path }}/tasks/post_up.yml"
+  when: instance_count > 0
+
+- name: Post-Down
+  include_tasks: "{{ role_path }}/tasks/post_down.yml"
+  when: instance_count == 0

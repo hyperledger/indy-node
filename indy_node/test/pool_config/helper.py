@@ -1,29 +1,25 @@
-from stp_core.loop.eventually import eventually
-from plenum.test.helper import waitForSufficientRepliesForRequests
-from plenum.test import waits as plenumWaits
+from plenum.test.helper import sdk_sign_and_submit_req_obj, \
+    sdk_get_and_check_replies
 from indy_client.client.wallet.pool_config import PoolConfig as WPoolConfig
 
 
-def sendPoolConfig(client, wallet, poolConfigData):
-    poolCfg = WPoolConfig(trustee=wallet.defaultId, **poolConfigData)
-    wallet.doPoolConfig(poolCfg)
-    reqs = wallet.preparePending()
-    req = client.submitReqs(*reqs)[0][0]
-    return poolCfg, req
+def sdk_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee, pool_config_data):
+    _, did = sdk_wallet_trustee
+    pool_cfg = WPoolConfig(trustee=did, **pool_config_data)
+    req = pool_cfg.ledgerRequest()
+    req = sdk_sign_and_submit_req_obj(looper, sdk_pool_handle, sdk_wallet_trustee, req)
+    return pool_cfg, req
 
 
-def ensurePoolConfigSent(looper, trustee, trusteeWallet, sendPoolCfg):
-    poolCfg, req = sendPoolConfig(trustee, trusteeWallet, sendPoolCfg)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=[req])
-
-    def check():
-        assert trusteeWallet.getPoolConfig(poolCfg.key).seqNo
-
-    timeout = plenumWaits.expectedReqAckQuorumTime()
-    looper.run(eventually(check, retryWait=1, timeout=timeout))
-    return poolCfg
+def sdk_ensure_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee, pool_config_data):
+    _, did = sdk_wallet_trustee
+    pool_cfg = WPoolConfig(trustee=did, **pool_config_data)
+    req = pool_cfg.ledgerRequest()
+    req = sdk_sign_and_submit_req_obj(looper, sdk_pool_handle, sdk_wallet_trustee, req)
+    sdk_get_and_check_replies(looper, [req])
+    return pool_cfg
 
 
-def checkPoolConfigWritableSet(nodes, writable):
+def check_pool_config_writable_set(nodes, writable):
     for node in nodes:
         assert node.poolCfg.isWritable() == writable

@@ -1,0 +1,10 @@
+---
+- name: Create ssh config
+  template:
+    src: ssh_config.j2
+    dest: "{{ inventory_dir }}/ssh_config"
+
+- name: Create inventory
+  template:
+    src: hosts.j2
+    dest: "{{ inventory_dir }}/hosts"

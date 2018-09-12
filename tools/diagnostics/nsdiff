@@ -1,0 +1,932 @@
+#!/usr/bin/env python3
+
+# README:
+#
+# This script assumes:
+# --------------------
+#
+# 1. The entirety of a node's state is bundled as a zip or tar file using
+#    nscapture.
+# 2. The zip/tar file has the name <node_name>.zip or <node_name>.tar.gz where
+#    <node_name> is the name of the node.
+# 3. Both zip/tar files to be compared are on the filesystem where nsdiff is
+#    installed. In other words, nsdiff does not attempt to connect or collect
+#    state data from remote nodes.
+# 4. nsdiff will be used in a development or production environment where indy-node
+#    and it's dependencies are installed.
+#
+# What is being compared?
+# -----------------------
+# The list of things (state) being compared depends on what nscapture is
+# capturing, but the following list is fairly representative of what is being
+# compared.
+#
+# Running nsdiff with a `-c False` will tell nsdiff not clean up temporary
+# directories.
+#
+# The output of nsdiff with optional switch `-c False` will look similar to the
+# following:
+#
+# Skipping removal of temp directory /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn/T/tmpl5i26zpm/./data/Node1
+# Skipping removal of temp directory /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn/T/tmp1mp5_t7u/./data/Node1
+# Skipping removal of transform and scrub temp directory /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn/T/tmpp0bybja8
+# Skipping removal of transform and scrub temp directory /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn/T/tmpcx5m4hjf
+#
+# In the example output above directories
+# /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn and
+# /var/folders/vy/g0zzhdg135q1wdcttztptv8h0000gn will contain a set of files. The
+# files represent a superset of things (state) that nsdiff is comparing.
+#
+# attr_db
+# config_merkleLeaves
+# config_merkleNodes
+# config_state
+# config_transactions
+# domain_merkleLeaves
+# domain_merkleNodes
+# domain_state
+# domain_transactions
+# idr_cache_db
+# log (this is derived from the latest log file containing view number and pre-prepare sequence number)
+# nodename
+# pool_merkleLeaves
+# pool_merkleNodes
+# pool_state
+# pool_transactions
+# seq_no_db
+# state_signature
+# state_ts_db
+
+from __future__ import print_function
+from ledger.compact_merkle_tree import CompactMerkleTree
+from ledger.hash_stores.file_hash_store import FileHashStore
+from ledger.ledger import Ledger
+from leveldb import LevelDBError
+from os import listdir
+from os.path import abspath, basename, dirname, isfile, isdir, join
+from plenum.common.constants import KeyValueStorageType
+from shutil import copyfile
+from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
+from state.pruning_state import PruningState
+
+import argparse
+import json
+import logging
+import os
+import shutil
+import subprocess
+import sys
+import tarfile
+import tempfile
+import zipfile
+import errno
+
+logger = logging.getLogger()
+
+
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+
+class ArchiveError(Error):
+    """Exception raised for errors encounterd while identifying and extracting
+    tarfiles and zipfiles.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+
+class NodeStateComparator:
+    logger = None
+    log_level = logging.WARNING
+    cleanup = True
+    datadir = "./data/"
+
+    s1 = "zipfile/tarfile"
+    s1tempdir = None
+    s1dir = None
+    s1_is_temp = False
+    s1_transformed_and_scrubbed = None
+
+    s2 = "zipfile/tarfile"
+    s2tempdir = None
+    s2dir = None
+    s2_is_temp = False
+    s2_transformed_and_scrubbed = None
+
+    # TODO: Do we want to skip additional content by default?
+    skipfiles = ['start_times']
+    skipdirs = ['combined_recorder']
+
+    def __init__(self, log_level=0, cleanup=True, datadir="./data/", skipfiles=None,
+                 skipdirs=None):
+        if skipfiles is None:
+            skipfiles = []
+        if skipdirs is None:
+            skipdirs = []
+
+        logger.setLevel(log_level)
+        logger.debug("Initializing NodeStateComparator...")
+        self.cleanup = cleanup
+        self.datadir = datadir
+        if skipfiles:
+            self.skipfiles.extend(skipfiles)
+        if skipdirs:
+            self.skipdirs.extend(skipdirs)
+
+    def _cleanup(self):
+        logger.debug("Cleaning up...")
+        # Clean-up temp dirs if tar/zip unpacked using a temp dir
+        if self.s1_is_temp:
+            if self.cleanup:
+                logger.info("Removing temp dir {} containing {} contents"
+                            .format(self.s1tempdir, self.s1))
+                shutil.rmtree(self.s1tempdir)
+            else:
+                logger.debug("Skipping removal of temp directory {}".format(
+                    self.s1dir))
+                print("Skipping removal of temp directory {}".format(
+                    self.s1dir))
+        if self.s2_is_temp:
+            if self.cleanup:
+                logger.info("Removing temp dir {} containing {} contents"
+                            .format(self.s2tempdir, self.s2))
+                shutil.rmtree(self.s2tempdir)
+            else:
+                logger.debug("Skipping removal of temp directory {}".format(
+                    self.s2dir))
+                print("Skipping removal of temp directory {}".format(
+                    self.s2dir))
+        # Clean-up temp dirs used to store transformed and scrubbed state data
+        if self.cleanup:
+            if self.s1_transformed_and_scrubbed:
+                s = ("Removing temp dir {} containing transformed and"
+                     "scrubbed contents from {}")
+                logger.info(s.format(self.s1_transformed_and_scrubbed,
+                                     self.s1dir))
+                shutil.rmtree(self.s1_transformed_and_scrubbed)
+            if self.s2_transformed_and_scrubbed:
+                s = ("Removing temp dir {} containing transformed and"
+                     "scrubbed contents from {}")
+                logger.info(s.format(self.s2_transformed_and_scrubbed,
+                                     self.s2dir))
+                shutil.rmtree(self.s2_transformed_and_scrubbed)
+        else:
+            skip_message = ("Skipping removal of transform and scrub temp"
+                            " directory {}")
+            logger.debug(skip_message.format(self.s1_transformed_and_scrubbed))
+            logger.debug(skip_message.format(self.s2_transformed_and_scrubbed))
+            print(skip_message.format(self.s1_transformed_and_scrubbed))
+            print(skip_message.format(self.s2_transformed_and_scrubbed))
+            print("It is up to you to remove the above temporary directories.")
+
+    # Print an error message to stderr and conditionally exit
+    def _eprint(self, *args, **kwargs):
+        doexit = kwargs.pop('exit', None)
+        print(*args, file=sys.stderr, **kwargs)
+        if doexit:
+            self._cleanup()
+            exit(1)
+
+    # Print the contents of a tarfile root directory. Does not traverse
+    # directories.
+    def print_tarfile(self, filename):
+        with tarfile.open(filename, "r") as tar:
+            for info in tar:
+                if info.isdir():
+                    file_type = 'directory'
+                elif info.isfile():
+                    file_type = 'file'
+                else:
+                    file_type = 'unknown'
+                logger.debug("{} is a {}".format(info.name, file_type))
+
+    # Print the contents of a zipfile root directory. Does not traverse
+    # directories.
+    def print_zipfile(self, filename):
+        f = zipfile.ZipFile(filename)
+        for info in f.infolist():
+            logger.debug(info.filename)
+
+    # Print the contents of a directory
+    def print_directory(self, d):
+        onlyfiles = [f for f in listdir(d) if isfile(join(d, f))]
+        onlydirs = [f for f in listdir(d) if isdir(join(d, f))]
+        logger.debug("In {}:".format(d))
+        for file in onlyfiles:
+            logger.debug("\t{}".format(file))
+        for dirent in onlydirs:
+            self.print_directory(join(d, dirent))
+
+    # Extract a tarball
+    def _extract_tarball(self, file):
+        tempdir = None
+        logger.debug("Extracting tarball {}".format(file))
+        if self.log_level <= logging.INFO:
+            self.print_tarfile(file)
+        tempdir = tempfile.mkdtemp()
+        if tempdir:
+            with tarfile.open(file, "r") as tar:
+                tar.extractall(tempdir)
+        else:
+            s = "Failed to create tempdir in which to unpack {}"
+            raise ArchiveError(s.format(file))
+        return tempdir
+
+    # Extract a zipfile
+    def _extract_zipfile(self, file):
+        tempdir = None
+        logger.debug("Extracting zipfile {}".format(file))
+        if self.log_level <= logging.INFO:
+            self.print_zipfile(file)
+        tempdir = tempfile.mkdtemp()
+        if tempdir:
+            with zipfile.ZipFile(file, 'r') as zip_f:
+                zip_f.extractall(tempdir)
+        else:
+            s = "Failed to create tempdir in which to unpack {}"
+            raise ArchiveError(s.format(file))
+        return tempdir
+
+    # Extract a tarball/zipfile into a temprary directory
+    def _extract_archive(self, file):
+        logger.debug("Extracting archive {}".format(file))
+        # Is the file a tarfile (tar, gz2, zip, tar.gz, etc.) or zipfile?
+        if tarfile.is_tarfile(file):
+            return self._extract_tarball(file)
+        elif zipfile.is_zipfile(file):
+            return self._extract_zipfile(file)
+        else:
+            raise ArchiveError("{} must be a tarfile or a zipfile".format(file))
+
+    def split_name(self, file):
+        abs_file = abspath(file)
+        base_name = basename(abs_file)
+        base_name_elements = base_name.split('.')
+        file_name = None
+        file_extension = None
+        if len(base_name_elements) > 0:
+            file_name = base_name_elements[0]
+        if len(base_name_elements) > 1:
+            file_extension = ".".join(base_name_elements[1:])
+        return dirname(abs_file), base_name, file_name, file_extension
+
+    def _mkdir_p(self, path):
+        try:
+            os.makedirs(path)
+        except OSError as exc:  # Python >2.5
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
+            else:
+                raise
+
+    def is_db_dir(self, file_list):
+        # The set of filenames that must exist in a directory to be assumed a
+        # LevelDB/RocksDB instance. Will be used in the following for-loop.
+        leveldb_rocksdb_filenames = ['CURRENT', 'LOG']
+
+        for filename in leveldb_rocksdb_filenames:
+            if filename not in file_list:
+                return False
+
+        return True
+
+    # TODO: What parameters are (or should be) class data members?
+    def transform_db(self, dir_name, sout, sname):
+        (dirname, filename, name, extension) = self.split_name(dir_name)
+
+        # Use "nodename" in place of the node's name when a directory
+        # (dirName in this case) matches the node name (sname)
+        if sname == filename:
+            filename = "nodename"
+
+        if filename.endswith("_transactions"):
+            logger.debug("{} is a transaction LevelDB/RocksDB instance!"
+                         .format(filename))
+            # utf-8 - call "getAllTxn()" in ledger.py in the ledger
+            #         module/package in indy-plenum.
+            # Create a Ledger domain object from the ledger directory
+            # 'filename' takes the form {file_name_prefix}_transactions
+            # where file_name_prefix is one of the following:
+            #    config, pool, domain
+            # FileHashStore requires a file_name_prefix.
+            file_name_prefix = filename.split("_")[0]
+            ledger = Ledger(
+                CompactMerkleTree(
+                    # The FileHashStore reads
+                    # {file_name_prefix}_merkleLeaves and
+                    # {file_name_prefix}_merkleNodes from dataDir
+                    hashStore=FileHashStore(
+                        dataDir=dirname,
+                        fileNamePrefix=file_name_prefix
+                    )
+                ),
+                dataDir=dirname,
+                fileName=filename
+            )
+
+            out_filename = join(sout, filename)
+            with open(out_filename, "a") as file_handle:
+                for txn in ledger.getAllTxn():
+                    logger.info("Writing >txn={}< to {}".format(
+                        str(txn), out_filename))
+                    file_handle.write(str(json.dumps(txn))+'\n')
+            ledger.stop()
+        else:
+            debug_msg = ("{} is NOT a transaction LevelDB/RocksDB"
+                         "instance!")
+            logger.debug(debug_msg.format(filename))
+            # Assume utf-8 decoding by default.
+            # utf-8 - use standard leveldb/rocksdb iterator() and utf-8
+            #         decoding.
+            opened = False
+            try:
+                debug_msg = ("Opening {} as a LevelDB instance with"
+                             " initKeyValueStorage...")
+                logger.debug(debug_msg.format(filename))
+                leveldb_rocksdb_handle = initKeyValueStorage(
+                    KeyValueStorageType.Leveldb, dirname, filename,
+                    read_only=True)
+                opened = True
+            except LevelDBError as e:
+                debug_message = ("Failed opening {} as a LevelDB"
+                                 " instance using initKeyValueStorageInt"
+                                 " with exeption {}")
+                logger.debug(debug_message.format(filename, e))
+                try:
+                    debug_message = ("Retry opening {} as a LevelDB"
+                                     " instance with"
+                                     " initKeyValueStorageIntKeys...")
+                    logger.debug(debug_message.format(filename))
+                    leveldb_rocksdb_handle = initKeyValueStorageIntKeys(
+                        KeyValueStorageType.Leveldb, dirname, filename,
+                        read_only=True)
+                    opened = True
+                except LevelDBError as e:
+                    debug_message = ("Failed opening {} as a LevelDB"
+                                     " instance using"
+                                     " initKeyValueStorageIntKeys with"
+                                     " exeption {}")
+                    logger.debug(debug_message.format(filename, e))
+                    opened = False
+
+            if not opened:
+                try:
+                    debug_message = ("Opening {} as a RocksDB instance"
+                                     " with initKeyValueStorage...")
+                    logger.debug(debug_message.format(filename))
+                    leveldb_rocksdb_handle = initKeyValueStorage(
+                        KeyValueStorageType.Rocksdb, dirname, filename,
+                        read_only=True)
+                    opened = True
+                except Exception:
+                    # rocksdb.errors.InvalidArgument
+                    e = sys.exc_info()[0]
+                    debug_message = ("Failed opening {} as a"
+                                     " RocksDB instance using"
+                                     " initKeyValueStorage with"
+                                     " exception: {}")
+                    logger.debug(debug_message.format(filename, e))
+                    try:
+                        debug_message = ("Retry opening {} as a RocksDB"
+                                         " instance with"
+                                         " initKeyValueStorageIntKeys...")
+                        logger.debug(debug_message.format(filename))
+                        leveldb_rocksdb_handle = initKeyValueStorageIntKeys(
+                            KeyValueStorageType.Rocksdb, dirname,
+                            filename, read_only=True)
+                        opened = True
+                    except Exception:
+                        e = sys.exc_info()[0]
+                        debug_message = ("Failed opening {} as a"
+                                         " RocksDB instance using"
+                                         " initKeyValueStorageIntKeys"
+                                         " with exeption {}")
+                        logger.debug(debug_message.format(filename, e))
+                        error_message = ("Failed to open {}/{} as a"
+                                         " LevelDB or RocksDB instance")
+                        logger.error(error_message.format(dirname,
+                                                          filename, e))
+                        opened = False
+
+            if opened:
+                debug_msg = ("Successfully opened LevelDB/RocksDB"
+                             " instance {}")
+                logger.debug(debug_msg.format(filename))
+                out_filename = join(sout, filename)
+                with open(out_filename, "a") as file_handle:
+                    if filename == "state_signature":
+                        for k, v in leveldb_rocksdb_handle.iterator():
+                            data = json.loads(v.decode('utf-8'))
+
+                            try:
+                                k = bytes(k)
+                            except TypeError:
+                                # k isn't convertable to bytes
+                                pass
+
+                            # The 'participants' and 'signature' can
+                            # differ, but the 'value' must be the same.
+                            # Preserve only the 'value' element in v.
+                            file_handle.write("{} {}\n".format(k,
+                                                               json.dumps(data['value'])))
+                    elif filename.endswith("_state"):
+                        state = PruningState(leveldb_rocksdb_handle)
+                        # Traverse keys and write a key-value pair per
+                        # line.
+                        state_dict = state.as_dict
+
+                        for k, v in state_dict.items():
+                            try:
+                                k = bytes(k)
+                            except TypeError:
+                                # k isn't convertable to bytes
+                                pass
+
+                            try:
+                                v = bytes(v)
+                            except TypeError:
+                                # v isn't convertable to bytes
+                                pass
+
+                            logger.info(
+                                "Writing >key={} value={}< to {}".format(k,
+                                                                         v,
+                                                                         out_filename)
+                            )
+                            file_handle.write("{} {}\n".format(k, v))
+                    elif filename.endswith("_merkleLeaves") or filename.endswith("_merkleNodes"):
+                        for k, v in leveldb_rocksdb_handle.iterator():
+                            try:
+                                k = bytes(k)
+                            except TypeError:
+                                # k isn't convertable to bytes
+                                pass
+
+                            try:
+                                v = bytes(v)
+                            except TypeError:
+                                # v isn't convertable to bytes
+                                pass
+
+                            logger.info("Writing >{} {}< to {}"
+                                        .format(k, v, out_filename))
+                            file_handle.write("{} {}\n".format(k, v))
+                    else:
+                        for k, v in leveldb_rocksdb_handle.iterator():
+                            try:
+                                v = v.decode("utf-8")
+                            except UnicodeDecodeError:
+                                # v isn't utf-8 encoded
+                                pass
+
+                            try:
+                                k = bytes(k)
+                            except TypeError:
+                                # k isn't convertable to bytes
+                                pass
+
+                            try:
+                                v = bytes(v)
+                            except TypeError:
+                                # v isn't convertable to bytes
+                                pass
+
+                            logger.info("Writing >{} {}< to {}"
+                                        .format(k, v, out_filename))
+                            file_handle.write("{} {}\n".format(k, v))
+                leveldb_rocksdb_handle.close()
+            else:
+                error_message = ("Failed to open LevelDB/RocksDB"
+                                 " instance {}")
+                logger.error(error_message.format(filename))
+                self._eprint(error_message.format(filename), exit=True)
+
+    def transform_dir(self, dir_name, file_list, sout, sname):
+        (dirname, filename, name, extension) = self.split_name(dir_name)
+
+        # Use "nodename" in place of the node's name when a directory
+        # (filename in this case) matches the node name (sname)
+        if sname == filename:
+            sout = join(sout, "nodename")
+        else:
+            sout = join(sout, filename)
+
+        # Make sure sout directory exists
+        self._mkdir_p(sout)
+
+        # Copy all files to sout and then walk each of the
+        # subdirectories (continue outer for loop (os.walk))
+        for fname in file_list:
+            if fname == "node_info":
+                # When comparing different nodes, only preserve "view"
+                # number for comparison. All other fields can differ.
+                with open(join(dirname, filename, fname),
+                          'r') as nodeInfo:
+                    data = nodeInfo.read()
+                    data = json.loads(data)
+                    out_filename = join(sout, fname)
+                    with open(out_filename, "a") as file_handle:
+                        file_handle.write("view: {}".format(
+                            data['view']))
+            else:
+                copyfile(join(abspath(dir_name), fname), join(sout, fname))
+
+    def transform_logs(self, sin, sout):
+        # Check for a log file
+        (dirname, filename, name, extension) = self.split_name(sin)
+        log_filename = "{}.log".format(filename)
+        log_filepath = join(dirname, "../", "log", log_filename)
+        if os.path.exists(log_filepath):
+            # Extract (view no, ppSeqNo) tuple from log file(s)
+            # Last "batch ordered"
+            process_grep = subprocess.Popen(["grep",
+                                             "-e",
+                                             "{}:.* ordered batch request, view no".format(filename),
+                                             log_filepath],
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_sort = subprocess.Popen(["sort"],
+                                            stdin=process_grep.stdout,
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_tail = subprocess.Popen(['tail',
+                                             '-1'],
+                                            stdin=process_sort.stdout,
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_cut1 = subprocess.Popen(['cut',
+                                             '-f',
+                                             '5',
+                                             '-d',
+                                             '|'],
+                                            stdin=process_tail.stdout,
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_cut2 = subprocess.Popen(['cut',
+                                             '-d',
+                                             ',',
+                                             '-f',
+                                             '2,3'],
+                                            stdin=process_cut1.stdout,
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_grep.stdout.close()
+            process_sort.stdout.close()
+            process_tail.stdout.close()
+            process_cut1.stdout.close()
+
+            batch_ordered_tuple = process_cut2.communicate()[0]
+
+            # Last "batch executed"
+            process_grep = subprocess.Popen(["grep",
+                                             "-e",
+                                             "{} executing Ordered batch".format(filename),
+                                             log_filepath],
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_sort = subprocess.Popen(["sort"],
+                                            stdin=process_grep.stdout,
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_tail = subprocess.Popen(['tail',
+                                             '-1'],
+                                            stdin=process_sort.stdout,
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_cut1 = subprocess.Popen(['cut',
+                                             '-f',
+                                             '5',
+                                             '-d',
+                                             '|'],
+                                            stdin=process_tail.stdout,
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_cut2 = subprocess.Popen(['cut',
+                                             '-d',
+                                             ' ',
+                                             '-f',
+                                             '6,7'],
+                                            stdin=process_cut1.stdout,
+                                            stdout=subprocess.PIPE,
+                                            shell=False)
+            process_grep.stdout.close()
+            process_sort.stdout.close()
+            process_tail.stdout.close()
+            process_cut1.stdout.close()
+
+            batch_executed_tuple = process_cut2.communicate()[0]
+            # Use the filename of "log" so that the *nix-diff can be done on a
+            # single directory.
+            out_filename = join(sout, "log")
+            with open(out_filename, "a") as file_handle:
+                file_handle.write("last batch ordered: {}".format(
+                    batch_ordered_tuple.decode()))
+                file_handle.write("last batch executed: {}".format(
+                    batch_executed_tuple.decode()))
+
+    def transform_and_scrub(self, sname, sin, sout):
+        """Convert all state data to a *nix diff-able form
+
+        Keyword arguments:
+        sin -- A directory containing indy-node/plenum state data
+        sout -- A directory in which to write *nix-diff-able/friendly output
+
+        Detect all LevelDB/RocksDB directories. The LevelDB directory structure
+        is described here:
+            https://github.com/google/leveldb/blob/master/doc/impl.md
+
+            Each database is represented by a set of files stored in a
+            directory.
+
+            By default, LevelDB/RocksDB uses a BytewiseComparator, which is the
+            expected outcome when calling initKeyValueStorage to create a
+            LevelDB/RocksDB instance/directory. initKeyValueStorageIntKeys
+            changes the comparator to an IntegerComparator. Therefore, the
+            LevelDB/RocksDB instances/directories may require one or the other.
+            First Attempt to open with initKeyValueStorage. If that throws an
+            error,try again with initKeyValueStorageIntKeys.
+
+        Transform and scrub data in preparation for *nix diff
+           1. Marshall/Transform data from LevelDB/RocksDB directories to flat
+              files.  Use domain objects where possible to decode key/value
+              pairs.
+           2. Any subset of 'particpants' (nodes) can be used to create
+              state 'signature'(s). Therefore, scrub state_signature LevelDB
+              entries and exclude 'participants' and 'signature' fields;
+              preserving only the 'value' JSON element.
+           3. Scrub the node_info; preserving only the 'view' field.
+           4. Extract the last/latest (view no, ppSeqNo) tuple from the logs
+              emitted by replica.py and node.py. TODO: update this description
+              once we have concrete examples.
+           5. All other files and directories are unaltered.
+        """
+        logger.debug("Transforming and scrubbing {} into {}".format(sin, sout))
+
+        # Traverse directory sin
+        # TODO: 1. Optimize using multiprocessing module. At minimum, all
+        #       directories can be transformed and scrubbed in parallel.
+        #       https://docs.python.org/3/library/multiprocessing.html
+        #
+        #       2. Files in Non-LevelDB/RocksDB directories can be transformed
+        #          and scrubbed in parallel.
+        for dirName, subdirList, fileList in os.walk(abspath(sin)):
+            if dirName in self.skipdirs:
+                logger.debug("Skipping dirName: {}".format(dirName))
+                break
+
+            if self.log_level <= logging.INFO:
+                logger.info("dirName: {}".format(dirName))
+
+            # Skip specific directories
+            subdirList[:] = [x for x in subdirList if x not in self.skipdirs]
+            # Skip specific files
+            fileList[:] = [x for x in fileList if x not in self.skipfiles]
+
+            (dirname, filename, name, extension) = self.split_name(dirName)
+
+            # Ignore 'recorder' artifacts. Should only exist in state captured
+            # from a replay
+            if (filename == "recorder" and dirname.endswith(
+                    "/{}".format(sname))):
+                subdirList[:] = []
+                continue
+
+            # Is the current directory a RocksDB/LevelDB database?
+            if self.is_db_dir(fileList):
+                logger.debug("{} is a LevelDB/RocksDB directory!".format(dirName))
+                # TODO: What parameters are (or should be) class data members?
+                self.transform_db(dirName, sout, sname)
+            else:
+                self.transform_dir(dirName, fileList, sout, sname)
+
+        self.transform_logs(sin, sout)
+
+    def diff(self, s1, s2):
+        """Perform a recursive *nix-diff on two directories"""
+        logger.debug("*nix diffing {} with {}".format(s1, s2))
+
+        # Try 1:
+        # os.system("diff -r {} {}".format(s1, s2))
+
+        # Try 2:
+        # supposedly subprocess' `call` is safer
+        # call("diff -r {} {}".format(s1, s2))
+
+        # Try 3:
+        cmd = ['diff']
+        if diff_supports_color():
+            cmd.append('--color=always')
+        cmd.append('-r')
+        cmd.append(s1)
+        cmd.append(s2)
+        result = subprocess.run(cmd)
+
+        if result.returncode == 0:
+            print("Identical state!")
+        else:
+            self._eprint("State differs!")
+            self._eprint("Return code of {} from command: diff -r {} {}".format(
+                result.returncode, s1, s2), exit=True)
+
+    def ndiff(self, s1, s2):
+        logger.debug("Performing node state diff on {} and {}".format(s1, s2))
+
+        # Validate inputs
+        validation_errors = []
+
+        # Capture the names of s1 and s2. Currently only used in print/diag
+        # statements
+        self.s1 = s1
+        self.s2 = s2
+
+        # s1 must either be a tarball, zipfile, or a directory
+        if isfile(s1):
+            # If s1 is a file, it must be a tarball or a zipfile
+            # Extract s1 contents into a temporary directory
+            try:
+                tempdir = self._extract_archive(s1)
+            except ArchiveError as e:
+                validation_errors.append(e)
+            else:
+                self.s1tempdir = tempdir
+                self.s1dir = tempdir
+                self.s1_is_temp = True
+        elif isdir(s1):
+            if self.log_level <= logging.INFO:
+                self.print_directory(s1)
+            self.s1dir = s1
+        else:
+            s = "{} must be a existing tarfile/zipfile or a directory."
+            validation_errors.append(s.format(s1))
+
+        # s2 must either be a tarball, zipfile, or a directory
+        if isfile(s2):
+            # If s2 is a file, it must be a tarball or a zipfile
+            # Extract s2 contents into a temporary directory
+            try:
+                tempdir = self._extract_archive(s2)
+            except ArchiveError as e:
+                validation_errors.append(e)
+            else:
+                self.s2tempdir = tempdir
+                self.s2dir = tempdir
+                self.s2_is_temp = True
+        elif isdir(s2):
+            if self.log_level <= logging.INFO:
+                self.print_directory(s2)
+            self.s2dir = s2
+        else:
+            s = "{} must be a existing tarfile/zipfile or a directory."
+            validation_errors.append(s.format(s2))
+
+        # Emit validation errors and exit
+        if validation_errors:
+            for validation_error in validation_errors:
+                self._eprint(validation_error)
+            self._cleanup()
+            exit(1)
+
+        # Extract dirname, filename, name, and extension from s1
+        (s1_dirname, s1_filename, s1_name, s1_extension) = self.split_name(
+            self.s1)
+        if self.s1_is_temp:
+            s1_dirname = self.s1dir
+            self.s1dir = join(self.s1dir, self.datadir, s1_name)
+        # Extract dirname, filename, name, and extension from s2
+        (s2_dirname, s2_filename, s2_name, s2_extension) = self.split_name(
+            self.s2)
+        if self.s2_is_temp:
+            s2_dirname = self.s2dir
+            self.s2dir = join(self.s2dir, self.datadir, s2_name)
+
+        # Trace level debug
+        s = "Argument {}: dirname={} filename={} name={} extension={}"
+        logger.info(s.format(1, s1_dirname, s1_filename, s1_name,
+                             s1_extension))
+        logger.info(s.format(2, s2_dirname, s2_filename, s2_name,
+                             s2_extension))
+
+        # Create temp directory for s1 and s2 in which to store all scrubbed and
+        # transformed files. A recursive *nix diff will be peformed on these
+        # directories.
+        self.s1_transformed_and_scrubbed = tempfile.mkdtemp(prefix=strip_archive_file_type(s1_filename)+".")
+        self.s2_transformed_and_scrubbed = tempfile.mkdtemp(prefix=strip_archive_file_type(s2_filename)+".")
+
+        # Transform and scrub state directories
+        self.transform_and_scrub(s1_name, self.s1dir, self.s1_transformed_and_scrubbed)
+        self.transform_and_scrub(s2_name, self.s2dir, self.s2_transformed_and_scrubbed)
+
+        # *nix diff s1_transformed_and_scrubbed with s2_transformed_and_scrubbed
+        self.diff(self.s1_transformed_and_scrubbed,
+                  self.s2_transformed_and_scrubbed)
+
+        self._cleanup()
+
+
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError(
+            'Boolean value (yes, no, true, false, y, n, 1, or 0) expected.')
+
+
+def strip_archive_file_type(file_name):
+    return file_name.rstrip('.tar.gz').rstrip('.zip')
+
+
+def diff_supports_color():
+    try:
+        help_rtn = subprocess.check_output(['diff', '--help'])
+        help_rtn = help_rtn.decode()
+        return '--color' in help_rtn
+    except Exception:
+        return False
+
+
+levels = {
+    'notset': logging.NOTSET,
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'warning': logging.WARNING,
+    'error': logging.ERROR,
+    'critical': logging.CRITICAL
+}
+
+
+def loglevel(v):
+    if v.lower() in levels.keys():
+        return levels[v.lower()]
+    else:
+        raise argparse.ArgumentTypeError(
+            'Expected one of the following: {}.'.format(
+                ', '.join(levels.keys())))
+
+
+def program_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("state1",
+                        help=".zip, .tar.gz, .tgz file or directory name")
+    parser.add_argument("state2",
+                        help=".zip, .tar.gz, .tgz file or directory name")
+
+    cleanup_help = ("Cleanup temporary files/directories?"
+                    " [CLEANUP]: yes, no, y, n, true, false, t, f, 1, 0"
+                    " Default: True")
+    parser.add_argument("-c", "--cleanup", type=str2bool, nargs='?', const=True,
+                        default=True, help=cleanup_help)
+
+    log_level_help = ("Logging level."
+                      " [LOG-LEVEL]: notset, debug, info, warning, error,"
+                      " critical Default: notset")
+    parser.add_argument("-l", "--log-level", type=loglevel, nargs='?',
+                        const=logging.WARNING, default=logging.WARNING, help=log_level_help)
+
+    datadir_help = ("A relative path to the \"data\" directory contained in the"
+                    " zip/tar/dir. If you are processing a zip/tar/dir named"
+                    " \"Node1.tar.gz\" and the \"Node1\" directory is located in"
+                    " sandbox/data, pass \"-d sandbox/data\"")
+    parser.add_argument("-d", "--datadir", nargs='?', const="./data/", default="./data/",
+                        help=datadir_help)
+
+    skip_file_help = ("Skip a file. Use -s or --skip-file for each"
+                      " file. Example: \"-s foo\" skips all files named foo.")
+    parser.add_argument("-s", '--skip-file', action='append',
+                        help=skip_file_help)
+
+    skip_dir_help = ("Skip a directory. Use -S or --skip-dir for each"
+                     " directory. Example: \"-s bar\" skips all directories"
+                     " named bar.")
+    parser.add_argument("-S", '--skip-dir', action='append',
+                        help=skip_dir_help)
+
+    return parser
+
+
+def parse_args(argv=None, parser=program_args()):
+
+    return parser.parse_args(args=argv)
+
+
+def main(args):
+    comparator = NodeStateComparator(log_level=args.log_level,
+                                     datadir=args.datadir,
+                                     cleanup=args.cleanup,
+                                     skipfiles=args.skip_file,
+                                     skipdirs=args.skip_dir)
+    comparator.ndiff(args.state1, args.state2)
+    return 0
+
+
+if __name__ == '__main__':
+    arguments = parse_args()
+    sys.exit(main(arguments))

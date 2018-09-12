@@ -1,0 +1,16 @@
+- hosts: pool
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Stop indy node
+      service: name=indy-node state=stopped
+
+    - name: Stop indy node control
+      service: name=indy-node-control state=stopped
+
+    - name: Update config
+      copy: src=indy_config.py dest=/etc/indy/indy_config.py
+
+    - name: Start indy node
+      service: name=indy-node state=started

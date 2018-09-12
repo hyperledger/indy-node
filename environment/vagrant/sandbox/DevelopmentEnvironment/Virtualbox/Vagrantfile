@@ -1,0 +1,476 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# ////README////
+#
+# This Vagrantfile is designed to instantiate an Evernym Development Environment
+# using Virtualbox as the vagrant provider and automates the following:
+#
+#  1. Clone all the required source code from github, or use clones you have
+#     already created.
+#    1.1. Source code should reside on the Virtualbox host (your desktop
+#         environment) and be available in the Virtualbox guest as a "shared
+#         folder". This allows the developer the option of using an IDE in their
+#         own graphical desktop environment with their own license.
+#    1.2. If you have not already cloned source, this Vagrant file assumes that
+#         you have already forked the project and will prompt you for a username
+#         and clone from "https://github.com/<username>/<project>.git" where
+#         <username> is your username, and <project> is the target repo(s).
+#  2. Install build tools/dependencies.
+#  3. (Optional) Build source code on 'vagrant up'. Defaults to (N)o.
+#  4. (Optional) Run unit tests on 'vagrant up'. Defaults to (N)o.
+#
+# //Prerequisites://
+#  1. Install VirtualBox
+#       - Note that Vagrant 2.0.0 doesn't seem to work with Virtualbox 5.2.
+#         If you are using Vagrant <= 2.0.0, please use Virtualbox 5.1.30
+#  2. Install Vagrant
+#       - See Note under Install Virtualbox above
+#  3. Install Git
+#  4. Set the 'branch' for each of the development_repos below.
+#     TODO: Display all branches, designate which branch the repo is on, and
+#           allow the user to select a different branch. The following git
+#           command should be helpful.
+#           git branch --list --format "%(refname:short) %(HEAD)" | sort -u
+#
+# //How to use://
+# Run 'vagrant up' and answer any questions this Vagrantfile or the Vagrant VM
+# instance (i.e. network bridge) needs to complete the process. If you run into
+# problems (i.e. shared folders, etc.), try 'vagrant reload --provision'. Doing
+# so will restart the VM and re-run the provisioning script. A slightly more
+# expensive operation would be to 'vagrant destroy' followed by 'vagrant up'.
+#
+# //Some details to be aware of://
+#  1. All files and folders in the Vagrant project folder show up as shared
+#     resources in /vagrant on all Vagrant VM(s)/guests instantiated by this
+#     Vagrantfile. This is a design descision made by the Vagrant folks.
+#  2. Source code will be cloned into this Vagrant project folder using the git
+#     project name and then shared in /src/<git project name> in the Vagrant
+#     guest VM(s). The .gitignore file in this Vagrant project folder ignores
+#     these folders.
+#  3. If you have your own source code clones, a symbolic link is
+#     created in this Vagrant project folder. Doing so simplifies some discovery
+#     logic in this Vagrantfile (ruby script). A side-effect of symlinking in
+#     this Vagrant project folder is that the symlink is broken inside the
+#     Virtualbox VM(s)/guests. Please do not remove or try to fix broken symlinks
+#     in /vagrant in the Virtualbox VM(s)/guests. And be assured that the source
+#     code associated with the symlinks on your Vagrant host are available in
+#     /src/<git project name> in your Vagrant VM(s)/guests.
+
+# //Make sure to be using the vagrant-vbguest plugin.//
+
+development_box         = 'bento/ubuntu-16.04'
+development_cpus        = '2'
+development_memory      = '4096'
+development_branch      = `git rev-parse --abbrev-ref HEAD`
+development_run_build   = 'N'
+development_run_tests   = 'N'
+development_run_cleanup = 'N'
+
+# Code should reside on the Vagrant host and be mounted to the Vagrant VM
+# using Vagrant's Shared Folder feature. Doing so allows a developer to use
+# their favorite IDE/tools to write code and have a cheap, fast way to build
+# and test their changes.
+
+# //Define development repos and setup default Shared Folder path.//
+#
+# If you do not want to develop one or more of the following repos, you can
+# "Skip" the repo when prompted.
+#
+# TODO: Decide how to chain dependendencies. For example, AWS Lambda code deps
+#       indy-sdk. Perhaps this is where a providing both .deb and .rpm will help
+#       if a dependency isn't being cloned and built from source, then a bundled
+#       .deb or .rpm will be installed to provide the dependency?
+development_repos = {
+  "indy-sdk" => {
+    "path" => "/vagrant/indy-sdk",
+    "url" => "https://github.com/<USERNAME>/indy-sdk.git",
+    "branch" => "master"
+  },
+  #"indy" => {
+  #  "path" => "/vagrant/indy",
+  #  "url" => "https://github.com/<USERNAME>/indy.git",
+  #  "branch" => "master"
+  #},
+  #"indy-self-serve" => {
+  #  "path" => "/vagrant/indy-self-serve",
+  #  "url" => "https://gitlab.corp.evernym.com/<USERNAME>/indy  -self-serve.git",
+  #  "branch" => "master"
+  #},
+}
+
+# //- Pseudocode -//
+# For each 'repo' in development_repos
+#   Detect 'repo' in Vagrant project directory root
+#     If 'repo' detected
+#       Use the default directory path when defining synced folder
+#     Else
+#       Prompt the user for one of three options:
+#         Option 1: Skip - I will not be developing 'repo'
+#           Go to next repo
+#         Option 2: Enter path of 'repo' git clone on Vagrant host
+#           Update the <path> for 'repo' => <path> in the development_repos
+#           associative array
+#         Option 3: Clone 'repo' for me. Note that this option requires that you
+#                   to have a fork of the 'repo' codebase on github/gitlab. The
+#                   clone will be created in the root of this Vagrant project.
+#                   - This option displays the repo URL and prompts the user for
+#                     their github userid and builds the 'repo' URL.
+#                   - The active branch will be the branch defined in the
+#                     development_repos hash above.
+#           Clone the repo
+#             If failed to clone (404, etc.)
+#               Exit with a verbose error message
+username = ""
+filtered_development_repos = {}
+development_repos.each_pair { |key, value|
+  filepath = File.expand_path(File.dirname(__FILE__))
+  directory = File.join("#{filepath}", "#{key}")
+  puts "Check if directory #{directory} exists ..."
+  if File.directory?("#{directory}")
+    puts "Directory #{directory} exists. Will mount #{directory} as "\
+      "/src/#{key}"
+    value["path"] = "#{directory}"
+    filtered_development_repos["#{key}"] = value
+  else
+    prompt = "> "
+    puts "Unable to detect a clone of repo '#{key}'. What would you like to do?"
+    puts "\t1. Skip - I will not be developing/testing code for #{key}."
+    puts "\t2. Enter a full path to repo '#{key}' on my Vagrant host."
+    puts "\t3. I have forked '#{key}'. Clone it for me."
+    print prompt
+
+    loop do
+      user_input = $stdin.gets.chomp
+      case user_input
+      when "1"
+        puts "Skipping ..."
+
+        # Create an empty directory using the repo name (key) so the developer is
+        # never prompted again. TODO: use properties file to manage the Skip
+        # feature (and others).
+        Dir.mkdir(key) unless Dir.exist?(key)
+
+        # Write a README file to the empty directory informing them
+        File.open("#{key}/README", "w") {
+          |f| f.write('You chose to skip this codebase. If you change your mind'\
+          ', do the following:' + "\n\n" + '1. Delete this directory.' + "\n" +
+          '2. Run \'vagrant reload --provision\' -OR- \'vagrant destroy &&'\
+          ' vagrant up\'')
+        }
+        break
+      when "2"
+        puts "Enter a full path to repo '#{key}' on your Vagrant host."
+        print prompt
+        absolute_path = $stdin.gets.chomp
+        if !File.directory?(absolute_path)
+          $stderr.puts "#{absolute_path} does not exist."
+          exit 1
+        else
+          puts "Verified #{absolute_path} exists ..."
+        end
+        puts "Creating symbolic link '#{key}' in Vagrant project to #{absolute_path} ..."
+        require 'open3'
+        stdout, stderr, status = Open3.capture3("ln -sf #{absolute_path} #{directory}")
+        if status.exitstatus != 0
+          $stderr.puts "Failed to create sybolic link"
+          $stderr.puts stderr
+          exit 1
+        end
+        value['path'] = absolute_path
+        filtered_development_repos[key] = value
+        break
+      when "3"
+        url = value['url']
+        puts "Enter your github username for url #{url}."
+        print prompt
+        username = $stdin.gets.chomp
+        url = url.sub("<USERNAME>", username)
+        value['url'] = url
+        branch = value['branch']
+        require 'open3'
+        stdout, stderr, status = Open3.capture3("git clone -b #{branch} #{url}")
+        if status.exitstatus != 0
+          $stderr.puts "Failed to clone #{url}"
+          $stderr.puts stderr
+          exit 1
+        end
+        value['path'] = Dir.pwd + "/#{key}"
+        filtered_development_repos[key] = value
+        break
+      else
+        puts "Please select either 1, 2, or 3"
+        print prompt
+      end
+
+      if do_checkout
+        case user_input
+        when "2", "3"
+          branch = value['branch']
+          puts "Setting '#{key}' branch to '#{branch}' ..."
+          require 'open3'
+          stdout, stderr, status = Open3.capture3("cd #{key} && git checkout #{branch}")
+          if status.exitstatus != 0
+            $stderr.puts "Failed checkout branch #{branch}"
+            $stderr.puts stderr
+            exit 1
+          end
+          break
+        end
+      end
+    end
+  end
+}
+
+if ARGV.include?("up")
+  development_run_cleanup = "Y"
+end
+
+if ARGV.include?("up") || ARGV.include?("provision") || ARGV.include?("--provision")
+  puts "Bringing up VM(s) ..."
+  prompt = "> "
+  puts "Build source? (y/N)"
+  print prompt
+
+  loop do
+    user_input = $stdin.gets.chomp
+    case user_input
+    when "Y", "y"
+      puts "Code will be built during VM provisioning ..."
+      development_run_build = "Y"
+      break
+    when "N", "n", ""
+      puts "Code will NOT be built during VM provisioning ..."
+      development_run_build = "N"
+      break
+    else
+      puts "Please enter Y, y, N, or n"
+      print prompt
+    end
+  end
+
+  # Only run tests if a build will be performed.
+  puts development_run_build
+  if development_run_build == "Y"
+    puts "Run tests? (y/N)"
+    print prompt
+
+    loop do
+      user_input = $stdin.gets.chomp
+      case user_input
+      when "Y", "y"
+        puts "Test will be run during VM provisioning ..."
+        development_run_tests = 'Y'
+        break
+      when "N", "n", ""
+        puts "Tests will NOT be run during VM provisioning ..."
+        development_run_tests = 'N'
+        break
+      else
+        puts "Please enter Y, y, N, or n"
+        print prompt
+      end
+    end
+  end
+end
+
+$script = <<SCRIPT
+#!/bin/bash -e
+
+BRANCH=$1
+RUN_BUILD=$2
+RUN_TESTS=$3
+RUN_CLEANUP=$4
+echo "Setting up development environment for branch $BRANCH"
+echo "Run build? $RUN_BUILD"
+echo "Run tests? $RUN_TESTS"
+echo "Run cleanup? $RUN_CLEANUP"
+
+#--------------------------------------------------------
+echo 'Setting Up Networking'
+if [ -f /vagrant/etc/hosts ]; then
+  cp /vagrant/etc/hosts /etc/hosts
+fi
+perl -p -i -e 's/(PasswordAuthentication\s+)no/$1yes/' /etc/ssh/sshd_config
+service sshd restart
+
+#--------------------------------------------------------
+echo "Installing Required Packages"
+# Refresh package lists from existing repos
+apt-get update
+apt-get install -y software-properties-common python-software-properties
+# The following two lines are required to install a indy cli
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+add-apt-repository "deb https://repo.sovrin.org/deb xenial stable"
+# Download the package lists from added repos
+apt-get update
+
+# NOTE: Packages required by indy cli: debsig*, apt-transport-https, indy
+DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl \
+    dialog \
+    figlet \
+    python-pip \
+    python3-pip \
+    python3.5-dev \
+    unzip \
+    make \
+    screen \
+    tmux \
+    vim \
+    wget \
+    debsigs \
+    debsig-verify \
+    apt-transport-https \
+    indy-node
+
+echo "Install docker ..."
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce
+
+#--------------------------------------------------------
+echo "Install docker SDK for Python ..."
+pip3 install docker
+
+#--------------------------------------------------------
+# The following steps were derived from:
+# https://github.com/hyperledger/indy-sdk/blob/master/doc/ubuntu-build.md
+#
+echo "Installing Rust and rustup non-interactively as user vagrant ..."
+echo "Note that rustup typically runs interactively and allows you to "
+echo "customize installation. Defaults are used in this case. You can "
+echo "reinstall Rust and rustup if you would like. See the following URL "
+echo "for details: https://www.rust-lang.org/install.html"
+curl https://sh.rustup.rs -sSf > rust.install.sh
+chmod u+x ./rust.install.sh
+chown vagrant:vagrant ./rust.install.sh
+su -c "./rust.install.sh -y" vagrant
+
+apt-get install -y \
+   build-essential \
+   pkg-config \
+   cmake \
+   libssl-dev \
+   libsqlite3-dev \
+   libsodium-dev
+
+#--------------------------------------------------------
+# Build
+#
+# For some reason, sourcing the vagrant users .profile isn't working.
+# Must use the absolute path to /home/vagrant/.cargo/bin/cargo to get
+# the build to work. Note that the .profile IS sourced when the
+# vagrant user logs in (next time 'vagrant ssh development' is run)
+#
+# Sourcing the /home/vagrant/.profile file as root didn't work
+#  source /home/vagrant/.profile
+if [ "$RUN_BUILD" == "Y" ]; then
+  # Only build indy-sdk if the source is present.
+  if [ -d "/src/indy-sdk" ]; then
+    cd /src/indy-sdk/libindy
+    su -c "/home/vagrant/.cargo/bin/cargo build" vagrant
+  fi
+fi
+
+#--------------------------------------------------------
+# Run tests?
+if [ "$RUN_TESTS" == "Y" ]; then
+  # Only run indy-sdk tests if the source is present
+  if [ -d "/src/indy-sdk" ]; then
+    cd /src/indy-sdk
+    sudo /vagrant-common/indypool.py start
+    #docker build -f ci/indy-pool.dockerfile -t indy_pool .
+    #docker run -itd --name indy_pool -p 9701-9708:9701-9708 indy_pool
+    cd /src/indy-sdk/libindy
+    su -c "RUST_TEST_THREADS=1 /home/vagrant/.cargo/bin/cargo test" vagrant
+  fi
+fi
+
+#--------------------------------------------------------
+if [ "$RUN_CLEANUP" == "Y" ]; then
+  echo 'Cleaning Up'
+  rm /etc/update-motd.d/10-help-text
+  rm /etc/update-motd.d/97-overlayroot
+fi
+
+#--------------------------------------------------------
+echo "Post-Build/Test setup..."
+if [ -d "/src/indy-sdk" ]; then
+  echo "Making sure indy_pool is running ..."
+  sudo /vagrant-common/indypool.py start
+
+  echo "Setting up vagrant user's .bashrc to use indy-sdk Python bindings ..."
+  # Only add indy-sdk python wrappers to the PTHONPATH if indy-sdk source is present
+  vagrant_bashrc="/home/vagrant/.bashrc"
+  python_wrappers_path='export PYTHONPATH=$PYTHONPATH:/src/indy-sdk/wrappers/python'
+  if ! grep -q "${python_wrappers_path}" ${vagrant_bashrc}; then
+    echo "Add libindy python wrappers to the PYTHONPATH in ${vagrant_bashrc} ..."
+    echo "${python_wrappers_path}" >> ${vagrant_bashrc}
+  fi
+  libindy_debug_lib_path='export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/src/indy-sdk/libindy/target/debug'
+  if ! grep -q "${libindy_debug_lib_path}" ${vagrant_bashrc}; then
+    echo "Add libindy debug libs to LD_LIBRARY_PATH in ${vagrant_bashrc} ..."
+    echo "${libindy_debug_lib_path}" >> ${vagrant_bashrc}
+  fi
+fi
+
+# Removed, because Python 3.5 works and 3.6 from ppa:jonathonf has a known issue
+# on Ubuntu 16.04: https://bugs.python.org/issue29307
+#--------------------------------------------------------
+#echo "Install Python 3.6 ..."
+#add-apt-repository ppa:jonathonf/python-3.6
+#apt-get update
+#apt-get install -y python3.6
+
+#--------------------------------------------------------
+echo "Setup default .vimrc ..."
+echo ":set colorcolumn=80" >> /home/vagrant/.vimrc
+
+apt-get update
+#DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+updatedb
+SCRIPT
+
+Vagrant.configure("2") do |config|
+
+  config.vm.define "development" do |development|
+    development.vm.box = development_box
+    development.vm.host_name = "development.sandbox.evernym.lab"
+    development.vm.network 'public_network'
+    development.ssh.private_key_path = '~/.vagrant.d/insecure_private_key'
+    development.ssh.insert_key = false
+    development.vm.provider "virtualbox" do |vb|
+      vb.name   = "sandbox-development"
+      vb.gui    = false
+      vb.memory = development_memory
+      vb.cpus   = development_cpus
+      vb.customize ["modifyvm", :id, "--cableconnected1", "on"]
+    end
+    # Uncomment the following line to set the default bridge.
+    # The bridge string MUST match your connection exactly as
+    # it appears when you are prompted to select a bridge during
+    # provisioning.
+    #default.vm.network "public_network", bridge: "en0: Wi-Fi (AirPort)"
+    development.vm.provision "shell" do |s|
+      s.inline = $script
+      s.args   = [
+        development_branch,
+        development_run_build,
+        development_run_tests,
+        development_run_cleanup
+      ]
+    end
+    filtered_development_repos.each do |key, value|
+      path = value['path']
+      #print "Setup rsync-ed folder: development.vm.synced_folder '#{value}', '/vagrant/#{key}', type: 'rsync'\n"
+      development.vm.synced_folder "#{path}", "/vagrant/#{key}"
+    end
+
+    # Include all DevelopmentEnvironment common scripts/tools. These tools will
+    # be referenced with an absolute path in the guest VM.
+    development.vm.synced_folder Dir.pwd + "/../common", "/vagrant-common"
+  end
+
+end

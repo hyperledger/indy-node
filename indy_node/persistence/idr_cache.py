@@ -1,10 +1,10 @@
 import rlp
+
+from indy_common.constants import ROLE, TGB, TRUST_ANCHOR
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX, \
     TXN_TIME
 from plenum.common.types import f
 from storage.kv_store import KeyValueStorage
-
-from indy_common.constants import ROLE, TGB, TRUST_ANCHOR
 from storage.optimistic_kv_store import OptimisticKVStore
 from stp_core.common.log import getlogger
 
@@ -107,7 +107,7 @@ class IdrCache(OptimisticKVStore):
             return
 
         try:
-            super().commit_batch()
+            return super().commit_batch()
         except ValueError:
             logger.warning('{}{} found no uncommitted batch'.
                            format(THREE_PC_PREFIX, self))
@@ -175,4 +175,4 @@ class IdrCache(OptimisticKVStore):
             if nymData.get(VERKEY) is None:
                 return nymData[f.IDENTIFIER.nm]
             return nym
-        logger.error('Nym {} not found'.format(nym))
+        logger.info('Nym {} not found'.format(nym))

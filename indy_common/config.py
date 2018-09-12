@@ -2,8 +2,8 @@ import os
 import logging
 from collections import OrderedDict
 
-from plenum.common.constants import ClientBootStrategy, HS_LEVELDB, KeyValueStorageType
-from plenum.config import pool_transactions_file_base, domain_transactions_file_base
+from plenum.common.constants import ClientBootStrategy, HS_ROCKSDB, HS_LEVELDB, KeyValueStorageType
+from plenum.config import rocksdb_default_config
 
 from indy_common.constants import Environment
 
@@ -39,24 +39,27 @@ outFilePath = "cli_output.log"
 clientBootStrategy = ClientBootStrategy.Custom
 
 hashStore = {
-    "type": HS_LEVELDB
+    "type": HS_ROCKSDB
 }
 
 primaryStorage = None
 
-configStateStorage = KeyValueStorageType.Leveldb
-idrCacheStorage = KeyValueStorageType.Leveldb
-attrStorage = KeyValueStorageType.Leveldb
+configStateStorage = KeyValueStorageType.Rocksdb
+idrCacheStorage = KeyValueStorageType.Rocksdb
+attrStorage = KeyValueStorageType.Rocksdb
 
 configStateDbName = 'config_state'
 attrDbName = 'attr_db'
 idrCacheDbName = 'idr_cache_db'
 
-RAETLogLevel = "concise"
-RAETLogLevelCli = "mute"
-RAETLogFilePath = os.path.expanduser("~/.indy/raet.log")
-RAETLogFilePathCli = None
-RAETMessageTimeout = 30
+rocksdb_attr_db_config = rocksdb_default_config.copy()
+# Change attr_db config here if you fully understand what's going on
+
+rocksdb_idr_cache_db_config = rocksdb_default_config.copy()
+# Change idr_cache_db config here if you fully understand what's going on
+
+db_attr_db_config = rocksdb_attr_db_config
+db_idr_cache_db_config = rocksdb_idr_cache_db_config
 
 
 PluginsToLoad = []
@@ -80,6 +83,7 @@ MinSepBetweenNodeUpgrades = 300
 
 
 upgradeLogFile = "upgrade_log"
+restartLogFile = "restart_log"
 
 lastVersionFilePath = "last_version_file"
 
@@ -98,3 +102,10 @@ agentLoggingLevel = logging.INFO
 default logging level for node
 '''
 logLevel = logging.INFO
+
+INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
+
+# Top level packet to be updated via pool upgrade command
+UPGRADE_ENTRY = 'indy-node'
+
+ANYONE_CAN_WRITE = False

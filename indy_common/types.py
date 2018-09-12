@@ -2,31 +2,36 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
-from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, VERSION, ORIGIN, FORCE
-from plenum.common.messages.fields import IterableField, AnyMapField, \
-    NonEmptyStringField, LedgerIdField as PLedgerIdField, \
-    LedgerInfoField as PLedgerInfoField
-from plenum.common.messages.node_message_factory import node_message_factory
-
+from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
+    DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+    POOL_UPGRADE, POOL_CONFIG, \
+    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, SHA256, \
+    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, START, CANCEL, \
+    REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
+    TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
+    REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
+    GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
+    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
+    CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE
+from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT
+from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
+from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
+from plenum.common.messages.fields import ConstantField, IdentifierField, \
+    LimitedLengthStringField, TxnSeqNoField, \
+    Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
+    ChooseField, IntegerField, IterableField, \
+    AnyMapField, NonEmptyStringField, DatetimeStringField
 from plenum.common.messages.message_base import MessageValidator
+from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
 from plenum.common.types import OPERATION
-from plenum.common.messages.node_messages import NonNegativeNumberField
-from plenum.common.messages.fields import ConstantField, IdentifierField, LimitedLengthStringField, TxnSeqNoField, \
-    Sha256HexField, JsonField, MapField, BooleanField, VersionField, ChooseField
-from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
-from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
-    NONCE_FIELD_LIMIT, ORIGIN_FIELD_LIMIT, \
+    NONCE_FIELD_LIMIT, \
     ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
-    HASH_FIELD_LIMIT, VERSION_FIELD_LIMIT
-
-from indy_common.constants import TXN_TYPE, allOpKeys, ATTRIB, GET_ATTR, \
-    DATA, GET_NYM, reqOpKeys, GET_TXNS, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
-    NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
-    DISCLO, ATTR_NAMES, REVOCATION, SCHEMA, ENDPOINT, CLAIM_DEF, REF, SIGNATURE_TYPE, SCHEDULE, SHA256, \
-    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, PRIMARY, START, CANCEL
+    VERSION_FIELD_LIMIT
 
 
 class Request(PRequest):
@@ -63,24 +68,65 @@ class ClientDiscloOperation(MessageValidator):
 
 class GetSchemaField(MessageValidator):
     schema = (
-        (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
-        (ORIGIN, LimitedLengthStringField(max_length=ORIGIN_FIELD_LIMIT, optional=True)),
+        (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (ORIGIN, IdentifierField(optional=True))
     )
 
 
 class SchemaField(MessageValidator):
     schema = (
-        (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
-        (ATTR_NAMES, IterableField(LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))),
+        (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (SCHEMA_ATTR_NAMES, IterableField(
+            LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
+            min_length=1)),
     )
 
 
 class ClaimDefField(MessageValidator):
     schema = (
-        (PRIMARY, AnyMapField()),
-        (REVOCATION, AnyMapField(optional=True)),
+        (CLAIM_DEF_PRIMARY, AnyMapField()),
+        (CLAIM_DEF_REVOCATION, AnyMapField(optional=True)),
+    )
+
+
+class RevocDefValueField(MessageValidator):
+    schema = (
+        (ISSUANCE_TYPE, NonEmptyStringField()),
+        (MAX_CRED_NUM, IntegerField()),
+        (PUBLIC_KEYS, AnyMapField()),
+        (TAILS_HASH, NonEmptyStringField()),
+        (TAILS_LOCATION, NonEmptyStringField()),
+    )
+
+
+class ClientRevocDefSubmitField(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(REVOC_REG_DEF)),
+        (ID, NonEmptyStringField()),
+        (REVOC_TYPE, NonEmptyStringField()),
+        (TAG, NonEmptyStringField()),
+        (CRED_DEF_ID, NonEmptyStringField()),
+        (VALUE, RevocDefValueField())
+    )
+
+
+class RevocRegEntryValueField(MessageValidator):
+    schema = (
+        (PREV_ACCUM, NonEmptyStringField(optional=True)),
+        (ACCUM, NonEmptyStringField()),
+        (ISSUED, IterableField(inner_field_type=IntegerField(), optional=True)),
+        (REVOKED, IterableField(inner_field_type=IntegerField(), optional=True))
+    )
+
+
+class ClientRevocRegEntrySubmitField(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(REVOC_REG_ENTRY)),
+        (REVOC_REG_DEF_ID, NonEmptyStringField()),
+        (REVOC_TYPE, NonEmptyStringField()),
+        (VALUE, RevocRegEntryValueField())
     )
 
 
@@ -94,7 +140,7 @@ class ClientSchemaOperation(MessageValidator):
 class ClientGetSchemaOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_SCHEMA)),
-        (TARGET_NYM, IdentifierField()),
+        (SCHEMA_FROM, IdentifierField()),
         (DATA, GetSchemaField()),
     )
 
@@ -105,15 +151,15 @@ class ClientAttribOperation(MessageValidator):
         (TARGET_NYM, IdentifierField(optional=True)),
         (RAW, JsonField(max_length=JSON_FIELD_LIMIT, optional=True)),
         (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
-        (HASH, LimitedLengthStringField(max_length=HASH_FIELD_LIMIT, optional=True)),
+        (HASH, Sha256HexField(optional=True)),
     )
 
     def _validate_message(self, msg):
-        self.__validate_field_set(msg)
+        self._validate_field_set(msg)
         if RAW in msg:
             self.__validate_raw_field(msg[RAW])
 
-    def __validate_field_set(self, msg):
+    def _validate_field_set(self, msg):
         fields_n = sum(1 for f in (RAW, ENC, HASH) if f in msg)
         if fields_n == 0:
             self._raise_missed_fields(RAW, ENC, HASH)
@@ -157,29 +203,60 @@ class ClientAttribOperation(MessageValidator):
                                        'invalid endpoint port')
 
 
-class ClientGetAttribOperation(MessageValidator):
+class ClientGetAttribOperation(ClientAttribOperation):
     schema = (
         (TXN_TYPE, ConstantField(GET_ATTR)),
         (TARGET_NYM, IdentifierField(optional=True)),
-        (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT)),
+        (RAW, LimitedLengthStringField(max_length=RAW_FIELD_LIMIT, optional=True)),
+        (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
+        (HASH, Sha256HexField(optional=True)),
     )
+
+    def _validate_message(self, msg):
+        self._validate_field_set(msg)
 
 
 class ClientClaimDefSubmitOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(CLAIM_DEF)),
-        (REF, TxnSeqNoField()),
-        (DATA, ClaimDefField()),
-        (SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (CLAIM_DEF_SCHEMA_REF, TxnSeqNoField()),
+        (CLAIM_DEF_PUBLIC_KEYS, ClaimDefField()),
+        (CLAIM_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (CLAIM_DEF_TAG, LimitedLengthStringField(max_length=256, optional=True)),
     )
 
 
 class ClientClaimDefGetOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(GET_CLAIM_DEF)),
-        (REF, TxnSeqNoField()),
-        (ORIGIN, IdentifierField()),
-        (SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (CLAIM_DEF_SCHEMA_REF, TxnSeqNoField()),
+        (CLAIM_DEF_FROM, IdentifierField()),
+        (CLAIM_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
+        (CLAIM_DEF_TAG, LimitedLengthStringField(max_length=256, optional=True)),
+    )
+
+
+class ClientGetRevocRegDefField(MessageValidator):
+    schema = (
+        (ID, NonEmptyStringField()),
+        (TXN_TYPE, ConstantField(GET_REVOC_REG_DEF)),
+    )
+
+
+class ClientGetRevocRegField(MessageValidator):
+    schema = (
+        (REVOC_REG_DEF_ID, NonEmptyStringField()),
+        (TIMESTAMP, IntegerField()),
+        (TXN_TYPE, ConstantField(GET_REVOC_REG)),
+    )
+
+
+class ClientGetRevocRegDeltaField(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(GET_REVOC_REG_DELTA)),
+        (REVOC_REG_DEF_ID, NonEmptyStringField()),
+        (FROM, IntegerField(optional=True)),
+        (TO, IntegerField()),
     )
 
 
@@ -197,6 +274,22 @@ class ClientPoolUpgradeOperation(MessageValidator):
         (NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (FORCE, BooleanField(optional=True)),
         (REINSTALL, BooleanField(optional=True)),
+        (PACKAGE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT, optional=True)),
+    )
+
+
+class ClientPoolRestartOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(POOL_RESTART)),
+        (ACTION, ChooseField(values=(START, CANCEL,))),
+        (DATETIME, DatetimeStringField(exceptional_values=["0", ""],
+                                       optional=True)),
+    )
+
+
+class ClientValidatorInfoOperation(MessageValidator):
+    schema = (
+        (TXN_TYPE, ConstantField(VALIDATOR_INFO)),
     )
 
 
@@ -209,7 +302,6 @@ class ClientPoolConfigOperation(MessageValidator):
 
 
 class ClientOperationField(PClientOperationField):
-
     _specific_operations = {
         SCHEMA: ClientSchemaOperation(),
         ATTRIB: ClientAttribOperation(),
@@ -221,6 +313,13 @@ class ClientOperationField(PClientOperationField):
         GET_SCHEMA: ClientGetSchemaOperation(),
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
         POOL_CONFIG: ClientPoolConfigOperation(),
+        POOL_RESTART: ClientPoolRestartOperation(),
+        VALIDATOR_INFO: ClientValidatorInfoOperation(),
+        REVOC_REG_DEF: ClientRevocDefSubmitField(),
+        REVOC_REG_ENTRY: ClientRevocRegEntrySubmitField(),
+        GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
+        GET_REVOC_REG: ClientGetRevocRegField(),
+        GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class
@@ -231,7 +330,6 @@ class ClientOperationField(PClientOperationField):
 
 
 class ClientMessageValidator(PClientMessageValidator):
-
     # extend operation field
     schema = tuple(
         map(lambda x: (x[0], ClientOperationField()) if x[0] == OPERATION else x,
@@ -239,27 +337,27 @@ class ClientMessageValidator(PClientMessageValidator):
     )
 
 
-class LedgerIdField(PLedgerIdField):
-    ledger_ids = PLedgerIdField.ledger_ids + (CONFIG_LEDGER_ID,)
-
-
-class LedgerInfoField(PLedgerInfoField):
-    _ledger_id_class = LedgerIdField
+# THE CODE BELOW MIGHT BE NEEDED IN THE FUTURE, THEREFORE KEEPING IT
+# class LedgerIdField(PLedgerIdField):
+#     ledger_ids = PLedgerIdField.ledger_ids + (CONFIG_LEDGER_ID,)
+#
+#
+# class LedgerInfoField(PLedgerInfoField):
+#     _ledger_id_class = LedgerIdField
 
 
 # TODO: it is a workaround which helps extend some fields from
 # downstream projects, should be removed after we find a better way
 # to do this
-node_message_factory.update_schemas_by_field_type(
-    PLedgerIdField, LedgerIdField)
-node_message_factory.update_schemas_by_field_type(
-    PLedgerInfoField, LedgerInfoField)
+# node_message_factory.update_schemas_by_field_type(
+#     PLedgerIdField, LedgerIdField)
+# node_message_factory.update_schemas_by_field_type(
+#     PLedgerInfoField, LedgerInfoField)
 
 
 class SafeRequest(Request, ClientMessageValidator):
-
     def __init__(self, **kwargs):
-        ClientMessageValidator.__init__(self, operation_schema_is_strict=True,
-                                        schema_is_strict=False)
+        ClientMessageValidator.__init__(self,
+                                        operation_schema_is_strict=OPERATION_SCHEMA_IS_STRICT)
         self.validate(kwargs)
         Request.__init__(self, **kwargs)

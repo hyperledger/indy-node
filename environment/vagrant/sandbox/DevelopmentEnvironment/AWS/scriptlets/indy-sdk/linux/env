@@ -1,0 +1,16 @@
+echo "Making sure indy_pool is running ..."
+sudo /vagrant/common/indypool.py start
+
+echo "Setting up vagrant user's .bashrc to use indy-sdk Python bindings ..."
+# Only add indy-sdk python wrappers to the PTHONPATH if indy-sdk source is present
+vagrant_bashrc="/home/ec2-user/.bashrc"
+python_wrappers_path='export PYTHONPATH=$PYTHONPATH:/src/indy-sdk/wrappers/python'
+if ! grep -q "${python_wrappers_path}" ${vagrant_bashrc}; then
+  echo "Add libindy python wrappers to the PYTHONPATH in ${vagrant_bashrc} ..."
+  echo "${python_wrappers_path}" >> ${vagrant_bashrc}
+fi
+libindy_debug_lib_path='export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/src/indy-sdk/libindy/target/debug'
+if ! grep -q "${libindy_debug_lib_path}" ${vagrant_bashrc}; then
+  echo "Add libindy debug libs to LD_LIBRARY_PATH in ${vagrant_bashrc} ..."
+  echo "${libindy_debug_lib_path}" >> ${vagrant_bashrc}
+fi

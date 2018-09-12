@@ -4,7 +4,9 @@ import re
 import tempfile
 from typing import List
 
+import base58
 import pytest
+from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 from plenum.common.signer_did import DidSigner
 from indy_client.test.agent.acme import ACME_ID, ACME_SEED
 from indy_client.test.agent.acme import ACME_VERKEY
@@ -12,6 +14,7 @@ from indy_client.test.agent.faber import FABER_ID, FABER_VERKEY, FABER_SEED
 from indy_client.test.agent.thrift import THRIFT_ID, THRIFT_VERKEY, THRIFT_SEED
 from indy_common.config_helper import NodeConfigHelper
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
+from plenum.common.txn_util import get_type
 
 from stp_core.crypto.util import randomSeed
 from stp_core.network.port_dispenser import genHa
@@ -19,7 +22,8 @@ from stp_core.network.port_dispenser import genHa
 import plenum
 from plenum.common import util
 from plenum.common.constants import ALIAS, NODE_IP, NODE_PORT, CLIENT_IP, \
-    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, TXN_TYPE, NODE, NYM
+    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, TXN_TYPE, NODE, NYM, \
+    BLS_KEY_PROOF
 from plenum.common.constants import CLIENT_STACK_SUFFIX
 from plenum.common.exceptions import BlowUp
 from plenum.common.signer_simple import SimpleSigner
@@ -30,7 +34,7 @@ from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 from plenum.test.conftest import txnPoolNodeSet, patchPluginManager, tdirWithNodeKeepInited
 from stp_core.loop.eventually import eventually
 from stp_core.common.log import getlogger
-from plenum.test.conftest import tdirWithPoolTxns, tdirWithDomainTxns
+from plenum.test.conftest import tdirWithPoolTxns
 from indy_client.cli.helper import USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
 from indy_client.test.helper import createNym, buildStewardClient
 from indy_common.constants import ENDPOINT, TRUST_ANCHOR
@@ -52,7 +56,7 @@ from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
     faberWallet, acmeWallet, thriftWallet, agentIpAddress, \
     faberAgentPort, acmeAgentPort, thriftAgentPort, faberAgent, acmeAgent, \
     thriftAgent, faberBootstrap, acmeBootstrap
-from indy_client.test.cli.helper import connect_and_check_output
+from indy_client.test.cli.helper import connect_and_check_output, disconnect_and_check_output
 from indy_common.config_helper import ConfigHelper
 from stp_core.crypto.util import randomSeed
 
@@ -88,13 +92,13 @@ def newKeyPairCreated(cli):
 
 
 @pytest.fixture(scope="module")
-def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns,
                txnPoolNodesLooper, tconf, cliTempLogger):
     return getCliBuilder(
         tdir,
         tconf,
         tdirWithPoolTxns,
-        tdirWithDomainTxnsUpdated,
+        tdirWithDomainTxns,
         logFileName=cliTempLogger,
         def_looper=txnPoolNodesLooper)
 
@@ -125,7 +129,7 @@ def susanMap():
     return getDefaultUserMap("Susan")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="module") # noqa
 def faberMap(agentIpAddress, faberAgentPort):
     ha = "{}:{}".format(agentIpAddress, faberAgentPort)
     return {'inviter': 'Faber College',
@@ -949,7 +953,7 @@ def custom_tdir_with_pool_txns(pool_txn_data, tdir_for_pool_txns, pool_transacti
     ledger = create_genesis_txn_init_ledger(tdir_for_pool_txns, pool_transactions_file_name)
 
     for item in pool_txn_data["txns"]:
-        if item.get(TXN_TYPE) == NODE:
+        if get_type(item) == NODE:
             ledger.add(item)
     ledger.stop()
     return tdir_for_pool_txns
@@ -960,7 +964,7 @@ def custom_tdir_with_domain_txns(pool_txn_data, tdir_for_domain_txns,
     ledger = create_genesis_txn_init_ledger(tdir_for_domain_txns, domain_transactions_file_name)
 
     for item in pool_txn_data["txns"]:
-        if item.get(TXN_TYPE) == NYM:
+        if get_type(item) == NYM:
             ledger.add(item)
     ledger.stop()
     return tdir_for_domain_txns
@@ -1232,28 +1236,28 @@ def savedKeyringRestored():
 # TODO: Need to refactor following three fixture to reuse code
 @pytest.yield_fixture(scope="module")
 def cliForMultiNodePools(request, multiPoolNodesCreated, tdir,
-                         tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                         tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                          cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("susan")
 
 
 @pytest.yield_fixture(scope="module")
 def aliceMultiNodePools(request, multiPoolNodesCreated, tdir,
-                        tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                        tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                         cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("alice")
 
 
 @pytest.yield_fixture(scope="module")
 def earlMultiNodePools(request, multiPoolNodesCreated, tdir,
-                       tdirWithPoolTxns, tdirWithDomainTxnsUpdated, tconf,
+                       tdirWithPoolTxns, tdirWithDomainTxns, tconf,
                        cliTempLogger):
     yield from getCliBuilder(tdir, tconf,
-                             tdirWithPoolTxns, tdirWithDomainTxnsUpdated,
+                             tdirWithPoolTxns, tdirWithDomainTxns,
                              cliTempLogger, multiPoolNodesCreated)("earl")
 
 
@@ -1349,11 +1353,18 @@ def newStewardVals():
     }
 
 
+@pytest.fixture(scope='function')
+def new_bls_keys():
+    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
+    return bls_key, key_proof
+
+
 @pytest.fixture(scope='module')
 def newNodeVals():
     newNodeSeed = randomSeed()
     nodeIp, nodePort = genHa()
     clientIp, clientPort = genHa()
+    _, bls_key, key_proof = create_default_bls_crypto_factory().generate_bls_keys()
 
     newNodeData = {
         NODE_IP: nodeIp,
@@ -1362,7 +1373,8 @@ def newNodeVals():
         CLIENT_PORT: clientPort,
         ALIAS: randomString(6),
         SERVICES: [VALIDATOR],
-        BLS_KEY: '0' * 32
+        BLS_KEY: bls_key,
+        BLS_KEY_PROOF: key_proof
     }
 
     return {
@@ -1412,11 +1424,6 @@ def newStewardCli(be, do, poolNodesStarted, trusteeCli,
 @pytest.fixture(scope="module")
 def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
                  newNodeVals):
-    be(philCli)
-
-    if not philCli._isConnectedToAnyEnv():
-        connect_and_check_output(do, philCli.txn_dir)
-
     be(newStewardCli)
     doSendNodeCmd(do, newNodeVals)
     newNodeData = newNodeVals["newNodeData"]
@@ -1430,13 +1437,23 @@ def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
             name = newNodeData[ALIAS]
             assert name in node.nodeReg
 
+    # Reconnect steward's CLI to get new pool membership info.
+    disconnect_and_check_output(do)
+    connect_and_check_output(do, newStewardCli.txn_dir)
+
     timeout = waits.expectedClientToPoolConnectionTimeout(
-        util.getMaxFailures(len(philCli.nodeReg))
-    )
+        len(newStewardCli.activeClient.nodeReg))
 
     newStewardCli.looper.run(eventually(checkClientConnected,
                                         newStewardCli.activeClient,
                                         timeout=timeout))
+
+    be(philCli)
+
+    # Reconnect Phil's CLI if needed to get new pool membership info.
+    if philCli._isConnectedToAnyEnv():
+        disconnect_and_check_output(do)
+    connect_and_check_output(do, philCli.txn_dir)
 
     philCli.looper.run(eventually(checkClientConnected,
                                   philCli.activeClient,

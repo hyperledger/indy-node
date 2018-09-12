@@ -1,0 +1,18 @@
+#setup environment
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+pool connect AS-pool
+- wallet create AS-02-wallet key=testkey storage_config={"pool":"AS-pool"}
+wallet open AS-02-wallet key=testkey
+#additg test DIDs with different roles for roles adding
+did new seed=StewardNode500000000000000000000 metadata="node5 steward"
+did new seed=StewardNode600000000000000000000 metadata="node6 steward"
+did new seed=TestAddNodeWithTrustAnchor000000 metadata="trust anchor"
+did new seed=TestAddNodeWithIdentityOwner0000 metadata="identity owner"
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+did new seed=TrusteeTest080000000000000000000 metadata="custom trustee"
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=XhYtvJqezMUKfF6KVNaGmT role=STEWARD verkey=~RmCt3RtDvKDfQBSKxo4qvy 
+ledger nym did=FBQ5W7LxRp8bLeVNEafjpd role=STEWARD verkey=~2a4KepmnVVAPGo5gNA3P3p 
+ledger nym did=Rhx2qwaeiGyhU9vn4ynHSS role=TRUST_ANCHOR verkey=~RTJS62PRHurqHJnbnT1Hgi 
+ledger nym did=5qhSKMkpqui6taGLTecwqf verkey=~UWK9xwiKsqMQSBmymYpR5v
+ledger nym did=WnynyXyqjNFXeGELaR81Gh role=TRUSTEE verkey=~XKXdGyymBGos1Hz2JPCEkM

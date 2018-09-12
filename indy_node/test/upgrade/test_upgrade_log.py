@@ -8,6 +8,7 @@ from os import path
 
 tmpDir = "/tmp/indy/"
 tmpFileName = "upgrade_log_test_file"
+tmpPkgName = "tmpPkgName"
 
 
 def test_update_log():
@@ -30,12 +31,14 @@ def test_update_log():
     upgrade_id = '1'
 
     # Check that we can add and then get event
-    log.appendScheduled(now, version, upgrade_id)
+    log.appendScheduled(now, version, upgrade_id, tmpPkgName)
     last = log.lastEvent
-    assert last[1] is UpgradeLog.UPGRADE_SCHEDULED
+    assert last[1] is UpgradeLog.SCHEDULED
     assert last[2] == now
     assert last[3] == version
     assert last[4] == upgrade_id
+    assert last[5] == tmpPkgName
+
 
     # Check that the we can load and parse the line we appended before
     assert UpgradeLog(tmpFilePath).lastEvent == last

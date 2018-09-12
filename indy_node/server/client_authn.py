@@ -1,15 +1,14 @@
 from copy import deepcopy
 from hashlib import sha256
 
-from indy_node.server.config_req_handler import ConfigReqHandler
 from plenum.common.types import OPERATION
 from plenum.common.constants import TXN_TYPE, RAW, ENC, HASH
 from plenum.server.client_authn import NaclAuthNr, CoreAuthNr, CoreAuthMixin
 
-from indy_common.constants import ATTRIB, GET_TXNS
-from indy_node.server.pool_req_handler import PoolRequestHandler
-from indy_node.server.domain_req_handler import DomainReqHandler
-
+from indy_common.constants import ATTRIB, POOL_UPGRADE, SCHEMA, CLAIM_DEF, \
+    GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, POOL_CONFIG, POOL_RESTART, \
+    REVOC_REG_DEF, REVOC_REG_ENTRY, \
+    GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, VALIDATOR_INFO
 from indy_node.persistence.idr_cache import IdrCache
 
 
@@ -18,23 +17,13 @@ class LedgerBasedAuthNr(CoreAuthMixin, NaclAuthNr):
     Transaction-based client authenticator.
     """
 
-    write_types = CoreAuthMixin.write_types.union(
-        PoolRequestHandler.write_types
-    ).union(
-        DomainReqHandler.write_types
-    ).union(
-        ConfigReqHandler.write_types
-    )
-
-    query_types = CoreAuthMixin.query_types.union(
-        {GET_TXNS, }
-    ).union(
-        PoolRequestHandler.query_types
-    ).union(
-        DomainReqHandler.query_types
-    ).union(
-        ConfigReqHandler.query_types
-    )
+    write_types = CoreAuthMixin.write_types.union({ATTRIB, SCHEMA, CLAIM_DEF,
+                                                   POOL_CONFIG, POOL_UPGRADE,
+                                                   REVOC_REG_DEF, REVOC_REG_ENTRY})
+    query_types = CoreAuthMixin.query_types.union({GET_NYM, GET_ATTR, GET_SCHEMA,
+                                                   GET_CLAIM_DEF, GET_REVOC_REG_DEF,
+                                                   GET_REVOC_REG, GET_REVOC_REG_DELTA})
+    action_types = CoreAuthMixin.action_types.union({POOL_RESTART, VALIDATOR_INFO})
 
     def __init__(self, cache: IdrCache):
         NaclAuthNr.__init__(self)

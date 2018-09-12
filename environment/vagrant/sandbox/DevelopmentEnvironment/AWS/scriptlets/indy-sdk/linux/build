@@ -1,0 +1,8 @@
+echo "Building indy-sdk..."                                                     
+cd /src/indy-sdk/libindy                                                        
+# Ammending PKG_CONFIG_PATH and LD_LIBRARY_PATH is only needed during initial   
+# provisioning. Once the developoment VM is created, these ammendments are      
+# performed in the ec2-user .bashrc. Without these ammendments, initial   
+# provisioning will result in a RUST panic stating "Package libsodium was not   
+# found in the pkg-config search path."                                         
+sudo -H -u ec2-user PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib /home/ec2-user/.cargo/bin/cargo build 

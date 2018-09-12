@@ -5,10 +5,10 @@ from collections import deque
 from typing import Dict, Union, Tuple, Optional, Callable
 
 from base58 import b58decode, b58encode
-from plenum import config
 
 from plenum.client.client import Client as PlenumClient
 from plenum.common.error import fault
+from plenum.common.txn_util import get_type
 from stp_core.common.log import getlogger
 from plenum.common.startable import Status
 
@@ -18,12 +18,11 @@ from plenum.common.types import f
 from plenum.common.util import libnacl
 from plenum.server.router import Router
 from stp_core.network.auth_mode import AuthMode
-from stp_raet.rstack import SimpleRStack
 from stp_zmq.simple_zstack import SimpleZStack
 
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, GET_NYM, ROLE, \
     NYM, GET_TXNS, LAST_TXN, TXNS, SCHEMA, CLAIM_DEF, SKEY, DISCLO, \
-    GET_ATTR, TRUST_ANCHOR, GET_CLAIM_DEF, GET_SCHEMA, SIGNATURE_TYPE, REF
+    GET_ATTR, TRUST_ANCHOR, GET_CLAIM_DEF, GET_SCHEMA
 
 from indy_client.persistence.client_req_rep_store_file import ClientReqRepStoreFile
 from indy_client.persistence.client_txn_log import ClientTxnLog
@@ -88,9 +87,7 @@ class Client(PlenumClient):
 
     @property
     def peerStackClass(self):
-        if config.UseZStack:
-            return SimpleZStack
-        return SimpleRStack
+        return SimpleZStack
 
     def setupAnoncreds(self):
         if self.anoncredsAreSetUp is False:
@@ -130,8 +127,8 @@ class Client(PlenumClient):
         if OP_FIELD_NAME not in msg:
             logger.error("Op absent in message {}".format(msg))
 
-    def requestConfirmed(self, identifier: str, reqId: int) -> bool:
-        return self.txnLog.hasTxnWithReqId(identifier, reqId)
+    def requestConfirmed(self, key) -> bool:
+        return self.txnLog.hasTxnWithReqId(key)
 
     def hasConsensus(self, identifier: str, reqId: int) -> Optional[str]:
         return super().hasConsensus(identifier, reqId)
@@ -141,7 +138,7 @@ class Client(PlenumClient):
         if request_type == GET_NYM:
             return domain.prepare_get_nym_for_state(result)
         if request_type == GET_ATTR:
-            path, value, hashed_value, value_bytes = \
+            attr_type, path, value, hashed_value, value_bytes = \
                 domain.prepare_get_attr_for_state(result)
             return path, value_bytes
         if request_type == GET_CLAIM_DEF:
@@ -165,8 +162,8 @@ class Client(PlenumClient):
         op = {
             TARGET_NYM: target,
             TXN_TYPE: DISCLO,
-            NONCE: b58encode(nonce),
-            DATA: b58encode(boxedMsg)
+            NONCE: b58encode(nonce).decode("utf-8"),
+            DATA: b58encode(boxedMsg).decode("utf-8")
         }
         self.submit(op, identifier=origin)
 
@@ -188,7 +185,7 @@ class Client(PlenumClient):
 
     def hasNym(self, nym):
         for txn in self.txnLog.getTxnsByType(NYM):
-            if txn.get(TXN_TYPE) == NYM:
+            if get_type(txn) == NYM:
                 return True
         return False
 

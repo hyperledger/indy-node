@@ -1,0 +1,814 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Require pretty printer when debugging
+require 'pp'
+require 'set'
+
+# README
+#
+# This Vagrantfile is designed to instantiate an Indy Development Environment
+# using AWS as the vagrant provider and automates the following:
+#
+#  1. Clone all the required source code from github, or use clones you have
+#     already created.
+#    1.1. Source code should reside in your desktop environment and be available
+#         in the AWS VM as an rsync-ed folder. This allows the developer the
+#         option of using an IDE in their own graphical desktop environment with
+#         their own license. `vagrant rsync` performs a one time rsync from your
+#         desktop out to the AWS vm(s). `vagrant rsync-auto` starts a process(es)
+#         that monitor changes on your desktop that auto-rcyncs files for you.
+#         You will have to run `vagrant rsync-auto` in it's own terminal or in
+#         the background.
+#  2. Install build tools/dependencies.
+#  3. (Optional) Build source code
+#  4. (Optional) Setup build/test environment
+#  5. (Optional) Run unit tests
+#  6. (Optional) Bundle artifacts
+#  7. (Optional) Deposit artifacts
+#  8. (Optional) Deploy artifacts
+#  9. (Optional) Clean up
+#
+# Prerequisites:
+#  1. Install Vagrant
+#
+#  2. Install the vagrant-aws plugin
+#      https://github.com/mitchellh/vagrant-aws/blob/master/README.md 
+#
+#     Run the following from the command line:
+#     $ vagrant plugin install vagrant-aws
+#
+#  3. Add a Vagrant box for use by this Vagrantfile
+#     Option 1: (recommended/default) Use the vagrant-aws plugin provided box.
+#       This option requires that you specifying all the AWS provider details
+#       within the config.vm.profider block.
+# 
+#       $ vagrant box add dummy https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box
+#
+#       Proceed to complete the "Configure the AWS Vagrant provider" step below.
+#
+#     Option 2: Create your own AWS Vagrant box:
+#         2.1 Follow these instructions:
+#           https://github.com/mitchellh/vagrant-aws/tree/master/example_box
+#         2.2 Change config.vm.box = "dummy" in the Vagrant.configure block
+#           below to the name of the Vagrant box you created and added.
+#         2.3 Comment out any Vagrant.configure settings that you built into
+#           your own AWS Vagrant box.
+#         2.4 Skip steps in the "Configure the AWS Vagrant provider" step below
+#           that are handled by your own AWS Vagrant box.
+#
+#  4. Configure the AWS Vagrant provider:
+#     The title of each of the following steps has a corresponding section
+#     in the Vagrant provider (config.vm.provider) portion of the
+#     Vagrant.configure block below. Simply search for "----- <title> -----" to
+#     Jump to the corresponding configuration settings.
+#     4.1 - Authentication and Authorization
+#       IMPORTANT: You can choose your AWS profile and files location by using
+#       aws.aws_profile and aws.aws_dir, however environment variables will
+#       always have precedence as defined by the AWS documentation. Therefore,
+#       if you choose Option 2, be sure environment variables are NOT set, or
+#       you could comment out Option 2 and use the environment variables to
+#       configure your Access Key.
+# 
+#       You have 3 options when configuring AWS authentication/authorization:
+#         Option 1: AWS Profile (default - recommended)
+#           1.1 Follow instructions to setup the AWS cli:
+#             http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+#           1.2 Create a profile and note the name.
+#           1.3 Replace <PROFILE> below with the name.
+#         Option 2: Access Key
+#           2.1 Comment out Option 1 and uncomment Option 2 in the
+#               Vagrant.configure block below.
+#           2.2 Follow the "To get the access key ID and secret access key for
+#             an IAM user" instructions at the following URL if you don't
+#             already have an Access Key:
+#             http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+#           2.3: Replace <YOUR KEY>, <YOUR SECRET KEY>, and <REGION> in Option 2
+#             below. NOTE: Keep your keys safe. Do NOT commit these changes to
+#             git!
+#         Option 3: Session Token - A Session Token Service token.
+#           3.1 Replace <SESSION TOKEN> and <REGION> in Option 3 in the
+#             Vagrant.configure block below. NOTE: Keep your session tokens
+#             safe. Do NOT commit these changes to git! Even if a session token
+#             has a very limited lifetime.
+#     4.2 - Security Groups
+#       Replace or delete <SECURITY GROUP>. At minimum, the security group(s)
+#       must allow SSH (inbound/outbound)
+#     4.3 - Regions
+#       AMIs are based on the region you have configured. The AMI IDs are
+#       subject to change. Therefore, find the AMI you want to use in the the
+#       desired region. Refer to the following documentation to find an AMI
+#       for a given region:
+#         http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
+#       Key pairs are also region specific. Set the <KEY PAIR NAME> for each
+#       region you configure. The <KEY PAIR NAME> key must be defined in
+#       NETWORK & SECURITY in the EC2 Management Console. If you don't have a
+#       key pair defined, run ssh-kegen on your workstation and upload the
+#       public key to NETWORK & SECURITY > Key Pairs in the EC2 Management
+#       Console in the target region. You will set the SSH private key path in
+#       the SSH step below.
+#     4.4 - Instance Type
+#       Size your VM. Refer to the following documentation to find a suitable
+#       instance type:
+#         http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html
+#     4.5 - SSH
+#       We are using an SSH keypair where the public key exists in
+#       EC2 Management Console > NETWORK & SECURITY > Key Pairs. It is possible
+#       that each region (see Regions above) could have a different
+#       key pair (keypair_name). Therefore, add all private keys to the
+#       override.ssh.private_key_path array.
+#  5. Install and configure the 'aws' command line interface (CLI)
+#
+#     To deploy an AWS Lambda using the aws cli, you must setup an 'adminuser'
+#     profile using the aws CLI. Requiring a specific profile name allows the
+#     provisioning script to automate things. No other reason for the name.
+#
+#     1. You must create an IAM user:
+#     http://docs.aws.amazon.com/lambda/latest/dg/setting-up.html
+#
+#     2. The IAM user must be given an Execution Role (IAM Role):
+#     http://docs.aws.amazon.com/lambda/latest/dg/with-s3-example-create-iam-role.html
+#
+#     3. Get the access key ID and secret access key for the IAM user with the
+#        aforementioned execution role:
+#     http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+#
+#     4. From your workstation, run...
+#        'aws configure --profile adminuser'
+#        ... and enter an AWS Access Key ID, and an AWS Secret Access Key.
+#
+#        The 'aws configure' command creates properties files used by the aws CLI
+#        located in ~/.aws. If this directory exists on your workstation when
+#        running 'vagrant up', it will be rcync-ed to the AWS instance(s).
+#
+#  6. Permissions are managed using IAM Roles (i.e. Execution Role). You must
+#     obtain an ARN for a role with permissions to create default KMS keys
+#     (kms:Encrypt) and AWSLambdaBasicExecutionRole. You will be prompted for the
+#     ARN when deploying Lambdas if you do not define the ARN for a given repo
+#     that requires it.
+#
+#  7. Install Git
+#
+#  8. Create as many pool_transaction_<ledger>_genesis files as you would like to
+#     develop/test against. Create them in the Vagrant project root (the directory
+#     where this Vagrantfile resides). You MUST use the naming convention
+#     "pool_transactions_<ledger>_genesis". Note that <ledger> = "Sandbox" is
+#     reserved for use by tests. On 'vagrant up' or 'vagrant reload', Vagrant
+#     will rsync them to /vagrant on the AWS vm(s). You will be prompted for the
+#     genesis file when bundling Lambdas if you do not define the genesis file for
+#     a given repo that requires it. Rememver that they will be rsync-ed to
+#     /vargrant in the AWS Amazon Linux EC2 instance.
+#
+#
+# How to use:
+# Run 'vagrant up' and provide any missing configuration information. All of your
+# answers will be captured in config.properties.
+#
+# If you run into problems (i.e. shared folders, etc.), try 'vagrant reload
+# --provision'. Doing so will restart the VM and re-run the bootstrap script.
+# A slightly more expensive operation would be to 'vagrant destroy' followed by
+# 'vagrant up'.
+#
+# Some details to be aware of:
+#  1. All files and folders in the Vagrant project folder show up as shared
+#     resources in /vagrant on all Vagrant VM(s)/guests instantiated by this
+#     Vagrantfile. This is a design descision made by the Vagrant folks.
+#  2. Source code will be cloned into this Vagrant project folder using the git
+#     project name and then shared in /src/<git project name> in the Vagrant
+#     guest VM(s). The .gitignore file in this Vagrant project folder ignores
+#     these folders. If you add repos to config.properties, please add the repo
+#     name to the .gitignore file.
+#  3. The vagrant-aws plugin for Vagrant has minimal support for synced folders.
+#     Upon vagrant up, vagrant reload, and vagrant provision, the AWS provider
+#     will use rsync (if available) to uni-directionally sync the folder to the
+#     remote machine over SSH. Any code changes you make in the Vagrant guest/VM
+#     will either need to be committed/pushed from the Vagrant guest/VM or you
+#     will need to create a patch to apply to the cloned repos on your
+#     workstation (Vagrant host). Rsync-ing from the AWS instance back to your
+#     workstation is possible but is left for you to figure out.
+#
+# Troubleshooting:
+#
+# If you get an "undefined method" stacktrace in vagrant-aws/config.rb rooted in
+# 'read_aws_files'...
+#
+# `read_aws_files': undefined method `[]' for nil:NilClass (NoMethodError)
+#
+# ... the Vagrant AWS plugin is likely not configured properly. Did you replace
+# all the <...> tags in the config.vm.provider block?
+
+# Get a handle to the filepath of this Vagrantfile. Some file IO will be relative
+# to this Vagrantfile's project directory.
+filepath = File.expand_path(File.dirname(__FILE__))
+
+# Define the properties filename relative to filepath
+properties_filename = File.join("#{filepath}", "config.properties")
+
+# Load the config.properties file
+def load_properties(properties_filename)
+  properties = {}
+  File.open(properties_filename, 'r') do |properties_file|
+    properties_file.read.each_line do |line|
+      line.strip!
+      if (line[0] != ?# and line[0] != ?=)
+        i = line.index('=')
+        if (i)
+          properties[line[0..i - 1].strip] = line[i + 1..-1].strip
+        else
+          properties[line] = ''
+        end
+      end
+    end      
+  end
+  properties
+end
+
+def check_dependencies(repo, deps_hash, properties)
+  deps = deps_hash[repo]
+  found_missing_dep = false
+  deps.each do |dep|
+    msg = "Repo #{repo} depends on #{dep}."
+    # Skipped?
+    property_friendly_key = dep.gsub("-", ".")
+    skipped = properties["development.repos.#{property_friendly_key}.skipped"] || 'N'
+    if skipped == 'Y'
+      found_missing_dep = true
+      notify "#{msg} #{dep} is configured to be skipped in config.properties"
+      next
+    end
+    # Missing from config.properties?
+    if ! deps_hash.key?(dep)
+      found_missing_dep = true
+      notify "#{msg} #{dep} is missing from config.properties"
+      next
+    end
+  end
+  found_missing_dep
+end
+
+# Get the list of repos from config.properties in dependency order, check for
+# cyclic and missing dependencies. Each repo MUST define a 'path'. Use the path
+# property to extract the repo name.
+def get_repos_from_properties(properties)
+  # A hash of <repo> => <deps array>
+  deps_hash = {}
+  # A set of repos included in properties file
+  repos = Set.new []
+  # The set of repos ordered based on their deps
+  ordered_repos = []
+
+  # Extract repo names from the 'path' property for each repo
+  properties.each do |key, value|
+    if key.start_with?("development.repos.") && key.end_with?(".path")
+      # Extract the repo name from the key; replacing dots with dashes.
+      repo_property_name = key[18..(key.index('.path')-1)]
+      repo_name = repo_property_name.gsub(".", "-")
+
+      # Skip repo?
+      skipped = properties["development.repos.#{repo_property_name}.skipped"] || 'N'
+      if skipped == 'Y'
+        next
+      end
+      repos.add(repo_name)
+
+      # Add repo and it's deps to deps_hash
+      if properties.key?("development.repos.#{repo_property_name}.deps")
+        # Repo has deps
+        # Parse deps; trimming leading and trailing whitespace
+        deps = properties["development.repos.#{repo_property_name}.deps"].split(',').map(&:strip)
+        deps_hash[repo_name] = deps
+      else
+        deps_hash[repo_name] = []
+      end
+    end
+  end
+
+  #puts "deps hash"
+  #pp deps_hash
+  #puts "repos"
+  #pp repos
+
+  # Create an ordered list of repos based on deps. This will be an insertion sort
+  # with cyclical and missing dependency detection.
+  cyclical_dep_found = false
+  missing_dependency = false
+  repos.each do |repo|
+    puts "Repo #{repo} is included"
+    if ordered_repos.empty?
+      #puts "List of ordered repos is empty. Append #{repo}..."
+      missing_dependency = check_dependencies(repo, deps_hash, properties)
+      ordered_repos << repo
+    else
+      # Traverse ordered_repos and insert repo based on deps
+      ordered_repos.each_with_index do |ordered_repo, index|
+        #puts "index: #{index} ordered_repo: #{ordered_repo}"
+        #puts "Is #{repo} in #{ordered_repo}'s deps list?"
+        # Does repo depend on ordered_repo?
+        if deps_hash[ordered_repo].include?(repo)
+          #puts "Is #{repo} IS in #{ordered_repo}'s deps list!"
+          #puts "Is #{ordered_repo} in #{repo}'s deps list?"
+          # Check for cyclical dependency
+          if deps_hash[repo].include?(ordered_repo)
+            #puts "Is #{ordered_repo} IS in #{repo}'s deps list!"
+            notify "Repo #{repo} has a cyclical dependency on #{ordered_repo}"
+            cyclical_dep_found = true
+          end
+          missing_dependency = check_dependencies(repo, deps_hash, properties)
+          # repo depends on ordered_repo, insert repo BEFORE ordered_repo
+          ordered_repos.insert(index, repo)
+          break
+        end
+      end
+      # No deps?
+      if ! ordered_repos.include?(repo) && ! cyclical_dep_found
+        # No deps. Append repo to ordered_repos.
+        check_dependencies(repo, deps_hash, properties)
+        missing_dependency = check_dependencies(repo, deps_hash, properties)
+        ordered_repos << repo
+      end
+    end
+  end
+  # Found at least one cyclic dependency?
+  if cyclical_dep_found
+    msg = 'Invalid config.properties file. Eliminate the above cyclical'\
+      ' dependencies.'
+    notify_exit msg
+  end
+  # Found at least one missing dependency?
+  if missing_dependency
+    msg = 'Invalid config.properties file. Reconfigure config.properties'\
+      ' to include the above missing dependencies.'
+    notify_exit msg
+  end
+  ordered_repos
+end
+
+# Write a property to the config.properties file
+def write_property(properties_filename, name, value)
+  contents = File.read(properties_filename)
+  matching_string = "^#{name}=.*"
+  match_regex = Regexp.new matching_string
+  new_contents = contents
+  replacement_value = "#{name}=#{value}"
+  if contents.match(match_regex)
+    new_contents = contents.gsub((Regexp.new matching_string), replacement_value)
+  else
+    new_contents << "\n#{replacement_value}"
+  end
+  # To write changes to the file, use:
+  File.open(properties_filename, "w") do |file|
+    file.puts(new_contents)
+  end
+end
+
+def notify(message)
+  puts "Failure: #{message}"
+end
+
+def notify_exit(message)
+  notify message
+  exit 1
+end
+
+def load_scriptlet(path, include_begin_marker="Y")
+  scriptlet = ""
+  filepath = path.shift
+  full_joined_path = File.join(filepath, path)
+  scriptlet_path = File.join(path)
+  # Some files have shebangs. Do not write before a shebang!
+  if include_begin_marker.eql? "Y"
+    scriptlet << "\n# Begin #{scriptlet_path}"
+  end
+  begin
+    file_content = File.read(full_joined_path)
+  rescue => err
+    scriptlet << "\n# Did not load #{scriptlet_path}"
+    scriptlet << "\n# Reason: #{err}"
+  else
+    if include_begin_marker.eql? "Y"
+      scriptlet << "\n"
+    end
+    scriptlet << file_content
+  end
+  scriptlet << "\n# End #{scriptlet_path}"
+  scriptlet
+end
+
+# Build the bootstrap script
+def build_script(repos, properties, targets)
+  filepath = File.expand_path(File.dirname(__FILE__))
+
+  os_family = properties["development.box.os.family"] || "linux"
+  package_manager = properties["development.box.packagemanager"] || "yum"
+
+  script = ""
+  #scriptlets/common/pre/<os family>/<package manager>/setup
+  script << load_scriptlet(["#{filepath}", "scriptlets", "common", "pre", os_family, package_manager, "setup"], "N")
+  #scriptlets/common/pre/<os family>/setup - uses curl. Therefore, run <package manager>/setup first
+  script << load_scriptlet(["#{filepath}", "scriptlets", "common", "pre", os_family, "setup"])
+
+  repos.each { |repo| 
+    #scriptlets/<repo>/<os family>/pre/setup
+    script << load_scriptlet(["#{filepath}", "scriptlets", repo, os_family, "pre", "setup"])
+    #scriptlets/<repo>/<os family>/pre/<package manager>/setup
+    script << load_scriptlet(["#{filepath}", "scriptlets", repo, os_family, "pre", package_manager, "setup"])
+
+    property_friendly_key = repo.gsub("-", ".")
+
+    # Compose the script based on the configured target. If the target is not
+    # configured, default to the last target in 'targets'.
+    repo_target = properties["development.repos.#{property_friendly_key}.provision.target"] ||
+      targets[-1]
+
+    target_index = targets.find_index(repo_target)
+    #puts "Processing scriptlets for #{repo}'s #{repo_target} target"
+    targets.each_with_index do |target, index|
+      # Skip indexes after target_index
+      if index > target_index
+        break
+      end
+      target_enabled = properties["development.repos.#{property_friendly_key}.provision.#{target}"] ||
+        properties["development.provision.#{target}"] || "Y"
+
+      if target_enabled.eql? "Y"
+        #scriptlets/<repo>/<os family>/<target>
+        script << load_scriptlet(["#{filepath}", "scriptlets", repo, os_family, target])
+      end 
+    end 
+
+    #scriptlets/<repo>/<os family>/post/<package manager>/setup
+    script << load_scriptlet(["#{filepath}", "scriptlets", repo, os_family, "post", package_manager, "setup"])
+    #scriptlets/<repo>/<os family>/post/setup
+    script << load_scriptlet(["#{filepath}", "scriptlets", repo, os_family, "post", "setup"])
+  }
+  
+  #scriptlets/common/post/<os family>/<package manager>/setup
+  script << load_scriptlet(["#{filepath}", "scriptlets", "common", "post", os_family, "setup"])
+  #scriptlets/common/post/<os family>/setup
+  script << load_scriptlet(["#{filepath}", "scriptlets", "common", "post", os_family, package_manager, "setup"])
+  script
+end
+
+# Load the properties hash using config.properties in the root of this Vagrant
+# project.
+properties = load_properties(properties_filename)
+
+# Pretty print properties hash wile debugging
+#pp properties
+
+development_box = properties['development.box'] || 'bento/ubuntu-16.04'
+development_cpus = properties['development.cpus'] || '2'
+development_memory = properties['development.memory'] || '4096'
+public_network_bridge = properties['public.network.bridge'] || nil
+
+development_repos = get_repos_from_properties(properties)
+#pp development_repos
+#exit 0
+
+# Pretty print development_repos hash wile debugging
+#pp development_repos
+
+modified_property = false
+development_repos.each { |key| 
+  property_friendly_key = key.gsub("-", ".")
+
+  write_property = false
+  directory = properties["development.repos.#{property_friendly_key}.path"].strip
+  if directory.empty?
+    expanded_directory = File.expand_path(directory) + "/#{key}"
+    write_property = true
+  else
+    expanded_directory = File.expand_path(directory)
+  end 
+
+  if File.directory?("#{expanded_directory}")
+    #puts "Directory #{expanded_directory} exists. Will mount as /src/#{key} in guest VM."
+    if write_property
+      write_property(properties_filename, "development.repos.#{property_friendly_key}.path", expanded_directory)
+    end
+  else
+    prompt = "> "
+    puts "Unable to detect a clone of repo '#{key}' at path '#{expanded_directory}'. What would you like to do?"
+    puts "\t1. Skip - I will not be developing/testing code for #{key}."
+    puts "\t2. Enter a full path to repo '#{key}' on my Vagrant host."
+    puts "\t3. I have forked '#{key}'. Clone it for me."
+    print prompt
+
+    loop do
+      user_input = $stdin.gets.chomp
+      case user_input
+      when "1"
+        puts "Skipping ..."
+        write_property(properties_filename, "development.repos.#{property_friendly_key}.skipped", "Y")
+        modified_property = true
+        break
+      when "2"
+        puts "Enter a full path to repo '#{key}' on your Vagrant host."
+        print prompt 
+        absolute_path = $stdin.gets.chomp
+        if !File.directory?(absolute_path)
+          $stderr.puts "#{absolute_path} does not exist."
+          exit 1
+        else
+          puts "Verified #{absolute_path} exists ..."
+        end
+        directory = absolute_path
+        write_property(properties_filename, "development.repos.#{property_friendly_key}.path", absolute_path)
+        modified_property = true
+
+        # Checkout a particular branch?
+        if properties.key?("development.repos.#{property_friendly_key}.branch")
+          branch = properties["development.repos.#{property_friendly_key}.branch"]
+          puts "Setting '#{key}' branch to '#{branch}' ..."
+          # TODO: Make this platform independent (windows or linux for indy-sdk)
+          require 'open3'
+          stdout, stderr, status = Open3.capture3("cd #{directory} && git checkout #{branch}")
+          if status.exitstatus != 0
+            $stderr.puts "Failed checkout branch #{branch}"
+            $stderr.puts stderr
+            exit 1
+          end
+        end
+        break
+      when "3"
+        url = properties["development.repos.#{property_friendly_key}.url"] || "git@github.com:<USERNAME>/agency.git"
+        # Check for <USERNAME> in the URL
+        if url.include? "<USERNAME>"
+          puts "Enter your github username for url #{url}."
+          print prompt 
+          username = $stdin.gets.chomp
+          url = url.sub("<USERNAME>", username)
+          write_property(properties_filename, "development.repos.#{property_friendly_key}.url", url)
+          modified_property = true
+        end
+        # Set the branch if configured. Otherwise, a clone will use the git project default.
+        branch_switch = ""
+        if properties.key?("development.repos.#{property_friendly_key}.branch")
+          branch = properties["development.repos.#{property_friendly_key}.branch"]
+          puts "Cloning '#{branch}' for repo '#{url}' on your Vagrant host."
+          branch_switch = "-b #{branch} "
+        end
+        require 'open3'
+        stdout, stderr, status = Open3.capture3("git clone #{branch_switch}#{url}")
+        if status.exitstatus != 0
+          $stderr.puts "Failed to clone #{url}"
+          $stderr.puts stderr
+          exit 1
+        end
+        write_property(properties_filename,
+          "development.repos.#{property_friendly_key}.path", Dir.pwd + "/#{key}")
+        modified_property = true
+        break
+      else
+        puts "Please select either 1, 2, or 3"
+        print prompt
+      end
+
+      case user_input
+      when "2"
+      end
+    end
+  end
+}
+
+# At least one property was modified. Reload perperties and repopulate
+# development_repos.
+if modified_property
+  properties = load_properties(properties_filename)
+  development_repos = get_repos_from_properties(properties)
+end
+
+# Compose a bootstrap script from scriptlets in the order defined by
+# 'targets' below.
+#
+# NOTE: All targets are dependent on successful completion of their predecessors.
+#       For example, if 'deploy' is the configured target for a given repo, and
+#       pre, build, env, test, and bundle targets preceed it, pre, build, evn,
+#       test, and bundle targets must all execute without error in their defined
+#       order before the deploy target is executed.
+#
+#       Any of the targets can be disabled on a repo-by-repo basis in the
+#       config.properties file. If a target is disabled, it's associated
+#       scriptlet(s) will be excluded. Also note that if a target does not have
+#       any associated scriptlets, then the target is effectively excluded as
+#       well.
+#
+# Read the README file in the scriptlets directory for details.
+targets = [
+  "clone",
+  "build",
+  "env",
+  "test",
+  "bundle",
+  "deposit",
+  "deploy",
+  "clean",
+]
+
+# Build the bootstrap script
+script = build_script(development_repos, properties, targets)
+
+# Write out the bootstrap script. Will be useful for debugging.
+# The alternative is to use the 'script' as an 'inline' script.
+File.open('bootstrap', 'w') do |f|
+  f << script
+end
+#exit 0
+
+Vagrant.configure("2") do |config|
+  # TODO: Decide if we want to create our own Vagrant box with our own defaults.
+  # ----- Vagrant Box -----
+  config.vm.box = "dummy"
+
+  # ----- Provider -----
+  config.vm.provider :aws do |aws, override|
+    # ----- Authentication and Authorization -----
+    # Option 1: AWS Profile
+    aws.aws_profile = "adminuser"
+
+    # Option 2: Access Key
+    #aws.access_key_id = "<YOUR KEY>"
+    #aws.secret_access_key = "<YOUR SECRET KEY>"
+    #aws.region = "<REGION>"
+
+    # Option 3: Session Token - A Session Token Service token
+    #aws.session_token = "<SESSION TOKEN>"
+    #aws.region = "<REGION>"
+
+    # ----- Security Groups -----
+    aws.security_groups = ["default", "Temp Dev"]
+
+    # ----- SSH -----
+    # We are using an SSH keypair where the public key exists in
+    # EC2 Management Console > NETWORK & SECURITY > Key Pairs
+    # Do NOT use Vagrant key pairs!
+    override.ssh.keys_only = false
+    
+    # It is possible that each region (see Regions below) could have a different
+    # key pair (keypair_name). Therefore, add all private keys to the
+    # override.ssh.private_key_path array.
+    #
+    # Varant will try them in the order they appear in private_key_path until
+    # one works or it runs out of keys.
+    #
+    # The insecure_private_key is vagrant's default key and should NOT be
+    # relied on for AWS work.
+    override.ssh.username = "ec2-user"
+    override.ssh.private_key_path = [
+      "~/.ssh/id_rsa",
+      "~/.vagrant.d/insecure_private_key"
+    ]
+
+    # ----- Regions -----
+    # The region in which the VM will be instantiated is defined by one of the
+    # following.
+    # 1. The AWS_DEFAULT_REGION environment variable
+    #      http://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html
+    # 2. The 'region' defined in the aws.aws_profile
+    # 3. aws.region
+    # 4. The Vagrant AWS plugin's default: us-east-1
+    #
+    # Environment variables take precedence over everything else and the Vagrant
+    # AWS plugin's default is used if not set. All other options override one
+    # another with the last definition being used.
+    #
+    # Add additional regions as needed. If an additional region is needed:
+    # 1. Copy the "Template" below.
+    # 2. Replace <REGION NAME>
+    # 3. Look up the <AMI ID> for the region
+    #   3.1 AWS provided AMIs
+    #     http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
+    #   3.2 Your own AMIs
+    #     https://<REGION>.console.aws.amazon.com/ec2/v2/home?region=<REGION>#Images:sort=name
+    # 4. Look up the <KEY PAIR NAME> for the region.
+    #     https://<REGION>.console.aws.amazon.com/ec2/v2/home?region=<REGION>#KeyPairs:sort=keyName
+    # 5. region_config does not allow us to set private_key_path for each
+    #    region_config's keypair_name. You MUST add the private key path for
+    #    region.keypair_name to the override.ssh.private_key_path array above!
+    #
+    # Template:
+    #
+    # aws.region_config "<REGION NAME>" do |region|
+    #   region.ami = "<AMI ID>"
+    #   region.keypair_name = "<KEY PAIR NAME>"
+    # end
+
+    # Example:
+    # aws.region_config "us-west-2" do |region|
+    #  # Amazon Linux AMI (HVM), SSD Volume Type
+    #  # US West Oregon - as of Oct 25, 2017
+    #  # region.ami = "ami-e689729e"
+    #  #
+    #  # Use the "Public Amazon Linux AMI version" instead of the latest for US
+    #  # West Oregon. OpenSSL 1.0.1k is the latest version of OpenSSL on the Public
+    #  # Amazon Linux AMI version. The Latest US West Oregon Amazon Linux AMI
+    #  # (HVM) comes with OpenSSL 1.0.2. libindy.so fails to load if linked against
+    #  # OpenSSL 1.0.2 instead of OpenSSL 1.0.1k
+    #  region.ami = "ami-aa5ebdd2"
+    #  region.keypair_name = "mykeypairname"
+    # end
+
+    # ----- Instance Type -----
+    # 1 vCPU .5 GiB - THIS IS TOO SMALL TO BUILD! DON'T USE IT
+    #aws.instance_type = "t2.nano"
+
+    # 1 vCPU 1 GiB - THIS IS TOO SMALL TO BUILD! DON'T USE IT
+    # aws.instance_type = "t2.micro"
+
+    # 1 vCPU 2 GiB RAM 8 GiB Disk
+    # 8 GiB Disk is too small. Use block device mapping below to set the volume
+    # size to 16 GiB
+    aws.instance_type = "t2.small"
+
+    # ----- Block Device Mapping -----
+    aws.block_device_mapping = [
+      {
+        'DeviceName' => '/dev/xvda',
+        'Ebs.VolumeSize' => 16
+      }
+    ]  
+  end
+
+  # ----- Vagrant VM -----
+  config.vm.define "aws.lambda.development" do |development|
+    # ----- Provisioning -----
+    #puts "script=#{script}"
+    development.vm.provision "shell" do |s|
+      #s.inline = $script
+      s.path = "bootstrap"
+    end
+
+    # Include all files and folders in the Vagrant project root. This provides a
+    # consistent behavior with the other providers (i.e. Virtualbox).
+    development.vm.synced_folder Dir.pwd, "/vagrant", type: "rsync"
+
+    # Include all DevelopmentEnvironment common scripts/tools. These tools will
+    # be referenced with an absolute path in the guest VM.
+    development.vm.synced_folder Dir.pwd + "/../common", "/vagrant/common", type: "rsync"
+
+    # Include the .aws config directory if it exists. It is required if the user
+    # wants to auto-deploy Lambdas.
+    awsConfigDir = File.expand_path('~') + "/.aws"
+    if Dir.exist?(awsConfigDir)
+      development.vm.synced_folder awsConfigDir, "/home/ec2-user/.aws", type: "rsync"
+    end
+
+    development_repos.each do |key|
+      property_friendly_key = key.gsub("-", ".")
+      path = properties["development.repos.#{property_friendly_key}.path"]
+      path = File.expand_path(path)
+
+      shared_folder_key = "development.repos.#{property_friendly_key}.sharedfolder.type"
+      if properties.key?(shared_folder_key)
+        shared_folder_type = properties[shared_folder_key]
+        #puts "Shared folder #{path} will be shared as /src/#{key} using #{shared_folder_type}"
+        development.vm.synced_folder "#{path}", "/src/#{key}", type: "#{shared_folder_type}"
+      else
+        #puts "Shared folder #{path} will be shared as /src/#{key} using rsync"
+        development.vm.synced_folder "#{path}", "/src/#{key}", type: "rsync"
+      end
+
+      repo_private_ssh_key_path = "development.repos.#{property_friendly_key}.git.private.key"
+      if properties.key?(repo_private_ssh_key_path)
+        private_key = properties[repo_private_ssh_key_path]
+        private_key = File.expand_path(private_key)
+        private_key_name = File.basename private_key
+        private_key_path = File.dirname private_key
+        private_key_dest_path = "/home/ec2-user/.ssh/#{private_key_name}"
+        #puts "Copying private key #{private_key_name} in #{private_key_path} on Vagrant host to #{private_key_dest_path} on Vagrant guest"
+        # Use the File Provisioner to copy up the private key. Doing so
+        # allows them to interact with git repos from the guest VM(s) using PKI
+        config.vm.provision "file", source: private_key, destination: private_key_dest_path
+      end
+    end
+
+    # Use the File Provisioner to copy up the user's .ssh/config. Doing so
+    # allows them to interact with git repos from the guest VM(s) using PKI
+    # in the same way they would from their Vagrant host.
+    #
+    # For example, they may be using a different key for each repo/domain. The
+    # following is a sample .ssh/config file:
+    #
+    # Host github.com
+    #  IdentityFile ~/myKeyFolder/myGitHubFile
+    # Host evernym.com
+    #  IdentityFile ~/myKeyFolder/myEvernymPrivateKey
+    #
+    # IdentityFile is defined as follows:
+    #
+    # Specifies a file from which the user's identity key is read when using
+    # public key authentication. The default for protocol version 1 is
+    # ~/.ssh/identity; and ~/.ssh/id_rsa or ~/.ssh/id_dsa for protocol version 2.
+    ssh_config = File.expand_path("~/.ssh/config")
+    if File.file?(ssh_config)
+      config.vm.provision "file", source: ssh_config, destination: "$HOME/.ssh/config"
+    end
+
+    # Use the File Provisioner to copy up the user's .gitconfig. Doing so
+    # allows them to interact with git repos from the guest VM(s)
+    git_config = File.expand_path("~/.gitconfig")
+    if File.file?(git_config)
+      config.vm.provision "file", source: git_config, destination: "$HOME/.gitconfig"
+    end
+  end
+end
