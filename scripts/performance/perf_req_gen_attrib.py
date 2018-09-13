@@ -4,6 +4,7 @@ from indy import ledger
 from scripts.performance.perf_utils import get_txn_field
 from scripts.performance.perf_req_gen import RequestGenerator
 
+
 class RGAttrib(RequestGenerator):
     _req_types = ["100", "104"]
 

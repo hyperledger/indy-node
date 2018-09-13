@@ -44,7 +44,7 @@ def test_parse_simple(kind, exp_type):
                           ('{"nym": {"label": "nym1"}}', (RGNym, {'label': "nym1"})),
                           ('{"t1": "nym"}', (RGNym, {"label": "t1"})),
                           ('{"t3": {"nym": 4}}', (RGNym, {"label": "t3", "count": 4})),
-                          ('{"t2": {"nym": {"label": "nym2", "count": 1}}}', (RGNym, {'label': "t2", "count": 1})),])
+                          ('{"t2": {"nym": {"label": "nym2", "count": 1}}}', (RGNym, {'label': "t2", "count": 1}))])
 def test_parse_json_obj(req, exp):
     r = ReqTypeParser.create_req_generator(req)
     assert r[0] == exp[0]
@@ -62,8 +62,7 @@ def test_parse_json_obj(req, exp):
      ('[{"nym": {"label": "nym1", "count": 2}}, {"t1": "schema"}]',
       (RGSeqReqs, {"next_random": False, "reqs": [(RGNym, {'label': "nym1", "count": 2}), (RGSchema, {'label': "t1"})]})),
      ('[{"t3": {"nym": 4}}, "attrib", {"t4": {"schema": {"count": 6}}}]',
-      (RGSeqReqs, {"next_random": False, "reqs": [(RGNym, {'label': "t3", "count": 4}), (RGAttrib, {'label': 'attrib'}), (RGSchema, {'label': "t4", "count": 6})]})),
-    ])
+      (RGSeqReqs, {"next_random": False, "reqs": [(RGNym, {'label': "t3", "count": 4}), (RGAttrib, {'label': 'attrib'}), (RGSchema, {'label': "t4", "count": 6})]}))])
 def test_parse_json_seq_seq(req, exp):
     r = ReqTypeParser.create_req_generator(req)
     assert r[0] == exp[0]
@@ -77,10 +76,9 @@ def test_parse_json_seq_seq(req, exp):
      ('{"nym": {"label": "nym1", "count": 2}, "t1": "schema"}',
       (RGSeqReqs, {"next_random": True, "reqs": [(RGNym, {'label': "nym1", "count": 2}), (RGSchema, {'label': "t1"})]})),
      ('{"t3": {"nym": 4}, "attrib": 3, "t4": {"schema": {"count": 6}}}',
-      (RGSeqReqs, {"next_random": True, "reqs": [(RGNym, {'label': "t3", "count": 4}), (RGAttrib, {'label': 'attrib', "count": 3}), (RGSchema, {'label': "t4", "count": 6})]})),
-    ])
+      (RGSeqReqs, {"next_random": True, "reqs": [(RGNym, {'label': "t3", "count": 4}), (RGAttrib, {'label': 'attrib', "count": 3}), (RGSchema, {'label': "t4", "count": 6})]}))])
 def test_parse_json_seq_rand(req, exp):
     r = ReqTypeParser.create_req_generator(req)
     assert r[0] == exp[0]
     assert r[1]["next_random"] == exp[1]["next_random"]
-    assert sorted(r[1]["reqs"], key=lambda x : str(x[0])) == sorted(exp[1]["reqs"], key=lambda x : str(x[0]))
+    assert sorted(r[1]["reqs"], key=lambda x: str(x[0])) == sorted(exp[1]["reqs"], key=lambda x: str(x[0]))

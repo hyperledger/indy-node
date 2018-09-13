@@ -49,8 +49,10 @@ def get_txn_field(txn_dict):
     tmp = txn_dict or {}
     return tmp.get('result', {}).get('txn', {}) or tmp.get('txn', {})
 
+
 def get_type_field(txn_dict):
-        return get_txn_field(txn_dict).get('type', None)
+    return get_txn_field(txn_dict).get('type', None)
+
 
 def get_txnid_field(txn_dict):
     tmp = txn_dict or {}

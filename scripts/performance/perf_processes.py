@@ -78,7 +78,7 @@ parser.add_argument('--load_time', default=0, type=float, required=False, dest='
 
 
 class TestRunner:
-    def __init__(self, clients = 0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
+    def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed="000000000000000000000000Trustee1", req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
                  sync_mode="freeflow", load_rate=10, out_file="", load_time=0, client_runner=LoadClient.run):
