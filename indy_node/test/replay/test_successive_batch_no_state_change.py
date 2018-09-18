@@ -75,7 +75,7 @@ def test_successive_batch_do_no_change_state(looper,
             assert len(node.idrCache.un_committed) == count
 
     for node in nodeSet:
-        for rpl in node.replicas:
+        for rpl in node.replicas.values():
             monkeypatch.setattr(rpl, '_request_missing_three_phase_messages',
                                 lambda *x, **y: None)
 
