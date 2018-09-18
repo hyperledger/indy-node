@@ -2,10 +2,11 @@ import json
 import time
 import libnacl
 import random
+
 from indy import ledger, anoncreds, blob_storage
 
-from scripts.performance.perf_utils import rawToFriendly, random_string, get_txnid_field
-from scripts.performance.perf_req_gen_definition import RGDefinition
+from perf_load.perf_utils import rawToFriendly, random_string, get_txnid_field
+from perf_load.perf_req_gen_definition import RGDefinition
 
 
 class RGDefRevoc(RGDefinition):

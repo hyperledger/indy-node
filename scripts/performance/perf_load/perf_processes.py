@@ -10,11 +10,11 @@ import signal
 import functools
 from datetime import datetime
 
-from scripts.performance.perf_client_msgs import ClientReady, ClientStop, ClientSend, ClientMsg
-from scripts.performance.perf_utils import check_fs, check_seed
-from scripts.performance.perf_gen_req_parser import ReqTypeParser
-from scripts.performance.perf_client import LoadClient
-from scripts.performance.perf_client_runner import ClientRunner
+from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend, ClientMsg
+from perf_load.perf_utils import check_fs, check_seed
+from perf_load.perf_gen_req_parser import ReqTypeParser
+from perf_load.perf_client import LoadClient
+from perf_load.perf_client_runner import ClientRunner
 
 
 parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK. '
@@ -77,7 +77,7 @@ parser.add_argument('--load_time', default=0, type=float, required=False, dest='
                     help='Work no longer then load_time sec. Default value is 0')
 
 
-class TestRunner:
+class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed="000000000000000000000000Trustee1", req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
@@ -315,7 +315,7 @@ class TestRunner:
         if self._stop_sec > 0:
             self._loop.call_later(self._stop_sec, self.sig_handler, signal.SIGINT)
 
-    def test_run(self):
+    def load_run(self):
         print("Number of client         ", self._proc_count, file=self._out_file)
         print("Path to genesis txns file", self._genesis_path, file=self._out_file)
         print("Seed                     ", self._seed, file=self._out_file)
@@ -375,7 +375,7 @@ class TestRunner:
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
     args = parser.parse_args()
-    tr = TestRunner(args.clients, args.genesis_path, args.seed, args.req_kind, args.batch_size, args.refresh_rate,
+    tr = LoadRunner(args.clients, args.genesis_path, args.seed, args.req_kind, args.batch_size, args.refresh_rate,
                     args.buff_req, args.out_dir, args.val_sep, args.wallet_key, args.mode, args.pool_config,
                     args.sync_mode, args.load_rate, args.out_file, args.load_time)
-    tr.test_run()
+    tr.load_run()

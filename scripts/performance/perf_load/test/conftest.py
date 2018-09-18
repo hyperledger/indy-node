@@ -1,8 +1,8 @@
 import pytest
-from scripts.performance.perf_client import LoadClient
-from scripts.performance.perf_req_gen import RequestGenerator
-from scripts.performance.perf_utils import random_string
 import shutil
+from perf_load.perf_client import LoadClient
+from perf_load.perf_req_gen import RequestGenerator
+from perf_load.perf_utils import random_string
 
 
 class RGTestReq(RequestGenerator):

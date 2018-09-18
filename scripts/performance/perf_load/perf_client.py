@@ -6,12 +6,11 @@ import signal
 from datetime import datetime
 from indy import pool, wallet, did, ledger
 
-from scripts.performance.perf_client_msgs import ClientReady, ClientRun, ClientStop,\
-    ClientGetStat, ClientSend, ClientMsg
-from scripts.performance.perf_clientstaistic import ClientStatistic
-from scripts.performance.perf_utils import random_string
-from scripts.performance.perf_req_gen import NoReqDataAvailableException
-from scripts.performance.perf_gen_req_parser import ReqTypeParser
+from perf_load.perf_client_msgs import ClientReady, ClientRun, ClientStop, ClientGetStat, ClientSend, ClientMsg
+from perf_load.perf_clientstaistic import ClientStatistic
+from perf_load.perf_utils import random_string
+from perf_load.perf_req_gen import NoReqDataAvailableException
+from perf_load.perf_gen_req_parser import ReqTypeParser
 
 
 class LoadClient:

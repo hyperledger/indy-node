@@ -2,8 +2,8 @@ from abc import ABCMeta, abstractmethod
 import json
 import random
 
-from scripts.performance.perf_clientstaistic import ClientStatistic
-from scripts.performance.perf_utils import check_fs, random_string, get_type_field
+from perf_load.perf_clientstaistic import ClientStatistic
+from perf_load.perf_utils import check_fs, random_string, get_type_field
 
 
 class NoReqDataAvailableException(Exception):

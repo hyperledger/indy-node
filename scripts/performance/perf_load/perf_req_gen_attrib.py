@@ -1,8 +1,8 @@
 import json
 from indy import ledger
 
-from scripts.performance.perf_utils import get_txn_field
-from scripts.performance.perf_req_gen import RequestGenerator
+from perf_load.perf_utils import get_txn_field
+from perf_load.perf_req_gen import RequestGenerator
 
 
 class RGAttrib(RequestGenerator):

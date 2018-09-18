@@ -1,5 +1,5 @@
 import random
-from scripts.performance.perf_req_gen import RequestGenerator
+from perf_load.perf_req_gen import RequestGenerator
 
 
 class RGSeqReqs(RequestGenerator):
