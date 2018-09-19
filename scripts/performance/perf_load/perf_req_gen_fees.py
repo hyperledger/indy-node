@@ -3,9 +3,9 @@ import libnacl
 from indy import payment
 from indy import ledger, anoncreds
 
-from scripts.performance.perf_utils import ensure_is_reply, rawToFriendly
-from scripts.performance.perf_req_gen import NoReqDataAvailableException
-from scripts.performance.perf_req_gen_payment import RGBasePayment
+from perf_load.perf_utils import ensure_is_reply, rawToFriendly
+from perf_load.perf_req_gen import NoReqDataAvailableException
+from perf_load.perf_req_gen_payment import RGBasePayment
 
 
 class RGFeesNym(RGBasePayment):

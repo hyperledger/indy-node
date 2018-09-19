@@ -1,4 +1,4 @@
-from scripts.performance.perf_client_msgs import ClientRun, ClientGetStat
+from perf_load.perf_client_msgs import ClientRun, ClientGetStat
 
 
 class ClientRunner:

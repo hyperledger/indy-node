@@ -1,9 +1,10 @@
 import json
 import libnacl
+
 from indy import ledger, anoncreds
 
-from scripts.performance.perf_utils import rawToFriendly, get_txnid_field
-from scripts.performance.perf_req_gen import RequestGenerator
+from perf_load.perf_utils import rawToFriendly, get_txnid_field
+from perf_load.perf_req_gen import RequestGenerator
 
 
 class RGSchema(RequestGenerator):

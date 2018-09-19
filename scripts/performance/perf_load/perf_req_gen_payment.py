@@ -4,11 +4,12 @@ from collections import deque
 from ctypes import CDLL
 from datetime import datetime
 import random
+
 from indy import payment
 from indy import did, ledger
 
-from scripts.performance.perf_utils import ensure_is_reply, divide_sequence_into_chunks
-from scripts.performance.perf_req_gen import NoReqDataAvailableException, RequestGenerator
+from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks
+from perf_load.perf_req_gen import NoReqDataAvailableException, RequestGenerator
 
 
 class RGBasePayment(RequestGenerator, metaclass=ABCMeta):

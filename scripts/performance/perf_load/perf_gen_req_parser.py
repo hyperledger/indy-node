@@ -1,13 +1,12 @@
 import json
-from scripts.performance.perf_req_gen_seq import RGSeqReqs
-from scripts.performance.perf_req_gen_nym import RGNym, RGGetNym
-from scripts.performance.perf_req_gen_schema import RGSchema, RGGetSchema
-from scripts.performance.perf_req_gen_attrib import RGAttrib, RGGetAttrib
-from scripts.performance.perf_req_gen_definition import RGGetDefinition, RGDefinition
-from scripts.performance.perf_req_gen_revoc import RGDefRevoc, RGGetDefRevoc, RGEntryRevoc,\
-    RGGetEntryRevoc, RGGetRevocRegDelta
-from scripts.performance.perf_req_gen_payment import RGGetPaymentSources, RGPayment, RGVerifyPayment
-from scripts.performance.perf_req_gen_fees import RGFeesNym, RGFeesSchema
+from perf_load.perf_req_gen_seq import RGSeqReqs
+from perf_load.perf_req_gen_nym import RGNym, RGGetNym
+from perf_load.perf_req_gen_schema import RGSchema, RGGetSchema
+from perf_load.perf_req_gen_attrib import RGAttrib, RGGetAttrib
+from perf_load.perf_req_gen_definition import RGGetDefinition, RGDefinition
+from perf_load.perf_req_gen_revoc import RGDefRevoc, RGGetDefRevoc, RGEntryRevoc, RGGetEntryRevoc, RGGetRevocRegDelta
+from perf_load.perf_req_gen_payment import RGGetPaymentSources, RGPayment, RGVerifyPayment
+from perf_load.perf_req_gen_fees import RGFeesNym, RGFeesSchema
 
 
 class ReqTypeParser:
