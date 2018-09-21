@@ -25,14 +25,14 @@ log.setLevel(logging.INFO)
 log.addHandler(my_handler)
 
 def getCurrentValidatorsAddressPort():
-    log.info("extracting addresses and ports of current validators")
+    log.info('extracting addresses and ports of current validators')
     validatorsAddressPort = collections.OrderedDict()
     jsonStr = input()
     log.info(jsonStr)
     validators = json.loads(jsonStr)
     for validator in validators:
         if 'VALIDATOR' in validator['services']:
-            validatorsAddressPort[validator["alias"]] = {"address": validator["node_ip"], "port": validator["node_port"]}
+            validatorsAddressPort[validator['alias']] = {'address': validator['node_ip'], 'port': validator['node_port']}
     return validatorsAddressPort
 
 def writeResult(validatorsAddressPort, outputFormat):
@@ -40,7 +40,7 @@ def writeResult(validatorsAddressPort, outputFormat):
         log.info("Serializing validators' address and port to json")
         print(json.dumps(validatorsAddressPort))
     elif outputFormat == 'aws':
-        log.info("Writing a string suitable for a source string for an AWS security group")
+        log.info('Writing a string suitable for a source string for an AWS security group')
         addressOnly = []
         for key in validatorsAddressPort.keys():
             addressOnly.append(validatorsAddressPort[key]['address'])
@@ -52,7 +52,7 @@ def writeResult(validatorsAddressPort, outputFormat):
         writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
         writer.writeheader()
         for key in validatorsAddressPort.keys():
-            validatorsAddressPort[key]["alias"] = key
+            validatorsAddressPort[key]['alias'] = key
             writer.writerow(validatorsAddressPort[key])
 
 def parseInputs():

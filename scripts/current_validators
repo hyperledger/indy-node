@@ -27,7 +27,7 @@ log.addHandler(my_handler)
 
 def parseTransactions(ledger):
 
-    log.info("Parsing ledger transactions into dictionary")
+    log.info('Parsing ledger transactions into dictionary')
 
     validators = collections.OrderedDict()
     # validators is dictionary of dictionaries that maps dest to the current values of the attritubes for that dest
@@ -88,49 +88,45 @@ def parseTransactions(ledger):
 
 
 def getLedger():
+    prefix = ['sudo', '-i', '-u', 'indy']
+    suffix = ['/usr/local/bin/read_ledger', '--type', 'pool', '--count']
+    if (getpass.getuser() != 'indy'):
+        command = prefix + suffix
+    else:
+        command = suffix
     try:
-        if (getpass.getuser() == 'indy'):
-            completed = subprocess.run(
-            ['/usr/local/bin/read_ledger', '--type', 'pool', '--count'],
-            check=True,
-            stdout=subprocess.PIPE,
-            )
-        else:
-            completed = subprocess.run(
-            ['sudo', '/usr/local/bin/read_ledger', '--type', 'pool', '--count'],
-            check=True,
-            stdout=subprocess.PIPE,
-            )
+        completed = subprocess.run(
+        command,
+        check=True,
+        stdout=subprocess.PIPE)
     except subprocess.CalledProcessError as err:
         log.error('ERROR attempting to run read_ledger --count subprocess: {}'.format(err))
         raise
     transCount = completed.stdout.decode('utf-8').strip()
-    log.info("{} entries in ledger.".format(transCount))
+    log.info('{} entries in ledger.'.format(transCount))
+
+    suffix = ['/usr/local/bin/read_ledger', '--type', 'pool', '--frm', '1', '--to', completed.stdout]
+    if (getpass.getuser() != 'indy'):
+        command = prefix + suffix
+    else:
+        command = suffix
     try:
-        if (getpass.getuser() == 'indy'):
-            completed = subprocess.run(
-            ['/usr/local/bin/read_ledger', '--type', 'pool', '--frm', '1', '--to', completed.stdout],
-            check=True,
-            stdout=subprocess.PIPE,
-            )
-        else:
-            completed = subprocess.run(
-            ['sudo', '/usr/local/bin/read_ledger', '--type', 'pool', '--frm', '1', '--to', completed.stdout],
-            check=True,
-            stdout=subprocess.PIPE,
-            )
+        completed = subprocess.run(
+        command,
+        check=True,
+        stdout=subprocess.PIPE)
     except subprocess.CalledProcessError as err:
         log.error('ERROR attempting to run read_ledger subprocess to capture ledger data: {}'.format(err))
         raise
 
     ledgerLines = completed.stdout.decode('utf-8').splitlines()
-    log.info("{} ledger entries received.".format(len(ledgerLines)))
+    log.info('{} ledger entries received.'.format(len(ledgerLines)))
     return ledgerLines
 
 def writeResult(jsonOut):
 
     if jsonOut:
-        log.info("Serializing info on validators to json")
+        log.info('Serializing info on validators to json')
         count = len(validators)
         print('[', end='')
         for i in validators.keys():
@@ -140,7 +136,7 @@ def writeResult(jsonOut):
                 count -= 1
         print(']')
     else:
-        log.info("Serializing info on validators to csv")
+        log.info('Serializing info on validators to csv')
         fieldnames = ['alias', 'blskey', 'client_ip', 'client_port', 'node_ip', 'node_port', 'services', 'dest', 'identifier']
         writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
         writer.writeheader()
