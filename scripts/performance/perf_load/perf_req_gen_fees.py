@@ -19,8 +19,8 @@ class RGFeesNym(RGBasePayment):
             self._sources_amounts[payment_address] = []
             self._sources_amounts[payment_address].extend(await self._get_payment_sources(payment_address))
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
-        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         await self.__retrieve_minted_sources()
 
         fees_req = await payment.build_set_txn_fees_req(wallet_handle, submitter_did, self._payment_method,
@@ -97,8 +97,8 @@ class RGFeesSchema(RGFeesNym):
                 return req_fees[0]
         raise NoReqDataAvailableException()
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
-        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
 
         fees_req = await payment.build_set_txn_fees_req(wallet_handle, submitter_did, self._payment_method,
                                                         json.dumps({"101": 1}))

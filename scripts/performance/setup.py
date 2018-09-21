@@ -25,5 +25,6 @@ setup(
     install_requires=['python3-indy>=1.6.1.dev683'],
     setup_requires=['pytest-runner'],
     extras_require={'tests': tests_require},
-    tests_require=tests_require
+    tests_require=tests_require,
+    scripts=['perf_load/perf_processes.py', 'perf_load/perf_spike_load.py']
 )

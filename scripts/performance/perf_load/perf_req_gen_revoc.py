@@ -12,10 +12,12 @@ from perf_load.perf_req_gen_definition import RGDefinition
 class RGDefRevoc(RGDefinition):
     _req_types = ["113", "115"]
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
-        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         dr = await ledger.build_cred_def_request(submitter_did, json.dumps(self._default_definition_json))
-        await ledger.sign_and_submit_request(pool_handle, self._wallet_handle, submitter_did, dr)
+        resp = await sign_req_f(wallet_handle, submitter_did, dr)
+        await send_req_f(pool_handle, resp)
+        # await ledger.sign_and_submit_request(pool_handle, self._wallet_handle, submitter_did, dr)
 
     async def _gen_req(self, submit_did, req_data):
         tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
@@ -38,7 +40,7 @@ class RGGetDefRevoc(RGDefRevoc):
         def_revoc_id = ':'.join([submitter_did, '04', cred_def_id, 'CL_ACCUM', 'reg1'])
         return def_revoc_id
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         pass
 
     async def on_request_generated(self, req_data, gen_req):
@@ -77,6 +79,9 @@ class RGEntryRevoc(RGDefRevoc):
         self._old_reqs = set()
         self._old_reqs_cnt = 0
 
+        self._sign_req = None
+        self._submit_req = None
+
     async def _upd_revoc_reg(self):
         while True:
             try:
@@ -88,18 +93,24 @@ class RGEntryRevoc(RGDefRevoc):
                         self._tails_writer)
                 def_revoc_request = await ledger.build_revoc_reg_def_request(
                     self._submitter_did, self._default_revoc_reg_def_json)
-                await ledger.sign_and_submit_request(
-                    self._pool_handle, self._wallet_handle, self._submitter_did, def_revoc_request)
+                def_revoc_request = await self._sign_req(self._wallet_handle, self._submitter_did, def_revoc_request)
+                await self._submit_req(self._pool_handle, def_revoc_request)
+                # await ledger.sign_and_submit_request(
+                #     self._pool_handle, self._wallet_handle, self._submitter_did, def_revoc_request)
                 entry_revoc_request = await ledger.build_revoc_reg_entry_request(
                     self._submitter_did, self._default_revoc_reg_def_id, "CL_ACCUM", self._default_revoc_reg_entry_json)
-                await ledger.sign_and_submit_request(
-                    self._pool_handle, self._wallet_handle, self._submitter_did, entry_revoc_request)
+                entry_revoc_request = await self._sign_req(self._wallet_handle, self._submitter_did, entry_revoc_request)
+                await self._submit_req(self._pool_handle, entry_revoc_request)
+                # await ledger.sign_and_submit_request(
+                #     self._pool_handle, self._wallet_handle, self._submitter_did, entry_revoc_request)
                 break
             except Exception as ex:
                 print("WARNING: _upd_revoc_reg {}".format(ex))
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
-        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        self._sign_req = sign_req_f
+        self._submit_req = send_req_f
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         self._max_cred_num = kwargs["max_cred_num"] if "max_cred_num" in kwargs else 100
         self._wallet_handle = wallet_handle
         self._submitter_did = submitter_did
@@ -154,7 +165,7 @@ class RGGetEntryRevoc(RGEntryRevoc):
         entry_revoc_id = ':'.join([submitter_did, '05', def_revoc_id])
         return entry_revoc_id
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         pass
 
     async def on_request_generated(self, req_data, gen_req):
@@ -171,7 +182,7 @@ class RGGetRevocRegDelta(RGGetEntryRevoc):
         req = await ledger.build_get_revoc_reg_delta_request(submit_did, req_data, None, int(time.time()))
         return req
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         pass
 
     async def on_request_generated(self, req_data, gen_req):

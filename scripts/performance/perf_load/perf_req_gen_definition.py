@@ -12,7 +12,7 @@ class RGGetDefinition(RequestGenerator):
         super().__init__(*args, **kwargs)
         self._submitter_did = None
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         self._submitter_did = submitter_did
 
     def _make_cred_def_id(self, shcema_id, tag):
@@ -41,13 +41,15 @@ class RGDefinition(RGGetDefinition):
         self._default_definition_id = None
         self._default_definition_json = None
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
-        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         self._wallet_handle = wallet_handle
         _, self._default_schema_json = await anoncreds.issuer_create_schema(
             submitter_did, random_string(32), "1.0", json.dumps(["name", "age", "sex", "height"]))
         schema_request = await ledger.build_schema_request(submitter_did, self._default_schema_json)
-        resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, schema_request)
+        resp = await sign_req_f(wallet_handle, submitter_did, schema_request)
+        resp = await send_req_f(pool_handle, resp)
+        # resp = await ledger.sign_and_submit_request(pool_handle, wallet_handle, submitter_did, schema_request)
         resp = json.loads(resp)
         seqno =\
             resp.get('result', {}).get('seqNo', None) or\

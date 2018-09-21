@@ -59,8 +59,8 @@ class RGBasePayment(RequestGenerator, metaclass=ABCMeta):
         self._payment_addresses = []
         self._additional_trustees_dids = []
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
-        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
 
         self._pool_handle = pool_handle
         self._wallet_handle = wallet_handle
@@ -169,8 +169,8 @@ class RGPayment(RGBasePayment):
         self.__req_id_to_source_amount = {}
         self._old_reqs = set()
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
-        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         await self.__retrieve_minted_sources()
 
     async def __retrieve_minted_sources(self):
@@ -245,8 +245,8 @@ class RGVerifyPayment(RGBasePayment):
         self._sources_amounts = []
         self._receipts = []
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
-        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
+        await super().on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
         await self.__retrieve_minted_sources()
         await self.__perform_payments()
 
