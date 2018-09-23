@@ -58,6 +58,7 @@ def get_txnid_field(txn_dict):
     tmp = txn_dict or {}
     return (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
 
+
 def request_get_type(req):
     if isinstance(req, dict):
         dict_req = req

@@ -309,8 +309,7 @@ class LoadRunner:
 
     def screen_stat(self):
         ends = "\n" if self._out_file != sys.stdout else "\r"
-        # print(self.get_refresh_str(), end=ends, file=self._out_file)
-        print(self.get_refresh_str())
+        print(self.get_refresh_str(), end=ends, file=self._out_file)
         self.request_stat()
         self._total_f.flush()
         self._failed_f.flush()
