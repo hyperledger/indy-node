@@ -84,22 +84,41 @@ class LoadClient:
     async def wallet_close(self, wallet_h):
         await wallet.close_wallet(wallet_h)
 
+    async def _init_pool(self, genesis_path):
+        await self.pool_protocol_version()
+        pool_cfg = json.dumps({"genesis_txn": genesis_path})
+        await self.pool_create_config(self._pool_name, pool_cfg)
+        self._pool_handle = await self.pool_open_pool(self._pool_name, self._pool_config)
+
+    async def _wallet_init(self, w_key):
+        self._wallet_name = "{}_wallet".format(self._pool_name)
+        wallet_credential = json.dumps({"key": w_key})
+        wallet_config = json.dumps({"id": self._wallet_name})
+        await self.wallet_create_wallet(wallet_config, wallet_credential)
+        self._wallet_handle = await self.wallet_open_wallet(wallet_config, wallet_credential)
+
+    async def _did_init(self, seed):
+        self._test_did, self._test_verk = await self.did_create_my_did(
+            self._wallet_handle, json.dumps({'seed': seed[0]}))
+
+    async def _pre_init(self):
+        pass
+
+    async def _post_init(self):
+        pass
+
     async def run_test(self, genesis_path, seed, w_key):
         try:
-            pool_cfg = json.dumps({"genesis_txn": genesis_path})
+            await self._pre_init()
 
-            await self.pool_protocol_version()
+            await self._init_pool(genesis_path)
+            await self._wallet_init(w_key)
+            await self._did_init(seed)
 
-            await self.pool_create_config(self._pool_name, pool_cfg)
-            self._pool_handle = await self.pool_open_pool(self._pool_name, self._pool_config)
-            self._wallet_name = "{}_wallet".format(self._pool_name)
-            wallet_credential = json.dumps({"key": w_key})
-            wallet_config = json.dumps({"id": self._wallet_name})
-            await self.wallet_create_wallet(wallet_config, wallet_credential)
-            self._wallet_handle = await self.wallet_open_wallet(wallet_config, wallet_credential)
-            self._test_did, self._test_verk = await self.did_create_my_did(self._wallet_handle, json.dumps({'seed': seed}))
-            await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle,
-                                                     self._test_did, self.ledger_sign_req, self.ledger_submit,
+            await self._post_init()
+
+            await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle, self._test_did,
+                                                     self.ledger_sign_req, self.ledger_submit,
                                                      max_cred_num=self._batch_size)
         except Exception as ex:
             self.msg("{} run_test error {}", self._name, ex)
@@ -282,6 +301,7 @@ class LoadClient:
                 exts = json.loads(ext_set)
             except Exception as e:
                 print("{} parse ext settings error {}".format(name, e))
+                exts = {}
 
         cln = cls(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **exts)
         try:

@@ -33,9 +33,9 @@ parser.add_argument('-g', '--genesis', required=False, dest='genesis_path', type
                          'Default value is ~/.indy-cli/networks/sandbox/pool_transactions_genesis',
                     default="~/.indy-cli/networks/sandbox/pool_transactions_genesis")
 
-parser.add_argument('-s', '--seed', type=check_seed, required=False, dest='seed',
+parser.add_argument('-s', '--seed', type=check_seed, required=False, dest='seed', action='append',
                     help='Seed to generate submitter did. Default value is Trustee1',
-                    default="000000000000000000000000Trustee1")
+                    default=[])
 
 parser.add_argument('-k', '--kind', default="nym", type=str, required=False, dest='req_kind',
                     help='Supported requests {} Default value is "nym". Could be combined in form of'
@@ -85,7 +85,7 @@ parser.add_argument('--ext', default=None, type=str, required=False, dest='ext_s
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
-                 seed="000000000000000000000000Trustee1", req_kind="nym", batch_size=10, refresh_rate=10,
+                 seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
                  sync_mode="freeflow", load_rate=10, out_file="", load_time=0, ext_set=None,
                  client_runner=LoadClient.run):
@@ -309,7 +309,8 @@ class LoadRunner:
 
     def screen_stat(self):
         ends = "\n" if self._out_file != sys.stdout else "\r"
-        print(self.get_refresh_str(), end=ends, file=self._out_file)
+        # print(self.get_refresh_str(), end=ends, file=self._out_file)
+        print(self.get_refresh_str())
         self.request_stat()
         self._total_f.flush()
         self._failed_f.flush()
@@ -363,7 +364,7 @@ class LoadRunner:
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(self._client_runner, prc_name, self._genesis_path, wr, self._seed, self._batch_size,
                                   self._batch_rate, self._req_kind, self._buff_req, self._wallet_key, self._pool_config,
-                                  load_client_mode, self._mode == 'p')
+                                  load_client_mode, self._mode == 'p', self._ext_set)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd, self._out_file)
@@ -384,6 +385,10 @@ class LoadRunner:
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
     args = parser.parse_args()
+
+    if not args.seed:
+        args.seed.append("000000000000000000000000Trustee1")
+
     tr = LoadRunner(args.clients, args.genesis_path, args.seed, args.req_kind, args.batch_size, args.refresh_rate,
                     args.buff_req, args.out_dir, args.val_sep, args.wallet_key, args.mode, args.pool_config,
                     args.sync_mode, args.load_rate, args.out_file, args.load_time, args.ext_set,

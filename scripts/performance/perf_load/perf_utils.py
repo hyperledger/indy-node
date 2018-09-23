@@ -57,3 +57,13 @@ def get_type_field(txn_dict):
 def get_txnid_field(txn_dict):
     tmp = txn_dict or {}
     return (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
+
+def request_get_type(req):
+    if isinstance(req, dict):
+        dict_req = req
+    elif isinstance(req, str):
+        dict_req = json.loads(req)
+    else:
+        raise RuntimeError("Request of unsupported type")
+    txn_type = dict_req.get("operation", {}).get("type", "")
+    return txn_type

@@ -55,6 +55,21 @@ class LoadClientTest(LoadClient):
     async def wallet_close(self, wallet_h):
         pass
 
+    async def _init_pool(self, genesis_path):
+        pass
+
+    async def _wallet_init(self, w_key):
+        pass
+
+    async def _did_init(self, seed):
+        pass
+
+    async def _pre_init(self):
+        pass
+
+    async def _post_init(self):
+        pass
+
 
 @pytest.fixture(scope="function")
 def tmpdir(request):
