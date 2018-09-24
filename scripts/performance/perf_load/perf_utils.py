@@ -6,6 +6,9 @@ import base58
 import libnacl
 
 
+PUB_XFER_TXN_ID = "10001"
+
+
 def check_fs(is_dir: bool, fs_name: str):
     pp = os.path.expanduser(fs_name)
     rights = os.W_OK if is_dir else os.R_OK
@@ -87,9 +90,9 @@ def gen_input_output(addr_txos, val):
             out_val = total_amount - val
             if out_val > 0:
                 outputs = [{"recipient": address, "amount": out_val}]
-            return inputs, outputs
+            return address, inputs, outputs
         else:
             for s_a in tmp_txo:
                 addr_txos[address].append(s_a)
 
-    return None, None
+    return None, None, None

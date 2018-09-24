@@ -5,7 +5,8 @@ from indy import payment
 from indy import ledger
 
 from perf_load.perf_client import LoadClient
-from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks, request_get_type, gen_input_output
+from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks,\
+    request_get_type, gen_input_output, PUB_XFER_TXN_ID
 
 
 TRUSTEE_ROLE_CODE = "0"
@@ -33,6 +34,7 @@ class LoadClientFees(LoadClient):
         super().__init__(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **kwargs)
         self._trustee_dids = []
         self._pool_fees = {}
+        self._ignore_fees_txns = [PUB_XFER_TXN_ID]
         self._addr_txos = {}
         self._payment_addrs_count = kwargs.get("payment_addrs_count", 100)
         self._addr_mint_limit = kwargs.get("addr_mint_limit", 1000)
@@ -47,11 +49,15 @@ class LoadClientFees(LoadClient):
 
     async def _add_fees(self, wallet_h, did, req):
         req_type = request_get_type(req)
+
+        if req_type in self._ignore_fees_txns:
+            return req
+
         fees_val = self._pool_fees.get(req_type, 0)
         if fees_val == 0:
             return req
 
-        inputs, outputs = gen_input_output(self._addr_txos, fees_val)
+        address, inputs, outputs = gen_input_output(self._addr_txos, fees_val)
         if inputs and outputs:
             req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
                                                          json.dumps(outputs), None)
@@ -188,5 +194,7 @@ class LoadClientFees(LoadClient):
 
     def _on_pool_create_ext_params(self):
         params = super()._on_pool_create_ext_params()
-        params.update({"addr_txos": self._addr_txos, "payment_method": self._payment_method})
+        params.update({"addr_txos": self._addr_txos,
+                       "payment_method": self._payment_method,
+                       "pool_fees": self._pool_fees})
         return params

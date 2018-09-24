@@ -4,7 +4,7 @@ import random
 from indy import payment
 from indy import ledger
 
-from perf_load.perf_utils import ensure_is_reply, gen_input_output
+from perf_load.perf_utils import ensure_is_reply, gen_input_output, PUB_XFER_TXN_ID
 from perf_load.perf_req_gen import NoReqDataAvailableException, RequestGenerator
 
 
@@ -16,6 +16,7 @@ class RGBasePayment(RequestGenerator):
         self._submitter_did = None
         self._payment_method = None
         self._addr_txos = None
+        self._payment_fees = 0
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         self._pool_handle = pool_handle
@@ -23,17 +24,20 @@ class RGBasePayment(RequestGenerator):
         self._submitter_did = submitter_did
         self._payment_method = kwargs.get("payment_method", "")
         self._addr_txos = kwargs.get("addr_txos", {})
+        self._payment_fees = kwargs.get("pool_fees", {}).get(PUB_XFER_TXN_ID, 0)
 
         if not self._payment_method or not self._addr_txos:
             raise RuntimeError("Payment init incorrect parameters")
 
-    def _gen_input_output(self, val):
-        inputs, outputs = gen_input_output(self._addr_txos, val)
+    def _gen_input_output(self, val, fees):
+        address, inputs, outputs = gen_input_output(self._addr_txos, val + fees)
 
         if inputs is None or outputs is None:
             raise NoReqDataAvailableException()
 
-        to_address = random.choice(list(self._addr_txos))
+        addrs = list(self._addr_txos)
+        addrs.remove(address)
+        to_address = random.choice(addrs)
         outputs.append({"recipient": to_address, "amount": val})
 
         return inputs, outputs
@@ -50,7 +54,7 @@ class RGGetPaymentSources(RGBasePayment):
 
 class RGPayment(RGBasePayment):
     def _gen_req_data(self):
-        return self._gen_input_output(1)
+        return self._gen_input_output(1, self._payment_fees)
 
     async def _gen_req(self, submit_did, req_data):
         inputs, outputs = req_data
@@ -71,7 +75,7 @@ class RGVerifyPayment(RGBasePayment):
     async def __perform_payments(self):
         for i in range(len(self._addr_txos)):
             try:
-                inputs, outputs = self._gen_input_output(1)
+                inputs, outputs = self._gen_input_output(1, self._payment_fees)
             except NoReqDataAvailableException:
                 break
 
