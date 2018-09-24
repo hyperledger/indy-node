@@ -1,6 +1,7 @@
 ![logo](collateral/logos/indy-logo.png)
 
 
+
 * [About Indy Node](#about-indy-node)
 * [Indy Node Repository Structure](#indy-node-repository-structure)
 * [Dependent Projects](#dependent-projects)
