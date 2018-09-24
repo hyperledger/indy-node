@@ -4,9 +4,8 @@ from ctypes import CDLL
 from indy import payment
 from indy import ledger
 
-from perf_load.perf_client_msgs import ClientReady
 from perf_load.perf_client import LoadClient
-from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks, request_get_type
+from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks, request_get_type, gen_input_output
 
 
 TRUSTEE_ROLE_CODE = "0"
@@ -52,19 +51,12 @@ class LoadClientFees(LoadClient):
         if fees_val == 0:
             return req
 
-        for ap in self._addr_txos:
-            while self._addr_txos[ap]:
-                (source, amount) = self._addr_txos[ap].pop()
-                if amount >= fees_val:
-                    address = ap
-                    inputs = [source]
-                    out_val = amount - fees_val
-                    outputs = []
-                    if out_val > 0:
-                        outputs = [{"recipient": address, "amount": out_val}]
-                    req_fees = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
-                                                              json.dumps(outputs), None)
-                    return req_fees[0]
+        inputs, outputs = gen_input_output(self._addr_txos, fees_val)
+        if inputs and outputs:
+            req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
+                                                         json.dumps(outputs), None)
+            return req_fees
+
         return req
 
     async def ledger_sign_req(self, wallet_h, did, req):
@@ -81,7 +73,7 @@ class LoadClientFees(LoadClient):
             op_f = resp_obj.get("op", "")
             if op_f == "REPLY":
                 receipt_infos_json = await payment.parse_response_with_fees(self._payment_method, resp)
-                receipt_infos = json.loads(receipt_infos_json)
+                receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
                 for ri in receipt_infos:
                     self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
             else:
@@ -193,3 +185,8 @@ class LoadClientFees(LoadClient):
     async def _post_init(self):
         await self._pool_fees_init()
         await self._payment_address_init()
+
+    def _on_pool_create_ext_params(self):
+        params = super()._on_pool_create_ext_params()
+        params.update({"addr_txos": self._addr_txos, "payment_method": self._payment_method})
+        return params

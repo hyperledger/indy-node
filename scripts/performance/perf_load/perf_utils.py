@@ -68,3 +68,28 @@ def request_get_type(req):
         raise RuntimeError("Request of unsupported type")
     txn_type = dict_req.get("operation", {}).get("type", "")
     return txn_type
+
+
+def gen_input_output(addr_txos, val):
+    for address in addr_txos:
+        inputs = []
+        outputs = []
+        total_amount = 0
+        tmp_txo = []
+        while addr_txos[address] and total_amount < val:
+            (source, amount) = addr_txos[address].pop()
+            if amount > 0:
+                inputs.append(source)
+                total_amount += amount
+                tmp_txo.append((source, amount))
+
+        if total_amount >= val:
+            out_val = total_amount - val
+            if out_val > 0:
+                outputs = [{"recipient": address, "amount": out_val}]
+            return inputs, outputs
+        else:
+            for s_a in tmp_txo:
+                addr_txos[address].append(s_a)
+
+    return None, None

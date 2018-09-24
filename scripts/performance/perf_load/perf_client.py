@@ -107,6 +107,9 @@ class LoadClient:
     async def _post_init(self):
         pass
 
+    def _on_pool_create_ext_params(self):
+        return {"max_cred_num": self._batch_size}
+
     async def run_test(self, genesis_path, seed, w_key):
         try:
             await self._pre_init()
@@ -119,7 +122,7 @@ class LoadClient:
 
             await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle, self._test_did,
                                                      self.ledger_sign_req, self.ledger_submit,
-                                                     max_cred_num=self._batch_size)
+                                                     **self._on_pool_create_ext_params())
         except Exception as ex:
             self.msg("{} run_test error {}", self._name, ex)
             self._loop.stop()
