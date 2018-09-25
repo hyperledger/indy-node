@@ -17,6 +17,7 @@ tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy>=1.6.1.d
 
 setup(
     name='indy-perf-load',
+    version="1.0.3",
     description='Indy node performance load',
     keywords='Indy Node performance load testing',
     packages=find_packages(),
@@ -25,5 +26,6 @@ setup(
     install_requires=['python3-indy>=1.6.1.dev683'],
     setup_requires=['pytest-runner'],
     extras_require={'tests': tests_require},
-    tests_require=tests_require
+    tests_require=tests_require,
+    scripts=['perf_load/perf_processes.py', 'perf_load/perf_spike_load.py']
 )

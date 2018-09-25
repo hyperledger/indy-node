@@ -36,7 +36,7 @@ class RequestGenerator(metaclass=ABCMeta):
     def get_label(self):
         return self._test_label
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         pass
 
     def _rand_data(self):

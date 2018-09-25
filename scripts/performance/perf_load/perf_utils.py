@@ -6,6 +6,9 @@ import base58
 import libnacl
 
 
+PUB_XFER_TXN_ID = "10001"
+
+
 def check_fs(is_dir: bool, fs_name: str):
     pp = os.path.expanduser(fs_name)
     rights = os.W_OK if is_dir else os.R_OK
@@ -57,3 +60,39 @@ def get_type_field(txn_dict):
 def get_txnid_field(txn_dict):
     tmp = txn_dict or {}
     return (tmp.get('result', {}).get('txnMetadata', {}) or tmp.get('txnMetadata', {})).get('txnId', None)
+
+
+def request_get_type(req):
+    if isinstance(req, dict):
+        dict_req = req
+    elif isinstance(req, str):
+        dict_req = json.loads(req)
+    else:
+        raise RuntimeError("Request of unsupported type")
+    txn_type = dict_req.get("operation", {}).get("type", "")
+    return txn_type
+
+
+def gen_input_output(addr_txos, val):
+    for address in addr_txos:
+        inputs = []
+        outputs = []
+        total_amount = 0
+        tmp_txo = []
+        while addr_txos[address] and total_amount < val:
+            (source, amount) = addr_txos[address].pop()
+            if amount > 0:
+                inputs.append(source)
+                total_amount += amount
+                tmp_txo.append((source, amount))
+
+        if total_amount >= val:
+            out_val = total_amount - val
+            if out_val > 0:
+                outputs = [{"recipient": address, "amount": out_val}]
+            return address, inputs, outputs
+        else:
+            for s_a in tmp_txo:
+                addr_txos[address].append(s_a)
+
+    return None, None, None

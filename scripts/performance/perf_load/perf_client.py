@@ -18,7 +18,7 @@ class LoadClient:
     SendTime = 1
     SendSync = 2
 
-    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode):
+    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **kwargs):
         self._name = name
         self._stat = ClientStatistic()
         self._send_mode = send_mode
@@ -84,23 +84,45 @@ class LoadClient:
     async def wallet_close(self, wallet_h):
         await wallet.close_wallet(wallet_h)
 
+    async def _init_pool(self, genesis_path):
+        await self.pool_protocol_version()
+        pool_cfg = json.dumps({"genesis_txn": genesis_path})
+        await self.pool_create_config(self._pool_name, pool_cfg)
+        self._pool_handle = await self.pool_open_pool(self._pool_name, self._pool_config)
+
+    async def _wallet_init(self, w_key):
+        self._wallet_name = "{}_wallet".format(self._pool_name)
+        wallet_credential = json.dumps({"key": w_key})
+        wallet_config = json.dumps({"id": self._wallet_name})
+        await self.wallet_create_wallet(wallet_config, wallet_credential)
+        self._wallet_handle = await self.wallet_open_wallet(wallet_config, wallet_credential)
+
+    async def _did_init(self, seed):
+        self._test_did, self._test_verk = await self.did_create_my_did(
+            self._wallet_handle, json.dumps({'seed': seed[0]}))
+
+    async def _pre_init(self):
+        pass
+
+    async def _post_init(self):
+        pass
+
+    def _on_pool_create_ext_params(self):
+        return {"max_cred_num": self._batch_size}
+
     async def run_test(self, genesis_path, seed, w_key):
         try:
-            pool_cfg = json.dumps({"genesis_txn": genesis_path})
+            await self._pre_init()
 
-            # TODO: remove after latest changes committed
-            await self.pool_protocol_version()
+            await self._init_pool(genesis_path)
+            await self._wallet_init(w_key)
+            await self._did_init(seed)
 
-            await self.pool_create_config(self._pool_name, pool_cfg)
-            self._pool_handle = await self.pool_open_pool(self._pool_name, self._pool_config)
-            self._wallet_name = "{}_wallet".format(self._pool_name)
-            wallet_credential = json.dumps({"key": w_key})
-            wallet_config = json.dumps({"id": self._wallet_name})
-            await self.wallet_create_wallet(wallet_config, wallet_credential)
-            self._wallet_handle = await self.wallet_open_wallet(wallet_config, wallet_credential)
-            self._test_did, self._test_verk = await self.did_create_my_did(self._wallet_handle, json.dumps({'seed': seed}))
-            await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle,
-                                                     self._test_did, max_cred_num=self._batch_size)
+            await self._post_init()
+
+            await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle, self._test_did,
+                                                     self.ledger_sign_req, self.ledger_submit,
+                                                     **self._on_pool_create_ext_params())
         except Exception as ex:
             self.msg("{} run_test error {}", self._name, ex)
             self._loop.stop()
@@ -114,6 +136,14 @@ class LoadClient:
             print("{} Ready send error {}".format(self._name, e))
             raise e
 
+    def _on_ClientRun(self, cln_run):
+        if self._send_mode == LoadClient.SendTime:
+            self._loop.call_soon(self.req_send)
+
+    def _on_ClientSend(self, cln_snd):
+        if self._send_mode == LoadClient.SendSync:
+            self.req_send(cln_snd.cnt)
+
     def read_cb(self):
         force_close = False
         try:
@@ -123,13 +153,11 @@ class LoadClient:
                     force_close = True
             elif isinstance(flag, ClientRun):
                 self.gen_reqs()
-                if self._send_mode == LoadClient.SendTime:
-                    self._loop.call_soon(self.req_send)
+                self._on_ClientRun(flag)
             elif isinstance(flag, ClientGetStat):
                 self._loop.call_soon(self.send_stat)
             elif isinstance(flag, ClientSend):
-                if self._send_mode == LoadClient.SendSync:
-                    self.req_send(flag.cnt)
+                self._on_ClientSend(flag)
         except Exception as e:
             self.msg("{} Error {}", self._name, e)
             force_close = True
@@ -170,7 +198,7 @@ class LoadClient:
             self.req_send(1)
 
     def max_in_bg(self):
-        return self._buff_reqs
+        return self._buff_reqs + 1
 
     async def pregen_reqs(self):
         if self._send_mode != LoadClient.SendResp:
@@ -266,11 +294,19 @@ class LoadClient:
 
     @classmethod
     def run(cls, name, genesis_path, pipe_conn, seed, batch_size, batch_rate,
-            req_kind, buff_req, wallet_key, pool_config, send_mode, mask_sign):
+            req_kind, buff_req, wallet_key, pool_config, send_mode, mask_sign, ext_set):
         if mask_sign:
             signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-        cln = cls(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode)
+        exts = {}
+        if ext_set and isinstance(ext_set, str):
+            try:
+                exts = json.loads(ext_set)
+            except Exception as e:
+                print("{} parse ext settings error {}".format(name, e))
+                exts = {}
+
+        cln = cls(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **exts)
         try:
             asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
             cln._loop.run_forever()

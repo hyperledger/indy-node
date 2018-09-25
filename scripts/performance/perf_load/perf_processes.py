@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import json
 import time
 import os
@@ -15,6 +17,7 @@ from perf_load.perf_utils import check_fs, check_seed
 from perf_load.perf_gen_req_parser import ReqTypeParser
 from perf_load.perf_client import LoadClient
 from perf_load.perf_client_runner import ClientRunner
+from perf_load.perf_client_fees import LoadClientFees
 
 
 parser = argparse.ArgumentParser(description='The script generates bunch of txns for the pool with Indy SDK. '
@@ -30,9 +33,9 @@ parser.add_argument('-g', '--genesis', required=False, dest='genesis_path', type
                          'Default value is ~/.indy-cli/networks/sandbox/pool_transactions_genesis',
                     default="~/.indy-cli/networks/sandbox/pool_transactions_genesis")
 
-parser.add_argument('-s', '--seed', type=check_seed, required=False, dest='seed',
+parser.add_argument('-s', '--seed', type=check_seed, required=False, dest='seed', action='append',
                     help='Seed to generate submitter did. Default value is Trustee1',
-                    default="000000000000000000000000Trustee1")
+                    default=[])
 
 parser.add_argument('-k', '--kind', default="nym", type=str, required=False, dest='req_kind',
                     help='Supported requests {} Default value is "nym". Could be combined in form of'
@@ -76,12 +79,16 @@ parser.add_argument('-o', '--out', default="", type=str, required=False, dest='o
 parser.add_argument('--load_time', default=0, type=float, required=False, dest='load_time',
                     help='Work no longer then load_time sec. Default value is 0')
 
+parser.add_argument('--ext', default=None, type=str, required=False, dest='ext_set',
+                    help='Ext settings to use')
+
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
-                 seed="000000000000000000000000Trustee1", req_kind="nym", batch_size=10, refresh_rate=10,
+                 seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
-                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, client_runner=LoadClient.run):
+                 sync_mode="freeflow", load_rate=10, out_file="", load_time=0, ext_set=None,
+                 client_runner=LoadClient.run):
         self._client_runner = client_runner
         self._clients = dict()  # key process future; value ClientRunner
         self._loop = asyncio.get_event_loop()
@@ -107,6 +114,7 @@ class LoadRunner:
         self._pool_config = None
         lr = load_rate if load_rate > 0 else 10
         self._batch_rate = 1 / lr
+        self._ext_set = ext_set
         if pool_config:
             try:
                 self._pool_config = json.loads(pool_config)
@@ -331,6 +339,7 @@ class LoadRunner:
         print("Sync mode                ", self._sync_mode, file=self._out_file)
         print("Pool config              ", self._pool_config, file=self._out_file)
         print("Load rate batches per sec", 1 / self._batch_rate, file=self._out_file)
+        print("Ext settings             ", self._ext_set, file=self._out_file)
 
         load_client_mode = LoadClient.SendTime
         if self._sync_mode in ['all', 'one']:
@@ -354,7 +363,7 @@ class LoadRunner:
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(self._client_runner, prc_name, self._genesis_path, wr, self._seed, self._batch_size,
                                   self._batch_rate, self._req_kind, self._buff_req, self._wallet_key, self._pool_config,
-                                  load_client_mode, self._mode == 'p')
+                                  load_client_mode, self._mode == 'p', self._ext_set)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd, self._out_file)
@@ -375,7 +384,12 @@ class LoadRunner:
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
     args = parser.parse_args()
+
+    if not args.seed:
+        args.seed.append("000000000000000000000000Trustee1")
+
     tr = LoadRunner(args.clients, args.genesis_path, args.seed, args.req_kind, args.batch_size, args.refresh_rate,
                     args.buff_req, args.out_dir, args.val_sep, args.wallet_key, args.mode, args.pool_config,
-                    args.sync_mode, args.load_rate, args.out_file, args.load_time)
+                    args.sync_mode, args.load_rate, args.out_file, args.load_time, args.ext_set,
+                    client_runner=LoadClient.run if not args.ext_set else LoadClientFees.run)
     tr.load_run()

@@ -8,7 +8,6 @@ from perf_load.perf_req_gen_attrib import RGAttrib, RGGetAttrib
 from perf_load.perf_req_gen_definition import RGGetDefinition, RGDefinition
 from perf_load.perf_req_gen_revoc import RGDefRevoc, RGGetDefRevoc, RGEntryRevoc, RGGetEntryRevoc, RGGetRevocRegDelta
 from perf_load.perf_req_gen_payment import RGGetPaymentSources, RGPayment, RGVerifyPayment
-from perf_load.perf_req_gen_fees import RGFeesNym, RGFeesSchema
 
 
 def test_supported_reqs():
@@ -17,8 +16,7 @@ def test_supported_reqs():
     assert reqs
     should_support = ["nym", "schema", "attrib", "cred_def", "revoc_reg_def", "revoc_reg_entry", "get_nym",
                       "get_attrib", "get_schema", "get_cred_def", "get_revoc_reg_def", "get_revoc_reg",
-                      "get_revoc_reg_delta", "get_payment_sources", "payment", "verify_payment", "fees_nym",
-                      "fees_schema"]
+                      "get_revoc_reg_delta", "get_payment_sources", "payment", "verify_payment"]
     assert len(reqs) == len(should_support)
     for ss in should_support:
         assert ss in reqs
@@ -30,8 +28,7 @@ def test_supported_reqs():
                           ("get_attrib", RGGetAttrib), ("get_schema", RGGetSchema), ("get_cred_def", RGGetDefinition),
                           ("get_revoc_reg_def", RGGetDefRevoc), ("get_revoc_reg", RGGetEntryRevoc),
                           ("get_revoc_reg_delta", RGGetRevocRegDelta), ("get_payment_sources", RGGetPaymentSources),
-                          ("payment", RGPayment), ("verify_payment", RGVerifyPayment), ("fees_nym", RGFeesNym),
-                          ("fees_schema", RGFeesSchema)])
+                          ("payment", RGPayment), ("verify_payment", RGVerifyPayment)])
 def test_parse_simple(kind, exp_type):
     r = ReqTypeParser.create_req_generator(kind)
     assert r[0] == exp_type

@@ -28,9 +28,9 @@ class RGSeqReqs(RequestGenerator):
         if len(self._reqs_collection) == 0:
             raise RuntimeError("At least one class should be provided")
 
-    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, *args, **kwargs):
+    async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         for req_builder in set(self._reqs_collection):
-            await req_builder.on_pool_create(pool_handle, wallet_handle, submitter_did, *args, **kwargs)
+            await req_builder.on_pool_create(pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs)
 
     def _seq_idx(self):
         return (self._req_idx + 1) % len(self._reqs_collection)
