@@ -7,6 +7,7 @@ from indy import ledger, anoncreds, blob_storage
 
 from perf_load.perf_utils import rawToFriendly, random_string, get_txnid_field
 from perf_load.perf_req_gen_definition import RGDefinition
+from perf_load.perf_req_gen import NoReqDataAvailableException
 
 
 class RGDefRevoc(RGDefinition):
@@ -17,7 +18,6 @@ class RGDefRevoc(RGDefinition):
         dr = await ledger.build_cred_def_request(submitter_did, json.dumps(self._default_definition_json))
         resp = await sign_req_f(wallet_handle, submitter_did, dr)
         await send_req_f(pool_handle, resp)
-        # await ledger.sign_and_submit_request(pool_handle, self._wallet_handle, submitter_did, dr)
 
     async def _gen_req(self, submit_did, req_data):
         tails_writer_config = json.dumps({'base_dir': 'tails', 'uri_pattern': ''})
@@ -95,14 +95,10 @@ class RGEntryRevoc(RGDefRevoc):
                     self._submitter_did, self._default_revoc_reg_def_json)
                 def_revoc_request = await self._sign_req(self._wallet_handle, self._submitter_did, def_revoc_request)
                 await self._submit_req(self._pool_handle, def_revoc_request)
-                # await ledger.sign_and_submit_request(
-                #     self._pool_handle, self._wallet_handle, self._submitter_did, def_revoc_request)
                 entry_revoc_request = await ledger.build_revoc_reg_entry_request(
                     self._submitter_did, self._default_revoc_reg_def_id, "CL_ACCUM", self._default_revoc_reg_entry_json)
                 entry_revoc_request = await self._sign_req(self._wallet_handle, self._submitter_did, entry_revoc_request)
                 await self._submit_req(self._pool_handle, entry_revoc_request)
-                # await ledger.sign_and_submit_request(
-                #     self._pool_handle, self._wallet_handle, self._submitter_did, entry_revoc_request)
                 break
             except Exception as ex:
                 print("WARNING: _upd_revoc_reg {}".format(ex))
@@ -131,8 +127,15 @@ class RGEntryRevoc(RGDefRevoc):
         _, _, revoc_reg_delta_json = await anoncreds.issuer_create_credential(
             self._wallet_handle, self._cred_offer_json, cred_req_json, self._default_cred_values_json,
             self._default_revoc_reg_def_id, self._blob_storage_reader_cfg_handle)
-        return await ledger.build_revoc_reg_entry_request(
-            submit_did, self._default_revoc_reg_def_id, "CL_ACCUM", revoc_reg_delta_json)
+        try:
+            req = await ledger.build_revoc_reg_entry_request(submit_did, self._default_revoc_reg_def_id,
+                                                             "CL_ACCUM", revoc_reg_delta_json)
+        except Exception as ex:
+            print("WARNING", ex)
+            self._old_reqs_cnt = 0
+            await self._upd_revoc_reg()
+            raise NoReqDataAvailableException()
+        return req
 
     def _gen_req_data(self):
         req_data = super()._gen_req_data()

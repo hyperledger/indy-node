@@ -90,7 +90,7 @@ def gen_input_output(addr_txos, val):
             out_val = total_amount - val
             if out_val > 0:
                 outputs = [{"recipient": address, "amount": out_val}]
-            return address, inputs, outputs
+            return {address: tmp_txo}, inputs, outputs
         else:
             for s_a in tmp_txo:
                 addr_txos[address].append(s_a)
