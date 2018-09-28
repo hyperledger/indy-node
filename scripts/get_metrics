@@ -210,7 +210,9 @@ def process_storage(storage, args):
 
     print("Profiling info:")
     for m in MetricsName:
-        if m > 30000 or m < MetricsName.NODE_PROD_TIME and \
+        if m > 30000:
+            break
+        if m < MetricsName.NODE_PROD_TIME and \
                 m not in {MetricsName.REQUEST_PROCESSING_TIME,
                           MetricsName.BACKUP_REQUEST_PROCESSING_TIME}:
             continue
