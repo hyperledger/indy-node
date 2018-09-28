@@ -131,7 +131,6 @@ class RGEntryRevoc(RGDefRevoc):
             req = await ledger.build_revoc_reg_entry_request(submit_did, self._default_revoc_reg_def_id,
                                                              "CL_ACCUM", revoc_reg_delta_json)
         except Exception as ex:
-            print("WARNING", ex)
             self._old_reqs_cnt = 0
             await self._upd_revoc_reg()
             raise NoReqDataAvailableException()
