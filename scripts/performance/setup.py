@@ -17,7 +17,7 @@ tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy>=1.6.1.d
 
 setup(
     name='indy-perf-load',
-    version="1.0.9",
+    version="1.0.10",
     description='Indy node performance load',
     keywords='Indy Node performance load testing',
     packages=find_packages(),
