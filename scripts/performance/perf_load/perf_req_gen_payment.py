@@ -36,7 +36,7 @@ class RGBasePayment(RequestGenerator):
             raise NoReqDataAvailableException()
 
         addrs = list(self._addr_txos)
-        addrs.remove(address)
+        addrs.remove(list(address)[0])
         to_address = random.choice(addrs)
         outputs.append({"recipient": to_address, "amount": val})
 

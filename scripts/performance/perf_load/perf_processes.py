@@ -11,6 +11,7 @@ import concurrent
 import signal
 import functools
 from datetime import datetime
+import yaml
 
 from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend, ClientMsg
 from perf_load.perf_utils import check_fs, check_seed
@@ -28,7 +29,7 @@ parser.add_argument('-c', '--clients', default=0, type=int, required=False, dest
                          '0 or less means equal to number of available CPUs. '
                          'Default value is 0')
 
-parser.add_argument('-g', '--genesis', required=False, dest='genesis_path', type=functools.partial(check_fs, False),
+parser.add_argument('-g', '--genesis_path', required=False, dest='genesis_path', type=functools.partial(check_fs, False),
                     help='Path to genesis txns file. '
                          'Default value is ~/.indy-cli/networks/sandbox/pool_transactions_genesis',
                     default="~/.indy-cli/networks/sandbox/pool_transactions_genesis")
@@ -37,24 +38,24 @@ parser.add_argument('-s', '--seed', type=check_seed, required=False, dest='seed'
                     help='Seed to generate submitter did. Default value is Trustee1',
                     default=[])
 
-parser.add_argument('-k', '--kind', default="nym", type=str, required=False, dest='req_kind',
+parser.add_argument('-k', '--req_kind', default="nym", type=str, required=False, dest='req_kind',
                     help='Supported requests {} Default value is "nym". Could be combined in form of'
                          ' JSON array or JSON obj'.format(ReqTypeParser.supported_requests()))
 
-parser.add_argument('-n', '--num', default=10, type=int, required=False, dest='batch_size',
+parser.add_argument('-n', '--batch_size', default=10, type=int, required=False, dest='batch_size',
                     help='Number of transactions to submit in one batch. Default value is 10')
 
-parser.add_argument('-r', '--refresh', default=10, type=float, required=False, dest='refresh_rate',
+parser.add_argument('-r', '--refresh_rate', default=10, type=float, required=False, dest='refresh_rate',
                     help='Statistics refresh rate in sec. Default value is 10')
 
 parser.add_argument('-b', '--buff_req', default=30, type=int, required=False, dest='buff_req',
                     help='Number of pregenerated reqs before start. Default value is 30')
 
-parser.add_argument('-d', '--directory', default=".", required=False, dest='out_dir',
+parser.add_argument('-d', '--out_dir', default=".", required=False, dest='out_dir',
                     type=functools.partial(check_fs, True),
                     help='Directory to save output files. Default value is "."')
 
-parser.add_argument('--sep', default="|", type=str, required=False, dest='val_sep',
+parser.add_argument('--val_sep', default="|", type=str, required=False, dest='val_sep',
                     help='csv file separator. Default value is "|"')
 
 parser.add_argument('-w', '--wallet_key', default="key", type=str, required=False, dest='wallet_key',
@@ -73,13 +74,13 @@ parser.add_argument('-y', '--sync_mode', default="freeflow", choices=['freeflow'
 parser.add_argument('-l', '--load_rate', default=10, type=float, required=False, dest='load_rate',
                     help='Batches per sec. Default value is 10')
 
-parser.add_argument('-o', '--out', default="", type=str, required=False, dest='out_file',
+parser.add_argument('-o', '--out_file', default="", type=str, required=False, dest='out_file',
                     help='Output file. Default value is stdout')
 
 parser.add_argument('--load_time', default=0, type=float, required=False, dest='load_time',
                     help='Work no longer then load_time sec. Default value is 0')
 
-parser.add_argument('--ext', default=None, type=str, required=False, dest='ext_set',
+parser.add_argument('--ext_set', default=None, type=str, required=False, dest='ext_set',
                     help='Ext settings to use')
 
 
@@ -383,13 +384,31 @@ class LoadRunner:
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
-    args = parser.parse_args()
+    args, extra = parser.parse_known_args()
+    dict_args = vars(args)
 
-    if not args.seed:
-        args.seed.append("000000000000000000000000Trustee1")
+    if len(extra) > 1:
+        raise argparse.ArgumentTypeError("Only path to config file expected, but found {} arguments".format(len(extra)))
 
-    tr = LoadRunner(args.clients, args.genesis_path, args.seed, args.req_kind, args.batch_size, args.refresh_rate,
-                    args.buff_req, args.out_dir, args.val_sep, args.wallet_key, args.mode, args.pool_config,
-                    args.sync_mode, args.load_rate, args.out_file, args.load_time, args.ext_set,
-                    client_runner=LoadClient.run if not args.ext_set else LoadClientFees.run)
+    try:
+        with open(extra[0], "r") as conf_file:
+            conf_vals = yaml.load(conf_file)
+    except Exception as ex:
+        print("Config parse error", ex)
+        conf_vals = {}
+
+    dict_args.update(conf_vals)
+
+    if not dict_args["seed"]:
+        dict_args["seed"].append("000000000000000000000000Trustee1")
+
+    dict_args["genesis_path"] = check_fs(False, dict_args["genesis_path"])
+    dict_args["out_dir"] = check_fs(True, dict_args["out_dir"])
+
+    tr = LoadRunner(dict_args["clients"], dict_args["genesis_path"], dict_args["seed"], dict_args["req_kind"],
+                    dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], dict_args["out_dir"],
+                    dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
+                    dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
+                    dict_args["ext_set"],
+                    client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run)
     tr.load_run()

@@ -43,6 +43,7 @@ class LoadClientFees(LoadClient):
         self._plugin_init = kwargs.get("plugin_init", "")
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
         self._set_fees = kwargs.get("set_fees", {})
+        self._req_addrs = {}
 
         if not self._payment_method or not self._plugin_lib or not self._plugin_init:
             raise RuntimeError("Plugin cannot be initialized. Some required param missed")
@@ -51,26 +52,35 @@ class LoadClientFees(LoadClient):
         req_type = request_get_type(req)
 
         if req_type in self._ignore_fees_txns:
-            return req
+            return None, req
 
         fees_val = self._pool_fees.get(req_type, 0)
         if fees_val == 0:
-            return req
+            return None, req
 
         address, inputs, outputs = gen_input_output(self._addr_txos, fees_val)
         if inputs and outputs:
             req_fees, _ = await payment.add_request_fees(wallet_h, did, req, json.dumps(inputs),
                                                          json.dumps(outputs), None)
-            return req_fees
+            return address, req_fees
 
-        return req
+        return None, req
 
     async def ledger_sign_req(self, wallet_h, did, req):
-        fees_req = await self._add_fees(wallet_h, did, req)
-        return await ledger.sign_request(wallet_h, did, fees_req)
+        addr, fees_req = await self._add_fees(wallet_h, did, req)
+        req = await ledger.sign_request(wallet_h, did, fees_req)
+        if addr is not None:
+            self._req_addrs[req] = addr
+        return req
 
-    async def _parse_fees_resp(self, resp_or_exp):
+    def _restore_fees_from_req(self, req):
+        fees_to_restore = self._req_addrs.pop(req, {})
+        for addr, txos in fees_to_restore.items():
+            self._addr_txos[addr].extend(txos)
+
+    async def _parse_fees_resp(self, req, resp_or_exp):
         if isinstance(resp_or_exp, Exception):
+            self._req_addrs.pop(req, {})
             return
 
         resp = resp_or_exp
@@ -83,16 +93,17 @@ class LoadClientFees(LoadClient):
                 for ri in receipt_infos:
                     self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
             else:
-                print("fees resp cannot be parsed")
+                self._restore_fees_from_req(req)
         except Exception as e:
             print("Error on payment txn postprocessing: {}".format(e))
+        self._req_addrs.pop(req, {})
 
     async def ledger_submit(self, pool_h, req):
         try:
             resp = await ledger.submit_request(pool_h, req)
         except Exception as ex:
             resp = ex
-        await self._parse_fees_resp(resp)
+        await self._parse_fees_resp(req, resp)
         return resp
 
     async def __is_trustee(self, checking_did):

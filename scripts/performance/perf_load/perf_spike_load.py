@@ -26,14 +26,14 @@ def create_output_directory(folder_path):
 
 
 def get_args(test_config, process_name):
-    args_for_script = ["python3", "perf_processes.py"]
+    args_for_script = ["perf_processes.py"]
     common_args = test_config["common"].copy()
     common_args.update(test_config["processes"][process_name])
     for dict_key, dict_value in common_args.items():
         if dict_key == "directory":
             directory = create_output_directory([test_config["common"]["directory"], "Spike_log", process_name])
             args_for_script.append("--directory={}".format(directory))
-        elif "step" in dict_key or "mode" in dict_key:
+        elif "step" in dict_key or dict_key == "mode":
             continue
         else:
             args_for_script.append("--{}={}".format(dict_key, dict_value))
