@@ -30,9 +30,9 @@ def get_args(test_config, process_name):
     common_args = test_config["common"].copy()
     common_args.update(test_config["processes"][process_name])
     for dict_key, dict_value in common_args.items():
-        if dict_key == "directory":
-            directory = create_output_directory([test_config["common"]["directory"], "Spike_log", process_name])
-            args_for_script.append("--directory={}".format(directory))
+        if dict_key == "out_dir":
+            directory = create_output_directory([test_config["common"]["out_dir"], "Spike_log", process_name])
+            args_for_script.append("--out_dir={}".format(directory))
         elif "step" in dict_key or dict_key == "mode":
             continue
         else:
@@ -115,7 +115,7 @@ def run_stable_process(process_name, config, process_time, interval=0):
 def start_profile():
     with open("config_perf_spike_load.yml") as file:
         test_config = yaml.load(file)
-    logging_folder = create_output_directory([test_config["common"]["directory"], "Spike_log"])
+    logging_folder = create_output_directory([test_config["common"]["out_dir"], "Spike_log"])
     logging_file_path = os.path.join(logging_folder, args.log_file)
     logging.basicConfig(filename=logging_file_path, filemode='w', level=logging.INFO,
                         format='%(asctime)s%(message)s', datefmt='%m-%d-%y %H:%M:%S')

@@ -17,13 +17,13 @@ tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy>=1.6.1.d
 
 setup(
     name='indy-perf-load',
-    version="1.0.11",
+    version="1.0.12",
     description='Indy node performance load',
     keywords='Indy Node performance load testing',
     packages=find_packages(),
     package_data={'': ['*.md']},
     include_package_data=True,
-    install_requires=['python3-indy>=1.6.1.dev683'],
+    install_requires=['python3-indy>=1.6.1.dev683', 'PyYAML>=3.12'],
     setup_requires=['pytest-runner'],
     extras_require={'tests': tests_require},
     tests_require=tests_require,
