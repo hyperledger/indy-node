@@ -11,6 +11,7 @@ import concurrent
 import signal
 import functools
 from datetime import datetime
+import yaml
 
 from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend, ClientMsg
 from perf_load.perf_utils import check_fs, check_seed
@@ -383,13 +384,31 @@ class LoadRunner:
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
-    args = parser.parse_args()
+    args, extra = parser.parse_known_args()
+    dict_args = vars(args)
 
-    if not args.seed:
-        args.seed.append("000000000000000000000000Trustee1")
+    if len(extra) > 1:
+        raise argparse.ArgumentTypeError("Only path to config file expected, but found {} arguments".format(len(extra)))
 
-    tr = LoadRunner(args.clients, args.genesis_path, args.seed, args.req_kind, args.batch_size, args.refresh_rate,
-                    args.buff_req, args.out_dir, args.val_sep, args.wallet_key, args.mode, args.pool_config,
-                    args.sync_mode, args.load_rate, args.out_file, args.load_time, args.ext_set,
-                    client_runner=LoadClient.run if not args.ext_set else LoadClientFees.run)
+    try:
+        with open(extra[0], "r") as conf_file:
+            conf_vals = yaml.load(conf_file)
+    except Exception as ex:
+        print("Config parse error", ex)
+        conf_vals = {}
+
+    dict_args.update(conf_vals)
+
+    if not dict_args["seed"]:
+        dict_args["seed"].append("000000000000000000000000Trustee1")
+
+    dict_args["genesis_path"] = check_fs(False, dict_args["genesis_path"])
+    dict_args["out_dir"] = check_fs(True, dict_args["out_dir"])
+
+    tr = LoadRunner(dict_args["clients"], dict_args["genesis_path"], dict_args["seed"], dict_args["req_kind"],
+                    dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], dict_args["out_dir"],
+                    dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
+                    dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
+                    dict_args["ext_set"],
+                    client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run)
     tr.load_run()
