@@ -389,9 +389,11 @@ if __name__ == '__main__':
     if len(extra) > 1:
         raise argparse.ArgumentTypeError("Only path to config file expected, but found {} arguments".format(len(extra)))
 
+    conf_vals = {}
     try:
-        with open(extra[0], "r") as conf_file:
-            conf_vals = yaml.load(conf_file)
+        if extra:
+            with open(extra[0], "r") as conf_file:
+                conf_vals = yaml.load(conf_file)
     except Exception as ex:
         print("Config parse error", ex)
         conf_vals = {}
