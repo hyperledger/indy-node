@@ -29,7 +29,7 @@ parser.add_argument('-c', '--clients', default=0, type=int, required=False, dest
                          '0 or less means equal to number of available CPUs. '
                          'Default value is 0')
 
-parser.add_argument('-g', '--genesis_path', required=False, dest='genesis_path', type=functools.partial(check_fs, False),
+parser.add_argument('-g', '--genesis_path', required=False, dest='genesis_path', type=str,
                     help='Path to genesis txns file. '
                          'Default value is ~/.indy-cli/networks/sandbox/pool_transactions_genesis',
                     default="~/.indy-cli/networks/sandbox/pool_transactions_genesis")
@@ -51,8 +51,7 @@ parser.add_argument('-r', '--refresh_rate', default=10, type=float, required=Fal
 parser.add_argument('-b', '--buff_req', default=30, type=int, required=False, dest='buff_req',
                     help='Number of pregenerated reqs before start. Default value is 30')
 
-parser.add_argument('-d', '--out_dir', default=".", required=False, dest='out_dir',
-                    type=functools.partial(check_fs, True),
+parser.add_argument('-d', '--out_dir', default=".", required=False, dest='out_dir', type=str,
                     help='Directory to save output files. Default value is "."')
 
 parser.add_argument('--val_sep', default="|", type=str, required=False, dest='val_sep',
@@ -390,9 +389,11 @@ if __name__ == '__main__':
     if len(extra) > 1:
         raise argparse.ArgumentTypeError("Only path to config file expected, but found {} arguments".format(len(extra)))
 
+    conf_vals = {}
     try:
-        with open(extra[0], "r") as conf_file:
-            conf_vals = yaml.load(conf_file)
+        if extra:
+            with open(extra[0], "r") as conf_file:
+                conf_vals = yaml.load(conf_file)
     except Exception as ex:
         print("Config parse error", ex)
         conf_vals = {}
