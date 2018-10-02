@@ -42,21 +42,26 @@ def test_pool_restart(
     _comparison_reply(responses, req_obj)
 
 
-def test_restarter_can_initialize_after_pool_restart(
-        sdk_pool_handle,
-        sdk_wallet_trustee,
-        looper,
-        tconf,
-        txnPoolNodeSet):
+def test_restarter_can_initialize_after_pool_restart(sdk_pool_handle,
+                                                     sdk_wallet_trustee,
+                                                     looper,
+                                                     tconf,
+                                                     txnPoolNodeSet):
+    '''
+    1. Schedule restart after restart_timeout seconds
+    2. Check that restart schedule on all nodes
+    3. Check that restart started on all nodes
+    4. Check that Restarter can be create.
+    '''
     server, indicator = looper.loop.run_until_complete(
         _createServer(
             host=tconf.controlServiceHost,
             port=tconf.controlServicePort
         )
     )
-
+    restart_timeout = 10
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    start_at = unow + timedelta(seconds=10)
+    start_at = unow + timedelta(seconds=restart_timeout)
     req_obj, responses = sdk_send_restart(looper,
                                           sdk_wallet_trustee,
                                           sdk_pool_handle,
@@ -71,7 +76,7 @@ def test_restarter_can_initialize_after_pool_restart(
         assert all(n.restarter.lastActionEventInfo[0] == RestartLog.STARTED
                    for n in txnPoolNodeSet)
 
-    looper.run(eventually(chk, timeout=20))
+    looper.run(eventually(chk, timeout=restart_timeout + 10))
     _comparison_reply(responses, req_obj)
     restarted_node = txnPoolNodeSet[-1]
     actionLog = restarted_node.restarter._actionLog
