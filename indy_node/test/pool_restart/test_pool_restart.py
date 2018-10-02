@@ -7,6 +7,7 @@ from jsonpickle import json
 from indy_node.server.restart_log import RestartLog
 
 from indy_common.constants import POOL_RESTART, ACTION, START, CANCEL
+from indy_node.server.restarter import Restarter
 from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_send_restart
 from plenum.common.constants import REPLY, TXN_TYPE
 from plenum.common.types import f
@@ -14,6 +15,7 @@ from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
     sdk_get_reply, sdk_get_and_check_replies
 from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
     nodeControlGeneralMonkeypatching
+from stp_core.loop.eventually import eventually
 
 
 def test_pool_restart(
@@ -38,6 +40,46 @@ def test_pool_restart(
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
     _comparison_reply(responses, req_obj)
+
+
+def test_restarter_can_initialize_after_pool_restart(
+        sdk_pool_handle,
+        sdk_wallet_trustee,
+        looper,
+        tconf,
+        txnPoolNodeSet):
+    server, indicator = looper.loop.run_until_complete(
+        _createServer(
+            host=tconf.controlServiceHost,
+            port=tconf.controlServicePort
+        )
+    )
+
+    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+    start_at = unow + timedelta(seconds=10)
+    req_obj, responses = sdk_send_restart(looper,
+                                          sdk_wallet_trustee,
+                                          sdk_pool_handle,
+                                          action=START,
+                                          datetime=str(datetime.isoformat(start_at)))
+
+    _stopServer(server)
+    for node in txnPoolNodeSet:
+        assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
+
+    def chk():
+        assert all(n.restarter.lastActionEventInfo[0] == RestartLog.STARTED
+                   for n in txnPoolNodeSet)
+
+    looper.run(eventually(chk, timeout=20))
+    _comparison_reply(responses, req_obj)
+    restarted_node = txnPoolNodeSet[-1]
+    actionLog = restarted_node.restarter._actionLog
+    Restarter(restarted_node.id,
+              restarted_node.name,
+              restarted_node.dataLocation,
+              restarted_node.config,
+              actionLog=actionLog)
 
 
 def test_pool_restart_cancel(
