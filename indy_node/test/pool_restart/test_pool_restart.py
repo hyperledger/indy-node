@@ -44,10 +44,9 @@ def test_pool_restart(
 
 def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
     '''
-    1. Schedule restart after restart_timeout seconds
-    2. Add restart schedule message to ActionLog
-    3. Add start restart message to ActionLog
-    4. Check that Restarter can be create (emulate case after node restart).
+    1. Add restart schedule message to ActionLog
+    2. Add start restart message to ActionLog
+    3. Check that Restarter can be create (emulate case after node restart).
     '''
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     restarted_node = txnPoolNodeSet[-1]
