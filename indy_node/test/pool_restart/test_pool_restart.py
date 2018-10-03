@@ -42,49 +42,22 @@ def test_pool_restart(
     _comparison_reply(responses, req_obj)
 
 
-def test_restarter_can_initialize_after_pool_restart(sdk_pool_handle,
-                                                     sdk_wallet_trustee,
-                                                     looper,
-                                                     tconf,
-                                                     txnPoolNodeSet):
+def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
     '''
     1. Schedule restart after restart_timeout seconds
-    2. Check that restart schedule on all nodes
-    3. Check that restart started on all nodes
-    4. Check that Restarter can be create.
+    2. Add restart schedule message to ActionLog
+    3. Add start restart message to ActionLog
+    4. Check that Restarter can be create (emulate case after node restart).
     '''
-    server, indicator = looper.loop.run_until_complete(
-        _createServer(
-            host=tconf.controlServiceHost,
-            port=tconf.controlServicePort
-        )
-    )
-    restart_timeout = 10
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    start_at = unow + timedelta(seconds=restart_timeout)
-    req_obj, responses = sdk_send_restart(looper,
-                                          sdk_wallet_trustee,
-                                          sdk_pool_handle,
-                                          action=START,
-                                          datetime=str(datetime.isoformat(start_at)))
-
-    _stopServer(server)
-    for node in txnPoolNodeSet:
-        assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
-
-    def chk():
-        assert all(n.restarter.lastActionEventInfo[0] == RestartLog.STARTED
-                   for n in txnPoolNodeSet)
-
-    looper.run(eventually(chk, timeout=restart_timeout + 10))
-    _comparison_reply(responses, req_obj)
     restarted_node = txnPoolNodeSet[-1]
-    actionLog = restarted_node.restarter._actionLog
+    restarted_node.restarter._actionLog.appendScheduled(unow)
+    restarted_node.restarter._actionLog.appendStarted(unow)
     Restarter(restarted_node.id,
               restarted_node.name,
               restarted_node.dataLocation,
               restarted_node.config,
-              actionLog=actionLog)
+              actionLog=restarted_node.restarter._actionLog)
 
 
 def test_pool_restart_cancel(

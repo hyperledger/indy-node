@@ -52,9 +52,6 @@ class Restarter(NodeMaintainer):
         self._actionLog.appendSucceeded(when)
         logger.info("Node '{}' successfully restarted"
                     .format(self.nodeName))
-        self._notifier.sendMessageUponNodeRestartComplete(
-            "Restart of node '{}' scheduled on {} "
-            "completed successfully".format(self.nodeName, when))
 
     def handleRestartRequest(self, req: Request) -> None:
         """
@@ -252,7 +249,6 @@ class Restarter(NodeMaintainer):
         if external_reason:
             logger.error("This problem may have external reasons, "
                          "check syslog for more information")
-        self._notifier.sendMessageUponNodeRestartFail(error_message)
 
 
 class RestartMessage(NodeControlToolMessage):
