@@ -94,6 +94,8 @@ def build_graph():
             PlotInfo(title="Throughput", log_scale=False,
                      items=["client_stack_messages_processed_per_sec",
                             "ordered_batch_size_per_sec"]),
+            PlotInfo(title="Backup throughput", log_scale=False,
+                     items=["backup_ordered_batch_size_per_sec"]),
             PlotInfo(title="Latency", log_scale=False,
                      items=["avg_monitor_avg_latency",
                             "avg_backup_monitor_avg_latency"]),
