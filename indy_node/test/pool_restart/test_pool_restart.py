@@ -11,11 +11,6 @@ from indy_node.server.restarter import Restarter
 from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_send_restart
 from plenum.common.constants import REPLY, TXN_TYPE
 from plenum.common.types import f
-from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
-    sdk_get_reply, sdk_get_and_check_replies
-from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
-    nodeControlGeneralMonkeypatching
-from stp_core.loop.eventually import eventually
 
 
 def test_pool_restart(
