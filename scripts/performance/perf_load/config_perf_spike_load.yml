@@ -1,0 +1,43 @@
+# perf_spike_load.py arguments
+profile:
+  spike_time_in_seconds: 300
+  rest_time_in_seconds: 300
+  total_time_in_seconds: 3600               # 1h = 3600 sec, 24h = 86400, 0 for endless test
+
+# perf_processes.py will be called with arguments provided below  during perf_spike_load.py execution. You may move arguments between common and processes sections:
+# e.g. if you want to define different clients number for reading and writing transactions, just copy "clients" to any of processes sections and provide values. 
+# The script takes the most specific arguments (for processes rather than common) in case of a duplication.
+common: 
+  clients: 1
+  seed: 000000000000000000000000Trustee1
+  batch_size: 1
+  refresh_rate: 100
+  buff_req: 100
+  val_sep: "|"
+  wallet_key: key
+  mode: p
+  pool_config: ""
+  sync_mode: all
+  out_file: "load_script_output.txt"
+  genesis_path: /home/me/Documents/genesis
+  out_dir: ~/Documents/
+
+processes:
+  background:                               # describes background process
+    req_kind: get_nym
+    mode: stable                            # stable - load without growing
+                                            # stepwise - growing load
+                                            # disabled or any other value except stable and stepwise to skip the process
+    step_value: 20                          # for stepwise testing
+    step_time_in_seconds: 60                # for stepwise testing
+    step_initial_load_rate: 0               # initial load rate per spike (and load rate in stable mode)
+
+
+  spike:                                    # describes spikes process
+    req_kind: nym
+    mode: stepwise                          # stable - load without growing
+                                            # stepwise - growing load
+                                            # disabled or any other value except stable and stepwise to skip the process
+    step_value: 1                           # for stepwise testing
+    step_time_in_seconds: 10                # for stepwise testing
+    step_initial_load_rate: 5               # initial load rate per spike (and load rate in stable mode)

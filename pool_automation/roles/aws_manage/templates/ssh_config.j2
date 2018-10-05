@@ -1,0 +1,8 @@
+{% for item in ec2.results %}
+{% set inst = item.tagged_instances[0] %}
+{% set tags = inst.tags %}
+Host {{ tag_namespace }}_{{ tag_role }}_{{ tags.id }}
+    HostName {{ inst.public_ip }}
+    User ubuntu
+    IdentityFile ./key
+{% endfor %}
