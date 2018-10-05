@@ -1,0 +1,34 @@
+---
+scenario:
+  name: default
+
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  inventory:
+    group_vars:
+      all:
+        indy_node_ver: 1.6.563
+        indy_plenum_ver: 1.6.501
+        python_indy_crypto_ver: 0.4.1
+        libindy_crypto_ver: 0.4.0
+
+platforms:
+  - name: instance
+    box: ubuntu/xenial64
+
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+
+lint:
+  name: yamllint
+  options:
+    config-file: ../common/yamllint
+
+verifier:
+  name: testinfra
+  lint:
+    name: flake8

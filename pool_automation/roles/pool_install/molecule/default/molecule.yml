@@ -1,0 +1,62 @@
+---
+scenario:
+  name: default
+
+parameters:
+  node_config: &node_config
+    box: ubuntu/xenial64
+    groups:
+      - nodes
+  node_ips:
+    - &node1_ip 192.168.33.11
+    - &node2_ip 192.168.33.12
+    - &node3_ip 192.168.33.13
+    - &node4_ip 192.168.33.14
+
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  inventory:
+    host_vars:
+      node1: {tag_id: 1, ansible_host: *node1_ip, ansible_port: 22}
+      node2: {tag_id: 2, ansible_host: *node2_ip, ansible_port: 22}
+      node3: {tag_id: 3, ansible_host: *node3_ip, ansible_port: 22}
+      node4: {tag_id: 4, ansible_host: *node4_ip, ansible_port: 22}
+
+platforms:
+  - <<: *node_config
+    name: node1
+    interfaces:
+      - network_name: private_network
+        ip: *node1_ip
+  - <<: *node_config
+    name: node2
+    interfaces:
+      - network_name: private_network
+        ip: *node2_ip
+  - <<: *node_config
+    name: node3
+    interfaces:
+      - network_name: private_network
+        ip: *node3_ip
+  - <<: *node_config
+    name: node4
+    interfaces:
+      - network_name: private_network
+        ip: *node4_ip
+
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+
+lint:
+  name: yamllint
+  options:
+    config-file: ../common/yamllint
+
+verifier:
+  name: testinfra
+  lint:
+    name: flake8

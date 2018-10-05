@@ -7,13 +7,10 @@ from jsonpickle import json
 from indy_node.server.restart_log import RestartLog
 
 from indy_common.constants import POOL_RESTART, ACTION, START, CANCEL
+from indy_node.server.restarter import Restarter
 from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_send_restart
 from plenum.common.constants import REPLY, TXN_TYPE
 from plenum.common.types import f
-from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, \
-    sdk_get_reply, sdk_get_and_check_replies
-from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
-    nodeControlGeneralMonkeypatching
 
 
 def test_pool_restart(
@@ -38,6 +35,23 @@ def test_pool_restart(
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
     _comparison_reply(responses, req_obj)
+
+
+def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
+    '''
+    1. Add restart schedule message to ActionLog
+    2. Add start restart message to ActionLog
+    3. Check that Restarter can be create (emulate case after node restart).
+    '''
+    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+    restarted_node = txnPoolNodeSet[-1]
+    restarted_node.restarter._actionLog.appendScheduled(unow)
+    restarted_node.restarter._actionLog.appendStarted(unow)
+    Restarter(restarted_node.id,
+              restarted_node.name,
+              restarted_node.dataLocation,
+              restarted_node.config,
+              actionLog=restarted_node.restarter._actionLog)
 
 
 def test_pool_restart_cancel(

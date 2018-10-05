@@ -1,0 +1,27 @@
+---
+scenario:
+  name: default
+
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+
+platforms:
+  - name: instance
+    box: ubuntu/xenial64
+
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+
+lint:
+  name: yamllint
+  options:
+    config-file: yamllint
+
+verifier:
+  name: testinfra
+  lint:
+    name: flake8
