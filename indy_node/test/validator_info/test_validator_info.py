@@ -11,7 +11,7 @@ from plenum.test.helper import check_sufficient_replies_received
 
 
 # noinspection PyUnresolvedReferences
-from plenum.test.validator_info.test_validator_info import \
+from plenum.test.validator_info.conftest import \
     info, node  # qa
 
 from indy_common.constants import TXN_TYPE, DATA, GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE

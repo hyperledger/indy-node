@@ -1,0 +1,19 @@
+---
+# AWS primary parameters
+aws_type: t2.micro
+aws_image: ami-027583e616ca104df
+aws_region: eu-central-1
+
+# Tags
+tag_namespace: test
+tag_role: default
+
+# Derivative parameters
+group_name: "{{ tag_role }}s"
+aws_keyname: "{{ tag_namespace }}-{{ group_name }}"
+aws_group: "{{ tag_namespace }}-{{ group_name }}"
+
+# List of all potential regions to use
+aws_regions:
+  - eu-central-1
+  - eu-west-3
