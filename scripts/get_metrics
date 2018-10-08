@@ -223,12 +223,13 @@ def process_storage(storage, args):
     if args.output is not None:
         columns = [Timestamp()]
         for m in MetricsName:
-            columns.append(MetricsValue(m, 'sum'))
-            columns.append(MetricsValue(m, 'count'))
-            columns.append(MetricsValue(m, 'min'))
-            columns.append(MetricsValue(m, 'lo'))
-            columns.append(MetricsValue(m, 'avg'))
-            columns.append(MetricsValue(m, 'hi'))
+            if m < 30000:
+                columns.append(MetricsValue(m, 'sum'))
+                columns.append(MetricsValue(m, 'count'))
+                columns.append(MetricsValue(m, 'min'))
+                columns.append(MetricsValue(m, 'lo'))
+                columns.append(MetricsValue(m, 'avg'))
+                columns.append(MetricsValue(m, 'hi'))
             columns.append(MetricsValue(m, 'max'))
 
         with open(args.output, 'w') as f:
@@ -245,7 +246,10 @@ if __name__ == '__main__':
     args = read_args()
 
     if args.data_dir is not None:
-        storage = initKeyValueStorage(KeyValueStorageType.Rocksdb, args.data_dir, "")
+        is_leveldb = any(f.endswith('.ldb') for f in os.listdir(args.data_dir))
+        storage_type = KeyValueStorageType.Leveldb if is_leveldb \
+            else KeyValueStorageType.Rocksdb
+        storage = initKeyValueStorage(storage_type, args.data_dir, "")
         process_storage(storage, args)
         exit()
 
