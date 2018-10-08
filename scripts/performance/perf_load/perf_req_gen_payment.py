@@ -38,6 +38,8 @@ class RGBasePayment(RequestGenerator):
         addrs = list(self._addr_txos)
         addrs.remove(list(address)[0])
         to_address = random.choice(addrs)
+        s, a = self._addr_txos[to_address][0]
+        self._addr_txos[to_address][0] = (s, a + val)
         outputs.append({"recipient": to_address, "amount": val})
 
         return inputs, outputs

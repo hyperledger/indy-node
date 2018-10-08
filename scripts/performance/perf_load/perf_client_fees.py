@@ -88,7 +88,7 @@ class LoadClientFees(LoadClient):
             resp_obj = json.loads(resp)
             op_f = resp_obj.get("op", "")
             if op_f == "REPLY":
-                receipt_infos_json = await payment.parse_response_with_fees(self._payment_method, resp)
+                receipt_infos_json = await payment.parse_payment_response(self._payment_method, resp)
                 receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
                 for ri in receipt_infos:
                     self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
@@ -207,5 +207,6 @@ class LoadClientFees(LoadClient):
         params = super()._on_pool_create_ext_params()
         params.update({"addr_txos": self._addr_txos,
                        "payment_method": self._payment_method,
-                       "pool_fees": self._pool_fees})
+                       "pool_fees": self._pool_fees,
+                       "addr_mint_limit": self._addr_mint_limit})
         return params

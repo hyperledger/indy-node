@@ -80,12 +80,12 @@ def gen_input_output(addr_txos, val):
         total_amount = 0
         tmp_txo = []
         while addr_txos[address] and total_amount < val:
-            (source, amount) = addr_txos[address].pop()
+            (source, amount) = addr_txos[address][-1]
             if amount > 0:
                 inputs.append(source)
                 total_amount += amount
                 tmp_txo.append((source, amount))
-
+        addr_txos[address] = addr_txos[address][-1:]
         if total_amount >= val:
             out_val = total_amount - val
             if out_val > 0:
