@@ -38,7 +38,7 @@ NEW_ID_REG_EX = "(\s* (?P<new_id>new\s+DID)" \
 
 GET_NYM_REG_EX = "(\s* (?P<send_get_nym>send\s+{getNym}) " \
                  "\s+ (?P<dest>dest=)\s*(?P<dest_id>[A-Za-z0-9+=/]+) \s*) ".format(
-    getNym=IndyTransactions.GET_NYM.name)
+                     getNym=IndyTransactions.GET_NYM.name)
 
 GET_ATTR_REG_EX = \
     "(\s* (?P<send_get_attr>send\s+{attrib}) " \
@@ -56,23 +56,25 @@ SEND_SCHEMA_REG_EX = "(\s*(?P<send_schema>send\s+{schema})" \
                      "\s+(?P<name_key>name=)\s*(?P<name>[A-Za-z0-9-_]+)" \
                      "\s*(?P<version_key>version=)\s*(?P<version>[0-9.]+)" \
                      "\s+(?P<keys_key>keys=)\s*(?P<keys>[0-9a-zA-Z-_,\s]+)\s*)".format(
-    schema=IndyTransactions.SCHEMA.name)
+                         schema=IndyTransactions.SCHEMA.name)
 
 GET_SCHEMA_REG_EX = "(\s*(?P<send_get_schema>send\s+{getSchema})" \
-                    "\s+(?P<dest>dest=) \s* (?P<dest_id>[A-Za-z0-9+=/]*)" \
-                    "\s+(?P<name_key>name=)\s*(?P<name>[A-Za-z0-9-_]+)" \
-                    "\s*(?P<version_key>version=)\s*(?P<version>[0-9.]+)\s*)".format(
-    getSchema=IndyTransactions.GET_SCHEMA.name)
+    "\s+(?P<dest>dest=) \s* (?P<dest_id>[A-Za-z0-9+=/]*)" \
+    "\s+(?P<name_key>name=)\s*(?P<name>[A-Za-z0-9-_]+)" \
+    "\s*(?P<version_key>version=)\s*(?P<version>[0-9.]+)\s*)".format(
+        getSchema=IndyTransactions.GET_SCHEMA.name)
+
 
 SEND_CLAIM_DEF_REG_EX = "(\s*(?P<send_claim_def>send\s+{issKey})" \
-                        "\s+(?P<ref_key>ref=)\s*(?P<ref>[0-9]+)\s*)" \
+                        "\s+(?P<ref_key>ref=)\s*(?P<ref>[0-9]+)\s*)"\
                         "\s*(?P<signature_type_key>signature_type=)\s*(?P<signature_type>[A-Z0-9]+)" \
     .format(issKey=IndyTransactions.CLAIM_DEF.name)
 
 GET_CLAIM_DEF_REG_EX = "(\s*(?P<send_get_claim_def>send\s+{issKey})" \
-                       "\s+(?P<ref_key>ref=)\s*(?P<ref>[0-9]+)\s*)" \
+                       "\s+(?P<ref_key>ref=)\s*(?P<ref>[0-9]+)\s*)"\
                        "\s*(?P<signature_type_key>signature_type=)\s*(?P<signature_type>[A-Z0-9]+)" \
     .format(issKey=IndyTransactions.GET_CLAIM_DEF.name)
+
 
 ADD_ATTRS_PROVER_REG_EX = "(\s*(?P<add_attrs>attribute \s+ known \s+ to) " \
                           "\s+ (?P<issuer_id>[A-Za-z0-9+=/]+) " \
@@ -139,13 +141,13 @@ SEND_PROOF_REG_EX = '(\s*(?P<send_proof>send \s+ proof) ' \
                     '\s+ to \s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
 SEND_PROOF_REQ_REG_EX = '(\s*(?P<send_proof_request>send \s+ proof-request) ' \
-                        '\s+ (?P<proof_request_name>[A-Za-z0-9-." ]+) ' \
-                        '\s+ to (?P<target>[A-Za-z0-9-." ]+) \s*)'
+    '\s+ (?P<proof_request_name>[A-Za-z0-9-." ]+) ' \
+    '\s+ to (?P<target>[A-Za-z0-9-." ]+) \s*)'
 
 SEND_NODE_REG_EX = "(\s* (?P<send_node>send\s+{node}) " \
                    "\s+ dest=\s*(?P<dest_id>[A-Za-z0-9+/]+) " \
                    "\s+ data=(?P<data>\{{\s*.*\}}) \s*) ".format(
-    node=IndyTransactions.NODE.name)
+                       node=IndyTransactions.NODE.name)
 
 SEND_POOL_UPG_REG_EX = "(\s*(?P<send_pool_upg>send\s+{poolUpgrade})" \
                        "\s+(?P<name_key>name=)\s*(?P<name>[A-Za-z0-9-_]+)" \
@@ -158,18 +160,21 @@ SEND_POOL_UPG_REG_EX = "(\s*(?P<send_pool_upg>send\s+{poolUpgrade})" \
                        "(\s+ (?P<force_key>force=)\s*(?P<force>True|False))?" \
                        "(\s+ (?P<reinstall_key>reinstall=)\s*(?P<reinstall>True|False))?" \
                        "(\s+ (?P<package_key>package=)\s*(?P<package>.+))?".format(
-    poolUpgrade=IndyTransactions.POOL_UPGRADE.name)
+                           poolUpgrade=IndyTransactions.POOL_UPGRADE.name)
+
 
 REQ_AVAIL_CLAIMS_REG_EX = '(\s*(?P<request_avail_claims>request \s+ available \s+ claims \s+ from) ' \
                           '\s+ (?P<connection_name>[A-Za-z0-9-." ]+) \s*)'
 
+
 SEND_POOL_CONFIG_REG_EX = "(\s*(?P<send_pool_config>send\s+{poolConfig})" \
                           "\s+(?P<writes_key>writes=)\s*(?P<writes>True|False))" \
                           "(\s+(?P<force_key>force=)\s*(?P<force>True|False))?".format(
-    poolConfig=IndyTransactions.POOL_CONFIG.name)
+                              poolConfig=IndyTransactions.POOL_CONFIG.name)
 
 CHANGE_CURENT_KEY_REG_EX = "(\s*(?P<change_ckey>change\s+current\s+key))" \
                            "(\s? with\s+seed\s+(?P<seed>[a-zA-Z0-9]+))?"
+
 
 SEND_NYM_FORMATTED_REG_EX = getPipedRegEx(SEND_NYM_REG_EX)
 GET_NYM_FORMATTED_REG_EX = getPipedRegEx(GET_NYM_REG_EX)
