@@ -89,22 +89,6 @@ def testSendNymSucceedsForStewardRole(
        mapper=parameters, expect=NYM_ADDED, within=2)
 
 
-def testSendNymSucceedsForTgbRole(
-        be, do, poolNodesStarted, trusteeCli):
-
-    halfKeyIdentifier, abbrevVerkey = createHalfKeyIdentifierAndAbbrevVerkey()
-
-    parameters = {
-        'dest': halfKeyIdentifier,
-        'verkey': abbrevVerkey,
-        'role': Roles.TGB.name
-    }
-
-    be(trusteeCli)
-    do('send NYM dest={dest} role={role} verkey={verkey}',
-       mapper=parameters, expect=NYM_ADDED, within=2)
-
-
 def testSendNymSucceedsForTrustAnchorRole(
         be, do, poolNodesStarted, trusteeCli):
 

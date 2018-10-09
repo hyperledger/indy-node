@@ -125,7 +125,6 @@ ENDPOINT = "endpoint"
 # Roles
 TRUST_ANCHOR = Roles.TRUST_ANCHOR.value
 TRUST_ANCHOR_STRING = 'TRUST_ANCHOR'
-TGB = Roles.TGB.value
 
 # client transaction types
 NODE = IndyTransactions.NODE.value

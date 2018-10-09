@@ -1,11 +1,11 @@
 from plenum.common.constants import TRUSTEE
 
 from indy_common.auth import Authoriser
-from indy_common.constants import POOL_UPGRADE, ACTION, TGB
+from indy_common.constants import POOL_UPGRADE, ACTION
 
 
 def test_pool_upgrade_start(role, is_owner):
-    authorized = role in (TRUSTEE, TGB)
+    authorized = role is TRUSTEE
     assert authorized == Authoriser.authorised(typ=POOL_UPGRADE,
                                                actorRole=role,
                                                field=ACTION,
@@ -15,7 +15,7 @@ def test_pool_upgrade_start(role, is_owner):
 
 
 def test_pool_upgrade_cancel(role, is_owner):
-    authorized = role in (TRUSTEE, TGB)
+    authorized = role is TRUSTEE
     assert authorized == Authoriser.authorised(typ=POOL_UPGRADE,
                                                actorRole=role,
                                                field=ACTION,
