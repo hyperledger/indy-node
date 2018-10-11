@@ -6,6 +6,7 @@ from indy_common.util import compose_cmd
 
 logger = getlogger()
 TIMEOUT = 300
+MAX_DEPS_DEPTH = 6
 
 
 class NodeControlUtil:
@@ -75,22 +76,25 @@ class NodeControlUtil:
         return ret.stdout.strip()
 
     @classmethod
-    def get_deps_tree(cls, package, include):
-        package_info = cls._get_info_from_package_manager(package)
-        ret = [package]
-        deps = []
-        deps_deps = []
-        for dep in include:
-            if dep in package_info:
-                match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep), package_info)
-                if match:
-                    dep_version = match.group(1)
-                    dep_package = '{}={}'.format(dep, dep_version)
-                    deps.append(dep_package)
-                    deps_deps.append(cls.get_deps_tree(dep_package, include))
-        ret.append(deps)
-        ret.append(deps_deps)
-        return ret
+    def get_deps_tree(cls, package, include, depth=0):
+        if depth < MAX_DEPS_DEPTH:
+            package_info = cls._get_info_from_package_manager(package)
+            ret = [package]
+            deps = []
+            deps_deps = []
+            for dep in include:
+                if dep in package_info:
+                    match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+[\.\+\~0-9A-Za-z]*)\).*'.format(dep), package_info)
+                    if match:
+                        dep_version = match.group(1)
+                        dep_package = '{}={}'.format(dep, dep_version)
+                        deps.append(dep_package)
+                        next_deps = cls.get_deps_tree(dep_package, include, depth=depth + 1)
+                        if next_deps:
+                            deps_deps.append(next_deps)
+            ret.append(deps)
+            ret.append(deps_deps)
+            return ret
 
     @classmethod
     def dep_tree_traverse(cls, dep_tree, deps_so_far):
