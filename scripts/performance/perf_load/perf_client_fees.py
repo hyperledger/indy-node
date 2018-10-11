@@ -207,6 +207,5 @@ class LoadClientFees(LoadClient):
         params = super()._on_pool_create_ext_params()
         params.update({"addr_txos": self._addr_txos,
                        "payment_method": self._payment_method,
-                       "pool_fees": self._pool_fees,
-                       "addr_mint_limit": self._addr_mint_limit})
+                       "pool_fees": self._pool_fees})
         return params

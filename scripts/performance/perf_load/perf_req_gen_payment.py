@@ -4,7 +4,7 @@ import random
 from indy import payment
 from indy import ledger
 
-from perf_load.perf_utils import ensure_is_reply, gen_input_output, PUB_XFER_TXN_ID
+from perf_load.perf_utils import ensure_is_reply, gen_input_output, PUB_XFER_TXN_ID, SEND_RESP
 from perf_load.perf_req_gen import NoReqDataAvailableException, RequestGenerator
 
 
@@ -17,6 +17,7 @@ class RGBasePayment(RequestGenerator):
         self._payment_method = None
         self._addr_txos = None
         self._payment_fees = 0
+        self._send_mode = kwargs.get('_send_mode', None)
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
         self._pool_handle = pool_handle
@@ -30,7 +31,9 @@ class RGBasePayment(RequestGenerator):
             raise RuntimeError("Payment init incorrect parameters")
 
     def _gen_input_output(self, val, fees):
-        address, inputs, outputs = gen_input_output(self._addr_txos, val + fees)
+        address, inputs, outputs = gen_input_output(self._addr_txos,
+                                                    val + fees,
+                                                    send_mode=self._send_mode)
 
         if inputs is None or outputs is None:
             raise NoReqDataAvailableException()
@@ -38,8 +41,9 @@ class RGBasePayment(RequestGenerator):
         addrs = list(self._addr_txos)
         addrs.remove(list(address)[0])
         to_address = random.choice(addrs)
-        s, a = self._addr_txos[to_address][0]
-        self._addr_txos[to_address][0] = (s, a + val)
+        if self._send_mode and self._send_mode == SEND_RESP:
+            s, a = self._addr_txos[to_address][0]
+            self._addr_txos[to_address][0] = (s, a + val)
         outputs.append({"recipient": to_address, "amount": val})
 
         return inputs, outputs

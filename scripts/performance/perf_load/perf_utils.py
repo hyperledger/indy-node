@@ -5,8 +5,10 @@ from collections import Sequence
 import base58
 import libnacl
 
-
 PUB_XFER_TXN_ID = "10001"
+SEND_RESP = 0
+SEND_TIME = 1
+SEND_SYNC = 2
 
 
 def check_fs(is_dir: bool, fs_name: str):
@@ -73,19 +75,23 @@ def request_get_type(req):
     return txn_type
 
 
-def gen_input_output(addr_txos, val):
+def gen_input_output(addr_txos, val, send_mode=SEND_TIME):
     for address in addr_txos:
         inputs = []
         outputs = []
         total_amount = 0
         tmp_txo = []
         while addr_txos[address] and total_amount < val:
-            (source, amount) = addr_txos[address][-1]
+            if send_mode == SEND_RESP:
+                (source, amount) = addr_txos[address][-1]
+            else:
+                (source, amount) = addr_txos[address].pop()
             if amount > 0:
                 inputs.append(source)
                 total_amount += amount
                 tmp_txo.append((source, amount))
-        addr_txos[address] = addr_txos[address][-1:]
+        if send_mode == SEND_RESP:
+            addr_txos[address] = addr_txos[address][-1:]
         if total_amount >= val:
             out_val = total_amount - val
             if out_val > 0:
