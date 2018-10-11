@@ -84,7 +84,7 @@ class NodeControlUtil:
             deps_deps = []
             for dep in include:
                 if dep in package_info:
-                    match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+[\.\+\~0-9A-Za-z]*)\).*'.format(dep), package_info)
+                    match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+[\-\.\+\~0-9A-Za-z]*)\).*'.format(dep), package_info)
                     if match:
                         dep_version = match.group(1)
                         dep_package = '{}={}'.format(dep, dep_version)

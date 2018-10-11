@@ -30,7 +30,7 @@ def testNodeControlResolvesDependencies(monkeypatch, tconf):
 
 def test_create_deps_for_exotic_version_style():
     depends = ['package1', 'package2']
-    versions = ['1.6.74', '0.9.4+1.59']
+    versions = ['1.6.74', '0.9.4~+.-AbCd1.2.3.4.EiF']
     def mock_info_from_package_manager(package):
         pkg_info = """Package: {package}
 Version: 1.1.26
