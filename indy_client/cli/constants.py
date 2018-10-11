@@ -20,10 +20,9 @@ CLIENT_GRAMS_USE_KEYPAIR_FORMATTED_REG_EX = getPipedRegEx(
 # TODO we can genericize the other TXN types in the same way
 TXN_NYM = "(\s* (?P<{{cmdName}}>{{cmd}}\s+{nym}) " \
           "\s+ (?P<dest>dest=) \s* (?P<dest_id>[A-Za-z0-9+=/]*)" \
-          "(\s+ (?P<role_key>role=) \s* (?P<role>{trustee}|{tgb}|{trustAnchor}|{steward}|))?" \
+          "(\s+ (?P<role_key>role=) \s* (?P<role>{trustee}|{trustAnchor}|{steward}|))?" \
           "(\s+ (?P<ver_key>verkey=) \s* (?P<new_ver_key>[~A-Za-z0-9+=/]*))?)".format(nym=IndyTransactions.NYM.name,
                                                                                       trustee=Roles.TRUSTEE.name,
-                                                                                      tgb=Roles.TGB.name,
                                                                                       trustAnchor=Roles.TRUST_ANCHOR.name,
                                                                                       steward=Roles.STEWARD.name)
 
