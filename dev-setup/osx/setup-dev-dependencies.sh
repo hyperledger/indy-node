@@ -1,13 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+if [ "$#" -ne 2 ]; then
+ echo "Please specify indy-sdk and indy-crypto version tags"
+ echo "e.g ./setup-dev-dependencies.sh 1.6.7 0.4.2"
+ exit 1
+fi
+
+indy_sdk_version=$1
+indy_crypto_version=$2
 
 brew update
 
 echo 'Installing libsodium...'
-brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/65effd2b617bade68a8a2c5b39e1c3089cc0e945/Formula/libsodium.rb   
+brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/65effd2b617bade68a8a2c5b39e1c3089cc0e945/Formula/libsodium.rb
 echo 'Installed libsodium'
 
-echo 'Installing RocksDB...'
-brew install rocksdb
+echo 'Installing RocksDB 5.8.8...'
+brew install https://gist.githubusercontent.com/faisal00813/4059a5b41c10aa87270351c4795af752/raw/551d4de01a83f884c798ec5c2cb28a1b15d04db8/rocksdb.rb
 echo 'Installing RocksDB...'
 
 echo 'Installing Charm Crypto...'
@@ -42,6 +51,8 @@ export OPENSSL_DIR=$(brew --prefix openssl)
 pushd /tmp
 git clone https://github.com/hyperledger/indy-sdk.git
 pushd indy-sdk/libindy
+git fetch --all --tags --prune
+git checkout tags/v"${indy_sdk_version}"
 cargo build --release
 cp target/release/libindy.dylib /usr/local/lib/
 popd
@@ -53,6 +64,8 @@ echo 'Installing libcrypto...'
 pushd /tmp
 git clone https://github.com/hyperledger/indy-crypto.git
 pushd indy-crypto/libindy-crypto
+git fetch --all --tags --prune
+git checkout tags/v"${indy_crypto_version}"
 cargo build --release
 cp target/release/libindy_crypto.dylib /usr/local/lib/
 popd
