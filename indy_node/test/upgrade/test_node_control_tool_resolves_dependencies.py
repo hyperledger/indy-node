@@ -1,6 +1,6 @@
 from indy_node.utils.node_control_tool import NodeControlTool
 from plenum.test.helper import randomText
-from indy_node.utils.node_control_utils import NodeControlUtil
+from indy_node.utils.node_control_utils import NodeControlUtil, MAX_DEPS_DEPTH
 
 
 def testNodeControlResolvesDependencies(monkeypatch, tconf):
@@ -26,3 +26,54 @@ def testNodeControlResolvesDependencies(monkeypatch, tconf):
     ret = nct._get_deps_list(node_package_with_version)
     nct.server.close()
     assert ret.split() == [anoncreds_package_with_version, plenum_package_with_version, node_package_with_version]
+
+
+def test_create_deps_for_exotic_version_style():
+    depends = ['package1', 'package2']
+    versions = ['1.6.74', '0.9.4+1.59']
+    def mock_info_from_package_manager(package):
+        pkg_info = """Package: {package}
+Version: 1.1.26
+Priority: extra
+Section: default
+Maintainer: Some Organization <some_org@org.com>
+Installed-Size: 21.5 kB
+Depends: {dep1} (= {ver1}), {dep2} (= {ver2})
+Homepage: https://github.com/some/package
+License: Apache 2.0
+Vendor: none
+Download-Size: 10.4 kB
+APT-Sources: https://some.org/deb xenial/rc amd64 Packages
+Description: Some package
+""".format(**{'package': package,
+            'dep1': depends[0],
+            'dep2': depends[1],
+            'ver1': versions[0],
+            'ver2': versions[1]})
+        return pkg_info
+    ncu = NodeControlUtil
+    ncu._get_info_from_package_manager = mock_info_from_package_manager
+    ret = ncu.get_deps_tree('package', include=depends, depth=MAX_DEPS_DEPTH-1)
+    """
+    Expected return value is:
+    0 item is package,
+    1 deps with version for previous package,
+    """
+    assert len(ret[1]) == len(depends)
+    assert depends[0] in ret[1][0]
+    assert depends[1] in ret[1][1]
+    assert "{}={}".format(depends[0], versions[0]) in ret[1]
+    assert "{}={}".format(depends[1], versions[1]) in ret[1]
+
+
+def test_max_depth_for_deps_tree():
+    depends = ['package1', 'package2']
+    def mock_info_from_package_manager(package):
+        pkg_info = """Depends: {} (= 1.1.1), {} (= 2.2.2)""".format(depends[0],
+                                                                    depends[1])
+        return pkg_info
+
+    ncu = NodeControlUtil
+    ncu._get_info_from_package_manager = mock_info_from_package_manager
+    ret = ncu.get_deps_tree('package', include=depends)
+    assert len(ret) <= MAX_DEPS_DEPTH
