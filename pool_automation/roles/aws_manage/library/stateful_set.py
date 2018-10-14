@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from ansible.module_utils.basic import AnsibleModule
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from itertools import cycle
 import boto3
 
@@ -24,68 +24,67 @@ AWS_REGIONS = [
     'us-west-2']
 
 
-EC2 = namedtuple('EC2', 'region client resource')
-
-
-def connect_ec2(region):
-    return EC2(region=region,
-               client=boto3.client('ec2', region_name=region),
-               resource=boto3.resource('ec2', region_name=region))
-
-
 def find_ubuntu_ami(ec2):
-    images = ec2.client.describe_images(
+    images = ec2.images.filter(
         Owners=['099720109477'],
         Filters=[
             {
                 'Name': 'name',
                 'Values': ['ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server*']
             }
-        ])['Images']
+        ]).all()
     # Return latest image available
-    images = sorted(images, key=lambda v: v['CreationDate'])
-    return images[-1]['ImageId'] if len(images) > 0 else None
+    images = sorted(images, key=lambda v: v.creation_date)
+    return images[-1].image_id if len(images) > 0 else None
 
 
-def create_instances(ec2, namespace, group, type_name, count):
-    params = dict(
+InstanceParams = namedtuple(
+    'InstanceParams', 'namespace role key_name group type_name')
+
+
+def create_instances(ec2, params, count):
+    instances = ec2.create_instances(
         ImageId=find_ubuntu_ami(ec2),
-        InstanceType=type_name,
+        # KeyName=params.key_name,
+        # SecurityGroups=[params.group],
+        InstanceType=params.type_name,
         MinCount=count,
-        MaxCount=count
-    )
-
-    instances = ec2.resource.create_instances(**params)
-    for instance in instances:
-        instance.create_tags(Tags=[
+        MaxCount=count,
+        TagSpecifications=[
             {
-                'Key': 'namespace',
-                'Value': namespace
-            },
-            {
-                'Key': 'group',
-                'Value': group
+                'ResourceType': 'instance',
+                'Tags': [
+                    {
+                        'Key': 'namespace',
+                        'Value': params.namespace
+                    },
+                    {
+                        'Key': 'role',
+                        'Value': params.role
+                    }
+                ]
             }
-        ])
+        ]
+    )
 
     return instances
 
 
-def find_instances(ec2, namespace, group=None):
+def find_instances(ec2, namespace, role=None):
     filters = [
         {'Name': 'tag:namespace', 'Values': [namespace]}
     ]
-    if group is not None:
-        filters.append({'Name': 'tag:group', 'Values': [group]})
+    if role is not None:
+        filters.append({'Name': 'tag:role', 'Values': [role]})
 
-    return [instance for instance in ec2.resource.instances.filter(Filters=filters)
+    return [instance for instance in ec2.instances.filter(Filters=filters)
             if instance.state['Name'] not in ['terminated', 'shutting-down']]
 
 
 def valid_instances(regions, count):
-    result = {}
+    result = defaultdict(list)
     for i, region in zip(range(count), cycle(regions)):
-        result.setdefault(region, []).append(str(i + 1))
+        result[region].append(str(i + 1))
     return result
 
 
@@ -96,24 +95,24 @@ def get_tag(inst, name):
     return None
 
 
-HostInfo = namedtuple('HostInfo', 'tag_id ip')
+HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
 
 
-def manage_instances(regions, namespace, group, type_name, count):
+def manage_instances(regions, params, count):
     valid_region_ids = valid_instances(regions, count)
     hosts = []
     changed = False
 
     for region in AWS_REGIONS:
-        ec2 = connect_ec2(region)
-        valid_ids = valid_region_ids.get(region, [])
+        ec2 = boto3.resource('ec2', region_name=region)
+        valid_ids = valid_region_ids[region]
 
-        instances = find_instances(ec2, namespace, group)
+        instances = find_instances(ec2, params.namespace, params.role)
         for inst in instances:
             tag_id = get_tag(inst, 'id')
             if tag_id in valid_ids:
                 valid_ids.remove(tag_id)
-                hosts.append(HostInfo(tag_id, inst.public_ip_address))
+                hosts.append(inst)
             else:
                 inst.terminate()
                 changed = True
@@ -121,12 +120,24 @@ def manage_instances(regions, namespace, group, type_name, count):
         if len(valid_ids) == 0:
             continue
 
-        instances = create_instances(
-            ec2, namespace, group, type_name, len(valid_ids))
+        instances = create_instances(ec2, params, len(valid_ids))
         for inst, tag_id in zip(instances, valid_ids):
             inst.create_tags(Tags=[{'Key': 'id', 'Value': tag_id}])
-            hosts.append(HostInfo(tag_id, inst.public_ip_address))
+            hosts.append(inst)
             changed = True
+
+    wait_for_ip = True
+    while wait_for_ip:
+        wait_for_ip = False
+        for inst in hosts:
+            if inst.public_ip_address is not None:
+                continue
+            wait_for_ip = True
+            inst.reload()
+
+    hosts = [HostInfo(tag_id=get_tag(inst, 'id'),
+                      public_ip=inst.public_ip_address,
+                      user='ubuntu') for inst in hosts]
 
     return changed, hosts
 
@@ -134,20 +145,27 @@ def manage_instances(regions, namespace, group, type_name, count):
 def run(module):
     params = module.params
 
-    changed, results = manage_instances(
-        params['regions'],
-        params['namespace'],
-        params['group'],
-        params['instance_type'],
-        params['instance_count'])
+    inst_params = InstanceParams(
+        namespace=params['namespace'],
+        role=params['role'],
+        key_name=params['key_name'],
+        group=params['group'],
+        type_name=params['instance_type']
+    )
 
-    module.exit_json(changed=changed, results=results)
+    changed, results = manage_instances(
+        params['regions'], inst_params, params['instance_count'])
+
+    module.exit_json(changed=changed,
+                     results=[r.__dict__ for r in results])
 
 
 if __name__ == '__main__':
     module_args = dict(
         regions=dict(type='list', required=True),
         namespace=dict(type='str', required=True),
+        role=dict(type='str', required=True),
+        key_name=dict(type='str', required=True),
         group=dict(type='str', required=True),
         instance_type=dict(type='str', required=True),
         instance_count=dict(type='int', required=True)
