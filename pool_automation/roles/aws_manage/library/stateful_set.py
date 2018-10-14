@@ -45,8 +45,8 @@ InstanceParams = namedtuple(
 def create_instances(ec2, params, count):
     instances = ec2.create_instances(
         ImageId=find_ubuntu_ami(ec2),
-        # KeyName=params.key_name,
-        # SecurityGroups=[params.group],
+        KeyName=params.key_name,
+        SecurityGroups=[params.group],
         InstanceType=params.type_name,
         MinCount=count,
         MaxCount=count,

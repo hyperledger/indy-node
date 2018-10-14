@@ -6,19 +6,55 @@ from stateful_set import AWS_REGIONS, InstanceParams, find_ubuntu_ami, \
     create_instances, find_instances, valid_instances, get_tag, manage_instances
 
 
-TEST_NAMESPACE = 'test_stateful_set'
-
 PARAMS = InstanceParams(
-    namespace=TEST_NAMESPACE,
+    namespace='test_stateful_set',
     role=None,
-    key_name=TEST_NAMESPACE,
-    group=TEST_NAMESPACE,
+    key_name='test_stateful_set_key',
+    group='test_stateful_set_group',
     type_name='t2.micro'
 )
+
+
+def manage_key_pair(ec2, present):
+    count = 0
+    for key in ec2.key_pairs.all():
+        if key.key_name != PARAMS.key_name:
+            continue
+        if present and count == 0:
+            count = 1
+        else:
+            key.delete()
+    if present and count == 0:
+        ec2.create_key_pair(KeyName=PARAMS.key_name)
+
+
+def manage_security_group(ec2, present):
+    count = 0
+    for group in ec2.security_groups.all():
+        if group.group_name != PARAMS.group:
+            continue
+        if present and count == 0:
+            count = 1
+        else:
+            group.delete()
+    if present and count == 0:
+        ec2.create_security_group(GroupName=PARAMS.group,
+                                  Description='Test security group')
+
+
+def terminate_instances(ec2):
+    instances = find_instances(ec2, PARAMS.namespace)
+    for inst in instances:
+        inst.terminate()
+
 
 def check_params(inst, params):
     assert {'Key': 'namespace', 'Value': params.namespace} in inst.tags
     assert {'Key': 'role', 'Value': params.role} in inst.tags
+    assert inst.key_name == params.key_name
+    assert len(inst.security_groups) == 1
+    assert inst.security_groups[0]['GroupName'] == params.group
+    assert inst.instance_type == params.type_name
 
 
 @pytest.fixture(scope="session")
@@ -27,11 +63,15 @@ def ec2_all():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def ec2_cleanup(ec2_all):
+def ec2_environment(ec2_all):
+    for ec2 in ec2_all.values():
+        manage_key_pair(ec2, True)
+        manage_security_group(ec2, True)
     yield
     for ec2 in ec2_all.values():
-        for inst in find_instances(ec2, TEST_NAMESPACE):
-            inst.terminate()
+        terminate_instances(ec2)
+        manage_key_pair(ec2, False)
+        # manage_security_group(ec2, False)
 
 
 @pytest.fixture(params=AWS_REGIONS)
@@ -64,15 +104,14 @@ def test_create_instances(ec2):
 
 def test_find_instances(ec2_all):
     ec2 = ec2_all['eu-central-1']
-    for inst in find_instances(ec2, TEST_NAMESPACE):
-        inst.terminate()
+    terminate_instances(ec2)
 
     create_instances(ec2, PARAMS._replace(role='aaa'), 2)
     create_instances(ec2, PARAMS._replace(role='bbb'), 3)
 
-    aaa = find_instances(ec2, TEST_NAMESPACE, 'aaa')
-    bbb = find_instances(ec2, TEST_NAMESPACE, 'bbb')
-    aaa_and_bbb = find_instances(ec2, TEST_NAMESPACE)
+    aaa = find_instances(ec2, PARAMS.namespace, 'aaa')
+    bbb = find_instances(ec2, PARAMS.namespace, 'bbb')
+    aaa_and_bbb = find_instances(ec2, PARAMS.namespace)
 
     assert len(aaa) == 2
     assert len(bbb) == 3
@@ -121,7 +160,7 @@ def test_manage_instances(ec2_all):
                 assert get_tag(inst, 'id') is not None
 
     changed, hosts = manage_instances(regions, params, 4)
-    instances = [find_instances(c, TEST_NAMESPACE, 'test_manage')
+    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert changed
     check_hosts(hosts)
@@ -136,7 +175,7 @@ def test_manage_instances(ec2_all):
     assert get_tag(instances[2][0], 'id') == '3'
 
     changed, hosts = manage_instances(regions, params, 4)
-    instances = [find_instances(c, TEST_NAMESPACE, 'test_manage')
+    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert not changed
     check_hosts(hosts)
@@ -151,7 +190,7 @@ def test_manage_instances(ec2_all):
     assert get_tag(instances[2][0], 'id') == '3'
 
     changed, hosts = manage_instances(regions, params, 2)
-    instances = [find_instances(c, TEST_NAMESPACE, 'test_manage')
+    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert changed
     check_hosts(hosts)
@@ -164,7 +203,7 @@ def test_manage_instances(ec2_all):
     assert get_tag(instances[1][0], 'id') == '2'
 
     changed, hosts = manage_instances(regions, params, 0)
-    instances = [find_instances(c, TEST_NAMESPACE, 'test_manage')
+    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert changed
     check_hosts(hosts)
@@ -175,7 +214,7 @@ def test_manage_instances(ec2_all):
     assert len(instances[2]) == 0
 
     changed, hosts = manage_instances(regions, params, 0)
-    instances = [find_instances(c, TEST_NAMESPACE, 'test_manage')
+    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert not changed
     check_hosts(hosts)
