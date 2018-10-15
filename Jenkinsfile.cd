@@ -87,8 +87,110 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
     return "$volumeName"
 }
 
+def systemTests = { releaseVersion ->
+    node("ubuntu") {
+        try {
+            dir("environment/docker/pool"){ 
+                stage("Prepare pool") {
+                    // TODO: add indy version to Dockerfile
+                    sh '''sed -i 's/\\(RUN pip3 install python3-indy\\)/& pytest/g' core.ubuntu.dockerfile'''
+                }
+                
+                stage("Run pool") {
+                    sh script: '''./pool_start.sh 25'''
+                    
+                    echo "Running nodes: "
+                    pool_nodes = sh(script: 'docker ps', returnStdout: true)
+                    echo pool_nodes
+                }
+            
+                stage("Prepare client") {
+                    sh script: '''sed -i 's/\\(docker exec -it\\)/#&/g' client_start.sh'''
+                }
+                
+                stage("Run client") {
+                    sh script: '''./client_for_pool_start.sh'''
+                }
+            } //end dir
+            
+            stage("Copy tests and genesis to the client") {
+                // FIXME: For tests only. Blocked by missing tests.
+                echo "sh '''docker cp ./tests indyclient:/home/indy'''"
+                echo "sh '''docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./docker_genesis'''"
+                echo "sh '''docker cp ./docker_genesis indyclient:/home/indy/tests/docker_genesis'''"
+            }
+            
+            stage("Run tests") {
+                try {
+                    dir("environment/docker/pool"){
+                        return // FIXME: For tests only. Blocked by missing tests.
+                        echo '''docker exec -t --user indy indyclient bash -c "cd /home/indy/tests && pytest --junit-xml=/home/indy/tests/reports/test_ledger_report.xml test_ledger.py" '''
+                    }
+                }
+                catch (Exception exc) {
+                    continue
+                }
+            }
+            
+            stage("Prepare reports") {
+                sh '''mkdir -p tests/reports'''
+                
+                dir("tests/reports"){
+                    
+                    echo '''docker cp indyclient:/home/indy/tests/reports/test_ledger_report.xml ./'''
+                }
+            }
+            
+            stage("Upload reports") {
+                dir("tests/reports"){
+                    return; // FIXME: For tests only    
+                    archiveArtifacts artifacts: '*.xml', onlyIfSuccessful: true
+                    junit healthScaleFactor: 0.0, keepLongStdio: true, testResults: '*.xml'
+                }
+            }
+        } 
+
+        catch (Exception exc) {
+            echo "Catch the exception ${exc.getMessage()}"
+            echo "Stack trace:"
+            echo "{exc.getStackTrace()}"
+        }
+            
+        finally {
+            sh '''docker stop $(docker ps -a -q)'''
+            sh '''docker network rm pool-network'''
+        }
+    }
+}
+
 options = new TestAndPublishOptions()
+
+// FIXME: Remove after tests
+options.skips([
+    StagesEnum.IS_TESTED, 
+    StagesEnum.STATIC_CODE_VALIDATION, 
+    StagesEnum.TEST, 
+    StagesEnum.AUTOMERGE, 
+    StagesEnum.GET_RELEASE_VERSION, 
+    StagesEnum.PYPI_RELEASE,
+    StagesEnum.PACK_RELEASE, 
+    StagesEnum.PACK_RELEASE_COPY, 
+    StagesEnum.GITHUB_RELEASE,
+    StagesEnum.QA_NOTIF, 
+    StagesEnum.QA_APPROVAL, 
+    StagesEnum.PRODUCT_NOTIF, 
+    StagesEnum.PRODUCT_APPROVAL, 
+    StagesEnum.TGB_NOTIF, 
+    StagesEnum.TGB_APPROVAL, 
+    StagesEnum.PACK_RELEASE_ST,
+    StagesEnum.PACK_RELEASE_COPY_ST, 
+    StagesEnum.GITHUB_RELEASE_ST, 
+    StagesEnum.POOL_UPDATE_NOTIF, 
+    StagesEnum.BUILD_RESULT_NOTIF,
+    ])
+
 options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
+options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
