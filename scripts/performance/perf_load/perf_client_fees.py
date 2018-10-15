@@ -88,7 +88,7 @@ class LoadClientFees(LoadClient):
             resp_obj = json.loads(resp)
             op_f = resp_obj.get("op", "")
             if op_f == "REPLY":
-                receipt_infos_json = await payment.parse_response_with_fees(self._payment_method, resp)
+                receipt_infos_json = await payment.parse_payment_response(self._payment_method, resp)
                 receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
                 for ri in receipt_infos:
                     self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))

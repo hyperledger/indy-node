@@ -8,15 +8,15 @@ from indy import pool, wallet, did, ledger
 
 from perf_load.perf_client_msgs import ClientReady, ClientRun, ClientStop, ClientGetStat, ClientSend, ClientMsg
 from perf_load.perf_clientstaistic import ClientStatistic
-from perf_load.perf_utils import random_string
+from perf_load.perf_utils import random_string, SEND_RESP, SEND_SYNC, SEND_TIME
 from perf_load.perf_req_gen import NoReqDataAvailableException
 from perf_load.perf_gen_req_parser import ReqTypeParser
 
 
 class LoadClient:
-    SendResp = 0
-    SendTime = 1
-    SendSync = 2
+    SendResp = SEND_RESP
+    SendTime = SEND_TIME
+    SendSync = SEND_SYNC
 
     def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **kwargs):
         self._name = name
@@ -40,6 +40,7 @@ class LoadClient:
         self._gen_q = []
         self._send_q = []
         req_class, params = ReqTypeParser.create_req_generator(req_kind)
+        params['_send_mode'] = self._send_mode
         self._req_generator = req_class(**params, client_stat=self._stat)
         assert self._req_generator is not None
         self._pool_config = json.dumps(pool_config) if isinstance(pool_config, dict) and pool_config else None
