@@ -37,14 +37,16 @@ def test_node_as_depend(monkeypatch, tconf):
     plenum_package_with_version = '{}={}'.format(*plenum_package)
     anoncreds_package_with_version = '{}={}'.format(*anoncreds_package)
     mock_info = {
-        top_level_package_with_version: "{}{} (= {}) {} (= {}), {} (= {})".format(
-            randomText(100), *node_package, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1]),
-        node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(
-            randomText(100), *plenum_package, randomText(100), *anoncreds_package, randomText(100)),
+        top_level_package_with_version: "{}\nVersion:{}\nDepends:{} (= {}), {} (= {}), {} (= {})".format(
+            randomText(100), top_level_package[1], *node_package, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1]),
+        node_package_with_version: '{}\nVersion:{}\nDepends:{} (= {}), {} (= {})'.format(
+            randomText(100), node_package[1], *plenum_package, *anoncreds_package),
         plenum_package_with_version: '{}'.format(randomText(100)),
         anoncreds_package_with_version: '{}'.format(randomText(100)),
-        top_level_package_dep1_with_version: '{}{} (= {})'.format(randomText(100), *plenum_package),
-        top_level_package_dep2_with_version: '{}{} (= {})'.format(randomText(100), *node_package)
+        top_level_package_dep1_with_version: '{}\nVersion:{}\nDepends:{} (= {})'.format(
+            randomText(100), EXT_TOP_PKT_DEPS[0][1], *plenum_package),
+        top_level_package_dep2_with_version: '{}\nVersion:{}\nDepends:{} (= {})'.format(
+            randomText(100), EXT_TOP_PKT_DEPS[1][1], *node_package)
     }
 
     def mock_get_info_from_package_manager(package):
@@ -53,8 +55,10 @@ def test_node_as_depend(monkeypatch, tconf):
     monkeypatch.setattr(NodeControlUtil, 'update_package_cache', lambda *x: None)
     monkeypatch.setattr(NodeControlUtil, '_get_info_from_package_manager',
                         lambda x: mock_get_info_from_package_manager(x))
+    monkeypatch.setattr(NodeControlUtil, 'get_sys_holds',
+                        lambda *x: [top_level_package[0], anoncreds_package[0], plenum_package[0], node_package[0],
+                                    EXT_TOP_PKT_DEPS[0][0], EXT_TOP_PKT_DEPS[1][0]])
     monkeypatch.setattr(NodeControlUtil, '_get_curr_info', lambda *x: PACKAGE_MNG_EXT_PTK_OUTPUT)
-    nct._ext_init()
     ret = nct._get_deps_list(top_level_package_with_version)
     nct.server.close()
     assert ret.split() == [anoncreds_package_with_version, plenum_package_with_version,
