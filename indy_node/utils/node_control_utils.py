@@ -6,7 +6,7 @@ from indy_common.util import compose_cmd
 
 logger = getlogger()
 TIMEOUT = 300
-MAX_DEPS_DEPTH = 8
+MAX_DEPS_DEPTH = 6
 
 
 class NodeControlUtil:
