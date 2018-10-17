@@ -20,6 +20,9 @@ Graph:
     stats_metric         - min, lo, avg, hi, max combined
     metric_per_sec       - sum of metric values averaged over frame time
     metric_count_per_sec - number of metric events averaged over frame time
+
+An option --output allows user to define a filepath for an output image (e.g. --output /home/me/Documents/out.png).
+If this option is provided, the script will not display the figure on a screen.
 """
 
 from typing import List
@@ -29,10 +32,11 @@ from collections import namedtuple
 from datetime import datetime
 import pandas as pd
 import argparse
+import os
 
 
 def add_subplot(ax, name, items, data, log_scale=False):
-    ax.set_title(name)
+    ax.set_title(name, verticalalignment='center')
     ax.grid(True)
     ax.set_yscale("log" if log_scale else "linear")
 
@@ -40,9 +44,7 @@ def add_subplot(ax, name, items, data, log_scale=False):
 
     for item in items:
         ax.plot(timestamps, data[item], label=item, ls='-', lw=2)
-
-    ax.legend(bbox_to_anchor=(1, 1), loc=2, prop={'size': 8}, borderaxespad=0.)
-
+    ax.legend(bbox_to_anchor=(1, 1), loc=2, borderaxespad=0.)
 
 PlotInfo = namedtuple('GraphInfo', 'title log_scale items')
 
@@ -80,7 +82,11 @@ def parse_plot_list(text: str) -> List[PlotInfo]:
 
 
 def build_graph():
+    plt.rcParams.update({'font.size': 10})
+    plt.rcParams["figure.figsize"] = [23,12]
+
     parser = argparse.ArgumentParser(description='Gets file path and graph name to build a graph')
+    parser.add_argument('--output', required=False, help='output picture file path', dest="output")
     parser.add_argument('filepath', type=str, help='the csv file absolute path')
     parser.add_argument('--plots', required=False, help='plot list')
     args = parser.parse_args()
@@ -131,8 +137,12 @@ def build_graph():
     mng.resize(*mng.window.maxsize())
     plt.subplots_adjust(left=0.05, right=0.85, bottom=0.07, top=0.93)
     plt.suptitle(file_path)
-    plt.show()
 
+    if not args.output:
+        plt.show()
+    else:
+        output = os.path.expanduser(args.output)
+        plt.savefig(output, bbox_inches='tight')
 
 if __name__ == '__main__':
     build_graph()
