@@ -49,11 +49,11 @@ class NodeControlUtil:
         ver = None
         ext_deps = []
         for ln in out_lines:
-            l = ln.strip(" \n")
-            if l.startswith("Version:"):
-                ver = l.split(":", maxsplit=1)[1].strip(" \n")
-            if l.startswith("Depends:"):
-                ext_deps = _parse_deps(l.split(":", maxsplit=1)[1].strip(" \n"))
+            act_line = ln.strip(" \n")
+            if act_line.startswith("Version:"):
+                ver = act_line.split(":", maxsplit=1)[1].strip(" \n")
+            if act_line.startswith("Depends:"):
+                ext_deps = _parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
         return ver, ext_deps
 
     @classmethod
