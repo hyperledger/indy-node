@@ -44,10 +44,8 @@ class LoadClientFees(LoadClient):
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
         self._set_fees = kwargs.get("set_fees", {})
         self._req_addrs = {}
-        self._mint_by = kwargs.get("mint_by", 0)
-        if self._mint_by < 1:
-            self._mint_by = self._addr_mint_limit
-        elif self._mint_by > self._addr_mint_limit:
+        self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
+        if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
             self._mint_by = self._addr_mint_limit
 
         if not self._payment_method or not self._plugin_lib or not self._plugin_init:
