@@ -73,6 +73,17 @@ def request_get_type(req):
     return txn_type
 
 
+def response_get_type(req):
+    if isinstance(req, dict):
+        dict_resp = req
+    elif isinstance(req, str):
+        dict_resp = json.loads(req)
+    else:
+        raise RuntimeError("Response of unsupported type")
+    txn_type = dict_resp.get("result", {}).get("txn", {}).get("type", "")
+    return txn_type
+
+
 def gen_input_output(addr_txos, val):
     for address in addr_txos:
         inputs = []

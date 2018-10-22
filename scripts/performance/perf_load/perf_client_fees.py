@@ -6,7 +6,7 @@ from indy import ledger
 
 from perf_load.perf_client import LoadClient
 from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks,\
-    request_get_type, gen_input_output, PUB_XFER_TXN_ID
+    request_get_type, gen_input_output, PUB_XFER_TXN_ID, response_get_type
 
 
 TRUSTEE_ROLE_CODE = "0"
@@ -44,6 +44,9 @@ class LoadClientFees(LoadClient):
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
         self._set_fees = kwargs.get("set_fees", {})
         self._req_addrs = {}
+        self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
+        if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
+            self._mint_by = self._addr_mint_limit
 
         if not self._payment_method or not self._plugin_lib or not self._plugin_init:
             raise RuntimeError("Plugin cannot be initialized. Some required param missed")
@@ -87,7 +90,8 @@ class LoadClientFees(LoadClient):
         try:
             resp_obj = json.loads(resp)
             op_f = resp_obj.get("op", "")
-            if op_f == "REPLY":
+            resp_type = response_get_type(resp_obj)
+            if op_f == "REPLY" and resp_type not in self._ignore_fees_txns:
                 receipt_infos_json = await payment.parse_response_with_fees(self._payment_method, resp)
                 receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
                 for ri in receipt_infos:
@@ -132,15 +136,19 @@ class LoadClientFees(LoadClient):
             ret_req = await ledger.multi_sign_request(self._wallet_handle, d, ret_req)
         return ret_req
 
-    async def __mint_sources(self, payment_addresses, amount):
-        outputs = []
-        for payment_address in payment_addresses:
-            outputs.append({"recipient": payment_address, "amount": amount})
-
-        mint_req, _ = await payment.build_mint_req(self._wallet_handle, self._test_did, json.dumps(outputs), None)
-        mint_req = await self.multisig_req(mint_req)
-        mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
-        ensure_is_reply(mint_resp)
+    async def __mint_sources(self, payment_addresses, amount, by_val):
+        iters = (amount // by_val) + (1 if (amount % by_val) > 0 else 0)
+        mint_val = by_val
+        for i in range(iters):
+            outputs = []
+            if (i + 1) * by_val > amount:
+                mint_val = amount % by_val
+            for payment_address in payment_addresses:
+                outputs.append({"recipient": payment_address, "amount": mint_val})
+            mint_req, _ = await payment.build_mint_req(self._wallet_handle, self._test_did, json.dumps(outputs), None)
+            mint_req = await self.multisig_req(mint_req)
+            mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
+            ensure_is_reply(mint_resp)
 
     async def _get_payment_sources(self, pmnt_addr):
         get_ps_req, _ = await payment.build_get_payment_sources_request(self._wallet_handle, self._test_did, pmnt_addr)
@@ -192,7 +200,7 @@ class LoadClientFees(LoadClient):
     async def _payment_address_init(self):
         pmt_addrs = await self.__create_payment_addresses(self._payment_addrs_count)
         for payment_addrs_chunk in divide_sequence_into_chunks(pmt_addrs, 500):
-            await self.__mint_sources(payment_addrs_chunk, self._addr_mint_limit)
+            await self.__mint_sources(payment_addrs_chunk, self._addr_mint_limit, self._mint_by)
         for pa in pmt_addrs:
             self._addr_txos.update(await self._get_payment_sources(pa))
 
