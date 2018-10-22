@@ -1,4 +1,4 @@
-from utils import *
+from acceptance.tests.utils import *
 import pytest
 from indy import pool, did, IndyError
 import hashlib
