@@ -293,4 +293,3 @@ async def test_send_and_get_revoc_reg_entry_positive(writer_role, reader_role):
 @pytest.mark.asyncio
 async def test_send_and_get_revoc_reg_entry_negative():
     pass
-
