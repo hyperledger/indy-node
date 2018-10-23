@@ -36,6 +36,8 @@ class NodeControlUtil:
             ret = []
             pkgs = deps.split(",")
             for pkg in pkgs:
+                if not pkg:
+                    continue
                 name_ver = pkg.strip(" ").split(" ", maxsplit=1)
                 name = name_ver[0].strip(" \n")
                 if len(name_ver) == 1:
