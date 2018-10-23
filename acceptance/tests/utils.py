@@ -19,12 +19,12 @@ def random_string(length):
 
 def random_did_and_json():
     return base58.b58encode(random_string(16)).decode(),\
-           json.dumps({'did': base58.b58encode(random_string(16)).decode()})
+        json.dumps({'did': base58.b58encode(random_string(16)).decode()})
 
 
 def random_seed_and_json():
     return base58.b58encode(random_string(23)).decode(),\
-           json.dumps({'seed': base58.b58encode(random_string(23)).decode()})
+        json.dumps({'seed': base58.b58encode(random_string(23)).decode()})
 
 
 async def pool_helper(pool_name=None, path_to_genesis='./docker_genesis'):
