@@ -7,12 +7,10 @@ provisioner:
   lint:
     name: ansible-lint
   inventory:
-    group_vars:
-      all:
-        indy_node_ver: 1.6.563
-        indy_plenum_ver: 1.6.501
-        python_indy_crypto_ver: 0.4.1
-        libindy_crypto_ver: 0.4.0
+    links:
+      group_vars: ../resources/group_vars
+  playbooks:
+    converge: ../resources/playbooks/playbook.yml
 
 platforms:
   - name: instance

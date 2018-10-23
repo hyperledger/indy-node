@@ -1,4 +1,12 @@
 ---
+- name: Install HTTPS support for apt
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+    update_cache: true
+  become: true
+
 - name: Add sovrin repositories
   apt_repository:
     repo: "deb https://repo.sovrin.org/deb xenial {{ channel }}"
@@ -7,15 +15,13 @@
 
 - name: Install indy node
   apt:
-    name: "{{ item }}"
+    name:
+      - "indy-node={{ indy_node_ver }}"
+      - "indy-plenum={{ indy_plenum_ver }}"
+      - "libindy-crypto={{ libindy_crypto_ver }}"
+      - "python3-indy-crypto={{ python_indy_crypto_ver }}"
     update_cache: true
-    force: true
   become: true
-  with_items:
-    - "indy-node={{ indy_node_ver }}"
-    - "indy-plenum={{ indy_plenum_ver }}"
-    - "libindy-crypto={{ libindy_crypto_ver }}"
-    - "python3-indy-crypto={{ python_indy_crypto_ver }}"
 
 - name: Enable node service
   service:
