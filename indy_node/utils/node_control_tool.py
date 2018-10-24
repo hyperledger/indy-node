@@ -34,11 +34,14 @@ class NodeControlTool:
             backup_dir: str = None,
             backup_name_prefix: str = None,
             backup_num: int = BACKUP_NUM,
+            hold_ext: str = '',
             config=None):
         self.config = config or getConfig()
 
         self.test_mode = test_mode
         self.timeout = timeout or TIMEOUT
+
+        self.hold_ext = hold_ext
 
         config_helper = ConfigHelper(self.config)
         self.backup_dir = backup_dir or config_helper.backup_dir
@@ -228,7 +231,7 @@ class NodeControlTool:
 
     def _hold_packages(self):
         if shutil.which("apt-mark"):
-            packages_to_hold = ' '.join(self.config.PACKAGES_TO_HOLD)
+            packages_to_hold = '{} {}'.format(' '.join(self.config.PACKAGES_TO_HOLD), self.hold_ext)
             cmd = compose_cmd(['apt-mark', 'hold', packages_to_hold])
             ret = NodeControlUtil.run_shell_command(cmd, TIMEOUT)
             if ret.returncode != 0:
