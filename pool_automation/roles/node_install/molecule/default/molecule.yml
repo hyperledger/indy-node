@@ -9,13 +9,12 @@ lint:
     config-file: ../common/yamllint
 platforms:
   - name: instance
-    image: solita/ubuntu-systemd:latest
-    command: /sbin/init
-    capabilities:
-      - SYS_ADMIN
+    image: solita/ubuntu-systemd:16.04  # TODO parametrize
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    network_mode: ${NETWORK_MODE:-bridge}
+    privileged: true
+    network_mode: ${MOLECULE_DOCKER_NETWORK_MODE:-bridge}
 provisioner:
   name: ansible
   lint:
