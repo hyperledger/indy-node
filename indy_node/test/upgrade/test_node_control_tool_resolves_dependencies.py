@@ -11,8 +11,8 @@ def testNodeControlResolvesDependencies(monkeypatch, tconf):
     node_package_with_version = '{}={}'.format(*node_package)
     plenum_package_with_version = '{}={}'.format(*plenum_package)
     anoncreds_package_with_version = '{}={}'.format(*anoncreds_package)
-    mock_info = {node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(
-        randomText(100), *plenum_package, randomText(100), *anoncreds_package, randomText(100)),
+    mock_info = {node_package_with_version: '{}\nVersion: {}\nDepends:{} (= {}), {} (= {})\n'.format(
+        randomText(100), node_package[1], *plenum_package, *anoncreds_package),
         plenum_package_with_version: '{}'.format(randomText(100)),
         anoncreds_package_with_version: '{}'.format(randomText(100))
     }
@@ -21,6 +21,8 @@ def testNodeControlResolvesDependencies(monkeypatch, tconf):
         return mock_info.get(package, None)
 
     monkeypatch.setattr(NodeControlUtil, 'update_package_cache', lambda *x: None)
+    monkeypatch.setattr(NodeControlUtil, 'get_sys_holds',
+                        lambda *x: [node_package[0], anoncreds_package[0], plenum_package[0]])
     monkeypatch.setattr(NodeControlUtil, '_get_info_from_package_manager',
                         lambda x: mock_get_info_from_package_manager(x))
     ret = nct._get_deps_list(node_package_with_version)
@@ -53,7 +55,7 @@ Description: Some package
         return pkg_info
     ncu = NodeControlUtil
     ncu._get_info_from_package_manager = mock_info_from_package_manager
-    ret = ncu.get_deps_tree('package', include=depends, depth=MAX_DEPS_DEPTH-1)
+    ret = ncu.get_deps_tree('package', depth=MAX_DEPS_DEPTH-1)
     """
     Expected return value is:
     0 item is package,
@@ -75,5 +77,5 @@ def test_max_depth_for_deps_tree():
 
     ncu = NodeControlUtil
     ncu._get_info_from_package_manager = mock_info_from_package_manager
-    ret = ncu.get_deps_tree('package', include=depends)
+    ret = ncu.get_deps_tree('package')
     assert len(ret) <= MAX_DEPS_DEPTH

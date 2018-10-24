@@ -1,5 +1,5 @@
-import re
 import subprocess
+import shutil
 
 from stp_core.common.log import getlogger
 from indy_common.util import compose_cmd
@@ -36,19 +36,26 @@ class NodeControlUtil:
             ret = []
             pkgs = deps.split(",")
             for pkg in pkgs:
+                if not pkg:
+                    continue
                 name_ver = pkg.strip(" ").split(" ", maxsplit=1)
                 name = name_ver[0].strip(" \n")
-                ret.append(name)
+                if len(name_ver) == 1:
+                    ret.append(name)
+                else:
+                    ver = name_ver[1].strip("()<>= \n")
+                    ret.append("{}={}".format(name, ver))
             return ret
 
         out_lines = output.split("\n")
         ver = None
         ext_deps = []
-        for l in out_lines:
-            if l.startswith("Version:"):
-                ver = l.split(":", maxsplit=1)[1].strip(" \n")
-            if l.startswith("Depends:"):
-                ext_deps = _parse_deps(l.split(":", maxsplit=1)[1].strip(" \n"))
+        for ln in out_lines:
+            act_line = ln.strip(" \n")
+            if act_line.startswith("Version:"):
+                ver = act_line.split(":", maxsplit=1)[1].strip(" \n")
+            if act_line.startswith("Depends:"):
+                ext_deps = _parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
         return ver, ext_deps
 
     @classmethod
@@ -76,25 +83,17 @@ class NodeControlUtil:
         return ret.stdout.strip()
 
     @classmethod
-    def get_deps_tree(cls, package, include, depth=0):
+    def get_deps_tree(cls, package, depth=0):
+        ret = [package]
         if depth < MAX_DEPS_DEPTH:
             package_info = cls._get_info_from_package_manager(package)
-            ret = [package]
-            deps = []
+            _, deps = cls._parse_version_deps_from_pkt_mgr_output(package_info)
             deps_deps = []
-            for dep in include:
-                if dep in package_info:
-                    match = re.search('.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+[\-\.\+\~0-9A-Za-z]*)\).*'.format(dep), package_info)
-                    if match:
-                        dep_version = match.group(1)
-                        dep_package = '{}={}'.format(dep, dep_version)
-                        deps.append(dep_package)
-                        next_deps = cls.get_deps_tree(dep_package, include, depth=depth + 1)
-                        if next_deps:
-                            deps_deps.append(next_deps)
+            for dep in deps:
+                deps_deps.append(cls.get_deps_tree(dep, depth=depth + 1))
             ret.append(deps)
             ret.append(deps_deps)
-            return ret
+        return ret
 
     @classmethod
     def dep_tree_traverse(cls, dep_tree, deps_so_far):
@@ -103,3 +102,20 @@ class NodeControlUtil:
         elif isinstance(dep_tree, list) and dep_tree:
             for d in reversed(dep_tree):
                 cls.dep_tree_traverse(d, deps_so_far)
+
+    @classmethod
+    def get_sys_holds(cls):
+        if shutil.which("apt-mark"):
+            cmd = compose_cmd(['apt-mark', 'showhold'])
+            try:
+                ret = cls.run_shell_command(cmd, TIMEOUT)
+            except Exception as ex:
+                return []
+            if ret.returncode != 0:
+                return []
+
+            hlds = ret.stdout.strip().split("\n")
+            return [h for h in hlds if h]
+        else:
+            logger.info('apt-mark not found. Assume holds is empty.')
+            return []
