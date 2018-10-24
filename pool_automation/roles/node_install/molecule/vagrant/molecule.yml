@@ -1,0 +1,32 @@
+---
+scenario:
+  name: vagrant
+
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  inventory:
+    links:
+      group_vars: ../resources/group_vars
+  playbooks:
+    converge: ../resources/playbooks/playbook.yml
+
+platforms:
+  - name: instance
+    box: ubuntu/xenial64
+
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+
+lint:
+  name: yamllint
+  options:
+    config-file: ../common/yamllint
+
+verifier:
+  name: testinfra
+  lint:
+    name: flake8
