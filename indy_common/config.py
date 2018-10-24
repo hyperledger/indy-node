@@ -109,3 +109,5 @@ INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
 UPGRADE_ENTRY = 'indy-node'
 
 ANYONE_CAN_WRITE = False
+
+PACKAGES_TO_HOLD = ['indy-anoncreds', 'indy-plenum', 'indy-node', 'python3-indy-crypto', 'libindy-crypto']

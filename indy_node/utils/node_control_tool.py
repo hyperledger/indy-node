@@ -226,7 +226,21 @@ class NodeControlTool:
                       reason=reason)
         logger.error(msg)
 
+    def _hold_packages(self):
+        if shutil.which("apt-mark"):
+            packages_to_hold = ' '.join(self.config.PACKAGES_TO_HOLD)
+            cmd = compose_cmd(['apt-mark', 'hold', packages_to_hold])
+            ret = NodeControlUtil.run_shell_command(cmd, TIMEOUT)
+            if ret.returncode != 0:
+                raise Exception('cannot mark {} packages for hold since {} returned {}'
+                                .format(packages_to_hold, cmd, ret.returncode))
+            logger.info('Successfully put {} packages on hold'.format(packages_to_hold))
+        else:
+            logger.info('Skipping packages holding')
+
     def start(self):
+        self._hold_packages()
+
         # Sockets from which we expect to read
         readers = [self.server]
 
