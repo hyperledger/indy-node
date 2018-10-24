@@ -15,7 +15,6 @@ platforms:
       - SYS_ADMIN
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    privileged: true
     network_mode: ${NETWORK_MODE:-bridge}
 provisioner:
   name: ansible
