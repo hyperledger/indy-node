@@ -113,18 +113,20 @@ def systemTests = { releaseVersion ->
                 }
             } //end dir
             
+            stage("Prepare System Tests") {
+                testHelpers.getSystemTests(targetDir: './system_tests')
+            }
+
             stage("Copy tests and genesis to the client") {
-                // FIXME: For tests only. Blocked by missing tests.
-                echo "sh '''docker cp ./tests indyclient:/home/indy'''"
-                echo "sh '''docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./docker_genesis'''"
-                echo "sh '''docker cp ./docker_genesis indyclient:/home/indy/tests/docker_genesis'''"
+                sh '''docker cp ./system_tests/system indyclient:/home/indy'''
+                sh '''docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./docker_genesis'''
+                sh '''docker cp ./docker_genesis indyclient:/home/indy/system/docker_genesis'''
             }
             
             stage("Run tests") {
                 try {
                     dir("environment/docker/pool"){
-                        return // FIXME: For tests only. Blocked by missing tests.
-                        echo '''docker exec -t --user indy indyclient bash -c "cd /home/indy/tests && pytest --junit-xml=/home/indy/tests/reports/test_ledger_report.xml test_ledger.py" '''
+                        sh '''docker exec -t --user indy indyclient bash -c "cd /home/indy/system && pytest --junit-xml=./reports/system_tests_ledger_report.xml test_ledger.py" '''
                     }
                 }
                 catch (Exception exc) {
@@ -133,17 +135,15 @@ def systemTests = { releaseVersion ->
             }
             
             stage("Prepare reports") {
-                sh '''mkdir -p tests/reports'''
-                
-                dir("tests/reports"){
-                    
-                    echo '''docker cp indyclient:/home/indy/tests/reports/test_ledger_report.xml ./'''
+                sh '''mkdir -p system_tests/reports'''
+
+                dir("system_tests/reports"){
+                    sh '''docker cp indyclient:/home/indy/system/reports/system_tests_ledger_report.xml ./'''
                 }
             }
             
             stage("Upload reports") {
-                dir("tests/reports"){
-                    return; // FIXME: For tests only    
+                dir("system_tests/reports"){    
                     archiveArtifacts artifacts: '*.xml', onlyIfSuccessful: true
                     junit healthScaleFactor: 0.0, keepLongStdio: true, testResults: '*.xml'
                 }
