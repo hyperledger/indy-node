@@ -6,7 +6,7 @@ driver:
 lint:
   name: yamllint
   options:
-    config-file: ../../.yamllint
+    config-file: ../../yamllint
 platforms:
   - name: instance
     image: ubuntu:16.04  # TODO parametrize

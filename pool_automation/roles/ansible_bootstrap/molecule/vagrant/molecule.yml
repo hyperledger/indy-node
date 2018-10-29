@@ -21,7 +21,7 @@ driver:
 lint:
   name: yamllint
   options:
-    config-file: ../../.yamllint
+    config-file: ../../yamllint
 
 verifier:
   name: testinfra
