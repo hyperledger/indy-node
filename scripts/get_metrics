@@ -242,14 +242,21 @@ def process_storage(storage, args):
                 f.write("\n")
 
 
+def detect_storage_type(path):
+    if os.path.isfile('{}.bin'.format(path)):
+        return KeyValueStorageType.BinaryFile
+    if any(f.endswith('.ldb') for f in os.listdir(path)):
+        return KeyValueStorageType.Leveldb
+    return KeyValueStorageType.Rocksdb
+
+
 if __name__ == '__main__':
     args = read_args()
 
     if args.data_dir is not None:
-        is_leveldb = any(f.endswith('.ldb') for f in os.listdir(args.data_dir))
-        storage_type = KeyValueStorageType.Leveldb if is_leveldb \
-            else KeyValueStorageType.Rocksdb
-        storage = initKeyValueStorage(storage_type, args.data_dir, "")
+        storage_type = detect_storage_type(args.data_dir)
+        location, name = os.path.split(args.data_dir)
+        storage = initKeyValueStorage(storage_type, location, name)
         process_storage(storage, args)
         exit()
 
