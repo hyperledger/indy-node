@@ -204,8 +204,9 @@ def process_storage(storage, args):
           .format(client_in.count / client_out.count, client_in.sum / client_out.sum))
     print("   Node incoming/outgoing traffic: {:.2f}".format(node_in.sum / node_out.sum))
     print("   Node/client traffic: {:.2f}".format(node_traffic / client_traffic))
-    print("   Node traffic per batch: {:.2f}".format(node_traffic / three_pc.count))
-    print("   Node traffic per request: {:.2f}".format(node_traffic / three_pc.sum))
+    if three_pc.count > 0:
+        print("   Node traffic per batch: {:.2f}".format(node_traffic / three_pc.count))
+        print("   Node traffic per request: {:.2f}".format(node_traffic / three_pc.sum))
     print("")
 
     print("Profiling info:")
