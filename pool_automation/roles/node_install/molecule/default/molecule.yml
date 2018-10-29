@@ -14,6 +14,7 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     privileged: true
+    pre_build_image: true
     network_mode: ${MOLECULE_DOCKER_NETWORK_MODE:-bridge}
 provisioner:
   name: ansible

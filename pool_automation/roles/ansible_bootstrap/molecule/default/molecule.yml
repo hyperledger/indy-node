@@ -10,6 +10,7 @@ lint:
 platforms:
   - name: instance
     image: ubuntu:16.04  # TODO parametrize
+    pre_build_image: true
 provisioner:
   name: ansible
   lint:

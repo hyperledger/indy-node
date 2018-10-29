@@ -34,9 +34,9 @@ Todos:
 - more tests
 
 
-### common
+### ansible_bootstrap
 
-Installs python and sovrin GPG keys.
+Installs python and sudo.
 
 
 ### node_install
