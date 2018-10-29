@@ -6,7 +6,7 @@ driver:
 lint:
   name: yamllint
   options:
-    config-file: ../common/yamllint
+    config-file: ../../.yamllint
 platforms:
   - name: instance
     image: solita/ubuntu-systemd:16.04  # TODO parametrize

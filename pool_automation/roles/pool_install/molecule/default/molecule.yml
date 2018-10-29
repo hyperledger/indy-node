@@ -46,7 +46,7 @@ dependency:
 lint:
   name: yamllint
   options:
-    config-file: ../common/yamllint
+    config-file: ../../.yamllint
 
 verifier:
   name: testinfra
