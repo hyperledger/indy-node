@@ -34,9 +34,9 @@ Todos:
 - more tests
 
 
-### common
+### ansible_bootstrap
 
-Installs python and sovrin GPG keys.
+Installs python and sudo.
 
 
 ### node_install
@@ -72,21 +72,37 @@ Install virtualenv packages:
 - python-vagrant
 - boto
 - boto3
+- docker
 
-In order to test role go to directory with role (for example 
+Default development workflow would be:
+- `molecule lint`
+- `molecule converge`
+- `molecule verify`
+- `molecule destroy`
+
+When you are ready you can run aggregative command `molecule test`.
+
+### Scenarios
+
+By default scenarios based on `docker` are used. Also `vagrant` scenarios are available
+and might be run like `molecule <command> -s vagrant`.
+
+In order to test all scenarios for some role go to a directory with the role (for example
 `roles/pool_install`) and run `molecule test --all`.
 
-To speed up development following workflow is recommended:
+#### Vagrant scenarios specific
+
+To speed up development and testing on vagrant VMs following workflow is recommended:
 - After each change run `molecule lint`. This will quickly show some
   style recommendations and probably highlight some stupid mistakes.
 - When lint is satisfied run `molecule converge`. This will spin up
   virtual machines (if neccessary) and run default playbook. This
-  could be slow operation when running for the first time, but 
+  could be slow operation when running for the first time, but
   subsequent runs are much faster.
 - When converge finishes without errors run `molecule verify`. This
   will start tests.
 - Do more changes, running this lint-converge-verify sequence.
-- When done (or there is suspicion that VM state gone very bad) run 
+- When done (or there is suspicion that VM state gone very bad) run
   `molecule destroy`, this will destroy virtual machines.
 - When virtual machines are running it's possible to login to them
   using `molecule login --host name`

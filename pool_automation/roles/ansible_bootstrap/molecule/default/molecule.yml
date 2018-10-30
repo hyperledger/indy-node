@@ -9,20 +9,12 @@ lint:
     config-file: ../../yamllint
 platforms:
   - name: instance
-    image: solita/ubuntu-systemd:16.04  # TODO parametrize
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    privileged: true
+    image: ubuntu:16.04  # TODO parametrize
     pre_build_image: true
-    network_mode: ${MOLECULE_DOCKER_NETWORK_MODE:-bridge}
 provisioner:
   name: ansible
   lint:
     name: ansible-lint
-  inventory:
-    links:
-      group_vars: ../resources/group_vars
   playbooks:
     converge: ../resources/playbooks/playbook.yml
 scenario:

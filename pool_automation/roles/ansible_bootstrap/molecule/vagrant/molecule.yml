@@ -1,11 +1,13 @@
 ---
 scenario:
-  name: default
+  name: vagrant
 
 provisioner:
   name: ansible
   lint:
     name: ansible-lint
+  playbooks:
+    converge: ../resources/playbooks/playbook.yml
 
 platforms:
   - name: instance
@@ -19,9 +21,10 @@ driver:
 lint:
   name: yamllint
   options:
-    config-file: yamllint
+    config-file: ../../yamllint
 
 verifier:
   name: testinfra
+  directory: ../resources/tests
   lint:
     name: flake8
