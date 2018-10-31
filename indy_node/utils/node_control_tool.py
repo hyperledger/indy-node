@@ -107,16 +107,12 @@ class NodeControlTool:
             cmd_file = 'upgrade_indy_node_test'
 
         cmd = compose_cmd([cmd_file, deps])
-        ret = NodeControlUtil.run_shell_script(cmd, self.timeout)
-        if ret.returncode != 0:
-            raise Exception('upgrade script failed, exit code is {}'.format(ret.returncode))
+        NodeControlUtil.run_shell_command(cmd, self.timeout)
 
     def _call_restart_node_script(self):
         logger.info('Restarting indy')
         cmd = compose_cmd(['restart_indy_node'])
-        ret = NodeControlUtil.run_shell_script(cmd, self.timeout)
-        if ret.returncode != 0:
-            raise Exception('restart failed: script returned {}'.format(ret.returncode))
+        NodeControlUtil.run_shell_command(cmd, self.timeout)
 
     def _backup_name(self, version):
         return os.path.join(self.backup_dir, '{}{}'.format(
@@ -233,10 +229,7 @@ class NodeControlTool:
         if shutil.which("apt-mark"):
             packages_to_hold = '{} {}'.format(' '.join(self.config.PACKAGES_TO_HOLD), self.hold_ext)
             cmd = compose_cmd(['apt-mark', 'hold', packages_to_hold])
-            ret = NodeControlUtil.run_shell_command(cmd, TIMEOUT)
-            if ret.returncode != 0:
-                raise Exception('cannot mark {} packages for hold since {} returned {}'
-                                .format(packages_to_hold, cmd, ret.returncode))
+            NodeControlUtil.run_shell_command(cmd, TIMEOUT)
             logger.info('Successfully put {} packages on hold'.format(packages_to_hold))
         else:
             logger.info('Skipping packages holding')

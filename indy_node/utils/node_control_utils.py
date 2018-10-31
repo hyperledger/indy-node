@@ -7,6 +7,10 @@ from stp_core.common.log import getlogger
 from indy_common.util import compose_cmd
 
 
+# Package manager command output could contain some utf-8 symbols
+# to handle such a case automatic stream parsing is prohibited,
+# decode error handler is added, proper decoder is selected
+
 # copied from validator-info from plenum
 def decode_err_handler(error):
     length = error.end - error.start
@@ -29,15 +33,12 @@ class NodeControlUtil:
             ret = subprocess.run(command, shell=True, check=False, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, timeout=timeout)
         except Exception as ex:
-            logger.warning("command {} failed with {}".format(command, ex))
-            return ""
+            raise Exception("command {} failed with {}".format(command, ex))
+        if ret.returncode != 0:
+            raise Exception('command {} returned {}'.format(command, ret.returncode))
         if ret.stdout:
-            return ret.stdout.decode(locale.getpreferredencoding(), 'decode_errors')
+            return ret.stdout.decode(locale.getpreferredencoding(), 'decode_errors').strip()
         return ""
-
-    @classmethod
-    def run_shell_script(cls, command, timeout):
-        return subprocess.run(command, shell=True, timeout=timeout)
 
     @classmethod
     def _get_curr_info(cls, package):
@@ -45,23 +46,24 @@ class NodeControlUtil:
         return cls.run_shell_command(cmd, TIMEOUT)
 
     @classmethod
-    def _parse_version_deps_from_pkt_mgr_output(cls, output):
-        def _parse_deps(deps: str):
-            ret = []
-            deps = deps.replace("|", ",")
-            pkgs = deps.split(",")
-            for pkg in pkgs:
-                if not pkg:
-                    continue
-                name_ver = pkg.strip(" ").split(" ", maxsplit=1)
-                name = name_ver[0].strip(" \n")
-                if len(name_ver) == 1:
-                    ret.append(name)
-                else:
-                    ver = name_ver[1].strip("()<>= \n")
-                    ret.append("{}={}".format(name, ver))
-            return ret
+    def _parse_deps(cls, deps: str):
+        ret = []
+        deps = deps.replace("|", ",")
+        pkgs = deps.split(",")
+        for pkg in pkgs:
+            if not pkg:
+                continue
+            name_ver = pkg.strip(" ").split(" ", maxsplit=1)
+            name = name_ver[0].strip(" \n")
+            if len(name_ver) == 1:
+                ret.append(name)
+            else:
+                ver = name_ver[1].strip("()<>= \n")
+                ret.append("{}={}".format(name, ver))
+        return ret
 
+    @classmethod
+    def _parse_version_deps_from_pkt_mgr_output(cls, output):
         out_lines = output.split("\n")
         ver = None
         ext_deps = []
@@ -70,7 +72,7 @@ class NodeControlUtil:
             if act_line.startswith("Version:"):
                 ver = act_line.split(":", maxsplit=1)[1].strip(" \n")
             if act_line.startswith("Depends:"):
-                ext_deps += _parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
+                ext_deps += cls._parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
         return ver, ext_deps
 
     @classmethod
