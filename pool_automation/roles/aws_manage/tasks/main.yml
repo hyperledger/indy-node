@@ -9,7 +9,7 @@
     namespace: "{{ tag_namespace }}"
     role: "{{ tag_role }}"
     key_name: "{{ aws_keyname }}"
-    group: "{{ aws_group }}"    
+    group: "{{ aws_group }}"
     instance_type: "{{ aws_type }}"
     instance_count: "{{ instance_count }}"
   register: ec2
