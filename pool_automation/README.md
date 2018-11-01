@@ -2,8 +2,7 @@
 
 ## Quickstart
 
-- Make sure you have `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` in your environment
-  with corresponding AWS access keys.
+- Make sure you have [AWS CLI][f681b33b] installed and configured.
 - Run `ansible-playbook pool_create.yml` - this will create 4 EC2 instances
   and `test_nodes` directory with inventory and SSH keys.
 - Run `ansible-playbook -i test_nodes/hosts pool_install.yml` - this will
@@ -12,6 +11,8 @@
   and take a look around.
 - Run `ansible-playbook pool_destroy.yml` - this will terminate previously
   created AWS EC2 instances and clear `config_pool` and `inventory_pool` files.
+
+  [f681b33b]: https://aws.amazon.com/cli/ "aws cli"
 
 
 ## Roles
@@ -59,6 +60,9 @@ Todos:
 
 Configures Indy Node pool.
 
+## Scripts
+
+The directory [scripts](scripts) includes helper scripts. Please refer to [scripts/README.md](scripts/README.md) for more details.
 
 ## Development
 
