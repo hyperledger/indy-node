@@ -2,9 +2,8 @@ import random
 from indy import ledger, did
 import json
 
-
 from perf_load.perf_req_gen import RequestGenerator
-from perf_utils import random_string
+from perf_load.perf_utils import random_string
 
 
 class RGPoolNewDemotedNode(RequestGenerator):
@@ -17,9 +16,7 @@ class RGPoolNewDemotedNode(RequestGenerator):
         self._node_did = None
 
     def _rand_data(self):
-        ret = "0"
-        for i in range(3):
-            ret += "."+str(random.randint(0, 255))
+        ret = "0.{}.{}.{}".format(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
         return ret
 
     async def on_pool_create(self, pool_handle, wallet_handle, submitter_did, sign_req_f, send_req_f, *args, **kwargs):
