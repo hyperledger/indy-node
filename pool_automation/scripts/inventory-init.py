@@ -4,6 +4,7 @@
 import os
 import sys
 from inspect import getsourcefile
+import json
 import glob
 import argparse
 import yaml
@@ -21,7 +22,7 @@ DEF_LOGLEVEL = logging.INFO
 def _init_roles_defaults():
     plays_dir = os.getenv('ANSIBLE_PLAYS_DIR')
     if not plays_dir:
-        script_path = os.path.abspath(getsourcefile(lambda:0))
+        script_path = os.path.abspath(getsourcefile(lambda: 0))
         plays_dir = os.path.abspath(os.path.join(os.path.dirname(script_path), '..'))
     else:
         plays_dir = os.path.abspath(plays_dir)
@@ -37,7 +38,7 @@ def _init_roles_defaults():
         try:
             with open(_fpath, 'r') as _f:
                 roles[role]['defaults'] = yaml.safe_load(_f)
-        except IOError as exc:
+        except IOError:
             logger.debug("Ignoring absense of the file {}".format(_fpath))
 
     return roles
@@ -63,8 +64,8 @@ def _set_logging(logconfig_path=None):
 
 def _parse_args(roles):
     parser = argparse.ArgumentParser(
-            description="Inventory Init Tool",
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        description="Inventory Init Tool",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('inventory-dir',
                         help='path to inventory directory')
@@ -118,15 +119,6 @@ def _dump_config(config_path, config_vars, default_vars):
 
 def main():
 
-    # ???
-    # 1. consequent run with the same inventory dir and different values
-
-    # TODO
-    # - accept dicts as args
-    # - docs:
-    #   - ANSIBLE_PLAYS_DIR
-    #   - cmd line arguments
-
     _set_logging()
 
     roles = _init_roles_defaults()
@@ -144,7 +136,6 @@ def main():
     if args["show_defaults"]:
         _dump_defaults(roles)
         exit(0)
-
 
     # create inventory dir hierarchy
     group_vars_dir = "{}/group_vars/all".format(args['inventory-dir'])
@@ -164,6 +155,7 @@ def main():
                 config[_p] = args[_arg_name]
 
         _dump_config("{}/{}_config.yml".format(group_vars_dir, role), config, params['defaults'])
+
 
 if __name__ == "__main__":
     sys.exit(main())
