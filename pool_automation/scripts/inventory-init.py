@@ -20,18 +20,18 @@ DEF_LOGLEVEL = logging.INFO
 
 
 def _init_roles_defaults():
-    plays_dir = os.getenv('ANSIBLE_PLAYS_DIR')
-    if not plays_dir:
+    proj_dir = os.getenv('ANSIBLE_PROJECT_DIR')
+    if not proj_dir:
         script_path = os.path.abspath(getsourcefile(lambda: 0))
-        plays_dir = os.path.abspath(os.path.join(os.path.dirname(script_path), '..'))
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(script_path), '..'))
     else:
-        plays_dir = os.path.abspath(plays_dir)
+        proj_dir = os.path.abspath(proj_dir)
 
-    roles = {os.path.basename(r): {'path': r} for r in glob.iglob("{}/roles/*".format(plays_dir))}
+    roles = {os.path.basename(r): {'path': r} for r in glob.iglob("{}/roles/*".format(proj_dir))}
 
     if not roles:
-        logger.error("No roles are found in {}".format(plays_dir))
-        raise RuntimeError("No roles are found in {}".format(plays_dir))
+        logger.error("No roles are found in {}".format(proj_dir))
+        raise RuntimeError("No roles are found in {}".format(proj_dir))
 
     for role, params in roles.iteritems():
         _fpath = "{}/defaults/main.yml".format(params['path'])
