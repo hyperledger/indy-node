@@ -4,14 +4,15 @@ aws_type: t2.micro
 aws_image: ami-027583e616ca104df
 
 # Tags
-tag_namespace: test
-tag_role: default
+tag_namespace: test-default
+tag_role: node
 
 # Derivative parameters
 group_name: "{{ tag_role }}s"
 inventory_dir: "{{ tag_namespace }}_{{ group_name }}"
 aws_keyname: "{{ tag_namespace }}-{{ group_name }}"
 aws_group: "{{ tag_namespace }}-{{ group_name }}"
+instance_count: 4
 
 # List of all potential regions to use
 aws_regions:
