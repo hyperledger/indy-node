@@ -117,6 +117,23 @@ def _dump_config(config_path, config_vars, default_vars):
         _f.write(''.join(["\n# DEFAULTS\n\n"] + ["#{}".format(_l) for _l in _s.splitlines(True)]))
 
 
+def _specify_localhost(inventory_dir):
+    localhost_spec = {
+        'all': {
+            'hosts': {
+                'localhost': {
+                    'ansible_connection': 'local',
+                    'ansible_python_interpreter': '{{ ansible_playbook_python }}'
+                }
+            }
+        }
+    }
+
+    with open(os.path.join(inventory_dir, 'localhost.yml'), "w") as _f:
+        _f.write('---\n')
+        yaml.safe_dump(localhost_spec, _f, default_flow_style=False)
+
+
 def main():
 
     _set_logging()
@@ -155,6 +172,8 @@ def main():
                 config[_p] = args[_arg_name]
 
         _dump_config("{}/{}_config.yml".format(group_vars_dir, role), config, params['defaults'])
+
+    _specify_localhost(args['inventory-dir'])
 
 
 if __name__ == "__main__":

@@ -21,18 +21,20 @@ The tool explores default values for each role it found and provides
 command line API to override them.
 
 The tool creates directory with the structure acceptable for Ansible inventory
-directories as declared in [Working With Inventory](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#splitting-out-host-and-group-specific-data):
+directories as declared in [Working With Inventory](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#splitting-out-host-and-group-specific-data). Also it adds an inventory file for
+`localhost` to make its specification explicit.
 
 ```shell
 inventory-dir/
 └── group_vars
-    └── all
-        ├── <role-name1>_config.yml
-        ├── ...
+|   └── all
+|       ├── <role-name1>_config.yml
+|       ...
+└── localhost.yml
 ```
 
-So it is possible to place your inventory file here (e.g. `inventory-dir/hosts`)
-and pass it to [Ansible command line tools][2aceed7f].
+So it is possible to place your inventory file(s) here (e.g. `inventory-dir/hosts`)
+and pass either the whole directory or an inventory file to [Ansible command line tools][2aceed7f].
 
 Also you may pass the `inventory-dir/group_vars` to molecule's provisioner
 as link as described [here](https://molecule.readthedocs.io/en/latest/configuration.html#provisioner).
