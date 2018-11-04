@@ -105,6 +105,20 @@ class NodeControlUtil:
         return ret
 
     @classmethod
+    def get_deps_tree_filtered(cls, *package, filter_list=[], depth=0):
+        ret = list(set(package))
+        filter_list = [f for f in filter_list if not list(filter(lambda x: f in x, ret))]
+        if depth < MAX_DEPS_DEPTH and filter_list:
+            package_info = cls._get_info_from_package_manager(*ret)
+            _, deps = cls._parse_version_deps_from_pkt_mgr_output(package_info)
+            deps_deps = []
+            deps = list(set(deps) - set(ret))
+            deps_deps.append(cls.get_deps_tree_filtered(*deps, filter_list=filter_list, depth=depth + 1))
+
+            ret.append(deps_deps)
+        return ret
+
+    @classmethod
     def dep_tree_traverse(cls, dep_tree, deps_so_far):
         if isinstance(dep_tree, str) and dep_tree not in deps_so_far:
             deps_so_far.append(dep_tree)

@@ -41,7 +41,7 @@ class NodeControlTool:
         self.test_mode = test_mode
         self.timeout = timeout or TIMEOUT
 
-        self.hold_ext = hold_ext
+        self.hold_ext = hold_ext.split(" ")
 
         config_helper = ConfigHelper(self.config)
         self.backup_dir = backup_dir or config_helper.backup_dir
@@ -78,7 +78,8 @@ class NodeControlTool:
     def _get_deps_list(self, package):
         logger.info('Getting dependencies for {}'.format(package))
         NodeControlUtil.update_package_cache()
-        dep_tree = NodeControlUtil.get_deps_tree(package)
+        app_holded = self.config.PACKAGES_TO_HOLD + self.hold_ext
+        dep_tree = NodeControlUtil.get_deps_tree_filtered(package, app_holded)
         ret = []
         NodeControlUtil.dep_tree_traverse(dep_tree, ret)
         # Filter deps according to system hold list
@@ -227,7 +228,7 @@ class NodeControlTool:
 
     def _hold_packages(self):
         if shutil.which("apt-mark"):
-            packages_to_hold = '{} {}'.format(' '.join(self.config.PACKAGES_TO_HOLD), self.hold_ext)
+            packages_to_hold = ' '.join(self.config.PACKAGES_TO_HOLD + self.hold_ext)
             cmd = compose_cmd(['apt-mark', 'hold', packages_to_hold])
             NodeControlUtil.run_shell_command(cmd, TIMEOUT)
             logger.info('Successfully put {} packages on hold'.format(packages_to_hold))
