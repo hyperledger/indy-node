@@ -79,7 +79,7 @@ class NodeControlTool:
         logger.info('Getting dependencies for {}'.format(package))
         NodeControlUtil.update_package_cache()
         app_holded = self.config.PACKAGES_TO_HOLD + self.hold_ext
-        dep_tree = NodeControlUtil.get_deps_tree_filtered(package, app_holded)
+        dep_tree = NodeControlUtil.get_deps_tree_filtered(package, filter_list=app_holded)
         ret = []
         NodeControlUtil.dep_tree_traverse(dep_tree, ret)
         # Filter deps according to system hold list
