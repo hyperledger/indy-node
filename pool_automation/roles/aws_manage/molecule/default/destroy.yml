@@ -3,4 +3,6 @@
   hosts: localhost
   gather_facts: false
   roles:
-    - { role: aws_manage, instance_count: 0 }
+    - role: aws_manage
+      vars:
+        instance_count: 0
