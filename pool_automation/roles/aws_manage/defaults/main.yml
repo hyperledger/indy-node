@@ -1,18 +1,11 @@
 ---
 # AWS primary parameters
-aws_type: t2.micro
-aws_image: ami-027583e616ca104df
+aws_ec2_type: t2.micro
+aws_ami_id: ami-027583e616ca104df
 
 # Tags
-tag_namespace: test-default
-tag_role: node
-
-# Derivative parameters
-group_name: "{{ tag_role }}s"
-inventory_dir: "{{ tag_namespace }}_{{ group_name }}"
-aws_keyname: "{{ tag_namespace }}-{{ group_name }}"
-aws_group: "{{ tag_namespace }}-{{ group_name }}"
-instance_count: 4
+aws_tag_namespace: test
+aws_tag_role: default
 
 # List of all potential regions to use
 aws_regions:
@@ -31,3 +24,11 @@ aws_regions:
   - us-east-2
   - us-west-1
   - us-west-2
+
+instance_count: 4
+
+# Derivative parameters
+group_name: "{{ aws_tag_role }}s"
+inventory_dir: "{{ aws_tag_namespace }}_{{ group_name }}"
+aws_keyname: "{{ aws_tag_namespace }}-{{ group_name }}"
+aws_sgroup: "{{ aws_tag_namespace }}-{{ group_name }}"

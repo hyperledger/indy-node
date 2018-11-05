@@ -1,6 +1,6 @@
 [{{ group_name }}]
 {% for item in ec2.results %}
-{{ tag_namespace }}_{{ tag_role }}{{ item.tag_id }} tag_id={{ item.tag_id }} ansible_host={{ item.public_ip }}
+{{ aws_tag_namespace }}_{{ aws_tag_role }}{{ item.tag_id }} tag_id={{ item.tag_id }} ansible_host={{ item.public_ip }}
 {% endfor %}
 
 [{{ group_name }}:vars]

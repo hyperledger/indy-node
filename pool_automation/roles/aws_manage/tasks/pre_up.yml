@@ -20,9 +20,9 @@
 
 - name: Create AWS security group
   ec2_group:
-    name: "{{ aws_group }}"
+    name: "{{ aws_sgroup }}"
     region: "{{ item }}"
-    description: "Security group for {{ tag_role }} in {{ tag_namespace }}"
+    description: "Security group for {{ aws_tag_role }} in {{ aws_tag_namespace }}"
     rules:
       - proto: all
         cidr_ip: 0.0.0.0/0

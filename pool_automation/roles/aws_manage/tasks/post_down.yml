@@ -13,7 +13,7 @@
 
 - name: Destroy AWS security group
   ec2_group:
-    name: "{{ aws_group }}"
+    name: "{{ aws_sgroup }}"
     region: "{{ item }}"
     state: absent
   with_items: "{{ aws_regions }}"

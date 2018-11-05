@@ -37,7 +37,7 @@ So it is possible to place your inventory file(s) here (e.g. `inventory-dir/host
 and pass either the whole directory or an inventory file to [Ansible command line tools][2aceed7f].
 
 Also you may pass the `inventory-dir/group_vars` to molecule's provisioner
-as link as described [here](https://molecule.readthedocs.io/en/latest/configuration.html#provisioner).
+as a link as described [here](https://molecule.readthedocs.io/en/latest/configuration.html#provisioner).
 
 ### Requirements
 

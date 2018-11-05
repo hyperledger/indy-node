@@ -5,14 +5,14 @@
       - lookup('vars', item, default='')
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
-    - aws_type
-    - aws_image
-    - tag_namespace
-    - tag_role
+    - aws_ec2_type
+    - aws_ami_id
+    - aws_tag_namespace
+    - aws_tag_role
     - group_name
     - inventory_dir
     - aws_keyname
-    - aws_group
+    - aws_sgroup
     - instance_count
     - aws_regions
 
@@ -23,11 +23,11 @@
 - name: Manage instances
   stateful_set:
     regions: "{{ aws_regions }}"
-    namespace: "{{ tag_namespace }}"
-    role: "{{ tag_role }}"
+    namespace: "{{ aws_tag_namespace }}"
+    role: "{{ aws_tag_role }}"
     key_name: "{{ aws_keyname }}"
-    group: "{{ aws_group }}"
-    instance_type: "{{ aws_type }}"
+    group: "{{ aws_sgroup }}"
+    instance_type: "{{ aws_ec2_type }}"
     instance_count: "{{ instance_count }}"
   register: ec2
 
