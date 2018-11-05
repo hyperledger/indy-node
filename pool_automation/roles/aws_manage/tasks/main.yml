@@ -1,4 +1,21 @@
 ---
+- name: Check that required variables are specified
+  assert:
+    that:
+      - lookup('vars', item, default='')
+    msg: "{{ lookup('vars', item, default='undefined')|string }}"
+  loop:
+    - aws_type
+    - aws_image
+    - tag_namespace
+    - tag_role
+    - group_name
+    - inventory_dir
+    - aws_keyname
+    - aws_group
+    - instance_count
+    - aws_regions
+
 - name: Pre-Up
   include_tasks: "{{ role_path }}/tasks/pre_up.yml"
   when: instance_count > 0
