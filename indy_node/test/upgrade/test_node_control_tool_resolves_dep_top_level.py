@@ -41,35 +41,39 @@ def test_node_as_depend(monkeypatch, tconf):
     python_crypto_with_version = '{}={}'.format(*python_crypto)
     libindy_crypto_with_version = '{}={}'.format(*libindy_crypto)
     mock_info = {
-        top_level_package_with_version: "{}\nVersion:{}\nDepends:{} (= {}), {} (= {}), {} (= {})".format(
+        top_level_package_with_version: "{}\nVersion:{}\nDepends:{} (= {}), {} (= {}), {} (= {})\n".format(
             randomText(100), top_level_package[1], *node_package, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1]),
-        node_package_with_version: '{}\nVersion:{}\nDepends:{} (= {}), {} (= {})'.format(
+        node_package_with_version: '{}\nVersion:{}\nDepends:{} (= {}), {} (= {})\n'.format(
             randomText(100), node_package[1], *plenum_package, *anoncreds_package),
-        plenum_package_with_version: '{}\nVersion:{}\nDepends:{} (= {})'.format(
+        plenum_package_with_version: '{}\nVersion:{}\nDepends:{} (= {})\n'.format(
             randomText(100), plenum_package[1], *python_crypto),
         anoncreds_package_with_version: '{}'.format(randomText(100)),
-        top_level_package_dep1_with_version: '{}\nVersion:{}\nDepends:{} (= {})'.format(
+        top_level_package_dep1_with_version: '{}\nVersion:{}\nDepends:{} (= {})\n'.format(
             randomText(100), EXT_TOP_PKT_DEPS[0][1], *plenum_package),
-        top_level_package_dep2_with_version: '{}\nVersion:{}\nDepends:{} (= {})'.format(
+        top_level_package_dep2_with_version: '{}\nVersion:{}\nDepends:{} (= {})\n'.format(
             randomText(100), EXT_TOP_PKT_DEPS[1][1], *node_package),
-        python_crypto_with_version: '{}\nVersion:{}\nDepends:{} (= {})'.format(
+        python_crypto_with_version: '{}\nVersion:{}\nDepends:{} (= {})\n'.format(
             randomText(100), python_crypto[1], *libindy_crypto),
         libindy_crypto_with_version: '{}\nVersion:{}\nDepends: \n{}'.format(
             randomText(100), libindy_crypto[1], randomText(100)),
     }
 
-    def mock_get_info_from_package_manager(package):
-        return mock_info.get(package, None)
+    def mock_get_info_from_package_manager(*package):
+        ret = ""
+        for p in package:
+            ret += mock_info.get(p, "")
+        return ret
 
     monkeypatch.setattr(NodeControlUtil, 'update_package_cache', lambda *x: None)
     monkeypatch.setattr(NodeControlUtil, '_get_info_from_package_manager',
-                        lambda x: mock_get_info_from_package_manager(x))
+                        lambda *x: mock_get_info_from_package_manager(*x))
     monkeypatch.setattr(NodeControlUtil, 'get_sys_holds',
                         lambda *x: [top_level_package[0], anoncreds_package[0], plenum_package[0], node_package[0],
                                     EXT_TOP_PKT_DEPS[0][0], EXT_TOP_PKT_DEPS[1][0], python_crypto[0], libindy_crypto[0]])
     monkeypatch.setattr(NodeControlUtil, '_get_curr_info', lambda *x: PACKAGE_MNG_EXT_PTK_OUTPUT)
     ret = nct._get_deps_list(top_level_package_with_version)
     nct.server.close()
-    assert ret.split() == [anoncreds_package_with_version, libindy_crypto_with_version, python_crypto_with_version,
-                           plenum_package_with_version, node_package_with_version, top_level_package_dep2_with_version,
-                           top_level_package_dep1_with_version, top_level_package_with_version]
+    assert sorted(ret.split()) == sorted([anoncreds_package_with_version, libindy_crypto_with_version,
+                                          python_crypto_with_version, plenum_package_with_version,
+                                          node_package_with_version, top_level_package_dep2_with_version,
+                                          top_level_package_dep1_with_version, top_level_package_with_version])
