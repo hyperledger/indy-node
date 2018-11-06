@@ -5,8 +5,8 @@ from collections import namedtuple, defaultdict
 from itertools import cycle
 import boto3
 
-#import logging
-#boto3.set_stream_logger('', logging.DEBUG)
+# import logging
+# boto3.set_stream_logger('', logging.DEBUG)
 
 AWS_REGIONS = [
     'ap-northeast-1',
@@ -99,6 +99,7 @@ def get_tag(inst, name):
 
 HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
 AWSWaiterInfo = namedtuple('AWSWaiterInfo', 'waiter kwargs')
+
 
 def manage_instances(regions, params, count):
     hosts = []
