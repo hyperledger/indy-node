@@ -67,7 +67,6 @@ setup(
     tests_require=tests_require,
     scripts=['scripts/indy',
              'scripts/add_new_node',
-             'scripts/reset_client',
              'scripts/start_indy_node',
              'scripts/start_node_control_tool',
              'scripts/clear_node.py',
