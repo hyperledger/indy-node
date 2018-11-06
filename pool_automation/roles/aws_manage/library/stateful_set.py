@@ -5,6 +5,8 @@ from collections import namedtuple, defaultdict
 from itertools import cycle
 import boto3
 
+#import logging
+#boto3.set_stream_logger('', logging.DEBUG)
 
 AWS_REGIONS = [
     'ap-northeast-1',
@@ -96,15 +98,21 @@ def get_tag(inst, name):
 
 
 HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
-
+AWSWaiterInfo = namedtuple('AWSWaiterInfo', 'waiter kwargs')
 
 def manage_instances(regions, params, count):
-    valid_region_ids = valid_instances(regions, count)
     hosts = []
+    waiters = []
     changed = False
 
+    valid_region_ids = valid_instances(regions, count)
+
     for region in AWS_REGIONS:
+        _terminated = []
+        _launched = []
+
         ec2 = boto3.resource('ec2', region_name=region)
+        ec2cl = boto3.client('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
         instances = find_instances(ec2, params.namespace, params.role)
@@ -113,27 +121,36 @@ def manage_instances(regions, params, count):
             if tag_id in valid_ids:
                 valid_ids.remove(tag_id)
                 hosts.append(inst)
+                _launched.append(inst.id)
             else:
                 inst.terminate()
+                _terminated.append(inst.id)
                 changed = True
 
-        if len(valid_ids) == 0:
-            continue
+        if valid_ids:
+            instances = create_instances(ec2, params, len(valid_ids))
+            for inst, tag_id in zip(instances, valid_ids):
+                inst.create_tags(Tags=[{'Key': 'id', 'Value': tag_id}])
+                hosts.append(inst)
+                _launched.append(inst.id)
+                changed = True
 
-        instances = create_instances(ec2, params, len(valid_ids))
-        for inst, tag_id in zip(instances, valid_ids):
-            inst.create_tags(Tags=[{'Key': 'id', 'Value': tag_id}])
-            hosts.append(inst)
-            changed = True
+        if _terminated:
+            waiters.append(AWSWaiterInfo(
+                waiter=ec2cl.get_waiter('instance_terminated'),
+                kwargs={'InstanceIds': list(_terminated)}
+            ))
 
-    wait_for_ip = True
-    while wait_for_ip:
-        wait_for_ip = False
-        for inst in hosts:
-            if inst.public_ip_address is not None:
-                continue
-            wait_for_ip = True
-            inst.reload()
+        if _launched:
+            # consider to use get_waiter('instance_status_ok')
+            # if 'running' is not enough in any circumstances
+            waiters.append(AWSWaiterInfo(
+                waiter=ec2cl.get_waiter('instance_running'),
+                kwargs={'InstanceIds': list(_launched)}
+            ))
+
+    for waiter_i in waiters:
+        waiter_i.waiter.wait(**waiter_i.kwargs)
 
     hosts = [HostInfo(tag_id=get_tag(inst, 'id'),
                       public_ip=inst.public_ip_address,
