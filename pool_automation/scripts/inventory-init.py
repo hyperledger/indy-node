@@ -79,10 +79,14 @@ def _parse_args(roles):
         )
         for p, d in params['defaults'].iteritems():
             _help_kwargs = {'metavar': "{}".format(type(d).__name__).upper()}
-            # TODO dict: is it acutal case?
+            # TODO smarter data types related routine:
+            #   - dict: is it acutal case?
+            #   - be generic: shouldn't have any role's specific things
             if type(d) is list:
                 _help_kwargs['nargs'] = '+'
                 _help_kwargs['metavar'] = 'ITEM'
+            elif type(d) in (int, float):
+                _help_kwargs['type'] = type(d)
 
             _group.add_argument("--{}.{}".format(role, p), **_help_kwargs)
 
