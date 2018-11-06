@@ -27,7 +27,7 @@ aws_regions:
 
 instance_count: 4
 
-pa_aws_prefix: "PA"
+pa_aws_prefix: PA
 # Derivative parameters
 group_name: "{{ aws_tag_role }}s"
 inventory_dir: "{{ aws_tag_namespace }}_{{ group_name }}"
