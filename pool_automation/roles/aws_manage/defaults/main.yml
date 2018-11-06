@@ -32,4 +32,4 @@ pa_aws_prefix: PA
 group_name: "{{ aws_tag_role }}s"
 inventory_dir: "{{ aws_tag_namespace }}_{{ group_name }}"
 aws_keyname: "{{ pa_aws_prefix }}-{{ aws_tag_namespace }}-{{ group_name }}"
-aws_sgroup: "-{{ pa_aws_prefix }}-{{ aws_tag_namespace }}-{{ group_name }}"
+aws_sgroup: "{{ pa_aws_prefix }}-{{ aws_tag_namespace }}-{{ group_name }}"
