@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from indy import pool, wallet, did, ledger
 
-from perf_load.perf_client_msgs import ClientReady, ClientRun, ClientStop, ClientGetStat, ClientSend, ClientMsg
+from perf_load.perf_client_msgs import ClientReady, ClientRun, ClientStop, ClientGetStat, ClientSend
 from perf_load.perf_clientstaistic import ClientStatistic
 from perf_load.perf_utils import random_string, logger_init
 from perf_load.perf_req_gen import NoReqDataAvailableException
@@ -50,12 +50,6 @@ class LoadClient:
             raise RuntimeError("Cannot pregenerate reqs in response waiting mode")
         self._logger = logging.getLogger(self._name)
 
-    def msg(self, fmt: str, *args):
-        try:
-            self._pipe_conn.send(ClientMsg(fmt, *args))
-        except Exception as e:
-            print("{} Ready send error {}".format(self._name, e))
-
     async def pool_open_pool(self, name, config):
         return await pool.open_pool_ledger(name, config)
 
@@ -87,21 +81,27 @@ class LoadClient:
         await wallet.close_wallet(wallet_h)
 
     async def _init_pool(self, genesis_path):
+        self._logger.info("_init_pool {}".format(genesis_path))
         await self.pool_protocol_version()
         pool_cfg = json.dumps({"genesis_txn": genesis_path})
         await self.pool_create_config(self._pool_name, pool_cfg)
         self._pool_handle = await self.pool_open_pool(self._pool_name, self._pool_config)
+        self._logger.info("_init_pool done")
 
     async def _wallet_init(self, w_key):
+        self._logger.info("_wallet_init {}".format(w_key))
         self._wallet_name = "{}_wallet".format(self._pool_name)
         wallet_credential = json.dumps({"key": w_key})
         wallet_config = json.dumps({"id": self._wallet_name})
         await self.wallet_create_wallet(wallet_config, wallet_credential)
         self._wallet_handle = await self.wallet_open_wallet(wallet_config, wallet_credential)
+        self._logger.info("_wallet_init done")
 
     async def _did_init(self, seed):
+        self._logger.info("_did_init {}".format(seed))
         self._test_did, self._test_verk = await self.did_create_my_did(
             self._wallet_handle, json.dumps({'seed': seed[0]}))
+        self._logger.info("_did_init done")
 
     async def _pre_init(self):
         pass
@@ -113,6 +113,7 @@ class LoadClient:
         return {"max_cred_num": self._batch_size}
 
     async def run_test(self, genesis_path, seed, w_key):
+        self._logger.info("run_test genesis_path {}, seed {}, w_key {}".format(genesis_path, seed, w_key))
         try:
             await self._pre_init()
 
@@ -122,27 +123,32 @@ class LoadClient:
 
             await self._post_init()
 
+            self._logger.info("call _req_generator.on_pool_create")
             await self._req_generator.on_pool_create(self._pool_handle, self._wallet_handle, self._test_did,
                                                      self.ledger_sign_req, self.ledger_submit,
                                                      **self._on_pool_create_ext_params())
         except Exception as ex:
-            self.msg("{} run_test error {}", self._name, ex)
+            self._logger.exception("run_test error {} stopping...".format(ex))
             self._loop.stop()
             return
 
+        self._logger.info("call pregen_reqs")
         await self.pregen_reqs()
 
+        self._logger.info("send ClientReady")
         try:
             self._pipe_conn.send(ClientReady())
         except Exception as e:
-            print("{} Ready send error {}".format(self._name, e))
+            self._logger.exception("Ready send error {}".format(e))
             raise e
 
     def _on_ClientRun(self, cln_run):
+        self._logger.debug("_on_ClientRun _send_mode {}".format(self._send_mode))
         if self._send_mode == LoadClient.SendTime:
             self._loop.call_soon(self.req_send)
 
     def _on_ClientSend(self, cln_snd):
+        self._logger.debug("_on_ClientSend _send_mode {}".format(self._send_mode))
         if self._send_mode == LoadClient.SendSync:
             self.req_send(cln_snd.cnt)
 
@@ -150,6 +156,7 @@ class LoadClient:
         force_close = False
         try:
             flag = self._pipe_conn.recv()
+            self._logger.debug("read_cb {}".format(flag))
             if isinstance(flag, ClientStop):
                 if self._closing is False:
                     force_close = True
@@ -161,22 +168,22 @@ class LoadClient:
             elif isinstance(flag, ClientSend):
                 self._on_ClientSend(flag)
         except Exception as e:
-            self.msg("{} Error {}", self._name, e)
+            self._logger.exception("Error {}".format(e))
             force_close = True
         if force_close:
             self._loop.create_task(self.stop_test())
 
     async def gen_signed_req(self):
-        self._logger.info("gen_signed_req")
+        self._logger.debug("gen_signed_req")
         if self._closing is True:
             return
         try:
             req_data, req = await self._req_generator.generate_request(self._test_did)
         except NoReqDataAvailableException:
-            self.msg("{} | Cannot generate request since no req data are available.", datetime.now())
+            self._logger.warning("Cannot generate request since no req data are available.")
             return
         except Exception as e:
-            self.msg("{} generate req error {}", self._name, e)
+            self._logger.exception("generate req error {}".format(e))
             self._loop.stop()
             raise e
         try:
@@ -210,7 +217,7 @@ class LoadClient:
                 try:
                     await self.gen_signed_req()
                 except NoReqDataAvailableException:
-                    self.msg("{} cannot prepare more reqs. Done {}/{}", self._name, i, self._buff_reqs)
+                    self._logger.warning("cannot prepare more reqs. Done {}/{}".format(i, self._buff_reqs))
                     return
 
     def gen_reqs(self):
@@ -245,7 +252,7 @@ class LoadClient:
         try:
             self._pipe_conn.send(st)
         except Exception as e:
-            print("{} stat send error {}".format(self._name, e))
+            self._logger.exception("stat send error {}".format(e))
             raise e
 
     def req_send(self, cnt: int = None):
@@ -258,7 +265,7 @@ class LoadClient:
         to_snd = cnt or self._batch_size
 
         if len(self._load_client_reqs) < to_snd:
-            self.msg("WARNING need to send {}, but have {}", to_snd, len(self._load_client_reqs))
+            self._logger.warning("Need to send {}, but have {}".format(to_snd, len(self._load_client_reqs)))
 
         for i in range(min(len(self._load_client_reqs), to_snd)):
             req_data, req = self._load_client_reqs.pop()
@@ -267,25 +274,29 @@ class LoadClient:
             self._send_q.append(sender)
 
     async def stop_test(self):
+        self._logger.info("stop_test...")
         self._closing = True
         if len(self._send_q) > 0:
             await asyncio.gather(*self._send_q, return_exceptions=True)
         if len(self._gen_q) > 0:
             await asyncio.gather(*self._gen_q, return_exceptions=True)
-
+        self._logger.info("stopping queues done")
         try:
             if self._wallet_handle is not None:
                 await self.wallet_close(self._wallet_handle)
+            self._logger.info("wallet closed")
         except Exception as e:
-            self.msg("{} close_wallet exception: {}", self._name, e)
+            self._logger.exception("close_wallet exception: {}".format(e))
         try:
             if self._pool_handle is not None:
                 await self.pool_close_pool(self._pool_handle)
+            self._logger.info("pool closed")
         except Exception as e:
-            self.msg("{} close_pool_ledger exception: {}", self._name, e)
+            self._logger.exception("close_pool_ledger exception: {}".format(e))
 
         self._loop.call_soon_threadsafe(self._loop.stop)
 
+        self._logger.info("looper stopped")
         dirs_to_dlt = []
         if self._wallet_name is not None and self._wallet_name != "":
             dirs_to_dlt.append(os.path.join(os.path.expanduser("~/.indy_client/wallet"), self._wallet_name))
@@ -295,6 +306,7 @@ class LoadClient:
         for d in dirs_to_dlt:
             if os.path.isdir(d):
                 shutil.rmtree(d, ignore_errors=True)
+        self._logger.info("dirs {} deleted".format(dirs_to_dlt))
 
     @classmethod
     def run(cls, name, genesis_path, pipe_conn, seed, batch_size, batch_rate,
@@ -304,12 +316,14 @@ class LoadClient:
             logger_init(log_dir, "{}.log".format(name), log_lvl)
             signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+        logging.getLogger(name).info("starting")
+
         exts = {}
         if ext_set and isinstance(ext_set, str):
             try:
                 exts = json.loads(ext_set)
             except Exception as e:
-                print("{} parse ext settings error {}".format(name, e))
+                logging.getLogger(name).warning("{} parse ext settings error {}".format(name, e))
                 exts = {}
 
         cln = cls(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **exts)
@@ -317,6 +331,8 @@ class LoadClient:
             asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
             cln._loop.run_forever()
         except Exception as e:
-            print("{} running error {}".format(cln._name, e))
+            logging.getLogger(name).exception("running error {}".format(e))
         stat = cln._stat.dump_stat(dump_all=True)
+
+        logging.getLogger(name).info("stopped")
         return stat

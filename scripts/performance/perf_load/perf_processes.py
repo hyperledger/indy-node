@@ -14,8 +14,8 @@ from datetime import datetime
 import yaml
 import logging
 
-from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend, ClientMsg
-from perf_load.perf_utils import check_fs, check_seed, logger_init
+from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend
+from perf_load.perf_utils import check_fs, check_seed, logger_init, SCRIPT_VERSION
 from perf_load.perf_gen_req_parser import ReqTypeParser
 from perf_load.perf_client import LoadClient
 from perf_load.perf_client_runner import ClientRunner
@@ -126,17 +126,18 @@ class LoadRunner:
                 raise RuntimeError("pool_config param is ill-formed JSON: {}".format(ex))
 
         test_name = "load_test_{}".format(datetime.now().strftime("%Y%m%d_%H%M%S"))
-        self._out_file = self.prepare_fs(out_dir, test_name, out_file)
         self._log_dir = os.path.join(out_dir, test_name)
         self._log_lvl = log_lvl
         logger_init(self._log_dir, "{}.log".format(test_name), self._log_lvl)
         self._logger = logging.getLogger(__name__)
+        self._out_file = self.prepare_fs(out_dir, test_name, out_file)
 
     def process_reqs(self, stat, name: str = ""):
         assert self._failed_f
         assert self._total_f
         assert self._succ_f
         assert self._nacked_f
+        self._logger.debug("process_reqs stat {}, name {}".format(stat, name))
         if not isinstance(stat, dict):
             return
         reqs = stat.get("reqs", [])
@@ -146,6 +147,7 @@ class LoadRunner:
         fails = []
         for (r_id, r_data) in reqs:
             # ["client", "label", "id", "status", "client_preparing", "client_prepared", "client_sent", "client_reply", "server_reply"]
+            self._logger.debug("process_reqs r_id {}, r_data {}".format(r_id, r_data))
             status = r_data.get("status", "")
             tot.append(self._value_separator.join(
                 [name, r_data.get("label", ""), str(r_id), status,
@@ -172,37 +174,45 @@ class LoadRunner:
             self._failed_f.write("\n".join(fails + [""]))
 
     def sig_handler(self, sig):
+        self._logger.debug("sig_handler sig {}".format(sig))
         for prc, cln in self._clients.items():
+            self._logger.debug("sig_handler prc {} cln {}".format(prc, cln))
             try:
                 if not cln.is_finished() and cln.conn:
                     cln.conn.send(ClientStop())
                 if sig == signal.SIGTERM:
                     prc.cancel()
             except Exception as e:
-                print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
+                self._logger.exception("Sent stop to client {} error {}".format(cln.name, e))
 
     def _tick_all(self):
+        self._logger.debug("_tick_all")
         self._loop.call_later(self._batch_rate, self._tick_all)
         for cln in self._clients.values():
+            self._logger.debug("_tick_all cln {}".format(cln))
             try:
                 if cln.status == ClientRunner.ClientRun and cln.conn:
                     cln.conn.send(ClientSend(self._batch_size))
             except Exception as e:
-                print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
+                self._logger.exception("Sent stop to client {} error {}".format(cln.name, e))
 
     def _tick_one(self, idx: int = 0):
         i = idx % len(self._clients)
+        self._logger.debug("_tick_one idx {} i {}".format(idx, i))
         self._loop.call_later(self._batch_rate, self._tick_one, i + 1)
         key = list(self._clients)[i]
         cln = self._clients[key]
+        self._logger.debug("_tick_one cln {}".format(cln))
         try:
             if cln.status == ClientRunner.ClientRun and cln.conn:
                 cln.conn.send(ClientSend(self._batch_size))
         except Exception as e:
-            print("Sent stop to client {} error {}".format(cln.name, e), file=self._out_file)
+            self._logger.exception("Sent stop to client {} error {}".format(cln.name, e))
 
     def start_clients(self):
         to_start = [c for c in self._clients.values() if c.status == ClientRunner.ClientReady]
+        self._logger.debug("start_clients to_start {} _start_sync {} _sync_mode {}".
+                           format(to_start, self._start_sync, self._sync_mode))
         if self._start_sync and len(to_start) != len(self._clients):
             return
         for cln in to_start:
@@ -217,33 +227,35 @@ class LoadRunner:
         self.schedule_stop()
 
     def request_stat(self):
+        self._logger.debug("request_stat")
         for cln in self._clients.values():
             cln.req_stats()
 
     def read_client_cb(self, prc):
+        self._logger.debug("read_client_cb prc {}".format(prc))
         try:
             r_data = self._clients[prc].conn.recv()
+            self._logger.debug("read_client_cb r_data {}".format(r_data))
             if isinstance(r_data, dict):
                 self._clients[prc].refresh_stat(r_data)
                 self.process_reqs(r_data, self._clients[prc].name)
             elif isinstance(r_data, ClientReady):
                 self._clients[prc].status = ClientRunner.ClientReady
                 self.start_clients()
-            elif isinstance(r_data, ClientMsg):
-                print("{} : {}".format(self._clients[prc].name, r_data.msg), file=self._out_file)
             else:
-                print("Recv garbage {} from {}".format(r_data, self._clients[prc].name), file=self._out_file)
+                self._logger.warning("Recv garbage {} from {}".format(r_data, self._clients[prc].name))
         except Exception as e:
-            print("{} read_client_cb error {}".format(self._clients[prc].name, e), file=self._out_file)
-            # self._clients[prc].conn = None
+            self._logger.exception("{} read_client_cb error {}".format(self._clients[prc].name, e))
 
     def client_done(self, client):
+        self._logger.debug("client_done client {}".format(client))
         try:
             last_stat = client.result()
+            self._logger.debug("client_done last_stat {}".format(last_stat))
             self._clients[client].refresh_stat(last_stat)
             self.process_reqs(last_stat, self._clients[client].name)
         except Exception as e:
-            print("Client Error", e, file=self._out_file)
+            self._logger.exception("Client Error {}".format(e))
 
         self._clients[client].stop_client()
         self._loop.remove_reader(self._clients[client].conn)
@@ -254,6 +266,7 @@ class LoadRunner:
             self._loop.call_soon_threadsafe(self._loop.stop)
 
     def get_refresh_str(self):
+        self._logger.debug("get_refresh_str")
         clients = 0
         total_sent = 0
         total_succ = 0
@@ -275,6 +288,8 @@ class LoadRunner:
         return print_str
 
     def prepare_fs(self, out_dir, test_dir_name, out_file):
+        self._logger.debug("prepare_fs out_dir {}, test_dir_name {}, out_file {}".
+                           format(out_dir, test_dir_name, out_file))
         self._out_dir = os.path.expanduser(os.path.join(out_dir, test_dir_name))
         if not os.path.exists(self._out_dir):
             os.makedirs(self._out_dir)
@@ -304,6 +319,7 @@ class LoadRunner:
         return ret_out
 
     def close_fs(self):
+        self._logger.debug("close_fs")
         assert self._failed_f
         assert self._total_f
         assert self._succ_f
@@ -316,6 +332,7 @@ class LoadRunner:
             self._out_file.close()
 
     def screen_stat(self):
+        self._logger.debug("close_fs")
         ends = "\n" if self._out_file != sys.stdout else "\r"
         print(self.get_refresh_str(), end=ends, file=self._out_file)
         self.request_stat()
@@ -328,11 +345,12 @@ class LoadRunner:
         self._loop.call_later(self._refresh_rate, self.screen_stat)
 
     def schedule_stop(self):
+        self._logger.debug("schedule_stop _stop_sec".format(self._stop_sec))
         if self._stop_sec > 0:
             self._loop.call_later(self._stop_sec, self.sig_handler, signal.SIGINT)
 
     def load_run(self):
-        self._logger.info("load_run")
+        print("Version                  ", SCRIPT_VERSION, file=self._out_file)
         print("Number of client         ", self._proc_count, file=self._out_file)
         print("Path to genesis txns file", self._genesis_path, file=self._out_file)
         print("Seed                     ", self._seed, file=self._out_file)
@@ -358,7 +376,8 @@ class LoadRunner:
             self._batch_size = 1
             self._buff_req = 0
 
-        self._logger.info("load_run set sig handlers")
+        self._logger.info("load_run version {} params {}".format(SCRIPT_VERSION, self.__dict__))
+
         self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
         self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
 
@@ -379,8 +398,10 @@ class LoadRunner:
 
         self.screen_stat()
 
+        self._logger.info("load_run all clients created")
         self._loop.run_forever()
 
+        self._logger.info("load_run stopping...")
         self._loop.remove_signal_handler(signal.SIGTERM)
         self._loop.remove_signal_handler(signal.SIGINT)
 
@@ -388,6 +409,7 @@ class LoadRunner:
         print("DONE At", datetime.now(), file=self._out_file)
         print(self.get_refresh_str(), file=self._out_file)
         self.close_fs()
+        self._logger.info("load_run stopped")
 
 
 if __name__ == '__main__':
