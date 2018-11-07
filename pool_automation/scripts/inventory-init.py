@@ -108,19 +108,6 @@ def _dump_defaults(roles):
             print(yaml.safe_dump(params['defaults'], default_flow_style=False))
 
 
-def _dump_config(config_path, config_vars, default_vars):
-    """Dumps user specified config and commented out defaults"""
-
-    # TODO consider to use Ansible's 'to_nice_yaml' from
-    # ansible.plugins.filter.core.py BUT it's not a public API
-    with open(config_path, "w") as _f:
-        _f.write('---\n')
-        if config_vars:
-            yaml.safe_dump(config_vars, _f, default_flow_style=False)
-        _s = yaml.safe_dump(default_vars, default_flow_style=False)
-        _f.write(''.join(["\n# DEFAULTS\n\n"] + ["#{}".format(_l) for _l in _s.splitlines(True)]))
-
-
 def _specify_localhost(inventory_dir):
     localhost_spec = {
         'all': {
@@ -164,19 +151,30 @@ def main():
         os.makedirs(group_vars_dir)
 
     # dump configs
-    for role, params in roles.iteritems():
-        if 'defaults' not in params:
-            continue
+    # TODO consider to use Ansible's 'to_nice_yaml' from
+    #      ansible.plugins.filter.core.py BUT it's not a public API
+    with open("{}/config.yml".format(group_vars_dir), "w") as _f:
+        _f.write('---\n')
 
-        # construct user specified config parameters
-        config = {}
-        for _p in params['defaults'].keys():
-            _arg_name = "{}.{}".format(role, _p)
-            if args.get(_arg_name):
-                config[_p] = args[_arg_name]
+        for role, params in roles.iteritems():
+            if 'defaults' not in params:
+                continue
 
-        _dump_config("{}/{}_config.yml".format(group_vars_dir, role), config, params['defaults'])
+            _f.write("\n# {0} {1} {0}\n".format('='*20, role))
+            # construct user specified config parameters
+            config = {}
+            for _p in params['defaults'].keys():
+                _arg_name = "{}.{}".format(role, _p)
+                if args.get(_arg_name):
+                    config[_p] = args[_arg_name]
 
+            if config:
+                yaml.safe_dump(config, _f, default_flow_style=False)
+
+            _s = yaml.safe_dump(params['defaults'], default_flow_style=False)
+            _f.write(''.join(["\n# defaults\n\n"] + ["#{}".format(_l) for _l in _s.splitlines(True)]))
+
+    # add inventory file for localhost
     _specify_localhost(args['inventory-dir'])
 
 
