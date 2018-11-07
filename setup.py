@@ -56,7 +56,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.6.578',
+    install_requires=['indy-plenum-dev==1.6.579',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator==0.4.0'],
@@ -67,7 +67,6 @@ setup(
     tests_require=tests_require,
     scripts=['scripts/indy',
              'scripts/add_new_node',
-             'scripts/reset_client',
              'scripts/start_indy_node',
              'scripts/start_node_control_tool',
              'scripts/clear_node.py',

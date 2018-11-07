@@ -1,8 +1,25 @@
 import subprocess
 import shutil
+import codecs
+import locale
 
 from stp_core.common.log import getlogger
 from indy_common.util import compose_cmd
+
+
+# Package manager command output could contain some utf-8 symbols
+# to handle such a case automatic stream parsing is prohibited,
+# decode error handler is added, proper decoder is selected
+
+# copied from validator-info from plenum
+def decode_err_handler(error):
+    length = error.end - error.start
+    return length * ' ', error.end
+
+
+# copied from validator-info from plenum
+codecs.register_error('decode_errors', decode_err_handler)
+
 
 logger = getlogger()
 TIMEOUT = 300
@@ -12,41 +29,41 @@ MAX_DEPS_DEPTH = 6
 class NodeControlUtil:
     @classmethod
     def run_shell_command(cls, command, timeout):
-        return subprocess.run(command, shell=True, check=True, universal_newlines=True,
-                              stdout=subprocess.PIPE, timeout=timeout)
-
-    @classmethod
-    def run_shell_script(cls, command, timeout):
-        return subprocess.run(command, shell=True, timeout=timeout)
+        try:
+            ret = subprocess.run(command, shell=True, check=False, stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE, timeout=timeout)
+        except Exception as ex:
+            raise Exception("command {} failed with {}".format(command, ex))
+        if ret.returncode != 0:
+            raise Exception('command {} returned {}'.format(command, ret.returncode))
+        if ret.stdout:
+            return ret.stdout.decode(locale.getpreferredencoding(), 'decode_errors').strip()
+        return ""
 
     @classmethod
     def _get_curr_info(cls, package):
         cmd = compose_cmd(['dpkg', '-s', package])
-        try:
-            ret = cls.run_shell_command(cmd, TIMEOUT)
-        except Exception as ex:
-            return ""
-        if ret.returncode != 0:
-            return ""
-        return ret.stdout.strip()
+        return cls.run_shell_command(cmd, TIMEOUT)
+
+    @classmethod
+    def _parse_deps(cls, deps: str):
+        ret = []
+        deps = deps.replace("|", ",")
+        pkgs = deps.split(",")
+        for pkg in pkgs:
+            if not pkg:
+                continue
+            name_ver = pkg.strip(" ").split(" ", maxsplit=1)
+            name = name_ver[0].strip(" \n")
+            if len(name_ver) == 1:
+                ret.append(name)
+            else:
+                ver = name_ver[1].strip("()<>= \n")
+                ret.append("{}={}".format(name, ver))
+        return ret
 
     @classmethod
     def _parse_version_deps_from_pkt_mgr_output(cls, output):
-        def _parse_deps(deps: str):
-            ret = []
-            pkgs = deps.split(",")
-            for pkg in pkgs:
-                if not pkg:
-                    continue
-                name_ver = pkg.strip(" ").split(" ", maxsplit=1)
-                name = name_ver[0].strip(" \n")
-                if len(name_ver) == 1:
-                    ret.append(name)
-                else:
-                    ver = name_ver[1].strip("()<>= \n")
-                    ret.append("{}={}".format(name, ver))
-            return ret
-
         out_lines = output.split("\n")
         ver = None
         ext_deps = []
@@ -55,7 +72,7 @@ class NodeControlUtil:
             if act_line.startswith("Version:"):
                 ver = act_line.split(":", maxsplit=1)[1].strip(" \n")
             if act_line.startswith("Depends:"):
-                ext_deps = _parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
+                ext_deps += cls._parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
         return ver, ext_deps
 
     @classmethod
@@ -64,34 +81,40 @@ class NodeControlUtil:
         return cls._parse_version_deps_from_pkt_mgr_output(package_info)
 
     @classmethod
-    def _get_info_from_package_manager(cls, package):
-        cmd = compose_cmd(['apt-cache', 'show', package])
-        try:
-            ret = cls.run_shell_command(cmd, TIMEOUT)
-        except Exception as ex:
-            return ""
-        if ret.returncode != 0:
-            return ""
-        return ret.stdout.strip()
+    def _get_info_from_package_manager(cls, *package):
+        cmd_arg = " ".join(list(package))
+        cmd = compose_cmd(['apt-cache', 'show', cmd_arg])
+        return cls.run_shell_command(cmd, TIMEOUT)
 
     @classmethod
     def update_package_cache(cls):
         cmd = compose_cmd(['apt', 'update'])
-        ret = cls.run_shell_command(cmd, TIMEOUT)
-        if ret.returncode != 0:
-            raise Exception('cannot update package cache since {} returned {}'.format(cmd, ret.returncode))
-        return ret.stdout.strip()
+        return cls.run_shell_command(cmd, TIMEOUT)
 
     @classmethod
-    def get_deps_tree(cls, package, depth=0):
-        ret = [package]
+    def get_deps_tree(cls, *package, depth=0):
+        ret = list(set(package))
         if depth < MAX_DEPS_DEPTH:
-            package_info = cls._get_info_from_package_manager(package)
+            package_info = cls._get_info_from_package_manager(*ret)
             _, deps = cls._parse_version_deps_from_pkt_mgr_output(package_info)
             deps_deps = []
-            for dep in deps:
-                deps_deps.append(cls.get_deps_tree(dep, depth=depth + 1))
-            ret.append(deps)
+            deps = list(set(deps) - set(ret))
+            deps_deps.append(cls.get_deps_tree(*deps, depth=depth + 1))
+
+            ret.append(deps_deps)
+        return ret
+
+    @classmethod
+    def get_deps_tree_filtered(cls, *package, filter_list=[], depth=0):
+        ret = list(set(package))
+        filter_list = [f for f in filter_list if not list(filter(lambda x: f in x, ret))]
+        if depth < MAX_DEPS_DEPTH and filter_list:
+            package_info = cls._get_info_from_package_manager(*ret)
+            _, deps = cls._parse_version_deps_from_pkt_mgr_output(package_info)
+            deps_deps = []
+            deps = list(set(deps) - set(ret))
+            deps_deps.append(cls.get_deps_tree_filtered(*deps, filter_list=filter_list, depth=depth + 1))
+
             ret.append(deps_deps)
         return ret
 
@@ -107,14 +130,9 @@ class NodeControlUtil:
     def get_sys_holds(cls):
         if shutil.which("apt-mark"):
             cmd = compose_cmd(['apt-mark', 'showhold'])
-            try:
-                ret = cls.run_shell_command(cmd, TIMEOUT)
-            except Exception as ex:
-                return []
-            if ret.returncode != 0:
-                return []
+            ret = cls.run_shell_command(cmd, TIMEOUT)
 
-            hlds = ret.stdout.strip().split("\n")
+            hlds = ret.strip().split("\n")
             return [h for h in hlds if h]
         else:
             logger.info('apt-mark not found. Assume holds is empty.')
