@@ -109,8 +109,8 @@ def manage_instances(regions, params, count):
     valid_region_ids = valid_instances(regions, count)
 
     for region in AWS_REGIONS:
-        _terminated = []
-        _launched = []
+        terminated = []
+        launched = []
 
         ec2 = boto3.resource('ec2', region_name=region)
         ec2cl = boto3.client('ec2', region_name=region)
@@ -122,10 +122,10 @@ def manage_instances(regions, params, count):
             if tag_id in valid_ids:
                 valid_ids.remove(tag_id)
                 hosts.append(inst)
-                _launched.append(inst.id)
+                launched.append(inst.id)
             else:
                 inst.terminate()
-                _terminated.append(inst.id)
+                terminated.append(inst.id)
                 changed = True
 
         if valid_ids:
@@ -133,21 +133,21 @@ def manage_instances(regions, params, count):
             for inst, tag_id in zip(instances, valid_ids):
                 inst.create_tags(Tags=[{'Key': 'id', 'Value': tag_id}])
                 hosts.append(inst)
-                _launched.append(inst.id)
+                launched.append(inst.id)
                 changed = True
 
-        if _terminated:
+        if terminated:
             waiters.append(AWSWaiterInfo(
                 waiter=ec2cl.get_waiter('instance_terminated'),
-                kwargs={'InstanceIds': list(_terminated)}
+                kwargs={'InstanceIds': list(terminated)}
             ))
 
-        if _launched:
+        if launched:
             # consider to use get_waiter('instance_status_ok')
             # if 'running' is not enough in any circumstances
             waiters.append(AWSWaiterInfo(
                 waiter=ec2cl.get_waiter('instance_running'),
-                kwargs={'InstanceIds': list(_launched)}
+                kwargs={'InstanceIds': list(launched)}
             ))
 
     for waiter_i in waiters:
