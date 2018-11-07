@@ -177,7 +177,8 @@ class LoadClient:
             self._loop.stop()
             raise e
         try:
-            sig_req = await self.ledger_sign_req(self._wallet_handle, self._test_did, req)
+            req_did = self._req_generator.req_did() or self._test_did
+            sig_req = await self.ledger_sign_req(self._wallet_handle, req_did, req)
             self._stat.signed(req_data)
             self._load_client_reqs.append((req_data, sig_req))
         except Exception as e:

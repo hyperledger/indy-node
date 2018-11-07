@@ -6,6 +6,8 @@ from perf_load.perf_req_gen_attrib import RGAttrib, RGGetAttrib
 from perf_load.perf_req_gen_definition import RGGetDefinition, RGDefinition
 from perf_load.perf_req_gen_revoc import RGDefRevoc, RGGetDefRevoc, RGEntryRevoc, RGGetEntryRevoc, RGGetRevocRegDelta
 from perf_load.perf_req_gen_payment import RGGetPaymentSources, RGPayment, RGVerifyPayment
+from perf_load.perf_req_gen_cfg_writes import RGConfigChangeState
+from perf_load.perf_req_gen_demoted_node import RGPoolNewDemotedNode
 
 
 class ReqTypeParser:
@@ -14,7 +16,7 @@ class ReqTypeParser:
          "revoc_reg_entry": RGEntryRevoc, "get_nym": RGGetNym, "get_attrib": RGGetAttrib, "get_schema": RGGetSchema,
          "get_cred_def": RGGetDefinition, "get_revoc_reg_def": RGGetDefRevoc, "get_revoc_reg": RGGetEntryRevoc,
          "get_revoc_reg_delta": RGGetRevocRegDelta, "get_payment_sources": RGGetPaymentSources, "payment": RGPayment,
-         "verify_payment": RGVerifyPayment}
+         "verify_payment": RGVerifyPayment, "cfg_writes": RGConfigChangeState, "demoted_node": RGPoolNewDemotedNode}
 
     @classmethod
     def supported_requests(cls):

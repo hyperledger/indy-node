@@ -160,7 +160,7 @@ def sendUpgradeMessage(version, pkg_name: str = APP_NAME):
 def nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout):
     ret = type("", (), {})()
     ret.returncode = 0
-    ret.stdout = stdout
+    ret.stdout = stdout if isinstance(stdout, bytes) else stdout.encode()
     tool.base_dir = tdir
     tool.indy_dir = os.path.join(tool.base_dir, '.indy')
     tool.tmp_dir = os.path.join(tool.base_dir, '.indy_tmp')
