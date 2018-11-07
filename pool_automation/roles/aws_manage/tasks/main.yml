@@ -1,0 +1,23 @@
+---
+- name: Pre-Up
+  include_tasks: "{{ role_path }}/tasks/pre_up.yml"
+  when: instance_count > 0
+
+- name: Manage instances
+  stateful_set:
+    regions: "{{ aws_regions }}"
+    namespace: "{{ tag_namespace }}"
+    role: "{{ tag_role }}"
+    key_name: "{{ aws_keyname }}"
+    group: "{{ aws_group }}"    
+    instance_type: "{{ aws_type }}"
+    instance_count: "{{ instance_count }}"
+  register: ec2
+
+- name: Post-Up
+  include_tasks: "{{ role_path }}/tasks/post_up.yml"
+  when: instance_count > 0
+
+- name: Post-Down
+  include_tasks: "{{ role_path }}/tasks/post_down.yml"
+  when: instance_count == 0

@@ -1,9 +1,8 @@
+from plenum.common.util import randomString, hexToFriendly
 from plenum.common.constants import SERVICES, VALIDATOR, TARGET_NYM, DATA
-from indy_common.roles import Roles
-from stp_core.network.port_dispenser import genHa
+from plenum.common.txn_util import get_payload_data
 
-import pytest
-
+from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_add_new_node, demote_node
 from indy_client.test.cli.helper import doSendNodeCmd
 
 
@@ -33,45 +32,40 @@ def testSuspendNode(be, do, trusteeCli, newNodeAdded):
                   expMsgs=['node already has the same data as requested'])
 
 
-@pytest.mark.skip(reason='INDY-133. Broken compatibility')
-def testSuspendNodeWhichWasNeverActive(be, do, trusteeCli, nymAddedOut,
-                                       poolNodesStarted, trusteeMap):
+def testDemoteNodeWhichWasNeverActive(looper, nodeSet, sdk_pool_handle,
+                                      sdk_wallet_trustee, tdir, tconf,
+                                      allPluginsPath):
     """
     Add a node without services field and check that the ledger does not
-    contain the `services` field and check that it can be blacklisted and
+    contain the `services` field and check that it can be demoted and
     the ledger has `services` as empty list
     """
-    newStewardSeed = '0000000000000000000KellySteward2'
-    newStewardIdr = 'DqCx7RFEpSUMZbV2mH89XPH6JT3jMvDNU55NTnBHsQCs'
-    be(trusteeCli)
-    do('send NYM dest={{remote}} role={role}'.format(
-        role=Roles.STEWARD.name),
-       within=5,
-       expect=nymAddedOut, mapper={'remote': newStewardIdr})
-    do('new key with seed {}'.format(newStewardSeed))
-    nport, cport = (_[1] for _ in genHa(2))
-    nodeId = '6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G'
-    newNodeVals = {
-        'newNodeIdr': nodeId,
-        'newNodeData': {'client_port': cport,
-                        'client_ip': '127.0.0.1',
-                        'alias': 'Node6',
-                        'node_ip': '127.0.0.1',
-                        'node_port': nport
-                        }
-    }
-    doSendNodeCmd(do, newNodeVals)
+    alias = randomString(5)
+    new_node_name = "Node-" + alias
+    sdk_wallet_steward = sdk_add_new_nym(looper,
+                                         sdk_pool_handle,
+                                         sdk_wallet_trustee,
+                                         alias="Steward-" + alias,
+                                         role='STEWARD')
+    new_node = sdk_add_new_node(looper,
+                                sdk_pool_handle,
+                                sdk_wallet_steward,
+                                new_node_name,
+                                tdir,
+                                tconf,
+                                allPluginsPath,
+                                services=None)
 
-    for node in poolNodesStarted.nodes.values():
+    for node in nodeSet:
         txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
-        assert txn[TARGET_NYM] == nodeId
-        assert SERVICES not in txn[DATA]
+        txn_data = get_payload_data(txn)
+        assert txn_data[TARGET_NYM] == hexToFriendly(new_node.nodestack.verhex)
+        assert SERVICES not in txn_data[DATA]
 
-    do('new key with seed {}'.format(trusteeMap['trusteeSeed']))
-    newNodeVals['newNodeData'][SERVICES] = []
-    doSendNodeCmd(do, newNodeVals)
+    demote_node(looper, sdk_wallet_steward, sdk_pool_handle, new_node)
 
-    for node in poolNodesStarted.nodes.values():
+    for node in nodeSet:
         txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
-        assert txn[TARGET_NYM] == nodeId
-        assert SERVICES in txn[DATA] and txn[DATA][SERVICES] == []
+        txn_data = get_payload_data(txn)
+        assert txn_data[TARGET_NYM] == hexToFriendly(new_node.nodestack.verhex)
+        assert SERVICES in txn_data[DATA] and txn_data[DATA][SERVICES] == []

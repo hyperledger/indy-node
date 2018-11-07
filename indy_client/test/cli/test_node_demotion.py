@@ -1,5 +1,6 @@
 import pytest
 from plenum.common.signer_did import DidSigner
+from plenum.common.txn_util import get_payload_data
 from stp_core.crypto.util import randomSeed
 from indy_client.test.cli.helper import addAgent
 from plenum.common.constants import SERVICES, VALIDATOR, TARGET_NYM, DATA
@@ -34,8 +35,9 @@ def test_steward_can_promote_and_demote_own_node(
 
     for node in poolNodesStarted.nodes.values():
         txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
-        assert txn[TARGET_NYM] == newNodeVals['newNodeIdr']
-        assert SERVICES in txn[DATA] and txn[DATA][SERVICES] == []
+        txn_data = get_payload_data(txn)
+        assert txn_data[TARGET_NYM] == newNodeVals['newNodeIdr']
+        assert SERVICES in txn_data[DATA] and txn_data[DATA][SERVICES] == []
 
     newNodeVals['newNodeData'][SERVICES] = [VALIDATOR]
 
@@ -44,5 +46,6 @@ def test_steward_can_promote_and_demote_own_node(
 
     for node in poolNodesStarted.nodes.values():
         txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
-        assert txn[TARGET_NYM] == newNodeVals['newNodeIdr']
-        assert SERVICES in txn[DATA] and txn[DATA][SERVICES] == [VALIDATOR]
+        txn_data = get_payload_data(txn)
+        assert txn_data[TARGET_NYM] == newNodeVals['newNodeIdr']
+        assert SERVICES in txn_data[DATA] and txn_data[DATA][SERVICES] == [VALIDATOR]

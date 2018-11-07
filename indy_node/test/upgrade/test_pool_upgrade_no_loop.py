@@ -5,7 +5,7 @@ from stp_core.loop.eventually import eventually
 from plenum.common.constants import VERSION
 
 from indy_node.test.upgrade.helper import bumpedVersion, checkUpgradeScheduled, \
-    check_no_loop, sdk_ensure_upgrade_sent
+    check_no_loop, sdk_ensure_upgrade_sent, clear_aq_stash
 from indy_node.server.upgrade_log import UpgradeLog
 import indy_node
 
@@ -13,9 +13,11 @@ import indy_node
 def test_upgrade_does_not_get_into_loop(looper, tconf, nodeSet,
                                         validUpgrade, sdk_pool_handle,
                                         sdk_wallet_trustee, monkeypatch):
-    new_version = bumpedVersion()
+    new_version = bumpedVersion(validUpgrade['version'])
     upgr1 = deepcopy(validUpgrade)
     upgr1[VERSION] = new_version
+
+    clear_aq_stash(nodeSet)
 
     # An upgrade scheduled, it should pass
     sdk_ensure_upgrade_sent(looper, sdk_pool_handle, sdk_wallet_trustee, upgr1)

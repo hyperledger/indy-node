@@ -1,8 +1,8 @@
 #!/bin/bash
 
 display_usage() {
-	echo -e "Usage:\t$0 <NODENAME> <NODEPORT> <CLIENTPORT> <TIMEZONE>"
-	echo -e "EXAMPLE: $0 Node1 9701 9702 /usr/share/zoneinfo/America/Denver"
+	echo -e "Usage:\t$0 <NODENAME> <NODEIP> <NODEPORT> <CLIENTIP> <CLIENTPORT> <TIMEZONE>"
+	echo -e "EXAMPLE: $0 Node1 0.0.0.0 9701 0.0.0.0 9702 /usr/share/zoneinfo/America/Denver"
 }
 
 # if less than one argument is supplied, display usage
@@ -13,9 +13,11 @@ then
 fi
 
 HOSTNAME=$1
-NODEPORT=$2
-CLIENTPORT=$3
-TIMEZONE=$4
+NODEIP=$2
+NODEPORT=$3
+CLIENTIP=$4
+CLIENTPORT=$5
+TIMEZONE=$6
 
 
 #--------------------------------------------------------
@@ -45,7 +47,7 @@ mv /tmp/indy_config.py /etc/indy/indy_config.py
 [[ $HOSTNAME =~ [^0-9]*([0-9]*) ]]
 NODENUM=${BASH_REMATCH[1]}
 echo "Setting Up Indy Node Number $NODENUM"
-su - indy -c "init_indy_node $HOSTNAME $NODEPORT $CLIENTPORT"  # set up /etc/indy/indy.env
+su - indy -c "init_indy_node $HOSTNAME $NODEIP $NODEPORT $CLIENTIP $CLIENTPORT"  # set up /etc/indy/indy.env
 su - indy -c "generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum $NODENUM --ips '10.20.30.201,10.20.30.202,10.20.30.203,10.20.30.204'"
 systemctl start indy-node
 systemctl enable indy-node
@@ -67,7 +69,7 @@ else
 fi
 chown indy:indy /etc/indy/indy_config.py
 echo "Setting Up Indy Node Number $NODENUM"
-su - indy -c "init_indy_node $HOSTNAME $NODEPORT $CLIENTPORT"  # set up /etc/indy/indy.env
+su - indy -c "init_indy_node $HOSTNAME $NODEIP $NODEPORT $CLIENTIP $CLIENTPORT"  # set up /etc/indy/indy.env
 su - indy -c "generate_indy_pool_transactions --nodes 4 --clients 4 --nodeNum $NODENUM --ips '10.20.30.201,10.20.30.202,10.20.30.203,10.20.30.204'"
 systemctl start indy-node
 systemctl enable indy-node

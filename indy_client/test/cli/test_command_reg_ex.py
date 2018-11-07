@@ -6,7 +6,7 @@ from plenum.test.cli.test_command_reg_ex import getMatchedVariables
 from prompt_toolkit.contrib.regular_languages.compiler import compile
 
 from indy_client.cli.helper import getNewClientGrams
-from indy_common.constants import REF
+from indy_common.constants import REF, CLAIM_DEF_SCHEMA_REF
 from indy_common.roles import Roles
 
 
@@ -132,17 +132,17 @@ def testAddAttrProverRegEx(grammar):
 def testSendClaimDefRegEx(grammar):
     matchedVars = getMatchedVariables(
         grammar, "send CLAIM_DEF ref=15 signature_type=CL")
-    from indy_common.constants import SIGNATURE_TYPE
+    from indy_common.constants import CLAIM_DEF_SIGNATURE_TYPE
     assertCliTokens(matchedVars, {
-        "send_claim_def": "send CLAIM_DEF", REF: "15", SIGNATURE_TYPE: "CL"})
+        "send_claim_def": "send CLAIM_DEF", CLAIM_DEF_SCHEMA_REF: "15", CLAIM_DEF_SIGNATURE_TYPE: "CL"})
 
 
 def test_send_get_claim_def_regex(grammar):
     matchedVars = getMatchedVariables(
         grammar, "send GET_CLAIM_DEF ref=15 signature_type=CL")
-    from indy_common.constants import SIGNATURE_TYPE
+    from indy_common.constants import CLAIM_DEF_SIGNATURE_TYPE
     assertCliTokens(matchedVars, {
-        "send_get_claim_def": "send GET_CLAIM_DEF", REF: "15", SIGNATURE_TYPE: "CL"})
+        "send_get_claim_def": "send GET_CLAIM_DEF", CLAIM_DEF_SCHEMA_REF: "15", CLAIM_DEF_SIGNATURE_TYPE: "CL"})
 
 
 def testShowFileCommandRegEx(grammar):

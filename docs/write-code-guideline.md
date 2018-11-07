@@ -1,4 +1,4 @@
-# Code quality requirements guideline
+﻿# Code quality requirements guideline
 
 Please make sure that you take into account the following items before sending a PR with the new code:
 
@@ -37,7 +37,7 @@ The current code is not perfect, so feel free to improve it.
 - Use classes instead of parallel arrays
 - Clear and not duplicated Utilities
 - Decomposition
-    - There are  functions and classes which are too long. For example class Node has more than 2000 lines of code, this complicates understanding of  logic.
+    - There are functions and classes which are too long. For example class Node has more than 2000 lines of code, this complicates understanding of  logic.
     - This can be solved by destructuring of such classes or functions on a smaller one by aggregation, composition and inheritance
 - No multiple enclosed if-elif-else statements
     - It’s hard to read the code containing multiple enclosed if-else statements

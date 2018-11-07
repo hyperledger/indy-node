@@ -1,0 +1,55 @@
+pool connect AS-01-02-steward-pool
+Pool "AS-01-02-steward-pool" has been connected
+
+wallet open AS-01-02-steward-wallet key=testkey
+Wallet "AS-01-02-steward-wallet" has been opened
+
+did use UAPL7pTFdHGCXS4MGU8Zqv
+Did "UAPL7pTFdHGCXS4MGU8Zqv" has been set as active
+
+ledger nym did=UAPL7pTFdHGCXS4MGU8Zqv verkey=~6m1fM2eoZ1ygsXgq8NLPGc
+Nym request has been sent to Ledger.
+Metadata:
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1523199097219969241 | 2018-04-08 14:51:37 |
++---------------------+---------------------+
+Data:
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| UAPL7pTFdHGCXS4MGU8Zqv | ~6m1fM2eoZ1ygsXgq8NLPGc | -    |
++------------------------+-------------------------+------+
+
+did new seed=0000000000000000000NewSteward122 metadata="new steward2"
+Did "UAPL7pTFdHGCXS4MGU8Zqv" has been created with "~6m1fM2eoZ1ygsXgq8NLPGc" verkey
+Metadata has been saved for DID "UAPL7pTFdHGCXS4MGU8Zqv"
+
+wallet close
+Wallet "AS-01-02-steward-wallet" has been closed
+
+pool disconnect
+Pool "AS-01-02-steward-pool" has been disconnected
+
+wallet list
++-------------------------+-----------------------+---------+
+| Name                    | Associated pool name  | Type    |
++-------------------------+-----------------------+---------+
+| AS-01-02-trustee-wallet | AS-01-02-trustee-pool | default |
++-------------------------+-----------------------+---------+
+| AS-01-02-steward-wallet | AS-01-02-steward-pool | default |
++-------------------------+-----------------------+---------+
+
+pool list
++-----------------------+
+| Pool                  |
++-----------------------+
+| AS-01-02-trustee-pool |
++-----------------------+
+| AS-01-02-steward-pool |
++-----------------------+
+
+exit
+
+Goodbye...

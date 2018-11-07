@@ -1,28 +1,23 @@
 import os
-import re
 import select
 import shutil
 import socket
-import subprocess
 from typing import List
 
-from indy_common.constants import ACTION, POOL_RESTART, POOL_UPGRADE, \
-    UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
+from indy_common.constants import UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
 from stp_core.common.log import getlogger
 
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper
 from indy_common.util import compose_cmd
-from indy_node.server.upgrader import Upgrader
 from indy_node.utils.migration_tool import migrate
+from indy_node.utils.node_control_utils import NodeControlUtil
 
 logger = getlogger()
 
 TIMEOUT = 300
 BACKUP_FORMAT = 'zip'
-DEPS = ['indy-plenum', 'indy-anoncreds', 'python3-indy-crypto']
 BACKUP_NUM = 10
-PACKAGES_TO_HOLD = 'indy-anoncreds indy-plenum indy-node python3-indy-crypto'
 TMP_DIR = '/tmp/.indy_tmp'
 
 
@@ -34,7 +29,6 @@ class NodeControlTool:
             timeout: int = TIMEOUT,
             backup_format: str = BACKUP_FORMAT,
             test_mode: bool = False,
-            deps: List[str] = DEPS,
             backup_target: str = None,
             files_to_preserve: List[str] = None,
             backup_dir: str = None,
@@ -43,8 +37,11 @@ class NodeControlTool:
             hold_ext: str = '',
             config=None):
         self.config = config or getConfig()
+
         self.test_mode = test_mode
         self.timeout = timeout or TIMEOUT
+
+        self.hold_ext = hold_ext.split(" ")
 
         config_helper = ConfigHelper(self.config)
         self.backup_dir = backup_dir or config_helper.backup_dir
@@ -52,7 +49,6 @@ class NodeControlTool:
 
         self.tmp_dir = TMP_DIR
         self.backup_format = backup_format
-        self.deps = deps
 
         _files_to_preserve = [self.config.lastRunVersionFile, self.config.nextVersionFile,
                               self.config.upgradeLogFile, self.config.lastVersionFilePath,
@@ -64,7 +60,6 @@ class NodeControlTool:
         _backup_name_prefix = '{}_backup_'.format(self.config.NETWORK_NAME)
 
         self.backup_name_prefix = backup_name_prefix or _backup_name_prefix
-        self.packages_to_hold = ' '.join([PACKAGES_TO_HOLD, hold_ext])
 
         # Create a TCP/IP socket
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -74,74 +69,38 @@ class NodeControlTool:
         # Bind the socket to the port
         self.server_address = ('localhost', 30003)
 
-        logger.info('Node control tool is starting up on {} port {}'.format(
-            *self.server_address))
+        logger.info('Node control tool is starting up on {} port {}'.format(*self.server_address))
         self.server.bind(self.server_address)
 
         # Listen for incoming connections
         self.server.listen(1)
 
-    @classmethod
-    def _get_info_from_package_manager(cls, package):
-        cmd = compose_cmd(['apt-cache', 'show', package])
-        ret = cls._run_shell_command(cmd)
-        if ret.returncode != 0:
-            raise Exception('cannot get package info since {} returned {}'
-                            .format(cmd, ret.returncode))
-        return ret.stdout.strip()
-
-    @classmethod
-    def _update_package_cache(cls):
-        cmd = compose_cmd(['apt', 'update'])
-        ret = cls._run_shell_command(cmd)
-        if ret.returncode != 0:
-            raise Exception('cannot update package cache since {} returned {}'
-                            .format(cmd,
-                                    ret.returncode))
-
-        return ret.stdout.strip()
-
-    def _hold_packages(self):
-        if shutil.which("apt-mark"):
-            cmd = compose_cmd(['apt-mark', 'hold', self.packages_to_hold])
-            ret = self._run_shell_command(cmd)
-            if ret.returncode != 0:
-                raise Exception('cannot mark {} packages for hold '
-                                'since {} returned {}'
-                                .format(self.packages_to_hold,
-                                        cmd,
-                                        ret.returncode))
-
-                logger.info('Successfully put {} packages on hold'.format(
-                    self.packages_to_hold))
-        else:
-            logger.info('Skipping packages holding')
-
     def _get_deps_list(self, package):
         logger.info('Getting dependencies for {}'.format(package))
-        ret = ''
-        self._update_package_cache()
-        package_info = self._get_info_from_package_manager(package)
+        NodeControlUtil.update_package_cache()
+        app_holded = self.config.PACKAGES_TO_HOLD + self.hold_ext
+        dep_tree = NodeControlUtil.get_deps_tree_filtered(package, filter_list=app_holded)
+        ret = []
+        NodeControlUtil.dep_tree_traverse(dep_tree, ret)
+        # Filter deps according to system hold list
+        # in case of hold empty return only package
+        holded = NodeControlUtil.get_sys_holds()
+        if not holded:
+            return package
+        else:
+            ret_list = []
+            for rl in ret:
+                name = rl.split("=", maxsplit=1)[0]
+                if name in holded:
+                    ret_list.append(rl)
+            if package not in ret_list:
+                ret_list.append(package)
+            return " ".join(ret_list)
 
-        for dep in self.deps:
-            if dep in package_info:
-                match = re.search(
-                    '.*{} \(= ([0-9]+\.[0-9]+\.[0-9]+)\).*'.format(dep),
-                    package_info)
-                if match:
-                    dep_version = match.group(1)
-                    dep_package = '{}={}'.format(dep, dep_version)
-                    dep_tree = self._get_deps_list(dep_package)
-                    ret = '{} {}'.format(dep_tree, ret)
+    def _call_upgrade_script(self, pkg_name, version):
+        logger.info('Upgrading indy node to version {}, test_mode {}'.format(version, int(self.test_mode)))
 
-        ret = '{} {}'.format(ret, package)
-        return ret
-
-    def _call_upgrade_script(self, version):
-        logger.info('Upgrading indy node to version {}, test_mode {}'.format(
-            version, int(self.test_mode)))
-
-        deps = self._get_deps_list('indy-node={}'.format(version))
+        deps = self._get_deps_list('{}={}'.format(pkg_name, version))
         deps = '"{}"'.format(deps)
 
         cmd_file = 'upgrade_indy_node'
@@ -149,18 +108,12 @@ class NodeControlTool:
             cmd_file = 'upgrade_indy_node_test'
 
         cmd = compose_cmd([cmd_file, deps])
-        ret = self._run_shell_script(cmd, self.timeout)
-        if ret.returncode != 0:
-            raise Exception('upgrade script failed, exit code is {}'
-                            .format(ret.returncode))
+        NodeControlUtil.run_shell_command(cmd, timeout=self.timeout)
 
     def _call_restart_node_script(self):
         logger.info('Restarting indy')
         cmd = compose_cmd(['restart_indy_node'])
-        ret = self._run_shell_script(cmd, self.timeout)
-        if ret.returncode != 0:
-            raise Exception('restart failed: script returned {}'
-                            .format(ret.returncode))
+        NodeControlUtil.run_shell_command(cmd, timeout=self.timeout)
 
     def _backup_name(self, version):
         return os.path.join(self.backup_dir, '{}{}'.format(
@@ -175,7 +128,7 @@ class NodeControlTool:
                             self.backup_format, self.backup_target)
 
     def _restore_from_backup(self, version):
-        logger.debug('Restoring from backup for {}'.format(version))
+        logger.info('Restoring from backup for {}'.format(version))
         for file_path in self.files_to_preserve:
             try:
                 shutil.copy2(os.path.join(self.backup_target, file_path),
@@ -202,7 +155,7 @@ class NodeControlTool:
         return sorted(files, key=os.path.getmtime, reverse=True)
 
     def _remove_old_backups(self):
-        logger.debug('Removing old backups')
+        logger.display('Removing old backups')
         files = self._get_backups()
         if len(files):
             files = files[self.backup_num:]
@@ -221,14 +174,16 @@ class NodeControlTool:
             raise e
         self._remove_old_backups()
 
-    def _upgrade(self, new_version, migrate=True, rollback=True):
-        current_version = Upgrader.getVersion()
+    def _upgrade(self, new_version, pkg_name, migrate=True, rollback=True):
+        current_version, _ = NodeControlUtil.curr_pkt_info(pkg_name)
         try:
-            logger.info('Trying to upgrade from {} to {}'
-                        .format(current_version, new_version))
-            self._call_upgrade_script(new_version)
+            from indy_node.server.upgrader import Upgrader
+            node_cur_version = Upgrader.getVersion()
+            logger.info('Trying to upgrade from {}={} to {}'.format(pkg_name, current_version, new_version))
+            self._call_upgrade_script(pkg_name, new_version)
             if migrate:
-                self._do_migration(current_version, new_version)
+                node_new_version = Upgrader.getVersion()
+                self._do_migration(node_cur_version, node_new_version)
             self._call_restart_node_script()
         except Exception as ex:
             self._declare_upgrade_failed(from_version=current_version,
@@ -237,7 +192,7 @@ class NodeControlTool:
             logger.error("Trying to rollback to the previous version {}"
                          .format(ex, current_version))
             if rollback:
-                self._upgrade(current_version, rollback=False)
+                self._upgrade(current_version, pkg_name, rollback=False)
 
     def _restart(self):
         try:
@@ -252,7 +207,8 @@ class NodeControlTool:
             logger.debug("Decoded ", command)
             if command[MESSAGE_TYPE] == UPGRADE_MESSAGE:
                 new_version = command['version']
-                self._upgrade(new_version)
+                pkg_name = command['pkg_name']
+                self._upgrade(new_version, pkg_name)
             elif command[MESSAGE_TYPE] == RESTART_MESSAGE:
                 self._restart()
         except json.decoder.JSONDecodeError as e:
@@ -270,20 +226,14 @@ class NodeControlTool:
                       reason=reason)
         logger.error(msg)
 
-    @classmethod
-    def _run_shell_command(cls, command):
-        return subprocess.run(command,
-                              shell=True,
-                              check=True,
-                              universal_newlines=True,
-                              stdout=subprocess.PIPE,
-                              timeout=TIMEOUT)
-
-    @classmethod
-    def _run_shell_script(cls, command, timeout):
-        return subprocess.run(command,
-                              shell=True,
-                              timeout=timeout)
+    def _hold_packages(self):
+        if shutil.which("apt-mark"):
+            packages_to_hold = ' '.join(self.config.PACKAGES_TO_HOLD + self.hold_ext)
+            cmd = compose_cmd(['apt-mark', 'hold', packages_to_hold])
+            NodeControlUtil.run_shell_command(cmd)
+            logger.info('Successfully put {} packages on hold'.format(packages_to_hold))
+        else:
+            logger.info('Skipping packages holding')
 
     def start(self):
         self._hold_packages()

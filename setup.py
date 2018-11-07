@@ -36,7 +36,7 @@ BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 LOG_DIR = os.path.join(BASE_DIR, "log")
 CONFIG_FILE = os.path.join(BASE_DIR, "indy_config.py")
 
-tests_require = ['pytest==3.4.1', 'pytest-xdist==1.22.1', 'python3-indy==1.3.1-dev-469']
+tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy==1.6.1.dev683']
 
 setup(
     name='indy-node-dev',
@@ -56,7 +56,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.2.342',
+    install_requires=['indy-plenum-dev==1.6.583',
                       'indy-anoncreds-dev==1.0.32',
                       'python-dateutil',
                       'timeout-decorator==0.4.0'],
@@ -66,13 +66,12 @@ setup(
     },
     tests_require=tests_require,
     scripts=['scripts/indy',
-             'scripts/change_node_ha',
              'scripts/add_new_node',
-             'scripts/reset_client',
              'scripts/start_indy_node',
              'scripts/start_node_control_tool',
              'scripts/clear_node.py',
              'scripts/get_keys',
+             'scripts/get_metrics',
              'scripts/generate_indy_pool_transactions',
              'scripts/init_indy_keys',
              'scripts/upgrade_indy_node_ubuntu1604.sh',
@@ -91,10 +90,18 @@ setup(
              'scripts/test_some_write_keys_others_read_them',
              'scripts/test_users_write_and_read_own_keys',
              'scripts/validator-info',
+             'scripts/validator-info-history',
              'scripts/init_bls_keys',
              'scripts/enable_bls',
              'scripts/create_dirs.sh',
              'scripts/indy_old_cli_export_dids',
              'scripts/setup_iptables',
-             'scripts/setup_indy_node_iptables']
+             'scripts/setup_indy_node_iptables',
+             'scripts/current_validators',
+             'scripts/node_address_list',
+             'scripts/generate_bls_proof_of_possession',
+             'tools/diagnostics/nscapture',
+             'tools/diagnostics/nsdiff',
+             'tools/diagnostics/nsreplay',
+             ]
 )

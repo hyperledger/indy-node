@@ -9,7 +9,7 @@
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
 * [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
-* [Continues integration and delivery](#continues-integration-and-delivery)
+* [Continuous integration and delivery](https://github.com/hyperledger/indy-node/blob/master/docs/ci-cd.md)
 * [How to send a PR](#how-to-send-a-pr)
 * [Docs and links](#docs-and-links)
 
@@ -23,7 +23,7 @@ collapse into this one, except for [indy-sdk](https://github.com/hyperledger/ind
 Indy has its own distributed ledger based on RBFT.
 
 ##### Relationship with Sovrin
-This code is independent from but commonly associated with [Sovrin](https://sovrin.org). Sovrin is a public utility
+This code is independent from but commonly associated with [The Sovrin Foundation](https://sovrin.org). The Sovrin Foundation is a public utility
 for identity, built on top of this codebase. People who install sovrin packages (e.g., with
 `sudo apt install sovrin`) get prepackaged genesis transactions that integrate
 with an Indy validator pool using [Sovrin's governance and trust framework](https://sovrin.org/wp-content/uploads/2017/06/SovrinProvisionalTrustFramework2017-03-22.pdf). However, it is possible to use Indy Node
@@ -104,8 +104,6 @@ to understand what needs to be done to create a Network, initialize and start No
 
 The described process is automated in one of the ways below (it allow to install a test Network):
 
- - **Automated VM Creation with Vagrant** [Create virtual machines](environment/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
-
  - **Docker** [Start Pool and Client with Docker](environment/docker/pool/README.md)
 
  - **Docker-based pool using with new libindy-based CLI**:
@@ -129,9 +127,9 @@ Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [co
 indy
 ```
 
-## Continues Integration and Delivery
+## Continuous Integration and Delivery
 
-Please have a look at [Continues integration/delivery](docs/ci-cd.md)
+Please have a look at [Continuous integration/delivery](docs/ci-cd.md)
 
 ## How to send a PR
 
@@ -181,9 +179,4 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 - [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
 - [Helper Scripts](docs/helper-scripts.md)
 - [Pool Upgrade](docs/pool-upgrade.md)
-
-
-
-
-
-
+- [Node Addition](docs/add-node.md)

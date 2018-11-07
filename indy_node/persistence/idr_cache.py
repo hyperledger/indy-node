@@ -1,10 +1,10 @@
 import rlp
+
+from indy_common.constants import ROLE, TRUST_ANCHOR
 from plenum.common.constants import VERKEY, TRUSTEE, STEWARD, THREE_PC_PREFIX, \
     TXN_TIME
 from plenum.common.types import f
 from storage.kv_store import KeyValueStorage
-
-from indy_common.constants import ROLE, TGB, TRUST_ANCHOR
 from storage.optimistic_kv_store import OptimisticKVStore
 from stp_core.common.log import getlogger
 
@@ -145,9 +145,6 @@ class IdrCache(OptimisticKVStore):
     def getTrustee(self, nym, isCommitted=True):
         return self.getNym(nym, TRUSTEE, isCommitted=isCommitted)
 
-    def getTGB(self, nym, isCommitted=True):
-        return self.getNym(nym, TGB, isCommitted=isCommitted)
-
     def getSteward(self, nym, isCommitted=True):
         return self.getNym(nym, STEWARD, isCommitted=isCommitted)
 
@@ -156,9 +153,6 @@ class IdrCache(OptimisticKVStore):
 
     def hasTrustee(self, nym, isCommitted=True):
         return bool(self.getTrustee(nym, isCommitted=isCommitted))
-
-    def hasTGB(self, nym, isCommitted=True):
-        return bool(self.getTGB(nym, isCommitted=isCommitted))
 
     def hasSteward(self, nym, isCommitted=True):
         return bool(self.getSteward(nym, isCommitted=isCommitted))
@@ -175,4 +169,4 @@ class IdrCache(OptimisticKVStore):
             if nymData.get(VERKEY) is None:
                 return nymData[f.IDENTIFIER.nm]
             return nym
-        logger.error('Nym {} not found'.format(nym))
+        logger.info('Nym {} not found'.format(nym))

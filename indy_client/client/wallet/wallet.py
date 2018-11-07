@@ -6,13 +6,17 @@ from collections import deque
 from typing import List
 from typing import Optional
 
+from indy_common.serialization import attrib_raw_data_serializer
+from indy_common.state import domain
 from ledger.util import F
 from plenum.client.wallet import Wallet as PWallet
 from plenum.common.did_method import DidMethods
+from plenum.common.txn_util import get_seq_no, get_reply_identifier, get_reply_txntype, get_reply_nym, get_payload_data, \
+    get_from
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, DATA, \
-    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN, CURRENT_PROTOCOL_VERSION
+    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN, CURRENT_PROTOCOL_VERSION, RAW, ENC, HASH
 from plenum.common.types import f
 
 from indy_client.client.wallet.attribute import Attribute, AttributeKey, \
@@ -27,7 +31,8 @@ from indy_common.exceptions import ConnectionNotFound
 from indy_common.types import Request
 from indy_common.identity import Identity
 from indy_common.constants import ATTRIB, GET_TXNS, GET_ATTR, \
-    GET_NYM, POOL_UPGRADE, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE, POOL_CONFIG
+    GET_NYM, POOL_UPGRADE, GET_SCHEMA, GET_CLAIM_DEF, POOL_CONFIG, CLAIM_DEF_TAG, \
+    CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, CLAIM_DEF_TAG_DEFAULT
 from stp_core.types import Identifier
 
 ENCODING = "utf-8"
@@ -234,38 +239,56 @@ class Wallet(PWallet, TrustAnchoring):
         replies
         :return:
         """
-        preparedReq = self._prepared.get((result[IDENTIFIER], reqId))
+        preparedReq = self._prepared.get(get_reply_identifier(result), reqId)
         if not preparedReq:
             raise RuntimeError('no matching prepared value for {},{}'.
-                               format(result[IDENTIFIER], reqId))
-        typ = result.get(TXN_TYPE)
+                               format(get_reply_identifier(result), reqId))
+        typ = get_reply_txntype(result)
         if typ and typ in self.replyHandler:
             self.replyHandler[typ](result, preparedReq)
             # else:
             #    raise NotImplementedError('No handler for {}'.format(typ))
 
+    def _attrib_data_from_reply(self, result):
+        dt = get_payload_data(result)
+        dest = dt[TARGET_NYM]
+        origin = get_from(result)
+        val = None
+        if RAW in dt:
+            val = json.loads(dt[RAW])
+        elif ENC in dt:
+            val = dt[ENC]
+        elif HASH in dt:
+            val = dt[HASH]
+        return origin, dest, val
+
     def _attribReply(self, result, preparedReq):
-        _, attrKey = preparedReq
-        attrib = self.getAttribute(AttributeKey(*attrKey))
-        attrib.seqNo = result[F.seqNo.name]
+        origin, dest, val = self._attrib_data_from_reply(result)
+        for attrib in self.getAttributesForNym(dest):
+            attrib_val = attrib.value
+            if attrib.ledgerStore == LedgerStore.RAW:
+                attrib_val = json.loads(attrib_val)
+            if attrib.origin == origin and attrib_val == val:
+                attrib.seqNo = get_seq_no(result)
 
     def _getAttrReply(self, result, preparedReq):
         # TODO: Confirm if we need to add the retrieved attribute to the wallet.
         # If yes then change the graph query on node to return the sequence
         # number of the attribute txn too.
-        _, attrKey = preparedReq
-        attrib = self.getAttribute(AttributeKey(*attrKey))
-        if DATA in result:
-            attrib.value = result[DATA]
-            attrib.seqNo = result[F.seqNo.name]
-        else:
-            logger.debug("No attribute found")
+        attr_type, attr_key = domain._extract_attr_typed_value(result)
+        for attrib in self.getAttributesForNym(result[TARGET_NYM]):
+            if attrib.name == attr_key:
+                attrib.seqNo = result[f.SEQ_NO.nm]
+                attrib.value = result[DATA]
+                if attr_type == 'raw':
+                    attrib.value = attrib_raw_data_serializer.deserialize(attrib.value)
+                    attrib.value = attrib_raw_data_serializer.serialize(attrib.value, toBytes=False)
 
     def _nymReply(self, result, preparedReq):
-        target = result[TARGET_NYM]
+        target = get_reply_nym(result)
         idy = self._trustAnchored.get(target)
         if idy:
-            idy.seqNo = result[F.seqNo.name]
+            idy.seqNo = get_seq_no(result)
         else:
             logger.warning(
                 "Target {} not found in trust anchored".format(target))
@@ -273,17 +296,17 @@ class Wallet(PWallet, TrustAnchoring):
     def _nodeReply(self, result, preparedReq):
         _, nodeKey = preparedReq
         node = self.getNode(nodeKey)
-        node.seqNo = result[F.seqNo.name]
+        node.seqNo = get_seq_no(result)
 
     def _poolUpgradeReply(self, result, preparedReq):
         _, upgKey = preparedReq
         upgrade = self.getPoolUpgrade(upgKey)
-        upgrade.seqNo = result[F.seqNo.name]
+        upgrade.seqNo = get_seq_no(result)
 
     def _poolConfigReply(self, result, preparedReq):
         _, cfgKey = preparedReq
         pconf = self.getPoolConfig(cfgKey)
-        pconf.seqNo = result[F.seqNo.name]
+        pconf.seqNo = get_seq_no(result)
 
     def _getNymReply(self, result, preparedReq):
         jsonData = result.get(DATA)
@@ -355,9 +378,10 @@ class Wallet(PWallet, TrustAnchoring):
         :return: req object
         """
         operation = {TXN_TYPE: GET_CLAIM_DEF,
-                     ORIGIN: sender,
-                     REF: seqNo,
-                     SIGNATURE_TYPE: signature
+                     CLAIM_DEF_FROM: sender,
+                     CLAIM_DEF_SCHEMA_REF: seqNo,
+                     CLAIM_DEF_SIGNATURE_TYPE: signature,
+                     CLAIM_DEF_TAG: CLAIM_DEF_TAG_DEFAULT
                      }
 
         req = Request(sender,

@@ -1,0 +1,111 @@
+# setup environment
+- pool create AS-0301-steward gen_txn_file=./pool_transactions_genesis
+pool connect AS-0301-steward
+- wallet create AS-03-wallet-steward key=testkey storage_config={"pool":"AS-0301-steward"}
+wallet open AS-03-wallet-steward key=testkey
+#################
+# setup section #
+#################
+did new seed=TestTrustee100000000000000000001 metadata="test trustee 1"
+did new seed=TestSteward100000000000000000001 metadata="test steward 1"
+did new seed=TestSteward200000000000000000001 metadata="test steward 2"
+did new seed=TestSteward300000000000000000001 metadata="test steward 3"
+did new seed=TestTrustAnchor00000000000000001 metadata="test trust anchor 0"
+did new seed=TestTrustAnchor10000000000000001 metadata="test trust anchor 1"
+did new seed=RandomUser1000000000000000000001 metadata="test identity 1"
+did new seed=RandomUser2000000000000000000001 metadata="test identity 2"
+# did new seed=RandomUser3000000000000000000001 metadata="test identity 3"
+did new seed=RandomUser4000000000000000000001 metadata="test identity 4"
+did new seed=RandomUser5000000000000000000001 metadata="test identity 5"
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+did use V4SGRU86Z58d6TV7PBUe6f
+# AS Trustee CREATE Steward (steward1)
+ledger nym did=7qFmEyYCXcmUFVied5Sp3b role=STEWARD verkey=~Mj3PFUSi6qmrTRonFXHx9n
+- ledger get-nym did=7qFmEyYCXcmUFVied5Sp3b
+# AS Trustee CREATE Steward (steward3)
+ledger nym did=CEJJcfjNGt7YcNLyXaszaq role=STEWARD verkey=~AAGGsLT3yQtTmNdKrHXtC2
+- ledger get-nym did=CEJJcfjNGt7YcNLyXaszaq
+################
+# test section #
+################
+# #1 AS Steward (steward1) CREATE Trustee (trustee1) (FAIL)
+did use 7qFmEyYCXcmUFVied5Sp3b
+- ledger nym did=81CCbJwqSyGNLLEtVo1kMq role=TRUSTEE verkey=~UimNgHv7X45jxnh65faK3h
+- ledger get-nym did=81CCbJwqSyGNLLEtVo1kMq
+# #2.1 AS Steward (steward1) REMOVE Trustee (FAIL)
+did use 7qFmEyYCXcmUFVied5Sp3b
+- ledger nym did=V4SGRU86Z58d6TV7PBUe6f role=
+# #2.2 CHECK Trustee IS VALID
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=81CCbJwqSyGNLLEtVo1kMq role=TRUSTEE verkey=~UimNgHv7X45jxnh65faK3h
+- ledger get-nym did=81CCbJwqSyGNLLEtVo1kMq
+# #3 AS Steward (steward1) CREATE Steward (steward2) (FAIL)
+did use 7qFmEyYCXcmUFVied5Sp3b
+- ledger nym did=XVP5k4E62PMJJWt2nPacHy role=STEWARD verkey=~Ka6GqJ3qBYRE4Ku9uyFuQW
+- ledger get-nym did=XVP5k4E62PMJJWt2nPacHy
+# #4.1 AS Steward (steward1) REMOVE Steward (steward3) (FAIL)
+did use 7qFmEyYCXcmUFVied5Sp3b
+- ledger nym did=CEJJcfjNGt7YcNLyXaszaq role=
+# #4.2 CHECK Steward IS VALID
+did use CEJJcfjNGt7YcNLyXaszaq
+ledger nym did=Bhe7Uh5E1LYLgpLcbuVjj2 role=TRUST_ANCHOR verkey=~NMpYrG7tAXYV4ujYZjddKu
+- ledger get-nym did=Bhe7Uh5E1LYLgpLcbuVjj2
+# #5.1 AS Steward (steward1) CREATE TrustAnchor (PASS)
+did use 7qFmEyYCXcmUFVied5Sp3b
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR verkey=~PuCGfSiTB3NZGi1SH8w7H
+- ledger get-nym did=CDcGtKx1boRYFwPBaGkMmk
+# #5.2 CHECK TrustAnchor IS VALID
+did use CDcGtKx1boRYFwPBaGkMmk
+ledger nym did=YUGDShR1RSr5T2CwbM7Hhu verkey=~GfsAf6NpSQDJ1ZWW2X7BiD
+- ledger get-nym did=YUGDShR1RSr5T2CwbM7Hhu
+# #6.1 AS Steward (steward1) REMOVE TrustAnchor (PASS) ?????????????????????????????????????????????????????????????????
+did use 7qFmEyYCXcmUFVied5Sp3b
+- ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=
+# #6.2 CHECK TrustAnchor IS INVALID
+did use CDcGtKx1boRYFwPBaGkMmk
+- ledger nym did=Jt7aMnw77aoaBMyhXUNjtt verkey=~DT5pLP1wcvsgAzM78sqiRJ
+- ledger get-nym did=Jt7aMnw77aoaBMyhXUNjtt
+# #7.1 AS Steward (steward1) RESTORE TrustAnchor (PASS) ?????????????????????????????????????????????????????????????????
+did use 7qFmEyYCXcmUFVied5Sp3b
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR
+# #7.2 CHECK TrustAnchor IS VALID
+did use CDcGtKx1boRYFwPBaGkMmk
+ledger nym did=XkZJxs6Uadv6MQeKGGZdZ6 verkey=~Aza4zyTRazcVsokmqNJfsg
+- ledger get-nym did=XkZJxs6Uadv6MQeKGGZdZ6
+# #8 AS Steward (steward1) CREATE IdentityOwner (PASS)
+did use 7qFmEyYCXcmUFVied5Sp3b
+ledger nym did=Xm3b3LtJ3UoL5KeYT7ti7j verkey=~GmTyyvE4eHWeSWuiAtmE19
+- ledger get-nym did=Xm3b3LtJ3UoL5KeYT7ti7j
+# #9.1 AS Steward (steward1) REMOVE self (FAIL)
+did use 7qFmEyYCXcmUFVied5Sp3b
+- ledger nym did=7qFmEyYCXcmUFVied5Sp3b role=
+# #9.2 CHECK Steward IS VALID
+ledger nym did=Jt7aMnw77aoaBMyhXUNjtt verkey=~DT5pLP1wcvsgAzM78sqiRJ
+- ledger get-nym did=Jt7aMnw77aoaBMyhXUNjtt
+### Additional cases ###
+did use V4SGRU86Z58d6TV7PBUe6f
+did new seed=RandomAttribOwner000000000000001
+ledger nym did=SvXt2QGwZF1kXTcpd2pJ37 verkey=~TmkMNbfcATrfJopaq4KcdV role=STEWARD
+did new seed=RandomUserForRotateKey0000000001
+ledger nym did=6LKnRH6hWPSpoWu824s5JH verkey=~JyFXPqScFNBSoPG4cgTeb1 role=STEWARD
+# Only owner can edit existing NYMs
+did use SvXt2QGwZF1kXTcpd2pJ37
+did rotate-key seed=RandomUserForRotateKey0NewKey001
+# Not owner can't edit existing NYMs (FAIL)
+did use 6LKnRH6hWPSpoWu824s5JH
+- ledger nym did=SvXt2QGwZF1kXTcpd2pJ37 verkey=~TmkMNbfcATrfJopaq4KcdV
+# Only owners can create ATTRIBs
+did use SvXt2QGwZF1kXTcpd2pJ37
+ledger attrib did=SvXt2QGwZF1kXTcpd2pJ37 raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Only owners can edit ATTRIBs
+ledger attrib did=SvXt2QGwZF1kXTcpd2pJ37 raw={"endpoint":{"ha":"127.0.0.1:6666"}}
+# Not owner can't create attrib (FAIL)
+did use SvXt2QGwZF1kXTcpd2pJ37
+- ledger attrib did=6LKnRH6hWPSpoWu824s5JH raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Not owner can't edit attrib (FAIL)
+did use 6LKnRH6hWPSpoWu824s5JH
+- ledger attrib did=SvXt2QGwZF1kXTcpd2pJ37 raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Steward can create SCHEMA:
+ledger schema name=StewardSchema version=1.0 attr_names=name,age
+# Steward can create CLAIM_DEF:
+ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=1

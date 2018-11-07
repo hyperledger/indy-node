@@ -1,7 +1,9 @@
 #!/bin/bash
 
 HOSTNAME=$1
+NODEIP=$2
 NODEPORT=$2
+CLIENTIP=$3
 CLIENTPORT=$3
 
 #--------------------------------------------------------
@@ -24,7 +26,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y dialog figlet python-pip pytho
 
 #--------------------------------------------------------
 echo 'Setting Up Indy Node'
-su - indy -c "init_indy_node $HOSTNAME $NODEPORT $CLIENTPORT"
+su - indy -c "init_indy_node $HOSTNAME $NODEIP $NODEPORT $CLIENTIP $CLIENTPORT"
 systemctl start indy-node
 systemctl enable indy-node
 systemctl status indy-node.service

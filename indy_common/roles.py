@@ -10,7 +10,6 @@ class Roles(Enum):
     #  Also the numeric constants CANNOT collide with the roles in plenum
     TRUSTEE = Roles.TRUSTEE.value
     STEWARD = Roles.STEWARD.value
-    TGB = "100"
     TRUST_ANCHOR = "101"
 
     def __str__(self):

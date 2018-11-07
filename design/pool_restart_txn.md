@@ -18,7 +18,7 @@ To send POOL_RESTART, fill the field "action" with the value "start".
 To cancel the scheduled restart, you should set the field "action" value "cancel".
 
 ### POOL_RESTART - restart now
-To restart as early as possible, send message without the "datetime" field or put in it value "0" or the past date on this place.
+To restart as early as possible, send message without the "datetime" field or put in it value "0" or ""(empty string) or the past date on this place.
 The restart is performed immediately and there is no guarantee of receiving an answer with Reply.
 
 ### POOL_RESTART - Reply

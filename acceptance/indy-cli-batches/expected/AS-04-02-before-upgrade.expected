@@ -1,0 +1,176 @@
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+Pool config "AS-pool" has been created
+
+pool connect AS-pool
+Pool "AS-pool" has been connected
+
+wallet create AS-04-wallet key=testkey storage_config={"pool":"AS-pool"}
+Wallet "AS-04-wallet" has been created
+
+wallet open AS-04-wallet key=testkey
+Wallet "AS-04-wallet" has been opened
+
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+Did "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey
+Metadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger schema name=Degree version=1.0 attr_names=undergrad,last_name,first_name,birth_date,postgrad,expiry_date
+Schema request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 16              | 1527789177227318572 | 2018-05-31 17:52:57 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++--------+---------+----------------------------------------------------------------------------+
+| Name   | Version | Attributes                                                                 |
++--------+---------+----------------------------------------------------------------------------+
+| Degree | 1.0     | "postgrad","first_name","last_name","birth_date","undergrad","expiry_date" |
++--------+---------+----------------------------------------------------------------------------+
+
+ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"}
+NodeConfig request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 17              | 1527789177477364284 | 2018-05-31 17:52:57 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++----------------------------------------------------------------+
+| Primary Key                                                    |
++----------------------------------------------------------------+
+| {n:"1",r:{"age":"4","name":"5"},rctxt:"6",rms:"3",s:"2",z:"7"} |
++----------------------------------------------------------------+
+
+ledger nym did=542MVr22zcHbVyGzaXmbT3
+Nym request has been sent to Ledger.
+Metadata:
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527789177741209163 | 2018-05-31 17:52:57 |
++---------------------+---------------------+
+Data:
++------------------------+------+
+| Did                    | Role |
++------------------------+------+
+| 542MVr22zcHbVyGzaXmbT3 | -    |
++------------------------+------+
+
+ledger nym did=542MVr22zcHbVyGzaXmbT4
+Nym request has been sent to Ledger.
+Metadata:
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527789178005493135 | 2018-05-31 17:52:58 |
++---------------------+---------------------+
+Data:
++------------------------+------+
+| Did                    | Role |
++------------------------+------+
+| 542MVr22zcHbVyGzaXmbT4 | -    |
++------------------------+------+
+
+ledger nym did=542MVr22zcHbVyGzaXmbT5
+Nym request has been sent to Ledger.
+Metadata:
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527789178261981181 | 2018-05-31 17:52:58 |
++---------------------+---------------------+
+Data:
++------------------------+------+
+| Did                    | Role |
++------------------------+------+
+| 542MVr22zcHbVyGzaXmbT5 | -    |
++------------------------+------+
+
+ledger nym did=542MVr22zcHbVyGzaXmbT6
+Nym request has been sent to Ledger.
+Metadata:
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527789178519129509 | 2018-05-31 17:52:58 |
++---------------------+---------------------+
+Data:
++------------------------+------+
+| Did                    | Role |
++------------------------+------+
+| 542MVr22zcHbVyGzaXmbT6 | -    |
++------------------------+------+
+
+ledger nym did=542MVr22zcHbVyGzaXmbT7
+Nym request has been sent to Ledger.
+Metadata:
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527789178770187542 | 2018-05-31 17:52:58 |
++---------------------+---------------------+
+Data:
++------------------------+------+
+| Did                    | Role |
++------------------------+------+
+| 542MVr22zcHbVyGzaXmbT7 | -    |
++------------------------+------+
+
+ledger get-schema did=V4SGRU86Z58d6TV7PBUe6f name=Degree version=1.0
+Following Schema has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Did                    | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 16              | 1527789179035167928 | 2018-05-31 17:52:57 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++--------+---------+----------------------------------------------------------------------------+
+| Name   | Version | Attributes                                                                 |
++--------+---------+----------------------------------------------------------------------------+
+| Degree | 1.0     | "postgrad","first_name","last_name","birth_date","undergrad","expiry_date" |
++--------+---------+----------------------------------------------------------------------------+
+
+ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f tag="1"
+Following Credential Definition has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 17              | 1527789179064660983 | 2018-05-31 17:52:57 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++----------------------------------------------------------------+
+| Primary Key                                                    |
++----------------------------------------------------------------+
+| {n:"1",r:{"age":"4","name":"5"},rctxt:"6",rms:"3",s:"2",z:"7"} |
++----------------------------------------------------------------+
+
+- ledger get-nym did=542MVr22zcHbVyGzaXmbT5
+Following NYM has been received.
+Metadata:
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 20              | 1527789179091290867 | 2018-05-31 17:52:58 |
++-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+------+
+| Identifier             | Dest                   | Role |
++------------------------+------------------------+------+
+| V4SGRU86Z58d6TV7PBUe6f | 542MVr22zcHbVyGzaXmbT5 | -    |
++------------------------+------------------------+------+
+
+wallet close
+Wallet "AS-04-wallet" has been closed
+
+pool disconnect
+Pool "AS-pool" has been disconnected
+
+Goodbye...

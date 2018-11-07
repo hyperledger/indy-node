@@ -10,6 +10,7 @@ from plenum.common.constants import ENC, REPLY, TXN_TIME, TXN_ID, \
     TXN_TYPE, ROLE, NONCE, VERKEY
 from plenum.common.exceptions import RequestRejectedException, RequestNackedException
 from plenum.common.signer_did import DidSigner
+from plenum.common.txn_util import get_type, get_payload_data, get_req_id
 from plenum.common.types import f
 from plenum.common.util import adict
 from plenum.test import waits
@@ -18,9 +19,8 @@ from indy_client.client.wallet.attribute import Attribute, LedgerStore
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.test.helper import checkNacks, \
     genTestClient, createNym, checkRejects, makePendingTxnsRequest
-from indy_common.constants import SKEY, TRUST_ANCHOR_STRING
+from indy_common.constants import SKEY, TRUST_ANCHOR_STRING, ATTRIB, TRUST_ANCHOR
 from indy_common.identity import Identity
-from indy_common.txn_util import ATTRIB, TRUST_ANCHOR
 from indy_common.util import getSymmetricallyEncryptedVal
 from indy_node.test.helper import submitAndCheck, \
     makeAttribRequest, makeGetNymRequest, addAttributeAndCheck, TestNode, \
@@ -217,7 +217,7 @@ def nymsAddedInQuickSuccession(looper, nodeSet, sdk_added_raw_attribute,
     count = 0
     for node in nodeSet:
         for seq, txn in node.domainLedger.getAllTxn():
-            if txn[TXN_TYPE] == NYM and txn[TARGET_NYM] == usigner.identifier:
+            if get_type(txn) == NYM and get_payload_data(txn)[TARGET_NYM] == usigner.identifier:
                 count += 1
 
     assert (count == len(nodeSet))
@@ -242,8 +242,8 @@ def testClientGetsResponseWithoutConsensusForUsedReqId(
     for msg, sender in reversed(trustAnchor.inBox):
         if msg[OP_FIELD_NAME] == REPLY:
             if not lastReqId:
-                lastReqId = msg[f.RESULT.nm][f.REQ_ID.nm]
-            if msg.get(f.RESULT.nm, {}).get(f.REQ_ID.nm) == lastReqId:
+                lastReqId = get_req_id(msg[f.RESULT.nm])
+            if get_req_id(msg[f.RESULT.nm]) == lastReqId:
                 replies[sender] = msg
             if len(replies) == len(nodeSet):
                 break

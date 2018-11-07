@@ -1,9 +1,12 @@
+from plenum.common.types import f
+
 from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PROOF_NODES, MULTI_SIGNATURE_SIGNATURE, \
     MULTI_SIGNATURE_PARTICIPANTS, MULTI_SIGNATURE_VALUE, MULTI_SIGNATURE_VALUE_LEDGER_ID, \
     MULTI_SIGNATURE_VALUE_STATE_ROOT, MULTI_SIGNATURE_VALUE_TXN_ROOT, MULTI_SIGNATURE_VALUE_POOL_STATE_ROOT, \
-    MULTI_SIGNATURE_VALUE_TIMESTAMP, TYPE, DATA
+    MULTI_SIGNATURE_VALUE_TIMESTAMP, TYPE, DATA, TXN_TIME, TXN_PAYLOAD, TXN_PAYLOAD_METADATA, TXN_PAYLOAD_METADATA_FROM, \
+    TXN_PAYLOAD_DATA, TXN_METADATA, TXN_METADATA_SEQ_NO, TXN_METADATA_TIME
 from indy_common.constants import VALUE, GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, \
-    ACCUM_FROM, ACCUM_TO, STATE_PROOF_FROM, ISSUED
+    ACCUM_TO, ISSUED, STATE_PROOF_FROM, ACCUM_FROM
 from common.serializers.serialization import state_roots_serializer, proof_nodes_serializer
 from state.pruning_state import PruningState
 from indy_common.state import domain
@@ -12,14 +15,14 @@ from indy_common.state import domain
 def prepare_for_state(result):
     request_type = result[TYPE]
     if request_type == GET_REVOC_REG_DEF:
-        return domain.prepare_revoc_def_for_state(result['data'])
+        return domain.prepare_get_revoc_def_for_state(result)
     if request_type == GET_REVOC_REG:
-        return domain.prepare_revoc_reg_entry_accum_for_state(result['data'])
+        return domain.prepare_get_revoc_reg_entry_accum_for_state(result)
     if request_type == GET_REVOC_REG_DELTA:
-        if ISSUED in result['data'][VALUE]:
-            return domain.prepare_revoc_reg_entry_for_state(result['data'])
+        if ISSUED in result[DATA][VALUE]:
+            return domain.prepare_get_revoc_reg_entry_for_state(result)
         else:
-            return domain.prepare_revoc_reg_entry_accum_for_state(result['data'])
+            return domain.prepare_get_revoc_reg_entry_accum_for_state(result)
     raise ValueError("Cannot make state key for "
                      "request of type {}"
                      .format(request_type))
@@ -74,13 +77,19 @@ def check_valid_proof(reply):
     assert multi_sig_value[MULTI_SIGNATURE_VALUE_TIMESTAMP]
     if result[TYPE] == GET_REVOC_REG_DELTA:
         if STATE_PROOF_FROM in result[DATA] and result[DATA][STATE_PROOF_FROM]:
-            reply_from = {DATA: result['data'][VALUE][ACCUM_FROM],
-                          STATE_PROOF: result['data'][STATE_PROOF_FROM],
-                          TYPE: result[TYPE]}
+            reply_from = {DATA: result[DATA][VALUE][ACCUM_FROM],
+                          STATE_PROOF: result[DATA][STATE_PROOF_FROM],
+                          TYPE: result[TYPE],
+                          f.SEQ_NO.nm: result[DATA][VALUE][ACCUM_FROM][f.SEQ_NO.nm],
+                          TXN_TIME: result[DATA][VALUE][ACCUM_FROM][TXN_TIME]
+                          }
             assert validate_proof(reply_from)
         reply_to = {DATA: result['data'][VALUE][ACCUM_TO],
                     STATE_PROOF: result[STATE_PROOF],
-                    TYPE: result[TYPE]}
+                    TYPE: result[TYPE],
+                    f.SEQ_NO.nm: result[f.SEQ_NO.nm],
+                    TXN_TIME: result[TXN_TIME]
+                    }
         assert validate_proof(reply_to)
     else:
         assert validate_proof(result)

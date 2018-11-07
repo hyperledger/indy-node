@@ -2,6 +2,7 @@
 from plenum.common.ledger import Ledger
 from plenum.common.exceptions import UnknownIdentifier
 from plenum.common.constants import TARGET_NYM, VERKEY
+from plenum.common.txn_util import get_payload_data
 from plenum.server.client_authn import NaclAuthNr
 
 
@@ -14,10 +15,11 @@ class NodeAuthNr(NaclAuthNr):
         verkey = None
         found = False
         for _, txn in self.ledger.getAllTxn():
-            if txn[TARGET_NYM] == identifier:
+            txn_data = get_payload_data(txn)
+            if txn_data[TARGET_NYM] == identifier:
                 found = True
-                if txn.get(VERKEY):
-                    verkey = txn[VERKEY]
+                if txn_data.get(VERKEY):
+                    verkey = txn_data[VERKEY]
 
         if not found:
             raise UnknownIdentifier(identifier)

@@ -1,0 +1,6 @@
+{% for item in ec2.results %}
+Host {{ tag_namespace }}_{{ tag_role }}{{ item.tag_id }}
+    HostName {{ item.public_ip }}
+    User {{ item.user }}
+    IdentityFile ./key
+{% endfor %}

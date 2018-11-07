@@ -15,8 +15,8 @@ echo Environment setup complete
 echo
 echo "The nodes can be started using :"
 echo
-echo "start_indy_node Node1 9701 9702"
-echo "start_indy_node Node2 9703 9704"
-echo "start_indy_node Node3 9705 9706"
-echo "start_indy_node Node4 9707 9708"
+echo "start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702"
+echo "start_indy_node Node2 0.0.0.0 9703 0.0.0.0 9704"
+echo "start_indy_node Node3 0.0.0.0 9705 0.0.0.0 9706"
+echo "start_indy_node Node4 0.0.0.0 9707 0.0.0.0 9708"
 echo 

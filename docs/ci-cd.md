@@ -1,4 +1,4 @@
-# Continues Integration / Delivery
+# Continuous Integration / Delivery
 
 #### Branches
 
@@ -10,7 +10,7 @@
 - Each PR needs to be reviewed.
 - PR can be merged only after all tests pass and code is reviewed.
 
-## Continues Integration
+## Continuous Integration
 
 - for each PR we execute:
     - static code validation
@@ -29,7 +29,7 @@
     - Run validation on the root folder of the project: `flake8 .`
 
 
-## Continues Delivery
+## Continuous Delivery
 
 - CD part of the pipeline is defined in `Jenkinsfile.cd` file.
 - CD part is run on a private Jenkins server dealing with issuing and uploading new builds.

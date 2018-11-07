@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+import dateutil.tz
+
 from typing import Iterable, List
 
 from indy_node.server.action_req_handler import ActionReqHandler
@@ -7,14 +10,15 @@ from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiat
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID
-from plenum.common.exceptions import InvalidClientRequest
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION
 from plenum.common.ledger import Ledger
+from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
     OPERATION
+from plenum.common.util import get_utc_datetime
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
-from storage.helper import initKeyValueStorage, initKeyValueStorageIntKeys
+from storage.helper import initKeyValueStorage
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
@@ -23,7 +27,6 @@ from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
-from storage.state_ts_store import StateTsDbStorage
 from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
@@ -39,7 +42,8 @@ logger = getlogger()
 
 class Node(PlenumNode, HasPoolManager):
     keygenScript = "init_indy_keys"
-    _client_request_class = SafeRequest
+    client_request_class = SafeRequest
+    TxnUtilConfig.client_request_class = Request
     _info_tool_class = ValidatorNodeInfoTool
 
     def __init__(self,
@@ -103,6 +107,14 @@ class Node(PlenumNode, HasPoolManager):
     def initPoolManager(self, ha, cliname, cliha):
         HasPoolManager.__init__(self, ha, cliname, cliha)
 
+    def on_inconsistent_3pc_state(self):
+        timeout = self.config.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT
+        logger.warning("Suspecting inconsistent 3PC state, going to restart in {} seconds".format(timeout))
+
+        now = get_utc_datetime()
+        when = now + timedelta(seconds=timeout)
+        self.restarter.requestRestart(when)
+
     def getPrimaryStorage(self):
         """
         This is usually an implementation of Ledger
@@ -155,7 +167,8 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache = IdrCache(self.name,
                                      initKeyValueStorage(self.config.idrCacheStorage,
                                                          self.dataLocation,
-                                                         self.config.idrCacheDbName)
+                                                         self.config.idrCacheDbName,
+                                                         db_config=self.config.db_idr_cache_db_config)
                                      )
         return self.idrCache
 
@@ -164,7 +177,8 @@ class Node(PlenumNode, HasPoolManager):
             initKeyValueStorage(
                 self.config.attrStorage,
                 self.dataLocation,
-                self.config.attrDbName)
+                self.config.attrDbName,
+                db_config=self.config.db_attr_db_config)
         )
 
     def setup_config_req_handler(self):
@@ -220,11 +234,10 @@ class Node(PlenumNode, HasPoolManager):
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
 
-        # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
-        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.startedProcessingReq(request.key, self.nodestack.name)
         self.send(request)
         self.upgrader.notified_about_action_result()
 
@@ -244,9 +257,10 @@ class Node(PlenumNode, HasPoolManager):
 
         # do not send protocol version before all Nodes support it after Upgrade
         request = self.wallet.signRequest(
-            Request(operation=op, protocolVersion=None))
+            Request(operation=op, protocolVersion=CURRENT_PROTOCOL_VERSION))
 
-        self.startedProcessingReq(*request.key, self.nodestack.name)
+        self.startedProcessingReq(request.key,
+                                  self.nodestack.name)
         self.send(request)
 
     def processNodeRequest(self, request: Request, frm: str):
@@ -259,8 +273,8 @@ class Node(PlenumNode, HasPoolManager):
                 logger.warning('The request {} failed to authenticate {}'
                                .format(request, repr(ex)))
                 return
-        if not self.isProcessingReq(*request.key):
-            self.startedProcessingReq(*request.key, frm)
+        if not self.isProcessingReq(request.key):
+            self.startedProcessingReq(request.key, frm)
         # If not already got the propagate request(PROPAGATE) for the
         # corresponding client request(REQUEST)
         self.recordAndPropagate(request, frm)
@@ -270,7 +284,7 @@ class Node(PlenumNode, HasPoolManager):
         if all(attr in msg.keys()
                for attr in [OPERATION, f.IDENTIFIER.nm, f.REQ_ID.nm]) \
                 and msg.get(OPERATION, {}).get(TXN_TYPE) == NODE_UPGRADE:
-            cls = self._client_request_class
+            cls = self.client_request_class
             cMsg = cls(**msg)
             return cMsg, frm
         else:
@@ -295,30 +309,8 @@ class Node(PlenumNode, HasPoolManager):
         c += self.restarter.service()
         return c
 
-    def processRequest(self, request: Request, frm: str):
-        if self.is_query(request.operation[TXN_TYPE]):
-            self.process_query(request, frm)
-            self.total_read_request_number += 1
-        elif self.is_action(request.operation[TXN_TYPE]):
-            self.process_action(request, frm)
-        else:
-            # forced request should be processed before consensus
-            if (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG]) and request.isForced():
-                self.configReqHandler.validate(request)
-                self.configReqHandler.applyForced(request)
-            # here we should have write transactions that should be processed
-            # pool_restart should not be written to ledger
-            # only on writable pool
-            if self.poolCfg.isWritable() or (request.operation[TXN_TYPE] in [
-                    POOL_UPGRADE, POOL_CONFIG]):
-                super().processRequest(request, frm)
-
-            else:
-                raise InvalidClientRequest(
-                    request.identifier,
-                    request.reqId,
-                    'Pool is in readonly mode, try again in 60 seconds')
+    def can_write_txn(self, txn_type):
+        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE, POOL_CONFIG]
 
     def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
                           txnRoot) -> List:
@@ -340,13 +332,14 @@ class Node(PlenumNode, HasPoolManager):
         :return:
         """
         # For RAW and ENC attributes, only hash is stored in the ledger.
-        if txn[TXN_TYPE] == ATTRIB:
+        if get_type(txn) == ATTRIB:
+            txn_data = get_payload_data(txn)
             # The key needs to be present and not None
-            key = RAW if (RAW in txn and txn[RAW] is not None) else \
-                ENC if (ENC in txn and txn[ENC] is not None) else \
+            key = RAW if (RAW in txn_data and txn_data[RAW] is not None) else \
+                ENC if (ENC in txn_data and txn_data[ENC] is not None) else \
                 None
             if key:
-                txn[key] = self.attributeStore.get(txn[key])
+                txn_data[key] = self.attributeStore.get(txn_data[key])
         return txn
 
     def closeAllKVStores(self):

@@ -37,14 +37,16 @@ if [ ! -z "${NODE_SERVICE_HOST_PATTERN}" ]; then
   fi
 fi
 
-if [ ! -z "${NODE_NAME}" ] && [ ! -z "${NODE_PORT}" ] && [ ! -z "${CLIENT_PORT}" ]; then 
+if [ ! -z "${NODE_NAME}" ] && [ ! -z "${NODE_IP}" ] && [ ! -z "${NODE_PORT}" ] && [ ! -z "${CLIENT_IP}" ] && [ ! -z "${CLIENT_PORT}" ]; then
   echo ===============================================================================
   echo "Initializing indy node:"
   echo -e "\tName: ${NODE_NAME}"
+  echo -e "\tNode IP: ${NODE_IP}"
   echo -e "\tNode Port: ${NODE_PORT}"
+  echo -e "\tClient IP: ${CLIENT_IP}"
   echo -e "\tClient Port: ${CLIENT_PORT}"
   echo -------------------------------------------------------------------------------
-  init_indy_node ${NODE_NAME} ${NODE_PORT} ${CLIENT_PORT}
+  init_indy_node ${NODE_NAME} ${NODE_IP} ${NODE_PORT} ${CLIENT_IP} ${CLIENT_PORT}
   echo ===============================================================================
   echo
 fi 

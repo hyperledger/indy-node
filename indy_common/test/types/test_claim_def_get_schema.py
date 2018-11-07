@@ -8,6 +8,7 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("ref", TxnSeqNoField),
     ("origin", IdentifierField),
     ('signature_type', LimitedLengthStringField),
+    ('tag', LimitedLengthStringField),
 ])
 
 

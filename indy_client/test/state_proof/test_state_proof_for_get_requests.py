@@ -6,7 +6,8 @@ from plenum.common.types import f
 from indy_client.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_replies
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
-    ATTR_NAMES, REF, SIGNATURE_TYPE, CLAIM_DEF, REVOCATION, GET_CLAIM_DEF
+    CLAIM_DEF, REVOCATION, GET_CLAIM_DEF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
+    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION
 from indy_common.serialization import attrib_raw_data_serializer
 
 # Fixtures, do not remove
@@ -95,9 +96,9 @@ def test_state_proof_returned_for_get_schema(looper,
     schema_version = "1.0"
     schema_attr_names = ["width", "height"]
     data = {
-        NAME: schema_name,
-        VERSION: schema_version,
-        ATTR_NAMES: schema_attr_names
+        SCHEMA_NAME: schema_name,
+        SCHEMA_VERSION: schema_version,
+        SCHEMA_ATTR_NAMES: schema_attr_names
     }
     schema_operation = {
         TXN_TYPE: SCHEMA,
@@ -124,8 +125,8 @@ def test_state_proof_returned_for_get_schema(looper,
         assert DATA in result
         data = result.get(DATA)
         assert data
-        assert ATTR_NAMES in data
-        assert data[ATTR_NAMES] == schema_attr_names
+        assert SCHEMA_ATTR_NAMES in data
+        assert data[SCHEMA_ATTR_NAMES] == schema_attr_names
         assert NAME in data
         assert VERSION in data
         assert result[TXN_TIME]
@@ -145,19 +146,19 @@ def test_state_proof_returned_for_get_claim_def(looper,
     data = {"primary": {'N': '123'}, REVOCATION: {'h0': '456'}}
     claim_def_operation = {
         TXN_TYPE: CLAIM_DEF,
-        REF: 12,
+        CLAIM_DEF_SCHEMA_REF: 12,
         DATA: data,
-        SIGNATURE_TYPE: 'CL'
+        CLAIM_DEF_SIGNATURE_TYPE: 'CL'
     }
     sdk_submit_operation_and_get_replies(looper,
                                          sdk_pool_handle,
                                          sdk_wallet_trust_anchor,
                                          claim_def_operation)
     get_claim_def_operation = {
-        ORIGIN: dest,
+        CLAIM_DEF_FROM: dest,
         TXN_TYPE: GET_CLAIM_DEF,
-        REF: 12,
-        SIGNATURE_TYPE: 'CL'
+        CLAIM_DEF_SCHEMA_REF: 12,
+        CLAIM_DEF_SIGNATURE_TYPE: 'CL'
     }
     replies = sdk_submit_operation_and_get_replies(looper,
                                                    sdk_pool_handle,

@@ -1,6 +1,7 @@
 import json
 
 from plenum.common.constants import VERKEY, DATA, NODE, TYPE
+from plenum.common.txn_util import get_payload_data, get_type
 from plenum.test.cli.helper import checkCmdValid
 
 from indy_common.constants import NYM
@@ -18,13 +19,14 @@ def executeAndCheckGenTxn(cli, cmd, typ, nym, role=None, data=None):
 
     role = Roles[role].value if role else role
     for txn in cli.genesisTransactions:
-        if txn.get(TARGET_NYM) == nym:
+        txn_data = get_payload_data(txn)
+        if txn_data.get(TARGET_NYM) == nym:
             nymCorrect = True
-            if txn.get(TYPE) == typ:
+            if get_type(txn) == typ:
                 typeCorrect = True
-            if txn.get(ROLE) == role:
+            if txn_data.get(ROLE) == role:
                 roleCorrect = True
-            if data and txn.get(DATA) == json.loads(data):
+            if data and txn_data.get(DATA) == json.loads(data):
                 dataCorrect = True
 
     assert typeCorrect and nymCorrect and roleCorrect and dataCorrect

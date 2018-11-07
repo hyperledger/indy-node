@@ -1,0 +1,105 @@
+# setup environment
+- pool create AS-0301-owner gen_txn_file=./pool_transactions_genesis
+pool connect AS-0301-owner
+- wallet create AS-03-wallet-owner key=testkey storage_config={"pool":"AS-0301-owner"}
+wallet open AS-03-wallet-owner key=testkey
+#################
+# setup section #
+#################
+did new seed=000000000000000000000000Trustee1 metadata="Default Trustee"
+did new seed=TestTrustee100000000000000000003 metadata="test trustee 1"
+did new seed=TestTrustee200000000000000000003 metadata="test trustee 2"
+did new seed=TestSteward100000000000000000003 metadata="test steward 1"
+# did new seed=TestSteward300000000000000000003 metadata="test steward 3"
+did new seed=TestSteward200000000000000000003 metadata="test steward 2"
+did new seed=TestTrustAnchor10000000000000003 metadata="test trust anchor 1"
+did new seed=TestTrustAnchor20000000000000003 metadata="test trust anchor 2"
+did new seed=TestTrustAnchor30000000000000003 metadata="test trust anchor 3"
+did new seed=RandomUser1000000000000000000003 metadata="test identity 1"
+did new seed=RandomUser2000000000000000000003 metadata="test identity 2"
+did new seed=RandomUser3000000000000000000003 metadata="test identity 3"
+# AS Trustee CREATE Steward (steward1)
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=AhqUV2zHYdNaWLFCCe7xCn role=STEWARD verkey=~YUY2ChUGWJovtU6XTn61D8
+- ledger get-nym did=AhqUV2zHYdNaWLFCCe7xCn
+# AS Trustee CREATE TrustAnchor (anchor1)
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=TRUST_ANCHOR verkey=~YPZot1kM4DLwvsX6mtcKd9
+- ledger get-nym did=DriVwCMbtEgkmoEHKin6Ah
+# AS Trustee CREATE IdentityOwner (user1)
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=LBbKEeczA9iL21p4Kgxcuf verkey=~3ZvjdaYs4cdFYXAwNGR85p
+- ledger get-nym did=LBbKEeczA9iL21p4Kgxcuf
+################
+# test section #
+################
+### Actions with NYMs ###
+# #1.1 AS IdentityOwner REMOVE Trustee (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=V4SGRU86Z58d6TV7PBUe6f role= 
+# #1.2 CHECK Trustee IS VALID
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=CYdQe2tmSwhv2XdicegoAn role=TRUSTEE verkey=~E7MjQHm14YnmZD9RErTBsi
+- ledger get-nym did=CYdQe2tmSwhv2XdicegoAn
+# #2 AS IdentityOwner CREATE Trustee (trustee1) (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=FiAsNdcWnpB2L22ZUGyKHa role=TRUSTEE verkey=~BZHjLX8NYwJXPTE746hn6Y
+- ledger get-nym did=FiAsNdcWnpB2L22ZUGyKHa
+# #3.1 AS IdentityOwner REMOVE Steward (steward1) (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=AhqUV2zHYdNaWLFCCe7xCn role=
+# #3.2 CHECK Steward IS VALID
+did use AhqUV2zHYdNaWLFCCe7xCn
+ledger nym did=4xuWDwsQSqzQmYSheSWFyg role=TRUST_ANCHOR verkey=~BmnEpJMi6kJHUcxcVJa2R4
+- ledger get-nym did=4xuWDwsQSqzQmYSheSWFyg
+# #4 AS IdentityOwner CREATE Steward (steward2) (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=CbPwHxKEibPhV4pgXWpu26 role=STEWARD verkey=~MviYa49QADQXAM68WSiLPD
+- ledger get-nym did=CbPwHxKEibPhV4pgXWpu26
+# #5.1 AS IdentityOwner REMOVE TrustAnchor (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=
+# #5.2 CHECK TrustAnchor IS VALID
+did use DriVwCMbtEgkmoEHKin6Ah
+ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG verkey=~UpRqa9gQ1jsbUBvKYPtWSo
+- ledger get-nym did=Q8uxmCGdXgLHHtaTwYtVJG
+# #6 AS IdentityOwner CREATE TrustAnchor (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=2b6xTx2HniDU77nxHm6zWB role=TRUST_ANCHOR verkey=~HF34ymwfTJngb8zFDmCyvX
+- ledger get-nym did=2b6xTx2HniDU77nxHm6zWB
+# #7.1 AS IdentityOwner CREATE IdentityOwner (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=Fk9ENxnz1ztDgdivQBJTCZ verkey=~NT9ANFeDhCLKDg5PNKZXKK
+- ledger get-nym did=Fk9ENxnz1ztDgdivQBJTCZ
+# #8 check that can't add roles back when don't have necessary permissions
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUST_ANCHOR
+- ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=STEWARD
+- ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUSTEE
+### Additional cases ###
+did use V4SGRU86Z58d6TV7PBUe6f
+did new seed=RandomAttribOwner000000000000003
+ledger nym did=UffJCJngTXc1o84dQ7aEUb verkey=~J4HtnGz2wW2nE7VuMeg39M
+did new seed=RandomUserForRotateKey0000000003
+ledger nym did=X3zYajU7gbz9Pu8k6E7Ppf verkey=~3ZDo6g4ZDRKGauKrR452xU
+# Only owner can edit existing NYMs
+did use X3zYajU7gbz9Pu8k6E7Ppf
+did rotate-key seed=RandomUserForRotateKey0NewKey003
+# Not owner can't edit existing NYMs (FAIL)
+did use UffJCJngTXc1o84dQ7aEUb
+- ledger nym did=X3zYajU7gbz9Pu8k6E7Ppf verkey=~3ZDo6g4ZDRKGauKrR452xU
+# Only owners can create ATTRIBs
+did use X3zYajU7gbz9Pu8k6E7Ppf
+ledger attrib did=X3zYajU7gbz9Pu8k6E7Ppf raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Only owners can edit ATTRIBs
+ledger attrib did=X3zYajU7gbz9Pu8k6E7Ppf raw={"endpoint":{"ha":"127.0.0.1:6666"}}
+# Not owner can't create attrib (FAIL)
+did use X3zYajU7gbz9Pu8k6E7Ppf
+- ledger attrib did=UffJCJngTXc1o84dQ7aEUb raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Not owner can't edit attrib (FAIL)
+did use UffJCJngTXc1o84dQ7aEUb
+- ledger attrib did=X3zYajU7gbz9Pu8k6E7Ppf raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+# Identity Owner can't create SCHEMA: (FAIL)
+- ledger schema name=IdentityOwnerSchema version=1.0 attr_names=name,age
+# Identity Owner can't create CLAIM_DEF: (FAIL)
+- ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=3

@@ -1,0 +1,64 @@
+#! /usr/bin/env python3
+import argparse
+import os
+
+from crypto.bls.bls_key_manager import LoadBLSKeyError
+from crypto.bls.indy_crypto.bls_crypto_indy_crypto import \
+    BlsCryptoSignerIndyCrypto
+from indy_common.config_helper import NodeConfigHelper
+from plenum.bls.bls_key_manager_file import BlsKeyManagerFile
+from indy_common.config_util import getConfig
+
+config = getConfig()
+config.enableStdOutLogging = False
+ENV_FILE_PATH = "/etc/indy/indy.env"
+
+
+def load_keys() -> (str, str):
+    node_name = get_node_name()
+    if node_name is None:
+        raise LoadBLSKeyError("Please use parameter --name for setting node name.")
+
+    node_config_helper = NodeConfigHelper(node_name, getConfig())
+    keys_dir = os.path.expanduser(node_config_helper.keys_dir)
+    if not os.path.exists(keys_dir):
+        raise LoadBLSKeyError("Keys are not exist. Please generate BLS keys.")
+
+    dir = os.path.join(keys_dir, node_name)
+    sk, pk = BlsKeyManagerFile(dir).load_keys()
+    return sk, pk
+
+
+def get_node_name():
+    node_name = parse_args()
+    node_name_key = 'NODE_NAME'
+
+    if os.path.exists(ENV_FILE_PATH):
+        with open(ENV_FILE_PATH, "r") as fenv:
+            for line in fenv.readlines():
+                if line.find(node_name_key) != -1:
+                    node_name = line.split('=')[1].strip()
+                    break
+    return node_name
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Generating proof of possession for the Node's BLS key.")
+
+    parser.add_argument('--name', required=False, help='node name')
+    args = parser.parse_args()
+    return args.name
+
+
+if __name__ == "__main__":
+    pk = sk = None
+    try:
+        sk, pk = load_keys()
+    except LoadBLSKeyError as e:
+        print(e.args[0])
+
+    if None not in [pk, sk]:
+        print("The Public BLS Key is", pk)
+        key_proof = BlsCryptoSignerIndyCrypto.generate_key_proof(sk, pk)
+        print("BLS Proof of possession for the Public BLS Key is", key_proof)

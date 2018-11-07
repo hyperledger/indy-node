@@ -17,7 +17,7 @@ strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
 from indy_client.test.conftest import trustAnchorWallet, \
-    trustAnchor, tdirWithDomainTxnsUpdated, updatedDomainTxnFile, \
+    trustAnchor, tdirWithDomainTxns, \
     stewardWallet, steward, genesisTxns, testClientClass, client_ledger_dir, \
     addedTrustAnchor, userWalletB, nodeSet, testNodeClass, updatedPoolTxnData, \
     trusteeData, trusteeWallet, trustee, warnfilters as client_warnfilters
@@ -25,7 +25,8 @@ from indy_client.test.conftest import trustAnchorWallet, \
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
-    tdirWithPoolTxns, tdirWithDomainTxns, tdirWithClientPoolTxns, txnPoolNodeSet, \
+    tdirWithPoolTxns, tdirWithDomainTxns as PTdirWithDomainTxns, \
+    tdirWithClientPoolTxns, txnPoolNodeSet, \
     poolTxnData, dirName, poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     patchPluginManager, txnPoolNodesLooper, warncheck, \
@@ -36,10 +37,10 @@ from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNa
     domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_name, sdk_wallet_steward, \
-    sdk_wallet_handle, sdk_wallet_name, sdk_steward_seed, sdk_wallet_client, sdk_wallet_trustee, \
+from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_data, sdk_wallet_steward, \
+    sdk_wallet_handle, sdk_wallet_data, sdk_steward_seed, sdk_wallet_client, sdk_wallet_trustee, \
     sdk_trustee_seed, trustee_data, sdk_client_seed, poolTxnClientData, poolTxnClientNames, \
-    sdk_wallet_stewards
+    sdk_wallet_stewards, create_node_and_not_start
 
 Logger.setLogLevel(logging.NOTSET)
 
@@ -84,7 +85,7 @@ def sdk_node_theta_added(looper,
                                          alias=new_steward_name,
                                          role=STEWARD_STRING)
 
-    sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort = \
+    sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof = \
         prepare_new_node_data(tconf, tdir, new_node_name,
                               configClass=node_config_helper_class)
 
@@ -99,7 +100,8 @@ def sdk_node_theta_added(looper,
                              nodePort=nodePort,
                              bls_key=bls_key,
                              sigseed=sigseed,
-                             services=[VALIDATOR]))
+                             services=[VALIDATOR],
+                             key_proof=key_proof))
 
     # sending request using 'sdk_' functions
     request_couple = sdk_sign_and_send_prepared_request(looper, new_steward_wallet,

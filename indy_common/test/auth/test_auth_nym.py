@@ -1,7 +1,7 @@
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
 from indy_common.auth import Authoriser
-from indy_common.constants import ROLE, NYM, TGB, TRUST_ANCHOR
+from indy_common.constants import ROLE, NYM, TRUST_ANCHOR
 
 
 def test_make_trustee(role, is_owner):
@@ -11,16 +11,6 @@ def test_make_trustee(role, is_owner):
                                                field=ROLE,
                                                oldVal=None,
                                                newVal=TRUSTEE,
-                                               isActorOwnerOfSubject=is_owner)[0]
-
-
-def test_make_tgb(role, is_owner):
-    authorized = (role == TRUSTEE)
-    assert authorized == Authoriser.authorised(typ=NYM,
-                                               actorRole=role,
-                                               field=ROLE,
-                                               oldVal=None,
-                                               newVal=TGB,
                                                isActorOwnerOfSubject=is_owner)[0]
 
 
@@ -50,16 +40,6 @@ def test_remove_trustee(role, is_owner):
                                                actorRole=role,
                                                field=ROLE,
                                                oldVal=TRUSTEE,
-                                               newVal=None,
-                                               isActorOwnerOfSubject=is_owner)[0]
-
-
-def test_remove_tgb(role, is_owner):
-    authorized = (role == TRUSTEE)
-    assert authorized == Authoriser.authorised(typ=NYM,
-                                               actorRole=role,
-                                               field=ROLE,
-                                               oldVal=TGB,
                                                newVal=None,
                                                isActorOwnerOfSubject=is_owner)[0]
 

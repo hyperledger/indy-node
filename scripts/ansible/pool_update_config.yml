@@ -11,3 +11,6 @@
 
     - name: Update config
       copy: src=indy_config.py dest=/etc/indy/indy_config.py
+
+    - name: Start indy node
+      service: name=indy-node state=started

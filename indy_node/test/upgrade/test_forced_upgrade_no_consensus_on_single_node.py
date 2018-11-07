@@ -10,7 +10,7 @@ def test_forced_upgrade_no_consensus_on_single_node(
     nup = validUpgradeExpForceTrue.copy()
     nup.update({VERSION: bumpVersion(validUpgradeExpForceTrue[VERSION])})
     for node in nodeSet:
-        if node.name != "Alpha":
+        if node.name != "Alpha" and node in looper.prodables:
             node.cleanupOnStopping = False
             looper.removeProdable(node)
             node.stop()

@@ -39,8 +39,7 @@ from indy_node.test.helper import addAttributeAndCheck
 from indy_client.test.helper import createNym, TestClient
 
 # noinspection PyUnresolvedReferences
-from indy_node.test.conftest import nodeSet, updatedDomainTxnFile, \
-    genesisTxns
+from indy_node.test.conftest import nodeSet, genesisTxns
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import poolTxnStewardData, poolTxnStewardNames

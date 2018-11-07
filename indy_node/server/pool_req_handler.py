@@ -1,7 +1,8 @@
 from copy import deepcopy
 
 from common.serializers.serialization import pool_state_serializer
-from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES
+from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES, \
+    BLS_KEY_PROOF
 
 from plenum.common.ledger import Ledger
 from plenum.server.pool_req_handler import PoolRequestHandler as PHandler
@@ -47,6 +48,8 @@ class PoolRequestHandler(PHandler):
         vals = []
         msgs = []
         for k in data:
+            if k == BLS_KEY_PROOF:
+                continue
             oldVal = nodeInfo.get(k, None) if nodeInfo else None
             newVal = data[k]
             if k == SERVICES:

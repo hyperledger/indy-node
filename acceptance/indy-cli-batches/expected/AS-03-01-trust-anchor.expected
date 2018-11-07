@@ -1,0 +1,513 @@
+- pool create AS-0301-anchor gen_txn_file=./pool_transactions_genesis
+Pool config "AS-0301-anchor" has been created
+
+pool connect AS-0301-anchor
+Pool "AS-0301-anchor" has been connected
+
+- wallet create AS-03-wallet-anchor key=testkey storage_config={"pool":"AS-0301-anchor"}
+Wallet "AS-03-wallet-anchor" has been created
+
+wallet open AS-03-wallet-anchor key=testkey
+Wallet "AS-03-wallet-anchor" has been opened
+
+did new seed=000000000000000000000000Trustee1 metadata="Default Trustee"
+Did "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey
+Metadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"
+
+did new seed=TestTrustAnchorTrustee1000000002 metadata="Trustee 1"
+Did "HUBDajRyCvTGR18ETzEGEB" has been created with "~DriCN8uMxoA8tiBazmkBWk" verkey
+Metadata has been saved for DID "HUBDajRyCvTGR18ETzEGEB"
+
+did new seed=TestTrustAnchorTrustee2000000002 metadata="Trustee 2"
+Did "KY4VDKjHUPTnxtF2zfJnNP" has been created with "~WUktVVQHL7saxaNochggZR" verkey
+Metadata has been saved for DID "KY4VDKjHUPTnxtF2zfJnNP"
+
+did new seed=TestTrustAnchorSteward1000000002 metadata="Steward 1"
+Did "23LxaWGVajU7vMn7zcrHGK" has been created with "~UgkZ1ktZV2DQg1sJn3tjdP" verkey
+Metadata has been saved for DID "23LxaWGVajU7vMn7zcrHGK"
+
+did new seed=TestTrustAnchorSteward2000000002 metadata="Steward 2"
+Did "BhJXbKYGm9ZkHF3jjhDrPJ" has been created with "~R7RAboPbpw5ycURytkcASB" verkey
+Metadata has been saved for DID "BhJXbKYGm9ZkHF3jjhDrPJ"
+
+did new seed=TestTrustAnchorCreateTrustAncho1 metadata="Trust Anchor 1"
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been created with "~5izgZjWpw3gxeDB9KRS7BN" verkey
+Metadata has been saved for DID "T6XTs3nSU3J7ptAcxSnaVo"
+
+did new seed=TestTrustAnchorCreateTrustAncho2 metadata="Trust Anchor 2"
+Did "TPrMRHHSunP3cEtpkY8gi7" has been created with "~ANMdNhQ3uuyXDmn7cxi8df" verkey
+Metadata has been saved for DID "TPrMRHHSunP3cEtpkY8gi7"
+
+did new seed=TestTrustAnchorCreateTrustAncho3 metadata="Trust Anchor 3"
+Did "Xw1QKjyG938oV5gUnLoBhm" has been created with "~3iC9GEndzoEYcruyhTLWDc" verkey
+Metadata has been saved for DID "Xw1QKjyG938oV5gUnLoBhm"
+
+did new seed=TestTrustAnchorCreateTrustAncho4 metadata="Trust Anchor 4"
+Did "3KghQejG1HZU5MbpQL5Cuk" has been created with "~6DWoz55wzC77CDEYkZzytR" verkey
+Metadata has been saved for DID "3KghQejG1HZU5MbpQL5Cuk"
+
+did new seed=TestTrustAnchorRandomUser1000002 metadata="Random User 1"
+Did "MXYSvpB5e549z6nqa1nTEh" has been created with "~PR7BXc75UwtiPvKjtDn26N" verkey
+Metadata has been saved for DID "MXYSvpB5e549z6nqa1nTEh"
+
+did new seed=TestTrustAnchorRandomUser2000002 metadata="Random User 2"
+Did "WDLETDtBugFiJvtkghHoH" has been created with "~QdAhvFaZ81ZZ1DxwqZ5i8i" verkey
+Metadata has been saved for DID "WDLETDtBugFiJvtkghHoH"
+
+did new seed=TestTrustAnchorRandomUser3000002 metadata="Random User 3"
+Did "3B1g9f3vC4pR8bTfi21z91" has been created with "~5RtP3dPmQdNmz75TvQPK9k" verkey
+Metadata has been saved for DID "3B1g9f3vC4pR8bTfi21z91"
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=23LxaWGVajU7vMn7zcrHGK role=STEWARD verkey=~UgkZ1ktZV2DQg1sJn3tjdP
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 40              | 1534005232137571436 | 2018-08-11 16:33:52 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| 23LxaWGVajU7vMn7zcrHGK | ~UgkZ1ktZV2DQg1sJn3tjdP | STEWARD |
++------------------------+-------------------------+---------+
+
+- ledger get-nym did=23LxaWGVajU7vMn7zcrHGK
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 40              | 1534005232925602488 | 2018-08-11 16:33:52 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+---------+
+| Identifier             | Dest                   | Verkey                  | Role    |
++------------------------+------------------------+-------------------------+---------+
+| V4SGRU86Z58d6TV7PBUe6f | 23LxaWGVajU7vMn7zcrHGK | ~UgkZ1ktZV2DQg1sJn3tjdP | STEWARD |
++------------------------+------------------------+-------------------------+---------+
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=TRUST_ANCHOR verkey=~5izgZjWpw3gxeDB9KRS7BN
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 41              | 1534005233011271550 | 2018-08-11 16:33:53 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| T6XTs3nSU3J7ptAcxSnaVo | ~5izgZjWpw3gxeDB9KRS7BN | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+- ledger get-nym did=T6XTs3nSU3J7ptAcxSnaVo
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 41              | 1534005233840906565 | 2018-08-11 16:33:53 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+--------------+
+| Identifier             | Dest                   | Verkey                  | Role         |
++------------------------+------------------------+-------------------------+--------------+
+| V4SGRU86Z58d6TV7PBUe6f | T6XTs3nSU3J7ptAcxSnaVo | ~5izgZjWpw3gxeDB9KRS7BN | TRUST_ANCHOR |
++------------------------+------------------------+-------------------------+--------------+
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=TRUST_ANCHOR verkey=~ANMdNhQ3uuyXDmn7cxi8df
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 42              | 1534005233933786246 | 2018-08-11 16:33:54 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| TPrMRHHSunP3cEtpkY8gi7 | ~ANMdNhQ3uuyXDmn7cxi8df | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+- ledger get-nym did=TPrMRHHSunP3cEtpkY8gi7
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 42              | 1534005234813642241 | 2018-08-11 16:33:54 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+--------------+
+| Identifier             | Dest                   | Verkey                  | Role         |
++------------------------+------------------------+-------------------------+--------------+
+| V4SGRU86Z58d6TV7PBUe6f | TPrMRHHSunP3cEtpkY8gi7 | ~ANMdNhQ3uuyXDmn7cxi8df | TRUST_ANCHOR |
++------------------------+------------------------+-------------------------+--------------+
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+ledger nym did=MXYSvpB5e549z6nqa1nTEh verkey=~PR7BXc75UwtiPvKjtDn26N
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| T6XTs3nSU3J7ptAcxSnaVo | 43              | 1534005235009499330 | 2018-08-11 16:33:55 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| MXYSvpB5e549z6nqa1nTEh | ~PR7BXc75UwtiPvKjtDn26N | -    |
++------------------------+-------------------------+------+
+
+- ledger get-nym did=MXYSvpB5e549z6nqa1nTEh
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| T6XTs3nSU3J7ptAcxSnaVo | 43              | 1534005235833544368 | 2018-08-11 16:33:55 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+------+
+| Identifier             | Dest                   | Verkey                  | Role |
++------------------------+------------------------+-------------------------+------+
+| T6XTs3nSU3J7ptAcxSnaVo | MXYSvpB5e549z6nqa1nTEh | ~PR7BXc75UwtiPvKjtDn26N | -    |
++------------------------+------------------------+-------------------------+------+
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+- ledger nym did=V4SGRU86Z58d6TV7PBUe6f role=
+Transaction has been rejected: T6XTs3nSU3J7ptAcxSnaVo is neither Trustee nor owner of V4SGRU86Z58d6TV7PBUe6f
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=KY4VDKjHUPTnxtF2zfJnNP role=TRUSTEE verkey=~WUktVVQHL7saxaNochggZR
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 44              | 1534005236401589738 | 2018-08-11 16:33:57 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| KY4VDKjHUPTnxtF2zfJnNP | ~WUktVVQHL7saxaNochggZR | TRUSTEE |
++------------------------+-------------------------+---------+
+
+- ledger get-nym did=KY4VDKjHUPTnxtF2zfJnNP
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 44              | 1534005237793600735 | 2018-08-11 16:33:57 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+---------+
+| Identifier             | Dest                   | Verkey                  | Role    |
++------------------------+------------------------+-------------------------+---------+
+| V4SGRU86Z58d6TV7PBUe6f | KY4VDKjHUPTnxtF2zfJnNP | ~WUktVVQHL7saxaNochggZR | TRUSTEE |
++------------------------+------------------------+-------------------------+---------+
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+- ledger nym did=HUBDajRyCvTGR18ETzEGEB role=TRUSTEE verkey=~DriCN8uMxoA8tiBazmkBWk
+Transaction has been rejected: TRUST_ANCHOR cannot add TRUSTEE
+
+- ledger get-nym did=HUBDajRyCvTGR18ETzEGEB
+NYM not found
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+- ledger nym did=23LxaWGVajU7vMn7zcrHGK role=
+Transaction has been rejected: T6XTs3nSU3J7ptAcxSnaVo is neither Trustee nor owner of 23LxaWGVajU7vMn7zcrHGK
+
+did use 23LxaWGVajU7vMn7zcrHGK
+Did "23LxaWGVajU7vMn7zcrHGK" has been set as active
+
+ledger nym did=3KghQejG1HZU5MbpQL5Cuk role=TRUST_ANCHOR verkey=~6DWoz55wzC77CDEYkZzytR
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| 23LxaWGVajU7vMn7zcrHGK | 45              | 1534005239424172193 | 2018-08-11 16:34:00 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| 3KghQejG1HZU5MbpQL5Cuk | ~6DWoz55wzC77CDEYkZzytR | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+- ledger get-nym did=3KghQejG1HZU5MbpQL5Cuk
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| 23LxaWGVajU7vMn7zcrHGK | 45              | 1534005240802053758 | 2018-08-11 16:34:00 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+--------------+
+| Identifier             | Dest                   | Verkey                  | Role         |
++------------------------+------------------------+-------------------------+--------------+
+| 23LxaWGVajU7vMn7zcrHGK | 3KghQejG1HZU5MbpQL5Cuk | ~6DWoz55wzC77CDEYkZzytR | TRUST_ANCHOR |
++------------------------+------------------------+-------------------------+--------------+
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+- ledger nym did=BhJXbKYGm9ZkHF3jjhDrPJ role=STEWARD verkey=~R7RAboPbpw5ycURytkcASB
+Transaction has been rejected: TRUST_ANCHOR cannot add STEWARD
+
+- ledger get-nym did=BhJXbKYGm9ZkHF3jjhDrPJ
+NYM not found
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+- ledger nym did=TPrMRHHSunP3cEtpkY8gi7 role=
+Transaction has been rejected: T6XTs3nSU3J7ptAcxSnaVo is neither Trustee nor owner of TPrMRHHSunP3cEtpkY8gi7
+
+did use TPrMRHHSunP3cEtpkY8gi7
+Did "TPrMRHHSunP3cEtpkY8gi7" has been set as active
+
+ledger nym did=3B1g9f3vC4pR8bTfi21z91 verkey=~5RtP3dPmQdNmz75TvQPK9k
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| TPrMRHHSunP3cEtpkY8gi7 | 46              | 1534005242457431605 | 2018-08-11 16:34:03 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| 3B1g9f3vC4pR8bTfi21z91 | ~5RtP3dPmQdNmz75TvQPK9k | -    |
++------------------------+-------------------------+------+
+
+- ledger get-nym did=3B1g9f3vC4pR8bTfi21z91
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| TPrMRHHSunP3cEtpkY8gi7 | 46              | 1534005243838067619 | 2018-08-11 16:34:03 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+------+
+| Identifier             | Dest                   | Verkey                  | Role |
++------------------------+------------------------+-------------------------+------+
+| TPrMRHHSunP3cEtpkY8gi7 | 3B1g9f3vC4pR8bTfi21z91 | ~5RtP3dPmQdNmz75TvQPK9k | -    |
++------------------------+------------------------+-------------------------+------+
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+- ledger nym did=Xw1QKjyG938oV5gUnLoBhm role=TRUST_ANCHOR verkey=~3iC9GEndzoEYcruyhTLWDc
+Transaction has been rejected: TRUST_ANCHOR cannot add TRUST_ANCHOR
+
+- ledger get-nym did=Xw1QKjyG938oV5gUnLoBhm
+NYM not found
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+- ledger nym did=T6XTs3nSU3J7ptAcxSnaVo role=
+Transaction has been rejected: TRUST_ANCHOR cannot update role
+
+ledger nym did=WDLETDtBugFiJvtkghHoH verkey=~QdAhvFaZ81ZZ1DxwqZ5i8i
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| T6XTs3nSU3J7ptAcxSnaVo | 47              | 1534005245509089648 | 2018-08-11 16:34:06 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++-----------------------+-------------------------+------+
+| Did                   | Verkey                  | Role |
++-----------------------+-------------------------+------+
+| WDLETDtBugFiJvtkghHoH | ~QdAhvFaZ81ZZ1DxwqZ5i8i | -    |
++-----------------------+-------------------------+------+
+
+- ledger get-nym did=WDLETDtBugFiJvtkghHoH
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| T6XTs3nSU3J7ptAcxSnaVo | 47              | 1534005246907362764 | 2018-08-11 16:34:06 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-----------------------+-------------------------+------+
+| Identifier             | Dest                  | Verkey                  | Role |
++------------------------+-----------------------+-------------------------+------+
+| T6XTs3nSU3J7ptAcxSnaVo | WDLETDtBugFiJvtkghHoH | ~QdAhvFaZ81ZZ1DxwqZ5i8i | -    |
++------------------------+-----------------------+-------------------------+------+
+
+did use T6XTs3nSU3J7ptAcxSnaVo
+Did "T6XTs3nSU3J7ptAcxSnaVo" has been set as active
+
+- ledger nym did=WDLETDtBugFiJvtkghHoH role=TRUST_ANCHOR
+Transaction has been rejected: T6XTs3nSU3J7ptAcxSnaVo is neither Trustee nor owner of WDLETDtBugFiJvtkghHoH
+
+- ledger nym did=WDLETDtBugFiJvtkghHoH role=STEWARD
+Transaction has been rejected: T6XTs3nSU3J7ptAcxSnaVo is neither Trustee nor owner of WDLETDtBugFiJvtkghHoH
+
+- ledger nym did=WDLETDtBugFiJvtkghHoH role=TRUSTEE
+Transaction has been rejected: T6XTs3nSU3J7ptAcxSnaVo is neither Trustee nor owner of WDLETDtBugFiJvtkghHoH
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+did new seed=RandomAttribOwner000000000000002
+Did "LoZB9o2PFfSjrpnkugqunZ" has been created with "~X2yUYuMgCaaPSEyudS8jnT" verkey
+
+ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT role=TRUST_ANCHOR
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 48              | 1534005249621295310 | 2018-08-11 16:34:10 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| LoZB9o2PFfSjrpnkugqunZ | ~X2yUYuMgCaaPSEyudS8jnT | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+did new seed=RandomUserForRotateKey0000000002
+Did "ETcbLj612u9oXr7adZSWZV" has been created with "~UUMiscx15SsxekQtLfVVLh" verkey
+
+ledger nym did=ETcbLj612u9oXr7adZSWZV verkey=~UUMiscx15SsxekQtLfVVLh role=TRUST_ANCHOR
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 49              | 1534005250977304111 | 2018-08-11 16:34:11 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| ETcbLj612u9oXr7adZSWZV | ~UUMiscx15SsxekQtLfVVLh | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+did use LoZB9o2PFfSjrpnkugqunZ
+Did "LoZB9o2PFfSjrpnkugqunZ" has been set as active
+
+did rotate-key seed=RandomUserForRotateKey0NewKey002
+Verkey for did "LoZB9o2PFfSjrpnkugqunZ" has been updated. New verkey: "4MDqPrrqjuUP8csRGTbTN81oXjypYQVsW6dQVsUTHgDk"
+
+did use ETcbLj612u9oXr7adZSWZV
+Did "ETcbLj612u9oXr7adZSWZV" has been set as active
+
+- ledger nym did=LoZB9o2PFfSjrpnkugqunZ verkey=~X2yUYuMgCaaPSEyudS8jnT
+Transaction has been rejected: ETcbLj612u9oXr7adZSWZV is neither Trustee nor owner of LoZB9o2PFfSjrpnkugqunZ
+
+did use LoZB9o2PFfSjrpnkugqunZ
+Did "LoZB9o2PFfSjrpnkugqunZ" has been set as active
+
+ledger attrib did=LoZB9o2PFfSjrpnkugqunZ raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+Attrib request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| LoZB9o2PFfSjrpnkugqunZ | 51              | 1534005253673940808 | 2018-08-11 16:34:14 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++--------------------------------------+
+| Raw value                            |
++--------------------------------------+
+| {"endpoint":{"ha":"127.0.0.1:5555"}} |
++--------------------------------------+
+
+ledger attrib did=LoZB9o2PFfSjrpnkugqunZ raw={"endpoint":{"ha":"127.0.0.1:6666"}}
+Attrib request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| LoZB9o2PFfSjrpnkugqunZ | 52              | 1534005255027302638 | 2018-08-11 16:34:15 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++--------------------------------------+
+| Raw value                            |
++--------------------------------------+
+| {"endpoint":{"ha":"127.0.0.1:6666"}} |
++--------------------------------------+
+
+did use LoZB9o2PFfSjrpnkugqunZ
+Did "LoZB9o2PFfSjrpnkugqunZ" has been set as active
+
+- ledger attrib did=ETcbLj612u9oXr7adZSWZV raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+Transaction has been rejected: Only identity owner/guardian can add attribute for that identity
+
+did use ETcbLj612u9oXr7adZSWZV
+Did "ETcbLj612u9oXr7adZSWZV" has been set as active
+
+- ledger attrib did=LoZB9o2PFfSjrpnkugqunZ raw={"endpoint":{"ha":"127.0.0.1:5555"}}
+Transaction has been rejected: Only identity owner/guardian can add attribute for that identity
+
+ledger schema name=TrustAnchorSchema version=1.0 attr_names=name,age
+Schema request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| ETcbLj612u9oXr7adZSWZV | 53              | 1534005257721831110 | 2018-08-11 16:34:18 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++-------------------+---------+--------------+
+| Name              | Version | Attributes   |
++-------------------+---------+--------------+
+| TrustAnchorSchema | 1.0     | "name","age" |
++-------------------+---------+--------------+
+
+ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=2
+NodeConfig request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| ETcbLj612u9oXr7adZSWZV | 54              | 1534005259113311294 | 2018-08-11 16:34:19 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++----------------------------------------------------------------------------+
+| Primary Key                                                                |
++----------------------------------------------------------------------------+
+| {n:"1",r:{"age":"4","master_secret":"3","name":"5"},rctxt:"6",s:"2",z:"7"} |
++----------------------------------------------------------------------------+
+
+Wallet "AS-03-wallet-anchor" has been closed
+Pool "AS-0301-anchor" has been disconnected
+Goodbye...

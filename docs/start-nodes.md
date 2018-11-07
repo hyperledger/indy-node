@@ -41,14 +41,14 @@ There are a number of scripts which can help in generation of keys and running a
 #### Generating keys
 
 ###### For deb installation
-The following script should be used to generate both ed25519 and BLS keys for a node named `Alpha` with node port `9701` and client port `9702`
+The following script should be used to generate both ed25519 and BLS keys for a node named `Alpha` with node port `9701` and client port `9702`:
 ```
-init_indy_node Alpha 9701 9702 [--seed 111111111111111111111111111Alpha]
+init_indy_node Alpha 0.0.0.0 9701 0.0.0.0 9702 [--seed 111111111111111111111111111Alpha]
 ```
 Also this script generates indy-node environment file needed for systemd service config and indy-node iptables setup script.
 
 ###### For pip installation
-The following script can generate both ed25519 and BLS keys for a node named `Alpha`
+The following script can generate both ed25519 and BLS keys for a node named `Alpha`:
 ```
 init_indy_keys --name Alpha [--seed 111111111111111111111111111Alpha] [--force]
 ```
@@ -67,9 +67,9 @@ There is a script that can generate keys and corresponding test genesis files to
 ```
 - `--nodes` specifies a total number of nodes in the pool
 - `--clients` specifies a number of pre-configured clients in the pool (in `domain_transactions_file_{network_name}_genesis`)
-- `--nodeNum` specifies a number of this particular node (from 1 to `-nodes` value), that is a number of the Node to create private keys locally for.
+- `--nodeNum` specifies a number of this particular node (from 1 to `-nodes` value), that is a number of the Node to create private keys locally for 
 - `--ip` specifies IP addresses for all nodes in the pool (if not specified, then `localhost` is used) 
-- `--network` specifies a Network generate transaction files and keys for. `sandbox` is used by default.
+- `--network` specifies a Network generate transaction files and keys for. `sandbox` is used by default 
  
 We can run the script multiple times for different networks. 
 
@@ -79,12 +79,14 @@ Instructions related to iptables setup can be found [here](https://github.com/hy
 
 #### Running Node
 
-The following script will start a Node process which can communicate with other Nodes and Clients
+The following script will start a Node process which can communicate with other Nodes and Clients:
 ```
-start_indy_node Alpha 9701 9702
+start_indy_node Alpha 0.0.0.0 9701 0.0.0.0 9702
 ```
 The node uses separate TCP channels for communicating with nodes and clients.
-The first port number is for the node-to-node communication channel and the second is for node-to-client communication channel.
+The first IP/port pair is for the node-to-node communication channel and the second IP/port pair is for node-to-client communication channel.
+IP addresses may be changed according to hardware configuration.
+Different IP addresses for node-to-node and node-to-client communication may be used.
 
 ## Local Test Network Example 
 
@@ -101,27 +103,26 @@ Node4 will use ports 9707 and 9708 for nodestack and clientstack respectively
 
 Now you can run the 4 nodes as
 ```
-start_indy_node Node1 9701 9702
+start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702
 ```
 ```
-start_indy_node Node2 9703 9704
+start_indy_node Node2 0.0.0.0 9703 0.0.0.0 9704
 ```
 ```
-start_indy_node Node3 9705 9706
+start_indy_node Node3 0.0.0.0 9705 0.0.0.0 9706
 ```
 ```
-start_indy_node Node4 9707 9708
+start_indy_node Node4 0.0.0.0 9707 0.0.0.0 9708
 ```
 
 ## Remote Test Network Example 
 
-Now lets say you want to run 4 nodes on 4 different machines as
+Now let's say you want to run 4 nodes on 4 different machines as
 1. Node1 running on 191.177.76.26
 2. Node2 running on 22.185.194.102
 3. Node3 running on 247.81.153.79
 4. Node4 running on 93.125.199.45
 
-For this
 On machine with IP 191.177.76.26 you will run
 ```
 ~$ generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 --ips '191.177.76.26,22.185.194.102,247.81.153.79,93.125.199.45'
@@ -148,14 +149,14 @@ This node with name Node4 will use ports 9707 and 9708 for nodestack and clients
 
 Now you can run the 4 nodes as
 ```
-start_indy_node Node1 9701 9702
+start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702
 ```
 ```
-start_indy_node Node2 9703 9704
+start_indy_node Node2 0.0.0.0 9703 0.0.0.0 9704
 ```
 ```
-start_indy_node Node3 9705 9706
+start_indy_node Node3 0.0.0.0 9705 0.0.0.0 9706
 ```
 ```
-start_indy_node Node4 9707 9708
+start_indy_node Node4 0.0.0.0 9707 0.0.0.0 9708
 ```

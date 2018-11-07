@@ -5,6 +5,8 @@ import base58
 
 from anoncreds.protocol.utils import randomString
 
+from plenum.common.member.member import Member
+from plenum.common.txn_util import get_payload_data
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.common.keygen_utils import initLocalKeys
 from plenum.common.signer_did import DidSigner
@@ -31,7 +33,7 @@ from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYP
 from indy_client.client.wallet.wallet import Wallet
 from indy_common.constants import NYM, TRUST_ANCHOR
 from indy_common.constants import TXN_TYPE, TARGET_NYM, ROLE
-from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnToGenesisFile
+from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnsToGenesisFile
 from indy_node.test.helper import makePendingTxnsRequest, buildStewardClient, \
     TestNode
 from indy_client.test.helper import addRole, genTestClient, TestClient, createNym, getClientAddedWithRole
@@ -39,7 +41,7 @@ from indy_client.test.helper import addRole, genTestClient, TestClient, createNy
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
-    tdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
+    tdirWithDomainTxns as PTdirWithDomainTxns, txnPoolNodeSet, poolTxnData, dirName, \
     poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, tdirWithPoolTxns, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     txnPoolNodesLooper, patchPluginManager, tdirWithClientPoolTxns, \
@@ -49,8 +51,8 @@ from plenum.test.conftest import tdir, client_tdir, nodeReg, \
 from indy_common.test.conftest import tconf, general_conf_tdir, poolTxnTrusteeNames, \
     domainTxnOrderedFields, looper, config_helper_class, node_config_helper_class
 
-from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_name, sdk_wallet_steward, \
-    sdk_wallet_handle, sdk_wallet_name, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data, \
+from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_data, sdk_wallet_steward, \
+    sdk_wallet_handle, sdk_wallet_data, sdk_steward_seed, sdk_wallet_trustee, sdk_trustee_seed, trustee_data, \
     sdk_wallet_client, sdk_client_seed, poolTxnClientData, poolTxnClientNames, poolTxnData
 
 Logger.setLogLevel(logging.DEBUG)
@@ -89,13 +91,11 @@ def updatedPoolTxnData(poolTxnData):
     data = deepcopy(poolTxnData)
     trusteeSeed = 'thisistrusteeseednotsteward12345'
     signer = DidSigner(seed=trusteeSeed.encode())
-    t = {
-        TARGET_NYM: signer.identifier,
-        VERKEY: signer.verkey,
-        ROLE: TRUSTEE,
-        TYPE: NYM,
-        ALIAS: "Trustee1",
-        TXN_ID: "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a"}
+    t = Member.nym_txn(nym=signer.identifier,
+                       name="Trustee1",
+                       verkey=signer.verkey,
+                       role=TRUSTEE,
+                       txn_id="6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4a")
     data["seeds"]["Trustee1"] = trusteeSeed
     data["txns"].insert(0, t)
     return data
@@ -107,7 +107,7 @@ def trusteeData(poolTxnTrusteeNames, updatedPoolTxnData):
     for name in poolTxnTrusteeNames:
         seed = updatedPoolTxnData["seeds"][name]
         txn = next(
-            (txn for txn in updatedPoolTxnData["txns"] if txn[ALIAS] == name),
+            (txn for txn in updatedPoolTxnData["txns"] if get_payload_data(txn)[ALIAS] == name),
             None)
         ret.append((name, seed.encode(), txn))
     return ret
@@ -146,13 +146,12 @@ def steward(nodeSet, looper, tdirWithClientPoolTxns, stewardWallet):
 
 @pytest.fixture(scope="module")
 def genesisTxns(stewardWallet: Wallet, trusteeWallet: Wallet):
-    nym = stewardWallet.defaultId
-    return [{TXN_TYPE: NYM,
-             TARGET_NYM: nym,
-             TXN_ID: "9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
-             ROLE: STEWARD,
-             VERKEY: stewardWallet.getVerkey()},
-            ]
+    return [Member.nym_txn(
+        nym = stewardWallet.defaultId,
+        verkey=stewardWallet.getVerkey(),
+        role=STEWARD,
+        txn_id="9c86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    )]
 
 
 @pytest.fixture(scope="module")
@@ -166,18 +165,14 @@ def testClientClass():
 
 
 @pytest.fixture(scope="module")
-def tdirWithDomainTxnsUpdated(tdirWithDomainTxns, poolTxnTrusteeNames,
-                              trusteeData, tconf):
+def tdirWithDomainTxns(PTdirWithDomainTxns, poolTxnTrusteeNames,
+                       trusteeData, genesisTxns, domainTxnOrderedFields,
+                       tconf):
     addTrusteeTxnsToGenesis(poolTxnTrusteeNames, trusteeData,
-                            tdirWithDomainTxns, tconf.domainTransactionsFile)
-    return tdirWithDomainTxns
-
-
-@pytest.fixture(scope="module")
-def updatedDomainTxnFile(tdirWithDomainTxnsUpdated, genesisTxns,
-                         domainTxnOrderedFields, tconf):
-    addTxnToGenesisFile(tdirWithDomainTxnsUpdated, tconf.domainTransactionsFile,
-                        genesisTxns, domainTxnOrderedFields)
+                            PTdirWithDomainTxns, tconf.domainTransactionsFile)
+    addTxnsToGenesisFile(PTdirWithDomainTxns, tconf.domainTransactionsFile,
+                         genesisTxns, domainTxnOrderedFields)
+    return PTdirWithDomainTxns
 
 
 @pytest.fixture(scope='module')
@@ -186,7 +181,7 @@ def sdk_pool_handle(plenum_pool_handle, nodeSet):
 
 
 @pytest.fixture(scope="module")
-def nodeSet(tconf, updatedPoolTxnData, updatedDomainTxnFile, txnPoolNodeSet):
+def nodeSet(txnPoolNodeSet):
     return txnPoolNodeSet
 
 

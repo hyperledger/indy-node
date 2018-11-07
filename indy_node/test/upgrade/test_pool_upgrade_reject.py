@@ -20,7 +20,7 @@ def testOnlyTrusteeCanSendPoolUpgrade(looper, sdk_pool_handle, sdk_wallet_stewar
     # A steward sending POOL_UPGRADE but txn fails
     validUpgrade = deepcopy(validUpgrade)
     validUpgrade[NAME] = 'upgrade-20'
-    validUpgrade[VERSION] = bumpedVersion()
+    validUpgrade[VERSION] = bumpedVersion(validUpgrade['version'])
     req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_steward, validUpgrade)
     sdk_get_bad_response(looper, [req], RequestRejectedException, 'cannot do')
 

@@ -9,6 +9,7 @@ from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 
 logger = getlogger()
+whitelist = ['Consensus for ReqId:']
 
 
 def test_submit_schema(submitted_schema, schema):

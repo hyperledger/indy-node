@@ -12,6 +12,7 @@ from stp_core.common.log import getlogger
 from stp_core.loop.eventually import eventually
 
 logger = getlogger()
+whitelist = ["is not connected - message will not be sent immediately."]
 
 
 @pytest.fixture(scope="module")
@@ -125,8 +126,8 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
     assert True in last_2_process_ordered_results  # True for master replica
 
 
-def patched_start_catchup(self):
-    Node.start_catchup(self)
+def patched_start_catchup(self, *args, **kwargs):
+    Node.start_catchup(self, *args, **kwargs)
 
     self.nodeIbStasher.reset_delays_and_process_delayeds()
     self.nodeIbStasher.delay(lsDelay(300))

@@ -65,7 +65,7 @@ This file is updated by node once a minute and contains following information:
 ```
 
 ## Modification - New Read Command
-Validator_info accessible as read command, available for all clients. New command VALIDATOR_INFO provide info from
+Validator_info accessible as read command, available for Steward and Trustee. New command VALIDATOR_INFO provide info from
 all the connected nodes without need of consensus (similar to force=True flag in upgrade cmd).
 Command allow requesting all parameters or some subset of parameters.
 

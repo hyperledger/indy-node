@@ -1,0 +1,26 @@
+#setup environment
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+pool connect AS-pool
+wallet create AS-01-wallet-3 key=testkey storage_config={"pool":"AS-pool"}
+wallet open AS-01-wallet-3 key=testkey
+#check that general actions work
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+did new seed=000000000000000000000NewSteward3 metadata="new steward"
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=Dji7gLeU11xUrHxZQVmScq verkey=~AvtK2VwnpLfVPt34gGFfA3 role=STEWARD
+did use Dji7gLeU11xUrHxZQVmScq
+did rotate-key
+ledger nym did=Qb7oAFvnr2kH6FeCA9UxUN verkey=~MBMEpUF1DPd6CM2irHVyXi
+- ledger get-nym did=Qb7oAFvnr2kH6FeCA9UxUN
+did list
+wallet create AS-01-identity-wallet-3 key=testkey storage_config={"pool":"AS-pool"}
+wallet open AS-01-identity-wallet-3 key=testkey
+did new seed=00000000000000000000000Identity3 metadata="new identity"
+did use Qb7oAFvnr2kH6FeCA9UxUN
+- ledger get-nym did=Qb7oAFvnr2kH6FeCA9UxUN
+did rotate-key
+- ledger get-nym did=Qb7oAFvnr2kH6FeCA9UxUN
+wallet close
+pool disconnect
+wallet list
+pool list

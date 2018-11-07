@@ -86,7 +86,8 @@ class UserScenario(metaclass=ABCMeta):
                 return reply, error
 
         reply, error = self._looper.run(eventually(partial(getRequestResult,
-                                                           req.key),
+                                                           (req.identifier,
+                                                            req.reqId)),
                                                    retryWait=.5,
                                                    timeout=5))
         assert not error, error

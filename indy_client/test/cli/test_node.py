@@ -1,7 +1,9 @@
 import base58
+from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 
 from plenum.common.constants import NODE_IP, CLIENT_IP, CLIENT_PORT, NODE_PORT, \
-    ALIAS, BLS_KEY
+    ALIAS, BLS_KEY, BLS_KEY_PROOF
+from plenum.common.keygen_utils import init_bls_keys
 from plenum.common.util import randomString
 from plenum.test.cli.helper import exitFromCli
 from stp_core.network.port_dispenser import genHa
@@ -41,13 +43,16 @@ def test_add_same_node_without_any_change_by_trustee(be, do, trusteeCli,
 
 def test_add_same_node_with_changed_bls_by_trustee(be, do, trusteeCli,
                                                    newNodeVals, newNodeAdded,
-                                                   nodeValsEmptyData):
+                                                   nodeValsEmptyData,
+                                                   new_bls_keys):
     '''
     Checks that it's not possible to add the same node with different BLS key by Trustee
     '''
     be(trusteeCli)
     node_vals = newNodeVals
-    node_vals['newNodeData'][BLS_KEY] = base58.b58encode(randomString(128).encode()).decode("utf-8")
+    bls_key, key_proof = new_bls_keys
+    node_vals['newNodeData'][BLS_KEY] = bls_key
+    node_vals['newNodeData'][BLS_KEY_PROOF] = key_proof
     doSendNodeCmd(do, node_vals,
                   expMsgs=["TRUSTEE not in allowed roles ['STEWARD']"])
     exitFromCli(do)
@@ -100,15 +105,18 @@ def test_update_ports_and_ips(be, do, newStewardCli,
 
 def test_update_bls(be, do, newStewardCli,
                     newNodeVals, newNodeAdded,
-                    nodeValsEmptyData):
+                    nodeValsEmptyData,
+                    new_bls_keys):
     '''
     Checks that it's possible to update BLS keys by owner (just alias and new key are required)
     '''
     be(newStewardCli)
 
     node_vals = nodeValsEmptyData
+    bls_key, key_proof = new_bls_keys
+    node_vals['newNodeData'][BLS_KEY] = bls_key
+    node_vals['newNodeData'][BLS_KEY_PROOF] = key_proof
     node_vals['newNodeData'][ALIAS] = newNodeVals['newNodeData'][ALIAS]
-    node_vals['newNodeData'][BLS_KEY] = base58.b58encode(randomString(128).encode()).decode("utf-8")
 
     doSendNodeCmd(do, node_vals,
                   expMsgs=['Node request completed'])
@@ -117,15 +125,18 @@ def test_update_bls(be, do, newStewardCli,
 
 def test_update_bls_by_trustee(be, do, trusteeCli,
                                newNodeVals, newNodeAdded,
-                               nodeValsEmptyData):
+                               nodeValsEmptyData,
+                               new_bls_keys):
     '''
     Checks that it's not possible to update BLS keys by Trustee (just alias and new key are required)
     '''
     be(trusteeCli)
 
     node_vals = nodeValsEmptyData
+    bls_key, key_proof = new_bls_keys
+    node_vals['newNodeData'][BLS_KEY] = bls_key
+    node_vals['newNodeData'][BLS_KEY_PROOF] = key_proof
     node_vals['newNodeData'][ALIAS] = newNodeVals['newNodeData'][ALIAS]
-    node_vals['newNodeData'][BLS_KEY] = base58.b58encode(randomString(128).encode()).decode("utf-8")
 
     doSendNodeCmd(do, node_vals,
                   expMsgs=["TRUSTEE not in allowed roles ['STEWARD']"])

@@ -46,6 +46,7 @@ def test_validation_with_unexpected_accum(
     with pytest.raises(InvalidClientRequest, match="must be equal to the last accumulator value"):
         req_handler.validate(Request(**req_entry))
 
+
 def test_validation_with_same_revoked_by_default(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -58,6 +59,7 @@ def test_validation_with_same_revoked_by_default(
     req_entry['operation'][VALUE][ACCUM] = randomString(10)
     with pytest.raises(InvalidClientRequest, match="are already revoked in current state"):
         req_handler.validate(Request(**req_entry))
+
 
 def test_validation_with_issued_no_revoked_before_by_default(
         build_txn_for_revoc_def_entry_by_default,
@@ -74,6 +76,7 @@ def test_validation_with_issued_no_revoked_before_by_default(
     with pytest.raises(InvalidClientRequest, match="are not present in the current revoked list"):
         req_handler.validate(Request(**req_entry))
 
+
 def test_validation_with_same_issued_by_demand(
         build_txn_for_revoc_def_entry_by_demand,
         create_node_and_not_start):
@@ -87,6 +90,7 @@ def test_validation_with_same_issued_by_demand(
     req_entry['operation'][VALUE][ISSUED] = [1, 2]
     with pytest.raises(InvalidClientRequest, match="are already issued in current state"):
         req_handler.validate(Request(**req_entry))
+
 
 def test_validation_with_revoked_no_issued_before_by_demand(
         build_txn_for_revoc_def_entry_by_demand,
@@ -102,6 +106,7 @@ def test_validation_with_revoked_no_issued_before_by_demand(
     with pytest.raises(InvalidClientRequest, match="are not present in the current issued list"):
         req_handler.validate(Request(**req_entry))
 
+
 def test_validation_if_issued_revoked_has_same_index(
         build_txn_for_revoc_def_entry_by_default,
         create_node_and_not_start):
@@ -112,6 +117,7 @@ def test_validation_if_issued_revoked_has_same_index(
     req_handler = node.getDomainReqHandler()
     with pytest.raises(InvalidClientRequest, match="Can not have an index in both 'issued' and 'revoked' lists"):
         req_handler.validate(Request(**req_entry))
+
 
 def test_validation_if_revoc_def_does_not_exist(
         build_txn_for_revoc_def_entry_by_default,

@@ -1,0 +1,19 @@
+---
+- name: Ensure inventory doesn't exists
+  file:
+    path: "{{ inventory_dir }}"
+    state: absent
+
+- name: Destroy public key
+  ec2_key:
+    name: "{{ aws_keyname }}"
+    region: "{{ item }}"
+    state: absent
+  with_items: "{{ aws_regions }}"
+
+- name: Destroy AWS security group
+  ec2_group:
+    name: "{{ aws_group }}"
+    region: "{{ item }}"
+    state: absent
+  with_items: "{{ aws_regions }}"
