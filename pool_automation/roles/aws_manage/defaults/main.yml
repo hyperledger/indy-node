@@ -1,7 +1,6 @@
 ---
 # AWS primary parameters
 aws_ec2_type: t2.micro
-aws_ami_id: ami-027583e616ca104df
 
 # Tags
 aws_tag_role: default

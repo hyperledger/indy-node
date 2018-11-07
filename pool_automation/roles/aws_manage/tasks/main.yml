@@ -6,7 +6,6 @@
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
     - aws_ec2_type
-    - aws_ami_id
     - aws_tag_role
     - aws_regions
     - group_name
