@@ -1,6 +1,6 @@
 ---
 - name: Install pool
   gather_facts: false
-  hosts: "{{ group_name | default('nodes') }}"
+  hosts: nodes
   roles:
     - pool_install

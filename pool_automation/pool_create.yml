@@ -3,4 +3,5 @@
   gather_facts: false
   hosts: localhost
   roles:
-    - aws_manage
+    - role: aws_manage
+      group_name: nodes
