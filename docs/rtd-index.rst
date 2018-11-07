@@ -10,11 +10,7 @@ Welcome to Hyperledger Indy Node's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   start-nodes.md 
+   add-node.md
 
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
