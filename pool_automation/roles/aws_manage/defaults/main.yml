@@ -4,7 +4,6 @@ aws_ec2_type: t2.micro
 aws_ami_id: ami-027583e616ca104df
 
 # Tags
-aws_tag_namespace: test
 aws_tag_role: default
 
 # List of all potential regions to use
@@ -32,7 +31,8 @@ pa_aws_prefix: PA
 # Derivative parameters
 group_name: "{{ aws_tag_role }}s"
 inventory_dir: "{{ aws_tag_namespace }}_{{ group_name }}"
-aws_inventory_file: "{{ inventory_dir }}/hosts"
 
+aws_inventory_file: "{{ inventory_dir }}/hosts"
+aws_tag_namespace: "{{ inventory_dir | default('test', true) | basename }}"
 aws_keyname: "{{ pa_aws_prefix }}-{{ aws_tag_namespace }}-{{ group_name }}"
 aws_sgroup: "{{ pa_aws_prefix }}-{{ aws_tag_namespace }}-{{ group_name }}"

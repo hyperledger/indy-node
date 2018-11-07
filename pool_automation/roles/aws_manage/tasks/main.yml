@@ -7,14 +7,14 @@
   loop:
     - aws_ec2_type
     - aws_ami_id
-    - aws_tag_namespace
     - aws_tag_role
+    - aws_regions
     - group_name
     - inventory_dir
     - aws_inventory_file
+    - aws_tag_namespace
     - aws_keyname
     - aws_sgroup
-    - aws_regions
 
 - name: Set ssh_dir_name variable
   set_fact:
