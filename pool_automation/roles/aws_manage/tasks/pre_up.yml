@@ -1,13 +1,13 @@
 ---
-- name: Ensure inventory dir exists
+- name: Ensure directory for ssh settings exists
   file:
-    path: "{{ inventory_dir }}"
+    path: "{{ ssh_dir }}"
     state: directory
 
 - name: Create key-pair
   expect:
-    command: "ssh-keygen -f {{ inventory_dir }}/key"
-    creates: "{{ inventory_dir }}/key"
+    command: "ssh-keygen -f {{ ssh_dir }}/key"
+    creates: "{{ ssh_dir }}/key"
     responses:
       passphrase: ""
 
@@ -15,7 +15,7 @@
   ec2_key:
     name: "{{ aws_keyname }}"
     region: "{{ item }}"
-    key_material: "{{ lookup('file', '{{ inventory_dir }}/key.pub') }}"
+    key_material: "{{ lookup('file', '{{ ssh_dir }}/key.pub') }}"
   with_items: "{{ aws_regions }}"
 
 - name: Create AWS security group

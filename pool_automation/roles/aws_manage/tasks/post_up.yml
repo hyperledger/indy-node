@@ -2,9 +2,9 @@
 - name: Create ssh config
   template:
     src: ssh_config.j2
-    dest: "{{ inventory_dir }}/ssh_config"
+    dest: "{{ ssh_dir }}/ssh_config"
 
-- name: Create inventory
+- name: Create inventory file for AWS hosts
   template:
     src: hosts.j2
-    dest: "{{ inventory_dir }}/hosts"
+    dest: "{{ aws_inventory_file }}"

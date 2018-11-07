@@ -11,17 +11,24 @@
     - aws_tag_role
     - group_name
     - inventory_dir
+    - aws_inventory_file
     - aws_keyname
     - aws_sgroup
     - aws_regions
 
+- name: Set ssh_dir_name variable
+  set_fact:
+    ssh_dir_name: .ssh
+
+- name: Set ssh_dir variable
+  set_fact:
+    ssh_dir: "{{ inventory_dir }}/{{ ssh_dir_name }}"
 
 - name: Check that instance_count has acceptable values
   assert:
     that:
       - instance_count >= 0
     msg: "{{ instance_count|string }}"
-
 
 - name: Pre-Up
   include_tasks: "{{ role_path }}/tasks/pre_up.yml"
