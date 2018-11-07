@@ -3,12 +3,13 @@ import json
 import os
 import asyncio
 import signal
+import logging
 from datetime import datetime
 from indy import pool, wallet, did, ledger
 
 from perf_load.perf_client_msgs import ClientReady, ClientRun, ClientStop, ClientGetStat, ClientSend, ClientMsg
 from perf_load.perf_clientstaistic import ClientStatistic
-from perf_load.perf_utils import random_string
+from perf_load.perf_utils import random_string, logger_init
 from perf_load.perf_req_gen import NoReqDataAvailableException
 from perf_load.perf_gen_req_parser import ReqTypeParser
 
@@ -47,6 +48,7 @@ class LoadClient:
             raise RuntimeError("Batch size cannot be greater than 1 in response waiting mode")
         if self._send_mode == LoadClient.SendResp and buff_req != 0:
             raise RuntimeError("Cannot pregenerate reqs in response waiting mode")
+        self._logger = logging.getLogger(self._name)
 
     def msg(self, fmt: str, *args):
         try:
@@ -165,6 +167,7 @@ class LoadClient:
             self._loop.create_task(self.stop_test())
 
     async def gen_signed_req(self):
+        self._logger.info("gen_signed_req")
         if self._closing is True:
             return
         try:
@@ -295,8 +298,10 @@ class LoadClient:
 
     @classmethod
     def run(cls, name, genesis_path, pipe_conn, seed, batch_size, batch_rate,
-            req_kind, buff_req, wallet_key, pool_config, send_mode, mask_sign, ext_set):
+            req_kind, buff_req, wallet_key, pool_config, send_mode, mask_sign, ext_set,
+            log_dir, log_lvl):
         if mask_sign:
+            logger_init(log_dir, "{}.log".format(name), log_lvl)
             signal.signal(signal.SIGINT, signal.SIG_IGN)
 
         exts = {}

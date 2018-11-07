@@ -12,9 +12,10 @@ import signal
 import functools
 from datetime import datetime
 import yaml
+import logging
 
 from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend, ClientMsg
-from perf_load.perf_utils import check_fs, check_seed
+from perf_load.perf_utils import check_fs, check_seed, logger_init
 from perf_load.perf_gen_req_parser import ReqTypeParser
 from perf_load.perf_client import LoadClient
 from perf_load.perf_client_runner import ClientRunner
@@ -82,13 +83,16 @@ parser.add_argument('--load_time', default=0, type=float, required=False, dest='
 parser.add_argument('--ext_set', default=None, type=str, required=False, dest='ext_set',
                     help='Ext settings to use')
 
+parser.add_argument('--log_lvl', default=logging.INFO, type=int, required=False, dest='log_lvl',
+                    help='Logging level')
+
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
                  sync_mode="freeflow", load_rate=10, out_file="", load_time=0, ext_set=None,
-                 client_runner=LoadClient.run):
+                 client_runner=LoadClient.run, log_lvl=logging.INFO):
         self._client_runner = client_runner
         self._clients = dict()  # key process future; value ClientRunner
         self._loop = asyncio.get_event_loop()
@@ -121,8 +125,12 @@ class LoadRunner:
             except Exception as ex:
                 raise RuntimeError("pool_config param is ill-formed JSON: {}".format(ex))
 
-        self._out_file = self.prepare_fs(out_dir, "load_test_{}".
-                                         format(datetime.now().strftime("%Y%m%d_%H%M%S")), out_file)
+        test_name = "load_test_{}".format(datetime.now().strftime("%Y%m%d_%H%M%S"))
+        self._out_file = self.prepare_fs(out_dir, test_name, out_file)
+        self._log_dir = os.path.join(out_dir, test_name)
+        self._log_lvl = log_lvl
+        logger_init(self._log_dir, "{}.log".format(test_name), self._log_lvl)
+        self._logger = logging.getLogger(__name__)
 
     def process_reqs(self, stat, name: str = ""):
         assert self._failed_f
@@ -267,7 +275,7 @@ class LoadRunner:
         return print_str
 
     def prepare_fs(self, out_dir, test_dir_name, out_file):
-        self._out_dir = os.path.join(out_dir, test_dir_name)
+        self._out_dir = os.path.expanduser(os.path.join(out_dir, test_dir_name))
         if not os.path.exists(self._out_dir):
             os.makedirs(self._out_dir)
 
@@ -324,6 +332,7 @@ class LoadRunner:
             self._loop.call_later(self._stop_sec, self.sig_handler, signal.SIGINT)
 
     def load_run(self):
+        self._logger.info("load_run")
         print("Number of client         ", self._proc_count, file=self._out_file)
         print("Path to genesis txns file", self._genesis_path, file=self._out_file)
         print("Seed                     ", self._seed, file=self._out_file)
@@ -349,8 +358,7 @@ class LoadRunner:
             self._batch_size = 1
             self._buff_req = 0
 
-        print("load_client_mode", load_client_mode, file=self._out_file)
-
+        self._logger.info("load_run set sig handlers")
         self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
         self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
 
@@ -363,10 +371,11 @@ class LoadRunner:
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(self._client_runner, prc_name, self._genesis_path, wr, self._seed, self._batch_size,
                                   self._batch_rate, self._req_kind, self._buff_req, self._wallet_key, self._pool_config,
-                                  load_client_mode, self._mode == 'p', self._ext_set)
+                                  load_client_mode, self._mode == 'p', self._ext_set, self._log_dir, self._log_lvl)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd, self._out_file)
+            self._logger.info("load_run client {} created".format(prc_name))
 
         self.screen_stat()
 
@@ -411,5 +420,6 @@ if __name__ == '__main__':
                     dict_args["val_sep"], dict_args["wallet_key"], dict_args["mode"], dict_args["pool_config"],
                     dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
                     dict_args["ext_set"],
-                    client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run)
+                    client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run,
+                    log_lvl=dict_args["log_lvl"])
     tr.load_run()
