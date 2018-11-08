@@ -9,7 +9,7 @@
     - aws_tag_role
     - aws_regions
     - group_name
-    - inventory_dir
+    - aws_inventory_dir
     - aws_inventory_file
     - aws_tag_namespace
     - aws_keyname
@@ -21,7 +21,7 @@
 
 - name: Set ssh_dir variable
   set_fact:
-    ssh_dir: "{{ inventory_dir }}/{{ ssh_dir_name }}"
+    ssh_dir: "{{ aws_inventory_dir }}/{{ ssh_dir_name }}"
 
 - name: Check that instance_count has acceptable values
   assert:
