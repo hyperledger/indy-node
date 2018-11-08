@@ -7,7 +7,7 @@ import libnacl
 import logging
 import time
 
-SCRIPT_VERSION = "1.0.19"
+SCRIPT_VERSION = "1.0.20"
 PUB_XFER_TXN_ID = "10001"
 
 
