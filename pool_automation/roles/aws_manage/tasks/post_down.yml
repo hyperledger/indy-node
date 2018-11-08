@@ -1,9 +1,4 @@
 ---
-- name: Ensure inventory doesn't exists
-  file:
-    path: "{{ inventory_dir }}"
-    state: absent
-
 - name: Destroy public key
   ec2_key:
     name: "{{ aws_keyname }}"
@@ -13,7 +8,17 @@
 
 - name: Destroy AWS security group
   ec2_group:
-    name: "{{ aws_group }}"
+    name: "{{ aws_sgroup }}"
     region: "{{ item }}"
     state: absent
   with_items: "{{ aws_regions }}"
+
+- name: Ensure inventory file for AWS hosts doesn't exist
+  file:
+    path: "{{ aws_inventory_file }}"
+    state: absent
+
+- name: Ensure directory with ssh settings doesn't exist
+  file:
+    path: "{{ ssh_dir }}"
+    state: absent

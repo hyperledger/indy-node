@@ -7,22 +7,15 @@ parameters:
     box: ubuntu/xenial64
     groups:
       - nodes
-  node_ips:
-    - &node1_ip 192.168.33.11
-    - &node2_ip 192.168.33.12
-    - &node3_ip 192.168.33.13
-    - &node4_ip 192.168.33.14
 
 provisioner:
   name: ansible
   lint:
     name: ansible-lint
   inventory:
-    host_vars:
-      node1: {tag_id: 1, ansible_host: *node1_ip, ansible_port: 22}
-      node2: {tag_id: 2, ansible_host: *node2_ip, ansible_port: 22}
-      node3: {tag_id: 3, ansible_host: *node3_ip, ansible_port: 22}
-      node4: {tag_id: 4, ansible_host: *node4_ip, ansible_port: 22}
+    links:
+      group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
+      host_vars: ./host_vars
   playbooks:
     converge: ../resources/playbooks/playbook.yml
 
@@ -31,22 +24,22 @@ platforms:
     name: node1
     interfaces:
       - network_name: private_network
-        ip: *node1_ip
+        ip: 192.168.33.11
   - <<: *node_config
     name: node2
     interfaces:
       - network_name: private_network
-        ip: *node2_ip
+        ip: 192.168.33.12
   - <<: *node_config
     name: node3
     interfaces:
       - network_name: private_network
-        ip: *node3_ip
+        ip: 192.168.33.13
   - <<: *node_config
     name: node4
     interfaces:
       - network_name: private_network
-        ip: *node4_ip
+        ip: 192.168.33.14
 
 driver:
   name: vagrant

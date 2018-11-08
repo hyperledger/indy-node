@@ -22,7 +22,7 @@ provisioner:
     name: ansible-lint
   inventory:
     links:
-      group_vars: ../resources/group_vars
+      group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
   playbooks:
     converge: ../resources/playbooks/playbook.yml
 scenario:

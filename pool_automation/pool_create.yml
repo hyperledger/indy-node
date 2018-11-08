@@ -3,4 +3,5 @@
   gather_facts: false
   hosts: localhost
   roles:
-    - { role: aws_manage, tag_namespace: test, tag_role: node, instance_count: 4 }
+    - role: aws_manage
+      group_name: nodes

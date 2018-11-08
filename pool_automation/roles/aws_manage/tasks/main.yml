@@ -1,4 +1,34 @@
 ---
+- name: Check that required variables are specified
+  assert:
+    that:
+      - lookup('vars', item, default='')
+    msg: "{{ lookup('vars', item, default='undefined')|string }}"
+  loop:
+    - aws_ec2_type
+    - aws_tag_role
+    - aws_regions
+    - group_name
+    - inventory_dir
+    - aws_inventory_file
+    - aws_tag_namespace
+    - aws_keyname
+    - aws_sgroup
+
+- name: Set ssh_dir_name variable
+  set_fact:
+    ssh_dir_name: .ssh
+
+- name: Set ssh_dir variable
+  set_fact:
+    ssh_dir: "{{ inventory_dir }}/{{ ssh_dir_name }}"
+
+- name: Check that instance_count has acceptable values
+  assert:
+    that:
+      - instance_count >= 0
+    msg: "{{ instance_count|string }}"
+
 - name: Pre-Up
   include_tasks: "{{ role_path }}/tasks/pre_up.yml"
   when: instance_count > 0
@@ -6,11 +36,11 @@
 - name: Manage instances
   stateful_set:
     regions: "{{ aws_regions }}"
-    namespace: "{{ tag_namespace }}"
-    role: "{{ tag_role }}"
+    namespace: "{{ aws_tag_namespace }}"
+    role: "{{ aws_tag_role }}"
     key_name: "{{ aws_keyname }}"
-    group: "{{ aws_group }}"    
-    instance_type: "{{ aws_type }}"
+    group: "{{ aws_sgroup }}"
+    instance_type: "{{ aws_ec2_type }}"
     instance_count: "{{ instance_count }}"
   register: ec2
 

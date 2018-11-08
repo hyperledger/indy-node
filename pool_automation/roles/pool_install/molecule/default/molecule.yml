@@ -23,11 +23,9 @@ provisioner:
   lint:
     name: ansible-lint
   inventory:
-    host_vars:
-      node1: {tag_id: 1, ansible_host: node1}
-      node2: {tag_id: 2, ansible_host: node2}
-      node3: {tag_id: 3, ansible_host: node3}
-      node4: {tag_id: 4, ansible_host: node4}
+    links:
+      group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
+      host_vars: ./host_vars
   playbooks:
     converge: ../resources/playbooks/playbook.yml
 
