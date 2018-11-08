@@ -160,7 +160,7 @@ def main():
             if 'defaults' not in params:
                 continue
 
-            _f.write("\n# {0} {1} {0}\n".format('='*20, role))
+            _f.write("\n# {0} {1} {0}\n".format('=' * 20, role))
             # construct user specified config parameters
             config = {}
             for _p in params['defaults'].keys():
