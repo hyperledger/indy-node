@@ -76,6 +76,10 @@ class AwsEC2Waiter(object):
         self._ids = defaultdict(list)
         self._ev_name = ev_name
 
+    @property
+    def awaited(self):
+        return dict(self._ids)
+
     def add_instance(self, instance, region=None):
         # fallback - autodetect placement region,
         # might lead to additional AWS API calls

@@ -109,14 +109,10 @@ def test_AwsEC2Launcher(ec2):
     instances = launcher.launch(params, 2, ec2=ec2)
 
     assert len(instances) == 2
-    assert len(launcher._ids) > 0
 
-    for instance in instances:
-        instance.reload()
-        assert instance.state['Name'] == 'pending'
-
+    assert len(launcher.awaited) > 0
     launcher.wait()
-    assert len(launcher._ids) == 0
+    assert len(launcher.awaited) == 0
 
     for instance in instances:
         instance.reload()
@@ -133,12 +129,10 @@ def test_AwsEC2Terminator(ec2):
 
     for instance in instances:
         terminator.terminate(instance)
-        instance.reload()
-        assert instance.state['Name'] == 'shutting-down'
 
-    assert len(terminator._ids) > 0
+    assert len(terminator.awaited) > 0
     terminator.wait()
-    assert len(terminator._ids) == 0
+    assert len(terminator.awaited) == 0
 
     for instance in instances:
         instance.reload()
