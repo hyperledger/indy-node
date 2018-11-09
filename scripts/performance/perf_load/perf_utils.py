@@ -4,9 +4,19 @@ import argparse
 from collections import Sequence
 import base58
 import libnacl
+import logging
+import time
 
-
+SCRIPT_VERSION = "1.0.20"
 PUB_XFER_TXN_ID = "10001"
+
+
+def logger_init(out_dir, f_name, log_lvl):
+    od = os.path.expanduser(out_dir)
+    os.makedirs(od, exist_ok=True)
+    logging.basicConfig(filename=os.path.join(od, f_name), level=log_lvl, style="{",
+                        format='{asctime:s}|{levelname:s}|{filename:s}|{name:s}|{message:s}')
+    logging.Formatter.converter = time.gmtime
 
 
 def check_fs(is_dir: bool, fs_name: str):

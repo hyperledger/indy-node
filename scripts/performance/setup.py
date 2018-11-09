@@ -2,6 +2,7 @@
 
 import sys
 from setuptools import setup, find_packages
+from perf_load.perf_utils import SCRIPT_VERSION
 
 v = sys.version_info
 if sys.version_info < (3, 5):
@@ -17,7 +18,7 @@ tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy>=1.6.1.d
 
 setup(
     name='indy-perf-load',
-    version="1.0.18",
+    version=SCRIPT_VERSION,
     description='Indy node performance load',
     keywords='Indy Node performance load testing',
     packages=find_packages(),
