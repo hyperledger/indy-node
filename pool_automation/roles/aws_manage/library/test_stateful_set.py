@@ -54,8 +54,8 @@ def terminate_instances(ec2):
 
 def check_params(inst, params):
     assert {'Key': 'Project', 'Value': params.project} in inst.tags
-    assert {'Key': 'namespace', 'Value': params.namespace} in inst.tags
-    assert {'Key': 'role', 'Value': params.role} in inst.tags
+    assert {'Key': 'Namespace', 'Value': params.namespace} in inst.tags
+    assert {'Key': 'Role', 'Value': params.role} in inst.tags
     assert inst.key_name == params.key_name
     assert len(inst.security_groups) == 1
     assert inst.security_groups[0]['GroupName'] == params.group
@@ -200,7 +200,7 @@ def test_manage_instances(ec2_all):
         for group in instances:
             for inst in group:
                 check_params(inst, params)
-                assert get_tag(inst, 'id') is not None
+                assert get_tag(inst, 'ID') is not None
 
     changed, hosts = manage_instances(regions, params, 4)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
@@ -212,10 +212,10 @@ def test_manage_instances(ec2_all):
     assert len(instances[0]) == 2
     assert len(instances[1]) == 1
     assert len(instances[2]) == 1
-    assert set([get_tag(instances[0][0], 'id'),
-                get_tag(instances[0][1], 'id')]) == set(['1', '4'])
-    assert get_tag(instances[1][0], 'id') == '2'
-    assert get_tag(instances[2][0], 'id') == '3'
+    assert set([get_tag(instances[0][0], 'ID'),
+                get_tag(instances[0][1], 'ID')]) == set(['1', '4'])
+    assert get_tag(instances[1][0], 'ID') == '2'
+    assert get_tag(instances[2][0], 'ID') == '3'
 
     changed, hosts = manage_instances(regions, params, 4)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
@@ -227,10 +227,10 @@ def test_manage_instances(ec2_all):
     assert len(instances[0]) == 2
     assert len(instances[1]) == 1
     assert len(instances[2]) == 1
-    assert set([get_tag(instances[0][0], 'id'),
-                get_tag(instances[0][1], 'id')]) == set(['1', '4'])
-    assert get_tag(instances[1][0], 'id') == '2'
-    assert get_tag(instances[2][0], 'id') == '3'
+    assert set([get_tag(instances[0][0], 'ID'),
+                get_tag(instances[0][1], 'ID')]) == set(['1', '4'])
+    assert get_tag(instances[1][0], 'ID') == '2'
+    assert get_tag(instances[2][0], 'ID') == '3'
 
     changed, hosts = manage_instances(regions, params, 2)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
@@ -242,8 +242,8 @@ def test_manage_instances(ec2_all):
     assert len(instances[0]) == 1
     assert len(instances[1]) == 1
     assert len(instances[2]) == 0
-    assert get_tag(instances[0][0], 'id') == '1'
-    assert get_tag(instances[1][0], 'id') == '2'
+    assert get_tag(instances[0][0], 'ID') == '1'
+    assert get_tag(instances[1][0], 'ID') == '2'
 
     changed, hosts = manage_instances(regions, params, 0)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
