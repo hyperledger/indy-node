@@ -2,8 +2,11 @@
 import boto3
 import pytest
 
-from stateful_set import AWS_REGIONS, InstanceParams, find_ubuntu_ami, \
-    create_instances, find_instances, valid_instances, get_tag, manage_instances
+from stateful_set import (
+    AWS_REGIONS, InstanceParams, find_ubuntu_ami,
+    AwsEC2Launcher, AwsEC2Terminator, find_instances,
+    valid_instances, get_tag, manage_instances
+)
 
 
 PARAMS = InstanceParams(
@@ -55,6 +58,7 @@ def check_params(inst, params):
     assert len(inst.security_groups) == 1
     assert inst.security_groups[0]['GroupName'] == params.group
     assert inst.instance_type == params.type_name
+    assert inst.state['Name'] == 'running'
 
 
 @pytest.fixture(scope="session")
@@ -68,13 +72,19 @@ def ec2_environment(ec2_all):
         manage_key_pair(ec2, True)
         manage_security_group(ec2, True)
     yield
+
+    terminator = AwsEC2Terminator()
+    for region, ec2 in ec2_all.iteritems():
+        for inst in find_instances(ec2, PARAMS.namespace):
+            terminator.terminate(inst, region)
+    terminator.wait(False)
+
     for ec2 in ec2_all.values():
-        terminate_instances(ec2)
         manage_key_pair(ec2, False)
-        # manage_security_group(ec2, False)
+        manage_security_group(ec2, False)
 
 
-@pytest.fixture(params=AWS_REGIONS)
+@pytest.fixture(params=sorted(AWS_REGIONS))
 def ec2(request, ec2_all):
     return ec2_all[request.param]
 
@@ -93,21 +103,52 @@ def test_find_ubuntu_image(ec2):
     assert 'UNSUPPORTED' not in image.description
 
 
-def test_create_instances(ec2):
+def test_AwsEC2Launcher(ec2):
+    launcher = AwsEC2Launcher()
     params = PARAMS._replace(role='test_create')
-    instances = create_instances(ec2, params, 2)
+    instances = launcher.launch(params, 2, ec2=ec2)
 
     assert len(instances) == 2
+
+    assert len(launcher.awaited) > 0
+    launcher.wait()
+    assert len(launcher.awaited) == 0
+
     for instance in instances:
         check_params(instance, params)
 
 
-def test_find_instances(ec2_all):
-    ec2 = ec2_all['eu-central-1']
-    terminate_instances(ec2)
+def test_AwsEC2Terminator(ec2):
+    launcher = AwsEC2Launcher()
+    terminator = AwsEC2Terminator()
 
-    create_instances(ec2, PARAMS._replace(role='aaa'), 2)
-    create_instances(ec2, PARAMS._replace(role='bbb'), 3)
+    params = PARAMS._replace(role='test_terminate')
+    instances = launcher.launch(params, 2, ec2=ec2)
+    launcher.wait()
+
+    for instance in instances:
+        terminator.terminate(instance)
+
+    assert len(terminator.awaited) > 0
+    terminator.wait()
+    assert len(terminator.awaited) == 0
+
+    for instance in instances:
+        assert instance.state['Name'] == 'terminated'
+
+
+def test_find_instances(ec2_all):
+    region = 'eu-central-1'
+    launcher = AwsEC2Launcher()
+    terminator = AwsEC2Terminator()
+    ec2 = ec2_all[region]
+
+    for inst in find_instances(ec2, PARAMS.namespace):
+        terminator.terminate(inst, region)
+    terminator.wait(False)
+
+    launcher.launch(PARAMS._replace(role='aaa'), 2, ec2=ec2)
+    launcher.launch(PARAMS._replace(role='bbb'), 3, ec2=ec2)
 
     aaa = find_instances(ec2, PARAMS.namespace, 'aaa')
     bbb = find_instances(ec2, PARAMS.namespace, 'bbb')

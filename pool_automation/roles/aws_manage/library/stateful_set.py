@@ -26,6 +26,7 @@ AWS_REGIONS = [
     'us-west-2']
 
 
+# TODO think about moving these module level funcitons into classes
 def find_ubuntu_ami(ec2):
     images = ec2.images.filter(
         Owners=['099720109477'],
@@ -38,38 +39,6 @@ def find_ubuntu_ami(ec2):
     # Return latest image available
     images = sorted(images, key=lambda v: v.creation_date)
     return images[-1].image_id if len(images) > 0 else None
-
-
-InstanceParams = namedtuple(
-    'InstanceParams', 'namespace role key_name group type_name')
-
-
-def create_instances(ec2, params, count):
-    instances = ec2.create_instances(
-        ImageId=find_ubuntu_ami(ec2),
-        KeyName=params.key_name,
-        SecurityGroups=[params.group],
-        InstanceType=params.type_name,
-        MinCount=count,
-        MaxCount=count,
-        TagSpecifications=[
-            {
-                'ResourceType': 'instance',
-                'Tags': [
-                    {
-                        'Key': 'namespace',
-                        'Value': params.namespace
-                    },
-                    {
-                        'Key': 'role',
-                        'Value': params.role
-                    }
-                ]
-            }
-        ]
-    )
-
-    return instances
 
 
 def find_instances(ec2, namespace, role=None):
@@ -98,22 +67,108 @@ def get_tag(inst, name):
 
 
 HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
-AWSWaiterInfo = namedtuple('AWSWaiterInfo', 'waiter kwargs')
+
+
+class AwsEC2Waiter(object):
+    """ Base class for EC2 actors which calls long running async actions. """
+
+    def __init__(self, ev_name):
+        self._awaited = defaultdict(list)
+        self._ev_name = ev_name
+
+    @property
+    def awaited(self):
+        return dict(self._awaited)
+
+    def add_instance(self, instance, region=None):
+        # fallback - autodetect placement region,
+        # might lead to additional AWS API calls
+        if not region:
+            # TODO more mature would be to use
+            #      ec2.client.describe_availability_zones
+            #      and create a map av.zone -> region
+            region = instance.placement['AvailabilityZone'][:-1]
+        self._awaited[region].append(instance)
+
+    def wait(self, update=True):
+        for region, instances in dict(self._awaited).iteritems():
+            ec2cl = boto3.client('ec2', region_name=region)
+            ec2cl.get_waiter(self._ev_name).wait(
+                InstanceIds=[inst.id for inst in instances])
+            if update:
+                for inst in instances:
+                    inst.reload()
+            del self._awaited[region]
+
+
+class AwsEC2Terminator(AwsEC2Waiter):
+    """ Helper class to terminate EC2 instances. """
+
+    def __init__(self):
+        super(AwsEC2Terminator, self).__init__('instance_terminated')
+
+    def terminate(self, instance, region=None):
+        instance.terminate()
+        self.add_instance(instance, region)
+
+
+InstanceParams = namedtuple(
+    'InstanceParams', 'namespace role key_name group type_name')
+
+
+class AwsEC2Launcher(AwsEC2Waiter):
+    """ Helper class to launch EC2 instances. """
+
+    def __init__(self):
+        # TODO consider to use waiter for 'instance_status_ok'
+        # if 'instance_running' is not enough in any circumstances
+        super(AwsEC2Launcher, self).__init__('instance_running')
+
+    def launch(self, params, count, region=None, ec2=None):
+        if not ec2:
+            ec2 = boto3.resource('ec2', region_name=region)
+
+        instances = ec2.create_instances(
+            ImageId=find_ubuntu_ami(ec2),
+            KeyName=params.key_name,
+            SecurityGroups=[params.group],
+            InstanceType=params.type_name,
+            MinCount=count,
+            MaxCount=count,
+            TagSpecifications=[
+                {
+                    'ResourceType': 'instance',
+                    'Tags': [
+                        {
+                            'Key': 'namespace',
+                            'Value': params.namespace
+                        },
+                        {
+                            'Key': 'role',
+                            'Value': params.role
+                        }
+                    ]
+                }
+            ]
+        )
+
+        for i in instances:
+            self.add_instance(i, region)
+
+        return instances
 
 
 def manage_instances(regions, params, count):
     hosts = []
-    waiters = []
     changed = False
+
+    aws_launcher = AwsEC2Launcher()
+    aws_terminator = AwsEC2Terminator()
 
     valid_region_ids = valid_instances(regions, count)
 
     for region in AWS_REGIONS:
-        terminated = []
-        launched = []
-
         ec2 = boto3.resource('ec2', region_name=region)
-        ec2cl = boto3.client('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
         instances = find_instances(ec2, params.namespace, params.role)
@@ -122,36 +177,21 @@ def manage_instances(regions, params, count):
             if tag_id in valid_ids:
                 valid_ids.remove(tag_id)
                 hosts.append(inst)
-                launched.append(inst.id)
+                aws_launcher.add_instance(inst, region)
             else:
-                inst.terminate()
-                terminated.append(inst.id)
+                aws_terminator.terminate(inst, region)
                 changed = True
 
         if valid_ids:
-            instances = create_instances(ec2, params, len(valid_ids))
+            instances = aws_launcher.launch(
+                params, len(valid_ids), region=region, ec2=ec2)
             for inst, tag_id in zip(instances, valid_ids):
                 inst.create_tags(Tags=[{'Key': 'id', 'Value': tag_id}])
                 hosts.append(inst)
-                launched.append(inst.id)
                 changed = True
 
-        if terminated:
-            waiters.append(AWSWaiterInfo(
-                waiter=ec2cl.get_waiter('instance_terminated'),
-                kwargs={'InstanceIds': list(terminated)}
-            ))
-
-        if launched:
-            # consider to use get_waiter('instance_status_ok')
-            # if 'running' is not enough in any circumstances
-            waiters.append(AWSWaiterInfo(
-                waiter=ec2cl.get_waiter('instance_running'),
-                kwargs={'InstanceIds': list(launched)}
-            ))
-
-    for waiter_i in waiters:
-        waiter_i.waiter.wait(**waiter_i.kwargs)
+    aws_launcher.wait()
+    aws_terminator.wait()
 
     hosts = [HostInfo(tag_id=get_tag(inst, 'id'),
                       public_ip=inst.public_ip_address,
