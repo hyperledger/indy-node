@@ -23,6 +23,8 @@
     name: "{{ aws_sgroup }}"
     region: "{{ item }}"
     description: "[{{ aws_tag_project }}] Security group for {{ aws_tag_role }} in {{ aws_tag_namespace }}"
+    tags:
+      Name: "{{ aws_tag_sgroup_name }}"
     rules:
       - proto: all
         cidr_ip: 0.0.0.0/0

@@ -1,12 +1,13 @@
 ---
-# AWS primary parameters
-aws_ec2_type: t2.micro
+# General
+aws_project_name: PoolAutomation
+aws_project_name_short: PA
 
-# Tags
-aws_tag_project: PoolAutomation
-aws_tag_role: default
+# Provision parameters
+instance_count: 4
 
-# List of all potential regions to use
+# AWS parameters
+#   List of all potential regions to use
 aws_regions:
   - ap-northeast-1
   - ap-northeast-2
@@ -24,13 +25,18 @@ aws_regions:
   - us-west-1
   - us-west-2
 
-instance_count: 4
+#   EC2 instance type
+aws_ec2_type: t2.micro
 
-# Derivative parameters
-group_name: "{{ aws_tag_role }}s"
-
+#   Resource tags and names
+aws_tag_project: "{{ aws_project_name }}"
 aws_tag_namespace: "{{ inventory_dir | default('test', true) | basename }}"
+aws_tag_role: default
+aws_keyname: "{{ aws_project_name_short }}-{{ aws_tag_namespace }}-{{ group_name }}"
+aws_sgroup: "{{ aws_project_name_short }}-{{ aws_tag_namespace }}-{{ group_name }}"
+aws_tag_sgroup_name: "{{ aws_sgroup }}"
+
+# Inventory parameters
 aws_inventory_dir: "{{ inventory_dir | default(aws_tag_namespace ~ '_' ~ group_name) }}"
 aws_inventory_file: "{{ aws_inventory_dir }}/hosts"
-aws_keyname: "{{ aws_tag_project }}-{{ aws_tag_namespace }}-{{ group_name }}"
-aws_sgroup: "{{ aws_tag_project }}-{{ aws_tag_namespace }}-{{ group_name }}"
+group_name: "{{ aws_tag_role + 's' }}"

@@ -11,6 +11,7 @@ from stateful_set import (
 
 PARAMS = InstanceParams(
     project='PoolAutomation',
+    project_short='PA',
     namespace='test_stateful_set',
     role=None,
     key_name='test_stateful_set_key',
@@ -77,7 +78,7 @@ def ec2_environment(ec2_all):
 
     terminator = AwsEC2Terminator()
     for region, ec2 in ec2_all.iteritems():
-        for inst in find_instances(ec2, PARAMS.namespace):
+        for inst in find_instances(ec2, PARAMS.project, PARAMS.namespace):
             terminator.terminate(inst, region)
     terminator.wait(False)
 
@@ -145,7 +146,7 @@ def test_find_instances(ec2_all):
     terminator = AwsEC2Terminator()
     ec2 = ec2_all[region]
 
-    for inst in find_instances(ec2, PARAMS.namespace):
+    for inst in find_instances(ec2, PARAMS.project, PARAMS.namespace):
         terminator.terminate(inst, region)
     terminator.wait(False)
 
@@ -200,7 +201,14 @@ def test_manage_instances(ec2_all):
         for group in instances:
             for inst in group:
                 check_params(inst, params)
-                assert get_tag(inst, 'ID') is not None
+                inst_tag_id = get_tag(inst, 'ID')
+                assert inst_tag_id is not None
+                inst_tag_name = get_tag(inst, 'Name')
+                assert inst_tag_name == "{}-{}-{}-{}".format(
+                    params.project_short,
+                    params.namespace,
+                    params.role,
+                    inst_tag_id.zfill(3))
 
     changed, hosts = manage_instances(regions, params, 4)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')

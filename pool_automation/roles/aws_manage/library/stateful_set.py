@@ -114,7 +114,7 @@ class AwsEC2Terminator(AwsEC2Waiter):
 
 
 InstanceParams = namedtuple(
-    'InstanceParams', 'project namespace role key_name group type_name')
+    'InstanceParams', 'project project_short namespace role key_name group type_name')
 
 
 class AwsEC2Launcher(AwsEC2Waiter):
@@ -191,7 +191,14 @@ def manage_instances(regions, params, count):
             instances = aws_launcher.launch(
                 params, len(valid_ids), region=region, ec2=ec2)
             for inst, tag_id in zip(instances, valid_ids):
-                inst.create_tags(Tags=[{'Key': 'ID', 'Value': tag_id}])
+                inst.create_tags(Tags=[
+                    {'Key': 'Name', 'Value': "{}-{}-{}-{}"
+                        .format(params.project_short,
+                                params.namespace,
+                                params.role,
+                                tag_id.zfill(3))},
+                    {'Key': 'ID', 'Value': tag_id}
+                ])
                 hosts.append(inst)
                 changed = True
 
@@ -210,6 +217,7 @@ def run(module):
 
     inst_params = InstanceParams(
         project=params['project'],
+        project_short=params['project_short'],
         namespace=params['namespace'],
         role=params['role'],
         key_name=params['key_name'],
@@ -228,6 +236,7 @@ if __name__ == '__main__':
     module_args = dict(
         regions=dict(type='list', required=True),
         project=dict(type='str', required=True),
+        project_short=dict(type='str', required=True),
         namespace=dict(type='str', required=True),
         role=dict(type='str', required=True),
         key_name=dict(type='str', required=True),
