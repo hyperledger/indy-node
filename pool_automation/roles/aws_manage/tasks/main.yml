@@ -6,6 +6,7 @@
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
     - aws_ec2_type
+    - aws_tag_project
     - aws_tag_role
     - aws_regions
     - group_name
@@ -36,6 +37,7 @@
 - name: Manage instances
   stateful_set:
     regions: "{{ aws_regions }}"
+    project: "{{ aws_tag_project }}"
     namespace: "{{ aws_tag_namespace }}"
     role: "{{ aws_tag_role }}"
     key_name: "{{ aws_keyname }}"

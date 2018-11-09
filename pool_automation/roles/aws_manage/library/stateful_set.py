@@ -41,7 +41,7 @@ def find_ubuntu_ami(ec2):
 
 
 InstanceParams = namedtuple(
-    'InstanceParams', 'namespace role key_name group type_name')
+    'InstanceParams', 'project namespace role key_name group type_name')
 
 
 def create_instances(ec2, params, count):
@@ -56,6 +56,10 @@ def create_instances(ec2, params, count):
             {
                 'ResourceType': 'instance',
                 'Tags': [
+                    {
+                        'Key': 'Project',
+                        'Value': params.project
+                    },
                     {
                         'Key': 'namespace',
                         'Value': params.namespace
@@ -72,8 +76,9 @@ def create_instances(ec2, params, count):
     return instances
 
 
-def find_instances(ec2, namespace, role=None):
+def find_instances(ec2, project, namespace, role=None):
     filters = [
+        {'Name': 'tag:project', 'Values': [project]},
         {'Name': 'tag:namespace', 'Values': [namespace]}
     ]
     if role is not None:
@@ -116,7 +121,7 @@ def manage_instances(regions, params, count):
         ec2cl = boto3.client('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
-        instances = find_instances(ec2, params.namespace, params.role)
+        instances = find_instances(ec2, params.project, params.namespace, params.role)
         for inst in instances:
             tag_id = get_tag(inst, 'id')
             if tag_id in valid_ids:
@@ -164,6 +169,7 @@ def run(module):
     params = module.params
 
     inst_params = InstanceParams(
+        project=params['project'],
         namespace=params['namespace'],
         role=params['role'],
         key_name=params['key_name'],
@@ -181,6 +187,7 @@ def run(module):
 if __name__ == '__main__':
     module_args = dict(
         regions=dict(type='list', required=True),
+        project=dict(type='str', required=True),
         namespace=dict(type='str', required=True),
         role=dict(type='str', required=True),
         key_name=dict(type='str', required=True),
