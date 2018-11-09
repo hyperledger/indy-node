@@ -29,20 +29,22 @@ MAX_DEPS_DEPTH = 6
 class NodeControlUtil:
     @classmethod
     def run_shell_command(cls, command, timeout=TIMEOUT, strict=True):
-        ret_bytes = None
         try:
+            logger.info("Call {}".format(command))
             ret = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE, timeout=timeout)
             ret_bytes = ret.stdout
         except subprocess.CalledProcessError as ex:
             ret_bytes = ex.output
             if strict:
-                raise Exception('command {} returned {}'.format(command, ex.returncode))
+                err_msg = ex.stderr.decode(locale.getpreferredencoding(), 'decode_errors').strip() if ex.stderr else ""
+                raise Exception('command {} returned {}. {}'.format(command, ex.returncode, err_msg))
         except Exception as ex:
             raise Exception("command {} failed with {}".format(command, ex))
-        if ret_bytes:
-            return ret_bytes.decode(locale.getpreferredencoding(), 'decode_errors').strip()
-        return ""
+        ret_msg = ret_bytes.decode(locale.getpreferredencoding(), 'decode_errors').strip() if ret_bytes else ""
+        if strict:
+            logger.info("Command result {}".format(ret_msg))
+        return ret_msg
 
     @classmethod
     def _get_curr_info(cls, package):
