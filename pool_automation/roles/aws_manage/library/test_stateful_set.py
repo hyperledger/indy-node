@@ -12,6 +12,7 @@ from stateful_set import (
 PARAMS = InstanceParams(
     project='PoolAutomation',
     project_short='PA',
+    add_tags={'Purpose': 'Test Pool Automation'},
     namespace='test_stateful_set',
     role=None,
     key_name='test_stateful_set_key',
@@ -209,6 +210,8 @@ def test_manage_instances(ec2_all):
                     params.namespace,
                     params.role,
                     inst_tag_id.zfill(3))
+                for tag_key, tag_value in params.add_tags.iteritems():
+                    assert tag_value == get_tag(inst, tag_key)
 
     changed, hosts = manage_instances(regions, params, 4)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')

@@ -21,6 +21,7 @@
     project_short: "{{ aws_project_name_short }}"
     namespace: "{{ aws_tag_namespace }}"
     role: "{{ aws_tag_role }}"
+    add_tags: "{{ aws_add_tags }}"
     key_name: "{{ aws_keyname }}"
     group: "{{ aws_sgroup }}"
     instance_type: "{{ aws_ec2_type }}"
