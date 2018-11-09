@@ -77,7 +77,7 @@ def ec2_environment(ec2_all):
     for region, ec2 in ec2_all.iteritems():
         for inst in find_instances(ec2, PARAMS.namespace):
             terminator.terminate(inst, region)
-    terminator.wait()
+    terminator.wait(False)
 
     for ec2 in ec2_all.values():
         manage_key_pair(ec2, False)
@@ -115,7 +115,6 @@ def test_AwsEC2Launcher(ec2):
     assert len(launcher.awaited) == 0
 
     for instance in instances:
-        instance.reload()
         check_params(instance, params)
 
 
@@ -135,7 +134,6 @@ def test_AwsEC2Terminator(ec2):
     assert len(terminator.awaited) == 0
 
     for instance in instances:
-        instance.reload()
         assert instance.state['Name'] == 'terminated'
 
 
@@ -147,7 +145,7 @@ def test_find_instances(ec2_all):
 
     for inst in find_instances(ec2, PARAMS.namespace):
         terminator.terminate(inst, region)
-    terminator.wait()
+    terminator.wait(False)
 
     launcher.launch(PARAMS._replace(role='aaa'), 2, ec2=ec2)
     launcher.launch(PARAMS._replace(role='bbb'), 3, ec2=ec2)

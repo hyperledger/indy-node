@@ -73,12 +73,12 @@ class AwsEC2Waiter(object):
     """ Base class for EC2 actors which calls long running async actions. """
 
     def __init__(self, ev_name):
-        self._ids = defaultdict(list)
+        self._awaited = defaultdict(list)
         self._ev_name = ev_name
 
     @property
     def awaited(self):
-        return dict(self._ids)
+        return dict(self._awaited)
 
     def add_instance(self, instance, region=None):
         # fallback - autodetect placement region,
@@ -88,13 +88,17 @@ class AwsEC2Waiter(object):
             #      ec2.client.describe_availability_zones
             #      and create a map av.zone -> region
             region = instance.placement['AvailabilityZone'][:-1]
-        self._ids[region].append(instance.id)
+        self._awaited[region].append(instance)
 
-    def wait(self):
-        for region, ids in dict(self._ids).iteritems():
+    def wait(self, update=True):
+        for region, instances in dict(self._awaited).iteritems():
             ec2cl = boto3.client('ec2', region_name=region)
-            ec2cl.get_waiter(self._ev_name).wait(InstanceIds=ids)
-            del self._ids[region]
+            ec2cl.get_waiter(self._ev_name).wait(
+                InstanceIds=[inst.id for inst in instances])
+            if update:
+                for inst in instances:
+                    inst.reload()
+            del self._awaited[region]
 
 
 class AwsEC2Terminator(AwsEC2Waiter):
