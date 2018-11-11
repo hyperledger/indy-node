@@ -41,12 +41,13 @@ def find_ubuntu_ami(ec2):
     return images[-1].image_id if len(images) > 0 else None
 
 
-def find_instances(ec2, namespace, role=None):
+def find_instances(ec2, project, namespace, role=None):
     filters = [
-        {'Name': 'tag:namespace', 'Values': [namespace]}
+        {'Name': 'tag:Project', 'Values': [project]},
+        {'Name': 'tag:Namespace', 'Values': [namespace]}
     ]
     if role is not None:
-        filters.append({'Name': 'tag:role', 'Values': [role]})
+        filters.append({'Name': 'tag:Role', 'Values': [role]})
 
     return [instance for instance in ec2.instances.filter(Filters=filters)
             if instance.state['Name'] not in ['terminated', 'shutting-down']]
@@ -113,7 +114,7 @@ class AwsEC2Terminator(AwsEC2Waiter):
 
 
 InstanceParams = namedtuple(
-    'InstanceParams', 'namespace role key_name group type_name')
+    'InstanceParams', 'project project_short namespace role add_tags key_name group type_name')
 
 
 class AwsEC2Launcher(AwsEC2Waiter):
@@ -140,11 +141,15 @@ class AwsEC2Launcher(AwsEC2Waiter):
                     'ResourceType': 'instance',
                     'Tags': [
                         {
-                            'Key': 'namespace',
+                            'Key': 'Project',
+                            'Value': params.project
+                        },
+                        {
+                            'Key': 'Namespace',
                             'Value': params.namespace
                         },
                         {
-                            'Key': 'role',
+                            'Key': 'Role',
                             'Value': params.role
                         }
                     ]
@@ -171,9 +176,9 @@ def manage_instances(regions, params, count):
         ec2 = boto3.resource('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
-        instances = find_instances(ec2, params.namespace, params.role)
+        instances = find_instances(ec2, params.project, params.namespace, params.role)
         for inst in instances:
-            tag_id = get_tag(inst, 'id')
+            tag_id = get_tag(inst, 'ID')
             if tag_id in valid_ids:
                 valid_ids.remove(tag_id)
                 hosts.append(inst)
@@ -186,14 +191,21 @@ def manage_instances(regions, params, count):
             instances = aws_launcher.launch(
                 params, len(valid_ids), region=region, ec2=ec2)
             for inst, tag_id in zip(instances, valid_ids):
-                inst.create_tags(Tags=[{'Key': 'id', 'Value': tag_id}])
+                inst.create_tags(Tags=[
+                    {'Key': 'Name', 'Value': "{}-{}-{}-{}"
+                        .format(params.project_short,
+                                params.namespace,
+                                params.role,
+                                tag_id.zfill(3)).lower()},
+                    {'Key': 'ID', 'Value': tag_id}] +
+                    [{'Key': k, 'Value': v} for k, v in params.add_tags.iteritems()])
                 hosts.append(inst)
                 changed = True
 
     aws_launcher.wait()
     aws_terminator.wait()
 
-    hosts = [HostInfo(tag_id=get_tag(inst, 'id'),
+    hosts = [HostInfo(tag_id=get_tag(inst, 'ID'),
                       public_ip=inst.public_ip_address,
                       user='ubuntu') for inst in hosts]
 
@@ -204,8 +216,11 @@ def run(module):
     params = module.params
 
     inst_params = InstanceParams(
+        project=params['project'],
+        project_short=params['project_short'],
         namespace=params['namespace'],
         role=params['role'],
+        add_tags=params['add_tags'],
         key_name=params['key_name'],
         group=params['group'],
         type_name=params['instance_type']
@@ -221,8 +236,11 @@ def run(module):
 if __name__ == '__main__':
     module_args = dict(
         regions=dict(type='list', required=True),
+        project=dict(type='str', required=True),
+        project_short=dict(type='str', required=True),
         namespace=dict(type='str', required=True),
         role=dict(type='str', required=True),
+        add_tags=dict(type='dict', required=False, default=dict()),
         key_name=dict(type='str', required=True),
         group=dict(type='str', required=True),
         instance_type=dict(type='str', required=True),

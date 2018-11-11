@@ -10,6 +10,9 @@ from stateful_set import (
 
 
 PARAMS = InstanceParams(
+    project='PoolAutomation',
+    project_short='PA',
+    add_tags={'Purpose': 'Test Pool Automation'},
     namespace='test_stateful_set',
     role=None,
     key_name='test_stateful_set_key',
@@ -46,14 +49,15 @@ def manage_security_group(ec2, present):
 
 
 def terminate_instances(ec2):
-    instances = find_instances(ec2, PARAMS.namespace)
+    instances = find_instances(ec2, PARAMS.project, PARAMS.namespace)
     for inst in instances:
         inst.terminate()
 
 
 def check_params(inst, params):
-    assert {'Key': 'namespace', 'Value': params.namespace} in inst.tags
-    assert {'Key': 'role', 'Value': params.role} in inst.tags
+    assert {'Key': 'Project', 'Value': params.project} in inst.tags
+    assert {'Key': 'Namespace', 'Value': params.namespace} in inst.tags
+    assert {'Key': 'Role', 'Value': params.role} in inst.tags
     assert inst.key_name == params.key_name
     assert len(inst.security_groups) == 1
     assert inst.security_groups[0]['GroupName'] == params.group
@@ -75,7 +79,7 @@ def ec2_environment(ec2_all):
 
     terminator = AwsEC2Terminator()
     for region, ec2 in ec2_all.iteritems():
-        for inst in find_instances(ec2, PARAMS.namespace):
+        for inst in find_instances(ec2, PARAMS.project, PARAMS.namespace):
             terminator.terminate(inst, region)
     terminator.wait(False)
 
@@ -143,16 +147,16 @@ def test_find_instances(ec2_all):
     terminator = AwsEC2Terminator()
     ec2 = ec2_all[region]
 
-    for inst in find_instances(ec2, PARAMS.namespace):
+    for inst in find_instances(ec2, PARAMS.project, PARAMS.namespace):
         terminator.terminate(inst, region)
     terminator.wait(False)
 
     launcher.launch(PARAMS._replace(role='aaa'), 2, ec2=ec2)
     launcher.launch(PARAMS._replace(role='bbb'), 3, ec2=ec2)
 
-    aaa = find_instances(ec2, PARAMS.namespace, 'aaa')
-    bbb = find_instances(ec2, PARAMS.namespace, 'bbb')
-    aaa_and_bbb = find_instances(ec2, PARAMS.namespace)
+    aaa = find_instances(ec2, PARAMS.project, PARAMS.namespace, 'aaa')
+    bbb = find_instances(ec2, PARAMS.project, PARAMS.namespace, 'bbb')
+    aaa_and_bbb = find_instances(ec2, PARAMS.project, PARAMS.namespace)
 
     assert len(aaa) == 2
     assert len(bbb) == 3
@@ -198,10 +202,19 @@ def test_manage_instances(ec2_all):
         for group in instances:
             for inst in group:
                 check_params(inst, params)
-                assert get_tag(inst, 'id') is not None
+                inst_tag_id = get_tag(inst, 'ID')
+                assert inst_tag_id is not None
+                inst_tag_name = get_tag(inst, 'Name')
+                assert inst_tag_name == "{}-{}-{}-{}".format(
+                    params.project_short,
+                    params.namespace,
+                    params.role,
+                    inst_tag_id.zfill(3))
+                for tag_key, tag_value in params.add_tags.iteritems():
+                    assert tag_value == get_tag(inst, tag_key)
 
     changed, hosts = manage_instances(regions, params, 4)
-    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert changed
     check_hosts(hosts)
@@ -210,13 +223,13 @@ def test_manage_instances(ec2_all):
     assert len(instances[0]) == 2
     assert len(instances[1]) == 1
     assert len(instances[2]) == 1
-    assert set([get_tag(instances[0][0], 'id'),
-                get_tag(instances[0][1], 'id')]) == set(['1', '4'])
-    assert get_tag(instances[1][0], 'id') == '2'
-    assert get_tag(instances[2][0], 'id') == '3'
+    assert set([get_tag(instances[0][0], 'ID'),
+                get_tag(instances[0][1], 'ID')]) == set(['1', '4'])
+    assert get_tag(instances[1][0], 'ID') == '2'
+    assert get_tag(instances[2][0], 'ID') == '3'
 
     changed, hosts = manage_instances(regions, params, 4)
-    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert not changed
     check_hosts(hosts)
@@ -225,13 +238,13 @@ def test_manage_instances(ec2_all):
     assert len(instances[0]) == 2
     assert len(instances[1]) == 1
     assert len(instances[2]) == 1
-    assert set([get_tag(instances[0][0], 'id'),
-                get_tag(instances[0][1], 'id')]) == set(['1', '4'])
-    assert get_tag(instances[1][0], 'id') == '2'
-    assert get_tag(instances[2][0], 'id') == '3'
+    assert set([get_tag(instances[0][0], 'ID'),
+                get_tag(instances[0][1], 'ID')]) == set(['1', '4'])
+    assert get_tag(instances[1][0], 'ID') == '2'
+    assert get_tag(instances[2][0], 'ID') == '3'
 
     changed, hosts = manage_instances(regions, params, 2)
-    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert changed
     check_hosts(hosts)
@@ -240,11 +253,11 @@ def test_manage_instances(ec2_all):
     assert len(instances[0]) == 1
     assert len(instances[1]) == 1
     assert len(instances[2]) == 0
-    assert get_tag(instances[0][0], 'id') == '1'
-    assert get_tag(instances[1][0], 'id') == '2'
+    assert get_tag(instances[0][0], 'ID') == '1'
+    assert get_tag(instances[1][0], 'ID') == '2'
 
     changed, hosts = manage_instances(regions, params, 0)
-    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert changed
     check_hosts(hosts)
@@ -255,7 +268,7 @@ def test_manage_instances(ec2_all):
     assert len(instances[2]) == 0
 
     changed, hosts = manage_instances(regions, params, 0)
-    instances = [find_instances(c, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert not changed
     check_hosts(hosts)
