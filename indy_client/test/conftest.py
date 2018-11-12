@@ -1,42 +1,32 @@
 import os
 import logging
-
 import base58
-
-from anoncreds.protocol.utils import randomString
 
 from plenum.common.member.member import Member
 from plenum.common.txn_util import get_payload_data
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
-from plenum.common.keygen_utils import initLocalKeys
 from plenum.common.signer_did import DidSigner
 from plenum.common.util import friendlyToRaw
 from stp_core.common.log import Logger
 
-from stp_core.loop.eventually import eventually
 from indy_client.test.constants import primes
 import warnings
 from copy import deepcopy
 
 from indy_common import strict_types
 
-# typecheck during tests
-from stp_core.network.port_dispenser import genHa
-
 strict_types.defaultShouldCheck = True
 
 import pytest
 
-from plenum.common.constants import VERKEY, ALIAS, STEWARD, TXN_ID, TRUSTEE, TYPE, NODE_IP, NODE_PORT, CLIENT_IP, \
-    CLIENT_PORT, SERVICES, VALIDATOR
+from plenum.common.constants import ALIAS, STEWARD, TRUSTEE
 
 from indy_client.client.wallet.wallet import Wallet
-from indy_common.constants import NYM, TRUST_ANCHOR
-from indy_common.constants import TXN_TYPE, TARGET_NYM, ROLE
+from indy_common.constants import TRUST_ANCHOR
 from indy_client.test.cli.helper import newCLI, addTrusteeTxnsToGenesis, addTxnsToGenesisFile
 from indy_node.test.helper import makePendingTxnsRequest, buildStewardClient, \
     TestNode
-from indy_client.test.helper import addRole, genTestClient, TestClient, createNym, getClientAddedWithRole
+from indy_client.test.helper import addRole, genTestClient, TestClient, createNym
 
 # noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, \
@@ -269,14 +259,6 @@ def userWalletA(nodeSet, addedTrustAnchor,
                 trustAnchorWallet, looper, trustAnchor):
     return addRole(looper, trustAnchor, trustAnchorWallet, 'userA',
                    addVerkey=False)
-
-
-@pytest.fixture(scope="module")
-def sdk_user_wallet_a(nodeSet, sdk_wallet_trust_anchor,
-                      sdk_pool_handle, looper, trustAnchor):
-    return sdk_add_new_nym(looper, sdk_pool_handle,
-                           sdk_wallet_trust_anchor, alias='userA',
-                           skipverkey=True)
 
 
 @pytest.fixture(scope="module")
