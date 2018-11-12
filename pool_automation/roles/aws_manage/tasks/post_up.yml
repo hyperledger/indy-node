@@ -5,6 +5,9 @@
     dest: "{{ ssh_dir }}/ssh_config"
 
 - name: Create inventory file for AWS hosts
+  vars:
+    ssh_private_key: "{% raw %}{{ inventory_dir }}{% endraw %}/{{ ssh_dir_name }}/key"
+    known_hosts_file: "{% raw %}{{ inventory_dir }}{% endraw %}/{{ ssh_dir_name }}/known_hosts"
   template:
     src: hosts.j2
     dest: "{{ aws_inventory_file }}"
