@@ -22,7 +22,12 @@
   ec2_group:
     name: "{{ aws_sgroup }}"
     region: "{{ item }}"
-    description: "Security group for {{ aws_tag_role }} in {{ aws_tag_namespace }}"
+    description: "[{{ aws_project_name }}] Security group for {{ aws_tag_role }} in {{ aws_tag_namespace }}"
+    tags:
+      Name: "{{ aws_tag_sgroup_name }}"
+      Project: "{{ aws_tag_project }}"
+      Namespace: "{{ aws_tag_namespace }}"
+      Role: "{{ aws_tag_role }}"
     rules:
       - proto: all
         cidr_ip: 0.0.0.0/0
