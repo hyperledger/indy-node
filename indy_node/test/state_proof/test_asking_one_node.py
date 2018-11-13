@@ -1,6 +1,8 @@
-from indy_client.test.state_proof.helper import sdk_submit_operation_and_get_replies
+from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_replies
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW
 from indy_common.constants import GET_ATTR
+
+# fixtures
 from indy_node.test.attrib_txn.test_nym_attrib import attributeData, \
     attributeName, attributeValue, sdk_added_raw_attribute
 
@@ -17,7 +19,7 @@ def test_state_proof_returned_for_get_attr(looper,
     """
     # Prepare and send get-request
     get_attr_operation = {
-        TARGET_NYM: sdk_added_raw_attribute['operation']['dest'],
+        TARGET_NYM: sdk_added_raw_attribute['result']['txn']['data']['dest'],
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }

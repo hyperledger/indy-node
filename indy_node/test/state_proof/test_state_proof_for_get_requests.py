@@ -3,7 +3,7 @@ from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA, \
     ROLE, VERKEY, TXN_TIME, NYM, NAME, VERSION
 from plenum.common.types import f
 
-from indy_client.test.state_proof.helper import check_valid_proof, \
+from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_replies
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
     CLAIM_DEF, REVOCATION, GET_CLAIM_DEF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
@@ -26,7 +26,7 @@ def test_state_proof_returned_for_get_attr(looper,
     Use different submitter and reader!
     """
     get_attr_operation = {
-        TARGET_NYM: sdk_added_raw_attribute['operation']['dest'],
+        TARGET_NYM: sdk_added_raw_attribute['result']['txn']['data']['dest'],
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }

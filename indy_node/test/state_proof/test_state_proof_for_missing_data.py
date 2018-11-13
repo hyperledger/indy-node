@@ -1,7 +1,7 @@
 from plenum.common.types import f
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA
 
-from indy_client.test.state_proof.helper import check_valid_proof, \
+from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_replies
 from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES

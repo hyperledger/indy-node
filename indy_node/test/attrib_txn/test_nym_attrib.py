@@ -46,8 +46,8 @@ def attributeData(attributeName, attributeValue):
 def sdk_added_raw_attribute(sdk_pool_handle, sdk_user_wallet_a,
                             sdk_wallet_trust_anchor, attributeData, looper):
     _, did_cl = sdk_user_wallet_a
-    req_couple = sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, attributeData, did_cl)
-    return req_couple[0]
+    req_couple = sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, attributeData, did_cl)[0]
+    return req_couple[1]
 
 
 @pytest.fixture(scope="module")
@@ -75,34 +75,6 @@ def whitelistextras(*msg):
     [whitelistArray.append(m) for m, _in in ins.items() if not _in]
     yield
     [whitelistArray.remove(m) for m, _in in ins.items() if not _in]
-
-
-def test_non_steward_cannot_create_trust_anchor(
-        nodeSet, looper, sdk_pool_handle, sdk_wallet_steward):
-    sdk_wallet_client = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward)
-    with pytest.raises(RequestRejectedException) as e:
-        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_client, role=TRUST_ANCHOR_STRING)
-    e.match('None role cannot')
-
-
-def testStewardCreatesATrustAnchor(looper, sdk_pool_handle, sdk_wallet_steward):
-    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, role=TRUST_ANCHOR_STRING)
-
-
-def testStewardCreatesAnotherTrustAnchor(looper, sdk_pool_handle, sdk_wallet_steward):
-    sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, role=TRUST_ANCHOR_STRING)
-
-
-def test_non_trust_anchor_cannot_create_user(
-        nodeSet, looper, sdk_pool_handle, sdk_wallet_steward):
-    sdk_wallet_client = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward)
-    with pytest.raises(RequestRejectedException) as e:
-        sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_client)
-    e.match('None role cannot')
-
-
-def testTrustAnchorCreatesAUser(sdk_user_wallet_a):
-    pass
 
 
 def testTrustAnchorAddsAttributeForUser(sdk_added_raw_attribute):
