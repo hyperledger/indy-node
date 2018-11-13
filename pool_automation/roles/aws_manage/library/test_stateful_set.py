@@ -10,8 +10,7 @@ from stateful_set import (
 
 
 PARAMS = InstanceParams(
-    project='PoolAutomation',
-    project_short='PA',
+    project='Indy-PA',
     add_tags={'Purpose': 'Test Pool Automation'},
     namespace='test_stateful_set',
     role=None,
@@ -206,10 +205,10 @@ def test_manage_instances(ec2_all):
                 assert inst_tag_id is not None
                 inst_tag_name = get_tag(inst, 'Name')
                 assert inst_tag_name == "{}-{}-{}-{}".format(
-                    params.project_short,
+                    params.project,
                     params.namespace,
                     params.role,
-                    inst_tag_id.zfill(3))
+                    inst_tag_id.zfill(3)).lower()
                 for tag_key, tag_value in params.add_tags.iteritems():
                     assert tag_value == get_tag(inst, tag_key)
 
