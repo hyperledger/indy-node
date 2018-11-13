@@ -6,7 +6,7 @@
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
     - aws_project_name
-    - aws_project_name_short
+    - aws_project_prefix
     - aws_regions
     - aws_ec2_type
     - aws_tag_project
