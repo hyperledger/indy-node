@@ -33,8 +33,10 @@ aws_tag_project: "{{ aws_project_name }}"
 aws_tag_namespace: "{{ inventory_dir | default('test', true) | basename }}"
 aws_tag_role: default
 aws_add_tags: {} # additional tags
-aws_keyname: "{{ [aws_project_name_short, aws_tag_namespace, group_name]|join('-')|lower }}"
-aws_sgroup: "{{ [aws_project_name_short, aws_tag_namespace, group_name]|join('-')|lower }}"
+
+aws_resource_common_name: "{{ [aws_project_name_short, aws_tag_namespace, group_name]|join('-')|lower }}"
+aws_keyname: "{{ aws_resource_common_name }}"
+aws_sgroup: "{{ aws_resource_common_name }}"
 aws_tag_sgroup_name: "{{ aws_sgroup }}"
 
 # Inventory parameters
