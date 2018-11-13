@@ -18,7 +18,6 @@
   stateful_set:
     regions: "{{ aws_regions }}"
     project: "{{ aws_tag_project }}"
-    project_short: "{{ aws_project_prefix }}"
     namespace: "{{ aws_tag_namespace }}"
     role: "{{ aws_tag_role }}"
     add_tags: "{{ aws_add_tags }}"

@@ -1,7 +1,6 @@
 ---
 # General
-aws_project_name: PoolAutomation
-aws_project_prefix: PA
+aws_project_name: Indy-PA
 
 # Provision parameters
 instance_count: 4
@@ -34,7 +33,7 @@ aws_tag_namespace: "{{ inventory_dir | default('test', true) | basename }}"
 aws_tag_role: default
 aws_add_tags: {} # additional tags
 
-aws_resource_common_name: "{{ [aws_project_prefix, aws_tag_namespace, group_name]|join('-')|lower }}"
+aws_resource_common_name: "{{ [aws_project_name, aws_tag_namespace, group_name]|join('-')|lower }}"
 aws_keyname: "{{ aws_resource_common_name }}"
 aws_sgroup: "{{ aws_resource_common_name }}"
 aws_tag_sgroup_name: "{{ aws_sgroup }}"
