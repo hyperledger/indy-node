@@ -4,7 +4,6 @@ import re
 import tempfile
 from typing import List
 
-import base58
 import pytest
 from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 from plenum.common.signer_did import DidSigner
@@ -16,30 +15,24 @@ from indy_common.config_helper import NodeConfigHelper
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from plenum.common.txn_util import get_type
 
-from stp_core.crypto.util import randomSeed
 from stp_core.network.port_dispenser import genHa
 
-import plenum
-from plenum.common import util
 from plenum.common.constants import ALIAS, NODE_IP, NODE_PORT, CLIENT_IP, \
-    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, TXN_TYPE, NODE, NYM, \
+    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, NODE, NYM, \
     BLS_KEY_PROOF
 from plenum.common.constants import CLIENT_STACK_SUFFIX
-from plenum.common.exceptions import BlowUp
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import randomString
 from plenum.test import waits
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 
-from plenum.test.conftest import txnPoolNodeSet, patchPluginManager, tdirWithNodeKeepInited
+from plenum.test.conftest import tdirWithNodeKeepInited
 from stp_core.loop.eventually import eventually
 from stp_core.common.log import getlogger
-from plenum.test.conftest import tdirWithPoolTxns
 from indy_client.cli.helper import USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
 from indy_client.test.helper import createNym, buildStewardClient
 from indy_common.constants import ENDPOINT, TRUST_ANCHOR
 from indy_common.roles import Roles
-from indy_common.test.conftest import poolTxnTrusteeNames
 from indy_common.test.conftest import domainTxnOrderedFields
 from indy_node.test.helper import TestNode
 from plenum.common.keygen_utils import initNodeKeysForBothStacks
@@ -51,8 +44,8 @@ from plenum.test.cli.helper import newKeyPair, doByCtx
 
 from indy_client.test.cli.helper import ensureNodesCreated, get_connection_request, \
     getPoolTxnData, newCLI, getCliBuilder, P, prompt_is, addAgent, doSendNodeCmd, addNym
-from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
-    acmeIsRunning as runningAcme, thriftIsRunning as runningThrift, emptyLooper,\
+from indy_client.test.agent.conftest import acmeIsRunning as runningAcme, \
+    thriftIsRunning as runningThrift, emptyLooper,\
     faberWallet, acmeWallet, thriftWallet, agentIpAddress, \
     faberAgentPort, acmeAgentPort, thriftAgentPort, faberAgent, acmeAgent, \
     thriftAgent, faberBootstrap, acmeBootstrap
@@ -901,9 +894,6 @@ def philCLI(CliBuilder):
     yield from CliBuilder("phil")
 
 
-@pytest.yield_fixture(scope="module")
-def faberCLI(CliBuilder):
-    yield from CliBuilder("faber")
 
 
 @pytest.yield_fixture(scope="module")
@@ -1181,34 +1171,6 @@ def steward(poolNodesCreated, looper, tdir, stewardWallet):
     return buildStewardClient(looper, tdir, stewardWallet)
 
 
-@pytest.fixture(scope="module")
-def faberAdded(poolNodesCreated,
-               looper,
-               aliceCLI,
-               faberInviteLoaded,
-               aliceConnected,
-               steward, stewardWallet):
-    li = get_connection_request("Faber", aliceCLI.activeWallet)
-    createNym(looper, li.remoteIdentifier, steward, stewardWallet,
-              role=TRUST_ANCHOR)
-
-
-@pytest.fixture(scope="module") # noqa
-def faberIsRunningWithoutNymAdded(emptyLooper, tdirWithPoolTxns, faberWallet,
-                                  faberAgent):
-    faber, faberWallet = runningFaber(emptyLooper, tdirWithPoolTxns,
-                                      faberWallet, faberAgent, None)
-    return faber, faberWallet
-
-
-@pytest.fixture(scope="module") # noqa
-def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
-                   faberAddedByPhil, faberAgent, faberBootstrap):
-    faber, faberWallet = runningFaber(
-        emptyLooper, tdirWithPoolTxns, faberWallet, faberAgent, faberAddedByPhil, faberBootstrap)
-    return faber, faberWallet
-
-
 @pytest.fixture(scope="module") # noqa
 def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet,
                   acmeAddedByPhil, acmeAgent, acmeBootstrap):
@@ -1322,12 +1284,6 @@ def philCli(be, do, philCLI, trusteeCli, poolTxnData):
            role=Roles.TRUSTEE.name)
 
     return philCLI
-
-
-@pytest.fixture(scope="module")
-def faberAddedByPhil(be, do, poolNodesStarted, philCli,
-                     nymAddedOut, faberMap):
-    return addAgent(be, do, philCli, faberMap)
 
 
 @pytest.fixture(scope="module")

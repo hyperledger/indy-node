@@ -5,7 +5,6 @@ import re
 from collections import namedtuple
 from pathlib import Path
 
-from config.config import cmod
 from plenum.common.util import randomString
 
 from plenum.test import waits
@@ -22,7 +21,6 @@ from plenum.test.test_client import genTestClient as genPlenumTestClient, \
     genTestClientProvider as genPlenumTestClientProvider
 
 from indy_common.identity import Identity
-from indy_common.constants import NULL
 
 from indy_client.client.wallet.upgrade import Upgrade
 from indy_client.client.wallet.wallet import Wallet
@@ -129,21 +127,6 @@ def checkNacks(client, reqId, contains='', nodeCount=4):
 def checkRejects(client, reqId, contains='', nodeCount=4):
     checkErrorMsg(REJECT, client, reqId, contains=contains,
                   nodeCount=nodeCount)
-
-
-def checkAccpets(client, reqId, nodeCount=4):
-    checkErrorMsg(REPLY, client, reqId, contains='',
-                  nodeCount=nodeCount)
-
-
-def submitAndCheckAccepts(looper, client, wallet, op, identifier):
-    reqId = submit(wallet, op, identifier, client)
-    timeout = waits.expectedReqNAckQuorumTime()
-    looper.run(eventually(checkAccpets,
-                          client,
-                          reqId,
-                          retryWait=1,
-                          timeout=timeout))
 
 
 def submit(wallet, op, identifier, client):
