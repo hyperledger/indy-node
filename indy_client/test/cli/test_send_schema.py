@@ -3,7 +3,6 @@ from plenum.test.helper import sdk_check_reply
 
 
 def test_send_schema_multiple_attrib(looper, sdk_pool_handle, sdk_wallet_trust_anchor):
-
     _, resp = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_trust_anchor, ["attrib1", "attrib2", "attrib3"])
     sdk_check_reply(resp)
 
