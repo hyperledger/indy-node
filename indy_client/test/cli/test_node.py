@@ -18,17 +18,6 @@ def test_add_new_node(newNodeAdded):
     pass
 
 
-def test_add_same_node_without_any_change(be, do, newStewardCli,
-                                          newNodeVals, newNodeAdded):
-    '''
-    Checks that it's not possible to add the same node twice by owner
-    '''
-    be(newStewardCli)
-    doSendNodeCmd(do, newNodeVals,
-                  expMsgs=['node already has the same data as requested'])
-    exitFromCli(do)
-
-
 def test_add_same_node_without_any_change_by_trustee(be, do, trusteeCli,
                                                      newNodeVals, newNodeAdded,
                                                      nodeValsEmptyData):

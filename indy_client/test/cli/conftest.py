@@ -5,6 +5,8 @@ import tempfile
 from typing import List
 
 import pytest
+from indy_node.test.conftest import sdk_node_theta_added
+
 from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 from plenum.common.signer_did import DidSigner
 from indy_common.config_helper import NodeConfigHelper
@@ -1195,50 +1197,19 @@ def newStewardCli(be, do, poolNodesStarted, trusteeCli,
 
 
 @pytest.fixture(scope="module")
-def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
-                 newNodeVals):
-    be(newStewardCli)
-    doSendNodeCmd(do, newNodeVals)
-    newNodeData = newNodeVals["newNodeData"]
-
-    def checkClientConnected(client):
-        name = newNodeData[ALIAS] + CLIENT_STACK_SUFFIX
-        assert name in client.nodeReg
-
-    def checkNodeConnected(nodes):
-        for node in nodes:
-            name = newNodeData[ALIAS]
-            assert name in node.nodeReg
-
-    # Reconnect steward's CLI to get new pool membership info.
-    disconnect_and_check_output(do)
-    connect_and_check_output(do, newStewardCli.txn_dir)
-
-    timeout = waits.expectedClientToPoolConnectionTimeout(
-        len(newStewardCli.activeClient.nodeReg))
-
-    newStewardCli.looper.run(eventually(checkClientConnected,
-                                        newStewardCli.activeClient,
-                                        timeout=timeout))
-
-    be(philCli)
-
-    # Reconnect Phil's CLI if needed to get new pool membership info.
-    if philCli._isConnectedToAnyEnv():
-        disconnect_and_check_output(do)
-    connect_and_check_output(do, philCli.txn_dir)
-
-    philCli.looper.run(eventually(checkClientConnected,
-                                  philCli.activeClient,
-                                  timeout=timeout))
-
-    poolNodesStarted.looper.run(
-        eventually(
-            checkNodeConnected,
-            list(
-                poolNodesStarted.nodes.values()),
-            timeout=timeout))
-    return newNodeVals
+def newNodeAdded(looper, nodeSet, tdir, tconf, sdk_pool_handle,
+                 sdk_wallet_trustee, allPluginsPath):
+    new_steward_wallet, new_node = sdk_node_theta_added(looper,
+                                                        nodeSet,
+                                                        tdir,
+                                                        tconf,
+                                                        sdk_pool_handle,
+                                                        sdk_wallet_trustee,
+                                                        allPluginsPath,
+                                                        node_config_helper_class=NodeConfigHelper,
+                                                        testNodeClass=TestNode,
+                                                        name='')
+    return new_steward_wallet, new_node
 
 
 @pytest.fixture(scope='module')
