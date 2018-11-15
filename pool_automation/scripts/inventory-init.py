@@ -79,12 +79,12 @@ def _parse_args(roles):
         )
         for p, d in params['defaults'].iteritems():
             _help_kwargs = {'metavar': "{}".format(type(d).__name__).upper()}
-            # TODO smarter data types related routine:
-            #   - dict: is it acutal case?
-            #   - be generic: shouldn't have any role's specific things
             if type(d) is list:
                 _help_kwargs['nargs'] = '+'
                 _help_kwargs['metavar'] = 'ITEM'
+            elif type(d) is dict:
+                _help_kwargs['metavar'] = 'JSON'
+                _help_kwargs['type'] = json.loads
             elif type(d) in (int, float):
                 _help_kwargs['type'] = type(d)
 
