@@ -177,12 +177,12 @@ def validate_claim_def_txn(txn):
 
 # Misc utility
 
-def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward, multi_attribute=[]):
+def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward, multi_attribute=[], name="", version=""):
     _, identifier = sdk_wallet_steward
 
-    if not multi_attribute:
+    if multi_attribute:
         _, schema_json = looper.loop.run_until_complete(
-            issuer_create_schema(identifier, "name", "1.0", json.dumps(multi_attribute)))
+            issuer_create_schema(identifier, name, version, json.dumps(multi_attribute)))
     else:
         _, schema_json = looper.loop.run_until_complete(
             issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
