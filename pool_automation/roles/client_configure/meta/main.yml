@@ -1,0 +1,3 @@
+---
+dependencies:
+  - role: client_install
