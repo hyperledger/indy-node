@@ -1,6 +1,6 @@
 ---
 - name: Pre-Checks - check variables
-  include_tasks: "{{ role_path }}/tasks/pre_checks.yml"
+  import_tasks: "pre_checks.yml"
 
 - name: Set ssh_dir_name variable
   set_fact:
@@ -11,7 +11,7 @@
     ssh_dir: "{{ aws_inventory_dir }}/{{ ssh_dir_name }}"
 
 - name: Pre-Up
-  include_tasks: "{{ role_path }}/tasks/pre_up.yml"
+  import_tasks: "pre_up.yml"
   when: instance_count > 0
 
 - name: Manage instances
@@ -28,9 +28,9 @@
   register: ec2
 
 - name: Post-Up
-  include_tasks: "{{ role_path }}/tasks/post_up.yml"
+  import_tasks: "post_up.yml"
   when: instance_count > 0
 
 - name: Post-Down
-  include_tasks: "{{ role_path }}/tasks/post_down.yml"
+  import_tasks: "post_down.yml"
   when: instance_count == 0
