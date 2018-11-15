@@ -1,0 +1,38 @@
+---
+- name: Check that required variables are specified
+  assert:
+    that:
+      - lookup('vars', item, default='')
+    msg: "{{ lookup('vars', item, default='undefined')|string }}"
+  loop:
+    - channel
+    - indy_cli_ver
+
+# TODO move the following three tasks (HTTPS, sovrin key and sovrin repos)
+#      into separate role
+- name: Install HTTPS support for apt
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+    update_cache: true
+  become: true
+
+- name: Add sovrin key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 3B75B82CF342D9FB
+  become: true
+
+- name: Add sovrin repositories for indy-sdk
+  apt_repository:
+    repo: "deb https://repo.sovrin.org/sdk/deb xenial {{ channel }}"
+    state: present
+  become: true
+
+- name: Install indy cli
+  apt:
+    name:
+      - "indy-cli={{ indy_cli_ver }}"
+    update_cache: true
+  become: true
