@@ -5,8 +5,8 @@ from libnacl.secret import SecretBox
 from hashlib import sha256
 
 from indy_client.test.cli.constants import INVALID_SYNTAX
-from indy_client.test.cli.helper import createUuidIdentifier, addNym
-
+from indy_client.test.cli.helper import addNym
+from indy_node.test.helper import createUuidIdentifier
 
 attrib_name = 'dateOfBirth'
 

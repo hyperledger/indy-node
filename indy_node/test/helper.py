@@ -3,25 +3,22 @@ import base58
 
 from indy.did import replace_keys_start, replace_keys_apply
 from indy.ledger import build_attrib_request, build_get_attrib_request
+from libnacl import randombytes
 
 from indy_common.config_helper import NodeConfigHelper
-from plenum.common.constants import DATA
-from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
-from plenum.common.txn_util import get_txn_id
-from stp_core.common.log import getlogger
+from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
+from plenum.common.util import rawToFriendly
+from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
+from stp_core.common.log import getlogger
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.test_node import TestNodeCore
 from plenum.test.testable import spyable
-from plenum.test import waits as plenumWaits, waits
-from indy_client.client.wallet.attribute import LedgerStore, Attribute
 from indy_client.client.wallet.wallet import Wallet
 from indy_client.test.helper import genTestClient
-from indy_common.constants import TARGET_NYM, TXN_TYPE, GET_NYM
 from indy_common.test.helper import TempStorage
 from indy_node.server.node import Node
 from indy_node.server.upgrader import Upgrader
-from stp_core.loop.eventually import eventually
 from stp_core.types import HA
 
 logger = getlogger()
@@ -103,11 +100,12 @@ def makePendingTxnsRequest(client, wallet):
     client.submitReqs(*prepared)
 
 
-def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib, dest=None):
+def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib,
+                                dest=None, xhash=None, enc=None):
     _, s_did = sdk_wallet_handle
     t_did = dest or s_did
     attrib_req = looper.loop.run_until_complete(
-        build_attrib_request(s_did, t_did, None, attrib, None))
+        build_attrib_request(s_did, t_did, xhash, attrib, enc))
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_handle,
                                                         sdk_pool_handle, attrib_req)
     rep = sdk_get_and_check_replies(looper, [request_couple])
@@ -172,3 +170,31 @@ def start_stopped_node(stopped_node, looper, tconf, tdir, allPluginsPath):
                               pluginPaths=allPluginsPath)
     looper.add(restarted_node)
     return restarted_node
+
+
+def modify_field(string, value, *field_path):
+    d = json.loads(string)
+    prev = None
+    for i in range(0, len(field_path) - 1):
+        if prev is None:
+            prev = d[field_path[i]]
+            continue
+        prev = prev[field_path[i]]
+    if prev:
+        prev[field_path[-1]] = value
+    else:
+        d[field_path[-1]] = value
+    return json.dumps(d)
+
+
+def createUuidIdentifier():
+    return rawToFriendly(randombytes(16))
+
+
+def createHalfKeyIdentifierAndAbbrevVerkey(seed=None):
+    didSigner = DidSigner(seed=seed)
+    return didSigner.identifier, didSigner.verkey
+
+
+def createCryptonym(seed=None):
+    return SimpleSigner(seed=seed).identifier

@@ -11,8 +11,8 @@ from plenum.common.types import OPERATION
 from plenum.common.util import randomString, hexToFriendly, friendlyToHex, rawToFriendly, friendlyToHexStr
 
 from plenum.test.helper import sdk_get_and_check_replies, sdk_get_bad_response
-from indy_client.test.cli.helper import createUuidIdentifier, createUuidIdentifierAndFullVerkey, \
-    createHalfKeyIdentifierAndAbbrevVerkey, createCryptonym
+from indy_client.test.cli.helper import createUuidIdentifierAndFullVerkey
+from indy_node.test.helper import createUuidIdentifier, createHalfKeyIdentifierAndAbbrevVerkey, createCryptonym
 from plenum.test.pool_transactions.helper import prepare_nym_request, sdk_sign_and_send_prepared_request
 
 

@@ -4,22 +4,19 @@ import re
 from _sha256 import sha256
 from typing import Dict
 
-from libnacl import randombytes
-
 from indy_client.cli.cli import IndyCli
 from indy_client.client.wallet.connection import Connection
 from indy_client.test.client.TestClient import TestClient
-from indy_common.constants import NYM
 from indy_common.roles import Roles
 from indy_common.txn_util import getTxnOrderedFields
+from indy_node.test.helper import createUuidIdentifier
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
-from plenum.common.constants import TARGET_NYM, ROLE, TXN_TYPE, ALIAS, TXN_ID, VALIDATOR, STEWARD
+from plenum.common.constants import TARGET_NYM, ROLE, VALIDATOR, STEWARD
 from plenum.common.member.member import Member
 from plenum.common.member.steward import Steward
 from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.util import rawToFriendly
 from plenum.test import waits
 from plenum.test.cli.helper import TestCliCore, assertAllNodesCreated, \
     waitAllNodesStarted, newCLI as newPlenumCLI
@@ -442,22 +439,9 @@ def doSendNodeCmd(do, nodeVals, expMsgs=None):
        within=15, expect=expect, mapper=nodeVals)
 
 
-def createUuidIdentifier():
-    return rawToFriendly(randombytes(16))
-
-
 def createUuidIdentifierAndFullVerkey(seed=None):
     didSigner = DidSigner(identifier=createUuidIdentifier(), seed=seed)
     return didSigner.identifier, didSigner.verkey
-
-
-def createHalfKeyIdentifierAndAbbrevVerkey(seed=None):
-    didSigner = DidSigner(seed=seed)
-    return didSigner.identifier, didSigner.verkey
-
-
-def createCryptonym(seed=None):
-    return SimpleSigner(seed=seed).identifier
 
 
 def compareAgentIssuerWallet(unpersistedWallet, restoredWallet):
