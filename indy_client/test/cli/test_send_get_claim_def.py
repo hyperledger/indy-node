@@ -1,8 +1,15 @@
 import pytest
 from indy_client.test.cli.helper import connect_and_check_output
-from indy_node.test.did.conftest import wallet
 from indy_client.test.cli.constants import INVALID_SYNTAX, SCHEMA_ADDED, \
     CLAIM_DEF_ADDED
+
+from indy_client.client.wallet.wallet import Wallet
+
+
+@pytest.fixture(scope='module')
+def wallet():
+    return Wallet('my wallet')
+
 
 CLAIM_DEF_FOUND = ['Found claim def', 'attrib1', 'attrib2', 'attrib3']
 CLAIM_DEF_NOT_FOUND = 'Claim def not found'
