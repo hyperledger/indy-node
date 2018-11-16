@@ -1,0 +1,43 @@
+---
+- name: Check that required variables are specified
+  assert:
+    that:
+      - lookup('vars', item, default='')
+    msg: "{{ lookup('vars', item, default='undefined')|string }}"
+  loop:
+    - perf_scripts_ver
+
+# TODO rename of split
+- name: Install pip and other required packages
+  apt:
+    name:
+      - python3-pip
+      - python-setuptools # neeeded for ansible's pip (TODO actually depends on python used by ansible)
+      - virtualenv
+      - git
+      - libsodium18 # TODO might depends on target platform package distributions
+      - vim # TODO think about other useful tools and move to client_install
+    update_cache: true
+  become: true
+
+- name: Install virtualenv globally
+  pip:
+    name:
+      - virtualenv
+    executable: pip3
+  become: true
+
+# TODO fix that in perf_process' install_requires
+- name: Install missed python packages
+  pip:
+    name:
+      - base58
+      - libnacl
+    virtualenv: "$HOME/{{ perf_scripts_venv_name }}"
+    virtualenv_python: python3
+
+- name: Install perf_process script from the VCS
+  pip:
+    name: "git+https://github.com/hyperledger/indy-node.git@{{ perf_scripts_ver }}#egg=subdir&subdirectory=scripts/performance"
+    virtualenv: "$HOME/{{ perf_scripts_venv_name }}"  # $HOME as a workaround
+    #virtualenv_python: python3 # would be necessary if previous action is removed

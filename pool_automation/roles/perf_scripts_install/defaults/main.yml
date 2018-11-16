@@ -1,0 +1,3 @@
+---
+perf_scripts_ver: master  # branch / tag / sha1
+perf_scripts_venv_name: perf_venv  # created in user's home
