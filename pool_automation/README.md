@@ -25,11 +25,11 @@ Parameters:
 - _instance_count_: number of instances in pool (provide 0 to destroy)
 - _aws_ec2_type_ (t2.micro): type of instances
 - _aws_region_ (eu-central-1): region of instances
+- _aws_tag_project_ (PoolAutomation): project name for created instances
 - _aws_tag_namespace_ (test): namespace of created instances
 - _aws_tag_role_ (default): role of created instances
 
 Todos:
-- allow created instances span all regions
 - extract key generation and inventory export to separate role
 - make inventory span separate roles in namespace
 - more tests

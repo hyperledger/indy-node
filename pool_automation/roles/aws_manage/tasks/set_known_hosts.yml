@@ -1,0 +1,36 @@
+---
+- name: Check in-variables
+  assert:
+    that:
+      - lookup('vars', item, default='')
+    msg: "{{ lookup('vars', item, default='undefined')|string }}"
+  loop:
+    - known_hosts_file
+    - hosts
+
+- name: Ensure '{{ known_hosts_file }}' exists
+  copy:
+    content: ""
+    dest: "{{ known_hosts_file }}"
+    force: no
+
+- name: Check existent records in '{{ known_hosts_file }}' file
+  command: "ssh-keygen -F {{ item }} -f {{ known_hosts_file }}"
+  ignore_errors: true
+  register: known_hosts
+  loop: "{{ hosts }}"
+
+- name: Gather host keys for unknown hosts
+  command: "ssh-keyscan -H {{ item.item }}"
+  when: item.rc != 0
+  register: host_keys
+  loop: "{{ known_hosts.results }}"
+
+- name: Add host keys into '{{ known_hosts_file }}'
+  known_hosts:
+    name: "{{ item.item.item }}"
+    key: "{{ item.stdout }}"
+    state: "present"
+    path: "{{ known_hosts_file }}"
+  when: item.stdout is defined
+  loop: "{{ host_keys.results }}"

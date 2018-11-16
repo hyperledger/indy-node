@@ -2,8 +2,13 @@ import pytest
 
 from indy_client.test.cli.constants import INVALID_SYNTAX, SCHEMA_ADDED
 from indy_client.test.cli.helper import createUuidIdentifier
-
 from indy_client.test.cli.helper import connect_and_check_output
+from indy_client.client.wallet.wallet import Wallet
+
+
+@pytest.fixture(scope='module')
+def wallet():
+    return Wallet('my wallet')
 
 from indy_node.test.schema.helper import send_schema_and_prepare
 
