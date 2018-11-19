@@ -1,35 +1,22 @@
 from plenum.common.util import randomString, hexToFriendly
-from plenum.common.constants import SERVICES, VALIDATOR, TARGET_NYM, DATA
+from plenum.common.constants import SERVICES, TARGET_NYM, DATA
 from plenum.common.txn_util import get_payload_data
 
-from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_add_new_node, demote_node
-from indy_client.test.cli.helper import doSendNodeCmd
+from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_add_new_node, demote_node, promote_node
 
 
-def testSuspendNode(be, do, trusteeCli, newNodeAdded):
+def testSuspendNode(looper, sdk_pool_handle, sdk_wallet_trustee, newNodeAdded):
     """
     Suspend a node and then cancel suspension. Suspend while suspended
     to test that there is no error
     """
-    newNodeVals = newNodeAdded
+    new_steward_wallet, new_node = newNodeAdded
 
-    be(trusteeCli)
+    demote_node(looper, sdk_wallet_trustee, sdk_pool_handle, new_node)
+    demote_node(looper, sdk_wallet_trustee, sdk_pool_handle, new_node)
 
-    newNodeVals['newNodeData'][SERVICES] = []
-    doSendNodeCmd(do, newNodeVals)
-    # Re-suspend node
-    newNodeVals['newNodeData'][SERVICES] = []
-    doSendNodeCmd(do, newNodeVals,
-                  expMsgs=['node already has the same data as requested'])
-
-    # Cancel suspension
-    newNodeVals['newNodeData'][SERVICES] = [VALIDATOR]
-    doSendNodeCmd(do, newNodeVals)
-
-    # Re-cancel suspension
-    newNodeVals['newNodeData'][SERVICES] = [VALIDATOR]
-    doSendNodeCmd(do, nodeVals=newNodeVals,
-                  expMsgs=['node already has the same data as requested'])
+    promote_node(looper, sdk_wallet_trustee, sdk_pool_handle, new_node)
+    promote_node(looper, sdk_wallet_trustee, sdk_pool_handle, new_node)
 
 
 def testDemoteNodeWhichWasNeverActive(looper, nodeSet, sdk_pool_handle,
