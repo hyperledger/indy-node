@@ -24,7 +24,7 @@ setup(
     packages=find_packages(),
     package_data={'': ['*.md']},
     include_package_data=True,
-    install_requires=['python3-indy>=1.6.1.dev683', 'PyYAML>=3.12'],
+    install_requires=['python3-indy>=1.6.1.dev683', 'PyYAML>=3.12', 'libnacl==1.6.1', 'base58'],
     setup_requires=['pytest-runner'],
     extras_require={'tests': tests_require},
     tests_require=tests_require,
