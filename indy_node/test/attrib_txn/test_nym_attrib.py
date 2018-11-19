@@ -1,25 +1,15 @@
 import json
 from contextlib import contextmanager
-
-import base58
-import libnacl.public
 import pytest
 
-from plenum.common.constants import ENC, TXN_ID, TARGET_NYM, \
-    TXN_TYPE, NONCE, STEWARD_STRING
+from plenum.common.constants import STEWARD_STRING
 from plenum.common.exceptions import RequestRejectedException
-from plenum.common.signer_did import DidSigner
 from plenum.common.util import adict, randomString
-from indy_client.client.wallet.attribute import Attribute, LedgerStore
-from indy_client.client.wallet.wallet import Wallet
-from indy_client.test.helper import genTestClient, createNym, makePendingTxnsRequest
-from indy_common.constants import SKEY, TRUST_ANCHOR_STRING, ATTRIB
+from indy_common.constants import TRUST_ANCHOR_STRING
 from indy_common.util import getSymmetricallyEncryptedVal
-from indy_node.test.helper import submitAndCheck, addAttributeAndCheck, \
-    sdk_add_attribute_and_check, sdk_get_attribute_and_check
+from indy_node.test.helper import sdk_add_attribute_and_check, sdk_get_attribute_and_check
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from stp_core.common.log import getlogger
-from stp_core.loop.eventually import eventually
 
 logger = getlogger()
 
@@ -54,18 +44,6 @@ def sdk_added_raw_attribute(sdk_pool_handle, sdk_user_wallet_a,
 def symEncData(attributeData):
     encData, secretKey = getSymmetricallyEncryptedVal(attributeData)
     return adict(data=attributeData, encData=encData, secretKey=secretKey)
-
-
-@pytest.fixture(scope="module")
-def addedEncryptedAttribute(userIdA, trustAnchor, trustAnchorWallet, looper,
-                            symEncData):
-    op = {
-        TARGET_NYM: userIdA,
-        TXN_TYPE: ATTRIB,
-        ENC: symEncData.encData
-    }
-
-    return submitAndCheck(looper, trustAnchor, trustAnchorWallet, op)[0]
 
 
 @contextmanager
@@ -184,32 +162,32 @@ def test_user_add_attrs_for_herself_and_get_it(
 
 
 @pytest.mark.skip(reason="INDY-896 ATTR cannot be added without dest")
-def test_attr_with_no_dest_added(nodeSet, tdirWithClientPoolTxns, looper,
-                                 trustAnchor, addedTrustAnchor, attributeData):
-    user_wallet = Wallet()
-    signer = DidSigner()
-    user_wallet.addIdentifier(signer=signer)
-
-    client, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
-    client.registerObserver(user_wallet.handleIncomingReply)
-    looper.add(client)
-    looper.run(client.ensureConnectedToNodes())
-    makePendingTxnsRequest(client, user_wallet)
-
-    createNym(looper,
-              user_wallet.defaultId,
-              trustAnchor,
-              addedTrustAnchor,
-              role=None,
-              verkey=user_wallet.getVerkey())
-
-    attr1 = json.dumps({'age': "24"})
-    attrib = Attribute(name='test4 attribute',
-                       origin=user_wallet.defaultId,
-                       value=attr1,
-                       dest=None,
-                       ledgerStore=LedgerStore.RAW)
-    addAttributeAndCheck(looper, client, user_wallet, attrib)
+def test_attr_with_no_dest_added(nodeSet, tdirWithClientPoolTxns, looper, attributeData):
+    pass
+    # user_wallet = Wallet()
+    # signer = DidSigner()
+    # user_wallet.addIdentifier(signer=signer)
+    #
+    # client, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
+    # client.registerObserver(user_wallet.handleIncomingReply)
+    # looper.add(client)
+    # looper.run(client.ensureConnectedToNodes())
+    # makePendingTxnsRequest(client, user_wallet)
+    #
+    # createNym(looper,
+    #           user_wallet.defaultId,
+    #           trustAnchor,
+    #           addedTrustAnchor,
+    #           role=None,
+    #           verkey=user_wallet.getVerkey())
+    #
+    # attr1 = json.dumps({'age': "24"})
+    # attrib = Attribute(name='test4 attribute',
+    #                    origin=user_wallet.defaultId,
+    #                    value=attr1,
+    #                    dest=None,
+    #                    ledgerStore=LedgerStore.RAW)
+    # addAttributeAndCheck(looper, client, user_wallet, attrib)
 
 
 @pytest.mark.skip(reason="SOV-561. Test not implemented")
@@ -222,22 +200,23 @@ def testGetTxnsNoSeqNo():
 
 @pytest.mark.skip(reason="SOV-560. Come back to it later since "
                          "requestPendingTxns move to wallet")
-def testGetTxnsSeqNo(nodeSet, addedTrustAnchor, tdirWithClientPoolTxns,
+def testGetTxnsSeqNo(nodeSet, tdirWithClientPoolTxns,
                      trustAnchorWallet, looper):
+    pass
     """
     Test GET_TXNS from client and provide seqNo to fetch from
     """
-    trustAnchor = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
-
-    looper.add(trustAnchor)
-    looper.run(trustAnchor.ensureConnectedToNodes())
-
-    def chk():
-        assert trustAnchor.spylog.count(
-            trustAnchor.requestPendingTxns.__name__) > 0
-
-    # TODO choose or create timeout in 'waits' on this case.
-    looper.run(eventually(chk, retryWait=1, timeout=3))
+    # trustAnchor = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
+    #
+    # looper.add(trustAnchor)
+    # looper.run(trustAnchor.ensureConnectedToNodes())
+    #
+    # def chk():
+    #     assert trustAnchor.spylog.count(
+    #         trustAnchor.requestPendingTxns.__name__) > 0
+    #
+    # # TODO choose or create timeout in 'waits' on this case.
+    # looper.run(eventually(chk, retryWait=1, timeout=3))
 
 
 @pytest.mark.skip(reason="SOV-560. Attribute encryption is done in client")
@@ -253,21 +232,22 @@ def testTrustAnchorDisclosesEncryptedAttribute(
         userSignerA,
         trustAnchorSigner,
         trustAnchor):
-    box = libnacl.public.Box(trustAnchorSigner.naclSigner.keyraw,
-                             userSignerA.naclSigner.verraw)
-
-    data = json.dumps({SKEY: symEncData.secretKey,
-                       TXN_ID: addedEncryptedAttribute[TXN_ID]})
-    nonce, boxedMsg = box.encrypt(data.encode(), pack_nonce=False)
-
-    op = {
-        TARGET_NYM: userSignerA.verstr,
-        TXN_TYPE: ATTRIB,
-        NONCE: base58.b58encode(nonce).decode("utf-8"),
-        ENC: base58.b58encode(boxedMsg).decode("utf-8")
-    }
-    submitAndCheck(looper, trustAnchor, op,
-                   identifier=trustAnchorSigner.verstr)
+    pass
+    # box = libnacl.public.Box(trustAnchorSigner.naclSigner.keyraw,
+    #                          userSignerA.naclSigner.verraw)
+    #
+    # data = json.dumps({SKEY: symEncData.secretKey,
+    #                    TXN_ID: addedEncryptedAttribute[TXN_ID]})
+    # nonce, boxedMsg = box.encrypt(data.encode(), pack_nonce=False)
+    #
+    # op = {
+    #     TARGET_NYM: userSignerA.verstr,
+    #     TXN_TYPE: ATTRIB,
+    #     NONCE: base58.b58encode(nonce).decode("utf-8"),
+    #     ENC: base58.b58encode(boxedMsg).decode("utf-8")
+    # }
+    # submitAndCheck(looper, trustAnchor, op,
+    #                identifier=trustAnchorSigner.verstr)
 
 
 @pytest.mark.skip(reason="SOV-561. Pending implementation")

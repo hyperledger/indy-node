@@ -4,42 +4,33 @@ import re
 import tempfile
 from typing import List
 
-import base58
 import pytest
+from indy_node.test.conftest import sdk_node_theta_added
+
 from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 from plenum.common.signer_did import DidSigner
-from indy_client.test.agent.acme import ACME_ID, ACME_SEED
-from indy_client.test.agent.acme import ACME_VERKEY
-from indy_client.test.agent.faber import FABER_ID, FABER_VERKEY, FABER_SEED
-from indy_client.test.agent.thrift import THRIFT_ID, THRIFT_VERKEY, THRIFT_SEED
 from indy_common.config_helper import NodeConfigHelper
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from plenum.common.txn_util import get_type
 
-from stp_core.crypto.util import randomSeed
 from stp_core.network.port_dispenser import genHa
 
-import plenum
-from plenum.common import util
 from plenum.common.constants import ALIAS, NODE_IP, NODE_PORT, CLIENT_IP, \
-    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, TXN_TYPE, NODE, NYM, \
+    CLIENT_PORT, SERVICES, VALIDATOR, BLS_KEY, NODE, NYM, \
     BLS_KEY_PROOF
 from plenum.common.constants import CLIENT_STACK_SUFFIX
-from plenum.common.exceptions import BlowUp
 from plenum.common.signer_simple import SimpleSigner
 from plenum.common.util import randomString
 from plenum.test import waits
 from plenum.test.test_node import checkNodesConnected, ensureElectionsDone
 
-from plenum.test.conftest import txnPoolNodeSet, patchPluginManager, tdirWithNodeKeepInited
+from plenum.test.conftest import tdirWithNodeKeepInited
 from stp_core.loop.eventually import eventually
 from stp_core.common.log import getlogger
-from plenum.test.conftest import tdirWithPoolTxns
 from indy_client.cli.helper import USAGE_TEXT, NEXT_COMMANDS_TO_TRY_TEXT
 from indy_client.test.helper import createNym, buildStewardClient
 from indy_common.constants import ENDPOINT, TRUST_ANCHOR
 from indy_common.roles import Roles
-from indy_common.test.conftest import poolTxnTrusteeNames
 from indy_common.test.conftest import domainTxnOrderedFields
 from indy_node.test.helper import TestNode
 from plenum.common.keygen_utils import initNodeKeysForBothStacks
@@ -51,11 +42,6 @@ from plenum.test.cli.helper import newKeyPair, doByCtx
 
 from indy_client.test.cli.helper import ensureNodesCreated, get_connection_request, \
     getPoolTxnData, newCLI, getCliBuilder, P, prompt_is, addAgent, doSendNodeCmd, addNym
-from indy_client.test.agent.conftest import faberIsRunning as runningFaber, \
-    acmeIsRunning as runningAcme, thriftIsRunning as runningThrift, emptyLooper,\
-    faberWallet, acmeWallet, thriftWallet, agentIpAddress, \
-    faberAgentPort, acmeAgentPort, thriftAgentPort, faberAgent, acmeAgent, \
-    thriftAgent, faberBootstrap, acmeBootstrap
 from indy_client.test.cli.helper import connect_and_check_output, disconnect_and_check_output
 from indy_common.config_helper import ConfigHelper
 from stp_core.crypto.util import randomSeed
@@ -103,110 +89,13 @@ def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns,
         def_looper=txnPoolNodesLooper)
 
 
-def getDefaultUserMap(name):
-    return {
-        'wallet-name': name,
-    }
-
-
-@pytest.fixture(scope="module")
-def aliceMap():
-    return getDefaultUserMap("Alice")
-
-
-@pytest.fixture(scope="module")
-def earlMap():
-    return getDefaultUserMap("Earl")
-
-
-@pytest.fixture(scope="module")
-def bobMap():
-    return getDefaultUserMap("Bob")
-
-
-@pytest.fixture(scope="module")
-def susanMap():
-    return getDefaultUserMap("Susan")
-
-
-@pytest.fixture(scope="module") # noqa
-def faberMap(agentIpAddress, faberAgentPort):
-    ha = "{}:{}".format(agentIpAddress, faberAgentPort)
-    return {'inviter': 'Faber College',
-            'invite': "sample/faber-request.indy",
-            'invite-not-exists': "sample/faber-request.indy.not.exists",
-            'inviter-not-exists': "non-existing-inviter",
-            'seed': FABER_SEED.decode(),
-            "remote": FABER_ID,
-            "remote-verkey": FABER_VERKEY,
-            "nonce": "b1134a647eb818069c089e7694f63e6d",
-            ENDPOINT: ha,
-            "invalidEndpointAttr": json.dumps({ENDPOINT: {'ha': ' 127.0.0.1:11'}}),
-            "endpointAttr": json.dumps({ENDPOINT: {'ha': ha}}),
-            "claims": "Transcript",
-            "claim-to-show": "Transcript",
-            "proof-req-to-match": "Transcript",
-            'wallet-name': 'Faber'}
-
-
-@pytest.fixture(scope="module") # noqa
-def acmeMap(agentIpAddress, acmeAgentPort):
-    ha = "{}:{}".format(agentIpAddress, acmeAgentPort)
-    return {'inviter': 'Acme Corp',
-            ENDPOINT: ha,
-            "endpointAttr": json.dumps({ENDPOINT: {'ha': ha}}),
-            "invalidEndpointAttr": json.dumps({ENDPOINT: {'ha': '127.0.0.1: 11'}}),
-            'invite': 'sample/acme-job-application.indy',
-            'invite-no-pr': 'sample/acme-job-application-no-pr.indy',
-            'invite-not-exists': 'sample/acme-job-application.indy.not.exists',
-            'inviter-not-exists': 'non-existing-inviter',
-            'seed': ACME_SEED.decode(),
-            "remote": ACME_ID,
-            "remote-verkey": ACME_VERKEY,
-            'nonce': '57fbf9dc8c8e6acde33de98c6d747b28c',
-            'proof-requests': 'Job-Application',
-            'proof-request-to-show': 'Job-Application',
-            'claim-ver-req-to-show': '0.2',
-            'proof-req-to-match': 'Job-Application',
-            'claims': '<claim-name>',
-            'rcvd-claim-transcript-provider': 'Faber College',
-            'rcvd-claim-transcript-name': 'Transcript',
-            'rcvd-claim-transcript-version': '1.2',
-            'send-proof-target': 'Alice',
-            'pr-name': 'Job-Application',
-            'pr-schema-version': '0.2',
-            'wallet-name': 'Acme'}
-
-
-@pytest.fixture(scope="module") # noqa
-def thriftMap(agentIpAddress, thriftAgentPort):
-    ha = "{}:{}".format(agentIpAddress, thriftAgentPort)
-    return {'inviter': 'Thrift Bank',
-            'invite': "sample/thrift-loan-application.indy",
-            'invite-not-exists': "sample/thrift-loan-application.indy.not.exists",
-            'inviter-not-exists': "non-existing-inviter",
-            'seed': THRIFT_SEED.decode(),
-            "remote": THRIFT_ID,
-            "remote-verkey": THRIFT_VERKEY,
-            "nonce": "77fbf9dc8c8e6acde33de98c6d747b28c",
-            ENDPOINT: ha,
-            "endpointAttr": json.dumps({ENDPOINT: {'ha': ha}}),
-            "invalidEndpointAttr": json.dumps({ENDPOINT: {'ha': '127.0.0.1:4A78'}}),
-            "proof-requests": "Loan-Application-Basic, Loan-Application-KYC",
-            "rcvd-claim-job-certificate-name": "Job-Certificate",
-            "rcvd-claim-job-certificate-version": "0.2",
-            "rcvd-claim-job-certificate-provider": "Acme Corp",
-            "claim-ver-req-to-show": "0.1",
-            'wallet-name': 'Thrift'}
-
-
 @pytest.fixture(scope="module")
 def loadInviteOut(nextCommandsToTryUsageLine):
     return ["1 connection request found for {inviter}.",
             "Creating connection for {inviter}.",
             ''] + \
-        nextCommandsToTryUsageLine + \
-        ['    show connection "{inviter}"',
+           nextCommandsToTryUsageLine + \
+           ['    show connection "{inviter}"',
             '    accept request from "{inviter}"',
             '',
             '']
@@ -241,7 +130,7 @@ def acceptWhenNotConnected(canNotAcceptMsg, connectUsage):
 def acceptUnSyncedWithoutEndpointWhenConnected(
         common_accept_request_msgs, syncedInviteAcceptedOutWithoutClaims):
     return common_accept_request_msgs + \
-        syncedInviteAcceptedOutWithoutClaims
+           syncedInviteAcceptedOutWithoutClaims
 
 
 @pytest.fixture(scope="module")
@@ -255,8 +144,8 @@ def common_accept_requests_msgs():
 def acceptUnSyncedWhenNotConnected(common_accept_requests_msgs,
                                    canNotSyncMsg, connectUsage):
     return common_accept_requests_msgs + \
-        ["Request acceptance aborted."] + \
-        canNotSyncMsg + connectUsage
+           ["Request acceptance aborted."] + \
+           canNotSyncMsg + connectUsage
 
 
 @pytest.fixture(scope="module")
@@ -276,9 +165,9 @@ def connectUsage(usageLine):
 
 @pytest.fixture(scope="module")
 def notConnectedStatus(connectUsage):
-    return ['Not connected to Indy network. Please connect first.', ''] +\
-        connectUsage +\
-        ['', '']
+    return ['Not connected to Indy network. Please connect first.', ''] + \
+           connectUsage + \
+           ['', '']
 
 
 @pytest.fixture(scope="module")
@@ -309,12 +198,12 @@ def jobApplicationProofRequestMap():
 @pytest.fixture(scope="module")
 def unsyncedInviteAcceptedWhenNotConnected(availableClaims):
     return [
-        "Response from {inviter}",
-        "Trust established.",
-        "DID created in Indy."
-    ] + availableClaims + [
-        "Cannot check if DID is written to Indy."
-    ]
+               "Response from {inviter}",
+               "Trust established.",
+               "DID created in Indy."
+           ] + availableClaims + [
+               "Cannot check if DID is written to Indy."
+           ]
 
 
 @pytest.fixture(scope="module")
@@ -342,11 +231,11 @@ def syncedInviteAcceptedWithClaimsOut(
 @pytest.fixture(scope="module")
 def unsycedAcceptedInviteWithoutClaimOut(syncedInviteAcceptedOutWithoutClaims):
     return [
-        "Request not yet verified",
-        "Attempting to sync...",
-        "Synchronizing...",
-    ] + syncedInviteAcceptedOutWithoutClaims + \
-        ["Confirmed DID written to Indy."]
+               "Request not yet verified",
+               "Attempting to sync...",
+               "Synchronizing...",
+           ] + syncedInviteAcceptedOutWithoutClaims + \
+           ["Confirmed DID written to Indy."]
 
 
 @pytest.fixture(scope="module")
@@ -395,35 +284,35 @@ def proofConstructedMsg():
 @pytest.fixture(scope="module")
 def showJobAppProofRequestOut(proofConstructedMsg, showTranscriptProofOut):
     return [
-        'Found proof request "{proof-req-to-match}" in connection "{inviter}"',
-        "Status: Requested",
-        "Name: {proof-request-to-show}",
-        "Version: {proof-request-version}",
-        "Attributes:",
-        "{proof-request-attr-first_name}: {set-attr-first_name}",
-        "{proof-request-attr-last_name}: {set-attr-last_name}",
-        "{proof-request-attr-phone_number}: {set-attr-phone_number}",
-        "{proof-request-attr-degree} (V): {attr-degree}",
-        "{proof-request-attr-status} (V): {attr-status}",
-        "{proof-request-attr-ssn} (V): {attr-ssn}"
-    ] + proofConstructedMsg + showTranscriptProofOut
+               'Found proof request "{proof-req-to-match}" in connection "{inviter}"',
+               "Status: Requested",
+               "Name: {proof-request-to-show}",
+               "Version: {proof-request-version}",
+               "Attributes:",
+               "{proof-request-attr-first_name}: {set-attr-first_name}",
+               "{proof-request-attr-last_name}: {set-attr-last_name}",
+               "{proof-request-attr-phone_number}: {set-attr-phone_number}",
+               "{proof-request-attr-degree} (V): {attr-degree}",
+               "{proof-request-attr-status} (V): {attr-status}",
+               "{proof-request-attr-ssn} (V): {attr-ssn}"
+           ] + proofConstructedMsg + showTranscriptProofOut
 
 
 @pytest.fixture(scope="module")
 def showNameProofRequestOut(showJobCertificateClaimInProofOut):
     return [
-        'Found proof request "{proof-req-to-match}" in connection "{inviter}"',
-        "Name: {proof-req-to-match}",
-        "Version: {proof-request-version}",
-        "Status: Requested",
-        "Attributes:",
-        "{proof-request-attr-first_name} (V): {set-attr-first_name}",
-        "{proof-request-attr-last_name} (V): {set-attr-last_name}",
-    ] + showJobCertificateClaimInProofOut + [
-        "Try Next:",
-        "set <attr-name> to <attr-value>",
-        'send proof "{proof-req-to-match}" to "{inviter}"'
-    ]
+               'Found proof request "{proof-req-to-match}" in connection "{inviter}"',
+               "Name: {proof-req-to-match}",
+               "Version: {proof-request-version}",
+               "Status: Requested",
+               "Attributes:",
+               "{proof-request-attr-first_name} (V): {set-attr-first_name}",
+               "{proof-request-attr-last_name} (V): {set-attr-last_name}",
+           ] + showJobCertificateClaimInProofOut + [
+               "Try Next:",
+               "set <attr-name> to <attr-value>",
+               'send proof "{proof-req-to-match}" to "{inviter}"'
+           ]
 
 
 @pytest.fixture(scope="module")
@@ -454,18 +343,6 @@ def proofRequestNotExists():
 @pytest.fixture(scope="module")
 def connectionNotExists():
     return ["No matching connection requests found in current wallet"]
-
-
-@pytest.fixture(scope="module")
-def faberInviteLoaded(aliceCLI, be, do, faberMap, loadInviteOut):
-    be(aliceCLI)
-    do("load {invite}", expect=loadInviteOut, mapper=faberMap)
-
-
-@pytest.fixture(scope="module")
-def acmeInviteLoaded(aliceCLI, be, do, acmeMap, loadInviteOut):
-    be(aliceCLI)
-    do("load {invite}", expect=loadInviteOut, mapper=acmeMap)
 
 
 @pytest.fixture(scope="module")
@@ -523,7 +400,7 @@ def syncConnectionOutWithoutEndpoint(syncConnectionOutStartsWith):
 def showSyncedConnectionWithEndpointOut(
         acceptedConnectionHeading, showConnectionOut):
     return acceptedConnectionHeading + showConnectionOut + \
-        ["Last synced: "]
+           ["Last synced: "]
 
 
 @pytest.fixture(scope="module")
@@ -727,7 +604,7 @@ def showTranscriptClaimOut(nextCommandsToTryUsageLine):
             "year",
             "status"
             ] + nextCommandsToTryUsageLine + \
-        ['request claim "{name}"']
+           ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -743,7 +620,7 @@ def showJobCertClaimOut(nextCommandsToTryUsageLine):
             "experience",
             "salary_bracket"
             ] + nextCommandsToTryUsageLine + \
-        ['request claim "{name}"']
+           ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -765,7 +642,7 @@ def showBankingRelationshipClaimOut(nextCommandsToTryUsageLine):
             "year_opened",
             "account_status"
             ] + nextCommandsToTryUsageLine + \
-        ['request claim "{name}"']
+           ['request claim "{name}"']
 
 
 @pytest.fixture(scope="module")
@@ -785,8 +662,8 @@ def showAcceptedConnectionWithClaimReqsOut(
         showConnectionWithAvailableClaimsOut,
         showConnectionSuggestion):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
-        showConnectionWithAvailableClaimsOut + \
-        showConnectionSuggestion
+           showConnectionWithAvailableClaimsOut + \
+           showConnectionSuggestion
 
 
 @pytest.fixture(scope="module")
@@ -802,14 +679,14 @@ def showAcceptedConnectionWithAvailableClaimsOut(
         showConnectionWithProofRequestsOut,
         showConnectionWithAvailableClaimsOut):
     return showAcceptedConnectionOut + showConnectionWithProofRequestsOut + \
-        showConnectionWithAvailableClaimsOut
+           showConnectionWithAvailableClaimsOut
 
 
 @pytest.fixture(scope="module")
 def showConnectionSuggestion(nextCommandsToTryUsageLine):
     return nextCommandsToTryUsageLine + \
-        ['show claim "{claims}"',
-         'request claim "{claims}"']
+           ['show claim "{claims}"',
+            'request claim "{claims}"']
 
 
 @pytest.fixture(scope="module")
@@ -829,19 +706,19 @@ def showAcceptedConnectionOut():
 @pytest.fixture(scope="module")
 def showConnectionOut(nextCommandsToTryUsageLine, connectionNotYetSynced):
     return [
-        "    Name: {inviter}",
-        "    DID: not yet assigned",
-        "    Trust anchor: {inviter} (not yet written to Indy)",
-        "    Verification key: <empty>",
-        "    Signing key: <hidden>",
-        "    Remote: {remote}",
-        "    Remote endpoint: {endpoint}",
-        "    Request nonce: {nonce}",
-        "    Request status: not verified, remote verkey unknown",
-        "    Last synced: {last_synced}"] + \
-        [""] + \
-        nextCommandsToTryUsageLine + \
-        ['    sync "{inviter}"',
+               "    Name: {inviter}",
+               "    DID: not yet assigned",
+               "    Trust anchor: {inviter} (not yet written to Indy)",
+               "    Verification key: <empty>",
+               "    Signing key: <hidden>",
+               "    Remote: {remote}",
+               "    Remote endpoint: {endpoint}",
+               "    Request nonce: {nonce}",
+               "    Request status: not verified, remote verkey unknown",
+               "    Last synced: {last_synced}"] + \
+           [""] + \
+           nextCommandsToTryUsageLine + \
+           ['    sync "{inviter}"',
             '    accept request from "{inviter}"',
             '',
             '']
@@ -850,19 +727,19 @@ def showConnectionOut(nextCommandsToTryUsageLine, connectionNotYetSynced):
 @pytest.fixture(scope="module")
 def showAcceptedSyncedConnectionOut(nextCommandsToTryUsageLine):
     return [
-        "Connection",
-        "Name: {inviter}",
-        "Trust anchor: {inviter} (confirmed)",
-        "Verification key: ~",
-        "Signing key: <hidden>",
-        "Remote: {remote}",
-        "Remote Verification key: <same as Remote>",
-        "Request nonce: {nonce}",
-        "Request status: Accepted",
-        "Proof Request(s): {proof-requests}",
-        "Available Claim(s): {claims}"] + \
-        nextCommandsToTryUsageLine + \
-        ['show claim "{claim-to-show}"',
+               "Connection",
+               "Name: {inviter}",
+               "Trust anchor: {inviter} (confirmed)",
+               "Verification key: ~",
+               "Signing key: <hidden>",
+               "Remote: {remote}",
+               "Remote Verification key: <same as Remote>",
+               "Request nonce: {nonce}",
+               "Request status: Accepted",
+               "Proof Request(s): {proof-requests}",
+               "Available Claim(s): {claims}"] + \
+           nextCommandsToTryUsageLine + \
+           ['show claim "{claim-to-show}"',
             'send proof "{proof-requests}"']
 
 
@@ -897,21 +774,6 @@ def susanCLI(CliBuilder):
 
 
 @pytest.yield_fixture(scope="module")
-def philCLI(CliBuilder):
-    yield from CliBuilder("phil")
-
-
-@pytest.yield_fixture(scope="module")
-def faberCLI(CliBuilder):
-    yield from CliBuilder("faber")
-
-
-@pytest.yield_fixture(scope="module")
-def acmeCLI(CliBuilder):
-    yield from CliBuilder("acme")
-
-
-@pytest.yield_fixture(scope="module")
 def thriftCLI(CliBuilder):
     yield from CliBuilder("thrift")
 
@@ -932,7 +794,7 @@ def poolCLI(tdir, tconf, poolCLI_baby, poolTxnData, poolTxnNodeNames, txnPoolNod
 
 @pytest.fixture(scope="module")
 def poolNodesCreated(poolCLI, poolTxnNodeNames):
-    #ensureNodesCreated(poolCLI, poolTxnNodeNames)
+    # ensureNodesCreated(poolCLI, poolTxnNodeNames)
     return poolCLI
 
 
@@ -973,7 +835,6 @@ def custom_tdir_with_domain_txns(pool_txn_data, tdir_for_domain_txns,
 @pytest.yield_fixture(scope="module")
 def multiPoolNodesCreated(request, tconf, looper, tdir,
                           cliTempLogger, namesOfPools=("pool1", "pool2")):
-
     multiNodes = []
     for poolName in namesOfPools:
         newPoolTxnNodeNames = [poolName + n for n
@@ -1034,8 +895,10 @@ def be(ctx):
     Fixture that is a 'be' function that closes over the test context.
     'be' allows to change the current cli in the context.
     """
+
     def _(cli):
         ctx['current_cli'] = cli
+
     return _
 
 
@@ -1050,7 +913,6 @@ def do(ctx):
 
 @pytest.fixture(scope="module")
 def dump(ctx):
-
     def _dump():
         logger = getlogger()
 
@@ -1063,6 +925,7 @@ def dump(ctx):
         for w in wrts.splitlines():
             logger.info('> ' + w, extra=nocli)
         logger.info('=========================================', extra=nocli)
+
     return _dump
 
 
@@ -1078,6 +941,7 @@ def bookmark(ctx):
 def current_cli(ctx):
     def _():
         return ctx['current_cli']
+
     return _
 
 
@@ -1085,6 +949,7 @@ def current_cli(ctx):
 def get_bookmark(bookmark, current_cli):
     def _():
         return bookmark.get(current_cli(), 0)
+
     return _
 
 
@@ -1092,6 +957,7 @@ def get_bookmark(bookmark, current_cli):
 def set_bookmark(bookmark, current_cli):
     def _(val):
         bookmark[current_cli()] = val
+
     return _
 
 
@@ -1100,12 +966,12 @@ def inc_bookmark(get_bookmark, set_bookmark):
     def _(inc):
         val = get_bookmark()
         set_bookmark(val + inc)
+
     return _
 
 
 @pytest.fixture(scope="module")
 def expect(current_cli, get_bookmark, inc_bookmark):
-
     def _expect(expected, mapper=None, line_no=None,
                 within=None, ignore_extra_lines=None):
         cur_cli = current_cli()
@@ -1128,8 +994,8 @@ def expect(current_cli, get_bookmark, inc_bookmark):
                 if (not is_p and a != e) or (is_p and not e.match(a)):
                     if ignore_extra_lines:
                         continue
-                    explanation += "line {} doesn't match\n"\
-                                   "  expected: {}\n"\
+                    explanation += "line {} doesn't match\n" \
+                                   "  expected: {}\n" \
                                    "    actual: {}\n".format(i, e, a)
                 expected_index += 1
 
@@ -1138,7 +1004,7 @@ def expect(current_cli, get_bookmark, inc_bookmark):
                     try:
                         p = re.compile(e) if isinstance(e, P) else None
                     except Exception as err:
-                        explanation += "ERROR COMPILING REGEX for {}: {}\n".\
+                        explanation += "ERROR COMPILING REGEX for {}: {}\n". \
                             format(e, err)
                     for a in actual:
                         if (p and p.fullmatch(a)) or a == e:
@@ -1168,6 +1034,7 @@ def expect(current_cli, get_bookmark, inc_bookmark):
                 pytest.fail(''.join(explanation))
             else:
                 inc_bookmark(len(actual))
+
         if within:
             cur_cli.looper.run(eventually(_, timeout=within))
         else:
@@ -1179,53 +1046,6 @@ def expect(current_cli, get_bookmark, inc_bookmark):
 @pytest.fixture(scope="module")
 def steward(poolNodesCreated, looper, tdir, stewardWallet):
     return buildStewardClient(looper, tdir, stewardWallet)
-
-
-@pytest.fixture(scope="module")
-def faberAdded(poolNodesCreated,
-               looper,
-               aliceCLI,
-               faberInviteLoaded,
-               aliceConnected,
-               steward, stewardWallet):
-    li = get_connection_request("Faber", aliceCLI.activeWallet)
-    createNym(looper, li.remoteIdentifier, steward, stewardWallet,
-              role=TRUST_ANCHOR)
-
-
-@pytest.fixture(scope="module") # noqa
-def faberIsRunningWithoutNymAdded(emptyLooper, tdirWithPoolTxns, faberWallet,
-                                  faberAgent):
-    faber, faberWallet = runningFaber(emptyLooper, tdirWithPoolTxns,
-                                      faberWallet, faberAgent, None)
-    return faber, faberWallet
-
-
-@pytest.fixture(scope="module") # noqa
-def faberIsRunning(emptyLooper, tdirWithPoolTxns, faberWallet,
-                   faberAddedByPhil, faberAgent, faberBootstrap):
-    faber, faberWallet = runningFaber(
-        emptyLooper, tdirWithPoolTxns, faberWallet, faberAgent, faberAddedByPhil, faberBootstrap)
-    return faber, faberWallet
-
-
-@pytest.fixture(scope="module") # noqa
-def acmeIsRunning(emptyLooper, tdirWithPoolTxns, acmeWallet,
-                  acmeAddedByPhil, acmeAgent, acmeBootstrap):
-    acme, acmeWallet = runningAcme(
-        emptyLooper, tdirWithPoolTxns, acmeWallet, acmeAgent, acmeAddedByPhil, acmeBootstrap)
-
-    return acme, acmeWallet
-
-
-@pytest.fixture(scope="module") # noqa
-def thriftIsRunning(emptyLooper, tdirWithPoolTxns, thriftWallet,
-                    thriftAddedByPhil, thriftAgent):
-    thrift, thriftWallet = runningThrift(emptyLooper, tdirWithPoolTxns,
-                                         thriftWallet, thriftAgent,
-                                         thriftAddedByPhil)
-
-    return thrift, thriftWallet
 
 
 @pytest.fixture(scope='module')
@@ -1261,7 +1081,7 @@ def earlMultiNodePools(request, multiPoolNodesCreated, tdir,
                              cliTempLogger, multiPoolNodesCreated)("earl")
 
 
-@pytest.yield_fixture(scope="module")   # noqa
+@pytest.yield_fixture(scope="module")  # noqa
 def trusteeCLI(CliBuilder, poolTxnTrusteeNames):
     yield from CliBuilder(poolTxnTrusteeNames[0])
 
@@ -1293,53 +1113,6 @@ def trusteeCli(be, do, trusteeMap, poolNodesStarted, nymAddedOut, trusteeCLI):
 def poolNodesStarted(be, do, poolCLI):
     be(poolCLI)
     return poolCLI
-
-
-@pytest.fixture(scope="module")
-def philCli(be, do, philCLI, trusteeCli, poolTxnData):
-
-    be(philCLI)
-
-    do('prompt Phil', expect=prompt_is('Phil'))
-
-    do('new wallet Phil', expect=['New wallet Phil created',
-                                  'Active wallet set to "Phil"'])
-
-    phil_seed = randomSeed()
-    phil_signer = DidSigner(seed=phil_seed)
-
-    mapper = {
-        'seed': phil_seed.decode(),
-        'idr': phil_signer.identifier}
-    do('new key with seed {seed}', expect=['Key created in wallet Phil',
-                                           'DID for key is {idr}',
-                                           'Current DID set to {idr}'],
-       mapper=mapper)
-
-    addNym(be, do, trusteeCli,
-           phil_signer.identifier,
-           verkey=phil_signer.verkey,
-           role=Roles.TRUSTEE.name)
-
-    return philCLI
-
-
-@pytest.fixture(scope="module")
-def faberAddedByPhil(be, do, poolNodesStarted, philCli,
-                     nymAddedOut, faberMap):
-    return addAgent(be, do, philCli, faberMap)
-
-
-@pytest.fixture(scope="module")
-def acmeAddedByPhil(be, do, poolNodesStarted, philCli,
-                    nymAddedOut, acmeMap):
-    return addAgent(be, do, philCli, acmeMap)
-
-
-@pytest.fixture(scope="module")
-def thriftAddedByPhil(be, do, poolNodesStarted, philCli,
-                      nymAddedOut, thriftMap):
-    return addAgent(be, do, philCli, thriftMap)
 
 
 @pytest.fixture(scope='module')
@@ -1383,12 +1156,14 @@ def newNodeVals():
         'newNodeData': newNodeData
     }
 
+
 @pytest.fixture(scope='module')
 def nodeValsEmptyData(newNodeVals):
     node_vals = {}
     node_vals['newNodeData'] = {}
     node_vals['newNodeIdr'] = newNodeVals['newNodeIdr']
     return node_vals
+
 
 @pytest.yield_fixture(scope="module")
 def cliWithNewStewardName(CliBuilder):
@@ -1422,50 +1197,19 @@ def newStewardCli(be, do, poolNodesStarted, trusteeCli,
 
 
 @pytest.fixture(scope="module")
-def newNodeAdded(be, do, poolNodesStarted, philCli, newStewardCli,
-                 newNodeVals):
-    be(newStewardCli)
-    doSendNodeCmd(do, newNodeVals)
-    newNodeData = newNodeVals["newNodeData"]
-
-    def checkClientConnected(client):
-        name = newNodeData[ALIAS] + CLIENT_STACK_SUFFIX
-        assert name in client.nodeReg
-
-    def checkNodeConnected(nodes):
-        for node in nodes:
-            name = newNodeData[ALIAS]
-            assert name in node.nodeReg
-
-    # Reconnect steward's CLI to get new pool membership info.
-    disconnect_and_check_output(do)
-    connect_and_check_output(do, newStewardCli.txn_dir)
-
-    timeout = waits.expectedClientToPoolConnectionTimeout(
-        len(newStewardCli.activeClient.nodeReg))
-
-    newStewardCli.looper.run(eventually(checkClientConnected,
-                                        newStewardCli.activeClient,
-                                        timeout=timeout))
-
-    be(philCli)
-
-    # Reconnect Phil's CLI if needed to get new pool membership info.
-    if philCli._isConnectedToAnyEnv():
-        disconnect_and_check_output(do)
-    connect_and_check_output(do, philCli.txn_dir)
-
-    philCli.looper.run(eventually(checkClientConnected,
-                                  philCli.activeClient,
-                                  timeout=timeout))
-
-    poolNodesStarted.looper.run(
-        eventually(
-            checkNodeConnected,
-            list(
-                poolNodesStarted.nodes.values()),
-            timeout=timeout))
-    return newNodeVals
+def newNodeAdded(looper, nodeSet, tdir, tconf, sdk_pool_handle,
+                 sdk_wallet_trustee, allPluginsPath):
+    new_steward_wallet, new_node = sdk_node_theta_added(looper,
+                                                        nodeSet,
+                                                        tdir,
+                                                        tconf,
+                                                        sdk_pool_handle,
+                                                        sdk_wallet_trustee,
+                                                        allPluginsPath,
+                                                        node_config_helper_class=NodeConfigHelper,
+                                                        testNodeClass=TestNode,
+                                                        name='')
+    return new_steward_wallet, new_node
 
 
 @pytest.fixture(scope='module')

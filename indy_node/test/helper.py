@@ -97,81 +97,10 @@ class TestNode(TempStorage, TestNodeCore, Node):
         return self.ClientStackClass
 
 
-def checkSubmitted(looper, client, optype, txnsBefore):
-    txnsAfter = []
-
-    def checkTxnCountAdvanced():
-        nonlocal txnsAfter
-        txnsAfter = client.getTxnsByType(optype)
-        logger.debug("old and new txns {} {}".format(txnsBefore, txnsAfter))
-        assert len(txnsAfter) > len(txnsBefore)
-
-    timeout = plenumWaits.expectedReqAckQuorumTime()
-    looper.run(eventually(checkTxnCountAdvanced, retryWait=1,
-                          timeout=timeout))
-    txnIdsBefore = [get_txn_id(txn) for txn in txnsBefore]
-    txnIdsAfter = [get_txn_id(txn) for txn in txnsAfter]
-    logger.debug("old and new txnids {} {}".format(txnIdsBefore, txnIdsAfter))
-    return list(set(txnIdsAfter) - set(txnIdsBefore))
-
-
-def submitAndCheck(looper, client, wallet, op, identifier=None):
-    # TODO: This assumes every transaction will have an edge in graph, why?
-    # Fix this
-    optype = op[TXN_TYPE]
-    txnsBefore = client.getTxnsByType(optype)
-    req = wallet.signOp(op, identifier=identifier)
-    wallet.pendRequest(req)
-    reqs = wallet.preparePending()
-    client.submitReqs(*reqs)
-    return checkSubmitted(looper, client, optype, txnsBefore)
-
-
 def makePendingTxnsRequest(client, wallet):
     wallet.pendSyncRequests()
     prepared = wallet.preparePending()
     client.submitReqs(*prepared)
-
-
-def makeGetNymRequest(client, wallet, nym):
-    op = {
-        TARGET_NYM: nym,
-        TXN_TYPE: GET_NYM,
-    }
-    req = wallet.signOp(op)
-    # TODO: This looks boilerplate
-    wallet.pendRequest(req)
-    reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)[0]
-
-
-def makeAttribRequest(client, wallet, attrib):
-    wallet.addAttribute(attrib)
-    # TODO: This looks boilerplate
-    reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)[0]
-
-
-def _newWallet(name=None):
-    signer = SimpleSigner()
-    w = Wallet(name or signer.identifier)
-    w.addIdentifier(signer=signer)
-    return w
-
-
-def addAttributeAndCheck(looper, client, wallet, attrib):
-    old = wallet.pendingCount
-    pending = wallet.addAttribute(attrib)
-    assert pending == old + 1
-    reqs = wallet.preparePending()
-    client.submitReqs(*reqs)
-
-    def chk():
-        assert wallet.getAttribute(attrib).seqNo is not None
-
-    timeout = plenumWaits.expectedTransactionExecutionTime(client.totalNodes)
-    looper.run(eventually(chk, retryWait=1, timeout=timeout))
-    return wallet.getAttribute(attrib).seqNo
 
 
 def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib, dest=None):
@@ -199,36 +128,6 @@ def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, valu
     _, did = sdk_wallet_handle
     attrData = json.dumps({name: value})
     sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrData)
-
-
-def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
-    reply, status = trustAnchor.getReply(*reqKey)
-    assert reply
-    data = json.loads(reply.get(DATA))
-    assert status == "CONFIRMED" and \
-        (data is not None and data.get(attrName) == attrValue)
-    return reply
-
-
-def getAttribute(
-        looper,
-        trustAnchor,
-        trustAnchorWallet,
-        userIdA,
-        attributeName,
-        attributeValue):
-    # Should be renamed to get_attribute_and_check
-    attrib = Attribute(name=attributeName,
-                       value=None,
-                       dest=userIdA,
-                       ledgerStore=LedgerStore.RAW)
-    req = trustAnchorWallet.requestAttribute(
-        attrib, sender=trustAnchorWallet.defaultId)
-    trustAnchor.submitReqs(req)
-    timeout = waits.expectedTransactionExecutionTime(len(trustAnchor.nodeReg))
-    return looper.run(eventually(checkGetAttr, (req.identifier, req.reqId),
-                                 trustAnchor, attributeName, attributeValue,
-                                 retryWait=1, timeout=timeout))
 
 
 def buildStewardClient(looper, tdir, stewardWallet):
