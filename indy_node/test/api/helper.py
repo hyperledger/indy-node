@@ -187,14 +187,15 @@ def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward):
 
 
 def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
-                               multi_attribute=[], name="", version=""):
+                               attributes=[], name="", version=""):
+
     _, identifier = sdk_wallet_steward
 
-    if multi_attribute:
+    if attributes:
         _, schema_json = looper.loop.run_until_complete(
             issuer_create_schema(
                 identifier, name,
-                version, json.dumps(multi_attribute)
+                version, json.dumps(attributes)
             ))
     else:
         _, schema_json = looper.loop.run_until_complete(
