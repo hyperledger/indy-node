@@ -6,11 +6,6 @@
 Welcome to Hyperledger Indy Node's documentation!
 =================================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   start-nodes.md 
-   add-node.md
+.. include:: _sidebar.rst.inc
 
 
