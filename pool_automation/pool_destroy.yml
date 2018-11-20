@@ -4,5 +4,5 @@
   hosts: localhost
   roles:
     - role: aws_manage
-      aws_tag_role: node
-      instance_count: 0
+      aws_group_name: nodes
+      aws_instance_count: 0

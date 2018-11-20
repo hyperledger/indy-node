@@ -1,9 +1,10 @@
 ---
 # General
 aws_project_name: Indy-PA
+aws_group_name: defaults
 
 # Provision parameters
-instance_count: 4
+aws_instance_count: 4
 
 # AWS parameters
 #   List of all potential regions to use
@@ -30,15 +31,14 @@ aws_ec2_type: t2.micro
 #   Resource tags and names
 aws_tag_project: "{{ aws_project_name }}"
 aws_tag_namespace: "{{ inventory_dir | default('test', true) | basename }}"
-aws_tag_role: default
+aws_tag_group: "{{ aws_group_name }}"
 aws_add_tags: {} # additional tags
 
-aws_resource_common_name: "{{ [aws_project_name, aws_tag_namespace, group_name]|join('-')|lower }}"
+aws_resource_common_name: "{{ [aws_project_name, aws_tag_namespace, aws_group_name]|join('-')|lower }}"
 aws_keyname: "{{ aws_resource_common_name }}"
 aws_sgroup: "{{ aws_resource_common_name }}"
 aws_tag_sgroup_name: "{{ aws_sgroup }}"
 
 # Inventory parameters
-aws_inventory_dir: "{{ inventory_dir | default(aws_tag_namespace ~ '_' ~ group_name) }}"
+aws_inventory_dir: "{{ inventory_dir | default(aws_tag_namespace ~ '_' ~ aws_group_name) }}"
 aws_inventory_file: "{{ aws_inventory_dir }}/hosts"
-group_name: "{{ aws_tag_role ~ 's' }}"

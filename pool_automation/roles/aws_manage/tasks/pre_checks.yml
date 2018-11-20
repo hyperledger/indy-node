@@ -6,20 +6,20 @@
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
     - aws_project_name
+    - aws_group_name
     - aws_regions
     - aws_ec2_type
     - aws_tag_project
     - aws_tag_namespace
-    - aws_tag_role
+    - aws_tag_group
     - aws_keyname
     - aws_sgroup
     - aws_tag_sgroup_name
     - aws_inventory_dir
     - aws_inventory_file
-    - group_name
 
 - name: Check that instance_count has acceptable values
   assert:
     that:
-      - instance_count >= 0
-    msg: "{{ instance_count|string }}"
+      - aws_instance_count >= 0
+    msg: "{{ aws_instance_count|string }}"

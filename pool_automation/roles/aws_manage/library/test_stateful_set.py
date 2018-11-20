@@ -13,9 +13,9 @@ PARAMS = InstanceParams(
     project='Indy-PA',
     add_tags={'Purpose': 'Test Pool Automation'},
     namespace='test_stateful_set',
-    role=None,
+    group=None,
     key_name='test_stateful_set_key',
-    group='test_stateful_set_group',
+    security_group='test_stateful_set_security_group',
     type_name='t2.micro'
 )
 
@@ -35,15 +35,15 @@ def manage_key_pair(ec2, present):
 
 def manage_security_group(ec2, present):
     count = 0
-    for group in ec2.security_groups.all():
-        if group.group_name != PARAMS.group:
+    for sgroup in ec2.security_groups.all():
+        if sgroup.group_name != PARAMS.security_group:
             continue
         if present and count == 0:
             count = 1
         else:
-            group.delete()
+            sgroup.delete()
     if present and count == 0:
-        ec2.create_security_group(GroupName=PARAMS.group,
+        ec2.create_security_group(GroupName=PARAMS.security_group,
                                   Description='Test security group')
 
 
@@ -56,10 +56,10 @@ def terminate_instances(ec2):
 def check_params(inst, params):
     assert {'Key': 'Project', 'Value': params.project} in inst.tags
     assert {'Key': 'Namespace', 'Value': params.namespace} in inst.tags
-    assert {'Key': 'Role', 'Value': params.role} in inst.tags
+    assert {'Key': 'Group', 'Value': params.group} in inst.tags
     assert inst.key_name == params.key_name
     assert len(inst.security_groups) == 1
-    assert inst.security_groups[0]['GroupName'] == params.group
+    assert inst.security_groups[0]['GroupName'] == params.security_group
     assert inst.instance_type == params.type_name
     assert inst.state['Name'] == 'running'
 
@@ -108,7 +108,7 @@ def test_find_ubuntu_image(ec2):
 
 def test_AwsEC2Launcher(ec2):
     launcher = AwsEC2Launcher()
-    params = PARAMS._replace(role='test_create')
+    params = PARAMS._replace(group='test_create')
     instances = launcher.launch(params, 2, ec2=ec2)
 
     assert len(instances) == 2
@@ -125,7 +125,7 @@ def test_AwsEC2Terminator(ec2):
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
 
-    params = PARAMS._replace(role='test_terminate')
+    params = PARAMS._replace(group='test_terminate')
     instances = launcher.launch(params, 2, ec2=ec2)
     launcher.wait()
 
@@ -150,8 +150,8 @@ def test_find_instances(ec2_all):
         terminator.terminate(inst, region)
     terminator.wait(False)
 
-    launcher.launch(PARAMS._replace(role='aaa'), 2, ec2=ec2)
-    launcher.launch(PARAMS._replace(role='bbb'), 3, ec2=ec2)
+    launcher.launch(PARAMS._replace(group='aaa'), 2, ec2=ec2)
+    launcher.launch(PARAMS._replace(group='bbb'), 3, ec2=ec2)
 
     aaa = find_instances(ec2, PARAMS.project, PARAMS.namespace, 'aaa')
     bbb = find_instances(ec2, PARAMS.project, PARAMS.namespace, 'bbb')
@@ -191,7 +191,7 @@ def test_valid_instances():
 def test_manage_instances(ec2_all):
     regions = ['eu-central-1', 'us-west-1', 'us-west-2']
     connections = [ec2_all[r] for r in regions]
-    params = PARAMS._replace(role='test_manage')
+    params = PARAMS._replace(group='test_manage')
 
     def check_hosts(hosts):
         assert len(set(host.tag_id for host in hosts)) == len(hosts)
@@ -207,7 +207,7 @@ def test_manage_instances(ec2_all):
                 assert inst_tag_name == "{}-{}-{}-{}".format(
                     params.project,
                     params.namespace,
-                    params.role,
+                    params.group,
                     inst_tag_id.zfill(3)).lower()
                 for tag_key, tag_value in params.add_tags.iteritems():
                     assert tag_value == get_tag(inst, tag_key)

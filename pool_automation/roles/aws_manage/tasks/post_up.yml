@@ -17,4 +17,4 @@
   vars:
     known_hosts_file: "{{ aws_inventory_dir }}/{{ ssh_dir_name }}/known_hosts"
     hosts: "{{ ec2.results|map(attribute='public_ip')|list }}"
-  when: instance_count > 0
+  when: aws_instance_count > 0

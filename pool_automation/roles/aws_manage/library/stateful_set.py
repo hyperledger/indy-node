@@ -41,13 +41,13 @@ def find_ubuntu_ami(ec2):
     return images[-1].image_id if len(images) > 0 else None
 
 
-def find_instances(ec2, project, namespace, role=None):
+def find_instances(ec2, project, namespace, group=None):
     filters = [
         {'Name': 'tag:Project', 'Values': [project]},
         {'Name': 'tag:Namespace', 'Values': [namespace]}
     ]
-    if role is not None:
-        filters.append({'Name': 'tag:Role', 'Values': [role]})
+    if group is not None:
+        filters.append({'Name': 'tag:Group', 'Values': [group]})
 
     return [instance for instance in ec2.instances.filter(Filters=filters)
             if instance.state['Name'] not in ['terminated', 'shutting-down']]
@@ -114,7 +114,7 @@ class AwsEC2Terminator(AwsEC2Waiter):
 
 
 InstanceParams = namedtuple(
-    'InstanceParams', 'project namespace role add_tags key_name group type_name')
+    'InstanceParams', 'project namespace group add_tags key_name security_group type_name')
 
 
 class AwsEC2Launcher(AwsEC2Waiter):
@@ -132,7 +132,7 @@ class AwsEC2Launcher(AwsEC2Waiter):
         instances = ec2.create_instances(
             ImageId=find_ubuntu_ami(ec2),
             KeyName=params.key_name,
-            SecurityGroups=[params.group],
+            SecurityGroups=[params.security_group],
             InstanceType=params.type_name,
             MinCount=count,
             MaxCount=count,
@@ -149,8 +149,8 @@ class AwsEC2Launcher(AwsEC2Waiter):
                             'Value': params.namespace
                         },
                         {
-                            'Key': 'Role',
-                            'Value': params.role
+                            'Key': 'Group',
+                            'Value': params.group
                         }
                     ]
                 }
@@ -176,7 +176,7 @@ def manage_instances(regions, params, count):
         ec2 = boto3.resource('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
-        instances = find_instances(ec2, params.project, params.namespace, params.role)
+        instances = find_instances(ec2, params.project, params.namespace, params.group)
         for inst in instances:
             tag_id = get_tag(inst, 'ID')
             if tag_id in valid_ids:
@@ -195,7 +195,7 @@ def manage_instances(regions, params, count):
                     {'Key': 'Name', 'Value': "{}-{}-{}-{}"
                         .format(params.project,
                                 params.namespace,
-                                params.role,
+                                params.group,
                                 tag_id.zfill(3)).lower()},
                     {'Key': 'ID', 'Value': tag_id}] +
                     [{'Key': k, 'Value': v} for k, v in params.add_tags.iteritems()])
@@ -218,10 +218,10 @@ def run(module):
     inst_params = InstanceParams(
         project=params['project'],
         namespace=params['namespace'],
-        role=params['role'],
+        group=params['group'],
         add_tags=params['add_tags'],
         key_name=params['key_name'],
-        group=params['group'],
+        security_group=params['security_group'],
         type_name=params['instance_type']
     )
 
@@ -237,10 +237,10 @@ if __name__ == '__main__':
         regions=dict(type='list', required=True),
         project=dict(type='str', required=True),
         namespace=dict(type='str', required=True),
-        role=dict(type='str', required=True),
+        group=dict(type='str', required=True),
         add_tags=dict(type='dict', required=False, default=dict()),
         key_name=dict(type='str', required=True),
-        group=dict(type='str', required=True),
+        security_group=dict(type='str', required=True),
         instance_type=dict(type='str', required=True),
         instance_count=dict(type='int', required=True)
     )

@@ -4,4 +4,4 @@
   hosts: localhost
   roles:
     - role: aws_manage
-      aws_tag_role: node
+      aws_group_name: nodes

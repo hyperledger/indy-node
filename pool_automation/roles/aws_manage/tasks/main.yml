@@ -12,25 +12,25 @@
 
 - name: Pre-Up
   import_tasks: "pre_up.yml"
-  when: instance_count > 0
+  when: aws_instance_count > 0
 
 - name: Manage instances
   stateful_set:
     regions: "{{ aws_regions }}"
     project: "{{ aws_tag_project }}"
     namespace: "{{ aws_tag_namespace }}"
-    role: "{{ aws_tag_role }}"
+    group: "{{ aws_tag_group }}"
     add_tags: "{{ aws_add_tags }}"
     key_name: "{{ aws_keyname }}"
-    group: "{{ aws_sgroup }}"
+    security_group: "{{ aws_sgroup }}"
     instance_type: "{{ aws_ec2_type }}"
-    instance_count: "{{ instance_count }}"
+    instance_count: "{{ aws_instance_count }}"
   register: ec2
 
 - name: Post-Up
   import_tasks: "post_up.yml"
-  when: instance_count > 0
+  when: aws_instance_count > 0
 
 - name: Post-Down
   import_tasks: "post_down.yml"
-  when: instance_count == 0
+  when: aws_instance_count == 0

@@ -27,7 +27,7 @@ Parameters:
 - _aws_region_ (eu-central-1): region of instances
 - _aws_tag_project_ (PoolAutomation): project name for created instances
 - _aws_tag_namespace_ (test): namespace of created instances
-- _aws_tag_role_ (default): role of created instances
+- _aws_tag_group_ (default): ansible inventory group of created instances
 
 Todos:
 - extract key generation and inventory export to separate role
