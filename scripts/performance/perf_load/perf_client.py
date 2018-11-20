@@ -19,9 +19,10 @@ class LoadClient:
     SendTime = 1
     SendSync = 2
 
-    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **kwargs):
+    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, short_stat,
+                 **kwargs):
         self._name = name
-        self._stat = ClientStatistic()
+        self._stat = ClientStatistic(short_stat)
         self._send_mode = send_mode
         self._buff_reqs = buff_req
         self._pipe_conn = pipe_conn
@@ -311,7 +312,7 @@ class LoadClient:
     @classmethod
     def run(cls, name, genesis_path, pipe_conn, seed, batch_size, batch_rate,
             req_kind, buff_req, wallet_key, pool_config, send_mode, mask_sign, ext_set,
-            log_dir, log_lvl):
+            log_dir, log_lvl, short_stat):
         if mask_sign:
             logger_init(log_dir, "{}.log".format(name), log_lvl)
             signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -326,7 +327,8 @@ class LoadClient:
                 logging.getLogger(name).warning("{} parse ext settings error {}".format(name, e))
                 exts = {}
 
-        cln = cls(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **exts)
+        cln = cls(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req,
+                  pool_config, send_mode, short_stat, **exts)
         try:
             asyncio.run_coroutine_threadsafe(cln.run_test(genesis_path, seed, wallet_key), loop=cln._loop)
             cln._loop.run_forever()

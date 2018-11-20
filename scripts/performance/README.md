@@ -39,6 +39,8 @@ Files to be stored:
 * nack_reject - request and error provided by pool
 * \<name\>.log - log file
 
+'--short_stat' : If mentioned only total statistics is stored. Other files will be empty.
+
 '--sep' : Separator that will be used in output csv file.
 Do not use "," - it will be in conflict with JSON values. Default value is "|".
 
