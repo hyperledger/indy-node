@@ -1,3 +1,5 @@
+import pytest
+
 from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_replies
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW
 from indy_common.constants import GET_ATTR
@@ -6,14 +8,17 @@ from indy_common.constants import GET_ATTR
 from indy_node.test.attrib_txn.test_nym_attrib import attributeData, \
     attributeName, attributeValue, sdk_added_raw_attribute
 
+from plenum.test.delayers import req_delay
+from plenum.test.stasher import delay_rules
 
-# for node in txnPoolNodeSet[1:]: node.clientstack.stop()
 
-def test_state_proof_returned_for_get_attr(looper,
-                                           sdk_added_raw_attribute,
-                                           attributeName,
-                                           sdk_pool_handle,
-                                           sdk_wallet_trustee):
+@pytest.mark.skip('Broken State Proof validation due to different expected state keys in txn type field')
+def test_client_gets_read_reply_from_1_node_only(looper,
+                                                 nodeSet,
+                                                 sdk_added_raw_attribute,
+                                                 attributeName,
+                                                 sdk_pool_handle,
+                                                 sdk_wallet_trustee):
     """
     Tests that client could send get-requests to only one node instead of n
     """
@@ -23,9 +28,12 @@ def test_state_proof_returned_for_get_attr(looper,
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }
-    # Get reply and verify that the only one received
-    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
-                                                   sdk_wallet_trustee,
-                                                   get_attr_operation)
 
-    assert len(replies) == 1
+    # the order of nodes the client sends requests to is [Alpha, Beta, Gamma, Delta]
+    # delay all requests to Beta, Gamma and Delta
+    # we expect that it's sufficient for the client to get Reply from Alpha only
+    stashers = [n.clientIbStasher for n in nodeSet[1:]]
+    with delay_rules(stashers, req_delay()):
+        sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
+                                             sdk_wallet_trustee,
+                                             get_attr_operation)
