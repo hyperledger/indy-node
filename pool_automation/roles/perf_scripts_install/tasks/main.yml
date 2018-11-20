@@ -27,17 +27,8 @@
     executable: pip3
   become: true
 
-# TODO fix that in perf_process' install_requires
-- name: Install missed python packages
-  pip:
-    name:
-      - base58
-      - libnacl
-    virtualenv: "$HOME/{{ perf_scripts_venv_name }}"
-    virtualenv_python: python3
-
 - name: Install perf_process script from the VCS
   pip:
     name: "git+https://github.com/hyperledger/indy-node.git@{{ perf_scripts_ver }}#egg=subdir&subdirectory=scripts/performance"
     virtualenv: "$HOME/{{ perf_scripts_venv_name }}"  # $HOME as a workaround
-    #virtualenv_python: python3 # would be necessary if previous action is removed
+    virtualenv_python: python3
