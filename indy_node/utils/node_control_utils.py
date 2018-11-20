@@ -27,6 +27,9 @@ MAX_DEPS_DEPTH = 6
 
 
 class NodeControlUtil:
+    # Method is used in case we are interested in command output
+    # errors are ignored
+    # only critical errors are logged to journalctl
     @classmethod
     def run_shell_command(cls, command, timeout=TIMEOUT):
         try:
@@ -39,6 +42,8 @@ class NodeControlUtil:
         ret_msg = ret_bytes.decode(locale.getpreferredencoding(), 'decode_errors').strip() if ret_bytes else ""
         return ret_msg
 
+    # Method is used in case we are NOT interested in command output
+    # everything: command, errors, output etc are logged to journalctl
     @classmethod
     def run_shell_script(cls, command, timeout=TIMEOUT):
         subprocess.run(command, shell=True, timeout=timeout, check=True)
