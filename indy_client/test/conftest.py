@@ -193,11 +193,3 @@ def addedTrustAnchor(nodeSet, steward, stewardWallet, looper,
 @pytest.fixture(scope="module")
 def client_ledger_dir(client_tdir, tconf):
     return os.path.join(client_tdir, 'networks', tconf.NETWORK_NAME)
-
-
-def pytest_assertrepr_compare(op, left, right):
-    if isinstance(left, str) and isinstance(right, str):
-        if op in ('in', 'not in'):
-            mod = 'not ' if 'not' in op else ''
-            lines = ['    ' + s for s in right.split('\n')]
-            return ['"{}" should {}be in...'.format(left, mod)] + lines

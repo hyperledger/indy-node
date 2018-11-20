@@ -17,9 +17,9 @@ strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
 from indy_client.test.conftest import trustAnchorWallet, \
-    trustAnchor, tdirWithDomainTxns, \
+    tdirWithDomainTxns, \
     stewardWallet, steward, genesisTxns, testClientClass, client_ledger_dir, \
-    addedTrustAnchor, nodeSet, testNodeClass, updatedPoolTxnData, \
+    nodeSet, testNodeClass, updatedPoolTxnData, \
     trusteeData, trusteeWallet, trustee, warnfilters as client_warnfilters
 
 # noinspection PyUnresolvedReferences
