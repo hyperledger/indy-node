@@ -17,8 +17,7 @@ from plenum.common.types import f, HA
 from stp_core.types import Identifier
 
 from stp_core.loop.eventually import eventually
-from plenum.test.test_client import genTestClient as genPlenumTestClient, \
-    genTestClientProvider as genPlenumTestClientProvider
+from plenum.test.test_client import genTestClient as genPlenumTestClient
 
 from indy_common.identity import Identity
 
@@ -97,18 +96,6 @@ def submitPoolUpgrade(
     looper.run(eventually(check, timeout=timeout))
 
 
-def getClientAddedWithRole(nodeSet, tdir, looper, client, wallet, name,
-                           role=None, addVerkey=True,
-                           client_connects_to=None):
-    newWallet = addRole(looper, client, wallet,
-                        name=name, addVerkey=addVerkey, role=role)
-    c, _ = genTestClient(nodeSet, tmpdir=tdir, usePoolLedger=True)
-    looper.add(c)
-    looper.run(c.ensureConnectedToNodes(count=client_connects_to))
-    c.registerObserver(newWallet.handleIncomingReply)
-    return c, newWallet
-
-
 def checkErrorMsg(typ, client, reqId, contains='', nodeCount=4):
     reqs = [x for x, _ in client.inBox if x[OP_FIELD_NAME] == typ and
             x[f.REQ_ID.nm] == reqId]
@@ -172,22 +159,6 @@ def genConnectedTestClient(looper,
     looper.add(c)
     looper.run(c.ensureConnectedToNodes())
     return c, w
-
-
-def genTestClientProvider(nodes=None,
-                          nodeReg=None,
-                          tmpdir=None,
-                          clientGnr=genTestClient):
-    return genPlenumTestClientProvider(nodes, nodeReg, tmpdir, clientGnr)
-
-
-def clientFromSigner(signer, looper, nodeSet, tdir):
-    wallet = Wallet(signer.identifier)
-    wallet.addIdentifier(signer)
-    s = genTestClient(nodeSet, tmpdir=tdir, identifier=signer.identifier)
-    looper.add(s)
-    looper.run(s.ensureConnectedToNodes())
-    return s
 
 
 def addUser(looper, creatorClient, creatorWallet, name,
