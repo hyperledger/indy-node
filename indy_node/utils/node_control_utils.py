@@ -30,8 +30,7 @@ class NodeControlUtil:
     @classmethod
     def run_shell_command(cls, command, timeout=TIMEOUT):
         try:
-            ret = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, timeout=timeout)
+            ret = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, timeout=timeout)
             ret_bytes = ret.stdout
         except subprocess.CalledProcessError as ex:
             ret_bytes = ex.output
@@ -42,8 +41,7 @@ class NodeControlUtil:
 
     @classmethod
     def run_shell_script(cls, command, timeout=TIMEOUT):
-        ret_msg = subprocess.run(command, shell=True, timeout=timeout, check=True).stdout
-        return ret_msg.decode(locale.getpreferredencoding(), 'decode_errors').strip() if ret_msg else ""
+        subprocess.run(command, shell=True, timeout=timeout, check=True)
 
     @classmethod
     def _get_curr_info(cls, package):
@@ -146,7 +144,7 @@ class NodeControlUtil:
     def get_sys_holds(cls):
         if shutil.which("apt-mark"):
             cmd = compose_cmd(['apt-mark', 'showhold'])
-            ret = cls.run_shell_script(cmd)
+            ret = cls.run_shell_command(cmd)
 
             hlds = ret.strip().split("\n")
             return [h for h in hlds if h]
