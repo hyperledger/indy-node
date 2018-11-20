@@ -198,3 +198,8 @@ def createHalfKeyIdentifierAndAbbrevVerkey(seed=None):
 
 def createCryptonym(seed=None):
     return SimpleSigner(seed=seed).identifier
+
+
+def createUuidIdentifierAndFullVerkey(seed=None):
+    didSigner = DidSigner(identifier=createUuidIdentifier(), seed=seed)
+    return didSigner.identifier, didSigner.verkey

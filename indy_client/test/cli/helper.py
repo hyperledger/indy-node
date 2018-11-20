@@ -2,20 +2,17 @@ import json
 import os
 import re
 from _sha256 import sha256
-from typing import Dict
 
 from indy_client.cli.cli import IndyCli
 from indy_client.client.wallet.connection import Connection
 from indy_client.test.client.TestClient import TestClient
 from indy_common.roles import Roles
 from indy_common.txn_util import getTxnOrderedFields
-from indy_node.test.helper import createUuidIdentifier
 from ledger.genesis_txn.genesis_txn_file_util import create_genesis_txn_init_ledger
 from plenum.bls.bls_crypto_factory import create_default_bls_crypto_factory
 from plenum.common.constants import TARGET_NYM, ROLE, VALIDATOR, STEWARD
 from plenum.common.member.member import Member
 from plenum.common.member.steward import Steward
-from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
 from plenum.test import waits
 from plenum.test.cli.helper import TestCliCore, assertAllNodesCreated, \
@@ -48,7 +45,7 @@ def sendNym(cli, nym, role):
 
 def checkGetNym(cli, nym):
     printeds = ["Getting nym {}".format(nym), "Sequence number for NYM {} is "
-                .format(nym)]
+        .format(nym)]
     checks = [x in cli.lastCmdOutput for x in printeds]
     assert all(checks)
     # TODO: These give NameError, don't know why
@@ -299,63 +296,6 @@ class P(str):
         return re.match('^{}$'.format(self), other)
 
 
-def check_wallet(cli,
-                 totalLinks=None,
-                 totalAvailableClaims=None,
-                 totalSchemas=None,
-                 totalClaimsRcvd=None,
-                 within=None):
-    async def check():
-        actualLinks = len(cli.activeWallet._connections)
-        assert (totalLinks is None or (totalLinks == actualLinks)), \
-            'connections expected to be {} but is {}'.format(
-                totalLinks, actualLinks)
-
-        tac = 0
-        for li in cli.activeWallet._connections.values():
-            tac += len(li.availableClaims)
-
-        assert (totalAvailableClaims is None or
-                totalAvailableClaims == tac), \
-            'available claims {} must be equal to {}'. \
-                format(tac, totalAvailableClaims)
-
-        if cli.agent.prover is None:
-            assert (totalSchemas + totalClaimsRcvd) == 0
-        else:
-            w = cli.agent.prover.wallet
-            actualSchemas = len(await w.getAllSchemas())
-            assert (totalSchemas is None or
-                    totalSchemas == actualSchemas), \
-                'schemas expected to be {} but is {}'. \
-                    format(totalSchemas, actualSchemas)
-
-            assert (totalClaimsRcvd is None or
-                    totalClaimsRcvd == len((await w.getAllClaimsSignatures()).keys()))
-
-    if within:
-        cli.looper.run(eventually(check, timeout=within))
-    else:
-        cli.looper.run(check)
-
-
-def wallet_state(totalLinks=0,
-                 totalAvailableClaims=0,
-                 totalSchemas=0,
-                 totalClaimsRcvd=0):
-    return locals()
-
-
-def addAgent(be, do, userCli, mapper):
-    addNym(be,
-           do,
-           userCli,
-           mapper['remote'],
-           verkey=mapper.get('remote-verkey', None),
-           role=Roles.TRUST_ANCHOR.name)
-    return userCli
-
-
 def addNym(be, do, userCli, idr, verkey=None, role=None):
     be(userCli)
 
@@ -368,132 +308,3 @@ def addNym(be, do, userCli, idr, verkey=None, role=None):
         cmd += ' verkey={}'.format(verkey)
 
     do(cmd, expect='Nym {} added'.format(idr), within=2)
-
-
-def newKey(be, do, userCli, seed=None):
-    be(userCli)
-    cmd = 'new key'
-    if seed is not None:
-        cmd += ' with seed {}'.format(seed)
-
-    do(cmd, expect='Current DID set to')
-
-
-def getAgentCliHelpString():
-    return """Indy-CLI, a simple command-line interface for a Indy Identity platform.
-   Commands:
-       help - Shows this or specific help message for given command
-         Usage:
-            help [<command name>]
-       prompt - Changes the prompt to given principal (a person like Alice, an organization like Faber College, or an IoT-style thing)
-       list wallets - Lists all wallets
-       list ids - Lists all DIDs of active wallet
-       show - Shows content of given file
-       show connection - Shows connection info in case of one matching connection, otherwise shows all the matching connection names
-       ping - Pings given remote's endpoint
-       list connections - List available connections in active wallet
-       send proof request - Send a proof request
-       license - Shows the license
-       exit - Exit the command-line interface ('quit' also works)"""
-
-
-def getTotalConnections(userCli):
-    return len(userCli.activeWallet._connections)
-
-
-def getTotalAvailableClaims(userCli):
-    availableClaimsCount = 0
-    for li in userCli.activeWallet._connections.values():
-        availableClaimsCount += len(li.availableClaims)
-    return availableClaimsCount
-
-
-def getTotalSchemas(userCli):
-    async def getTotalSchemasCoro():
-        return 0 if userCli.agent.prover is None \
-            else len(await userCli.agent.prover.wallet.getAllSchemas())
-
-    return userCli.looper.run(getTotalSchemasCoro)
-
-
-def getTotalClaimsRcvd(userCli):
-    async def getTotalClaimsRcvdCoro():
-        return 0 if userCli.agent.prover is None \
-            else len((await userCli.agent.prover.wallet.getAllClaimsSignatures()).keys())
-
-    return userCli.looper.run(getTotalClaimsRcvdCoro)
-
-
-def getWalletState(userCli):
-    totalLinks = getTotalLinks(userCli)
-    totalAvailClaims = getTotalAvailableClaims(userCli)
-    totalSchemas = getTotalSchemas(userCli)
-    totalClaimsRcvd = getTotalClaimsRcvd(userCli)
-    return wallet_state(totalLinks, totalAvailClaims, totalSchemas,
-                        totalClaimsRcvd)
-
-
-def doSendNodeCmd(do, nodeVals, expMsgs=None):
-    expect = expMsgs or ['Node request completed']
-    do('send NODE dest={newNodeIdr} data={newNodeData}',
-       within=15, expect=expect, mapper=nodeVals)
-
-
-def createUuidIdentifierAndFullVerkey(seed=None):
-    didSigner = DidSigner(identifier=createUuidIdentifier(), seed=seed)
-    return didSigner.identifier, didSigner.verkey
-
-
-def compareAgentIssuerWallet(unpersistedWallet, restoredWallet):
-    def compare(old, new):
-        if isinstance(old, Dict):
-            for k, v in old.items():
-                assert v == new.get(k)
-        else:
-            assert old == new
-
-    compareList = [
-        # from anoncreds wallet
-        (unpersistedWallet.walletId, restoredWallet.walletId),
-        (unpersistedWallet._repo.wallet.name, restoredWallet._repo.wallet.name),
-
-        # from indy-issuer-wallet-in-memory
-        (unpersistedWallet.availableClaimsToAll,
-         restoredWallet.availableClaimsToAll),
-        (unpersistedWallet.availableClaimsByNonce,
-         restoredWallet.availableClaimsByNonce),
-        (unpersistedWallet.availableClaimsByIdentifier,
-         restoredWallet.availableClaimsByIdentifier),
-        (unpersistedWallet._proofRequestsSchema,
-         restoredWallet._proofRequestsSchema),
-
-        # from anoncreds issuer-wallet-in-memory
-        (unpersistedWallet._sks, restoredWallet._sks),
-        (unpersistedWallet._skRs, restoredWallet._skRs),
-        (unpersistedWallet._accumSks, restoredWallet._accumSks),
-        (unpersistedWallet._m2s, restoredWallet._m2s),
-        (unpersistedWallet._attributes, restoredWallet._attributes),
-
-        # from anoncreds wallet-in-memory
-        (unpersistedWallet._schemasByKey, restoredWallet._schemasByKey),
-        (unpersistedWallet._schemasById, restoredWallet._schemasById),
-        (unpersistedWallet._pks, restoredWallet._pks),
-        (unpersistedWallet._pkRs, restoredWallet._pkRs),
-        (unpersistedWallet._accums, restoredWallet._accums),
-        (unpersistedWallet._accumPks, restoredWallet._accumPks),
-        # TODO: need to check for _tails, it is little bit different than
-        # others (Dict instead of namedTuple or class)
-    ]
-
-    assert unpersistedWallet._repo.client is None
-    assert restoredWallet._repo.client is not None
-    for oldDict, newDict in compareList:
-        compare(oldDict, newDict)
-
-
-def getSeqNoFromCliOutput(cli):
-    seqPat = re.compile("Sequence number is ([0-9]+)")
-    m = seqPat.search(cli.lastCmdOutput)
-    assert m
-    seqNo, = m.groups()
-    return int(seqNo)

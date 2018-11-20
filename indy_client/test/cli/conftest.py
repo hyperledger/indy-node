@@ -41,7 +41,7 @@ from stp_core.loop.looper import Looper
 from plenum.test.cli.helper import newKeyPair, doByCtx
 
 from indy_client.test.cli.helper import ensureNodesCreated, get_connection_request, \
-    getPoolTxnData, newCLI, getCliBuilder, P, prompt_is, addAgent, doSendNodeCmd, addNym
+    getPoolTxnData, newCLI, getCliBuilder, P, prompt_is, addNym
 from indy_client.test.cli.helper import connect_and_check_output, disconnect_and_check_output
 from indy_common.config_helper import ConfigHelper
 from stp_core.crypto.util import randomSeed
@@ -73,11 +73,6 @@ def cli(looper, client_tdir):
 
 
 @pytest.fixture(scope="module")
-def newKeyPairCreated(cli):
-    return newKeyPair(cli)
-
-
-@pytest.fixture(scope="module")
 def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns,
                txnPoolNodesLooper, tconf, cliTempLogger):
     return getCliBuilder(
@@ -87,65 +82,6 @@ def CliBuilder(tdir, tdirWithPoolTxns, tdirWithDomainTxns,
         tdirWithDomainTxns,
         logFileName=cliTempLogger,
         def_looper=txnPoolNodesLooper)
-
-
-@pytest.fixture(scope="module")
-def loadInviteOut(nextCommandsToTryUsageLine):
-    return ["1 connection request found for {inviter}.",
-            "Creating connection for {inviter}.",
-            ''] + \
-           nextCommandsToTryUsageLine + \
-           ['    show connection "{inviter}"',
-            '    accept request from "{inviter}"',
-            '',
-            '']
-
-
-@pytest.fixture(scope="module")
-def fileNotExists():
-    return ["Given file does not exist"]
-
-
-@pytest.fixture(scope="module")
-def canNotSyncMsg():
-    return ["Cannot sync because not connected"]
-
-
-@pytest.fixture(scope="module")
-def syncWhenNotConnected(canNotSyncMsg, connectUsage):
-    return canNotSyncMsg + connectUsage
-
-
-@pytest.fixture(scope="module")
-def canNotAcceptMsg():
-    return ["Cannot accept because not connected"]
-
-
-@pytest.fixture(scope="module")
-def acceptWhenNotConnected(canNotAcceptMsg, connectUsage):
-    return canNotAcceptMsg + connectUsage
-
-
-@pytest.fixture(scope="module")
-def acceptUnSyncedWithoutEndpointWhenConnected(
-        common_accept_request_msgs, syncedInviteAcceptedOutWithoutClaims):
-    return common_accept_request_msgs + \
-           syncedInviteAcceptedOutWithoutClaims
-
-
-@pytest.fixture(scope="module")
-def common_accept_requests_msgs():
-    return ["Request not yet verified",
-            "Connection not yet synchronized.",
-            ]
-
-
-@pytest.fixture(scope="module")
-def acceptUnSyncedWhenNotConnected(common_accept_requests_msgs,
-                                   canNotSyncMsg, connectUsage):
-    return common_accept_requests_msgs + \
-           ["Request acceptance aborted."] + \
-           canNotSyncMsg + connectUsage
 
 
 @pytest.fixture(scope="module")
