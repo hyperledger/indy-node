@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 
 # -*- coding: utf-8 -*-
@@ -13,14 +14,11 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-from recommonmark.parser import CommonMarkParser
-import sphinx_rtd_theme
 import os
 import sys
-from os.path import abspath, join, dirname
-
-sys.path.insert(0, abspath(join(dirname(__file__))))
-
+from recommonmark.parser import CommonMarkParser
+import sphinx_rtd_theme
+sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
 project = u'Hyperledger Indy Node'
@@ -43,7 +41,7 @@ release = u''
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.intersphinx',
+    'sphinx.ext.intersphinx'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -189,17 +187,6 @@ epub_exclude_files = ['search.html']
 
 # Example configuration for intersphinx: refer to the Python standard library.
 
-
-
-# on_rtd is whether we are on readthedocs.org, this line of code grabbed from docs.readthedocs.org
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-# This is used for linking and such so we link to the thing we're building
-rtd_version = os.environ.get('READTHEDOCS_VERSION', 'latest')
-if rtd_version not in ['stable', 'latest']:
-    rtd_version = 'latest'
-
-
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
@@ -214,57 +201,26 @@ source_suffix = ['.rst', '.md']
 # The master toctree document.
 master_doc = 'index'
 
-# -------------------- INTERSPHINX -------
+# ------------ Remote Documentation Builder Config -----------
+on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-rtd_version = 'latest'
+if(on_rtd):
+    rtd_version = os.environ.get('READTHEDOCS_VERSION', 'latest')
+    if rtd_version not in ['stable', 'latest']:
+        rtd_version = 'latest'
 
-intersphinx_mapping = {
-    'sovrin': ('http://sovrin.readthedocs.io/en/%s/' % rtd_version, None),
-    'indy-sdk': ('http://indy-sdk.readthedocs.io/en/%s/' % rtd_version, None),
-    'indy-node': ('http://indy-node.readthedocs.io/en/%s/' % rtd_version, None),
-}
-
-
-# -- Custom Document processing ----------------------------------------------
-
-import gensidebar
-gensidebar.generate_sidebar(globals(), 'node')
-
-
-import sphinx.addnodes
-import docutils.nodes
-
-def process_child(node):
-    '''This function changes class references to not have the
-       intermediate module name by hacking at the doctree'''
+# get sidebar file
+    try:
+        os.system("git clone https://github.com/michaeldboyd/sovrin-docs-conf.git remote_conf")
+        os.system("mv remote_conf/remote_conf.py .")
+        os.system("rm toc.rst")
+        import remote_conf
+        remote_conf.generate_sidebar(globals(), 'node')
+        intersphinx_mapping = remote_conf.get_intersphinx_mapping(rtd_version)
+        master_doc = "toc"
     
-    # Edit descriptions to be nicer
-    if isinstance(node, sphinx.addnodes.desc_addname):
-        if len(node.children) == 1:
-            child = node.children[0]
-            text = child.astext()
-            if text.startswith('wpilib.') and text.endswith('.'):
-                # remove the last element
-                text = '.'.join(text.split('.')[:-2]) + '.'
-                node.children[0] = docutils.nodes.Text(text)
-                
-    # Edit literals to be nicer
-    elif isinstance(node, docutils.nodes.literal):
-        child = node.children[0]
-        text = child.astext()
-        
-        # Remove the imported module name
-        if text.startswith('wpilib.'):
-            stext = text.split('.')
-            text = '.'.join(stext[:-2] + [stext[-1]])
-            node.children[0] = docutils.nodes.Text(text)
-    
-    for child in node.children:
-        process_child(child)
-
-def doctree_read(app, doctree):
-    for child in doctree.children:
-        process_child(child)
-
-def setup(app):
-    app.connect('doctree-read', doctree_read)
+    except:
+        e = sys.exc_info*()[0]
+        print e
+    finally:      
+        os.system("rm -rf remote_conf/ __pycache__/ remote_conf.py")
