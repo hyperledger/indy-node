@@ -2,6 +2,7 @@ import logging
 import warnings
 import pytest
 
+from indy_node.test.helper import TestNode
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_pool_refresh, prepare_new_node_data, \
     create_and_start_new_node, prepare_node_request, sdk_sign_and_send_prepared_request
 from stp_core.common.log import Logger
@@ -16,15 +17,9 @@ from indy_common import strict_types
 strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
-from indy_client.test.conftest import trustAnchorWallet, \
-    tdirWithDomainTxns, \
-    stewardWallet, steward, genesisTxns, nodeSet, testNodeClass, updatedPoolTxnData, \
-    warnfilters as client_warnfilters
-
-# noinspection PyUnresolvedReferences
 from plenum.test.conftest import tdir, client_tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
-    tdirWithPoolTxns, tdirWithDomainTxns as PTdirWithDomainTxns, \
+    tdirWithPoolTxns, tdirWithDomainTxns, \
     tdirWithClientPoolTxns, txnPoolNodeSet, \
     poolTxnData, dirName, poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
@@ -50,9 +45,8 @@ def sdk_pool_handle(plenum_pool_handle, nodeSet):
 
 
 @pytest.fixture(scope="session")
-def warnfilters(client_warnfilters):
+def warnfilters():
     def _():
-        client_warnfilters()
         warnings.filterwarnings(
             'ignore',
             category=DeprecationWarning,
@@ -133,3 +127,13 @@ def sdk_user_wallet_a(nodeSet, sdk_wallet_trust_anchor,
     return sdk_add_new_nym(looper, sdk_pool_handle,
                            sdk_wallet_trust_anchor, alias='userA',
                            skipverkey=True)
+
+
+@pytest.fixture(scope="module")
+def nodeSet(txnPoolNodeSet):
+    return txnPoolNodeSet
+
+
+@pytest.fixture(scope="module")
+def testNodeClass():
+    return TestNode
