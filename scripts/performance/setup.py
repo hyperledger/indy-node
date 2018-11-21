@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
+import os
 import sys
 from setuptools import setup, find_packages
-from perf_load.perf_utils import SCRIPT_VERSION
 
 v = sys.version_info
 if sys.version_info < (3, 5):
@@ -14,13 +14,25 @@ if sys.version_info < (3, 5):
     print("NOTE: Installation failed. Run setup.py using python3")
     sys.exit(1)
 
+# resolve metadata
+metadata = {}
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, 'perf_load', '__metadata__.py'), 'r') as f:
+    exec(f.read(), metadata)
+
 tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy>=1.6.1.dev683']
 
 setup(
-    name='indy-perf-load',
-    version=SCRIPT_VERSION,
-    description='Indy node performance load',
-    keywords='Indy Node performance load testing',
+    name=metadata['__title__'],
+    version=metadata['__version__'],
+    description=metadata['__description__'],
+    long_description=metadata['__long_description__'],
+    keywords=metadata['__keywords__'],
+    url=metadata['__url__'],
+    author=metadata['__author__'],
+    author_email=metadata['__author_email__'],
+    maintainer=metadata['__maintainer__'],
+    license=metadata['__license__'],
     packages=find_packages(),
     package_data={'': ['*.md']},
     include_package_data=True,
