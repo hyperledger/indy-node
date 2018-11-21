@@ -1,0 +1,11 @@
+---
+- name: Provision hosts for clients
+  gather_facts: false
+  hosts: localhost
+  tasks:
+  - include_tasks: tasks/render.tasks.yml
+    vars:
+      render_groups: ['clients']
+
+  - include_tasks: tasks/provision.clients.yml
+...
