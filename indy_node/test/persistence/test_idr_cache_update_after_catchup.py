@@ -2,9 +2,8 @@ import json
 
 from indy.ledger import build_nym_request, sign_request, submit_request
 
-from indy_client.test.cli.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy_common.state import domain
-from indy_node.test.helper import start_stopped_node
+from indy_node.test.helper import start_stopped_node, createHalfKeyIdentifierAndAbbrevVerkey
 from plenum.common.txn_util import get_txn_time
 from plenum.test.node_catchup.helper import waitNodeDataEquality
 from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disconnected
