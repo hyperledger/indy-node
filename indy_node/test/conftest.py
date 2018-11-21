@@ -2,6 +2,7 @@ import logging
 import warnings
 import pytest
 
+from indy_common.config_helper import NodeConfigHelper
 from indy_node.test.helper import TestNode
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_pool_refresh, prepare_new_node_data, \
     create_and_start_new_node, prepare_node_request, sdk_sign_and_send_prepared_request
@@ -137,3 +138,24 @@ def nodeSet(txnPoolNodeSet):
 @pytest.fixture(scope="module")
 def testNodeClass():
     return TestNode
+
+
+@pytest.fixture(scope="module")
+def newNodeAdded(looper, nodeSet, tdir, tconf, sdk_pool_handle,
+                 sdk_wallet_trustee, allPluginsPath):
+    new_steward_wallet, new_node = sdk_node_theta_added(looper,
+                                                        nodeSet,
+                                                        tdir,
+                                                        tconf,
+                                                        sdk_pool_handle,
+                                                        sdk_wallet_trustee,
+                                                        allPluginsPath,
+                                                        node_config_helper_class=NodeConfigHelper,
+                                                        testNodeClass=TestNode,
+                                                        name='')
+    return new_steward_wallet, new_node
+
+
+@pytest.fixture(scope='module')
+def nodeIds(nodeSet):
+    return next(iter(nodeSet)).poolManager.nodeIds

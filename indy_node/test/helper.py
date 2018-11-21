@@ -15,7 +15,6 @@ from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.test_node import TestNodeCore
 from plenum.test.testable import spyable
 from indy_client.client.wallet.wallet import Wallet
-from indy_client.test.helper import genTestClient
 from indy_common.test.helper import TempStorage
 from indy_node.server.node import Node
 from indy_node.server.upgrader import Upgrader
@@ -94,12 +93,6 @@ class TestNode(TempStorage, TestNodeCore, Node):
         return self.ClientStackClass
 
 
-def makePendingTxnsRequest(client, wallet):
-    wallet.pendSyncRequests()
-    prepared = wallet.preparePending()
-    client.submitReqs(*prepared)
-
-
 def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib,
                                 dest=None, xhash=None, enc=None):
     _, s_did = sdk_wallet_handle
@@ -126,15 +119,6 @@ def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, valu
     _, did = sdk_wallet_handle
     attrData = json.dumps({name: value})
     sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrData)
-
-
-def buildStewardClient(looper, tdir, stewardWallet):
-    s, _ = genTestClient(tmpdir=tdir, usePoolLedger=True)
-    s.registerObserver(stewardWallet.handleIncomingReply)
-    looper.add(s)
-    looper.run(s.ensureConnectedToNodes())
-    makePendingTxnsRequest(s, stewardWallet)
-    return s
 
 
 base58_alphabet = set(base58.alphabet.decode("utf-8"))

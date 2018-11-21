@@ -1,5 +1,3 @@
-from typing import Union, Tuple
-import inspect
 import re
 
 from collections import namedtuple
@@ -8,20 +6,12 @@ from pathlib import Path
 from plenum.common.util import randomString
 
 from plenum.test import waits
-from indy_client.test.client.TestClient import TestClient
 
 from stp_core.common.log import getlogger
-from plenum.common.signer_did import DidSigner
-from plenum.common.constants import REQNACK, OP_FIELD_NAME, REJECT, REPLY
-from plenum.common.types import f, HA
-from stp_core.types import Identifier
 
 from stp_core.loop.eventually import eventually
-from plenum.test.test_client import genTestClient as genPlenumTestClient
-
 from indy_common.identity import Identity
 
-from indy_client.client.wallet.upgrade import Upgrade
 from indy_client.client.wallet.wallet import Wallet
 
 logger = getlogger()
@@ -43,143 +33,6 @@ def createNym(looper, nym, creatorClient, creatorWallet: Wallet, role=None,
         len(creatorClient.nodeReg)
     )
     looper.run(eventually(check, retryWait=1, timeout=timeout))
-
-
-def makePendingTxnsRequest(client, wallet):
-    wallet.pendSyncRequests()
-    prepared = wallet.preparePending()
-    client.submitReqs(*prepared)
-
-
-def buildStewardClient(looper, tdir, stewardWallet):
-    s, _ = genTestClient(tmpdir=tdir, usePoolLedger=True)
-    s.registerObserver(stewardWallet.handleIncomingReply)
-    looper.add(s)
-    looper.run(s.ensureConnectedToNodes())
-    makePendingTxnsRequest(s, stewardWallet)
-    return s
-
-
-def addRole(looper, creatorClient, creatorWallet, name,
-            addVerkey=True, role=None):
-    wallet = Wallet(name)
-    signer = DidSigner()
-    idr, _ = wallet.addIdentifier(signer=signer)
-    verkey = wallet.getVerkey(idr) if addVerkey else None
-    createNym(looper, idr, creatorClient, creatorWallet, verkey=verkey,
-              role=role)
-    return wallet
-
-
-def submitPoolUpgrade(
-        looper,
-        senderClient,
-        senderWallet,
-        name,
-        action,
-        version,
-        schedule,
-        timeout,
-        sha256):
-    upgrade = Upgrade(name, action, schedule, version, sha256, timeout,
-                      senderWallet.defaultId)
-    senderWallet.doPoolUpgrade(upgrade)
-    reqs = senderWallet.preparePending()
-    senderClient.submitReqs(*reqs)
-
-    def check():
-        assert senderWallet._upgrades[upgrade.key].seqNo
-
-    timeout = waits.expectedTransactionExecutionTime(
-        len(senderClient.nodeReg)
-    )
-    looper.run(eventually(check, timeout=timeout))
-
-
-def checkErrorMsg(typ, client, reqId, contains='', nodeCount=4):
-    reqs = [x for x, _ in client.inBox if x[OP_FIELD_NAME] == typ and
-            x[f.REQ_ID.nm] == reqId]
-    for r in reqs:
-        assert f.REASON.nm in r
-        assert contains in r[f.REASON.nm], '{} not in {}'.format(
-            contains, r[f.REASON.nm])
-    assert len(reqs) == nodeCount
-
-
-def checkNacks(client, reqId, contains='', nodeCount=4):
-    checkErrorMsg(REQNACK, client, reqId,
-                  contains=contains, nodeCount=nodeCount)
-
-
-def checkRejects(client, reqId, contains='', nodeCount=4):
-    checkErrorMsg(REJECT, client, reqId, contains=contains,
-                  nodeCount=nodeCount)
-
-
-def submit(wallet, op, identifier, client):
-    req = wallet.signOp(op, identifier=identifier)
-    wallet.pendRequest(req)
-    reqs = wallet.preparePending()
-    client.submitReqs(*reqs)
-
-    return req.reqId
-
-
-def genTestClient(nodes=None,
-                  nodeReg=None,
-                  tmpdir=None,
-                  identifier: Identifier = None,
-                  verkey: str = None,
-                  peerHA: Union[HA, Tuple[str, int]] = None,
-                  testClientClass=TestClient,
-                  usePoolLedger=False,
-                  name: str = None) -> (TestClient, Wallet):
-    testClient, wallet = genPlenumTestClient(nodes,
-                                             nodeReg,
-                                             tmpdir,
-                                             testClientClass,
-                                             verkey=verkey,
-                                             identifier=identifier,
-                                             bootstrapKeys=False,
-                                             usePoolLedger=usePoolLedger,
-                                             name=name)
-    testClient.peerHA = peerHA
-    return testClient, wallet
-
-
-def genConnectedTestClient(looper,
-                           nodes=None,
-                           nodeReg=None,
-                           tmpdir=None,
-                           identifier: Identifier = None,
-                           verkey: str = None
-                           ) -> TestClient:
-    c, w = genTestClient(nodes, nodeReg=nodeReg, tmpdir=tmpdir,
-                         identifier=identifier, verkey=verkey)
-    looper.add(c)
-    looper.run(c.ensureConnectedToNodes())
-    return c, w
-
-
-def addUser(looper, creatorClient, creatorWallet, name,
-            addVerkey=True):
-    wallet = Wallet(name)
-    signer = DidSigner()
-    idr, _ = wallet.addIdentifier(signer=signer)
-    verkey = wallet.getVerkey(idr) if addVerkey else None
-    createNym(looper, idr, creatorClient, creatorWallet, verkey=verkey)
-    return wallet
-
-
-def peer_path(filename):
-    s = inspect.stack()
-    caller = None
-    for i in range(1, len(s)):
-        # pycharm can wrap calls, so we want to ignore those in the stack
-        if 'pycharm' not in s[i].filename:
-            caller = s[i].filename
-            break
-    return Path(caller).parent.joinpath(filename)
 
 
 def _within_hint(match, ctx):
