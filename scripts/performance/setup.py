@@ -17,7 +17,7 @@ if sys.version_info < (3, 5):
 # resolve metadata
 metadata = {}
 here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'perf_load', '__metadata__.py'), 'r') as f:
+with open(os.path.join(here, 'perf_load', '__version__.py'), 'r') as f:
     exec(f.read(), metadata)
 
 tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy>=1.6.1.dev683']
