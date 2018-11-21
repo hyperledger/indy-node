@@ -8,7 +8,7 @@ lint:
   options:
     config-file: ../../yamllint
 platforms:
-  - name: instance
+  - name: perf_scripts
     image: ubuntu:16.04  # TODO parametrize
     pre_build_image: true
 provisioner:

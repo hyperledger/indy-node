@@ -3,4 +3,4 @@
   gather_facts: false
   hosts: all
   roles:
-    - role: perf_scripts_install
+    - role: perf_scripts
