@@ -142,14 +142,6 @@ def tests = [
             python: python
         )
     },
-    client: { python ->
-        test(
-            resFile: "test-result-client.${NODE_NAME}.txt",
-            testDir: 'indy_client',
-            python: python,
-            useRunner: true
-        )
-    },
     node: { python ->
         test(
             resFile: "test-result-node.${NODE_NAME}.txt",

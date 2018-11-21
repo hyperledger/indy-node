@@ -1,15 +1,12 @@
 import json
 import pytest
+
 from plenum.common.constants import NODE_IP, NODE_PORT, CLIENT_IP, CLIENT_PORT, ALIAS, VALIDATOR, SERVICES
-
 from plenum.common.util import cryptonymToHex, hexToFriendly
-
 from plenum.common.exceptions import RequestNackedException, RequestRejectedException
 
-from plenum.common.types import OPERATION
-
-from plenum.test.helper import sdk_get_and_check_replies, sdk_get_bad_response
-
+from plenum.test.helper import sdk_get_and_check_replies, sdk_get_bad_response, sdk_sign_request_strings, \
+    sdk_send_signed_requests
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, prepare_node_request, \
     sdk_sign_and_send_prepared_request
 
@@ -57,7 +54,6 @@ def testSendNodeFailsIfDestIsHexKey(
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
-@pytest.mark.skip(reason='SOV-1096')
 def testSendNodeHasInvalidSyntaxIfDestIsEmpty(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
     node_request['operation']['dest'] = ''
@@ -65,13 +61,11 @@ def testSendNodeHasInvalidSyntaxIfDestIsEmpty(
     request_couple = sdk_sign_and_send_prepared_request(looper, steward_wallet,
                                                         sdk_pool_handle,
                                                         json.dumps(node_request))
-    sdk_get_and_check_replies(looper, [request_couple])
     sdk_get_bad_response(looper, [request_couple], RequestNackedException,
-                         'b58 decoded value length 1 should be one of [16, 32]')
+                         'b58 decoded value length 0 should be one of [16, 32]')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
-@pytest.mark.skip(reason='SOV-1096')
 def testSendNodeHasInvalidSyntaxIfDestIsMissed(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
     del node_request['operation']['dest']
@@ -79,9 +73,8 @@ def testSendNodeHasInvalidSyntaxIfDestIsMissed(
     request_couple = sdk_sign_and_send_prepared_request(looper, steward_wallet,
                                                         sdk_pool_handle,
                                                         json.dumps(node_request))
-    sdk_get_and_check_replies(looper, [request_couple])
     sdk_get_bad_response(looper, [request_couple], RequestNackedException,
-                         'b58 decoded value length 1 should be one of [16, 32]')
+                         'missed fields - dest')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
@@ -483,7 +476,6 @@ def testSendNodeFailsIfDataIsEmptyJson(
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
-@pytest.mark.skip(reason='INDY-68')
 def testSendNodeFailsIfDataIsBrokenJson(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
     node_request['operation']['data'] = "{'node_ip': '10.0.0.105', 'node_port': 9701"
@@ -491,13 +483,11 @@ def testSendNodeFailsIfDataIsBrokenJson(
     request_couple = sdk_sign_and_send_prepared_request(looper, steward_wallet,
                                                         sdk_pool_handle,
                                                         json.dumps(node_request))
-    sdk_get_and_check_replies(looper, [request_couple])
     sdk_get_bad_response(looper, [request_couple], RequestNackedException,
-                         'b58 decoded value length 1 should be one of [16, 32]')
+                         'invalid type')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
-@pytest.mark.skip(reason='INDY-68')
 def testSendNodeFailsIfDataIsNotJson(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
     node_request['operation']['data'] = 'not_json'
@@ -505,13 +495,11 @@ def testSendNodeFailsIfDataIsNotJson(
     request_couple = sdk_sign_and_send_prepared_request(looper, steward_wallet,
                                                         sdk_pool_handle,
                                                         json.dumps(node_request))
-    sdk_get_and_check_replies(looper, [request_couple])
     sdk_get_bad_response(looper, [request_couple], RequestNackedException,
-                         'b58 decoded value length 1 should be one of [16, 32]')
+                         'invalid type')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
-@pytest.mark.skip(reason='SOV-1096')
 def testSendNodeHasInvalidSyntaxIfDataIsEmptyString(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
     node_request['operation']['data'] = ''
@@ -519,35 +507,31 @@ def testSendNodeHasInvalidSyntaxIfDataIsEmptyString(
     request_couple = sdk_sign_and_send_prepared_request(looper, steward_wallet,
                                                         sdk_pool_handle,
                                                         json.dumps(node_request))
-    sdk_get_and_check_replies(looper, [request_couple])
     sdk_get_bad_response(looper, [request_couple], RequestNackedException,
-                         'b58 decoded value length 1 should be one of [16, 32]')
+                         'invalid type')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
-@pytest.mark.skip(reason='SOV-1096')
 def testSendNodeHasInvalidSyntaxIfDataIsMissed(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
+    del node_request['operation']['data']
     steward_wallet, node = sdk_node_theta_added
     request_couple = sdk_sign_and_send_prepared_request(looper, steward_wallet,
                                                         sdk_pool_handle,
                                                         json.dumps(node_request))
-    sdk_get_and_check_replies(looper, [request_couple])
     sdk_get_bad_response(looper, [request_couple], RequestNackedException,
-                         'b58 decoded value length 1 should be one of [16, 32]')
+                         'missed fields')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
-@pytest.mark.skip(reason='SOV-1096')
+@pytest.mark.skip(reason='INDY-1864')
 def testSendNodeHasInvalidSyntaxIfUnknownParameterIsPassed(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
+    node_request['operation']['albus'] = 'severus'
     steward_wallet, node = sdk_node_theta_added
-    request_couple = sdk_sign_and_send_prepared_request(looper, steward_wallet,
-                                                        sdk_pool_handle,
-                                                        json.dumps(node_request))
+    signed_reqs = sdk_sign_request_strings(looper, steward_wallet, [node_request])
+    request_couple = sdk_send_signed_requests(sdk_pool_handle, signed_reqs)[0]
     sdk_get_and_check_replies(looper, [request_couple])
-    sdk_get_bad_response(looper, [request_couple], RequestNackedException,
-                         'b58 decoded value length 1 should be one of [16, 32]')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
@@ -564,7 +548,6 @@ def testSendNodeHasInvalidSyntaxIfAllParametersAreMissed(
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 
-@pytest.mark.skip('INDY-88')
 def testSendNodeSucceedsIfServicesIsMissed(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
     del node_request['operation']['data'][SERVICES]
@@ -573,6 +556,4 @@ def testSendNodeSucceedsIfServicesIsMissed(
                                                         sdk_pool_handle,
                                                         json.dumps(node_request))
     sdk_get_and_check_replies(looper, [request_couple])
-    sdk_get_bad_response(looper, [request_couple], RequestNackedException,
-                         'b58 decoded value length 1 should be one of [16, 32]')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)

@@ -30,8 +30,10 @@ class LoadClientFees(LoadClient):
                 print("Payment plugin initialization failed: {}".format(repr(ex)))
                 raise ex
 
-    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **kwargs):
-        super().__init__(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **kwargs)
+    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, short_stat,
+                 **kwargs):
+        super().__init__(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode,
+                         short_stat, **kwargs)
         self._trustee_dids = []
         self._pool_fees = {}
         self._ignore_fees_txns = [PUB_XFER_TXN_ID]
