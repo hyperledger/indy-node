@@ -61,6 +61,8 @@ lint:
 
 verifier:
   name: testinfra
-  directory: ../resources/tests
+  directory: ../resources/tests/base
+  additional_files_or_dirs:
+    - ../test_configured.py
   lint:
     name: flake8

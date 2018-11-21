@@ -1,4 +1,6 @@
 ---
-channel: master
+indy_cli_configuration: true
+
+indy_cli_repo_components: master
 # TODO remove default values for versions
 indy_cli_ver: 1.6.7~829

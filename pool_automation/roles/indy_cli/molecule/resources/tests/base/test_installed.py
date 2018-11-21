@@ -1,3 +1,4 @@
+testinfra_hosts = ['clients']
 
 def test_correct_package_versions_are_installed(host):
     v = host.ansible.get_variables()

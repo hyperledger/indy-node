@@ -8,10 +8,12 @@ lint:
   options:
     config-file: ../../yamllint
 platforms:
-  - name: instance
+  - name: indy_cli_base
     image: ubuntu:16.04  # TODO parametrize
     pre_build_image: true
     network_mode: ${MOLECULE_DOCKER_NETWORK_MODE:-bridge}
+    groups:
+      - clients
 provisioner:
   name: ansible
   lint:
@@ -20,11 +22,11 @@ provisioner:
     links:
       group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
   playbooks:
-    converge: ../resources/playbooks/playbook.yml
+    converge: ../resources/playbooks/playbook_base.yml
 scenario:
-  name: default
+  name: base
 verifier:
   name: testinfra
-  directory: ../resources/tests
+  directory: ../resources/tests/base
   lint:
     name: flake8

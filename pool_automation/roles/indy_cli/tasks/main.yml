@@ -5,7 +5,7 @@
       - lookup('vars', item, default='')
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
-    - channel
+    - indy_cli_repo_components
     - indy_cli_ver
 
 # TODO move the following three tasks (HTTPS, sovrin key and sovrin repos)
@@ -26,7 +26,7 @@
 
 - name: Add sovrin repositories for indy-sdk
   apt_repository:
-    repo: "deb https://repo.sovrin.org/sdk/deb xenial {{ channel }}"
+    repo: "deb https://repo.sovrin.org/sdk/deb xenial {{ indy_cli_repo_components }}"
     state: present
   become: true
 
@@ -36,3 +36,7 @@
       - "indy-cli={{ indy_cli_ver }}"
     update_cache: true
   become: true
+
+- name: Configuration tasks
+  include_tasks: configure.yml
+  when: indy_cli_configuration

@@ -14,13 +14,11 @@
     flat: true
   run_once: true
   delegate_to: "{{ groups['nodes'][0] }}"
-  when: false
 
 - name: Push pool genesis txns file to client
   copy:
     src: "{{ txns_path_local }}"
     dest: "{{ txns_path_remote }}"
-  when: false
 
 - name: Check list of configured pools
   shell: "echo 'pool list' | indy-cli"
@@ -33,3 +31,4 @@
   register: pool_create_res
   failed_when: ('Pool config \"' ~ indy_pool_name ~ '\" has been created') not in pool_create_res.stdout
   when: indy_pool_name not in test_cli_res.stdout
+...

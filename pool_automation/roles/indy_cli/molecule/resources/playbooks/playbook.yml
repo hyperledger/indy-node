@@ -9,4 +9,4 @@
   gather_facts: false
   hosts: clients
   roles:
-    - role: client_configure
+    - role: indy_cli

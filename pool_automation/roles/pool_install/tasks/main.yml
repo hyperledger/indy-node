@@ -43,10 +43,13 @@
     - "/var/lib/indy/{{ network_name }}"
     - "/var/log/indy/{{ network_name }}"
 
+- set_fact:
+    pool_txns_genesis_path: "/var/lib/indy/{{ network_name }}/pool_transactions_genesis"
+
 - name: Generate indy pool transactions
   command: "generate_indy_pool_transactions --nodes {{ pool_size }} --clients 1 --nodeNum {{ tag_id }} --ips '{{ node_ips }}'"
   args:
-    creates: "/var/lib/indy/{{ network_name }}/pool_transactions_genesis"
+    creates: "{{ pool_txns_genesis_path }}"
   become: true
   become_user: indy
 
