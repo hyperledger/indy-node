@@ -1,21 +1,22 @@
 ---
-dependency:
-  name: galaxy
+scenario:
+  name: default
+
 driver:
   name: docker
-lint:
-  name: yamllint
-  options:
-    config-file: ../../yamllint
-platforms:
-  - name: instance
+
+parameters:
+  node_config: &node_config
     image: solita/ubuntu-systemd:16.04  # TODO parametrize
-    command: ${MOLECULE_DOCKER_COMMAND:-""}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     privileged: true
     pre_build_image: true
-    network_mode: ${MOLECULE_DOCKER_NETWORK_MODE:-bridge}
+    networks:
+      - name: private_network
+    groups:
+      - nodes
+
 provisioner:
   name: ansible
   lint:
@@ -23,12 +24,32 @@ provisioner:
   inventory:
     links:
       group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
+      host_vars: ./host_vars
   playbooks:
     converge: ../resources/playbooks/playbook.yml
-scenario:
-  name: default
+
+platforms:
+  - <<: *node_config
+    name: node1
+  - <<: *node_config
+    name: node2
+  - <<: *node_config
+    name: node3
+  - <<: *node_config
+    name: node4
+
+dependency:
+  name: galaxy
+
+lint:
+  name: yamllint
+  options:
+    config-file: ../../yamllint
+
 verifier:
   name: testinfra
-  directory: ../resources/tests
+  directory: ../resources/tests/base
+  additional_files_or_dirs:
+    - ../test_configured.py
   lint:
     name: flake8

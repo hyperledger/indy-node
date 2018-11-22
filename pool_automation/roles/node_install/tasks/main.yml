@@ -48,3 +48,7 @@
     name: indy-node
     enabled: true
   become: true
+
+- name: Configuration tasks
+  include_tasks: configure.yml
+  when: indy_node_configuration

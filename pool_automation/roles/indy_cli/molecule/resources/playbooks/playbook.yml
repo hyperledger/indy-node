@@ -3,7 +3,7 @@
   gather_facts: false
   hosts: nodes
   roles:
-    - role: pool_install
+    - role: node_install
 
 - name: Converge clients
   gather_facts: false

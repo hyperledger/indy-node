@@ -3,4 +3,4 @@
   gather_facts: false
   hosts: nodes
   roles:
-    - pool_install
+    - node_install

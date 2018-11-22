@@ -1,6 +1,8 @@
 ---
 - name: Converge
   gather_facts: false
-  hosts: nodes
+  hosts: all
   roles:
     - role: node_install
+      vars:
+        indy_node_configuration: false

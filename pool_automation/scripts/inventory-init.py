@@ -45,7 +45,6 @@ group_vars:
     - aws_manage
   nodes:
     - node_install
-    - pool_install
   clients:
     - indy_cli
     - perf_scripts

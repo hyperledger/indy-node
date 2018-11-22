@@ -42,7 +42,7 @@ Installs python and sudo.
 
 ### node_install
 
-Adds sovrin repository and installs Indy Node.
+Adds sovrin repository and installs and configures Indy Node.
 
 Parameters:
 - _channel_ (master): which release channel to use (master/rc/stable)
@@ -55,10 +55,6 @@ Todos:
 - allow providing only _indy_node_ver_
 - remove unused repositories when switching channels
 
-
-### pool_install
-
-Configures Indy Node pool.
 
 ## Scripts
 
@@ -92,7 +88,7 @@ By default scenarios based on `docker` are used. Also `vagrant` scenarios are av
 and might be run like `molecule <command> -s vagrant`.
 
 In order to test all scenarios for some role go to a directory with the role (for example
-`roles/pool_install`) and run `molecule test --all`.
+`roles/node_install`) and run `molecule test --all`.
 
 #### Vagrant scenarios specific
 
