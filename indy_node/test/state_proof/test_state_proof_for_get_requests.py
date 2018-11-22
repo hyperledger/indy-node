@@ -9,7 +9,7 @@ from indy_node.test.state_proof.helper import check_valid_proof, \
     sdk_submit_operation_and_get_result
 from indy_common.constants import GET_ATTR, GET_NYM, SCHEMA, GET_SCHEMA, \
     CLAIM_DEF, REVOCATION, GET_CLAIM_DEF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_FROM, \
-    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION
+    SCHEMA_ATTR_NAMES, SCHEMA_NAME, SCHEMA_VERSION, CLAIM_DEF_TAG
 from indy_common.serialization import attrib_raw_data_serializer
 
 # Fixtures, do not remove
@@ -17,7 +17,6 @@ from indy_node.test.attrib_txn.test_nym_attrib import \
     sdk_added_raw_attribute, attributeName, attributeValue, attributeData
 
 
-@pytest.mark.skip('Broken State Proof validation due to different expected state keys in txn type field')
 def test_state_proof_returned_for_get_attr(looper,
                                            nodeSetWithOneNodeResponding,
                                            sdk_added_raw_attribute,
@@ -46,7 +45,6 @@ def test_state_proof_returned_for_get_attr(looper,
     check_valid_proof(result)
 
 
-@pytest.mark.skip('Broken State Proof validation due to different expected state keys in txn type field')
 def test_state_proof_returned_for_get_nym(looper,
                                           nodeSetWithOneNodeResponding,
                                           sdk_user_wallet_a,
@@ -86,7 +84,6 @@ def test_state_proof_returned_for_get_nym(looper,
     check_valid_proof(result)
 
 
-@pytest.mark.skip('Broken State Proof validation due to different expected state keys in txn type field')
 def test_state_proof_returned_for_get_schema(looper,
                                              nodeSetWithOneNodeResponding,
                                              sdk_wallet_trust_anchor,
@@ -136,7 +133,6 @@ def test_state_proof_returned_for_get_schema(looper,
     check_valid_proof(result)
 
 
-@pytest.mark.skip('Broken State Proof validation due to different expected state keys in txn type field')
 def test_state_proof_returned_for_get_claim_def(looper,
                                                 nodeSetWithOneNodeResponding,
                                                 sdk_wallet_trust_anchor,
@@ -153,7 +149,8 @@ def test_state_proof_returned_for_get_claim_def(looper,
         TXN_TYPE: CLAIM_DEF,
         CLAIM_DEF_SCHEMA_REF: 12,
         DATA: data,
-        CLAIM_DEF_SIGNATURE_TYPE: 'CL'
+        CLAIM_DEF_SIGNATURE_TYPE: 'CL',
+        CLAIM_DEF_TAG: "tag1"
     }
     sdk_submit_operation_and_get_result(looper,
                                         sdk_pool_handle,
@@ -163,7 +160,8 @@ def test_state_proof_returned_for_get_claim_def(looper,
         CLAIM_DEF_FROM: dest,
         TXN_TYPE: GET_CLAIM_DEF,
         CLAIM_DEF_SCHEMA_REF: 12,
-        CLAIM_DEF_SIGNATURE_TYPE: 'CL'
+        CLAIM_DEF_SIGNATURE_TYPE: 'CL',
+        CLAIM_DEF_TAG: "tag1"
     }
     result = sdk_submit_operation_and_get_result(looper,
                                                  sdk_pool_handle,

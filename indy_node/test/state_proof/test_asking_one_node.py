@@ -9,7 +9,6 @@ from indy_node.test.attrib_txn.test_nym_attrib import attributeData, \
     attributeName, attributeValue, sdk_added_raw_attribute
 
 
-@pytest.mark.skip('Broken State Proof validation due to different expected state keys in txn type field')
 def test_client_gets_read_reply_from_1_node_only(looper,
                                                  nodeSetWithOneNodeResponding,
                                                  sdk_added_raw_attribute,
