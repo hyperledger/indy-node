@@ -168,7 +168,6 @@ def test_attr_with_no_dest_added(nodeSet, tdirWithClientPoolTxns, looper, attrib
     # signer = DidSigner()
     # user_wallet.addIdentifier(signer=signer)
     #
-    # client, _ = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
     # client.registerObserver(user_wallet.handleIncomingReply)
     # looper.add(client)
     # looper.run(client.ensureConnectedToNodes())
@@ -206,8 +205,6 @@ def testGetTxnsSeqNo(nodeSet, tdirWithClientPoolTxns,
     """
     Test GET_TXNS from client and provide seqNo to fetch from
     """
-    # trustAnchor = genTestClient(nodeSet, tmpdir=tdirWithClientPoolTxns, usePoolLedger=True)
-    #
     # looper.add(trustAnchor)
     # looper.run(trustAnchor.ensureConnectedToNodes())
     #

@@ -5,7 +5,7 @@ from indy.anoncreds import issuer_create_schema, issuer_create_and_store_credent
 from indy.ledger import build_attrib_request, sign_request, build_schema_request, build_cred_def_request, \
     build_nym_request, build_get_schema_request, parse_get_schema_response
 
-from indy_client.test.cli.helper import createHalfKeyIdentifierAndAbbrevVerkey
+from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy_common.types import Request
 from indy_node.test.api.helper import sdk_write_schema
 from plenum.common.messages.node_messages import Propagate
