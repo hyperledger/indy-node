@@ -40,7 +40,7 @@ Todos:
 Installs python and sudo.
 
 
-### node_install
+### indy_node
 
 Adds sovrin repository and installs and configures Indy Node.
 
@@ -88,7 +88,7 @@ By default scenarios based on `docker` are used. Also `vagrant` scenarios are av
 and might be run like `molecule <command> -s vagrant`.
 
 In order to test all scenarios for some role go to a directory with the role (for example
-`roles/node_install`) and run `molecule test --all`.
+`roles/indy_node`) and run `molecule test --all`.
 
 #### Vagrant scenarios specific
 

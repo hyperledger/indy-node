@@ -44,7 +44,7 @@ group_vars:
   localhosts:
     - aws_manage
   nodes:
-    - node_install
+    - indy_node
   clients:
     - indy_cli
     - perf_scripts

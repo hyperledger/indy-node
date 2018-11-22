@@ -8,7 +8,7 @@ lint:
   options:
     config-file: ../../yamllint
 platforms:
-  - name: node_install_base
+  - name: indy_node_base
     image: solita/ubuntu-systemd:16.04  # TODO parametrize
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
