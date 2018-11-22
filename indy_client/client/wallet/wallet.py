@@ -1,14 +1,10 @@
 import datetime
 import json
 import operator
-from collections import OrderedDict
 from collections import deque
-from typing import List
-from typing import Optional
 
 from indy_common.serialization import attrib_raw_data_serializer
 from indy_common.state import domain
-from ledger.util import F
 from plenum.client.wallet import Wallet as PWallet
 from plenum.common.did_method import DidMethods
 from plenum.common.txn_util import get_seq_no, get_reply_identifier, get_reply_txntype, get_reply_nym, get_payload_data, \
@@ -16,18 +12,16 @@ from plenum.common.txn_util import get_seq_no, get_reply_identifier, get_reply_t
 from plenum.common.util import randomString
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, DATA, \
-    IDENTIFIER, NYM, ROLE, VERKEY, NODE, NAME, VERSION, ORIGIN, CURRENT_PROTOCOL_VERSION, RAW, ENC, HASH
+    NYM, ROLE, VERKEY, NODE, NAME, VERSION, CURRENT_PROTOCOL_VERSION, RAW, ENC, HASH
 from plenum.common.types import f
 
 from indy_client.client.wallet.attribute import Attribute, AttributeKey, \
     LedgerStore
-from indy_client.client.wallet.connection import Connection
 from indy_client.client.wallet.node import Node
 from indy_client.client.wallet.trustAnchoring import TrustAnchoring
 from indy_client.client.wallet.upgrade import Upgrade
 from indy_client.client.wallet.pool_config import PoolConfig
 from indy_common.did_method import DefaultDidMethods
-from indy_common.exceptions import ConnectionNotFound
 from indy_common.types import Request
 from indy_common.identity import Identity
 from indy_common.constants import ATTRIB, GET_TXNS, GET_ATTR, \
@@ -43,12 +37,11 @@ logger = getlogger()
 # TODO: Maybe we should have a thinner wallet which should not have
 # ProverWallet
 class Wallet(PWallet, TrustAnchoring):
-
     clientNotPresentMsg = "The wallet does not have a client associated with it"
 
     def __init__(self,
-                 name: str=None,
-                 supportedDidMethods: DidMethods=None):
+                 name: str = None,
+                 supportedDidMethods: DidMethods = None):
         PWallet.__init__(self,
                          name,
                          supportedDidMethods or DefaultDidMethods)
@@ -57,13 +50,10 @@ class Wallet(PWallet, TrustAnchoring):
         self._attributes = {}  # type: Dict[(str, Identifier,
         # Optional[Identifier]), Attribute]
 
-        self.env = None     # Helps to know associated environment
+        self.env = None  # Helps to know associated environment
         self._nodes = {}
         self._upgrades = {}
         self._pconfigs = {}
-
-        self._connections = OrderedDict()  # type: Dict[str, Connection]
-        # Note, ordered dict to make iteration deterministic
 
         self.knownIds = {}  # type: Dict[str, Identifier]
 
@@ -98,36 +88,6 @@ class Wallet(PWallet, TrustAnchoring):
     # getMatchingLinksWithReceivedClaim should be fixed. Difference between
     # `AvailableClaim` and `ReceivedClaim` is that for ReceivedClaim we
     # have attribute values from issuer.
-
-    # TODO: Few of the below methods have duplicate code, need to refactor it
-    def getMatchingConnectionsWithAvailableClaim(self, claimName=None):
-        matchingConnectionsAndAvailableClaim = []
-        for k, li in self._connections.items():
-            for cl in li.availableClaims:
-                if not claimName or Wallet._isMatchingName(claimName, cl[0]):
-                    matchingConnectionsAndAvailableClaim.append((li, cl))
-        return matchingConnectionsAndAvailableClaim
-
-    def findAllProofRequests(self, claimReqName, connectionName=None):
-        matches = []
-        for k, li in self._connections.items():
-            for cpr in li.proofRequests:
-                if Wallet._isMatchingName(claimReqName, cpr.name):
-                    if connectionName is None or Wallet._isMatchingName(
-                            connectionName, li.name):
-                        matches.append((li, cpr))
-        return matches
-
-    def getMatchingConnectionsWithProofReq(
-            self, proofReqName, connectionName=None):
-        matchingConnectionAndProofReq = []
-        for k, li in self._connections.items():
-            for cpr in li.proofRequests:
-                if Wallet._isMatchingName(proofReqName, cpr.name):
-                    if connectionName is None or Wallet._isMatchingName(
-                            connectionName, li.name):
-                        matchingConnectionAndProofReq.append((li, cpr))
-        return matchingConnectionAndProofReq
 
     def addAttribute(self, attrib: Attribute):
         """
@@ -201,9 +161,6 @@ class Wallet(PWallet, TrustAnchoring):
 
     def getAttributesForNym(self, idr: Identifier):
         return [a for a in self._attributes.values() if a.dest == idr]
-
-    def addConnection(self, connection: Connection):
-        self._connections[connection.key] = connection
 
     def addLastKnownSeqs(self, identifier, seqNo):
         self.lastKnownSeqs[identifier] = seqNo
@@ -329,16 +286,6 @@ class Wallet(PWallet, TrustAnchoring):
     def pendRequest(self, req, key=None):
         self._pending.appendleft((req, key))
 
-    def getConnectionInvitation(self, name: str):
-        return self._connections.get(name)
-
-    def getMatchingConnections(self, name: str) -> List[Connection]:
-        allMatched = []
-        for k, v in self._connections.items():
-            if self._isMatchingName(name, k):
-                allMatched.append(v)
-        return allMatched
-
     # TODO: sender by default should be `self.defaultId`
     def requestAttribute(self, attrib: Attribute, sender):
         """
@@ -401,33 +348,10 @@ class Wallet(PWallet, TrustAnchoring):
         self.pendRequest(req, key=key)
         return self.preparePending(limit=1)[0]
 
-    def getConnection(self, name, required=False) -> Connection:
-        con_name = self._connections.get(name)
-        if not con_name and required:
-            logger.debug("Wallet has connections {}".format(self._connections))
-            raise ConnectionNotFound(name)
-        return con_name
-
-    def getConnectionBy(self,
-                        remote: Identifier=None,
-                        nonce=None,
-                        internalId=None,
-                        required=False) -> Optional[Connection]:
-        for _, li in self._connections.items():
-            if (not remote or li.remoteIdentifier == remote) and \
-               (not nonce or li.request_nonce == nonce) and \
-               (not internalId or li.internalId == internalId):
-                return li
-        if required:
-            raise ConnectionNotFound
-
     def getIdentity(self, idr):
         # TODO, Question: Should it consider self owned identities too or
         # should it just have identities that are retrieved from the DL
         return self.knownIds.get(idr)
-
-    def getConnectionNames(self):
-        return list(self._connections.keys())
 
     def build_attrib(self, nym, raw=None, enc=None, hsh=None):
         assert int(bool(raw)) + int(bool(enc)) + int(bool(hsh)) == 1

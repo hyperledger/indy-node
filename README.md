@@ -69,15 +69,10 @@ Indy Node repo consists of the following parts:
       So, if you want to work with Indy Node, you will need to have the Plenum code as well in most of the cases
       and work with two projects at the same time 
       (see [How to Start Working with the Code](#how-to-start-working-with-the-code) below).
-- [indy-anoncreds](https://github.com/hyperledger/indy-anoncreds) 
-    - A python implementation of the anonymous credentials ideas developed by IBM Research.
-    - This is quite independent from indy-node/plenum. So, in most cases you don't need this code to contribute to Indy-Node.
-    - It will be deprecated soon in favor of anoncreds implementation in indy-sdk (see below). 
 - [indy-sdk](https://github.com/hyperledger/indy-sdk)
     - An official SDK for Indy.
     - it contains client and anoncreds implementation
     - You don't need it to contribute to Indy-Node. But please use indy-sdk for your own applications dealing with Indy ecosystem.
-    - It will replace indy-client and indy-anoncreds parsts soon.
 - [indy-crypto](https://github.com/hyperledger/indy-crypto)
     - A shared crypto library 
     - It's based on [AMCL](https://github.com/milagro-crypto/amcl)

@@ -78,12 +78,10 @@ Use cases for artifacts
 We use [fpm](https://github.com/jordansissel/fpm) for packaging python code into deb packages. Build scripts are placed in `build-scripts` folders:
 - https://github.com/hyperledger/indy-node/blob/master/build-scripts
 - https://github.com/hyperledger/indy-plenum/blob/master/build-scripts
-- https://github.com/hyperledger/indy-anoncreds/blob/master/build-scripts
 
 We also pack some 3rd parties dependencies which are not presented in canonical ubuntu repositories:
 - https://github.com/hyperledger/indy-node/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh
 - https://github.com/hyperledger/indy-plenum/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh
-- https://github.com/hyperledger/indy-anoncreds/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh
 
 Each `build-scripts` folder includes `Readme.md`. Please check them for more details.
 
@@ -92,7 +90,7 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
 - Please note, that we are using semver-like approach for versioning (major, minor, build) for each of the components.
 - Major and minor parts are set in the code (see [\_\_metadata\_\_.py](https://github.com/hyperledger/indy-node/blob/master/indy_node/__metadata__.py)). They must be incremented for new releases manually from code if needed.
 - Build part is incremented with each build on Jenkins (so it always increases, but may be not sequentially)
-- Each dependency (including indy-plenum and indy-anoncreds) has a strict version (see [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py))
+- Each dependency (including indy-plenum) has a strict version (see [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py))
 - If you install indy-node (either from pypi, or from deb package), the specified in setup.py version of indy-plenum is installed.
 - Master and Stable builds usually have different versions.
 - Differences in master and stable code:

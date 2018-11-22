@@ -30,7 +30,6 @@ Adds [Indy Core apt repository](https://repo.sovrin.org/deb) to apt sources.list
 
 ### indy-core-baseci
 Base image for images that provide CI testing environment for Indy core projects
-([indy-anoncreds](https://github.com/hyperledger/indy-anoncreds),
 [indy-plenum](https://github.com/hyperledger/indy-plenum),
 [indy-node](https://github.com/hyperledger/indy-node)).
 Based on  [indy-baseci](#indy-baseci).

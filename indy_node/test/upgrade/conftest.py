@@ -33,21 +33,18 @@ def patch_packet_mgr_output(monkeypatch, pkg_name, pkg_version):
                                      "License: EXT_PKT_DEPS-lic\nVendor: none\n". \
             format(pkg_name, pkg_version, APP_NAME, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1])
         top_level_package = (pkg_name, pkg_version)
-        anoncreds_package = ('indy-anoncreds', '0.0.2')
         plenum_package = ('indy-plenum', '0.0.3')
         top_level_package_with_version = '{}={}'.format(*top_level_package)
         top_level_package_dep1_with_version = '{}={}'.format(*EXT_TOP_PKT_DEPS[0])
         top_level_package_dep2_with_version = '{}={}'.format(*EXT_TOP_PKT_DEPS[1])
         node_package_with_version = '{}={}'.format(*node_package)
         plenum_package_with_version = '{}={}'.format(*plenum_package)
-        anoncreds_package_with_version = '{}={}'.format(*anoncreds_package)
         mock_info = {
             top_level_package_with_version: "{}{} (= {}) {} (= {}), {} (= {})".format(
                 randomText(100), *node_package, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1]),
             node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(
-                randomText(100), *plenum_package, randomText(100), *anoncreds_package, randomText(100)),
+                randomText(100), *plenum_package, randomText(100), randomText(100)),
             plenum_package_with_version: '{}'.format(randomText(100)),
-            anoncreds_package_with_version: '{}'.format(randomText(100)),
             top_level_package_dep1_with_version: '{}{} (= {})'.format(randomText(100), *plenum_package),
             top_level_package_dep2_with_version: '{}{} (= {})'.format(randomText(100), *node_package)
         }
