@@ -1,9 +1,0 @@
----
-- name: Render tasks templates
-  template:
-    src: templates/provision.tasks.yml.j2
-    dest: "tasks/provision.{{ item }}.yml"
-  vars:
-    group: "{{ item }}"
-  loop: "{{ render_groups }}"
-...
