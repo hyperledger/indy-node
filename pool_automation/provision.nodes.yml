@@ -1,11 +1,20 @@
 ---
-- name: Provision hosts for nodes
+- name: Ensure 'aws_nodes_provisioner' host exists
   gather_facts: false
   hosts: localhost
   tasks:
-  - include_tasks: tasks/render.tasks.yml
-    vars:
-      render_groups: ['nodes']
+    - name: Add 'aws_nodes_provisioner' host to inventory
+      add_host:
+        name: aws_nodes_provisioner
+        ansible_connection: local
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      when: not hostvars['aws_nodes_provisioner']
 
-  - include_tasks: tasks/provision.nodes.yml
+- name: Provision hosts for nodes
+  gather_facts: false
+  hosts: aws_nodes_provisioner
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: nodes
 ...

@@ -1,11 +1,20 @@
 ---
-- name: Provision hosts for clients
+- name: Ensure 'aws_clients_provisioner' host exists
   gather_facts: false
   hosts: localhost
   tasks:
-  - include_tasks: tasks/render.tasks.yml
-    vars:
-      render_groups: ['clients']
+    - name: Add 'aws_clients_provisioner' host to inventory
+      add_host:
+        name: aws_clients_provisioner
+        ansible_connection: local
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      when: not hostvars['aws_clients_provisioner']
 
-  - include_tasks: tasks/provision.clients.yml
+- name: Provision hosts for clients
+  gather_facts: false
+  hosts: aws_clients_provisioner
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: clients
 ...
