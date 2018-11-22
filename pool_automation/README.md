@@ -5,7 +5,7 @@
 - Make sure you have [AWS CLI][f681b33b] installed and configured.
 - Run `ansible-playbook pool_create.yml` - this will create 4 EC2 instances
   and `test_nodes` directory with inventory and SSH keys.
-- Run `ansible-playbook -i test_nodes/hosts pool_install.yml` - this will
+- Run `ansible-playbook -i test_nodes/hosts pool.yml` - this will
   install and configure Indy Node pool on previously created EC2 instances.
 - Run `ssh -F test_nodes/ssh_config test_node_1` to login to first node
   and take a look around.
