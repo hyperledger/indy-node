@@ -3,12 +3,9 @@
   gather_facts: false
   hosts: localhost
   tasks:
-    - name: Add 'aws_clients_provisioner' host to inventory
-      add_host:
-        name: aws_clients_provisioner
-        ansible_connection: local
-        ansible_python_interpreter: "{{ ansible_playbook_python }}"
-      when: not hostvars['aws_clients_provisioner']
+    - include_tasks: tasks/ensure_provisioner.yml
+      vars:
+        provisioner_host: aws_clients_provisioner
 
 - name: Provision hosts for clients
   gather_facts: false

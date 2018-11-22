@@ -9,7 +9,7 @@
   install and configure Indy Node pool on previously created EC2 instances.
 - Run `ssh -F test_nodes/ssh_config test_node_1` to login to first node
   and take a look around.
-- Run `ansible-playbook pool_destroy.yml` - this will terminate previously
+- Run `ansible-playbook destroy.nodes.yml` - this will terminate previously
   created AWS EC2 instances and clear `config_pool` and `inventory_pool` files.
 
   [f681b33b]: https://aws.amazon.com/cli/ "aws cli"

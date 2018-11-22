@@ -1,0 +1,4 @@
+---
+- import_playbook: destroy.nodes.yml
+- import_playbook: destroy.clients.yml
+...
