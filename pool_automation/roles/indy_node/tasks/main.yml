@@ -5,7 +5,7 @@
       - lookup('vars', item, default='')
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
-    - channel
+    - indy_node_channel
     - indy_node_ver
     - indy_plenum_ver
     - python_indy_crypto_ver
@@ -29,7 +29,7 @@
 
 - name: Add sovrin repositories
   apt_repository:
-    repo: "deb https://repo.sovrin.org/deb xenial {{ channel }}"
+    repo: "deb https://repo.sovrin.org/deb xenial {{ indy_node_channel }}"
     state: present
   become: true
 

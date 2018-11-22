@@ -45,7 +45,7 @@ Installs python and sudo.
 Adds sovrin repository and installs and configures Indy Node.
 
 Parameters:
-- _channel_ (master): which release channel to use (master/rc/stable)
+- _indy_node_channel_ (master): which release channel to use (master/rc/stable)
 - _indy_node_ver_
 - _indy_plenum_ver_
 - _python_indy_crypto_ver_
