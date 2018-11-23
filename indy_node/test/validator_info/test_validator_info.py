@@ -1,8 +1,7 @@
 import pytest
 import importlib
 
-from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_replies
-
+from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_result
 from plenum.common.constants import TARGET_NYM, RAW, NAME, VERSION, ORIGIN
 
 # noinspection PyUnresolvedReferences
@@ -97,7 +96,7 @@ def makeGetNymRequest(looper, sdk_pool_handle, sdk_wallet, nym):
         TARGET_NYM: nym,
         TXN_TYPE: GET_NYM,
     }
-    return sdk_submit_operation_and_get_replies(looper, sdk_pool_handle, sdk_wallet, op)
+    return sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet, op)
 
 
 def makeGetSchemaRequest(looper, sdk_pool_handle, sdk_wallet, nym):
@@ -109,7 +108,7 @@ def makeGetSchemaRequest(looper, sdk_pool_handle, sdk_wallet, nym):
             VERSION: '1.0',
         }
     }
-    return sdk_submit_operation_and_get_replies(looper, sdk_pool_handle, sdk_wallet, op)
+    return sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet, op)
 
 
 def makeGetAttrRequest(looper, sdk_pool_handle, sdk_wallet, nym, raw):
@@ -118,7 +117,7 @@ def makeGetAttrRequest(looper, sdk_pool_handle, sdk_wallet, nym, raw):
         TXN_TYPE: GET_ATTR,
         RAW: raw
     }
-    return sdk_submit_operation_and_get_replies(looper, sdk_pool_handle, sdk_wallet, op)
+    return sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet, op)
 
 
 def makeGetClaimDefRequest(looper, sdk_pool_handle, sdk_wallet):
@@ -128,7 +127,7 @@ def makeGetClaimDefRequest(looper, sdk_pool_handle, sdk_wallet):
         REF: 1,
         SIGNATURE_TYPE: 'any'
     }
-    return sdk_submit_operation_and_get_replies(looper, sdk_pool_handle, sdk_wallet, op)
+    return sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet, op)
 
 
 @pytest.fixture

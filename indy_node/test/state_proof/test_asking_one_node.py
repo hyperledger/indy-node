@@ -1,4 +1,6 @@
-from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_replies
+import pytest
+
+from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_result
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW
 from indy_common.constants import GET_ATTR
 
@@ -7,13 +9,12 @@ from indy_node.test.attrib_txn.test_nym_attrib import attributeData, \
     attributeName, attributeValue, sdk_added_raw_attribute
 
 
-# for node in txnPoolNodeSet[1:]: node.clientstack.stop()
-
-def test_state_proof_returned_for_get_attr(looper,
-                                           sdk_added_raw_attribute,
-                                           attributeName,
-                                           sdk_pool_handle,
-                                           sdk_wallet_trustee):
+def test_client_gets_read_reply_from_1_node_only(looper,
+                                                 nodeSetWithOneNodeResponding,
+                                                 sdk_added_raw_attribute,
+                                                 attributeName,
+                                                 sdk_pool_handle,
+                                                 sdk_wallet_trustee):
     """
     Tests that client could send get-requests to only one node instead of n
     """
@@ -23,9 +24,7 @@ def test_state_proof_returned_for_get_attr(looper,
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }
-    # Get reply and verify that the only one received
-    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
-                                                   sdk_wallet_trustee,
-                                                   get_attr_operation)
 
-    assert len(replies) == 1
+    sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
+                                        sdk_wallet_trustee,
+                                        get_attr_operation)

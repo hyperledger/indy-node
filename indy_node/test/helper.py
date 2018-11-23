@@ -14,26 +14,12 @@ from stp_core.common.log import getlogger
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.test_node import TestNodeCore
 from plenum.test.testable import spyable
-from indy_client.client.wallet.wallet import Wallet
 from indy_common.test.helper import TempStorage
 from indy_node.server.node import Node
 from indy_node.server.upgrader import Upgrader
 from stp_core.types import HA
 
 logger = getlogger()
-
-
-class Organization:
-    def __init__(self, client=None):
-        self.client = client
-        self.wallet = Wallet(self.client)  # created only once per organization
-        self.userWallets = {}  # type: Dict[str, Wallet]
-
-    def removeUserWallet(self, userId: str):
-        if userId in self.userWallets:
-            del self.userWallets[userId]
-        else:
-            raise ValueError("No wallet exists for this user id")
 
 
 @spyable(methods=[Upgrader.processLedger])
