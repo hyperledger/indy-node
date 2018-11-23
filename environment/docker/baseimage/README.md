@@ -26,7 +26,6 @@ Based on [indy-baseimage](#indy-baseimage).
 Adds [Indy Core apt repository](https://repo.sovrin.org/deb) to apt sources.list. Also it adds two scripts into system $PATH available directory that could be run by child images to perform common setup routine:
 
  - `indy_ci_add_user` creates user with python virtualenv configured
- - `indy_ci_charm_crypto` installs Charm Crypto
 
 ### indy-core-baseci
 Base image for images that provide CI testing environment for Indy core projects
