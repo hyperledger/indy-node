@@ -41,4 +41,4 @@ aws_tag_sgroup_name: "{{ aws_sgroup }}"
 
 # Inventory parameters
 aws_inventory_dir: "{{ inventory_dir | default(aws_tag_namespace ~ '_' ~ aws_group_name) }}"
-aws_inventory_file: "{{ aws_inventory_dir }}/hosts"
+aws_inventory_file: "{{ aws_inventory_dir }}/{{ aws_group_name }}"

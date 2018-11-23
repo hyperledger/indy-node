@@ -1,20 +1,19 @@
 ---
-- name: Create ssh config
+- name: Create/Update ssh config
   template:
     src: ssh_config.j2
-    dest: "{{ ssh_dir }}/ssh_config"
+    dest: "{{ ssh_config }}"
 
-- name: Create inventory file for AWS hosts
+- name: Create/Update known_hosts file
+  import_tasks: "set_known_hosts.yml"
   vars:
-    ssh_private_key: "{% raw %}{{ inventory_dir }}{% endraw %}/{{ ssh_dir_name }}/key"
-    known_hosts_file: "{% raw %}{{ inventory_dir }}{% endraw %}/{{ ssh_dir_name }}/known_hosts"
+    alive: "{{ aws_ec2hosts.alive|map(attribute='public_ip')|list }}"
+    terminated: "{{ aws_ec2hosts.terminated|map(attribute='public_ip')|list }}"
+
+- name: Create/Update inventory file for AWS hosts
+  vars:
+    ssh_private_key: "{% raw %}{{ inventory_dir }}{% endraw %}/{{ ssh_dir_name }}/{{ ssh_key_name }}"
+    known_hosts_file: "{% raw %}{{ inventory_dir }}{% endraw %}/{{ ssh_dir_name }}/{{ ssh_known_hosts_name }}"
   template:
     src: hosts.j2
     dest: "{{ aws_inventory_file }}"
-
-- name: Add hosts keys to known_hosts file
-  import_tasks: "set_known_hosts.yml"
-  vars:
-    known_hosts_file: "{{ aws_inventory_dir }}/{{ ssh_dir_name }}/known_hosts"
-    hosts: "{{ aws_ec2hosts.alive|map(attribute='public_ip')|list }}"
-  when: aws_instance_count > 0
