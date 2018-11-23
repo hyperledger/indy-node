@@ -16,9 +16,10 @@
 
 - name: Check existent records in '{{ known_hosts_file }}' file
   command: "ssh-keygen -F {{ item }} -f {{ known_hosts_file }}"
-  ignore_errors: true
   register: known_hosts
   loop: "{{ hosts }}"
+  ignore_errors: true
+  changed_when: false
 
 - name: Gather host keys for unknown hosts
   command: "ssh-keyscan -H {{ item.item }}"
