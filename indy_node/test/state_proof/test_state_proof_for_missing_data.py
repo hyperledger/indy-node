@@ -1,8 +1,9 @@
-from plenum.common.types import f
+import pytest
+
 from plenum.common.constants import TARGET_NYM, TXN_TYPE, RAW, DATA
 
 from indy_node.test.state_proof.helper import check_valid_proof, \
-    sdk_submit_operation_and_get_replies
+    sdk_submit_operation_and_get_result
 from indy_common.constants import GET_ATTR, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES
 
@@ -11,14 +12,12 @@ from indy_node.test.attrib_txn.test_nym_attrib import \
     sdk_added_raw_attribute, attributeName, attributeValue, attributeData
 
 
-def check_no_data_and_valid_proof(replies):
-    for reply in replies:
-        result = reply[1][f.RESULT.nm]
-        assert result.get(DATA) is None
-        check_valid_proof(reply[1])
+def check_no_data_and_valid_proof(result):
+    assert result.get(DATA) is None
+    check_valid_proof(result)
 
 
-def test_state_proof_returned_for_missing_attr(looper,
+def test_state_proof_returned_for_missing_attr(looper, nodeSetWithOneNodeResponding,
                                                attributeName,
                                                sdk_pool_handle,
                                                sdk_wallet_trust_anchor):
@@ -32,12 +31,12 @@ def test_state_proof_returned_for_missing_attr(looper,
         TXN_TYPE: GET_ATTR,
         RAW: attributeName
     }
-    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
-                                                   sdk_wallet_trust_anchor, get_attr_operation)
-    check_no_data_and_valid_proof(replies)
+    result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
+                                                 sdk_wallet_trust_anchor, get_attr_operation)
+    check_no_data_and_valid_proof(result)
 
 
-def test_state_proof_returned_for_missing_nym(looper,
+def test_state_proof_returned_for_missing_nym(looper, nodeSetWithOneNodeResponding,
                                               sdk_pool_handle,
                                               sdk_wallet_trust_anchor,
                                               sdk_user_wallet_a):
@@ -54,12 +53,12 @@ def test_state_proof_returned_for_missing_nym(looper,
         TXN_TYPE: GET_NYM
     }
 
-    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
-                                                   sdk_wallet_trust_anchor, get_nym_operation)
-    check_no_data_and_valid_proof(replies)
+    result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
+                                                 sdk_wallet_trust_anchor, get_nym_operation)
+    check_no_data_and_valid_proof(result)
 
 
-def test_state_proof_returned_for_missing_schema(looper,
+def test_state_proof_returned_for_missing_schema(looper, nodeSetWithOneNodeResponding,
                                                  sdk_pool_handle,
                                                  sdk_wallet_trust_anchor):
     """
@@ -76,16 +75,14 @@ def test_state_proof_returned_for_missing_schema(looper,
             SCHEMA_VERSION: schema_version,
         }
     }
-    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
-                                                   sdk_wallet_trust_anchor,
-                                                   get_schema_operation)
-    for reply in replies:
-        result = reply[1][f.RESULT.nm]
-        assert SCHEMA_ATTR_NAMES not in result[DATA]
-        check_valid_proof(reply[1])
+    result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
+                                                 sdk_wallet_trust_anchor,
+                                                 get_schema_operation)
+    assert SCHEMA_ATTR_NAMES not in result[DATA]
+    check_valid_proof(result)
 
 
-def test_state_proof_returned_for_missing_claim_def(looper,
+def test_state_proof_returned_for_missing_claim_def(looper, nodeSetWithOneNodeResponding,
                                                     sdk_pool_handle,
                                                     sdk_wallet_trust_anchor):
     """
@@ -99,7 +96,7 @@ def test_state_proof_returned_for_missing_claim_def(looper,
         CLAIM_DEF_SCHEMA_REF: 12,
         CLAIM_DEF_SIGNATURE_TYPE: 'CL'
     }
-    replies = sdk_submit_operation_and_get_replies(looper, sdk_pool_handle,
-                                                   sdk_wallet_trust_anchor,
-                                                   get_claim_def_operation)
-    check_no_data_and_valid_proof(replies)
+    result = sdk_submit_operation_and_get_result(looper, sdk_pool_handle,
+                                                 sdk_wallet_trust_anchor,
+                                                 get_claim_def_operation)
+    check_no_data_and_valid_proof(result)
