@@ -14,8 +14,9 @@ from datetime import datetime
 import yaml
 import logging
 
+import perf_load
 from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend
-from perf_load.perf_utils import check_fs, check_seed, logger_init, SCRIPT_VERSION
+from perf_load.perf_utils import check_fs, check_seed, logger_init
 from perf_load.perf_gen_req_parser import ReqTypeParser
 from perf_load.perf_client import LoadClient
 from perf_load.perf_client_runner import ClientRunner
@@ -357,7 +358,7 @@ class LoadRunner:
             self._loop.call_later(self._stop_sec, self.sig_handler, signal.SIGINT)
 
     def load_run(self):
-        print("Version                  ", SCRIPT_VERSION, file=self._out_file)
+        print("Version                  ", perf_load.__version__, file=self._out_file)
         print("Number of client         ", self._proc_count, file=self._out_file)
         print("Path to genesis txns file", self._genesis_path, file=self._out_file)
         print("Seed                     ", self._seed, file=self._out_file)
@@ -384,7 +385,7 @@ class LoadRunner:
             self._batch_size = 1
             self._buff_req = 0
 
-        self._logger.info("load_run version {} params {}".format(SCRIPT_VERSION, self.__dict__))
+        self._logger.info("load_run version {} params {}".format(perf_load.__version__, self.__dict__))
 
         self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
         self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
