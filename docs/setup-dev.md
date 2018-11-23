@@ -18,7 +18,7 @@ You can also have a look at the scripts mentioned below to follow them and perfo
 1. Get scripts from [dev-setup-ubuntu](https://github.com/hyperledger/indy-node/tree/master/dev-setup/ubuntu)
 1. Run `setup-dev-python.sh` to setup Python3.5, pip and virtualenv
 1. Run `source ~/.bashrc` to apply virtual environment wrapper installation
-1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (charm-crypto, libindy, libindy-crypto, libsodium)
+1. Run `setup-dev-depend-ubuntu16.sh` to setup dependencies (libindy, libindy-crypto, libsodium)
 1. Fork [indy-plenum](https://github.com/hyperledger/indy-plenum) and [indy-node](https://github.com/hyperledger/indy-node)
 1. Go to the destination folder for the project
 1. Run `init-dev-project.sh <github-name> <new-virtualenv-name>` to clone indy-plenum and indy-node projects and
@@ -80,13 +80,6 @@ Run ```sudo yum install python3.5```
 ##### Windows
 
 Download the latest build (pywin32-220.win-amd64-py3.5.exe is the latest build as of this writing) from  [here](https://sourceforge.net/projects/pywin32/files/pywin32/Build%20220/) and run the downloaded executable.
-
-### Setup Charm-Crypto
-
-Indy-client requires anonymous credentials library which requires a cryptographic library.
-The default configuration includes an example that uses Charm-Crypto framework.
-You can install it as described in [Anonymous Credentials](https://github.com/evernym/anoncreds) repository 
-(in particular, running `setup-charm.sh`).
 
 ### Setup Libsodium
 
