@@ -212,13 +212,14 @@ def test_manage_instances(ec2_all):
                 for tag_key, tag_value in params.add_tags.iteritems():
                     assert tag_value == get_tag(inst, tag_key)
 
-    changed, hosts = manage_instances(regions, params, 4)
+    res = manage_instances(regions, params, 4)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
-    assert changed
-    check_hosts(hosts)
+    assert res.changed
+    assert len(res.alive) == 4
+    assert len(res.terminated) == 0
+    check_hosts(res.alive + res.terminated)
     check_tags(instances)
-    assert len(hosts) == 4
     assert len(instances[0]) == 2
     assert len(instances[1]) == 1
     assert len(instances[2]) == 1
@@ -227,13 +228,14 @@ def test_manage_instances(ec2_all):
     assert get_tag(instances[1][0], 'ID') == '2'
     assert get_tag(instances[2][0], 'ID') == '3'
 
-    changed, hosts = manage_instances(regions, params, 4)
+    res = manage_instances(regions, params, 4)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
-    assert not changed
-    check_hosts(hosts)
+    assert not res.changed
+    assert len(res.alive) == 4
+    assert len(res.terminated) == 0
+    check_hosts(res.alive + res.terminated)
     check_tags(instances)
-    assert len(hosts) == 4
     assert len(instances[0]) == 2
     assert len(instances[1]) == 1
     assert len(instances[2]) == 1
@@ -242,37 +244,40 @@ def test_manage_instances(ec2_all):
     assert get_tag(instances[1][0], 'ID') == '2'
     assert get_tag(instances[2][0], 'ID') == '3'
 
-    changed, hosts = manage_instances(regions, params, 2)
+    res = manage_instances(regions, params, 2)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
-    assert changed
-    check_hosts(hosts)
+    assert res.changed
+    assert len(res.alive) == 2
+    assert len(res.terminated) == 2
+    check_hosts(res.alive + res.terminated)
     check_tags(instances)
-    assert len(hosts) == 2
     assert len(instances[0]) == 1
     assert len(instances[1]) == 1
     assert len(instances[2]) == 0
     assert get_tag(instances[0][0], 'ID') == '1'
     assert get_tag(instances[1][0], 'ID') == '2'
 
-    changed, hosts = manage_instances(regions, params, 0)
+    res = manage_instances(regions, params, 0)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
-    assert changed
-    check_hosts(hosts)
+    assert res.changed
+    assert len(res.alive) == 0
+    assert len(res.terminated) == 2
+    check_hosts(res.alive + res.terminated)
     check_tags(instances)
-    assert len(hosts) == 0
     assert len(instances[0]) == 0
     assert len(instances[1]) == 0
     assert len(instances[2]) == 0
 
-    changed, hosts = manage_instances(regions, params, 0)
+    res = manage_instances(regions, params, 0)
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
-    assert not changed
-    check_hosts(hosts)
+    assert not res.changed
+    assert len(res.alive) == 0
+    assert len(res.terminated) == 0
+    check_hosts(res.alive + res.terminated)
     check_tags(instances)
-    assert len(hosts) == 0
     assert len(instances[0]) == 0
     assert len(instances[1]) == 0
     assert len(instances[2]) == 0

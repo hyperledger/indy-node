@@ -8,6 +8,13 @@ import boto3
 # import logging
 # boto3.set_stream_logger('', logging.DEBUG)
 
+HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
+
+InstanceParams = namedtuple(
+    'InstanceParams', 'project namespace group add_tags key_name security_group type_name')
+
+ManageResults = namedtuple('ManageResults', 'changed alive terminated')
+
 AWS_REGIONS = [
     'ap-northeast-1',
     'ap-northeast-2',
@@ -67,9 +74,6 @@ def get_tag(inst, name):
     return None
 
 
-HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
-
-
 class AwsEC2Waiter(object):
     """ Base class for EC2 actors which calls long running async actions. """
 
@@ -111,10 +115,6 @@ class AwsEC2Terminator(AwsEC2Waiter):
     def terminate(self, instance, region=None):
         instance.terminate()
         self.add_instance(instance, region)
-
-
-InstanceParams = namedtuple(
-    'InstanceParams', 'project namespace group add_tags key_name security_group type_name')
 
 
 class AwsEC2Launcher(AwsEC2Waiter):
@@ -165,7 +165,14 @@ class AwsEC2Launcher(AwsEC2Waiter):
 
 def manage_instances(regions, params, count):
     hosts = []
+    terminated = []
     changed = False
+
+    def _host_info(inst):
+        return HostInfo(
+            tag_id=get_tag(inst, 'ID'),
+            public_ip=inst.public_ip_address,
+            user='ubuntu')
 
     aws_launcher = AwsEC2Launcher()
     aws_terminator = AwsEC2Terminator()
@@ -184,6 +191,7 @@ def manage_instances(regions, params, count):
                 hosts.append(inst)
                 aws_launcher.add_instance(inst, region)
             else:
+                terminated.append(_host_info(inst))
                 aws_terminator.terminate(inst, region)
                 changed = True
 
@@ -205,11 +213,11 @@ def manage_instances(regions, params, count):
     aws_launcher.wait()
     aws_terminator.wait()
 
-    hosts = [HostInfo(tag_id=get_tag(inst, 'ID'),
-                      public_ip=inst.public_ip_address,
-                      user='ubuntu') for inst in hosts]
-
-    return changed, hosts
+    return ManageResults(
+        changed,
+        [_host_info(inst) for inst in hosts],
+        terminated
+    )
 
 
 def run(module):
@@ -225,11 +233,14 @@ def run(module):
         type_name=params['instance_type']
     )
 
-    changed, results = manage_instances(
+    res = manage_instances(
         params['regions'], inst_params, params['instance_count'])
 
-    module.exit_json(changed=changed,
-                     results=[r.__dict__ for r in results])
+    module.exit_json(
+        changed=res.changed,
+        alive=[r.__dict__ for r in res.alive],
+        terminated=[r.__dict__ for r in res.terminated]
+    )
 
 
 if __name__ == '__main__':

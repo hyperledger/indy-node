@@ -16,5 +16,5 @@
   import_tasks: "set_known_hosts.yml"
   vars:
     known_hosts_file: "{{ aws_inventory_dir }}/{{ ssh_dir_name }}/known_hosts"
-    hosts: "{{ ec2.results|map(attribute='public_ip')|list }}"
+    hosts: "{{ aws_ec2hosts.alive|map(attribute='public_ip')|list }}"
   when: aws_instance_count > 0
