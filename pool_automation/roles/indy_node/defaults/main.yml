@@ -9,3 +9,5 @@ libindy_crypto_ver: 0.4.0
 # configuration parameters
 indy_node_configuration: true
 network_name: sandbox
+
+indy_node_pool_genesis_txns_path: "{{ inventory_dir | default((playbook_dir | default('.', true)) ~ '/.build', true) }}/pool/pool_transactions_genesis"

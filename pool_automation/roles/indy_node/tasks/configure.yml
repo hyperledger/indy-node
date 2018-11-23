@@ -44,14 +44,21 @@
     - "/var/log/indy/{{ network_name }}"
 
 - set_fact:
-    pool_txns_genesis_path: "/var/lib/indy/{{ network_name }}/pool_transactions_genesis"
+    pool_genesis_txns_path_remote: "/var/lib/indy/{{ network_name }}/pool_transactions_genesis"
 
 - name: Generate indy pool transactions
   command: "generate_indy_pool_transactions --nodes {{ pool_size }} --clients 1 --nodeNum {{ tag_id }} --ips '{{ node_ips }}'"
   args:
-    creates: "{{ pool_txns_genesis_path }}"
+    creates: "{{ pool_genesis_txns_path_remote }}"
   become: true
   become_user: indy
+
+- name: Fetch pool genesis txns file to Ansible controller
+  fetch:
+    src: "{{ pool_genesis_txns_path_remote }}"
+    dest: "{{ indy_node_pool_genesis_txns_path }}"
+    flat: true
+  run_once: true
 
 - name: Start indy service
   service:

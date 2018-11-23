@@ -10,6 +10,7 @@ lint:
 platforms:
   - name: indy_node_base
     image: solita/ubuntu-systemd:16.04  # TODO parametrize
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     privileged: true

@@ -1,6 +1,13 @@
 ---
-indy_cli_configuration: true
-
 indy_cli_channel: master
 # TODO remove default values for versions
 indy_cli_ver: 1.6.7~829
+
+# configuration parameters
+indy_cli_configuration: true
+
+indy_cli_pool_genesis_txns_path_local: "{{ inventory_dir | default((playbook_dir | default('.', true)) ~ '/.build', true) }}/pool/pool_transactions_genesis"
+# TODO as an option we may use ansible_env.HOME but it needs facts gathering
+indy_cli_pool_genesis_txns_path_remote: '$HOME/pool_transactions_genesis'
+
+indy_cli_pool_name: indy-pool

@@ -1,24 +1,8 @@
 ---
-- name: Set facts
-  set_fact:
-    txns_path_remote_node: "{{ hostvars[groups['nodes'][0]]['pool_txns_genesis_path'] }}"
-    txns_path_local: "{{ inventory_dir }}/.build/pool_transactions_genesis"
-    # TODO as an option we may use ansible_env.HOME but it needs facts gathering
-    txns_path_remote: "$HOME/pool_transactions_genesis"
-    indy_pool_name: indy-pool
-
-- name: Fetch pool genesis txns file to Ansible controller
-  fetch:
-    src: "{{ txns_path_remote_node }}"
-    dest: "{{ txns_path_local }}"
-    flat: true
-  run_once: true
-  delegate_to: "{{ groups['nodes'][0] }}"
-
 - name: Push pool genesis txns file to client
   copy:
-    src: "{{ txns_path_local }}"
-    dest: "{{ txns_path_remote }}"
+    src: "{{ indy_cli_pool_genesis_txns_path_local }}"
+    dest: "{{ indy_cli_pool_genesis_txns_path_remote }}"
 
 - name: Check list of configured pools
   shell: "echo 'pool list' | indy-cli"
@@ -27,8 +11,8 @@
   changed_when: false
 
 - name: Configure CLI to work with the pool
-  shell: "echo \"pool create {{ indy_pool_name }} gen_txn_file={{ txns_path_remote }}\" | indy-cli"
+  shell: "echo \"pool create {{ indy_cli_pool_name }} gen_txn_file={{ indy_cli_pool_genesis_txns_path_remote }}\" | indy-cli"
   register: pool_create_res
-  failed_when: ('Pool config \"' ~ indy_pool_name ~ '\" has been created') not in pool_create_res.stdout
-  when: indy_pool_name not in test_cli_res.stdout
+  failed_when: ('Pool config \"' ~ indy_cli_pool_name ~ '\" has been created') not in pool_create_res.stdout
+  when: indy_cli_pool_name not in test_cli_res.stdout
 ...
