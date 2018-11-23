@@ -42,7 +42,7 @@ def patch_packet_mgr_output(monkeypatch, pkg_name, pkg_version):
         mock_info = {
             top_level_package_with_version: "{}{} (= {}) {} (= {}), {} (= {})".format(
                 randomText(100), *node_package, *EXT_TOP_PKT_DEPS[0], *EXT_TOP_PKT_DEPS[1]),
-            node_package_with_version: '{}{} (= {}){}{} (= {}){}'.format(
+            node_package_with_version: '{}{} (= {}){}{}'.format(
                 randomText(100), *plenum_package, randomText(100), randomText(100)),
             plenum_package_with_version: '{}'.format(randomText(100)),
             top_level_package_dep1_with_version: '{}{} (= {})'.format(randomText(100), *plenum_package),
