@@ -3,6 +3,6 @@
   gather_facts: false
   hosts: clients
   roles:
-    - role: indy_cli
+    - role: perf_scripts
       vars:
-        indy_cli_configuration: false
+        perf_scripts_configuration: false

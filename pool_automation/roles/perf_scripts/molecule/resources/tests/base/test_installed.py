@@ -1,5 +1,6 @@
-import pytest
+testinfra_hosts = ['clients']
 
+import pytest
 
 @pytest.fixture(scope="module")
 def venv_path(host):

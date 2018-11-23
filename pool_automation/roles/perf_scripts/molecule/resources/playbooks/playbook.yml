@@ -1,6 +1,12 @@
 ---
-- name: Converge
+- name: Converge pool
   gather_facts: false
-  hosts: all
+  hosts: nodes
+  roles:
+    - role: indy_node
+
+- name: Converge clients
+  gather_facts: false
+  hosts: clients
   roles:
     - role: perf_scripts

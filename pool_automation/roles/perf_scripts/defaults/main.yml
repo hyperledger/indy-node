@@ -1,3 +1,10 @@
 ---
 perf_scripts_ver: master  # branch / tag / sha1
 perf_scripts_venv_name: perf_venv  # created in user's home
+
+# configuration parameters
+perf_scripts_configuration: true
+
+perf_scripts_pool_genesis_txns_path_local: "{{ inventory_dir | default((playbook_dir | default('.', true)) ~ '/.build', true) }}/pool/pool_transactions_genesis"
+# TODO as an option we may use ansible_env.HOME but it needs facts gathering
+perf_scripts_pool_genesis_txns_path_remote: '$HOME/pool_transactions_genesis'
