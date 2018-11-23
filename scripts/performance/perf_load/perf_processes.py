@@ -14,8 +14,9 @@ from datetime import datetime
 import yaml
 import logging
 
+import perf_load
 from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend
-from perf_load.perf_utils import check_fs, check_seed, logger_init, SCRIPT_VERSION
+from perf_load.perf_utils import check_fs, check_seed, logger_init
 from perf_load.perf_gen_req_parser import ReqTypeParser
 from perf_load.perf_client import LoadClient
 from perf_load.perf_client_runner import ClientRunner
@@ -86,13 +87,15 @@ parser.add_argument('--ext_set', default=None, type=str, required=False, dest='e
 parser.add_argument('--log_lvl', default=logging.INFO, type=int, required=False, dest='log_lvl',
                     help='Logging level')
 
+parser.add_argument('--short_stat', action='store_true', dest='short_stat', help='Store only total statistics')
+
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
                  seed=["000000000000000000000000Trustee1"], req_kind="nym", batch_size=10, refresh_rate=10,
                  buff_req=30, out_dir=".", val_sep="|", wallet_key="key", mode="p", pool_config='',
                  sync_mode="freeflow", load_rate=10, out_file="", load_time=0, ext_set=None,
-                 client_runner=LoadClient.run, log_lvl=logging.INFO):
+                 client_runner=LoadClient.run, log_lvl=logging.INFO, short_stat=False):
         self._client_runner = client_runner
         self._clients = dict()  # key process future; value ClientRunner
         self._loop = asyncio.get_event_loop()
@@ -131,6 +134,7 @@ class LoadRunner:
         logger_init(self._log_dir, "{}.log".format(test_name), self._log_lvl)
         self._logger = logging.getLogger(__name__)
         self._out_file = self.prepare_fs(out_dir, test_name, out_file)
+        self._short_stat = short_stat
 
     def process_reqs(self, stat, name: str = ""):
         assert self._failed_f
@@ -166,6 +170,10 @@ class LoadRunner:
 
         if tot:
             self._total_f.write("\n".join(tot + [""]))
+
+        if self._short_stat:
+            return
+
         if suc:
             self._succ_f.write("\n".join(suc + [""]))
         if nack:
@@ -350,7 +358,7 @@ class LoadRunner:
             self._loop.call_later(self._stop_sec, self.sig_handler, signal.SIGINT)
 
     def load_run(self):
-        print("Version                  ", SCRIPT_VERSION, file=self._out_file)
+        print("Version                  ", perf_load.__version__, file=self._out_file)
         print("Number of client         ", self._proc_count, file=self._out_file)
         print("Path to genesis txns file", self._genesis_path, file=self._out_file)
         print("Seed                     ", self._seed, file=self._out_file)
@@ -367,6 +375,7 @@ class LoadRunner:
         print("Pool config              ", self._pool_config, file=self._out_file)
         print("Load rate batches per sec", 1 / self._batch_rate, file=self._out_file)
         print("Ext settings             ", self._ext_set, file=self._out_file)
+        print("Save short statistics    ", self._short_stat, file=self._out_file)
 
         load_client_mode = LoadClient.SendTime
         if self._sync_mode in ['all', 'one']:
@@ -376,7 +385,7 @@ class LoadRunner:
             self._batch_size = 1
             self._buff_req = 0
 
-        self._logger.info("load_run version {} params {}".format(SCRIPT_VERSION, self.__dict__))
+        self._logger.info("load_run version {} params {}".format(perf_load.__version__, self.__dict__))
 
         self._loop.add_signal_handler(signal.SIGTERM, functools.partial(self.sig_handler, signal.SIGTERM))
         self._loop.add_signal_handler(signal.SIGINT, functools.partial(self.sig_handler, signal.SIGINT))
@@ -390,7 +399,8 @@ class LoadRunner:
             prc_name = "LoadClient_{}".format(i)
             prc = executor.submit(self._client_runner, prc_name, self._genesis_path, wr, self._seed, self._batch_size,
                                   self._batch_rate, self._req_kind, self._buff_req, self._wallet_key, self._pool_config,
-                                  load_client_mode, self._mode == 'p', self._ext_set, self._log_dir, self._log_lvl)
+                                  load_client_mode, self._mode == 'p', self._ext_set, self._log_dir, self._log_lvl,
+                                  self._short_stat)
             prc.add_done_callback(self.client_done)
             self._loop.add_reader(rd, self.read_client_cb, prc)
             self._clients[prc] = ClientRunner(prc_name, rd, self._out_file)
@@ -443,5 +453,5 @@ if __name__ == '__main__':
                     dict_args["sync_mode"], dict_args["load_rate"], dict_args["out_file"], dict_args["load_time"],
                     dict_args["ext_set"],
                     client_runner=LoadClient.run if not dict_args["ext_set"] else LoadClientFees.run,
-                    log_lvl=dict_args["log_lvl"])
+                    log_lvl=dict_args["log_lvl"], short_stat=dict_args["short_stat"])
     tr.load_run()
