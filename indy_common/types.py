@@ -222,7 +222,7 @@ class ClientClaimDefSubmitOperation(MessageValidator):
         (CLAIM_DEF_SCHEMA_REF, TxnSeqNoField()),
         (CLAIM_DEF_PUBLIC_KEYS, ClaimDefField()),
         (CLAIM_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
-        (CLAIM_DEF_TAG, LimitedLengthStringField(max_length=256, optional=True)),
+        (CLAIM_DEF_TAG, LimitedLengthStringField(max_length=256)),
     )
 
 

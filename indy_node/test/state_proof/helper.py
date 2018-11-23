@@ -5,13 +5,14 @@ from plenum.common.constants import STATE_PROOF, ROOT_HASH, MULTI_SIGNATURE, PRO
 from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 
 
-def sdk_submit_operation_and_get_replies(looper, sdk_pool_handle, sdk_wallet_sender, operation):
+def sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet_sender, operation):
     req = sdk_sign_and_submit_op(looper, sdk_pool_handle, sdk_wallet_sender, operation)
-    return sdk_get_and_check_replies(looper, [req])
+    replies = sdk_get_and_check_replies(looper, [req])
+    assert len(replies) == 1
+    return replies[0][1]['result']
 
 
-def check_valid_proof(reply):
-    result = reply['result']
+def check_valid_proof(result):
     assert STATE_PROOF in result
 
     state_proof = result[STATE_PROOF]
