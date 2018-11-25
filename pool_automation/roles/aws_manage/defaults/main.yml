@@ -3,12 +3,19 @@
 aws_project_name: Indy-PA
 aws_group_name: defaults
 
-# Provision parameters
-aws_instance_count: 4
+  # Namespace parameters
+aws_namespace_name: "{{ namespace_name | default(inventory_dir, true) | default('test', true) | basename }}"
+aws_namespace_dir: "{{ namespace_dir | default(inventory_dir, true) | default(aws_namespace_name, true) }}"
 
-# AWS parameters
-#   List of all potential regions to use
-aws_regions:
+  # Inventory parameters
+aws_inventory_dir: "{{ inventory_dir | default(aws_namespace_dir ~ '/inventory') }}"
+aws_inventory_file: "{{ aws_inventory_dir }}/{{ aws_group_name }}"
+
+# Provision parameters
+
+  # List of all potential regions to use
+  # (for reference mostly)
+aws_regions_all:
   - ap-northeast-1
   - ap-northeast-2
   - ap-south-1
@@ -19,18 +26,26 @@ aws_regions:
   - eu-west-1
   - eu-west-2
   - eu-west-3
-  - sa-east-1
+  - sa-east-1  # !!! be aware: expensive
   - us-east-1
   - us-east-2
   - us-west-1
   - us-west-2
 
-#   EC2 instance type
+  # List of regions to use
+  # (the cheapest ones)
+aws_regions:
+  - us-east-1
+  - us-east-2
+  - us-west-2
+
+aws_instance_count: 1
+
 aws_ec2_type: t2.micro
 
-#   Resource tags and names
+  # Resource tags and names
 aws_tag_project: "{{ aws_project_name }}"
-aws_tag_namespace: "{{ inventory_dir | default('test', true) | basename }}"
+aws_tag_namespace: "{{ aws_namespace_name }}"
 aws_tag_group: "{{ aws_group_name }}"
 aws_add_tags: {} # additional tags
 
@@ -38,7 +53,3 @@ aws_resource_common_name: "{{ [aws_project_name, aws_tag_namespace, aws_group_na
 aws_keyname: "{{ aws_resource_common_name }}"
 aws_sgroup: "{{ aws_resource_common_name }}"
 aws_tag_sgroup_name: "{{ aws_sgroup }}"
-
-# Inventory parameters
-aws_inventory_dir: "{{ inventory_dir | default(aws_tag_namespace ~ '_' ~ aws_group_name) }}"
-aws_inventory_file: "{{ aws_inventory_dir }}/{{ aws_group_name }}"

@@ -7,6 +7,10 @@
   loop:
     - aws_project_name
     - aws_group_name
+    - aws_namespace_name
+    - aws_namespace_dir
+    - aws_inventory_dir
+    - aws_inventory_file
     - aws_regions
     - aws_ec2_type
     - aws_tag_project
@@ -15,8 +19,6 @@
     - aws_keyname
     - aws_sgroup
     - aws_tag_sgroup_name
-    - aws_inventory_dir
-    - aws_inventory_file
 
 - name: Check that instance_count has acceptable values
   assert:

@@ -186,11 +186,27 @@ def _arg_name(var_name, arg_prefix=None):
 
 def _parse_args(roles, inv_mode, inv_scheme=None):
     parser = argparse.ArgumentParser(
-        description="Inventory Init Tool",
+        description="Namespace Configuration Tool",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('inventory-dir',
-                        help='path to inventory directory')
+    parser.add_argument('namespace-dir',
+                        help='path to namespace directory')
+
+    parser.add_argument("--namespace-name", metavar="STR", default=None,
+                        help=("Name of the namespace. "
+                              "Default: basename of the 'namespace-dir'"))
+
+    parser.add_argument("--inventory-name", metavar="STR", default='inventory',
+                        help=("Name of the inventory directory inside "
+                              "the 'namespace-dir'"))
+
+    parser.add_argument("--logconfig", metavar="PATH", default=None,
+                        help=("Path to json-formatted logging configuration"
+                              " file, if not defined the basic"
+                              " one will be used"))
+
+    parser.add_argument("--show-defaults", action="store_true",
+                        help="Show defaults and exit")
 
     def add_role_group(parent, role, arg_prefix=None, title=None, descr=None):
 
@@ -225,14 +241,6 @@ def _parse_args(roles, inv_mode, inv_scheme=None):
         for role in roles.itervalues():
             add_role_group(parser, role, title="'{}' role vars".format(role.name))
 
-    parser.add_argument("--logconfig", metavar="PATH", default=None,
-                        help=("Path to json-formatted logging configuration"
-                              " file, if not defined the one the basic"
-                              " one will be used"))
-
-    parser.add_argument("--show-defaults", action="store_true",
-                        help="Show defaults and exit")
-
     return vars(parser.parse_args())
 
 
@@ -263,9 +271,13 @@ def main():
         _dump_defaults(roles)
         exit(0)
 
+    inv_dir = os.path.join(args['namespace-dir'], args['inventory_name'])
+    namespace_name = (args['namespace_name'] if args['namespace_name']
+                      else os.path.basename(args['namespace-dir']))
+
     # create inventory dir hierarchy
     for d in ('host_vars', 'group_vars'):
-        _path = os.path.join(args['inventory-dir'], d)
+        _path = os.path.join(inv_dir, d)
         if not os.path.isdir(_path):
             os.makedirs(_path)
 
@@ -278,7 +290,16 @@ def main():
                 user_vars[v_name] = args[arg_name]
         return user_vars
 
-    inventories = []
+    namespace_spec = {
+        'all': {
+            'vars': {
+                'namespace_dir': os.path.join('{{ inventory_dir }}', '..'),
+                'namespace_name': namespace_name
+            }
+        }
+    }
+
+    inventories = [Inv(inv_dir, 'namespace.yml', namespace_spec)]
     if inv_mode == 'plays':
         for inv, inv_spec in inv_scheme.iteritems():
             if inv in ('host_vars', 'group_vars'):
@@ -288,10 +309,9 @@ def main():
                         role_ref = RoleRef(roles[role_name])
                         role_ref.set_vars(get_user_vars(role_ref, inv_obj))
                         _roles.append(role_ref)
-                    inventories.append(
-                        InvVars(args['inventory-dir'], inv, inv_obj, _roles))
+                    inventories.append(InvVars(inv_dir, inv, inv_obj, _roles))
             else:
-                inventories.append(Inv(args['inventory-dir'], inv, inv_spec))
+                inventories.append(Inv(inv_dir, inv, inv_spec))
     else:  # role oriented logic
         localhost_spec = {
             'all': {
@@ -303,15 +323,13 @@ def main():
                 }
             }
         }
-        inventories.append(Inv(args['inventory-dir'],
-                           'localhost.yml', localhost_spec))
+        inventories.append(Inv(inv_dir, 'localhost.yml', localhost_spec))
         _roles = []
         for role in roles.itervalues():
             role_ref = RoleRef(role)
             role_ref.set_vars(get_user_vars(role_ref))
             _roles.append(role_ref)
-        inventories.append(
-            InvVars(args['inventory-dir'], 'group_vars', 'all', _roles))
+        inventories.append(InvVars(inv_dir, 'group_vars', 'all', _roles))
 
     for inv in inventories:
         inv.dump()

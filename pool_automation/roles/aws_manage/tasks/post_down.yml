@@ -17,8 +17,6 @@
   file:
     path: "{{ item }}"
     state: absent
-  loop:
-    - "{{ aws_inventory_file }}"
-    - "{{ lookup('fileglob', ssh_known_hosts ~ '*') }}"
-    - "{{ ssh_config }}"
-    - "{{ lookup('fileglob', ssh_key ~ '*') }}"
+  loop: "{{ [aws_inventory_file, ssh_config]
+            + q('fileglob', ssh_known_hosts ~ '*')
+            + q('fileglob', ssh_key ~ '*') }}"

@@ -189,7 +189,7 @@ def test_valid_instances():
 
 
 def test_manage_instances(ec2_all):
-    regions = ['eu-central-1', 'us-west-1', 'us-west-2']
+    regions = ['us-east-1', 'us-east-2', 'us-west-2']
     connections = [ec2_all[r] for r in regions]
     params = PARAMS._replace(group='test_manage')
 
