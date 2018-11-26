@@ -4,14 +4,14 @@
     content: ""
     dest: "{{ ssh_known_hosts }}"
     force: no
-  when: alive or terminated
+  when: active or terminated
 
-- name: Ensure alive hosts' keys are in '{{ ssh_known_hosts }}'
+- name: Ensure active hosts' keys are in '{{ ssh_known_hosts }}'
   block:
     - name: Check existent records in '{{ ssh_known_hosts }}'
       command: "ssh-keygen -F {{ item }} -f {{ ssh_known_hosts }}"
       register: known_hosts
-      loop: "{{ alive }}"
+      loop: "{{ active }}"
       ignore_errors: true
       changed_when: false
 
@@ -29,7 +29,7 @@
         path: "{{ ssh_known_hosts }}"
       when: item.stdout is defined
       loop: "{{ host_keys.results }}"
-  when: alive
+  when: active
 
 - name: Remove terminated hosts' keys from '{{ ssh_known_hosts }}'
   known_hosts:

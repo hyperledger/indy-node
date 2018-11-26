@@ -216,9 +216,9 @@ def test_manage_instances(ec2_all):
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert res.changed
-    assert len(res.alive) == 4
+    assert len(res.active) == 4
     assert len(res.terminated) == 0
-    check_hosts(res.alive + res.terminated)
+    check_hosts(res.active + res.terminated)
     check_tags(instances)
     assert len(instances[0]) == 2
     assert len(instances[1]) == 1
@@ -232,9 +232,9 @@ def test_manage_instances(ec2_all):
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert not res.changed
-    assert len(res.alive) == 4
+    assert len(res.active) == 4
     assert len(res.terminated) == 0
-    check_hosts(res.alive + res.terminated)
+    check_hosts(res.active + res.terminated)
     check_tags(instances)
     assert len(instances[0]) == 2
     assert len(instances[1]) == 1
@@ -248,9 +248,9 @@ def test_manage_instances(ec2_all):
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert res.changed
-    assert len(res.alive) == 2
+    assert len(res.active) == 2
     assert len(res.terminated) == 2
-    check_hosts(res.alive + res.terminated)
+    check_hosts(res.active + res.terminated)
     check_tags(instances)
     assert len(instances[0]) == 1
     assert len(instances[1]) == 1
@@ -262,9 +262,9 @@ def test_manage_instances(ec2_all):
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert res.changed
-    assert len(res.alive) == 0
+    assert len(res.active) == 0
     assert len(res.terminated) == 2
-    check_hosts(res.alive + res.terminated)
+    check_hosts(res.active + res.terminated)
     check_tags(instances)
     assert len(instances[0]) == 0
     assert len(instances[1]) == 0
@@ -274,9 +274,9 @@ def test_manage_instances(ec2_all):
     instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
                  for c in connections]
     assert not res.changed
-    assert len(res.alive) == 0
+    assert len(res.active) == 0
     assert len(res.terminated) == 0
-    check_hosts(res.alive + res.terminated)
+    check_hosts(res.active + res.terminated)
     check_tags(instances)
     assert len(instances[0]) == 0
     assert len(instances[1]) == 0

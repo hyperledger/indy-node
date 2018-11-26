@@ -9,7 +9,8 @@ aws_namespace_dir: "{{ namespace_dir | default(inventory_dir, true) | default(aw
 
   # Inventory parameters
 aws_inventory_dir: "{{ inventory_dir | default(aws_namespace_dir ~ '/inventory') }}"
-aws_inventory_file: "{{ aws_inventory_dir }}/{{ aws_group_name }}"
+aws_inventory_file: "{{ aws_inventory_dir }}/{{ aws_group_name }}.yml"
+aws_base_group: "{{ aws_namespace_name }}"
 
 # Provision parameters
 

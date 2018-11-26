@@ -13,7 +13,7 @@ HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
 InstanceParams = namedtuple(
     'InstanceParams', 'project namespace group add_tags key_name security_group type_name')
 
-ManageResults = namedtuple('ManageResults', 'changed alive terminated')
+ManageResults = namedtuple('ManageResults', 'changed active terminated')
 
 AWS_REGIONS = [
     'ap-northeast-1',
@@ -238,7 +238,7 @@ def run(module):
 
     module.exit_json(
         changed=res.changed,
-        alive=[r.__dict__ for r in res.alive],
+        active=[r.__dict__ for r in res.active],
         terminated=[r.__dict__ for r in res.terminated]
     )
 
