@@ -1,4 +1,21 @@
 ---
-- import_playbook: destroy.nodes.yml
-- import_playbook: destroy.clients.yml
+- name: Destroy clients
+  gather_facts: false
+  hosts: localhost
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: clients
+        aws_instance_count: 0
+  tags: [ 'never', 'clients' ]
+
+- name: Destroy Indy nodes
+  gather_facts: false
+  hosts: localhost
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: nodes
+        aws_instance_count: 0
+  tags: [ 'never', 'nodes' ]
 ...

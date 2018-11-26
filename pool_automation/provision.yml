@@ -1,3 +1,28 @@
 ---
-- import_playbook: provision.nodes.yml
-- import_playbook: provision.clients.yml
+- name: Ensure provisioner hosts exist
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - include_tasks: tasks/ensure_provisioner.yml
+      vars:
+        provisioner_host: "{{ item }}"
+      loop: ['aws_nodes_provisioner', 'aws_clients_provisioner']
+
+- name: Provision hosts for nodes
+  gather_facts: false
+  hosts: aws_nodes_provisioner
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: nodes
+  tags: [ 'never', 'nodes' ]
+
+- name: Provision hosts for clients
+  gather_facts: false
+  hosts: aws_clients_provisioner
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: clients
+  tags: [ 'never', 'clients' ]
+...
