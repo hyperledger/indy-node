@@ -198,6 +198,28 @@ source_parsers = {
 source_suffix = ['.rst', '.md']
 # source_suffix = '.rst'
 
+from recommonmark.transform import AutoStructify
+from recommonmark.states import DummyStateMachine
+# -------------- Additional fix for Markdown parsing support ---------------
+# Once Recommonmark is fixed, remove this hack.
+from recommonmark.states import DummyStateMachine
+# Monkey patch to fix recommonmark 0.4 doc reference issues.
+orig_run_role = DummyStateMachine.run_role
+def run_role(self, name, options=None, content=None):
+    if name == 'doc':
+        name = 'any'
+    return orig_run_role(self, name, options, content)
+DummyStateMachine.run_role = run_role
+
+# -------------- end hack ----------------------------
+
+def setup(app):
+    app.add_config_value('recommonmark_config', {
+            'auto_toc_tree_section': 'Contents',
+            }, True)
+    app.add_transform(AutoStructify)
+
+
 # The master toctree document.
 master_doc = 'index'
 

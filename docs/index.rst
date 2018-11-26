@@ -13,5 +13,21 @@ Welcome to Hyperledger Indy Node's documentation!
    introduction.md
    start-nodes.md 
    add-node.md
+   ci-cd.md
+   cluster-simulation.md
+   helper-scripts.md
+   indy-file-structure-guideline.md
+   indy-running-locally.md
+   node-monitoring-tools-for-stewards.md
+   node-state-diagnostic-tools.md
+   pool-upgrade.md
+   requests-new.md
+   setup-dev.md
+   setup-iptables.md
+   transactions.md
+   write-code-guideline.md
+   1.3_to_1.4_migration_guide.md
+
+
 
 
