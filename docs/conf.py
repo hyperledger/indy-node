@@ -16,8 +16,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import os
 import sys
-from recommonmark.parser import CommonMarkParser
 import sphinx_rtd_theme
+from recommonmark.transform import AutoStructify
 sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
@@ -29,7 +29,8 @@ author = u'Hyperledger'
 version = u'1.0'
 # The full version, including alpha/beta/rc tags
 release = u''
-
+# for documentation module
+nickname = 'node'
 
 # -- General configuration ---------------------------------------------------
 
@@ -50,9 +51,6 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_parsers = {
-    '.md' : CommonMarkParser,
-}
 
 source_suffix = ['.rst', '.md']
 # source_suffix = '.rst'
@@ -191,15 +189,10 @@ epub_exclude_files = ['search.html']
 # You can specify multiple suffix as a list of string:
 #
 
+
 source_parsers = {
-    '.md' : CommonMarkParser,
+    '.md' : 'recommonmark.parser.CommonMarkParser',
 }
-
-source_suffix = ['.rst', '.md']
-# source_suffix = '.rst'
-
-from recommonmark.transform import AutoStructify
-from recommonmark.states import DummyStateMachine
 # -------------- Additional fix for Markdown parsing support ---------------
 # Once Recommonmark is fixed, remove this hack.
 from recommonmark.states import DummyStateMachine
@@ -219,30 +212,26 @@ def setup(app):
             }, True)
     app.add_transform(AutoStructify)
 
-
-# The master toctree document.
-master_doc = 'index'
-
 # ------------ Remote Documentation Builder Config -----------
+# Note: this is a hacky way of maintaining a consistent sidebar amongst all the repositories. 
+# Do you have a better way to do it?
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
 if(on_rtd):
     rtd_version = os.environ.get('READTHEDOCS_VERSION', 'latest')
     if rtd_version not in ['stable', 'latest']:
         rtd_version = 'latest'
-
-# get sidebar file
     try:
         os.system("git clone https://github.com/michaeldboyd/sovrin-docs-conf.git remote_conf")
         os.system("mv remote_conf/remote_conf.py .")
-        os.system("rm toc.rst")
         import remote_conf
-        remote_conf.generate_sidebar(globals(), 'node')
+        remote_conf.generate_sidebar(globals(), nickname)
         intersphinx_mapping = remote_conf.get_intersphinx_mapping(rtd_version)
         master_doc = "toc"
     
     except:
-        e = sys.exc_info*()[0]
+        e = sys.exc_info()[0]
         print e
     finally:      
         os.system("rm -rf remote_conf/ __pycache__/ remote_conf.py")
+
