@@ -18,6 +18,8 @@ from indy_node.test.anon_creds.conftest import claim_def, build_revoc_reg_entry_
 from indy_node.test.attrib_txn.test_nym_attrib import attributeData, attributeName, attributeValue
 from indy_node.test.anon_creds.conftest import build_revoc_def_by_default
 
+from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
+
 
 @pytest.fixture(scope="module")
 def tconf(tconf):
@@ -118,7 +120,6 @@ def client_send_revoc_reg_def(looper,
 
     tconf.ANYONE_CAN_WRITE = OLD_ANYONE_CAN_WRITE
     Authoriser.auth_map = None
-
 
     _, author_did = sdk_wallet_client
     revoc_reg = build_revoc_def_by_default
