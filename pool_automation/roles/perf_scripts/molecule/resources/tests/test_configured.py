@@ -2,19 +2,6 @@ import pytest
 
 testinfra_hosts = ['clients']
 
-@pytest.fixture(scope="module")
-def venv_path(host):
-    return "{}/{}".format(
-        host.user().home,
-        host.ansible.get_variables()['perf_scripts_venv_name'])
-
-
-@pytest.fixture(scope="module")
-def pool_txns_path(host):
-    return "{}/{}".format(
-        host.user().home,
-        host.ansible.get_variables()['perf_scripts_pool_genesis_txns_name'])
-
 
 def test_pool_txns_genesis_file_exists(host, pool_txns_path):
     txns_file = host.file(pool_txns_path)

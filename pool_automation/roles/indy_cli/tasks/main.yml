@@ -8,11 +8,11 @@
     - indy_cli_build_dir
     - indy_cli_channel
     - indy_cli_ver
+    - indy_cli_pool_name
     - indy_cli_pool_dir_name
     - indy_cli_pool_genesis_txns_name
     - indy_cli_pool_genesis_txns_path_local
     - indy_cli_pool_genesis_txns_path_remote
-    - indy_cli_pool_name
 
 # TODO move the following three tasks (HTTPS, sovrin key and sovrin repos)
 #      into separate role
