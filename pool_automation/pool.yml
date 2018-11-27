@@ -1,6 +1,0 @@
----
-- name: Install pool
-  gather_facts: false
-  hosts: nodes
-  roles:
-    - indy_node

@@ -1,0 +1,16 @@
+---
+- name: Configure pool
+  gather_facts: false
+  hosts: nodes
+  roles:
+    - indy_node
+  tags: [ 'pool', 'nodes' ]
+
+- name: Configure clients
+  gather_facts: false
+  hosts: clients
+  roles:
+    - indy_cli
+    - perf_scripts
+  tags: [ 'clients' ]
+...
