@@ -13,10 +13,13 @@ import functools
 from datetime import datetime
 import yaml
 import logging
+import shutil
+
+from indy import pool
 
 import perf_load
 from perf_load.perf_client_msgs import ClientReady, ClientStop, ClientSend
-from perf_load.perf_utils import check_fs, check_seed, logger_init
+from perf_load.perf_utils import check_fs, check_seed, logger_init, random_string
 from perf_load.perf_gen_req_parser import ReqTypeParser
 from perf_load.perf_client import LoadClient
 from perf_load.perf_client_runner import ClientRunner
@@ -422,6 +425,23 @@ class LoadRunner:
         self._logger.info("load_run stopped")
 
 
+def check_genesis(gen_path):
+    loop = asyncio.get_event_loop()
+    pool_cfg = json.dumps({"genesis_txn": gen_path})
+    pool_name = "pool_{}".format(random_string(24))
+    loop.run_until_complete(pool.set_protocol_version(2))
+    try:
+        loop.run_until_complete(pool.create_pool_ledger_config(pool_name, pool_cfg))
+        pool_handle = loop.run_until_complete(pool.open_pool_ledger(pool_name, None))
+    except Exception as ex:
+        raise argparse.ArgumentTypeError(ex)
+
+    loop.run_until_complete(pool.close_pool_ledger(pool_handle))
+    dir_to_dlt = os.path.join(os.path.expanduser("~/.indy_client/pool"), pool_name)
+    if os.path.isdir(dir_to_dlt):
+        shutil.rmtree(dir_to_dlt, ignore_errors=True)
+
+
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
     args, extra = parser.parse_known_args()
@@ -446,6 +466,8 @@ if __name__ == '__main__':
 
     dict_args["genesis_path"] = check_fs(False, dict_args["genesis_path"])
     dict_args["out_dir"] = check_fs(True, dict_args["out_dir"])
+
+    check_genesis(dict_args["genesis_path"])
 
     tr = LoadRunner(dict_args["clients"], dict_args["genesis_path"], dict_args["seed"], dict_args["req_kind"],
                     dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], dict_args["out_dir"],
