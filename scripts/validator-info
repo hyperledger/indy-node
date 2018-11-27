@@ -70,10 +70,8 @@ class FloatUnknown(BaseUnknown):
 class TimestampUnknown(BaseUnknown):
     def _str(self):
         return "{}".format(
-            datetime.datetime.fromtimestamp(self.val).strftime(
-                "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
-                    '#' if os.name == 'nt' else '-'))
-        )
+            time.strftime("%A, %B %{0}d, %Y %{0}I:%M:%S %p %z".format('#' if os.name == 'nt' else '-'),
+                          time.localtime(self.val)))
 
 
 class UptimeUnknown(BaseUnknown):
@@ -452,19 +450,18 @@ class ValidatorStats(BaseStats):
         # will drop visibility of output
         lines = [
             "Validator {} is {}".format(self['Node_info']['Name'], self['state']),
-            "#Current time:     {}".format(self['timestamp']),
+            "Update time:     {}".format(self['timestamp']),
             "Validator DID:    {}".format(self['Node_info']['did']),
             "Verification Key: {}".format(self['Node_info']['verkey']),
-            "Node Port:        {}".format(self['Node_info']['Node_port']),
-            "Client Port:      {}".format(self['Node_info']['Client_port']),
+            "BLS Key: {}".format(self['Node_info']['BLS_key']),
+            "Node HA:        {}:{}".format(self['Node_info']['Node_ip'], self['Node_info']['Node_port']),
+            "Client HA:      {}:{}".format(self['Node_info']['Client_ip'], self['Node_info']['Client_port']),
             "Metrics:",
-            "  Uptime: {}".format(self['Node_info']['Metrics']['uptime']),
-            "#  Total Config Transactions:  {}".format(
-                self['Node_info']['Metrics']['transaction-count']['config']),
-            "  Total Ledger Transactions:  {}".format(
-                self['Node_info']['Metrics']['transaction-count']['ledger']),
-            "  Total Pool Transactions:    {}".format(
-                self['Node_info']['Metrics']['transaction-count']['pool']),
+            "  Uptime: {}".format(self['Node_info']['Metrics']['uptime'])
+            ] + [
+            "  Total {} Transactions:  {}".format(lname, ltxnc)
+            for lname, ltxnc in self['Node_info']['Metrics']['transaction-count'].items()
+        ] + [
             "  Read Transactions/Seconds:  {}".format(
                 self['Node_info']['Metrics']['average-per-second']['read-transactions']),
             "  Write Transactions/Seconds: {}".format(
@@ -473,7 +470,7 @@ class ValidatorStats(BaseStats):
                 self['Pool_info']['Reachable_nodes_count'],
                 self['Pool_info']['Total_nodes_count'])
         ] + [
-            "#  {}".format(alias)
+            "  {}\t{}".format(alias[0], alias[1] if alias[0] else "")
             for alias in self['Pool_info']['Reachable_nodes']
         ] + [
             "Unreachable Hosts: {}/{}".format(
@@ -481,12 +478,12 @@ class ValidatorStats(BaseStats):
                 self['Pool_info']['Total_nodes_count']
             )
         ] + [
-            "#  {}".format(alias)
+            "  {}\t{}".format(alias[0], alias[1] if alias[0] else "")
             for alias in self['Pool_info']['Unreachable_nodes']
         ] + [
-            "#Software Versions:"
+            "Software Versions:"
         ] + [
-            "#  {}: {}".format(pkgName, self['software'][pkgName])
+            "  {}: {}".format(pkgName, self['software'][pkgName])
             for pkgName in self['software'].keys()
         ]
 
