@@ -7,7 +7,7 @@
       vars:
         aws_group_name: clients
         aws_instance_count: 0
-  tags: [ 'never', 'clients' ]
+  tags: [ 'clients' ]
 
 - name: Destroy Indy nodes
   gather_facts: false
@@ -17,5 +17,5 @@
       vars:
         aws_group_name: nodes
         aws_instance_count: 0
-  tags: [ 'never', 'nodes' ]
+  tags: [ 'nodes' ]
 ...
