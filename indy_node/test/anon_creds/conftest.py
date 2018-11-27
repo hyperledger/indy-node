@@ -18,6 +18,8 @@ from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.types import f, OPERATION
 from plenum.test.helper import create_new_test_node
 
+from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
+
 
 @pytest.fixture(scope="module")
 def add_revoc_def_by_default(create_node_and_not_start,
@@ -130,10 +132,10 @@ def build_txn_for_revoc_def_entry_by_demand(looper,
     return req
 
 @pytest.fixture(scope="module")
-def claim_def():
+def claim_def(send_schema_seq_no):
     return {
         "type": CLAIM_DEF,
-        "ref": 1,
+        "ref": send_schema_seq_no,
         "signature_type": "CL",
         "tag": "some_tag",
         "data": {
