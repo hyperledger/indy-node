@@ -4,6 +4,8 @@ import pytest
 from indy.anoncreds import issuer_create_and_store_credential_def
 from indy.ledger import build_cred_def_request, parse_get_schema_response, \
     build_get_schema_request
+from plenum.common.exceptions import RequestRejectedException
+
 from indy_common.constants import REF
 
 from indy_node.test.api.helper import sdk_write_schema
@@ -35,29 +37,30 @@ def test_send_claim_def_succeeds(
     reply = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
 
-@pytest.mark.skip(reason="INDY-1862")
 def test_send_claim_def_fails_if_ref_is_seqno_of_non_schema_txn(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, schema_json):
     wallet_handle, identifier = sdk_wallet_trustee
-    request = modify_field(schema_json, 9999, 'seq_no')
 
     _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
         wallet_handle, identifier, schema_json, "some_tag1", "CL", json.dumps({"support_revocation": True})))
     request = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
-    request = modify_field(request, 9999, OPERATION, REF)
-    reply = sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
+    request = modify_field(request, 1, OPERATION, REF)
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
+    e.match('isn\'t seqNo of the schema.')
 
 
-@pytest.mark.skip(reason="INDY-1862")
 def test_send_claim_def_fails_if_ref_is_not_existing_seqno(
         looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee, schema_json):
     wallet_handle, identifier = sdk_wallet_trustee
 
     _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
-        wallet_handle, identifier, schema_json, "some_tag1", "CL", json.dumps({"support_revocation": True})))
+        wallet_handle, identifier, schema_json, "some_tag2", "CL", json.dumps({"support_revocation": True})))
     request = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
     request = modify_field(request, 999999, OPERATION, REF)
-    sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
+    e.match('doesn\'t exist')
 
 
 def test_update_claim_def_for_same_schema_and_signature_type(
@@ -65,7 +68,7 @@ def test_update_claim_def_for_same_schema_and_signature_type(
     wallet_handle, identifier = sdk_wallet_trustee
 
     _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
-        wallet_handle, identifier, schema_json, "some_tag1", "CL", json.dumps({"support_revocation": True})))
+        wallet_handle, identifier, schema_json, "some_tag3", "CL", json.dumps({"support_revocation": True})))
     request = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
@@ -79,12 +82,12 @@ def test_can_send_same_claim_def_by_different_issuers(
     wallet_handle, identifier = sdk_wallet_trustee
 
     _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
-        wallet_handle, identifier, schema_json, "some_tag2", "CL", json.dumps({"support_revocation": True})))
+        wallet_handle, identifier, schema_json, "some_tag4", "CL", json.dumps({"support_revocation": True})))
     request = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
 
     wallet_handle, identifier = sdk_wallet_steward
     _, definition_json = looper.loop.run_until_complete(issuer_create_and_store_credential_def(
-        wallet_handle, identifier, schema_json, "some_tag2", "CL", json.dumps({"support_revocation": True})))
+        wallet_handle, identifier, schema_json, "some_tag4", "CL", json.dumps({"support_revocation": True})))
     request = looper.loop.run_until_complete(build_cred_def_request(identifier, definition_json))
     sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, request)])

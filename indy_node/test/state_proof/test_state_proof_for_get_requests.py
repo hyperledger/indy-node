@@ -15,6 +15,7 @@ from indy_common.serialization import attrib_raw_data_serializer
 # Fixtures, do not remove
 from indy_node.test.attrib_txn.test_nym_attrib import \
     sdk_added_raw_attribute, attributeName, attributeValue, attributeData
+from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
 
 
 def test_state_proof_returned_for_get_attr(looper,
@@ -137,7 +138,8 @@ def test_state_proof_returned_for_get_claim_def(looper,
                                                 nodeSetWithOneNodeResponding,
                                                 sdk_wallet_trust_anchor,
                                                 sdk_pool_handle,
-                                                sdk_wallet_client):
+                                                sdk_wallet_client,
+                                                send_schema_seq_no):
     """
     Tests that state proof is returned in the reply for GET_CLAIM_DEF
     transactions.
@@ -147,7 +149,7 @@ def test_state_proof_returned_for_get_claim_def(looper,
     data = {"primary": {'N': '123'}, REVOCATION: {'h0': '456'}}
     claim_def_operation = {
         TXN_TYPE: CLAIM_DEF,
-        CLAIM_DEF_SCHEMA_REF: 12,
+        CLAIM_DEF_SCHEMA_REF: send_schema_seq_no,
         DATA: data,
         CLAIM_DEF_SIGNATURE_TYPE: 'CL',
         CLAIM_DEF_TAG: "tag1"
@@ -159,7 +161,7 @@ def test_state_proof_returned_for_get_claim_def(looper,
     get_claim_def_operation = {
         CLAIM_DEF_FROM: dest,
         TXN_TYPE: GET_CLAIM_DEF,
-        CLAIM_DEF_SCHEMA_REF: 12,
+        CLAIM_DEF_SCHEMA_REF: send_schema_seq_no,
         CLAIM_DEF_SIGNATURE_TYPE: 'CL',
         CLAIM_DEF_TAG: "tag1"
     }
