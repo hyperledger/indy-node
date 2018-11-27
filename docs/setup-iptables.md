@@ -3,6 +3,11 @@
 In order to prevent the indy-node process from reaching of open file descriptors limit caused by clients connections it is strongly
 recommended to add iptables rule that limits the number of simultaneous clients connections for client port.
 
+NOTE: limitation of the number of `simultaneous clients connections` does not mean that we limit the
+number of `simultaneous clients` the indy-node works with in any time. The IndySDK client does not keep
+connection infinitely, it uses the same connection for request-response session with some optimisations,
+so it's just about connections, not about clients.
+
 Also iptables can be used to deal with various DoS attacks (e.g. syn flood) but rules' parameters are not estimated yet.
 
 NOTE: you should be a root to operate with iptables.
@@ -17,7 +22,7 @@ This environment file contains client port (NODE_CLIENT_PORT) and recommended cl
 This parameters can be used to add the iptables rule for chain INPUT:
 
 ```
-# iptables -I INPUT -p tcp --syn --dport 9702 -m connlimit --connlimit-above 15360 --connlimit-mask 0 -j REJECT --reject-with tcp-reset
+# iptables -I INPUT -p tcp --syn --dport 9702 -m connlimit --connlimit-above 500 --connlimit-mask 0 -j REJECT --reject-with tcp-reset
 ```
 Some key options:
  - --dport - a port for which limit is set
@@ -55,8 +60,8 @@ NOTE: this script should be called *after* `init_indy_node` script.
 
 ###### For pip installation
 The `setup_indy_node_iptables` script can not be used in case of pip installation as indy-node environment file does not exist,
-use the `setup_iptables` script instead (9702 is a client port, 15360 is recommended limit for now)
+use the `setup_iptables` script instead (9702 is a client port, 500 is recommended limit for now)
 ```
-# setup_iptables 9702 15360
+# setup_iptables 9702 500
 ```
 In fact, the `setup_indy_node_iptables` script is just a wrapper for the `setup_iptables` script.
