@@ -5,10 +5,10 @@ aws_group_name: defaults
 
   # Namespace parameters
 aws_namespace_name: "{{ namespace_name | default(inventory_dir, true) | default('test', true) | basename }}"
-aws_namespace_dir: "{{ namespace_dir | default(inventory_dir, true) | default(aws_namespace_name, true) }}"
+aws_build_dir: "{{ namespace_dir | default(inventory_dir, true) | default(aws_namespace_name, true) }}"
 
   # Inventory parameters
-aws_inventory_dir: "{{ inventory_dir | default(aws_namespace_dir ~ '/inventory', true) }}"
+aws_inventory_dir: "{{ inventory_dir | default(aws_build_dir ~ '/inventory', true) }}"
 aws_inventory_file: "{{ aws_inventory_dir }}/{{ aws_group_name }}.yml"
 aws_base_group: "{{ aws_namespace_name }}"
 

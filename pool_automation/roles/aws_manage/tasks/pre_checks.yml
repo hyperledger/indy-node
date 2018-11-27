@@ -8,7 +8,7 @@
     - aws_project_name
     - aws_group_name
     - aws_namespace_name
-    - aws_namespace_dir
+    - aws_build_dir
     - aws_inventory_dir
     - aws_inventory_file
     - aws_regions

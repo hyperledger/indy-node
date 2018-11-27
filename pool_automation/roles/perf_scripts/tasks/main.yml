@@ -5,7 +5,11 @@
       - lookup('vars', item, default='')
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
+    - perf_scripts_build_dir
     - perf_scripts_ver
+    - perf_scripts_pool_genesis_txns_name
+    - perf_scripts_pool_genesis_txns_path_local
+    - perf_scripts_pool_genesis_txns_path_remote
 
 # TODO rename of split
 - name: Install pip and other required packages

@@ -5,11 +5,16 @@
       - lookup('vars', item, default='')
     msg: "{{ lookup('vars', item, default='undefined')|string }}"
   loop:
+    - indy_node_build_dir
     - indy_node_channel
     - indy_node_ver
     - indy_plenum_ver
     - python_indy_crypto_ver
     - libindy_crypto_ver
+    - network_name
+    - indy_node_pool_dir_name
+    - indy_node_pool_genesis_txns_name
+    - indy_node_pool_genesis_txns_path
 
 # TODO move the following three tasks (HTTPS, sovrin key and sovrin repos)
 #      into separate role

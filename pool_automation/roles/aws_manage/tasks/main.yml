@@ -6,14 +6,14 @@
 # it would be possible (https://github.com/ansible/ansible/issues/40239)
 - name: Set ssh_dir_name, ssh_key_name and ssh_known_hosts_name variables
   set_fact:
-    ssh_dir_name: "{{ '.ssh' if aws_namespace_dir == aws_inventory_dir else 'ssh'}}"
+    ssh_dir_name: "{{ '.ssh' if aws_build_dir == aws_inventory_dir else 'ssh'}}"
     ssh_key_name: "key.{{ aws_group_name }}"
     ssh_known_hosts_name: "known_hosts.{{ aws_group_name }}"
     ssh_config_name: "config.{{ aws_group_name }}"
 
 - name: Set ssh_dir variable
   set_fact:
-    ssh_dir: "{{ aws_namespace_dir }}/{{ ssh_dir_name }}"
+    ssh_dir: "{{ aws_build_dir }}/{{ ssh_dir_name }}"
 
 - name: Set ssh_key and ssh_known_hosts variable
   set_fact:
