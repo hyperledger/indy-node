@@ -183,7 +183,6 @@ def _arg_name(var_name, arg_prefix=None):
     return "{}.{}".format(arg_prefix, var_name) if arg_prefix else var_name
 
 
-
 def _parse_args(roles, inv_mode, inv_scheme=None):
     parser = argparse.ArgumentParser(
         description="Namespace Configuration Tool",
