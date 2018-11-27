@@ -13,6 +13,7 @@
       register: known_hosts
       loop: "{{ active }}"
       ignore_errors: true
+      failed_when: false
       changed_when: false
 
     - name: Gather host keys for unknown hosts
