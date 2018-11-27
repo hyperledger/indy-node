@@ -293,7 +293,8 @@ def main():
         'all': {
             'vars': {
                 'namespace_dir': os.path.join('{{ inventory_dir }}', '..'),
-                'namespace_name': namespace_name
+                'namespace_name': namespace_name,
+                'namespace_dir_relative': '..'
             }
         }
     }
