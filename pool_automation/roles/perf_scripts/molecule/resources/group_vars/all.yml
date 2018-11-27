@@ -1,3 +1,4 @@
 ---
 perf_scripts_ver: master
 perf_scripts_venv_name: perf_test_venv
+perf_scripts_pool_genesis_txns_name: pool_transactions_genesis

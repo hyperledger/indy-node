@@ -22,4 +22,4 @@ def test_perf_load_package_is_installed_inside_venv(host, venv_path):
 
 
 def test_perf_processes_is_runable(host, venv_path):
-    assert host.run_test("{}/bin/perf_processes.py --help".format(venv_path))
+    assert host.run("{}/bin/perf_processes.py --help".format(venv_path)).rc == 0

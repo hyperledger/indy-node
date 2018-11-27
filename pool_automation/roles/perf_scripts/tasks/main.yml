@@ -7,19 +7,46 @@
   loop:
     - perf_scripts_build_dir
     - perf_scripts_ver
+    - perf_scripts_venv_name
+    - perf_scripts_indy_sdk_channel
+    - perf_scripts_pool_dir_name
     - perf_scripts_pool_genesis_txns_name
     - perf_scripts_pool_genesis_txns_path_local
     - perf_scripts_pool_genesis_txns_path_remote
+
+
+# TODO move the following three tasks (HTTPS, sovrin key and sovrin repos)
+#      into separate role
+- name: Install HTTPS support for apt
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+    update_cache: true
+  become: true
+
+- name: Add sovrin key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 3B75B82CF342D9FB
+  become: true
+
+- name: Add sovrin repositories for indy-sdk
+  apt_repository:
+    repo: "deb https://repo.sovrin.org/sdk/deb xenial {{ perf_scripts_indy_sdk_channel }}"
+    state: present
+  become: true
 
 # TODO rename of split
 - name: Install pip and other required packages
   apt:
     name:
+      - libsodium18 # TODO might depends on target platform package distributions
+      - libindy
       - python3-pip
       - python-setuptools # neeeded for ansible's pip (TODO actually depends on python used by ansible)
       - virtualenv
       - git
-      - libsodium18 # TODO might depends on target platform package distributions
       - vim # TODO think about other useful tools and move to client_install
     update_cache: true
   become: true

@@ -3,6 +3,7 @@ perf_scripts_build_dir: "{{ namespace_dir | default(inventory_dir, true) | defau
 
 perf_scripts_ver: master  # branch / tag / sha1
 perf_scripts_venv_name: perf_venv  # created in user's home
+perf_scripts_indy_sdk_channel: master
 
 # configuration parameters
 perf_scripts_configuration: true
