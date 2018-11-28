@@ -1,4 +1,11 @@
 ---
+- name: Check inventory directory
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - include_tasks: tasks/check_inventory.yml
+      when: not (skip_inventory_check|default(false)|bool)
+
 - name: Destroy clients
   gather_facts: false
   hosts: localhost
