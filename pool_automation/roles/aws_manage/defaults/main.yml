@@ -40,7 +40,7 @@ aws_regions:
   - us-east-2
   - us-west-2
 
-aws_instance_count: 1
+aws_instance_count: 4
 
 aws_ec2_type: t2.micro
 
