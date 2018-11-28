@@ -1,12 +1,15 @@
 # Setup iptables rules (recommended)
 
-In order to prevent the indy-node process from reaching of open file descriptors limit caused by clients connections it is strongly
-recommended to add iptables rule that limits the number of simultaneous clients connections for client port.
+It is strongly recommended to add iptables (or some other firewall) rule that limits the number of simultaneous clients
+connections for client port.
+There are at least two important reasons for this:
+ - preventing the indy-node process from reaching of open file descriptors limit caused by clients connections
+ - preventing the indy-node process from large memory usage as ZeroMQ creates the separate queue for each TCP connection.
 
-NOTE: limitation of the number of `simultaneous clients connections` does not mean that we limit the
-number of `simultaneous clients` the indy-node works with in any time. The IndySDK client does not keep
+NOTE: limitation of the number of *simultaneous clients connections* does not mean that we limit the
+number of *simultaneous clients* the indy-node works with in any time. The IndySDK client does not keep
 connection infinitely, it uses the same connection for request-response session with some optimisations,
-so it's just about connections, not about clients.
+so it's just about **connections**, **not** about **clients**.
 
 Also iptables can be used to deal with various DoS attacks (e.g. syn flood) but rules' parameters are not estimated yet.
 
