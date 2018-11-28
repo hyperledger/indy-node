@@ -4,6 +4,7 @@ indy_cli_build_dir: "{{ namespace_dir | default(inventory_dir, true) | default('
 indy_cli_channel: master
 # TODO remove default values for versions
 indy_cli_ver: 1.6.7~829
+indy_cli_libindy_ver: null
 
 # configuration parameters
 indy_cli_configuration: true

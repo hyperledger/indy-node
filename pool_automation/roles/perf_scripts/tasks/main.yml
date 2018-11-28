@@ -42,7 +42,7 @@
   apt:
     name:
       - libsodium18 # TODO might depends on target platform package distributions
-      - libindy
+      - "libindy{{ ('=' ~ perf_scripts_libindy_ver) if perf_scripts_libindy_ver else '' }}"
       - python3-pip
       - python-setuptools # neeeded for ansible's pip (TODO actually depends on python used by ansible)
       - virtualenv
@@ -57,6 +57,14 @@
       - virtualenv
     executable: pip3
   become: true
+
+- name: Install python3-indy
+  pip:
+    name: "python3-indy=={{ perf_scripts_python3_indy_ver }}"
+    virtualenv: "$HOME/{{ perf_scripts_venv_name }}"  # $HOME as a workaround
+    virtualenv_python: python3
+    state: present
+  when: not not perf_scripts_python3_indy_ver
 
 - name: Install performance scripts from the VCS
   pip:

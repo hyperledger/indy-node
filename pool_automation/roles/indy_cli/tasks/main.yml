@@ -39,6 +39,7 @@
 - name: Install indy cli
   apt:
     name:
+      - "libindy{{ ('=' ~ indy_cli_libindy_ver) if indy_cli_libindy_ver else '' }}"
       - "indy-cli={{ indy_cli_ver }}"
     update_cache: true
   become: true
