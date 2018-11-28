@@ -30,6 +30,11 @@ class ValidatorNodeInfoTool(PlenumValidatorNodeInfoTool):
         info = super().software_info
         if 'Software' in info:
             info['Software'].update({'indy-node': self.__node_pkg_version})
+            try:
+                pkg = importlib.import_module(self._config.UPGRADE_ENTRY)
+                info['Software'].update({self._config.UPGRADE_ENTRY: pkg.__version__})
+            except Exception:
+                pass
         return info
 
     @property

@@ -1,5 +1,4 @@
 import pytest
-import importlib
 
 from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_result
 from plenum.common.constants import TARGET_NYM, RAW, NAME, VERSION, ORIGIN
@@ -44,16 +43,6 @@ def test_validator_info_ha_fields_valid(node, info):
 @pytest.mark.skip(reason="info will not be included by default")
 def test_validator_info_file_software_indy_node_valid(info):
     assert info['Software']['indy-node'] == node_pgk_version
-
-
-@pytest.mark.skip(reason="info will not be included by default")
-def test_validator_info_file_software_sovrin_valid(info):
-    try:
-        pkg = importlib.import_module('sovrin')
-    except ImportError:
-        assert info['Software']['sovrin'] is None
-    else:
-        assert info['Software']['sovrin'] == pkg.__version__
 
 
 @pytest.fixture()
