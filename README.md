@@ -114,14 +114,6 @@ The described process is automated in one of the ways below (it allow to install
 Please have a look at [Dev Setup](docs/setup-dev.md)
 
 
-## How to Start Indy Client CLI
-Once installed, you can play with the command-line interface by running Indy from a terminal.
-
-Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [conemu](https://conemu.github.io/).
-```
-indy
-```
-
 ## Continuous Integration and Delivery
 
 Please have a look at [Continuous integration/delivery](docs/ci-cd.md)
@@ -162,10 +154,12 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 - Please have a look at documents and diagrams in [docs](docs) folder
 - Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder:
     - [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md)
+    - [Plenum Consensus Algorithm Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/diagrams/consensus-protocol.png)
     - [Glossary](https://github.com/hyperledger/indy-plenum/blob/master/docs/glossary.md)
     - [Storages](https://github.com/hyperledger/indy-plenum/blob/master/docs/storage.md)
     - [Request Handling](https://github.com/hyperledger/indy-plenum/blob/master/docs/request_handling.md)
     - [Catchup](https://github.com/hyperledger/indy-plenum/blob/master/docs/catchup.md)
+    - [Catchup Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/diagrams/catchup-procedure.png)
     - [Plugins](https://github.com/hyperledger/indy-plenum/blob/master/docs/plugins.md)
 - Relationship between Entities and Transactions: [relationship diagram](docs/relationship-diagram.png)
 - Supported transactions and their format: [transactions](docs/transactions.md)
