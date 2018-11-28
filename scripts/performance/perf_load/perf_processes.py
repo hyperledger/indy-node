@@ -92,6 +92,9 @@ parser.add_argument('--log_lvl', default=logging.INFO, type=int, required=False,
 
 parser.add_argument('--short_stat', action='store_true', dest='short_stat', help='Store only total statistics')
 
+parser.add_argument('--test_conn', action='store_true', dest='test_conn',
+                    help='Check pool connection with provided genesis file')
+
 
 class LoadRunner:
     def __init__(self, clients=0, genesis_path="~/.indy-cli/networks/sandbox/pool_transactions_genesis",
@@ -468,6 +471,9 @@ if __name__ == '__main__':
     dict_args["out_dir"] = check_fs(True, dict_args["out_dir"])
 
     check_genesis(dict_args["genesis_path"])
+
+    if dict_args["test_conn"]:
+        exit(0)
 
     tr = LoadRunner(dict_args["clients"], dict_args["genesis_path"], dict_args["seed"], dict_args["req_kind"],
                     dict_args["batch_size"], dict_args["refresh_rate"], dict_args["buff_req"], dict_args["out_dir"],
