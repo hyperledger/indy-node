@@ -1,9 +1,0 @@
----
-- name: Add '{{ provisioner_host }}' host to inventory
-  add_host:
-    name: "{{ provisioner_host }}"
-    ansible_connection: local
-    ansible_python_interpreter: "{{ ansible_playbook_python }}"
-  when: not hostvars[provisioner_host]
-  changed_when: false
-...
