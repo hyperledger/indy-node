@@ -4,7 +4,7 @@ import pytest
 from indy.ledger import build_get_schema_request
 from plenum.common.exceptions import RequestNackedException
 
-from plenum.common.constants import DATA, NAME, VERSION
+from plenum.common.constants import DATA, NAME, VERSION, TXN_METADATA, TXN_METADATA_SEQ_NO
 
 from plenum.common.types import OPERATION
 
@@ -18,6 +18,12 @@ from indy_node.test.helper import createUuidIdentifier, modify_field
 def send_schema(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
     schema_json, _ = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_trustee)
     return json.loads(schema_json)['id']
+
+
+@pytest.fixture(scope="module")
+def send_schema_seq_no(looper, sdk_pool_handle, nodeSet, sdk_wallet_trustee):
+    _, reply = sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_trustee)
+    return reply['result'][TXN_METADATA][TXN_METADATA_SEQ_NO]
 
 
 def test_send_get_schema_succeeds(
