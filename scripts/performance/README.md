@@ -93,6 +93,8 @@ Note: batches are evenly distributed, but txs inside one batch are sent as fast 
 
 '--ext_set' : Parameter allow to configure plugins settings. Should be provided in form of JSON. For now only payment plugins supported. Default is empty.
 
+'--test_conn' : Check connection to pool with provided genesis file only. Do not send reqs, do not create test dirs or files. Just do pool open and make initial catchup and exit.
+
 One or more parameters could be stored in config file. Format of the config is simple YAML. Long parameter name should be used. Config name should be passed to script as an additional unnamed argument.
 ```
 python3 perf_processes.py -n 1000 -k nym config_file_name
