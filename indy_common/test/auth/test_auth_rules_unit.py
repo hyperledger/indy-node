@@ -35,6 +35,7 @@ def dict_edit():
                 old_value='old_value',
                 new_value='new_value')
 
+
 @pytest.fixture(scope='function', params=[RuleAdd, RuleRemove, RuleEdit])
 def allow_all_dict(request):
     return request.param, dict(description="General rule",
@@ -72,13 +73,13 @@ def test_not_allow_all(not_allow_all_dict):
 
 def test_rule_add_allows(dict_add):
     rule = RuleAdd(**dict_add)
-    assert rule.allow_old_value == True
+    assert rule.allow_old_value is True
 
 
 def test_rule_remove_allows(dict_remove):
     rule = RuleRemove(**dict_remove)
-    assert rule.allow_old_value == True
-    assert rule.allow_new_value == True
+    assert rule.allow_old_value is True
+    assert rule.allow_new_value is True
 
 
 def test_make_rule_id_not_allow_all(not_allow_all_dict):

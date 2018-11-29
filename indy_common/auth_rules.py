@@ -1,7 +1,7 @@
 import re
 from typing import Dict, List, NamedTuple
 
-from indy_common.constants import NYM, LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
+from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
 from plenum.common.constants import TRUSTEE, STEWARD
 
 from abc import ABCMeta, abstractmethod
@@ -13,6 +13,7 @@ from indy_common.constants import OWNER, POOL_UPGRADE, TRUST_ANCHOR, NYM, \
 
 RULE_DELIMETER = "--"
 
+
 def compile_rule_id(txn_type,
                     field,
                     old_value,
@@ -21,6 +22,7 @@ def compile_rule_id(txn_type,
                                 field,
                                 old_value,
                                 new_value])
+
 
 """
 
@@ -36,6 +38,7 @@ Combined auth constraints (for example, [('TRUSTEE', 3), ('STEWARD', 7)])
 
 """
 
+
 class AuthConstraint(List[RoleDef]):
     """
     'AND' strategy implemented. If there is several RoleDefs, then all of this must be presented in incomming constraints
@@ -47,6 +50,7 @@ class AuthConstraint(List[RoleDef]):
                 if r.role == s.role and s.sig_count <= r.sig_count:
                     compares.append(True)
         return len(self) == len(compares) and all(compares)
+
 
 """
 
@@ -100,6 +104,7 @@ class RuleAdd(AbstractRule):
         if self.default_auth_constraint == []:
             self.allow_for_all = True
 
+
 class RuleRemove(AbstractRule):
     def _preprocessing(self):
         self.allow_old_value = True
@@ -108,6 +113,7 @@ class RuleRemove(AbstractRule):
             self.allow_field = True
         if self.default_auth_constraint == []:
             self.allow_for_all = True
+
 
 class RuleEdit(AbstractRule):
     def _preprocessing(self):
@@ -120,11 +126,13 @@ class RuleEdit(AbstractRule):
         if self.default_auth_constraint == []:
             self.allow_for_all = True
 
+
 """
 
 Policy's clases
 
 """
+
 
 class AbstractAuthPolicy(metaclass=ABCMeta):
     def __init__(self, auth_map):
@@ -223,4 +231,3 @@ addNewSteward = RuleAdd(txn_type=NYM,
                         new_value=STEWARD,
                         default_auth_constraint=[{TRUSTEE: 1}],
                         description="Add new steward")
-
