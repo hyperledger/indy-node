@@ -4,4 +4,4 @@
   gather_facts: false
   roles:
     - role: aws_manage
-      instance_count: 0
+      aws_instance_count: 0

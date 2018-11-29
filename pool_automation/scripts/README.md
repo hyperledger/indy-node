@@ -2,7 +2,7 @@
 
 ## Quickstart
 
-- `inventory-init.py`: helps to create inventory directory with group variables
+- `namespace-config.py`: helps to create inventory directory with group variables
    that override Ansible Roles' defaults. The inventory directory then might be
    passed either to [Ansible command line tools][2aceed7f] or
    [molecule][1d2f4724].
@@ -12,7 +12,7 @@
 
 ## Scripts
 
-### inventory-init.py
+### namespace-config.py
 
 Used to create inventory directory with user specified values for group
 variables to use in Ansible roles.
@@ -51,5 +51,5 @@ as a link as described [here](https://molecule.readthedocs.io/en/latest/configur
 
 ### Command line API
 
-Please refer to `inventory-init.py --help` for the detailed information
+Please refer to `namespace-config.py --help` for the detailed information
 regarding available arguments.
