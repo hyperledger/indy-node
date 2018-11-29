@@ -215,7 +215,7 @@ class Authorizer():
             return False
         if not rule.allow_new_value and rule.new_value != new_value:
             return False
-        if not rule.allow_for_all and rule_auth_constraint.is_accepted(auth_constraint):
+        if not rule.allow_for_all and not rule_auth_constraint.is_accepted(auth_constraint):
             return False
         return True
 
@@ -223,11 +223,11 @@ class Authorizer():
 addNewTrustee = RuleAdd(txn_type=NYM,
                         field='role',
                         new_value=TRUSTEE,
-                        default_auth_constraint=[{TRUSTEE: 1}],
+                        default_auth_constraint=AuthConstraint(RoleDef(TRUSTEE, 1)),
                         description="Add new trustee")
 
 addNewSteward = RuleAdd(txn_type=NYM,
                         field='role',
                         new_value=STEWARD,
-                        default_auth_constraint=[{TRUSTEE: 1}],
+                        default_auth_constraint=AuthConstraint(RoleDef(TRUSTEE, 1)),
                         description="Add new steward")
