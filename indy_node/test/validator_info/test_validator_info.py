@@ -1,5 +1,4 @@
 import pytest
-import importlib
 
 from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_result
 from plenum.common.constants import TARGET_NYM, RAW, NAME, VERSION, ORIGIN
@@ -25,19 +24,25 @@ def test_validator_info_file_metrics_count_ledger_field_valid(info):
     assert info['Node_info']['Metrics']['transaction-count']['config'] == 0
 
 
+def test_validator_info_file_metrics_count_all_ledgers_field_valid(node, info):
+    has_cnt = len(info['Node_info']['Metrics']['transaction-count'])
+    assert has_cnt == len(node.ledgerManager.ledgerRegistry)
+
+
+def test_validator_info_bls_key_field_valid(node, info):
+    assert info['Node_info']['BLS_key']
+
+
+def test_validator_info_ha_fields_valid(node, info):
+    assert info['Node_info']['Node_ip']
+    assert info['Node_info']['Client_ip']
+    assert info['Node_info']['Node_port']
+    assert info['Node_info']['Client_port']
+
+
 @pytest.mark.skip(reason="info will not be included by default")
 def test_validator_info_file_software_indy_node_valid(info):
     assert info['Software']['indy-node'] == node_pgk_version
-
-
-@pytest.mark.skip(reason="info will not be included by default")
-def test_validator_info_file_software_sovrin_valid(info):
-    try:
-        pkg = importlib.import_module('sovrin')
-    except ImportError:
-        assert info['Software']['sovrin'] is None
-    else:
-        assert info['Software']['sovrin'] == pkg.__version__
 
 
 @pytest.fixture()

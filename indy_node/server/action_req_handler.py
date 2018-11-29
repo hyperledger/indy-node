@@ -75,7 +75,7 @@ class ActionReqHandler(RequestHandler):
                 result = self._generate_action_result(req)
                 result[DATA] = self.info_tool.info
                 result[DATA].update(self.info_tool.memory_profiler)
-                result[DATA].update(self.info_tool.software_info)
+                result[DATA].update(self.info_tool._generate_software_info())
                 result[DATA].update(self.info_tool.extractions)
                 result[DATA].update(self.info_tool.node_disk_size)
             else:
