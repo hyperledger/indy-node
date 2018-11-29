@@ -2,6 +2,7 @@ import os
 import logging
 from collections import OrderedDict
 
+from indy_common.constants import LOCAL_AUTH_POLICY
 from plenum.common.constants import ClientBootStrategy, HS_ROCKSDB, KeyValueStorageType
 from plenum.config import rocksdb_default_config
 
@@ -103,3 +104,5 @@ UPGRADE_ENTRY = 'indy-node'
 ANYONE_CAN_WRITE = False
 
 PACKAGES_TO_HOLD = ['indy-plenum', 'indy-node', 'python3-indy-crypto', 'libindy-crypto']
+
+authPolicy = LOCAL_AUTH_POLICY
