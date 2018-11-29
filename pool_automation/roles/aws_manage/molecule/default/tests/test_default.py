@@ -8,7 +8,7 @@ def is_valid_instance(inst):
         return False
     if inst.tags.get('Namespace') != 'test':
         return False
-    if inst.tags.get('Role') != 'default':
+    if inst.tags.get('Group') != 'default':
         return False
     return True
 

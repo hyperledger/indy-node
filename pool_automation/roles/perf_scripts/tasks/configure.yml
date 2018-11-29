@@ -1,0 +1,6 @@
+---
+- name: Push pool genesis txns file to client
+  copy:
+    src: "{{ perf_scripts_pool_genesis_txns_path_local }}"
+    dest: "{{ perf_scripts_pool_genesis_txns_path_remote }}"
+...

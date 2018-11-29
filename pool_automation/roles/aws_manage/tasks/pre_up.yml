@@ -6,8 +6,8 @@
 
 - name: Create key-pair
   expect:
-    command: "ssh-keygen -f {{ ssh_dir }}/key"
-    creates: "{{ ssh_dir }}/key"
+    command: "ssh-keygen -f {{ ssh_key }}"
+    creates: "{{ ssh_key }}"
     responses:
       passphrase: ""
 
@@ -15,19 +15,19 @@
   ec2_key:
     name: "{{ aws_keyname }}"
     region: "{{ item }}"
-    key_material: "{{ lookup('file', '{{ ssh_dir }}/key.pub') }}"
+    key_material: "{{ lookup('file', '{{ ssh_key }}.pub') }}"
   with_items: "{{ aws_regions }}"
 
 - name: Create AWS security group
   ec2_group:
     name: "{{ aws_sgroup }}"
     region: "{{ item }}"
-    description: "[{{ aws_project_name }}] Security group for {{ aws_tag_role }} in {{ aws_tag_namespace }}"
+    description: "[{{ aws_project_name }}] Security group for {{ aws_group_name }} in {{ aws_tag_namespace }}"
     tags:
       Name: "{{ aws_tag_sgroup_name }}"
       Project: "{{ aws_tag_project }}"
       Namespace: "{{ aws_tag_namespace }}"
-      Role: "{{ aws_tag_role }}"
+      Group: "{{ aws_tag_group }}"
     rules:
       - proto: all
         cidr_ip: 0.0.0.0/0

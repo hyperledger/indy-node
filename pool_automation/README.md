@@ -5,11 +5,11 @@
 - Make sure you have [AWS CLI][f681b33b] installed and configured.
 - Run `ansible-playbook pool_create.yml` - this will create 4 EC2 instances
   and `test_nodes` directory with inventory and SSH keys.
-- Run `ansible-playbook -i test_nodes/hosts pool_install.yml` - this will
+- Run `ansible-playbook -i test_nodes/hosts pool.yml` - this will
   install and configure Indy Node pool on previously created EC2 instances.
 - Run `ssh -F test_nodes/ssh_config test_node_1` to login to first node
   and take a look around.
-- Run `ansible-playbook pool_destroy.yml` - this will terminate previously
+- Run `ansible-playbook destroy.nodes.yml` - this will terminate previously
   created AWS EC2 instances and clear `config_pool` and `inventory_pool` files.
 
   [f681b33b]: https://aws.amazon.com/cli/ "aws cli"
@@ -27,7 +27,7 @@ Parameters:
 - _aws_region_ (eu-central-1): region of instances
 - _aws_tag_project_ (PoolAutomation): project name for created instances
 - _aws_tag_namespace_ (test): namespace of created instances
-- _aws_tag_role_ (default): role of created instances
+- _aws_tag_group_ (default): ansible inventory group of created instances
 
 Todos:
 - extract key generation and inventory export to separate role
@@ -40,12 +40,12 @@ Todos:
 Installs python and sudo.
 
 
-### node_install
+### indy_node
 
-Adds sovrin repository and installs Indy Node.
+Adds sovrin repository and installs and configures Indy Node.
 
 Parameters:
-- _channel_ (master): which release channel to use (master/rc/stable)
+- _indy_node_channel_ (master): which release channel to use (master/rc/stable)
 - _indy_node_ver_
 - _indy_plenum_ver_
 - _python_indy_crypto_ver_
@@ -55,10 +55,6 @@ Todos:
 - allow providing only _indy_node_ver_
 - remove unused repositories when switching channels
 
-
-### pool_install
-
-Configures Indy Node pool.
 
 ## Scripts
 
@@ -92,7 +88,7 @@ By default scenarios based on `docker` are used. Also `vagrant` scenarios are av
 and might be run like `molecule <command> -s vagrant`.
 
 In order to test all scenarios for some role go to a directory with the role (for example
-`roles/pool_install`) and run `molecule test --all`.
+`roles/indy_node`) and run `molecule test --all`.
 
 #### Vagrant scenarios specific
 

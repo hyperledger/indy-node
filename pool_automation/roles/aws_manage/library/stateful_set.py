@@ -8,6 +8,13 @@ import boto3
 # import logging
 # boto3.set_stream_logger('', logging.DEBUG)
 
+HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
+
+InstanceParams = namedtuple(
+    'InstanceParams', 'project namespace group add_tags key_name security_group type_name')
+
+ManageResults = namedtuple('ManageResults', 'changed active terminated')
+
 AWS_REGIONS = [
     'ap-northeast-1',
     'ap-northeast-2',
@@ -41,13 +48,13 @@ def find_ubuntu_ami(ec2):
     return images[-1].image_id if len(images) > 0 else None
 
 
-def find_instances(ec2, project, namespace, role=None):
+def find_instances(ec2, project, namespace, group=None):
     filters = [
         {'Name': 'tag:Project', 'Values': [project]},
         {'Name': 'tag:Namespace', 'Values': [namespace]}
     ]
-    if role is not None:
-        filters.append({'Name': 'tag:Role', 'Values': [role]})
+    if group is not None:
+        filters.append({'Name': 'tag:Group', 'Values': [group]})
 
     return [instance for instance in ec2.instances.filter(Filters=filters)
             if instance.state['Name'] not in ['terminated', 'shutting-down']]
@@ -65,9 +72,6 @@ def get_tag(inst, name):
         if tag['Key'] == name:
             return tag['Value']
     return None
-
-
-HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
 
 
 class AwsEC2Waiter(object):
@@ -113,10 +117,6 @@ class AwsEC2Terminator(AwsEC2Waiter):
         self.add_instance(instance, region)
 
 
-InstanceParams = namedtuple(
-    'InstanceParams', 'project namespace role add_tags key_name group type_name')
-
-
 class AwsEC2Launcher(AwsEC2Waiter):
     """ Helper class to launch EC2 instances. """
 
@@ -132,7 +132,7 @@ class AwsEC2Launcher(AwsEC2Waiter):
         instances = ec2.create_instances(
             ImageId=find_ubuntu_ami(ec2),
             KeyName=params.key_name,
-            SecurityGroups=[params.group],
+            SecurityGroups=[params.security_group],
             InstanceType=params.type_name,
             MinCount=count,
             MaxCount=count,
@@ -149,8 +149,8 @@ class AwsEC2Launcher(AwsEC2Waiter):
                             'Value': params.namespace
                         },
                         {
-                            'Key': 'Role',
-                            'Value': params.role
+                            'Key': 'Group',
+                            'Value': params.group
                         }
                     ]
                 }
@@ -165,7 +165,14 @@ class AwsEC2Launcher(AwsEC2Waiter):
 
 def manage_instances(regions, params, count):
     hosts = []
+    terminated = []
     changed = False
+
+    def _host_info(inst):
+        return HostInfo(
+            tag_id=get_tag(inst, 'ID'),
+            public_ip=inst.public_ip_address,
+            user='ubuntu')
 
     aws_launcher = AwsEC2Launcher()
     aws_terminator = AwsEC2Terminator()
@@ -176,7 +183,7 @@ def manage_instances(regions, params, count):
         ec2 = boto3.resource('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
-        instances = find_instances(ec2, params.project, params.namespace, params.role)
+        instances = find_instances(ec2, params.project, params.namespace, params.group)
         for inst in instances:
             tag_id = get_tag(inst, 'ID')
             if tag_id in valid_ids:
@@ -184,6 +191,7 @@ def manage_instances(regions, params, count):
                 hosts.append(inst)
                 aws_launcher.add_instance(inst, region)
             else:
+                terminated.append(_host_info(inst))
                 aws_terminator.terminate(inst, region)
                 changed = True
 
@@ -195,7 +203,7 @@ def manage_instances(regions, params, count):
                     {'Key': 'Name', 'Value': "{}-{}-{}-{}"
                         .format(params.project,
                                 params.namespace,
-                                params.role,
+                                params.group,
                                 tag_id.zfill(3)).lower()},
                     {'Key': 'ID', 'Value': tag_id}] +
                     [{'Key': k, 'Value': v} for k, v in params.add_tags.iteritems()])
@@ -205,11 +213,11 @@ def manage_instances(regions, params, count):
     aws_launcher.wait()
     aws_terminator.wait()
 
-    hosts = [HostInfo(tag_id=get_tag(inst, 'ID'),
-                      public_ip=inst.public_ip_address,
-                      user='ubuntu') for inst in hosts]
-
-    return changed, hosts
+    return ManageResults(
+        changed,
+        [_host_info(inst) for inst in hosts],
+        terminated
+    )
 
 
 def run(module):
@@ -218,18 +226,21 @@ def run(module):
     inst_params = InstanceParams(
         project=params['project'],
         namespace=params['namespace'],
-        role=params['role'],
+        group=params['group'],
         add_tags=params['add_tags'],
         key_name=params['key_name'],
-        group=params['group'],
+        security_group=params['security_group'],
         type_name=params['instance_type']
     )
 
-    changed, results = manage_instances(
+    res = manage_instances(
         params['regions'], inst_params, params['instance_count'])
 
-    module.exit_json(changed=changed,
-                     results=[r.__dict__ for r in results])
+    module.exit_json(
+        changed=res.changed,
+        active=[r.__dict__ for r in res.active],
+        terminated=[r.__dict__ for r in res.terminated]
+    )
 
 
 if __name__ == '__main__':
@@ -237,10 +248,10 @@ if __name__ == '__main__':
         regions=dict(type='list', required=True),
         project=dict(type='str', required=True),
         namespace=dict(type='str', required=True),
-        role=dict(type='str', required=True),
+        group=dict(type='str', required=True),
         add_tags=dict(type='dict', required=False, default=dict()),
         key_name=dict(type='str', required=True),
-        group=dict(type='str', required=True),
+        security_group=dict(type='str', required=True),
         instance_type=dict(type='str', required=True),
         instance_count=dict(type='int', required=True)
     )

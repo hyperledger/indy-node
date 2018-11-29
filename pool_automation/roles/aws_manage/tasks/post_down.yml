@@ -13,12 +13,10 @@
     state: absent
   with_items: "{{ aws_regions }}"
 
-- name: Ensure inventory file for AWS hosts doesn't exist
+- name: Ensure inventory file and ssh settings for '{{ aws_group_name }}' doesn't exist
   file:
-    path: "{{ aws_inventory_file }}"
+    path: "{{ item }}"
     state: absent
-
-- name: Ensure directory with ssh settings doesn't exist
-  file:
-    path: "{{ ssh_dir }}"
-    state: absent
+  loop: "{{ [aws_inventory_file, ssh_config]
+            + q('fileglob', ssh_known_hosts ~ '*')
+            + q('fileglob', ssh_key ~ '*') }}"
