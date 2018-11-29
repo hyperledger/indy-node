@@ -821,12 +821,12 @@ def main():
         if not bn:
             continue
         node_name = bn.split("_", maxsplit=1)[0]
-        if bn.find("additional") != -1:
-            files_by_node.update({node_name: {"additional": path}})
-        if bn.find("version") != -1:
-            files_by_node.update({node_name: {"version": path}})
+        if "additional" in bn:
+            files_by_node.setdefault(node_name, {}).update({"additional": path})
+        elif "version" in bn:
+            files_by_node.setdefault(node_name, {}).update({"version": path})
         else:
-            files_by_node.update({node_name: {"info": path}})
+            files_by_node.setdefault(node_name, {}).update({"info": path})
     if not files_by_node:
         print('There are no info files in {}'.format(args.basedir))
         return

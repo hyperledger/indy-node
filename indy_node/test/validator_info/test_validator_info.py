@@ -4,6 +4,8 @@ from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_resul
 from plenum.common.constants import TARGET_NYM, RAW, NAME, VERSION, ORIGIN
 
 # noinspection PyUnresolvedReferences
+from plenum.common.ledger import Ledger
+from plenum.test.primary_selection.test_primary_selector import FakeLedger
 from plenum.test.validator_info.conftest import info, node  # qa
 
 from indy_common.constants import TXN_TYPE, DATA, GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE
@@ -22,11 +24,6 @@ def test_validator_info_file_schema_is_valid(info):
 
 def test_validator_info_file_metrics_count_ledger_field_valid(info):
     assert info['Node_info']['Metrics']['transaction-count']['config'] == 0
-
-
-def test_validator_info_file_metrics_count_all_ledgers_field_valid(node, info):
-    has_cnt = len(info['Node_info']['Metrics']['transaction-count'])
-    assert has_cnt == len(node.ledgerManager.ledgerRegistry)
 
 
 def test_validator_info_bls_key_field_valid(node, info):
@@ -158,3 +155,35 @@ def read_txn_and_get_latest_info(looper, sdk_pool_handle,
 
 def reset_node_total_read_request_number(node):
     node.total_read_request_number = 0
+
+
+class FakeTree:
+    @property
+    def root_hash(self):
+        return '222222222222222222222222222'
+
+class FakeLedgerEx(FakeLedger):
+    @property
+    def uncommittedRootHash(self):
+        return '111111111111111111111111111111111'
+
+    @property
+    def uncommittedTxns(self):
+        return []
+
+    @property
+    def tree(self):
+        return FakeTree()
+
+    @property
+    def size(self):
+        return 100
+
+
+def test_validator_info_file_metrics_count_all_ledgers_field_valid(node):
+    new_ids = [444, 555, 666, 777]
+    for newid in new_ids:
+        node.ledgerManager.addLedger(newid, FakeLedgerEx(newid, newid))
+    info = node._info_tool.info
+    has_cnt = len(info['Node_info']['Metrics']['transaction-count'])
+    assert has_cnt == len(new_ids) + 3
