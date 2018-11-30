@@ -1,8 +1,7 @@
-{% for item in ec2.results %}
-{% set inst = item.tagged_instances[0] %}
-{% set tags = inst.tags %}
-Host {{ tag_namespace }}_{{ tag_role }}_{{ tags.id }}
-    HostName {{ inst.public_ip }}
-    User ubuntu
-    IdentityFile ./key
+{% for item in aws_ec2hosts.active %}
+Host {{ aws_tag_namespace }}_{{ aws_tag_group }}{{ item.tag_id }}
+    HostName {{ item.public_ip }}
+    User {{ item.user }}
+    IdentityFile ./{{ ssh_key_name }}
+    UserKnownHostsFile ./{{ ssh_known_hosts_name }}
 {% endfor %}

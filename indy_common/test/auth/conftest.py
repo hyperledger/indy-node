@@ -3,10 +3,10 @@ import pytest
 from indy_common.auth import Authoriser, generate_auth_map
 from plenum.common.constants import STEWARD, TRUSTEE
 
-from indy_common.constants import TRUST_ANCHOR, TGB
+from indy_common.constants import TRUST_ANCHOR
 
 
-@pytest.fixture(scope='function', params=[STEWARD, TRUSTEE, TRUST_ANCHOR, TGB, None])
+@pytest.fixture(scope='function', params=[STEWARD, TRUSTEE, TRUST_ANCHOR, None])
 def role(request):
     return request.param
 

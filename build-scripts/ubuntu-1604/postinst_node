@@ -15,7 +15,7 @@ INSTALL_DIR='/usr/local/lib/python3.5/dist-packages'
 NOFILES_SOFT_LIMIT=65536
 NOFILES_HARD_LIMIT=131072
 
-CLIENT_CONNECTIONS_LIMIT=10000
+CLIENT_CONNECTIONS_LIMIT=500
 
 
 # workaround when .indy become regular file

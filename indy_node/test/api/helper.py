@@ -3,7 +3,7 @@ import base58
 
 from indy.anoncreds import issuer_create_schema
 from indy.ledger import build_schema_request
-from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req
+from plenum.test.helper import sdk_get_reply, sdk_sign_and_submit_req, sdk_get_and_check_replies
 
 
 # Utility predicates
@@ -177,10 +177,35 @@ def validate_claim_def_txn(txn):
 
 # Misc utility
 
-def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward):
+def sdk_write_schema(looper, sdk_pool_handle, sdk_wallet_steward, multi_attribute=[], name="", version=""):
     _, identifier = sdk_wallet_steward
-    _, schema_json = looper.loop.run_until_complete(
-        issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
+
+    if multi_attribute:
+        _, schema_json = looper.loop.run_until_complete(
+            issuer_create_schema(identifier, name, version, json.dumps(multi_attribute)))
+    else:
+        _, schema_json = looper.loop.run_until_complete(
+            issuer_create_schema(identifier, "name", "1.0", json.dumps(["first", "last"])))
+
     request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
+
     return schema_json, \
            sdk_get_reply(looper, sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, request))[1]
+
+
+def sdk_write_schema_and_check(looper, sdk_pool_handle, sdk_wallet_steward,
+                               attributes=[], name="", version=""):
+    _, identifier = sdk_wallet_steward
+
+    _, schema_json = looper.loop.run_until_complete(
+        issuer_create_schema(
+            identifier, name,
+            version, json.dumps(attributes)
+        ))
+
+    request = looper.loop.run_until_complete(
+        build_schema_request(identifier, schema_json)
+    )
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_steward, request)
+    rep = sdk_get_and_check_replies(looper, [req])
+    return rep

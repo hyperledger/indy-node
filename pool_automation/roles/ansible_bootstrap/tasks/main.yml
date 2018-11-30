@@ -1,0 +1,20 @@
+---
+- name: Check if python is installed
+  raw: test -e /usr/bin/python
+  register: test_python
+  failed_when: false
+  changed_when: false
+
+- name: Check if sudo is installed
+  raw: sudo --version
+  register: test_sudo
+  failed_when: false
+  changed_when: false
+
+# assumption:
+#   either sudo installed and remote user is in sudoers
+#   or sudo is not installed but remote user has root priviledges
+- name: Install python for Ansible and sudo
+  raw: apt -y update && apt install -y python-minimal sudo
+  when: test_python.rc != 0 or test_sudo.rc != 0
+  become: "{{ test_sudo.rc == 0 }}"

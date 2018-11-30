@@ -1,21 +1,21 @@
 pool connect AS-pool
-[1;32mPool "AS-pool" has been connected[0m
+Pool "AS-pool" has been connected
 
 wallet open AS-04-wallet key=testkey
-[1;32mWallet "AS-04-wallet" has been opened[0m
+Wallet "AS-04-wallet" has been opened
 
 did use V4SGRU86Z58d6TV7PBUe6f
-[1;32mDid "V4SGRU86Z58d6TV7PBUe6f" has been set as active[0m
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
 ledger nym did=542MVr22zcHbVyGzaXmbT2
-[1;32mNym request has been sent to Ledger.[0m
-[1;32mMetadata:[0m
+Nym request has been sent to Ledger.
+Metadata:
 +---------------------+---------------------+
 | Request ID          | Transaction time    |
 +---------------------+---------------------+
 | 1527789271458474578 | 2018-05-31 17:54:31 |
 +---------------------+---------------------+
-[1;32mData:[0m
+Data:
 +------------------------+------+
 | Did                    | Role |
 +------------------------+------+
@@ -23,14 +23,14 @@ ledger nym did=542MVr22zcHbVyGzaXmbT2
 +------------------------+------+
 
 ledger get-schema did=V4SGRU86Z58d6TV7PBUe6f name=Degree version=1.0
-[1;32mFollowing Schema has been received.[0m
-[1;32mMetadata:[0m
+Following Schema has been received.
+Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Did                    | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
 | V4SGRU86Z58d6TV7PBUe6f | 16              | 1527789271710847095 | 2018-05-31 17:52:57 |
 +------------------------+-----------------+---------------------+---------------------+
-[1;32mData:[0m
+Data:
 +--------+---------+----------------------------------------------------------------------------+
 | Name   | Version | Attributes                                                                 |
 +--------+---------+----------------------------------------------------------------------------+
@@ -38,14 +38,14 @@ ledger get-schema did=V4SGRU86Z58d6TV7PBUe6f name=Degree version=1.0
 +--------+---------+----------------------------------------------------------------------------+
 
 ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f tag="1"
-[1;32mFollowing Credential Definition has been received.[0m
-[1;32mMetadata:[0m
+Following Credential Definition has been received.
+Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
 | V4SGRU86Z58d6TV7PBUe6f | 17              | 1527789271740916519 | 2018-05-31 17:52:57 |
 +------------------------+-----------------+---------------------+---------------------+
-[1;32mData:[0m
+Data:
 +----------------------------------------------------------------+
 | Primary Key                                                    |
 +----------------------------------------------------------------+
@@ -53,14 +53,14 @@ ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f 
 +----------------------------------------------------------------+
 
 - ledger get-nym did=542MVr22zcHbVyGzaXmbT5
-[1;32mFollowing NYM has been received.[0m
-[1;32mMetadata:[0m
+Following NYM has been received.
+Metadata:
 +-----------------+---------------------+---------------------+
 | Sequence Number | Request ID          | Transaction time    |
 +-----------------+---------------------+---------------------+
 | 20              | 1527789271777541476 | 2018-05-31 17:52:58 |
 +-----------------+---------------------+---------------------+
-[1;32mData:[0m
+Data:
 +------------------------+------------------------+------+
 | Identifier             | Dest                   | Role |
 +------------------------+------------------------+------+
@@ -68,14 +68,14 @@ ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f 
 +------------------------+------------------------+------+
 
 - ledger get-nym did=542MVr22zcHbVyGzaXmbT2
-[1;32mFollowing NYM has been received.[0m
-[1;32mMetadata:[0m
+Following NYM has been received.
+Metadata:
 +-----------------+---------------------+---------------------+
 | Sequence Number | Request ID          | Transaction time    |
 +-----------------+---------------------+---------------------+
 | 23              | 1527789271796959032 | 2018-05-31 17:54:31 |
 +-----------------+---------------------+---------------------+
-[1;32mData:[0m
+Data:
 +------------------------+------------------------+------+
 | Identifier             | Dest                   | Role |
 +------------------------+------------------------+------+
@@ -83,9 +83,9 @@ ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f 
 +------------------------+------------------------+------+
 
 wallet close
-[1;32mWallet "AS-04-wallet" has been closed[0m
+Wallet "AS-04-wallet" has been closed
 
 pool disconnect
-[1;32mPool "AS-pool" has been disconnected[0m
+Pool "AS-pool" has been disconnected
 
-[1;32mGoodbye...[0m
+Goodbye...

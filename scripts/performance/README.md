@@ -23,7 +23,7 @@ Default value is 0.
 
 '-g', '--genesis' : Path to file with genesis txns for the pool to connect to. Default value is "~/.indy-cli/networks/sandbox/pool_transactions_genesis".
 
-'-s', '--seed' : Seed that will be used to generate submitter did. Default value is Trustee1.
+'-s', '--seed' : Seed that will be used to generate submitter did. Default value is Trustee1. If test requires several did to be generated, several seed parameters could be provided.
 
 '-w', '--wallet_key' : Key to access encrypted wallet. Default value is "key".
 
@@ -37,6 +37,9 @@ Files to be stored:
 * successful - request and response for successful txns
 * failed - request and error provided by libindy
 * nack_reject - request and error provided by pool
+* \<name\>.log - log file
+
+'--short_stat' : If mentioned only total statistics is stored. Other files will be empty.
 
 '--sep' : Separator that will be used in output csv file.
 Do not use "," - it will be in conflict with JSON values. Default value is "|".
@@ -63,6 +66,9 @@ Supported txns:
 * get_payment_sources - Get payment sources
 * payment - Perform payment
 * verify_payment - Verify performed payment
+* cfg_writes - Config ledger txn - set writable property of pool to True
+* demoted_node - Pool ledger txn - add new demoted node
+* get_txn - Multi ledger txn - request txn by ledger id and seq_no
 
 Note: At the moment revoc_reg_entry requests could be used only with batch size equal to 1. After each entry write request revoc registery is recreated. So each entry req generates 3 request to ledger in total.
 
@@ -71,7 +77,7 @@ Default value is 'p''.
 
 '-p', '--pool_config' : Pool config in form of JSON. The value will be passed to open_pool_ledger call. Default value is empty. Parameters description depends on libindy version and could be found in official sdk documentation.
 
-'-l', '--load_rate' : Batch send rate in txns per sec. Batches will be evenly distributed within second. Default 10.
+'-l', '--load_rate' : Batch send rate in batches per sec. Batches will be evenly distributed within second. Default 10.
 
 Note: batches are evenly distributed, but txs inside one batch are sent as fast as possible.
 
@@ -83,11 +89,24 @@ Note: batches are evenly distributed, but txs inside one batch are sent as fast 
 
 '--load_time' : Work no longer then load_time sec. Zero value means work always. Default value is 0.
 
+'--log_lvl' : Log level as int value. Default is info level.
+
+'--ext_set' : Parameter allow to configure plugins settings. Should be provided in form of JSON. For now only payment plugins supported. Default is empty.
+
+'--test_conn' : Check connection to pool with provided genesis file only. Do not send reqs, do not create test dirs or files. Just do pool open and make initial catchup and exit.
+
+One or more parameters could be stored in config file. Format of the config is simple YAML. Long parameter name should be used. Config name should be passed to script as an additional unnamed argument.
+```
+python3 perf_processes.py -n 1000 -k nym config_file_name
+```
+
 ## Transaction data
-Each txn can read predefined data from file or generate random data.
+
+All txns generate random data.
+Some txns (nym, schema, attrib, cred_def, revoc_reg_def, revoc_reg_entry, get_nym, get_attrib, get_schema, get_cred_def, get_revoc_reg_def, get_revoc_reg, get_revoc_reg_delta) can read predefined data from file.
 Default mode for each txn is to generate random data.
 
-Script is designed to use data from csv files which
+In case of predefined data script is designed to use csv files which
 could be obtained from previous script run with writing txns of random data - result file named "successful".
 
 For example one can run script to add 1000 nym txns
@@ -100,6 +119,7 @@ This file could be used to run script to read all those 1000 nyms
 ```
 python3 perf_processes.py -n 1000 -k "{\"get_nym\": {\"file_name\": \"./load_test_20180620_150354/successful\"}}"
 ```
+
 #### Parameters for data file processing
 
 'file_name' - name of the file.
@@ -114,19 +134,37 @@ python3 perf_processes.py -n 1000 -k "{\"get_nym\": {\"file_name\": \"./load_tes
 
 'file_field' - split number to be used to run test with. Default is 2.
 
-#### Parameters for specific request types
 
-'payment_addrs_count' - count of payment addresses. Default is 100. The count of payment addresses actually also determines the count of initial
-payment sources (one payment source per payment address). Please note, the count of initial payment sources serves
-as a buffer for payment request generator because new payments use receipts of previous payments as sources.
-In case there is no available sources in the buffer, payment request generator prints a message to stdout that
-a next request cannot be generated since no req data are available. _Applicable for: payment, verify_payment, get_payment_sources_
+#### Parameters for 'get_txn' txn type
 
-'payment_method' - payment method. _Applicable for: payment, verify_payment, get_payment_sources_
+'ledger' - ledger id to request from, default is DOMAIN.
 
-'plugin_lib' - name of payment library file. _Applicable for: payment, verify_payment, get_payment_sources_
+'min_seq_no' - min seq_no to request, default is 0.
 
-'plugin_init_func' - name of payment library initialization function. _Applicable for: payment, verify_payment, get_payment_sources_
+'max_seq_no' - max seq_no to request, default is 10000000.
+
+'rand_seq' - the way to get next seq_no from interval from min to max, true - next val is random, false - sequentially from min to max, default is true.
+
+
+#### Parameters for payment plugins
+
+If ext_set contains setting for payment plugins then load script will try to send txn with fees.
+
+'payment_addrs_count' - count of payment addresses. Default is 100.
+
+'addr_mint_limit' - will be minted to each address. Default is 1000.
+
+'payment_method' - payment method. Default is empty.
+
+'plugin_lib' - name of payment library file. Default is empty.
+
+'plugin_init' - name of payment library initialization function. Default is empty.
+
+'trustees_num' - number of trustees required for multisig. Default is 4.
+
+'set_fees' - fees that wiil be append to existing pool fees before test starts. Default is empty.
+
+'mint_by' - mint limit will be minted several times by mint_by amount. Total minted amount will be equal to mint limit. Default is mint limit.  
 
 
 ## Examples
@@ -205,9 +243,4 @@ python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", 
 "read ledger" file is the output of the command read_ledger. Test settings shown below
 ```
 python3 perf_processes.py -k "{\"TXN_TYPE\": {\"file_name\": \"/path/to/file\", \"file_max_split\": 1, \"file_field\": 1, \"ignore_first_line\": false, \"file_sep\": \" \"}}"
-```
-
-* To send payment txns using 1000 payment addresses / initial payment sources (NOTE: payment method specific arguments should be substituted):
-```
-python3 perf_processes.py -k "{\"payment\": {\"payment_addrs_count\": 1000, \"payment_method\": \"<PAYMENT_METHOD>\", \"payment_lib\": \"<PAYMENT_LIB>\", \"payment_init_func\": \"<PAYMENT_INIT_FUNC>\"}}""
 ```
