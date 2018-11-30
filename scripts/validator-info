@@ -70,10 +70,8 @@ class FloatUnknown(BaseUnknown):
 class TimestampUnknown(BaseUnknown):
     def _str(self):
         return "{}".format(
-            datetime.datetime.fromtimestamp(self.val).strftime(
-                "%A, %B %{0}d, %Y %{0}I:%M:%S %p".format(
-                    '#' if os.name == 'nt' else '-'))
-        )
+            time.strftime("%A, %B %{0}d, %Y %{0}I:%M:%S %p %z".format('#' if os.name == 'nt' else '-'),
+                          time.localtime(self.val)))
 
 
 class UptimeUnknown(BaseUnknown):
@@ -98,10 +96,14 @@ class StateUnknown(BaseUnknown):
 
 class NodesListUnknown(BaseUnknown):
     def __init__(self, val):
-        super().__init__([] if val is None else val)
+        super().__init__({} if val is None else {rn[0]: rn[1] for rn in val})
 
     def _str(self):
-        return "\n".join("#  {}".format(alias) for alias in self.val)
+        if self.val:
+            return "\n".join(["  {}\t{}".format(pr_n, "({})".format(r_idx) if r_idx is not None else "")
+                              for pr_n, r_idx in self.val.items()])
+        else:
+            return ""
 
     def __iter__(self):
         return iter(self.val)
@@ -257,12 +259,18 @@ class BindingStats(BaseUnknown):
         ], False)
 
 
-class TransactionsStats(BaseStats):
-    shema = [
-        ("config", BaseUnknown),
-        ("ledger", BaseUnknown),
-        ("pool", BaseUnknown)
-    ]
+class TransactionsStats(BaseUnknown):
+    def __init__(self, val):
+        super().__init__({} if val is None else val)
+
+    def _str(self):
+        if self.val:
+            return "\n".join(["  Total {} Transactions:  {}".format(ledger, cnt) for ledger, cnt in self.val.items()])
+        else:
+            return ""
+
+    def __iter__(self):
+        return iter(self.val)
 
 
 class AverageStats(BaseStats):
@@ -285,8 +293,11 @@ class NodeStats(BaseStats):
         ("Name", BaseUnknown),
         ("did", BaseUnknown),
         ("verkey", BaseUnknown),
-        ("Node_port", BindingStats),
-        ("Client_port", BindingStats),
+        ("BLS_key", BaseUnknown),
+        ("Node_port", BaseUnknown),
+        ("Client_port", BaseUnknown),
+        ("Node_ip", BaseUnknown),
+        ("Client_ip", BaseUnknown),
         ("Metrics", MetricsStats)
     ]
 
@@ -452,19 +463,17 @@ class ValidatorStats(BaseStats):
         # will drop visibility of output
         lines = [
             "Validator {} is {}".format(self['Node_info']['Name'], self['state']),
-            "#Current time:     {}".format(self['timestamp']),
+            "Update time:     {}".format(self['timestamp']),
             "Validator DID:    {}".format(self['Node_info']['did']),
             "Verification Key: {}".format(self['Node_info']['verkey']),
-            "Node Port:        {}".format(self['Node_info']['Node_port']),
-            "Client Port:      {}".format(self['Node_info']['Client_port']),
+            "BLS Key: {}".format(self['Node_info']['BLS_key']),
+            "Node HA:        {}:{}".format(self['Node_info']['Node_ip'], self['Node_info']['Node_port']),
+            "Client HA:      {}:{}".format(self['Node_info']['Client_ip'], self['Node_info']['Client_port']),
             "Metrics:",
-            "  Uptime: {}".format(self['Node_info']['Metrics']['uptime']),
-            "#  Total Config Transactions:  {}".format(
-                self['Node_info']['Metrics']['transaction-count']['config']),
-            "  Total Ledger Transactions:  {}".format(
-                self['Node_info']['Metrics']['transaction-count']['ledger']),
-            "  Total Pool Transactions:    {}".format(
-                self['Node_info']['Metrics']['transaction-count']['pool']),
+            "  Uptime: {}".format(self['Node_info']['Metrics']['uptime'])
+            ] + [
+                str(self['Node_info']['Metrics']['transaction-count'])
+        ] + [
             "  Read Transactions/Seconds:  {}".format(
                 self['Node_info']['Metrics']['average-per-second']['read-transactions']),
             "  Write Transactions/Seconds: {}".format(
@@ -473,28 +482,27 @@ class ValidatorStats(BaseStats):
                 self['Pool_info']['Reachable_nodes_count'],
                 self['Pool_info']['Total_nodes_count'])
         ] + [
-            "#  {}".format(alias)
-            for alias in self['Pool_info']['Reachable_nodes']
+            str(self['Pool_info']['Reachable_nodes'])
         ] + [
             "Unreachable Hosts: {}/{}".format(
                 self['Pool_info']['Unreachable_nodes_count'],
                 self['Pool_info']['Total_nodes_count']
             )
         ] + [
-            "#  {}".format(alias)
-            for alias in self['Pool_info']['Unreachable_nodes']
+            str(self['Pool_info']['Unreachable_nodes'])
         ] + [
-            "#Software Versions:"
+            "Software Versions:"
         ] + [
-            "#  {}: {}".format(pkgName, self['software'][pkgName])
+            "  {}: {}".format(pkgName, self['software'][pkgName])
             for pkgName in self['software'].keys()
         ]
 
         # skip lines with started with '#' if not verbose
         # or remove '#' otherwise
+        # return "\n".join(lines)
         return ("\n".join(
             [l[(1 if l[0] == '#' else 0):]
-                for l in lines if self._verbose or l[0] != '#'])
+                for l in lines if self._verbose or (l and l[0] != '#')])
         )
 
 
@@ -519,7 +527,7 @@ async def handle_client(client_reader, client_writer):
             else:
                 logger.debug("Received data: {}".format(data))
                 stats = json.loads(data.decode())
-                print(json.dumps(stats, indent=2, cls=NewEncoder))
+                print(json.dumps(stats, indent=2, cls=NewEncoder, sort_keys=True))
 
 
 def accept_client(client_reader, client_writer):
@@ -567,7 +575,7 @@ def nagios(vstats):
         "{} {}_Unreachable_Validators unreachable_validators={} {} Unreachable Validators".format(
             state,vstats['Node_info']['Name'],vstats['Pool_info']['Unreachable_nodes_count'],vstats['Node_info']['Name'])
     ]
-    return "\n".join(lines);
+    return "\n".join(lines)
 
 
 def get_stats_from_file(stats, verbose, _json, _nagios):
@@ -576,7 +584,7 @@ def get_stats_from_file(stats, verbose, _json, _nagios):
     vstats = ValidatorStats(stats, verbose)
 
     if _json:
-        return json.dumps(vstats, indent=2, cls=NewEncoder)
+        return json.dumps(vstats, indent=2, cls=NewEncoder, sort_keys=True)
     if _nagios:
         return nagios(vstats) 
 
@@ -617,7 +625,7 @@ def format_value(value):
 
 
 def create_print_tree(stats: dict, indent=0, lines=[]):
-    for key, value in stats.items():
+    for key, value in sorted(stats.items(), key=lambda x: x[0]):
         if isinstance(value, dict):
             lines.append(make_indent(indent) + format_key(key))
             create_print_tree(value, indent + 1, lines)
@@ -805,25 +813,36 @@ def main():
     #     loop.close()
     # else:
     all_paths = glob(os.path.join(args.basedir, "*_info.json"))
-    info_paths = []
-    additional_paths = []
+
+    files_by_node = dict()
+
     for path in all_paths:
-        if path.find("additional") != -1:
-            additional_paths.append(path)
+        bn = os.path.basename(path)
+        if not bn:
+            continue
+        node_name = bn.split("_", maxsplit=1)[0]
+        if "additional" in bn:
+            files_by_node.setdefault(node_name, {}).update({"additional": path})
+        elif "version" in bn:
+            files_by_node.setdefault(node_name, {}).update({"version": path})
         else:
-            info_paths.append(path)
-    if not info_paths:
+            files_by_node.setdefault(node_name, {}).update({"info": path})
+    if not files_by_node:
         print('There are no info files in {}'.format(args.basedir))
         return
 
     if args.json:
-        out_json = compile_json_ouput(info_paths + additional_paths)
+        allf = []
+        for n, ff in files_by_node.items():
+            allf.extend([v for k, v in ff.items()])
+        out_json = compile_json_ouput(allf)
         if out_json:
-            print(json.dumps(out_json))
+            print(json.dumps(out_json, sort_keys=True))
             sys.exit(0)
 
-    for file_path in info_paths:
-        json_data = read_json(file_path)
+    for node in files_by_node:
+        inf_ver = [v for k, v in files_by_node[node].items() if k in ["info", "version"]]
+        json_data = compile_json_ouput(inf_ver)
         if json_data:
             if args.verbose:
                     print("{}".format(os.linesep).join(create_print_tree(json_data, lines=[])))
@@ -832,7 +851,10 @@ def main():
 
         print('\n')
     if args.verbose:
-        for file_path in additional_paths:
+        for node in files_by_node:
+            file_path = files_by_node[node].get("additional", "")
+            if not file_path:
+                continue
             json_data = read_json(file_path)
             if json_data:
                 print("{}".format(os.linesep).join(create_print_tree(json_data, lines=[])))

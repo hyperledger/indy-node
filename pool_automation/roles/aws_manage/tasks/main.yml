@@ -1,23 +1,47 @@
 ---
+- name: Pre-Checks - check variables
+  import_tasks: "pre_checks.yml"
+
+# TODO combine all 'set_fact's to one task when
+# it would be possible (https://github.com/ansible/ansible/issues/40239)
+- name: Set ssh_dir_name, ssh_key_name and ssh_known_hosts_name variables
+  set_fact:
+    ssh_dir_name: "{{ '.ssh' if aws_build_dir == aws_inventory_dir else 'ssh'}}"
+    ssh_key_name: "key.{{ aws_group_name }}"
+    ssh_known_hosts_name: "known_hosts.{{ aws_group_name }}"
+    ssh_config_name: "config.{{ aws_group_name }}"
+
+- name: Set ssh_dir variable
+  set_fact:
+    ssh_dir: "{{ aws_build_dir }}/{{ ssh_dir_name }}"
+
+- name: Set ssh_key and ssh_known_hosts variable
+  set_fact:
+    ssh_key: "{{ ssh_dir }}/{{ ssh_key_name }}"
+    ssh_known_hosts: "{{ ssh_dir }}/{{ ssh_known_hosts_name }}"
+    ssh_config: "{{ ssh_dir }}/{{ ssh_config_name }}"
+
 - name: Pre-Up
-  include_tasks: "{{ role_path }}/tasks/pre_up.yml"
-  when: instance_count > 0
+  import_tasks: "pre_up.yml"
+  when: aws_instance_count > 0
 
 - name: Manage instances
   stateful_set:
     regions: "{{ aws_regions }}"
-    namespace: "{{ tag_namespace }}"
-    role: "{{ tag_role }}"
+    project: "{{ aws_tag_project }}"
+    namespace: "{{ aws_tag_namespace }}"
+    group: "{{ aws_tag_group }}"
+    add_tags: "{{ aws_add_tags }}"
     key_name: "{{ aws_keyname }}"
-    group: "{{ aws_group }}"    
-    instance_type: "{{ aws_type }}"
-    instance_count: "{{ instance_count }}"
-  register: ec2
+    security_group: "{{ aws_sgroup }}"
+    instance_type: "{{ aws_ec2_type }}"
+    instance_count: "{{ aws_instance_count }}"
+  register: aws_ec2hosts
 
 - name: Post-Up
-  include_tasks: "{{ role_path }}/tasks/post_up.yml"
-  when: instance_count > 0
+  import_tasks: "post_up.yml"
+  when: aws_instance_count > 0
 
 - name: Post-Down
-  include_tasks: "{{ role_path }}/tasks/post_down.yml"
-  when: instance_count == 0
+  import_tasks: "post_down.yml"
+  when: aws_instance_count == 0
