@@ -27,9 +27,6 @@
 #    > ln -s ../opt/openssl/include/openssl .
 #    The above fix was taken from:
 #    https://www.anintegratedworld.com/mac-osx-fatal-error-opensslsha-h-file-not-found/
-#    Prehaps adding the above two lines between `brew install openssl` and the
-#    "# PBC" section of https://github.com/hyperledger/indy-anoncreds/blob/master/setup-charm-homebrew.sh
-#    would be sufficient?
 
 from indy_common.config_helper import NodeConfigHelper
 from indy_common.config_util import getConfig
@@ -277,7 +274,7 @@ class NodeStateReplayer:
             node_name)
 
         return Recorder(node_rec_kv_store, skip_metadata_write=True), \
-            Recorder(client_rec_kv_store, skip_metadata_write=True)
+               Recorder(client_rec_kv_store, skip_metadata_write=True)
 
     def update_loaded_config(self, config):
         config.STACK_COMPANION = 2

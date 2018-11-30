@@ -1,61 +1,47 @@
 ---
-- name: Define valid ids
+- name: Pre-Checks - check variables
+  import_tasks: "pre_checks.yml"
+
+# TODO combine all 'set_fact's to one task when
+# it would be possible (https://github.com/ansible/ansible/issues/40239)
+- name: Set ssh_dir_name, ssh_key_name and ssh_known_hosts_name variables
   set_fact:
-    valid_ids: "{{ range(1, instance_count+1) | map('string') | list }}"
-    inventory_dir: "{{ tag_namespace }}_{{ group_name }}"
+    ssh_dir_name: "{{ '.ssh' if aws_build_dir == aws_inventory_dir else 'ssh'}}"
+    ssh_key_name: "key.{{ aws_group_name }}"
+    ssh_known_hosts_name: "known_hosts.{{ aws_group_name }}"
+    ssh_config_name: "config.{{ aws_group_name }}"
+
+- name: Set ssh_dir variable
+  set_fact:
+    ssh_dir: "{{ aws_build_dir }}/{{ ssh_dir_name }}"
+
+- name: Set ssh_key and ssh_known_hosts variable
+  set_fact:
+    ssh_key: "{{ ssh_dir }}/{{ ssh_key_name }}"
+    ssh_known_hosts: "{{ ssh_dir }}/{{ ssh_known_hosts_name }}"
+    ssh_config: "{{ ssh_dir }}/{{ ssh_config_name }}"
 
 - name: Pre-Up
-  include_tasks: "{{ role_path }}/tasks/pre_up.yml"
-  when: instance_count > 0
+  import_tasks: "pre_up.yml"
+  when: aws_instance_count > 0
 
-- name: Gather information on all existing instances
-  ec2_instance_facts:
-    region: "{{ item }}"
-    filters:
-      "tag:namespace": "{{ tag_namespace }}"
-      "tag:role": "{{ tag_role }}"
-  register: ec2
-  with_items: "{{ aws_regions }}"
-
-- name: Destroy excess instances
-  ec2_instance:
-    region: "{{ item }}"
-    instance_ids: |
-      {% set tmp = ec2.results |
-         selectattr('item', 'eq', item) |
-         first %}
-      {{ tmp.instances |
-         rejectattr('state.name', 'eq', 'terminated') |
-         rejectattr('tags.id', 'in', valid_ids) |
-         map(attribute='instance_id') |
-         list }}
-    state: absent
-  with_items: "{{ aws_regions }}"
-
-- name: Ensure needed instances are running
-  ec2:
-    instance_type: "{{ aws_type }}"
-    image: "{{ aws_image }}"
+- name: Manage instances
+  stateful_set:
+    regions: "{{ aws_regions }}"
+    project: "{{ aws_tag_project }}"
+    namespace: "{{ aws_tag_namespace }}"
+    group: "{{ aws_tag_group }}"
+    add_tags: "{{ aws_add_tags }}"
     key_name: "{{ aws_keyname }}"
-    group: "{{ aws_group }}"
-    exact_count: 1
-    instance_tags:
-      namespace: "{{ tag_namespace }}"
-      role: "{{ tag_role }}"
-      id: "{{ item }}"
-    count_tag:
-      namespace: "{{ tag_namespace }}"
-      role: "{{ tag_role }}"
-      id: "{{ item }}"
-    region: "{{ aws_region }}"
-    wait: true
-  with_items: "{{ valid_ids }}"
-  register: ec2
+    security_group: "{{ aws_sgroup }}"
+    instance_type: "{{ aws_ec2_type }}"
+    instance_count: "{{ aws_instance_count }}"
+  register: aws_ec2hosts
 
 - name: Post-Up
-  include_tasks: "{{ role_path }}/tasks/post_up.yml"
-  when: instance_count > 0
+  import_tasks: "post_up.yml"
+  when: aws_instance_count > 0
 
 - name: Post-Down
-  include_tasks: "{{ role_path }}/tasks/post_down.yml"
-  when: instance_count == 0
+  import_tasks: "post_down.yml"
+  when: aws_instance_count == 0

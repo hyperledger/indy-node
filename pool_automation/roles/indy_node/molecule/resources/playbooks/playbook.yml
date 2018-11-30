@@ -1,0 +1,6 @@
+---
+- name: Converge
+  gather_facts: false
+  hosts: nodes
+  roles:
+    - role: indy_node

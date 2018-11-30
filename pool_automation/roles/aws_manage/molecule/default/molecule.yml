@@ -6,6 +6,9 @@ provisioner:
   name: ansible
   lint:
     name: ansible-lint
+  inventory:
+    links:
+      group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
 
 platforms:
   - name: instance
@@ -16,7 +19,7 @@ driver:
 lint:
   name: yamllint
   options:
-    config-file: ../common/yamllint
+    config-file: ../../yamllint
 
 verifier:
   name: testinfra

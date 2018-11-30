@@ -6,7 +6,7 @@ from indy import ledger
 
 from perf_load.perf_client import LoadClient
 from perf_load.perf_utils import ensure_is_reply, divide_sequence_into_chunks,\
-    request_get_type, gen_input_output, PUB_XFER_TXN_ID
+    request_get_type, gen_input_output, PUB_XFER_TXN_ID, response_get_type
 
 
 TRUSTEE_ROLE_CODE = "0"
@@ -30,8 +30,10 @@ class LoadClientFees(LoadClient):
                 print("Payment plugin initialization failed: {}".format(repr(ex)))
                 raise ex
 
-    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **kwargs):
-        super().__init__(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, **kwargs)
+    def __init__(self, name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode, short_stat,
+                 **kwargs):
+        super().__init__(name, pipe_conn, batch_size, batch_rate, req_kind, buff_req, pool_config, send_mode,
+                         short_stat, **kwargs)
         self._trustee_dids = []
         self._pool_fees = {}
         self._ignore_fees_txns = [PUB_XFER_TXN_ID]
@@ -44,6 +46,9 @@ class LoadClientFees(LoadClient):
         self._req_num_of_trustees = kwargs.get("trustees_num", 4)
         self._set_fees = kwargs.get("set_fees", {})
         self._req_addrs = {}
+        self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
+        if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
+            self._mint_by = self._addr_mint_limit
 
         if not self._payment_method or not self._plugin_lib or not self._plugin_init:
             raise RuntimeError("Plugin cannot be initialized. Some required param missed")
@@ -87,7 +92,8 @@ class LoadClientFees(LoadClient):
         try:
             resp_obj = json.loads(resp)
             op_f = resp_obj.get("op", "")
-            if op_f == "REPLY":
+            resp_type = response_get_type(resp_obj)
+            if op_f == "REPLY" and resp_type not in self._ignore_fees_txns:
                 receipt_infos_json = await payment.parse_response_with_fees(self._payment_method, resp)
                 receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
                 for ri in receipt_infos:
@@ -95,7 +101,7 @@ class LoadClientFees(LoadClient):
             else:
                 self._restore_fees_from_req(req)
         except Exception as e:
-            print("Error on payment txn postprocessing: {}".format(e))
+            self._logger.exception("Error on payment txn postprocessing: {}".format(e))
         self._req_addrs.pop(req, {})
 
     async def ledger_submit(self, pool_h, req):
@@ -132,15 +138,19 @@ class LoadClientFees(LoadClient):
             ret_req = await ledger.multi_sign_request(self._wallet_handle, d, ret_req)
         return ret_req
 
-    async def __mint_sources(self, payment_addresses, amount):
-        outputs = []
-        for payment_address in payment_addresses:
-            outputs.append({"recipient": payment_address, "amount": amount})
-
-        mint_req, _ = await payment.build_mint_req(self._wallet_handle, self._test_did, json.dumps(outputs), None)
-        mint_req = await self.multisig_req(mint_req)
-        mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
-        ensure_is_reply(mint_resp)
+    async def __mint_sources(self, payment_addresses, amount, by_val):
+        iters = (amount // by_val) + (1 if (amount % by_val) > 0 else 0)
+        mint_val = by_val
+        for i in range(iters):
+            outputs = []
+            if (i + 1) * by_val > amount:
+                mint_val = amount % by_val
+            for payment_address in payment_addresses:
+                outputs.append({"recipient": payment_address, "amount": mint_val})
+            mint_req, _ = await payment.build_mint_req(self._wallet_handle, self._test_did, json.dumps(outputs), None)
+            mint_req = await self.multisig_req(mint_req)
+            mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
+            ensure_is_reply(mint_resp)
 
     async def _get_payment_sources(self, pmnt_addr):
         get_ps_req, _ = await payment.build_get_payment_sources_request(self._wallet_handle, self._test_did, pmnt_addr)
@@ -175,6 +185,7 @@ class LoadClientFees(LoadClient):
                                                                 self._trustee_dids[0], nym_req)
                 ensure_is_reply(nym_resp)
             self._trustee_dids.append(self._test_did)
+        self._logger.info("_did_init done")
 
     async def _pool_fees_init(self):
         if self._set_fees:
@@ -188,24 +199,29 @@ class LoadClientFees(LoadClient):
         get_fees_resp = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did,
                                                              get_fees_req)
         self._pool_fees = json.loads(await payment.parse_get_txn_fees_response(self._payment_method, get_fees_resp))
+        self._logger.info("_pool_fees_init done")
 
     async def _payment_address_init(self):
         pmt_addrs = await self.__create_payment_addresses(self._payment_addrs_count)
         for payment_addrs_chunk in divide_sequence_into_chunks(pmt_addrs, 500):
-            await self.__mint_sources(payment_addrs_chunk, self._addr_mint_limit)
+            await self.__mint_sources(payment_addrs_chunk, self._addr_mint_limit, self._mint_by)
         for pa in pmt_addrs:
             self._addr_txos.update(await self._get_payment_sources(pa))
+        self._logger.info("_payment_address_init done")
 
     async def _pre_init(self):
         self.__init_plugin_once(self._plugin_lib, self._plugin_init)
+        self._logger.info("_pre_init done")
 
     async def _post_init(self):
         await self._pool_fees_init()
         await self._payment_address_init()
+        self._logger.info("_post_init done")
 
     def _on_pool_create_ext_params(self):
         params = super()._on_pool_create_ext_params()
         params.update({"addr_txos": self._addr_txos,
                        "payment_method": self._payment_method,
                        "pool_fees": self._pool_fees})
+        self._logger.info("_on_pool_create_ext_params done {}".format(params))
         return params

@@ -9,9 +9,7 @@ from stp_core.common.log import getlogger
 from plenum.common.constants import STEWARD_STRING, TRUSTEE_STRING
 from plenum.test.pool_transactions.test_suspend_node import \
     checkNodeNotInNodeReg
-from indy_client.test.helper import addRole, \
-    getClientAddedWithRole
-from indy_common.constants import TGB, TRUST_ANCHOR_STRING
+from indy_common.constants import TRUST_ANCHOR_STRING
 
 logger = getlogger()
 
@@ -20,12 +18,6 @@ logger = getlogger()
 def another_trustee(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
     return sdk_add_new_nym(looper, sdk_pool_handle,
                            sdk_wallet_trustee, 'newTrustee', TRUSTEE_STRING)
-
-
-@pytest.fixture(scope="module")
-def anotherTGB(nodeSet, tdirWithClientPoolTxns, looper, trustee, trusteeWallet):
-    return getClientAddedWithRole(nodeSet, tdirWithClientPoolTxns, looper,
-                                  trustee, trusteeWallet, 'newTGB', role=TGB)
 
 
 @pytest.fixture(scope="module")
@@ -54,12 +46,6 @@ def another_trust_anchor1(looper, nodeSet, sdk_pool_handle, sdk_wallet_trustee):
 
 def testTrusteeAddingAnotherTrustee(another_trustee):
     pass
-
-
-# TODO: remove when delete TGB
-def testTrusteeAddingTGB(looper, anotherTGB):
-    # The new TGB adds a NYM
-    addRole(looper, *anotherTGB, name=randomString())
 
 
 def testTrusteeAddingSteward(looper, sdk_pool_handle, another_steward):

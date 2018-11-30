@@ -10,7 +10,7 @@ from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
     GET_REVOC_REG_DEF, ID, GET_REVOC_REG, GET_REVOC_REG_DELTA, REVOC_TYPE, \
     TIMESTAMP, FROM, TO, ISSUED, REVOKED, STATE_PROOF_FROM, ACCUM_FROM, ACCUM_TO, \
-    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION
+    CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, REF
 from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
     get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
     get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
@@ -282,6 +282,17 @@ class DomainReqHandler(PHandler):
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
         # sine a Claim Def needs to be identified by seqNo
+        ref = req.operation[REF]
+        try:
+            txn = self.ledger.getBySeqNo(ref)
+        except KeyError:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "Mentioned seqNo ({}) doesn't exist.".format(ref))
+        if txn['txn']['type'] != SCHEMA:
+            raise InvalidClientRequest(req.identifier,
+                                       req.reqId,
+                                       "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
         try:
             origin_role = self.idrCache.getRole(
                 req.identifier, isCommitted=False) or None
