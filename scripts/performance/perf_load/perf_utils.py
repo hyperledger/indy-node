@@ -4,9 +4,18 @@ import argparse
 from collections import Sequence
 import base58
 import libnacl
-
+import logging
+import time
 
 PUB_XFER_TXN_ID = "10001"
+
+
+def logger_init(out_dir, f_name, log_lvl):
+    od = os.path.expanduser(out_dir)
+    os.makedirs(od, exist_ok=True)
+    logging.basicConfig(filename=os.path.join(od, f_name), level=log_lvl, style="{",
+                        format='{asctime:s}|{levelname:s}|{filename:s}|{name:s}|{message:s}')
+    logging.Formatter.converter = time.gmtime
 
 
 def check_fs(is_dir: bool, fs_name: str):
@@ -70,6 +79,17 @@ def request_get_type(req):
     else:
         raise RuntimeError("Request of unsupported type")
     txn_type = dict_req.get("operation", {}).get("type", "")
+    return txn_type
+
+
+def response_get_type(req):
+    if isinstance(req, dict):
+        dict_resp = req
+    elif isinstance(req, str):
+        dict_resp = json.loads(req)
+    else:
+        raise RuntimeError("Response of unsupported type")
+    txn_type = dict_resp.get("result", {}).get("txn", {}).get("type", "")
     return txn_type
 
 

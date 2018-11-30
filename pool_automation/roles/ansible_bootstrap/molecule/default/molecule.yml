@@ -1,0 +1,26 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint:
+  name: yamllint
+  options:
+    config-file: ../../yamllint
+platforms:
+  - name: instance
+    image: ubuntu:16.04  # TODO parametrize
+    pre_build_image: true
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  playbooks:
+    converge: ../resources/playbooks/playbook.yml
+scenario:
+  name: default
+verifier:
+  name: testinfra
+  directory: ../resources/tests
+  lint:
+    name: flake8

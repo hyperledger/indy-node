@@ -1,0 +1,7 @@
+---
+perf_scripts_ver: master
+perf_scripts_indy_sdk_channel: master
+perf_scripts_python3_indy_ver: 1.6.8.dev858
+perf_scripts_libindy_ver: 1.6.8~858
+perf_scripts_venv_name: perf_test_venv
+perf_scripts_pool_genesis_txns_name: pool_transactions_genesis

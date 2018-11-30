@@ -1,0 +1,8 @@
+---
+- name: Converge
+  gather_facts: false
+  hosts: clients
+  roles:
+    - role: indy_cli
+      vars:
+        indy_cli_configuration: false

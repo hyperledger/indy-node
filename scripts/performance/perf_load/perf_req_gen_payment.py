@@ -53,6 +53,10 @@ class RGGetPaymentSources(RGBasePayment):
 
 
 class RGPayment(RGBasePayment):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._sent_reqs = set()
+
     def _gen_req_data(self):
         return self._gen_input_output(1, self._payment_fees)
 
@@ -61,6 +65,24 @@ class RGPayment(RGBasePayment):
         req, _ = await payment.build_payment_req(
             self._wallet_handle, self._submitter_did, json.dumps(inputs), json.dumps(outputs), None)
         return req
+
+    async def on_request_generated(self, req_data, gen_req):
+        self._sent_reqs.add(gen_req)
+
+    async def on_request_replied(self, req_data, gen_req, resp_or_exp):
+        if gen_req in self._sent_reqs:
+            self._sent_reqs.remove(gen_req)
+
+            if isinstance(resp_or_exp, Exception):
+                return
+
+            try:
+                receipt_infos_json = await payment.parse_payment_response(self._payment_method, resp_or_exp)
+                receipt_infos = json.loads(receipt_infos_json) if receipt_infos_json else []
+                for ri in receipt_infos:
+                    self._addr_txos[ri["recipient"]].append((ri["receipt"], ri["amount"]))
+            except Exception:
+                pass
 
 
 class RGVerifyPayment(RGBasePayment):

@@ -1,7 +1,7 @@
 from plenum.common.constants import TRUSTEE, STEWARD
 
 from indy_common.auth import Authoriser, generate_auth_map
-from indy_common.constants import NAME, TGB, TRUST_ANCHOR, SCHEMA
+from indy_common.constants import NAME, TRUST_ANCHOR, SCHEMA
 
 
 def test_schema_adding(initialized_auth_map):
@@ -12,10 +12,8 @@ def test_schema_adding(initialized_auth_map):
 
 
 def test_schema_adding_without_permission(initialized_auth_map):
-    roles = {TGB, None}
-    for role in roles:
-        r, msg = _authorised_for_schemas(role)
-        assert not r and msg
+    r, msg = _authorised_for_schemas(None)
+    assert not r and msg
 
 
 def test_client_can_send_claim_def():

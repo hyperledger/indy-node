@@ -1,30 +1,20 @@
 import pytest
-import os
-import importlib
-import json
 
-from stp_core.loop.eventually import eventually
-
+from indy_node.test.state_proof.helper import sdk_submit_operation_and_get_result
 from plenum.common.constants import TARGET_NYM, RAW, NAME, VERSION, ORIGIN
-from plenum.test import waits
-from plenum.test.helper import check_sufficient_replies_received
-
 
 # noinspection PyUnresolvedReferences
-from plenum.test.validator_info.conftest import \
-    info, node  # qa
+from plenum.common.ledger import Ledger
+from plenum.test.primary_selection.test_primary_selector import FakeLedger
+from plenum.test.validator_info.conftest import info, node  # qa
 
 from indy_common.constants import TXN_TYPE, DATA, GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REF, SIGNATURE_TYPE
-
-from indy_client.client.wallet.attribute import Attribute
 from indy_node.__metadata__ import __version__ as node_pgk_version
-
 
 PERIOD_SEC = 1
 TEST_NODE_NAME = 'Alpha'
 STATUS_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
 INFO_FILENAME = '{}_info.json'.format(TEST_NODE_NAME.lower())
-
 
 
 def test_validator_info_file_schema_is_valid(info):
@@ -36,19 +26,19 @@ def test_validator_info_file_metrics_count_ledger_field_valid(info):
     assert info['Node_info']['Metrics']['transaction-count']['config'] == 0
 
 
-@pytest.mark.skip(reason="info will not be included by default")
+def test_validator_info_bls_key_field_valid(node, info):
+    assert info['Node_info']['BLS_key']
+
+
+def test_validator_info_ha_fields_valid(node, info):
+    assert info['Node_info']['Node_ip']
+    assert info['Node_info']['Client_ip']
+    assert info['Node_info']['Node_port']
+    assert info['Node_info']['Client_port']
+
+
 def test_validator_info_file_software_indy_node_valid(info):
     assert info['Software']['indy-node'] == node_pgk_version
-
-
-@pytest.mark.skip(reason="info will not be included by default")
-def test_validator_info_file_software_sovrin_valid(info):
-    try:
-        pkg = importlib.import_module('sovrin')
-    except ImportError:
-        assert info['Software']['sovrin'] is None
-    else:
-        assert info['Software']['sovrin'] == pkg.__version__
 
 
 @pytest.fixture()
@@ -102,28 +92,15 @@ def test_validator_info_file_get_claim_def(read_txn_and_get_latest_info,
     assert latest_info['Node_info']['Metrics']['average-per-second']['read-transactions'] > 0
 
 
-@pytest.fixture()
-def client_and_wallet(steward, stewardWallet):
-    return steward, stewardWallet
-
-
-def submitRequests(client, wallet, op):
-    req = wallet.signOp(op)
-    # TODO: This looks boilerplate
-    wallet.pendRequest(req)
-    reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)[0]
-
-
-def makeGetNymRequest(client, wallet, nym):
+def makeGetNymRequest(looper, sdk_pool_handle, sdk_wallet, nym):
     op = {
         TARGET_NYM: nym,
         TXN_TYPE: GET_NYM,
     }
-    return submitRequests(client, wallet, op)
+    return sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet, op)
 
 
-def makeGetSchemaRequest(client, wallet, nym):
+def makeGetSchemaRequest(looper, sdk_pool_handle, sdk_wallet, nym):
     op = {
         TARGET_NYM: nym,
         TXN_TYPE: GET_SCHEMA,
@@ -132,55 +109,89 @@ def makeGetSchemaRequest(client, wallet, nym):
             VERSION: '1.0',
         }
     }
-    return submitRequests(client, wallet, op)
+    return sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet, op)
 
 
-def makeGetAttrRequest(client, wallet, nym, raw):
+def makeGetAttrRequest(looper, sdk_pool_handle, sdk_wallet, nym, raw):
     op = {
         TARGET_NYM: nym,
         TXN_TYPE: GET_ATTR,
         RAW: raw
     }
-    return submitRequests(client, wallet, op)
+    return sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet, op)
 
 
-def makeGetClaimDefRequest(client, wallet):
+def makeGetClaimDefRequest(looper, sdk_pool_handle, sdk_wallet):
     op = {
         TXN_TYPE: GET_CLAIM_DEF,
-        ORIGIN: '1' * 16, # must be a valid DID
+        ORIGIN: '1' * 16,  # must be a valid DID
         REF: 1,
         SIGNATURE_TYPE: 'any'
     }
-    return submitRequests(client, wallet, op)
+    return sdk_submit_operation_and_get_result(looper, sdk_pool_handle, sdk_wallet, op)
 
 
 @pytest.fixture
-def read_txn_and_get_latest_info(txnPoolNodesLooper,
-                                 client_and_wallet, node):
-    client, wallet = client_and_wallet
+def read_txn_and_get_latest_info(looper, sdk_pool_handle,
+                                 sdk_wallet_client, node):
+    _, did = sdk_wallet_client
 
     def read_wrapped(txn_type):
-
         if txn_type == GET_NYM:
-            reqs = makeGetNymRequest(client, wallet, wallet.defaultId)
+            makeGetNymRequest(looper, sdk_pool_handle, sdk_wallet_client, did)
         elif txn_type == GET_SCHEMA:
-            reqs = makeGetSchemaRequest(client, wallet, wallet.defaultId)
+            makeGetSchemaRequest(looper, sdk_pool_handle, sdk_wallet_client, did)
         elif txn_type == GET_ATTR:
-            reqs = makeGetAttrRequest(client, wallet, wallet.defaultId, "attrName")
+            makeGetAttrRequest(looper, sdk_pool_handle, sdk_wallet_client, did, "attrName")
         elif txn_type == GET_CLAIM_DEF:
-            reqs = makeGetClaimDefRequest(client, wallet)
+            makeGetClaimDefRequest(looper, sdk_pool_handle, sdk_wallet_client)
         else:
             assert False, "unexpected txn type {}".format(txn_type)
-
-        timeout = waits.expectedTransactionExecutionTime(
-            len(client.inBox))
-        txnPoolNodesLooper.run(
-            eventually(check_sufficient_replies_received,
-                       client, reqs[0].identifier, reqs[0].reqId,
-                       retryWait=1, timeout=timeout))
         return node._info_tool.info
+
     return read_wrapped
 
 
 def reset_node_total_read_request_number(node):
     node.total_read_request_number = 0
+
+
+class FakeTree:
+    @property
+    def root_hash(self):
+        return '222222222222222222222222222'
+
+class FakeLedgerEx(FakeLedger):
+    @property
+    def uncommittedRootHash(self):
+        return '111111111111111111111111111111111'
+
+    @property
+    def uncommittedTxns(self):
+        return []
+
+    @property
+    def tree(self):
+        return FakeTree()
+
+    @property
+    def size(self):
+        return 100
+
+
+def test_validator_info_file_metrics_count_all_ledgers_field_valid(node):
+    new_ids = [444, 555, 666, 777]
+    for newid in new_ids:
+        node.ledgerManager.addLedger(newid, FakeLedgerEx(newid, newid))
+    info = node._info_tool.info
+    has_cnt = len(info['Node_info']['Metrics']['transaction-count'])
+    assert has_cnt == len(new_ids) + 3
+
+
+def test_validator_info_update_date_field_valid(info):
+    assert "Update time" in info
+    import time
+    import datetime
+    from_str = time.mktime(datetime.datetime.strptime(info["Update time"],
+                                                      "%A, %B %d, %Y %I:%M:%S %p %z").timetuple())
+    assert int(from_str) == info["timestamp"]
