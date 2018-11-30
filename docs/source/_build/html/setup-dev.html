@@ -1,0 +1,475 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Dev Setup &mdash; Hyperledger Indy Node  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Setup iptables rules (recommended)" href="setup-iptables.html" />
+    <link rel="prev" title="Requests" href="requests-new.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Hyperledger Indy Node
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start-nodes.html">Create a Network and Start Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-node.html">Add Node to Existing Pool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ci-cd.html">Continuous Integration / Delivery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster-simulation.html">Running a Simulation of a Indy Cluster and Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="helper-scripts.html">Helper Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-file-structure-guideline.html">Indy File Folders Structure Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html">Indy – Running the Getting Started tutorial locally</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html#resetting-the-indy-environment">Resetting the Indy environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-monitoring-tools-for-stewards.html">Node Monitoring Tools for Stewards</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html">Node State Diagnostic Tools Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html#workflow">Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pool-upgrade.html">Pool Upgrade Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests-new.html">Requests</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Dev Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quick-setup-on-ubuntu-16-04">Quick Setup on Ubuntu 16.04:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#detailed-setup">Detailed Setup</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setup-python">Setup Python</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ubuntu">Ubuntu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#centos-redhat">CentOS/Redhat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mac">Mac</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#windows">Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-charm-crypto">Setup Charm-Crypto</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-libsodium">Setup Libsodium</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ubuntu">Ubuntu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#centos-redhat">CentOS/Redhat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#mac">Mac</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#windows">Windows</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-indy-crypto">Setup Indy-Crypto</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-rocksdb">Setup RocksDB</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-libindy">Setup Libindy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-a-virtual-environment-recommended">Using a virtual environment (recommended)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-code-and-running-tests">Installing code and running tests</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="setup-iptables.html">Setup iptables rules (recommended)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="write-code-guideline.html">Code quality requirements guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1.3_to_1.4_migration_guide.html">List of breaking changes for migration from indy-node 1.3 to 1.4</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hyperledger Indy Node</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Dev Setup</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/setup-dev.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="dev-setup">
+<span id="dev-setup"></span><h1>Dev Setup<a class="headerlink" href="#dev-setup" title="Permalink to this headline">¶</a></h1>
+<p>There are scripts that can help in setting up environment and project for developers.
+The scripts are in <a class="reference external" href="https://github.com/hyperledger/indy-node/tree/master/dev-setup">dev-setup</a> folder.</p>
+<p><strong>Note</strong>: as of now, we provide scripts for Ubuntu only. It’s not guaranteed that the code is working on Windows.</p>
+<ul class="simple">
+<li>One needs Python 3.5 to work with the code</li>
+<li>We recommend using Python virtual environment for development</li>
+<li>We use pytest for unit and integration testing</li>
+<li>There are some dependencies that must be installed before being able to run the code</li>
+</ul>
+<div class="section" id="quick-setup-on-ubuntu-16-04">
+<span id="quick-setup-on-ubuntu-16-04"></span><h2>Quick Setup on Ubuntu 16.04:<a class="headerlink" href="#quick-setup-on-ubuntu-16-04" title="Permalink to this headline">¶</a></h2>
+<p>This is a Quick Setup for development on a clean Ubuntu 16.04 machine.
+You can also have a look at the scripts mentioned below to follow them and perform setup manually.</p>
+<ol class="simple">
+<li>Get scripts from <a class="reference external" href="https://github.com/hyperledger/indy-node/tree/master/dev-setup/ubuntu">dev-setup-ubuntu</a></li>
+<li>Run <code class="docutils literal notranslate"><span class="pre">setup-dev-python.sh</span></code> to setup Python3.5, pip and virtualenv</li>
+<li>Run <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.bashrc</span></code> to apply virtual environment wrapper installation</li>
+<li>Run <code class="docutils literal notranslate"><span class="pre">setup-dev-depend-ubuntu16.sh</span></code> to setup dependencies (charm-crypto, libindy, libindy-crypto, libsodium)</li>
+<li>Fork <a class="reference external" href="https://github.com/hyperledger/indy-plenum">indy-plenum</a> and <a class="reference external" href="https://github.com/hyperledger/indy-node">indy-node</a></li>
+<li>Go to the destination folder for the project</li>
+<li>Run <code class="docutils literal notranslate"><span class="pre">init-dev-project.sh</span> <span class="pre">&lt;github-name&gt;</span> <span class="pre">&lt;new-virtualenv-name&gt;</span></code> to clone indy-plenum and indy-node projects and
+create a virtualenv to work in</li>
+<li>Activate new virtualenv <code class="docutils literal notranslate"><span class="pre">workon</span> <span class="pre">&lt;new-virtualenv-name&gt;</span></code></li>
+<li>[Optionally] Install Pycharm</li>
+<li>[Optionally] Open and configure projects in Pycharm:<ul>
+<li>Open both indy-plenum and indy-node in one window</li>
+<li>Go to <code class="docutils literal notranslate"><span class="pre">File</span> <span class="pre">-&gt;</span> <span class="pre">Settings</span></code></li>
+<li>Configure Project Interpreter to use just created virtualenv<ul>
+<li>Go to <code class="docutils literal notranslate"><span class="pre">Project:</span> <span class="pre">&lt;name&gt;</span> <span class="pre">-&gt;</span> <span class="pre">Project</span> <span class="pre">Interpreter</span></code></li>
+<li>You’ll see indy-plenum and indy-node projects on the right side tab.
+For each of them:<ul>
+<li>Click on the project just beside “Project Interpreter” drop down, you’ll see one setting icon, click on it.</li>
+<li>Select “Add Local”</li>
+<li>Select existing virtualenv path as below: <virtual env path>/bin/python3.5
+For example: /home/user_name/.virtualenvs/new-virtualenv-name&gt;/bin/python3.5</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Configure Project Dependency<ul>
+<li>Go to <code class="docutils literal notranslate"><span class="pre">Project:</span> <span class="pre">&lt;name&gt;</span> <span class="pre">-&gt;</span> <span class="pre">Project</span> <span class="pre">Dependencies</span></code></li>
+<li>Mark each project to be dependent on another one</li>
+</ul>
+</li>
+<li>Configure pytest<ul>
+<li>Go to <code class="docutils literal notranslate"><span class="pre">Configure</span> <span class="pre">Tools</span> <span class="pre">-&gt;</span> <span class="pre">Python</span> <span class="pre">Integrated</span> <span class="pre">tools</span></code></li>
+<li>You’ll see indy-plenum and indy-node projects on the right side tab.
+For each of them:<ul>
+<li>Select Py.test from the ‘Default test runner’</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Press <code class="docutils literal notranslate"><span class="pre">Apply</span></code></li>
+</ul>
+</li>
+</ol>
+</div>
+<div class="section" id="detailed-setup">
+<span id="detailed-setup"></span><h2>Detailed Setup<a class="headerlink" href="#detailed-setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="setup-python">
+<span id="setup-python"></span><h3>Setup Python<a class="headerlink" href="#setup-python" title="Permalink to this headline">¶</a></h3>
+<p>One needs Python 3.5 to work with the code. You can use <code class="docutils literal notranslate"><span class="pre">dev-setup/ubuntu/setup_dev_python.sh</span></code> script for quick installation of Python 3.5, pip
+and virtual environment on Ubuntu, or follow the detailed instructions below.</p>
+<div class="section" id="ubuntu">
+<span id="ubuntu"></span><h4>Ubuntu<a class="headerlink" href="#ubuntu" title="Permalink to this headline">¶</a></h4>
+<ol class="simple">
+<li>Run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">add-apt-repository</span> <span class="pre">ppa:deadsnakes/ppa</span></code></li>
+<li>Run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">update</span></code></li>
+<li>On Ubuntu 14, run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">python3.5</span></code> (python3.5 is pre-installed on most Ubuntu 16 systems; if not, do it there as well.)</li>
+</ol>
+</div>
+<div class="section" id="centos-redhat">
+<span id="centos-redhat"></span><h4>CentOS/Redhat<a class="headerlink" href="#centos-redhat" title="Permalink to this headline">¶</a></h4>
+<p>Run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">yum</span> <span class="pre">install</span> <span class="pre">python3.5</span></code></p>
+</div>
+<div class="section" id="mac">
+<span id="mac"></span><h4>Mac<a class="headerlink" href="#mac" title="Permalink to this headline">¶</a></h4>
+<ol class="simple">
+<li>Go to <a class="reference external" href="https://www.python.org">python.org</a> and from the “Downloads” menu, download the Python 3.5.0 package (python-3.5.0-macosx10.6.pkg) or later.</li>
+<li>Open the downloaded file to install it.</li>
+<li>If you are a homebrew fan, you can install it using this brew command: <code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">python3</span></code></li>
+<li>To install homebrew package manager, see: <a class="reference external" href="http://brew.sh/">brew.sh</a></li>
+</ol>
+</div>
+<div class="section" id="windows">
+<span id="windows"></span><h4>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h4>
+<p>Download the latest build (pywin32-220.win-amd64-py3.5.exe is the latest build as of this writing) from  <a class="reference external" href="https://sourceforge.net/projects/pywin32/files/pywin32/Build%20220/">here</a> and run the downloaded executable.</p>
+</div>
+</div>
+<div class="section" id="setup-charm-crypto">
+<span id="setup-charm-crypto"></span><h3>Setup Charm-Crypto<a class="headerlink" href="#setup-charm-crypto" title="Permalink to this headline">¶</a></h3>
+<p>Indy-client requires anonymous credentials library which requires a cryptographic library.
+The default configuration includes an example that uses Charm-Crypto framework.
+You can install it as described in <a class="reference external" href="https://github.com/evernym/anoncreds">Anonymous Credentials</a> repository
+(in particular, running <code class="docutils literal notranslate"><span class="pre">setup-charm.sh</span></code>).</p>
+</div>
+<div class="section" id="setup-libsodium">
+<span id="setup-libsodium"></span><h3>Setup Libsodium<a class="headerlink" href="#setup-libsodium" title="Permalink to this headline">¶</a></h3>
+<p>Indy also depends on libsodium, an awesome crypto library. These need to be installed separately.</p>
+<div class="section" id="ubuntu">
+<span id="id1"></span><h4>Ubuntu<a class="headerlink" href="#ubuntu" title="Permalink to this headline">¶</a></h4>
+<ol class="simple">
+<li>We need to install libsodium with the package manager. This typically requires a package repo that’s not active by default. Inspect <code class="docutils literal notranslate"><span class="pre">/etc/apt/sources.list</span></code> file with your favorite editor (using sudo). On ubuntu 16, you are looking for a line that says <code class="docutils literal notranslate"><span class="pre">deb</span> <span class="pre">http://us.archive.ubuntu.com/ubuntu</span> <span class="pre">xenial</span> <span class="pre">main</span> <span class="pre">universe</span></code>. On ubuntu 14, look for or add: <code class="docutils literal notranslate"><span class="pre">deb</span> <span class="pre">http://ppa.launchpad.net/chris-lea/libsodium/ubuntu</span> <span class="pre">trusty</span> <span class="pre">main</span></code> and <code class="docutils literal notranslate"><span class="pre">deb-src</span> <span class="pre">http://ppa.launchpad.net/chris-lea/libsodium/ubuntu</span> <span class="pre">trusty</span> <span class="pre">main</span></code>.</li>
+<li>Run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">update</span></code>. On ubuntu 14, if you get a GPG error about public key not available, run this command and then, after, retry apt-get update: <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-key</span> <span class="pre">adv</span> <span class="pre">--keyserver</span> <span class="pre">keyserver.ubuntu.com</span> <span class="pre">--recv-keys</span> <span class="pre">B9316A7BC7917B12</span></code></li>
+<li>Install libsodium; the version depends on your distro version. On Ubuntu 14, run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">libsodium13</span></code>; on Ubuntu 16, run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">libsodium18</span></code></li>
+</ol>
+</div>
+<div class="section" id="centos-redhat">
+<span id="id2"></span><h4>CentOS/Redhat<a class="headerlink" href="#centos-redhat" title="Permalink to this headline">¶</a></h4>
+<p>Run <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">yum</span> <span class="pre">install</span> <span class="pre">libsodium-devel</span></code></p>
+</div>
+<div class="section" id="mac">
+<span id="id3"></span><h4>Mac<a class="headerlink" href="#mac" title="Permalink to this headline">¶</a></h4>
+<p>Once you have homebrew installed, run <code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">libsodium</span></code> to install libsodium.</p>
+</div>
+<div class="section" id="windows">
+<span id="id4"></span><h4>Windows<a class="headerlink" href="#windows" title="Permalink to this headline">¶</a></h4>
+<ol class="simple">
+<li>Go to https://download.libsodium.org/libsodium/releases/ and download the latest libsodium package (libsodium-1.0.8-mingw.tar.gz is the latest version as of this writing).</li>
+<li>When you extract the contents of the downloaded tar file, you will see 2 folders with the names libsodium-win32 and libsodium-win64.</li>
+<li>As the name suggests, use the libsodium-win32 if you are using 32-bit machine or libsodium-win64 if you are using a 64-bit operating system.</li>
+<li>Copy the libsodium-x.dll from libsodium-win32\bin or libsodium-win64\bin to C:\Windows\System or System32 and rename it to libsodium.dll.</li>
+</ol>
+</div>
+</div>
+<div class="section" id="setup-indy-crypto">
+<span id="setup-indy-crypto"></span><h3>Setup Indy-Crypto<a class="headerlink" href="#setup-indy-crypto" title="Permalink to this headline">¶</a></h3>
+<p>Indy depends on <a class="reference external" href="https://github.com/hyperledger/indy-crypto">Indy-Crypto</a>.</p>
+<p>There is a deb package of libindy-crypto that can be used on Ubuntu:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span>
+<span class="n">apt</span><span class="o">-</span><span class="n">key</span> <span class="n">adv</span> <span class="o">--</span><span class="n">keyserver</span> <span class="n">keyserver</span><span class="o">.</span><span class="n">ubuntu</span><span class="o">.</span><span class="n">com</span> <span class="o">--</span><span class="n">recv</span><span class="o">-</span><span class="n">keys</span> <span class="mi">68</span><span class="n">DB5E88</span>
+<span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="s2">&quot;deb https://repo.sovrin.org/deb xenial master&quot;</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libindy</span><span class="o">-</span><span class="n">crypto</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="https://github.com/hyperledger/indy-crypto">Indy-Crypto</a> on how it can be installed on other platforms.</p>
+</div>
+<div class="section" id="setup-rocksdb">
+<span id="setup-rocksdb"></span><h3>Setup RocksDB<a class="headerlink" href="#setup-rocksdb" title="Permalink to this headline">¶</a></h3>
+<p>Indy depends on RocksDB, an embeddable persistent key-value store for fast storage.</p>
+<p>Currently Indy requires RocksDB version 5.8.8 or higher. There is a deb package of RocksDB-5.8.8 and related stuff that
+can be used on Ubuntu 16.04 (repository configuration steps may be skipped if Indy-Crypto installation steps have been done):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start of repository configuration steps</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> <span class="n">ca</span><span class="o">-</span><span class="n">certificates</span>
+<span class="n">apt</span><span class="o">-</span><span class="n">key</span> <span class="n">adv</span> <span class="o">--</span><span class="n">keyserver</span> <span class="n">keyserver</span><span class="o">.</span><span class="n">ubuntu</span><span class="o">.</span><span class="n">com</span> <span class="o">--</span><span class="n">recv</span><span class="o">-</span><span class="n">keys</span> <span class="mi">68</span><span class="n">DB5E88</span>
+<span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="s2">&quot;deb https://repo.sovrin.org/deb xenial master&quot;</span>
+<span class="c1"># End of repository configuration steps</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="n">libbz2</span><span class="o">-</span><span class="n">dev</span> \
+    <span class="n">zlib1g</span><span class="o">-</span><span class="n">dev</span> \
+    <span class="n">liblz4</span><span class="o">-</span><span class="n">dev</span> \
+    <span class="n">libsnappy</span><span class="o">-</span><span class="n">dev</span> \
+    <span class="n">rocksdb</span><span class="o">=</span><span class="mf">5.8</span><span class="o">.</span><span class="mi">8</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="https://github.com/facebook/rocksdb">RocksDB</a> on how it can be installed on other platforms.</p>
+</div>
+<div class="section" id="setup-libindy">
+<span id="setup-libindy"></span><h3>Setup Libindy<a class="headerlink" href="#setup-libindy" title="Permalink to this headline">¶</a></h3>
+<p>Indy needs <a class="reference external" href="https://github.com/hyperledger/indy-sdk">Libindy</a> as a test dependency.</p>
+<p>There is a deb package of libindy that can be used on Ubuntu:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">add</span><span class="o">-</span><span class="n">apt</span><span class="o">-</span><span class="n">repository</span> <span class="s2">&quot;deb https://repo.sovrin.org/sdk/deb xenial stable&quot;</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">libindy</span>
+</pre></div>
+</div>
+<p>See <a class="reference external" href="https://github.com/hyperledger/indy-sdk">Libindy</a> on how it can be installed on other platforms.</p>
+</div>
+<div class="section" id="using-a-virtual-environment-recommended">
+<span id="using-a-virtual-environment-recommended"></span><h3>Using a virtual environment (recommended)<a class="headerlink" href="#using-a-virtual-environment-recommended" title="Permalink to this headline">¶</a></h3>
+<p>We recommend creating a new Python virtual environment for trying out Indy.
+A virtual environment is a Python environment which is isolated from the
+system’s default Python environment (you can change that) and any other
+virtual environment you create.</p>
+<p>You can create a new virtual environment by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">virtualenv</span> <span class="o">-</span><span class="n">p</span> <span class="n">python3</span><span class="o">.</span><span class="mi">5</span> <span class="o">&lt;</span><span class="n">name</span> <span class="n">of</span> <span class="n">virtual</span> <span class="n">environment</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>And activate it by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">&lt;</span><span class="n">name</span> <span class="n">of</span> <span class="n">virtual</span> <span class="n">environment</span><span class="o">&gt;/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+<p>Optionally, you can install virtual environment wrapper as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">virtualenvwrapper</span>
+<span class="n">echo</span> <span class="s1">&#39;&#39;</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<span class="n">echo</span> <span class="s1">&#39;# Python virtual environment wrapper&#39;</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<span class="n">echo</span> <span class="s1">&#39;export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3&#39;</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<span class="n">echo</span> <span class="s1">&#39;export WORKON_HOME=$HOME/.virtualenvs&#39;</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<span class="n">echo</span> <span class="s1">&#39;source /usr/local/bin/virtualenvwrapper.sh&#39;</span> <span class="o">&gt;&gt;</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<span class="n">source</span> <span class="o">~/.</span><span class="n">bashrc</span>
+</pre></div>
+</div>
+<p>It allows to create a new virtual environment and activate it by using</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkvirtualenv</span> <span class="o">-</span><span class="n">p</span> <span class="n">python3</span><span class="o">.</span><span class="mi">5</span> <span class="o">&lt;</span><span class="n">env_name</span><span class="o">&gt;</span>
+<span class="n">workon</span> <span class="o">&lt;</span><span class="n">env_name</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-code-and-running-tests">
+<span id="installing-code-and-running-tests"></span><h3>Installing code and running tests<a class="headerlink" href="#installing-code-and-running-tests" title="Permalink to this headline">¶</a></h3>
+<p>Activate the virtual environment.</p>
+<p>Navigate to the root directory of the source (for each project) and install required packages by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span><span class="p">[</span><span class="n">tests</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If you are working with both indy-plenum and indy-node, then please make sure that both projects are installed with -e option,
+and not from pypi (have a look at the sequence at <code class="docutils literal notranslate"><span class="pre">init-dev-project.sh</span></code>).</p>
+<p>Go to the folder with tests (either <code class="docutils literal notranslate"><span class="pre">indy-plenum</span></code>, <code class="docutils literal notranslate"><span class="pre">indy-node/indy_node</span></code>, <code class="docutils literal notranslate"><span class="pre">indy-node/indy_client</span></code> or <code class="docutils literal notranslate"><span class="pre">indy-node/indy_common</span></code>)
+and run tests</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="o">.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="setup-iptables.html" class="btn btn-neutral float-right" title="Setup iptables rules (recommended)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="requests-new.html" class="btn btn-neutral" title="Requests" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hyperledger
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

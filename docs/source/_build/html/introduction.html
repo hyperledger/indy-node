@@ -1,0 +1,481 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction &mdash; Hyperledger Indy Node  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Create a Network and Start Nodes" href="start-nodes.html" />
+    <link rel="prev" title="Welcome to Hyperledger Indy Node’s documentation!" href="index.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Hyperledger Indy Node
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#about-indy-node">About Indy Node</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#relationship-with-sovrin">Relationship with Sovrin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-started-guide">Getting Started Guide</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hyperledger-wiki-indy">Hyperledger Wiki-Indy</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#technical-overview-of-indy-blockchain">Technical Overview of Indy Blockchain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#indy-node-repository-structure">Indy Node Repository Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependent-projects">Dependent Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contact-us">Contact us</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-contribute">How to Contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-install-a-test-network">How to Install a Test Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-start-working-with-the-code">How to Start Working with the Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-start-indy-client-cli">How to Start Indy Client CLI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#continuous-integration-and-delivery">Continuous Integration and Delivery</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-send-a-pr">How to send a PR</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-send-a-pr-to-both-plenum-and-node">How to send a PR to both plenum and node</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#docs-and-links">Docs and links</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="start-nodes.html">Create a Network and Start Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-node.html">Add Node to Existing Pool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ci-cd.html">Continuous Integration / Delivery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster-simulation.html">Running a Simulation of a Indy Cluster and Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="helper-scripts.html">Helper Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-file-structure-guideline.html">Indy File Folders Structure Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html">Indy – Running the Getting Started tutorial locally</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html#resetting-the-indy-environment">Resetting the Indy environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-monitoring-tools-for-stewards.html">Node Monitoring Tools for Stewards</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html">Node State Diagnostic Tools Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html#workflow">Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pool-upgrade.html">Pool Upgrade Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests-new.html">Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup-dev.html">Dev Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup-iptables.html">Setup iptables rules (recommended)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="write-code-guideline.html">Code quality requirements guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1.3_to_1.4_migration_guide.html">List of breaking changes for migration from indy-node 1.3 to 1.4</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hyperledger Indy Node</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Introduction</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/introduction.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <p><img alt="logo" src="_images/indy-logo.png" /></p>
+<div class="section" id="introduction">
+<span id="introduction"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference external" href="#introduction">Introduction</a><ul>
+<li><a class="reference external" href="#about-indy-node">About Indy Node</a>
+- <a class="reference external" href="#relationship-with-sovrin">Relationship with Sovrin</a>
+- <a class="reference external" href="#getting-started-guide">Getting Started Guide</a>
+- <a class="reference external" href="#hyperledger-wiki-indy">Hyperledger Wiki-Indy</a></li>
+<li><a class="reference external" href="#technical-overview-of-indy-blockchain">Technical Overview of Indy Blockchain</a></li>
+<li><a class="reference external" href="#indy-node-repository-structure">Indy Node Repository Structure</a></li>
+<li><a class="reference external" href="#dependent-projects">Dependent Projects</a></li>
+<li><a class="reference external" href="#contact-us">Contact us</a></li>
+<li><a class="reference external" href="#how-to-contribute">How to Contribute</a></li>
+<li><a class="reference external" href="#how-to-install-a-test-network">How to Install a Test Network</a></li>
+<li><a class="reference external" href="#how-to-start-working-with-the-code">How to Start Working with the Code</a></li>
+<li><a class="reference external" href="#how-to-start-indy-client-cli">How to Start Indy Client CLI</a></li>
+<li><a class="reference external" href="#continuous-integration-and-delivery">Continuous Integration and Delivery</a></li>
+<li><a class="reference external" href="#how-to-send-a-pr">How to send a PR</a>
+- <a class="reference external" href="#how-to-send-a-pr-to-both-plenum-and-node">How to send a PR to both plenum and node</a></li>
+<li><a class="reference external" href="#docs-and-links">Docs and links</a></li>
+</ul>
+</li>
+</ul>
+<div class="section" id="about-indy-node">
+<span id="about-indy-node"></span><h2>About Indy Node<a class="headerlink" href="#about-indy-node" title="Permalink to this headline">¶</a></h2>
+<p>This codebase embodies all the functionality to run nodes (validators and/or observers)
+that provide a <a class="reference external" href="https://sovrin.org">self-sovereign identity ecosystem</a> on top of a
+distributed ledger. It is the core project for Indy; over time, all other indy-* projects may
+collapse into this one, except for <a class="reference external" href="https://github.com/hyperledger/indy-sdk">indy-sdk</a>.</p>
+<p>Indy has its own distributed ledger based on RBFT.</p>
+<div class="section" id="relationship-with-sovrin">
+<span id="relationship-with-sovrin"></span><h3>Relationship with Sovrin<a class="headerlink" href="#relationship-with-sovrin" title="Permalink to this headline">¶</a></h3>
+<p>This code is independent from but commonly associated with <a class="reference external" href="https://sovrin.org">The Sovrin Foundation</a>. The Sovrin Foundation is a public utility
+for identity, built on top of this codebase. People who install sovrin packages (e.g., with
+<code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt</span> <span class="pre">install</span> <span class="pre">sovrin</span></code>) get prepackaged genesis transactions that integrate
+with an Indy validator pool using <a class="reference external" href="https://sovrin.org/wp-content/uploads/2017/06/SovrinProvisionalTrustFramework2017-03-22.pdf">Sovrin’s governance and trust framework</a>. However, it is possible to use Indy Node
+with a different network, using whatever conventions a community chooses.</p>
+</div>
+<div class="section" id="getting-started-guide">
+<span id="getting-started-guide"></span><h3>Getting Started Guide<a class="headerlink" href="#getting-started-guide" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>We recommend that developers should explore Sovrin’s <a class="reference external" href="https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md">Getting Started Guide</a> to learn about Indy basics.</li>
+</ul>
+</div>
+<div class="section" id="hyperledger-wiki-indy">
+<span id="hyperledger-wiki-indy"></span><h3>Hyperledger Wiki-Indy<a class="headerlink" href="#hyperledger-wiki-indy" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>If you haven’t done so already, please visit the main resource for all things “Indy” to get acquainted with the code base, helpful resources, and up-to-date information: <a class="reference external" href="https://wiki.hyperledger.org/projects/indy">Hyperledger Wiki-Indy</a>.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="technical-overview-of-indy-blockchain">
+<span id="technical-overview-of-indy-blockchain"></span><h2>Technical Overview of Indy Blockchain<a class="headerlink" href="#technical-overview-of-indy-blockchain" title="Permalink to this headline">¶</a></h2>
+<p>Please visit <a class="reference external" href="https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md">Technical Overview of Plenum</a>.</p>
+<p>More documentation can be found in <a class="reference external" href="https://github.com/hyperledger/indy-plenum/blob/master/docs">indy-plenum-docs</a>
+and <a class="reference external" href="docs">indy-node-docs</a>.</p>
+</div>
+<div class="section" id="indy-node-repository-structure">
+<span id="indy-node-repository-structure"></span><h2>Indy Node Repository Structure<a class="headerlink" href="#indy-node-repository-structure" title="Permalink to this headline">¶</a></h2>
+<p>Indy Node repo consists of the following parts:</p>
+<ul class="simple">
+<li>indy-node:<ul>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-plenum">indy-plenum</a>-based implementation of distributed ledger</li>
+<li>Extends plenum’s base pool functionality with specific transactions support (CLAIM_DEF, SCHEMA, POOL_UPGRADE, etc.)</li>
+</ul>
+</li>
+<li>indy-client<ul>
+<li>Contains client and CLI code</li>
+<li>Will be deprecated soon in favor of <a class="reference external" href="https://github.com/hyperledger/indy-sdk">indy-sdk</a>, so please use indy-sdk for your own applications dealing with Indy ecosystem.</li>
+</ul>
+</li>
+<li>indy-common<ul>
+<li>Common code for both indy-node and indy-client parts</li>
+</ul>
+</li>
+<li>scripts<ul>
+<li>Some scripts that can be run for installed Node (in particular, scripts to start Nodes, generate keys, prepare test Network, etc.)</li>
+</ul>
+</li>
+<li>doc<ul>
+<li>a folder with documentation</li>
+</ul>
+</li>
+<li>dev-setup<ul>
+<li>a folder with scripts helping to configure development environment (python, dependencies, projects, virtual environment)</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="dependent-projects">
+<span id="dependent-projects"></span><h2>Dependent Projects<a class="headerlink" href="#dependent-projects" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/hyperledger/indy-plenum">indy-plenum</a><ul>
+<li>The heart of the distributed ledger technology inside Hyperledger Indy.</li>
+<li>Most probably you will need to make changes in Plenum if you want to contribute to Indy.
+So, if you want to work with Indy Node, you will need to have the Plenum code as well in most of the cases
+and work with two projects at the same time
+(see <a class="reference external" href="#how-to-start-working-with-the-code">How to Start Working with the Code</a> below).</li>
+</ul>
+</li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-anoncreds">indy-anoncreds</a><ul>
+<li>A python implementation of the anonymous credentials ideas developed by IBM Research.</li>
+<li>This is quite independent from indy-node/plenum. So, in most cases you don’t need this code to contribute to Indy-Node.</li>
+<li>It will be deprecated soon in favor of anoncreds implementation in indy-sdk (see below).</li>
+</ul>
+</li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-sdk">indy-sdk</a><ul>
+<li>An official SDK for Indy.</li>
+<li>it contains client and anoncreds implementation</li>
+<li>You don’t need it to contribute to Indy-Node. But please use indy-sdk for your own applications dealing with Indy ecosystem.</li>
+<li>It will replace indy-client and indy-anoncreds parsts soon.</li>
+</ul>
+</li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-crypto">indy-crypto</a><ul>
+<li>A shared crypto library</li>
+<li>It’s based on <a class="reference external" href="https://github.com/milagro-crypto/amcl">AMCL</a></li>
+<li>In particular, it contains BLS multi-signature crypto needed for state proofs support in Indy.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="contact-us">
+<span id="contact-us"></span><h2>Contact us<a class="headerlink" href="#contact-us" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Bugs, stories, and backlog for this codebase are managed in <a class="reference external" href="https://jira.hyperledger.org">Hyperledger’s Jira</a>.
+Use project name <code class="docutils literal notranslate"><span class="pre">INDY</span></code>.</li>
+<li>Join us on <a class="reference external" href="https://chat.hyperledger.org/channel/indy">Jira’s Rocket.Chat</a> at <code class="docutils literal notranslate"><span class="pre">#indy</span></code> and/or <code class="docutils literal notranslate"><span class="pre">#indy-node</span></code> channels to discuss.</li>
+</ul>
+</div>
+<div class="section" id="how-to-contribute">
+<span id="how-to-contribute"></span><h2>How to Contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>We’d love your help; see these <a class="reference external" href="http://bit.ly/2ugd0bq">instructions on how to contribute</a>.</li>
+<li>You may also want to read this info about <a class="reference external" href="MAINTAINERS.md">maintainers</a>.</li>
+<li>See <a class="reference external" href="#how-to-send-a-pr">How to send a PR</a> below.</li>
+</ul>
+</div>
+<div class="section" id="how-to-install-a-test-network">
+<span id="how-to-install-a-test-network"></span><h2>How to Install a Test Network<a class="headerlink" href="#how-to-install-a-test-network" title="Permalink to this headline">¶</a></h2>
+<p>You can have a look at <a class="reference external" href="docs/start-nodes.md">Start Nodes</a>
+to understand what needs to be done to create a Network, initialize and start Nodes, and what scripts are provided for this.</p>
+<p>The described process is automated in one of the ways below (it allow to install a test Network):</p>
+<ul class="simple">
+<li><strong>Docker</strong> <a class="reference external" href="environment/docker/pool/README.md">Start Pool and Client with Docker</a></li>
+<li><strong>Docker-based pool using with new libindy-based CLI</strong>:<ul>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-sdk/blob/master/README.md#how-to-start-local-nodes-pool-with-docker">Start Pool Locally</a></li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md">Get Started with Libindy</a></li>
+</ul>
+</li>
+<li><strong>Also coming soon:</strong> Create virtual machines in AWS.</li>
+</ul>
+</div>
+<div class="section" id="how-to-start-working-with-the-code">
+<span id="how-to-start-working-with-the-code"></span><h2>How to Start Working with the Code<a class="headerlink" href="#how-to-start-working-with-the-code" title="Permalink to this headline">¶</a></h2>
+<p>Please have a look at <a class="reference external" href="docs/setup-dev.md">Dev Setup</a></p>
+</div>
+<div class="section" id="how-to-start-indy-client-cli">
+<span id="how-to-start-indy-client-cli"></span><h2>How to Start Indy Client CLI<a class="headerlink" href="#how-to-start-indy-client-cli" title="Permalink to this headline">¶</a></h2>
+<p>Once installed, you can play with the command-line interface by running Indy from a terminal.</p>
+<p>Note: For Windows, we recommended using either <a class="reference external" href="http://cmder.net/">cmder</a> or <a class="reference external" href="https://conemu.github.io/">conemu</a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">indy</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="continuous-integration-and-delivery">
+<span id="continuous-integration-and-delivery"></span><h2>Continuous Integration and Delivery<a class="headerlink" href="#continuous-integration-and-delivery" title="Permalink to this headline">¶</a></h2>
+<p>Please have a look at <a class="reference external" href="docs/ci-cd.md">Continuous integration/delivery</a></p>
+</div>
+<div class="section" id="how-to-send-a-pr">
+<span id="how-to-send-a-pr"></span><h2>How to send a PR<a class="headerlink" href="#how-to-send-a-pr" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Make sure that you followed <a class="reference external" href="docs/write-code-guideline.md">write code guideline</a> before sending a PR</li>
+<li>Do not create big PRs; send a PR for one feature or bug fix only.
+If a feature is too big, consider splitting a big PR to a number of small ones.</li>
+<li>Consider sending a design doc into <code class="docutils literal notranslate"><span class="pre">design</span></code> folder (as markdown or PlantUML diagram) for a new feature  before implementing it</li>
+<li>Make sure that a new feature or fix is covered by tests (try following TDD)</li>
+<li>Make sure that documentation is updated according to your changes</li>
+<li>Provide a full description of changes in the PR including Jira ticket number if any</li>
+<li>Make sure that all your commits have a DCO sign-off from the author</li>
+<li>Make sure that static code validation passed
+(you can run <code class="docutils literal notranslate"><span class="pre">flake8</span> <span class="pre">.</span></code> on the project root to check it; you can install flake8 from pypi: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">flake8</span></code>)</li>
+<li>Put the link to the PR into <code class="docutils literal notranslate"><span class="pre">#indy-pr-review</span></code> channel in Rocket.Chat</li>
+<li>A reviewer needs to start your tests first (add <code class="docutils literal notranslate"><span class="pre">test</span> <span class="pre">this</span> <span class="pre">please</span></code> comment to the PR)</li>
+<li>You need to make sure that all the tests pass</li>
+<li>A reviewer needs to review the code and approve the PR. If there are review comments, they will be put into the PR itself.</li>
+<li>You must process them (feel free to reply in the PR threads, or have a discussion in Rocket.Chat if needed)</li>
+<li>A reviewer or maintainer will merge the PR (we usually use Squash)</li>
+</ul>
+<div class="section" id="how-to-send-a-pr-to-both-plenum-and-node">
+<span id="how-to-send-a-pr-to-both-plenum-and-node"></span><h3>How to send a PR to both plenum and node<a class="headerlink" href="#how-to-send-a-pr-to-both-plenum-and-node" title="Permalink to this headline">¶</a></h3>
+<p>If you made changes in both indy-plenum and indy-node, you need to do the following:</p>
+<ul class="simple">
+<li>Raise a PR to indy-plenum’s master and wait until code is reviewed and merged (see above)<ul>
+<li>So, a new build of indy-plenum is created</li>
+</ul>
+</li>
+<li>Note a just built version of indy-plenum (indy-plenum-dev in pypi): X.Y.Z (you can check it either on <a class="reference external" href="https://github.com/hyperledger/indy-plenum/releases">tags/releases</a> page, <a class="reference external" href="https://pypi.python.org/pypi/indy-plenum-dev">pypi</a> or on CI server).</li>
+<li>Change indy-plenum-dev’s dependency version to the new one in indy-node’s <a class="reference external" href="https://github.com/hyperledger/indy-node/blob/master/setup.py">setup.py</a>.</li>
+<li>Raise PR to indy-node’s master and wait until code is reviewed and merged (see above)<ul>
+<li>So, a new build of indy-node is created</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="docs-and-links">
+<span id="docs-and-links"></span><h2>Docs and links<a class="headerlink" href="#docs-and-links" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Indy-plenum is based on <a class="reference external" href="https://pakupaku.me/plaublin/rbft/5000a297.pdf">RBFT</a> protocol</li>
+<li>Please have a look at documents and diagrams in <a class="reference external" href="docs">docs</a> folder</li>
+<li>Please have a look at documents and diagrams in Plenum’s <a class="reference external" href="https://github.com/hyperledger/indy-plenum/tree/master/docs">docs</a> folder:<ul>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md">Technical Overview of Plenum</a></li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-plenum/blob/master/docs/glossary.md">Glossary</a></li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-plenum/blob/master/docs/storage.md">Storages</a></li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-plenum/blob/master/docs/request_handling.md">Request Handling</a></li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-plenum/blob/master/docs/catchup.md">Catchup</a></li>
+<li><a class="reference external" href="https://github.com/hyperledger/indy-plenum/blob/master/docs/plugins.md">Plugins</a></li>
+</ul>
+</li>
+<li>Relationship between Entities and Transactions: <a class="reference external" href="docs/relationship-diagram.png">relationship diagram</a></li>
+<li>Supported transactions and their format: <a class="reference external" href="docs/transactions.md">transactions</a></li>
+<li>Supported requests (write, read) and their format: <a class="reference external" href="docs/requests.md">requests</a></li>
+<li><a class="reference external" href="https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0">Network roles and permissions</a></li>
+<li><a class="reference external" href="docs/indy-file-structure-guideline.md">Indy file folder structure guideline</a></li>
+<li><a class="reference external" href="docs/helper-scripts.md">Helper Scripts</a></li>
+<li><a class="reference external" href="docs/pool-upgrade.md">Pool Upgrade</a></li>
+<li><a class="reference external" href="docs/add-node.md">Node Addition</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="start-nodes.html" class="btn btn-neutral float-right" title="Create a Network and Start Nodes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to Hyperledger Indy Node’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hyperledger
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,326 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Indy File Folders Structure Guideline &mdash; Hyperledger Indy Node  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Indy – Running the Getting Started tutorial locally" href="indy-running-locally.html" />
+    <link rel="prev" title="Helper Scripts" href="helper-scripts.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Hyperledger Indy Node
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start-nodes.html">Create a Network and Start Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-node.html">Add Node to Existing Pool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ci-cd.html">Continuous Integration / Delivery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster-simulation.html">Running a Simulation of a Indy Cluster and Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="helper-scripts.html">Helper Scripts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Indy File Folders Structure Guideline</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#use-system-specific-files-and-folder-for-indy-node-service">1. Use system-specific files and folder for indy-node service</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#organize-file-folders-to-support-possibility-to-work-with-multiple-networks-live-test-local-etc">2. Organize file folders to support possibility to work with multiple networks (live, test, local, etc.)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#set-proper-permissions-for-files-and-folders">3. Set proper permissions for files and folders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#provide-a-way-to-override-config-and-other-data-for-different-networks">4. Provide a way to override config and other data for different networks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#client-should-use-home-folder">5. Client should use /home folder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#separate-node-and-client-folders">6. Separate node and client folders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#it-should-be-possible-to-work-with-both-node-and-client-libindy-on-the-same-machine">7. It should be possible to work with both node and client (libindy) on the same machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#it-should-be-possible-to-run-client-libindy-for-multiple-users">8. It should be possible to run client (libindy) for multiple users</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html">Indy – Running the Getting Started tutorial locally</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html#resetting-the-indy-environment">Resetting the Indy environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-monitoring-tools-for-stewards.html">Node Monitoring Tools for Stewards</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html">Node State Diagnostic Tools Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html#workflow">Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pool-upgrade.html">Pool Upgrade Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests-new.html">Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup-dev.html">Dev Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup-iptables.html">Setup iptables rules (recommended)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="write-code-guideline.html">Code quality requirements guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1.3_to_1.4_migration_guide.html">List of breaking changes for migration from indy-node 1.3 to 1.4</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hyperledger Indy Node</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Indy File Folders Structure Guideline</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/indy-file-structure-guideline.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="indy-file-folders-structure-guideline">
+<span id="indy-file-folders-structure-guideline"></span><h1>Indy File Folders Structure Guideline<a class="headerlink" href="#indy-file-folders-structure-guideline" title="Permalink to this headline">¶</a></h1>
+<p>Indy-node service works with some files and folders on the file system.
+We need to be careful when selecting this files and folders or adding new ones.</p>
+<div class="section" id="use-system-specific-files-and-folder-for-indy-node-service">
+<span id="use-system-specific-files-and-folder-for-indy-node-service"></span><h2>1. Use system-specific files and folder for indy-node service<a class="headerlink" href="#use-system-specific-files-and-folder-for-indy-node-service" title="Permalink to this headline">¶</a></h2>
+<p>As of now, we support indy-node service (using systemctl) on Ubuntu only.
+But in future we will support more platforms (CentOS, Windows Server, etc.)</p>
+<p>So, we should follow the following principles:</p>
+<ul>
+<li><p class="first">Use system-specific folder for storing config files</p>
+<ul class="simple">
+<li>Indy-config files</li>
+<li>other config files (such as service config)</li>
+</ul>
+<p><em>Ubuntu: /etc/indy</em></p>
+</li>
+<li><p class="first">Use system-specific folder for storing data, such as</p>
+<ul class="simple">
+<li>ledger (transaction log, states)</li>
+<li>Genesis transaction files</li>
+<li>Node keys (transport and BLS)</li>
+</ul>
+<p><em>Ubuntu: <code class="docutils literal notranslate"><span class="pre">/var/lib/indy</span></code></em></p>
+</li>
+<li><p class="first">Use system-specific folder to store log files</p>
+<p><em>Ubuntu: <code class="docutils literal notranslate"><span class="pre">/var/log/indy</span></code></em></p>
+</li>
+<li><p class="first">Avoid using /home folder for indy-node service</p>
+</li>
+</ul>
+</div>
+<div class="section" id="organize-file-folders-to-support-possibility-to-work-with-multiple-networks-live-test-local-etc">
+<span id="organize-file-folders-to-support-possibility-to-work-with-multiple-networks-live-test-local-etc"></span><h2>2. Organize file folders to support possibility to work with multiple networks (live, test, local, etc.)<a class="headerlink" href="#organize-file-folders-to-support-possibility-to-work-with-multiple-networks-live-test-local-etc" title="Permalink to this headline">¶</a></h2>
+<p>We may have multiple Networks (identified by different genesis transaction files) installed for the same indy-node service.
+The file structure should support it.</p>
+<ul>
+<li><p class="first">The current Network to work with is specified explicitly in the main config file (<code class="docutils literal notranslate"><span class="pre">NETWORK_NAME=</span></code>):</p>
+<p><em>Ubuntu: /etc/indy</em></p>
+</li>
+<li><p class="first">Separate config files for each Network</p>
+<p><em>Ubuntu: <code class="docutils literal notranslate"><span class="pre">/var/lib/indy/{network_name}</span></code></em></p>
+</li>
+<li><p class="first">Separate data for each Network</p>
+<ul class="simple">
+<li>Separate ledgers (transaction log, states)</li>
+<li>Separate genesis transaction files</li>
+<li>Separate Node keys (transport and BLS)</li>
+</ul>
+<p><em>Ubuntu: <code class="docutils literal notranslate"><span class="pre">/var/lib/indy/{network_name}</span></code></em></p>
+</li>
+<li><p class="first">Separate log files for each Network</p>
+<p><em>Ubuntu: <code class="docutils literal notranslate"><span class="pre">/var/log/indy/{network_name}</span></code></em></p>
+</li>
+</ul>
+</div>
+<div class="section" id="set-proper-permissions-for-files-and-folders">
+<span id="set-proper-permissions-for-files-and-folders"></span><h2>3. Set proper permissions for files and folders<a class="headerlink" href="#set-proper-permissions-for-files-and-folders" title="Permalink to this headline">¶</a></h2>
+<p>Make sure that all data, and, especially, keys have proper permissions.
+Private keys can only be read by the user the service is run for (indy user usually)</p>
+</div>
+<div class="section" id="provide-a-way-to-override-config-and-other-data-for-different-networks">
+<span id="provide-a-way-to-override-config-and-other-data-for-different-networks"></span><h2>4. Provide a way to override config and other data for different networks<a class="headerlink" href="#provide-a-way-to-override-config-and-other-data-for-different-networks" title="Permalink to this headline">¶</a></h2>
+<p>Each Network may have its own config extending base config.</p>
+<p><em>Ubuntu:</em></p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">/etc/indy</span></code>  - base config</li>
+<li><code class="docutils literal notranslate"><span class="pre">/etc/indy/{network_name}</span></code>  - config extension</li>
+</ul>
+</div>
+<div class="section" id="client-should-use-home-folder">
+<span id="client-should-use-home-folder"></span><h2>5. Client should use /home folder<a class="headerlink" href="#client-should-use-home-folder" title="Permalink to this headline">¶</a></h2>
+<p>Client doesn’t need a service, and should use its own home directory for files with proper permissions.</p>
+<p>Indy-sdk uses <code class="docutils literal notranslate"><span class="pre">~/.indy_client</span></code></p>
+</div>
+<div class="section" id="separate-node-and-client-folders">
+<span id="separate-node-and-client-folders"></span><h2>6. Separate node and client folders<a class="headerlink" href="#separate-node-and-client-folders" title="Permalink to this headline">¶</a></h2>
+<p>Client and Node should be two independent products not sharing any common files/folders</p>
+</div>
+<div class="section" id="it-should-be-possible-to-work-with-both-node-and-client-libindy-on-the-same-machine">
+<span id="it-should-be-possible-to-work-with-both-node-and-client-libindy-on-the-same-machine"></span><h2>7. It should be possible to work with both node and client (libindy) on the same machine<a class="headerlink" href="#it-should-be-possible-to-work-with-both-node-and-client-libindy-on-the-same-machine" title="Permalink to this headline">¶</a></h2>
+<p>We may install and work with both node and client on the same machine independently</p>
+</div>
+<div class="section" id="it-should-be-possible-to-run-client-libindy-for-multiple-users">
+<span id="it-should-be-possible-to-run-client-libindy-for-multiple-users"></span><h2>8. It should be possible to run client (libindy) for multiple users<a class="headerlink" href="#it-should-be-possible-to-run-client-libindy-for-multiple-users" title="Permalink to this headline">¶</a></h2>
+<p>We may have multiple users working with client code on the same machine. Each user must have separate data and key files with proper permissions.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="indy-running-locally.html" class="btn btn-neutral float-right" title="Indy – Running the Getting Started tutorial locally" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="helper-scripts.html" class="btn btn-neutral" title="Helper Scripts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hyperledger
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

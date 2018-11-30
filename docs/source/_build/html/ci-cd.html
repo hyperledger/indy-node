@@ -1,0 +1,411 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Continuous Integration / Delivery &mdash; Hyperledger Indy Node  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Running a Simulation of a Indy Cluster and Agents" href="cluster-simulation.html" />
+    <link rel="prev" title="Add Node to Existing Pool" href="add-node.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Hyperledger Indy Node
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start-nodes.html">Create a Network and Start Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-node.html">Add Node to Existing Pool</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Continuous Integration / Delivery</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#branches">Branches</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pull-requests">Pull Requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#continuous-integration">Continuous Integration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#static-code-validation">Static Code Validation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#continuous-delivery">Continuous Delivery</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#builds">Builds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#packaging">Packaging</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#supported-platforms-and-oses">Supported platforms and OSes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#build-scripts">Build scripts</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#versioning">Versioning</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-create-a-stable-release">How to Create a Stable Release</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cluster-simulation.html">Running a Simulation of a Indy Cluster and Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="helper-scripts.html">Helper Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-file-structure-guideline.html">Indy File Folders Structure Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html">Indy – Running the Getting Started tutorial locally</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html#resetting-the-indy-environment">Resetting the Indy environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-monitoring-tools-for-stewards.html">Node Monitoring Tools for Stewards</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html">Node State Diagnostic Tools Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html#workflow">Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pool-upgrade.html">Pool Upgrade Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests-new.html">Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup-dev.html">Dev Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup-iptables.html">Setup iptables rules (recommended)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="write-code-guideline.html">Code quality requirements guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1.3_to_1.4_migration_guide.html">List of breaking changes for migration from indy-node 1.3 to 1.4</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hyperledger Indy Node</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Continuous Integration / Delivery</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/ci-cd.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="continuous-integration-delivery">
+<span id="continuous-integration-delivery"></span><h1>Continuous Integration / Delivery<a class="headerlink" href="#continuous-integration-delivery" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="branches">
+<span id="branches"></span><h2>Branches<a class="headerlink" href="#branches" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Master branch contains the latest changes. All PRs usually need to be sent to master.</li>
+<li>Stable branch contains latest releases (https://github.com/hyperledger/indy-node/releases). Hotfixes need to be sent to both stable and master.</li>
+</ul>
+</div>
+<div class="section" id="pull-requests">
+<span id="pull-requests"></span><h2>Pull Requests<a class="headerlink" href="#pull-requests" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Each PR needs to be reviewed.</li>
+<li>PR can be merged only after all tests pass and code is reviewed.</li>
+</ul>
+</div>
+<div class="section" id="continuous-integration">
+<span id="continuous-integration"></span><h2>Continuous Integration<a class="headerlink" href="#continuous-integration" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>for each PR we execute:<ul>
+<li>static code validation</li>
+<li>Unit/Integration tests</li>
+</ul>
+</li>
+<li>We use pipeline in code approach and Jenkins as our main CI/CD server.</li>
+<li>CI part of the pipeline (running tests for each PR) is defined in <code class="docutils literal notranslate"><span class="pre">Jenkinsfile.ci</span></code> file.</li>
+<li>CI part is run on Hyperledger Jenkins, so it is public and open as every contributor needs to see results of the tests run for his or her PR.</li>
+</ul>
+<div class="section" id="static-code-validation">
+<span id="static-code-validation"></span><h3>Static Code Validation<a class="headerlink" href="#static-code-validation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>We use flake8 for static code validation.</li>
+<li>It’s run against every PR. PR fails if there are some static code validation errors.</li>
+<li>Not all checks are enabled (have a look at <code class="docutils literal notranslate"><span class="pre">.flake8</span></code> file at the project root)</li>
+<li>You can run static code validation locally:<ul>
+<li>Install flake8: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">flake8</span></code></li>
+<li>Run validation on the root folder of the project: <code class="docutils literal notranslate"><span class="pre">flake8</span> <span class="pre">.</span></code></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="continuous-delivery">
+<span id="continuous-delivery"></span><h2>Continuous Delivery<a class="headerlink" href="#continuous-delivery" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>CD part of the pipeline is defined in <code class="docutils literal notranslate"><span class="pre">Jenkinsfile.cd</span></code> file.</li>
+<li>CD part is run on a private Jenkins server dealing with issuing and uploading new builds.</li>
+</ul>
+<div class="section" id="builds">
+<span id="builds"></span><h3>Builds<a class="headerlink" href="#builds" title="Permalink to this headline">¶</a></h3>
+<p>What artifacts are produced after each push</p>
+<ul class="simple">
+<li>to <code class="docutils literal notranslate"><span class="pre">master</span></code> branch:<ul>
+<li>indy-plenum:<ul>
+<li>indy-plenum-dev in <a class="reference external" href="https://pypi.python.org/pypi/indy-plenum-dev">pypi</a></li>
+<li>indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)</li>
+</ul>
+</li>
+<li>indy-node:<ul>
+<li>indy-node-dev in <a class="reference external" href="https://pypi.python.org/pypi/indy-node-dev">pypi</a></li>
+<li>indy-node deb package in <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/master/"><code class="docutils literal notranslate"><span class="pre">https://repo.sovrin.org/deb</span> <span class="pre">xenial</span> <span class="pre">master</span></code></a></li>
+<li>indy-plenum deb package in <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/master/"><code class="docutils literal notranslate"><span class="pre">https://repo.sovrin.org/deb</span> <span class="pre">xenial</span> <span class="pre">master</span></code></a> (copied from master-latest)</li>
+<li>indy-node release tag (https://github.com/hyperledger/indy-node/releases)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>to <code class="docutils literal notranslate"><span class="pre">stable</span></code> branch:<ul>
+<li>indy-plenum:<ul>
+<li>indy-plenum in <a class="reference external" href="https://pypi.python.org/pypi/indy-plenum">pypi</a></li>
+<li>indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)</li>
+</ul>
+</li>
+<li>indy-node:<ul>
+<li>indy-node in <a class="reference external" href="https://pypi.python.org/pypi/indy-node">pypi</a></li>
+<li>indy-node deb package in <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/rc/"><code class="docutils literal notranslate"><span class="pre">https://repo.sovrin.org/deb</span> <span class="pre">xenial</span> <span class="pre">rc</span></code></a></li>
+<li>indy-plenum deb package in <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/rc/"><code class="docutils literal notranslate"><span class="pre">https://repo.sovrin.org/deb</span> <span class="pre">xenial</span> <span class="pre">rc</span></code></a> (copied from rc-latest)</li>
+<li>indy-node release tag (https://github.com/hyperledger/indy-node/releases)</li>
+<li>after build is tested and approved:<ul>
+<li>indy-node deb package in <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/stable/"><code class="docutils literal notranslate"><span class="pre">https://repo.sovrin.org/deb</span> <span class="pre">xenial</span> <span class="pre">stable</span></code></a> (copied from rc)</li>
+<li>indy-plenum deb package in <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/stable/"><code class="docutils literal notranslate"><span class="pre">https://repo.sovrin.org/deb</span> <span class="pre">xenial</span> <span class="pre">stable</span></code></a> (copied from rc)</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>Use cases for artifacts</p>
+<ul class="simple">
+<li>Pypi artifacts can be used for dev experiments, but not intended to be used for production.</li>
+<li>Using deb packages is recommended way to be used for a test/production pool on Ubuntu.<ul>
+<li>indy-node deb package from <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/stable/"><code class="docutils literal notranslate"><span class="pre">https://repo.sovrin.org/deb</span> <span class="pre">xenial</span> <span class="pre">stable</span></code></a>
+is one and the only official stable release that can be used for production (stable version).</li>
+<li>indy-node deb package from <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/master/"><code class="docutils literal notranslate"><span class="pre">https://repo.sovrin.org/deb</span> <span class="pre">xenial</span> <span class="pre">master</span></code></a>
+contains the latest changes (from master branch). It’s not guaranteed that that this code is stable enough.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="packaging">
+<span id="packaging"></span><h3>Packaging<a class="headerlink" href="#packaging" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="supported-platforms-and-oses">
+<span id="supported-platforms-and-oses"></span><h4>Supported platforms and OSes<a class="headerlink" href="#supported-platforms-and-oses" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Ubuntu 16.04 on x86_64</li>
+</ul>
+</div>
+<div class="section" id="build-scripts">
+<span id="build-scripts"></span><h4>Build scripts<a class="headerlink" href="#build-scripts" title="Permalink to this headline">¶</a></h4>
+<p>We use <a class="reference external" href="https://github.com/jordansissel/fpm">fpm</a> for packaging python code into deb packages. Build scripts are placed in <code class="docutils literal notranslate"><span class="pre">build-scripts</span></code> folders:</p>
+<ul class="simple">
+<li>https://github.com/hyperledger/indy-node/blob/master/build-scripts</li>
+<li>https://github.com/hyperledger/indy-plenum/blob/master/build-scripts</li>
+<li>https://github.com/hyperledger/indy-anoncreds/blob/master/build-scripts</li>
+</ul>
+<p>We also pack some 3rd parties dependencies which are not presented in canonical ubuntu repositories:</p>
+<ul class="simple">
+<li>https://github.com/hyperledger/indy-node/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh</li>
+<li>https://github.com/hyperledger/indy-plenum/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh</li>
+<li>https://github.com/hyperledger/indy-anoncreds/blob/master/build-scripts/ubuntu-1604/build-3rd-parties.sh</li>
+</ul>
+<p>Each <code class="docutils literal notranslate"><span class="pre">build-scripts</span></code> folder includes <code class="docutils literal notranslate"><span class="pre">Readme.md</span></code>. Please check them for more details.</p>
+</div>
+</div>
+<div class="section" id="versioning">
+<span id="versioning"></span><h3>Versioning<a class="headerlink" href="#versioning" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Please note, that we are using semver-like approach for versioning (major, minor, build) for each of the components.</li>
+<li>Major and minor parts are set in the code (see <a class="reference external" href="https://github.com/hyperledger/indy-node/blob/master/indy_node/__metadata__.py">__metadata__.py</a>). They must be incremented for new releases manually from code if needed.</li>
+<li>Build part is incremented with each build on Jenkins (so it always increases, but may be not sequentially)</li>
+<li>Each dependency (including indy-plenum and indy-anoncreds) has a strict version (see <a class="reference external" href="https://github.com/hyperledger/indy-node/blob/master/setup.py">setup.py</a>)</li>
+<li>If you install indy-node (either from pypi, or from deb package), the specified in setup.py version of indy-plenum is installed.</li>
+<li>Master and Stable builds usually have different versions.</li>
+<li>Differences in master and stable code:<ul>
+<li><code class="docutils literal notranslate"><span class="pre">setup.py</span></code>:<ul>
+<li>dev suffix in project names and indy-plenum dependency in master; no suffixes in stable</li>
+<li>different versions of indy-plenum dependency</li>
+</ul>
+</li>
+<li>different versions in migrations scripts</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="how-to-create-a-stable-release">
+<span id="how-to-create-a-stable-release"></span><h2>How to Create a Stable Release<a class="headerlink" href="#how-to-create-a-stable-release" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Create a new branch based on <code class="docutils literal notranslate"><span class="pre">stable</span></code> in indy-plenum</li>
+<li>Merge <code class="docutils literal notranslate"><span class="pre">master</span></code> branch into this new branch</li>
+<li>Make sure that proper versions and names are used (without dev suffixes)</li>
+<li>Raise a PR to indy-plenum’s stable, and wait until code is reviewed and merged. So, a new release candidate of plenum is created.</li>
+<li>Create a new branch based on <code class="docutils literal notranslate"><span class="pre">stable</span></code> in indy-node</li>
+<li>Merge <code class="docutils literal notranslate"><span class="pre">master</span></code> branch into this new branch</li>
+<li>Change indy-plenum’s dependency version to the new one in indy-node’s <a class="reference external" href="https://github.com/hyperledger/indy-node/blob/stable/setup.py">setup.py</a>.</li>
+<li>Make sure that proper versions and names are used (without dev suffixes)</li>
+<li>Raise a PR to indy-node’s stable, and wait until code is reviewed and merged. So, a new release candidate of indy-node is created.</li>
+<li>QA needs to test this release candidate from <a class="reference external" href="https://repo.sovrin.org/lib/apt/xenial/rc/">https://repo.sovrin.org/deb xenial rc</a></li>
+<li>QA approves the release candidate of indy-plenum.</li>
+<li>QA approves the release candidate of indy-node. So, a new stable release is created.</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="cluster-simulation.html" class="btn btn-neutral float-right" title="Running a Simulation of a Indy Cluster and Agents" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="add-node.html" class="btn btn-neutral" title="Add Node to Existing Pool" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hyperledger
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
