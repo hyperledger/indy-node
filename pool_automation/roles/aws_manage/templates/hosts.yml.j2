@@ -1,0 +1,19 @@
+#jinja2: lstrip_blocks: True
+---
+{{ ansible_managed | comment }}
+all:
+  children:
+    {{ aws_base_group }}:
+      children:
+        {{ aws_tag_group }}:
+          vars:
+            ansible_ssh_private_key_file: "{{ ssh_private_key }}"
+            ansible_ssh_extra_args: "-o UserKnownHostsFile={{ known_hosts_file }}"
+          hosts:
+            {% for host in hosts|sort(attribute='tag_id') %}
+            {{ aws_tag_namespace }}_{{ aws_tag_group }}{{ host.tag_id }}:
+              tag_id: {{ host.tag_id }}
+              ansible_user: {{ host.user }}
+              ansible_host: {{ host.public_ip }}
+            {% endfor %}
+...

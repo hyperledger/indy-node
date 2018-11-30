@@ -1,0 +1,8 @@
+---
+- name: Converge
+  gather_facts: false
+  hosts: clients
+  roles:
+    - role: perf_scripts
+      vars:
+        perf_scripts_configuration: false

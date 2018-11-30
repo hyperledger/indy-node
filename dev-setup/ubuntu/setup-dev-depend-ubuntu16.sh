@@ -30,11 +30,6 @@ sudo apt-get install -y libbz2-dev \
 echo 'Installed RocksDB'
 
 
-echo 'Installing Charm Crypto...'
-sudo apt-get install -y python3-charm-crypto
-echo 'Installed Charm Crypto'
-
-
 echo 'Installing Libindy and Libindy Crypto...'
 sudo apt-get install -y libindy libindy-crypto
 echo 'Installed Libindy and Libindy Crypto'

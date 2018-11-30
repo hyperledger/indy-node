@@ -204,8 +204,6 @@ def run_role(self, name, options=None, content=None):
     return orig_run_role(self, name, options, content)
 DummyStateMachine.run_role = run_role
 
-# -------------- end hack ----------------------------
-
 def setup(app):
     app.add_config_value('recommonmark_config', {
             'auto_toc_tree_section': 'Contents',

@@ -1,0 +1,18 @@
+---
+- name: Push pool genesis txns file to client
+  copy:
+    src: "{{ indy_cli_pool_genesis_txns_path_local }}"
+    dest: "{{ indy_cli_pool_genesis_txns_path_remote }}"
+
+- name: Check list of configured pools
+  shell: "echo 'pool list' | indy-cli"
+  register: test_cli_res
+  failed_when: false
+  changed_when: false
+
+- name: Configure CLI to work with the pool
+  shell: "echo \"pool create {{ indy_cli_pool_name }} gen_txn_file={{ indy_cli_pool_genesis_txns_path_remote }}\" | indy-cli"
+  register: pool_create_res
+  failed_when: ('Pool config \"' ~ indy_cli_pool_name ~ '\" has been created') not in pool_create_res.stdout
+  when: indy_cli_pool_name not in test_cli_res.stdout
+...

@@ -3,7 +3,8 @@ import time
 
 
 class ClientStatistic:
-    def __init__(self):
+    def __init__(self, short_stat=False):
+        self._short_stat = short_stat
         self._req_prep = 0
         self._req_sent = 0
         self._req_succ = 0
@@ -31,8 +32,9 @@ class ClientStatistic:
     def sent(self, req_data, req):
         req_data_repr = repr(req_data)
         self._client_stat_reqs.setdefault(req_data_repr, dict())["client_sent"] = time.time()
-        self._client_stat_reqs[req_data_repr]["req"] = req
         self._req_sent += 1
+        if not self._short_stat:
+            self._client_stat_reqs[req_data_repr]["req"] = req
 
     def reply(self, req_data, reply_or_exception):
         req_data_repr = repr(req_data)
@@ -69,7 +71,8 @@ class ClientStatistic:
             self._req_fail += 1
             status = "fail"
         self._client_stat_reqs[req_data_repr]["status"] = status
-        self._client_stat_reqs[req_data_repr]["resp"] = resp
+        if not self._short_stat:
+            self._client_stat_reqs[req_data_repr]["resp"] = resp
 
     def dump_stat(self, dump_all: bool = False):
         ret_val = {}

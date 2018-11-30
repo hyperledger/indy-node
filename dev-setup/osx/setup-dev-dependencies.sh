@@ -19,22 +19,6 @@ echo 'Installing RocksDB 5.8.8...'
 brew install https://gist.githubusercontent.com/faisal00813/4059a5b41c10aa87270351c4795af752/raw/551d4de01a83f884c798ec5c2cb28a1b15d04db8/rocksdb.rb
 echo 'Installing RocksDB...'
 
-echo 'Installing Charm Crypto...'
-xcode-select --install
-brew install gmp
-brew install pbc
-pushd /tmp
-git clone https://github.com/JHUISI/charm.git
-pushd charm
-./configure.sh --enable-darwin
-make
-make install
-make test
-popd
-rm -rf charm
-popd
-echo 'Installed Charm Crypto'
-
 echo 'Installing libindy...'
 brew install pkg-config
 brew install automake 
