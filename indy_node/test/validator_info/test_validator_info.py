@@ -37,7 +37,6 @@ def test_validator_info_ha_fields_valid(node, info):
     assert info['Node_info']['Client_port']
 
 
-@pytest.mark.skip(reason="info will not be included by default")
 def test_validator_info_file_software_indy_node_valid(info):
     assert info['Software']['indy-node'] == node_pgk_version
 
@@ -187,3 +186,12 @@ def test_validator_info_file_metrics_count_all_ledgers_field_valid(node):
     info = node._info_tool.info
     has_cnt = len(info['Node_info']['Metrics']['transaction-count'])
     assert has_cnt == len(new_ids) + 3
+
+
+def test_validator_info_update_date_field_valid(info):
+    assert "Update time" in info
+    import time
+    import datetime
+    from_str = time.mktime(datetime.datetime.strptime(info["Update time"],
+                                                      "%A, %B %d, %Y %I:%M:%S %p %z").timetuple())
+    assert int(from_str) == info["timestamp"]
