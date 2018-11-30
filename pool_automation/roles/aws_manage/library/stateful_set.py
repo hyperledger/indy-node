@@ -11,7 +11,7 @@ import boto3
 HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
 
 InstanceParams = namedtuple(
-    'InstanceParams', 'project namespace group add_tags key_name security_group type_name')
+    'InstanceParams', 'project namespace group add_tags key_name security_group type_name market_spot spot_max_price')
 
 ManageResults = namedtuple('ManageResults', 'changed active terminated')
 
@@ -85,14 +85,17 @@ class AwsEC2Waiter(object):
     def awaited(self):
         return dict(self._awaited)
 
+    def _instance_region(self, instance):
+        # TODO more mature would be to use
+        #      ec2.client.describe_availability_zones
+        #      and create a map av.zone -> region
+        return instance.placement['AvailabilityZone'][:-1]
+
     def add_instance(self, instance, region=None):
         # fallback - autodetect placement region,
         # might lead to additional AWS API calls
         if not region:
-            # TODO more mature would be to use
-            #      ec2.client.describe_availability_zones
-            #      and create a map av.zone -> region
-            region = instance.placement['AvailabilityZone'][:-1]
+            region = self._instance_region(instance)
         self._awaited[region].append(instance)
 
     def wait(self, update=True):
@@ -115,6 +118,12 @@ class AwsEC2Terminator(AwsEC2Waiter):
     def terminate(self, instance, region=None):
         instance.terminate()
         self.add_instance(instance, region)
+        # cancel spot request if any
+        if instance.spot_instance_request_id:
+            ec2cl = boto3.client('ec2', region_name=(region if region
+                                 else self._instance_region(instance)))
+            ec2cl.cancel_spot_instance_requests(
+                SpotInstanceRequestIds=[instance.spot_instance_request_id])
 
 
 class AwsEC2Launcher(AwsEC2Waiter):
@@ -129,14 +138,14 @@ class AwsEC2Launcher(AwsEC2Waiter):
         if not ec2:
             ec2 = boto3.resource('ec2', region_name=region)
 
-        instances = ec2.create_instances(
-            ImageId=find_ubuntu_ami(ec2),
-            KeyName=params.key_name,
-            SecurityGroups=[params.security_group],
-            InstanceType=params.type_name,
-            MinCount=count,
-            MaxCount=count,
-            TagSpecifications=[
+        launch_spec = {
+            'ImageId': find_ubuntu_ami(ec2),
+            'KeyName': params.key_name,
+            'SecurityGroups': [params.security_group],
+            'InstanceType': params.type_name,
+            'MinCount': count,
+            'MaxCount': count,
+            'TagSpecifications': [
                 {
                     'ResourceType': 'instance',
                     'Tags': [
@@ -155,7 +164,20 @@ class AwsEC2Launcher(AwsEC2Waiter):
                     ]
                 }
             ]
-        )
+        }
+
+        if params.market_spot:
+            launch_spec['InstanceMarketOptions'] = {
+                'MarketType': 'spot',
+                'SpotOptions': {}
+            }
+            for opt in ['spot_max_price']:
+                spot_options = launch_spec['InstanceMarketOptions']['SpotOptions']
+                if getattr(params, opt) is not None:
+                    opt_name = ''.join(w.title() for w in opt.split('_')[1:])
+                    spot_options[opt_name] = getattr(params, opt)
+
+        instances = ec2.create_instances(**launch_spec)
 
         for i in instances:
             self.add_instance(i, region)
@@ -183,7 +205,8 @@ def manage_instances(regions, params, count):
         ec2 = boto3.resource('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
-        instances = find_instances(ec2, params.project, params.namespace, params.group)
+        instances = find_instances(
+            ec2, params.project, params.namespace, params.group)
         for inst in instances:
             tag_id = get_tag(inst, 'ID')
             if tag_id in valid_ids:
@@ -230,7 +253,9 @@ def run(module):
         add_tags=params['add_tags'],
         key_name=params['key_name'],
         security_group=params['security_group'],
-        type_name=params['instance_type']
+        type_name=params['instance_type'],
+        market_spot=params['market_spot'],
+        spot_max_price=params['spot_max_price']
     )
 
     res = manage_instances(
@@ -253,7 +278,9 @@ if __name__ == '__main__':
         key_name=dict(type='str', required=True),
         security_group=dict(type='str', required=True),
         instance_type=dict(type='str', required=True),
-        instance_count=dict(type='int', required=True)
+        instance_count=dict(type='int', required=True),
+        market_spot=dict(type='bool', required=False, default=False),
+        spot_max_price=dict(type='str', required=False, default=None),
     )
 
     module = AnsibleModule(
