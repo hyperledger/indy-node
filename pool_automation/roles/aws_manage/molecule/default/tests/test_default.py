@@ -4,9 +4,17 @@ import boto.ec2
 def is_valid_instance(inst):
     if inst.state != "running":
         return False
+<<<<<<< HEAD
     if inst.tags.get('namespace') != 'test':
         return False
     if inst.tags.get('role') != 'default':
+=======
+    if inst.tags.get('Project') != 'PoolAutomation':
+        return False
+    if inst.tags.get('Namespace') != 'test':
+        return False
+    if inst.tags.get('Group') != 'default':
+>>>>>>> public/master
         return False
     return True
 

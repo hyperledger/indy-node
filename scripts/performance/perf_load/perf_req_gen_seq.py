@@ -56,3 +56,6 @@ class RGSeqReqs(RequestGenerator):
     async def on_request_replied(self, req_data, req, resp_or_exp):
         for r in self._reqs_collection:
             await r.on_request_replied(req_data, req, resp_or_exp)
+
+    def req_did(self):
+        return self._reqs_collection[self._req_idx].req_did()

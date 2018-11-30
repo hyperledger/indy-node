@@ -1,50 +1,25 @@
-import inspect
 import json
-from contextlib import ExitStack
-from typing import Iterable
 import base58
 
 from indy.did import replace_keys_start, replace_keys_apply
-from indy.ledger import build_attrib_request
+from indy.ledger import build_attrib_request, build_get_attrib_request
+from libnacl import randombytes
 
 from indy_common.config_helper import NodeConfigHelper
-from plenum.common.constants import REQACK, TXN_ID, DATA
-from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
-from plenum.common.txn_util import get_type, get_txn_id
-from stp_core.common.log import getlogger
+from plenum.common.signer_did import DidSigner
 from plenum.common.signer_simple import SimpleSigner
-from plenum.common.util import getMaxFailures, runall, randomString
-from plenum.test.helper import waitForSufficientRepliesForRequests, \
-    checkLastClientReqForNode, buildCompletedTxnFromReply, sdk_get_and_check_replies
-from plenum.test.test_node import checkNodesAreReady, TestNodeCore
-from plenum.test.test_node import checkNodesConnected
+from plenum.common.util import rawToFriendly
+from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request, sdk_add_new_nym
+from stp_core.common.log import getlogger
+from plenum.test.helper import sdk_get_and_check_replies
+from plenum.test.test_node import TestNodeCore
 from plenum.test.testable import spyable
-from plenum.test import waits as plenumWaits, waits
-from indy_client.client.wallet.attribute import LedgerStore, Attribute
-from indy_client.client.wallet.wallet import Wallet
-from indy_client.test.helper import genTestClient, genTestClientProvider
-from indy_common.constants import ATTRIB, TARGET_NYM, TXN_TYPE, GET_NYM
 from indy_common.test.helper import TempStorage
 from indy_node.server.node import Node
 from indy_node.server.upgrader import Upgrader
-from stp_core.loop.eventually import eventually
-from stp_core.loop.looper import Looper
 from stp_core.types import HA
 
 logger = getlogger()
-
-
-class Organization:
-    def __init__(self, client=None):
-        self.client = client
-        self.wallet = Wallet(self.client)  # created only once per organization
-        self.userWallets = {}  # type: Dict[str, Wallet]
-
-    def removeUserWallet(self, userId: str):
-        if userId in self.userWallets:
-            del self.userWallets[userId]
-        else:
-            raise ValueError("No wallet exists for this user id")
 
 
 @spyable(methods=[Upgrader.processLedger])
@@ -104,141 +79,32 @@ class TestNode(TempStorage, TestNodeCore, Node):
         return self.ClientStackClass
 
 
-def checkSubmitted(looper, client, optype, txnsBefore):
-    txnsAfter = []
-
-    def checkTxnCountAdvanced():
-        nonlocal txnsAfter
-        txnsAfter = client.getTxnsByType(optype)
-        logger.debug("old and new txns {} {}".format(txnsBefore, txnsAfter))
-        assert len(txnsAfter) > len(txnsBefore)
-
-    timeout = plenumWaits.expectedReqAckQuorumTime()
-    looper.run(eventually(checkTxnCountAdvanced, retryWait=1,
-                          timeout=timeout))
-    txnIdsBefore = [get_txn_id(txn) for txn in txnsBefore]
-    txnIdsAfter = [get_txn_id(txn) for txn in txnsAfter]
-    logger.debug("old and new txnids {} {}".format(txnIdsBefore, txnIdsAfter))
-    return list(set(txnIdsAfter) - set(txnIdsBefore))
-
-
-def submitAndCheck(looper, client, wallet, op, identifier=None):
-    # TODO: This assumes every transaction will have an edge in graph, why?
-    # Fix this
-    optype = op[TXN_TYPE]
-    txnsBefore = client.getTxnsByType(optype)
-    req = wallet.signOp(op, identifier=identifier)
-    wallet.pendRequest(req)
-    reqs = wallet.preparePending()
-    client.submitReqs(*reqs)
-    return checkSubmitted(looper, client, optype, txnsBefore)
-
-
-def makePendingTxnsRequest(client, wallet):
-    wallet.pendSyncRequests()
-    prepared = wallet.preparePending()
-    client.submitReqs(*prepared)
-
-
-def makeGetNymRequest(client, wallet, nym):
-    op = {
-        TARGET_NYM: nym,
-        TXN_TYPE: GET_NYM,
-    }
-    req = wallet.signOp(op)
-    # TODO: This looks boilerplate
-    wallet.pendRequest(req)
-    reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)[0]
-
-
-def makeAttribRequest(client, wallet, attrib):
-    wallet.addAttribute(attrib)
-    # TODO: This looks boilerplate
-    reqs = wallet.preparePending()
-    return client.submitReqs(*reqs)[0]
-
-
-def _newWallet(name=None):
-    signer = SimpleSigner()
-    w = Wallet(name or signer.identifier)
-    w.addIdentifier(signer=signer)
-    return w
-
-
-def addAttributeAndCheck(looper, client, wallet, attrib):
-    old = wallet.pendingCount
-    pending = wallet.addAttribute(attrib)
-    assert pending == old + 1
-    reqs = wallet.preparePending()
-    client.submitReqs(*reqs)
-
-    def chk():
-        assert wallet.getAttribute(attrib).seqNo is not None
-
-    timeout = plenumWaits.expectedTransactionExecutionTime(client.totalNodes)
-    looper.run(eventually(chk, retryWait=1, timeout=timeout))
-    return wallet.getAttribute(attrib).seqNo
-
-
-def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib, dest=None):
+def sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrib,
+                                dest=None, xhash=None, enc=None):
     _, s_did = sdk_wallet_handle
     t_did = dest or s_did
     attrib_req = looper.loop.run_until_complete(
-        build_attrib_request(s_did, t_did, None, attrib, None))
+        build_attrib_request(s_did, t_did, xhash, attrib, enc))
     request_couple = sdk_sign_and_send_prepared_request(looper, sdk_wallet_handle,
                                                         sdk_pool_handle, attrib_req)
-    sdk_get_and_check_replies(looper, [request_couple])
-    return request_couple
+    rep = sdk_get_and_check_replies(looper, [request_couple])
+    return rep
+
+
+def sdk_get_attribute_and_check(looper, sdk_pool_handle, submitter_wallet, target_did, attrib_name):
+    _, submitter_did = submitter_wallet
+    req = looper.loop.run_until_complete(
+        build_get_attrib_request(submitter_did, target_did, attrib_name, None, None))
+    request_couple = sdk_sign_and_send_prepared_request(looper, submitter_wallet,
+                                                        sdk_pool_handle, req)
+    rep = sdk_get_and_check_replies(looper, [request_couple])
+    return rep
 
 
 def sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_handle, name, value):
     _, did = sdk_wallet_handle
     attrData = json.dumps({name: value})
     sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_handle, attrData)
-
-
-def checkGetAttr(reqKey, trustAnchor, attrName, attrValue):
-    reply, status = trustAnchor.getReply(*reqKey)
-    assert reply
-    data = json.loads(reply.get(DATA))
-    assert status == "CONFIRMED" and \
-        (data is not None and data.get(attrName) == attrValue)
-    return reply
-
-
-def getAttribute(
-        looper,
-        trustAnchor,
-        trustAnchorWallet,
-        userIdA,
-        attributeName,
-        attributeValue):
-    # Should be renamed to get_attribute_and_check
-    attrib = Attribute(name=attributeName,
-                       value=None,
-                       dest=userIdA,
-                       ledgerStore=LedgerStore.RAW)
-    req = trustAnchorWallet.requestAttribute(
-        attrib, sender=trustAnchorWallet.defaultId)
-    trustAnchor.submitReqs(req)
-    timeout = waits.expectedTransactionExecutionTime(len(trustAnchor.nodeReg))
-    return looper.run(eventually(checkGetAttr, (req.identifier, req.reqId),
-                                 trustAnchor, attributeName, attributeValue,
-                                 retryWait=1, timeout=timeout))
-
-
-def sdk_get_attribute():
-    pass
-
-
-def buildStewardClient(looper, tdir, stewardWallet):
-    s, _ = genTestClient(tmpdir=tdir, usePoolLedger=True)
-    s.registerObserver(stewardWallet.handleIncomingReply)
-    looper.add(s)
-    looper.run(s.ensureConnectedToNodes())
-    makePendingTxnsRequest(s, stewardWallet)
-    return s
 
 
 base58_alphabet = set(base58.alphabet.decode("utf-8"))
@@ -274,3 +140,36 @@ def start_stopped_node(stopped_node, looper, tconf, tdir, allPluginsPath):
                               pluginPaths=allPluginsPath)
     looper.add(restarted_node)
     return restarted_node
+
+
+def modify_field(string, value, *field_path):
+    d = json.loads(string)
+    prev = None
+    for i in range(0, len(field_path) - 1):
+        if prev is None:
+            prev = d[field_path[i]]
+            continue
+        prev = prev[field_path[i]]
+    if prev:
+        prev[field_path[-1]] = value
+    else:
+        d[field_path[-1]] = value
+    return json.dumps(d)
+
+
+def createUuidIdentifier():
+    return rawToFriendly(randombytes(16))
+
+
+def createHalfKeyIdentifierAndAbbrevVerkey(seed=None):
+    didSigner = DidSigner(seed=seed)
+    return didSigner.identifier, didSigner.verkey
+
+
+def createCryptonym(seed=None):
+    return SimpleSigner(seed=seed).identifier
+
+
+def createUuidIdentifierAndFullVerkey(seed=None):
+    didSigner = DidSigner(identifier=createUuidIdentifier(), seed=seed)
+    return didSigner.identifier, didSigner.verkey

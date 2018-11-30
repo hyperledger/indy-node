@@ -87,3 +87,6 @@ class RequestGenerator(metaclass=ABCMeta):
 
     async def on_request_replied(self, req_data, gen_req, resp_or_exp):
         pass
+
+    def req_did(self):
+        return None

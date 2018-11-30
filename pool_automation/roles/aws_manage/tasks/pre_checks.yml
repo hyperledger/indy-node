@@ -1,0 +1,27 @@
+---
+- name: Check that required variables are specified
+  assert:
+    that:
+      - lookup('vars', item, default='')
+    msg: "{{ lookup('vars', item, default='undefined')|string }}"
+  loop:
+    - aws_project_name
+    - aws_group_name
+    - aws_namespace_name
+    - aws_build_dir
+    - aws_inventory_dir
+    - aws_inventory_file
+    - aws_regions
+    - aws_ec2_type
+    - aws_tag_project
+    - aws_tag_namespace
+    - aws_tag_group
+    - aws_keyname
+    - aws_sgroup
+    - aws_tag_sgroup_name
+
+- name: Check that instance_count has acceptable values
+  assert:
+    that:
+      - aws_instance_count >= 0
+    msg: "{{ aws_instance_count|string }}"

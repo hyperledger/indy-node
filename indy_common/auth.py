@@ -2,7 +2,7 @@ from indy_common.config_util import getConfig
 from plenum.common.constants import TRUSTEE, STEWARD, NODE
 from stp_core.common.log import getlogger
 
-from indy_common.constants import OWNER, POOL_UPGRADE, TGB, TRUST_ANCHOR, NYM, \
+from indy_common.constants import OWNER, POOL_UPGRADE, TRUST_ANCHOR, NYM, \
     POOL_CONFIG, SCHEMA, CLAIM_DEF, \
     POOL_RESTART, VALIDATOR_INFO
 from indy_common.roles import Roles
@@ -17,17 +17,13 @@ def generate_auth_map(valid_roles, anyone_can_write=None):
     auth_map = {
         '{}_role__{}'.format(NYM, TRUSTEE):
             {TRUSTEE: []},
-        '{}_role__{}'.format(NYM, TGB):
-            {TRUSTEE: []},
         '{}_role__{}'.format(NYM, STEWARD):
             {TRUSTEE: []},
         '{}_role__{}'.format(NYM, TRUST_ANCHOR):
             {TRUSTEE: [], STEWARD: []},
         '{}_role__'.format(NYM):
-            {TRUSTEE: [], TGB: [], STEWARD: [], TRUST_ANCHOR: []},
+            {TRUSTEE: [], STEWARD: [], TRUST_ANCHOR: []},
         '{}_role_{}_'.format(NYM, TRUSTEE):
-            {TRUSTEE: []},
-        '{}_role_{}_'.format(NYM, TGB):
             {TRUSTEE: []},
         '{}_role_{}_'.format(NYM, STEWARD):
             {TRUSTEE: []},
@@ -57,13 +53,13 @@ def generate_auth_map(valid_roles, anyone_can_write=None):
         '{}_blskey_<any>_<any>'.format(NODE):
             {STEWARD: [OWNER, ]},
         '{}_action__start'.format(POOL_UPGRADE):
-            {TRUSTEE: [], TGB: []},
+            {TRUSTEE: []},
         '{}_action_start_cancel'.format(POOL_UPGRADE):
-            {TRUSTEE: [], TGB: []},
+            {TRUSTEE: []},
         '{}_action_<any>_<any>'.format(POOL_RESTART):
             {TRUSTEE: []},
         '{}_action_<any>_<any>'.format(POOL_CONFIG):
-            {TRUSTEE: [], TGB: []},
+            {TRUSTEE: []},
         '{}_<any>_<any>_<any>'.format(VALIDATOR_INFO):
             {TRUSTEE: [], STEWARD: []},
     }
@@ -75,7 +71,7 @@ def generate_auth_map(valid_roles, anyone_can_write=None):
 
 
 class Authoriser:
-    ValidRoles = (TRUSTEE, TGB, STEWARD, TRUST_ANCHOR, None)
+    ValidRoles = (TRUSTEE, STEWARD, TRUST_ANCHOR, None)
 
     auth_map = None
 

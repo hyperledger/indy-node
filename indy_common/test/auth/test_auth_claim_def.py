@@ -1,7 +1,7 @@
 from plenum.common.constants import TRUSTEE, STEWARD
 
 from indy_common.auth import Authoriser, generate_auth_map
-from indy_common.constants import REF, TGB, TRUST_ANCHOR, CLAIM_DEF
+from indy_common.constants import REF, TRUST_ANCHOR, CLAIM_DEF
 
 
 def test_claim_def_adding(initialized_auth_map):
@@ -12,10 +12,8 @@ def test_claim_def_adding(initialized_auth_map):
 
 
 def test_claim_def_adding_without_permission(initialized_auth_map):
-    roles = {TGB, None}
-    for role in roles:
-        r, msg = _authorised_for_claim_def(role, True)
-        assert not r and msg
+    r, msg = _authorised_for_claim_def(None, True)
+    assert not r and msg
 
 
 def test_claim_def_adding_not_owner(initialized_auth_map):
