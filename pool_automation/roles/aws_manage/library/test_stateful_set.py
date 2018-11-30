@@ -1,6 +1,8 @@
-
 import boto3
 import pytest
+
+import random
+import string
 
 from stateful_set import (
     AWS_REGIONS, InstanceParams, find_ubuntu_ami,
@@ -13,44 +15,68 @@ PARAMS = InstanceParams(
     project='Indy-PA',
     add_tags={'Purpose': 'Test Pool Automation'},
     namespace='test_stateful_set',
-    group=None,
+    group='test_stateful_set_group',
     key_name='test_stateful_set_key',
     security_group='test_stateful_set_security_group',
-    type_name='t2.micro'
+    type_name='t2.micro',
+    market_spot=False,
+    spot_max_price=None
 )
 
 
-def manage_key_pair(ec2, present):
+############
+# FIXTURES #
+############
+
+def gen_params(group_suffix=None, key_name_suffix=None, security_group_suffix=None):
+    def _random(N=7):
+        return ''.join(random.choice(string.ascii_uppercase + string.digits)
+                       for _ in range(N))
+
+    return InstanceParams(
+        project='Indy-PA',
+        add_tags={'Purpose': 'Test Pool Automation'},
+        namespace='test_stateful_set',
+        group="test_stateful_set_group_{}"
+              .format(group_suffix if group_suffix
+                      else _random()),
+        key_name="test_stateful_set_key_{}"
+                 .format(key_name_suffix if key_name_suffix
+                         else _random()),
+        security_group="test_stateful_set_security_group_{}"
+                       .format(security_group_suffix if security_group_suffix
+                               else _random()),
+        type_name='t2.micro',
+        market_spot=False,
+        spot_max_price=None
+    )
+
+
+def manage_key_pair(ec2, present, params):
     count = 0
     for key in ec2.key_pairs.all():
-        if key.key_name != PARAMS.key_name:
+        if key.key_name != params.key_name:
             continue
         if present and count == 0:
             count = 1
         else:
             key.delete()
     if present and count == 0:
-        ec2.create_key_pair(KeyName=PARAMS.key_name)
+        ec2.create_key_pair(KeyName=params.key_name)
 
 
-def manage_security_group(ec2, present):
+def manage_security_group(ec2, present, params):
     count = 0
     for sgroup in ec2.security_groups.all():
-        if sgroup.group_name != PARAMS.security_group:
+        if sgroup.group_name != params.security_group:
             continue
         if present and count == 0:
             count = 1
         else:
             sgroup.delete()
     if present and count == 0:
-        ec2.create_security_group(GroupName=PARAMS.security_group,
+        ec2.create_security_group(GroupName=params.security_group,
                                   Description='Test security group')
-
-
-def terminate_instances(ec2):
-    instances = find_instances(ec2, PARAMS.project, PARAMS.namespace)
-    for inst in instances:
-        inst.terminate()
 
 
 def check_params(inst, params):
@@ -69,28 +95,39 @@ def ec2_all():
     return {r: boto3.resource('ec2', region_name=r) for r in AWS_REGIONS}
 
 
-@pytest.fixture(scope="session", autouse=True)
-def ec2_environment(ec2_all):
+@pytest.fixture(scope="function")
+def ec2_resources(request, ec2_all):
+    params = gen_params(
+        group_suffix=request.node.name,
+        key_name_suffix=request.node.name,
+        security_group_suffix=request.node.name
+    )
+
     for ec2 in ec2_all.values():
-        manage_key_pair(ec2, True)
-        manage_security_group(ec2, True)
-    yield
+        manage_key_pair(ec2, True, params)
+        manage_security_group(ec2, True, params)
+    yield params
 
     terminator = AwsEC2Terminator()
     for region, ec2 in ec2_all.iteritems():
-        for inst in find_instances(ec2, PARAMS.project, PARAMS.namespace):
+        for inst in find_instances(
+                ec2, params.project, params.namespace, params.group):
             terminator.terminate(inst, region)
     terminator.wait(False)
 
     for ec2 in ec2_all.values():
-        manage_key_pair(ec2, False)
-        manage_security_group(ec2, False)
+        manage_key_pair(ec2, False, params)
+        manage_security_group(ec2, False, params)
 
 
 @pytest.fixture(params=sorted(AWS_REGIONS))
 def ec2(request, ec2_all):
     return ec2_all[request.param]
 
+
+#########
+# TESTS #
+#########
 
 def test_find_ubuntu_image(ec2):
     image_id = find_ubuntu_ami(ec2)
@@ -106,10 +143,9 @@ def test_find_ubuntu_image(ec2):
     assert 'UNSUPPORTED' not in image.description
 
 
-def test_AwsEC2Launcher(ec2):
+def test_AwsEC2Launcher(ec2, ec2_resources):
     launcher = AwsEC2Launcher()
-    params = PARAMS._replace(group='test_create')
-    instances = launcher.launch(params, 2, ec2=ec2)
+    instances = launcher.launch(ec2_resources, 2, ec2=ec2)
 
     assert len(instances) == 2
 
@@ -118,15 +154,14 @@ def test_AwsEC2Launcher(ec2):
     assert len(launcher.awaited) == 0
 
     for instance in instances:
-        check_params(instance, params)
+        check_params(instance, ec2_resources)
 
 
-def test_AwsEC2Terminator(ec2):
+def test_AwsEC2Terminator(ec2, ec2_resources):
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
 
-    params = PARAMS._replace(group='test_terminate')
-    instances = launcher.launch(params, 2, ec2=ec2)
+    instances = launcher.launch(ec2_resources, 2, ec2=ec2)
     launcher.wait()
 
     for instance in instances:
@@ -140,28 +175,43 @@ def test_AwsEC2Terminator(ec2):
         assert instance.state['Name'] == 'terminated'
 
 
-def test_find_instances(ec2_all):
+def test_find_instances(ec2_all, ec2_resources):
     region = 'eu-central-1'
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
     ec2 = ec2_all[region]
 
-    for inst in find_instances(ec2, PARAMS.project, PARAMS.namespace):
-        terminator.terminate(inst, region)
+    params1 = ec2_resources._replace(
+        group="{}_{}".format(ec2_resources.group, 'aaa'))
+    params2 = ec2_resources._replace(
+        group="{}_{}".format(ec2_resources.group, 'bbb'))
+
+    for group in (params1.group, params2.group):
+        for inst in find_instances(
+                ec2, ec2_resources.project,
+                ec2_resources.namespace, group):
+            terminator.terminate(inst, region)
     terminator.wait(False)
 
-    launcher.launch(PARAMS._replace(group='aaa'), 2, ec2=ec2)
-    launcher.launch(PARAMS._replace(group='bbb'), 3, ec2=ec2)
+    launcher.launch(params1, 2, ec2=ec2)
+    launcher.launch(params2, 3, ec2=ec2)
 
-    aaa = find_instances(ec2, PARAMS.project, PARAMS.namespace, 'aaa')
-    bbb = find_instances(ec2, PARAMS.project, PARAMS.namespace, 'bbb')
-    aaa_and_bbb = find_instances(ec2, PARAMS.project, PARAMS.namespace)
+    aaa = find_instances(
+        ec2, params1.project, params1.namespace, params1.group)
+    bbb = find_instances(
+        ec2, params2.project, params2.namespace, params2.group)
+    aaa_and_bbb = [i for i in find_instances(
+        ec2, ec2_resources.project, ec2_resources.namespace)
+        if get_tag(i, 'Group') in (params1.group, params2.group)]
 
     assert len(aaa) == 2
     assert len(bbb) == 3
     assert len(aaa_and_bbb) == 5
-
     assert set(aaa).union(bbb) == set(aaa_and_bbb)
+
+    for inst in aaa_and_bbb:
+        terminator.terminate(inst, region)
+    terminator.wait(False)
 
 
 def test_valid_instances():
@@ -188,18 +238,19 @@ def test_valid_instances():
     assert instances['eu'] == ['2', '4']
 
 
-def test_manage_instances(ec2_all):
+@pytest.mark.parametrize('market_spot', [False, True])
+def test_manage_instances(ec2_all, ec2_resources, market_spot):
     regions = ['us-east-1', 'us-east-2', 'us-west-2']
     connections = [ec2_all[r] for r in regions]
-    params = PARAMS._replace(group='test_manage')
+    params = ec2_resources._replace(market_spot=market_spot)
 
     def check_hosts(hosts):
         assert len(set(host.tag_id for host in hosts)) == len(hosts)
         assert len(set(host.public_ip for host in hosts)) == len(hosts)
 
     def check_tags(instances):
-        for group in instances:
-            for inst in group:
+        for inst_group in instances:
+            for inst in inst_group:
                 check_params(inst, params)
                 inst_tag_id = get_tag(inst, 'ID')
                 assert inst_tag_id is not None
@@ -213,7 +264,7 @@ def test_manage_instances(ec2_all):
                     assert tag_value == get_tag(inst, tag_key)
 
     res = manage_instances(regions, params, 4)
-    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, params.project, params.namespace, params.group)
                  for c in connections]
     assert res.changed
     assert len(res.active) == 4
@@ -229,7 +280,7 @@ def test_manage_instances(ec2_all):
     assert get_tag(instances[2][0], 'ID') == '3'
 
     res = manage_instances(regions, params, 4)
-    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, params.project, params.namespace, params.group)
                  for c in connections]
     assert not res.changed
     assert len(res.active) == 4
@@ -245,7 +296,7 @@ def test_manage_instances(ec2_all):
     assert get_tag(instances[2][0], 'ID') == '3'
 
     res = manage_instances(regions, params, 2)
-    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, params.project, params.namespace, params.group)
                  for c in connections]
     assert res.changed
     assert len(res.active) == 2
@@ -259,7 +310,7 @@ def test_manage_instances(ec2_all):
     assert get_tag(instances[1][0], 'ID') == '2'
 
     res = manage_instances(regions, params, 0)
-    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, params.project, params.namespace, params.group)
                  for c in connections]
     assert res.changed
     assert len(res.active) == 0
@@ -271,7 +322,7 @@ def test_manage_instances(ec2_all):
     assert len(instances[2]) == 0
 
     res = manage_instances(regions, params, 0)
-    instances = [find_instances(c, PARAMS.project, PARAMS.namespace, 'test_manage')
+    instances = [find_instances(c, params.project, params.namespace, params.group)
                  for c in connections]
     assert not res.changed
     assert len(res.active) == 0
