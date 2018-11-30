@@ -101,7 +101,7 @@ class NodesListUnknown(BaseUnknown):
     def _str(self):
         if self.val:
             return "\n".join(["  {}\t{}".format(pr_n, "({})".format(r_idx) if r_idx is not None else "")
-                              for pr_n, r_idx in self.val.items()])
+                              for pr_n, r_idx in sorted(self.val.items(), key=lambda x: x[0])])
         else:
             return ""
 
@@ -265,7 +265,8 @@ class TransactionsStats(BaseUnknown):
 
     def _str(self):
         if self.val:
-            return "\n".join(["  Total {} Transactions:  {}".format(ledger, cnt) for ledger, cnt in self.val.items()])
+            return "\n".join(["  Total {} Transactions:  {}".format(ledger, cnt)
+                              for ledger, cnt in sorted(self.val.items(), key=lambda x: x[0])])
         else:
             return ""
 
