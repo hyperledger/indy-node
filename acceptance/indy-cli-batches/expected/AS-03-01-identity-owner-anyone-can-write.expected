@@ -454,19 +454,7 @@ Data:
 +---------------------+---------+--------------+
 
 ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=3
-NodeConfig request has been sent to Ledger.
-Metadata:
-+------------------------+-----------------+---------------------+---------------------+
-| From                   | Sequence Number | Request ID          | Transaction time    |
-+------------------------+-----------------+---------------------+---------------------+
-| UffJCJngTXc1o84dQ7aEUb | 35              | 1534004792100180390 | 2018-08-11 16:26:32 |
-+------------------------+-----------------+---------------------+---------------------+
-Data:
-+----------------------------------------------------------------------------+
-| Primary Key                                                                |
-+----------------------------------------------------------------------------+
-| {n:"1",r:{"age":"4","master_secret":"3","name":"5"},rctxt:"6",s:"2",z:"7"} |
-+----------------------------------------------------------------------------+
+Transaction has been rejected: Mentioned seqNo (1) isn't seqNo of the schema.
 
 Pool "AS-0301-owner" has been disconnected
 Wallet "AS-03-wallet-owner" has been closed
