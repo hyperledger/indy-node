@@ -163,8 +163,8 @@ Data:
 did use CDBcM7hSAmQuenmEnE8dXG 
 Did "CDBcM7hSAmQuenmEnE8dXG" has been set as active
 
-- ledger nym did=6nnZTxQ18EkVEjVV6hBMeT verkey=~2TBdyJLgAhkbogxjpUfPJD
-Transaction has been rejected: None role cannot add None role
+- ledger nym did=6nnZTxQ18EkVEjVV6hBMeT verkey=~2TBdyJLgAhkbogxjpUfPJD role=TRUSTEE
+Transaction has been rejected: None role cannot add TRUSTEE
 
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
