@@ -103,5 +103,5 @@ did use ETcbLj612u9oXr7adZSWZV
 - ledger attrib did=LoZB9o2PFfSjrpnkugqunZ raw={"endpoint":{"ha":"127.0.0.1:5555"}}
 # TrustAnchor can create SCHEMA:
 ledger schema name=TrustAnchorSchema version=1.0 attr_names=name,age
-# TrustAnchor can create CLAIM_DEF:
-ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=2
+# TrustAnchor can create CLAIM_DEF (will fail because of wrong schema id):
+- ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=2
