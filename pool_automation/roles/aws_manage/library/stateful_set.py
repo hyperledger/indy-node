@@ -44,7 +44,7 @@ AWS_REGIONS = OrderedDict([(r.code, r) for r in [
     AWSRegion('ap-northeast-2', 'Asia Pacific (Seoul)'),
     # some specific one, requires service subscriptions
     # (ClientError: An error occurred (OptInRequired) when calling the DescribeInstances operation)
-    #AWSRegion('ap-northeast-3', 'Asia Pacific (Osaka-Local)'),
+    # AWSRegion('ap-northeast-3', 'Asia Pacific (Osaka-Local)'),
     AWSRegion('ap-southeast-1', 'Asia Pacific (Singapore)'),
     AWSRegion('ap-southeast-2', 'Asia Pacific (Sydney)'),
     AWSRegion('ap-south-1', 'Asia Pacific (Mumbai)'),
@@ -262,7 +262,6 @@ def manage_instances(regions, params, count):
                         params.group,
                         tag_id.zfill(3)).lower()},
             {'Key': 'ID', 'Value': tag_id}])
-
 
     aws_terminator.wait()
 

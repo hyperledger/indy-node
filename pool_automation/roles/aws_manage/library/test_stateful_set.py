@@ -1,8 +1,10 @@
-import boto3
-import pytest
-
 import random
 import string
+import json
+import boto3
+from collections import defaultdict
+
+import pytest
 
 from stateful_set import (
     AWS_REGIONS, InstanceParams, find_ubuntu_ami,
@@ -11,109 +13,34 @@ from stateful_set import (
 )
 
 
+AWS_REGIONS_TEST = [r.code for r in AWS_REGIONS.values() if not r.expensive]
+
+
+class EC2TestCtx(object):
+    def __init__(self, region, resource, client, prices=None):
+        self.region = region
+        self.resource = resource
+        self.client = client
+        self.prices = prices
+
+
 ############
 # FIXTURES #
 ############
 
-def gen_params(group_suffix=None, key_name_suffix=None, security_group_suffix=None):
-
-    def _random(N=7):
-        return ''.join(random.choice(string.ascii_uppercase + string.digits)
-                       for _ in range(N))
-
-    return InstanceParams(
-        project='Indy-PA',
-        add_tags={'Purpose': 'Test Pool Automation'},
-        namespace='test_stateful_set',
-        group="group_{}"
-              .format(group_suffix if group_suffix
-                      else _random()),
-        key_name="test_stateful_set_key_{}"
-                 .format(key_name_suffix if key_name_suffix
-                         else _random()),
-        security_group="test_stateful_set_security_group_{}"
-                       .format(security_group_suffix if security_group_suffix
-                               else _random()),
-        type_name='t2.micro',
-        market_spot=False,
-        spot_max_price=None
-    )
-
-
-def manage_key_pair(ec2, present, params):
-    count = 0
-    for key in ec2.key_pairs.all():
-        if key.key_name != params.key_name:
-            continue
-        if present and count == 0:
-            count = 1
-        else:
-            key.delete()
-    if present and count == 0:
-        ec2.create_key_pair(KeyName=params.key_name)
-
-
-def manage_security_group(ec2, present, params):
-    count = 0
-    for sgroup in ec2.security_groups.all():
-        if sgroup.group_name != params.security_group:
-            continue
-        if present and count == 0:
-            count = 1
-        else:
-            sgroup.delete()
-    if present and count == 0:
-        sg = ec2.create_security_group(
-            GroupName=params.security_group,
-            Description='Test security group')
-        sg.create_tags(Tags=[
-            {'Key': 'Name', 'Value': "{}-{}-{}"
-                .format(params.project,
-                        params.namespace,
-                        params.group)},
-            {'Key': 'Project', 'Value': params.project},
-            {'Key': 'Namespace', 'Value': params.namespace},
-            {'Key': 'Group', 'Value': params.group}])
-
-
-def check_params(inst, params):
-    assert {'Key': 'Project', 'Value': params.project} in inst.tags
-    assert {'Key': 'Namespace', 'Value': params.namespace} in inst.tags
-    assert {'Key': 'Group', 'Value': params.group} in inst.tags
-    assert inst.key_name == params.key_name
-    assert len(inst.security_groups) == 1
-    assert inst.security_groups[0]['GroupName'] == params.security_group
-    assert inst.instance_type == params.type_name
-    assert inst.state['Name'] == 'running'
-
-
-def idfn(regions):
-    return '_'.join(regions)
-
-
-# tests parametrization spec
-def pytest_generate_tests(metafunc):
-    test_func_name = metafunc.function.__name__
-
-    if 'regions' in metafunc.fixturenames:
-        ids = idfn
-        if test_func_name == 'test_manage_instances':
-            regions = [['us-east-1', 'us-east-2', 'us-west-2']]
-            ids = ['3regions']
-        elif test_func_name == 'test_find_instances':
-            regions = [['eu-central-1']]
-        else:
-            regions = [[r] for r in AWS_REGIONS]
-
-        metafunc.parametrize("regions", regions, ids=ids)
-
 
 @pytest.fixture(scope="session")
 def ec2_all():
-    return {r: boto3.resource('ec2', region_name=r) for r in AWS_REGIONS}
+    return {
+        r: {
+            'rc': boto3.resource('ec2', region_name=r),
+            'cl': boto3.client('ec2', region_name=r)
+        }
+        for r in AWS_REGIONS_TEST
+    }
 
 
-# only to make flake8 happy
+# just to make flake8 happy
 @pytest.fixture
 def regions():
     pass
@@ -121,14 +48,76 @@ def regions():
 
 @pytest.fixture
 def ec2(regions, ec2_all):
-    return (ec2_all[regions[0]] if len(regions) == 1
-            else [ec2_all[r] for r in regions])
+    return [ec2_all[r]['rc'] for r in regions]
+
+
+@pytest.fixture
+def ec2cl(regions, ec2_all):
+    return [ec2_all[r]['cl'] for r in regions]
 
 
 @pytest.fixture
 def ec2_resources(request, regions, ec2):
-    ec2 = ec2 if type(ec2) is list else [ec2]
-    assert len(ec2) == len(regions)
+
+    def gen_params(group_suffix=None, key_name_suffix=None,
+                   security_group_suffix=None):
+
+        def _random(N=7):
+            return ''.join(random.choice(string.ascii_uppercase + string.digits)
+                           for _ in range(N))
+
+        return InstanceParams(
+            project='Indy-PA-dev',
+            add_tags={'Purpose': 'Test Pool Automation'},
+            namespace='test_stateful_set',
+            group="group_{}"
+                  .format(group_suffix if group_suffix
+                          else _random()),
+            key_name="test_stateful_set_key_{}"
+                     .format(key_name_suffix if key_name_suffix
+                             else _random()),
+            security_group="test_stateful_set_security_group_{}"
+                           .format(security_group_suffix
+                                   if security_group_suffix
+                                   else _random()),
+            type_name='t2.micro',
+            market_spot=False,
+            spot_max_price=None
+        )
+
+    def manage_key_pair(ec2, present, params):
+        count = 0
+        for key in ec2.key_pairs.all():
+            if key.key_name != params.key_name:
+                continue
+            if present and count == 0:
+                count = 1
+            else:
+                key.delete()
+        if present and count == 0:
+            ec2.create_key_pair(KeyName=params.key_name)
+
+    def manage_security_group(ec2, present, params):
+        count = 0
+        for sgroup in ec2.security_groups.all():
+            if sgroup.group_name != params.security_group:
+                continue
+            if present and count == 0:
+                count = 1
+            else:
+                sgroup.delete()
+        if present and count == 0:
+            sg = ec2.create_security_group(
+                GroupName=params.security_group,
+                Description='Test security group')
+            sg.create_tags(Tags=[
+                {'Key': 'Name', 'Value': "{}-{}-{}"
+                    .format(params.project,
+                            params.namespace,
+                            params.group)},
+                {'Key': 'Project', 'Value': params.project},
+                {'Key': 'Namespace', 'Value': params.namespace},
+                {'Key': 'Group', 'Value': params.group}])
 
     params = gen_params(
         group_suffix=request.node.name,
@@ -153,16 +142,129 @@ def ec2_resources(request, regions, ec2):
         manage_security_group(rc, False, params)
 
 
+@pytest.fixture(scope="session")
+def pricing_client():
+    # pricing API is available only through us-east-1 and ap-south-1
+    # https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/using-pelong.html
+    return boto3.client('pricing', region_name='us-east-1')
+
+
+@pytest.fixture(scope="session")
+def ec2_prices():
+    return {
+        r: {
+            'on-demand': defaultdict(dict)
+        } for r in AWS_REGIONS_TEST
+    }
+
+
+@pytest.fixture
+def with_on_demand_prices():
+    pass
+
+
+@pytest.fixture
+def on_demand_prices(request, pricing_client, ec2_prices,
+                     regions, ec2_resources):
+
+    if 'with_on_demand_prices' not in request.fixturenames:
+        return
+
+    for region_code in regions:
+        res = ec2_prices[region_code]['on-demand'].get(ec2_resources.type_name)
+        if res is None:
+            # Search product filters
+            # https://docs.aws.amazon.com/aws-cost-management/latest/APIReference/API_pricing_Filter.html
+            # https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/using-ppslong.html
+            filters = [
+                {'Field': k, 'Type': 'TERM_MATCH', 'Value': v} for k, v in
+                (('tenancy', 'shared'),
+                 ('capacitystatus', 'UnusedCapacityReservation'),
+                 ('location', AWS_REGIONS[region_code].location),
+                 ('operatingSystem', 'Linux'),  # TODO might be parametrized
+                 ('instanceType', ec2_resources.type_name),
+                 ('preInstalledSw', 'NA'))
+            ]
+
+            products = pricing_client.get_products(
+                ServiceCode='AmazonEC2', Filters=filters)
+            price_info = json.loads(products['PriceList'][0])
+
+            # https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/reading-an-offer.html
+            #
+            # "terms": {
+            #      "OnDemand": {
+            #         "<sku.offerTermCode>": {
+            #            "offerTermCode":"The term code of the product",
+            #            "sku":"The SKU of the product",
+            #            ...
+            #            "priceDimensions": {
+            #               "<sku.offerTermCode.rateCode>": {
+            #                  "rateCode":"The rate code of the price",
+            #                  ...
+            #                  "pricePerUnit": {
+            #                     "currencyCode":"currencyRate",
+            #                  }
+            #               }
+            #            }
+            #         }
+            #      }
+            #   }
+            offer = price_info['terms']['OnDemand'].popitem()[1]
+            price_tier = offer['priceDimensions'].popitem()[1]
+
+            res = float(price_tier['pricePerUnit']['USD'])
+            ec2_prices[region_code]['on-demand'][ec2_resources.type_name] = res
+
+
+@pytest.fixture
+def ec2ctxs(regions, ec2, ec2cl, on_demand_prices, ec2_prices):
+    assert len(set([len(l) for l in (regions, ec2, ec2cl)])) == 1
+    return [EC2TestCtx(r, rc, cl, ec2_prices[r]) for r, rc, cl
+            in zip(regions, ec2, ec2cl)]
+
+
+@pytest.fixture
+def ec2ctx(ec2ctxs):
+    assert len(ec2ctxs) == 1
+    return ec2ctxs[0]
+
+
+# parametrization spec for tests
+def pytest_generate_tests(metafunc):
+
+    def idfn(regions):
+        return '_'.join(regions)
+
+    test_func_name = metafunc.function.__name__
+
+    if 'regions' in metafunc.fixturenames:
+        ids = idfn
+        if test_func_name == 'test_manage_instances':
+            regions = [['us-east-1', 'us-east-2', 'us-west-2']]
+            ids = ['3regions']
+        elif test_func_name == 'test_AwsEC2Launcher_wait':
+            regions = [['us-east-1', 'us-east-2']]
+        elif test_func_name == 'test_AwsEC2Launcher_spot':
+            regions = [['us-east-1'], ['us-east-2']]
+        elif test_func_name == 'test_find_instances':
+            regions = [['us-east-1']]
+        else:
+            regions = [[r] for r in AWS_REGIONS_TEST]
+
+        metafunc.parametrize("regions", regions, ids=ids)
+
+
 #########
 # TESTS #
 #########
 
 
-def test_find_ubuntu_image(ec2):
-    image_id = find_ubuntu_ami(ec2)
+def test_find_ubuntu_image(ec2ctx):
+    image_id = find_ubuntu_ami(ec2ctx.resource)
     assert image_id is not None
 
-    image = ec2.Image(image_id)
+    image = ec2ctx.resource.Image(image_id)
     assert image.owner_id == '099720109477'  # Canonical
     assert image.state == 'available'
     assert image.architecture == 'x86_64'
@@ -172,25 +274,95 @@ def test_find_ubuntu_image(ec2):
     assert 'UNSUPPORTED' not in image.description
 
 
-def test_AwsEC2Launcher(ec2, ec2_resources):
-    launcher = AwsEC2Launcher()
-    instances = launcher.launch(ec2_resources, 2, ec2=ec2)
+def check_instance_params(inst, params, ec2cl=None, price=None):
+    # https://stackoverflow.com/questions/5595425/what-is-the-best-way-to-compare-floats-for-almost-equality-in-python
+    # https://www.python.org/dev/peps/pep-0485/#proposed-implementation
+    def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
+        return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
-    assert len(instances) == 2
+    # general
+    assert inst.instance_type == params.type_name
+    assert inst.state['Name'] == 'running'
+    # tags
+    assert {'Key': 'Project', 'Value': params.project} in inst.tags
+    assert {'Key': 'Namespace', 'Value': params.namespace} in inst.tags
+    assert {'Key': 'Group', 'Value': params.group} in inst.tags
+    for tag_key, tag_value in params.add_tags.iteritems():
+        assert tag_value == get_tag(inst, tag_key)
+    # linked resources
+    assert inst.key_name == params.key_name
+    assert len(inst.security_groups) == 1
+    assert inst.security_groups[0]['GroupName'] == params.security_group
+
+    # market options
+    if params.market_spot:
+        assert inst.instance_lifecycle == 'spot'
+        assert inst.spot_instance_request_id is not None
+        spot_params = ec2cl.describe_spot_instance_requests(
+            SpotInstanceRequestIds=[inst.spot_instance_request_id])
+        assert isclose(
+            float(spot_params['SpotInstanceRequests'][0]['SpotPrice']),
+            price
+        )
+
+
+def test_AwsEC2Launcher_wait(ec2ctxs, ec2_resources):
+    launcher = AwsEC2Launcher()
+    instances = []
+
+    params = ec2_resources._replace(market_spot=False)
+
+    for ctx in ec2ctxs:
+        _instances = launcher.launch(
+            params, 1, region=ctx.region, ec2=ctx.resource)
+        assert len(_instances) == 1
+        instances += _instances
 
     assert len(launcher.awaited) > 0
     launcher.wait()
     assert len(launcher.awaited) == 0
 
-    for instance in instances:
-        check_params(instance, ec2_resources)
+    for inst in instances:
+        check_instance_params(inst, params)
 
 
-def test_AwsEC2Terminator(ec2, ec2_resources):
+def idfn_test_AwsEC2Launcher(max_price):
+    if max_price is None:
+        return 'max_price_default'
+    else:
+        return "max_price_{}".format(max_price)
+
+
+@pytest.mark.parametrize('max_price_factor', [None, 0.7],
+                         ids=idfn_test_AwsEC2Launcher)
+def test_AwsEC2Launcher_spot(ec2ctx, ec2_resources,
+                             with_on_demand_prices, max_price_factor):
+    launcher = AwsEC2Launcher()
+    default_price = ec2ctx.prices['on-demand'][ec2_resources.type_name]
+
+    price = default_price * (1 if max_price_factor is None else
+                             max_price_factor)
+    params = ec2_resources._replace(
+        market_spot=True,
+        spot_max_price=(None if max_price_factor is None else
+                        "{}".format(price))
+    )
+    instances = launcher.launch(
+        params, 1, region=ec2ctx.region, ec2=ec2ctx.resource)
+
+    assert len(instances) == 1
+
+    launcher.wait()
+
+    for inst in instances:
+        check_instance_params(inst, params, ec2ctx.client, price)
+
+
+def test_AwsEC2Terminator(ec2ctx, ec2_resources):
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
 
-    instances = launcher.launch(ec2_resources, 2, ec2=ec2)
+    instances = launcher.launch(ec2_resources, 2, ec2=ec2ctx.resource)
     launcher.wait()
 
     for instance in instances:
@@ -204,7 +376,7 @@ def test_AwsEC2Terminator(ec2, ec2_resources):
         assert instance.state['Name'] == 'terminated'
 
 
-def test_find_instances(regions, ec2, ec2_resources):
+def test_find_instances(ec2ctx, ec2_resources):
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
 
@@ -215,20 +387,20 @@ def test_find_instances(regions, ec2, ec2_resources):
 
     for group in (params1.group, params2.group):
         for inst in find_instances(
-                ec2, ec2_resources.project,
+                ec2ctx.resource, ec2_resources.project,
                 ec2_resources.namespace, group):
-            terminator.terminate(inst, regions[0])
+            terminator.terminate(inst, ec2ctx.region)
     terminator.wait(False)
 
-    launcher.launch(params1, 2, ec2=ec2)
-    launcher.launch(params2, 3, ec2=ec2)
+    launcher.launch(params1, 2, ec2=ec2ctx.resource)
+    launcher.launch(params2, 3, ec2=ec2ctx.resource)
 
     aaa = find_instances(
-        ec2, params1.project, params1.namespace, params1.group)
+        ec2ctx.resource, params1.project, params1.namespace, params1.group)
     bbb = find_instances(
-        ec2, params2.project, params2.namespace, params2.group)
+        ec2ctx.resource, params2.project, params2.namespace, params2.group)
     aaa_and_bbb = [i for i in find_instances(
-        ec2, ec2_resources.project, ec2_resources.namespace)
+        ec2ctx.resource, ec2_resources.project, ec2_resources.namespace)
         if get_tag(i, 'Group') in (params1.group, params2.group)]
 
     assert len(aaa) == 2
@@ -237,7 +409,7 @@ def test_find_instances(regions, ec2, ec2_resources):
     assert set(aaa).union(bbb) == set(aaa_and_bbb)
 
     for inst in aaa_and_bbb:
-        terminator.terminate(inst, regions[0])
+        terminator.terminate(inst, ec2ctx.region)
     terminator.wait(False)
 
 
@@ -265,9 +437,8 @@ def test_valid_instances():
     assert instances['eu'] == ['2', '4']
 
 
-@pytest.mark.parametrize('market_spot', [False, True])
-def test_manage_instances(regions, ec2, ec2_resources, market_spot):
-    params = ec2_resources._replace(market_spot=market_spot)
+def test_manage_instances(ec2ctxs, ec2_resources):
+    regions = [ctx.region for ctx in ec2ctxs]
 
     def check_hosts(hosts):
         assert len(set(host.tag_id for host in hosts)) == len(hosts)
@@ -276,21 +447,19 @@ def test_manage_instances(regions, ec2, ec2_resources, market_spot):
     def check_tags(instances):
         for inst_group in instances:
             for inst in inst_group:
-                check_params(inst, params)
                 inst_tag_id = get_tag(inst, 'ID')
                 assert inst_tag_id is not None
                 inst_tag_name = get_tag(inst, 'Name')
                 assert inst_tag_name == "{}-{}-{}-{}".format(
-                    params.project,
-                    params.namespace,
-                    params.group,
+                    ec2_resources.project,
+                    ec2_resources.namespace,
+                    ec2_resources.group,
                     inst_tag_id.zfill(3)).lower()
-                for tag_key, tag_value in params.add_tags.iteritems():
-                    assert tag_value == get_tag(inst, tag_key)
 
-    res = manage_instances(regions, params, 4)
-    instances = [find_instances(c, params.project, params.namespace, params.group)
-                 for c in ec2]
+    res = manage_instances(regions, ec2_resources, 4)
+    instances = [find_instances(ctx.resource, ec2_resources.project,
+                                ec2_resources.namespace, ec2_resources.group)
+                 for ctx in ec2ctxs]
     assert res.changed
     assert len(res.active) == 4
     assert len(res.terminated) == 0
@@ -304,9 +473,10 @@ def test_manage_instances(regions, ec2, ec2_resources, market_spot):
     assert get_tag(instances[1][0], 'ID') == '2'
     assert get_tag(instances[2][0], 'ID') == '3'
 
-    res = manage_instances(regions, params, 4)
-    instances = [find_instances(c, params.project, params.namespace, params.group)
-                 for c in ec2]
+    res = manage_instances(regions, ec2_resources, 4)
+    instances = [find_instances(ctx.resource, ec2_resources.project,
+                                ec2_resources.namespace, ec2_resources.group)
+                 for ctx in ec2ctxs]
     assert not res.changed
     assert len(res.active) == 4
     assert len(res.terminated) == 0
@@ -320,9 +490,10 @@ def test_manage_instances(regions, ec2, ec2_resources, market_spot):
     assert get_tag(instances[1][0], 'ID') == '2'
     assert get_tag(instances[2][0], 'ID') == '3'
 
-    res = manage_instances(regions, params, 2)
-    instances = [find_instances(c, params.project, params.namespace, params.group)
-                 for c in ec2]
+    res = manage_instances(regions, ec2_resources, 2)
+    instances = [find_instances(ctx.resource, ec2_resources.project,
+                                ec2_resources.namespace, ec2_resources.group)
+                 for ctx in ec2ctxs]
     assert res.changed
     assert len(res.active) == 2
     assert len(res.terminated) == 2
@@ -334,9 +505,10 @@ def test_manage_instances(regions, ec2, ec2_resources, market_spot):
     assert get_tag(instances[0][0], 'ID') == '1'
     assert get_tag(instances[1][0], 'ID') == '2'
 
-    res = manage_instances(regions, params, 0)
-    instances = [find_instances(c, params.project, params.namespace, params.group)
-                 for c in ec2]
+    res = manage_instances(regions, ec2_resources, 0)
+    instances = [find_instances(ctx.resource, ec2_resources.project,
+                                ec2_resources.namespace, ec2_resources.group)
+                 for ctx in ec2ctxs]
     assert res.changed
     assert len(res.active) == 0
     assert len(res.terminated) == 2
@@ -346,9 +518,10 @@ def test_manage_instances(regions, ec2, ec2_resources, market_spot):
     assert len(instances[1]) == 0
     assert len(instances[2]) == 0
 
-    res = manage_instances(regions, params, 0)
-    instances = [find_instances(c, params.project, params.namespace, params.group)
-                 for c in ec2]
+    res = manage_instances(regions, ec2_resources, 0)
+    instances = [find_instances(ctx.resource, ec2_resources.project,
+                                ec2_resources.namespace, ec2_resources.group)
+                 for ctx in ec2ctxs]
     assert not res.changed
     assert len(res.active) == 0
     assert len(res.terminated) == 0
