@@ -1,5 +1,5 @@
 import re
-from typing import Dict, List, NamedTuple
+from typing import List, NamedTuple
 
 from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
 from plenum.common.constants import TRUSTEE, STEWARD
@@ -73,6 +73,8 @@ class AbstractRule(metaclass=ABCMeta):
         self.rule_id = rule_id
         self.default_auth_constraint = default_auth_constraint
         self.field = field
+        # self.old_value = '*' if old_value == '*' else re.escape(old_value)
+        # self.new_value = '*' if new_value == '*' else re.escape(new_value)
         self.old_value = old_value
         self.new_value = new_value
         self.allow_field = False
@@ -86,8 +88,8 @@ class AbstractRule(metaclass=ABCMeta):
         if not self.rule_id:
             self.rule_id = compile_rule_id(self.txn_type,
                                            self.field,
-                                           self.old_value,
-                                           self.new_value)
+                                           '*' if self.old_value == '*' else re.escape(self.old_value),
+                                           '*' if self.new_value == '*' else re.escape(self.new_value))
 
     @abstractmethod
     def _preprocessing(self):
@@ -146,7 +148,9 @@ class AbstractAuthPolicy(metaclass=ABCMeta):
 class LocalAuthPolicy(AbstractAuthPolicy):
 
     def get_auth_constraint(self, rule_id) -> AuthConstraint:
-        return self.auth_map.get(rule_id, None)
+        rule = self.auth_map.get(rule_id, None)
+        if rule:
+            return rule.default_auth_constraint
 
 
 class ConfigLedgerAuthPolicy(AbstractAuthPolicy):
@@ -161,6 +165,10 @@ class ConfigLedgerAuthPolicy(AbstractAuthPolicy):
 Main class for authorization
 
 """
+
+
+class AuthRuleNotFound(Exception):
+    pass
 
 
 class Authorizer():
@@ -181,7 +189,7 @@ class Authorizer():
                                   old_value,
                                   new_value)
         for key in self.policy.auth_map.keys():
-            if re.match(key, rule_id):
+            if re.match(key.replace('*', '.*'), rule_id):
                 return self.policy.auth_map.get(key)
 
     def authorize(self,
@@ -194,13 +202,17 @@ class Authorizer():
                               field=field,
                               old_value=old_value,
                               new_value=new_value)
-        rule_auth_constraint = self.policy.get_auth_constraint(rule.rule_id)
-        return self._do_authorize(field=field,
-                                  old_value=old_value,
-                                  new_value=new_value,
-                                  rule=rule,
-                                  rule_auth_constraint=rule_auth_constraint,
-                                  auth_constraint=auth_constraint)
+        if rule:
+            rule_auth_constraint = self.policy.get_auth_constraint(rule.rule_id)
+            return self._do_authorize(field=field,
+                                      old_value=old_value,
+                                      new_value=new_value,
+                                      rule=rule,
+                                      rule_auth_constraint=rule_auth_constraint,
+                                      auth_constraint=auth_constraint)
+        else:
+            raise AuthRuleNotFound("There is no rule for txn_type: {}, field: {}, old_value: {}, new_value: {}"
+                                   .format(txn_type, field, old_value, new_value))
 
     def _do_authorize(self,
                       field: str,
@@ -223,11 +235,11 @@ class Authorizer():
 addNewTrustee = RuleAdd(txn_type=NYM,
                         field='role',
                         new_value=TRUSTEE,
-                        default_auth_constraint=AuthConstraint(RoleDef(TRUSTEE, 1)),
+                        default_auth_constraint=AuthConstraint([RoleDef(TRUSTEE, 1)]),
                         description="Add new trustee")
 
 addNewSteward = RuleAdd(txn_type=NYM,
                         field='role',
                         new_value=STEWARD,
-                        default_auth_constraint=AuthConstraint(RoleDef(TRUSTEE, 1)),
+                        default_auth_constraint=AuthConstraint([RoleDef(TRUSTEE, 1)]),
                         description="Add new steward")
