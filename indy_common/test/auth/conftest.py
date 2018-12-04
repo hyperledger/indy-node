@@ -27,7 +27,6 @@ def initialized_auth_map():
     Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, False)
 
 
-
 @pytest.fixture(scope='function')
 def dict_add():
     return dict(description="Adding something",
@@ -78,6 +77,3 @@ def not_allow_all_dict(request):
                                field='some_field',
                                old_value='old_value',
                                new_value='new_value')
-
-
-
