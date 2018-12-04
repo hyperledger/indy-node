@@ -67,7 +67,7 @@ did use CDcGtKx1boRYFwPBaGkMmk
 - ledger get-nym did=Jt7aMnw77aoaBMyhXUNjtt
 # #7.1 AS Steward (steward1) RESTORE TrustAnchor (PASS) ?????????????????????????????????????????????????????????????????
 did use 7qFmEyYCXcmUFVied5Sp3b
-ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR
+- ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR
 # #7.2 CHECK TrustAnchor IS VALID
 did use CDcGtKx1boRYFwPBaGkMmk
 ledger nym did=XkZJxs6Uadv6MQeKGGZdZ6 verkey=~Aza4zyTRazcVsokmqNJfsg
@@ -107,5 +107,5 @@ did use 6LKnRH6hWPSpoWu824s5JH
 - ledger attrib did=SvXt2QGwZF1kXTcpd2pJ37 raw={"endpoint":{"ha":"127.0.0.1:5555"}}
 # Steward can create SCHEMA:
 ledger schema name=StewardSchema version=1.0 attr_names=name,age
-# Steward can create CLAIM_DEF:
-ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=1
+# Steward can create CLAIM_DEF (will fail because of wrong schema id):
+- ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=1
