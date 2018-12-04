@@ -44,7 +44,7 @@ def testSendNodeFailsIfDestIsShortReadableName(
 def testSendNodeFailsIfDestIsHexKey(
         looper, sdk_pool_handle, nodeSet, sdk_node_theta_added, node_request):
     node_request['operation']['dest'] = cryptonymToHex(
-        node_request['operation']['dest']).decode()
+        node_request['operation']['dest']).decode() + "0"
     steward_wallet, node = sdk_node_theta_added
     request_couple = sdk_sign_and_send_prepared_request(looper, steward_wallet,
                                                         sdk_pool_handle,
