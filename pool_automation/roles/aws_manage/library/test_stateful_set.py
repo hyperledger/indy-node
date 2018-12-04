@@ -2,7 +2,6 @@ import random
 import string
 import json
 import boto3
-from collections import defaultdict
 
 import pytest
 
@@ -11,9 +10,6 @@ from stateful_set import (
     AwsEC2Launcher, AwsEC2Terminator, find_instances,
     valid_instances, get_tag, manage_instances
 )
-
-
-AWS_REGIONS_TEST = [r.code for r in AWS_REGIONS.values() if not r.expensive]
 
 
 class EC2TestCtx(object):
@@ -27,17 +23,6 @@ class EC2TestCtx(object):
 ############
 # FIXTURES #
 ############
-
-
-@pytest.fixture(scope="session")
-def ec2_all():
-    return {
-        r: {
-            'rc': boto3.resource('ec2', region_name=r),
-            'cl': boto3.client('ec2', region_name=r)
-        }
-        for r in AWS_REGIONS_TEST
-    }
 
 
 @pytest.fixture
@@ -75,7 +60,8 @@ def ec2_resources(request, regions, ec2):
                                    if security_group_suffix
                                    else _random()),
             type_name='t2.micro',
-            market_spot=False,
+            # TODO docs
+            market_spot=(request.config.getoption("--market-type") == 'spot'),
             spot_max_price=None
         )
 
@@ -141,15 +127,6 @@ def pricing_client():
     # pricing API is available only through us-east-1 and ap-south-1
     # https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/using-pelong.html
     return boto3.client('pricing', region_name='us-east-1')
-
-
-@pytest.fixture(scope="session")
-def ec2_prices():
-    return {
-        r: {
-            'on-demand': defaultdict(dict)
-        } for r in AWS_REGIONS_TEST
-    }
 
 
 @pytest.fixture
@@ -218,27 +195,6 @@ def ec2ctxs(regions, ec2, ec2cl, on_demand_prices, ec2_prices):
 def ec2ctx(ec2ctxs):
     assert len(ec2ctxs) == 1
     return ec2ctxs[0]
-
-
-# parametrization spec for tests
-def pytest_generate_tests(metafunc):
-
-    def idfn(regions):
-        return '_'.join(regions)
-
-    if 'regions' in metafunc.fixturenames:
-        # TODO
-        # as of now (pytest v.4.0.1) pytest doesn't provide public API
-        # to access markers from this hook (e.g. using Metafunc), but according
-        # to comments in code they are going to change that
-        # https://github.com/pytest-dev/pytest/blob/4.0.1/src/_pytest/python.py#L1447),
-        # thus the following code should be reviewed later
-        marker = metafunc.definition.get_closest_marker('regions')
-
-        metafunc.parametrize(
-            "regions",
-            marker.args[0] if marker else [[r] for r in AWS_REGIONS_TEST],
-            ids=marker.kwargs.get('ids', idfn) if marker else idfn)
 
 
 #########
@@ -338,19 +294,27 @@ def test_AwsEC2Launcher_spot(ec2ctx, ec2_resources, max_price_factor):
     instances = launcher.launch(
         params, 1, region=ec2ctx.region, ec2=ec2ctx.resource)
 
-    assert len(instances) == 1
-
     launcher.wait()
 
     for inst in instances:
         check_instance_params(inst, params, ec2ctx.client, price)
 
 
-def test_AwsEC2Terminator(ec2ctx, ec2_resources):
+@pytest.mark.regions([['us-east-1', 'us-east-2']])
+def test_AwsEC2Terminator_wait(ec2ctxs, ec2_resources):
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
 
-    instances = launcher.launch(ec2_resources, 2, ec2=ec2ctx.resource)
+    instances = []
+
+    params = ec2_resources._replace(market_spot=False)
+
+    for ctx in ec2ctxs:
+        _instances = launcher.launch(
+            params, 1, region=ctx.region, ec2=ctx.resource)
+        assert len(_instances) == 1
+        instances += _instances
+
     launcher.wait()
 
     for instance in instances:
@@ -362,6 +326,35 @@ def test_AwsEC2Terminator(ec2ctx, ec2_resources):
 
     for instance in instances:
         assert instance.state['Name'] == 'terminated'
+
+
+@pytest.mark.regions([['us-east-1'], ['us-east-2']])
+def test_AwsEC2Terminator_spot(ec2ctx, ec2_resources):
+    launcher = AwsEC2Launcher()
+    terminator = AwsEC2Terminator()
+
+    params = ec2_resources._replace(market_spot=True, spot_max_price=None)
+    instances = launcher.launch(
+        params, 1, region=ec2ctx.region, ec2=ec2ctx.resource)
+
+    launcher.wait()
+
+    for instance in instances:
+        terminator.terminate(instance)
+
+    for instance in instances:
+        assert instance.spot_instance_request_id is not None
+        spot_params = ec2ctx.client.describe_spot_instance_requests(
+            SpotInstanceRequestIds=[instance.spot_instance_request_id])
+        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-bid-status.html#get-spot-instance-bid-status
+        assert (spot_params['SpotInstanceRequests'][0]['State'] in
+                ('closed', 'cancelled'))
+        assert (spot_params['SpotInstanceRequests'][0]['Status']['Code'] in (
+            'instance-terminated-by-user',
+            'request-canceled-and-instance-running'
+        ))
+
+    terminator.wait()
 
 
 @pytest.mark.regions([['us-east-1']])
