@@ -18,7 +18,6 @@ before_install:
 
 install:
     - pip install -U -e .
-    - pip install -U indy-client
 
 script:
     - python -m indy_node.test

@@ -21,9 +21,6 @@ cliNodeReg = OrderedDict([
 
 GENERAL_CONFIG_DIR = '/etc/indy/'
 
-CLI_BASE_DIR = '~/.indy-cli/'
-CLI_NETWORK_DIR = os.path.join(CLI_BASE_DIR, 'networks')
-
 GENERAL_CONFIG_FILE = 'indy_config.py'
 NETWORK_CONFIG_FILE = 'indy_config.py'
 USER_CONFIG_FILE = 'indy_config.py'
