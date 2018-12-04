@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from ansible.module_utils.basic import AnsibleModule
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, OrderedDict
 from itertools import cycle
 import boto3
 
@@ -15,25 +15,46 @@ InstanceParams = namedtuple(
 
 ManageResults = namedtuple('ManageResults', 'changed active terminated')
 
-AWS_REGIONS = [
-    'ap-northeast-1',
-    'ap-northeast-2',
-    'ap-south-1',
-    'ap-southeast-1',
-    'ap-southeast-2',
-    'ca-central-1',
-    'eu-central-1',
-    'eu-west-1',
-    'eu-west-2',
-    'eu-west-3',
-    'sa-east-1',
-    'us-east-1',
-    'us-east-2',
-    'us-west-1',
-    'us-west-2']
+
+class AWSRegion(object):
+    def __init__(self, code, location, expensive=False):
+        self.code = code
+        self.location = location
+        self.expensive = expensive
 
 
-# TODO think about moving these module level funcitons into classes
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html
+#
+# prices:
+#   - https://aws.amazon.com/ec2/pricing/
+#   - https://www.concurrencylabs.com/blog/choose-your-aws-region-wisely/
+#
+# TODO automate or update periodically
+AWS_REGIONS = OrderedDict([(r.code, r) for r in [
+    AWSRegion('us-east-1', 'US East (N. Virginia)'),
+    AWSRegion('us-east-2', 'US East (Ohio)'),
+    AWSRegion('us-west-1', 'US West (N. California)'),
+    AWSRegion('us-west-2', 'US West (Oregon)'),
+    AWSRegion('ca-central-1', 'Canada (Central)'),
+    AWSRegion('eu-central-1', 'EU (Frankfurt)'),
+    AWSRegion('eu-west-1', 'EU (Ireland)'),
+    AWSRegion('eu-west-2', 'EU (London)'),
+    AWSRegion('eu-west-3', 'EU (Paris)'),
+    AWSRegion('ap-northeast-1', 'Asia Pacific (Tokyo)'),
+    AWSRegion('ap-northeast-2', 'Asia Pacific (Seoul)'),
+    # some specific one, requires service subscriptions
+    # (ClientError: An error occurred (OptInRequired) when calling the DescribeInstances operation)
+    #AWSRegion('ap-northeast-3', 'Asia Pacific (Osaka-Local)'),
+    AWSRegion('ap-southeast-1', 'Asia Pacific (Singapore)'),
+    AWSRegion('ap-southeast-2', 'Asia Pacific (Sydney)'),
+    AWSRegion('ap-south-1', 'Asia Pacific (Mumbai)'),
+    AWSRegion('sa-east-1', 'South America (Sao Paulo)', True),
+]])
+
+
+# TODO
+#   - think about moving these module level funcitons into classes
+#   - cache results
 def find_ubuntu_ami(ec2):
     images = ec2.images.filter(
         Owners=['099720109477'],
@@ -42,7 +63,7 @@ def find_ubuntu_ami(ec2):
                 'Name': 'name',
                 'Values': ['ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server*']
             }
-        ]).all()
+        ])
     # Return latest image available
     images = sorted(images, key=lambda v: v.creation_date)
     return images[-1].image_id if len(images) > 0 else None
@@ -161,6 +182,9 @@ class AwsEC2Launcher(AwsEC2Waiter):
                             'Key': 'Group',
                             'Value': params.group
                         }
+                    ] + [
+                        {'Key': k, 'Value': v}
+                        for k, v in params.add_tags.iteritems()
                     ]
                 }
             ]
@@ -188,6 +212,7 @@ class AwsEC2Launcher(AwsEC2Waiter):
 def manage_instances(regions, params, count):
     hosts = []
     terminated = []
+    tag_ids = []
     changed = False
 
     def _host_info(inst):
@@ -201,7 +226,7 @@ def manage_instances(regions, params, count):
 
     valid_region_ids = valid_instances(regions, count)
 
-    for region in AWS_REGIONS:
+    for region in AWS_REGIONS.keys():
         ec2 = boto3.resource('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
@@ -222,18 +247,23 @@ def manage_instances(regions, params, count):
             instances = aws_launcher.launch(
                 params, len(valid_ids), region=region, ec2=ec2)
             for inst, tag_id in zip(instances, valid_ids):
-                inst.create_tags(Tags=[
-                    {'Key': 'Name', 'Value': "{}-{}-{}-{}"
-                        .format(params.project,
-                                params.namespace,
-                                params.group,
-                                tag_id.zfill(3)).lower()},
-                    {'Key': 'ID', 'Value': tag_id}] +
-                    [{'Key': k, 'Value': v} for k, v in params.add_tags.iteritems()])
+                tag_ids.append((inst, tag_id))
                 hosts.append(inst)
                 changed = True
 
     aws_launcher.wait()
+
+    # add tags based on id once instances are running
+    for inst, tag_id in tag_ids:
+        inst.create_tags(Tags=[
+            {'Key': 'Name', 'Value': "{}-{}-{}-{}"
+                .format(params.project,
+                        params.namespace,
+                        params.group,
+                        tag_id.zfill(3)).lower()},
+            {'Key': 'ID', 'Value': tag_id}])
+
+
     aws_terminator.wait()
 
     return ManageResults(
