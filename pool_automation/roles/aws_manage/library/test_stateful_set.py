@@ -40,12 +40,6 @@ def ec2_all():
     }
 
 
-# just to make flake8 happy
-@pytest.fixture
-def regions():
-    pass
-
-
 @pytest.fixture
 def ec2(regions, ec2_all):
     return [ec2_all[r]['rc'] for r in regions]
@@ -159,15 +153,11 @@ def ec2_prices():
 
 
 @pytest.fixture
-def with_on_demand_prices():
-    pass
-
-
-@pytest.fixture
 def on_demand_prices(request, pricing_client, ec2_prices,
                      regions, ec2_resources):
 
-    if 'with_on_demand_prices' not in request.fixturenames:
+    marker = request.node.get_closest_marker('prices')
+    if not (marker and ('on-demand' in marker.get('term', []))):
         return
 
     for region_code in regions:
@@ -236,23 +226,19 @@ def pytest_generate_tests(metafunc):
     def idfn(regions):
         return '_'.join(regions)
 
-    test_func_name = metafunc.function.__name__
-
     if 'regions' in metafunc.fixturenames:
-        ids = idfn
-        if test_func_name == 'test_manage_instances':
-            regions = [['us-east-1', 'us-east-2', 'us-west-2']]
-            ids = ['3regions']
-        elif test_func_name == 'test_AwsEC2Launcher_wait':
-            regions = [['us-east-1', 'us-east-2']]
-        elif test_func_name == 'test_AwsEC2Launcher_spot':
-            regions = [['us-east-1'], ['us-east-2']]
-        elif test_func_name == 'test_find_instances':
-            regions = [['us-east-1']]
-        else:
-            regions = [[r] for r in AWS_REGIONS_TEST]
+        # TODO
+        # as of now (pytest v.4.0.1) pytest doesn't provide public API
+        # to access markers from this hook (e.g. using Metafunc), but according
+        # to comments in code they are going to change that
+        # https://github.com/pytest-dev/pytest/blob/4.0.1/src/_pytest/python.py#L1447),
+        # thus the following code should be reviewed later
+        marker = metafunc.definition.get_closest_marker('regions')
 
-        metafunc.parametrize("regions", regions, ids=ids)
+        metafunc.parametrize(
+            "regions",
+            marker.args[0] if marker else [[r] for r in AWS_REGIONS_TEST],
+            ids=marker.kwargs.get('ids', idfn) if marker else idfn)
 
 
 #########
@@ -306,6 +292,7 @@ def check_instance_params(inst, params, ec2cl=None, price=None):
         )
 
 
+@pytest.mark.regions([['us-east-1', 'us-east-2']])
 def test_AwsEC2Launcher_wait(ec2ctxs, ec2_resources):
     launcher = AwsEC2Launcher()
     instances = []
@@ -333,10 +320,11 @@ def idfn_test_AwsEC2Launcher(max_price):
         return "max_price_{}".format(max_price)
 
 
-@pytest.mark.parametrize('max_price_factor', [None, 0.7],
-                         ids=idfn_test_AwsEC2Launcher)
-def test_AwsEC2Launcher_spot(ec2ctx, ec2_resources,
-                             with_on_demand_prices, max_price_factor):
+@pytest.mark.prices(term="on-demand")
+@pytest.mark.regions([['us-east-1'], ['us-east-2']])
+@pytest.mark.parametrize(
+    'max_price_factor', [None, 0.7], ids=idfn_test_AwsEC2Launcher)
+def test_AwsEC2Launcher_spot(ec2ctx, ec2_resources, max_price_factor):
     launcher = AwsEC2Launcher()
     default_price = ec2ctx.prices['on-demand'][ec2_resources.type_name]
 
@@ -376,6 +364,7 @@ def test_AwsEC2Terminator(ec2ctx, ec2_resources):
         assert instance.state['Name'] == 'terminated'
 
 
+@pytest.mark.regions([['us-east-1']])
 def test_find_instances(ec2ctx, ec2_resources):
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
@@ -437,6 +426,8 @@ def test_valid_instances():
     assert instances['eu'] == ['2', '4']
 
 
+@pytest.mark.regions(
+    [['us-east-1', 'us-east-2', 'us-west-2']], ids=['3regions'])
 def test_manage_instances(ec2ctxs, ec2_resources):
     regions = [ctx.region for ctx in ec2ctxs]
 
