@@ -3238,12 +3238,6 @@
         "IPaddress": "10.0.0.201"
       }
     },
-//    "ClientCodePyPi": {
-//      "Ubuntu1604": {
-//        "stable": "indy-client",
-//        "master": "indy-client-dev"
-//      }
-//    },
     "RegionBasedData": {
       "ap-northeast-1": {
         "Ubuntu1604": "ami-aae114cc"

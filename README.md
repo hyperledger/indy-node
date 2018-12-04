@@ -8,7 +8,6 @@
 * [How to Contribute](#how-to-contribute)
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
-* [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
 * [Continuous integration and delivery](https://github.com/hyperledger/indy-node/blob/master/docs/ci-cd.md)
 * [How to send a PR](#how-to-send-a-pr)
 * [Docs and links](#docs-and-links)
@@ -49,11 +48,8 @@ Indy Node repo consists of the following parts:
 - indy-node: 
     - [indy-plenum](https://github.com/hyperledger/indy-plenum)-based implementation of distributed ledger
     - Extends plenum's base pool functionality with specific transactions support (CLAIM_DEF, SCHEMA, POOL_UPGRADE, etc.)
-- indy-client
-    - Contains client and CLI code
-    - Will be deprecated soon in favor of [indy-sdk](https://github.com/hyperledger/indy-sdk), so please use indy-sdk for your own applications dealing with Indy ecosystem.
 - indy-common
-    - Common code for both indy-node and indy-client parts
+    - Common code for indy-node
 - scripts
     - Some scripts that can be run for installed Node (in particular, scripts to start Nodes, generate keys, prepare test Network, etc.)
 - doc
