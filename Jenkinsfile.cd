@@ -79,9 +79,8 @@ def systemTests = { component ->
                 }
                 
                 stage("Run pool") {
-                    sh './pool_start.sh 25'
-                    
                     echo "System Tests ($component): Running nodes..."
+                    sh './pool_start.sh 25'
                     pool_nodes = sh(script: 'docker ps', returnStdout: true)
                     echo "System Tests ($component): pool_nodes"
                 }
@@ -92,7 +91,7 @@ def systemTests = { component ->
                         ./client_for_pool_start.sh
                     '''
                 }
-            } //end dir
+            }
             
             stage("Prepare tests") {
                 testHelpers.getSystemTests(targetDir: './system_tests')
@@ -112,7 +111,6 @@ def systemTests = { component ->
                     }
                 }
             } finally {
-
                 stage("Upload test teports") {
                     sh "mkdir -p system_tests/reports"
 
@@ -130,16 +128,25 @@ def systemTests = { component ->
             echo "{exc.getStackTrace()}"
         } finally {
             stage('Cleanup') {
+                wsCleanup()
+
+                // TODO harden
                 try {
-                    sh '''
-                        docker stop $(docker ps -a -q)
-                        docker network rm pool-network
-                    '''
+                    sh "./client_stop.sh"
                 } catch (Exception ex) {
-                    // pass
+                    echo "System Tests ($component): client container stop error: ${exc.getMessage()}"
                 }
 
-                wsCleanup()
+                try {
+                    sh "./pool_stop.sh"
+                } catch (Exception ex) {
+                    echo "System Tests ($component): client container stop error: ${exc.getMessage()}"
+                }
+
+                sh """
+                    docker container prune -f
+                    docker network prune -f
+                """
             }
         }
     }
