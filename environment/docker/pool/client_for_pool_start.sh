@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 POOL_DATA_FILE="$1"
 IP="$2"
 CLI_CNT="$3"
