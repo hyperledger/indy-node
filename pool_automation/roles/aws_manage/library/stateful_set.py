@@ -195,6 +195,7 @@ class AwsEC2Launcher(AwsEC2Waiter):
                 'MarketType': 'spot',
                 'SpotOptions': {}
             }
+            # TODO make more generic to cover all possible options
             for opt in ['spot_max_price']:
                 spot_options = launch_spec['InstanceMarketOptions']['SpotOptions']
                 if getattr(params, opt) is not None:

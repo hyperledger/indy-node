@@ -134,7 +134,7 @@ def on_demand_prices(request, pricing_client, ec2_prices,
                      regions, ec2_resources):
 
     marker = request.node.get_closest_marker('prices')
-    if not (marker and ('on-demand' in marker.get('term', []))):
+    if not (marker and ('on-demand' in marker.kwargs.get('term', []))):
         return
 
     for region_code in regions:
