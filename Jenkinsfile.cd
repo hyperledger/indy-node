@@ -66,6 +66,8 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 
 def systemTests = { component ->
     node("ubuntu") {
+        checkout scm
+
         try {
             dir("environment/docker/pool"){ 
                 stage("Prepare pool") {
@@ -144,7 +146,8 @@ def systemTests = { component ->
 options = new TestAndPublishOptions()
 
 // FIXME: Remove after tests
-options.skips([
+env.BRANCH_NAME = 'master'
+options.skip([
     StagesEnum.IS_TESTED, 
     StagesEnum.STATIC_CODE_VALIDATION, 
     StagesEnum.TEST, 
@@ -167,8 +170,9 @@ options.skips([
     StagesEnum.BUILD_RESULT_NOTIF,
     ])
 
-options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
+//options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
 options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])
+
 testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
