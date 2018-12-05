@@ -64,13 +64,14 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
     return "$volumeName"
 }
 
-def systemTests = { releaseVersion ->
+def systemTests = { component ->
     node("ubuntu") {
         try {
             dir("environment/docker/pool"){ 
                 stage("Prepare pool") {
-                    // TODO: add indy version to Dockerfile
                     sh '''sed -i 's/\\(RUN pip3 install python3-indy\\)/& pytest/g' core.ubuntu.dockerfile'''
+                    sh """sed -i 's/repo.sovrin.org\\/deb xenial master/repo.sovrin.org\\/deb xenial $component/g' core.ubuntu.dockerfile"""
+                    sh '''sed -i 's/sdk\\/deb xenial master/sdk\\/deb xenial stable/g' core.ubuntu.dockerfile'''
                 }
                 
                 stage("Run pool") {
