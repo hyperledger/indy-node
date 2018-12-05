@@ -128,7 +128,7 @@ def systemTests = { component ->
             echo "{exc.getStackTrace()}"
         } finally {
             stage('Cleanup') {
-                wsCleanup()
+                cleanWs()
 
                 // TODO harden
                 try {
