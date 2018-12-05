@@ -70,75 +70,77 @@ def systemTests = { component ->
 
         try {
             dir("environment/docker/pool"){ 
-                stage("Prepare pool") {
-                    sh '''sed -i 's/\\(RUN pip3 install python3-indy\\)/& pytest/g' core.ubuntu.dockerfile'''
-                    sh """sed -i 's/repo.sovrin.org\\/deb xenial master/repo.sovrin.org\\/deb xenial $component/g' core.ubuntu.dockerfile"""
-                    sh '''sed -i 's/sdk\\/deb xenial master/sdk\\/deb xenial stable/g' core.ubuntu.dockerfile'''
+                stage("Patch core dockerfile") {
+                    sh """
+                        sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
+                        sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(RUN pip3 install python3-indy\\)/& pytest/g' core.ubuntu.dockerfile
+                    """
                 }
                 
                 stage("Run pool") {
-                    sh script: '''./pool_start.sh 25'''
+                    sh './pool_start.sh 25'
                     
-                    echo "Running nodes: "
+                    echo "System Tests ($component): Running nodes..."
                     pool_nodes = sh(script: 'docker ps', returnStdout: true)
-                    echo pool_nodes
+                    echo "System Tests ($component): pool_nodes"
                 }
             
-                stage("Prepare client") {
-                    sh script: '''sed -i 's/\\(docker exec -it\\)/#&/g' client_start.sh'''
-                }
-                
-                stage("Run client") {
-                    sh script: '''./client_for_pool_start.sh'''
+                stage("Prepare and run client") {
+                    sh '''
+                        sed -i 's/\\(docker exec -it\\)/#&/g' client_start.sh'
+                        ./client_for_pool_start.sh
+                    '''
                 }
             } //end dir
             
-            stage("Prepare System Tests") {
+            stage("Prepare tests") {
                 testHelpers.getSystemTests(targetDir: './system_tests')
+                sh '''
+                    docker cp ./system_tests/system indyclient:/home/indy
+                    docker exec -t --user indy indyclient cp /var/lib/indy/sandbox/pool_transactions_genesis /home/indy/system
+                '''
             }
 
-            stage("Copy tests and genesis to the client") {
-                sh '''docker cp ./system_tests/system indyclient:/home/indy'''
-                sh '''docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./docker_genesis'''
-                sh '''docker cp ./docker_genesis indyclient:/home/indy/system/docker_genesis'''
-            }
-            
-            stage("Run tests") {
-                try {
+            String testReportFileName = "system_tests_report.xml"
+            try {
+                stage("Run tests") {
                     dir("environment/docker/pool"){
-                        sh '''docker exec -t --user indy indyclient bash -c "cd /home/indy/system && pytest --junit-xml=./reports/system_tests_ledger_report.xml test_ledger.py" '''
+                        sh """
+                            docker exec -t --user indy indyclient bash -c "cd /home/indy/system && pytest --junit-xml=./reports/$testReportFileName test_ledger.py"
+                        """
                     }
                 }
-                catch (Exception exc) {
-                    continue
+            } finally {
+
+                stage("Upload test teports") {
+                    sh "mkdir -p system_tests/reports"
+
+                    dir("system_tests/reports"){
+                        sh "docker cp indyclient:/home/indy/system/reports/$testReportFileName ./"
+                        archiveArtifacts artifacts: testReportFileName, allowEmptyArchive: true
+                        junit testReportFileName
+                    }
                 }
             }
             
-            stage("Prepare reports") {
-                sh '''mkdir -p system_tests/reports'''
-
-                dir("system_tests/reports"){
-                    sh '''docker cp indyclient:/home/indy/system/reports/system_tests_ledger_report.xml ./'''
-                }
-            }
-            
-            stage("Upload reports") {
-                dir("system_tests/reports"){    
-                    archiveArtifacts artifacts: '*.xml', onlyIfSuccessful: true
-                    junit healthScaleFactor: 0.0, keepLongStdio: true, testResults: '*.xml'
-                }
-            }
-        } 
-
-        catch (Exception exc) {
-            echo "Catch the exception ${exc.getMessage()}"
-            echo "Stack trace:"
+        } catch (Exception exc) {
+            echo "System Tests ($component): Catch the exception ${exc.getMessage()}"
+            echo "System Tests ($component): Stack trace:"
             echo "{exc.getStackTrace()}"
-        }
-            
-        finally {
-            sh '''docker stop $(docker ps -a -q)'''
-            sh '''docker network rm pool-network'''
+        } finally {
+            stage('Cleanup') {
+                try {
+                    sh '''
+                        docker stop $(docker ps -a -q)
+                        docker network rm pool-network
+                    '''
+                } catch (Exception ex) {
+                    // pass
+                }
+
+                wsCleanup()
+            }
         }
     }
 }
