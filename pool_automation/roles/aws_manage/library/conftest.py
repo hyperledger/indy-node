@@ -11,7 +11,7 @@ AWS_REGIONS_TEST = [r.code for r in AWS_REGIONS.values() if not r.expensive]
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--market-type", choices=['on-demand', 'spot'], default='on-demand',
+        "--market-type", choices=['on-demand', 'spot'], default='spot',
         help="EC2 instances market type to use by default"
     )
 
