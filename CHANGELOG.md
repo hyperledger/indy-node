@@ -1,6 +1,8 @@
 # Hyperledger Indy Node Release Notes
 
 
+* [1.6.78](#1678)
+
 * [1.6.73](#1673)
 
 * [1.6.70](#1670)
@@ -31,6 +33,66 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+
+## 1.6.78
+
+### Component Version Information
+
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.6.53 |
+| indy-anoncreds | 1.0.11 |
+| indy-node | 1.6.78 |
+|   |   |   |
+
+### Major Fixes
+
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Re-asking for ledger statuses and maximal consistency proofs is not canceled. |   | [INDY-1740](https://jira.hyperledger.org/browse/INDY-1740) |
+| Bug in calling notifier methods in Restarter. |   | [INDY-1741](https://jira.hyperledger.org/browse/INDY-1741) |
+| 35 view changes were happened during 10 minutes after nodes failure because of invalid request. |   | [INDY-1696](https://jira.hyperledger.org/browse/INDY-1696) |
+| Requests queue is not cleared in case of reject-nym transactions. |   | [INDY-1700](https://jira.hyperledger.org/browse/INDY-1700) |
+| Throughput critically decreases without causing view_change. |   | [INDY-1672](https://jira.hyperledger.org/browse/INDY-1740) |
+| Node can&#39;t catch up large ledger. |   | [INDY-1595](https://jira.hyperledger.org/browse/INDY-1595) |
+| Unable to demote node in STN. |   | [INDY-1621](https://jira.hyperledger.org/browse/INDY-1621) |
+| View changes happen when all responses should be rejected during load testing scenario. |   | [INDY-1653](https://jira.hyperledger.org/browse/INDY-1653) |
+| Node doesn&#39;t write txns after disconnection from the rest nodes. |   | [INDY-1580](https://jira.hyperledger.org/browse/INDY-1580) |
+| Throughput is degrading if backup primary is stopped. |   | [INDY-1618](https://jira.hyperledger.org/browse/INDY-1618) |
+|   |   |   |   |
+
+### Changes - Additions - Known Issues
+
+| Description | Workaround | Ticket |
+| --- | --- | --- |
+| Switch off a replica that stopped because disconnected from a backup primary. |   | [INDY-1681](https://jira.hyperledger.org/browse/INDY-1681) |
+| Extend load scripts emulating non-smooth load according to the changes in the core script. |   | [INDY-1667](https://jira.hyperledger.org/browse/INDY-1667) |
+| Proof of stability under load. |   | [INDY-1607](https://jira.hyperledger.org/browse/INDY-1607) |
+| Investigate Out of memory issues with the current load testing. |   | [INDY-1688](https://jira.hyperledger.org/browse/INDY-1688) |
+| Do not re-verify signature for Propagates with already verified requests. |   | [INDY-1649](https://jira.hyperledger.org/browse/INDY-1649) |
+| POA: Require multiple signatures for important transactions. |   | [INDY-1704](https://jira.hyperledger.org/browse/INDY-1704) |
+| Support all FEEs txns in the load script. |   | [INDY-1665](https://jira.hyperledger.org/browse/INDY-1665) |
+| Test domain transactions with FEEs. |   | [INDY-1661](https://jira.hyperledger.org/browse/INDY-1661) |
+| 3PC Batch should preserve the order of requests when applying PrePrepare on non-primary. |   | [INDY-1642](https://jira.hyperledger.org/browse/INDY-1642) |
+| Ability to switch off (remove) replicas with no changes of F value. |   | [INDY-1680](https://jira.hyperledger.org/browse/INDY-1680) |
+| A node should be able to participate in BLS multi-signature only if it has a valid proof of posession. |   | [INDY-1589](https://jira.hyperledger.org/browse/INDY-1589) |
+| Make validator info as a hystorical data. |   | [INDY-1637](https://jira.hyperledger.org/browse/INDY-1637) |
+|   |   |   | |
+| **Known Issue:** Upgrade failed on pool from 1.3.62 to 1.4.66. Note that INDY-1447 was fixed in indy-node 1.5.68, but it still presents in indy-node 1.3.62 and 1.4.66 code. | **So, some of the nodes may not to be upgraded during simultaneous pool-upgrade.** If this problem will appear, stewards should perform manual upgrade of indy-node in accordance with this [instruction:](https://docs.google.com/document/d/1vUvbioL5OsmZMSkwRcu0p0jdttJO5VS8K3GhDLdNaoI)**(!)** To reduce the risk of reproducing INDY-1447, it is **recommended to use old CLI for pool upgrade.** | [INDY-1447](https://jira.hyperledger.org/browse/INDY-1447) |
+|   |   |   |   |
+
+### Upgrade Scripts:
+
+**Pool upgrade from indy-node 1.3.62 to indy-node 1.6.78 should be performed simultaneously for all nodes due to txn format changes.**
+
+### Additional Information:
+
+**All indy-cli pools should be recreated with actual genesis files.**
+
+**For more details about txn format changes see** [**INDY-1421**](https://jira.hyperledger.org/browse/INDY-1421) **.**
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
 
 
 ## 1.6.73

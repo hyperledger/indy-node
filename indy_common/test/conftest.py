@@ -18,7 +18,6 @@ strict_types.defaultShouldCheck = True
 from plenum.test.conftest import GENERAL_CONFIG_DIR, \
     txnPoolNodesLooper, overriddenConfigValues  # noqa
 
-
 logger = getlogger()
 
 
@@ -74,24 +73,22 @@ def general_conf_tdir_for_func(tdir_for_func):
     return general_config_dir
 
 
-def _tconf(general_config, client_temp_dir):
+def _tconf(general_config):
     config = getConfig(general_config_dir=general_config)
     for k, v in overriddenConfigValues.items():
         setattr(config, k, v)
     config.MinSepBetweenNodeUpgrades = 5
-    config.CLI_BASE_DIR = client_temp_dir
-    config.CLI_NETWORK_DIR = os.path.join(config.CLI_BASE_DIR, 'networks')
     return config
 
 
 @pytest.fixture(scope="module")
-def tconf(general_conf_tdir, client_tdir):
-    return _tconf(general_conf_tdir, client_tdir)
+def tconf(general_conf_tdir):
+    return _tconf(general_conf_tdir)
 
 
 @pytest.fixture()
-def tconf_for_func(general_conf_tdir_for_func, client_tdir):
-    return _tconf(general_conf_tdir_for_func, client_tdir)
+def tconf_for_func(general_conf_tdir_for_func):
+    return _tconf(general_conf_tdir_for_func)
 
 
 @pytest.fixture(scope="module")

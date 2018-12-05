@@ -8,7 +8,6 @@
 * [How to Contribute](#how-to-contribute)
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
-* [How to Start Indy Client CLI](#how-to-start-indy-client-cli)
 * [Continuous integration and delivery](https://github.com/hyperledger/indy-node/blob/master/docs/ci-cd.md)
 * [How to send a PR](#how-to-send-a-pr)
 * [Docs and links](#docs-and-links)
@@ -49,11 +48,8 @@ Indy Node repo consists of the following parts:
 - indy-node: 
     - [indy-plenum](https://github.com/hyperledger/indy-plenum)-based implementation of distributed ledger
     - Extends plenum's base pool functionality with specific transactions support (CLAIM_DEF, SCHEMA, POOL_UPGRADE, etc.)
-- indy-client
-    - Contains client and CLI code
-    - Will be deprecated soon in favor of [indy-sdk](https://github.com/hyperledger/indy-sdk), so please use indy-sdk for your own applications dealing with Indy ecosystem.
 - indy-common
-    - Common code for both indy-node and indy-client parts
+    - Common code for indy-node
 - scripts
     - Some scripts that can be run for installed Node (in particular, scripts to start Nodes, generate keys, prepare test Network, etc.)
 - doc
@@ -69,15 +65,10 @@ Indy Node repo consists of the following parts:
       So, if you want to work with Indy Node, you will need to have the Plenum code as well in most of the cases
       and work with two projects at the same time 
       (see [How to Start Working with the Code](#how-to-start-working-with-the-code) below).
-- [indy-anoncreds](https://github.com/hyperledger/indy-anoncreds) 
-    - A python implementation of the anonymous credentials ideas developed by IBM Research.
-    - This is quite independent from indy-node/plenum. So, in most cases you don't need this code to contribute to Indy-Node.
-    - It will be deprecated soon in favor of anoncreds implementation in indy-sdk (see below). 
 - [indy-sdk](https://github.com/hyperledger/indy-sdk)
     - An official SDK for Indy.
     - it contains client and anoncreds implementation
     - You don't need it to contribute to Indy-Node. But please use indy-sdk for your own applications dealing with Indy ecosystem.
-    - It will replace indy-client and indy-anoncreds parsts soon.
 - [indy-crypto](https://github.com/hyperledger/indy-crypto)
     - A shared crypto library 
     - It's based on [AMCL](https://github.com/milagro-crypto/amcl)
@@ -119,14 +110,6 @@ The described process is automated in one of the ways below (it allow to install
 Please have a look at [Dev Setup](docs/setup-dev.md)
 
 
-## How to Start Indy Client CLI
-Once installed, you can play with the command-line interface by running Indy from a terminal.
-
-Note: For Windows, we recommended using either [cmder](http://cmder.net/) or [conemu](https://conemu.github.io/).
-```
-indy
-```
-
 ## Continuous Integration and Delivery
 
 Please have a look at [Continuous integration/delivery](docs/ci-cd.md)
@@ -167,10 +150,12 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 - Please have a look at documents and diagrams in [docs](docs) folder
 - Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder:
     - [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md)
+    - [Plenum Consensus Algorithm Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/diagrams/consensus-protocol.png)
     - [Glossary](https://github.com/hyperledger/indy-plenum/blob/master/docs/glossary.md)
     - [Storages](https://github.com/hyperledger/indy-plenum/blob/master/docs/storage.md)
     - [Request Handling](https://github.com/hyperledger/indy-plenum/blob/master/docs/request_handling.md)
     - [Catchup](https://github.com/hyperledger/indy-plenum/blob/master/docs/catchup.md)
+    - [Catchup Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/diagrams/catchup-procedure.png)
     - [Plugins](https://github.com/hyperledger/indy-plenum/blob/master/docs/plugins.md)
 - Relationship between Entities and Transactions: [relationship diagram](docs/relationship-diagram.png)
 - Supported transactions and their format: [transactions](docs/transactions.md)

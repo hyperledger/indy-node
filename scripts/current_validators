@@ -1,4 +1,4 @@
-# !/usr/bin/python3
+#! /usr/bin/python3
 
 import string
 import json
@@ -156,19 +156,19 @@ def parse_inputs():
 
     parser.add_argument('--writeJson',
                         help='Boolean flag.  If set, the output is json. (Default: the output is csv.)',
-                        action='set_true')
+                        action='store_true')
 
     parser.add_argument('--protocolVersion', help='Ledger protocol version. legacy = 1, current = 2, the default is set to 2'
-                                                  'EXAMPLE: --protocolVersion 1')
+                                                  '\nEXAMPLE: --protocolVersion 1')
 
     args = parser.parse_args()
 
     if not args.protocolVersion:
-        args.protocolVersion = '2'  # Mike said leave this on protocol version 2
+        args.protocolVersion = '2'  # default to 2
     elif args.protocolVersion == '1' or args.protocolVersion == '2':
-        args.protocolVersion
+        pass
     else:
-        log.error("INVALID PARAMS \nPlease enter a correct parameter"
+        log.error("Invalid protocolVersion"
                   "\n EXAMPLE: protocolVersion 1")
 
     return args

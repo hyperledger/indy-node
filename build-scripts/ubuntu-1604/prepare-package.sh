@@ -35,7 +35,6 @@ fi
 echo -e "\n\nReplace postfixes"
 sed -i -r "s~indy-node-[a-z]+~indy-node~" "$repo/setup.py"
 sed -i -r "s~indy-plenum-[a-z]+~indy-plenum~" "$repo/setup.py"
-sed -i -r "s~indy-anoncreds-[a-z]+~indy-anoncreds~" "$repo/setup.py"
 
 echo -e "Adapt the dependencies for the Canonical archive"
 sed -i "s~python-dateutil~python3-dateutil~" "$repo/setup.py"

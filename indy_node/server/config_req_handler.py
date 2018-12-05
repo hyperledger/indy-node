@@ -63,15 +63,6 @@ class ConfigReqHandler(LedgerRequestHandler):
             return Upgrader.getVersion(), [APP_NAME]
         return NodeControlUtil.curr_pkt_info(pkg_name)
 
-    def get_dependencies(self, pkg_name, version):
-        base_deps = [APP_NAME, "indy-plenum"]
-        if pkg_name == APP_NAME:
-            return base_deps
-        deps = []
-        NodeControlUtil.dep_tree_traverse(
-            NodeControlUtil.get_deps_tree("{}={}".format(pkg_name, version), base_deps), deps)
-        return deps
-
     def validate(self, req: Request):
         status = None
         operation = req.operation

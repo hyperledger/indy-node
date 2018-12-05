@@ -2,10 +2,8 @@ import os
 import logging
 from collections import OrderedDict
 
-from plenum.common.constants import ClientBootStrategy, HS_ROCKSDB, HS_LEVELDB, KeyValueStorageType
+from plenum.common.constants import ClientBootStrategy, HS_ROCKSDB, KeyValueStorageType
 from plenum.config import rocksdb_default_config
-
-from indy_common.constants import Environment
 
 nodeReg = OrderedDict([
     ('Alpha', ('127.0.0.1', 9701)),
@@ -22,9 +20,6 @@ cliNodeReg = OrderedDict([
 ])
 
 GENERAL_CONFIG_DIR = '/etc/indy/'
-
-CLI_BASE_DIR = '~/.indy-cli/'
-CLI_NETWORK_DIR = os.path.join(CLI_BASE_DIR, 'networks')
 
 GENERAL_CONFIG_FILE = 'indy_config.py'
 NETWORK_CONFIG_FILE = 'indy_config.py'
@@ -61,9 +56,7 @@ rocksdb_idr_cache_db_config = rocksdb_default_config.copy()
 db_attr_db_config = rocksdb_attr_db_config
 db_idr_cache_db_config = rocksdb_idr_cache_db_config
 
-
 PluginsToLoad = []
-
 
 # TODO: This should be in indy_node's config
 
@@ -71,16 +64,13 @@ PluginsToLoad = []
 # might be incorrect sometimes if Node failed to update the file and crashed)
 lastRunVersionFile = 'last_version'
 
-
 # File that stores the version of the code to which the update has to be made.
 # This is used to detect if there was an error while upgrading. Once it has
 # been found out that there was error while upgrading, then it can be upgraded.
 nextVersionFile = 'next_version'
 
-
 # Minimum time difference (seconds) between the code update of 2 nodes
 MinSepBetweenNodeUpgrades = 300
-
 
 upgradeLogFile = "upgrade_log"
 restartLogFile = "restart_log"
@@ -92,7 +82,6 @@ Node control utils options
 '''
 controlServiceHost = "127.0.0.1"
 controlServicePort = "30003"
-
 
 '''
 logging level for agents
@@ -109,3 +98,5 @@ INCONSISTENCY_WATCHER_NETWORK_TIMEOUT = 90
 UPGRADE_ENTRY = 'indy-node'
 
 ANYONE_CAN_WRITE = False
+
+PACKAGES_TO_HOLD = ['indy-plenum', 'indy-node', 'python3-indy-crypto', 'libindy-crypto']

@@ -9,8 +9,6 @@ from stp_core.common.log import getlogger
 from plenum.common.constants import STEWARD_STRING, TRUSTEE_STRING
 from plenum.test.pool_transactions.test_suspend_node import \
     checkNodeNotInNodeReg
-from indy_client.test.helper import addRole, \
-    getClientAddedWithRole
 from indy_common.constants import TRUST_ANCHOR_STRING
 
 logger = getlogger()

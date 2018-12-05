@@ -1,3 +1,4 @@
+import logging
 from perf_load.perf_client_msgs import ClientRun, ClientGetStat
 
 
@@ -18,8 +19,10 @@ class ClientRunner:
         self.total_nack = 0
         self.total_reject = 0
         self._out_file = out_file
+        self._logger = logging.getLogger(name)
 
     def stop_client(self):
+        self._logger.debug("stop_client")
         self.status = ClientRunner.ClientStopped
 
     def is_finished(self):
@@ -35,18 +38,20 @@ class ClientRunner:
         self.total_reject = stat.get("total_rejected", self.total_reject)
 
     def run_client(self):
+        self._logger.debug("run_client {}".format(self))
         try:
             if self.conn and self.status == ClientRunner.ClientReady:
                 self.conn.send(ClientRun())
                 self.status = ClientRunner.ClientRun
         except Exception as e:
-            print("Sent Run to client {} error {}".format(self.name, e), file=self._out_file)
+            self._logger.exception("Sent Run to client {} error {}".format(self.name, e))
             self.status = ClientRunner.ClientError
 
     def req_stats(self):
+        self._logger.debug("req_stats {}".format(self))
         try:
             if self.conn and self.status == ClientRunner.ClientRun:
                 self.conn.send(ClientGetStat())
         except Exception as e:
-            print("Sent ClientGetStat to client {} error {}".format(self.name, e), file=self._out_file)
+            self._logger.exception("Sent ClientGetStat to client {} error {}".format(self.name, e), file=self._out_file)
             self.status = ClientRunner.ClientError
