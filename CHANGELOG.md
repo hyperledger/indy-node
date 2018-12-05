@@ -40,6 +40,18 @@ Although every attempt has been made to make this information as accurate as pos
 | indy-anoncreds | dependency is not required anymore |
 | indy-node | 1.6.79 |
 
+### Additional Information:
+
+**Warning: Embedded command-line tool _indy_ is no longer available.** For further pool interaction use _indy-cli_ package https://github.com/hyperledger/indy-sdk/tree/master/cli
+
+[**indy-test-automation repo**](https://github.com/hyperledger/indy-test-automation) has been created for end-to-end tests and additional test tools [**(INDY-1766)**](https://jira.hyperledger.org/browse/INDY-1766)
+
+**The** [**INDY-1818**](https://jira.hyperledger.org/browse/INDY-1818) **(Init Indy Node should output Base58-encrypted verkey already) affects nodes adding.**
+
+**validator-info output has been changed.**  If you use validator-info as data source make sure that you have done necessary changes for compatibility
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
 ### Major Fixes
 
 | Description | Additional Information | Ticket Number |
@@ -99,16 +111,6 @@ Although every attempt has been made to make this information as accurate as pos
 ### Upgrade Scripts:
 
 No further action is required
-
-### Additional Information:
-
-[**indy-test-automation repo**](https://github.com/hyperledger/indy-test-automation) **has been created for end-to-end tests and additional test tools** [**(INDY-1766)**](https://jira.hyperledger.org/browse/INDY-1766)
-
-**The** [**INDY-1818**](https://jira.hyperledger.org/browse/INDY-1818) **(Init Indy Node should output Base58-encrypted verkey already) affects nodes adding.**
-
-**validator-info output has been changed.**  If you use validator-info as data source make sure that you have done necessary changes for compatibility
-
-**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
 
 ## 1.6.78
 
