@@ -138,8 +138,8 @@ def systemTests = { component ->
                 '''
             }
 
-            String testReportFileNameXml = "system_tests_report.xml"
-            String testReportFileNamePlain = "system_tests_report.txt"
+            String testReportFileNameXml = "system_tests_report.${component}.xml"
+            String testReportFileNamePlain = "system_tests_report.${component}.txt"
             try {
                 stage("Run tests") {
                     sh """
