@@ -65,8 +65,38 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 }
 
 def systemTests = { component ->
+
+    String prefix = "System Tests ($component)"
+    String defaultNetwork = 'pool-network'
+
+    def dockerClean = { networkName=defaultNetwork ->
+
+        try {
+            sh "docker ps -q --filter network=$networkName | xargs docker rm -f"
+        } catch (Exception exc) {
+            echo "$prefix: failed to remove docker containers in $networkName network: $error"
+            throw exc
+        }
+
+        try {
+            sh "docker network rm $networkName"
+        } catch (Exception exc) {
+            echo "$prefix: failed to remove docker $networkName network: $error"
+            throw exc
+        }
+
+        sh "docker container prune -f"
+        sh "docker network prune -f"
+    }
+
     node("ubuntu") {
-        checkout scm
+        stage("Cleanup docker") {
+            dockerClean()
+        }
+
+        stage("Checkout SCM") {
+            checkout scm
+        }
 
         try {
             dir("environment/docker/pool"){
@@ -79,15 +109,15 @@ def systemTests = { component ->
                 }
 
                 stage("Run pool") {
-                    echo "System Tests ($component): Running nodes..."
+                    echo "$prefix: Running nodes..."
                     sh './pool_start.sh 25'
                     pool_nodes = sh(script: 'docker ps', returnStdout: true)
-                    echo "System Tests ($component): pool_nodes"
+                    echo "$prefix: $pool_nodes"
                 }
 
                 stage("Prepare and run client") {
                     sh '''
-                        sed -i 's/\\(docker exec -it\\)/#&/g' client_start.sh'
+                        sed -i 's/\\(docker exec -it\\)/#&/g' client_start.sh
                         ./client_for_pool_start.sh
                     '''
                 }
@@ -122,32 +152,17 @@ def systemTests = { component ->
             }
 
         } catch (Exception exc) {
-            echo "System Tests ($component): Catch the exception ${exc.getMessage()}"
-            echo "System Tests ($component): Stack trace:"
-            echo "{exc.getStackTrace()}"
+            echo "$prefix: fail: $exc"
+            throw exc
         } finally {
             stage('Cleanup') {
-                cleanWs()
-
-                dir("environment/docker/pool"){
-                    // TODO harden
-                    try {
-                        sh "./client_stop.sh"
-                    } catch (Exception exc) {
-                        echo "System Tests ($component): client container stop error: ${exc.getMessage()}"
-                    }
-
-                    try {
-                        sh "./pool_stop.sh"
-                    } catch (Exception exc) {
-                        echo "System Tests ($component): client container stop error: ${exc.getMessage()}"
-                    }
+                try {
+                    dockerClean()
+                } catch(Exception exc) {
+                    // pass
                 }
 
-                sh """
-                    docker container prune -f
-                    docker network prune -f
-                """
+                cleanWs()
             }
         }
     }
