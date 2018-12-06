@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from ansible.module_utils.basic import AnsibleModule
-from collections import namedtuple, defaultdict
+from collections import namedtuple, defaultdict, OrderedDict
 from itertools import cycle
 import boto3
 
@@ -11,29 +11,50 @@ import boto3
 HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
 
 InstanceParams = namedtuple(
-    'InstanceParams', 'project namespace group add_tags key_name security_group type_name')
+    'InstanceParams', 'project namespace group add_tags key_name security_group type_name market_spot spot_max_price')
 
 ManageResults = namedtuple('ManageResults', 'changed active terminated')
 
-AWS_REGIONS = [
-    'ap-northeast-1',
-    'ap-northeast-2',
-    'ap-south-1',
-    'ap-southeast-1',
-    'ap-southeast-2',
-    'ca-central-1',
-    'eu-central-1',
-    'eu-west-1',
-    'eu-west-2',
-    'eu-west-3',
-    'sa-east-1',
-    'us-east-1',
-    'us-east-2',
-    'us-west-1',
-    'us-west-2']
+
+class AWSRegion(object):
+    def __init__(self, code, location, expensive=False):
+        self.code = code
+        self.location = location
+        self.expensive = expensive
 
 
-# TODO think about moving these module level funcitons into classes
+# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html
+#
+# prices:
+#   - https://aws.amazon.com/ec2/pricing/
+#   - https://www.concurrencylabs.com/blog/choose-your-aws-region-wisely/
+#
+# TODO automate or update periodically
+AWS_REGIONS = OrderedDict([(r.code, r) for r in [
+    AWSRegion('us-east-1', 'US East (N. Virginia)'),
+    AWSRegion('us-east-2', 'US East (Ohio)'),
+    AWSRegion('us-west-1', 'US West (N. California)'),
+    AWSRegion('us-west-2', 'US West (Oregon)'),
+    AWSRegion('ca-central-1', 'Canada (Central)'),
+    AWSRegion('eu-central-1', 'EU (Frankfurt)'),
+    AWSRegion('eu-west-1', 'EU (Ireland)'),
+    AWSRegion('eu-west-2', 'EU (London)'),
+    AWSRegion('eu-west-3', 'EU (Paris)'),
+    AWSRegion('ap-northeast-1', 'Asia Pacific (Tokyo)'),
+    AWSRegion('ap-northeast-2', 'Asia Pacific (Seoul)'),
+    # some specific one, requires service subscriptions
+    # (ClientError: An error occurred (OptInRequired) when calling the DescribeInstances operation)
+    # AWSRegion('ap-northeast-3', 'Asia Pacific (Osaka-Local)'),
+    AWSRegion('ap-southeast-1', 'Asia Pacific (Singapore)'),
+    AWSRegion('ap-southeast-2', 'Asia Pacific (Sydney)'),
+    AWSRegion('ap-south-1', 'Asia Pacific (Mumbai)'),
+    AWSRegion('sa-east-1', 'South America (Sao Paulo)', True),
+]])
+
+
+# TODO
+#   - think about moving these module level funcitons into classes
+#   - cache results
 def find_ubuntu_ami(ec2):
     images = ec2.images.filter(
         Owners=['099720109477'],
@@ -42,7 +63,7 @@ def find_ubuntu_ami(ec2):
                 'Name': 'name',
                 'Values': ['ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server*']
             }
-        ]).all()
+        ])
     # Return latest image available
     images = sorted(images, key=lambda v: v.creation_date)
     return images[-1].image_id if len(images) > 0 else None
@@ -85,14 +106,17 @@ class AwsEC2Waiter(object):
     def awaited(self):
         return dict(self._awaited)
 
+    def _instance_region(self, instance):
+        # TODO more mature would be to use
+        #      ec2.client.describe_availability_zones
+        #      and create a map av.zone -> region
+        return instance.placement['AvailabilityZone'][:-1]
+
     def add_instance(self, instance, region=None):
         # fallback - autodetect placement region,
         # might lead to additional AWS API calls
         if not region:
-            # TODO more mature would be to use
-            #      ec2.client.describe_availability_zones
-            #      and create a map av.zone -> region
-            region = instance.placement['AvailabilityZone'][:-1]
+            region = self._instance_region(instance)
         self._awaited[region].append(instance)
 
     def wait(self, update=True):
@@ -115,6 +139,12 @@ class AwsEC2Terminator(AwsEC2Waiter):
     def terminate(self, instance, region=None):
         instance.terminate()
         self.add_instance(instance, region)
+        # cancel spot request if any
+        if instance.spot_instance_request_id:
+            ec2cl = boto3.client('ec2', region_name=(region if region
+                                 else self._instance_region(instance)))
+            ec2cl.cancel_spot_instance_requests(
+                SpotInstanceRequestIds=[instance.spot_instance_request_id])
 
 
 class AwsEC2Launcher(AwsEC2Waiter):
@@ -129,14 +159,14 @@ class AwsEC2Launcher(AwsEC2Waiter):
         if not ec2:
             ec2 = boto3.resource('ec2', region_name=region)
 
-        instances = ec2.create_instances(
-            ImageId=find_ubuntu_ami(ec2),
-            KeyName=params.key_name,
-            SecurityGroups=[params.security_group],
-            InstanceType=params.type_name,
-            MinCount=count,
-            MaxCount=count,
-            TagSpecifications=[
+        launch_spec = {
+            'ImageId': find_ubuntu_ami(ec2),
+            'KeyName': params.key_name,
+            'SecurityGroups': [params.security_group],
+            'InstanceType': params.type_name,
+            'MinCount': count,
+            'MaxCount': count,
+            'TagSpecifications': [
                 {
                     'ResourceType': 'instance',
                     'Tags': [
@@ -152,10 +182,27 @@ class AwsEC2Launcher(AwsEC2Waiter):
                             'Key': 'Group',
                             'Value': params.group
                         }
+                    ] + [
+                        {'Key': k, 'Value': v}
+                        for k, v in params.add_tags.iteritems()
                     ]
                 }
             ]
-        )
+        }
+
+        if params.market_spot:
+            launch_spec['InstanceMarketOptions'] = {
+                'MarketType': 'spot',
+                'SpotOptions': {}
+            }
+            # TODO make more generic to cover all possible options
+            for opt in ['spot_max_price']:
+                spot_options = launch_spec['InstanceMarketOptions']['SpotOptions']
+                if getattr(params, opt) is not None:
+                    opt_name = ''.join(w.title() for w in opt.split('_')[1:])
+                    spot_options[opt_name] = getattr(params, opt)
+
+        instances = ec2.create_instances(**launch_spec)
 
         for i in instances:
             self.add_instance(i, region)
@@ -166,6 +213,7 @@ class AwsEC2Launcher(AwsEC2Waiter):
 def manage_instances(regions, params, count):
     hosts = []
     terminated = []
+    tag_ids = []
     changed = False
 
     def _host_info(inst):
@@ -179,11 +227,12 @@ def manage_instances(regions, params, count):
 
     valid_region_ids = valid_instances(regions, count)
 
-    for region in AWS_REGIONS:
+    for region in AWS_REGIONS.keys():
         ec2 = boto3.resource('ec2', region_name=region)
         valid_ids = valid_region_ids[region]
 
-        instances = find_instances(ec2, params.project, params.namespace, params.group)
+        instances = find_instances(
+            ec2, params.project, params.namespace, params.group)
         for inst in instances:
             tag_id = get_tag(inst, 'ID')
             if tag_id in valid_ids:
@@ -199,18 +248,22 @@ def manage_instances(regions, params, count):
             instances = aws_launcher.launch(
                 params, len(valid_ids), region=region, ec2=ec2)
             for inst, tag_id in zip(instances, valid_ids):
-                inst.create_tags(Tags=[
-                    {'Key': 'Name', 'Value': "{}-{}-{}-{}"
-                        .format(params.project,
-                                params.namespace,
-                                params.group,
-                                tag_id.zfill(3)).lower()},
-                    {'Key': 'ID', 'Value': tag_id}] +
-                    [{'Key': k, 'Value': v} for k, v in params.add_tags.iteritems()])
+                tag_ids.append((inst, tag_id))
                 hosts.append(inst)
                 changed = True
 
     aws_launcher.wait()
+
+    # add tags based on id once instances are running
+    for inst, tag_id in tag_ids:
+        inst.create_tags(Tags=[
+            {'Key': 'Name', 'Value': "{}-{}-{}-{}"
+                .format(params.project,
+                        params.namespace,
+                        params.group,
+                        tag_id.zfill(3)).lower()},
+            {'Key': 'ID', 'Value': tag_id}])
+
     aws_terminator.wait()
 
     return ManageResults(
@@ -230,7 +283,9 @@ def run(module):
         add_tags=params['add_tags'],
         key_name=params['key_name'],
         security_group=params['security_group'],
-        type_name=params['instance_type']
+        type_name=params['instance_type'],
+        market_spot=params['market_spot'],
+        spot_max_price=params['spot_max_price']
     )
 
     res = manage_instances(
@@ -253,7 +308,9 @@ if __name__ == '__main__':
         key_name=dict(type='str', required=True),
         security_group=dict(type='str', required=True),
         instance_type=dict(type='str', required=True),
-        instance_count=dict(type='int', required=True)
+        instance_count=dict(type='int', required=True),
+        market_spot=dict(type='bool', required=False, default=False),
+        spot_max_price=dict(type='str', required=False, default=None),
     )
 
     module = AnsibleModule(
