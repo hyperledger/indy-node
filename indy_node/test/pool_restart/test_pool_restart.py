@@ -37,6 +37,16 @@ def test_pool_restart(
     _comparison_reply(responses, req_obj)
 
 
+def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper,
+                                     tdir, tconf, txnPoolNodeSet):
+
+    for node in txnPoolNodeSet:
+        node.view_changer.view_change_in_progress = True
+
+    pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
+                     tdir, tconf, START)
+
+
 def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
     '''
     1. Add restart schedule message to ActionLog
