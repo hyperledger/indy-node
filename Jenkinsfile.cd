@@ -179,33 +179,7 @@ def systemTests = { component ->
 }
 
 options = new TestAndPublishOptions()
-
-// FIXME: Remove after tests
-env.BRANCH_NAME = 'master'
-options.skip([
-    StagesEnum.IS_TESTED,
-    StagesEnum.STATIC_CODE_VALIDATION,
-    StagesEnum.TEST,
-    StagesEnum.AUTOMERGE,
-    StagesEnum.GET_RELEASE_VERSION,
-    StagesEnum.PYPI_RELEASE,
-    StagesEnum.PACK_RELEASE,
-    StagesEnum.PACK_RELEASE_COPY,
-    StagesEnum.GITHUB_RELEASE,
-    StagesEnum.QA_NOTIF,
-    StagesEnum.QA_APPROVAL,
-    StagesEnum.PRODUCT_NOTIF,
-    StagesEnum.PRODUCT_APPROVAL,
-    StagesEnum.TGB_NOTIF,
-    StagesEnum.TGB_APPROVAL,
-    StagesEnum.PACK_RELEASE_ST,
-    StagesEnum.PACK_RELEASE_COPY_ST,
-    StagesEnum.GITHUB_RELEASE_ST,
-    StagesEnum.POOL_UPDATE_NOTIF,
-    StagesEnum.BUILD_RESULT_NOTIF,
-    ])
-
-//options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
+options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
 options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])
