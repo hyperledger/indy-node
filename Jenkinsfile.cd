@@ -69,19 +69,20 @@ def systemTests = { component ->
     String prefix = "System Tests ($component)"
     String defaultNetwork = 'pool-network'
 
-    def dockerClean = { networkName=defaultNetwork ->
+    def dockerClean = { networkName ->
+        networkName = networkName ?: defaultNetwork
 
         try {
-            sh "docker ps -q --filter network=$networkName | xargs docker rm -f"
+            sh "docker ps -q --filter network=$networkName | xargs -r docker rm -f"
         } catch (Exception exc) {
-            echo "$prefix: failed to remove docker containers in $networkName network: $error"
+            echo "$prefix: failed to remove docker containers in $networkName network: $exc"
             throw exc
         }
 
         try {
-            sh "docker network rm $networkName"
+            sh "docker network ls -q --filter name=$networkName | xargs -r docker network rm"
         } catch (Exception exc) {
-            echo "$prefix: failed to remove docker $networkName network: $error"
+            echo "$prefix: failed to remove docker $networkName network: $exc"
             throw exc
         }
 
@@ -124,29 +125,38 @@ def systemTests = { component ->
             }
 
             stage("Prepare tests") {
+                // https://github.com/moby/moby/issues/34096
+                // https://github.com/moby/moby/issues/34096
+                // inconsistent docker behaviour, depends on version
+                // thus, ensure ownership for copied files
                 testHelpers.getSystemTests(targetDir: './system_tests')
                 sh '''
                     docker cp ./system_tests/system indyclient:/home/indy
                     docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./
                     docker cp ./pool_transactions_genesis indyclient:/home/indy/system/docker_genesis
+                    docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system
                 '''
             }
 
-            String testReportFileName = "system_tests_report.xml"
+            String testReportFileNameXml = "system_tests_report.xml"
+            String testReportFileNamePlain = "system_tests_report.txt"
             try {
                 stage("Run tests") {
                     sh """
-                        docker exec -t --user indy indyclient bash -c "cd /home/indy/system && pytest --junit-xml=./reports/$testReportFileName test_ledger.py"
+                        docker exec -t --user indy indyclient bash -c "\
+                            set -o pipefail; \
+                            cd /home/indy/system && mkdir reports && \
+                            pytest -v --junit-xml=./reports/$testReportFileNameXml test_ledger.py 2>&1 | \
+                            tee ./reports/$testReportFileNamePlain"
                     """
                 }
             } finally {
                 stage("Upload test teports") {
-                    sh "mkdir -p system_tests/reports"
+                    sh "docker cp indyclient:/home/indy/system/reports/ ./system_tests"
 
                     dir("system_tests/reports"){
-                        sh "docker cp indyclient:/home/indy/system/reports/$testReportFileName ./"
-                        archiveArtifacts artifacts: testReportFileName, allowEmptyArchive: true
-                        junit testReportFileName
+                        archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
+                        junit testResults: testReportFileNameXml, allowEmptyResults: true
                     }
                 }
             }
