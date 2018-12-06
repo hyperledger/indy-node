@@ -248,7 +248,7 @@ def check_instance_params(inst, params, ec2cl=None, price=None):
         )
 
 
-@pytest.mark.regions([['us-east-2', 'ap-south-1']])
+@pytest.mark.regions([['us-east-2', 'eu-west-1']])
 def test_AwsEC2Launcher_wait(ec2ctxs, ec2_resources):
     launcher = AwsEC2Launcher()
     instances = []
@@ -277,7 +277,7 @@ def idfn_test_AwsEC2Launcher(max_price):
 
 
 @pytest.mark.prices(term="on-demand")
-@pytest.mark.regions([['us-east-2'], ['ap-south-1']])
+@pytest.mark.regions([['us-east-2'], ['eu-west-1']])
 @pytest.mark.parametrize(
     'max_price_factor', [None, 0.7], ids=idfn_test_AwsEC2Launcher)
 def test_AwsEC2Launcher_spot(ec2ctx, ec2_resources, max_price_factor):
@@ -300,7 +300,7 @@ def test_AwsEC2Launcher_spot(ec2ctx, ec2_resources, max_price_factor):
         check_instance_params(inst, params, ec2ctx.client, price)
 
 
-@pytest.mark.regions([['us-east-2', 'ap-south-1']])
+@pytest.mark.regions([['us-east-2', 'eu-west-1']])
 def test_AwsEC2Terminator_wait(ec2ctxs, ec2_resources):
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
@@ -328,7 +328,7 @@ def test_AwsEC2Terminator_wait(ec2ctxs, ec2_resources):
         assert instance.state['Name'] == 'terminated'
 
 
-@pytest.mark.regions([['us-east-2'], ['ap-south-1']])
+@pytest.mark.regions([['us-east-2'], ['eu-west-1']])
 def test_AwsEC2Terminator_spot(ec2ctx, ec2_resources):
     launcher = AwsEC2Launcher()
     terminator = AwsEC2Terminator()
@@ -420,7 +420,7 @@ def test_valid_instances():
 
 
 @pytest.mark.regions(
-    [['us-east-2', 'ap-south-1', 'eu-west-1']], ids=['3regions'])
+    [['us-east-2', 'ca-central-1', 'eu-west-1']], ids=['3regions'])
 def test_manage_instances(ec2ctxs, ec2_resources):
     regions = [ctx.region for ctx in ec2ctxs]
 
