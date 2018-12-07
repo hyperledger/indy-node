@@ -1,0 +1,3 @@
+ansible
+boto3
+pexpect>=3.3 # required by ansible expect module
