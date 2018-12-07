@@ -1,9 +1,10 @@
 #!/usr/bin/python
+import re
+from itertools import cycle
+from collections import namedtuple, defaultdict, OrderedDict
+import boto3
 
 from ansible.module_utils.basic import AnsibleModule
-from collections import namedtuple, defaultdict, OrderedDict
-from itertools import cycle
-import boto3
 
 # import logging
 # boto3.set_stream_logger('', logging.DEBUG)
@@ -11,7 +12,9 @@ import boto3
 HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
 
 InstanceParams = namedtuple(
-    'InstanceParams', 'project namespace group add_tags key_name security_group type_name market_spot spot_max_price')
+    'InstanceParams',
+    'project namespace group add_tags key_name security_group '
+    'type_name market_spot spot_max_price ebs_volume_size')
 
 ManageResults = namedtuple('ManageResults', 'changed active terminated')
 
@@ -88,8 +91,8 @@ def valid_instances(regions, count):
     return result
 
 
-def get_tag(inst, name):
-    for tag in inst.tags:
+def get_tag(obj, name):
+    for tag in obj.tags:
         if tag['Key'] == name:
             return tag['Value']
     return None
@@ -150,14 +153,41 @@ class AwsEC2Terminator(AwsEC2Waiter):
 class AwsEC2Launcher(AwsEC2Waiter):
     """ Helper class to launch EC2 instances. """
 
+    _camel_to_snake_re1 = re.compile('(.)([A-Z][a-z]+)')
+    _camel_to_snake_re2 = re.compile('([a-z0-9])([A-Z])')
+
     def __init__(self):
         # TODO consider to use waiter for 'instance_status_ok'
         # if 'instance_running' is not enough in any circumstances
         super(AwsEC2Launcher, self).__init__('instance_running')
 
+    @classmethod
+    def _camel_to_snake(cls, camel_one):
+        # borrowed from here:
+        # https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+        return cls._camel_to_snake_re2.sub(
+            r'\1_\2', cls._camel_to_snake_re1.sub(r'\1_\2', camel_one)).lower()
+
     def launch(self, params, count, region=None, ec2=None):
+
+        def _get_options(opts_list, prefix=''):
+            res = {}
+            for opt in opts_list:
+                _opt = prefix + self._camel_to_snake(opt)
+                if getattr(params, _opt) is not None:
+                    res[opt] = getattr(params, _opt)
+            return res
+
         if not ec2:
             ec2 = boto3.resource('ec2', region_name=region)
+
+        spot_opts_list = (
+            'MaxPrice',
+        )
+
+        ebs_opts_list = (
+            'VolumeSize',
+        )
 
         launch_spec = {
             'ImageId': find_ubuntu_ami(ec2),
@@ -168,7 +198,7 @@ class AwsEC2Launcher(AwsEC2Waiter):
             'MaxCount': count,
             'TagSpecifications': [
                 {
-                    'ResourceType': 'instance',
+                    'ResourceType': rc_type,
                     'Tags': [
                         {
                             'Key': 'Project',
@@ -186,21 +216,26 @@ class AwsEC2Launcher(AwsEC2Waiter):
                         {'Key': k, 'Value': v}
                         for k, v in params.add_tags.iteritems()
                     ]
-                }
+                } for rc_type in ('instance', 'volume')
             ]
         }
 
+        # ebs
+        ebs_options = _get_options(ebs_opts_list, 'ebs_')
+        if ebs_options:
+            launch_spec['BlockDeviceMappings'] = [{
+                'DeviceName': '/dev/sda1',
+                'Ebs': ebs_options
+            }]
+
+        # spot
         if params.market_spot:
             launch_spec['InstanceMarketOptions'] = {
                 'MarketType': 'spot',
-                'SpotOptions': {}
+                'SpotOptions': _get_options(spot_opts_list, 'spot_')
             }
-            # TODO make more generic to cover all possible options
-            for opt in ['spot_max_price']:
-                spot_options = launch_spec['InstanceMarketOptions']['SpotOptions']
-                if getattr(params, opt) is not None:
-                    opt_name = ''.join(w.title() for w in opt.split('_')[1:])
-                    spot_options[opt_name] = getattr(params, opt)
+
+        # tags
 
         instances = ec2.create_instances(**launch_spec)
 
@@ -285,7 +320,8 @@ def run(module):
         security_group=params['security_group'],
         type_name=params['instance_type'],
         market_spot=params['market_spot'],
-        spot_max_price=params['spot_max_price']
+        spot_max_price=params['spot_max_price'],
+        ebs_volume_size=params['ebs_volume_size'],
     )
 
     res = manage_instances(
@@ -311,6 +347,7 @@ if __name__ == '__main__':
         instance_count=dict(type='int', required=True),
         market_spot=dict(type='bool', required=False, default=False),
         spot_max_price=dict(type='str', required=False, default=None),
+        ebs_volume_size=dict(type='int', required=False, default=None),
     )
 
     module = AnsibleModule(
