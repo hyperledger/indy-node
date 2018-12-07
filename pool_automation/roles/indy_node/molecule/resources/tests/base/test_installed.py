@@ -18,5 +18,17 @@ def test_correct_package_versions_are_installed(host):
     assert libindy_crypto.version == v['libindy_crypto_ver']
 
 
+def test_correct_add_packages_are_installed(host):
+    v = host.ansible.get_variables()
+
+    for pack in v['indy_node_add_packages']:
+        pack_spec = pack.split('=') # TODO test fuzzy constraints
+        assert host.package(pack_spec[0]).is_installed
+        try:
+            assert host.package(pack_spec[0]).version == pack_spec[1]
+        except IndexError:
+            pass
+
+
 def test_node_service_is_enabled(host):
     assert host.service('indy-node').is_enabled

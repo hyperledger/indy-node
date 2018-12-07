@@ -48,6 +48,13 @@
     update_cache: true
   become: true
 
+- name: Install additional packages
+  apt:
+    name: "{{ indy_node_add_packages }}"
+    update_cache: true
+  become: true
+  when: indy_node_add_packages
+
 - name: Enable node service
   service:
     name: indy-node
