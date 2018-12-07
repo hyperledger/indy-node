@@ -124,7 +124,7 @@ def staticCodeValidation() {
         checkout scm
 
         buildDocker('code-validation', 'ci/code-validation.dockerfile ci').inside {
-            sh "python3 -m flake8"
+            sh "python3 -m flake8 -v"
         }
     }
     finally {
