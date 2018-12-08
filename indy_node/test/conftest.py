@@ -18,10 +18,10 @@ from indy_common import strict_types
 strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, client_tdir, nodeReg, \
+from plenum.test.conftest import tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
     tdirWithPoolTxns, tdirWithDomainTxns, \
-    tdirWithClientPoolTxns, txnPoolNodeSet, \
+    txnPoolNodeSet, \
     poolTxnData, dirName, poolTxnNodeNames, allPluginsPath, tdirWithNodeKeepInited, \
     poolTxnStewardData, poolTxnStewardNames, getValueFromModule, \
     patchPluginManager, txnPoolNodesLooper, warncheck, \

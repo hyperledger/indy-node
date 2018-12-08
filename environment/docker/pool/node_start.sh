@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 IMAGE_NAME="$1"
 NODE_IP="$2"
 POOL_NETWORK_NAME="$3"

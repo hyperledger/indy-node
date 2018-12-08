@@ -116,5 +116,5 @@ did use 484PvcK1gUqwWEWCkumDzA
 - ledger attrib did=QbvWTyhmZmDF8Ms82wC2JD raw={"endpoint":{"ha":"127.0.0.1:5555"}}
 # Trustee can create SCHEMA:
 ledger schema name=TrusteeSchema version=1.0 attr_names=name,age
-# Trustee can create CLAIM_DEF:
-ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=10
+# Trustee can create CLAIM_DEF (will fail because of wrong schema id):
+- ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=10

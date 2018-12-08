@@ -3,6 +3,7 @@
 ## Quickstart
 
 - Make sure you have [AWS CLI][f681b33b] installed and configured.
+- [Install](#installation) requirements
 - Run `ansible-playbook pool_create.yml` - this will create 4 EC2 instances
   and `test_nodes` directory with inventory and SSH keys.
 - Run `ansible-playbook -i test_nodes/hosts pool.yml` - this will
@@ -14,6 +15,13 @@
 
   [f681b33b]: https://aws.amazon.com/cli/ "aws cli"
 
+## Installation
+
+- python 2.7 or 3.6
+- required packages: `pip install -r requirements.txt`, options:
+  - (recommended) inside python virtual environment
+  - with `--user` inside user Python install directory
+  - (not recommended) globally using `sudo`
 
 ## Roles
 
@@ -66,13 +74,9 @@ Install system packages:
 - vagrant
 - python 2.7 or 3.6, including dev package
 
-Install virtualenv packages:
-- molecule
-- testinfra
-- python-vagrant
-- boto
-- boto3
-- docker
+Install python packages:
+
+`pip install -r requirements-dev.txt`
 
 Default development workflow would be:
 - `molecule lint`

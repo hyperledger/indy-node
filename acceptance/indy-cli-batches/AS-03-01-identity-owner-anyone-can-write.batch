@@ -101,5 +101,5 @@ did use UffJCJngTXc1o84dQ7aEUb
 - ledger attrib did=X3zYajU7gbz9Pu8k6E7Ppf raw={"endpoint":{"ha":"127.0.0.1:5555"}}
 # Identity Owner can create SCHEMA: (PASS with ANYONE_CAN_WRITE=True)
 ledger schema name=IdentityOwnerSchema version=1.0 attr_names=name,age
-# Identity Owner can create CLAIM_DEF: (PASS with ANYONE_CAN_WRITE=True)
-ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=3
+# Identity Owner can create CLAIM_DEF: (PASS with ANYONE_CAN_WRITE=True, but will fail because of wrong schema id)
+- ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=3
