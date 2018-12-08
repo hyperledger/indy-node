@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Current implemented rules in auth_map &mdash; Hyperledger Indy Node  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Continuous Integration / Delivery" href="ci-cd.html" />
+    <link rel="prev" title="Add Node to Existing Pool" href="add-node.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Hyperledger Indy Node
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="start-nodes.html">Create a Network and Start Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="add-node.html">Add Node to Existing Pool</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Current implemented rules in auth_map</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#also-there-is-a-some-optional-rules-for-case-if-in-config-option-anyone-can-write-is-set-to-true">Also, there is a some optional rules for case if in config option ANYONE_CAN_WRITE is set to True:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#as-of-now-it-s-not-implemented-yet-but-the-next-rules-for-revocation-feature-are-needed">As of now it’s not implemented yet, but the next rules for Revocation feature are needed:</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#if-anyone-can-write-is-set-to-false">If ANYONE_CAN_WRITE is set to False:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#if-anyone-can-write-is-set-to-true">If ANYONE_CAN_WRITE is set to True:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ci-cd.html">Continuous Integration / Delivery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cluster-simulation.html">Running a Simulation of a Indy Cluster and Agents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="helper-scripts.html">Helper Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-file-structure-guideline.html">Indy File Folders Structure Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html">Indy – Running the Getting Started tutorial locally</a></li>
+<li class="toctree-l1"><a class="reference internal" href="indy-running-locally.html#resetting-the-indy-environment">Resetting the Indy environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-monitoring-tools-for-stewards.html">Node Monitoring Tools for Stewards</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html">Node State Diagnostic Tools Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node-state-diagnostic-tools.html#workflow">Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pool-upgrade.html">Pool Upgrade Guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests-new.html">Requests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup-dev.html">Dev Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup-iptables.html">Setup iptables rules (recommended)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="write-code-guideline.html">Code quality requirements guideline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="1.3_to_1.4_migration_guide.html">List of breaking changes for migration from indy-node 1.3 to 1.4</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Hyperledger Indy Node</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Current implemented rules in auth_map</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/auth_rules.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="current-implemented-rules-in-auth-map">
+<span id="current-implemented-rules-in-auth-map"></span><h1>Current implemented rules in auth_map<a class="headerlink" href="#current-implemented-rules-in-auth-map" title="Permalink to this headline">¶</a></h1>
+<p>| Transaction type | Field | Previous value | New value | Who can| Description |
+|——————|——-|—————-|———–|——–|————-|
+| NYM              |<code class="docutils literal notranslate"><span class="pre">role</span></code> |<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>       | TRUSTEE   | TRUSTEE|Adding new TRUSTEE|
+| NYM              |<code class="docutils literal notranslate"><span class="pre">role</span></code> |<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>       | STEWARD   | TRUSTEE|Adding new STEWARD|
+| NYM              |<code class="docutils literal notranslate"><span class="pre">role</span></code> |<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>       | TRUST_ANCHOR| TRUSTEE, STEWARD|Adding new TRUST_ANCHOR|
+| NYM              |<code class="docutils literal notranslate"><span class="pre">role</span></code> |<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>       |<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>  | TRUSTEE, STEWARD, TRUST_ANCHOR| Adding new Identity Owner|
+| NYM              |<code class="docutils literal notranslate"><span class="pre">role</span></code> | TRUSTEE        |<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>  | TRUSTEE | Blacklisting Trustee|
+| NYM              |<code class="docutils literal notranslate"><span class="pre">role</span></code> | STEWARD        |<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>  | TRUSTEE | Blacklisting Steward|
+| NYM              |<code class="docutils literal notranslate"><span class="pre">role</span></code> | TRUST_ANCHOR   |<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>  | TRUSTEE | Blacklisting Trust anchor|
+| NYM              |<code class="docutils literal notranslate"><span class="pre">verkey</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Owner of this nym | Key Rotation|
+| SCHEMA           |<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| TRUSTEE, STEWARD, TRUST_ANCHOR | Adding new Schema|
+| SCHEMA           |<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| No one can edit existing Schema | Editing Schema|
+| CLAIM_DEF        |<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| TRUSTEE, STEWARD, TRUST_ANCHOR| Adding new CLAIM_DEF transaction|
+| CLAIM_DEF        |<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Owner of claim_def txn| Editing CLAIM_DEF transaction|
+| NODE             |<code class="docutils literal notranslate"><span class="pre">services</span></code>|<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>|<code class="docutils literal notranslate"><span class="pre">[VALIDATOR]</span></code>| STEWARD if it is owner of this transaction| Adding new node to pool|
+| NODE             |<code class="docutils literal notranslate"><span class="pre">services</span></code>|<code class="docutils literal notranslate"><span class="pre">[VALIDATOR]</span></code>|<code class="docutils literal notranslate"><span class="pre">[]</span></code>| TRUSTEE, STEWARD if it is owner of this transaction| Demotion of node|
+| NODE             |<code class="docutils literal notranslate"><span class="pre">services</span></code>|<code class="docutils literal notranslate"><span class="pre">[]</span></code>|<code class="docutils literal notranslate"><span class="pre">[VALIDATOR]</span></code>| TRUSTEE, STEWARD if it is owner of this transaction| Promotion of node|
+| NODE             |<code class="docutils literal notranslate"><span class="pre">node_ip</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| STEWARD if it is owner of this transaction| Changing Node’s ip address|
+| NODE             |<code class="docutils literal notranslate"><span class="pre">node_port</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| STEWARD if it is owner of this transaction| Changing Node’s port|
+| NODE             |<code class="docutils literal notranslate"><span class="pre">client_ip</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| STEWARD if it is owner of this transaction| Changing Client’s ip address|
+| NODE             |<code class="docutils literal notranslate"><span class="pre">client_port</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| STEWARD if it is owner of this transaction| Changing Client’s port|
+| NODE             |<code class="docutils literal notranslate"><span class="pre">blskey</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| STEWARD if it is owner of this transaction| Changing Node’s blskey|
+| POOL_UPGRADE     |<code class="docutils literal notranslate"><span class="pre">action</span></code>|<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>|<code class="docutils literal notranslate"><span class="pre">start</span></code>|TRUSTEE| Starting upgrade procedure|
+| POOL_UPGRADE     |<code class="docutils literal notranslate"><span class="pre">action</span></code>|<code class="docutils literal notranslate"><span class="pre">start</span></code>|<code class="docutils literal notranslate"><span class="pre">cancel</span></code>|TRUSTEE| Canceling upgrade procedure|
+| POOL_RESTART     |<code class="docutils literal notranslate"><span class="pre">action</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|TRUSTEE| Restarting pool command|
+| POOL_CONFIG      |<code class="docutils literal notranslate"><span class="pre">action</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|TRUSTEE| Pool config command (like a <code class="docutils literal notranslate"><span class="pre">read</span> <span class="pre">only</span></code> option)|
+| VALIDATOR_INFO   |<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| TRUSTEE, STEWARD| Getting validator_info from pool|</p>
+<div class="section" id="also-there-is-a-some-optional-rules-for-case-if-in-config-option-anyone-can-write-is-set-to-true">
+<span id="also-there-is-a-some-optional-rules-for-case-if-in-config-option-anyone-can-write-is-set-to-true"></span><h2>Also, there is a some optional rules for case if in config option ANYONE_CAN_WRITE is set to True:<a class="headerlink" href="#also-there-is-a-some-optional-rules-for-case-if-in-config-option-anyone-can-write-is-set-to-true" title="Permalink to this headline">¶</a></h2>
+<p>| Transaction type | Field | Previous value | New value | Who can| Description |
+|——————|——-|—————-|———–|——–|————-|
+|NYM               |<code class="docutils literal notranslate"><span class="pre">role</span></code>|<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>|<code class="docutils literal notranslate"><span class="pre">&lt;empty&gt;</span></code>| Anyone| Adding new nym|
+|SCHEMA            |<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Anyone| Any operations with SCHEMA transaction|
+|CLAIM_DEF         |<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Anyone| Any operations with CLAIM_DEF transaction|</p>
+</div>
+<div class="section" id="as-of-now-it-s-not-implemented-yet-but-the-next-rules-for-revocation-feature-are-needed">
+<span id="as-of-now-it-s-not-implemented-yet-but-the-next-rules-for-revocation-feature-are-needed"></span><h2>As of now it’s not implemented yet, but the next rules for Revocation feature are needed:<a class="headerlink" href="#as-of-now-it-s-not-implemented-yet-but-the-next-rules-for-revocation-feature-are-needed" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="if-anyone-can-write-is-set-to-false">
+<span id="if-anyone-can-write-is-set-to-false"></span><h3>If ANYONE_CAN_WRITE is set to False:<a class="headerlink" href="#if-anyone-can-write-is-set-to-false" title="Permalink to this headline">¶</a></h3>
+<p>| Transaction type | Field | Previous value | New value | Who can| Description |
+|——————|——-|—————-|———–|——–|————-|
+|REVOC_REG_DEF|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| TRUSTEE, STEWARD, TRUST_ANCHOR| Adding new REVOC_REG_DEF|
+|REVOC_REG_DEF|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Only owners can edit existing REVOC_REG_DEF| Editing REVOC_REG_DEF|
+|REVOC_REG_ENTRY|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Only the owner of the corresponding REVOC_REG_DEF can create new REVOC_REG_ENTRY| Adding new REVOC_REG_ENTRY|
+|REVOC_REG_ENTRY|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Only owners can edit existing REVOC_REG_ENTRY| Editing REVOC_REG_ENTRY|</p>
+</div>
+<div class="section" id="if-anyone-can-write-is-set-to-true">
+<span id="if-anyone-can-write-is-set-to-true"></span><h3>If ANYONE_CAN_WRITE is set to True:<a class="headerlink" href="#if-anyone-can-write-is-set-to-true" title="Permalink to this headline">¶</a></h3>
+<p>| Transaction type | Field | Previous value | New value | Who can| Description |
+|——————|——-|—————-|———–|——–|————-|
+|REVOC_REG_DEF|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Anyone can create new REVOC_REG_DEF| Adding new REVOC_REG_DEF|
+|REVOC_REG_DEF|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Only owners can edit existing REVOC_REG_DEF| Editing REVOC_REG_DEF|
+|REVOC_REG_ENTRY|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Only the owner of the corresponding REVOC_REG_DEF can create new REVOC_REG_ENTRY| Adding new REVOC_REG_ENTRY|
+|REVOC_REG_ENTRY|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>|<code class="docutils literal notranslate"><span class="pre">*</span></code>| Only owners can edit existing REVOC_REG_ENTRY| Adding new REVOC_REG_ENTRY|</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="ci-cd.html" class="btn btn-neutral float-right" title="Continuous Integration / Delivery" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="add-node.html" class="btn btn-neutral" title="Add Node to Existing Pool" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Hyperledger
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -13,6 +13,7 @@ Welcome to Hyperledger Indy Node's documentation!
    introduction.md
    start-nodes.md 
    add-node.md
+   auth_rules.md
    ci-cd.md
    cluster-simulation.md
    helper-scripts.md
@@ -27,6 +28,7 @@ Welcome to Hyperledger Indy Node's documentation!
    transactions.md
    write-code-guideline.md
    1.3_to_1.4_migration_guide.md
+
 
 
 

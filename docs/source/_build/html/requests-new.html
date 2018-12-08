@@ -86,6 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="start-nodes.html">Create a Network and Start Nodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="add-node.html">Add Node to Existing Pool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auth_rules.html">Current implemented rules in auth_map</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ci-cd.html">Continuous Integration / Delivery</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cluster-simulation.html">Running a Simulation of a Indy Cluster and Agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="helper-scripts.html">Helper Scripts</a></li>
@@ -494,8 +495,6 @@ state trie root hash for the ledger the returned transaction belongs to</li>
 </li>
 </ul>
 </li>
-</ul>
-<ul>
 <li><p class="first"><code class="docutils literal notranslate"><span class="pre">stateProof</span></code> (base64-encoded string; optional):</p>
 <p>Patricia Merkle Trie State proof for the returned transaction.
 It proves that the returned transaction belongs to the Patricia Merkle Trie with a
@@ -1424,8 +1423,6 @@ False by default.</p>
 <p>Whether any write requests can be processed by the pool (if false, then pool goes to read-only state).
 True by default.</p>
 </li>
-</ul>
-<ul>
 <li><p class="first"><code class="docutils literal notranslate"><span class="pre">force</span></code> (boolean; optional):</p>
 <p>Whether we should apply transaction (for example, move pool to read-only state) without waiting for consensus
 of this transaction.

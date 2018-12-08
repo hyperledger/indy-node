@@ -42,7 +42,8 @@ nickname = 'node'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.intersphinx'
+    'sphinx_markdown_tables',
+    'sphinx.ext.intersphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -220,7 +221,7 @@ if(on_rtd):
     if rtd_version not in ['stable', 'latest']:
         rtd_version = 'latest'
     try:
-        os.system("git clone https://github.com/michaeldboyd/indy-docs-conf.git remote_conf")
+        os.system("git clone https://github.com/hyperledger/indy-docs.git remote_conf")
         os.system("mv remote_conf/remote_conf.py .")
         import remote_conf
         remote_conf.generate_sidebar(globals(), nickname)
@@ -232,4 +233,6 @@ if(on_rtd):
         print e
     finally:      
         os.system("rm -rf remote_conf/ __pycache__/ remote_conf.py")
+
+
 
