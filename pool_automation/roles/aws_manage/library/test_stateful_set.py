@@ -62,7 +62,9 @@ def ec2_resources(request, regions, ec2):
             type_name='t2.micro',
             # TODO docs
             market_spot=(request.config.getoption("--market-type") == 'spot'),
-            spot_max_price=None
+            spot_max_price=None,
+            # TODO docs
+            ebs_volume_size=9
         )
 
     def manage_key_pair(ec2, present, params):
@@ -216,25 +218,35 @@ def test_find_ubuntu_image(ec2ctx):
     assert 'UNSUPPORTED' not in image.description
 
 
+# TODO split test_AwsEC2Launcher tests into multiple more focused ones
 def check_instance_params(inst, params, ec2cl=None, price=None):
     # https://stackoverflow.com/questions/5595425/what-is-the-best-way-to-compare-floats-for-almost-equality-in-python
     # https://www.python.org/dev/peps/pep-0485/#proposed-implementation
     def isclose(a, b, rel_tol=1e-09, abs_tol=0.0):
         return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
+    def check_tags(obj):
+        assert {'Key': 'Project', 'Value': params.project} in obj.tags
+        assert {'Key': 'Namespace', 'Value': params.namespace} in obj.tags
+        assert {'Key': 'Group', 'Value': params.group} in obj.tags
+        for tag_key, tag_value in params.add_tags.iteritems():
+            assert tag_value == get_tag(obj, tag_key)
+
     # general
     assert inst.instance_type == params.type_name
     assert inst.state['Name'] == 'running'
     # tags
-    assert {'Key': 'Project', 'Value': params.project} in inst.tags
-    assert {'Key': 'Namespace', 'Value': params.namespace} in inst.tags
-    assert {'Key': 'Group', 'Value': params.group} in inst.tags
-    for tag_key, tag_value in params.add_tags.iteritems():
-        assert tag_value == get_tag(inst, tag_key)
+    check_tags(inst)
     # linked resources
     assert inst.key_name == params.key_name
     assert len(inst.security_groups) == 1
     assert inst.security_groups[0]['GroupName'] == params.security_group
+
+    # ebs options
+    volumes = list(inst.volumes.all())
+    assert len(volumes) == 1
+    assert volumes[0].size == params.ebs_volume_size
+    check_tags(volumes[0])
 
     # market options
     if params.market_spot:

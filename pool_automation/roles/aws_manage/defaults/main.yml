@@ -45,6 +45,7 @@ aws_instance_count: 4
 aws_ec2_type: t2.micro
 aws_ec2_market_spot: true
 aws_ec2_spot_max_price: null
+aws_ebs_volume_size: 16
 
   # Resource tags and names
 aws_tag_project: "{{ aws_project_name }}"
