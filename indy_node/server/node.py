@@ -356,4 +356,3 @@ class Node(PlenumNode, HasPoolManager):
         is_force = OPERATION in msg_dict and msg_dict.get(OPERATION).get(FORCE, False)
         is_force_upgrade = str(is_force) == 'True' and txn_type == POOL_UPGRADE
         return txn_type and not is_force_upgrade and super().is_request_need_quorum(msg_dict)
-
