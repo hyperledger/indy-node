@@ -1,0 +1,1701 @@
+versions pytest-4.0.1, py-1.7.0, python-2.7.12.final.0
+cwd=/home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/default
+args=['--debug', '-p', 'no:cacheprovider', '--connection=ansible', '--ansible-inventory=/tmp/molecule/plugins/default/ansible_inventory.yml', '/home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/default/../resources/tests/test_default.py', '-vvv']
+
+  pytest_cmdline_main [hook]
+      config: <_pytest.config.Config object at 0x7f30d9748e50>
+    pytest_plugin_registered [hook]
+        manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+        plugin: <Session 'indy-node'>
+    finish pytest_plugin_registered --> [] [hook]
+    pytest_configure [hook]
+        config: <_pytest.config.Config object at 0x7f30d9748e50>
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.logging.LoggingPlugin object at 0x7f30d9308290>
+      finish pytest_plugin_registered --> [] [hook]
+    early skip of rewriting module: py._io.terminalwriter [assertion]
+    early skip of rewriting module: py._io.unicodedata [assertion]
+    early skip of rewriting module: unicodedata [assertion]
+    early skip of rewriting module: py._io.termios [assertion]
+    early skip of rewriting module: termios [assertion]
+    early skip of rewriting module: py._io.fcntl [assertion]
+    early skip of rewriting module: py._io.struct [assertion]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.config.Config object at 0x7f30d9748e50>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.mark' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/mark/__init__.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.main' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/main.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.terminal' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/terminal.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.runner' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/runner.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.python' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/python.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.fixtures' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/fixtures.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.debugging' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/debugging.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.unittest' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/unittest.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.capture' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/capture.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.skipping' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/skipping.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.tmpdir' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/tmpdir.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.monkeypatch' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/monkeypatch.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.recwarn' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/recwarn.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.pastebin' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/pastebin.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.helpconfig' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/helpconfig.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.nose' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/nose.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.assertion' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/assertion/__init__.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.junitxml' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/junitxml.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.resultlog' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/resultlog.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.doctest' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/doctest.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.cacheprovider' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/cacheprovider.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.freeze_support' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/freeze_support.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.setuponly' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/setuponly.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.setupplan' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/setupplan.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.stepwise' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/stepwise.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.warnings' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/warnings.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.logging' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/logging.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module 'testinfra.plugin' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/plugin.py'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module 'xdist.looponfail' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/xdist/looponfail.py'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module 'xdist.plugin' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/xdist/plugin.py'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module 'pytest_forked' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/pytest_forked/__init__.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.capture.CaptureManager object at 0x7f30d93d9bd0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <Session 'indy-node'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.logging.LoggingPlugin object at 0x7f30d9308290>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.terminal.TerminalReporter object at 0x7f30d9308790>
+      finish pytest_plugin_registered --> [] [hook]
+    finish pytest_configure --> [] [hook]
+    pytest_sessionstart [hook]
+        session: <Session 'indy-node'>
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.config.Config object at 0x7f30d9748e50>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.mark' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/mark/__init__.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.main' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/main.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.terminal' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/terminal.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.runner' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/runner.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.python' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/python.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.fixtures' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/fixtures.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.debugging' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/debugging.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.unittest' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/unittest.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.capture' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/capture.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.skipping' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/skipping.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.tmpdir' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/tmpdir.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.monkeypatch' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/monkeypatch.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.recwarn' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/recwarn.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.pastebin' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/pastebin.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.helpconfig' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/helpconfig.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.nose' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/nose.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.assertion' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/assertion/__init__.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.junitxml' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/junitxml.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.resultlog' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/resultlog.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.doctest' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/doctest.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.cacheprovider' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/cacheprovider.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.freeze_support' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/freeze_support.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.setuponly' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/setuponly.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.setupplan' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/setupplan.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.stepwise' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/stepwise.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.warnings' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/warnings.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module '_pytest.logging' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/logging.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module 'testinfra.plugin' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/plugin.py'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module 'xdist.looponfail' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/xdist/looponfail.py'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module 'xdist.plugin' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/xdist/plugin.py'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <module 'pytest_forked' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/pytest_forked/__init__.pyc'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.capture.CaptureManager object at 0x7f30d93d9bd0>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <Session 'indy-node'>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.logging.LoggingPlugin object at 0x7f30d9308290>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.terminal.TerminalReporter object at 0x7f30d9308790>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_plugin_registered [hook]
+          manager: <_pytest.config.PytestPluginManager object at 0x7f30dc604450>
+          plugin: <_pytest.fixtures.FixtureManager object at 0x7f30d9314a10>
+      finish pytest_plugin_registered --> [] [hook]
+      pytest_report_header [hook]
+          startdir: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/default
+          config: <_pytest.config.Config object at 0x7f30d9748e50>
+      finish pytest_report_header --> [['rootdir: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node, inifile:', 'plugins: testinfra-1.16.0, xdist-1.24.0, forked-0.2'], ['using: pytest-4.0.1 pylib-1.7.0', 'setuptools registered plugins:', '  testinfra-1.16.0 at /home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/plugin.py', '  pytest-xdist-1.24.0 at /home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/xdist/looponfail.py', '  pytest-xdist-1.24.0 at /home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/xdist/plugin.py', '  pytest-forked-0.2 at /home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/pytest_forked/__init__.pyc']] [hook]
+    finish pytest_sessionstart --> [] [hook]
+    pytest_collection [hook]
+        session: <Session 'indy-node'>
+    perform_collect <Session 'indy-node'> ['/home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/default/../resources/tests/test_default.py'] [collection]
+        pytest_collectstart [hook]
+            collector: <Session 'indy-node'>
+        finish pytest_collectstart --> [] [hook]
+        pytest_make_collect_report [hook]
+            collector: <Session 'indy-node'>
+        processing argument /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/resources/tests/test_default.py [collection]
+            pytest_ignore_collect [hook]
+                path: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/__init__.py
+                config: <_pytest.config.Config object at 0x7f30d9748e50>
+            finish pytest_ignore_collect --> False [hook]
+            pytest_collect_file [hook]
+                path: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/__init__.py
+                parent: <Session 'indy-node'>
+              pytest_pycollect_makemodule [hook]
+                  path: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/__init__.py
+                  parent: <Session 'indy-node'>
+              finish pytest_pycollect_makemodule --> <Package '/home/and/Projects/DSR/evernym/github/andkononykhin/indy-node'> [hook]
+            finish pytest_collect_file --> [<Package '/home/and/Projects/DSR/evernym/github/andkononykhin/indy-node'>] [hook]
+            pytest_collect_file [hook]
+                path: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/resources/tests/test_default.py
+                parent: <Session 'indy-node'>
+              pytest_pycollect_makemodule [hook]
+                  path: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/resources/tests/test_default.py
+                  parent: <Session 'indy-node'>
+              finish pytest_pycollect_makemodule --> <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'> [hook]
+            finish pytest_collect_file --> [<Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>] [hook]
+          matchnodes [<Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>] [] [collection]
+            matchnodes finished ->  1 nodes [collection]
+        finish pytest_make_collect_report --> <CollectReport '' lenresult=1 outcome='passed'> [hook]
+        pytest_collectreport [hook]
+            report: <CollectReport '' lenresult=1 outcome='passed'>
+        finish pytest_collectreport --> [] [hook]
+    genitems <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'> [collection]
+      pytest_collectstart [hook]
+          collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+      finish pytest_collectstart --> [] [hook]
+      pytest_make_collect_report [hook]
+          collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+      find_module called for: test_default [assertion]
+      matched test file (was specified on cmdline): '/home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/resources/tests/test_default.py' [assertion]
+      rewriting '/home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/resources/tests/test_default.py' [assertion]
+      early skip of rewriting module: encodings.ascii [assertion]
+        pytest_pycollect_makeitem [hook]
+            obj: <module '_pytest.assertion.rewrite' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/_pytest/assertion/rewrite.pyc'>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: @pytest_ar
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <function test_correct_plugins_are_installed at 0x7f30d90dd2a8>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: test_correct_plugins_are_installed
+          pytest_generate_tests [hook]
+              metafunc: <_pytest.python.Metafunc object at 0x7f30d90d4b10>
+          matched marked file 'testinfra.backend.ansible' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.ansible [assertion]
+          found cached rewritten pyc for '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/ansible.py' [assertion]
+          matched marked file 'testinfra.backend.base' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.base [assertion]
+          found cached rewritten pyc for '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/base.py' [assertion]
+          matched marked file 'testinfra.backend.__builtin__' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.__builtin__ [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/__builtin__.py' [assertion]
+          matched marked file 'testinfra.backend._pytest' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend._pytest [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/_pytest.py' [assertion]
+          matched marked file 'testinfra.backend.collections' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.collections [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/collections.py' [assertion]
+          matched marked file 'testinfra.backend.locale' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.locale [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/locale.py' [assertion]
+          matched marked file 'testinfra.backend.logging' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.logging [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/logging.py' [assertion]
+          matched marked file 'testinfra.backend.pipes' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.pipes [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/pipes.py' [assertion]
+          early skip of rewriting module: pipes [assertion]
+          matched marked file 'testinfra.backend.subprocess' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.subprocess [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/subprocess.py' [assertion]
+          matched marked file 'testinfra.backend.warnings' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.warnings [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/warnings.py' [assertion]
+          matched marked file 'testinfra.backend.testinfra' (from 'testinfra') [assertion]
+          find_module called for: testinfra.backend.testinfra [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/backend/testinfra.py' [assertion]
+          matched marked file 'testinfra.utils.ansible_runner' (from 'testinfra') [assertion]
+          find_module called for: testinfra.utils.ansible_runner [assertion]
+          found cached rewritten pyc for '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/utils/ansible_runner.py' [assertion]
+          early skip of rewriting module: ansible [assertion]
+          early skip of rewriting module: ansible.release [assertion]
+          early skip of rewriting module: ansible.constants [assertion]
+          early skip of rewriting module: jinja2 [assertion]
+          early skip of rewriting module: jinja2.jinja2 [assertion]
+          early skip of rewriting module: jinja2.environment [assertion]
+          early skip of rewriting module: jinja2.os [assertion]
+          early skip of rewriting module: jinja2.sys [assertion]
+          early skip of rewriting module: jinja2.weakref [assertion]
+          early skip of rewriting module: jinja2.functools [assertion]
+          early skip of rewriting module: jinja2.nodes [assertion]
+          early skip of rewriting module: jinja2.types [assertion]
+          early skip of rewriting module: jinja2.operator [assertion]
+          early skip of rewriting module: jinja2.collections [assertion]
+          early skip of rewriting module: jinja2.utils [assertion]
+          early skip of rewriting module: jinja2.re [assertion]
+          early skip of rewriting module: jinja2.json [assertion]
+          early skip of rewriting module: jinja2.errno [assertion]
+          early skip of rewriting module: jinja2.threading [assertion]
+          early skip of rewriting module: jinja2._compat [assertion]
+          early skip of rewriting module: jinja2.cPickle [assertion]
+          early skip of rewriting module: cPickle [assertion]
+          early skip of rewriting module: jinja2.cStringIO [assertion]
+          early skip of rewriting module: jinja2.itertools [assertion]
+          early skip of rewriting module: jinja2.urllib [assertion]
+          early skip of rewriting module: jinja2.markupsafe [assertion]
+          early skip of rewriting module: markupsafe [assertion]
+          early skip of rewriting module: markupsafe.re [assertion]
+          early skip of rewriting module: markupsafe.string [assertion]
+          early skip of rewriting module: markupsafe.collections [assertion]
+          early skip of rewriting module: markupsafe.markupsafe [assertion]
+          early skip of rewriting module: markupsafe._compat [assertion]
+          early skip of rewriting module: markupsafe.sys [assertion]
+          early skip of rewriting module: markupsafe._speedups [assertion]
+          early skip of rewriting module: jinja2.defaults [assertion]
+          early skip of rewriting module: jinja2.filters [assertion]
+          early skip of rewriting module: jinja2.math [assertion]
+          early skip of rewriting module: jinja2.random [assertion]
+          early skip of rewriting module: jinja2.warnings [assertion]
+          early skip of rewriting module: jinja2.runtime [assertion]
+          early skip of rewriting module: jinja2.exceptions [assertion]
+          early skip of rewriting module: jinja2.tests [assertion]
+          early skip of rewriting module: jinja2.decimal [assertion]
+          early skip of rewriting module: jinja2.lexer [assertion]
+          early skip of rewriting module: jinja2.parser [assertion]
+          early skip of rewriting module: jinja2.compiler [assertion]
+          early skip of rewriting module: jinja2.copy [assertion]
+          early skip of rewriting module: jinja2.keyword [assertion]
+          early skip of rewriting module: jinja2.visitor [assertion]
+          early skip of rewriting module: jinja2.optimizer [assertion]
+          early skip of rewriting module: jinja2.idtracking [assertion]
+          early skip of rewriting module: jinja2.loaders [assertion]
+          early skip of rewriting module: jinja2.hashlib [assertion]
+          early skip of rewriting module: jinja2.bccache [assertion]
+          early skip of rewriting module: jinja2.stat [assertion]
+          early skip of rewriting module: jinja2.marshal [assertion]
+          early skip of rewriting module: jinja2.tempfile [assertion]
+          early skip of rewriting module: jinja2.fnmatch [assertion]
+          early skip of rewriting module: ansible.module_utils [assertion]
+          early skip of rewriting module: ansible.module_utils._text [assertion]
+          early skip of rewriting module: ansible.module_utils.codecs [assertion]
+          early skip of rewriting module: ansible.module_utils.ansible [assertion]
+          early skip of rewriting module: ansible.module_utils.six [assertion]
+          early skip of rewriting module: ansible.module_utils.parsing [assertion]
+          early skip of rewriting module: ansible.module_utils.parsing.convert_bool [assertion]
+          early skip of rewriting module: ansible.module_utils.parsing.ansible [assertion]
+          early skip of rewriting module: ansible.config [assertion]
+          early skip of rewriting module: ansible.config.manager [assertion]
+          early skip of rewriting module: yaml [assertion]
+          early skip of rewriting module: yaml.error [assertion]
+          early skip of rewriting module: yaml.tokens [assertion]
+          early skip of rewriting module: yaml.events [assertion]
+          early skip of rewriting module: yaml.nodes [assertion]
+          early skip of rewriting module: yaml.loader [assertion]
+          early skip of rewriting module: yaml.reader [assertion]
+          early skip of rewriting module: yaml.codecs [assertion]
+          early skip of rewriting module: yaml.re [assertion]
+          early skip of rewriting module: yaml.scanner [assertion]
+          early skip of rewriting module: yaml.parser [assertion]
+          early skip of rewriting module: yaml.composer [assertion]
+          early skip of rewriting module: yaml.constructor [assertion]
+          early skip of rewriting module: yaml.datetime [assertion]
+          early skip of rewriting module: yaml.binascii [assertion]
+          early skip of rewriting module: yaml.sys [assertion]
+          early skip of rewriting module: yaml.types [assertion]
+          early skip of rewriting module: yaml.resolver [assertion]
+          early skip of rewriting module: yaml.dumper [assertion]
+          early skip of rewriting module: yaml.emitter [assertion]
+          early skip of rewriting module: yaml.serializer [assertion]
+          early skip of rewriting module: yaml.representer [assertion]
+          early skip of rewriting module: yaml.copy_reg [assertion]
+          early skip of rewriting module: yaml.cyaml [assertion]
+          early skip of rewriting module: yaml._yaml [assertion]
+          early skip of rewriting module: _yaml [assertion]
+          early skip of rewriting module: yaml.CSafeLoader [assertion]
+          early skip of rewriting module: ansible.config.data [assertion]
+          early skip of rewriting module: ansible.errors [assertion]
+          early skip of rewriting module: ansible.errors.yaml_strings [assertion]
+          early skip of rewriting module: ansible.module_utils.six.moves [assertion]
+          early skip of rewriting module: ConfigParser [assertion]
+          early skip of rewriting module: ansible.parsing [assertion]
+          early skip of rewriting module: ansible.parsing.quoting [assertion]
+          early skip of rewriting module: ansible.utils [assertion]
+          early skip of rewriting module: ansible.utils.py3compat [assertion]
+          early skip of rewriting module: ansible.utils.path [assertion]
+          early skip of rewriting module: encodings.unicode_escape [assertion]
+          early skip of rewriting module: ansible.cli [assertion]
+          early skip of rewriting module: getpass [assertion]
+          early skip of rewriting module: optparse [assertion]
+          early skip of rewriting module: ansible.inventory [assertion]
+          early skip of rewriting module: ansible.inventory.manager [assertion]
+          early skip of rewriting module: ansible.inventory.data [assertion]
+          early skip of rewriting module: ansible.inventory.group [assertion]
+          early skip of rewriting module: ansible.inventory.host [assertion]
+          early skip of rewriting module: ansible.utils.vars [assertion]
+          early skip of rewriting module: ansible.parsing.splitter [assertion]
+          early skip of rewriting module: ansible.utils.display [assertion]
+          early skip of rewriting module: ansible.utils.color [assertion]
+          early skip of rewriting module: ansible.parsing.utils [assertion]
+          early skip of rewriting module: ansible.parsing.utils.addresses [assertion]
+          early skip of rewriting module: ansible.plugins [assertion]
+          early skip of rewriting module: ansible.plugins.loader [assertion]
+          early skip of rewriting module: ansible.parsing.utils.yaml [assertion]
+          early skip of rewriting module: ansible.parsing.yaml [assertion]
+          early skip of rewriting module: ansible.parsing.yaml.loader [assertion]
+          early skip of rewriting module: _yaml [assertion]
+          early skip of rewriting module: ansible.parsing.yaml.constructor [assertion]
+          early skip of rewriting module: ansible.parsing.yaml.objects [assertion]
+          early skip of rewriting module: ansible.utils.unsafe_proxy [assertion]
+          early skip of rewriting module: ansible.parsing.vault [assertion]
+          early skip of rewriting module: cryptography [assertion]
+          early skip of rewriting module: cryptography.__about__ [assertion]
+          early skip of rewriting module: cryptography.exceptions [assertion]
+          early skip of rewriting module: cryptography.hazmat [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.hashes [assertion]
+          early skip of rewriting module: cryptography.utils [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.interfaces [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.padding [assertion]
+          early skip of rewriting module: cryptography.hazmat.bindings [assertion]
+          early skip of rewriting module: cryptography.hazmat.bindings._padding [assertion]
+          early skip of rewriting module: _cffi_backend [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.hmac [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.mac [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.kdf [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.kdf.pbkdf2 [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.constant_time [assertion]
+          early skip of rewriting module: hmac [assertion]
+          early skip of rewriting module: cryptography.hazmat.bindings._constant_time [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.ciphers [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.ciphers.base [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.ciphers.modes [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.ciphers.algorithms [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.backend [assertion]
+          early skip of rewriting module: cryptography.x509 [assertion]
+          early skip of rewriting module: cryptography.x509.certificate_transparency [assertion]
+          early skip of rewriting module: cryptography.x509.base [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.asymmetric [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.asymmetric.dsa [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.asymmetric.ec [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.asymmetric.rsa [assertion]
+          early skip of rewriting module: fractions [assertion]
+          early skip of rewriting module: cryptography.x509.extensions [assertion]
+          early skip of rewriting module: ipaddress [assertion]
+          early skip of rewriting module: asn1crypto [assertion]
+          early skip of rewriting module: asn1crypto.version [assertion]
+          early skip of rewriting module: asn1crypto.keys [assertion]
+          early skip of rewriting module: asn1crypto._elliptic_curve [assertion]
+          early skip of rewriting module: asn1crypto._int [assertion]
+          early skip of rewriting module: asn1crypto.util [assertion]
+          early skip of rewriting module: asn1crypto._errors [assertion]
+          early skip of rewriting module: asn1crypto._iri [assertion]
+          early skip of rewriting module: encodings.idna [assertion]
+          early skip of rewriting module: encodings.stringprep [assertion]
+          early skip of rewriting module: stringprep [assertion]
+          early skip of rewriting module: encodings.re [assertion]
+          early skip of rewriting module: encodings.unicodedata [assertion]
+          early skip of rewriting module: asn1crypto._types [assertion]
+          early skip of rewriting module: asn1crypto._ordereddict [assertion]
+          early skip of rewriting module: asn1crypto.sys [assertion]
+          early skip of rewriting module: asn1crypto.collections [assertion]
+          early skip of rewriting module: asn1crypto._ffi [assertion]
+          early skip of rewriting module: asn1crypto._perf [assertion]
+          early skip of rewriting module: asn1crypto._perf._big_num_ctypes [assertion]
+          early skip of rewriting module: asn1crypto.algos [assertion]
+          early skip of rewriting module: asn1crypto.core [assertion]
+          early skip of rewriting module: asn1crypto._teletex_codec [assertion]
+          early skip of rewriting module: asn1crypto.parser [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.serialization [assertion]
+          early skip of rewriting module: cryptography.x509.general_name [assertion]
+          early skip of rewriting module: idna [assertion]
+          early skip of rewriting module: idna.package_data [assertion]
+          early skip of rewriting module: idna.core [assertion]
+          early skip of rewriting module: idna.idnadata [assertion]
+          early skip of rewriting module: idna.bisect [assertion]
+          early skip of rewriting module: idna.unicodedata [assertion]
+          early skip of rewriting module: idna.re [assertion]
+          early skip of rewriting module: idna.sys [assertion]
+          early skip of rewriting module: idna.intranges [assertion]
+          early skip of rewriting module: six.moves.urllib_parse [assertion]
+          early skip of rewriting module: cryptography.x509.name [assertion]
+          early skip of rewriting module: cryptography.x509.oid [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.aead [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.ciphers [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.cmac [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.decode_asn1 [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.dh [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.asymmetric.dh [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.dsa [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.utils [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.asymmetric.utils [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.ec [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.encode_asn1 [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.hashes [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.hmac [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.rsa [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.asymmetric.padding [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.x25519 [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.asymmetric.x25519 [assertion]
+          early skip of rewriting module: cryptography.hazmat.backends.openssl.x509 [assertion]
+          early skip of rewriting module: cryptography.hazmat.bindings.openssl [assertion]
+          early skip of rewriting module: cryptography.hazmat.bindings.openssl.binding [assertion]
+          early skip of rewriting module: cryptography.hazmat.bindings._openssl [assertion]
+          early skip of rewriting module: cryptography.hazmat.bindings.openssl._conditional [assertion]
+          early skip of rewriting module: cryptography.hazmat.primitives.kdf.scrypt [assertion]
+          early skip of rewriting module: Crypto [assertion]
+          early skip of rewriting module: ansible.parsing.ajson [assertion]
+          early skip of rewriting module: ansible.utils.plugin_docs [assertion]
+          early skip of rewriting module: ansible.parsing.plugin_docs [assertion]
+          early skip of rewriting module: ansible.parsing.metadata [assertion]
+          early skip of rewriting module: ansible.parsing.dataloader [assertion]
+          early skip of rewriting module: ansible.module_utils.basic [assertion]
+          early skip of rewriting module: syslog [assertion]
+          early skip of rewriting module: systemd [assertion]
+          early skip of rewriting module: selinux [assertion]
+          early skip of rewriting module: ansible.module_utils.common [assertion]
+          early skip of rewriting module: ansible.module_utils.common._collections_compat [assertion]
+          early skip of rewriting module: ansible.module_utils.common.process [assertion]
+          early skip of rewriting module: ansible.module_utils.common.file [assertion]
+          early skip of rewriting module: selinux [assertion]
+          early skip of rewriting module: ansible.module_utils.pycompat24 [assertion]
+          early skip of rewriting module: ansible.module_utils.sys [assertion]
+          early skip of rewriting module: ansible.module_utils.ast [assertion]
+          early skip of rewriting module: ansible.vars [assertion]
+          early skip of rewriting module: ansible.vars.manager [assertion]
+          early skip of rewriting module: ansible.inventory.helpers [assertion]
+          early skip of rewriting module: ansible.plugins.cache [assertion]
+          early skip of rewriting module: ansible.template [assertion]
+          early skip of rewriting module: ansible.template.safe_eval [assertion]
+          early skip of rewriting module: ansible.template.template [assertion]
+          early skip of rewriting module: ansible.template.vars [assertion]
+          early skip of rewriting module: ansible.utils.listify [assertion]
+          early skip of rewriting module: ansible.vars.clean [assertion]
+          early skip of rewriting module: ansible.cli.playbook [assertion]
+          early skip of rewriting module: ansible.executor [assertion]
+          early skip of rewriting module: ansible.executor.playbook_executor [assertion]
+          early skip of rewriting module: ansible.executor.task_queue_manager [assertion]
+          early skip of rewriting module: multiprocessing [assertion]
+          early skip of rewriting module: multiprocessing.os [assertion]
+          early skip of rewriting module: multiprocessing.sys [assertion]
+          early skip of rewriting module: multiprocessing.multiprocessing [assertion]
+          early skip of rewriting module: multiprocessing.process [assertion]
+          early skip of rewriting module: multiprocessing.signal [assertion]
+          early skip of rewriting module: multiprocessing.itertools [assertion]
+          early skip of rewriting module: multiprocessing.util [assertion]
+          early skip of rewriting module: multiprocessing.weakref [assertion]
+          early skip of rewriting module: multiprocessing.atexit [assertion]
+          early skip of rewriting module: multiprocessing.threading [assertion]
+          early skip of rewriting module: multiprocessing.subprocess [assertion]
+          early skip of rewriting module: multiprocessing._multiprocessing [assertion]
+          early skip of rewriting module: _multiprocessing [assertion]
+          early skip of rewriting module: ansible.executor.play_iterator [assertion]
+          early skip of rewriting module: ansible.playbook [assertion]
+          early skip of rewriting module: ansible.playbook.play [assertion]
+          early skip of rewriting module: ansible.playbook.attribute [assertion]
+          early skip of rewriting module: ansible.playbook.base [assertion]
+          early skip of rewriting module: ansible.playbook.become [assertion]
+          early skip of rewriting module: ansible.playbook.block [assertion]
+          early skip of rewriting module: ansible.playbook.conditional [assertion]
+          early skip of rewriting module: ansible.playbook.helpers [assertion]
+          early skip of rewriting module: ansible.parsing.mod_args [assertion]
+          early skip of rewriting module: ansible.playbook.role [assertion]
+          early skip of rewriting module: ansible.playbook.role.metadata [assertion]
+          early skip of rewriting module: ansible.playbook.role.include [assertion]
+          early skip of rewriting module: ansible.playbook.role.definition [assertion]
+          early skip of rewriting module: ansible.playbook.taggable [assertion]
+          early skip of rewriting module: ansible.playbook.role.requirement [assertion]
+          early skip of rewriting module: tarfile [assertion]
+          early skip of rewriting module: ansible.playbook.playbook_include [assertion]
+          early skip of rewriting module: ansible.playbook.task [assertion]
+          early skip of rewriting module: ansible.playbook.loop_control [assertion]
+          early skip of rewriting module: ansible.executor.stats [assertion]
+          early skip of rewriting module: ansible.executor.task_result [assertion]
+          early skip of rewriting module: ansible.playbook.play_context [assertion]
+          early skip of rewriting module: ansible.utils.ssh_functions [assertion]
+          early skip of rewriting module: ansible.plugins.callback [assertion]
+          early skip of rewriting module: ansible.utils.helpers [assertion]
+          early skip of rewriting module: ansible.vars.hostvars [assertion]
+          early skip of rewriting module: ansible.vars.reserved [assertion]
+          early skip of rewriting module: ansible.plugins.inventory [assertion]
+          early skip of rewriting module: ansible.utils.shlex [assertion]
+          early skip of rewriting module: py._io.saferepr [assertion]
+          finish pytest_generate_tests --> [] [hook]
+        finish pytest_pycollect_makeitem --> [<Function 'test_correct_plugins_are_installed[ansible://plugins]'>] [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: None
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __spec__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: {'bytearray': <type 'bytearray'>, 'IndexError': <type 'exceptions.IndexError'>, 'all': <built-in function all>, 'help': Type help() for interactive help, or help(object) for help about object., 'vars': <built-in function vars>, 'SyntaxError': <type 'exceptions.SyntaxError'>, 'unicode': <type 'unicode'>, 'UnicodeDecodeError': <type 'exceptions.UnicodeDecodeError'>, 'memoryview': <type 'memoryview'>, 'isinstance': <built-in function isinstance>, 'copyright': Copyright (c) 2001-2016 Python Software Foundation.
+All Rights Reserved.
+
+Copyright (c) 2000 BeOpen.com.
+All Rights Reserved.
+
+Copyright (c) 1995-2001 Corporation for National Research Initiatives.
+All Rights Reserved.
+
+Copyright (c) 1991-1995 Stichting Mathematisch Centrum, Amsterdam.
+All Rights Reserved., 'NameError': <type 'exceptions.NameError'>, 'BytesWarning': <type 'exceptions.BytesWarning'>, 'dict': <type 'dict'>, 'input': <built-in function input>, 'oct': <built-in function oct>, 'bin': <built-in function bin>, 'SystemExit': <type 'exceptions.SystemExit'>, 'StandardError': <type 'exceptions.StandardError'>, 'format': <built-in function format>, 'repr': <built-in function repr>, 'sorted': <built-in function sorted>, 'False': False, 'RuntimeWarning': <type 'exceptions.RuntimeWarning'>, 'list': <type 'list'>, 'iter': <built-in function iter>, 'reload': <built-in function reload>, 'Warning': <type 'exceptions.Warning'>, '__package__': None, 'round': <built-in function round>, 'dir': <built-in function dir>, 'cmp': <built-in function cmp>, 'set': <type 'set'>, 'bytes': <type 'str'>, 'reduce': <built-in function reduce>, 'intern': <built-in function intern>, 'issubclass': <built-in function issubclass>, 'Ellipsis': Ellipsis, 'EOFError': <type 'exceptions.EOFError'>, 'locals': <built-in function locals>, 'BufferError': <type 'exceptions.BufferError'>, 'slice': <type 'slice'>, 'FloatingPointError': <type 'exceptions.FloatingPointError'>, 'sum': <built-in function sum>, 'getattr': <built-in function getattr>, 'abs': <built-in function abs>, 'exit': Use exit() or Ctrl-D (i.e. EOF) to exit, 'print': <built-in function print>, 'True': True, 'FutureWarning': <type 'exceptions.FutureWarning'>, 'ImportWarning': <type 'exceptions.ImportWarning'>, 'None': None, 'hash': <built-in function hash>, 'ReferenceError': <type 'exceptions.ReferenceError'>, 'len': <built-in function len>, 'credits':     Thanks to CWI, CNRI, BeOpen.com, Zope Corporation and a cast of thousands
+    for supporting Python development.  See www.python.org for more information., 'frozenset': <type 'frozenset'>, '__name__': '__builtin__', 'ord': <built-in function ord>, 'super': <type 'super'>, 'TypeError': <type 'exceptions.TypeError'>, 'license': See http://www.python.org/2.7/license.html, 'KeyboardInterrupt': <type 'exceptions.KeyboardInterrupt'>, 'UserWarning': <type 'exceptions.UserWarning'>, 'filter': <built-in function filter>, 'range': <built-in function range>, 'staticmethod': <type 'staticmethod'>, 'SystemError': <type 'exceptions.SystemError'>, 'BaseException': <type 'exceptions.BaseException'>, 'pow': <built-in function pow>, 'RuntimeError': <type 'exceptions.RuntimeError'>, 'float': <type 'float'>, 'MemoryError': <type 'exceptions.MemoryError'>, 'StopIteration': <type 'exceptions.StopIteration'>, 'globals': <built-in function globals>, 'divmod': <built-in function divmod>, 'enumerate': <type 'enumerate'>, 'apply': <built-in function apply>, 'LookupError': <type 'exceptions.LookupError'>, 'open': <built-in function open>, 'quit': Use quit() or Ctrl-D (i.e. EOF) to exit, 'basestring': <type 'basestring'>, 'UnicodeError': <type 'exceptions.UnicodeError'>, 'zip': <built-in function zip>, 'hex': <built-in function hex>, 'long': <type 'long'>, 'next': <built-in function next>, 'ImportError': <type 'exceptions.ImportError'>, 'chr': <built-in function chr>, 'xrange': <type 'xrange'>, 'type': <type 'type'>, '__doc__': "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices.", 'Exception': <type 'exceptions.Exception'>, 'tuple': <type 'tuple'>, 'UnicodeTranslateError': <type 'exceptions.UnicodeTranslateError'>, 'reversed': <type 'reversed'>, 'UnicodeEncodeError': <type 'exceptions.UnicodeEncodeError'>, 'IOError': <type 'exceptions.IOError'>, 'hasattr': <built-in function hasattr>, 'delattr': <built-in function delattr>, 'setattr': <built-in function setattr>, 'raw_input': <built-in function raw_input>, 'SyntaxWarning': <type 'exceptions.SyntaxWarning'>, 'compile': <built-in function compile>, 'ArithmeticError': <type 'exceptions.ArithmeticError'>, 'str': <type 'str'>, 'property': <type 'property'>, 'GeneratorExit': <type 'exceptions.GeneratorExit'>, 'int': <type 'int'>, '__import__': <built-in function __import__>, 'KeyError': <type 'exceptions.KeyError'>, 'coerce': <built-in function coerce>, 'PendingDeprecationWarning': <type 'exceptions.PendingDeprecationWarning'>, 'file': <type 'file'>, 'EnvironmentError': <type 'exceptions.EnvironmentError'>, 'unichr': <built-in function unichr>, 'id': <built-in function id>, 'OSError': <type 'exceptions.OSError'>, 'DeprecationWarning': <type 'exceptions.DeprecationWarning'>, 'min': <built-in function min>, 'UnicodeWarning': <type 'exceptions.UnicodeWarning'>, 'execfile': <built-in function execfile>, 'any': <built-in function any>, 'complex': <type 'complex'>, 'bool': <type 'bool'>, 'ValueError': <type 'exceptions.ValueError'>, 'NotImplemented': NotImplemented, 'map': <built-in function map>, 'buffer': <type 'buffer'>, 'max': <built-in function max>, 'object': <type 'object'>, 'TabError': <type 'exceptions.TabError'>, 'callable': <built-in function callable>, 'ZeroDivisionError': <type 'exceptions.ZeroDivisionError'>, 'eval': <built-in function eval>, '__debug__': True, 'IndentationError': <type 'exceptions.IndentationError'>, 'AssertionError': <type 'exceptions.AssertionError'>, 'classmethod': <type 'classmethod'>, 'UnboundLocalError': <type 'exceptions.UnboundLocalError'>, 'NotImplementedError': <type 'exceptions.NotImplementedError'>, 'AttributeError': <type 'exceptions.AttributeError'>, 'OverflowError': <type 'exceptions.OverflowError'>}
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __builtins__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/resources/tests/test_default.py
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __file__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <function ansible_vars at 0x7f30d90dd1b8>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: ansible_vars
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <_pytest.assertion.rewrite.AssertionRewritingHook object at 0x7f30d93d9f50>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __loader__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <function test_plugins_role_was_executed at 0x7f30d90dd230>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: test_plugins_role_was_executed
+          pytest_generate_tests [hook]
+              metafunc: <_pytest.python.Metafunc object at 0x7f30d8ae4410>
+          finish pytest_generate_tests --> [] [hook]
+        finish pytest_pycollect_makeitem --> [<Function 'test_plugins_role_was_executed[ansible://plugins]'>] [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <module 'pytest' from '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/pytest.pyc'>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: pytest
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/resources/tests/__pycache__/test_default.cpython-27-PYTEST.pyc
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __cached__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: test_default
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __name__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: None
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __package__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <module '__builtin__' (built-in)>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: @py_builtins
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: None
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __doc__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <slot wrapper '__setattr__' of 'module' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __setattr__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <built-in method __new__ of type object at 0x8fe100>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __new__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <slot wrapper '__getattribute__' of 'module' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __getattribute__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <slot wrapper '__delattr__' of 'module' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __delattr__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <slot wrapper '__repr__' of 'module' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __repr__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <member '__dict__' of 'module' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __dict__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <slot wrapper '__init__' of 'module' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __init__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <method '__reduce_ex__' of 'object' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __reduce_ex__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <method '__reduce__' of 'object' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __reduce__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <slot wrapper '__str__' of 'object' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __str__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <method '__format__' of 'object' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __format__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <attribute '__class__' of 'object' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __class__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <method '__subclasshook__' of 'object' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __subclasshook__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <slot wrapper '__hash__' of 'object' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __hash__
+        finish pytest_pycollect_makeitem --> None [hook]
+        pytest_pycollect_makeitem [hook]
+            obj: <method '__sizeof__' of 'object' objects>
+            collector: <Module 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+            name: __sizeof__
+        finish pytest_pycollect_makeitem --> None [hook]
+      finish pytest_make_collect_report --> <CollectReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py' lenresult=2 outcome='passed'> [hook]
+    genitems <Function 'test_plugins_role_was_executed[ansible://plugins]'> [collection]
+      pytest_itemcollected [hook]
+          item: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+      finish pytest_itemcollected --> [] [hook]
+    genitems <Function 'test_correct_plugins_are_installed[ansible://plugins]'> [collection]
+      pytest_itemcollected [hook]
+          item: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+      finish pytest_itemcollected --> [] [hook]
+      pytest_collectreport [hook]
+          report: <CollectReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py' lenresult=2 outcome='passed'>
+      finish pytest_collectreport --> [] [hook]
+      pytest_collection_modifyitems [hook]
+          items: [<Function 'test_plugins_role_was_executed[ansible://plugins]'>, <Function 'test_correct_plugins_are_installed[ansible://plugins]'>]
+          session: <Session 'indy-node'>
+          config: <_pytest.config.Config object at 0x7f30d9748e50>
+      finish pytest_collection_modifyitems --> [] [hook]
+      pytest_collection_finish [hook]
+          session: <Session 'indy-node'>
+        pytest_report_collectionfinish [hook]
+            items: [<Function 'test_plugins_role_was_executed[ansible://plugins]'>, <Function 'test_correct_plugins_are_installed[ansible://plugins]'>]
+            config: <_pytest.config.Config object at 0x7f30d9748e50>
+            startdir: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/default
+        finish pytest_report_collectionfinish --> [] [hook]
+      finish pytest_collection_finish --> [] [hook]
+    finish pytest_collection --> [<Function 'test_plugins_role_was_executed[ansible://plugins]'>, <Function 'test_correct_plugins_are_installed[ansible://plugins]'>] [hook]
+    pytest_runtestloop [hook]
+        session: <Session 'indy-node'>
+      pytest_runtest_protocol [hook]
+          item: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+          nextitem: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+        pytest_runtest_logstart [hook]
+            location: ('pool_automation/roles/plugins/molecule/resources/tests/test_default.py', 8, 'test_plugins_role_was_executed[ansible://plugins]')
+            nodeid: pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]
+        finish pytest_runtest_logstart --> [] [hook]
+        pytest_runtest_setup [hook]
+            item: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+          pytest_fixture_setup [hook]
+              fixturedef: <FixtureDef argname='_testinfra_host' scope=u'module' baseid=''>
+              request: <SubRequest '_testinfra_host' for <Function 'test_plugins_role_was_executed[ansible://plugins]'>>
+          finish pytest_fixture_setup --> <testinfra.host.Host object at 0x7f30d8ae4610> [hook]
+          pytest_fixture_setup [hook]
+              fixturedef: <FixtureDef argname='host' scope=u'module' baseid=''>
+              request: <SubRequest 'host' for <Function 'test_plugins_role_was_executed[ansible://plugins]'>>
+          finish pytest_fixture_setup --> <testinfra.host.Host object at 0x7f30d8ae4610> [hook]
+          pytest_fixture_setup [hook]
+              fixturedef: <FixtureDef argname='ansible_vars' scope='module' baseid='pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+              request: <SubRequest 'ansible_vars' for <Function 'test_plugins_role_was_executed[ansible://plugins]'>>
+          matched marked file 'testinfra.modules.ansible' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.ansible [assertion]
+          found cached rewritten pyc for '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/ansible.py' [assertion]
+          matched marked file 'testinfra.modules.base' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.base [assertion]
+          found cached rewritten pyc for '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/base.py' [assertion]
+          matched marked file 'testinfra.modules.__builtin__' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.__builtin__ [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/__builtin__.py' [assertion]
+          matched marked file 'testinfra.modules._pytest' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules._pytest [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/_pytest.py' [assertion]
+          early skip of rewriting module: ansible.plugins.vars [assertion]
+          early skip of rewriting module: ansible.plugins.connection [assertion]
+          finish pytest_fixture_setup --> [hook]
+              omit: __omit_place_holder__24a1359fff30094dcea984c9ae5bc5b5426e74a8
+              inventory_file: /tmp/molecule/plugins/default/ansible_inventory.yml
+              ansible_playbook_python: /home/and/.virtualenvs/pool-automation/bin/python2
+              ansible_check_mode: False
+              plugins_test_file_path: /tmp/plugins_test_file
+              ansible_diff_mode: False
+              ansible_connection: docker
+              groups: {'ungrouped': [u'plugins'], 'all': [u'plugins']}
+              inventory_hostname_short: plugins
+              molecule_instance_config: {{ lookup('env', 'MOLECULE_INSTANCE_CONFIG') }}
+              ansible_facts: {}
+              plugins_packages: [u'gosu', u'jq=1.5+dfsg-1']
+              inventory_hostname: plugins
+              ansible_inventory_sources: /tmp/molecule/plugins/default/ansible_inventory.yml
+              molecule_scenario_directory: {{ lookup('env', 'MOLECULE_SCENARIO_DIRECTORY') }}
+              molecule_yml: {{ lookup('file', molecule_file) | molecule_from_yaml }}
+              ansible_forks: 5
+              playbook_dir: /home/and/Projects/DSR/evernym/github/andkononykhin/indy-node/pool_automation/roles/plugins/molecule/default
+              plugins_role: plugins_test
+              molecule_ephemeral_directory: {{ lookup('env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}
+              inventory_dir: /tmp/molecule/plugins/default
+              ansible_verbosity: 0
+              group_names: ['ungrouped']
+              molecule_file: {{ lookup('env', 'MOLECULE_FILE') }}
+              ansible_run_tags: []
+              ansible_skip_tags: []
+              ansible_version: {'major': 2, 'full': '2.7.0', 'string': '2.7.0', 'minor': 7, 'revision': 0}
+        finish pytest_runtest_setup --> [] [hook]
+        pytest_runtest_makereport [hook]
+            item: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+            call: <CallInfo when='setup' result: []>
+        finish pytest_runtest_makereport --> <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='setup' outcome='passed'> [hook]
+        pytest_runtest_logreport [hook]
+            report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='setup' outcome='passed'>
+          pytest_report_teststatus [hook]
+              report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='setup' outcome='passed'>
+          finish pytest_report_teststatus --> ('', '', '') [hook]
+        finish pytest_runtest_logreport --> [] [hook]
+        pytest_runtest_call [hook]
+            item: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+          pytest_pyfunc_call [hook]
+              pyfuncitem: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+          matched marked file 'testinfra.modules.file' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.file [assertion]
+          found cached rewritten pyc for '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/file.py' [assertion]
+          matched marked file 'testinfra.modules.datetime' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.datetime [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/datetime.py' [assertion]
+          matched marked file 'testinfra.modules.six' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.six [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/six.py' [assertion]
+          matched marked file 'testinfra.modules.systeminfo' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.systeminfo [assertion]
+          found cached rewritten pyc for '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/systeminfo.py' [assertion]
+          matched marked file 'testinfra.modules.re' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.re [assertion]
+          rewriting '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/re.py' [assertion]
+          early skip of rewriting module: ansible.playbook.handler [assertion]
+          early skip of rewriting module: ansible.playbook.task_include [assertion]
+          early skip of rewriting module: ansible.playbook.role_include [assertion]
+          early skip of rewriting module: ansible.playbook.handler_task_include [assertion]
+          early skip of rewriting module: ansible.plugins.action [assertion]
+          early skip of rewriting module: ansible.executor.module_common [assertion]
+          early skip of rewriting module: distutils [assertion]
+          early skip of rewriting module: distutils.os [assertion]
+          early skip of rewriting module: distutils.sys [assertion]
+          early skip of rewriting module: distutils.warnings [assertion]
+          early skip of rewriting module: distutils.imp [assertion]
+          early skip of rewriting module: distutils.opcode [assertion]
+          early skip of rewriting module: _virtualenv_distutils.sys [assertion]
+          early skip of rewriting module: distutils.distutils [assertion]
+          early skip of rewriting module: distutils.dist [assertion]
+          early skip of rewriting module: distutils.re [assertion]
+          early skip of rewriting module: distutils.email [assertion]
+          early skip of rewriting module: distutils.errors [assertion]
+          early skip of rewriting module: distutils.fancy_getopt [assertion]
+          early skip of rewriting module: distutils.string [assertion]
+          early skip of rewriting module: distutils.getopt [assertion]
+          early skip of rewriting module: getopt [assertion]
+          early skip of rewriting module: distutils.util [assertion]
+          early skip of rewriting module: distutils.dep_util [assertion]
+          early skip of rewriting module: distutils.stat [assertion]
+          early skip of rewriting module: distutils.spawn [assertion]
+          early skip of rewriting module: distutils.debug [assertion]
+          early skip of rewriting module: distutils.log [assertion]
+          early skip of rewriting module: distutils.sysconfig [assertion]
+          early skip of rewriting module: distutils.fnmatch [assertion]
+          early skip of rewriting module: distutils.version [assertion]
+          early skip of rewriting module: distutils.types [assertion]
+          early skip of rewriting module: ansible.plugins.shell [assertion]
+          early skip of rewriting module: ansible.plugins.shell.powershell [assertion]
+          early skip of rewriting module: ansible.executor.action_write_locks [assertion]
+          early skip of rewriting module: ansible.module_utils.facts [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.compat [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.namespace [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.default_collectors [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.other [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.other.facter [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.collector [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.timeout [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.other.ohai [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.apparmor [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.caps [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.chroot [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.cmdline [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.utils [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.os [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.distribution [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.date_time [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.env [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.dns [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.fips [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.local [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.lsb [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.pkg_mgr [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.platform [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.python [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.selinux [assertion]
+          early skip of rewriting module: selinux [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.service_mgr [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.ssh_pub_keys [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.system.user [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.base [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.aix [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.darwin [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.sysctl [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.re [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.dragonfly [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.freebsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.hpux [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.hurd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.linux [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.netbsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.openbsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.hardware.sunos [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.base [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.aix [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.generic_bsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.darwin [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.dragonfly [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.freebsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.hpux [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.hurd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.linux [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.iscsi [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.netbsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.openbsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.network.sunos [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.base [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.dragonfly [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.freebsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.hpux [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.linux [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.netbsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.sysctl [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.openbsd [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.virtual.sunos [assertion]
+          early skip of rewriting module: ansible.module_utils.facts.ansible_collector [assertion]
+          early skip of rewriting module: multiprocessing.synchronize [assertion]
+          early skip of rewriting module: multiprocessing.time [assertion]
+          early skip of rewriting module: multiprocessing.forking [assertion]
+          early skip of rewriting module: multiprocessing.errno [assertion]
+          early skip of rewriting module: multiprocessing.pickle [assertion]
+          early skip of rewriting module: multiprocessing.functools [assertion]
+          early skip of rewriting module: ansible.module_utils.json_utils [assertion]
+          early skip of rewriting module: ansible.module_utils.json [assertion]
+          early skip of rewriting module: ansible.parsing.utils.jsonify [assertion]
+          early skip of rewriting module: ansible.modules [assertion]
+          early skip of rewriting module: multiprocessing.queues [assertion]
+          early skip of rewriting module: multiprocessing.collections [assertion]
+          early skip of rewriting module: multiprocessing.Queue [assertion]
+          early skip of rewriting module: Queue [assertion]
+          early skip of rewriting module: multiprocessing.connection [assertion]
+          early skip of rewriting module: multiprocessing.socket [assertion]
+          early skip of rewriting module: multiprocessing.tempfile [assertion]
+          early skip of rewriting module: ansible.plugins.callback.default [assertion]
+          early skip of rewriting module: ansible.utils.module_docs_fragments [assertion]
+          early skip of rewriting module: ansible.plugins.strategy [assertion]
+          early skip of rewriting module: ansible.executor.process [assertion]
+          early skip of rewriting module: ansible.executor.process.worker [assertion]
+          early skip of rewriting module: Crypto [assertion]
+          early skip of rewriting module: ansible.executor.task_executor [assertion]
+          early skip of rewriting module: pty [assertion]
+          early skip of rewriting module: tty [assertion]
+          early skip of rewriting module: ansible.module_utils.connection [assertion]
+          early skip of rewriting module: ansible.module_utils.os [assertion]
+          early skip of rewriting module: ansible.module_utils.hashlib [assertion]
+          early skip of rewriting module: ansible.module_utils.socket [assertion]
+          early skip of rewriting module: ansible.module_utils.struct [assertion]
+          early skip of rewriting module: ansible.module_utils.traceback [assertion]
+          early skip of rewriting module: ansible.module_utils.uuid [assertion]
+          early skip of rewriting module: ansible.module_utils.functools [assertion]
+          early skip of rewriting module: ansible.playbook.included_file [assertion]
+          early skip of rewriting module: requests [assertion]
+          early skip of rewriting module: requests.urllib3 [assertion]
+          early skip of rewriting module: urllib3 [assertion]
+          early skip of rewriting module: urllib3.connectionpool [assertion]
+          early skip of rewriting module: urllib3.exceptions [assertion]
+          early skip of rewriting module: urllib3.packages [assertion]
+          early skip of rewriting module: urllib3.packages.ssl_match_hostname [assertion]
+          early skip of rewriting module: urllib3.packages.ssl_match_hostname.sys [assertion]
+          early skip of rewriting module: urllib3.packages.ssl_match_hostname.backports [assertion]
+          early skip of rewriting module: backports.ssl_match_hostname [assertion]
+          early skip of rewriting module: backports.ssl_match_hostname.re [assertion]
+          early skip of rewriting module: backports.ssl_match_hostname.sys [assertion]
+          early skip of rewriting module: backports.ssl_match_hostname.ipaddress [assertion]
+          early skip of rewriting module: urllib3.packages.six [assertion]
+          early skip of rewriting module: urllib3.packages.six.moves [assertion]
+          early skip of rewriting module: urllib3.packages.six.moves.http_client [assertion]
+          early skip of rewriting module: httplib [assertion]
+          early skip of rewriting module: mimetools [assertion]
+          early skip of rewriting module: rfc822 [assertion]
+          early skip of rewriting module: urllib3.connection [assertion]
+          early skip of rewriting module: urllib3.util [assertion]
+          early skip of rewriting module: urllib3.util.connection [assertion]
+          early skip of rewriting module: urllib3.util.wait [assertion]
+          early skip of rewriting module: urllib3.util.errno [assertion]
+          early skip of rewriting module: urllib3.util.functools [assertion]
+          early skip of rewriting module: urllib3.util.select [assertion]
+          early skip of rewriting module: urllib3.util.sys [assertion]
+          early skip of rewriting module: urllib3.util.time [assertion]
+          early skip of rewriting module: urllib3.contrib [assertion]
+          early skip of rewriting module: urllib3.contrib._appengine_environ [assertion]
+          early skip of rewriting module: urllib3.contrib.os [assertion]
+          early skip of rewriting module: urllib3.util.request [assertion]
+          early skip of rewriting module: urllib3.util.response [assertion]
+          early skip of rewriting module: urllib3.util.ssl_ [assertion]
+          early skip of rewriting module: urllib3.util.timeout [assertion]
+          early skip of rewriting module: urllib3.util.retry [assertion]
+          early skip of rewriting module: urllib3.util.url [assertion]
+          early skip of rewriting module: urllib3._collections [assertion]
+          early skip of rewriting module: urllib3.request [assertion]
+          early skip of rewriting module: urllib3.filepost [assertion]
+          early skip of rewriting module: urllib3.fields [assertion]
+          early skip of rewriting module: mimetypes [assertion]
+          early skip of rewriting module: _winreg [assertion]
+          early skip of rewriting module: urllib3.packages.six.moves.urllib [assertion]
+          early skip of rewriting module: urllib3.packages.six.moves.urllib.parse [assertion]
+          early skip of rewriting module: urllib3.response [assertion]
+          early skip of rewriting module: urllib3.util.queue [assertion]
+          early skip of rewriting module: urllib3.util.collections [assertion]
+          early skip of rewriting module: urllib3.util.Queue [assertion]
+          early skip of rewriting module: urllib3.poolmanager [assertion]
+          early skip of rewriting module: requests.chardet [assertion]
+          early skip of rewriting module: chardet [assertion]
+          early skip of rewriting module: chardet.compat [assertion]
+          early skip of rewriting module: chardet.sys [assertion]
+          early skip of rewriting module: chardet.universaldetector [assertion]
+          early skip of rewriting module: chardet.codecs [assertion]
+          early skip of rewriting module: chardet.logging [assertion]
+          early skip of rewriting module: chardet.re [assertion]
+          early skip of rewriting module: chardet.charsetgroupprober [assertion]
+          early skip of rewriting module: chardet.enums [assertion]
+          early skip of rewriting module: chardet.charsetprober [assertion]
+          early skip of rewriting module: chardet.escprober [assertion]
+          early skip of rewriting module: chardet.codingstatemachine [assertion]
+          early skip of rewriting module: chardet.escsm [assertion]
+          early skip of rewriting module: chardet.latin1prober [assertion]
+          early skip of rewriting module: chardet.mbcsgroupprober [assertion]
+          early skip of rewriting module: chardet.utf8prober [assertion]
+          early skip of rewriting module: chardet.mbcssm [assertion]
+          early skip of rewriting module: chardet.sjisprober [assertion]
+          early skip of rewriting module: chardet.mbcharsetprober [assertion]
+          early skip of rewriting module: chardet.chardistribution [assertion]
+          early skip of rewriting module: chardet.euctwfreq [assertion]
+          early skip of rewriting module: chardet.euckrfreq [assertion]
+          early skip of rewriting module: chardet.gb2312freq [assertion]
+          early skip of rewriting module: chardet.big5freq [assertion]
+          early skip of rewriting module: chardet.jisfreq [assertion]
+          early skip of rewriting module: chardet.jpcntx [assertion]
+          early skip of rewriting module: chardet.eucjpprober [assertion]
+          early skip of rewriting module: chardet.gb2312prober [assertion]
+          early skip of rewriting module: chardet.euckrprober [assertion]
+          early skip of rewriting module: chardet.cp949prober [assertion]
+          early skip of rewriting module: chardet.big5prober [assertion]
+          early skip of rewriting module: chardet.euctwprober [assertion]
+          early skip of rewriting module: chardet.sbcsgroupprober [assertion]
+          early skip of rewriting module: chardet.sbcharsetprober [assertion]
+          early skip of rewriting module: chardet.langcyrillicmodel [assertion]
+          early skip of rewriting module: chardet.langgreekmodel [assertion]
+          early skip of rewriting module: chardet.langbulgarianmodel [assertion]
+          early skip of rewriting module: chardet.langthaimodel [assertion]
+          early skip of rewriting module: chardet.langhebrewmodel [assertion]
+          early skip of rewriting module: chardet.hebrewprober [assertion]
+          early skip of rewriting module: chardet.langturkishmodel [assertion]
+          early skip of rewriting module: chardet.version [assertion]
+          early skip of rewriting module: requests.warnings [assertion]
+          early skip of rewriting module: requests.exceptions [assertion]
+          early skip of rewriting module: urllib3.contrib.pyopenssl [assertion]
+          early skip of rewriting module: OpenSSL [assertion]
+          early skip of rewriting module: requests.__version__ [assertion]
+          early skip of rewriting module: requests.utils [assertion]
+          early skip of rewriting module: requests.codecs [assertion]
+          early skip of rewriting module: requests.contextlib [assertion]
+          early skip of rewriting module: requests.io [assertion]
+          early skip of rewriting module: requests.os [assertion]
+          early skip of rewriting module: requests.re [assertion]
+          early skip of rewriting module: requests.socket [assertion]
+          early skip of rewriting module: requests.struct [assertion]
+          early skip of rewriting module: requests.sys [assertion]
+          early skip of rewriting module: requests.tempfile [assertion]
+          early skip of rewriting module: requests.zipfile [assertion]
+          early skip of rewriting module: requests.certs [assertion]
+          early skip of rewriting module: requests.certifi [assertion]
+          early skip of rewriting module: certifi [assertion]
+          early skip of rewriting module: certifi.core [assertion]
+          early skip of rewriting module: certifi.os [assertion]
+          early skip of rewriting module: certifi.warnings [assertion]
+          early skip of rewriting module: requests._internal_utils [assertion]
+          early skip of rewriting module: requests.compat [assertion]
+          early skip of rewriting module: requests.simplejson [assertion]
+          early skip of rewriting module: simplejson [assertion]
+          early skip of rewriting module: requests.json [assertion]
+          early skip of rewriting module: requests.urllib [assertion]
+          early skip of rewriting module: requests.urlparse [assertion]
+          early skip of rewriting module: requests.urllib2 [assertion]
+          early skip of rewriting module: urllib2 [assertion]
+          early skip of rewriting module: requests.cookielib [assertion]
+          early skip of rewriting module: cookielib [assertion]
+          early skip of rewriting module: _LWPCookieJar [assertion]
+          early skip of rewriting module: _MozillaCookieJar [assertion]
+          early skip of rewriting module: requests.Cookie [assertion]
+          early skip of rewriting module: Cookie [assertion]
+          early skip of rewriting module: requests.StringIO [assertion]
+          early skip of rewriting module: requests.collections [assertion]
+          early skip of rewriting module: requests.cookies [assertion]
+          early skip of rewriting module: requests.copy [assertion]
+          early skip of rewriting module: requests.time [assertion]
+          early skip of rewriting module: requests.calendar [assertion]
+          early skip of rewriting module: requests.threading [assertion]
+          early skip of rewriting module: requests.structures [assertion]
+          early skip of rewriting module: requests.packages [assertion]
+          early skip of rewriting module: requests.models [assertion]
+          early skip of rewriting module: requests.datetime [assertion]
+          early skip of rewriting module: requests.encodings [assertion]
+          early skip of rewriting module: requests.hooks [assertion]
+          early skip of rewriting module: requests.auth [assertion]
+          early skip of rewriting module: requests.hashlib [assertion]
+          early skip of rewriting module: requests.base64 [assertion]
+          early skip of rewriting module: requests.status_codes [assertion]
+          early skip of rewriting module: requests.api [assertion]
+          early skip of rewriting module: requests.sessions [assertion]
+          early skip of rewriting module: requests.adapters [assertion]
+          early skip of rewriting module: urllib3.contrib.socks [assertion]
+          early skip of rewriting module: socks [assertion]
+          early skip of rewriting module: requests.logging [assertion]
+          early skip of rewriting module: ansible.module_utils.urls [assertion]
+          early skip of rewriting module: ansible.module_utils.base64 [assertion]
+          early skip of rewriting module: ansible.module_utils.netrc [assertion]
+          early skip of rewriting module: netrc [assertion]
+          early skip of rewriting module: ansible.module_utils.platform [assertion]
+          early skip of rewriting module: ansible.module_utils.re [assertion]
+          early skip of rewriting module: ansible.module_utils.tempfile [assertion]
+          early skip of rewriting module: ansible.module_utils.httplib [assertion]
+          early skip of rewriting module: ansible.module_utils.six.moves.http_cookiejar [assertion]
+          early skip of rewriting module: ansible.module_utils.six.moves.urllib [assertion]
+          early skip of rewriting module: ansible.module_utils.six.moves.urllib.request [assertion]
+          early skip of rewriting module: ansible.module_utils.six.moves.urllib.error [assertion]
+          early skip of rewriting module: ansible.module_utils.urllib [assertion]
+          early skip of rewriting module: ansible.module_utils.urllib2 [assertion]
+          early skip of rewriting module: ansible.module_utils.six.moves.urllib.parse [assertion]
+          early skip of rewriting module: ansible.module_utils.ssl [assertion]
+          early skip of rewriting module: ansible.module_utils.urllib3 [assertion]
+          early skip of rewriting module: urllib3.contrib.pyopenssl [assertion]
+          early skip of rewriting module: OpenSSL [assertion]
+          early skip of rewriting module: ansible.module_utils.requests [assertion]
+          early skip of rewriting module: requests.packages.urllib3.contrib.pyopenssl [assertion]
+          early skip of rewriting module: OpenSSL [assertion]
+          early skip of rewriting module: urllib3.contrib.pyopenssl [assertion]
+          early skip of rewriting module: OpenSSL [assertion]
+          early skip of rewriting module: requests.packages.urllib3.contrib.pyopenssl [assertion]
+          early skip of rewriting module: OpenSSL [assertion]
+          early skip of rewriting module: prettytable [assertion]
+          early skip of rewriting module: xmpp [assertion]
+          early skip of rewriting module: junit_xml [assertion]
+          early skip of rewriting module: logdna [assertion]
+          early skip of rewriting module: flatdict [assertion]
+          early skip of rewriting module: logstash [assertion]
+          early skip of rewriting module: smtplib [assertion]
+          early skip of rewriting module: prettytable [assertion]
+          early skip of rewriting module: logging.handlers [assertion]
+          early skip of rewriting module: logging.errno [assertion]
+          early skip of rewriting module: logging.logging [assertion]
+          early skip of rewriting module: logging.socket [assertion]
+          early skip of rewriting module: logging.cPickle [assertion]
+          early skip of rewriting module: logging.struct [assertion]
+          early skip of rewriting module: logging.re [assertion]
+          early skip of rewriting module: logging.stat [assertion]
+          early skip of rewriting module: ansible.parsing.yaml.dumper [assertion]
+          early skip of rewriting module: ansible.plugins.test [assertion]
+          early skip of rewriting module: ansible.plugins.filter [assertion]
+          early skip of rewriting module: crypt [assertion]
+          early skip of rewriting module: ansible.module_utils.common.collections [assertion]
+          early skip of rewriting module: ansible.utils.encrypt [assertion]
+          early skip of rewriting module: passlib [assertion]
+          early skip of rewriting module: ansible.utils.hashing [assertion]
+          early skip of rewriting module: ansible.utils.unicode [assertion]
+          early skip of rewriting module: netaddr [assertion]
+          early skip of rewriting module: jmespath [assertion]
+          early skip of rewriting module: jmespath.jmespath [assertion]
+          early skip of rewriting module: jmespath.parser [assertion]
+          early skip of rewriting module: jmespath.random [assertion]
+          early skip of rewriting module: jmespath.lexer [assertion]
+          early skip of rewriting module: jmespath.string [assertion]
+          early skip of rewriting module: jmespath.warnings [assertion]
+          early skip of rewriting module: jmespath.json [assertion]
+          early skip of rewriting module: jmespath.exceptions [assertion]
+          early skip of rewriting module: jmespath.compat [assertion]
+          early skip of rewriting module: jmespath.sys [assertion]
+          early skip of rewriting module: jmespath.inspect [assertion]
+          early skip of rewriting module: jmespath.itertools [assertion]
+          early skip of rewriting module: jmespath.ast [assertion]
+          early skip of rewriting module: jmespath.visitor [assertion]
+          early skip of rewriting module: jmespath.operator [assertion]
+          early skip of rewriting module: jmespath.functions [assertion]
+          early skip of rewriting module: jmespath.math [assertion]
+          early skip of rewriting module: jmespath.numbers [assertion]
+          early skip of rewriting module: molecule [assertion]
+          early skip of rewriting module: molecule.pbr [assertion]
+          early skip of rewriting module: pbr [assertion]
+          early skip of rewriting module: pbr.version [assertion]
+          early skip of rewriting module: pbr.itertools [assertion]
+          early skip of rewriting module: pbr.operator [assertion]
+          early skip of rewriting module: pbr.sys [assertion]
+          early skip of rewriting module: pbr.pkg_resources [assertion]
+          early skip of rewriting module: molecule.config [assertion]
+          early skip of rewriting module: molecule.os [assertion]
+          early skip of rewriting module: molecule.anyconfig [assertion]
+          early skip of rewriting module: anyconfig [assertion]
+          early skip of rewriting module: anyconfig.globals [assertion]
+          early skip of rewriting module: anyconfig.collections [assertion]
+          early skip of rewriting module: anyconfig.anyconfig [assertion]
+          early skip of rewriting module: anyconfig.init [assertion]
+          early skip of rewriting module: anyconfig.logging [assertion]
+          early skip of rewriting module: anyconfig.compat [assertion]
+          early skip of rewriting module: pathlib [assertion]
+          early skip of rewriting module: anyconfig.api [assertion]
+          early skip of rewriting module: anyconfig.backends [assertion]
+          early skip of rewriting module: anyconfig.ioinfo [assertion]
+          early skip of rewriting module: anyconfig.utils [assertion]
+          early skip of rewriting module: anyconfig.processors [assertion]
+          early skip of rewriting module: anyconfig.backend [assertion]
+          early skip of rewriting module: anyconfig.backend.base [assertion]
+          early skip of rewriting module: anyconfig.backend.ini [assertion]
+          early skip of rewriting module: anyconfig.parser [assertion]
+          early skip of rewriting module: anyconfig.backend.json [assertion]
+          early skip of rewriting module: anyconfig.backend.pickle [assertion]
+          early skip of rewriting module: anyconfig.backend.properties [assertion]
+          early skip of rewriting module: anyconfig.backend.shellvars [assertion]
+          early skip of rewriting module: anyconfig.backend.xml [assertion]
+          early skip of rewriting module: xml [assertion]
+          early skip of rewriting module: xml._xmlplus [assertion]
+          early skip of rewriting module: _xmlplus [assertion]
+          early skip of rewriting module: xml.etree [assertion]
+          early skip of rewriting module: xml.etree.cElementTree [assertion]
+          early skip of rewriting module: xml.etree._elementtree [assertion]
+          early skip of rewriting module: _elementtree [assertion]
+          early skip of rewriting module: xml.etree.ElementTree [assertion]
+          early skip of rewriting module: xml.etree.sys [assertion]
+          early skip of rewriting module: xml.etree.re [assertion]
+          early skip of rewriting module: xml.etree.warnings [assertion]
+          early skip of rewriting module: xml.etree.ElementPath [assertion]
+          early skip of rewriting module: xml.etree.ElementC14N [assertion]
+          early skip of rewriting module: ElementC14N [assertion]
+          early skip of rewriting module: pyexpat [assertion]
+          early skip of rewriting module: anyconfig.backend.yaml [assertion]
+          early skip of rewriting module: ruamel [assertion]
+          early skip of rewriting module: yaml.CSafeLoader [assertion]
+          early skip of rewriting module: yaml.CDumper [assertion]
+          early skip of rewriting module: anyconfig.backend.configobj [assertion]
+          early skip of rewriting module: configobj [assertion]
+          early skip of rewriting module: anyconfig.backend.toml [assertion]
+          early skip of rewriting module: toml [assertion]
+          early skip of rewriting module: anyconfig.query [assertion]
+          early skip of rewriting module: anyconfig.dicts [assertion]
+          early skip of rewriting module: anyconfig.template [assertion]
+          early skip of rewriting module: anyconfig.schema [assertion]
+          early skip of rewriting module: jsonschema [assertion]
+          early skip of rewriting module: molecule.six [assertion]
+          early skip of rewriting module: molecule.molecule [assertion]
+          early skip of rewriting module: molecule.interpolation [assertion]
+          early skip of rewriting module: molecule.string [assertion]
+          early skip of rewriting module: molecule.logger [assertion]
+          early skip of rewriting module: molecule.logging [assertion]
+          early skip of rewriting module: molecule.sys [assertion]
+          early skip of rewriting module: molecule.colorama [assertion]
+          early skip of rewriting module: colorama [assertion]
+          early skip of rewriting module: colorama.initialise [assertion]
+          early skip of rewriting module: colorama.atexit [assertion]
+          early skip of rewriting module: colorama.contextlib [assertion]
+          early skip of rewriting module: colorama.sys [assertion]
+          early skip of rewriting module: colorama.ansitowin32 [assertion]
+          early skip of rewriting module: colorama.re [assertion]
+          early skip of rewriting module: colorama.os [assertion]
+          early skip of rewriting module: colorama.ansi [assertion]
+          early skip of rewriting module: colorama.winterm [assertion]
+          early skip of rewriting module: colorama.win32 [assertion]
+          early skip of rewriting module: colorama.ctypes [assertion]
+          early skip of rewriting module: molecule.platforms [assertion]
+          early skip of rewriting module: molecule.scenario [assertion]
+          early skip of rewriting module: molecule.tempfile [assertion]
+          early skip of rewriting module: molecule.scenarios [assertion]
+          early skip of rewriting module: molecule.operator [assertion]
+          early skip of rewriting module: molecule.tree_format [assertion]
+          early skip of rewriting module: tree_format [assertion]
+          early skip of rewriting module: tree_format._text [assertion]
+          early skip of rewriting module: tree_format.itertools [assertion]
+          early skip of rewriting module: molecule.util [assertion]
+          early skip of rewriting module: molecule.__future__ [assertion]
+          early skip of rewriting module: molecule.contextlib [assertion]
+          early skip of rewriting module: molecule.fnmatch [assertion]
+          early skip of rewriting module: molecule.jinja2 [assertion]
+          early skip of rewriting module: molecule.re [assertion]
+          early skip of rewriting module: molecule.yaml [assertion]
+          early skip of rewriting module: molecule.state [assertion]
+          early skip of rewriting module: molecule.dependency [assertion]
+          early skip of rewriting module: molecule.dependency.ansible_galaxy [assertion]
+          early skip of rewriting module: molecule.dependency.os [assertion]
+          early skip of rewriting module: molecule.dependency.sh [assertion]
+          early skip of rewriting module: sh [assertion]
+          early skip of rewriting module: resource [assertion]
+          early skip of rewriting module: molecule.dependency.molecule [assertion]
+          early skip of rewriting module: molecule.dependency.base [assertion]
+          early skip of rewriting module: molecule.dependency.abc [assertion]
+          early skip of rewriting module: molecule.dependency.gilt [assertion]
+          early skip of rewriting module: molecule.dependency.shell [assertion]
+          early skip of rewriting module: molecule.driver [assertion]
+          early skip of rewriting module: molecule.driver.azure [assertion]
+          early skip of rewriting module: molecule.driver.molecule [assertion]
+          early skip of rewriting module: molecule.driver.base [assertion]
+          early skip of rewriting module: molecule.driver.abc [assertion]
+          early skip of rewriting module: molecule.driver.os [assertion]
+          early skip of rewriting module: molecule.status [assertion]
+          early skip of rewriting module: molecule.collections [assertion]
+          early skip of rewriting module: molecule.driver.delegated [assertion]
+          early skip of rewriting module: molecule.driver.docker [assertion]
+          early skip of rewriting module: molecule.driver.ec2 [assertion]
+          early skip of rewriting module: molecule.driver.gce [assertion]
+          early skip of rewriting module: molecule.driver.lxc [assertion]
+          early skip of rewriting module: molecule.driver.lxd [assertion]
+          early skip of rewriting module: molecule.driver.openstack [assertion]
+          early skip of rewriting module: molecule.driver.vagrant [assertion]
+          early skip of rewriting module: molecule.lint [assertion]
+          early skip of rewriting module: molecule.lint.yamllint [assertion]
+          early skip of rewriting module: molecule.lint.os [assertion]
+          early skip of rewriting module: molecule.lint.sh [assertion]
+          early skip of rewriting module: molecule.lint.molecule [assertion]
+          early skip of rewriting module: molecule.lint.base [assertion]
+          early skip of rewriting module: molecule.lint.abc [assertion]
+          early skip of rewriting module: molecule.model [assertion]
+          early skip of rewriting module: molecule.model.schema_v2 [assertion]
+          early skip of rewriting module: molecule.model.copy [assertion]
+          early skip of rewriting module: molecule.model.functools [assertion]
+          early skip of rewriting module: molecule.model.re [assertion]
+          early skip of rewriting module: molecule.model.cerberus [assertion]
+          early skip of rewriting module: cerberus [assertion]
+          early skip of rewriting module: cerberus.validator [assertion]
+          early skip of rewriting module: cerberus.errors [assertion]
+          early skip of rewriting module: cerberus.platform [assertion]
+          early skip of rewriting module: cerberus.sys [assertion]
+          early skip of rewriting module: cerberus.utils [assertion]
+          early skip of rewriting module: cerberus.schema [assertion]
+          early skip of rewriting module: molecule.model.molecule [assertion]
+          early skip of rewriting module: molecule.provisioner [assertion]
+          early skip of rewriting module: molecule.provisioner.ansible [assertion]
+          early skip of rewriting module: molecule.provisioner.copy [assertion]
+          early skip of rewriting module: molecule.provisioner.collections [assertion]
+          early skip of rewriting module: molecule.provisioner.os [assertion]
+          early skip of rewriting module: molecule.provisioner.shutil [assertion]
+          early skip of rewriting module: molecule.provisioner.molecule [assertion]
+          early skip of rewriting module: molecule.provisioner.base [assertion]
+          early skip of rewriting module: molecule.provisioner.abc [assertion]
+          early skip of rewriting module: molecule.provisioner.lint [assertion]
+          early skip of rewriting module: molecule.provisioner.lint.ansible_lint [assertion]
+          early skip of rewriting module: molecule.provisioner.lint.os [assertion]
+          early skip of rewriting module: molecule.provisioner.lint.sh [assertion]
+          early skip of rewriting module: molecule.provisioner.lint.molecule [assertion]
+          early skip of rewriting module: molecule.provisioner.lint.base [assertion]
+          early skip of rewriting module: molecule.provisioner.lint.abc [assertion]
+          early skip of rewriting module: molecule.provisioner.ansible_playbook [assertion]
+          early skip of rewriting module: molecule.provisioner.sh [assertion]
+          early skip of rewriting module: molecule.provisioner.ansible_playbooks [assertion]
+          early skip of rewriting module: molecule.verifier [assertion]
+          early skip of rewriting module: molecule.verifier.goss [assertion]
+          early skip of rewriting module: molecule.verifier.os [assertion]
+          early skip of rewriting module: molecule.verifier.molecule [assertion]
+          early skip of rewriting module: molecule.verifier.base [assertion]
+          early skip of rewriting module: molecule.verifier.abc [assertion]
+          early skip of rewriting module: molecule.verifier.lint [assertion]
+          early skip of rewriting module: molecule.verifier.lint.flake8 [assertion]
+          early skip of rewriting module: molecule.verifier.lint.os [assertion]
+          early skip of rewriting module: molecule.verifier.lint.sh [assertion]
+          early skip of rewriting module: molecule.verifier.lint.molecule [assertion]
+          early skip of rewriting module: molecule.verifier.lint.base [assertion]
+          early skip of rewriting module: molecule.verifier.lint.abc [assertion]
+          early skip of rewriting module: molecule.verifier.lint.rubocop [assertion]
+          early skip of rewriting module: molecule.verifier.lint.yamllint [assertion]
+          early skip of rewriting module: molecule.verifier.inspec [assertion]
+          early skip of rewriting module: molecule.verifier.testinfra [assertion]
+          early skip of rewriting module: molecule.verifier.glob [assertion]
+          early skip of rewriting module: molecule.verifier.sh [assertion]
+          early skip of rewriting module: ansible.module_utils.network [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.utils [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.re [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.ast [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.operator [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.socket [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.itertools [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.struct [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.ansible [assertion]
+          early skip of rewriting module: ansible.module_utils.network.common.jinja2 [assertion]
+          early skip of rewriting module: textfsm [assertion]
+          early skip of rewriting module: passlib [assertion]
+          finish pytest_pyfunc_call --> True [hook]
+        finish pytest_runtest_call --> [] [hook]
+        pytest_runtest_makereport [hook]
+            item: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+            call: <CallInfo when='call' result: []>
+        finish pytest_runtest_makereport --> <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='call' outcome='passed'> [hook]
+        pytest_runtest_logreport [hook]
+            report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='call' outcome='passed'>
+          pytest_report_teststatus [hook]
+              report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='call' outcome='passed'>
+          finish pytest_report_teststatus --> ('passed', '.', 'PASSED') [hook]
+        finish pytest_runtest_logreport --> [] [hook]
+        pytest_runtest_teardown [hook]
+            item: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+            nextitem: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+        finish pytest_runtest_teardown --> [] [hook]
+        pytest_runtest_makereport [hook]
+            item: <Function 'test_plugins_role_was_executed[ansible://plugins]'>
+            call: <CallInfo when='teardown' result: []>
+        finish pytest_runtest_makereport --> <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='teardown' outcome='passed'> [hook]
+        pytest_runtest_logreport [hook]
+            report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='teardown' outcome='passed'>
+          pytest_report_teststatus [hook]
+              report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]' when='teardown' outcome='passed'>
+          finish pytest_report_teststatus --> ('', '', '') [hook]
+        finish pytest_runtest_logreport --> [] [hook]
+        pytest_runtest_logfinish [hook]
+            location: ('pool_automation/roles/plugins/molecule/resources/tests/test_default.py', 8, 'test_plugins_role_was_executed[ansible://plugins]')
+            nodeid: pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_plugins_role_was_executed[ansible://plugins]
+        finish pytest_runtest_logfinish --> [] [hook]
+      finish pytest_runtest_protocol --> True [hook]
+      pytest_runtest_protocol [hook]
+          item: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+          nextitem: None
+        pytest_runtest_logstart [hook]
+            location: ('pool_automation/roles/plugins/molecule/resources/tests/test_default.py', 12, 'test_correct_plugins_are_installed[ansible://plugins]')
+            nodeid: pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]
+        finish pytest_runtest_logstart --> [] [hook]
+        pytest_runtest_setup [hook]
+            item: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+        finish pytest_runtest_setup --> [] [hook]
+        pytest_runtest_makereport [hook]
+            item: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+            call: <CallInfo when='setup' result: []>
+        finish pytest_runtest_makereport --> <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='setup' outcome='passed'> [hook]
+        pytest_runtest_logreport [hook]
+            report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='setup' outcome='passed'>
+          pytest_report_teststatus [hook]
+              report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='setup' outcome='passed'>
+          finish pytest_report_teststatus --> ('', '', '') [hook]
+        finish pytest_runtest_logreport --> [] [hook]
+        pytest_runtest_call [hook]
+            item: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+          pytest_pyfunc_call [hook]
+              pyfuncitem: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+          matched marked file 'testinfra.modules.package' (from 'testinfra') [assertion]
+          find_module called for: testinfra.modules.package [assertion]
+          found cached rewritten pyc for '/home/and/.virtualenvs/pool-automation/local/lib/python2.7/site-packages/testinfra/modules/package.py' [assertion]
+          finish pytest_pyfunc_call --> True [hook]
+        finish pytest_runtest_call --> [] [hook]
+        pytest_runtest_makereport [hook]
+            item: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+            call: <CallInfo when='call' result: []>
+        finish pytest_runtest_makereport --> <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='call' outcome='passed'> [hook]
+        pytest_runtest_logreport [hook]
+            report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='call' outcome='passed'>
+          pytest_report_teststatus [hook]
+              report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='call' outcome='passed'>
+          finish pytest_report_teststatus --> ('passed', '.', 'PASSED') [hook]
+        finish pytest_runtest_logreport --> [] [hook]
+        pytest_runtest_teardown [hook]
+            item: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+            nextitem: None
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='ansible_vars' scope='module' baseid='pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+              request: <SubRequest 'ansible_vars' for <Function 'test_correct_plugins_are_installed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='ansible_vars' scope='module' baseid='pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+              request: <SubRequest 'ansible_vars' for <Function 'test_correct_plugins_are_installed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='ansible_vars' scope='module' baseid='pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+              request: <SubRequest 'ansible_vars' for <Function 'test_plugins_role_was_executed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='host' scope=u'module' baseid=''>
+              request: <SubRequest 'host' for <Function 'test_correct_plugins_are_installed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='host' scope=u'module' baseid=''>
+              request: <SubRequest 'host' for <Function 'test_correct_plugins_are_installed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='host' scope=u'module' baseid=''>
+              request: <SubRequest 'host' for <Function 'test_plugins_role_was_executed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='_testinfra_host' scope=u'module' baseid=''>
+              request: <SubRequest '_testinfra_host' for <Function 'test_correct_plugins_are_installed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='ansible_vars' scope='module' baseid='pool_automation/roles/plugins/molecule/resources/tests/test_default.py'>
+              request: <SubRequest 'ansible_vars' for <Function 'test_plugins_role_was_executed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='host' scope=u'module' baseid=''>
+              request: <SubRequest 'host' for <Function 'test_plugins_role_was_executed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+          pytest_fixture_post_finalizer [hook]
+              fixturedef: <FixtureDef argname='_testinfra_host' scope=u'module' baseid=''>
+              request: <SubRequest '_testinfra_host' for <Function 'test_plugins_role_was_executed[ansible://plugins]'>>
+          finish pytest_fixture_post_finalizer --> [] [hook]
+        finish pytest_runtest_teardown --> [] [hook]
+        pytest_runtest_makereport [hook]
+            item: <Function 'test_correct_plugins_are_installed[ansible://plugins]'>
+            call: <CallInfo when='teardown' result: []>
+        finish pytest_runtest_makereport --> <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='teardown' outcome='passed'> [hook]
+        pytest_runtest_logreport [hook]
+            report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='teardown' outcome='passed'>
+          pytest_report_teststatus [hook]
+              report: <TestReport 'pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]' when='teardown' outcome='passed'>
+          finish pytest_report_teststatus --> ('', '', '') [hook]
+        finish pytest_runtest_logreport --> [] [hook]
+        pytest_runtest_logfinish [hook]
+            location: ('pool_automation/roles/plugins/molecule/resources/tests/test_default.py', 12, 'test_correct_plugins_are_installed[ansible://plugins]')
+            nodeid: pool_automation/roles/plugins/molecule/resources/tests/test_default.py::test_correct_plugins_are_installed[ansible://plugins]
+        finish pytest_runtest_logfinish --> [] [hook]
+      finish pytest_runtest_protocol --> True [hook]
+    finish pytest_runtestloop --> True [hook]
+    pytest_sessionfinish [hook]
+        session: <Session 'indy-node'>
+        exitstatus: 0
+      pytest_terminal_summary [hook]
+          exitstatus: 0
+          terminalreporter: <_pytest.terminal.TerminalReporter object at 0x7f30d9308790>
+      finish pytest_terminal_summary --> [] [hook]
+    finish pytest_sessionfinish --> [] [hook]
+    pytest_unconfigure [hook]
+        config: <_pytest.config.Config object at 0x7f30d9748e50>
+    finish pytest_unconfigure --> [] [hook]

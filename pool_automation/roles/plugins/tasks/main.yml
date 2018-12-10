@@ -1,0 +1,14 @@
+---
+- name: Execute role {{ plugins_role }}
+  include_role:
+    name: "{{ plugins_role }}"
+  when: not not plugins_role
+
+
+- name: Install indy plugin packages
+  apt:
+    name: "{{ plugins_packages }}"
+    update_cache: true
+  become: true
+  when: not not plugins_packages
+...

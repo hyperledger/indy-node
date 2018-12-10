@@ -1,0 +1,31 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint:
+  name: yamllint
+  options:
+    config-file: ../../yamllint
+platforms:
+  - name: plugins
+    image: ubuntu:16.04  # TODO parametrize
+    pre_build_image: true
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  inventory:
+    links:
+      group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
+  env:
+    ANSIBLE_ROLES_PATH: ../resources/roles
+  playbooks:
+    converge: ../resources/playbooks/playbook.yml
+scenario:
+  name: default
+verifier:
+  name: testinfra
+  directory: ../resources/tests
+  lint:
+    name: flake8
