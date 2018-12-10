@@ -10,7 +10,7 @@ from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiat
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE
 from plenum.common.ledger import Ledger
 from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
@@ -348,3 +348,12 @@ class Node(PlenumNode, HasPoolManager):
             self.idrCache.close()
         if self.attributeStore:
             self.attributeStore.close()
+
+    def is_request_need_quorum(self, msg_dict: dict):
+        txn_type = msg_dict.get(OPERATION).get(TXN_TYPE, None) \
+            if OPERATION in msg_dict \
+            else None
+        is_force = OPERATION in msg_dict and msg_dict.get(OPERATION).get(FORCE, False)
+        is_force_upgrade = str(is_force) == 'True' and txn_type == POOL_UPGRADE
+        return txn_type and not (is_force_upgrade or
+                                 super().is_request_need_quorum(msg_dict))
