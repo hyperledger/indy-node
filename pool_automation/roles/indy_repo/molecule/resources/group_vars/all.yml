@@ -1,0 +1,6 @@
+---
+indy_repo_node_channels: master rc
+indy_repo_sdk_channels: master stable
+indy_repo_node: true
+indy_repo_sdk: true
+...
