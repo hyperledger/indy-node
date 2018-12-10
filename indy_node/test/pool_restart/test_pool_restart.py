@@ -11,6 +11,7 @@ from indy_node.server.restarter import Restarter
 from indy_node.test.pool_restart.helper import _createServer, _stopServer, sdk_send_restart
 from plenum.common.constants import REPLY, TXN_TYPE
 from plenum.common.types import f
+from plenum.test.testing_utils import FakeSomething
 
 
 def test_pool_restart(
@@ -35,16 +36,6 @@ def test_pool_restart(
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
     _comparison_reply(responses, req_obj)
-
-
-def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper,
-                                     tdir, tconf, txnPoolNodeSet):
-
-    for node in txnPoolNodeSet:
-        node.view_changer.view_change_in_progress = True
-
-    pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
-                     tdir, tconf, START)
 
 
 def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
@@ -86,10 +77,10 @@ def test_pool_restart_cancel(
     _comparison_reply(responses, req_obj)
 
     req_obj, responses = sdk_send_restart(looper,
-                                     sdk_wallet_trustee,
-                                     sdk_pool_handle,
-                                     action=CANCEL,
-                                     datetime="")
+                                          sdk_wallet_trustee,
+                                          sdk_pool_handle,
+                                          action=CANCEL,
+                                          datetime="")
     _stopServer(server)
     for node in txnPoolNodeSet:
         assert node.restarter.lastActionEventInfo[0] == RestartLog.CANCELLED
@@ -102,6 +93,22 @@ def test_pool_restart_now_without_datetime(
                      tdir, tconf, START)
 
 
+def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper,
+                                     tdir, tconf, txnPoolNodeSet):
+
+    for node in txnPoolNodeSet:
+        if node.view_changer is None:
+            node.view_changer = FakeSomething(view_change_in_progress=True)
+        else:
+            node.view_changer.view_change_in_progress = True
+
+    pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
+                     tdir, tconf, START)
+
+    for node in txnPoolNodeSet:
+        node.view_changer.view_change_in_progress = False
+
+
 def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
                      action, datetime=None):
     server, indicator = looper.loop.run_until_complete(
@@ -110,13 +117,13 @@ def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
             port=tconf.controlServicePort
         )
     )
-    _stopServer(server)
 
     req_obj, resp = sdk_send_restart(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle,
                                      action=action,
                                      datetime=datetime)
+    _stopServer(server)
     _comparison_reply(resp, req_obj)
 
 
