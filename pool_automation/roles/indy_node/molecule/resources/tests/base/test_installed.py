@@ -1,7 +1,12 @@
+import pytest
 
-def test_correct_package_versions_are_installed(host):
-    v = host.ansible.get_variables()
 
+@pytest.fixture(scope="module")
+def ansible_vars(host):
+    return host.ansible.get_variables()
+
+
+def test_correct_package_versions_are_installed(host, ansible_vars):
     indy_node = host.package('indy-node')
     indy_plenum = host.package('indy-plenum')
     python_indy_crypto = host.package('python3-indy-crypto')
@@ -12,22 +17,10 @@ def test_correct_package_versions_are_installed(host):
     assert python_indy_crypto.is_installed
     assert libindy_crypto.is_installed
 
-    assert indy_node.version == v['indy_node_ver']
-    assert indy_plenum.version == v['indy_plenum_ver']
-    assert python_indy_crypto.version == v['python_indy_crypto_ver']
-    assert libindy_crypto.version == v['libindy_crypto_ver']
-
-
-def test_correct_add_packages_are_installed(host):
-    v = host.ansible.get_variables()
-
-    for pack in v['indy_node_add_packages']:
-        pack_spec = pack.split('=') # TODO test fuzzy constraints
-        assert host.package(pack_spec[0]).is_installed
-        try:
-            assert host.package(pack_spec[0]).version == pack_spec[1]
-        except IndexError:
-            pass
+    assert indy_node.version == ansible_vars['indy_node_ver']
+    assert indy_plenum.version == ansible_vars['indy_plenum_ver']
+    assert python_indy_crypto.version == ansible_vars['python_indy_crypto_ver']
+    assert libindy_crypto.version == ansible_vars['libindy_crypto_ver']
 
 
 def test_node_service_is_enabled(host):

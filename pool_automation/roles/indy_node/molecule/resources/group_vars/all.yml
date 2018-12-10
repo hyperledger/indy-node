@@ -3,7 +3,4 @@ indy_node_ver: 1.6.563
 indy_plenum_ver: 1.6.501
 python_indy_crypto_ver: 0.4.1
 libindy_crypto_ver: 0.4.0
-
-indy_node_add_packages:
-  - gosu
-  - jq=1.5+dfsg-1
+...
