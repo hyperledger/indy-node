@@ -9,8 +9,6 @@ class HasPoolManager(PHasPoolManager):
     def __init__(self, ha=None, cliname=None, cliha=None):
         self.poolManager = TxnPoolManager(self, ha=ha, cliname=cliname,
                                           cliha=cliha)
-        self.requestExecuter[POOL_LEDGER_ID] = \
-            self.poolManager.executePoolTxnBatch
 
 
 class TxnPoolManager(PTxnPoolManager):
