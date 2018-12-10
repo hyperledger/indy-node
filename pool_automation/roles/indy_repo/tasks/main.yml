@@ -1,4 +1,5 @@
 ---
+# TODO it might make sense to split the role into indy_node_repo and indy_sdk_repo
 - name: Install HTTPS support for apt
   apt:
     name:
@@ -6,12 +7,14 @@
       - ca-certificates
     update_cache: true
   become: true
+  when: indy_repo_node or indy_repo_sdk
 
 - name: Add indy repo key
   apt_key:
     keyserver: keyserver.ubuntu.com
     id: 3B75B82CF342D9FB
   become: true
+  when: indy_repo_node or indy_repo_sdk
 
 - name: Add repository for indy node
   apt_repository:

@@ -1,5 +1,5 @@
 ---
-indy_repo_node: true
+indy_repo_node: false
 indy_repo_node_channels: master
 
 indy_repo_sdk: false
