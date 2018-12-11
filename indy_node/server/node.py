@@ -115,7 +115,7 @@ class Node(PlenumNode, HasPoolManager):
         when = now + timedelta(seconds=timeout)
         self.restarter.requestRestart(when)
 
-    def getPrimaryStorage(self):
+    def getDomainLedger(self):
         """
         This is usually an implementation of Ledger
         """
