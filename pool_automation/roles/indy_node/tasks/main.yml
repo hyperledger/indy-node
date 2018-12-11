@@ -21,7 +21,6 @@
     name: indy_repo
   vars:
     indy_repo_node_channels: "{{ indy_node_channel }}"
-    indy_repo_node: true
 
 - name: Install indy node
   apt:

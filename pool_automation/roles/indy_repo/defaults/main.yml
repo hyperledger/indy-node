@@ -1,7 +1,4 @@
 ---
-indy_repo_node: false
-indy_repo_node_channels: master
-
-indy_repo_sdk: false
-indy_repo_sdk_channels: master
+indy_repo_node_channels: null
+indy_repo_sdk_channels: null
 ...

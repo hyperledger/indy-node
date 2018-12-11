@@ -19,7 +19,6 @@
     name: indy_repo
   vars:
     indy_repo_sdk_channels: "{{ indy_cli_channel }}"
-    indy_repo_sdk: true
 
 - name: Install indy cli
   apt:

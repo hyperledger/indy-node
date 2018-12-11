@@ -19,7 +19,6 @@
     name: indy_repo
   vars:
     indy_repo_sdk_channels: "{{ perf_scripts_indy_sdk_channel }}"
-    indy_repo_sdk: true
 
 # TODO rename of split
 - name: Install pip and other required packages
