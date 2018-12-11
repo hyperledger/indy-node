@@ -10,7 +10,7 @@ def test_validation_cred_def_not_present(build_revoc_def_by_default,
                                          create_node_and_not_start):
     node = create_node_and_not_start
     req = build_revoc_def_by_default
-    req_handler = node.getDomainReqHandler()
+    req_handler = node.init_domain_req_handler()
     with pytest.raises(InvalidClientRequest, match="There is no any CRED_DEF"):
         req_handler.validate(Request(**req))
 
@@ -18,7 +18,7 @@ def test_validation_cred_def_not_present(build_revoc_def_by_default,
 def test_invalid_cred_def_id_format(build_revoc_def_by_default,
                                     create_node_and_not_start):
     node = create_node_and_not_start
-    req_handler = node.getDomainReqHandler()
+    req_handler = node.init_domain_req_handler()
     req = build_revoc_def_by_default
 
     req['operation'][CRED_DEF_ID] = ":".join(3 * [randomString(10)])

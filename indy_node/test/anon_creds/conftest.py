@@ -1,7 +1,6 @@
 import pytest
 import time
 import json
-from contextlib import ExitStack
 
 from indy_common.state.domain import make_state_path_for_claim_def
 from plenum.common.util import randomString
@@ -16,7 +15,6 @@ from indy_common.state import domain
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.types import f, OPERATION
-from plenum.test.helper import create_new_test_node
 
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
 
@@ -42,7 +40,7 @@ def add_revoc_def_by_default(create_node_and_not_start,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
-    req_handler = node.getDomainReqHandler()
+    req_handler = node.init_domain_req_handler()
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=int(time.time()),
                               seq_no=node.domainLedger.seqNo + 1)
@@ -100,7 +98,7 @@ def add_revoc_def_by_demand(create_node_and_not_start,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
-    req_handler = node.getDomainReqHandler()
+    req_handler = node.init_domain_req_handler()
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=int(time.time()),
                               seq_no=node.domainLedger.seqNo + 1)

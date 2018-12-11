@@ -24,7 +24,7 @@ def test_revoc_reg_delta_schema_validation_missed_fields(build_get_revoc_reg_del
 def test_revoc_reg_delta_from_greater_then_to(create_node_and_not_start,
                                               build_get_revoc_reg_delta):
     node = create_node_and_not_start
-    req_handler = node.getDomainReqHandler()
+    req_handler = node.init_domain_req_handler()
     req = build_get_revoc_reg_delta
     req['operation'][FROM] = 100
     req['operation'][TO] = 20

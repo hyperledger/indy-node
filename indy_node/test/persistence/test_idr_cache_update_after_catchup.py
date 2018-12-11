@@ -33,7 +33,7 @@ def test_idr_cache_update_after_catchup(txnPoolNodeSet,
                                         tconf, tdir, allPluginsPath)
     txnPoolNodeSet[-1] = restarted_node
     waitNodeDataEquality(looper, restarted_node, *txnPoolNodeSet[:-1])
-    req_handler = restarted_node.getDomainReqHandler()
+    req_handler = restarted_node.init_domain_req_handler()
     root_hash = req_handler.ts_store.get_equal_or_prev(get_txn_time(result['result']))
     key = domain.make_state_path_for_nym(idr)
     from_state = req_handler.state.get_for_root_hash(root_hash=root_hash,

@@ -16,7 +16,7 @@ def test_get_revoc_reg_entry_without_any_rev_entry(send_revoc_reg_def_by_default
                                                    txnPoolNodeSet):
     req = build_get_revoc_reg_entry
     req[OPERATION][TIMESTAMP] = int(time.time()) + 2
-    req_handler = txnPoolNodeSet[0].getDomainReqHandler()
+    req_handler = txnPoolNodeSet[0].init_domain_req_handler()
     result = req_handler.handleGetRevocRegReq(SafeRequest(**req))
     assert result[DATA] is None
     assert result[f.SEQ_NO.nm] is None

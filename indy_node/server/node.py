@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-import dateutil.tz
+from datetime import timedelta
 
 from typing import Iterable, List
 
@@ -95,9 +94,9 @@ class Node(PlenumNode):
                          storage=storage,
                          config=config)
 
-        self.upgrader = self.getUpgrader()
-        self.restarter = self.getRestarter()
-        self.poolCfg = self.getPoolConfig()
+        self.upgrader = self.init_upgrader()
+        self.restarter = self.init_restarter()
+        self.poolCfg = self.init_pool_config()
 
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
@@ -105,7 +104,7 @@ class Node(PlenumNode):
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
 
-    def getPoolConfig(self):
+    def init_pool_config(self):
         return PoolConfig(self.configLedger)
 
     def on_inconsistent_3pc_state(self):
@@ -116,7 +115,7 @@ class Node(PlenumNode):
         when = now + timedelta(seconds=timeout)
         self.restarter.requestRestart(when)
 
-    def getPrimaryStorage(self):
+    def init_domain_ledger(self):
         """
         This is usually an implementation of Ledger
         """
@@ -136,7 +135,7 @@ class Node(PlenumNode):
                                dataDir=self.dataLocation,
                                config=self.config)
 
-    def getUpgrader(self):
+    def init_upgrader(self):
         return Upgrader(self.id,
                         self.name,
                         self.dataLocation,
@@ -145,21 +144,21 @@ class Node(PlenumNode):
                         actionFailedCallback=self.postConfigLedgerCaughtUp,
                         action_start_callback=self.notify_upgrade_start)
 
-    def getRestarter(self):
+    def init_restarter(self):
         return Restarter(self.id,
                          self.name,
                          self.dataLocation,
                          self.config)
 
-    def getPoolReqHandler(self):
+    def init_pool_req_handler(self):
         return PoolRequestHandler(self.poolLedger,
                                   self.states[POOL_LEDGER_ID],
                                   self.states,
                                   self.getIdrCache())
 
-    def getDomainReqHandler(self):
+    def init_domain_req_handler(self):
         if self.attributeStore is None:
-            self.attributeStore = self.loadAttributeStore()
+            self.attributeStore = self.init_attribute_store()
         return DomainReqHandler(self.domainLedger,
                                 self.states[DOMAIN_LEDGER_ID],
                                 self.config,
@@ -169,7 +168,7 @@ class Node(PlenumNode):
                                 self.bls_bft.bls_store,
                                 self.getStateTsDbStorage())
 
-    def getConfigReqHandler(self):
+    def init_config_req_handler(self):
         return ConfigReqHandler(self.configLedger,
                                 self.states[CONFIG_LEDGER_ID],
                                 self.getIdrCache(),
@@ -187,7 +186,7 @@ class Node(PlenumNode):
                                      )
         return self.idrCache
 
-    def loadAttributeStore(self):
+    def init_attribute_store(self):
         return AttributeStore(
             initKeyValueStorage(
                 self.config.attrStorage,
@@ -313,8 +312,8 @@ class Node(PlenumNode):
     def can_write_txn(self, txn_type):
         return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE, POOL_CONFIG]
 
-    def executeDomainTxns(self, ppTime, reqs: List[Request], stateRoot,
-                          txnRoot) -> List:
+    def execute_domain_txns(self, ppTime, reqs: List[Request], stateRoot,
+                            txnRoot) -> List:
         """
         Execute the REQUEST sent to this Node
 
