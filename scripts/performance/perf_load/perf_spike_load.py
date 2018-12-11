@@ -13,6 +13,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--file', required=False, default="spike_log.csv",
                     help="Output CSV file name with logs", dest="log_file")
 
+parser.add_argument('--spike_config', required=False, default="config_perf_spike_load.yml",
+                    help="Path to config for spike load test in YML format", dest="spike_config")
 
 def create_output_directory(folder_path):
     output_folder = os.path.join(folder_path[0], *folder_path[1:])
@@ -113,7 +115,7 @@ def run_stable_process(process_name, config, process_time, interval=0):
 
 
 def start_profile():
-    with open("config_perf_spike_load.yml") as file:
+    with open(args.spike_config) as file:
         test_config = yaml.load(file)
     logging_folder = create_output_directory([test_config["common"]["out_dir"], "Spike_log"])
     logging_file_path = os.path.join(logging_folder, args.log_file)
