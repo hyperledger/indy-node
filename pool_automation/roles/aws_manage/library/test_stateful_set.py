@@ -64,7 +64,8 @@ def ec2_resources(request, regions, ec2):
             market_spot=(request.config.getoption("--market-type") == 'spot'),
             spot_max_price=None,
             # TODO docs
-            ebs_volume_size=9
+            ebs_volume_size=9,
+            ebs_volume_type='gp2',
         )
 
     def manage_key_pair(ec2, present, params):
@@ -246,6 +247,7 @@ def check_instance_params(inst, params, ec2cl=None, price=None):
     volumes = list(inst.volumes.all())
     assert len(volumes) == 1
     assert volumes[0].size == params.ebs_volume_size
+    assert volumes[0].volume_type == params.ebs_volume_type
     check_tags(volumes[0])
 
     # market options

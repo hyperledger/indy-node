@@ -14,7 +14,7 @@ HostInfo = namedtuple('HostInfo', 'tag_id public_ip user')
 InstanceParams = namedtuple(
     'InstanceParams',
     'project namespace group add_tags key_name security_group '
-    'type_name market_spot spot_max_price ebs_volume_size')
+    'type_name market_spot spot_max_price ebs_volume_size ebs_volume_type')
 
 ManageResults = namedtuple('ManageResults', 'changed active terminated')
 
@@ -185,8 +185,11 @@ class AwsEC2Launcher(AwsEC2Waiter):
             'MaxPrice',
         )
 
+        # Note: default value type depends on region for API calls
+        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html
         ebs_opts_list = (
             'VolumeSize',
+            'VolumeType',
         )
 
         launch_spec = {
@@ -322,6 +325,7 @@ def run(module):
         market_spot=params['market_spot'],
         spot_max_price=params['spot_max_price'],
         ebs_volume_size=params['ebs_volume_size'],
+        ebs_volume_type=params['ebs_volume_type'],
     )
 
     res = manage_instances(
@@ -348,6 +352,7 @@ if __name__ == '__main__':
         market_spot=dict(type='bool', required=False, default=False),
         spot_max_price=dict(type='str', required=False, default=None),
         ebs_volume_size=dict(type='int', required=False, default=None),
+        ebs_volume_type=dict(type='str', required=False, default=None),
     )
 
     module = AnsibleModule(
