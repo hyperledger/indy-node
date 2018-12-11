@@ -20,9 +20,9 @@
       command: "ssh-keyscan -H {{ item.item }}"
       when: item.rc != 0
       register: host_keys
-      # ssh-keyscan fails silently returning nothing with 0 exit code
       loop: "{{ known_hosts.results }}"
-      until: host_keys.rc == 0 and (not not host_keys.stdout|trim)
+      # ssh-keyscan fails silently returning nothing with 0 exit code
+      until: host_keys.rc == 0 and (host_keys.stdout|trim|d(False, True))
       retries: 5
       delay: 5
 
