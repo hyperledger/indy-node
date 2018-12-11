@@ -51,7 +51,7 @@
     virtualenv: "$HOME/{{ perf_scripts_venv_name }}"  # $HOME as a workaround
     virtualenv_python: python3
     state: present
-  when: not not perf_scripts_python3_indy_ver
+  when: perf_scripts_python3_indy_ver|d(False, True)
 
 - name: Install performance scripts from the VCS
   pip:

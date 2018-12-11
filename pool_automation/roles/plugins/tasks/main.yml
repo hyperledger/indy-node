@@ -2,7 +2,7 @@
 - name: Execute role {{ plugins_role }}
   include_role:
     name: "{{ plugins_role }}"
-  when: not not plugins_role
+  when: plugins_role|d(False, True)
 
 
 - name: Install indy plugin packages
@@ -10,5 +10,5 @@
     name: "{{ plugins_packages }}"
     update_cache: true
   become: true
-  when: not not plugins_packages
+  when: plugins_packages|d(False, True)
 ...

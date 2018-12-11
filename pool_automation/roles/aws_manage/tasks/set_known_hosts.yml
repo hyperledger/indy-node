@@ -22,7 +22,7 @@
       register: host_keys
       loop: "{{ known_hosts.results }}"
       # ssh-keyscan fails silently returning nothing with 0 exit code
-      until: host_keys.rc == 0 and (not not host_keys.stdout|trim)
+      until: host_keys.rc == 0 and (host_keys.stdout|trim|d(False, True))
       retries: 5
       delay: 5
 
