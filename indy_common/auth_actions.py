@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from indy_common.auth_constraints import AuthConstraint, AuthConstraintOr
-from indy_common.constants import ROLE
+from indy_common.constants import ROLE, NODE
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
 from abc import ABCMeta, abstractmethod
@@ -93,8 +93,8 @@ addNewTrustAnchor = AuthActionAdd(txn_type=NYM,
 
 
 addNewIdentityOwner = AuthActionAdd(txn_type=NYM,
-                                    field='*',
-                                    value='*')
+                                    field='role',
+                                    value='')
 
 
 blacklistingTrustee = AuthActionEdit(txn_type=NYM,
@@ -118,9 +118,85 @@ keyRotation = AuthActionEdit(txn_type=NYM,
                              new_value='*')
 
 
+AddSchema = AuthActionAdd(txn_type=SCHEMA,
+                          field='*',
+                          value='*')
+
+AddClaimDef = AuthActionAdd(txn_type=CLAIM_DEF,
+                            field='*',
+                            value='*')
+
+EditClaimDef = AuthActionEdit(txn_type=CLAIM_DEF,
+                              field='*',
+                              old_value='*',
+                              new_value='*')
+
+
+AddingNewNode = AuthActionAdd(txn_type=NODE,
+                              field='services',
+                              value='[VALIDATOR]')
+
+DemoteNode = AuthActionEdit(txn_type=NODE,
+                            field='services',
+                            old_value='[VALIDATOR]',
+                            new_value='[]')
+
+PromoteNode = AuthActionEdit(txn_type=NODE,
+                             field='services',
+                             old_value='[]',
+                             new_value='[VALIDATOR]')
+
+
+ChangeNodeIp = AuthActionEdit(txn_type=NODE,
+                              field='node_ip',
+                              old_value='*',
+                              new_value='*')
+
+ChangeNodePort = AuthActionEdit(txn_type=NODE,
+                                field='node_port',
+                                old_value='*',
+                                new_value='*')
+
+ChangeClientIp = AuthActionEdit(txn_type=NODE,
+                                field='client_ip',
+                                old_value='*',
+                                new_value='*')
+
+ChangeClientPort = AuthActionEdit(txn_type=NODE,
+                                  field='client_port',
+                                  old_value='*',
+                                  new_value='*')
+
+ChangeBlsKey = AuthActionEdit(txn_type=NODE,
+                              field='blskey',
+                              old_value='*',
+                              new_value='*')
+
+StartUpgrade = AuthActionAdd(txn_type=POOL_UPGRADE,
+                             field='action',
+                             value='start')
+
+CancelUpgrade = AuthActionEdit(txn_type=POOL_UPGRADE,
+                               field='action',
+                               old_value='start',
+                               new_value='cancel')
+
+PoolRestart = AuthActionAdd(txn_type=POOL_RESTART,
+                            field='action',
+                            value='*')
+
+PoolConfig = AuthActionAdd(txn_type=POOL_CONFIG,
+                           field='action',
+                           value='*')
+
+ValidatorInfo = AuthActionAdd(txn_type=VALIDATOR_INFO,
+                              field='*',
+                              value='*')
+
 auth_map = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
             addNewSteward.get_action_id(): AuthConstraint(TRUSTEE, 1),
-            addNewTrustAnchor.get_action_id(): AuthConstraint(TRUST_ANCHOR, 1),
+            addNewTrustAnchor.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
+                                                                 AuthConstraint(STEWARD, 1)]),
             addNewIdentityOwner.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                                    AuthConstraint(STEWARD, 1),
                                                                    AuthConstraint(TRUST_ANCHOR, 1)]),
@@ -129,4 +205,27 @@ auth_map = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
             blacklistingTrustAnchor.get_action_id(): AuthConstraint(TRUSTEE, 1),
             keyRotation.get_action_id(): AuthConstraint(role='*',
                                                         sig_count=1,
-                                                        need_to_be_owner=True)}
+                                                        need_to_be_owner=True),
+            AddSchema.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
+                                                         AuthConstraint(STEWARD, 1),
+                                                         AuthConstraint(TRUST_ANCHOR, 1)]),
+            AddClaimDef.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
+                                                           AuthConstraint(STEWARD, 1),
+                                                           AuthConstraint(TRUST_ANCHOR, 1)]),
+            EditClaimDef.get_action_id(): AuthConstraint('*', 1, need_to_be_owner=True),
+            AddingNewNode.get_action_id(): AuthConstraint(STEWARD, 1, need_to_be_owner=True),
+            DemoteNode.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
+                                                          AuthConstraint(STEWARD, 1, need_to_be_owner=True)]),
+            PromoteNode.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
+                                                          AuthConstraint(STEWARD, 1, need_to_be_owner=True)]),
+            ChangeNodeIp.get_action_id(): AuthConstraint(STEWARD, 1, need_to_be_owner=True),
+            ChangeNodePort.get_action_id(): AuthConstraint(STEWARD, 1, need_to_be_owner=True),
+            ChangeClientIp.get_action_id(): AuthConstraint(STEWARD, 1, need_to_be_owner=True),
+            ChangeClientPort.get_action_id(): AuthConstraint(STEWARD, 1, need_to_be_owner=True),
+            ChangeBlsKey.get_action_id(): AuthConstraint(STEWARD, 1, need_to_be_owner=True),
+            StartUpgrade.get_action_id(): AuthConstraint(TRUSTEE, 1),
+            CancelUpgrade.get_action_id(): AuthConstraint(TRUSTEE, 1),
+            PoolRestart.get_action_id(): AuthConstraint(TRUSTEE, 1),
+            PoolConfig.get_action_id(): AuthConstraint(TRUSTEE, 1),
+            ValidatorInfo.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
+                                                             AuthConstraint(STEWARD, 1)])}

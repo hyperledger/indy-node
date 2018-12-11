@@ -4,6 +4,7 @@ from indy_common.auth_constraints import AuthConstraint, AbstractAuthConstraint,
 from indy_common.auth_actions import AbstractAuthAction
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
+from plenum.common.constants import TXN_TYPE, NYM, TARGET_NYM
 
 
 class AuthRuleNotFound(Exception):
@@ -44,16 +45,30 @@ class RolesAuthorizer(AbstractAuthorizer):
     def get_sig_count(self, request: Request):
         pass
 
-    def _get_req_owner(self, request: Request):
-        return request.identifier
-
-    def _get_txn_owner(self, request: Request):
+    def _get_req_owner_for_nym(self, request: Request):
         try:
             owner = self.cache.getOwnerFor(request.identifier, isCommitted=False)
         except KeyError:
             """Not found in idrCache"""
             owner = None
         return owner
+
+    def _get_txn_owner_for_nym(self, request: Request):
+        try:
+            owner = self.cache.getOwnerFor(request.operation[TARGET_NYM], isCommitted=False)
+        except KeyError:
+            """Not found in idrCache"""
+            owner = None
+        return owner
+
+    def _get_req_owner(self, request: Request):
+        return request.identifier
+
+    def _get_txn_owner(self, request: Request):
+        txn_type = request.operation[TXN_TYPE]
+        if txn_type == NYM:
+            return self._get_txn_owner_for_nym(request)
+        return None
 
     def is_owner_accepted(self, request: Request, constraint: AuthConstraint):
         if constraint.need_to_be_owner and \

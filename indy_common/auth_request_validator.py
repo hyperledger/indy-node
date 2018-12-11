@@ -12,12 +12,12 @@ from indy_common.types import Request
 class AbstractRequestValidator(AbstractAuthorizer):
 
     @abstractmethod
-    def validate(self, request, action_list: List([AbstractAuthAction])):
+    def validate(self, request, action_list: [AbstractAuthAction]):
         raise NotImplementedError()
 
 
 class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
-    def __init__(self, config, auth_map={}, cache=None):
+    def __init__(self, config, auth_map, cache):
         CompositeAuthorizer.__init__(self)
         self.cache = cache
         self.config = config
@@ -30,7 +30,7 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
         self.register_authorizer(AndAuthorizer(), auth_constraint_id=AND_CONSTRAINT_ID)
         self.register_authorizer(OrAuthorizer(), auth_constraint_id=OR_CONSTRAINT_ID)
 
-    def validate(self, request: Request, action_list: List([AbstractAuthAction])):
+    def validate(self, request: Request, action_list: [AbstractAuthAction]):
         for action in action_list:
             action_id = action.get_action_id()
             auth_constraint = self.auth_cons_strategy.get_auth_constraint(action_id)

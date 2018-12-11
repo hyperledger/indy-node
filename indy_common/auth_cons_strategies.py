@@ -22,6 +22,8 @@ class AbstractAuthStrategy(metaclass=ABCMeta):
         r = split_action_id(from_req)
         if r.prefix != am.prefix:
             return False
+        if r.txn_type != am.txn_type:
+            return False
         if r.field != am.field and \
                 am.field != '*':
             return False
