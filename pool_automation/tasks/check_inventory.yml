@@ -6,7 +6,7 @@
       not one of specified {{ ansible_inventory_sources }}.
       Seems as wrongly autodetected.
   when:
-    - not (skip_inventory_check|default(false)|bool)
-    - inventory_dir|default(false)
+    - not (skip_inventory_check|d(false)|bool)
+    - inventory_dir|d(false)
     - (inventory_dir|realpath) not in ansible_inventory_sources
 ...
