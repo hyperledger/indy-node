@@ -37,8 +37,9 @@
     instance_type: "{{ aws_ec2_type }}"
     instance_count: "{{ aws_instance_count }}"
     market_spot: "{{ aws_ec2_market_spot }}"
-    spot_max_price: "{{ aws_ec2_spot_max_price }}"
-    ebs_volume_size: "{{ aws_ebs_volume_size|int|d(omit, True) }}"
+    spot_max_price: "{{ aws_ec2_spot_max_price|default(omit, True) }}"
+    ebs_volume_size: "{{ aws_ebs_volume_size|int|default(omit, True) }}"
+    ebs_volume_type: "{{ aws_ebs_volume_type|default(omit, True) }}"
   register: aws_ec2hosts
 
 - name: Post-Up
