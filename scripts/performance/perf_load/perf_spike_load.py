@@ -16,6 +16,7 @@ parser.add_argument('--file', required=False, default="spike_log.csv",
 parser.add_argument('--spike_config', required=False, default="config_perf_spike_load.yml",
                     help="Path to config for spike load test in YML format", dest="spike_config")
 
+
 def create_output_directory(folder_path):
     output_folder = os.path.join(folder_path[0], *folder_path[1:])
     try:
