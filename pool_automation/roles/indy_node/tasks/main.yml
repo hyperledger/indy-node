@@ -16,27 +16,11 @@
     - indy_node_pool_genesis_txns_name
     - indy_node_pool_genesis_txns_path
 
-# TODO move the following three tasks (HTTPS, sovrin key and sovrin repos)
-#      into separate role
-- name: Install HTTPS support for apt
-  apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-    update_cache: true
-  become: true
-
-- name: Add sovrin key
-  apt_key:
-    keyserver: keyserver.ubuntu.com
-    id: 3B75B82CF342D9FB
-  become: true
-
-- name: Add sovrin repositories
-  apt_repository:
-    repo: "deb https://repo.sovrin.org/deb xenial {{ indy_node_channel }}"
-    state: present
-  become: true
+- name: Install indy node repo
+  import_role:
+    name: indy_repo
+  vars:
+    indy_repo_node_channels: "{{ indy_node_channel }}"
 
 - name: Install indy node
   apt:
@@ -47,6 +31,10 @@
       - "python3-indy-crypto={{ python_indy_crypto_ver }}"
     update_cache: true
   become: true
+
+- name: Install plugins
+  import_role:
+    name: plugins
 
 - name: Enable node service
   service:

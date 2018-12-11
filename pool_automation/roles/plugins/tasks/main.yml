@@ -1,0 +1,14 @@
+---
+- name: Execute role {{ plugins_role }}
+  include_role:
+    name: "{{ plugins_role }}"
+  when: plugins_role|d(False, True)
+
+
+- name: Install indy plugin packages
+  apt:
+    name: "{{ plugins_packages }}"
+    update_cache: true
+  become: true
+  when: plugins_packages|d(False, True)
+...
