@@ -3,6 +3,8 @@ import dateutil.tz
 
 from typing import Iterable, List
 
+from indy_node.server.pool_req_handler import PoolRequestHandler
+
 from indy_node.server.action_req_handler import ActionReqHandler
 from indy_node.server.restarter import Restarter
 from ledger.compact_merkle_tree import CompactMerkleTree
@@ -10,7 +12,7 @@ from ledger.genesis_txn.genesis_txn_initiator_from_file import GenesisTxnInitiat
 from indy_node.server.validator_info_tool import ValidatorNodeInfoTool
 
 from plenum.common.constants import VERSION, NODE_PRIMARY_STORAGE_SUFFIX, \
-    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE
+    ENC, RAW, DOMAIN_LEDGER_ID, CURRENT_PROTOCOL_VERSION, FORCE, POOL_LEDGER_ID
 from plenum.common.ledger import Ledger
 from plenum.common.txn_util import get_type, get_payload_data, TxnUtilConfig
 from plenum.common.types import f, \
@@ -31,16 +33,14 @@ from indy_node.server.client_authn import LedgerBasedAuthNr
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.domain_req_handler import DomainReqHandler
 from indy_node.server.node_authn import NodeAuthNr
-from indy_node.server.pool_manager import HasPoolManager
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
 from stp_core.common.log import getlogger
 
-
 logger = getlogger()
 
 
-class Node(PlenumNode, HasPoolManager):
+class Node(PlenumNode):
     keygenScript = "init_indy_keys"
     client_request_class = SafeRequest
     TxnUtilConfig.client_request_class = Request
@@ -59,7 +59,7 @@ class Node(PlenumNode, HasPoolManager):
                  plugins_dir: str = None,
                  node_info_dir: str = None,
                  primaryDecider=None,
-                 pluginPaths: Iterable[str]=None,
+                 pluginPaths: Iterable[str] = None,
                  storage=None,
                  config=None):
         config = config or getConfig()
@@ -95,6 +95,10 @@ class Node(PlenumNode, HasPoolManager):
                          storage=storage,
                          config=config)
 
+        self.upgrader = self.getUpgrader()
+        self.restarter = self.getRestarter()
+        self.poolCfg = self.getPoolConfig()
+
         # TODO: ugly line ahead, don't know how to avoid
         self.clientAuthNr = clientAuthNr or self.defaultAuthNr()
 
@@ -103,9 +107,6 @@ class Node(PlenumNode, HasPoolManager):
 
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)
-
-    def initPoolManager(self, ha, cliname, cliha):
-        HasPoolManager.__init__(self, ha, cliname, cliha)
 
     def on_inconsistent_3pc_state(self):
         timeout = self.config.INCONSISTENCY_WATCHER_NETWORK_TIMEOUT
@@ -150,6 +151,12 @@ class Node(PlenumNode, HasPoolManager):
                          self.dataLocation,
                          self.config)
 
+    def getPoolReqHandler(self):
+        return PoolRequestHandler(self.poolLedger,
+                                  self.states[POOL_LEDGER_ID],
+                                  self.states,
+                                  self.getIdrCache())
+
     def getDomainReqHandler(self):
         if self.attributeStore is None:
             self.attributeStore = self.loadAttributeStore()
@@ -161,6 +168,14 @@ class Node(PlenumNode, HasPoolManager):
                                 self.attributeStore,
                                 self.bls_bft.bls_store,
                                 self.getStateTsDbStorage())
+
+    def getConfigReqHandler(self):
+        return ConfigReqHandler(self.configLedger,
+                                self.states[CONFIG_LEDGER_ID],
+                                self.getIdrCache(),
+                                self.upgrader,
+                                self.poolManager,
+                                self.poolCfg)
 
     def getIdrCache(self):
         if self.idrCache is None:
@@ -180,20 +195,6 @@ class Node(PlenumNode, HasPoolManager):
                 self.config.attrDbName,
                 db_config=self.config.db_attr_db_config)
         )
-
-    def setup_config_req_handler(self):
-        self.upgrader = self.getUpgrader()
-        self.restarter = self.getRestarter()
-        self.poolCfg = self.getPoolConfig()
-        super().setup_config_req_handler()
-
-    def getConfigReqHandler(self):
-        return ConfigReqHandler(self.configLedger,
-                                self.states[CONFIG_LEDGER_ID],
-                                self.getIdrCache(),
-                                self.upgrader,
-                                self.poolManager,
-                                self.poolCfg)
 
     def get_action_req_handler(self):
         return ActionReqHandler(self.getIdrCache(),
@@ -337,7 +338,7 @@ class Node(PlenumNode, HasPoolManager):
             # The key needs to be present and not None
             key = RAW if (RAW in txn_data and txn_data[RAW] is not None) else \
                 ENC if (ENC in txn_data and txn_data[ENC] is not None) else \
-                None
+                    None
             if key:
                 txn_data[key] = self.attributeStore.get(txn_data[key])
         return txn
