@@ -5,7 +5,7 @@ from indy_common.constants import CRED_DEF_ID, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_S
     PREV_ACCUM, REVOKED
 from indy_common.state.domain import make_state_path_for_claim_def
 from indy_node.test.helper import sdk_add_attribute_and_check
-from indy_common.auth import Authoriser
+from indy_common.authorize import Authoriser
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check, sdk_send_signed_requests, \

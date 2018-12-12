@@ -1,14 +1,10 @@
 from abc import ABCMeta
 
-from indy_common.auth_constraints import AuthConstraint, AbstractAuthConstraint, ROLE_CONSTRAINT_ID, AuthConstraintAnd
-from indy_common.auth_actions import AbstractAuthAction
+from indy_common.authorize.auth_actions import AbstractAuthAction
+from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, ROLE_CONSTRAINT_ID, \
+    AuthConstraintAnd
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
-from plenum.common.constants import TXN_TYPE, NYM, TARGET_NYM
-
-
-class AuthRuleNotFound(Exception):
-    pass
 
 
 class AuthValidationError(Exception):
@@ -23,7 +19,8 @@ class AbstractAuthorizer(metaclass=ABCMeta):
     def authorize(self,
                   request: Request,
                   auth_constraint: AbstractAuthConstraint,
-                  auth_action: AbstractAuthAction)-> (bool, str):
+                  auth_action: AbstractAuthAction,
+                  is_owner: bool = False)-> (bool, str):
         raise NotImplementedError()
 
 
@@ -45,34 +42,8 @@ class RolesAuthorizer(AbstractAuthorizer):
     def get_sig_count(self, request: Request):
         pass
 
-    def _get_req_owner_for_nym(self, request: Request):
-        try:
-            owner = self.cache.getOwnerFor(request.identifier, isCommitted=False)
-        except KeyError:
-            """Not found in idrCache"""
-            owner = None
-        return owner
-
-    def _get_txn_owner_for_nym(self, request: Request):
-        try:
-            owner = self.cache.getOwnerFor(request.operation[TARGET_NYM], isCommitted=False)
-        except KeyError:
-            """Not found in idrCache"""
-            owner = None
-        return owner
-
-    def _get_req_owner(self, request: Request):
-        return request.identifier
-
-    def _get_txn_owner(self, request: Request):
-        txn_type = request.operation[TXN_TYPE]
-        if txn_type == NYM:
-            return self._get_txn_owner_for_nym(request)
-        return None
-
-    def is_owner_accepted(self, request: Request, constraint: AuthConstraint):
-        if constraint.need_to_be_owner and \
-                self._get_req_owner(request) != self._get_txn_owner(request):
+    def is_owner_accepted(self, constraint: AuthConstraint, is_owner: bool=False):
+        if constraint.need_to_be_owner and not is_owner:
             return False
         return True
 
@@ -88,12 +59,16 @@ class RolesAuthorizer(AbstractAuthorizer):
 
         return sig_count >= auth_constraint.sig_count
 
-    def authorize(self, request: Request, auth_constraint: AuthConstraint, auth_action: AbstractAuthAction=None):
+    def authorize(self,
+                  request: Request,
+                  auth_constraint: AuthConstraint,
+                  auth_action: AbstractAuthAction=None,
+                  is_owner: bool=False):
         if not self.is_role_accepted(request, auth_constraint):
             return False, "role is not accepted"
         if not self.is_sig_count_accepted(request, auth_constraint):
             return False, "count of signatures is not accepted"
-        if not self.is_owner_accepted(request, auth_constraint):
+        if not self.is_owner_accepted(auth_constraint, is_owner):
             return False, "actor must be owner"
         return True, ""
 
@@ -107,37 +82,52 @@ class CompositeAuthorizer(AbstractAuthorizer):
         authorizer.parent = self
         self.authorizers.setdefault(auth_constraint_id, []).append(authorizer)
 
-    def authorize(self, request: Request, auth_constraint: AuthConstraint, auth_action: AbstractAuthAction):
+    def authorize(self,
+                  request: Request,
+                  auth_constraint: AuthConstraint,
+                  auth_action: AbstractAuthAction,
+                  is_owner: bool = False):
         for authorizer in self.authorizers.get(auth_constraint.constraint_id):
             authorized, reason = authorizer.authorize(request=request,
                                                       auth_constraint=auth_constraint,
-                                                      auth_action=auth_action)
+                                                      auth_action=auth_action,
+                                                      is_owner=is_owner)
             if not authorized:
                 raise AuthValidationError("Validation error with reason: {}".format(reason))
             return True, ""
 
 
-class AndAuthorizer(CompositeAuthorizer):
+class AndAuthorizer(AbstractAuthorizer):
 
-    def authorize(self, request, auth_constraint: AuthConstraintAnd, auth_action: AbstractAuthAction):
+    def authorize(self,
+                  request,
+                  auth_constraint: AuthConstraintAnd,
+                  auth_action: AbstractAuthAction,
+                  is_owner: bool = False):
         for constraint in auth_constraint.auth_constraints:
             authorized, reason = self.parent.authorize(request=request,
                                                        auth_constraint=constraint,
-                                                       auth_action=auth_action)
+                                                       auth_action=auth_action,
+                                                       is_owner=is_owner)
             if not authorized:
                 raise AuthValidationError("Validation error with reason: {}".format(reason))
         return True, ""
 
 
-class OrAuthorizer(CompositeAuthorizer):
+class OrAuthorizer(AbstractAuthorizer):
 
-    def authorize(self, request, auth_constraint: AuthConstraintAnd, auth_action: AbstractAuthAction):
+    def authorize(self,
+                  request: Request,
+                  auth_constraint: AuthConstraintAnd,
+                  auth_action: AbstractAuthAction,
+                  is_owner: bool = False):
         successes = []
         for constraint in auth_constraint.auth_constraints:
             try:
                 self.parent.authorize(request=request,
                                       auth_constraint=constraint,
-                                      auth_action=auth_action)
+                                      auth_action=auth_action,
+                                      is_owner=is_owner)
             except AuthValidationError:
                 pass
             else:

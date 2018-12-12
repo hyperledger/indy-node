@@ -6,7 +6,7 @@ from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES, \
 
 from plenum.common.ledger import Ledger
 from plenum.server.pool_req_handler import PoolRequestHandler as PHandler
-from indy_common.auth import Authoriser
+from indy_common.authorize import Authoriser
 from indy_common.constants import NODE
 from indy_node.persistence.idr_cache import IdrCache
 from state.state import State

@@ -5,7 +5,7 @@ from plenum.common.exceptions import InvalidClientRequest, \
 from plenum.common.types import f
 from plenum.server.req_handler import RequestHandler
 from plenum.common.constants import TXN_TYPE, DATA
-from indy_common.auth import Authoriser
+from indy_common.authorize import Authoriser
 from indy_common.constants import ACTION, POOL_RESTART, VALIDATOR_INFO
 from indy_common.roles import Roles
 from indy_common.types import Request

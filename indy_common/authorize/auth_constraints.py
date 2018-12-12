@@ -8,27 +8,26 @@ OR_CONSTRAINT_ID = 'OR'
 
 
 class AbstractAuthConstraint(metaclass=ABCMeta):
-    def __init__(self, role, sig_count, need_to_be_owner=False, metadata={}):
-        self.role = role
-        self.sig_count = sig_count
-        self.need_to_be_owner = need_to_be_owner
-        self.metadata = metadata
+    def __init__(self):
         self.constraint_id = ''
 
 
 class AuthConstraint(AbstractAuthConstraint):
     def __init__(self, role, sig_count, need_to_be_owner=False, metadata={}):
-        super().__init__(role, sig_count, need_to_be_owner=need_to_be_owner, metadata=metadata)
+        self.role = role
+        self.sig_count = sig_count
+        self.need_to_be_owner = need_to_be_owner
+        self.metadata = metadata
         self.constraint_id = ROLE_CONSTRAINT_ID
 
 
-class AuthConstraintAnd:
+class AuthConstraintAnd(AbstractAuthConstraint):
     def __init__(self, auth_constraints):
         self.auth_constraints = auth_constraints
         self.constraint_id = AND_CONSTRAINT_ID
 
 
-class AuthConstraintOr:
+class AuthConstraintOr(AbstractAuthConstraint):
     def __init__(self, auth_constraints):
         self.auth_constraints = auth_constraints
         self.constraint_id = OR_CONSTRAINT_ID

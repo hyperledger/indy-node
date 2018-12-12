@@ -1,12 +1,33 @@
 import pytest
+import time
 
-from indy_common.auth_constraints import AuthConstraint, AND_CONSTRAINT_ID, OR_CONSTRAINT_ID, AuthConstraintAnd, \
+from indy_common.authorize.auth_constraints import AND_CONSTRAINT_ID, OR_CONSTRAINT_ID, AuthConstraint, AuthConstraintAnd, \
     AuthConstraintOr
-from indy_common.authorizer import CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, OrAuthorizer, \
+from indy_common.authorize.authorizer import CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, OrAuthorizer, \
     AuthValidationError
 from indy_common.types import Request
+from indy_node.persistence.idr_cache import IdrCache
 from plenum.common.constants import CURRENT_PROTOCOL_VERSION
 from plenum.test.helper import randomOperation
+from storage.kv_in_memory import KeyValueStorageInMemory
+
+
+@pytest.fixture(scope='module')
+def req_auth():
+    return Request(identifier="some_identifier",
+                   reqId=1,
+                   operation=randomOperation(),
+                   signature="signature",
+                   protocolVersion=CURRENT_PROTOCOL_VERSION)
+
+
+@pytest.fixture(scope='module')
+def idr_cache(req_auth):
+    cache = IdrCache("Cache",
+                     KeyValueStorageInMemory())
+    cache.set(req_auth.identifier, 1, int(time.time()), role="SomeRole",
+              verkey="SomeVerkey", isCommitted=False)
+    return cache
 
 
 @pytest.fixture(scope='module')

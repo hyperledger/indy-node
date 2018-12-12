@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABCMeta
 
-from indy_common.auth_constraints import AbstractAuthConstraint
-from indy_common.auth_actions import split_action_id
+from indy_common.authorize.auth_actions import split_action_id
+from indy_common.authorize.auth_constraints import AbstractAuthConstraint
 
 
 class AbstractAuthStrategy(metaclass=ABCMeta):
