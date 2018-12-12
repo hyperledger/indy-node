@@ -16,6 +16,7 @@ def test_get_action_id_action_edit(action_edit):
                                                             new_value='new_value',
                                                             prefix=EDIT_PREFIX)
 
+
 def test_split_action_id():
     origin = ActionDef('PREFIX', 'SomeType', 'some_field', 'old_value', 'new_value')
     splitted_action = split_action_id(compile_action_id(txn_type='SomeType',

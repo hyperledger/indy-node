@@ -47,7 +47,7 @@ def test_is_accepted_by_the_same(is_accepted):
 
 def test_not_is_accepted_by_prefix(is_accepted):
     assert not is_accepted("PREFIX--TYPE--FIELD--OLD_VALUE--NEW_VALUE",
-                         "aaPREFIX--TYPE--FIELD--OLD_VALUE--NEW_VALUE")
+                           "aaPREFIX--TYPE--FIELD--OLD_VALUE--NEW_VALUE")
 
 
 def test_not_is_accepted_by_type(is_accepted):
@@ -58,6 +58,7 @@ def test_not_is_accepted_by_type(is_accepted):
 def test_not_is_accepted_by_field(is_accepted):
     assert not is_accepted("PREFIX--TYPE--FIELD--OLD_VALUE--NEW_VALUE",
                            "PREFIX--TYPE--aaFIELD--OLD_VALUE--NEW_VALUE")
+
 
 def test_not_is_accepted_by_old_value(is_accepted):
     assert not is_accepted("PREFIX--TYPE--FIELD--OLD_VALUE--NEW_VALUE",

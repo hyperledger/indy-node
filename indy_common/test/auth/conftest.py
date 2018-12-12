@@ -14,7 +14,6 @@ from plenum.test.helper import randomOperation
 from storage.kv_in_memory import KeyValueStorageInMemory
 
 
-
 OTHER_IDENTIFIER = "some_other_identifier"
 
 
