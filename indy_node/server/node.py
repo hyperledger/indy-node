@@ -336,8 +336,7 @@ class Node(PlenumNode):
             txn_data = get_payload_data(txn)
             # The key needs to be present and not None
             key = RAW if (RAW in txn_data and txn_data[RAW] is not None) else \
-                ENC if (ENC in txn_data and txn_data[ENC] is not None) else \
-                    None
+                ENC if (ENC in txn_data and txn_data[ENC] is not None) else None
             if key:
                 txn_data[key] = self.attributeStore.get(txn_data[key])
         return txn
