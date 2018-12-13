@@ -19,24 +19,9 @@ from storage.kv_in_memory import KeyValueStorageInMemory
 OTHER_IDENTIFIER = "some_other_identifier"
 
 
-@pytest.fixture(scope='function', params=[STEWARD, TRUSTEE, TRUST_ANCHOR, None])
-def role(request):
-    return request.param
-
-
 @pytest.fixture(scope='function', params=[True, False])
 def is_owner(request):
     return request.param
-
-
-@pytest.fixture(scope='function', params=[None, "value1"])
-def old_values(request):
-    return request.param
-
-
-@pytest.fixture(scope='module')
-def initialized_auth_map():
-    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, False)
 
 
 @pytest.fixture(scope='function')
