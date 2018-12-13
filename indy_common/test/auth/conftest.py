@@ -9,9 +9,10 @@ from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from plenum.common.constants import STEWARD, TRUSTEE
 
-from indy_common.constants import TRUST_ANCHOR
+from indy_common.constants import TRUST_ANCHOR, LOCAL_AUTH_POLICY
 from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.test.helper import randomOperation
+from plenum.test.testing_utils import FakeSomething
 from storage.kv_in_memory import KeyValueStorageInMemory
 
 
@@ -70,13 +71,13 @@ def idr_cache():
 
 @pytest.fixture(scope='module')
 def write_auth_req_validator(idr_cache):
-    validator = WriteRequestValidator(config={},
+    validator = WriteRequestValidator(config=FakeSomething(authPolicy=LOCAL_AUTH_POLICY),
                                       auth_map=authMap,
                                       cache=idr_cache)
     return validator
 
 
-@pytest.fixture(scope='module', params=["trustee_identifier", "steward_identifier", "trust_anchor_identifier"])
+@pytest.fixture(scope='module', params=["trustee_identifier", "steward_identifier", "trust_anchor_identifier", OTHER_IDENTIFIER])
 def identifier(request):
     return request.param
 

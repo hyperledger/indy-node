@@ -1,10 +1,11 @@
 from abc import abstractmethod
 
-from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy
+from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy, ConfigLedgerAuthStrategy
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AND_CONSTRAINT_ID, OR_CONSTRAINT_ID, ROLE_CONSTRAINT_ID
 from indy_common.authorize.authorizer import AbstractAuthorizer, CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, \
     OrAuthorizer, AuthValidationError
+from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
 from indy_common.types import Request
 from plenum.common.exceptions import UnauthorizedClientRequest
 from stp_core.common.log import getlogger
@@ -57,4 +58,7 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
 
     def create_auth_strategy(self):
         """depends on config"""
-        return LocalAuthStrategy(self.auth_map)
+        if self.config.authPolicy == LOCAL_AUTH_POLICY:
+            return LocalAuthStrategy(self.auth_map)
+        elif self.config.authPolicy == CONFIG_LEDGER_AUTH_POLICY:
+            return ConfigLedgerAuthStrategy(auth_map=self.auth_map)
