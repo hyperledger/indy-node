@@ -44,10 +44,11 @@ class AbstractAuthAction(metaclass=ABCMeta):
 
 
 class AuthActionAdd(AbstractAuthAction):
-    def __init__(self, txn_type, field=None, value=None):
+    def __init__(self, txn_type, field=None, value=None, is_owner=True):
         self.txn_type = txn_type
         self.field = field
         self.value = value
+        self.is_owner = is_owner
 
     def get_action_id(self):
         return compile_action_id(txn_type=self.txn_type,
@@ -58,11 +59,12 @@ class AuthActionAdd(AbstractAuthAction):
 
 
 class AuthActionEdit(AbstractAuthAction):
-    def __init__(self, txn_type, field=None, old_value=None, new_value=None):
+    def __init__(self, txn_type, field=None, old_value=None, new_value=None, is_owner=True):
         self.txn_type = txn_type
         self.field = field
         self.old_value = old_value
         self.new_value = new_value
+        self.is_owner = is_owner
 
     def get_action_id(self):
         return compile_action_id(txn_type=self.txn_type,

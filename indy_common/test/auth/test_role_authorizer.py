@@ -1,6 +1,7 @@
 import pytest
 import time
 
+from indy_common.authorize.auth_actions import AuthActionAdd
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.authorize.authorizer import RolesAuthorizer
 from indy_common.types import Request
@@ -53,7 +54,7 @@ def test_role_authorizer_is_owner_accepted(idr_cache, is_owner):
     authorized = is_owner
     assert authorized == authorizer.is_owner_accepted(
         AuthConstraint(role="SomeRole", sig_count=1, need_to_be_owner=True),
-        is_owner=is_owner)
+        AuthActionAdd(txn_type=NYM, field='some_field', value='some_value', is_owner=is_owner))
 
 
 def test_role_authorizer_authorize_with_owner(idr_cache, req_auth, is_owner):
@@ -64,7 +65,7 @@ def test_role_authorizer_authorize_with_owner(idr_cache, req_auth, is_owner):
     authorizer = RolesAuthorizer(cache=idr_cache)
     authorized, reason = authorizer.authorize(req,
                                               AuthConstraint(role="SomeRole", sig_count=1, need_to_be_owner=True),
-                                              is_owner=is_owner)
+                                              AuthActionAdd(txn_type=NYM, field='some_field', value='some_value', is_owner=is_owner))
     assert authorized == is_owner
 
 

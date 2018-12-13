@@ -8,7 +8,11 @@ from indy_node.persistence.idr_cache import IdrCache
 
 
 class AuthValidationError(Exception):
-    pass
+    def __init__(self, reason):
+        self.reason = reason
+
+    def __str__(self):
+        return "Validation error with reason: {}".format(self.reason)
 
 
 class AbstractAuthorizer(metaclass=ABCMeta):
@@ -19,8 +23,7 @@ class AbstractAuthorizer(metaclass=ABCMeta):
     def authorize(self,
                   request: Request,
                   auth_constraint: AbstractAuthConstraint,
-                  auth_action: AbstractAuthAction,
-                  is_owner: bool = False)-> (bool, str):
+                  auth_action: AbstractAuthAction)-> (bool, str):
         raise NotImplementedError()
 
 
@@ -42,8 +45,8 @@ class RolesAuthorizer(AbstractAuthorizer):
     def get_sig_count(self, request: Request):
         pass
 
-    def is_owner_accepted(self, constraint: AuthConstraint, is_owner: bool=False):
-        if constraint.need_to_be_owner and not is_owner:
+    def is_owner_accepted(self, constraint: AuthConstraint, action: AbstractAuthAction):
+        if constraint.need_to_be_owner and not action.is_owner:
             return False
         return True
 
@@ -62,13 +65,12 @@ class RolesAuthorizer(AbstractAuthorizer):
     def authorize(self,
                   request: Request,
                   auth_constraint: AuthConstraint,
-                  auth_action: AbstractAuthAction=None,
-                  is_owner: bool=False):
+                  auth_action: AbstractAuthAction=None):
         if not self.is_role_accepted(request, auth_constraint):
             return False, "role is not accepted"
         if not self.is_sig_count_accepted(request, auth_constraint):
             return False, "count of signatures is not accepted"
-        if not self.is_owner_accepted(auth_constraint, is_owner):
+        if not self.is_owner_accepted(auth_constraint, auth_action):
             return False, "actor must be owner"
         return True, ""
 
@@ -85,15 +87,13 @@ class CompositeAuthorizer(AbstractAuthorizer):
     def authorize(self,
                   request: Request,
                   auth_constraint: AuthConstraint,
-                  auth_action: AbstractAuthAction,
-                  is_owner: bool = False):
+                  auth_action: AbstractAuthAction):
         for authorizer in self.authorizers.get(auth_constraint.constraint_id):
             authorized, reason = authorizer.authorize(request=request,
                                                       auth_constraint=auth_constraint,
-                                                      auth_action=auth_action,
-                                                      is_owner=is_owner)
+                                                      auth_action=auth_action)
             if not authorized:
-                raise AuthValidationError("Validation error with reason: {}".format(reason))
+                raise AuthValidationError(reason)
             return True, ""
 
 
@@ -102,15 +102,13 @@ class AndAuthorizer(AbstractAuthorizer):
     def authorize(self,
                   request,
                   auth_constraint: AuthConstraintAnd,
-                  auth_action: AbstractAuthAction,
-                  is_owner: bool = False):
+                  auth_action: AbstractAuthAction):
         for constraint in auth_constraint.auth_constraints:
             authorized, reason = self.parent.authorize(request=request,
                                                        auth_constraint=constraint,
-                                                       auth_action=auth_action,
-                                                       is_owner=is_owner)
+                                                       auth_action=auth_action)
             if not authorized:
-                raise AuthValidationError("Validation error with reason: {}".format(reason))
+                raise AuthValidationError(reason)
         return True, ""
 
 
@@ -119,15 +117,13 @@ class OrAuthorizer(AbstractAuthorizer):
     def authorize(self,
                   request: Request,
                   auth_constraint: AuthConstraintAnd,
-                  auth_action: AbstractAuthAction,
-                  is_owner: bool = False):
+                  auth_action: AbstractAuthAction):
         successes = []
         for constraint in auth_constraint.auth_constraints:
             try:
                 self.parent.authorize(request=request,
                                       auth_constraint=constraint,
-                                      auth_action=auth_action,
-                                      is_owner=is_owner)
+                                      auth_action=auth_action)
             except AuthValidationError:
                 pass
             else:

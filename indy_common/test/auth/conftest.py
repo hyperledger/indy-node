@@ -10,6 +10,7 @@ from indy_node.persistence.idr_cache import IdrCache
 from plenum.common.constants import STEWARD, TRUSTEE
 
 from indy_common.constants import TRUST_ANCHOR
+from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.test.helper import randomOperation
 from storage.kv_in_memory import KeyValueStorageInMemory
 
@@ -85,3 +86,14 @@ def req(identifier):
     return Request(identifier=identifier,
                    operation=randomOperation(),
                    signature='signature')
+
+
+@pytest.fixture(scope='module')
+def write_request_validation(write_auth_req_validator):
+    def wrapped(*args, **kwargs):
+        try:
+            write_auth_req_validator.validate(*args, **kwargs)
+        except UnauthorizedClientRequest:
+            return False
+        return True
+    return wrapped

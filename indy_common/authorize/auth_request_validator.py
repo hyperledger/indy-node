@@ -6,6 +6,7 @@ from indy_common.authorize.auth_constraints import AND_CONSTRAINT_ID, OR_CONSTRA
 from indy_common.authorize.authorizer import AbstractAuthorizer, CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, \
     OrAuthorizer, AuthValidationError
 from indy_common.types import Request
+from plenum.common.exceptions import UnauthorizedClientRequest
 from stp_core.common.log import getlogger
 
 
@@ -33,7 +34,7 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
         self.register_authorizer(AndAuthorizer(), auth_constraint_id=AND_CONSTRAINT_ID)
         self.register_authorizer(OrAuthorizer(), auth_constraint_id=OR_CONSTRAINT_ID)
 
-    def validate(self, request: Request, action_list: [AbstractAuthAction], is_owner=False):
+    def validate(self, request: Request, action_list: [AbstractAuthAction]):
         for action in action_list:
             action_id = action.get_action_id()
             auth_constraint = self.auth_cons_strategy.get_auth_constraint(action_id)
@@ -41,13 +42,18 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
                 try:
                     super().authorize(request=request,
                                       auth_constraint=auth_constraint,
-                                      auth_action=action,
-                                      is_owner=is_owner)
+                                      auth_action=action)
                 except AuthValidationError as exp:
-                    logger.warning("Request {} cannot be authorized by reason: {}".format(request, exp))
-                    return False
+                    logger.warning("Request {} cannot be authorized by reason: {}".format(request, exp.reason))
+                    raise UnauthorizedClientRequest(request.identifier,
+                                                    request.reqId,
+                                                    exp.reason)
                 return True
-            return False
+            error_msg = "There is no authorization constraints for request: {}".format(request)
+            logger.warning(error_msg)
+            raise UnauthorizedClientRequest(request.identifier,
+                                            request.reqId,
+                                            error_msg)
 
     def create_auth_strategy(self):
         """depends on config"""
