@@ -4,7 +4,7 @@ from typing import List, Callable
 
 import base58
 
-from indy_common.authorize import Authoriser
+from indy_common.auth import Authoriser
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \

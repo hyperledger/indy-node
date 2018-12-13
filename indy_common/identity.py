@@ -2,7 +2,7 @@ from plenum.common.constants import TARGET_NYM, TXN_TYPE, NYM, ROLE, VERKEY, \
     CURRENT_PROTOCOL_VERSION
 from plenum.common.signer_did import DidIdentity
 from stp_core.types import Identifier
-from indy_common.authorize import Authoriser
+from indy_common.auth import Authoriser
 
 from indy_common.generates_request import GeneratesRequest
 from indy_common.constants import GET_NYM, NULL

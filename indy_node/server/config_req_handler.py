@@ -6,7 +6,7 @@ from plenum.common.exceptions import InvalidClientRequest, \
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
-from indy_common.authorize import Authoriser
+from indy_common.auth import Authoriser
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     APP_NAME, REINSTALL
 from indy_common.roles import Roles

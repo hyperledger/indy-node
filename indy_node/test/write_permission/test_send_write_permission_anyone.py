@@ -10,7 +10,7 @@ from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check, \
     sdk_get_and_check_replies, sdk_sign_and_submit_req
 from plenum.common.exceptions import RequestRejectedException
 
-from indy_common.authorize import Authoriser
+from indy_common.auth import Authoriser
 from indy.anoncreds import issuer_create_schema
 from indy.ledger import build_schema_request
 
