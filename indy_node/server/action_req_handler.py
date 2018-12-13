@@ -1,13 +1,13 @@
-import dateutil.parser
-
+from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
+from indy_common.authorize.auth_map import authMap
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.config_util import getConfig
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.types import f
 from plenum.server.req_handler import RequestHandler
 from plenum.common.constants import TXN_TYPE, DATA
-from indy_common.auth import Authoriser
 from indy_common.constants import ACTION, POOL_RESTART, VALIDATOR_INFO
-from indy_common.roles import Roles
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.restarter import Restarter
@@ -31,6 +31,8 @@ class ActionReqHandler(RequestHandler):
         self.poolManager = poolManager
         self.poolCfg = poolCfg
 
+        self.init_auth_validator()
+
     def doStaticValidation(self, request: Request):
         pass
 
@@ -42,27 +44,24 @@ class ActionReqHandler(RequestHandler):
             return
         origin = req.identifier
         try:
-            origin_role = self.idrCache.getRole(origin, isCommitted=False)
+            self.idrCache.getRole(origin, isCommitted=False)
         except BaseException:
             raise UnauthorizedClientRequest(
                 req.identifier,
                 req.reqId,
                 "Nym {} not added to the ledger yet".format(origin))
-        r = False
         if typ == POOL_RESTART:
             action = operation.get(ACTION)
-            r, msg = Authoriser.authorised(typ, origin_role,
-                                           field=ACTION,
-                                           oldVal=status,
-                                           newVal=action)
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=POOL_RESTART,
+                                                              field=ACTION,
+                                                              old_value=status,
+                                                              new_value=action)])
         elif typ == VALIDATOR_INFO:
-            r, msg = Authoriser.authorised(typ, origin_role)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier, req.reqId,
-                "{} cannot do action with type = {}".format(
-                    Roles.nameFromValue(origin_role),
-                    typ))
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=VALIDATOR_INFO,
+                                                             field='*',
+                                                             value='*')])
 
     def apply(self, req: Request, cons_time: int = None):
         logger.debug("Transaction {} with type {} started"
@@ -93,3 +92,8 @@ class ActionReqHandler(RequestHandler):
         return {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId}}
+
+    def init_auth_validator(self):
+        self.write_req_validator = WriteRequestValidator(config=getConfig(),
+                                                         auth_map=authMap,
+                                                         cache=self.idrCache)

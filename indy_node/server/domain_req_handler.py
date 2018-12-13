@@ -5,6 +5,10 @@ from typing import List, Callable
 import base58
 
 from indy_common.auth import Authoriser
+from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
+from indy_common.authorize.auth_map import authMap
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.config_util import getConfig
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
@@ -14,7 +18,6 @@ from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
 from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
     get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
     get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
-from indy_common.roles import Roles
 from indy_common.state import domain
 from indy_common.types import Request
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
@@ -65,6 +68,7 @@ class DomainReqHandler(PHandler):
         self.post_batch_rejection_handlers = []
 
         self._add_default_handlers()
+        self.init_auth_validator()
 
     def _updateStateWithSingleTxn(self, txn, isCommitted=False):
         txn_type = get_type(txn)
@@ -180,31 +184,22 @@ class DomainReqHandler(PHandler):
 
     def _validateNewNym(self, req: Request, op, originRole):
         role = op.get(ROLE)
-        r, msg = Authoriser.authorised(NYM,
-                                       originRole,
-                                       field=ROLE,
-                                       oldVal=None,
-                                       newVal=role)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "{} cannot add {}".format(
-                    Roles.nameFromValue(originRole),
-                    Roles.nameFromValue(role))
-            )
+        self.write_req_validator.validate(req,
+                                          [AuthActionAdd(txn_type=NYM,
+                                                         field=ROLE,
+                                                         value=role)])
 
     def _validateExistingNym(self, req: Request, op, originRole, nymData):
         unauthorized = False
-        reason = None
         origin = req.identifier
         owner = self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
-        isOwner = origin == owner
+        is_owner = origin == owner
 
-        if not originRole == TRUSTEE and not isOwner:
+        if not originRole == TRUSTEE and not is_owner:
             reason = '{} is neither Trustee nor owner of {}' \
                 .format(origin, op[TARGET_NYM])
-            unauthorized = True
+            raise UnauthorizedClientRequest(
+                req.identifier, req.reqId, reason)
 
         if not unauthorized:
             updateKeys = [ROLE, VERKEY]
@@ -213,17 +208,12 @@ class DomainReqHandler(PHandler):
                     newVal = op[key]
                     oldVal = nymData.get(key)
                     if oldVal != newVal:
-                        r, msg = Authoriser.authorised(NYM, originRole, field=key,
-                                                       oldVal=oldVal, newVal=newVal,
-                                                       isActorOwnerOfSubject=isOwner)
-                        if not r:
-                            unauthorized = True
-                            reason = "{} cannot update {}".\
-                                format(Roles.nameFromValue(originRole), key)
-                            break
-        if unauthorized:
-            raise UnauthorizedClientRequest(
-                req.identifier, req.reqId, reason)
+                        self.write_req_validator.validate(req,
+                                                          [AuthActionEdit(txn_type=NYM,
+                                                                          field=key,
+                                                                          old_value=oldVal,
+                                                                          new_value=newVal,
+                                                                          is_owner=is_owner)])
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier
@@ -263,21 +253,16 @@ class DomainReqHandler(PHandler):
                                        'name {} and version {}'
                                        .format(identifier, schema_name, schema_version))
         try:
-            origin_role = self.idrCache.getRole(
+            self.idrCache.getRole(
                 req.identifier, isCommitted=False) or None
         except BaseException:
             raise UnknownIdentifier(
                 req.identifier,
                 req.reqId)
-        r, msg = Authoriser.authorised(typ=SCHEMA,
-                                       actorRole=origin_role)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "{} cannot add schema".format(
-                    Roles.nameFromValue(origin_role))
-            )
+        self.write_req_validator.validate(req,
+                                          [AuthActionAdd(txn_type=SCHEMA,
+                                                         field='*',
+                                                         value='*')])
 
     def _validate_claim_def(self, req: Request):
         # we can not add a Claim Def with existent ISSUER_DID
@@ -294,7 +279,7 @@ class DomainReqHandler(PHandler):
                                        req.reqId,
                                        "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
         try:
-            origin_role = self.idrCache.getRole(
+            self.idrCache.getRole(
                 req.identifier, isCommitted=False) or None
         except BaseException:
             raise UnknownIdentifier(
@@ -302,16 +287,15 @@ class DomainReqHandler(PHandler):
                 req.reqId)
         # only owner can update claim_def,
         # because his identifier is the primary key of claim_def
-        r, msg = Authoriser.authorised(typ=CLAIM_DEF,
-                                       actorRole=origin_role,
-                                       isActorOwnerOfSubject=True)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "{} cannot add claim def".format(
-                    Roles.nameFromValue(origin_role))
-            )
+        self.write_req_validator.validate(req,
+                                          [AuthActionAdd(txn_type=CLAIM_DEF,
+                                                         field='*',
+                                                         value='*'),
+                                           AuthActionEdit(txn_type=CLAIM_DEF,
+                                                          field='*',
+                                                          old_value='*',
+                                                          new_value='*',
+                                                          is_owner=True)])
 
     def _validate_revoc_reg_def(self, req: Request):
         operation = req.operation
@@ -923,3 +907,8 @@ class DomainReqHandler(PHandler):
             txn_data[attr_type] = domain.hash_of(value) if value else ''
 
         return txn
+
+    def init_auth_validator(self):
+        self.write_req_validator = WriteRequestValidator(config=getConfig(),
+                                                         auth_map=authMap,
+                                                         cache=self.idrCache)

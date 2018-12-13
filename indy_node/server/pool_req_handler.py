@@ -1,6 +1,9 @@
 from copy import deepcopy
 
 from common.serializers.serialization import pool_state_serializer
+from indy_common.authorize.auth_map import authMap
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.config_util import getConfig
 from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES, \
     BLS_KEY_PROOF
 
@@ -18,6 +21,8 @@ class PoolRequestHandler(PHandler):
         super().__init__(ledger, state, domainState)
         self.stateSerializer = pool_state_serializer
         self.idrCache = idrCache
+
+        self.init_auth_validator()
 
     def isSteward(self, nym, isCommitted: bool=True):
         return self.idrCache.hasSteward(nym, isCommitted)
@@ -67,3 +72,8 @@ class PoolRequestHandler(PHandler):
                 msgs.append(msg)
         msg = None if all(vals) else '\n'.join(msgs)
         return msg
+
+    def init_auth_validator(self):
+        self.write_req_validator = WriteRequestValidator(config=getConfig(),
+                                                         auth_map=authMap,
+                                                         cache=self.idrCache)
