@@ -6,6 +6,10 @@ from indy_common.authorize.auth_constraints import AND_CONSTRAINT_ID, OR_CONSTRA
 from indy_common.authorize.authorizer import AbstractAuthorizer, CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, \
     OrAuthorizer, AuthValidationError
 from indy_common.types import Request
+from stp_core.common.log import getlogger
+
+
+logger = getlogger()
 
 
 class AbstractRequestValidator(AbstractAuthorizer):
@@ -39,7 +43,8 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
                                       auth_constraint=auth_constraint,
                                       auth_action=action,
                                       is_owner=is_owner)
-                except AuthValidationError:
+                except AuthValidationError as exp:
+                    logger.warning("Request {} cannot be authorized by reason: {}".format(request, exp))
                     return False
                 return True
             return False
