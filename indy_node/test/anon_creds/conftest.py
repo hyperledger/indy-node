@@ -3,6 +3,7 @@ import time
 import json
 
 from indy_common.state.domain import make_state_path_for_claim_def
+from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
@@ -40,7 +41,7 @@ def add_revoc_def_by_default(create_node_and_not_start,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
-    req_handler = node.init_domain_req_handler()
+    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=int(time.time()),
                               seq_no=node.domainLedger.seqNo + 1)
@@ -98,7 +99,7 @@ def add_revoc_def_by_demand(create_node_and_not_start,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
-    req_handler = node.init_domain_req_handler()
+    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=int(time.time()),
                               seq_no=node.domainLedger.seqNo + 1)

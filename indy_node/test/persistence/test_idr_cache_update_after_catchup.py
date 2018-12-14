@@ -4,6 +4,7 @@ from indy.ledger import build_nym_request, sign_request, submit_request
 
 from indy_common.state import domain
 from indy_node.test.helper import start_stopped_node, createHalfKeyIdentifierAndAbbrevVerkey
+from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.txn_util import get_txn_time
 from plenum.test.node_catchup.helper import waitNodeDataEquality
 from plenum.test.pool_transactions.helper import disconnect_node_and_ensure_disconnected
@@ -33,7 +34,7 @@ def test_idr_cache_update_after_catchup(txnPoolNodeSet,
                                         tconf, tdir, allPluginsPath)
     txnPoolNodeSet[-1] = restarted_node
     waitNodeDataEquality(looper, restarted_node, *txnPoolNodeSet[:-1])
-    req_handler = restarted_node.init_domain_req_handler()
+    req_handler = restarted_node.get_req_handler(DOMAIN_LEDGER_ID)
     root_hash = req_handler.ts_store.get_equal_or_prev(get_txn_time(result['result']))
     key = domain.make_state_path_for_nym(idr)
     from_state = req_handler.state.get_for_root_hash(root_hash=root_hash,
