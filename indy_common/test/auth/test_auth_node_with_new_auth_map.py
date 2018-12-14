@@ -8,7 +8,7 @@ def test_node_enable(write_request_validation, req, is_owner):
     assert authorized == write_request_validation(req,
                                                   [AuthActionAdd(txn_type=NODE,
                                                                  field=SERVICES,
-                                                                 value='[VALIDATOR]',
+                                                                 value='[\'VALIDATOR\']',
                                                                  is_owner=is_owner)])
 
 
@@ -18,7 +18,7 @@ def test_node_promote(write_request_validation, req, is_owner):
                                                   [AuthActionEdit(txn_type=NODE,
                                                                   field=SERVICES,
                                                                   old_value='[]',
-                                                                  new_value='[VALIDATOR]',
+                                                                  new_value='[\'VALIDATOR\']',
                                                                   is_owner=is_owner)])
 
 
@@ -27,7 +27,7 @@ def test_node_demote(write_request_validation, req, is_owner):
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=NODE,
                                                                   field=SERVICES,
-                                                                  old_value='[VALIDATOR]',
+                                                                  old_value='[\'VALIDATOR\']',
                                                                   new_value='[]',
                                                                   is_owner=is_owner)])
 
