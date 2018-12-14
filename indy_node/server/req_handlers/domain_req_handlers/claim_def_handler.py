@@ -1,5 +1,5 @@
-from indy_node.server.domain_req_handler import DomainReqHandler
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
-class ClaimDefHandler(DomainReqHandler):
+class ClaimDefHandler(WriteRequestHandler):
     pass

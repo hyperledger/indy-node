@@ -1,5 +1,5 @@
-from indy_node.server.action_req_handler import ActionReqHandler
+from plenum.server.request_handlers.handler_interfaces.action_request_handler import ActionRequestHandler
 
 
-class ValidatorInfoHandler(ActionReqHandler):
+class ValidatorInfoHandler(ActionRequestHandler):
     pass

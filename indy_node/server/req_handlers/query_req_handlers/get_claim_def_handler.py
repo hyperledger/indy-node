@@ -1,5 +1,5 @@
-from indy_node.server.query_req_handler import QueryReqHandler
+from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
 
-class GetClaimDefHandler(QueryReqHandler):
+class GetClaimDefHandler(ReadRequestHandler):
     pass

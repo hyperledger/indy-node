@@ -1,5 +1,5 @@
-from indy_node.server.config_req_handler import ConfigReqHandler
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
-class PoolUpgrade(ConfigReqHandler):
+class PoolUpgrade(WriteRequestHandler):
     pass
