@@ -50,7 +50,7 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
                                                     request.reqId,
                                                     exp.reason)
                 return True
-            error_msg = "There is no authorization constraints for request: {}".format(request)
+            error_msg = 'Request can not be authorized as action is not allowed: {}'.format(request)
             logger.warning(error_msg)
             raise UnauthorizedClientRequest(request.identifier,
                                             request.reqId,

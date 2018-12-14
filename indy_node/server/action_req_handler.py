@@ -1,5 +1,7 @@
-from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
+from indy_common.authorize.auth_actions import AuthActionAdd
+from indy_common.authorize.auth_map import authMap
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.config_util import getConfig
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.types import f
@@ -22,19 +24,20 @@ class ActionReqHandler(RequestHandler):
 
     def __init__(self, idrCache: IdrCache,
                  restarter: Restarter, poolManager, poolCfg: PoolConfig,
-                 info_tool: ValidatorNodeInfoTool, write_req_validator: WriteRequestValidator):
+                 info_tool: ValidatorNodeInfoTool):
         self.idrCache = idrCache
         self.restarter = restarter
         self.info_tool = info_tool
         self.poolManager = poolManager
         self.poolCfg = poolCfg
-        self.write_req_validator = write_req_validator
+        self.write_req_validator = WriteRequestValidator(config=getConfig(),
+                                                         auth_map=authMap,
+                                                         cache=self.idrCache)
 
     def doStaticValidation(self, request: Request):
         pass
 
     def validate(self, req: Request):
-        status = None
         operation = req.operation
         typ = operation.get(TXN_TYPE)
         if typ not in self.operation_types:
@@ -50,10 +53,9 @@ class ActionReqHandler(RequestHandler):
         if typ == POOL_RESTART:
             action = operation.get(ACTION)
             self.write_req_validator.validate(req,
-                                              [AuthActionEdit(txn_type=POOL_RESTART,
-                                                              field=ACTION,
-                                                              old_value=status,
-                                                              new_value=action)])
+                                              [AuthActionAdd(txn_type=POOL_RESTART,
+                                                             field=ACTION,
+                                                             value=action)])
         elif typ == VALIDATOR_INFO:
             self.write_req_validator.validate(req,
                                               [AuthActionAdd(txn_type=VALIDATOR_INFO,
