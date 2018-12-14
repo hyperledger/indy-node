@@ -32,7 +32,6 @@ class ConfigReqHandler(LedgerRequestHandler):
                                                          auth_map=authMap,
                                                          cache=self.idrCache)
 
-
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
         if operation[TXN_TYPE] == POOL_UPGRADE:
