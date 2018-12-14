@@ -52,7 +52,7 @@ class RolesAuthorizer(AbstractAuthorizer):
 
     def is_role_accepted(self, request: Request, auth_constraint: AuthConstraint):
         role = self.get_role(request)
-        if role:
+        if role is not None:
             return role == auth_constraint.role or auth_constraint.role == '*'
 
     def is_sig_count_accepted(self, request: Request, auth_constraint: AuthConstraint):
