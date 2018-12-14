@@ -65,17 +65,17 @@ editClaimDef = AuthActionEdit(txn_type=CLAIM_DEF,
 
 addingNewNode = AuthActionAdd(txn_type=NODE,
                               field='services',
-                              value='[VALIDATOR]')
+                              value='[\'VALIDATOR\']')
 
 demoteNode = AuthActionEdit(txn_type=NODE,
                             field='services',
-                            old_value='[VALIDATOR]',
+                            old_value='[\'VALIDATOR\']',
                             new_value='[]')
 
 promoteNode = AuthActionEdit(txn_type=NODE,
                              field='services',
                              old_value='[]',
-                             new_value='[VALIDATOR]')
+                             new_value='[\'VALIDATOR\']')
 
 
 changeNodeIp = AuthActionEdit(txn_type=NODE,
@@ -116,9 +116,10 @@ poolRestart = AuthActionAdd(txn_type=POOL_RESTART,
                             field='action',
                             value='*')
 
-poolConfig = AuthActionAdd(txn_type=POOL_CONFIG,
-                           field='action',
-                           value='*')
+poolConfig = AuthActionEdit(txn_type=POOL_CONFIG,
+                            field='action',
+                            old_value='*',
+                            new_value='*')
 
 validatorInfo = AuthActionAdd(txn_type=VALIDATOR_INFO,
                               field='*',

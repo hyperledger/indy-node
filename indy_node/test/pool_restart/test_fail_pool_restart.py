@@ -22,8 +22,7 @@ def test_fail_pool_restart_with_steward_role(
                                       req_obj)
     with pytest.raises(RequestRejectedException) as excinfo:
         sdk_get_and_check_replies(looper, [req], 100)
-    assert excinfo.match("STEWARD cannot do action with type = " +
-                         POOL_RESTART)
+    assert excinfo.match("role is not accepted")
 
 
 def test_fail_pool_restart_with_invalid_datetime(

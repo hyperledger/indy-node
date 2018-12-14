@@ -292,12 +292,7 @@ class DomainReqHandler(PHandler):
         self.write_req_validator.validate(req,
                                           [AuthActionAdd(txn_type=CLAIM_DEF,
                                                          field='*',
-                                                         value='*'),
-                                           AuthActionEdit(txn_type=CLAIM_DEF,
-                                                          field='*',
-                                                          old_value='*',
-                                                          new_value='*',
-                                                          is_owner=True)])
+                                                         value='*')])
 
     def _validate_revoc_reg_def(self, req: Request):
         operation = req.operation
