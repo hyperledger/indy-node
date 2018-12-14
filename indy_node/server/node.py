@@ -1,8 +1,9 @@
-from datetime import datetime, timedelta
-import dateutil.tz
+from datetime import timedelta
 
 from typing import Iterable, List
 
+from indy_common.authorize.auth_map import authMap
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_node.server.action_req_handler import ActionReqHandler
 from indy_node.server.restarter import Restarter
 from ledger.compact_merkle_tree import CompactMerkleTree
@@ -100,6 +101,8 @@ class Node(PlenumNode, HasPoolManager):
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
+        """initiating write auth validator"""
+        self.init_auth_validator()
 
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)
@@ -160,7 +163,8 @@ class Node(PlenumNode, HasPoolManager):
                                 self.getIdrCache(),
                                 self.attributeStore,
                                 self.bls_bft.bls_store,
-                                self.getStateTsDbStorage())
+                                self.getStateTsDbStorage(),
+                                self.write_req_validator)
 
     def getIdrCache(self):
         if self.idrCache is None:
@@ -193,14 +197,16 @@ class Node(PlenumNode, HasPoolManager):
                                 self.getIdrCache(),
                                 self.upgrader,
                                 self.poolManager,
-                                self.poolCfg)
+                                self.poolCfg,
+                                self.write_req_validator)
 
     def get_action_req_handler(self):
         return ActionReqHandler(self.getIdrCache(),
                                 self.restarter,
                                 self.poolManager,
                                 self.poolCfg,
-                                self._info_tool)
+                                self._info_tool,
+                                self.write_req_validator)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
         pass
@@ -356,3 +362,8 @@ class Node(PlenumNode, HasPoolManager):
         is_force = OPERATION in msg_dict and msg_dict.get(OPERATION).get(FORCE, False)
         is_force_upgrade = str(is_force) == 'True' and txn_type == POOL_UPGRADE
         return txn_type and not is_force_upgrade and super().is_request_need_quorum(msg_dict)
+
+    def init_auth_validator(self):
+        self.write_req_validator = WriteRequestValidator(config=self.config,
+                                                         auth_map=authMap,
+                                                         cache=self.idrCache)

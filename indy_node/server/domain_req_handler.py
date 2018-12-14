@@ -6,9 +6,6 @@ import base58
 
 from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_common.authorize.auth_map import authMap
-from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.config_util import getConfig
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, REVOC_REG_DEF, REVOC_REG_ENTRY, ISSUANCE_TYPE, \
     REVOC_REG_DEF_ID, VALUE, ISSUANCE_BY_DEFAULT, ISSUANCE_ON_DEMAND, TAG, CRED_DEF_ID, \
@@ -54,7 +51,7 @@ class DomainReqHandler(PHandler):
     }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store, ts_store=None):
+                 idrCache, attributeStore, bls_store, write_req_validator, ts_store=None):
         super().__init__(ledger, state, config, requestProcessor, bls_store, ts_store=ts_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
@@ -66,9 +63,9 @@ class DomainReqHandler(PHandler):
         self.post_batch_creation_handlers = []
         self.post_batch_commit_handlers = []
         self.post_batch_rejection_handlers = []
+        self.write_req_validator = write_req_validator
 
         self._add_default_handlers()
-        self.init_auth_validator()
 
     def _updateStateWithSingleTxn(self, txn, isCommitted=False):
         txn_type = get_type(txn)
@@ -907,8 +904,3 @@ class DomainReqHandler(PHandler):
             txn_data[attr_type] = domain.hash_of(value) if value else ''
 
         return txn
-
-    def init_auth_validator(self):
-        self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=authMap,
-                                                         cache=self.idrCache)

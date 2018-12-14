@@ -1,7 +1,6 @@
 from typing import List
 
 from indy_common.authorize.auth_actions import AuthActionEdit
-from indy_common.authorize.auth_map import authMap
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from plenum.common.exceptions import InvalidClientRequest, \
@@ -22,14 +21,14 @@ class ConfigReqHandler(LedgerRequestHandler):
     write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
-                 upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
+                 upgrader: Upgrader, poolManager, poolCfg: PoolConfig, write_req_validator: WriteRequestValidator):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
         self.poolManager = poolManager
         self.poolCfg = poolCfg
+        self.write_req_validator = write_req_validator
 
-        self.init_auth_validator()
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -151,8 +150,3 @@ class ConfigReqHandler(LedgerRequestHandler):
         txn = reqToTxn(req)
         self.upgrader.handleUpgradeTxn(txn)
         self.poolCfg.handleConfigTxn(txn)
-
-    def init_auth_validator(self):
-        self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=authMap,
-                                                         cache=self.idrCache)

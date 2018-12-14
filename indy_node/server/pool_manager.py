@@ -20,4 +20,5 @@ class TxnPoolManager(PTxnPoolManager):
     def getPoolReqHandler(self):
         return PoolRequestHandler(self.ledger, self.state,
                                   self.node.states[DOMAIN_LEDGER_ID],
-                                  self.node.getIdrCache())
+                                  self.node.getIdrCache(),
+                                  self.node.write_req_validator)

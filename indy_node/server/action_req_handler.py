@@ -1,7 +1,5 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_common.authorize.auth_map import authMap
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
-from indy_common.config_util import getConfig
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.types import f
@@ -24,14 +22,13 @@ class ActionReqHandler(RequestHandler):
 
     def __init__(self, idrCache: IdrCache,
                  restarter: Restarter, poolManager, poolCfg: PoolConfig,
-                 info_tool: ValidatorNodeInfoTool):
+                 info_tool: ValidatorNodeInfoTool, write_req_validator: WriteRequestValidator):
         self.idrCache = idrCache
         self.restarter = restarter
         self.info_tool = info_tool
         self.poolManager = poolManager
         self.poolCfg = poolCfg
-
-        self.init_auth_validator()
+        self.write_req_validator = write_req_validator
 
     def doStaticValidation(self, request: Request):
         pass
@@ -92,8 +89,3 @@ class ActionReqHandler(RequestHandler):
         return {**request.operation, **{
             f.IDENTIFIER.nm: request.identifier,
             f.REQ_ID.nm: request.reqId}}
-
-    def init_auth_validator(self):
-        self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=authMap,
-                                                         cache=self.idrCache)
