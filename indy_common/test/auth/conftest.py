@@ -3,7 +3,7 @@ import time
 
 from indy_common.auth import Authoriser, generate_auth_map
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_common.authorize.auth_map import authMap
+from indy_common.authorize.auth_map import authMap, anyoneCanWriteMap
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
@@ -56,9 +56,11 @@ def idr_cache():
 
 @pytest.fixture(scope='module')
 def write_auth_req_validator(idr_cache):
-    validator = WriteRequestValidator(config=FakeSomething(authPolicy=LOCAL_AUTH_POLICY),
+    validator = WriteRequestValidator(config=FakeSomething(authPolicy=LOCAL_AUTH_POLICY,
+                                                           ANYONE_CAT_WRITE=False),
                                       auth_map=authMap,
-                                      cache=idr_cache)
+                                      cache=idr_cache,
+                                      anyone_can_write_map=anyoneCanWriteMap)
     return validator
 
 

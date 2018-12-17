@@ -22,11 +22,13 @@ class AbstractRequestValidator(AbstractAuthorizer):
 
 
 class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
-    def __init__(self, config, auth_map, cache):
+    def __init__(self, config, auth_map, cache, anyone_can_write_map=None):
         CompositeAuthorizer.__init__(self)
         self.cache = cache
         self.config = config
         self.auth_map = auth_map
+        self.anyone_can_write = self.config.ANYONE_CAN_WRITE
+        self.anyone_can_write_map = anyone_can_write_map
         self.auth_cons_strategy = self.create_auth_strategy()
         self.register_default_authorizers()
 
@@ -59,6 +61,7 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
     def create_auth_strategy(self):
         """depends on config"""
         if self.config.authPolicy == LOCAL_AUTH_POLICY:
-            return LocalAuthStrategy(self.auth_map)
+            return LocalAuthStrategy(auth_map=self.auth_map,
+                                     anyone_can_write_map=self.anyone_can_write_map if self.anyone_can_write else None)
         elif self.config.authPolicy == CONFIG_LEDGER_AUTH_POLICY:
             return ConfigLedgerAuthStrategy(auth_map=self.auth_map)

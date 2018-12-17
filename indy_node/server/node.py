@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from typing import Iterable, List
 
-from indy_common.authorize.auth_map import authMap
+from indy_common.authorize.auth_map import authMap, anyoneCanWriteMap
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_node.server.action_req_handler import ActionReqHandler
 from indy_node.server.restarter import Restarter
@@ -101,10 +101,6 @@ class Node(PlenumNode, HasPoolManager):
 
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
-        """initiating write auth validator"""
-        self.write_req_validator = WriteRequestValidator(config=config,
-                                                         auth_map=authMap,
-                                                         cache=self.getIdrCache())
 
     def getPoolConfig(self):
         return PoolConfig(self.configLedger)

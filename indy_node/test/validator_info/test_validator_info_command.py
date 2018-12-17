@@ -25,8 +25,7 @@ def test_fail_validator_info_command(
         sdk_get_validator_info(looper,
                                sdk_wallet_client,
                                sdk_pool_handle)
-    assert excinfo.match("None role cannot do action with type = " +
-                         VALIDATOR_INFO)
+    assert excinfo.match("There is no accepted constraint")
 
 
 def _comparison_reply(responses, req_obj):
