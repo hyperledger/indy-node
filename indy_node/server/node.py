@@ -172,7 +172,7 @@ class Node(PlenumNode):
                                 self.getIdrCache(),
                                 self.attributeStore,
                                 self.bls_bft.bls_store,
-                                self.init_state_ts_db_storage())
+                                self.getStateTsDbStorage())
 
     def init_config_req_handler(self):
         return ConfigReqHandler(self.configLedger,
