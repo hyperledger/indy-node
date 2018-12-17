@@ -104,6 +104,13 @@ class Node(PlenumNode):
         self.nodeMsgRouter.routes[Request] = self.processNodeRequest
         self.nodeAuthNr = self.defaultNodeAuthNr()
 
+        # Will be refactored soon
+        self.get_req_handler(CONFIG_LEDGER_ID).upgrader = self.upgrader
+        self.get_req_handler(CONFIG_LEDGER_ID).poolCfg = self.poolCfg
+        self.actionReqHandler.poolCfg = self.poolCfg
+        self.actionReqHandler.restarter = self.restarter
+
+
     def init_pool_config(self):
         return PoolConfig(self.configLedger)
 
