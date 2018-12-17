@@ -110,7 +110,6 @@ class Node(PlenumNode):
         self.actionReqHandler.poolCfg = self.poolCfg
         self.actionReqHandler.restarter = self.restarter
 
-
     def init_pool_config(self):
         return PoolConfig(self.configLedger)
 
