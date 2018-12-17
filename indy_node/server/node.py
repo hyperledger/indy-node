@@ -201,7 +201,7 @@ class Node(PlenumNode):
                 db_config=self.config.db_attr_db_config)
         )
 
-    def get_action_req_handler(self):
+    def init_action_req_handler(self):
         return ActionReqHandler(self.getIdrCache(),
                                 self.restarter,
                                 self.poolManager,
