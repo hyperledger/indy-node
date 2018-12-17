@@ -138,19 +138,19 @@ anyoneCanAddClaimDef = AuthActionAdd(txn_type=CLAIM_DEF,
                                      value='*')
 
 anyoneCanEditNYM = AuthActionEdit(txn_type=NYM,
-                                   field=ROLE,
-                                   old_value='*',
-                                   new_value='*')
+                                  field=ROLE,
+                                  old_value='*',
+                                  new_value='*')
 
 anyoneCanEditSchema = AuthActionEdit(txn_type=SCHEMA,
-                                      field='*',
-                                      old_value='*',
-                                      new_value='*')
+                                     field='*',
+                                     old_value='*',
+                                     new_value='*')
 
 anyoneCanEditClaimDef = AuthActionEdit(txn_type=CLAIM_DEF,
-                                        field='*',
-                                        old_value='*',
-                                        new_value='*')
+                                       field='*',
+                                       old_value='*',
+                                       new_value='*')
 
 authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            addNewSteward.get_action_id(): AuthConstraint(TRUSTEE, 1),
