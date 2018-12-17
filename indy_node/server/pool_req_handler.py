@@ -14,12 +14,12 @@ from state.state import State
 
 class PoolRequestHandler(PHandler):
     def __init__(self, ledger: Ledger, state: State,
-                 domainState: State, idrCache: IdrCache):
-        super().__init__(ledger, state, domainState)
+                 states, idrCache: IdrCache):
+        super().__init__(ledger, state, states)
         self.stateSerializer = pool_state_serializer
         self.idrCache = idrCache
 
-    def isSteward(self, nym, isCommitted: bool=True):
+    def isSteward(self, nym, isCommitted: bool = True):
         return self.idrCache.hasSteward(nym, isCommitted)
 
     def authErrorWhileUpdatingNode(self, request):
