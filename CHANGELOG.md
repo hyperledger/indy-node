@@ -32,7 +32,8 @@
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
 
-## 1.6.80
+## 1.6.80 
+### Release date: Dec 13th, 2018
 
 ### Component Version Information
 | Components | Version Numbers |
@@ -51,6 +52,7 @@ Although every attempt has been made to make this information as accurate as pos
 | Fix throughput class creation bug |  | [INDY-1888](https://jira.hyperledger.org/browse/INDY-1888) |
 
 ## 1.6.79
+### Release date: Dec 6th, 2018
 
 ### Component Version Information
 
@@ -133,6 +135,7 @@ Although every attempt has been made to make this information as accurate as pos
 No further action is required
 
 ## 1.6.78
+### Release date: Oct 18th, 2018
 
 ### Component Version Information
 
@@ -193,6 +196,7 @@ No further action is required
 
 
 ## 1.6.73
+### Release date: Sep 5th, 2018
 
 **Important:** Several iterations were done very rapidly between the last release and this one. All of the changes, upgrades, etc... are included in this new release. Simply upgrading will include them all from 1.6.70 until 1.6.73. To see further, specific numerous changes, please reference the appropriate tickets in the [Hyperledger Jira ticketing system.](https://jira.hyperledger.org/)
 
@@ -247,6 +251,7 @@ No further action is required
 
 
 ## 1.6.70
+### Release date: Aug 14th, 2018
 
 ### Component Version Information
 
@@ -373,6 +378,7 @@ For more details about txn format changes see INDY-1421.**
 
 
 ## 1.4.66
+### Release date: Jul 2nd, 2018
 
 
 ### Component Version Information
@@ -481,6 +487,7 @@ Use https://github.com/hyperledger/indy-sdk/blob/b4a2bb82087e2eafe5e55bddb20a306
 
 
 ## 1.3.62
+### Release date: May 22th, 2018
 
 
 ### Component Version Information
@@ -579,6 +586,7 @@ None at this time.
 
 
 ## 1.3.55
+### Release date: Feb 28th, 2018
 
 **Important: Upgrade to this version should be performed simultaneously for all nodes (with `force=True`).**
 
@@ -657,6 +665,7 @@ Node promoting is not recommended for 1.3.52 version according to known issues b
 As mentioned above, upgrade to this version should be performed simultaneously for all nodes (with `force=True`).
 
 ## 1.2.50
+### Release date: Dec 18th, 2017
 
 
 ### Component Version Information
@@ -849,6 +858,7 @@ The genesis files are now located in their own directory based off the network n
 
 
 ## 1.1.43
+### Release date: Oct 24th, 2017
 
 
 ### Component Version Information
@@ -873,6 +883,7 @@ The genesis files are now located in their own directory based off the network n
 |   |   |   |   |
 
 ## 1.1.37
+### Release date: Sep 26th, 2017
 
 
 ### Component Version Information
