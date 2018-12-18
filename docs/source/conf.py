@@ -220,7 +220,7 @@ if(on_rtd):
     if rtd_version not in ['stable', 'latest']:
         rtd_version = 'latest'
     try:
-        os.system("git clone https://github.com/michaeldboyd/indy-docs.git remote_conf")
+        os.system("git clone https://github.com/hyperledger/indy-docs.git remote_conf")
         os.system("mv remote_conf/remote_conf.py .")
         import remote_conf
         remote_conf.generate_sidebar(globals(), nickname)
