@@ -10,7 +10,7 @@ Welcome to Hyperledger Indy Node's documentation!
 .. toctree::
    :maxdepth: 1
 
-   introduction.md
+   ../../README.md
    start-nodes.md 
    add-node.md
    auth_rules.md
