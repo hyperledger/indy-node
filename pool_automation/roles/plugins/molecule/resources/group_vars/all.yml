@@ -1,0 +1,8 @@
+---
+plugins_role: plugins_test
+plugins_packages:
+  - gosu
+  - jq=1.5+dfsg-1
+
+plugins_test_file_path: /tmp/plugins_test_file
+...

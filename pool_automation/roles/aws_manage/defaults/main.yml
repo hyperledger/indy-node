@@ -4,11 +4,11 @@ aws_project_name: Indy-PA
 aws_group_name: defaults
 
   # Namespace parameters
-aws_namespace_name: "{{ namespace_name | default(inventory_dir, true) | default('test', true) | basename }}"
-aws_build_dir: "{{ namespace_dir | default(inventory_dir, true) | default(aws_namespace_name, true) }}"
+aws_namespace_name: "{{ namespace_name | d(inventory_dir, true) | d('test', true) | basename }}"
+aws_build_dir: "{{ namespace_dir | d(inventory_dir, true) | d(aws_namespace_name, true) }}"
 
   # Inventory parameters
-aws_inventory_dir: "{{ inventory_dir | default(aws_build_dir ~ '/inventory', true) }}"
+aws_inventory_dir: "{{ inventory_dir | d(aws_build_dir ~ '/inventory', true) }}"
 aws_inventory_file: "{{ aws_inventory_dir }}/{{ aws_group_name }}.yml"
 aws_base_group: "{{ aws_namespace_name }}"
 
@@ -46,6 +46,7 @@ aws_ec2_type: t2.micro
 aws_ec2_market_spot: true
 aws_ec2_spot_max_price: null
 aws_ebs_volume_size: 16
+aws_ebs_volume_type: gp2
 
   # Resource tags and names
 aws_tag_project: "{{ aws_project_name }}"

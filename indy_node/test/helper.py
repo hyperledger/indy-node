@@ -48,12 +48,12 @@ class TestNode(TempStorage, TestNodeCore, Node):
         TestNodeCore.__init__(self, *args, **kwargs)
         self.cleanupOnStopping = True
 
-    def getUpgrader(self):
+    def init_upgrader(self):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
                             self.configLedger)
 
-    def getDomainReqHandler(self):
-        return Node.getDomainReqHandler(self)
+    def init_domain_req_handler(self):
+        return Node.init_domain_req_handler(self)
 
     def init_core_authenticator(self):
         return Node.init_core_authenticator(self)
