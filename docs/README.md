@@ -40,10 +40,8 @@ If you'd like to link to a file outside of the docs/ folder, you'll need to prov
 Here are the quick steps to achieve this on a local machine without depending on ReadTheDocs. Note: Instructions may differ depending on your OS.
 Run these commands within the repository folder
 ```bash
-pip install Sphinx
-pip install sphinx_rtd_theme
-pip install recommonmark==0.4.0
 cd docs/source # Be in this directory. Makefile sits there.
+pip install -r requirements.txt
 make html
 ```
 
