@@ -57,7 +57,7 @@ def idr_cache():
 @pytest.fixture(scope='module')
 def write_auth_req_validator(idr_cache):
     validator = WriteRequestValidator(config=FakeSomething(authPolicy=LOCAL_AUTH_POLICY,
-                                                           ANYONE_CAT_WRITE=False),
+                                                           ANYONE_CAN_WRITE=False),
                                       auth_map=authMap,
                                       cache=idr_cache,
                                       anyone_can_write_map=anyoneCanWriteMap)
