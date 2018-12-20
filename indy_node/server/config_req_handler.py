@@ -1,16 +1,16 @@
 from typing import List
 
+from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
+from indy_common.authorize.auth_map import authMap, anyoneCanWriteMap
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
-from indy_common.auth import Authoriser
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     APP_NAME, REINSTALL
-from indy_common.roles import Roles
-from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
@@ -28,6 +28,10 @@ class ConfigReqHandler(LedgerRequestHandler):
         self.upgrader = upgrader
         self.poolManager = poolManager
         self.poolCfg = poolCfg
+        self.write_req_validator = WriteRequestValidator(config=getConfig(),
+                                                         auth_map=authMap,
+                                                         cache=self.idrCache,
+                                                         anyone_can_write_map=anyoneCanWriteMap)
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -64,14 +68,14 @@ class ConfigReqHandler(LedgerRequestHandler):
         return NodeControlUtil.curr_pkt_info(pkg_name)
 
     def validate(self, req: Request):
-        status = None
+        status = '*'
         operation = req.operation
         typ = operation.get(TXN_TYPE)
         if typ not in [POOL_UPGRADE, POOL_CONFIG]:
             return
         origin = req.identifier
         try:
-            originRole = self.idrCache.getRole(origin, isCommitted=False)
+            self.idrCache.getRole(origin, isCommitted=False)
         except BaseException:
             raise UnauthorizedClientRequest(
                 req.identifier,
@@ -97,7 +101,6 @@ class ConfigReqHandler(LedgerRequestHandler):
                 # currentVersion > targetVersion
                 raise InvalidClientRequest(req.identifier, req.reqId, "Version is not upgradable")
 
-            trname = IndyTransactions.POOL_UPGRADE.name
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version
             # present
@@ -109,7 +112,7 @@ class ConfigReqHandler(LedgerRequestHandler):
                     None) and get_payload_data(txn).get(VERSION) == req.operation.get(VERSION),
                 reverse=True)
             if txn:
-                status = get_payload_data(txn).get(ACTION, None)
+                status = get_payload_data(txn).get(ACTION, '*')
 
             if status == START and action == START:
                 raise InvalidClientRequest(
@@ -117,16 +120,25 @@ class ConfigReqHandler(LedgerRequestHandler):
                     req.reqId,
                     "Upgrade '{}' is already scheduled".format(
                         req.operation.get(NAME)))
+            if status == '*':
+                auth_action = AuthActionAdd(txn_type=POOL_UPGRADE,
+                                            field=ACTION,
+                                            value=action)
+            else:
+                auth_action = AuthActionEdit(txn_type=POOL_UPGRADE,
+                                             field=ACTION,
+                                             old_value=status,
+                                             new_value=action)
+            self.write_req_validator.validate(req,
+                                              [auth_action])
         elif typ == POOL_CONFIG:
-            trname = IndyTransactions.POOL_CONFIG.name
-            action = None
-            status = None
-        r, msg = Authoriser.authorised(
-            typ, originRole, field=ACTION, oldVal=status, newVal=action)
-        if not r:
-            raise UnauthorizedClientRequest(
-                req.identifier, req.reqId, "{} cannot do {}".format(
-                    Roles.nameFromValue(originRole), trname))
+            action = '*'
+            status = '*'
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=typ,
+                                                              field=ACTION,
+                                                              old_value=status,
+                                                              new_value=action)])
 
     def apply(self, req: Request, cons_time):
         txn = append_txn_metadata(reqToTxn(req),

@@ -3,39 +3,25 @@ import time
 
 from indy_common.auth import Authoriser, generate_auth_map
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_common.authorize.auth_map import authMap
+from indy_common.authorize.auth_map import authMap, anyoneCanWriteMap
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from plenum.common.constants import STEWARD, TRUSTEE
 
-from indy_common.constants import TRUST_ANCHOR
+from indy_common.constants import TRUST_ANCHOR, LOCAL_AUTH_POLICY
 from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.test.helper import randomOperation
+from plenum.test.testing_utils import FakeSomething
 from storage.kv_in_memory import KeyValueStorageInMemory
 
 
 OTHER_IDENTIFIER = "some_other_identifier"
 
 
-@pytest.fixture(scope='function', params=[STEWARD, TRUSTEE, TRUST_ANCHOR, None])
-def role(request):
-    return request.param
-
-
 @pytest.fixture(scope='function', params=[True, False])
 def is_owner(request):
     return request.param
-
-
-@pytest.fixture(scope='function', params=[None, "value1"])
-def old_values(request):
-    return request.param
-
-
-@pytest.fixture(scope='module')
-def initialized_auth_map():
-    Authoriser.auth_map = generate_auth_map(Authoriser.ValidRoles, False)
 
 
 @pytest.fixture(scope='function')
@@ -70,13 +56,15 @@ def idr_cache():
 
 @pytest.fixture(scope='module')
 def write_auth_req_validator(idr_cache):
-    validator = WriteRequestValidator(config={},
+    validator = WriteRequestValidator(config=FakeSomething(authPolicy=LOCAL_AUTH_POLICY,
+                                                           ANYONE_CAN_WRITE=False),
                                       auth_map=authMap,
-                                      cache=idr_cache)
+                                      cache=idr_cache,
+                                      anyone_can_write_map=anyoneCanWriteMap)
     return validator
 
 
-@pytest.fixture(scope='module', params=["trustee_identifier", "steward_identifier", "trust_anchor_identifier"])
+@pytest.fixture(scope='module', params=["trustee_identifier", "steward_identifier", "trust_anchor_identifier", OTHER_IDENTIFIER])
 def identifier(request):
     return request.param
 
