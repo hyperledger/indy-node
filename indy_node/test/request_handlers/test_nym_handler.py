@@ -19,14 +19,6 @@ def nym_handler(db_manager):
     return NymHandler(None, db_manager)
 
 
-@pytest.fixture(scope="module")
-def creator(db_manager):
-    identifier = randomString()
-    idr = db_manager.get_store('idr')
-    add_to_idr(idr, identifier, None)
-    return identifier
-
-
 @pytest.fixture(scope="function")
 def nym_request(creator):
     return Request(identifier=creator,
@@ -35,6 +27,14 @@ def nym_request(creator):
                               'dest': randomString(),
                               'role': None,
                               'verkey': randomString()})
+
+
+@pytest.fixture(scope="module")
+def creator(db_manager):
+    identifier = randomString()
+    idr = db_manager.get_store('idr')
+    add_to_idr(idr, identifier, None)
+    return identifier
 
 
 def test_nym_static_validation_passes(nym_request, nym_handler: NymHandler):
