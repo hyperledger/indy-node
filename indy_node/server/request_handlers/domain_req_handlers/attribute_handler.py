@@ -12,8 +12,8 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 
 class AttributeHandler(WriteRequestHandler):
 
-    def __init__(self, config, database_manager: DatabaseManager):
-        super().__init__(config, database_manager, ATTRIB, DOMAIN_LEDGER_ID)
+    def __init__(self, database_manager: DatabaseManager):
+        super().__init__(database_manager, ATTRIB, DOMAIN_LEDGER_ID)
 
     def static_validation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation

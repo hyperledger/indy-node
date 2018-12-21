@@ -6,6 +6,7 @@ from indy_common.auth import Authoriser
 from indy_common.constants import NYM
 
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
+from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import STEWARD, TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
@@ -34,17 +35,6 @@ def nym_request(creator):
                               'dest': randomString(),
                               'role': None,
                               'verkey': randomString()})
-
-
-def add_to_idr(idr, identifier, role):
-    random_s = randomString()
-    idr.set(identifier,
-            seqNo=5,
-            txnTime=random.randint(10, 100000),
-            ta=random_s,
-            role=role,
-            verkey=random_s,
-            isCommitted=True)
 
 
 def test_nym_static_validation_passes(nym_request, nym_handler: NymHandler):
