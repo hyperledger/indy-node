@@ -7,6 +7,7 @@ from indy_common.auth import Authoriser
 from indy_common.constants import SCHEMA
 
 from indy_common.req_utils import get_write_schema_name, get_write_schema_version
+from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest, UnknownIdentifier, UnauthorizedClientRequest
 
@@ -18,8 +19,9 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 
 class SchemaHandler(WriteRequestHandler):
 
-    def __init__(self, database_manager: DatabaseManager):
+    def __init__(self, database_manager: DatabaseManager, get_schema_handler: GetSchemaHandler):
         super().__init__(database_manager, SCHEMA, DOMAIN_LEDGER_ID)
+        self.get_schema_handler = get_schema_handler
 
     def static_validation(self, request: Request):
         pass
@@ -30,7 +32,7 @@ class SchemaHandler(WriteRequestHandler):
         identifier = request.identifier
         schema_name = get_write_schema_name(request)
         schema_version = get_write_schema_version(request)
-        schema, _, _, _ = self.getSchema(
+        schema, _, _, _ = self.get_schema_handler.getSchema(
             author=identifier,
             schemaName=schema_name,
             schemaVersion=schema_version,
