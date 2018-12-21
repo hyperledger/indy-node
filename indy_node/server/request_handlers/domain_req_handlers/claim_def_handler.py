@@ -53,7 +53,8 @@ class ClaimDefHandler(WriteRequestHandler):
                 identifier,
                 req_id,
                 "{} cannot add claim def".format(
-                    Roles.nameFromValue(origin_role))
+                    Roles.nameFromValue(origin_role)
+                    if origin_role else "Person without role")
             )
 
     def gen_txn_path(self, txn):
