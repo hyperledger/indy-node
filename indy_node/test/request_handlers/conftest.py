@@ -4,11 +4,14 @@ from indy_common.constants import SCHEMA
 from indy_common.config_helper import NodeConfigHelper
 
 from indy_node.persistence.idr_cache import IdrCache
+from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.request_handlers.helper import get_fake_ledger
+from indy_node.test.request_handlers.test_schema_handler import make_schema_exist
 from plenum.common.constants import KeyValueStorageType, DOMAIN_LEDGER_ID
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.server.database_manager import DatabaseManager
+from plenum.test.testing_utils import FakeSomething
 from state.state import State
 from storage.helper import initKeyValueStorage
 
@@ -38,3 +41,11 @@ def schema_request():
                                   'attr_names': ['last_name',
                                                  'first_name', ]
                               }})
+
+
+
+@pytest.fixture(scope="module")
+def schema_handler(db_manager):
+    f = FakeSomething()
+    make_schema_exist(f, False)
+    return SchemaHandler(db_manager, f)
