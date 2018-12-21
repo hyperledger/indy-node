@@ -26,6 +26,8 @@ class NymHandler(PNymHandler):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
         role = operation.get(ROLE)
         nym = operation.get(TARGET_NYM)
+        if isinstance(nym, str):
+            nym = nym.strip()
         if not nym:
             raise InvalidClientRequest(identifier, req_id,
                                        "{} needs to be present".
