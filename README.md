@@ -148,7 +148,7 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 
 - Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
 - Please have a look at documents and diagrams in [docs/source](docs/source) folder
-- Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder:
+- Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder, or on https://indy.readthedocs.io/projects/plenum :
     - [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md)
     - [Plenum Consensus Algorithm Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/diagrams/consensus-protocol.png)
     - [Glossary](https://github.com/hyperledger/indy-plenum/blob/master/docs/glossary.md)

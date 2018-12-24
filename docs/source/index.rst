@@ -10,22 +10,20 @@ Welcome to Hyperledger Indy Node's documentation!
 .. toctree::
    :maxdepth: 1
 
+   transactions.md
+   requests.md
+   auth_rules.md
+   pool-upgrade.md
    start-nodes.md 
    add-node.md
-   auth_rules.md
-   ci-cd.md
-   cluster-simulation.md
    helper-scripts.md
-   indy-file-structure-guideline.md
-   indy-running-locally.md
+   setup-iptables.md
    node-monitoring-tools-for-stewards.md
    node-state-diagnostic-tools.md
-   pool-upgrade.md
-   requests-new.md
-   setup-dev.md
-   setup-iptables.md
-   transactions.md
+   ci-cd.md
+   indy-file-structure-guideline.md
    write-code-guideline.md
+   setsup-dev.md
    1.3_to_1.4_migration_guide.md
 
 
