@@ -13,8 +13,8 @@ from plenum.common.util import randomString
 
 
 @pytest.fixture(scope="module")
-def claim_def_handler(db_manager, tconf):
-    return ClaimDefHandler(tconf, db_manager)
+def claim_def_handler(db_manager):
+    return ClaimDefHandler(db_manager)
 
 
 @pytest.fixture(scope="module")
