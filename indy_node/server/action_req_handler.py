@@ -43,14 +43,6 @@ class ActionReqHandler(RequestHandler):
         typ = operation.get(TXN_TYPE)
         if typ not in self.operation_types:
             return
-        origin = req.identifier
-        try:
-            self.idrCache.getRole(origin, isCommitted=False)
-        except BaseException:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "Nym {} not added to the ledger yet".format(origin))
         if typ == POOL_RESTART:
             action = operation.get(ACTION)
             self.write_req_validator.validate(req,

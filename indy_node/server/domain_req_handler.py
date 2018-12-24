@@ -193,30 +193,22 @@ class DomainReqHandler(PHandler):
                                                          value=role)])
 
     def _validateExistingNym(self, req: Request, op, originRole, nymData):
-        unauthorized = False
         origin = req.identifier
         owner = self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
         is_owner = origin == owner
 
-        if not originRole == TRUSTEE and not is_owner:
-            reason = '{} is neither Trustee nor owner of {}' \
-                .format(origin, op[TARGET_NYM])
-            raise UnauthorizedClientRequest(
-                req.identifier, req.reqId, reason)
-
-        if not unauthorized:
-            updateKeys = [ROLE, VERKEY]
-            for key in updateKeys:
-                if key in op:
-                    newVal = op[key]
-                    oldVal = nymData.get(key)
-                    if oldVal != newVal:
-                        self.write_req_validator.validate(req,
-                                                          [AuthActionEdit(txn_type=NYM,
-                                                                          field=key,
-                                                                          old_value=oldVal,
-                                                                          new_value=newVal,
-                                                                          is_owner=is_owner)])
+        updateKeys = [ROLE, VERKEY]
+        for key in updateKeys:
+            if key in op:
+                newVal = op[key]
+                oldVal = nymData.get(key)
+                if oldVal != newVal:
+                    self.write_req_validator.validate(req,
+                                                      [AuthActionEdit(txn_type=NYM,
+                                                                      field=key,
+                                                                      old_value=oldVal,
+                                                                      new_value=newVal,
+                                                                      is_owner=is_owner)])
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier

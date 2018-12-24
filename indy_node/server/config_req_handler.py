@@ -73,14 +73,6 @@ class ConfigReqHandler(LedgerRequestHandler):
         typ = operation.get(TXN_TYPE)
         if typ not in [POOL_UPGRADE, POOL_CONFIG]:
             return
-        origin = req.identifier
-        try:
-            self.idrCache.getRole(origin, isCommitted=False)
-        except BaseException:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "Nym {} not added to the ledger yet".format(origin))
         if typ == POOL_UPGRADE:
             pkt_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
             if pkt_to_upgrade:
