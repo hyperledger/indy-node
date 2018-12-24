@@ -20,7 +20,7 @@ def claim_def_handler(db_manager):
 @pytest.fixture(scope="module")
 def creator(db_manager):
     identifier = randomString()
-    idr = db_manager.get_store('idr')
+    idr = db_manager.database_manager.idr_cache
     add_to_idr(idr, identifier, STEWARD)
     return identifier
 
@@ -51,7 +51,7 @@ def test_claim_def_dynamic_validation_without_permission(claim_def_request, sche
     claim_def_handler.ledger.appendTxns([schema])
 
     test_identifier = randomString()
-    idr = claim_def_handler.database_manager.get_store('idr')
+    idr = claim_def_handler.database_manager.idr_cache
     add_to_idr(idr, test_identifier, "")
 
     request = Request(identifier=test_identifier,

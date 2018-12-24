@@ -8,7 +8,6 @@ from indy_node.test.request_handlers.helper import add_to_idr
 from plenum.common.constants import STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
-
 from plenum.common.util import randomString
 
 
@@ -30,7 +29,7 @@ def nym_request(creator):
 @pytest.fixture(scope="module")
 def creator(db_manager):
     identifier = randomString()
-    idr = db_manager.get_store('idr')
+    idr = db_manager.idr_cache
     add_to_idr(idr, identifier, None)
     return identifier
 
