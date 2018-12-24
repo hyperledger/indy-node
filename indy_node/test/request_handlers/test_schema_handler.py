@@ -1,15 +1,9 @@
-from functools import partial
-
 import pytest
-from indy_common.constants import SCHEMA, GET_SCHEMA
 
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
-from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
 from indy_node.test.request_handlers.helper import add_to_idr
-from plenum.common.constants import DOMAIN_LEDGER_ID, TRUSTEE
+from plenum.common.constants import TRUSTEE
 from plenum.common.exceptions import InvalidClientRequest, UnknownIdentifier, UnauthorizedClientRequest
-from plenum.common.request import Request
-from plenum.common.util import randomString
 from plenum.test.testing_utils import FakeSomething
 
 

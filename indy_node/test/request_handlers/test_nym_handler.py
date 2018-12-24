@@ -1,5 +1,3 @@
-import random
-
 import pytest
 from indy_common.auth import Authoriser
 
@@ -7,7 +5,7 @@ from indy_common.constants import NYM
 
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
 from indy_node.test.request_handlers.helper import add_to_idr
-from plenum.common.constants import STEWARD, TRUSTEE
+from plenum.common.constants import STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 

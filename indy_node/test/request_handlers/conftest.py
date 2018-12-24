@@ -1,8 +1,6 @@
 import pytest
 from indy_common.constants import SCHEMA
 
-from indy_common.config_helper import NodeConfigHelper
-
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
 from indy_node.test.request_handlers.helper import get_fake_ledger
@@ -41,7 +39,6 @@ def schema_request():
                                   'attr_names': ['last_name',
                                                  'first_name', ]
                               }})
-
 
 
 @pytest.fixture(scope="module")

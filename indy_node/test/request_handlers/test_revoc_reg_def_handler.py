@@ -1,12 +1,8 @@
 import pytest
-import time
 
-from indy_common.constants import REVOC_REG_DEF, REVOC_REG_DEF_ID, TIMESTAMP, GET_REVOC_REG, CRED_DEF_ID, REVOC_TYPE, \
+from indy_common.constants import REVOC_REG_DEF, CRED_DEF_ID, REVOC_TYPE, \
     TAG
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_def_handler import RevocRegDefHandler
-
-from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
-from plenum.common.constants import TXN_TYPE
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.util import randomString

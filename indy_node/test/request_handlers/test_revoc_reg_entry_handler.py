@@ -1,17 +1,10 @@
-from functools import partial
-
 import pytest
-from indy_node.server.revocation_strategy import IssuedStrategy, RevokedStrategy
 
-from indy_common.constants import SCHEMA, GET_SCHEMA, REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUANCE_BY_DEFAULT, \
-    ISSUANCE_ON_DEMAND, VALUE, ISSUANCE_TYPE
+from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUANCE_BY_DEFAULT, \
+    VALUE, ISSUANCE_TYPE
 from indy_node.server.request_handlers.domain_req_handlers.revoc_reg_entry_handler import RevocRegEntryHandler
 
-from indy_node.server.request_handlers.domain_req_handlers.schema_handler import SchemaHandler
-from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
-from indy_node.test.request_handlers.helper import add_to_idr
-from plenum.common.constants import DOMAIN_LEDGER_ID, TRUSTEE
-from plenum.common.exceptions import InvalidClientRequest, UnknownIdentifier, UnauthorizedClientRequest
+from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.test.testing_utils import FakeSomething
