@@ -44,16 +44,16 @@ class SchemaHandler(WriteRequestHandler):
                                        .format(identifier, schema_name, schema_version))
         try:
             origin_role = self.idrCache.getRole(
-                request.identifier, isCommitted=False) or None
+                identifier, isCommitted=False) or None
         except BaseException:
             raise UnknownIdentifier(
-                request.identifier,
+                identifier,
                 request.reqId)
         r, msg = Authoriser.authorised(typ=SCHEMA,
                                        actorRole=origin_role)
         if not r:
             raise UnauthorizedClientRequest(
-                request.identifier,
+                identifier,
                 request.reqId,
                 "{} cannot add schema".format(
                     Roles.nameFromValue(origin_role))
