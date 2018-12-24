@@ -5,7 +5,7 @@ from plenum.common.exceptions import InvalidClientRequest
 
 
 class GetRevocRegHandler(ReadRequestHandler):
-    def _get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
+    def get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
         assert revoc_reg_def_id
         current_entry, _, _, _ = self.getRevocDefEntry(revoc_reg_def_id=revoc_reg_def_id,
                                                        isCommitted=False)

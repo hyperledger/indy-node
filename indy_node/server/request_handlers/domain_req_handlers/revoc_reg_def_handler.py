@@ -5,7 +5,7 @@ from indy_node.server.request_handlers.read_req_handlers.get_revoc_reg_def_handl
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_type
+from plenum.common.txn_util import get_type, get_request_data
 
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
@@ -21,7 +21,8 @@ class RevocRegDefHandler(WriteRequestHandler):
         pass
 
     def dynamic_validation(self, request: Request):
-        operation = request.operation
+        self._validate_type(request)
+        identifier, req_id, operation = get_request_data(request)
         cred_def_id = operation.get(CRED_DEF_ID)
         revoc_def_type = operation.get(REVOC_TYPE)
         revoc_def_tag = operation.get(TAG)
@@ -30,22 +31,22 @@ class RevocRegDefHandler(WriteRequestHandler):
         assert revoc_def_type
         tags = cred_def_id.split(":")
         if len(tags) != 4 and len(tags) != 5:
-            raise InvalidClientRequest(request.identifier,
-                                       request.reqId,
+            raise InvalidClientRequest(identifier,
+                                       req_id,
                                        "Format of {} field is not acceptable. "
                                        "Expected: 'did:marker:signature_type:schema_ref' or "
                                        "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
         cred_def, _, _, _ = self.get_revoc_reg_def.lookup(cred_def_id, isCommitted=False, with_proof=False)
         if cred_def is None:
-            raise InvalidClientRequest(request.identifier,
-                                       request.reqId,
+            raise InvalidClientRequest(identifier,
+                                       req_id,
                                        "There is no any CRED_DEF by path: {}".format(cred_def_id))
 
     def gen_txn_path(self, txn):
         path = domain.prepare_revoc_def_for_state(txn, path_only=True)
         return path.decode()
 
-    def _updateStateWithSingleTxn(self, txn, isCommitted=False):
+    def _update_state_with_single_txn(self, txn, isCommitted=False):
         assert get_type(txn) == REVOC_REG_DEF
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)

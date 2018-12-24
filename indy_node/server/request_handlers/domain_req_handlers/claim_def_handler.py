@@ -15,8 +15,8 @@ from plenum.server.request_handlers.handler_interfaces.write_request_handler imp
 
 class ClaimDefHandler(WriteRequestHandler):
 
-    def __init__(self, config, database_manager: DatabaseManager):
-        super().__init__(config, database_manager, CLAIM_DEF, DOMAIN_LEDGER_ID)
+    def __init__(self, database_manager: DatabaseManager):
+        super().__init__(database_manager, CLAIM_DEF, DOMAIN_LEDGER_ID)
 
     def static_validation(self, request: Request):
         pass
@@ -24,6 +24,7 @@ class ClaimDefHandler(WriteRequestHandler):
     def dynamic_validation(self, request: Request):
         # we can not add a Claim Def with existent ISSUER_DID
         # sine a Claim Def needs to be identified by seqNo
+        self._validate_type(request)
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
         ref = operation[REF]
         try:
@@ -37,7 +38,7 @@ class ClaimDefHandler(WriteRequestHandler):
                                        req_id,
                                        "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
         try:
-            origin_role = self.idrCache.getRole(
+            origin_role = self.database_manager.idr_cache.getRole(
                 identifier, isCommitted=False) or None
         except BaseException:
             raise UnknownIdentifier(
@@ -61,11 +62,7 @@ class ClaimDefHandler(WriteRequestHandler):
         path = domain.prepare_claim_def_for_state(txn, path_only=True)
         return path.decode()
 
-    def _updateStateWithSingleTxn(self, txn, isCommitted=False) -> None:
+    def _update_state_with_single_txn(self, txn, isCommitted=False) -> None:
         assert get_type(txn) == CLAIM_DEF
         path, value_bytes = domain.prepare_claim_def_for_state(txn)
         self.state.set(path, value_bytes)
-
-    @property
-    def idrCache(self):
-        return self.database_manager.get_store('idr')

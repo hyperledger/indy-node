@@ -7,11 +7,11 @@ from indy_common.roles import Roles
 from indy_common.constants import NYM
 
 from indy_common.auth import Authoriser
-from plenum.common.constants import ROLE, TARGET_NYM, DOMAIN_LEDGER_ID, TRUSTEE, VERKEY, TXN_TIME
+from plenum.common.constants import ROLE, TARGET_NYM, TRUSTEE, VERKEY, TXN_TIME
 
 from plenum.common.exceptions import InvalidClientRequest, UnknownIdentifier, UnauthorizedClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_payload_data, get_from, get_seq_no, get_txn_time
+from plenum.common.txn_util import get_payload_data, get_from, get_seq_no, get_txn_time, get_request_data
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
@@ -23,7 +23,8 @@ class NymHandler(PNymHandler):
         super().__init__(config, database_manager)
 
     def static_validation(self, request: Request):
-        identifier, req_id, operation = request.identifier, request.reqId, request.operation
+        self._validate_type(request)
+        identifier, req_id, operation = get_request_data(request)
         role = operation.get(ROLE)
         nym = operation.get(TARGET_NYM)
         if isinstance(nym, str):
@@ -38,28 +39,29 @@ class NymHandler(PNymHandler):
                                        format(role))
 
     def dynamic_validation(self, request: Request):
-        identifier, req_id, operation = request.identifier, request.reqId, request.operation
+        self._validate_type(request)
+        identifier, req_id, operation = get_request_data(request)
         try:
-            originRole = self.idrCache.getRole(
+            origin_role = self.database_manager.idr_cache.getRole(
                 identifier, isCommitted=False) or None
         except BaseException:
             raise UnknownIdentifier(
                 identifier,
                 req_id)
 
-        nymData = self.idrCache.getNym(operation[TARGET_NYM], isCommitted=False)
-        if not nymData:
+        nym_data = self.database_manager.idr_cache.getNym(operation[TARGET_NYM], isCommitted=False)
+        if not nym_data:
             # If nym does not exist
-            self._validateNewNym(request, operation, originRole)
+            self._validate_new_nym(identifier, req_id, operation, origin_role)
         else:
-            self._validateExistingNym(request, operation, originRole, nymData)
+            self._validate_existing_nym(identifier, req_id, operation, origin_role, nym_data)
 
     def gen_txn_path(self, txn):
         nym = get_payload_data(txn).get(TARGET_NYM)
         binary_digest = domain.make_state_path_for_nym(nym)
         return hexlify(binary_digest).decode()
 
-    def _updateStateWithSingleTxn(self, txn, isCommitted=False):
+    def _update_state_with_single_txn(self, txn, isCommitted=False):
         txn_data = get_payload_data(txn)
         nym = txn_data.get(TARGET_NYM)
         data = {
@@ -71,21 +73,21 @@ class NymHandler(PNymHandler):
             data[ROLE] = txn_data.get(ROLE)
         if VERKEY in txn_data:
             data[VERKEY] = txn_data.get(VERKEY)
-        self.updateNym(nym, txn, isCommitted=isCommitted)
+        self.update_nym(nym, txn, isCommitted=isCommitted)
 
-    def updateNym(self, nym, txn, isCommitted=True):
-        updatedData = super().updateNym(nym, txn, isCommitted=isCommitted)
+    def update_nym(self, nym, txn, isCommitted=True):
+        updatedData = super().update_nym(nym, txn, isCommitted=isCommitted)
         txn_time = get_txn_time(txn)
-        self.idrCache.set(nym,
-                          seqNo=get_seq_no(txn),
-                          txnTime=txn_time,
-                          ta=updatedData.get(f.IDENTIFIER.nm),
-                          role=updatedData.get(ROLE),
-                          verkey=updatedData.get(VERKEY),
-                          isCommitted=isCommitted)
+        self.database_manager.idr_cache.set(nym,
+                                            seqNo=get_seq_no(txn),
+                                            txnTime=txn_time,
+                                            ta=updatedData.get(f.IDENTIFIER.nm),
+                                            role=updatedData.get(ROLE),
+                                            verkey=updatedData.get(VERKEY),
+                                            isCommitted=isCommitted)
 
-    def _validateNewNym(self, req: Request, op, originRole):
-        role = op.get(ROLE)
+    def _validate_new_nym(self, identifier, req_id, operation, originRole):
+        role = operation.get(ROLE)
         r, msg = Authoriser.authorised(NYM,
                                        originRole,
                                        field=ROLE,
@@ -93,44 +95,39 @@ class NymHandler(PNymHandler):
                                        newVal=role)
         if not r:
             raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
+                identifier,
+                req_id,
                 "{} cannot add {}".format(
                     Roles.nameFromValue(originRole),
                     Roles.nameFromValue(role))
             )
 
-    def _validateExistingNym(self, req: Request, op, originRole, nymData):
+    def _validate_existing_nym(self, identifier, req_id, op, origin_role, nym_data):
         unauthorized = False
         reason = None
-        origin = req.identifier
-        owner = self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
-        isOwner = origin == owner
+        owner = self.database_manager.idr_cache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
+        is_owner = identifier == owner
 
-        if not originRole == TRUSTEE and not isOwner:
+        if not origin_role == TRUSTEE and not is_owner:
             reason = '{} is neither Trustee nor owner of {}' \
-                .format(origin, op[TARGET_NYM])
+                .format(identifier, op[TARGET_NYM])
             unauthorized = True
 
         if not unauthorized:
-            updateKeys = [ROLE, VERKEY]
-            for key in updateKeys:
+            update_keys = [ROLE, VERKEY]
+            for key in update_keys:
                 if key in op:
-                    newVal = op[key]
-                    oldVal = nymData.get(key)
-                    if oldVal != newVal:
-                        r, msg = Authoriser.authorised(NYM, originRole, field=key,
-                                                       oldVal=oldVal, newVal=newVal,
-                                                       isActorOwnerOfSubject=isOwner)
+                    new_val = op[key]
+                    old_val = nym_data.get(key)
+                    if old_val != new_val:
+                        r, msg = Authoriser.authorised(NYM, origin_role, field=key,
+                                                       oldVal=old_val, newVal=new_val,
+                                                       isActorOwnerOfSubject=is_owner)
                         if not r:
                             unauthorized = True
                             reason = "{} cannot update {}". \
-                                format(Roles.nameFromValue(originRole), key)
+                                format(Roles.nameFromValue(origin_role), key)
                             break
         if unauthorized:
             raise UnauthorizedClientRequest(
-                req.identifier, req.reqId, reason)
-
-    @property
-    def idrCache(self):
-        return self.database_manager.get_store('idr')
+                identifier, req_id, reason)
