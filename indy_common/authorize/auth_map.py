@@ -19,7 +19,7 @@ addNewTrustAnchor = AuthActionAdd(txn_type=NYM,
 
 
 addNewIdentityOwner = AuthActionAdd(txn_type=NYM,
-                                    field='role',
+                                    field=ROLE,
                                     value='')
 
 
@@ -42,7 +42,6 @@ keyRotation = AuthActionEdit(txn_type=NYM,
                              field=VERKEY,
                              old_value='*',
                              new_value='*')
-
 
 addSchema = AuthActionAdd(txn_type=SCHEMA,
                           field='*',
