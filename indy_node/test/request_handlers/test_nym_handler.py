@@ -79,12 +79,12 @@ def test_nym_dynamic_validation_for_new_nym(nym_request, nym_handler: NymHandler
         nym_request.operation['role'] = role
         with pytest.raises(UnauthorizedClientRequest):
             nym_handler.dynamic_validation(nym_request)
-    add_to_idr(nym_handler.idrCache, creator, STEWARD)
+    add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
     nym_handler.dynamic_validation(nym_request)
 
 
 def test_nym_dynamic_validation_for_existing_nym(nym_request: Request, nym_handler: NymHandler, creator):
-    add_to_idr(nym_handler.idrCache, nym_request.operation['dest'], None)
+    add_to_idr(nym_handler.database_manager.idr_cache, nym_request.operation['dest'], None)
     with pytest.raises(UnauthorizedClientRequest):
         nym_handler.dynamic_validation(nym_request)
     nym_request._identifier = nym_request.operation['dest']

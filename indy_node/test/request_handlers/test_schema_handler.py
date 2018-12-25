@@ -35,12 +35,12 @@ def test_schema_dynamic_validation_failed_ident_not_exist(schema_request, schema
 
 def test_schema_dynamic_validation_failed_not_authorised(schema_request, schema_handler):
     make_schema_exist(schema_handler.get_schema_handler, False)
-    add_to_idr(schema_handler.idrCache, schema_request.identifier, None)
+    add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, None)
     with pytest.raises(UnauthorizedClientRequest):
         schema_handler.dynamic_validation(schema_request)
 
 
 def test_schema_dynamic_validation_passes(schema_request, schema_handler):
     make_schema_exist(schema_handler.get_schema_handler, False)
-    add_to_idr(schema_handler.idrCache, schema_request.identifier, TRUSTEE)
+    add_to_idr(schema_handler.database_manager.idr_cache, schema_request.identifier, TRUSTEE)
     schema_handler.dynamic_validation(schema_request)

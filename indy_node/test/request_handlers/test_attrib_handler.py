@@ -47,12 +47,12 @@ def test_attrib_dynamic_validation_fails(attrib_request, attrib_handler: Attribu
 
 
 def test_attrib_dynamic_validation_fails_not_owner(attrib_request, attrib_handler: AttributeHandler):
-    add_to_idr(attrib_handler.idrCache, attrib_request.operation['dest'], None)
+    add_to_idr(attrib_handler.database_manager.idr_cache, attrib_request.operation['dest'], None)
     with pytest.raises(UnauthorizedClientRequest):
         attrib_handler.dynamic_validation(attrib_request)
 
 
 def test_attrib_dynamic_validation_passes(attrib_request, attrib_handler: AttributeHandler):
-    add_to_idr(attrib_handler.idrCache, attrib_request.operation['dest'], None)
+    add_to_idr(attrib_handler.database_manager.idr_cache, attrib_request.operation['dest'], None)
     attrib_request._identifier = attrib_request.operation['dest']
     attrib_handler.dynamic_validation(attrib_request)

@@ -20,7 +20,7 @@ def claim_def_handler(db_manager):
 @pytest.fixture(scope="module")
 def creator(db_manager):
     identifier = randomString()
-    idr = db_manager.database_manager.idr_cache
+    idr = db_manager.idr_cache
     add_to_idr(idr, identifier, STEWARD)
     return identifier
 
