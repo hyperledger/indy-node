@@ -193,8 +193,6 @@ class DomainReqHandler(PHandler):
             if key in op:
                 newVal = op[key]
                 oldVal = nymData.get(key)
-                if key == ROLE and newVal == oldVal:
-                    continue
                 self.write_req_validator.validate(req,
                                                   [AuthActionEdit(txn_type=NYM,
                                                                   field=key,
