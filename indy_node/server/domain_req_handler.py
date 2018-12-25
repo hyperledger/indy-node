@@ -167,32 +167,23 @@ class DomainReqHandler(PHandler):
         return len(dataKeys) == 1
 
     def _validateNym(self, req: Request):
-        origin = req.identifier
         op = req.operation
-
-        try:
-            originRole = self.idrCache.getRole(
-                origin, isCommitted=False) or None
-        except BaseException:
-            raise UnknownIdentifier(
-                req.identifier,
-                req.reqId)
 
         nymData = self.idrCache.getNym(op[TARGET_NYM], isCommitted=False)
         if not nymData:
             # If nym does not exist
-            self._validateNewNym(req, op, originRole)
+            self._validateNewNym(req, op)
         else:
-            self._validateExistingNym(req, op, originRole, nymData)
+            self._validateExistingNym(req, op, nymData)
 
-    def _validateNewNym(self, req: Request, op, originRole):
+    def _validateNewNym(self, req: Request, op):
         role = op.get(ROLE)
         self.write_req_validator.validate(req,
                                           [AuthActionAdd(txn_type=NYM,
                                                          field=ROLE,
                                                          value=role)])
 
-    def _validateExistingNym(self, req: Request, op, originRole, nymData):
+    def _validateExistingNym(self, req: Request, op, nymData):
         origin = req.identifier
         owner = self.idrCache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
         is_owner = origin == owner
@@ -202,13 +193,12 @@ class DomainReqHandler(PHandler):
             if key in op:
                 newVal = op[key]
                 oldVal = nymData.get(key)
-                if oldVal != newVal:
-                    self.write_req_validator.validate(req,
-                                                      [AuthActionEdit(txn_type=NYM,
-                                                                      field=key,
-                                                                      old_value=oldVal,
-                                                                      new_value=newVal,
-                                                                      is_owner=is_owner)])
+                self.write_req_validator.validate(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=key,
+                                                                  old_value=oldVal,
+                                                                  new_value=newVal,
+                                                                  is_owner=is_owner)])
 
     def _validateAttrib(self, req: Request):
         origin = req.identifier
@@ -247,13 +237,6 @@ class DomainReqHandler(PHandler):
                                        '{} can have one and only one SCHEMA with '
                                        'name {} and version {}'
                                        .format(identifier, schema_name, schema_version))
-        try:
-            self.idrCache.getRole(
-                req.identifier, isCommitted=False) or None
-        except BaseException:
-            raise UnknownIdentifier(
-                req.identifier,
-                req.reqId)
         self.write_req_validator.validate(req,
                                           [AuthActionAdd(txn_type=SCHEMA,
                                                          field='*',
@@ -273,13 +256,6 @@ class DomainReqHandler(PHandler):
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
                                        "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
-        try:
-            self.idrCache.getRole(
-                req.identifier, isCommitted=False) or None
-        except BaseException:
-            raise UnknownIdentifier(
-                req.identifier,
-                req.reqId)
         # only owner can update claim_def,
         # because his identifier is the primary key of claim_def
         self.write_req_validator.validate(req,
