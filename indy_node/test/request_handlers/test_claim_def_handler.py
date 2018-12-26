@@ -2,7 +2,7 @@ import pytest
 
 from indy_common.constants import NYM, CLAIM_DEF, REF
 from indy_node.server.request_handlers.domain_req_handlers.claim_def_handler import ClaimDefHandler
-from indy_node.test.request_handlers.helper import add_to_idr
+from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 
 from plenum.common.constants import STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest, UnknownIdentifier
@@ -10,11 +10,14 @@ from plenum.common.request import Request
 from plenum.common.txn_util import reqToTxn, get_seq_no
 
 from plenum.common.util import randomString
+from plenum.test.testing_utils import FakeSomething
 
 
 @pytest.fixture(scope="module")
 def claim_def_handler(db_manager):
-    return ClaimDefHandler(db_manager)
+    f = FakeSomething()
+    f.validate = lambda request, action_list: True
+    return ClaimDefHandler(db_manager, f)
 
 
 @pytest.fixture(scope="module")
@@ -35,8 +38,7 @@ def claim_def_request(creator, schema_request):
 
 
 def test_claim_def_dynamic_validation_for_new_claim_def(claim_def_request, schema_request,
-                                                        claim_def_handler: ClaimDefHandler,
-                                                        creator):
+                                                        claim_def_handler: ClaimDefHandler):
     schema = reqToTxn(schema_request)
     claim_def_request.operation[REF] = get_seq_no(schema)
     claim_def_handler.ledger.appendTxns([schema])
@@ -44,8 +46,8 @@ def test_claim_def_dynamic_validation_for_new_claim_def(claim_def_request, schem
 
 
 def test_claim_def_dynamic_validation_without_permission(claim_def_request, schema_request,
-                                                         claim_def_handler: ClaimDefHandler,
-                                                         creator):
+                                                         claim_def_handler: ClaimDefHandler):
+    claim_def_handler.write_request_validator.validate = get_exception(True)
     schema = reqToTxn(schema_request)
     claim_def_request.operation[REF] = get_seq_no(schema)
     claim_def_handler.ledger.appendTxns([schema])
@@ -59,13 +61,11 @@ def test_claim_def_dynamic_validation_without_permission(claim_def_request, sche
                       operation=claim_def_request.operation)
     with pytest.raises(UnauthorizedClientRequest) as e:
         claim_def_handler.dynamic_validation(request)
-    assert "cannot add claim def" \
-           in e._excinfo[1].args[0]
 
 
 def test_claim_def_dynamic_validation_for_unknown_identifier(claim_def_request, schema_request,
-                                                             claim_def_handler: ClaimDefHandler,
-                                                             creator):
+                                                             claim_def_handler: ClaimDefHandler):
+    claim_def_handler.write_request_validator.validate = get_exception(True)
     test_identifier = randomString()
     schema = reqToTxn(schema_request)
     claim_def_request.operation[REF] = get_seq_no(schema)
@@ -73,13 +73,12 @@ def test_claim_def_dynamic_validation_for_unknown_identifier(claim_def_request, 
     request = Request(identifier=test_identifier,
                       reqId=claim_def_request.reqId,
                       operation=claim_def_request.operation)
-    with pytest.raises(UnknownIdentifier) as e:
+    with pytest.raises(UnauthorizedClientRequest) as e:
         claim_def_handler.dynamic_validation(request)
-    assert 'unknown identifier' in e._excinfo[1].reason
 
 
 def test_claim_def_dynamic_validation_without_schema(claim_def_request, schema_request,
-                                                     claim_def_handler: ClaimDefHandler, creator):
+                                                     claim_def_handler: ClaimDefHandler):
     with pytest.raises(InvalidClientRequest) as e:
         claim_def_handler.dynamic_validation(claim_def_request)
     assert "Mentioned seqNo ({}) doesn't exist.".format(claim_def_request.operation[REF]) \

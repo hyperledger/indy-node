@@ -4,16 +4,19 @@ from indy_common.auth import Authoriser
 from indy_common.constants import NYM
 
 from indy_node.server.request_handlers.domain_req_handlers.nym_handler import NymHandler
-from indy_node.test.request_handlers.helper import add_to_idr
+from indy_node.test.request_handlers.helper import add_to_idr, get_exception
 from plenum.common.constants import STEWARD
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 from plenum.common.request import Request
 from plenum.common.util import randomString
+from plenum.test.testing_utils import FakeSomething
 
 
 @pytest.fixture(scope="module")
 def nym_handler(db_manager):
-    return NymHandler(None, db_manager)
+    f = FakeSomething()
+    f.validate = lambda request, action_list: True
+    return NymHandler(db_manager, f)
 
 
 @pytest.fixture(scope="function")
@@ -75,17 +78,21 @@ def test_nym_static_validation_not_authorized_random(nym_request, nym_handler: N
 
 
 def test_nym_dynamic_validation_for_new_nym(nym_request, nym_handler: NymHandler, creator):
-    for role in Authoriser.ValidRoles:
-        nym_request.operation['role'] = role
-        with pytest.raises(UnauthorizedClientRequest):
-            nym_handler.dynamic_validation(nym_request)
+    nym_handler.write_request_validator.validate = get_exception(False)
     add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
     nym_handler.dynamic_validation(nym_request)
+
+    nym_handler.write_request_validator.validate = get_exception(True)
+    with pytest.raises(UnauthorizedClientRequest):
+        nym_handler.dynamic_validation(nym_request)
 
 
 def test_nym_dynamic_validation_for_existing_nym(nym_request: Request, nym_handler: NymHandler, creator):
     add_to_idr(nym_handler.database_manager.idr_cache, nym_request.operation['dest'], None)
+    nym_handler.write_request_validator.validate = get_exception(False)
+    add_to_idr(nym_handler.database_manager.idr_cache, creator, STEWARD)
+    nym_handler.dynamic_validation(nym_request)
+
+    nym_handler.write_request_validator.validate = get_exception(True)
     with pytest.raises(UnauthorizedClientRequest):
         nym_handler.dynamic_validation(nym_request)
-    nym_request._identifier = nym_request.operation['dest']
-    nym_handler.dynamic_validation(nym_request)

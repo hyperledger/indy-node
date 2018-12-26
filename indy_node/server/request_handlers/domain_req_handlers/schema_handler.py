@@ -34,18 +34,18 @@ class SchemaHandler(WriteRequestHandler):
         schema_version = get_write_schema_version(request)
         schema, _, _, _ = self.get_schema_handler.get_schema(
             author=identifier,
-            schemaName=schema_name,
-            schemaVersion=schema_version,
+            schema_name=schema_name,
+            schema_version=schema_version,
             with_proof=False)
         if schema:
             raise InvalidClientRequest(identifier, req_id,
                                        '{} can have one and only one SCHEMA with '
                                        'name {} and version {}'
                                        .format(identifier, schema_name, schema_version))
-        self.write_req_validator.validate(request,
-                                          [AuthActionAdd(txn_type=SCHEMA,
-                                                         field='*',
-                                                         value='*')])
+        self.write_request_validator.validate(request,
+                                              [AuthActionAdd(txn_type=SCHEMA,
+                                                             field='*',
+                                                             value='*')])
 
     def gen_txn_path(self, txn):
         self._validate_txn_type(txn)

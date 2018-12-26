@@ -1,5 +1,6 @@
 import random
 
+from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.common.txn_util import get_seq_no
 from plenum.common.util import randomString
 from plenum.test.testing_utils import FakeSomething
@@ -23,3 +24,13 @@ def get_fake_ledger():
     ledger.appendTxns = lambda txns: ledger.txn_list.update({get_seq_no(txn): txn
                                                              for txn in txns})
     return ledger
+
+
+def get_exception(is_exception):
+    def exception(request, action_list):
+        if is_exception:
+            raise UnauthorizedClientRequest(None, None)
+        else:
+            pass
+
+    return exception

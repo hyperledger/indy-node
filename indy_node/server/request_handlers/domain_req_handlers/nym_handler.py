@@ -92,14 +92,14 @@ class NymHandler(WriteRequestHandler):
 
     def _validate_new_nym(self, request, operation):
         role = operation.get(ROLE)
-        self.write_req_validator.validate(request,
-                                          [AuthActionAdd(txn_type=NYM,
-                                                         field=ROLE,
-                                                         value=role)])
+        self.write_request_validator.validate(request,
+                                              [AuthActionAdd(txn_type=NYM,
+                                                             field=ROLE,
+                                                             value=role)])
 
     def _validate_existing_nym(self, request, operation, nym_data):
         origin = request.identifier
-        owner = self.idrCache.getOwnerFor(operation[TARGET_NYM], isCommitted=False)
+        owner = self.database_manager.idr_cache.getOwnerFor(operation[TARGET_NYM], isCommitted=False)
         is_owner = origin == owner
 
         updateKeys = [ROLE, VERKEY]
@@ -107,9 +107,9 @@ class NymHandler(WriteRequestHandler):
             if key in operation:
                 newVal = operation[key]
                 oldVal = nym_data.get(key)
-                self.write_req_validator.validate(request,
-                                                  [AuthActionEdit(txn_type=NYM,
-                                                                  field=key,
-                                                                  old_value=oldVal,
-                                                                  new_value=newVal,
-                                                                  is_owner=is_owner)])
+                self.write_request_validator.validate(request,
+                                                      [AuthActionEdit(txn_type=NYM,
+                                                                      field=key,
+                                                                      old_value=oldVal,
+                                                                      new_value=newVal,
+                                                                      is_owner=is_owner)])

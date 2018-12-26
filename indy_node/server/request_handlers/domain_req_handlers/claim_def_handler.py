@@ -41,10 +41,10 @@ class ClaimDefHandler(WriteRequestHandler):
                                        "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
         # only owner can update claim_def,
         # because his identifier is the primary key of claim_def
-        self.write_req_validator.validate(request,
-                                          [AuthActionAdd(txn_type=CLAIM_DEF,
-                                                         field='*',
-                                                         value='*')])
+        self.write_request_validator.validate(request,
+                                              [AuthActionAdd(txn_type=CLAIM_DEF,
+                                                             field='*',
+                                                             value='*')])
 
     def gen_txn_path(self, txn):
         self._validate_txn_type(txn)

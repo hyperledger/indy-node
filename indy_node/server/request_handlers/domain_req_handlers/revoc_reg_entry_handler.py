@@ -1,3 +1,5 @@
+from typing import Dict, Callable
+
 from indy_common.state import domain
 
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, VALUE, ISSUANCE_TYPE
@@ -14,10 +16,10 @@ class RevocRegEntryHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  get_revoc_reg_entry: GetRevocRegHandler,
-                 revocation_strategy_map: dict):
+                 get_revocation_strategy: Callable):
         super().__init__(database_manager, REVOC_REG_ENTRY, DOMAIN_LEDGER_ID)
         self.get_revoc_reg_entry = get_revoc_reg_entry
-        self.revocation_strategy_map = revocation_strategy_map
+        self.get_revocation_strategy = get_revocation_strategy
 
     def static_validation(self, request: Request):
         pass
@@ -50,6 +52,3 @@ class RevocRegEntryHandler(WriteRequestHandler):
             revoc_def[VALUE][ISSUANCE_TYPE])
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
-
-    def get_revocation_strategy(self, type):
-        return self.revocation_strategy_map.get(type, None)

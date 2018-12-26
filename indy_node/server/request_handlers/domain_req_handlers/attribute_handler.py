@@ -1,6 +1,7 @@
 from indy_common.state import domain
 
 from indy_common.constants import ATTRIB
+from indy_node.server.request_handlers.utils import validate_attrib_keys
 from plenum.common.constants import DOMAIN_LEDGER_ID, RAW, ENC, HASH, TARGET_NYM
 from plenum.common.exceptions import InvalidClientRequest, UnauthorizedClientRequest
 
@@ -19,7 +20,7 @@ class AttributeHandler(WriteRequestHandler):
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
 
-        if not self._validate_attrib_keys(operation):
+        if not validate_attrib_keys(operation):
             raise InvalidClientRequest(identifier, req_id,
                                        '{} should have one and only one of '
                                        '{}, {}, {}'
@@ -66,8 +67,3 @@ class AttributeHandler(WriteRequestHandler):
 
     def __has_nym(self, nym, isCommitted: bool = True):
         return self.database_manager.idr_cache.hasNym(nym, isCommitted=isCommitted)
-
-    @staticmethod
-    def _validate_attrib_keys(operation):
-        data_keys = {RAW, ENC, HASH}.intersection(set(operation.keys()))
-        return len(data_keys) == 1

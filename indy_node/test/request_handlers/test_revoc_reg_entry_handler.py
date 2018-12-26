@@ -19,16 +19,15 @@ def revoc_reg_entry_handler(db_manager):
         def validate(self, current_entry, request):
             pass
 
-    revocation_strategy_map = {
-        ISSUANCE_BY_DEFAULT: Validator
-    }
+    def get_revocation_strategy(type):
+        return Validator
 
     def get_current_revoc_entry_and_revoc_def(author_did, revoc_reg_def_id, req_id):
         return True, {VALUE: {ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT}}
 
     f = FakeSomething()
     f.get_current_revoc_entry_and_revoc_def = get_current_revoc_entry_and_revoc_def
-    return RevocRegEntryHandler(db_manager, f, revocation_strategy_map)
+    return RevocRegEntryHandler(db_manager, f, get_revocation_strategy)
 
 
 @pytest.fixture(scope="function")
@@ -46,9 +45,9 @@ def test_revoc_reg_entry_dynamic_validation_passes(revoc_reg_entry_handler,
 
 def test_revoc_reg_entry_dynamic_validation_fails(revoc_reg_entry_handler,
                                                   revoc_reg_entry_request):
-    def validate(self, current_entry, request):
+    def validate(sample):
         raise InvalidClientRequest('sample', 'sample')
 
-    revoc_reg_entry_handler.revocation_strategy_map[ISSUANCE_BY_DEFAULT].validate = validate
+    revoc_reg_entry_handler.get_revocation_strategy = validate
     with pytest.raises(InvalidClientRequest):
         revoc_reg_entry_handler.dynamic_validation(revoc_reg_entry_request)
