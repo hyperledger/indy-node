@@ -1,28 +1,29 @@
 from binascii import hexlify
 
 from common.serializers.serialization import domain_state_serializer
+from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import domain
-from indy_common.roles import Roles
 from indy_common.constants import NYM
 from indy_common.auth import Authoriser
+from indy_node.server.request_handlers.write_request_handler import WriteRequestHandler
 from ledger.util import F
 
-from plenum.common.constants import ROLE, TARGET_NYM, TRUSTEE, VERKEY, DOMAIN_LEDGER_ID, TXN_TIME
-
-from plenum.common.exceptions import InvalidClientRequest, UnknownIdentifier, UnauthorizedClientRequest
+from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, DOMAIN_LEDGER_ID, TXN_TIME
+from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_request_data, get_from
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
-from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
 
 
 class NymHandler(WriteRequestHandler):
     state_serializer = domain_state_serializer
 
-    def __init__(self, database_manager: DatabaseManager):
-        super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID)
+    def __init__(self, database_manager: DatabaseManager,
+                 write_request_validator: WriteRequestValidator):
+        super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID, write_request_validator)
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
@@ -42,21 +43,14 @@ class NymHandler(WriteRequestHandler):
 
     def dynamic_validation(self, request: Request):
         self._validate_request_type(request)
-        identifier, req_id, operation = get_request_data(request)
-        try:
-            origin_role = self.database_manager.idr_cache.getRole(
-                identifier, isCommitted=False) or None
-        except BaseException:
-            raise UnknownIdentifier(
-                identifier,
-                req_id)
+        operation = request.operation
 
         nym_data = self.database_manager.idr_cache.getNym(operation[TARGET_NYM], isCommitted=False)
         if not nym_data:
             # If nym does not exist
-            self._validate_new_nym(identifier, req_id, operation, origin_role)
+            self._validate_new_nym(request, operation)
         else:
-            self._validate_existing_nym(identifier, req_id, operation, origin_role, nym_data)
+            self._validate_existing_nym(request, operation, nym_data)
 
     def gen_txn_path(self, txn):
         self._validate_txn_type(txn)
@@ -96,48 +90,26 @@ class NymHandler(WriteRequestHandler):
                                             isCommitted=is_committed)
         return existing_data
 
-    def _validate_new_nym(self, identifier, req_id, operation, origin_role):
+    def _validate_new_nym(self, request, operation):
         role = operation.get(ROLE)
-        r, msg = Authoriser.authorised(NYM,
-                                       origin_role,
-                                       field=ROLE,
-                                       oldVal=None,
-                                       newVal=role)
-        if not r:
-            raise UnauthorizedClientRequest(
-                identifier,
-                req_id,
-                "{} cannot add {}".format(
-                    Roles.nameFromValue(origin_role),
-                    Roles.nameFromValue(role))
-            )
+        self.write_req_validator.validate(request,
+                                          [AuthActionAdd(txn_type=NYM,
+                                                         field=ROLE,
+                                                         value=role)])
 
-    def _validate_existing_nym(self, identifier, req_id, op, origin_role, nym_data):
-        unauthorized = False
-        reason = None
-        owner = self.database_manager.idr_cache.getOwnerFor(op[TARGET_NYM], isCommitted=False)
-        is_owner = identifier == owner
+    def _validate_existing_nym(self, request, operation, nym_data):
+        origin = request.identifier
+        owner = self.idrCache.getOwnerFor(operation[TARGET_NYM], isCommitted=False)
+        is_owner = origin == owner
 
-        if not origin_role == TRUSTEE and not is_owner:
-            reason = '{} is neither Trustee nor owner of {}' \
-                .format(identifier, op[TARGET_NYM])
-            unauthorized = True
-
-        if not unauthorized:
-            update_keys = [ROLE, VERKEY]
-            for key in update_keys:
-                if key in op:
-                    new_val = op[key]
-                    old_val = nym_data.get(key)
-                    if old_val != new_val:
-                        r, msg = Authoriser.authorised(NYM, origin_role, field=key,
-                                                       oldVal=old_val, newVal=new_val,
-                                                       isActorOwnerOfSubject=is_owner)
-                        if not r:
-                            unauthorized = True
-                            reason = "{} cannot update {}". \
-                                format(Roles.nameFromValue(origin_role), key)
-                            break
-        if unauthorized:
-            raise UnauthorizedClientRequest(
-                identifier, req_id, reason)
+        updateKeys = [ROLE, VERKEY]
+        for key in updateKeys:
+            if key in operation:
+                newVal = operation[key]
+                oldVal = nym_data.get(key)
+                self.write_req_validator.validate(request,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=key,
+                                                                  old_value=oldVal,
+                                                                  new_value=newVal,
+                                                                  is_owner=is_owner)])

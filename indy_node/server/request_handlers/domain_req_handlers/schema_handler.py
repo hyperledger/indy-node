@@ -1,26 +1,25 @@
+from indy_common.authorize.auth_actions import AuthActionAdd
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import domain
-
-from indy_common.roles import Roles
-
-from indy_common.auth import Authoriser
 
 from indy_common.constants import SCHEMA
 
 from indy_common.req_utils import get_write_schema_name, get_write_schema_version
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
+from indy_node.server.request_handlers.write_request_handler import WriteRequestHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
-from plenum.common.exceptions import InvalidClientRequest, UnknownIdentifier, UnauthorizedClientRequest
+from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request
-from plenum.common.txn_util import get_type, get_request_data
+from plenum.common.txn_util import get_request_data
 from plenum.server.database_manager import DatabaseManager
-from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
 class SchemaHandler(WriteRequestHandler):
 
-    def __init__(self, database_manager: DatabaseManager, get_schema_handler: GetSchemaHandler):
-        super().__init__(database_manager, SCHEMA, DOMAIN_LEDGER_ID)
+    def __init__(self, database_manager: DatabaseManager, get_schema_handler: GetSchemaHandler,
+                 write_request_validator: WriteRequestValidator):
+        super().__init__(database_manager, SCHEMA, DOMAIN_LEDGER_ID, write_request_validator)
         self.get_schema_handler = get_schema_handler
 
     def static_validation(self, request: Request):
@@ -33,7 +32,7 @@ class SchemaHandler(WriteRequestHandler):
         identifier, req_id, operation = get_request_data(request)
         schema_name = get_write_schema_name(request)
         schema_version = get_write_schema_version(request)
-        schema, _, _, _ = self.get_schema_handler.getSchema(
+        schema, _, _, _ = self.get_schema_handler.get_schema(
             author=identifier,
             schemaName=schema_name,
             schemaVersion=schema_version,
@@ -43,22 +42,10 @@ class SchemaHandler(WriteRequestHandler):
                                        '{} can have one and only one SCHEMA with '
                                        'name {} and version {}'
                                        .format(identifier, schema_name, schema_version))
-        try:
-            origin_role = self.database_manager.idr_cache.getRole(
-                identifier, isCommitted=False) or None
-        except BaseException:
-            raise UnknownIdentifier(
-                identifier,
-                req_id)
-        r, msg = Authoriser.authorised(typ=SCHEMA,
-                                       actorRole=origin_role)
-        if not r:
-            raise UnauthorizedClientRequest(
-                identifier,
-                req_id,
-                "{} cannot add schema".format(
-                    Roles.nameFromValue(origin_role))
-            )
+        self.write_req_validator.validate(request,
+                                          [AuthActionAdd(txn_type=SCHEMA,
+                                                         field='*',
+                                                         value='*')])
 
     def gen_txn_path(self, txn):
         self._validate_txn_type(txn)

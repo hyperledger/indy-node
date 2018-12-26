@@ -5,12 +5,12 @@ from indy_node.server.request_handlers.read_request_handler import ReadRequestHa
 
 class GetSchemaHandler(ReadRequestHandler):
 
-    def getSchema(self,
-                  author: str,
-                  schemaName: str,
-                  schemaVersion: str,
-                  isCommitted=True,
-                  with_proof=True) -> (str, int, int, list):
+    def get_schema(self,
+                   author: str,
+                   schemaName: str,
+                   schemaVersion: str,
+                   isCommitted=True,
+                   with_proof=True) -> (str, int, int, list):
         assert author is not None
         assert schemaName is not None
         assert schemaVersion is not None

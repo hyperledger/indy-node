@@ -18,7 +18,7 @@ def make_schema_exist(handler, is_exist: bool):
     def exist(author, schemaName, schemaVersion, with_proof):
         return is_exist, None, None, None
 
-    handler.getSchema = exist
+    handler.get_schema = exist
 
 
 def test_schema_dynamic_validation_failed_existing_schema(schema_request, schema_handler):
