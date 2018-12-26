@@ -29,6 +29,15 @@ def idr_cache(req_auth):
     return cache
 
 
+@pytest.fixture(scope='module')
+def idr_cache_none_role(req_auth):
+    cache = IdrCache("Cache",
+                     KeyValueStorageInMemory())
+    cache.set(req_auth.identifier, 1, int(time.time()),
+              verkey="SomeVerkey", isCommitted=False)
+    return cache
+
+
 def test_role_authorizer_get_role(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     assert authorizer.get_role(req_auth) == "SomeRole"
@@ -80,6 +89,31 @@ def test_role_authorizer_not_authorize_role(idr_cache, req_auth):
     authorized, reason = authorizer.authorize(req_auth, AuthConstraint(role="SomeOtherRole", sig_count=1))
     assert not authorized
     assert reason == "role is not accepted"
+
+
+def test_role_authorizer_not_authorize_unknown_nym(idr_cache):
+    authorizer = RolesAuthorizer(cache=idr_cache)
+
+    unknown_req_auth = Request(identifier="some_unknown_identifier",
+                               reqId=2,
+                               operation=randomOperation(),
+                               signature="signature",
+                               protocolVersion=CURRENT_PROTOCOL_VERSION)
+
+    authorized, reason = authorizer.authorize(unknown_req_auth,
+                                              AuthConstraint(role="SomeOtherRole", sig_count=1))
+    assert not authorized
+    assert reason == "sender's DID {} is not found in the Ledger".format(unknown_req_auth.identifier)
+
+
+def test_role_authorizer_none_role_not_accepted(idr_cache_none_role, req_auth):
+    authorizer = RolesAuthorizer(cache=idr_cache_none_role)
+    assert not authorizer.is_role_accepted(req_auth, AuthConstraint(role="SomeRole", sig_count=1))
+
+
+def test_role_authorizer_none_role_accepted_for_all_roles(idr_cache_none_role, req_auth):
+    authorizer = RolesAuthorizer(cache=idr_cache_none_role)
+    assert authorizer.is_role_accepted(req_auth, AuthConstraint(role="*", sig_count=1))
 
 
 def test_role_authorizer_is_sig_count_accepted():

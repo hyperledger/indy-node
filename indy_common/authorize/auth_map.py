@@ -19,7 +19,7 @@ addNewTrustAnchor = AuthActionAdd(txn_type=NYM,
 
 
 addNewIdentityOwner = AuthActionAdd(txn_type=NYM,
-                                    field='role',
+                                    field=ROLE,
                                     value='')
 
 
@@ -38,11 +38,30 @@ blacklistingTrustAnchor = AuthActionEdit(txn_type=NYM,
                                          old_value=TRUST_ANCHOR,
                                          new_value='')
 
+sameRoleTrustee = AuthActionEdit(txn_type=NYM,
+                                 field=ROLE,
+                                 old_value=TRUSTEE,
+                                 new_value=TRUSTEE)
+
+sameRoleSteward = AuthActionEdit(txn_type=NYM,
+                                 field=ROLE,
+                                 old_value=STEWARD,
+                                 new_value=STEWARD)
+
+sameRoleTrustAnchor = AuthActionEdit(txn_type=NYM,
+                                     field=ROLE,
+                                     old_value=TRUST_ANCHOR,
+                                     new_value=TRUST_ANCHOR)
+
+sameRoleNone = AuthActionEdit(txn_type=NYM,
+                              field=ROLE,
+                              old_value='',
+                              new_value='')
+
 keyRotation = AuthActionEdit(txn_type=NYM,
                              field=VERKEY,
                              old_value='*',
                              new_value='*')
-
 
 addSchema = AuthActionAdd(txn_type=SCHEMA,
                           field='*',
@@ -162,6 +181,19 @@ authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            blacklistingTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            blacklistingSteward.get_action_id(): AuthConstraint(TRUSTEE, 1),
            blacklistingTrustAnchor.get_action_id(): AuthConstraint(TRUSTEE, 1),
+
+           sameRoleTrustee.get_action_id(): AuthConstraint(role='*',
+                                                           sig_count=1,
+                                                           need_to_be_owner=True),
+           sameRoleSteward.get_action_id(): AuthConstraint(role='*',
+                                                           sig_count=1,
+                                                           need_to_be_owner=True),
+           sameRoleTrustAnchor.get_action_id(): AuthConstraint(role='*',
+                                                               sig_count=1,
+                                                               need_to_be_owner=True),
+           sameRoleNone.get_action_id(): AuthConstraint(role='*',
+                                                        sig_count=1,
+                                                        need_to_be_owner=True),
            keyRotation.get_action_id(): AuthConstraint(role='*',
                                                        sig_count=1,
                                                        need_to_be_owner=True),
