@@ -29,7 +29,7 @@ class SchemaHandler(WriteRequestHandler):
     def dynamic_validation(self, request: Request):
         # we can not add a Schema with already existent NAME and VERSION
         # sine a Schema needs to be identified by seqNo
-        self._validate_type(request)
+        self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         schema_name = get_write_schema_name(request)
         schema_version = get_write_schema_version(request)
@@ -61,10 +61,11 @@ class SchemaHandler(WriteRequestHandler):
             )
 
     def gen_txn_path(self, txn):
+        self._validate_txn_type(txn)
         path = domain.prepare_schema_for_state(txn, path_only=True)
         return path.decode()
 
     def _update_state_with_single_txn(self, txn, isCommitted=False) -> None:
-        assert get_type(txn) == SCHEMA
+        self._validate_txn_type(txn)
         path, value_bytes = domain.prepare_schema_for_state(txn)
         self.state.set(path, value_bytes)

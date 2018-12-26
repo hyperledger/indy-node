@@ -1,29 +1,31 @@
 from binascii import hexlify
 
+from common.serializers.serialization import domain_state_serializer
 from indy_common.state import domain
-
 from indy_common.roles import Roles
-
 from indy_common.constants import NYM
-
 from indy_common.auth import Authoriser
-from plenum.common.constants import ROLE, TARGET_NYM, TRUSTEE, VERKEY, TXN_TIME
+from ledger.util import F
+
+from plenum.common.constants import ROLE, TARGET_NYM, TRUSTEE, VERKEY, DOMAIN_LEDGER_ID, TXN_TIME
 
 from plenum.common.exceptions import InvalidClientRequest, UnknownIdentifier, UnauthorizedClientRequest
 from plenum.common.request import Request
-from plenum.common.txn_util import get_payload_data, get_from, get_seq_no, get_txn_time, get_request_data
+from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, get_request_data, get_from
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
-from plenum.server.request_handlers.nym_handler import NymHandler as PNymHandler
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
+from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
 
 
-class NymHandler(PNymHandler):
+class NymHandler(WriteRequestHandler):
+    state_serializer = domain_state_serializer
 
-    def __init__(self, config, database_manager: DatabaseManager):
-        super().__init__(config, database_manager)
+    def __init__(self, database_manager: DatabaseManager):
+        super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID)
 
     def static_validation(self, request: Request):
-        self._validate_type(request)
+        self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         role = operation.get(ROLE)
         nym = operation.get(TARGET_NYM)
@@ -39,7 +41,7 @@ class NymHandler(PNymHandler):
                                        format(role))
 
     def dynamic_validation(self, request: Request):
-        self._validate_type(request)
+        self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         try:
             origin_role = self.database_manager.idr_cache.getRole(
@@ -57,39 +59,47 @@ class NymHandler(PNymHandler):
             self._validate_existing_nym(identifier, req_id, operation, origin_role, nym_data)
 
     def gen_txn_path(self, txn):
+        self._validate_txn_type(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
         binary_digest = domain.make_state_path_for_nym(nym)
         return hexlify(binary_digest).decode()
 
-    def _update_state_with_single_txn(self, txn, isCommitted=False):
+    def _update_state_with_single_txn(self, txn, is_committed=True):
+        self._validate_txn_type(txn)
+        nym = get_payload_data(txn).get(TARGET_NYM)
+        existing_data = get_nym_details(self.state, nym,
+                                        is_committed=is_committed)
         txn_data = get_payload_data(txn)
-        nym = txn_data.get(TARGET_NYM)
-        data = {
-            f.IDENTIFIER.nm: get_from(txn),
-            f.SEQ_NO.nm: get_seq_no(txn),
-            TXN_TIME: get_txn_time(txn)
-        }
-        if ROLE in txn_data:
-            data[ROLE] = txn_data.get(ROLE)
-        if VERKEY in txn_data:
-            data[VERKEY] = txn_data.get(VERKEY)
-        self.update_nym(nym, txn, isCommitted=isCommitted)
+        new_data = {}
+        if not existing_data:
+            new_data[f.IDENTIFIER.nm] = get_from(txn)
+            new_data[ROLE] = None
+            new_data[VERKEY] = None
 
-    def update_nym(self, nym, txn, isCommitted=True):
-        updatedData = super().update_nym(nym, txn, isCommitted=isCommitted)
+        if ROLE in txn_data:
+            new_data[ROLE] = txn_data[ROLE]
+        if VERKEY in txn_data:
+            new_data[VERKEY] = txn_data[VERKEY]
+        new_data[F.seqNo.name] = get_seq_no(txn)
+        new_data[TXN_TIME] = get_txn_time(txn)
+        existing_data.update(new_data)
+        val = self.state_serializer.serialize(existing_data)
+        key = nym_to_state_key(nym)
+        self.state.set(key, val)
         txn_time = get_txn_time(txn)
         self.database_manager.idr_cache.set(nym,
                                             seqNo=get_seq_no(txn),
                                             txnTime=txn_time,
-                                            ta=updatedData.get(f.IDENTIFIER.nm),
-                                            role=updatedData.get(ROLE),
-                                            verkey=updatedData.get(VERKEY),
-                                            isCommitted=isCommitted)
+                                            ta=existing_data.get(f.IDENTIFIER.nm),
+                                            role=existing_data.get(ROLE),
+                                            verkey=existing_data.get(VERKEY),
+                                            isCommitted=is_committed)
+        return existing_data
 
-    def _validate_new_nym(self, identifier, req_id, operation, originRole):
+    def _validate_new_nym(self, identifier, req_id, operation, origin_role):
         role = operation.get(ROLE)
         r, msg = Authoriser.authorised(NYM,
-                                       originRole,
+                                       origin_role,
                                        field=ROLE,
                                        oldVal=None,
                                        newVal=role)
@@ -98,7 +108,7 @@ class NymHandler(PNymHandler):
                 identifier,
                 req_id,
                 "{} cannot add {}".format(
-                    Roles.nameFromValue(originRole),
+                    Roles.nameFromValue(origin_role),
                     Roles.nameFromValue(role))
             )
 

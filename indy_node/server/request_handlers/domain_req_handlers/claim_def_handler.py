@@ -24,7 +24,7 @@ class ClaimDefHandler(WriteRequestHandler):
     def dynamic_validation(self, request: Request):
         # we can not add a Claim Def with existent ISSUER_DID
         # sine a Claim Def needs to be identified by seqNo
-        self._validate_type(request)
+        self._validate_request_type(request)
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
         ref = operation[REF]
         try:
@@ -59,10 +59,11 @@ class ClaimDefHandler(WriteRequestHandler):
             )
 
     def gen_txn_path(self, txn):
+        self._validate_txn_type(txn)
         path = domain.prepare_claim_def_for_state(txn, path_only=True)
         return path.decode()
 
-    def _update_state_with_single_txn(self, txn, isCommitted=False) -> None:
-        assert get_type(txn) == CLAIM_DEF
+    def _update_state_with_single_txn(self, txn, isCommitted=True) -> None:
+        self._validate_txn_type(txn)
         path, value_bytes = domain.prepare_claim_def_for_state(txn)
         self.state.set(path, value_bytes)

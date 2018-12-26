@@ -16,7 +16,7 @@ class AttributeHandler(WriteRequestHandler):
         super().__init__(database_manager, ATTRIB, DOMAIN_LEDGER_ID)
 
     def static_validation(self, request: Request):
-        self._validate_type(request)
+        self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
 
         if not self._validate_attrib_keys(operation):
@@ -26,11 +26,11 @@ class AttributeHandler(WriteRequestHandler):
                                        .format(ATTRIB, RAW, ENC, HASH))
 
     def dynamic_validation(self, request: Request):
-        self._validate_type(request)
+        self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
 
         if not (not operation.get(TARGET_NYM) or
-                self.has_nym(operation[TARGET_NYM], isCommitted=False)):
+                self.__has_nym(operation[TARGET_NYM], isCommitted=False)):
             raise InvalidClientRequest(identifier, req_id,
                                        '{} should be added before adding '
                                        'attribute for it'.
@@ -46,10 +46,11 @@ class AttributeHandler(WriteRequestHandler):
                 "for that identity")
 
     def gen_txn_path(self, txn):
+        self._validate_txn_type(txn)
         path = domain.prepare_attr_for_state(txn, path_only=True)
         return path.decode()
 
-    def _update_state_with_single_txn(self, txn, isCommitted=False) -> None:
+    def _update_state_with_single_txn(self, txn, is_committed=True) -> None:
         """
         The state trie stores the hash of the whole attribute data at:
             the did+attribute name if the data is plaintext (RAW)
@@ -57,13 +58,13 @@ class AttributeHandler(WriteRequestHandler):
         If the attribute is HASH, then nothing is stored in attribute store,
         the trie stores a blank value for the key did+hash
         """
-        assert get_type(txn) == ATTRIB
+        self._validate_txn_type(txn)
         attr_type, path, value, hashed_value, value_bytes = domain.prepare_attr_for_state(txn)
         self.state.set(path, value_bytes)
         if attr_type != HASH:
             self.database_manager.attribute_store.set(hashed_value, value)
 
-    def has_nym(self, nym, isCommitted: bool = True):
+    def __has_nym(self, nym, isCommitted: bool = True):
         return self.database_manager.idr_cache.hasNym(nym, isCommitted=isCommitted)
 
     @staticmethod

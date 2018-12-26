@@ -23,7 +23,7 @@ class RevocRegEntryHandler(WriteRequestHandler):
         pass
 
     def dynamic_validation(self, request: Request):
-        self._validate_type(request)
+        self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         current_entry, revoc_def = self.get_revoc_reg_entry.get_current_revoc_entry_and_revoc_def(
             author_did=identifier,
@@ -35,10 +35,12 @@ class RevocRegEntryHandler(WriteRequestHandler):
         validator.validate(current_entry, request)
 
     def gen_txn_path(self, txn):
+        self._validate_txn_type(txn)
         path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
         return path.decode()
 
     def _update_state_with_single_txn(self, txn, isCommitted=False):
+        self._validate_txn_type(txn)
         current_entry, revoc_def = self.get_revoc_reg_entry.get_current_revoc_entry_and_revoc_def(
             author_did=get_from(txn),
             revoc_reg_def_id=get_payload_data(txn)[REVOC_REG_DEF_ID],

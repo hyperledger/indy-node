@@ -21,7 +21,7 @@ class RevocRegDefHandler(WriteRequestHandler):
         pass
 
     def dynamic_validation(self, request: Request):
-        self._validate_type(request)
+        self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         cred_def_id = operation.get(CRED_DEF_ID)
         revoc_def_type = operation.get(REVOC_TYPE)
@@ -43,10 +43,11 @@ class RevocRegDefHandler(WriteRequestHandler):
                                        "There is no any CRED_DEF by path: {}".format(cred_def_id))
 
     def gen_txn_path(self, txn):
+        self._validate_txn_type(txn)
         path = domain.prepare_revoc_def_for_state(txn, path_only=True)
         return path.decode()
 
     def _update_state_with_single_txn(self, txn, isCommitted=False):
-        assert get_type(txn) == REVOC_REG_DEF
+        self._validate_txn_type(txn)
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)
