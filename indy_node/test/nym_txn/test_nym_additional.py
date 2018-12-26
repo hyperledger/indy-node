@@ -53,7 +53,7 @@ def test_send_same_nyms_only_first_gets_written(
     # request 2
     with pytest.raises(RequestRejectedException) as e:
         _, did2 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, dest=did, verkey=verkey)
-    e.match('is neither Trustee nor owner of')
+    e.match('actor must be owner')
 
 
 def get_nym(looper, sdk_pool_handle, sdk_wallet_steward, t_did):

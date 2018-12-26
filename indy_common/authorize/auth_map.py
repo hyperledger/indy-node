@@ -19,7 +19,7 @@ addNewTrustAnchor = AuthActionAdd(txn_type=NYM,
 
 
 addNewIdentityOwner = AuthActionAdd(txn_type=NYM,
-                                    field='role',
+                                    field=ROLE,
                                     value='')
 
 
@@ -38,11 +38,30 @@ blacklistingTrustAnchor = AuthActionEdit(txn_type=NYM,
                                          old_value=TRUST_ANCHOR,
                                          new_value='')
 
+sameRoleTrustee = AuthActionEdit(txn_type=NYM,
+                                 field=ROLE,
+                                 old_value=TRUSTEE,
+                                 new_value=TRUSTEE)
+
+sameRoleSteward = AuthActionEdit(txn_type=NYM,
+                                 field=ROLE,
+                                 old_value=STEWARD,
+                                 new_value=STEWARD)
+
+sameRoleTrustAnchor = AuthActionEdit(txn_type=NYM,
+                                     field=ROLE,
+                                     old_value=TRUST_ANCHOR,
+                                     new_value=TRUST_ANCHOR)
+
+sameRoleNone = AuthActionEdit(txn_type=NYM,
+                              field=ROLE,
+                              old_value='',
+                              new_value='')
+
 keyRotation = AuthActionEdit(txn_type=NYM,
                              field=VERKEY,
                              old_value='*',
                              new_value='*')
-
 
 addSchema = AuthActionAdd(txn_type=SCHEMA,
                           field='*',
@@ -65,17 +84,17 @@ editClaimDef = AuthActionEdit(txn_type=CLAIM_DEF,
 
 addingNewNode = AuthActionAdd(txn_type=NODE,
                               field='services',
-                              value='[VALIDATOR]')
+                              value='[\'VALIDATOR\']')
 
 demoteNode = AuthActionEdit(txn_type=NODE,
                             field='services',
-                            old_value='[VALIDATOR]',
+                            old_value='[\'VALIDATOR\']',
                             new_value='[]')
 
 promoteNode = AuthActionEdit(txn_type=NODE,
                              field='services',
                              old_value='[]',
-                             new_value='[VALIDATOR]')
+                             new_value='[\'VALIDATOR\']')
 
 
 changeNodeIp = AuthActionEdit(txn_type=NODE,
@@ -116,13 +135,41 @@ poolRestart = AuthActionAdd(txn_type=POOL_RESTART,
                             field='action',
                             value='*')
 
-poolConfig = AuthActionAdd(txn_type=POOL_CONFIG,
-                           field='action',
-                           value='*')
+poolConfig = AuthActionEdit(txn_type=POOL_CONFIG,
+                            field='action',
+                            old_value='*',
+                            new_value='*')
 
 validatorInfo = AuthActionAdd(txn_type=VALIDATOR_INFO,
                               field='*',
                               value='*')
+
+anyoneCanAddNYM = AuthActionAdd(txn_type=NYM,
+                                field=ROLE,
+                                value='*')
+
+anyoneCanAddSchema = AuthActionAdd(txn_type=SCHEMA,
+                                   field='*',
+                                   value='*')
+
+anyoneCanAddClaimDef = AuthActionAdd(txn_type=CLAIM_DEF,
+                                     field='*',
+                                     value='*')
+
+anyoneCanEditNYM = AuthActionEdit(txn_type=NYM,
+                                  field=ROLE,
+                                  old_value='*',
+                                  new_value='*')
+
+anyoneCanEditSchema = AuthActionEdit(txn_type=SCHEMA,
+                                     field='*',
+                                     old_value='*',
+                                     new_value='*')
+
+anyoneCanEditClaimDef = AuthActionEdit(txn_type=CLAIM_DEF,
+                                       field='*',
+                                       old_value='*',
+                                       new_value='*')
 
 authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            addNewSteward.get_action_id(): AuthConstraint(TRUSTEE, 1),
@@ -134,6 +181,19 @@ authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            blacklistingTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            blacklistingSteward.get_action_id(): AuthConstraint(TRUSTEE, 1),
            blacklistingTrustAnchor.get_action_id(): AuthConstraint(TRUSTEE, 1),
+
+           sameRoleTrustee.get_action_id(): AuthConstraint(role='*',
+                                                           sig_count=1,
+                                                           need_to_be_owner=True),
+           sameRoleSteward.get_action_id(): AuthConstraint(role='*',
+                                                           sig_count=1,
+                                                           need_to_be_owner=True),
+           sameRoleTrustAnchor.get_action_id(): AuthConstraint(role='*',
+                                                               sig_count=1,
+                                                               need_to_be_owner=True),
+           sameRoleNone.get_action_id(): AuthConstraint(role='*',
+                                                        sig_count=1,
+                                                        need_to_be_owner=True),
            keyRotation.get_action_id(): AuthConstraint(role='*',
                                                        sig_count=1,
                                                        need_to_be_owner=True),
@@ -161,3 +221,18 @@ authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            poolConfig.get_action_id(): AuthConstraint(TRUSTEE, 1),
            validatorInfo.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                             AuthConstraint(STEWARD, 1)])}
+
+anyoneCanWriteMap = {anyoneCanAddNYM.get_action_id(): AuthConstraint(role='*',
+                                                                     sig_count=1),
+                     anyoneCanAddSchema.get_action_id(): AuthConstraint(role='*',
+                                                                        sig_count=1),
+                     anyoneCanAddClaimDef.get_action_id(): AuthConstraint(role='*',
+                                                                          sig_count=1,
+                                                                          need_to_be_owner=True),
+                     anyoneCanEditNYM.get_action_id(): AuthConstraint(role='*',
+                                                                      sig_count=1),
+                     anyoneCanEditSchema.get_action_id(): AuthConstraint(role='*',
+                                                                         sig_count=1),
+                     anyoneCanEditClaimDef.get_action_id(): AuthConstraint(role='*',
+                                                                           sig_count=1,
+                                                                           need_to_be_owner=True)}

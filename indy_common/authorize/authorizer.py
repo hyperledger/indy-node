@@ -33,7 +33,10 @@ class RolesAuthorizer(AbstractAuthorizer):
         self.cache = cache
 
     def get_role(self, request: Request):
-        """Also need to check isOwner or not"""
+        """
+        None roles are stored as empty strings, so the role returned as None
+        by this function means that corresponding DID is not stored in a ledger.
+        """
         idr = request.identifier
         try:
             role = self.cache.getRole(idr, isCommitted=False)
@@ -52,8 +55,8 @@ class RolesAuthorizer(AbstractAuthorizer):
 
     def is_role_accepted(self, request: Request, auth_constraint: AuthConstraint):
         role = self.get_role(request)
-        if role:
-            return role == auth_constraint.role or auth_constraint.role == '*'
+        return role == auth_constraint.role or auth_constraint.role == '*' \
+            if role is not None else None
 
     def is_sig_count_accepted(self, request: Request, auth_constraint: AuthConstraint):
         sig_count = 1
@@ -66,7 +69,10 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction=None):
-        if not self.is_role_accepted(request, auth_constraint):
+        is_role_accepted = self.is_role_accepted(request, auth_constraint)
+        if is_role_accepted is None:
+            return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
+        if not is_role_accepted:
             return False, "role is not accepted"
         if not self.is_sig_count_accepted(request, auth_constraint):
             return False, "count of signatures is not accepted"

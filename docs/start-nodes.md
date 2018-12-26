@@ -1,5 +1,7 @@
 # Create a Network and Start Nodes
 
+Please be aware that recommended way of starting a pool is to [use Docker](https://github.com/hyperledger/indy-node/blob/master/environment/docker/pool/README.md).
+
 In order to run your own Network, you need to do the following for each Node:
 1. Install Indy Node
     - A recommended way for ubuntu is installing from deb packages

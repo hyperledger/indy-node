@@ -13,7 +13,7 @@ def testTrusteeSuspendingTrustAnchor(looper, sdk_pool_handle, sdk_wallet_trustee
     sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trust_anchor)
-    e.match('None role cannot add None role')
+    e.match('There is no accepted constraint')
 
 
 def testTrusteeSuspendingTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,
@@ -22,7 +22,7 @@ def testTrusteeSuspendingTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,
     sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_new_nym(looper, sdk_pool_handle, another_trustee)
-    e.match('None role cannot add None role')
+    e.match('There is no accepted constraint')
 
 
 def testTrusteeSuspendingSteward(looper, sdk_pool_handle, sdk_wallet_trustee,
@@ -31,7 +31,7 @@ def testTrusteeSuspendingSteward(looper, sdk_pool_handle, sdk_wallet_trustee,
     sdk_suspend_role(looper, sdk_pool_handle, sdk_wallet_trustee, did)
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward)
-    e.match('None role cannot add None role')
+    e.match('There is no accepted constraint')
 
 
 def testTrustAnchorSuspendingHimselfByVerkeyFlush(looper, sdk_pool_handle,
