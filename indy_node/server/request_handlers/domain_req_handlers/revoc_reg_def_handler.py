@@ -36,18 +36,18 @@ class RevocRegDefHandler(WriteRequestHandler):
                                        "Format of {} field is not acceptable. "
                                        "Expected: 'did:marker:signature_type:schema_ref' or "
                                        "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
-        cred_def, _, _, _ = self.get_revoc_reg_def.lookup(cred_def_id, isCommitted=False, with_proof=False)
+        cred_def, _, _, _ = self.get_revoc_reg_def.lookup(cred_def_id, is_committed=False, with_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(identifier,
                                        req_id,
                                        "There is no any CRED_DEF by path: {}".format(cred_def_id))
 
-    def gen_txn_path(self, txn):
+    def gen_state_key(self, txn):
         self._validate_txn_type(txn)
         path = domain.prepare_revoc_def_for_state(txn, path_only=True)
         return path.decode()
 
-    def _update_state_with_single_txn(self, txn, isCommitted=False):
+    def update_state(self, txn, prev_result, is_committed=False):
         self._validate_txn_type(txn)
         path, value_bytes = domain.prepare_revoc_def_for_state(txn)
         self.state.set(path, value_bytes)

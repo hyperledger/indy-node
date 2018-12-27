@@ -52,13 +52,13 @@ class NymHandler(WriteRequestHandler):
         else:
             self._validate_existing_nym(request, operation, nym_data)
 
-    def gen_txn_path(self, txn):
+    def gen_state_key(self, txn):
         self._validate_txn_type(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
         binary_digest = domain.make_state_path_for_nym(nym)
         return hexlify(binary_digest).decode()
 
-    def _update_state_with_single_txn(self, txn, is_committed=True):
+    def update_state(self, txn, prev_result, is_committed=False):
         self._validate_txn_type(txn)
         nym = get_payload_data(txn).get(TARGET_NYM)
         existing_data = get_nym_details(self.state, nym,
@@ -80,14 +80,6 @@ class NymHandler(WriteRequestHandler):
         val = self.state_serializer.serialize(existing_data)
         key = nym_to_state_key(nym)
         self.state.set(key, val)
-        txn_time = get_txn_time(txn)
-        self.database_manager.idr_cache.set(nym,
-                                            seqNo=get_seq_no(txn),
-                                            txnTime=txn_time,
-                                            ta=existing_data.get(f.IDENTIFIER.nm),
-                                            role=existing_data.get(ROLE),
-                                            verkey=existing_data.get(VERKEY),
-                                            isCommitted=is_committed)
         return existing_data
 
     def _validate_new_nym(self, request, operation):

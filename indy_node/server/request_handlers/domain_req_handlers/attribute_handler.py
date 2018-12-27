@@ -31,7 +31,7 @@ class AttributeHandler(WriteRequestHandler):
         identifier, req_id, operation = get_request_data(request)
 
         if not (not operation.get(TARGET_NYM) or
-                self.__has_nym(operation[TARGET_NYM], isCommitted=False)):
+                self.__has_nym(operation[TARGET_NYM], is_committed=False)):
             raise InvalidClientRequest(identifier, req_id,
                                        '{} should be added before adding '
                                        'attribute for it'.
@@ -46,12 +46,12 @@ class AttributeHandler(WriteRequestHandler):
                 "Only identity owner/guardian can add attribute "
                 "for that identity")
 
-    def gen_txn_path(self, txn):
+    def gen_state_key(self, txn):
         self._validate_txn_type(txn)
         path = domain.prepare_attr_for_state(txn, path_only=True)
         return path.decode()
 
-    def _update_state_with_single_txn(self, txn, is_committed=True) -> None:
+    def update_state(self, txn, is_committed=True) -> None:
         """
         The state trie stores the hash of the whole attribute data at:
             the did+attribute name if the data is plaintext (RAW)
@@ -65,5 +65,5 @@ class AttributeHandler(WriteRequestHandler):
         if attr_type != HASH:
             self.database_manager.attribute_store.set(hashed_value, value)
 
-    def __has_nym(self, nym, isCommitted: bool = True):
-        return self.database_manager.idr_cache.hasNym(nym, isCommitted=isCommitted)
+    def __has_nym(self, nym, is_committed: bool = True):
+        return self.database_manager.idr_cache.hasNym(nym, isCommitted=is_committed)

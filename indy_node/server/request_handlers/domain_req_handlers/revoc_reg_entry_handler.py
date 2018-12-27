@@ -36,12 +36,12 @@ class RevocRegEntryHandler(WriteRequestHandler):
         validator = validator_cls(self.state)
         validator.validate(current_entry, request)
 
-    def gen_txn_path(self, txn):
+    def gen_state_key(self, txn):
         self._validate_txn_type(txn)
         path = domain.prepare_revoc_reg_entry_for_state(txn, path_only=True)
         return path.decode()
 
-    def _update_state_with_single_txn(self, txn, isCommitted=False):
+    def update_state(self, txn, prev_result, is_committed=False):
         self._validate_txn_type(txn)
         current_entry, revoc_def = self.get_revoc_reg_entry.get_current_revoc_entry_and_revoc_def(
             author_did=get_from(txn),

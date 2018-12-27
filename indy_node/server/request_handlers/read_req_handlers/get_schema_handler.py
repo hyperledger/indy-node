@@ -2,10 +2,10 @@ from indy_common.constants import SCHEMA_NAME, SCHEMA_VERSION, GET_SCHEMA
 from indy_common.req_utils import get_read_schema_from, get_read_schema_name, get_read_schema_version
 from indy_common.state import domain
 
-from indy_node.server.request_handlers.read_request_handler import ReadRequestHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
 
 class GetSchemaHandler(ReadRequestHandler):
@@ -42,7 +42,7 @@ class GetSchemaHandler(ReadRequestHandler):
                    author: str,
                    schema_name: str,
                    schema_version: str,
-                   is_committed=True,
+                   is_committed=False,
                    with_proof=True) -> (str, int, int, list):
         assert author is not None
         assert schema_name is not None

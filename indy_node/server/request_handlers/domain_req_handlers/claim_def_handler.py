@@ -46,12 +46,12 @@ class ClaimDefHandler(WriteRequestHandler):
                                                              field='*',
                                                              value='*')])
 
-    def gen_txn_path(self, txn):
+    def gen_state_key(self, txn):
         self._validate_txn_type(txn)
         path = domain.prepare_claim_def_for_state(txn, path_only=True)
         return path.decode()
 
-    def _update_state_with_single_txn(self, txn, isCommitted=True) -> None:
+    def update_state(self, txn, prev_result, is_committed=True) -> None:
         self._validate_txn_type(txn)
         path, value_bytes = domain.prepare_claim_def_for_state(txn)
         self.state.set(path, value_bytes)

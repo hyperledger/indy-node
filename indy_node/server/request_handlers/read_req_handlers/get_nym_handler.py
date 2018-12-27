@@ -2,12 +2,12 @@ from indy_common.constants import GET_NYM
 
 from common.serializers.serialization import domain_state_serializer
 from indy_common.state import domain
-from indy_node.server.request_handlers.read_request_handler import ReadRequestHandler
 
 from plenum.common.constants import TARGET_NYM, TXN_TIME, DOMAIN_LEDGER_ID
 from plenum.common.request import Request
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
 
 class GetNymHandler(ReadRequestHandler):
@@ -19,7 +19,7 @@ class GetNymHandler(ReadRequestHandler):
         self._validate_request_type(request)
         nym = request.operation[TARGET_NYM]
         path = domain.make_state_path_for_nym(nym)
-        nym_data, proof = self.get_value_from_state(path, with_proof=True)
+        nym_data, proof = self._get_value_from_state(path, with_proof=True)
         if nym_data:
             nym_data = domain_state_serializer.deserialize(nym_data)
             nym_data[TARGET_NYM] = nym

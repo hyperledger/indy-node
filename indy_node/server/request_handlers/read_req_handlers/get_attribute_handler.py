@@ -1,8 +1,9 @@
+from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
+
 from indy_common.state import domain
 
 from indy_common.constants import ATTRIB, GET_ATTR
 
-from indy_node.server.request_handlers.read_request_handler import ReadRequestHandler
 from indy_node.server.request_handlers.utils import validate_attrib_keys
 from plenum.common.constants import RAW, ENC, HASH, TARGET_NYM, DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
@@ -54,13 +55,13 @@ class GetAttributeHandler(ReadRequestHandler):
                  did: str,
                  key: str,
                  attr_type,
-                 is_committed=True) -> (str, int, int, list):
+                 is_committed=False) -> (str, int, int, list):
         assert did is not None
         assert key is not None
         path = domain.make_state_path_for_attr(did, key, attr_type == HASH)
         try:
             hashed_val, last_seq_no, last_update_time, proof = \
-                self.lookup(path, is_committed, with_proof=True)
+                self.lookup(path, is_committed, with_proof=False)
         except KeyError:
             return None, None, None, None
         if not hashed_val or hashed_val == '':

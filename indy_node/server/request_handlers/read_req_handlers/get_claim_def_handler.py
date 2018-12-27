@@ -4,10 +4,10 @@ from indy_common.constants import CLAIM_DEF_SIGNATURE_TYPE, GET_CLAIM_DEF
 from indy_common.req_utils import get_read_claim_def_from, get_read_claim_def_signature_type, \
     get_read_claim_def_schema_ref, get_read_claim_def_tag
 
-from indy_node.server.request_handlers.read_request_handler import ReadRequestHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
 
 class GetClaimDefHandler(ReadRequestHandler):
@@ -40,7 +40,7 @@ class GetClaimDefHandler(ReadRequestHandler):
                       schema_seq_no: str,
                       signature_type,
                       tag,
-                      is_committed=True) -> (str, int, int, list):
+                      is_committed=False) -> (str, int, int, list):
         assert author is not None
         assert schema_seq_no is not None
         path = domain.make_state_path_for_claim_def(author, schema_seq_no, signature_type, tag)

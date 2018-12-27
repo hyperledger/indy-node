@@ -5,11 +5,11 @@ from indy_common.state import domain
 from indy_common.constants import FROM, TO, REVOC_REG_DEF_ID, ISSUANCE_TYPE, REVOKED, ISSUED, VALUE, REVOC_TYPE, \
     ACCUM_TO, STATE_PROOF_FROM, ACCUM_FROM, GET_REVOC_REG_DELTA
 
-from indy_node.server.request_handlers.read_request_handler import ReadRequestHandler
 from indy_node.server.request_handlers.utils import StateValue
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.handler_interfaces.read_request_handler import ReadRequestHandler
 
 
 class GetRevocRegDeltaHandler(ReadRequestHandler):
@@ -112,9 +112,9 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
         reg_entry_proof = None
         past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
-            encoded_entry, reg_entry_proof = self.get_value_from_state(path_to_reg_entry,
-                                                                       head_hash=past_root,
-                                                                       with_proof=True)
+            encoded_entry, reg_entry_proof = self._get_value_from_state(path_to_reg_entry,
+                                                                        head_hash=past_root,
+                                                                        with_proof=True)
             if encoded_entry:
                 reg_entry, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
         return StateValue(root_hash=past_root,
@@ -130,7 +130,7 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
         reg_entry_accum_proof = None
         past_root = self.ts_store.get_equal_or_prev(timestamp)
         if past_root:
-            encoded_entry, reg_entry_accum_proof = self.get_value_from_state(
+            encoded_entry, reg_entry_accum_proof = self._get_value_from_state(
                 path_to_reg_entry_accum, head_hash=past_root, with_proof=True)
             if encoded_entry:
                 reg_entry_accum, seq_no, last_update_time = domain.decode_state_value(encoded_entry)
