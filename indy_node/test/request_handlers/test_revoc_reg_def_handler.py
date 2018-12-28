@@ -11,7 +11,7 @@ from plenum.test.testing_utils import FakeSomething
 
 @pytest.fixture(scope="function")
 def revoc_reg_def_handler(db_manager):
-    def lookup(cred_def_id, isCommitted, with_proof):
+    def lookup(cred_def_id, is_committed, with_proof):
         return True, None, None, None
 
     get_handler = FakeSomething()
@@ -39,7 +39,7 @@ def test_revoc_reg_def_dynamic_validation_fails_wrong_id(revoc_reg_def_handler,
 
 def test_revoc_reg_def_dynamic_validation_fails_no_cred_def(revoc_reg_def_handler,
                                                             revoc_reg_def_request):
-    def lookup(cred_def_id, isCommitted, with_proof):
+    def lookup(cred_def_id, is_committed, with_proof):
         return None, None, None, None
 
     revoc_reg_def_handler.get_revoc_reg_def.lookup = lookup
