@@ -46,8 +46,8 @@ class GetRevocRegHandler(ReadRequestHandler):
     def get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
         assert revoc_reg_def_id
         current_entry, _, _, _ = self._get_revoc_def_entry(revoc_reg_def_id=revoc_reg_def_id,
-                                                           isCommitted=False)
-        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, isCommitted=False, with_proof=False)
+                                                           is_committed=True)
+        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, is_committed=True, with_proof=True)
         if revoc_def is None:
             raise InvalidClientRequest(author_did,
                                        req_id,
@@ -56,11 +56,11 @@ class GetRevocRegHandler(ReadRequestHandler):
 
     def _get_revoc_def_entry(self,
                              revoc_reg_def_id,
-                             isCommitted=True) -> (str, int, int, list):
+                             is_committed=True) -> (str, int, int, list):
         assert revoc_reg_def_id
         path = domain.make_state_path_for_revoc_reg_entry(revoc_reg_def_id=revoc_reg_def_id)
         try:
-            keys, seqno, lastUpdateTime, proof = self.lookup(path, isCommitted, with_proof=False)
-            return keys, seqno, lastUpdateTime, proof
+            keys, seq_no, last_update_time, proof = self.lookup(path, is_committed, with_proof=True)
+            return keys, seq_no, last_update_time, proof
         except KeyError:
             return None, None, None, None

@@ -40,7 +40,7 @@ class GetClaimDefHandler(ReadRequestHandler):
                       schema_seq_no: str,
                       signature_type,
                       tag,
-                      is_committed=False) -> (str, int, int, list):
+                      is_committed=True) -> (str, int, int, list):
         assert author is not None
         assert schema_seq_no is not None
         path = domain.make_state_path_for_claim_def(author, schema_seq_no, signature_type, tag)

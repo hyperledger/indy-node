@@ -51,7 +51,7 @@ class AttributeHandler(WriteRequestHandler):
         path = domain.prepare_attr_for_state(txn, path_only=True)
         return path.decode()
 
-    def update_state(self, txn, is_committed=True) -> None:
+    def update_state(self, txn, prev_result, is_committed=True) -> None:
         """
         The state trie stores the hash of the whole attribute data at:
             the did+attribute name if the data is plaintext (RAW)

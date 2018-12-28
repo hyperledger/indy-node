@@ -42,7 +42,7 @@ class GetSchemaHandler(ReadRequestHandler):
                    author: str,
                    schema_name: str,
                    schema_version: str,
-                   is_committed=False,
+                   is_committed=True,
                    with_proof=True) -> (str, int, int, list):
         assert author is not None
         assert schema_name is not None

@@ -110,7 +110,7 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
         seq_no = None
         last_update_time = None
         reg_entry_proof = None
-        past_root = self.ts_store.get_equal_or_prev(timestamp)
+        past_root = self.database_manager.ts_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry, reg_entry_proof = self._get_value_from_state(path_to_reg_entry,
                                                                         head_hash=past_root,
@@ -128,7 +128,7 @@ class GetRevocRegDeltaHandler(ReadRequestHandler):
         seq_no = None
         last_update_time = None
         reg_entry_accum_proof = None
-        past_root = self.ts_store.get_equal_or_prev(timestamp)
+        past_root = self.database_manager.ts_store.get_equal_or_prev(timestamp)
         if past_root:
             encoded_entry, reg_entry_accum_proof = self._get_value_from_state(
                 path_to_reg_entry_accum, head_hash=past_root, with_proof=True)

@@ -55,13 +55,13 @@ class GetAttributeHandler(ReadRequestHandler):
                  did: str,
                  key: str,
                  attr_type,
-                 is_committed=False) -> (str, int, int, list):
+                 is_committed=True) -> (str, int, int, list):
         assert did is not None
         assert key is not None
         path = domain.make_state_path_for_attr(did, key, attr_type == HASH)
         try:
             hashed_val, last_seq_no, last_update_time, proof = \
-                self.lookup(path, is_committed, with_proof=False)
+                self.lookup(path, is_committed, with_proof=True)
         except KeyError:
             return None, None, None, None
         if not hashed_val or hashed_val == '':

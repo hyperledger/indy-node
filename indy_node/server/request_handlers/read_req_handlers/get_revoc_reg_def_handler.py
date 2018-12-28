@@ -16,7 +16,7 @@ class GetRevocRegDefHandler(ReadRequestHandler):
         state_path = request.operation.get(ID, None)
         assert state_path
         try:
-            keys, last_seq_no, last_update_time, proof = self.lookup(state_path, is_committed=False, with_proof=True)
+            keys, last_seq_no, last_update_time, proof = self.lookup(state_path, is_committed=True, with_proof=True)
         except KeyError:
             keys, last_seq_no, last_update_time, proof = None, None, None, None
         result = self.make_result(request=request,
