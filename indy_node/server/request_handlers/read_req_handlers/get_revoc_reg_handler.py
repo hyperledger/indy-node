@@ -46,8 +46,8 @@ class GetRevocRegHandler(ReadRequestHandler):
     def get_current_revoc_entry_and_revoc_def(self, author_did, revoc_reg_def_id, req_id):
         assert revoc_reg_def_id
         current_entry, _, _, _ = self._get_revoc_def_entry(revoc_reg_def_id=revoc_reg_def_id,
-                                                           is_committed=True)
-        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, is_committed=True, with_proof=True)
+                                                           is_committed=False)
+        revoc_def, _, _, _ = self.lookup(revoc_reg_def_id, is_committed=False, with_proof=False)
         if revoc_def is None:
             raise InvalidClientRequest(author_did,
                                        req_id,

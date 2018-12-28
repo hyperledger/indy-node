@@ -36,7 +36,7 @@ class RevocRegDefHandler(WriteRequestHandler):
                                        "Format of {} field is not acceptable. "
                                        "Expected: 'did:marker:signature_type:schema_ref' or "
                                        "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
-        cred_def, _, _, _ = self.get_revoc_reg_def.lookup(cred_def_id, is_committed=False, with_proof=True)
+        cred_def, _, _, _ = self.get_revoc_reg_def.lookup(cred_def_id, is_committed=False, with_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(identifier,
                                        req_id,
