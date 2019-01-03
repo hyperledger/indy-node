@@ -44,10 +44,10 @@ class AbstractAuthAction(metaclass=ABCMeta):
 
 
 class AuthActionAdd(AbstractAuthAction):
-    def __init__(self, txn_type, field=None, value=None, is_owner=True):
+    def __init__(self, txn_type, field=None, value=None, is_owner: bool=True):
         self.txn_type = txn_type
-        self.field = field
-        self.value = value
+        self.field = str(field) if field is not None else ''
+        self.value = str(value) if value else ''
         self.is_owner = is_owner
 
     def get_action_id(self):
@@ -59,11 +59,16 @@ class AuthActionAdd(AbstractAuthAction):
 
 
 class AuthActionEdit(AbstractAuthAction):
-    def __init__(self, txn_type, field=None, old_value=None, new_value=None, is_owner=True):
+    def __init__(self,
+                 txn_type,
+                 field=None,
+                 old_value=None,
+                 new_value=None,
+                 is_owner: bool=True):
         self.txn_type = txn_type
-        self.field = field
-        self.old_value = old_value
-        self.new_value = new_value
+        self.field = str(field) if field is not None else ''
+        self.old_value = str(old_value) if old_value is not None else ''
+        self.new_value = str(new_value) if new_value is not None else ''
         self.is_owner = is_owner
 
     def get_action_id(self):

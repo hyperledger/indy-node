@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.6.82](#1682)
+
 * [1.6.80](#1680)
 
 * [1.6.79](#1679)
@@ -32,7 +34,27 @@
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
 
-## 1.6.80
+## 1.6.82 
+### Release date: Dec 20th, 2018
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.6.57 |
+| indy-node | 1.6.82 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Changes - Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Add old instance change messages discarding |  | [INDY-1909](https://jira.hyperledger.org/browse/INDY-1909) |
+| Increase ToleratePrimaryDisconnection and bind re-try time |  | [INDY-1836](https://jira.hyperledger.org/browse/INDY-1836) |
+| Add check for None of replica's primary name during logging |  | [INDY-1926](https://jira.hyperledger.org/browse/INDY-1926) |
+
+## 1.6.80 
+### Release date: Dec 13th, 2018
 
 ### Component Version Information
 | Components | Version Numbers |
@@ -51,6 +73,7 @@ Although every attempt has been made to make this information as accurate as pos
 | Fix throughput class creation bug |  | [INDY-1888](https://jira.hyperledger.org/browse/INDY-1888) |
 
 ## 1.6.79
+### Release date: Dec 6th, 2018
 
 ### Component Version Information
 
@@ -133,6 +156,7 @@ Although every attempt has been made to make this information as accurate as pos
 No further action is required
 
 ## 1.6.78
+### Release date: Oct 18th, 2018
 
 ### Component Version Information
 
@@ -173,8 +197,8 @@ No further action is required
 | Test domain transactions with FEEs. |   | [INDY-1661](https://jira.hyperledger.org/browse/INDY-1661) |
 | 3PC Batch should preserve the order of requests when applying PrePrepare on non-primary. |   | [INDY-1642](https://jira.hyperledger.org/browse/INDY-1642) |
 | Ability to switch off (remove) replicas with no changes of F value. |   | [INDY-1680](https://jira.hyperledger.org/browse/INDY-1680) |
-| A node should be able to participate in BLS multi-signature only if it has a valid proof of posession. |   | [INDY-1589](https://jira.hyperledger.org/browse/INDY-1589) |
-| Make validator info as a hystorical data. |   | [INDY-1637](https://jira.hyperledger.org/browse/INDY-1637) |
+| A node should be able to participate in BLS multi-signature only if it has a valid proof of possession. |   | [INDY-1589](https://jira.hyperledger.org/browse/INDY-1589) |
+| Make validator info as a historical data. |   | [INDY-1637](https://jira.hyperledger.org/browse/INDY-1637) |
 |   |   |   | |
 | **Known Issue:** Upgrade failed on pool from 1.3.62 to 1.4.66. Note that INDY-1447 was fixed in indy-node 1.5.68, but it still presents in indy-node 1.3.62 and 1.4.66 code. | **So, some of the nodes may not to be upgraded during simultaneous pool-upgrade.** If this problem will appear, stewards should perform manual upgrade of indy-node in accordance with this [instruction:](https://docs.google.com/document/d/1vUvbioL5OsmZMSkwRcu0p0jdttJO5VS8K3GhDLdNaoI)**(!)** To reduce the risk of reproducing INDY-1447, it is **recommended to use old CLI for pool upgrade.** | [INDY-1447](https://jira.hyperledger.org/browse/INDY-1447) |
 |   |   |   |   |
@@ -193,6 +217,7 @@ No further action is required
 
 
 ## 1.6.73
+### Release date: Sep 5th, 2018
 
 **Important:** Several iterations were done very rapidly between the last release and this one. All of the changes, upgrades, etc... are included in this new release. Simply upgrading will include them all from 1.6.70 until 1.6.73. To see further, specific numerous changes, please reference the appropriate tickets in the [Hyperledger Jira ticketing system.](https://jira.hyperledger.org/)
 
@@ -247,6 +272,7 @@ No further action is required
 
 
 ## 1.6.70
+### Release date: Aug 14th, 2018
 
 ### Component Version Information
 
@@ -373,6 +399,7 @@ For more details about txn format changes see INDY-1421.**
 
 
 ## 1.4.66
+### Release date: Jul 2nd, 2018
 
 
 ### Component Version Information
@@ -481,6 +508,7 @@ Use https://github.com/hyperledger/indy-sdk/blob/b4a2bb82087e2eafe5e55bddb20a306
 
 
 ## 1.3.62
+### Release date: May 22th, 2018
 
 
 ### Component Version Information
@@ -579,6 +607,7 @@ None at this time.
 
 
 ## 1.3.55
+### Release date: Feb 28th, 2018
 
 **Important: Upgrade to this version should be performed simultaneously for all nodes (with `force=True`).**
 
@@ -657,6 +686,7 @@ Node promoting is not recommended for 1.3.52 version according to known issues b
 As mentioned above, upgrade to this version should be performed simultaneously for all nodes (with `force=True`).
 
 ## 1.2.50
+### Release date: Dec 18th, 2017
 
 
 ### Component Version Information
@@ -849,6 +879,7 @@ The genesis files are now located in their own directory based off the network n
 
 
 ## 1.1.43
+### Release date: Oct 24th, 2017
 
 
 ### Component Version Information
@@ -873,6 +904,7 @@ The genesis files are now located in their own directory based off the network n
 |   |   |   |   |
 
 ## 1.1.37
+### Release date: Sep 26th, 2017
 
 
 ### Component Version Information
