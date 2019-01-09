@@ -1,5 +1,10 @@
+import asyncio
 import json
+from collections import Callable
+from functools import partial
+
 import base58
+import time
 
 from indy.did import replace_keys_start, replace_keys_apply
 from indy.ledger import build_attrib_request, build_get_attrib_request
@@ -21,10 +26,25 @@ from stp_core.types import HA
 
 logger = getlogger()
 
+TEST_INITIAL_NODE_VERSION = '1.0.0'
+
 
 @spyable(methods=[Upgrader.processLedger])
 class TestUpgrader(Upgrader):
-    pass
+
+    def __init__(self, nodeId, nodeName, dataDir, config, ledger=None, actionLog=None,
+                 actionFailedCallback: Callable = None, action_start_callback: Callable = None):
+        self.version = TEST_INITIAL_NODE_VERSION
+        super().__init__(nodeId, nodeName, dataDir, config, ledger, actionLog, actionFailedCallback,
+                         action_start_callback)
+
+    async def _sendUpgradeRequest(self, when, version, upgrade_id, failTimeout, pkg_name):
+        retryLimit = self.retry_limit
+        if retryLimit:
+            self.version = version
+        while retryLimit:
+            break
+        self._unscheduleAction()
 
 
 # noinspection PyShadowingNames,PyShadowingNames
