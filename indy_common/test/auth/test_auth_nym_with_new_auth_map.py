@@ -36,6 +36,7 @@ def test_make_trust_anchor(write_request_validation, req, is_owner):
                                                                  value=TRUST_ANCHOR,
                                                                  is_owner=is_owner)])
 
+
 def test_make_network_monitor(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier")
     assert authorized == write_request_validation(req,
@@ -73,6 +74,7 @@ def test_remove_trust_anchor(write_request_validation, req, is_owner):
                                                                   old_value=TRUST_ANCHOR,
                                                                   new_value='',
                                                                   is_owner=is_owner)])
+
 
 def test_remove_network_monitor(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier")
