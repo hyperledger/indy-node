@@ -534,7 +534,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
  
      Dictionary with Schema's data:
      
-    - `attr_names`: array of attribute name strings
+    - `attr_names`: array of attribute name strings (125 attributes maximum)
     - `name`: Schema's name string
     - `version`: Schema's version string
 
