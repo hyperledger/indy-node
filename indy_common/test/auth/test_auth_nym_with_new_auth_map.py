@@ -38,7 +38,7 @@ def test_make_trust_anchor(write_request_validation, req, is_owner):
 
 
 def test_make_network_monitor(write_request_validation, req, is_owner):
-    authorized = (req.identifier == "steward_identifier")
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
                                                   [AuthActionAdd(txn_type=NYM,
                                                                  field=ROLE,
@@ -77,7 +77,7 @@ def test_remove_trust_anchor(write_request_validation, req, is_owner):
 
 
 def test_remove_network_monitor(write_request_validation, req, is_owner):
-    authorized = (req.identifier == "steward_identifier")
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=NYM,
                                                                   field=ROLE,
