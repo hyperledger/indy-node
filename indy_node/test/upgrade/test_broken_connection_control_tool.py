@@ -45,6 +45,18 @@ def validUpgrade(nodeIds, tconf, monkeypatch):
                 sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55')
 
 
+@pytest.fixture(scope='function')
+def skip_functions():
+    # Do this to prevent exceptions because of node_control_tool absence
+    old_get_version = Upgrader.getVersion
+    old_update = Upgrader._update_action_log_for_started_action
+    Upgrader.getVersion = lambda self, pkg: '1.6.0'
+    Upgrader._update_action_log_for_started_action = lambda self: 1
+    yield
+    Upgrader.getVersion = old_get_version
+    Upgrader._update_action_log_for_started_action = old_update
+
+
 def test_node_doesnt_retry_upgrade(
         looper, nodeSet, validUpgrade, nodeIds,
         sdk_pool_handle, sdk_wallet_trustee, tconf):
@@ -79,12 +91,8 @@ def test_node_doesnt_retry_upgrade(
 
 
 def test_node_upgrades_after_restart(looper, nodeSet, testNodeClass, tconf,
-                                     tdir, allPluginsPath, validUpgrade):
+                                     tdir, allPluginsPath, validUpgrade, skip_functions):
     bad_node = nodeSet[1]
-
-    # Do this to prevent exceptions because of node_control_tool absence
-    Upgrader.getVersion = lambda self, pkg: '1.6.0'
-    Upgrader._update_action_log_for_started_action = lambda self: 1
 
     # Restart bad_node
     name = bad_node.name
