@@ -11,6 +11,7 @@ class Roles(Enum):
     TRUSTEE = Roles.TRUSTEE.value
     STEWARD = Roles.STEWARD.value
     TRUST_ANCHOR = "101"
+    NETWORK_MONITOR = "201"
 
     def __str__(self):
         return self.name

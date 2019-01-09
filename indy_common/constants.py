@@ -126,6 +126,9 @@ ENDPOINT = "endpoint"
 TRUST_ANCHOR = Roles.TRUST_ANCHOR.value
 TRUST_ANCHOR_STRING = 'TRUST_ANCHOR'
 
+NETWORK_MONITOR = Roles.NETWORK_MONITOR.value
+NETWORK_MONITOR_STRING = 'NETWORK_MONITOR'
+
 # client transaction types
 NODE = IndyTransactions.NODE.value
 NYM = IndyTransactions.NYM.value
