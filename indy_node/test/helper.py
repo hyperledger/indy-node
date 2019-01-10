@@ -21,7 +21,7 @@ from plenum.test.test_node import TestNodeCore
 from plenum.test.testable import spyable
 from indy_common.test.helper import TempStorage
 from indy_node.server.node import Node
-from indy_node.server.upgrader import Upgrader
+from indy_node.server.upgrader import Upgrader, UpgradeMessage
 from stp_core.types import HA
 
 logger = getlogger()
@@ -43,8 +43,20 @@ class TestUpgrader(Upgrader):
         if retryLimit:
             self.version = version
         while retryLimit:
-            break
-        self._unscheduleAction()
+            try:
+                msg = UpgradeMessage(version=version, pkg_name=pkg_name).toJson()
+                logger.info("Sending message to control tool: {}".format(msg))
+                break
+            except Exception as ex:
+                logger.warning("Failed to communicate to control tool: {}".format(ex))
+                asyncio.sleep(self.retry_timeout)
+                retryLimit -= 1
+        if not retryLimit:
+            self._unscheduleAction()
+        else:
+            logger.info("Waiting {} minutes for upgrade to be performed".format(failTimeout))
+            timesUp = partial(self._declareTimeoutExceeded, when, version, upgrade_id)
+            self._schedule(timesUp, self.get_timeout(failTimeout))
 
 
 # noinspection PyShadowingNames,PyShadowingNames
@@ -70,7 +82,7 @@ class TestNode(TempStorage, TestNodeCore, Node):
 
     def init_upgrader(self):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
-                            self.configLedger)
+                            self.configLedger, actionFailedCallback=self.postConfigLedgerCaughtUp)
 
     def init_domain_req_handler(self):
         return Node.init_domain_req_handler(self)
