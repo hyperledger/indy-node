@@ -56,10 +56,8 @@ def test_can_not_send_same_schema(looper, sdk_pool_handle,
 def test_schema_maximum_attrib(looper, sdk_pool_handle,
                                sdk_wallet_trust_anchor):
     attribs = []
-    string = randomString(NAME_FIELD_LIMIT)
     for i in range(SCHEMA_ATTRIBUTES_LIMIT):
-        i = str(i)
-        attribs.append(string[:-len(i)] + i)
+        attribs.append(randomString(NAME_FIELD_LIMIT))
 
     sdk_write_schema_and_check(
         looper, sdk_pool_handle,
