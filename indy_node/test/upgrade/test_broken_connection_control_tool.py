@@ -7,6 +7,8 @@ import pytest
 
 from datetime import datetime, timedelta
 
+from copy import deepcopy
+
 from indy_common.constants import START
 
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
@@ -53,12 +55,12 @@ def validUpgrade(nodeIds, tconf, monkeypatch):
 @pytest.fixture(scope='function')
 def skip_functions():
     # Do this to prevent exceptions because of node_control_tool absence
-    old_get_version = Upgrader.getVersion
-    old_update = Upgrader._update_action_log_for_started_action
+    old_get_version = deepcopy(Upgrader.getVersion)
+    old_update = deepcopy(Upgrader._update_action_log_for_started_action)
     Upgrader.getVersion = lambda self, pkg: '1.6.0'
     Upgrader._update_action_log_for_started_action = lambda self: 1
     yield
-    Upgrader.getVersion = old_get_version
+    Upgrader.getVersion = staticmethod(old_get_version)
     Upgrader._update_action_log_for_started_action = old_update
 
 
@@ -77,6 +79,7 @@ async def _sendUpgradeRequest(self, when, version, upgrade_id, failTimeout, pkg_
             retryLimit -= 1
     if not retryLimit:
         self._unscheduleAction()
+        # self._actionFailedCallback()
     else:
         logger.info("Waiting {} minutes for upgrade to be performed".format(failTimeout))
         timesUp = partial(self._declareTimeoutExceeded, when, version, upgrade_id)
@@ -85,13 +88,14 @@ async def _sendUpgradeRequest(self, when, version, upgrade_id, failTimeout, pkg_
 
 @pytest.fixture(scope='function')
 def replace_send_upgrade():
-    old_send = Upgrader._sendUpgradeRequest
+    old_send = deepcopy(Upgrader._sendUpgradeRequest)
     Upgrader._sendUpgradeRequest = _sendUpgradeRequest
     yield
     Upgrader._sendUpgradeRequest = old_send
 
 
 def test_node_doesnt_retry_upgrade(
+        sdk_wallet_steward,
         looper, nodeSet, validUpgrade, nodeIds,
         sdk_pool_handle, sdk_wallet_trustee, tconf,
         replace_send_upgrade):
