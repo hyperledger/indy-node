@@ -2,7 +2,7 @@ import pytest
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
-from indy_common.constants import ROLE, NYM, TRUST_ANCHOR
+from indy_common.constants import ROLE, NYM, TRUST_ANCHOR, NETWORK_MONITOR
 
 
 @pytest.fixture(scope='module', params=[True, False])
@@ -37,6 +37,15 @@ def test_make_trust_anchor(write_request_validation, req, is_owner):
                                                                  is_owner=is_owner)])
 
 
+def test_make_network_monitor(write_request_validation, req, is_owner):
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionAdd(txn_type=NYM,
+                                                                 field=ROLE,
+                                                                 value=NETWORK_MONITOR,
+                                                                 is_owner=is_owner)])
+
+
 def test_remove_trustee(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
@@ -63,6 +72,16 @@ def test_remove_trust_anchor(write_request_validation, req, is_owner):
                                                   [AuthActionEdit(txn_type=NYM,
                                                                   field=ROLE,
                                                                   old_value=TRUST_ANCHOR,
+                                                                  new_value='',
+                                                                  is_owner=is_owner)])
+
+
+def test_remove_network_monitor(write_request_validation, req, is_owner):
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=NETWORK_MONITOR,
                                                                   new_value='',
                                                                   is_owner=is_owner)])
 

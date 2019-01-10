@@ -9,7 +9,7 @@ from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from plenum.common.constants import STEWARD, TRUSTEE
 
-from indy_common.constants import TRUST_ANCHOR, LOCAL_AUTH_POLICY
+from indy_common.constants import TRUST_ANCHOR, LOCAL_AUTH_POLICY, NETWORK_MONITOR
 from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.test.helper import randomOperation
 from plenum.test.testing_utils import FakeSomething
@@ -49,7 +49,9 @@ def idr_cache():
               verkey="steward_identifier_verkey", isCommitted=False)
     cache.set("trust_anchor_identifier", 3, int(time.time()), role=TRUST_ANCHOR,
               verkey="trust_anchor_identifier_verkey", isCommitted=False)
-    cache.set(OTHER_IDENTIFIER, 4, int(time.time()), role='OtherRole',
+    cache.set("network_monitor_identifier", 4, int(time.time()), role=NETWORK_MONITOR,
+              verkey="network_monitor_identifier_verkey", isCommitted=False)
+    cache.set(OTHER_IDENTIFIER, 5, int(time.time()), role='OtherRole',
               verkey="other_verkey", isCommitted=False)
     return cache
 
@@ -64,7 +66,9 @@ def write_auth_req_validator(idr_cache):
     return validator
 
 
-@pytest.fixture(scope='module', params=["trustee_identifier", "steward_identifier", "trust_anchor_identifier", OTHER_IDENTIFIER])
+@pytest.fixture(scope='module', params=["trustee_identifier", "steward_identifier",
+                                        "trust_anchor_identifier", "network_monitor_identifier",
+                                        OTHER_IDENTIFIER])
 def identifier(request):
     return request.param
 
