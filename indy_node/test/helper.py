@@ -38,26 +38,6 @@ class TestUpgrader(Upgrader):
         super().__init__(nodeId, nodeName, dataDir, config, ledger, actionLog, actionFailedCallback,
                          action_start_callback)
 
-    async def _sendUpgradeRequest(self, when, version, upgrade_id, failTimeout, pkg_name):
-        retryLimit = self.retry_limit
-        if retryLimit:
-            self.version = version
-        while retryLimit:
-            try:
-                msg = UpgradeMessage(version=version, pkg_name=pkg_name).toJson()
-                logger.info("Sending message to control tool: {}".format(msg))
-                break
-            except Exception as ex:
-                logger.warning("Failed to communicate to control tool: {}".format(ex))
-                asyncio.sleep(self.retry_timeout)
-                retryLimit -= 1
-        if not retryLimit:
-            self._unscheduleAction()
-        else:
-            logger.info("Waiting {} minutes for upgrade to be performed".format(failTimeout))
-            timesUp = partial(self._declareTimeoutExceeded, when, version, upgrade_id)
-            self._schedule(timesUp, self.get_timeout(failTimeout))
-
 
 # noinspection PyShadowingNames,PyShadowingNames
 @spyable(
@@ -82,7 +62,9 @@ class TestNode(TempStorage, TestNodeCore, Node):
 
     def init_upgrader(self):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
-                            self.configLedger, actionFailedCallback=self.postConfigLedgerCaughtUp)
+                            self.configLedger,
+                            actionFailedCallback=self.postConfigLedgerCaughtUp,
+                            action_start_callback=self.notify_upgrade_start)
 
     def init_domain_req_handler(self):
         return Node.init_domain_req_handler(self)
