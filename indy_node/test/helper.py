@@ -1,10 +1,5 @@
-import asyncio
 import json
-from collections import Callable
-from functools import partial
-
 import base58
-import time
 
 from indy.did import replace_keys_start, replace_keys_apply
 from indy.ledger import build_attrib_request, build_get_attrib_request
@@ -21,22 +16,14 @@ from plenum.test.test_node import TestNodeCore
 from plenum.test.testable import spyable
 from indy_common.test.helper import TempStorage
 from indy_node.server.node import Node
-from indy_node.server.upgrader import Upgrader, UpgradeMessage
+from indy_node.server.upgrader import Upgrader
 from stp_core.types import HA
 
 logger = getlogger()
 
-TEST_INITIAL_NODE_VERSION = '1.0.0'
-
-
 @spyable(methods=[Upgrader.processLedger])
 class TestUpgrader(Upgrader):
-
-    def __init__(self, nodeId, nodeName, dataDir, config, ledger=None, actionLog=None,
-                 actionFailedCallback: Callable = None, action_start_callback: Callable = None):
-        self.version = TEST_INITIAL_NODE_VERSION
-        super().__init__(nodeId, nodeName, dataDir, config, ledger, actionLog, actionFailedCallback,
-                         action_start_callback)
+    pass
 
 
 # noinspection PyShadowingNames,PyShadowingNames

@@ -1,26 +1,16 @@
-import asyncio
-from functools import partial
-
 import dateutil
 import dateutil.tz
 import pytest
 
 from datetime import datetime, timedelta
-
 from copy import deepcopy
-
 from indy_common.constants import START
-
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
 
-from indy_common.config_helper import NodeConfigHelper
-
-from indy_node.server.upgrader import Upgrader, UpgradeMessage
-from indy_node.test.helper import TEST_INITIAL_NODE_VERSION
+from indy_node.server.upgrader import Upgrader
 from indy_node.test.upgrade.helper import sdk_ensure_upgrade_sent, bumpedVersion
 from plenum.test.helper import randomText
 
-from plenum.test.test_node import ensureElectionsDone, checkNodesConnected
 from stp_core.common.log import getlogger
 
 delta = 2
@@ -39,11 +29,10 @@ def tconf(tconf):
 def validUpgrade(nodeIds, tconf, monkeypatch):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=100)
-    acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
+    startAt = unow + timedelta(seconds=delta)
     for i in nodeIds:
         schedule[i] = datetime.isoformat(startAt)
-        startAt = startAt + timedelta(seconds=acceptableDiff + 3)
+        startAt = startAt + timedelta(seconds=delta)
 
     patch_packet_mgr_output(monkeypatch, EXT_PKT_NAME, EXT_PKT_VERSION)
 
@@ -55,105 +44,26 @@ def validUpgrade(nodeIds, tconf, monkeypatch):
 @pytest.fixture(scope='function')
 def skip_functions():
     # Do this to prevent exceptions because of node_control_tool absence
-    old_get_version = deepcopy(Upgrader.getVersion)
-    old_update = deepcopy(Upgrader._update_action_log_for_started_action)
-    Upgrader.getVersion = lambda self, pkg: '1.6.0'
-    Upgrader._update_action_log_for_started_action = lambda self: 1
+    old_action_failed = deepcopy(Upgrader._action_failed)
+
+    Upgrader._action_failed = \
+        lambda self, version, scheduled_on, upgrade_id, external_reason: 1
     yield
-    Upgrader.getVersion = staticmethod(old_get_version)
-    Upgrader._update_action_log_for_started_action = old_update
+    Upgrader._action_failed = old_action_failed
 
 
-async def _sendUpgradeRequest(self, when, version, upgrade_id, failTimeout, pkg_name):
-    retryLimit = self.retry_limit
-    if retryLimit:
-        self.version = version
-    while retryLimit:
-        try:
-            msg = UpgradeMessage(version=version, pkg_name=pkg_name).toJson()
-            logger.info("Sending message to control tool: {}".format(msg))
-            break
-        except Exception as ex:
-            logger.warning("Failed to communicate to control tool: {}".format(ex))
-            asyncio.sleep(self.retry_timeout)
-            retryLimit -= 1
-    if not retryLimit:
-        self._unscheduleAction()
-        # self._actionFailedCallback()
-    else:
-        logger.info("Waiting {} minutes for upgrade to be performed".format(failTimeout))
-        timesUp = partial(self._declareTimeoutExceeded, when, version, upgrade_id)
-        self._schedule(timesUp, self.get_timeout(failTimeout))
-
-
-@pytest.fixture(scope='function')
-def replace_send_upgrade():
-    old_send = deepcopy(Upgrader._sendUpgradeRequest)
-    Upgrader._sendUpgradeRequest = _sendUpgradeRequest
-    yield
-    Upgrader._sendUpgradeRequest = old_send
-
-
-def test_node_doesnt_retry_upgrade(
-        sdk_wallet_steward,
-        looper, nodeSet, validUpgrade, nodeIds,
-        sdk_pool_handle, sdk_wallet_trustee, tconf,
-        replace_send_upgrade):
-    bad_node = nodeSet[1]
-
-    # Making upgrade sooner
-    schedule = {}
-    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=delta)
-    for i in nodeIds:
-        schedule[i] = datetime.isoformat(startAt)
-        startAt = startAt + timedelta(seconds=delta)
-    validUpgrade['schedule'] = schedule
-
+def test_node_doesnt_retry_upgrade(looper, nodeSet, validUpgrade, nodeIds,
+                                   sdk_pool_handle, sdk_wallet_trustee, tconf,
+                                   skip_functions):
     # Emulating connection problems
-    bad_node.upgrader.retry_limit = 0
+    for node in nodeSet:
+        node.upgrader.retry_limit = 0
 
     # Send upgrade
     sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
                             sdk_wallet_trustee, validUpgrade)
     looper.runFor(len(nodeIds) * delta)
 
-    # Every node except bad_node upgraded
-    for node in nodeSet:
-        if node is not bad_node:
-            assert node.upgrader.version == validUpgrade['version']
-    assert bad_node.upgrader.version == TEST_INITIAL_NODE_VERSION
-
     # Every node, including bad_node, tried to upgrade only once
     for node in nodeSet:
         assert node.upgrader.spylog.count(Upgrader.processLedger.__name__) == 1
-
-
-def test_node_upgrades_after_restart(looper, nodeSet, testNodeClass, tconf,
-                                     tdir, allPluginsPath, validUpgrade, skip_functions,
-                                     replace_send_upgrade):
-    bad_node = nodeSet[1]
-
-    # Restart bad_node
-    name = bad_node.name
-    nodeSet.remove(bad_node)
-    bad_node.cleanupOnStopping = False
-    looper.removeProdable(bad_node)
-    bad_node.stop()
-    del bad_node
-    config_helper = NodeConfigHelper(name, tconf, chroot=tdir)
-    node = testNodeClass(name, config_helper=config_helper,
-                         config=tconf, pluginPaths=allPluginsPath)
-    looper.add(node)
-    nodeSet.append(node)
-    looper.run(checkNodesConnected(nodeSet))
-    ensureElectionsDone(looper=looper, nodes=nodeSet, retryWait=1)
-
-    bad_node = nodeSet[-1]
-
-    # Connection problems resolved
-    assert bad_node.upgrader.retry_limit == 3
-
-    # Node upgraded after restart
-    for node in nodeSet:
-        assert node.upgrader.version == validUpgrade['version']
