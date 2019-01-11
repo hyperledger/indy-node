@@ -58,7 +58,8 @@ setup(
     )],
     install_requires=['indy-plenum-dev==1.6.646',
                       'python-dateutil',
-                      'timeout-decorator==0.4.0'],
+                      'timeout-decorator==0.4.0',
+                      'distro==1.3.0'],
     setup_requires=['pytest-runner'],
     extras_require={
         'tests': tests_require
