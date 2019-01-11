@@ -61,7 +61,12 @@ def patch_packet_mgr_output(monkeypatch, pkg_name, pkg_version):
 
 
 @pytest.fixture(scope='function', params=[(EXT_PKT_NAME, EXT_PKT_VERSION), (APP_NAME, None)])
-def validUpgrade(nodeIds, tconf, monkeypatch, request):
+def pckg(request):
+    return request.param
+
+
+@pytest.fixture(scope='function')
+def validUpgrade(nodeIds, tconf, monkeypatch, pckg):
     schedule = {}
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     startAt = unow + timedelta(seconds=100)
@@ -70,10 +75,10 @@ def validUpgrade(nodeIds, tconf, monkeypatch, request):
         schedule[i] = datetime.isoformat(startAt)
         startAt = startAt + timedelta(seconds=acceptableDiff + 3)
 
-    patch_packet_mgr_output(monkeypatch, request.param[0], request.param[1])
+    patch_packet_mgr_output(monkeypatch, pckg[0], pckg[1])
 
-    return dict(name='upgrade-{}'.format(randomText(3)), version=bumpedVersion(request.param[1]),
-                action=START, schedule=schedule, timeout=1, package=request.param[0],
+    return dict(name='upgrade-{}'.format(randomText(3)), version=bumpedVersion(pckg[1]),
+                action=START, schedule=schedule, timeout=1, package=pckg[0],
                 sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55')
 
 

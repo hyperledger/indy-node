@@ -17,28 +17,17 @@ delta = 2
 logger = getlogger()
 
 
+@pytest.fixture(scope='function')
+def pckg():
+    return (EXT_PKT_NAME, EXT_PKT_VERSION)
+
+
 @pytest.fixture(scope="module")
 def tconf(tconf):
     old_delta = tconf.MinSepBetweenNodeUpgrades
     tconf.MinSepBetweenNodeUpgrades = delta
     yield tconf
     tconf.MinSepBetweenNodeUpgrades = old_delta
-
-
-@pytest.fixture(scope='function')
-def validUpgrade(nodeIds, tconf, monkeypatch):
-    schedule = {}
-    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    startAt = unow + timedelta(seconds=delta)
-    for i in nodeIds:
-        schedule[i] = datetime.isoformat(startAt)
-        startAt = startAt + timedelta(seconds=delta)
-
-    patch_packet_mgr_output(monkeypatch, EXT_PKT_NAME, EXT_PKT_VERSION)
-
-    return dict(name='upgrade-{}'.format(randomText(3)), version=bumpedVersion(EXT_PKT_VERSION),
-                action=START, schedule=schedule, timeout=1, package=EXT_PKT_NAME,
-                sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55')
 
 
 @pytest.fixture(scope='function')
@@ -55,6 +44,14 @@ def skip_functions():
 def test_node_doesnt_retry_upgrade(looper, nodeSet, validUpgrade, nodeIds,
                                    sdk_pool_handle, sdk_wallet_trustee, tconf,
                                    skip_functions):
+    schedule = {}
+    unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+    startAt = unow + timedelta(seconds=delta)
+    for i in nodeIds:
+        schedule[i] = datetime.isoformat(startAt)
+        startAt = startAt + timedelta(seconds=delta)
+    validUpgrade['schedule'] = schedule
+
     # Emulating connection problems
     for node in nodeSet:
         node.upgrader.retry_limit = 0
