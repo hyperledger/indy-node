@@ -3,9 +3,9 @@
 import importlib
 import os
 import pkgutil
+import platform
 import subprocess
 import time
-import distro
 from pathlib import Path
 from functools import cmp_to_key
 
@@ -128,7 +128,8 @@ def _compare_migration_scripts(migration1, migration2):
 
 
 def _get_current_platform():
-    name = distro.linux_distribution()[0]
-    if 'Ubuntu' in name or 'ubuntu' in name:
+    uname = platform.uname()
+    version = uname.version
+    if 'Ubuntu' in version:
         return 'Ubuntu'
     raise Exception('Platform is not supported')
