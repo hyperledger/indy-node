@@ -142,7 +142,6 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
             else:
                 logSuccess('Run #{} was successful'.format(runsCount))
                 log('\n\n')
-
         else:
             break  # just one run
 
