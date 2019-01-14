@@ -103,3 +103,5 @@ ANYONE_CAN_WRITE = False
 PACKAGES_TO_HOLD = ['indy-plenum', 'indy-node', 'python3-indy-crypto', 'libindy-crypto']
 
 authPolicy = LOCAL_AUTH_POLICY
+
+SCHEMA_ATTRIBUTES_LIMIT = 125
