@@ -6,7 +6,6 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import domain
 from indy_common.constants import NYM
 from indy_common.auth import Authoriser
-from indy_node.server.request_handlers.write_request_handler import WriteRequestHandler
 from ledger.util import F
 
 from plenum.common.constants import ROLE, TARGET_NYM, VERKEY, DOMAIN_LEDGER_ID, TXN_TIME
@@ -16,6 +15,7 @@ from plenum.common.txn_util import get_payload_data, get_seq_no, get_txn_time, g
 from plenum.common.types import f
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.request_handlers.utils import nym_to_state_key, get_nym_details
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
 class NymHandler(WriteRequestHandler):
@@ -23,7 +23,8 @@ class NymHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  write_request_validator: WriteRequestValidator):
-        super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID, write_request_validator)
+        super().__init__(database_manager, NYM, DOMAIN_LEDGER_ID)
+        self.write_request_validator = write_request_validator
 
     def static_validation(self, request: Request):
         self._validate_request_type(request)
