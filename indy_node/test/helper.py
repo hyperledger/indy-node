@@ -21,7 +21,6 @@ from stp_core.types import HA
 
 logger = getlogger()
 
-
 @spyable(methods=[Upgrader.processLedger])
 class TestUpgrader(Upgrader):
     pass
@@ -50,7 +49,9 @@ class TestNode(TempStorage, TestNodeCore, Node):
 
     def init_upgrader(self):
         return TestUpgrader(self.id, self.name, self.dataLocation, self.config,
-                            self.configLedger)
+                            self.configLedger,
+                            actionFailedCallback=self.postConfigLedgerCaughtUp,
+                            action_start_callback=self.notify_upgrade_start)
 
     def init_domain_req_handler(self):
         return Node.init_domain_req_handler(self)
