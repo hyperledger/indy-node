@@ -130,4 +130,5 @@ def _compare_migration_scripts(migration1, migration2):
 def _get_current_platform():
     name = distro.linux_distribution()[0]
     if 'Ubuntu' in name or 'ubuntu' in name:
-        raise Exception('Platform is not supported')
+        return 'Ubuntu'
+    raise Exception('Platform is not supported')
