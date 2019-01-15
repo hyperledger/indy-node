@@ -39,6 +39,7 @@ sed -i -r "s~indy-plenum-[a-z]+~indy-plenum~" "$repo/setup.py"
 echo -e "Adapt the dependencies for the Canonical archive"
 sed -i "s~python-dateutil~python3-dateutil~" "$repo/setup.py"
 sed -i "s~timeout-decorator~python3-timeout-decorator~" "$repo/setup.py"
+sed -i "s~distro~python3-distro~" "$repo/setup.py"
 
 # create manifest file
 repourl=$(git --git-dir $repo/.git --work-tree $repo config --get remote.origin.url)
