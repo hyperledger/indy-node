@@ -19,9 +19,11 @@ def test_network_monitor_suspension_by_another_steward(looper,
         did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
     new_network_monitor_did, new_network_monitor_verkey = looper.loop.run_until_complete(
         did.create_and_store_my_did(sdk_wallet_steward[0], "{}"))
+
     """Adding new steward"""
     sdk_add_new_nym(looper, sdk_pool_handle,
                     sdk_wallet_trustee, 'newSteward', STEWARD_STRING, verkey=new_steward_verkey, dest=new_steward_did)
+
     """Adding NETWORK_MONITOR role by first steward"""
     op = {'type': '1',
           'dest': new_network_monitor_did,
@@ -29,14 +31,16 @@ def test_network_monitor_suspension_by_another_steward(looper,
           'verkey': new_network_monitor_verkey}
     req = sdk_sign_and_submit_op(looper, sdk_pool_handle, (sdk_wallet_handle, new_steward_did), op)
     sdk_get_and_check_replies(looper, [req])
+
     """Check that get_validator_info command works for NETWORK_MONITOR role"""
     sdk_get_validator_info(looper, (sdk_wallet_handle, new_network_monitor_did), sdk_pool_handle)
+
+    """Blacklisting network_monitor by new steward"""
     op = {'type': '1',
           'dest': new_network_monitor_did,
           'role': None}
     if with_verkey:
         op['verkey'] = new_network_monitor_verkey
-    """Blacklisting network_monitor by new steward"""
     req = sdk_sign_and_submit_op(looper, sdk_pool_handle, (sdk_wallet_handle, new_steward_did), op)
     if with_verkey:
         with pytest.raises(RequestRejectedException):
@@ -54,6 +58,7 @@ def test_network_monitor_suspension_by_itself(looper,
                                               with_verkey):
     new_network_monitor_did, new_network_monitor_verkey = looper.loop.run_until_complete(
         did.create_and_store_my_did(sdk_wallet_steward[0], "{}"))
+
     """Adding NETWORK_MONITOR role by steward"""
     op = {'type': '1',
           'dest': new_network_monitor_did,
@@ -61,12 +66,13 @@ def test_network_monitor_suspension_by_itself(looper,
           'verkey': new_network_monitor_verkey}
     req = sdk_sign_and_submit_op(looper, sdk_pool_handle, (sdk_wallet_handle, sdk_wallet_steward[1]), op)
     sdk_get_and_check_replies(looper, [req])
+
+    """Blacklisting network_monitor by itself"""
     op = {'type': '1',
           'dest': new_network_monitor_did,
           'role': None}
     if with_verkey:
         op['verkey'] = new_network_monitor_verkey
-    """Blacklisting network_monitor by itself"""
     req = sdk_sign_and_submit_op(looper, sdk_pool_handle, (sdk_wallet_handle, new_network_monitor_did), op)
     with pytest.raises(RequestRejectedException):
         sdk_get_and_check_replies(looper, [req])
