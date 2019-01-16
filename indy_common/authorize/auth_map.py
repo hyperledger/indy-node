@@ -62,6 +62,11 @@ sameRoleTrustAnchor = AuthActionEdit(txn_type=NYM,
                                      old_value=TRUST_ANCHOR,
                                      new_value=TRUST_ANCHOR)
 
+sameRoleNetworkMonitor = AuthActionEdit(txn_type=NYM,
+                                        field=ROLE,
+                                        old_value=NETWORK_MONITOR,
+                                        new_value=NETWORK_MONITOR)
+
 sameRoleNone = AuthActionEdit(txn_type=NYM,
                               field=ROLE,
                               old_value='',
@@ -206,6 +211,9 @@ authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            sameRoleNone.get_action_id(): AuthConstraint(role='*',
                                                         sig_count=1,
                                                         need_to_be_owner=True),
+           sameRoleNetworkMonitor.get_action_id(): AuthConstraint(role="*",
+                                                                  sig_count=1,
+                                                                  need_to_be_owner=True),
            keyRotation.get_action_id(): AuthConstraint(role='*',
                                                        sig_count=1,
                                                        need_to_be_owner=True),
