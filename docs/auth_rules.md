@@ -4,10 +4,12 @@
 | NYM              |`role` |`<empty>`       | TRUSTEE   | TRUSTEE|Adding new TRUSTEE|
 | NYM              |`role` |`<empty>`       | STEWARD   | TRUSTEE|Adding new STEWARD|
 | NYM              |`role` |`<empty>`       | TRUST_ANCHOR| TRUSTEE, STEWARD|Adding new TRUST_ANCHOR|
+| NYM              |`role` |`<empty>`       | NETWORK_MONITOR| TRUSTEE, STEWARD|Adding new NETWORK_MONITOR|
 | NYM              |`role` |`<empty>`       |`<empty>`  | TRUSTEE, STEWARD, TRUST_ANCHOR| Adding new Identity Owner|
 | NYM              |`role` | TRUSTEE        |`<empty>`  | TRUSTEE | Blacklisting Trustee|
 | NYM              |`role` | STEWARD        |`<empty>`  | TRUSTEE | Blacklisting Steward|
 | NYM              |`role` | TRUST_ANCHOR   |`<empty>`  | TRUSTEE | Blacklisting Trust anchor|
+| NYM              |`role` | NETWORK_MONITOR|`<empty>`  | TRUSTEE, STEWARD | Blacklisting user with NETWORK_MONITOR role| 
 | NYM              |`verkey`|`*`|`*`| Owner of this nym | Key Rotation|
 | SCHEMA           |`*`|`*`|`*`| TRUSTEE, STEWARD, TRUST_ANCHOR | Adding new Schema|
 | SCHEMA           |`*`|`*`|`*`| No one can edit existing Schema | Editing Schema|
@@ -25,7 +27,7 @@
 | POOL_UPGRADE     |`action`|`start`|`cancel`|TRUSTEE| Canceling upgrade procedure|
 | POOL_RESTART     |`action`|`*`|`*`|TRUSTEE| Restarting pool command|
 | POOL_CONFIG      |`action`|`*`|`*`|TRUSTEE| Pool config command (like a `read only` option)| 
-| VALIDATOR_INFO   |`*`|`*`|`*`| TRUSTEE, STEWARD| Getting validator_info from pool|
+| VALIDATOR_INFO   |`*`|`*`|`*`| TRUSTEE, STEWARD, NETWORK_MONITOR| Getting validator_info from pool|
 
 
 ### Also, there is a some optional rules for case if in config option ANYONE_CAN_WRITE is set to True:
@@ -52,5 +54,3 @@
 |REVOC_REG_DEF|`*`|`*`|`*`| Only owners can edit existing REVOC_REG_DEF| Editing REVOC_REG_DEF|
 |REVOC_REG_ENTRY|`*`|`*`|`*`| Only the owner of the corresponding REVOC_REG_DEF can create new REVOC_REG_ENTRY| Adding new REVOC_REG_ENTRY|
 |REVOC_REG_ENTRY|`*`|`*`|`*`| Only owners can edit existing REVOC_REG_ENTRY| Adding new REVOC_REG_ENTRY|
-
-
