@@ -448,7 +448,7 @@ class Upgrader(NodeMaintainer):
             return True, ''
         times = sorted(times)
         for i in range(len(times) - 1):
-            diff = (times[i + 1] - times[i]).seconds
+            diff = (times[i + 1] - times[i]).total_seconds()
             if diff < self.config.MinSepBetweenNodeUpgrades:
                 return False, 'time span between upgrades is {} ' \
                               'seconds which is less than specified ' \
