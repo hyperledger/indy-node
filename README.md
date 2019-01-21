@@ -160,7 +160,7 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 - Relationship between Entities and Transactions: [relationship diagram](docs/relationship-diagram.png)
 - Supported transactions and their format: [transactions](docs/transactions.md)
 - Supported requests (write, read) and their format: [requests](docs/requests.md)
-- [Network roles and permissions](https://docs.google.com/spreadsheets/d/1TWXF7NtBjSOaUIBeIH77SyZnawfo91cJ_ns4TR-wsq4/edit#gid=0)
+- [Network roles and permissions](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)
 - [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
 - [Helper Scripts](docs/helper-scripts.md)
 - [Pool Upgrade](docs/pool-upgrade.md)
