@@ -15,7 +15,7 @@
 | SCHEMA           |`*`|`*`|`*`| No one can edit existing Schema | Editing Schema|
 | CLAIM_DEF        |`*`|`*`|`*`| TRUSTEE, STEWARD, TRUST_ANCHOR| Adding new CLAIM_DEF transaction|
 | CLAIM_DEF        |`*`|`*`|`*`| Owner of claim_def txn| Editing CLAIM_DEF transaction|
-| NODE             |`services`|`<empty>`|`[VALIDATOR]`| STEWARD if it is owner of this transaction| Adding new node to pool|
+| NODE             |`services`|`<empty>`|`[VALIDATOR]`| STEWARD if it doesn't own NODE transaction yet| Adding new node to pool|
 | NODE             |`services`|`[VALIDATOR]`|`[]`| TRUSTEE, STEWARD if it is owner of this transaction| Demotion of node|
 | NODE             |`services`|`[]`|`[VALIDATOR]`| TRUSTEE, STEWARD if it is owner of this transaction| Promotion of node|
 | NODE             |`node_ip`|`*`|`*`| STEWARD if it is owner of this transaction| Changing Node's ip address|
