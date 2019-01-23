@@ -272,6 +272,12 @@ class TransactionsStats(BaseUnknown):
     def __iter__(self):
         return iter(self.val)
 
+    def __getitem__(self, item):
+        return self.val
+
+    def __setitem__(self, key, value):
+        self.val[key] = value
+
 
 class AverageStats(BaseStats):
     shema = [
@@ -550,20 +556,16 @@ def nagios(vstats):
     if "running" == running:
         state = '0'
 
-    lines = [
-        "{} {}_Total_Config_Transactions config_transactions={} {} Total Config Transactions".format(
-            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count'].val['config'],
-            vstats['Node_info']['Name'])
-    ] + [
-        "{} {}_Total_Ledger_Transactions ledger_transactions={} {} Total Ledger Transactions".format(
-            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count'].val['ledger'],
-            vstats['Node_info']['Name'])
-    ] + [
-        "{} {}_Total_Pool_Transactions pool_transactions={} {} Total Pool Transactions".format(
-            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count'].val['pool'],
-            vstats['Node_info']['Name'])
-    ] + [
-        "{} {}_Read_Transactions_per_second read_transactions_per_second={} {} Read Transactions/Second".format(
+    lines = ["{} {}_Total_{}_Transactions config_transactions={} {} Total {} Transactions".format(
+            state,
+            vstats['Node_info']['Name'],
+            ledger_name.title(),
+            count,
+            vstats['Node_info']['Name'],
+            ledger_name.title())
+            for ledger_name, count in vstats['Node_info']['Metrics']['transaction-count'].items()]
+
+    lines += ["{} {}_Read_Transactions_per_second read_transactions_per_second={} {} Read Transactions/Second".format(
             state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['average-per-second']['read-transactions'],
             vstats['Node_info']['Name'])
     ] + [
