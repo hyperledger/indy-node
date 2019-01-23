@@ -269,6 +269,9 @@ class TransactionsStats(BaseUnknown):
         else:
             return ""
 
+    def items(self):
+        return dict(self.val).items()
+
     def __iter__(self):
         return iter(self.val)
 
