@@ -123,6 +123,12 @@ reqOpKeys = (TXN_TYPE,)
 ENDPOINT = "endpoint"
 
 # Roles
+
+# FIXME can be automated by oteration through Roles
+# but it would be less self-descriptive
+CLIENT = Roles.CLIENT.value
+CLIENT_STRING = None
+
 TRUST_ANCHOR = Roles.TRUST_ANCHOR.value
 TRUST_ANCHOR_STRING = 'TRUST_ANCHOR'
 
