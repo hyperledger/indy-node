@@ -6,20 +6,21 @@ from indy_common.constants import SCHEMA
 
 from indy_common.req_utils import get_write_schema_name, get_write_schema_version
 from indy_node.server.request_handlers.read_req_handlers.get_schema_handler import GetSchemaHandler
-from indy_node.server.request_handlers.write_request_handler import WriteRequestHandler
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.request import Request
 from plenum.common.txn_util import get_request_data
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
 class SchemaHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager, get_schema_handler: GetSchemaHandler,
                  write_request_validator: WriteRequestValidator):
-        super().__init__(database_manager, SCHEMA, DOMAIN_LEDGER_ID, write_request_validator)
+        super().__init__(database_manager, SCHEMA, DOMAIN_LEDGER_ID)
+        self.write_request_validator = write_request_validator
         self.get_schema_handler = get_schema_handler
 
     def static_validation(self, request: Request):

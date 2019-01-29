@@ -4,21 +4,22 @@ from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.state import domain
 
 from indy_common.constants import CLAIM_DEF, REF, SCHEMA
-from indy_node.server.request_handlers.write_request_handler import WriteRequestHandler
 
 from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.request import Request
 from plenum.common.txn_util import get_request_data
+
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
 class ClaimDefHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  write_request_validator: WriteRequestValidator):
-        super().__init__(database_manager, CLAIM_DEF, DOMAIN_LEDGER_ID,
-                         write_request_validator)
+        super().__init__(database_manager, CLAIM_DEF, DOMAIN_LEDGER_ID)
+        self.write_request_validator = write_request_validator
 
     def static_validation(self, request: Request):
         pass

@@ -1,7 +1,7 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, NYM, ROLE
+    CLAIM_DEF, SCHEMA, NYM, ROLE, NETWORK_MONITOR
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
 
@@ -16,6 +16,10 @@ addNewSteward = AuthActionAdd(txn_type=NYM,
 addNewTrustAnchor = AuthActionAdd(txn_type=NYM,
                                   field=ROLE,
                                   value=TRUST_ANCHOR)
+
+addNewNetworkMonitor = AuthActionAdd(txn_type=NYM,
+                                     field=ROLE,
+                                     value=NETWORK_MONITOR)
 
 
 addNewIdentityOwner = AuthActionAdd(txn_type=NYM,
@@ -38,6 +42,11 @@ blacklistingTrustAnchor = AuthActionEdit(txn_type=NYM,
                                          old_value=TRUST_ANCHOR,
                                          new_value='')
 
+blacklistingNetworkMonitor = AuthActionEdit(txn_type=NYM,
+                                            field=ROLE,
+                                            old_value=NETWORK_MONITOR,
+                                            new_value='')
+
 sameRoleTrustee = AuthActionEdit(txn_type=NYM,
                                  field=ROLE,
                                  old_value=TRUSTEE,
@@ -52,6 +61,11 @@ sameRoleTrustAnchor = AuthActionEdit(txn_type=NYM,
                                      field=ROLE,
                                      old_value=TRUST_ANCHOR,
                                      new_value=TRUST_ANCHOR)
+
+sameRoleNetworkMonitor = AuthActionEdit(txn_type=NYM,
+                                        field=ROLE,
+                                        old_value=NETWORK_MONITOR,
+                                        new_value=NETWORK_MONITOR)
 
 sameRoleNone = AuthActionEdit(txn_type=NYM,
                               field=ROLE,
@@ -175,13 +189,16 @@ authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            addNewSteward.get_action_id(): AuthConstraint(TRUSTEE, 1),
            addNewTrustAnchor.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                                 AuthConstraint(STEWARD, 1)]),
+           addNewNetworkMonitor.get_action_id(): AuthConstraintOr([AuthConstraint(STEWARD, 1),
+                                                                   AuthConstraint(TRUSTEE, 1)]),
            addNewIdentityOwner.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                                   AuthConstraint(STEWARD, 1),
                                                                   AuthConstraint(TRUST_ANCHOR, 1)]),
            blacklistingTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            blacklistingSteward.get_action_id(): AuthConstraint(TRUSTEE, 1),
            blacklistingTrustAnchor.get_action_id(): AuthConstraint(TRUSTEE, 1),
-
+           blacklistingNetworkMonitor.get_action_id(): AuthConstraintOr([AuthConstraint(STEWARD, 1),
+                                                                         AuthConstraint(TRUSTEE, 1)]),
            sameRoleTrustee.get_action_id(): AuthConstraint(role='*',
                                                            sig_count=1,
                                                            need_to_be_owner=True),
@@ -194,6 +211,9 @@ authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            sameRoleNone.get_action_id(): AuthConstraint(role='*',
                                                         sig_count=1,
                                                         need_to_be_owner=True),
+           sameRoleNetworkMonitor.get_action_id(): AuthConstraint(role="*",
+                                                                  sig_count=1,
+                                                                  need_to_be_owner=True),
            keyRotation.get_action_id(): AuthConstraint(role='*',
                                                        sig_count=1,
                                                        need_to_be_owner=True),
@@ -220,7 +240,8 @@ authMap = {addNewTrustee.get_action_id(): AuthConstraint(TRUSTEE, 1),
            poolRestart.get_action_id(): AuthConstraint(TRUSTEE, 1),
            poolConfig.get_action_id(): AuthConstraint(TRUSTEE, 1),
            validatorInfo.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
-                                                            AuthConstraint(STEWARD, 1)])}
+                                                            AuthConstraint(STEWARD, 1),
+                                                            AuthConstraint(NETWORK_MONITOR, 1)])}
 
 anyoneCanWriteMap = {anyoneCanAddNYM.get_action_id(): AuthConstraint(role='*',
                                                                      sig_count=1),

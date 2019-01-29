@@ -16,7 +16,7 @@ class ValidatorNodeInfoTool(PlenumValidatorNodeInfoTool):
         ts_str = "{}".format(time.strftime(
             "%A, %B %{0}d, %Y %{0}I:%M:%S %p %z".format('#' if os.name == 'nt' else '-'),
             time.localtime(info["timestamp"])))
-        info.update({"Update time": ts_str})
+        info.update({"Update_time": ts_str})
         if 'Node_info' in info:
             if 'Metrics' in info['Node_info']:
                 std_ledgers = [POOL_LEDGER_ID, DOMAIN_LEDGER_ID, CONFIG_LEDGER_ID]
