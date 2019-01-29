@@ -69,7 +69,6 @@ class RolesAuthorizer(AbstractAuthorizer):
     def get_named_role_from_req(self, request: Request):
         return get_named_role(self.get_role(request))
 
-
     def authorize(self,
                   request: Request,
                   auth_constraint: AuthConstraint,
