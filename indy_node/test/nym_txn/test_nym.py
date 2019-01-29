@@ -11,7 +11,7 @@ def test_non_steward_cannot_create_trust_anchor(
     sdk_wallet_client = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward)
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_client, role=TRUST_ANCHOR_STRING)
-    e.match('There is no accepted constraint')
+    e.match('Rule for this action is')
 
 
 def testStewardCreatesATrustAnchor(looper, sdk_pool_handle, sdk_wallet_steward):
@@ -27,7 +27,7 @@ def test_non_trust_anchor_cannot_create_user(
     sdk_wallet_client = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward)
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_client)
-    e.match('There is no accepted constraint')
+    e.match('Rule for this action is')
 
 
 def testTrustAnchorCreatesAUser(sdk_user_wallet_a):

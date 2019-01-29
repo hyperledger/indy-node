@@ -3,6 +3,7 @@ from abc import ABCMeta
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, ROLE_CONSTRAINT_ID, \
     AuthConstraintAnd
+from indy_common.authorize.helper import get_named_role
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 
@@ -65,6 +66,10 @@ class RolesAuthorizer(AbstractAuthorizer):
 
         return sig_count >= auth_constraint.sig_count
 
+    def get_named_role_from_req(self, request: Request):
+        return get_named_role(self.get_role(request))
+
+
     def authorize(self,
                   request: Request,
                   auth_constraint: AuthConstraint,
@@ -73,11 +78,12 @@ class RolesAuthorizer(AbstractAuthorizer):
         if is_role_accepted is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
         if not is_role_accepted:
-            return False, "role is not accepted"
+            return False, "{} can not do this action".format(self.get_named_role_from_req(request))
         if not self.is_sig_count_accepted(request, auth_constraint):
-            return False, "count of signatures is not accepted"
+            return False, "Count of signatures is not accepted"
         if not self.is_owner_accepted(auth_constraint, auth_action):
-            return False, "actor must be owner"
+            return False, "{} can not touch verkey field since only the owner can modify it".\
+                format(self.get_named_role_from_req(request))
         return True, ""
 
 
@@ -135,5 +141,5 @@ class OrAuthorizer(AbstractAuthorizer):
             else:
                 successes.append(True)
         if len(successes) == 0:
-            raise AuthValidationError("There is no accepted constraint")
+            raise AuthValidationError("Rule for this action is: {}".format(auth_constraint))
         return True, ""
