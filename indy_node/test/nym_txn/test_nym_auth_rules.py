@@ -10,7 +10,6 @@ from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
-from indy_common.constants import IDENTITY_OWNER, TRUST_ANCHOR, NETWORK_MONITOR
 from indy_common.roles import Roles
 from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 
