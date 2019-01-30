@@ -124,7 +124,7 @@ ENDPOINT = "endpoint"
 
 # Roles
 
-# FIXME can be automated by oteration through Roles
+# FIXME can be automated by iteration through Roles
 # but it would be less self-descriptive
 CLIENT = Roles.CLIENT.value
 CLIENT_STRING = None
