@@ -20,6 +20,7 @@ from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 #   - mixed cases: both verkey and role are presented in NYM txn
 #     ??? possibly not necessary for now since role and verkey related constrains
 #     are composed like logical AND validation fails if any of them fails
+#   - ANYONE_CAN_WRITE=True case
 
 
 # FIXTURES
