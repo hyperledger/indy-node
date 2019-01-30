@@ -79,7 +79,7 @@ class DIDWallet(object):
 
 def auth_check(action_id, signer, dest):
 
-    is_self = signer.did == dest.did
+    # is_self = signer.did == dest.did
     is_owner = signer == (dest if dest.verkey is not None else dest.creator)
 
     if action_id == ActionIds.add:
@@ -96,7 +96,7 @@ def auth_check(action_id, signer, dest):
         elif dest.role == Roles.TRUST_ANCHOR:
             return (signer.role == Roles.TRUSTEE)
             # FIXME INDY-1968: uncomment when the task is addressed
-            #return ((signer.role == Roles.TRUSTEE) or
+            # return ((signer.role == Roles.TRUSTEE) or
             #        (signer.role == Roles.TRUST_ANCHOR and
             #            is_self and is_owner))
         elif dest.role == Roles.NETWORK_MONITOR:
