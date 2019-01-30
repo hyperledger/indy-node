@@ -182,7 +182,7 @@ def provisioned_role(request):
     return request.param
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def provisioned(provisioned_role):
     did, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
     return (
