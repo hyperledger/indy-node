@@ -126,9 +126,6 @@ ENDPOINT = "endpoint"
 
 # FIXME can be automated by iteration through Roles
 # but it would be less self-descriptive
-IDENTITY_OWNER = Roles.IDENTITY_OWNER.value
-IDENTITY_OWNER_STRING = None
-
 TRUST_ANCHOR = Roles.TRUST_ANCHOR.value
 TRUST_ANCHOR_STRING = 'TRUST_ANCHOR'
 
