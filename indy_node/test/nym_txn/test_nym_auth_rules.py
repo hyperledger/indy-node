@@ -10,7 +10,7 @@ from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
-from indy_common.constants import CLIENT, TRUST_ANCHOR, NETWORK_MONITOR
+from indy_common.constants import IDENTITY_OWNER, TRUST_ANCHOR, NETWORK_MONITOR
 from indy_common.roles import Roles
 from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 
@@ -65,7 +65,7 @@ class Rotator(EnumBase):
 
 # FIXME class name
 class DIDWallet(object):
-    def __init__(self, did=None, role=Roles.CLIENT, verkey=None, creator=None, wallet_handle=None):
+    def __init__(self, did=None, role=Roles.IDENTITY_OWNER, verkey=None, creator=None, wallet_handle=None):
         self.did = did
         self.role = role
         self.verkey = verkey
@@ -87,7 +87,7 @@ def auth_check(action_id, signer, dest):
             return signer.role == Roles.TRUSTEE
         elif dest.role in (Roles.TRUST_ANCHOR, Roles.NETWORK_MONITOR):
             return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
-        elif dest.role == Roles.CLIENT:
+        elif dest.role == Roles.IDENTITY_OWNER:
             return signer.role in (Roles.TRUSTEE, Roles.STEWARD, Roles.TRUST_ANCHOR)
 
     elif action_id == ActionIds.demote:
@@ -102,7 +102,7 @@ def auth_check(action_id, signer, dest):
         elif dest.role == Roles.NETWORK_MONITOR:
             return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
         # FIXME INDY-1969: remove when the task is addressed
-        elif dest.role == Roles.CLIENT:
+        elif dest.role == Roles.IDENTITY_OWNER:
             return is_owner
 
     elif action_id == ActionIds.rotate:
@@ -138,7 +138,7 @@ def create_new_did(looper, sdk_pool_handle, creator, role, skipverkey=False):
 
 @pytest.fixture(scope="module")
 def client(sdk_wallet_client):
-    return DIDWallet(did=sdk_wallet_client[1], role=Roles.CLIENT, wallet_handle=sdk_wallet_client[0])
+    return DIDWallet(did=sdk_wallet_client[1], role=Roles.IDENTITY_OWNER, wallet_handle=sdk_wallet_client[0])
 
 
 @pytest.fixture(scope="module")
@@ -185,10 +185,12 @@ def provisioned_role(request):
 @pytest.fixture(scope="module")
 def provisioned(provisioned_role):
     did, verkey = createHalfKeyIdentifierAndAbbrevVerkey()
-    return (DIDWallet(did=did,
-                      role=provisioned_role if provisioned_role else Roles.CLIENT,
-                      verkey=verkey),
-            provisioned_role is None)
+    return (
+        DIDWallet(
+            did=did,
+            role=provisioned_role if provisioned_role else Roles.IDENTITY_OWNER,
+            verkey=verkey),
+        provisioned_role is None)
 
 
 # scope is 'function' since demoter demotes

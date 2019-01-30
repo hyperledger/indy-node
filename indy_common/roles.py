@@ -8,7 +8,7 @@ class Roles(Enum):
     #  These numeric constants CANNOT be changed once they have been used,
     #  because that would break backwards compatibility with the ledger
     #  Also the numeric constants CANNOT collide with the roles in plenum
-    CLIENT = None  # FIXME might makes sense to move to plenum
+    IDENTITY_OWNER = None  # FIXME might makes sense to move to plenum
     TRUSTEE = Roles.TRUSTEE.value
     STEWARD = Roles.STEWARD.value
     TRUST_ANCHOR = "101"
