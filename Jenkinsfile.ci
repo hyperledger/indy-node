@@ -147,7 +147,7 @@ def tests = [
             resFile: "test-result-node.${NODE_NAME}.txt",
             testDir: 'indy_node',
             python: python,
-            useRunner: true
+            useRunner: false
         )
     },
 ].collect {k, v -> [k, v]}
