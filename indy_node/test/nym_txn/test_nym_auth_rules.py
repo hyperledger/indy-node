@@ -17,6 +17,9 @@ from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 
 #   TODO
 #   - more specific string patterns for auth exc check
+#   - mixed cases: both verkey and role are presented in NYM txn
+#     ??? possibly not necessary for now since role and verkey related constrains
+#     are composed like logical AND validation fails if any of them fails
 
 
 # FIXTURES
@@ -91,11 +94,16 @@ def auth_check(action_id, signer, dest):
         if dest.role in (Roles.TRUSTEE, Roles.STEWARD):
             return signer.role == Roles.TRUSTEE
         elif dest.role == Roles.TRUST_ANCHOR:
-            return ((signer.role == Roles.TRUSTEE) or
-                    (signer.role == Roles.TRUST_ANCHOR and
-                        is_self and is_owner))
+            return (signer.role == Roles.TRUSTEE)
+            # FIXME INDY-1968: uncomment when the task is addressed
+            #return ((signer.role == Roles.TRUSTEE) or
+            #        (signer.role == Roles.TRUST_ANCHOR and
+            #            is_self and is_owner))
         elif dest.role == Roles.NETWORK_MONITOR:
             return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
+        # FIXME INDY-1969: remove when the task is addressed
+        elif dest.role == Roles.CLIENT:
+            return is_owner
 
     elif action_id == ActionIds.rotate:
         return is_owner
@@ -307,7 +315,7 @@ def test_nym_add(looper, sdk_pool_handle, txnPoolNodeSet, provisioner, provision
 
 # Demotion is considered as NYM with only 'role' field specified and it's None.
 # If NYM includes 'verkey' field as well it mixes role demotion/promotion and
-# verkey rotation and should be checked separately. TODO mixed cases
+# verkey rotation and should be checked separately.
 def test_nym_demote(looper, sdk_pool_handle, txnPoolNodeSet, demoter, demoted):
     # might be None for cases 'self_created_no_verkey' and 'self_created_verkey' or self demotion
     if demoted:
