@@ -17,6 +17,9 @@ did new seed=RandomUser2000000000000000000000 metadata="test identity 2"
 did new seed=RandomUser4000000000000000000000 metadata="test identity 4"
 did new seed=RandomUser5000000000000000000000 metadata="test identity 5"
 did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+did new seed=NetworkMonitor100000000000000000 metadata="network monitor 1"
+did new seed=NetworkMonitor200000000000000000 metadata="network monitor 2"
+did new seed=NetworkMonitor300000000000000000 metadata="network monitor 3"
 did use V4SGRU86Z58d6TV7PBUe6f
 # AS Trustee (default) CREATE Trustee (trustee2)
 ledger nym did=QQMQmb1mrBRJR3vx6GP4kg role=TRUSTEE verkey=~7Cj2MTAjyAbHdAiuafgCUW
@@ -86,6 +89,19 @@ ledger nym did=NhF3hPZyV715sfmvsjhj1h verkey=~EjjPJGQcnFGhuyS35bVMGA
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=6nnZTxQ18EkVEjVV6hBMeT verkey=~2TBdyJLgAhkbogxjpUfPJD
 - ledger get-nym did=6nnZTxQ18EkVEjVV6hBMeT
+# #10 AS Trustee (default) CREATE NetworkMonitor (PASS)
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=5JNBLdovQap28Ncm8haqH4 role=NETWORK_MONITOR verkey=~VvRtNwrsLbgikyzAz3vohj
+# #11.1 AS Trustee (default) REMOVE NetworkMonitor (PASS)
+ledger nym did=5JNBLdovQap28Ncm8haqH4 role=
+# #11.2 CHECK NetworkMonitor IS INVALID
+did use V4SGRU86Z58d6TV7PBUe6f
+- ledger get-validator-info nodes=Node1
+# #12.1 AS Trustee (default) RESTORE NetworkMonitor (PASS)
+ledger nym did=5JNBLdovQap28Ncm8haqH4 role=NETWORK_MONITOR
+# #12.2 CHECK NetworkMonitor IS VALID
+did use 5JNBLdovQap28Ncm8haqH4
+ledger get-validator-info nodes=Node1
 # #11 AS Trustee (trustee2) REMOVE self (trustee2) (PASS)
 did use QQMQmb1mrBRJR3vx6GP4kg
 ledger nym did=QQMQmb1mrBRJR3vx6GP4kg role=
@@ -118,3 +134,9 @@ did use 484PvcK1gUqwWEWCkumDzA
 ledger schema name=TrusteeSchema version=1.0 attr_names=name,age
 # Trustee can create CLAIM_DEF (will fail because of wrong schema id):
 - ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=10
+# Steward can RESTART POOL
+did use 484PvcK1gUqwWEWCkumDzA
+ledger pool-restart action=start datetime=2020-01-25T12:49:05.258870+00:00 nodes=Node4
+# Steward can get validator-info
+did use 484PvcK1gUqwWEWCkumDzA
+ledger get-validator-info nodes=Node1
