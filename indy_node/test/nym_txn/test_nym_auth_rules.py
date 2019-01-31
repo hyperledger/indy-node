@@ -137,23 +137,8 @@ def create_new_did(looper, sdk_pool_handle, creator, role, skipverkey=False):
 
 
 @pytest.fixture(scope="module")
-def client(sdk_wallet_client):
-    return DIDWallet(did=sdk_wallet_client[1], role=Roles.IDENTITY_OWNER, wallet_handle=sdk_wallet_client[0])
-
-
-@pytest.fixture(scope="module")
 def trustee(sdk_wallet_trustee):
     return DIDWallet(did=sdk_wallet_trustee[1], role=Roles.TRUSTEE, wallet_handle=sdk_wallet_trustee[0])
-
-
-@pytest.fixture(scope="module")
-def steward(sdk_wallet_steward):
-    return DIDWallet(did=sdk_wallet_steward[1], role=Roles.STEWARD, wallet_handle=sdk_wallet_steward[0])
-
-
-@pytest.fixture(scope="module", params=list(Roles))
-def role(request):
-    return request.param
 
 
 def did_fixture_wrapper():
@@ -164,6 +149,7 @@ def did_fixture_wrapper():
     return _fixture
 
 
+# adds did_per_module and did_per_function fixtures
 for scope in ('module', 'function'):
     setattr(
         sys.modules[__name__],
