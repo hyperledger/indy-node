@@ -26,9 +26,23 @@ class AuthConstraint(AbstractAuthConstraint):
 
     def __str__(self):
         role = get_named_role(self.role) if self.role != '*' else 'ALL'
-        return "Required role: {}, Count of signatures: {}, Need to be owner: {}".format(role,
-                                                                                         self.sig_count,
-                                                                                         self.need_to_be_owner)
+        if role != 'ALL' and self.need_to_be_owner and self.sig_count > 1:
+            return "{} {} signatures are required and needs to be owner".format(self.sig_count, role)
+        elif role != 'ALL' and not self.need_to_be_owner and self.sig_count > 1:
+            return "{} {} signatures are required".format(self.sig_count, role)
+        elif role != 'ALL' and not self.need_to_be_owner and self.sig_count == 1:
+            return "1 {} signature is required".format(role)
+        elif role != 'ALL' and self.need_to_be_owner and self.sig_count == 1:
+            return "1 {} signature is required and needs to be owner".format(role)
+
+        elif role == "ALL" and self.need_to_be_owner and self.sig_count == 1:
+            return "1 signature of any role is required and needs to be owner"
+        elif role == 'ALL' and not self.need_to_be_owner and self.sig_count == 1:
+            return "1 signature of any role is required".format(role)
+        elif role == 'ALL' and not self.need_to_be_owner and self.sig_count > 1:
+            return "{} signatures of any role are required".format(self.sig_count)
+        elif role == "ALL" and self.need_to_be_owner and self.sig_count > 1:
+            return "{} signatures of any role are required and needs to be owner".format(self.sig_count)
 
 
 class AuthConstraintAnd(AbstractAuthConstraint):

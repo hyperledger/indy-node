@@ -79,7 +79,7 @@ class RolesAuthorizer(AbstractAuthorizer):
         if not is_role_accepted:
             return False, "{} can not do this action".format(self.get_named_role_from_req(request))
         if not self.is_sig_count_accepted(request, auth_constraint):
-            return False, "Count of signatures is not accepted"
+            return False, "Not enough signatures"
         if not self.is_owner_accepted(auth_constraint, auth_action):
             return False, "{} can not touch verkey field since only the owner can modify it".\
                 format(self.get_named_role_from_req(request))
