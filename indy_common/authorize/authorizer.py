@@ -5,6 +5,7 @@ from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthC
     AuthConstraintAnd
 from indy_common.authorize.helper import get_named_role
 from indy_common.constants import NYM, CLAIM_DEF
+from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 
@@ -85,10 +86,10 @@ class RolesAuthorizer(AbstractAuthorizer):
             if auth_action.txn_type == NYM:
                 return False, "{} can not touch verkey field since only the owner can modify it".\
                     format(self.get_named_role_from_req(request))
-            if auth_action.txn_type == CLAIM_DEF:
-                return False, "{} can not edit CLAIM_DEF txn since only owner can modify it".\
-                    format(self.get_named_role_from_req(request))
-            return "Actor must be owner"
+            else:
+                return False, "{} can not edit {} txn since only owner can modify it".\
+                    format(self.get_named_role_from_req(request),
+                           IndyTransactions.get_name_from_code(auth_action.txn_type))
         return True, ""
 
 
