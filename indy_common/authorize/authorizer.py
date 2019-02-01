@@ -83,9 +83,10 @@ class RolesAuthorizer(AbstractAuthorizer):
         if not self.is_sig_count_accepted(request, auth_constraint):
             return False, "Not enough signatures"
         if not self.is_owner_accepted(auth_constraint, auth_action):
-            if auth_action.txn_type == NYM:
-                return False, "{} can not touch verkey field since only the owner can modify it".\
-                    format(self.get_named_role_from_req(request))
+            if auth_action.field != '*':
+                return False, "{} can not touch {} field since only the owner can modify it".\
+                    format(self.get_named_role_from_req(request),
+                           auth_action.field)
             else:
                 return False, "{} can not edit {} txn since only owner can modify it".\
                     format(self.get_named_role_from_req(request),
