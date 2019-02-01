@@ -5,15 +5,15 @@
 * [Common Structure](#common-structure)
 * [Domain Ledger](#domain-ledger)
 
-    * [NYM](#nym)    
-    * [ATTRIB](#attrib)    
+    * [NYM](#nym)
+    * [ATTRIB](#attrib)
     * [SCHEMA](#schema)
     * [CLAIM_DEF](#claim_def)
-    
-* [Pool Ledger](#pool-ledger)    
+
+* [Pool Ledger](#pool-ledger)
     * [NODE](#node)
-    
-* [Config Ledger](#config-ledger)    
+
+* [Config Ledger](#config-ledger)
     * [POOL_UPGRADE](#pool_upgrade)
     * [NODE_UPGRADE](#node_upgrade)
     * [POOL_CONFIG](#pool_config)
@@ -23,10 +23,10 @@
 This doc is about supported transactions and their representation on the Ledger (that is, the internal one).
 If you are interested in the format of a client's request (both write and read), then have a look at [requests](requests.md).
 
-- All transactions are stored in a distributed ledger (replicated on all nodes) 
+- All transactions are stored in a distributed ledger (replicated on all nodes)
 - The ledger is based on a [Merkle Tree](https://en.wikipedia.org/wiki/Merkle_tree)
 - The ledger consists of two things:
-    - transactions log as a sequence of key-value pairs 
+    - transactions log as a sequence of key-value pairs
 where key is a sequence number of the transaction and value is the serialized transaction
     - merkle tree (where hashes for leaves and nodes are persisted)
 - Each transaction has a sequence number (no gaps) - keys in transactions log
@@ -43,13 +43,13 @@ where key is a sequence number of the transaction and value is the serialized tr
 Below you can find the format and description of all supported transactions.
 
 ## Genesis Transactions
-As Indy is a public **permissioned** blockchain, each ledger may have a number of pre-defined 
+As Indy is a public **permissioned** blockchain, each ledger may have a number of pre-defined
 transactions defining the initial pool and network.
 - pool genesis transactions define initial trusted nodes in the pool
 - domain genesis transactions define initial trusted trustees and stewards
 
 ## Common Structure
-Each transaction has the following structure consisting of metadata values (common for all transaction types) and 
+Each transaction has the following structure consisting of metadata values (common for all transaction types) and
 transaction specific data:
 ```
 {
@@ -57,12 +57,12 @@ transaction specific data:
     "txn": {
         "type": <...>,
         "protocolVersion": <...>,
-        
+
         "data": {
             "ver": <...>,
             <txn-specific fields>
         },
-        
+
         "metadata": {
             "reqId": <...>,
             "from": <...>
@@ -70,7 +70,7 @@ transaction specific data:
     },
     "txnMetadata": {
         "txnTime": <...>,
-        "seqNo": <...>,  
+        "seqNo": <...>,
         "txnId": <...>
     },
     "reqSignature": {
@@ -85,16 +85,16 @@ transaction specific data:
 - `ver` (string):
 
     Transaction version to be able to evolve content.
-    The content of all sub-fields may depend on this version.       
+    The content of all sub-fields may depend on this version.
 
 - `txn` (dict):
-    
+
     Transaction-specific payload (data)
 
     - `type` (enum number as string):
-    
+
         Supported transaction types:
-        
+
         - NODE = 0
         - NYM = 1
         - ATTRIB = 100
@@ -104,63 +104,63 @@ transaction specific data:
         - NODE_UPGRADE = 110
         - POOL_CONFIG = 111
 
-    - `protocolVersion` (integer; optional): 
-    
+    - `protocolVersion` (integer; optional):
+
         The version of client-to-node or node-to-node protocol. Each new version may introduce a new feature in requests/replies/data.
         Since clients and different nodes may be at different versions, we need this field to support backward compatibility
-        between clients and nodes.     
-     
+        between clients and nodes.
+
     - `data` (dict):
 
-        Transaction-specific data fields (see following sections for each transaction's description).  
-       
+        Transaction-specific data fields (see following sections for each transaction's description).
+
     - `metadata` (dict):
-    
+
         Metadata as came from the request.
 
         - `from` (base58-encoded string):
              Identifier (DID) of the transaction submitter (client who sent the transaction) as base58-encoded string
              for 16 or 32 byte DID value.
-             It may differ from `did` field for some of transaction (for example NYM), where `did` is a 
+             It may differ from `did` field for some of transaction (for example NYM), where `did` is a
              target identifier (for example, a newly created DID identifier).
-             
+
              *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `did` is a newly created DID.
-             
-        - `reqId` (integer): 
+
+        - `reqId` (integer):
             Unique ID number of the request with transaction.
-  
+
     - `txnMetadata` (dict):
-    
-        Metadata attached to the transaction.    
-        
+
+        Metadata attached to the transaction.
+
          - `version` (integer):
             Transaction version to be able to evolve `txnMetadata`.
-            The content of `txnMetadata` may depend on the version.  
-        
-        - `txnTime` (integer as POSIX timestamp): 
+            The content of `txnMetadata` may depend on the version.
+
+        - `txnTime` (integer as POSIX timestamp):
             The time when transaction was written to the Ledger as POSIX timestamp.
-            
+
         - `seqNo` (integer):
             A unique sequence number of the transaction on Ledger
-            
+
         - `txnId` (string):
             Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger.
-            
-  
+
+
 - `reqSignature` (dict):
 
     Submitter's signature over request with transaction (`txn` field).
-    
+
     - `type` (string enum):
-        
+
         - ED25519: ed25519 signature
         - ED25519_MULTI: ed25519 signature in multisig case.
-    
-    - `values` (list): 
-        
+
+    - `values` (list):
+
         - `from` (base58-encoded string):
         Identifier (DID) of signer as base58-encoded string for 16 or 32 byte DID value.
-        
+
         - `value` (base58-encoded string):
          signature value
 
@@ -172,27 +172,27 @@ Please note that all these metadata fields may be absent for genesis transaction
 Creates a new NYM record for a specific user, trust anchor, steward or trustee.
 Note that only trustees and stewards can create new trust anchors and a trustee can be created only by other trustees (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)).
 
-The transaction can be used for 
+The transaction can be used for
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
 
 - `dest` (base58-encoded string):
 
     Target DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from the `from` metadata field, where `from` is the DID of the submitter.
-    
+
     *Example*: `from` is a DID of a Trust Anchor creating a new DID, and `dest` is a newly created DID.
-     
-- `role` (enum number as integer; optional): 
+
+- `role` (enum number as integer; optional):
 
     Role of a user that the NYM record is being created for. One of the following values
-    
+
     - None (common USER)
     - 0 (TRUSTEE)
     - 2 (STEWARD)
     - 101 (TRUST_ANCHOR)
-    
+
   A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)).
-  
+
 - `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
     Target verification key as base58-encoded string. It can start with "~", which means that
@@ -202,14 +202,15 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     (doesn't own the identifier yet).
     Verkey can be changed to "None" by owner, it means that this user goes back under guardianship.
 
-- `alias` (string; optional): 
+- `alias` (string; optional):
 
     NYM's alias.
 
-If there is no NYM transaction for the specified DID (`did`) yes, then this can be considered as the creation of a new DID.
+If there is no NYM transaction for the specified DID (`did`) yet, then this can be considered as the creation of a new DID.
 
 If there is already a NYM transaction with the specified DID (`did`),  then this is is considered an update of that DID.
-In this case we can specify only the values we would like to update. All unspecified values remain unchanged.
+In this case **only the values that need to be updated should be specified** since any specified one is treated as an update even if it matches the current value in ledger. All unspecified values remain unchanged.
+
 So, if key rotation needs to be performed, the owner of the DID needs to send a NYM request with
 `did` and `verkey` only. `role` and `alias` will stay the same.
 
@@ -221,14 +222,14 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     "txn": {
         "type":"1",
         "protocolVersion":1,
-        
+
         "data": {
             "ver": 1,
             "dest":"GEzcdDLhCpGCYRHW82kjHd",
             "verkey":"~HmUWn928bnFT6Ephf65YXv",
             "role":101,
         },
-        
+
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
@@ -258,14 +259,14 @@ Adds an attribute to a NYM record
 
     Target DID we set an attribute for as base58-encoded string for 16 or 32 byte DID value.
     It differs from `from` metadata field, where `from` is the DID of the submitter.
-    
+
     *Example*: `from` is a DID of a Trust Anchor setting an attribute for a DID, and `dest` is the DID we set an attribute for.
-    
+
 - `raw` (sha256 hash string; mutually exclusive with `hash` and `enc`):
 
-    Hash of the raw attribute data. 
+    Hash of the raw attribute data.
     Raw data is represented as JSON, where the key is the attribute name and the value is the attribute value.
-    The ledger only stores a hash of the raw data; the real (unhashed) raw data is stored in a separate 
+    The ledger only stores a hash of the raw data; the real (unhashed) raw data is stored in a separate
     attribute store.
 
 - `hash` (sha256 hash string; mutually exclusive with `raw` and `enc`):
@@ -276,8 +277,8 @@ Adds an attribute to a NYM record
 - `enc` (sha256 hash string; mutually exclusive with `raw` and `hash`):
 
     Hash of encrypted attribute data.
-    The ledger contains the hash only; the real encrypted data is stored in a separate 
-    attribute store. 
+    The ledger contains the hash only; the real encrypted data is stored in a separate
+    attribute store.
 
 **Example**:
 ```
@@ -286,13 +287,13 @@ Adds an attribute to a NYM record
     "txn": {
         "type":"100",
         "protocolVersion":1,
-        
+
         "data": {
             "ver":1,
             "dest":"GEzcdDLhCpGCYRHW82kjHd",
             "raw":"3cba1e3cf23c8ce24b7e08171d823fbd9a4929aafd9f27516e30699d3a42026a",
         },
-        
+
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
@@ -300,7 +301,7 @@ Adds an attribute to a NYM record
     },
     "txnMetadata": {
         "txnTime":1513945121,
-        "seqNo": 10,  
+        "seqNo": 10,
         "txnId": "N22KY2Dyvmuu2PyyqSFKue|02"
     },
     "reqSignature": {
@@ -321,13 +322,13 @@ It's not possible to update an existing schema.
 So, if the Schema needs to be evolved, a new Schema with a new version or new name needs to be created.
 
 - `data` (dict):
- 
+
      Dictionary with Schema's data:
-     
+
     - `attr_names`: array of attribute name strings
     - `name`: Schema's name string
     - `version`: Schema's version string
-    
+
 
 **Example**:
 ```
@@ -336,7 +337,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
     "txn": {
         "type":101,
         "protocolVersion":1,
-        
+
         "data": {
             "ver":1,
             "data": {
@@ -345,7 +346,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
                 "version":"1.0"
             },
         },
-        
+
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
@@ -353,7 +354,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
     },
     "txnMetadata": {
         "txnTime":1513945121,
-        "seqNo": 10,  
+        "seqNo": 10,
         "txnId":"L5AD5g65TDQr1PPHHRoiGf1|Degree|1.0",
     },
     "reqSignature": {
@@ -363,7 +364,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
         }]
     }
-   
+
 }
 ```
 
@@ -374,14 +375,14 @@ It's not possible to update `data` in an existing claim definition.
 Therefore if an existing claim defintion needs to be evolved (for example, a key needs to be rotated), a new claim definition needs to be created for a new Issuer DID (`did`).
 
 - `data` (dict):
- 
+
      Dictionary with claim definition's data:
-     
+
     - `primary` (dict): primary claim public key
     - `revocation` (dict): revocation claim public key
-        
+
 - `ref` (string):
-    
+
     Sequence number of a schema transaction the claim definition is created for.
 
 - `signature_type` (string):
@@ -391,8 +392,8 @@ Therefore if an existing claim defintion needs to be evolved (for example, a key
 - `tag` (string, optional):
 
     A unique tag to have multiple public keys for the same Schema and type issued by the same DID.
-    A default tag `tag` will be used if not specified. 
-    
+    A default tag `tag` will be used if not specified.
+
 **Example**:
 ```
 {
@@ -400,7 +401,7 @@ Therefore if an existing claim defintion needs to be evolved (for example, a key
     "txn": {
         "type":102,
         "protocolVersion":1,
-        
+
         "data": {
             "ver":1,
             "data": {
@@ -415,7 +416,7 @@ Therefore if an existing claim defintion needs to be evolved (for example, a key
             "signature_type":"CL",
             'tag': 'some_tag'
         },
-        
+
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
@@ -423,7 +424,7 @@ Therefore if an existing claim defintion needs to be evolved (for example, a key
     },
     "txnMetadata": {
         "txnTime":1513945121,
-        "seqNo": 10,  
+        "seqNo": 10,
         "txnId":"HHAD5g65TDQr1PPHHRoiGf2L5AD5g65TDQr1PPHHRoiGf1|Degree1|CL|key1",
     },
     "reqSignature": {
@@ -443,29 +444,29 @@ Therefore if an existing claim defintion needs to be evolved (for example, a key
 Adds a new node to the pool or updates an existing node in the pool
 
 - `data` (dict):
-    
+
     Data associated with the Node:
-    
+
     - `alias` (string): Node's alias
     - `blskey` (base58-encoded string; optional): BLS multi-signature key as base58-encoded string (it's needed for BLS signatures and state proofs support)
-    - `client_ip` (string; optional): Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)  
+    - `client_ip` (string; optional): Node's client listener IP address, that is the IP clients use to connect to the node when sending read and write requests (ZMQ with TCP)
     - `client_port` (string; optional): Node's client listener port, that is the port clients use to connect to the node when sending read and write requests (ZMQ with TCP)
     - `node_ip` (string; optional): The IP address other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
     - `node_port` (string; optional): The port other Nodes use to communicate with this Node; no clients are allowed here (ZMQ with TCP)
-    - `services` (array of strings; optional): the service of the Node. `VALIDATOR` is the only supported one now. 
+    - `services` (array of strings; optional): the service of the Node. `VALIDATOR` is the only supported one now.
 
 - `dest` (base58-encoded string):
 
     Target Node's DID as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the transaction submitter (Steward's DID).
-    
+
     *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the DID of this Node.
-    
+
 - `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
     Target Node verification key as base58-encoded string.
-    It may absent if `dest` is 32-bit cryptonym CID. 
-     
+    It may absent if `dest` is 32-bit cryptonym CID.
+
 
 If there is no NODE transaction with the specified Node ID (`dest`), then it can be considered as creation of a new NODE.
 
@@ -482,7 +483,7 @@ There is no need to specify all other fields, and they will remain the same.
     "txn": {
         "type":0,
         "protocolVersion":1,
-        
+
         "data": {
             "data": {
                 "alias":"Delta",
@@ -495,7 +496,7 @@ There is no need to specify all other fields, and they will remain the same.
             },
             "dest":"4yC546FFzorLPgTNTc6V43DnpFrR8uHvtunBxb2Suaa2",
         },
-        
+
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
@@ -503,7 +504,7 @@ There is no need to specify all other fields, and they will remain the same.
     },
     "txnMetadata": {
         "txnTime":1513945121,
-        "seqNo": 10,  
+        "seqNo": 10,
         "txnId":"Delta",
     },
     "reqSignature": {
@@ -530,29 +531,29 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 - `action` (enum: `start` or `cancel`):
 
     Starts or cancels the Upgrade.
-    
+
 - `version` (string):
 
     The version of indy-node package we perform upgrade to.
     Must be greater than existing one (or equal if `reinstall` flag is True).
-    
+
 - `schedule` (dict of node DIDs to timestamps):
 
     Schedule of when to perform upgrade on each node. This is a map where Node DIDs are keys, and upgrade time is a value (see example below).
     If `force` flag is False, then it's required that time difference between each Upgrade must be not less than 5 minutes
     (to give each Node enough time and not make the whole Pool go down during Upgrade).
-    
+
 - `sha256` (sha256 hash string):
 
     sha256 hash of the package
-    
+
 - `force` (boolean; optional):
 
     Whether we should apply transaction (schedule Upgrade) without waiting for consensus
     of this transaction.
     If false, then transaction is applied only after it's written to the ledger.
     Otherwise it's applied regardless of result of consensus, and there are no restrictions on the Upgrade `schedule` for each Node.
-    So, we can Upgrade the whole Pool at the same time when it's set to True.  
+    So, we can Upgrade the whole Pool at the same time when it's set to True.
     False by default. Avoid setting to True without good reason.
 
 - `reinstall` (boolean; optional):
@@ -575,7 +576,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     "txn": {
         "type":109,
         "protocolVersion":1,
-        
+
         "data": {
             "ver":1,
             "name":"upgrade-13",
@@ -588,7 +589,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
             "timeout":1,
             "justification":null,
         },
-        
+
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
@@ -597,7 +598,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     },
     "txnMetadata": {
         "txnTime":1513945121,
-        "seqNo": 10,  
+        "seqNo": 10,
     },
     "reqSignature": {
         "type": "ED25519",
@@ -612,14 +613,14 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
 #### NODE_UPGRADE
 Status of each Node's upgrade (sent by each upgraded Node)
 
-- `action` (enum string): 
+- `action` (enum string):
 
     One of `in_progress`, `complete` or `fail`.
-    
-- `version` (string): 
-    
+
+- `version` (string):
+
     The version of indy-node the node was upgraded to.
-    
+
 
 **Example:**
 ```
@@ -628,13 +629,13 @@ Status of each Node's upgrade (sent by each upgraded Node)
     "txn": {
         "type":110,
         "protocolVersion":1,
-        
+
         "data": {
             "ver":1,
             "action":"complete",
             "version":"1.2"
         },
-        
+
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
@@ -642,7 +643,7 @@ Status of each Node's upgrade (sent by each upgraded Node)
     },
     "txnMetadata": {
         "txnTime":1513945121,
-        "seqNo": 10,  
+        "seqNo": 10,
         "txnId":"upgrade-13",
     },
     "reqSignature": {
@@ -670,9 +671,9 @@ Command to change Pool's configuration
     Whether we should apply transaction (for example, move pool to read-only state) without waiting for consensus
     of this transaction.
     If false, then transaction is applied only after it's written to the ledger.
-    Otherwise it's applied regardless of result of consensus.  
+    Otherwise it's applied regardless of result of consensus.
     False by default. Avoid setting to True without good reason.
-    
+
 
 **Example:**
 ```
@@ -681,13 +682,13 @@ Command to change Pool's configuration
     "txn": {
         "type":111,
         "protocolVersion":1,
-        
+
         "data": {
             "ver":1,
             "writes":false,
             "force":true,
         },
-        
+
         "metadata": {
             "reqId":1513945121191691,
             "from":"L5AD5g65TDQr1PPHHRoiGf",
@@ -695,7 +696,7 @@ Command to change Pool's configuration
     },
     "txnMetadata": {
         "txnTime":1513945121,
-        "seqNo": 10,  
+        "seqNo": 10,
         "txnId":"1111",
     },
     "reqSignature": {

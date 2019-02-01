@@ -40,10 +40,10 @@ def test_steward_suspension_by_another_trustee(looper,
         sdk_get_and_check_replies(looper, [req])
 
 
-def test_steward_cannot_create_trust_anchors_after_demote (looper,
-                                          sdk_pool_handle,
-                                          sdk_wallet_trustee,
-                                          sdk_wallet_handle):
+def test_steward_cannot_create_trust_anchors_after_demote(looper,
+                                                          sdk_pool_handle,
+                                                          sdk_wallet_trustee,
+                                                          sdk_wallet_handle):
     new_steward_did, new_steward_verkey = looper.loop.run_until_complete(
         did.create_and_store_my_did(sdk_wallet_trustee[0], "{}"))
     new_ta_did, new_ta_verkey = looper.loop.run_until_complete(
@@ -79,4 +79,3 @@ def test_steward_cannot_create_trust_anchors_after_demote (looper,
                         'newSteward',
                         TRUST_ANCHOR_STRING,
                         verkey=new_ta_2_verkey, dest=new_ta_2_did)
-
