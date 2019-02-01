@@ -41,7 +41,7 @@ def test_client_cant_send_nym(looper,
     # client cant create another client NYM when ANYONE_CAN_WRITE set to False
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_client)
-    e.match('There is no accepted constraint')
+    e.match('Rule for this action is')
 
 
 def test_client_can_send_attrib(looper,
@@ -80,7 +80,7 @@ def test_client_cant_send_schema(looper,
         issuer_create_schema(identifier, "another_name", "2.0", json.dumps(["first", "last"])))
     request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
     sdk_get_bad_response(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request)],
-                         RequestRejectedException, 'There is no accepted constraint')
+                         RequestRejectedException, 'Rule for this action is')
 
 
 def test_client_cant_send_claim_def(looper,
@@ -96,4 +96,4 @@ def test_client_cant_send_claim_def(looper,
     # Client cant send create if ANYONE_CAN_WRITE flag set to True
     req = sdk_sign_request_from_dict(looper, sdk_wallet_client, claim_def)
     req = sdk_send_signed_requests(sdk_pool_handle, [json.dumps(req)])
-    sdk_get_bad_response(looper, req, RequestRejectedException, 'There is no accepted constraint')
+    sdk_get_bad_response(looper, req, RequestRejectedException, 'Rule for this action is')

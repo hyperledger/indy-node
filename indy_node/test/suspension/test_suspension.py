@@ -86,7 +86,7 @@ def testTrusteeSuspensionByTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,
     _, did = sdk_wallet_trustee
     with pytest.raises(RequestRejectedException) as e:
         sdk_suspend_role(looper, sdk_pool_handle, another_steward1, did)
-    e.match('role is not accepted')
+    e.match('{} can not do this action'.format(STEWARD_STRING))
 
 
 # Keep the test below at the end of the suite since it will make one of the
