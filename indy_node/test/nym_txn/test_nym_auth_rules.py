@@ -1,18 +1,21 @@
 import sys
 import pytest
+import json
 
 from enum import Enum, unique
 
 from indy.did import create_and_store_my_did
 
-from plenum.common.constants import TRUSTEE, STEWARD, NYM
-from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
+from plenum.common.constants import (
+    TRUSTEE, STEWARD, NYM, TXN_TYPE, TARGET_NYM, VERKEY, ROLE,
+    CURRENT_PROTOCOL_VERSION)
+from plenum.common.exceptions import RequestRejectedException, UnauthorizedClientRequest
+from plenum.test.helper import sdk_gen_request, sdk_sign_request_objects, sdk_sign_and_submit_op, sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
+from indy_common.types import Request
 from indy_common.roles import Roles
 from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
-
 
 #   TODO
 #   - more specific string patterns for auth exc check
@@ -20,6 +23,25 @@ from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 #     ??? possibly not necessary for now since role and verkey related constrains
 #     are composed like logical AND validation fails if any of them fails
 #   - ANYONE_CAN_WRITE=True case
+
+
+# params for add:
+# - signer:
+#   - role: Roles
+# - dest:
+#   - verkey in NYM: omitted, None, val
+#   - role: Roles, omitted
+
+
+# params for edit:
+# - signer:
+#   - role: Roles
+#   - is_creator / is_other / is_self
+# - dest:
+#   - verkey in ledger: None, val
+#   - verkey in NYM: same, new, omitted
+#   - role in ledger: Roles
+#   - role: Roles, omitted
 
 
 # FIXTURES
@@ -114,20 +136,20 @@ def auth_check(action_id, signer, dest):
 def create_new_did(looper, sdk_pool_handle, creator, role, skipverkey=False):
 
     op = {
-        'type': NYM,
-        'role': role.value
+        TXN_TYPE: NYM,
+        ROLE: role.value
     }
 
     new_did_verkey = None
 
     if skipverkey:
         new_did, _ = createHalfKeyIdentifierAndAbbrevVerkey()
-        op.update({'dest': new_did})
+        op.update({TARGET_NYM: new_did})
     else:
         new_did, new_did_verkey = looper.loop.run_until_complete(
             create_and_store_my_did(creator.wallet_handle, "{}"))
 
-    op.update({'dest': new_did, 'verkey': new_did_verkey})
+    op.update({TARGET_NYM: new_did, VERKEY: new_did_verkey})
 
     req = sdk_sign_and_submit_op(looper, sdk_pool_handle, creator.wallet_did, op)
     sdk_get_and_check_replies(looper, [req])
@@ -248,67 +270,68 @@ def rotated(did_per_function):
 
 # TEST HELPERS
 
-def sign_submit_check(looper, sdk_pool_handle, signer, dest, action_id, op):
-    req = sdk_sign_and_submit_op(looper, sdk_pool_handle, signer.wallet_did, op)
+def sign_submit_check(looper, node, signer, dest, action_id, op):
+    req_obj = sdk_gen_request(op, protocol_version=CURRENT_PROTOCOL_VERSION,
+                              identifier=signer.did)
+    s_req = sdk_sign_request_objects(looper, signer.wallet_did, [req_obj])[0]
+
+    request = Request(**json.loads(s_req))
 
     if auth_check(action_id, signer, dest):
-        sdk_get_and_check_replies(looper, [req])
+        node.get_req_handler(txn_type=NYM).validate(request)
     else:
-        with pytest.raises(RequestRejectedException) as excinfo:
-            sdk_get_and_check_replies(looper, [req])
-        excinfo.match('UnauthorizedClientRequest')
+        with pytest.raises(UnauthorizedClientRequest):
+            node.get_req_handler(txn_type=NYM).validate(request)
 
 
-def add(looper, sdk_pool_handle, provisioner, provisioned, omit_role=False):
+def add(looper, node, provisioner, provisioned, omit_role=False):
     op = {
-        'type': NYM,
-        'dest': provisioned.did,
-        'verkey': provisioned.verkey,
+        TXN_TYPE: NYM,
+        TARGET_NYM: provisioned.did,
+        VERKEY: provisioned.verkey,
     }
 
     if not omit_role:
-        op['role'] = provisioned.role.value
+        op[ROLE] = provisioned.role.value
 
-    sign_submit_check(looper, sdk_pool_handle, provisioner, provisioned, ActionIds.add, op)
+    sign_submit_check(looper, node, provisioner, provisioned, ActionIds.add, op)
 
 
-def demote(looper, sdk_pool_handle, demoter, demoted):
+def demote(looper, node, demoter, demoted):
     op = {
-        'type': NYM,
-        'dest': demoted.did,
-        'role': None
+        TXN_TYPE: NYM,
+        TARGET_NYM: demoted.did,
+        ROLE: None
     }
 
-    sign_submit_check(looper, sdk_pool_handle, demoter,
-                      demoted, ActionIds.demote, op)
+    sign_submit_check(looper, node, demoter, demoted, ActionIds.demote, op)
 
 
-def rotate(looper, sdk_pool_handle, rotator, rotated, new_verkey):
+def rotate(looper, node, rotator, rotated, new_verkey):
     op = {
-        'type': NYM,
-        'dest': rotated.did,
-        'verkey': new_verkey
+        TXN_TYPE: NYM,
+        TARGET_NYM: rotated.did,
+        VERKEY: new_verkey
     }
 
-    sign_submit_check(looper, sdk_pool_handle, rotator,
-                      rotated, ActionIds.rotate, op)
+    sign_submit_check(looper, node, rotator, rotated, ActionIds.rotate, op)
 
 
 # TESTS
 
-def test_nym_add(looper, sdk_pool_handle, txnPoolNodeSet, provisioner, provisioned):
+def test_nym_add(looper, txnPoolNodeSet, provisioner, provisioned):
     provisioned, omit_role = provisioned
-    add(looper, sdk_pool_handle, provisioner, provisioned, omit_role=omit_role)
+    add(looper, txnPoolNodeSet[0], provisioner, provisioned, omit_role=omit_role)
 
 
 # Demotion is considered as NYM with only 'role' field specified and it's None.
 # If NYM includes 'verkey' field as well it mixes role demotion/promotion and
 # verkey rotation and should be checked separately.
-def test_nym_demote(looper, sdk_pool_handle, txnPoolNodeSet, demoter, demoted):
+def test_nym_demote(looper, txnPoolNodeSet, demoter, demoted):
     # might be None for cases 'self_created_no_verkey' and 'self_created_verkey' or self demotion
     if demoted:
-        demote(looper, sdk_pool_handle, demoter, demoted)
+        demote(looper, txnPoolNodeSet[0], demoter, demoted)
 
 
-def test_nym_rotate(looper, sdk_pool_handle, txnPoolNodeSet, rotator, rotated, rotation_verkey):
-    rotate(looper, sdk_pool_handle, rotator, rotated, rotation_verkey)
+def test_nym_rotate(looper, txnPoolNodeSet, rotator, rotated, rotation_verkey):
+    rotate(looper, txnPoolNodeSet[0], rotator, rotated, rotation_verkey)
