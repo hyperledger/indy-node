@@ -4,6 +4,7 @@ from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, ROLE_CONSTRAINT_ID, \
     AuthConstraintAnd
 from indy_common.authorize.helper import get_named_role
+from indy_common.constants import NYM, CLAIM_DEF
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 
@@ -81,8 +82,13 @@ class RolesAuthorizer(AbstractAuthorizer):
         if not self.is_sig_count_accepted(request, auth_constraint):
             return False, "Not enough signatures"
         if not self.is_owner_accepted(auth_constraint, auth_action):
-            return False, "{} can not touch verkey field since only the owner can modify it".\
-                format(self.get_named_role_from_req(request))
+            if auth_action.txn_type == NYM:
+                return False, "{} can not touch verkey field since only the owner can modify it".\
+                    format(self.get_named_role_from_req(request))
+            if auth_action.txn_type == CLAIM_DEF:
+                return False, "{} can not edit CLAIM_DEF txn since only owner can modify it".\
+                    format(self.get_named_role_from_req(request))
+            return "Actor must be owner"
         return True, ""
 
 
