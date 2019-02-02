@@ -134,3 +134,13 @@ def test_same_role_network_monitor(write_request_validation, req, is_owner):
                                                                   old_value=NETWORK_MONITOR,
                                                                   new_value=NETWORK_MONITOR,
                                                                   is_owner=is_owner)])
+
+
+def test_same_role_none(write_request_validation, req, is_owner):
+    authorized = is_owner
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value='',
+                                                                  new_value='',
+                                                                  is_owner=is_owner)])
