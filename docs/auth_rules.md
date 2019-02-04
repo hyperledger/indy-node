@@ -8,6 +8,7 @@
     <th>Who can</th>
     <th>Description</th>
   </tr>
+
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub><code>role</code></sub></td>
@@ -44,42 +45,176 @@
     <td><sub>NYM</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub><code>&lt;empty&gt;</code></sub></td>
-    <td><sub><code>&lt;empty&gt;</code></sub></td>
+    <td><sub><code>&lt;None&gt;</code></sub></td>
     <td><sub>TRUSTEE, STEWARD, TRUST_ANCHOR</sub></td>
     <td><sub>Adding new Identity Owner</sub></td>
+  </tr>
+
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>STEWARD</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change Trustee to Steward</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub>TRUSTEE</sub></td>
-    <td><sub><code>&lt;empty&gt;</code></sub></td>
+    <td><sub>TRUST_ANCHOR</sub></td>
     <td><sub>TRUSTEE</sub></td>
-    <td><sub>Blacklisting Trustee</sub></td>
+    <td><sub>Change Trustee to Trust Anchor</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>NETWORK_MONITOR</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change Trustee to Network Monitor</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Demote Trustee</sub></td>
+  </tr>
+
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>STEWARD</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change Steward to Trustee</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub>STEWARD</sub></td>
-    <td><sub><code>&lt;empty&gt;</code></sub></td>
+    <td><sub>TRUST_ANCHOR</sub></td>
     <td><sub>TRUSTEE</sub></td>
-    <td><sub>Blacklisting Steward</sub></td>
+    <td><sub>Change Steward to Trust Anchor</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>STEWARD</sub></td>
+    <td><sub>NETWORK_MONITOR</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change Steward to Network Monitor</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>STEWARD</sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Demote Steward</sub></td>
+  </tr>
+
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change Trust Anchor to Trustee</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub>TRUST_ANCHOR</sub></td>
-    <td><sub><code>&lt;empty&gt;</code></sub></td>
+    <td><sub>STEWARD</sub></td>
     <td><sub>TRUSTEE</sub></td>
-    <td><sub>Blacklisting Trust anchor</sub></td>
+    <td><sub>Change Trust Anchor to Steward</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>NETWORK_MONITOR</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change Trust Anchor to Network Monitor</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Demote Trust Anchor</sub></td>
+  </tr>
+
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>NETWORK_MONITOR</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change Network Monitor to Trustee</sub></td>
   </tr>
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub><code>role</code></sub></td>
     <td><sub>NETWORK_MONITOR</sub></td>
-    <td><sub><code>&lt;empty&gt;</code></sub></td>
-    <td><sub>TRUSTEE, STEWARD</sub></td>
-    <td><sub>Blacklisting user with NETWORK_MONITOR role</sub></td>
+    <td><sub>STEWARD</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change Network Monitor to Steward</sub></td>
   </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>NETWORK_MONITOR</sub></td>
+    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>TRUSTEE, STEWARD</sub></td>
+    <td><sub>Change Network Monitor to Trust Anchor</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>NETWORK_MONITOR</sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub>TRUSTEE, STEWARD</sub></td>
+    <td><sub>Demote Network Monitor</sub></td>
+  </tr>
+
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Promote roleless user to Trustee</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub>STEWARD</sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Promote roleless user to Steward</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub>TRUST_ANCHOR</sub></td>
+    <td><sub>TRUSTEE, STEWARD</sub></td>
+    <td><sub>Promote roleless user to Trust Anchor</sub></td>
+  </tr>
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub>NETWORK_MONITOR</sub></td>
+    <td><sub>TRUSTEE, STEWARD</sub></td>
+    <td><sub>Promote roleless user to Network Monitor</sub></td>
+  </tr>
+
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub><code>verkey</code></sub></td>
