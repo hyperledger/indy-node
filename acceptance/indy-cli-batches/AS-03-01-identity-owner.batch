@@ -18,10 +18,22 @@ did new seed=TestTrustAnchor30000000000000003 metadata="test trust anchor 3"
 did new seed=RandomUser1000000000000000000003 metadata="test identity 1"
 did new seed=RandomUser2000000000000000000003 metadata="test identity 2"
 did new seed=RandomUser3000000000000000000003 metadata="test identity 3"
+did new seed=NetworkMonitor100000000000000003 metadata="network monitor 1"
+did new seed=NetworkMonitor200000000000000003 metadata="network monitor 2"
+did new seed=NetworkMonitor300000000000000003 metadata="network monitor 3"
 # AS Trustee CREATE Steward (steward1)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=AhqUV2zHYdNaWLFCCe7xCn role=STEWARD verkey=~YUY2ChUGWJovtU6XTn61D8
 - ledger get-nym did=AhqUV2zHYdNaWLFCCe7xCn
+# AS Trustee CREATE NetworkMonitor (network monitor 1)
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=zsFQSgcs9GdmHr6nYgJfj role=NETWORK_MONITOR verkey=~Y2gktifxXw9J85GXFKpZQ6
+- ledger get-nym did=zsFQSgcs9GdmHr6nYgJfj
+# AS Trustee CREATE NetworkMonitor (network monitor 2)
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=Pn1rJGNmmcKi88B2qo2Emn role=NETWORK_MONITOR verkey=~usAvjM7QfLR9Qf2bZSBZU
+ledger nym did=Pn1rJGNmmcKi88B2qo2Emn role=
+- ledger get-nym did=Pn1rJGNmmcKi88B2qo2Emn
 # AS Trustee CREATE TrustAnchor (anchor1)
 did use V4SGRU86Z58d6TV7PBUe6f
 ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=TRUST_ANCHOR verkey=~YPZot1kM4DLwvsX6mtcKd9
@@ -71,11 +83,21 @@ did use LBbKEeczA9iL21p4Kgxcuf
 did use LBbKEeczA9iL21p4Kgxcuf
 - ledger nym did=Fk9ENxnz1ztDgdivQBJTCZ verkey=~NT9ANFeDhCLKDg5PNKZXKK
 - ledger get-nym did=Fk9ENxnz1ztDgdivQBJTCZ
+# #8 AS IdentityOwner CREATE NetworkMonitor (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=NGMUrRk7EDTRunXLgY7KWn role=NETWORK_MONITOR verkey=~NGMUrRk7EDTRunXLgY7KWn
+# #9.1 AS IdentityOwner REMOVE NetworkMonitor (FAIL)
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger nym did=zsFQSgcs9GdmHr6nYgJfj role=
+# #9.2 CHECK NetworkMonitor IS VALID
+did use zsFQSgcs9GdmHr6nYgJfj
+ledger get-validator-info nodes=Node1
 # #8 check that can't add roles back when don't have necessary permissions
 did use LBbKEeczA9iL21p4Kgxcuf
 - ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUST_ANCHOR
 - ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=STEWARD
 - ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUSTEE
+- ledger nym did=Pn1rJGNmmcKi88B2qo2Emn role=NETWORK_MONITOR
 ### Additional cases ###
 did use V4SGRU86Z58d6TV7PBUe6f
 did new seed=RandomAttribOwner000000000000003
@@ -103,3 +125,9 @@ did use UffJCJngTXc1o84dQ7aEUb
 - ledger schema name=IdentityOwnerSchema version=1.0 attr_names=name,age
 # Identity Owner can't create CLAIM_DEF: (FAIL)
 - ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=3
+# Identity Owner can't RESTART POOL
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger pool-restart action=start datetime=2020-01-25T12:49:05.258870+00:00 nodes=Node4
+# Identity Owner can't get validator-info
+did use LBbKEeczA9iL21p4Kgxcuf
+- ledger get-validator-info nodes=Node1

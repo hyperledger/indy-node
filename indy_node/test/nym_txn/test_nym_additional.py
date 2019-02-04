@@ -36,24 +36,31 @@ def trust_anchor_did_verkey(looper, sdk_wallet_client):
 def test_pool_nodes_started(nodeSet):
     pass
 
+@pytest.fixture(scope='function', params=['trustee', 'steward'])
+def sdk_wallet(request, sdk_wallet_steward, sdk_wallet_trustee):
+    if request.param == 'steward':
+        yield sdk_wallet_steward
+    elif request.param == 'trustee':
+        yield sdk_wallet_trustee
+
 
 def test_send_same_nyms_only_first_gets_written(
-        looper, sdk_pool_handle, sdk_wallet_steward):
-    wh, _ = sdk_wallet_steward
+        looper, sdk_pool_handle, sdk_wallet):
+    wh, _ = sdk_wallet
     seed = randomString(32)
     did, verkey = looper.loop.run_until_complete(
         create_and_store_my_did(wh, json.dumps({'seed': seed})))
 
     # request 1
-    _, did1 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, dest=did, verkey=verkey)
+    _, did1 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet, dest=did, verkey=verkey)
 
     seed = randomString(32)
     _, verkey = looper.loop.run_until_complete(
         create_and_store_my_did(wh, json.dumps({'seed': seed})))
     # request 2
     with pytest.raises(RequestRejectedException) as e:
-        _, did2 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_steward, dest=did, verkey=verkey)
-    e.match('actor must be owner')
+        _, did2 = sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet, dest=did, verkey=verkey)
+    e.match('can not touch verkey field since only the owner can modify it')
 
 
 def get_nym(looper, sdk_pool_handle, sdk_wallet_steward, t_did):
