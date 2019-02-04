@@ -1,0 +1,90 @@
+#!/bin/bash -e
+
+#--------------------------------------------------------
+cat << EOF
+Lambda executors in the us-west-2 region are Amazon Linux VMs based on AMI ID
+ami-aa5ebdd2 (2017.03 release).
+
+The lastest Amazon Linux AMI in region us-west-2 for use in EC2 is based on the
+2017.09 release (AMI ID ami-e689729e).
+
+We MUST build native dependencies (shared libraries) using the AMI version used
+by the Lambda executors in the target region. Otherwise native libs may not load.
+
+Configure yum to NOT use the lastest Amazon Linux release version. Doing so, for
+example, ensures that the openssl-devel version installed
+(openssl-devel-1.0.1k-15.99.amzn1.x86_64) will correspond to the version of
+openssl (openssl-1.0.1k-15.99.amzn1.x86_64) installed on the Lambda executors.
+EOF
+
+sed -i -- 's/^releasever=latest/#releasever=latest/' /etc/yum.conf
+
+#--------------------------------------------------------
+# The following steps were derived from:
+# https://github.com/hyperledger/indy-sdk
+# NOTE: Add links to README files here if you add any additional repos
+#       to the development_repos hash (ruby code above)
+
+#--------------------------------------------------------
+# Common amongst all dev environments
+echo "Installing Required Packages..."
+# Refresh package lists from existing repos
+yum update -y
+yum clean all
+
+# TODO: Uncomment yum upgrade once Amazon starts using the latest Amazon
+#       Linux AMI for Lambda execution?
+#yum upgrade -y
+#
+yum groupinstall -y "Development Tools"
+
+# Required for libindy
+yum install -y \
+    wget \
+    cmake \
+    pkgconfig \
+    openssl-devel \
+    sqlite-devel \
+    docker
+
+USER=ec2-user
+
+echo "Add exports to $USER's .bashrc ..."
+user_bashrc="/home/$USER/.bashrc"
+declare -a exports=(
+ 'export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig'
+ 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib'
+)
+for exp in "${exports[@]}"
+do
+  if ! grep -q "$exp" "$user_bashrc"; then 
+    echo "Adding '${exp}' to $user_bashrc"
+    echo "$exp" >> "$user_bashrc"
+    echo "Executing '${exp}'"
+  else 
+    echo "$exp already found in $user_bashrc"
+  fi
+done
+source $user_bashrc
+
+# Required for Indy client
+yum install -y \
+    curl \
+    dialog \
+    figlet
+
+# Useful dev utils
+# Some of these may have already been installed by Development Tools
+# groupinstall above.
+yum install -y \
+    mlocate \
+    unzip \
+    make \
+    screen \
+    tmux \
+    vim
+
+# Set the package_manager in .bashrc
+# package_manager is used by scriptlets/common/pre/linux/setup
+sed -i 's/^package_manager=""/package_manager="yum"/g' /home/ec2-user/.bashrc
+sed -i 's/^package_manager=""/package_manager="yum"/g' /root/.bashrc

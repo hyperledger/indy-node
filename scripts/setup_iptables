@@ -1,0 +1,49 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]; then
+    echo ""
+    echo "Usage: $0 client_port connlimit";
+    echo "  client_port - node client port";
+    echo "  connlimit   - clients connections limit";
+    echo ""
+    exit 1;
+fi
+
+
+DPORT=$1
+CONN_LIMIT=$2
+LOG_CHAIN=LOG_CONN_REJECT
+
+add_rule_if_not_exist()
+{
+    RULE="$1"
+
+    cmd="iptables -C $RULE 2>/dev/null 1>&2"
+    eval $cmd
+
+    if [ $? -eq 1 ]; then
+        cmd="iptables -A $RULE"
+        eval $cmd
+    fi
+}
+
+# Check whether iptables installed and works
+dpkg -s iptables 2>/dev/null 1>&2 && iptables -nL 2>/dev/null 1>&2
+if [ $? -eq 0 ]; then
+    # Create logging chain for rejected connections
+    iptables -N $LOG_CHAIN 2>/dev/null 1>&2
+
+    # Append a rule that sets log level and log prefix
+    RULE="$LOG_CHAIN -j LOG --log-level warning --log-prefix \"connlimit: \""
+    add_rule_if_not_exist "$RULE"
+
+    # Append a rule that finally rejects connection
+    RULE="$LOG_CHAIN -p tcp -j REJECT --reject-with tcp-reset"
+    add_rule_if_not_exist "$RULE"
+
+    # Append a rule to limit the number of simultaneous clients connections
+    RULE="INPUT -p tcp --syn --dport $DPORT -m connlimit --connlimit-above $CONN_LIMIT --connlimit-mask 0 -j $LOG_CHAIN"
+    add_rule_if_not_exist "$RULE"
+else
+    echo "Warning: iptables is not installed or permission denied, clients connections limit is not set."
+fi

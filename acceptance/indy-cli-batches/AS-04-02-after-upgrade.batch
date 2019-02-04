@@ -1,0 +1,12 @@
+#setup environment
+pool connect AS-pool
+wallet open AS-04-wallet key=testkey
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=542MVr22zcHbVyGzaXmbT2
+#check that data still available after upgrade
+ledger get-schema did=V4SGRU86Z58d6TV7PBUe6f name=Degree version=1.0
+ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f tag="1"
+- ledger get-nym did=542MVr22zcHbVyGzaXmbT5
+- ledger get-nym did=542MVr22zcHbVyGzaXmbT2
+wallet close
+pool disconnect

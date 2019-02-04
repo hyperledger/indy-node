@@ -1,0 +1,7 @@
+{% for item in aws_ec2hosts.active %}
+Host {{ aws_tag_namespace }}_{{ aws_tag_group }}{{ item.tag_id }}
+    HostName {{ item.public_ip }}
+    User {{ item.user }}
+    IdentityFile ./{{ ssh_key_name }}
+    UserKnownHostsFile ./{{ ssh_known_hosts_name }}
+{% endfor %}

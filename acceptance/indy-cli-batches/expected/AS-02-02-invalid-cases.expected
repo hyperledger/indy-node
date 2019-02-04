@@ -1,0 +1,54 @@
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+Pool config "AS-pool" already exists
+
+pool connect AS-pool
+Pool "AS-pool" has been connected
+
+- wallet create AS-02-wallet key=testkey storage_config={"pool":"AS-pool"}
+Wallet "AS-02-wallet" already exists
+
+wallet open AS-02-wallet key=testkey
+Wallet "AS-02-wallet" has been opened
+
+did use XhYtvJqezMUKfF6KVNaGmT
+Did "XhYtvJqezMUKfF6KVNaGmT" has been set as active
+
+- ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=
+Transaction has been rejected: XhYtvJqezMUKfF6KVNaGmT is not a steward of node 6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc alias=Node6 services=
+Transaction has been rejected: existing data has conflicts with request data {'alias': 'Node6', 'services': []}. Error: Node's alias cannot be changed
+
+did use Rhx2qwaeiGyhU9vn4ynHSS
+Did "Rhx2qwaeiGyhU9vn4ynHSS" has been set as active
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc alias=Node5 services=
+Transaction has been rejected: Rhx2qwaeiGyhU9vn4ynHSS is not a steward so cannot update a node
+
+did use 5qhSKMkpqui6taGLTecwqf
+Did "5qhSKMkpqui6taGLTecwqf" has been set as active
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc alias=Node5 services=
+Transaction has been rejected: 5qhSKMkpqui6taGLTecwqf is not a steward so cannot update a node
+
+did use XhYtvJqezMUKfF6KVNaGmT
+Did "XhYtvJqezMUKfF6KVNaGmT" has been set as active
+
+- ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=VALIDATOR
+Transaction has been rejected: XhYtvJqezMUKfF6KVNaGmT is not a steward of node 6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G
+
+did use Rhx2qwaeiGyhU9vn4ynHSS
+Did "Rhx2qwaeiGyhU9vn4ynHSS" has been set as active
+
+- ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=VALIDATOR
+Transaction has been rejected: Rhx2qwaeiGyhU9vn4ynHSS is not a steward so cannot update a node
+
+did use 5qhSKMkpqui6taGLTecwqf
+Did "5qhSKMkpqui6taGLTecwqf" has been set as active
+
+- ledger node target=6G9QhQa3HWjRKeRmEvEkLbWWf2t7cw6KLtafzi494G4G alias=Node6 services=VALIDATOR
+Transaction has been rejected: 5qhSKMkpqui6taGLTecwqf is not a steward so cannot update a node
+
+Pool "AS-pool" has been disconnected
+Wallet "AS-02-wallet" has been closed
+Goodbye...

@@ -5,18 +5,12 @@ import os.path
 
 from plenum.common.keygen_utils import initNodeKeysForBothStacks
 from plenum.common.constants import CLIENT_STACK_SUFFIX
-from plenum.common.util import randomString
 
 from indy_common.config_util import getConfig
-
-config = getConfig()
-keepDir = os.path.join(config.baseDir, config.NETWORK_NAME)
+from indy_common.config_helper import NodeConfigHelper
 
 
 if __name__ == "__main__":
-    if not os.path.exists(keepDir):
-        os.makedirs(keepDir, exist_ok=True)
-
     parser = argparse.ArgumentParser(
         description="Generate keys for a node's stacks "
                     "by taking the node's name and 2 "
@@ -30,8 +24,14 @@ if __name__ == "__main__":
 
     print("Node-stack name is", args.name)
     print("Client-stack name is", args.name + CLIENT_STACK_SUFFIX)
+
+    config = getConfig()
+    config_helper = NodeConfigHelper(args.name, config)
+
+    os.makedirs(config_helper.keys_dir, exist_ok=True)
+
     try:
-        initNodeKeysForBothStacks(args.name, keepDir, args.seed, override=args.force)
+        initNodeKeysForBothStacks(args.name, config_helper.keys_dir, args.seed, override=args.force)
     except Exception as ex:
         print(ex)
         exit()

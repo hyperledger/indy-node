@@ -1,0 +1,22 @@
+---
+- name: Destroy public key
+  ec2_key:
+    name: "{{ aws_keyname }}"
+    region: "{{ item }}"
+    state: absent
+  with_items: "{{ aws_regions }}"
+
+- name: Destroy AWS security group
+  ec2_group:
+    name: "{{ aws_sgroup }}"
+    region: "{{ item }}"
+    state: absent
+  with_items: "{{ aws_regions }}"
+
+- name: Ensure inventory file and ssh settings for '{{ aws_group_name }}' doesn't exist
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ [aws_inventory_file, ssh_config]
+            + q('fileglob', ssh_known_hosts ~ '*')
+            + q('fileglob', ssh_key ~ '*') }}"

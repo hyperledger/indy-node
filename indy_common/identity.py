@@ -1,4 +1,5 @@
-from plenum.common.constants import TARGET_NYM, TXN_TYPE, NYM, ROLE, VERKEY, CURRENT_PROTOCOL_VERSION
+from plenum.common.constants import TARGET_NYM, TXN_TYPE, NYM, ROLE, VERKEY, \
+    CURRENT_PROTOCOL_VERSION
 from plenum.common.signer_did import DidIdentity
 from stp_core.types import Identifier
 from indy_common.auth import Authoriser
@@ -78,7 +79,7 @@ class Identity(GeneratesRequest):
             TARGET_NYM: self.identity.identifier
         }
         if self.identity.verkey is not None:
-            op[VERKEY] = self.identity.verkey
+            op[VERKEY] = None if self.identity.verkey == '' else self.identity.verkey
         if self._role:
             op[ROLE] = self.role
         return op

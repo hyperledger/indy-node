@@ -1,0 +1,27 @@
+---
+- name: Check inventory directory
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - include_tasks: tasks/check_inventory.yml
+
+- name: Destroy clients
+  gather_facts: false
+  hosts: localhost
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: clients
+        aws_instance_count: 0
+  tags: [ 'clients' ]
+
+- name: Destroy Indy nodes
+  gather_facts: false
+  hosts: localhost
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: nodes
+        aws_instance_count: 0
+  tags: [ 'nodes' ]
+...

@@ -72,3 +72,6 @@ docs/source/api_docs/
 
 # hidden files
 .*
+
+# Vagrant files
+.vagrant

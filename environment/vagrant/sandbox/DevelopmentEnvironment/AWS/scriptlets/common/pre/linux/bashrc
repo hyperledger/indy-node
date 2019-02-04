@@ -1,0 +1,183 @@
+package_manager=""
+scriptlets_directory="/vagrant/scriptlets"
+current_repo=""
+repo_scriptlet_path=""
+original_ps1=$PS1
+
+context_is_set() {
+  if [ -z "${current_repo}" ]; then
+    return 1
+  else
+    return 0
+  fi
+}
+
+use_repo() {
+  if [ "$#" -ne 1 ]
+  then
+    echo "Usage: use <repo>" 
+    return 1
+  fi
+
+  if [ -d "/src/${1}" ]; then
+    echo "Switching CI/CD context to repo $1"
+    current_repo="$1"
+    repo_scriptlet_path="${scriptlets_directory}/${current_repo}"
+    PS1="(${current_repo})$original_ps1"
+    return 0
+  else
+    >&2 echo "Don't know anything about repo /src/${1}."
+    return 1
+  fi
+}
+
+unset_repo() {
+  current_repo=""
+  PS1="$original_ps1"
+}
+
+help_repo() {
+  echo "Usage: userepo <repo> - set repo context"
+  echo "Usage: helprepo - print usage and help information"
+  echo "Usage: *repo - CI/CD targets - see Aavailable commands below"
+  echo ""
+  echo "Available commands:"
+  echo "-------------------"
+  compgen -a | grep repo$
+  echo ""
+  echo "Settings:"
+  echo "---------"
+  echo "package_manager=${package_manager}"
+  echo "scriptlets_directory=${scriptlets_directory}"
+  echo "current_repo=${current_repo}"
+  echo "repo_scriptlet_path=${repo_scriptlet_path}"
+}
+
+setup_repo() {
+  paths=(
+    "common/pre/linux/${package_manager}/setup"
+    "common/pre/linux/setup"
+    "linux/pre/${package_manager}/setup"
+    "linux/pre/setup"
+    "linux/post/${package_manager}/setup"
+    "linux/post/setup"
+    "common/post/linux/${package_manager}/setup"
+    "common/post/linux/setup"
+  )
+
+  for path in "${paths[@]}"
+  do
+    full_path="${scriptlets_directory}/${path}"
+    if [ -f ${full_path} ]; then
+      echo "Executing ${full_path} ..."
+      sudo bash -e ${full_path}
+    else
+      echo "Skipping ${full_path} scriptlet. Reason: not found."
+    fi
+  done
+}
+
+command_on_repo() {
+  msg="$1"
+  scriptlet="$2"
+  full_path="${repo_scriptlet_path}/${scriptlet}"
+  if [ -f "${full_path}" ]; then
+    echo "${current_repo}: ${msg}"
+    sudo bash -e ${full_path}
+  else
+    echo "${current_repo}: scriptlet ${scriptlet} not found."
+  fi
+}
+
+build_repo() {
+  # <repo>/linux/build
+  if context_is_set; then
+    command_on_repo "Building" "linux/build"
+  fi
+}
+
+env_repo() {
+  # <repo>/linux/env
+  if context_is_set; then
+    command_on_repo "Setting up environment" "linux/env"
+  fi
+}
+
+test_repo() {
+  # <repo>/linux/test
+  if context_is_set; then
+    command_on_repo "Testing" "linux/test"
+  fi
+}
+
+bundle_repo() {
+  # <repo>/linux/bundle
+  if context_is_set; then
+    command_on_repo "Bundling" "linux/bundle"
+  fi
+}
+
+deposit_repo() {
+  # <repo>/linux/deposit
+  if context_is_set; then
+    command_on_repo "Depositing" "linux/deposit"
+  fi
+}
+
+deploy_repo() {
+  # <repo>/linux/deploy/${package_manager}
+  if context_is_set; then
+    command_on_repo "Deploying" "linux/deploy/${package_manager}"
+  fi
+}
+
+clean_repo() {
+  # <repo>/linux/clean
+  if context_is_set; then
+    command_on_repo "Cleaning" "linux/clean"
+  fi
+}
+
+which_repo() {
+  if context_is_set; then
+    echo "Repository: ${current_repo}"                                          
+    echo "Source Location: /src/${current_repo}"
+  else
+    echo "Repo context is not set. Use userepo command to set repo context."
+  fi
+}
+
+cd_repo() {
+  if context_is_set; then
+    cd /src/${current_repo}
+  fi
+}
+
+alias userepo="use_repo"
+alias unsetrepo="unset_repo"
+alias helprepo="help_repo"
+alias setuprepo="setup_repo"
+alias buildrepo="build_repo"
+alias envrepo="env_repo"
+alias testrepo="test_repo"
+alias bundlerepo="bundle_repo"
+alias depositrepo="deposit_repo"
+alias deployrepo="deploy_repo"
+alias cleanrepo="clean_repo"
+alias whichrepo="which_repo"
+alias cdrepo="cd_repo"
+
+export -f use_repo
+export -f unset_repo
+export -f help_repo
+export -f setup_repo
+export -f command_on_repo
+export -f build_repo
+export -f env_repo
+export -f test_repo
+export -f bundle_repo
+export -f deposit_repo
+export -f deploy_repo
+export -f clean_repo
+export -f which_repo
+export -f cd_repo

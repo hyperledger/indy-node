@@ -1,0 +1,329 @@
+- pool create AS-0301-steward gen_txn_file=./pool_transactions_genesis
+Pool config "AS-0301-steward" has been created
+
+pool connect AS-0301-steward
+Pool "AS-0301-steward" has been connected
+
+- wallet create AS-03-wallet-steward key=testkey storage_config={"pool":"AS-0301-steward"}
+Wallet "AS-03-wallet-steward" has been created
+
+wallet open AS-03-wallet-steward key=testkey
+Wallet "AS-03-wallet-steward" has been opened
+
+did new seed=TestTrustee100000000000000000001 metadata="test trustee 1"
+Did "81CCbJwqSyGNLLEtVo1kMq" has been created with "~UimNgHv7X45jxnh65faK3h" verkey
+Metadata has been saved for DID "81CCbJwqSyGNLLEtVo1kMq"
+
+did new seed=TestSteward100000000000000000001 metadata="test steward 1"
+Did "7qFmEyYCXcmUFVied5Sp3b" has been created with "~Mj3PFUSi6qmrTRonFXHx9n" verkey
+Metadata has been saved for DID "7qFmEyYCXcmUFVied5Sp3b"
+
+did new seed=TestSteward200000000000000000001 metadata="test steward 2"
+Did "XVP5k4E62PMJJWt2nPacHy" has been created with "~Ka6GqJ3qBYRE4Ku9uyFuQW" verkey
+Metadata has been saved for DID "XVP5k4E62PMJJWt2nPacHy"
+
+did new seed=TestSteward300000000000000000001 metadata="test steward 3"
+Did "CEJJcfjNGt7YcNLyXaszaq" has been created with "~AAGGsLT3yQtTmNdKrHXtC2" verkey
+Metadata has been saved for DID "CEJJcfjNGt7YcNLyXaszaq"
+
+did new seed=TestTrustAnchor00000000000000001 metadata="test trust anchor 0"
+Did "CDcGtKx1boRYFwPBaGkMmk" has been created with "~PuCGfSiTB3NZGi1SH8w7H" verkey
+Metadata has been saved for DID "CDcGtKx1boRYFwPBaGkMmk"
+
+did new seed=TestTrustAnchor10000000000000001 metadata="test trust anchor 1"
+Did "Bhe7Uh5E1LYLgpLcbuVjj2" has been created with "~NMpYrG7tAXYV4ujYZjddKu" verkey
+Metadata has been saved for DID "Bhe7Uh5E1LYLgpLcbuVjj2"
+
+did new seed=RandomUser1000000000000000000001 metadata="test identity 1"
+Did "XkZJxs6Uadv6MQeKGGZdZ6" has been created with "~Aza4zyTRazcVsokmqNJfsg" verkey
+Metadata has been saved for DID "XkZJxs6Uadv6MQeKGGZdZ6"
+
+did new seed=RandomUser2000000000000000000001 metadata="test identity 2"
+Did "Xm3b3LtJ3UoL5KeYT7ti7j" has been created with "~GmTyyvE4eHWeSWuiAtmE19" verkey
+Metadata has been saved for DID "Xm3b3LtJ3UoL5KeYT7ti7j"
+
+did new seed=RandomUser4000000000000000000001 metadata="test identity 4"
+Did "YUGDShR1RSr5T2CwbM7Hhu" has been created with "~GfsAf6NpSQDJ1ZWW2X7BiD" verkey
+Metadata has been saved for DID "YUGDShR1RSr5T2CwbM7Hhu"
+
+did new seed=RandomUser5000000000000000000001 metadata="test identity 5"
+Did "Jt7aMnw77aoaBMyhXUNjtt" has been created with "~DT5pLP1wcvsgAzM78sqiRJ" verkey
+Metadata has been saved for DID "Jt7aMnw77aoaBMyhXUNjtt"
+
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+Did "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey
+Metadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=7qFmEyYCXcmUFVied5Sp3b role=STEWARD verkey=~Mj3PFUSi6qmrTRonFXHx9n
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 33              | 1534005195103816786 | 2018-08-11 16:33:15 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| 7qFmEyYCXcmUFVied5Sp3b | ~Mj3PFUSi6qmrTRonFXHx9n | STEWARD |
++------------------------+-------------------------+---------+
+
+- ledger get-nym did=7qFmEyYCXcmUFVied5Sp3b
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 33              | 1534005195894891570 | 2018-08-11 16:33:15 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+---------+
+| Identifier             | Dest                   | Verkey                  | Role    |
++------------------------+------------------------+-------------------------+---------+
+| V4SGRU86Z58d6TV7PBUe6f | 7qFmEyYCXcmUFVied5Sp3b | ~Mj3PFUSi6qmrTRonFXHx9n | STEWARD |
++------------------------+------------------------+-------------------------+---------+
+
+ledger nym did=CEJJcfjNGt7YcNLyXaszaq role=STEWARD verkey=~AAGGsLT3yQtTmNdKrHXtC2
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 34              | 1534005195933339924 | 2018-08-11 16:33:16 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| CEJJcfjNGt7YcNLyXaszaq | ~AAGGsLT3yQtTmNdKrHXtC2 | STEWARD |
++------------------------+-------------------------+---------+
+
+- ledger get-nym did=CEJJcfjNGt7YcNLyXaszaq
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 34              | 1534005196874579207 | 2018-08-11 16:33:16 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+---------+
+| Identifier             | Dest                   | Verkey                  | Role    |
++------------------------+------------------------+-------------------------+---------+
+| V4SGRU86Z58d6TV7PBUe6f | CEJJcfjNGt7YcNLyXaszaq | ~AAGGsLT3yQtTmNdKrHXtC2 | STEWARD |
++------------------------+------------------------+-------------------------+---------+
+
+did use 7qFmEyYCXcmUFVied5Sp3b
+Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
+
+- ledger nym did=81CCbJwqSyGNLLEtVo1kMq role=TRUSTEE verkey=~UimNgHv7X45jxnh65faK3h
+Transaction has been rejected: STEWARD cannot add TRUSTEE
+
+- ledger get-nym did=81CCbJwqSyGNLLEtVo1kMq
+NYM not found
+
+did use 7qFmEyYCXcmUFVied5Sp3b
+Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
+
+- ledger nym did=V4SGRU86Z58d6TV7PBUe6f role=
+Transaction has been rejected: 7qFmEyYCXcmUFVied5Sp3b is neither Trustee nor owner of V4SGRU86Z58d6TV7PBUe6f
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=81CCbJwqSyGNLLEtVo1kMq role=TRUSTEE verkey=~UimNgHv7X45jxnh65faK3h
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 35              | 1534005198493653092 | 2018-08-11 16:33:19 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| 81CCbJwqSyGNLLEtVo1kMq | ~UimNgHv7X45jxnh65faK3h | TRUSTEE |
++------------------------+-------------------------+---------+
+
+- ledger get-nym did=81CCbJwqSyGNLLEtVo1kMq
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 35              | 1534005199941485532 | 2018-08-11 16:33:19 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+---------+
+| Identifier             | Dest                   | Verkey                  | Role    |
++------------------------+------------------------+-------------------------+---------+
+| V4SGRU86Z58d6TV7PBUe6f | 81CCbJwqSyGNLLEtVo1kMq | ~UimNgHv7X45jxnh65faK3h | TRUSTEE |
++------------------------+------------------------+-------------------------+---------+
+
+did use 7qFmEyYCXcmUFVied5Sp3b
+Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
+
+- ledger nym did=XVP5k4E62PMJJWt2nPacHy role=STEWARD verkey=~Ka6GqJ3qBYRE4Ku9uyFuQW
+Transaction has been rejected: STEWARD cannot add STEWARD
+
+- ledger get-nym did=XVP5k4E62PMJJWt2nPacHy
+NYM not found
+
+did use 7qFmEyYCXcmUFVied5Sp3b
+Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
+
+- ledger nym did=CEJJcfjNGt7YcNLyXaszaq role=
+Transaction has been rejected: 7qFmEyYCXcmUFVied5Sp3b is neither Trustee nor owner of CEJJcfjNGt7YcNLyXaszaq
+
+did use CEJJcfjNGt7YcNLyXaszaq
+Did "CEJJcfjNGt7YcNLyXaszaq" has been set as active
+
+ledger nym did=Bhe7Uh5E1LYLgpLcbuVjj2 role=TRUST_ANCHOR verkey=~NMpYrG7tAXYV4ujYZjddKu
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| CEJJcfjNGt7YcNLyXaszaq | 36              | 1534005201589633068 | 2018-08-11 16:33:22 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+--------------+
+| Did                    | Verkey                  | Role         |
++------------------------+-------------------------+--------------+
+| Bhe7Uh5E1LYLgpLcbuVjj2 | ~NMpYrG7tAXYV4ujYZjddKu | TRUST_ANCHOR |
++------------------------+-------------------------+--------------+
+
+- ledger get-nym did=Bhe7Uh5E1LYLgpLcbuVjj2
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| CEJJcfjNGt7YcNLyXaszaq | 36              | 1534005202961457481 | 2018-08-11 16:33:22 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+--------------+
+| Identifier             | Dest                   | Verkey                  | Role         |
++------------------------+------------------------+-------------------------+--------------+
+| CEJJcfjNGt7YcNLyXaszaq | Bhe7Uh5E1LYLgpLcbuVjj2 | ~NMpYrG7tAXYV4ujYZjddKu | TRUST_ANCHOR |
++------------------------+------------------------+-------------------------+--------------+
+
+did use 7qFmEyYCXcmUFVied5Sp3b
+Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
+
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR verkey=~PuCGfSiTB3NZGi1SH8w7H
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| 7qFmEyYCXcmUFVied5Sp3b | 37              | 1534005203036368824 | 2018-08-11 16:33:23 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+--------------+
+| Did                    | Verkey                 | Role         |
++------------------------+------------------------+--------------+
+| CDcGtKx1boRYFwPBaGkMmk | ~PuCGfSiTB3NZGi1SH8w7H | TRUST_ANCHOR |
++------------------------+------------------------+--------------+
+
+- ledger get-nym did=CDcGtKx1boRYFwPBaGkMmk
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| 7qFmEyYCXcmUFVied5Sp3b | 37              | 1534005204011390885 | 2018-08-11 16:33:23 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+------------------------+--------------+
+| Identifier             | Dest                   | Verkey                 | Role         |
++------------------------+------------------------+------------------------+--------------+
+| 7qFmEyYCXcmUFVied5Sp3b | CDcGtKx1boRYFwPBaGkMmk | ~PuCGfSiTB3NZGi1SH8w7H | TRUST_ANCHOR |
++------------------------+------------------------+------------------------+--------------+
+
+did use CDcGtKx1boRYFwPBaGkMmk
+Did "CDcGtKx1boRYFwPBaGkMmk" has been set as active
+
+ledger nym did=YUGDShR1RSr5T2CwbM7Hhu verkey=~GfsAf6NpSQDJ1ZWW2X7BiD
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| CDcGtKx1boRYFwPBaGkMmk | 38              | 1534005204050115133 | 2018-08-11 16:33:24 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| YUGDShR1RSr5T2CwbM7Hhu | ~GfsAf6NpSQDJ1ZWW2X7BiD | -    |
++------------------------+-------------------------+------+
+
+- ledger get-nym did=YUGDShR1RSr5T2CwbM7Hhu
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| CDcGtKx1boRYFwPBaGkMmk | 38              | 1534005205042158052 | 2018-08-11 16:33:24 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+------+
+| Identifier             | Dest                   | Verkey                  | Role |
++------------------------+------------------------+-------------------------+------+
+| CDcGtKx1boRYFwPBaGkMmk | YUGDShR1RSr5T2CwbM7Hhu | ~GfsAf6NpSQDJ1ZWW2X7BiD | -    |
++------------------------+------------------------+-------------------------+------+
+
+did use 7qFmEyYCXcmUFVied5Sp3b
+Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
+
+- ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=
+Transaction has been rejected: 7qFmEyYCXcmUFVied5Sp3b is neither Trustee nor owner of CDcGtKx1boRYFwPBaGkMmk
+
+did use CDcGtKx1boRYFwPBaGkMmk
+Did "CDcGtKx1boRYFwPBaGkMmk" has been set as active
+
+- ledger nym did=Jt7aMnw77aoaBMyhXUNjtt verkey=~DT5pLP1wcvsgAzM78sqiRJ
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| CDcGtKx1boRYFwPBaGkMmk | 39              | 1534005205716058459 | 2018-08-11 16:33:26 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| Jt7aMnw77aoaBMyhXUNjtt | ~DT5pLP1wcvsgAzM78sqiRJ | -    |
++------------------------+-------------------------+------+
+
+- ledger get-nym did=Jt7aMnw77aoaBMyhXUNjtt
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| CDcGtKx1boRYFwPBaGkMmk | 39              | 1534005207074672779 | 2018-08-11 16:33:26 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+------+
+| Identifier             | Dest                   | Verkey                  | Role |
++------------------------+------------------------+-------------------------+------+
+| CDcGtKx1boRYFwPBaGkMmk | Jt7aMnw77aoaBMyhXUNjtt | ~DT5pLP1wcvsgAzM78sqiRJ | -    |
++------------------------+------------------------+-------------------------+------+
+
+did use 7qFmEyYCXcmUFVied5Sp3b
+Did "7qFmEyYCXcmUFVied5Sp3b" has been set as active
+
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR
+Transaction has been rejected: 7qFmEyYCXcmUFVied5Sp3b is neither Trustee nor owner of CDcGtKx1boRYFwPBaGkMmk
+Batch execution failed at line #49
+Wallet "AS-03-wallet-steward" has been closed
+Pool "AS-0301-steward" has been disconnected
+Goodbye...

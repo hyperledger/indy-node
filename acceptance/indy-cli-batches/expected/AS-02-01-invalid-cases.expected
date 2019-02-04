@@ -1,0 +1,45 @@
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+Pool config "AS-pool" already exists
+
+pool connect AS-pool
+Pool "AS-pool" has been connected
+
+- wallet create AS-02-wallet key=testkey storage_config={"pool":"AS-pool"}
+Wallet "AS-02-wallet" already exists
+
+wallet open AS-02-wallet key=testkey
+Wallet "AS-02-wallet" has been opened
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey=2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R blskey_pop=RbGAR89T5bg6Bg66Xg1fy5NjVarmvr8Q7XAmEPCA6arPvcfcDwLiEftD2cCVoEnrRSPLhgf3Cn9n81gdgMCbSBEhKuWW3njXkPFE1jvP67bU1d2jb6gw5BxyxsF9qg1Hvz6pr181u7s1WZBmGXinLoKaFhb6jptHghHvtqEuTgoqXM
+Transaction has been rejected: V4SGRU86Z58d6TV7PBUe6f is not a steward so cannot add a new node
+
+did use Rhx2qwaeiGyhU9vn4ynHSS
+Did "Rhx2qwaeiGyhU9vn4ynHSS" has been set as active
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey=2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R blskey_pop=RbGAR89T5bg6Bg66Xg1fy5NjVarmvr8Q7XAmEPCA6arPvcfcDwLiEftD2cCVoEnrRSPLhgf3Cn9n81gdgMCbSBEhKuWW3njXkPFE1jvP67bU1d2jb6gw5BxyxsF9qg1Hvz6pr181u7s1WZBmGXinLoKaFhb6jptHghHvtqEuTgoqXM
+Transaction has been rejected: Rhx2qwaeiGyhU9vn4ynHSS is not a steward so cannot add a new node
+
+did use 5qhSKMkpqui6taGLTecwqf
+Did "5qhSKMkpqui6taGLTecwqf" has been set as active
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey=2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R blskey_pop=RbGAR89T5bg6Bg66Xg1fy5NjVarmvr8Q7XAmEPCA6arPvcfcDwLiEftD2cCVoEnrRSPLhgf3Cn9n81gdgMCbSBEhKuWW3njXkPFE1jvP67bU1d2jb6gw5BxyxsF9qg1Hvz6pr181u7s1WZBmGXinLoKaFhb6jptHghHvtqEuTgoqXM
+Transaction has been rejected: 5qhSKMkpqui6taGLTecwqf is not a steward so cannot add a new node
+
+did use XhYtvJqezMUKfF6KVNaGmT
+Did "XhYtvJqezMUKfF6KVNaGmT" has been set as active
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey=2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R
+Transaction has been rejected: A Proof of possession must be provided with BLS key
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey_pop=RbGAR89T5bg6Bg66Xg1fy5NjVarmvr8Q7XAmEPCA6arPvcfcDwLiEftD2cCVoEnrRSPLhgf3Cn9n81gdgMCbSBEhKuWW3njXkPFE1jvP67bU1d2jb6gw5BxyxsF9qg1Hvz6pr181u7s1WZBmGXinLoKaFhb6jptHghHvtqEuTgoqXM
+Transaction has been rejected: A Proof of possession is not needed without BLS key
+
+- ledger node target=4Tn3wZMNCvhSTXPcLinQDnHyj56DTLQtL61ki4jo2Loc client_port=9702 client_ip=10.0.0.105 alias=Node5 node_ip=10.0.0.105 node_port=9701 services=VALIDATOR blskey=2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R blskey_pop=RbGAR89T5bg6Bg66Xg1fy5NjVarmvr8Q7XAmEPCA6arPvcfcDwLiEftD2cCVoEnrRSPLhgf3Cn9n81gdgMCbSBEhKuWW3njXkPFE1jvP67bU1d2jb6gw5BxyxsF9qg1Hvz6pr181u7s1WZBmGXinLoKaFhb6jptHghHvtqEuT11111
+Transaction has been rejected: Proof of possession RbGAR89T5bg6Bg66Xg1fy5NjVarmvr8Q7XAmEPCA6arPvcfcDwLiEftD2cCVoEnrRSPLhgf3Cn9n81gdgMCbSBEhKuWW3njXkPFE1jvP67bU1d2jb6gw5BxyxsF9qg1Hvz6pr181u7s1WZBmGXinLoKaFhb6jptHghHvtqEuT11111 is incorrect for BLS key 2RdajPq6rCidK5gQbMzSJo1NfBMYiS3e44GxjTqZUk3RhBdtF28qEABHRo4MgHS2hwekoLWRTza9XiGEMRCompeujWpX85MPt87WdbTMysXZfb7J1ZXUEMrtE5aZahfx6p2YdhZdrArFvTmFWdojaD2V5SuvuaQL4G92anZ1yteay3R
+
+Pool "AS-pool" has been disconnected
+Wallet "AS-02-wallet" has been closed
+Goodbye...

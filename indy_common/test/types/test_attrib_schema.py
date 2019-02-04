@@ -1,7 +1,8 @@
 import pytest
 from indy_common.types import ClientAttribOperation
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, IdentifierField, JsonField
+from plenum.common.messages.fields import ConstantField, LimitedLengthStringField, IdentifierField, \
+    JsonField, Sha256HexField
 
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
@@ -9,7 +10,7 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("dest", IdentifierField),
     ("raw", JsonField),
     ('enc', LimitedLengthStringField),
-    ('hash', LimitedLengthStringField),
+    ('hash', Sha256HexField)
 ])
 
 

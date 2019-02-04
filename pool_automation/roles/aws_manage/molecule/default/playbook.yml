@@ -1,0 +1,6 @@
+---
+- name: Converge
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - aws_manage

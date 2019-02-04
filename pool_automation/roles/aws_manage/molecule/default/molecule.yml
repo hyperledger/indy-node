@@ -1,0 +1,27 @@
+---
+scenario:
+  name: default
+
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  inventory:
+    links:
+      group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
+
+platforms:
+  - name: instance
+
+driver:
+  name: delegated
+
+lint:
+  name: yamllint
+  options:
+    config-file: ../../yamllint
+
+verifier:
+  name: testinfra
+  lint:
+    name: flake8

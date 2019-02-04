@@ -1,0 +1,57 @@
+@startuml
+object "Schema Issuer (NYM txn)" as DID1 {
+(dest: <font color=blue><i><schema_issuer_did>)
+}
+
+object "Claim Def Issuer (NYM txn)" as DID2 {
+(dest: <font color=purple><i><claim_def_issuer_did>)
+}
+
+object SCHEMA {
+(identifier: <font color=blue><i><schema_issuer_did>,
+name: <i><schema_name>,
+version: <i><schema_version>)
+\n
+seq_no: <font color=green><i><schema_seq_no>
+}
+
+object CLAIM_DEF {
+(identifier: <font color=purple><i><claim_def_issuer_did>,
+ref: <font color=green><i><schema_seq_no>,
+signature_type: <i><claim_def_type>)
+\n
+seq_no: <font color=darksalmon><i><claim_def_seq_no>
+}
+
+object REVOC_REG {
+(identifier: <font color=purple><i><claim_def_issuer_did>,
+ref: <font color=darksalmon><i><claim_def_seq_no>)
+\n
+seq_no: <font color=teal><i><revoc_reg_seq_no>
+}
+
+object REVOC_REG_DELTA {
+(identifier: <font color=purple><i><claim_def_issuer_did>,
+ref: <font color=teal><i><revoc_reg_seq_no>)
+\n
+seq_no: <i><revoc_ref_delta_seq_no>
+}
+
+
+
+DID1 "<b>1" -- "<b>n" SCHEMA
+SCHEMA "<b>1" -- "<b>n" CLAIM_DEF
+DID2 "<b>1" -- "<b>1" CLAIM_DEF
+CLAIM_DEF "<b>1" -- "<b>n" REVOC_REG
+REVOC_REG "<b>1" -- "<b>n" REVOC_REG_DELTA
+
+
+
+note "TBD" as N1
+note "We may consider supporting\na separate Issuer\n(with a separate DID)\nfor Revoc Registry" as N2
+N1 .. REVOC_REG
+N1 .. REVOC_REG_DELTA
+N2 .. REVOC_REG
+N2 .. REVOC_REG_DELTA
+
+@enduml

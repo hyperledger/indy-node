@@ -1,0 +1,154 @@
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+Pool config "AS-pool" has been created
+
+pool connect AS-pool
+Pool "AS-pool" has been connected
+
+wallet create AS-01-wallet-1 key=testkey storage_config={"pool":"AS-pool"}
+Wallet "AS-01-wallet-1" has been created
+
+wallet open AS-01-wallet-1 key=testkey
+Wallet "AS-01-wallet-1" has been opened
+
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+Did "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey
+Metadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"
+
+did new seed=000000000000000000000NewSteward1 metadata="new steward"
+Did "5Ur5boqV3EXobXhtfow83q" has been created with "~WWyzovtLNpZW8iAfu9qSN5" verkey
+Metadata has been saved for DID "5Ur5boqV3EXobXhtfow83q"
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=5Ur5boqV3EXobXhtfow83q verkey=~WWyzovtLNpZW8iAfu9qSN5 role=STEWARD
+Nym request has been sent to Ledger.
+Metadata:
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527781962070712451 | 2018-05-31 15:52:42 |
++---------------------+---------------------+
+Data:
++------------------------+-------------------------+---------+
+| Did                    | Verkey                  | Role    |
++------------------------+-------------------------+---------+
+| 5Ur5boqV3EXobXhtfow83q | ~WWyzovtLNpZW8iAfu9qSN5 | STEWARD |
++------------------------+-------------------------+---------+
+
+did use 5Ur5boqV3EXobXhtfow83q
+Did "5Ur5boqV3EXobXhtfow83q" has been set as active
+
+did rotate-key
+Verkey for did "5Ur5boqV3EXobXhtfow83q" has been updated. New verkey: "J1WyzFAvS4DUoGGf6eo9sX1iXJ7jayeX677Nh3VAwVRk"
+
+ledger nym did=NyLkggDnCtZY6ngkfNqzg2 verkey=~LTar8Y3uzcQEt3HdhgqtSz
+Nym request has been sent to Ledger.
+Metadata:
++---------------------+---------------------+
+| Request ID          | Transaction time    |
++---------------------+---------------------+
+| 1527781962599906305 | 2018-05-31 15:52:42 |
++---------------------+---------------------+
+Data:
++------------------------+-------------------------+------+
+| Did                    | Verkey                  | Role |
++------------------------+-------------------------+------+
+| NyLkggDnCtZY6ngkfNqzg2 | ~LTar8Y3uzcQEt3HdhgqtSz | -    |
++------------------------+-------------------------+------+
+
+- ledger get-nym did=NyLkggDnCtZY6ngkfNqzg2
+Following NYM has been received.
+Metadata:
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1526            | 1527781962844903608 | 2018-05-31 15:52:42 |
++-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+------+
+| Identifier             | Dest                   | Verkey                  | Role |
++------------------------+------------------------+-------------------------+------+
+| 5Ur5boqV3EXobXhtfow83q | NyLkggDnCtZY6ngkfNqzg2 | ~LTar8Y3uzcQEt3HdhgqtSz | -    |
++------------------------+------------------------+-------------------------+------+
+
+did list
++------------------------+----------------------------------------------+-----------------+
+| Did                    | Verkey                                       | Metadata        |
++------------------------+----------------------------------------------+-----------------+
+| V4SGRU86Z58d6TV7PBUe6f | ~CoRER63DVYnWZtK8uAzNbx                      | default trustee |
++------------------------+----------------------------------------------+-----------------+
+| 5Ur5boqV3EXobXhtfow83q | J1WyzFAvS4DUoGGf6eo9sX1iXJ7jayeX677Nh3VAwVRk | new steward     |
++------------------------+----------------------------------------------+-----------------+
+Current did "5Ur5boqV3EXobXhtfow83q"
+
+wallet create AS-01-identity-wallet key=testkey storage_config={"pool":"AS-pool"}
+Wallet "AS-01-identity-wallet" has been created
+
+wallet open AS-01-identity-wallet key=testkey
+Wallet "AS-01-wallet-1" has been closed
+Wallet "AS-01-identity-wallet" has been opened
+
+did new seed=00000000000000000000000Identity1 metadata="new identity"
+Did "NyLkggDnCtZY6ngkfNqzg2" has been created with "~LTar8Y3uzcQEt3HdhgqtSz" verkey
+Metadata has been saved for DID "NyLkggDnCtZY6ngkfNqzg2"
+
+did use NyLkggDnCtZY6ngkfNqzg2
+Did "NyLkggDnCtZY6ngkfNqzg2" has been set as active
+
+- ledger get-nym did=NyLkggDnCtZY6ngkfNqzg2
+Following NYM has been received.
+Metadata:
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1526            | 1527781964929492594 | 2018-05-31 15:52:42 |
++-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-------------------------+------+
+| Identifier             | Dest                   | Verkey                  | Role |
++------------------------+------------------------+-------------------------+------+
+| 5Ur5boqV3EXobXhtfow83q | NyLkggDnCtZY6ngkfNqzg2 | ~LTar8Y3uzcQEt3HdhgqtSz | -    |
++------------------------+------------------------+-------------------------+------+
+
+did rotate-key
+Verkey for did "NyLkggDnCtZY6ngkfNqzg2" has been updated. New verkey: "5TKaMf8EXoad6tLMptGNuh4563Vg9znFnBJ1iZH7zDJu"
+
+- ledger get-nym did=NyLkggDnCtZY6ngkfNqzg2
+Following NYM has been received.
+Metadata:
++-----------------+---------------------+---------------------+
+| Sequence Number | Request ID          | Transaction time    |
++-----------------+---------------------+---------------------+
+| 1527            | 1527781965229610522 | 2018-05-31 15:52:45 |
++-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+----------------------------------------------+------+
+| Identifier             | Dest                   | Verkey                                       | Role |
++------------------------+------------------------+----------------------------------------------+------+
+| 5Ur5boqV3EXobXhtfow83q | NyLkggDnCtZY6ngkfNqzg2 | 5TKaMf8EXoad6tLMptGNuh4563Vg9znFnBJ1iZH7zDJu | -    |
++------------------------+------------------------+----------------------------------------------+------+
+
+wallet close
+Wallet "AS-01-identity-wallet" has been closed
+
+pool disconnect
+Pool "AS-pool" has been disconnected
+
+wallet list
++-----------------------+----------------------+---------+
+| Name                  | Associated pool name | Type    |
++-----------------------+----------------------+---------+
+| AS-01-wallet-1        | AS-pool              | default |
++-----------------------+----------------------+---------+
+| AS-01-identity-wallet | AS-pool              | default |
++-----------------------+----------------------+---------+
+
+pool list
++---------+
+| Pool    |
++---------+
+| AS-pool |
++---------+
+
+Goodbye...

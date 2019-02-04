@@ -10,6 +10,9 @@ version_dotted="$2"
 METADATA_FNAME="__metadata__.py"
 MANIFEST_FNAME="manifest.txt"
 
+GENERAL_CONFIG_DIR="\/etc\/indy"
+REPO_GENERAL_CONFIG_DIR="$repo/indy_node/general_config"
+
 echo -e "\n\nAbout to start updating package $repo to version $version_dotted info from cur dir: $(pwd)"
 
 metadata="$(find $repo -name $METADATA_FNAME)"
@@ -32,11 +35,11 @@ fi
 echo -e "\n\nReplace postfixes"
 sed -i -r "s~indy-node-[a-z]+~indy-node~" "$repo/setup.py"
 sed -i -r "s~indy-plenum-[a-z]+~indy-plenum~" "$repo/setup.py"
-sed -i -r "s~indy-anoncreds-[a-z]+~indy-anoncreds~" "$repo/setup.py"
 
 echo -e "Adapt the dependencies for the Canonical archive"
 sed -i "s~python-dateutil~python3-dateutil~" "$repo/setup.py"
 sed -i "s~timeout-decorator~python3-timeout-decorator~" "$repo/setup.py"
+sed -i "s~distro~python3-distro~" "$repo/setup.py"
 
 # create manifest file
 repourl=$(git --git-dir $repo/.git --work-tree $repo config --get remote.origin.url)
@@ -47,5 +50,15 @@ manifest_file=$(echo $metadata | sed -r "s/${METADATA_FNAME}$/${MANIFEST_FNAME}/
 echo "Adding manifest\n=======\n$manifest\n=======\n into $manifest_file"
 rm -rf $manifest_file
 echo -e $manifest >$manifest_file
+
+echo "Preparing config files"
+# Define user config directory
+sed -i "s/^\(GENERAL_CONFIG_DIR\s*=\s*\).*\$/\1\"$GENERAL_CONFIG_DIR\"/" "$repo/indy_common/config.py"
+# Create user config
+cp $REPO_GENERAL_CONFIG_DIR/general_config.py $REPO_GENERAL_CONFIG_DIR/indy_config.py
+cat $REPO_GENERAL_CONFIG_DIR/ubuntu_platform_config.py >> $REPO_GENERAL_CONFIG_DIR/indy_config.py
+rm -f $REPO_GENERAL_CONFIG_DIR/general_config.py
+rm -f $REPO_GENERAL_CONFIG_DIR/ubuntu_platform_config.py
+rm -f $REPO_GENERAL_CONFIG_DIR/windows_platform_config.py
 
 echo -e "Finished preparing $repo for publishing\n"

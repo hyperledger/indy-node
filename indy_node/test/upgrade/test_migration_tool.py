@@ -1,5 +1,4 @@
 import indy_node.utils.migration_tool as migration_tool
-import time
 import pytest
 from timeout_decorator import TimeoutError
 

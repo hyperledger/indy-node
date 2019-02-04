@@ -1,0 +1,13 @@
+127.0.0.1	localhost
+127.0.1.1	vagrant
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+10.20.30.101	agent01.evernym.lab agent01
+10.20.30.102	agent02.evernym.lab agent02
+10.20.30.103	agent03.evernym.lab agent03
+10.20.30.104	agent04.evernym.lab agent04
+10.20.30.201	validator01.evernym.lab validator01 Node1.evernym.lab Node1
+10.20.30.202	validator022evernym.lab validator02 Node2.evernym.lab Node2
+10.20.30.203	validator03.evernym.lab validator03 Node3.evernym.lab Node3
+10.20.30.204	validator04.evernym.lab validator04 Node4.evernym.lab Node4

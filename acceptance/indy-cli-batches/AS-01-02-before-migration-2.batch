@@ -1,0 +1,20 @@
+#prepare test IDs and wallets before client migration
+pool create AS-01-02-trustee-pool gen_txn_file=./pool_transactions_genesis
+pool connect AS-01-02-trustee-pool
+wallet create AS-01-02-trustee-wallet key=testkey storage_config={"pool":"AS-01-02-trustee-pool"}
+wallet open AS-01-02-trustee-wallet key=testkey
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=UAPL7pTFdHGCXS4MGU8Zqv verkey=~6m1fM2eoZ1ygsXgq8NLPGc role=STEWARD
+pool create AS-01-02-steward-pool gen_txn_file=./pool_transactions_genesis
+pool connect AS-01-02-steward-pool
+wallet create AS-01-02-steward-wallet key=testkey storage_config={"pool":"AS-01-02-steward-pool"}
+wallet open AS-01-02-steward-wallet key=testkey
+did new seed=0000000000000000000NewSteward122 metadata="new steward2"
+did use UAPL7pTFdHGCXS4MGU8Zqv
+did rotate-key
+wallet close
+pool disconnect
+wallet list
+pool list
+exit

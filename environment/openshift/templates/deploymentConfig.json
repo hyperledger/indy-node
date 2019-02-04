@@ -1,0 +1,344 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata":
+  {
+    "name": "Deployment Template",
+    "annotations":
+    {
+      "description": "A deployment template for the Alice indy example application in OpenShift.",
+      "tags": "alice,sorin,indy",
+      "iconClass": "icon-github"
+    }
+  },
+  "objects": [
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata":
+      {
+        "name": "${APPLICATION_NAME}",
+        "annotations":
+        {
+          "description": "${APPLICATION_SERVICE_DESCRIPTION}"
+        }
+      },
+      "spec":
+      {
+        "ports": [
+          {
+            "name": "node-port",
+            "protocol": "TCP",
+            "port": "${{NODE_PORT}}",
+            "targetPort": "${{NODE_PORT}}"
+          },
+          {
+            "name": "client-port",
+            "protocol": "TCP",
+            "port": "${{CLIENT_PORT}}",
+            "targetPort": "${{CLIENT_PORT}}"
+          },
+          {
+            "name": "agent-port",
+            "protocol": "TCP",
+            "port": "${{AGENT_PORT}}",
+            "targetPort": "${{AGENT_PORT}}"
+          }
+        ],
+        "selector":
+        {
+          "app": "${APPLICATION_NAME}"
+        }
+      }
+    },
+    {
+      "kind": "Route",
+      "apiVersion": "v1",
+      "metadata":
+      {
+        "name": "${APPLICATION_NAME}"
+      },
+      "spec":
+      {
+        "host": "${APPLICATION_HOSTNAME}",
+        "to":
+        {
+          "kind": "Service",
+          "name": "${APPLICATION_NAME}"
+        },
+        "tls":
+        {
+          "termination": "edge"
+        },
+        "wildcardPolicy": "None"
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata":
+      {
+        "name": "${APPLICATION_NAME}",
+        "generation": 1,
+        "creationTimestamp": null,
+        "labels":
+        {
+          "app": "${APPLICATION_NAME}"
+        }
+      },
+      "spec":
+      {
+        "strategy":
+        {
+          "type": "Rolling",
+          "rollingParams":
+          {
+            "updatePeriodSeconds": 1,
+            "intervalSeconds": 1,
+            "timeoutSeconds": 600,
+            "maxUnavailable": "25%",
+            "maxSurge": "25%"
+          },
+          "resources": {}
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          },
+          {
+            "type": "ImageChange",
+            "imageChangeParams":
+            {
+              "automatic": true,
+              "containerNames": [
+                "${APPLICATION_NAME}"
+              ],
+              "from":
+              {
+                "kind": "ImageStreamTag",
+                "namespace": "${IMAGE_NAMESPACE}",
+                "name": "${SOURCE_IMAGE_NAME}:${DEPLOYMENT_TAG}"
+              }
+            }
+          }
+        ],
+        "replicas": 1,
+        "test": false,
+        "selector":
+        {
+          "app": "${APPLICATION_NAME}",
+          "deploymentconfig": "${APPLICATION_NAME}"
+        },
+        "template":
+        {
+          "metadata":
+          {
+            "creationTimestamp": null,
+            "labels":
+            {
+              "app": "${APPLICATION_NAME}",
+              "deploymentconfig": "${APPLICATION_NAME}"
+            }
+          },
+          "spec":
+          {
+            "containers": [
+              {
+                "name": "${APPLICATION_NAME}",
+                "image": " ",
+                "ports": [
+                  {
+                    "name": "node-port",
+                    "containerPort": "${{NODE_PORT}}",
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "client-port",
+                    "containerPort": "${{CLIENT_PORT}}",
+                    "protocol": "TCP"
+                  },
+                  {
+                    "name": "agent-port",
+                    "containerPort": "${{AGENT_PORT}}",
+                    "protocol": "TCP"
+                  }
+                ],
+                "env": [
+                  {
+                    "name": "NODE_NAME",
+                    "value": "${NODE_NAME}"
+                  },
+                  {
+                    "name": "NODE_NUMBER",
+                    "value": "${NODE_NUMBER}"
+                  },
+                  {
+                    "name": "NODE_PORT",
+                    "value": "${NODE_PORT}"
+                  },
+                  {
+                    "name": "CLIENT_PORT",
+                    "value": "${CLIENT_PORT}"
+                  },
+                  {
+                    "name": "NODE_IP_LIST",
+                    "value": "${NODE_IP_LIST}"
+                  },
+                  {
+                    "name": "NODE_COUNT",
+                    "value": "${NODE_COUNT}"
+                  },
+                  {
+                    "name": "CLIENT_COUNT",
+                    "value": "${CLIENT_COUNT}"
+                  },
+                  {
+                    "name": "HOME",
+                    "value": "${HOME_DIR}"
+                  },
+                  {
+                    "name": "AGENT_NAME",
+                    "value": "${AGENT_NAME}"
+                  },
+                  {
+                    "name": "AGENT_PORT",
+                    "value": "${AGENT_PORT}"
+                  },
+                  {
+                    "name": "NODE_SERVICE_HOST_PATTERN",
+                    "value": "${NODE_SERVICE_HOST_PATTERN}"
+                  }
+                ],
+                "resources": {},
+                "terminationMessagePath": "/dev/termination-log",
+                "imagePullPolicy": "Always"
+              }
+            ],
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": 30,
+            "dnsPolicy": "ClusterFirst",
+            "securityContext": {}
+          }
+        }
+      },
+      "status": {}
+    }
+  ],
+  "parameters": [
+    {
+      "name": "APPLICATION_NAME",
+      "displayName": "Application Name",
+      "description": "The name assigned to the objects related to the deployment.",
+      "value": "indynode1"
+    },
+    {
+      "name": "APPLICATION_SERVICE_DESCRIPTION",
+      "displayName": "Application Service Description",
+      "description": "The application service description.",
+      "required": true,
+      "value": "Exposes and load balances the associated pods."
+    },
+    {
+      "name": "APPLICATION_HOSTNAME",
+      "displayName": "Application Hostname",
+      "description": "The exposed hostname that will route to the coresponding service, if left blank a value will be defaulted.",
+      "value": ""
+    },
+    {
+      "name": "SOURCE_IMAGE_NAME",
+      "displayName": "Source Image Name",
+      "description": "The name of the image source for the deployment.",
+      "value": "indynode1"
+    },
+    {
+      "name": "IMAGE_NAMESPACE",
+      "displayName": "Namespace containing application images.",
+      "description": "Namespace containing application images.",
+      "value": ""
+    },
+    {
+      "name": "DEPLOYMENT_TAG",
+      "displayName": "Image tag to watch for changes and trigger deployment.",
+      "description": "Image tag to watch for changes and trigger deployment.",
+      "required": true,
+      "value": "latest"
+    },
+    {
+      "name": "NODE_NAME",
+      "displayName": "Node Name",
+      "description": "The name of the indy node.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "NODE_NUMBER",
+      "displayName": "Node Number",
+      "description": "The number of the indy node.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "NODE_PORT",
+      "displayName": "Node Port",
+      "description": "The port number used to communicate with other nodes.",
+      "required": true,
+      "value": "9701"
+    },
+    {
+      "name": "CLIENT_PORT",
+      "displayName": "Client Port",
+      "description": "The port number used to communicate with indy clients.",
+      "required": true,
+      "value": "9702"
+    },
+    {
+      "name": "NODE_IP_LIST",
+      "displayName": "Node IP List",
+      "description": "The list of IP addresses for all the indy nodes.",
+      "required": true,
+      "value": "127.0.0.1"
+    },
+    {
+      "name": "NODE_COUNT",
+      "displayName": "Node Count",
+      "description": "The number of indy nodes in the pool.",
+      "required": true,
+      "value": "4"
+    },
+    {
+      "name": "CLIENT_COUNT",
+      "displayName": "Client Count",
+      "description": "The number of indy clients.",
+      "required": true,
+      "value": "10"
+    },
+    {
+      "name": "HOME_DIR",
+      "displayName": "Home Directory",
+      "description": "The default home directory.",
+      "required": true,
+      "value": "/home/indy"
+    },
+    {
+      "name": "AGENT_NAME",
+      "displayName": "Agent Name",
+      "description": "The name of the agent node.",
+      "required": false,
+      "value": ""
+    },
+    {
+      "name": "AGENT_PORT",
+      "displayName": "Agent Port",
+      "description": "The port on which the agent listens.",
+      "required": true,
+      "value": "5555"
+    },
+    {
+      "name": "NODE_SERVICE_HOST_PATTERN",
+      "displayName": "Node Service Host Pattern",
+      "description": "The RegEx pattern to use to collect the IP addresses of the nodes.",
+      "required": true,
+      "value": "NODE[0-9]+_SERVICE_HOST="
+    }
+  ]
+}

@@ -1,17 +1,17 @@
 from plenum.test.test_node import ensure_node_disconnected, getNonPrimaryReplicas
-from indy_node.test.helper import addRawAttribute
+from indy_node.test.helper import sdk_add_raw_attribute
 
 
-def test_n_minus_f_pool_processes_attrib(looper, nodeSet, up,
-                                         steward, stewardWallet):
+def test_n_minus_f_pool_processes_attrib(looper, nodeSet,
+                                         sdk_pool_handle,
+                                         sdk_wallet_steward):
     """
     The pool N-f nodes should be able to process ATTRIB txn.
     https://jira.hyperledger.org/browse/INDY-245
     """
     make_pool_n_minus_f_nodes(looper, nodeSet)
 
-    addRawAttribute(looper, steward, stewardWallet,
-                    'foo', 'bar')
+    sdk_add_raw_attribute(looper, sdk_pool_handle, sdk_wallet_steward, 'foo', 'bar')
 
 
 def make_pool_n_minus_f_nodes(looper, nodeSet):

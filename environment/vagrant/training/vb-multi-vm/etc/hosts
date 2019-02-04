@@ -1,0 +1,13 @@
+127.0.0.1	localhost
+127.0.1.1	vagrant
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+10.20.30.101	agent01
+10.20.30.102	agent02
+10.20.30.103	agent03
+10.20.30.104	cli01
+10.20.30.201	validator01 Node1
+10.20.30.202	validator02 Node2
+10.20.30.203	validator03 Node3
+10.20.30.204	validator04 Node4

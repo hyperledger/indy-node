@@ -1,0 +1,30 @@
+USER=ec2-user
+
+#--------------------------------------------------------
+# Install Rust and rustup
+#
+# The following part of this script was derived from:
+# "Setup Indy SDK build environment for RHEL based distro (Amazon Linux 2017.03)"
+# https://github.com/hyperledger/indy-sdk/blob/master/doc/rhel-build.md
+
+echo "Installing Rust and rustup non-interactively as ${USER}..."
+echo "Note that rustup typically runs interactively and allows you to "
+echo "customize installation. Defaults are used in this case. You can "
+echo "reinstall Rust and rustup if you would like. See the following URL "
+echo "for details: https://www.rust-lang.org/install.html"
+
+curl https://sh.rustup.rs -sSf > rust.install.sh
+chmod u+x ./rust.install.sh
+chown $USER:$USER ./rust.install.sh
+su -c "./rust.install.sh -y" $USER
+
+#--------------------------------------------------------
+echo "Install Docker SDK for Python..."
+pip install docker
+echo "Start docker service..."
+chkconfig docker on
+service docker start
+
+#--------------------------------------------------------
+echo "Making sure indy_pool is running ..."
+sudo /vagrant/common/indypool.py start

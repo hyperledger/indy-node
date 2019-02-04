@@ -1,0 +1,7 @@
+---
+- name: Destroy
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - role: aws_manage
+      aws_instance_count: 0

@@ -1,35 +1,26 @@
-from stp_core.loop.eventually import eventually
-from plenum.test.helper import waitForSufficientRepliesForRequests
-from plenum.test import waits as plenumWaits
-from indy_client.client.wallet.pool_config import PoolConfig as WPoolConfig
-from indy_node.server.pool_config import PoolConfig as SPoolConfig
-from indy_node.utils.node_control_tool import NodeControlTool
-from indy_common.config_util import getConfig
+from indy.ledger import build_pool_config_request
+
+from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req
 
 
-config = getConfig()
+def sdk_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee, pool_config_data):
+    _, did = sdk_wallet_trustee
+    req = looper.loop.run_until_complete(build_pool_config_request(
+        did, pool_config_data['writes'], pool_config_data['force']))
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, req)
+    return req
 
 
-def sendPoolConfig(client, wallet, poolConfigData):
-    poolCfg = WPoolConfig(trustee=wallet.defaultId, **poolConfigData)
-    wallet.doPoolConfig(poolCfg)
-    reqs = wallet.preparePending()
-    req = client.submitReqs(*reqs)[0][0]
-    return poolCfg, req
+
+def sdk_ensure_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee, pool_config_data):
+    _, did = sdk_wallet_trustee
+    req = looper.loop.run_until_complete(build_pool_config_request(
+        did, pool_config_data['writes'], pool_config_data['force']))
+    req = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, req)
+    rep = sdk_get_and_check_replies(looper, [req])
+    return rep
 
 
-def ensurePoolConfigSent(looper, trustee, trusteeWallet, sendPoolCfg):
-    poolCfg, req = sendPoolConfig(trustee, trusteeWallet, sendPoolCfg)
-    waitForSufficientRepliesForRequests(looper, trustee, requests=[req])
-
-    def check():
-        assert trusteeWallet.getPoolConfig(poolCfg.key).seqNo
-
-    timeout = plenumWaits.expectedReqAckQuorumTime()
-    looper.run(eventually(check, retryWait=1, timeout=timeout))
-    return poolCfg
-
-
-def checkPoolConfigWritableSet(nodes, writable):
+def check_pool_config_writable_set(nodes, writable):
     for node in nodes:
         assert node.poolCfg.isWritable() == writable

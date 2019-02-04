@@ -1,0 +1,74 @@
+#!/usr/bin/python3
+
+import string
+import json
+import logging
+from logging.handlers import RotatingFileHandler
+import argparse
+import sys
+import fileinput
+import csv
+import collections
+
+log_formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
+
+logFile = 'node_address_list.log'
+
+my_handler = RotatingFileHandler(logFile, mode='a', maxBytes=1024*1024,
+                                 backupCount=1, encoding=None, delay=0)
+my_handler.setFormatter(log_formatter)
+my_handler.setLevel(logging.INFO)
+
+log = logging.getLogger('root')
+log.setLevel(logging.INFO)
+
+log.addHandler(my_handler)
+
+def getCurrentValidatorsAddressPort():
+    log.info('extracting addresses and ports of current validators')
+    validatorsAddressPort = collections.OrderedDict()
+    jsonStr = input()
+    log.info(jsonStr)
+    validators = json.loads(jsonStr)
+    for validator in validators:
+        if 'VALIDATOR' in validator['services']:
+            validatorsAddressPort[validator['alias']] = {'address': validator['node_ip'], 'port': validator['node_port']}
+    return validatorsAddressPort
+
+def writeResult(validatorsAddressPort, outputFormat):
+    if outputFormat == 'json':
+        log.info("Serializing validators' address and port to json")
+        print(json.dumps(validatorsAddressPort))
+    elif outputFormat == 'aws':
+        log.info('Writing a string suitable for a source string for an AWS security group')
+        addressOnly = []
+        for key in validatorsAddressPort.keys():
+            addressOnly.append(validatorsAddressPort[key]['address'])
+        conjunction = '/32,'
+        print(conjunction.join(addressOnly) + '/32')
+    else:
+        log.info("Serializing validators' address and port to csv")
+        fieldnames = ['alias', 'address', 'port']
+        writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
+        writer.writeheader()
+        for key in validatorsAddressPort.keys():
+            validatorsAddressPort[key]['alias'] = key
+            writer.writerow(validatorsAddressPort[key])
+
+def parseInputs():
+    parser = argparse.ArgumentParser(description = 'This script accepts validator JSON data on stdin, and extracts the node address and port information from it.')
+    parser.add_argument('--outFormat', help='May be json, csv, or aws. (Default: the output is csv.)')
+    args = parser.parse_args()
+    if args.outFormat == None:
+        return 'csv'
+    elif args.outFormat in ['csv', 'json', 'aws']:
+        return args.outFormat
+    else:
+        print('Invalid output format selected: {}'.format(args.outFormat))
+        exit(1)
+
+
+if __name__ == '__main__':
+    outputFormat = parseInputs()
+    validatorsAddressPort = getCurrentValidatorsAddressPort()
+    writeResult = writeResult(validatorsAddressPort, outputFormat)

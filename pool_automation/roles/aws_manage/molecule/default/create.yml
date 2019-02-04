@@ -1,0 +1,4 @@
+---
+- name: Create
+  hosts: localhost
+  gather_facts: false

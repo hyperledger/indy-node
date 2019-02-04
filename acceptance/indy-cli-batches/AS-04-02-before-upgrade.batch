@@ -1,0 +1,20 @@
+#setup environment
+- pool create AS-pool gen_txn_file=./pool_transactions_genesis
+pool connect AS-pool
+wallet create AS-04-wallet key=testkey storage_config={"pool":"AS-pool"}
+wallet open AS-04-wallet key=testkey
+did new seed=000000000000000000000000Trustee1 metadata="default trustee"
+did use V4SGRU86Z58d6TV7PBUe6f
+#add data before pool upgrade
+ledger schema name=Degree version=1.0 attr_names=undergrad,last_name,first_name,birth_date,postgrad,expiry_date
+ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag="1"
+ledger nym did=542MVr22zcHbVyGzaXmbT3
+ledger nym did=542MVr22zcHbVyGzaXmbT4
+ledger nym did=542MVr22zcHbVyGzaXmbT5
+ledger nym did=542MVr22zcHbVyGzaXmbT6
+ledger nym did=542MVr22zcHbVyGzaXmbT7
+ledger get-schema did=V4SGRU86Z58d6TV7PBUe6f name=Degree version=1.0
+ledger get-cred-def schema_id=1 signature_type=CL origin=V4SGRU86Z58d6TV7PBUe6f tag="1"
+- ledger get-nym did=542MVr22zcHbVyGzaXmbT5
+wallet close
+pool disconnect

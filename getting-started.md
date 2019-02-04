@@ -1,8 +1,7 @@
 # Getting Started with Indy
+**WARNING**: This Getting Started has been deprecated. Please, use [new Getting Started in Indy SDK](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md)
 
 ## A Developer Guide for an Implementation of the Indy Code Base
-
-**Note:** If you're looking to create an actual Developer Environment connected to a sandbox, please visit this [guide](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/sandbox/DevelopmentEnvironment/Vagrantfile) instead.
 
 ![logo](collateral/logos/indy-logo.png)
 
@@ -47,7 +46,7 @@ Faber College has done some prep work to offer this service to Alice. It has the
 
 Alice doesn’t realize it yet, but in order to use this digital transcript she will need a new type of identity -- not the traditional identity that Faber College has built for her in its on-campus database, but a new and portable one that belongs to her, independent of all past and future relationships, that nobody can revoke or co-opt or correlate without her permission. This is a **_self-sovereign identity_** and it is the core feature of the ledger.
 
-In normal contexts, managing a self-sovereign identity will require a tool such as a desktop or mobile application. It might be a standalone app, or it might leverage a third party service provider that the ledger calls an **agency**. For example, leaders in this technology such as the Sovrin Foundation and companies like Evernym, publish reference versions of such tools. Faber College will have studied these requirements and will recommend a **_Indy app_** to Alice if she doesn’t already have one; this app will install as part of the workflow from the **Get Transcript** button.
+In normal contexts, managing a self-sovereign identity will require a tool such as a desktop or mobile application. It might be a standalone app, or it might leverage a third party service provider that the ledger calls an **agency**. For example, leaders in this technology such as the Sovrin Foundation and companies like Evernym, publish reference versions of such tools. Faber College will have studied these requirements and will recommend an **_Indy app_** to Alice if she doesn’t already have one; this app will install as part of the workflow from the **Get Transcript** button.
 
 When Alice clicks **Get Transcript**, she will download a file that holds an Indy **connection request**. This connection request file, having a .indy extension and associated with her Indy app, will allow her to establish a secure channel of communication with another party in the ledger ecosystem -- Faber College.
 
@@ -56,19 +55,17 @@ So when Alice clicks **Get Transcript**, she will normally end up installing an 
 For this guide, however, we’ll be using a command-line interface instead of an app, so we can see what happens behind the scenes. We will pretend to be a particularly curious and technically adventurous Alice…
 
 ## Install Indy
+
 You can install a test network in one of several ways:
 
- - **Automated VM Creation with Vagrant** [Create virtual machines](https://github.com/evernym/sovrin-environments/blob/stable/vagrant/training/vb-multi-vm/TestIndyClusterSetup.md) using VirtualBox and Vagrant.
- 
- - **Running locally** [Running pool locally](docs/indy-running-locally.md) or [Indy Cluster Simulation](docs/cluster-simulation.md)
-
- - **Coming soon:** Use client side docker images to make it easy for you to play with Indy.
+ - **Docker:** [Start Pool and Client with Docker](environment/docker/pool/StartIndyAgents.md).
 
  - **Also coming soon:** Create virtual machines in AWS.
 
 To proceed past this point, you should have a test Indy Validator cluster running, either in separate nodes (VMs), or in simulation. You should also have Agent nodes (or a simulation) running with the "Faber College", "Acme Corp", and "Thrift Bank" Agents in separate terminals.  You should also have a CLI client which gives you a command-line interface(CLI) to Indy. We are going to use that CLI to explore what Indy can do. (Indy also has a programmatic API, but it is not yet fully formalized, and this version of the guide doesn’t document it.)
 
 ## Using the Indy CLI
+
 After completing the preceding, you should have a terminal with an Indy client CLI prompt:
 
 ```
@@ -97,7 +94,7 @@ ALICE> status
 Not connected to Indy network. Please connect first.
 
 Usage:
-    connect(test | live)
+    connect(sandbox | live)
 ```
 Alice might also try the 'help' command to see a list of the other commands that are available to her.
 
@@ -124,8 +121,6 @@ Alice sees a bunch of data that looks interesting but mysterious. She wants to k
 
 ```
 ALICE> load sample/faber-request.indy
-New wallet Default created
-Active wallet set to "Default"
 1 connection request found for Faber College.
 Creating Connection for Faber College.
 
@@ -140,7 +135,7 @@ This causes the client to parse and validate the file in addition to displaying 
 ALICE> show connection Faber
 ```
 
-Unlike the 'show' command for files, this one asks Indy to show a connection. More details are exposed:
+Unlike the 'show' command for files, this one asks the Indy network to show a connection. More details are exposed:
 
 ```
 Expanding Faber to "Faber College"
@@ -174,8 +169,8 @@ This is a friendly name for the connection that Alice has been invited to accept
 DID: not yet assigned
 ```
 
-**DID** (**distributed identifier**) is an opaque, unique sequences of bits, (like UUIDs or GUIDs) that get generated when a user tries to accept the connection request. That DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
- Each connection request on Indy establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within the Indy code base.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
+**DID** (**Decentralized Identifier**) is an opaque, unique sequences of bits, (like UUIDs or GUIDs) that get generated when a user tries to accept the connection request. That DID will be sent to Faber College, and used by Faber College to reference Alice in secure interactions.
+ Each connection request on the Indy network establishes a **pairwise relationship** when accepted. A pairwise relationship is a unique relationship between two identity owners (e.g., Faber and Alice). The relationship between them is not shareable with others; it is unique to those two parties in that each pairwise relationship uses different DIDs. (In other circles you may see this defined as two sets of data working in conjunction with each other to perform a specific function, such as in a "public" key and a "private" key working together. This is _not_ how it is defined within the Indy code base.) Alice won’t use this DID with other relationships. By having independent pairwise relationships, Alice reduces the ability for others to correlate her activities across multiple interactions.
 
 ```
 Trust anchor: Faber College(not yet written to Indy)
@@ -198,9 +193,11 @@ The verification key is a 32 byte Ed25519 verification key. Ed25519 is a particu
 The verification key has a subtle relationship with the DID value a couple lines above it in the CLI output.
 
 There are three options possible for a verification key associated with a DID:
-- **Empty.** There is no verkey (verification key) associated with a DID, and the DID is a **NCID** (non-cryptographic identifier).
-In this case, the creator of the identity record (the trust anchor) controls the DID, and no independent proof-of-existence is possible until either an Abbreviated or Full verkey is created.
+
+- **Empty.** There is no verkey (verification key) associated with a DID, and the DID is a **NCID** (non-cryptographic identifier). In this case, the creator of the identity record (the trust anchor) controls the DID, and no independent proof-of-existence is possible until either an Abbreviated or Full verkey is created.
+
 - **Abbreviated.** In this case, there is a verkey starting with a tilde '~' followed by 22 or 23 characters. The tilde indicates that the DID itself represents the first 16 bytes of the verkey and the string following the tilde represents the second 16 bytes of the verkey, both using base58Check encoding.
+
 - **Full.** In this case, there is a full 44 character verkey, representing a base58Check encoding of all 32 bytes of a Ed25519 verification key.
 
 In this guide, an Abbreviated key will be created and used by Alice (you'll notice the `~` prefix for the verification key later in the guide).
@@ -233,20 +230,23 @@ Remote endpoint: < unknown, waiting for sync >
 ```
 
 Remotes can have endpoints -- locations (IRIs / URIs / URLs) on the network where others can contact them. These endpoints can be static or they can be ephemeral pseudonymous endpoints facilitated by a third party agency. To keep things simple, we’ll just use static endpoints for now.
+
 ```
 Request nonce: b1134a647eb818069c089e7694f63e6d
 ```
 
 This **nonce** is just a big random number that Faber College generated to track the unique connection request. A nonce is a random arbitrary number that can only be used one time. When a connection request is accepted, the invitee digitally signs the nonce such that the inviter can match the acceptance with a prior request.
+
 ```
 Request status: not verified, remote verification key unknown
 ```
 
 Requests are signed by the remote. We have a signature, but we don’t yet know Faber College’s verification key, so the signature can’t be proved authentic. We might have a connection request from someone masquerading as Faber College. We’ll resolve that uncertainty when we sync.
+
 ```
 Last synced: < this connection has not yet been synchronized >
 ```
-A connection stores when it was last synchronized with the Indy network, so we can tell how stale some of the information might be. Ultimately, values will be proved current when a transaction is committed to the ledger, so staleness isn’t dangerous -- but it makes the ledger more efficient when identity owners work with up-to-date data.
+A connection stores when it was last synchronized with the Indy ledger, so we can tell how stale some of the information might be. Ultimately, values will be proved current when a transaction is committed to the ledger, so staleness isn’t dangerous -- but it makes the ledger more efficient when identity owners work with up-to-date data.
 
 ## Accept a Connection Request
 
@@ -261,23 +261,23 @@ Request acceptance aborted.
 Cannot sync because not connected. Please connect first.
 
 Usage:
-    connect <test|live>
+    connect <sandbox|live>
 ```
 
 In order to accept a connection request, its origin must be proved. Just because a connection request says the sender is "Faber College" doesn’t make it so; the ease of forging email headers is a reminder of why we can’t just trust what a sender says. Syncing the connection with the ledger will allow us to prove the association between Faber College’s identity and public key, but the CLI must be connected to the ledger to sync -- and we haven’t connected yet.
 
-There are two Indy networks we might connect to. One is a test network, and the other is live (production). We’ll use the test network for the demo.
+There are two Indy networks we might connect to. One is a sandbox (test) network, and the other is live (production). We’ll use the sandbox (test) network for the demo.
 
 ```
-ALICE> connect test
+ALICE> connect sandbox
  ...
-Connected to test.
+Connected to sandbox.
 ```
 
 Alice tries again to accept the connection request from Faber College. This time she succeeds.
 
 ```
-ALICE@test> accept request from Faber
+ALICE@sandbox> accept request from Faber
 Expanding Faber to "Faber College"
 Request not yet verified.
 Connection not yet synchronized.
@@ -313,7 +313,7 @@ Accepting a connection request takes the nonce that Faber College provided, and 
 Once the connection is accepted and synchronized, Alice inspects it again.
 
 ```
-ALICE@test> show connection Faber
+ALICE@sandbox> show connection Faber
 Expanding Faber to "Faber College"
 Connection
     Name: Faber College
@@ -343,7 +343,7 @@ Alice can see now that the remote verification key and remote endpoint, as well 
 At this point Alice is connected to Faber College and can interact in a secure way. The Indy CLI supports a ping command to test secure pairwise interactions. (This command is partly implemented today, and partly still a stub.)
 
 ```
-ALICE@test> ping Faber
+ALICE@sandbox> ping Faber
 Expanding Faber to "Faber College"
 
 Pinging remote endpoint: ('10.20.30.101', 5555)
@@ -374,7 +374,7 @@ Notice that when Alice last showed the Faber connection, there was a new line: `
 Claims are offered by an **issuer**. An issuer may be any identity owner known to the ledger and any issuer may issue a claim about any identity owner it can identify. The usefulness and reliability of a claim are tied to the reputation of the issuer with respect to the claim at hand. For Alice to self-issue a claim that she likes chocolate ice cream may be perfectly reasonable, but for her to self-issue a claim that she graduated from Faber College should not impress anyone. The value of this transcript is that it is provably issued by Faber College. Alice wants to use that claim. She asks for more information:
 
 ```
-ALICE@test> show claim Transcript
+ALICE@sandbox> show claim Transcript
 Found claim Transcript in connection Faber College
 Status: available (not yet issued)
 Name: Transcript
@@ -393,7 +393,7 @@ Try Next:
 Alice sees the attributes the transcript contains. These attributes are known because a schema for Transcript has been written to the ledger (see [Appendix](#appendix)). However, the "not yet issued" note means that the transcript has not been delivered to Alice in a usable form. To get the transcript, Alice needs to request it.
 
 ```
-ALICE@test> request claim Transcript
+ALICE@sandbox> request claim Transcript
 Found claim Transcript in connection Faber College
 Requesting claim Transcript from Faber College...
 
@@ -407,7 +407,7 @@ Response from Faber College (34.61 ms):
 Now the transcript has been issued; Alice has it in her possession, in much the same way that she would hold a physical transcript that had been mailed to her. When she inspects it again, she sees more details:
 
 ```
-ALICE@test> show claim Transcript
+ALICE@sandbox> show claim Transcript
 Found claim Transcript in connection Faber College
 Status: 2017-05-01 12:32:17.497455
 Name: Transcript
@@ -425,7 +425,7 @@ Attributes:
 At some time in the future, Alice would like to work for the fictional company, Acme Corp. Normally she would browse to their website, where she would click on a hyperlink to apply for a job. Her browser would download a connection request which her Indy app would open; this would trigger a prompt to Alice, asking her to accept the connection with Acme Corp. Because we’re using a CLI, the interface is different, but the steps are the same. We do approximately the same things that we did when Alice was accepting Faber College’s connection request:
 
 ```
-ALICE@test> show sample/acme-job-application.indy
+ALICE@sandbox> show sample/acme-job-application.indy
 {
   "connection-request": {
     "name": "Acme Corp",
@@ -453,13 +453,13 @@ Try Next:
     load sample/acme-job-application.indy
 ```
 
-Notice that this connection request contains a **proof request**. A proof request is a request made by the party who needs verifiable proof of certain attributes  that can be provided by other verified claims. (Some attributes can be marked so that they must be verified by other proven claims -- like a SSN -- and some attributes can be self-attested to -- like a nickname.)
+Notice that this connection request contains a **proof request**. A proof request is a request made by the party who needs verifiable proof of certain attributes that can be provided by other verified claims. (Some attributes can be marked so that they must be verified by other proven claims -- like a SSN -- and some attributes can be self-attested to -- like a nickname.)
 
 In this case, Acme Corp is requesting that Alice provide a Job Application. The Job Application is a rich document type that has a schema defined on the ledger; its particulars are outside the scope of this guide, but it will require a name, SSN, and degree, so it overlaps with the transcript we’ve already looked at. This becomes important below.
 
 Notice that the connection request also identifies an endpoint. This is different from our previous case, where an identity owner’s endpoint was discovered through lookup on the ledger. Here, Acme has decided to short-circuit the ledger and just directly publish its job application acceptor endpoint with each request. The Indy code base supports this.  Alice quickly works through the sequence of commands that establishes a new pairwise connection with Acme:
 ```
-ALICE@test> load sample/acme-job-application.indy
+ALICE@sandbox> load sample/acme-job-application.indy
 1 connection request found for Acme Corp.
 Creating Connection for Acme Corp.
 
@@ -468,7 +468,7 @@ Try Next:
     accept request from "Acme Corp"
 
 
-ALICE@test> show connection Acme
+ALICE@sandbox> show connection Acme
 Expanding Acme to "Acme Corp"
 Connection (not yet accepted)
     Name: Acme Corp
@@ -489,7 +489,7 @@ Try Next:
     accept request from "Acme Corp"
 
 
-ALICE@test> accept request from Acme
+ALICE@sandbox> accept request from Acme
 Expanding Acme to "Acme Corp"
 Request not yet verified.
 Connection not yet synchronized.
@@ -519,7 +519,7 @@ Try Next:
 Notice what the proof request looks like now. Although the application is not submitted, it has various claims filled in:
 
 ```
-ALICE@test> show proof request Job-Application
+ALICE@sandbox> show proof request Job-Application
 Found proof request "Job-Application" in connection "Acme Corp"
 Status: Requested
 Name: Job-Application
@@ -555,15 +555,15 @@ The pre-population doesn’t create data leakage though; the request is still pe
 Notice that some attributes are verifiable and some are not. The proof request schema says that SSN, degree, and graduation status in the transcript must be formally asserted by an issuer other than Alice. Notice also that the first occurrence of first_name and last_name, plus the only occurrence of phone_number, are currently empty, and are not required to be verifiable. By not tagging these claims with a verifiable status, Acme’s claim request is saying it will accept Alice’s own claim about her names and phone numbers. (This might be done to allow Alice to provide a first name that’s a nickname, for example.) Alice therefore adds the extra attributes now:
 
 ```
-ALICE@test> set first_name to Alice
-ALICE@test> set last_name to Garcia
-ALICE@test> set phone_number to 123-456-7890
+ALICE@sandbox> set first_name to Alice
+ALICE@sandbox> set last_name to Garcia
+ALICE@sandbox> set phone_number to 123-456-7890
 ```
 
 Alice checks to see what the proof request looks like now.
 
 ```
-ALICE@test> show proof request Job-Application
+ALICE@sandbox> show proof request Job-Application
 Found proof request "Job-Application" in connection "Acme Corp"
 Status: Requested
 Name: Job-Application
@@ -595,7 +595,7 @@ Try Next:
 She decides to submit.
 
 ```
-ALICE@test> send proof Job-Application to Acme
+ALICE@sandbox> send proof Job-Application to Acme
 
 Signature accepted.
 
@@ -611,7 +611,7 @@ It will be interesting to see whether Acme accepts this application with the inf
 Here, we’ll assume the application is accepted, and Alice ends up getting the job. When Alice inspects her connection with Acme a week later, she sees that a new claim is available:
 
 ```
-ALICE@test> show connection Acme
+ALICE@sandbox> show connection Acme
 Expanding Acme to "Acme Corp"
 Connection
     Name: Acme Corp
@@ -640,7 +640,7 @@ Try Next:
 Now that Alice has a job, she’d like to apply for a loan. That will require proof of employment. She can get this from the Job-Certificate claim offered by Acme. Alice goes through a familiar sequence of interactions. First she inspects the claim:
 
 ```
-ALICE@test> show claim Job-Certificate
+ALICE@sandbox> show claim Job-Certificate
 Found claim Job-Certificate in connection Acme Corp.
 Status: available(not yet issued)
 Name: Job-Certificate
@@ -659,7 +659,7 @@ Try Next:
 Next, she requests it:
 
 ```
-ALICE@test> request claim Job-Certificate
+ALICE@sandbox> request claim Job-Certificate
 Found claim Job-Certificate in connection Acme Corp
 Requesting claim Job-Certificate from Acme Corp...
 
@@ -672,7 +672,7 @@ Response from Acme Corp (11.48 ms):
 The Job-Certificate has been issued, and she now has it in her possession.
 
 ```
-ALICE@test> show claim Job-Certificate
+ALICE@sandbox> show claim Job-Certificate
 Found claim Job-Certificate in connection Acme Corp
 Status: 2017-05-01 16:53:53.742695
 Name: Job-Certificate
@@ -691,7 +691,7 @@ There is a disadvantage in this approach to data sharing though, -- it may discl
 
 Alice now loads Thrift Bank's loan application connection:
 ```
-ALICE@test> load sample/thrift-loan-application.indy
+ALICE@sandbox> load sample/thrift-loan-application.indy
 1 connection request found for Thrift Bank.
 Creating Connection for Thrift Bank.
 
@@ -703,7 +703,7 @@ Try Next:
 Alice accepts the loan application connection:
 
 ```
-ALICE@test> accept request from Thrift
+ALICE@sandbox> accept request from Thrift
 Expanding thrift to "Thrift Bank"
 Request not yet verified.
 Connection not yet synchronized.
@@ -736,7 +736,7 @@ Try Next:
 
 Alice checks to see what the proof request "Loan-Application-Basic" looks like:
 ```
-ALICE@test> show proof request Loan-Application-Basic
+ALICE@sandbox> show proof request Loan-Application-Basic
 Found proof request "Loan-Application-Basic" in connection "Thrift Bank"
 Status: Requested
 Name: Loan-Application-Basic
@@ -762,7 +762,7 @@ Try Next:
 Alice sends just the "Loan-Application-Basic" proof to the bank. This allows her to minimize the **PII** (personally identifiable information) that she has to share when all she's trying to do right now is prove basic eligibility.
 
 ```
-ALICE@test> send proof Loan-Application-Basic to Thrift Bank
+ALICE@sandbox> send proof Loan-Application-Basic to Thrift Bank
 
 Signature accepted.
 
@@ -775,7 +775,7 @@ Response from Thrift Bank (479.17 ms):
 Alice now checks the second proof request where she needs to share her personal information with the bank.
 
 ```
-ALICE@test> show proof request Loan-Application-KYC
+ALICE@sandbox> show proof request Loan-Application-KYC
 Found proof request "Loan-Application-KYC" in connection "Thrift Bank"
 Status: Requested
 Name: Loan-Application-KYC
@@ -808,7 +808,7 @@ Try Next:
 
 Alice now sends "Loan-Application-KYC" proof to the bank:
 ```
-ALICE@test> send proof Loan-Application-KYC to Thrift Bank
+ALICE@sandbox> send proof Loan-Application-KYC to Thrift Bank
 
 Signature accepted.
 

@@ -1,0 +1,20 @@
+---
+- name: Create/Update ssh config
+  template:
+    src: ssh_config.j2
+    dest: "{{ ssh_config }}"
+
+- name: Create/Update known_hosts file
+  import_tasks: "set_known_hosts.yml"
+  vars:
+    active: "{{ aws_ec2hosts.active|map(attribute='public_ip')|list }}"
+    terminated: "{{ aws_ec2hosts.terminated|map(attribute='public_ip')|list }}"
+
+- name: Create/Update inventory file for AWS hosts
+  vars:
+    hosts: "{{ aws_ec2hosts.active }}"
+    ssh_private_key: "{% raw %}{{ inventory_dir }}{% endraw %}/{{ namespace_dir_relative|d('.', true) }}/{{ ssh_dir_name }}/{{ ssh_key_name }}"
+    known_hosts_file: "{% raw %}{{ inventory_dir }}{% endraw %}/{{ namespace_dir_relative|d('.', true) }}/{{ ssh_dir_name }}/{{ ssh_known_hosts_name }}"
+  template:
+    src: hosts.yml.j2
+    dest: "{{ aws_inventory_file }}"

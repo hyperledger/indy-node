@@ -20,11 +20,23 @@ def run(pytest, output_file, repeatUntilFailure, testDir, test_slice):
         log("Is going to repeat the test suite until failure")
     log("Preparing test suite with {}".format(pytest))
     testListFile = "test_list.txt"
-    os.system('{} --collect-only {} > {}'.format(pytest, testDir, testListFile))
+    collect_status = os.system('{} --collect-only {} > {}'.format(pytest, testDir, testListFile))
+
+    if collect_status != 0:
+        log("Test suit preparation error {}".format(collect_status))
+        return -1
+
     log("Reading collected modules file")
     collectedData = open(testListFile).read()
     os.remove(testListFile)
     log("Collecting modules")
+
+    # check errors during collect
+    if re.findall("={5,} ERRORS ={5,}", collectedData):
+        log("Errors found during collection")
+        log(collectedData)
+        return -1
+
     testList = re.findall("<Module '(.+)'>", collectedData)
     # testList = list(set(os.path.dirname(t) for t in testList))
     first_level_tests = set()

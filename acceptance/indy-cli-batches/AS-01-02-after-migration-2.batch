@@ -1,0 +1,11 @@
+#check that test IDs and wallets are still available after client migration
+pool connect AS-01-02-steward-pool
+wallet open AS-01-02-steward-wallet key=testkey
+did use UAPL7pTFdHGCXS4MGU8Zqv
+ledger nym did=UAPL7pTFdHGCXS4MGU8Zqv verkey=~6m1fM2eoZ1ygsXgq8NLPGc
+did new seed=0000000000000000000NewSteward122 metadata="new steward2"
+wallet close
+pool disconnect
+wallet list
+pool list
+exit

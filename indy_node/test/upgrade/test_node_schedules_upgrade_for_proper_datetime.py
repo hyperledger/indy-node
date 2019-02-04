@@ -6,14 +6,13 @@ from datetime import timedelta
 from indy_common.constants import SCHEDULE
 from indy_node.test import waits
 from indy_node.test.upgrade.helper import checkUpgradeScheduled, \
-    ensureUpgradeSent
+    sdk_ensure_upgrade_sent
 from plenum.common.constants import VERSION
 from stp_core.loop.eventually import eventually
 
 
 def test_node_schedules_upgrade_for_proper_datetime(
-        looper, tconf, nodeSet, validUpgrade, trustee, trusteeWallet):
-
+        looper, tconf, nodeSet, validUpgrade, sdk_pool_handle, sdk_wallet_trustee):
     upgr1 = deepcopy(validUpgrade)
     # Upgrade of each node will be scheduled for its own day
     # (since today with one day step)
@@ -25,7 +24,8 @@ def test_node_schedules_upgrade_for_proper_datetime(
         deltaDays += 1
 
     # Upgrade is scheduled for the proper datetime for each node
-    ensureUpgradeSent(looper, trustee, trusteeWallet, upgr1)
+    sdk_ensure_upgrade_sent(looper, sdk_pool_handle,
+                            sdk_wallet_trustee, upgr1)
     looper.run(
         eventually(
             checkUpgradeScheduled,

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+NODE_SERVICE_HOST_PATTERN="${1}"
+if [ -z "$NODE_SERVICE_HOST_PATTERN" ]; then
+	echo "You must supply NODE_SERVICE_HOST_PATTERN."
+	exit 1
+fi
+
+ENV_VARS=$(env | grep -E ${NODE_SERVICE_HOST_PATTERN})
+
+NEW_NODE_IP_LIST=""
+ORIGINAL_IFS=${IFS}
+for ENV_VAR in ${ENV_VARS}; do
+	IFS="="	
+	VAR=(${ENV_VAR})
+	NEW_NODE_IP_LIST="${NEW_NODE_IP_LIST},${VAR[1]}"	
+done
+IFS=${ORIGINAL_IFS}
+
+NEW_NODE_IP_LIST="${NEW_NODE_IP_LIST:1}"
+echo "${NEW_NODE_IP_LIST}"

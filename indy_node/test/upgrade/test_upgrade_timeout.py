@@ -1,4 +1,3 @@
-import pytest
 from stp_core.loop.eventually import eventually
 from indy_node.server.upgrader import Upgrader
 import functools
@@ -8,7 +7,7 @@ whitelist = ['Failed to upgrade node',
              'This problem may have external reasons, check syslog for more information']
 
 
-def testTimeoutWorks(nodeSet, looper, monkeypatch):
+def testTimeoutWorks(nodeSet, looper, monkeypatch, tconf):
     """
     Checks that after some timeout upgrade is marked as failed if
     it not started
@@ -37,10 +36,14 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch):
     for node in nodeSet:
         monkeypatch.setattr(
             node.upgrader,
-            '_upgradeFailedCallback',
+            '_actionFailedCallback',
             functools.partial(
                 upgrade_failed_callback_test,
                 node.name))
-        looper.run(node.upgrader._sendUpdateRequest(when, version, None, timeout))
+        looper.run(node.upgrader._sendUpgradeRequest(when,
+                                                     version,
+                                                     None,
+                                                     timeout,
+                                                     tconf.UPGRADE_ENTRY))
 
     looper.run(eventually(chk))

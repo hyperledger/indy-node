@@ -1,0 +1,24 @@
+# TODO: Decide what repo will host AWS lambda code
+# For AWS Lambda code:
+#       1. Create an adminuser aws profile
+#       - If not defined in config.properties, prompt for "AWS Access Key ID", 
+#         "AWS Secret Access Key", "Default region name" (i.e. us-west-2), and
+#         "Default output format" (text, json,...)
+#
+#         Then in provisioning script run:
+#
+#         $ aws configure --profile adminuser
+#         AWS Access Key ID [None]: <AWS Access Key ID>
+#         AWS Secret Access Key [None]: <AWS Secret Access Key"
+#         Default region name [None]: <Default region name>
+#         Default output format [None]: <Default output format>
+#
+#       2. Prompt for Execution Role ARN
+#
+#       3. From the provisioning script call deploy.sh script with ARN
+#          and profile.
+
+echo "Deploying indy-self-serve artifacts..."
+cd /src/indy-self-serve/
+echo "Deploying lambda/nym ..."
+sudo -H -u ec2-user lambda/nym/deploy.sh
