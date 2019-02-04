@@ -1,5 +1,5 @@
 ![logo](collateral/logos/indy-logo.png)
-
+# Indy Node
 * [About Indy Node](#about-indy-node)
 * [Technical Overview of Indy Blockchain](#technical-overview-of-indy-blockchain)
 * [Indy Node Repository Structure](#indy-node-repository-structure)
@@ -40,7 +40,7 @@ with a different network, using whatever conventions a community chooses.
 Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
 
 More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
-and [indy-node-docs](docs).
+and [indy-node-docs](docs/source/).
 
 ## Indy Node Repository Structure
 
@@ -90,7 +90,7 @@ Use project name `INDY`.
 
 ## How to Install a Test Network 
 
-You can have a look at [Start Nodes](docs/start-nodes.md) 
+You can have a look at [Start Nodes](docs/source/start-nodes.md) 
 to understand what needs to be done to create a Network, initialize and start Nodes, and what scripts are provided for this.
 
 The described process is automated in one of the ways below (it allow to install a test Network):
@@ -107,16 +107,16 @@ The described process is automated in one of the ways below (it allow to install
 
 ## How to Start Working with the Code
 
-Please have a look at [Dev Setup](docs/setup-dev.md)
+Please have a look at [Dev Setup](docs/source/setup-dev.md)
 
 
 ## Continuous Integration and Delivery
 
-Please have a look at [Continuous integration/delivery](docs/ci-cd.md)
+Please have a look at [Continuous integration/delivery](docs/source/ci-cd.md)
 
 ## How to send a PR
 
-- Make sure that you followed [write code guideline](docs/write-code-guideline.md) before sending a PR
+- Make sure that you followed [write code guideline](docs/source/write-code-guideline.md) before sending a PR
 - Do not create big PRs; send a PR for one feature or bug fix only.
  If a feature is too big, consider splitting a big PR to a number of small ones.
 - Consider sending a design doc into `design` folder (as markdown or PlantUML diagram) for a new feature  before implementing it
@@ -147,21 +147,21 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
 ## Docs and links
 
 - Indy-plenum is based on [RBFT](https://pakupaku.me/plaublin/rbft/5000a297.pdf) protocol
-- Please have a look at documents and diagrams in [docs](docs) folder
-- Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder:
-    - [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md)
-    - [Plenum Consensus Algorithm Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/diagrams/consensus-protocol.png)
-    - [Glossary](https://github.com/hyperledger/indy-plenum/blob/master/docs/glossary.md)
-    - [Storages](https://github.com/hyperledger/indy-plenum/blob/master/docs/storage.md)
-    - [Request Handling](https://github.com/hyperledger/indy-plenum/blob/master/docs/request_handling.md)
-    - [Catchup](https://github.com/hyperledger/indy-plenum/blob/master/docs/catchup.md)
-    - [Catchup Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/diagrams/catchup-procedure.png)
-    - [Plugins](https://github.com/hyperledger/indy-plenum/blob/master/docs/plugins.md)
-- Relationship between Entities and Transactions: [relationship diagram](docs/relationship-diagram.png)
-- Supported transactions and their format: [transactions](docs/transactions.md)
-- Supported requests (write, read) and their format: [requests](docs/requests.md)
-- [Network roles and permissions](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)
-- [Indy file folder structure guideline](docs/indy-file-structure-guideline.md)
-- [Helper Scripts](docs/helper-scripts.md)
-- [Pool Upgrade](docs/pool-upgrade.md)
-- [Node Addition](docs/add-node.md)
+- Please have a look at documents and diagrams in [docs/source](docs/source) folder
+- Please have a look at documents and diagrams in Plenum's [docs](https://github.com/hyperledger/indy-plenum/tree/master/docs) folder, or on https://indy.readthedocs.io/projects/plenum :
+    - [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/main.md)
+    - [Plenum Consensus Algorithm Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/diagrams/consensus-protocol.png)
+    - [Glossary](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/glossary.md)
+    - [Storages](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/storage.md)
+    - [Request Handling](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/request_handling.md)
+    - [Catchup](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/catchup.md)
+    - [Catchup Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/diagrams/catchup-procedure.png)
+    - [Plugins](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/plugins.md)
+- Relationship between Entities and Transactions: [relationship diagram](docs/source/relationship-diagram.png)
+- Supported transactions and their format: [transactions](docs/source/transactions.md)
+- Supported requests (write, read) and their format: [requests](docs/source/requests.md)
+- [Network roles and permissions](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)
+- [Indy file folder structure guideline](docs/source/indy-file-structure-guideline.md)
+- [Helper Scripts](docs/source/helper-scripts.md)
+- [Pool Upgrade](docs/source/pool-upgrade.md)
+- [Node Addition](docs/source/add-node.md)
