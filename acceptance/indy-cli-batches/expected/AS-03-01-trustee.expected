@@ -58,6 +58,18 @@ did new seed=000000000000000000000000Trustee1 metadata="default trustee"
 Did "V4SGRU86Z58d6TV7PBUe6f" has been created with "~CoRER63DVYnWZtK8uAzNbx" verkey
 Metadata has been saved for DID "V4SGRU86Z58d6TV7PBUe6f"
 
+did new seed=NetworkMonitor100000000000000000 metadata="network monitor 1"
+Did "5JNBLdovQap28Ncm8haqH4" has been created with "~VvRtNwrsLbgikyzAz3vohj" verkey
+Metadata has been saved for DID "5JNBLdovQap28Ncm8haqH4"
+
+did new seed=NetworkMonitor200000000000000000 metadata="network monitor 2"
+Did "7cZugZqyBkfx8U4Vbr41M1" has been created with "~C4nPUETzZm6bnKYkECQjMe" verkey
+Metadata has been saved for DID "7cZugZqyBkfx8U4Vbr41M1"
+
+did new seed=NetworkMonitor300000000000000000 metadata="network monitor 3"
+Did "47xdh8nAynU4QsKPjcLC2r" has been created with "~SeZ6e9krmNEEji65Qffh3E" verkey
+Metadata has been saved for DID "47xdh8nAynU4QsKPjcLC2r"
+
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
@@ -67,7 +79,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 55              | 1534005278646869693 | 2018-08-11 16:34:38 |
+| V4SGRU86Z58d6TV7PBUe6f | 59              | 1549372478276780306 | 2019-02-05 13:14:38 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+---------+
@@ -85,7 +97,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 56              | 1534005279391165404 | 2018-08-11 16:34:39 |
+| V4SGRU86Z58d6TV7PBUe6f | 60              | 1549372478529772796 | 2019-02-05 13:14:39 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+---------+
@@ -100,7 +112,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 56              | 1534005280410181611 | 2018-08-11 16:34:39 |
+| V4SGRU86Z58d6TV7PBUe6f | 60              | 1549372479568779955 | 2019-02-05 13:14:39 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+---------+
@@ -118,7 +130,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| CDBcM7hSAmQuenmEnE8dXG | 57              | 1534005280481293123 | 2018-08-11 16:34:40 |
+| CDBcM7hSAmQuenmEnE8dXG | 61              | 1549372479596299725 | 2019-02-05 13:14:40 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+---------+
@@ -133,7 +145,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| CDBcM7hSAmQuenmEnE8dXG | 57              | 1534005281449313999 | 2018-08-11 16:34:40 |
+| CDBcM7hSAmQuenmEnE8dXG | 61              | 1549372480539959549 | 2019-02-05 13:14:40 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+---------+
@@ -151,7 +163,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 58              | 1534005281506844769 | 2018-08-11 16:34:41 |
+| V4SGRU86Z58d6TV7PBUe6f | 62              | 1549372480607667104 | 2019-02-05 13:14:41 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------+
@@ -164,7 +176,7 @@ did use CDBcM7hSAmQuenmEnE8dXG
 Did "CDBcM7hSAmQuenmEnE8dXG" has been set as active
 
 - ledger nym did=6nnZTxQ18EkVEjVV6hBMeT verkey=~2TBdyJLgAhkbogxjpUfPJD role=TRUSTEE
-Transaction has been rejected: None role cannot add TRUSTEE
+Transaction has been rejected: None role Rule for this action is: 1 TRUSTEE signature is required
 
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
@@ -175,7 +187,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 59              | 1534005283121801151 | 2018-08-11 16:34:43 |
+| V4SGRU86Z58d6TV7PBUe6f | 63              | 1549372482416371758 | 2019-02-05 13:14:43 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+---------+
@@ -193,7 +205,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| CDBcM7hSAmQuenmEnE8dXG | 60              | 1534005284522049385 | 2018-08-11 16:34:44 |
+| CDBcM7hSAmQuenmEnE8dXG | 64              | 1549372483642376477 | 2019-02-05 13:14:44 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+------+
@@ -208,7 +220,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| CDBcM7hSAmQuenmEnE8dXG | 60              | 1534005285514033760 | 2018-08-11 16:34:44 |
+| CDBcM7hSAmQuenmEnE8dXG | 64              | 1549372484588656326 | 2019-02-05 13:14:44 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+------+
@@ -226,7 +238,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 61              | 1534005285561517178 | 2018-08-11 16:34:46 |
+| V4SGRU86Z58d6TV7PBUe6f | 65              | 1549372484659171902 | 2019-02-05 13:14:45 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+---------+
@@ -241,7 +253,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 61              | 1534005286520083600 | 2018-08-11 16:34:46 |
+| V4SGRU86Z58d6TV7PBUe6f | 65              | 1549372485651061520 | 2019-02-05 13:14:45 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+---------+
@@ -259,7 +271,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 62              | 1534005286572843271 | 2018-08-11 16:34:47 |
+| V4SGRU86Z58d6TV7PBUe6f | 66              | 1549372485684102323 | 2019-02-05 13:14:46 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------+
@@ -272,7 +284,7 @@ did use YLs2LfEvHoSdS6euixMAe8
 Did "YLs2LfEvHoSdS6euixMAe8" has been set as active
 
 - ledger nym did=EAvxCBmoYzkojBtgX1SVh8 role=TRUST_ANCHOR verkey=~HXn8bHcAYuaDAsCdjdLxLc
-Transaction has been rejected: None role cannot add TRUST_ANCHOR
+Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
 
 - ledger get-nym did=EAvxCBmoYzkojBtgX1SVh8
 NYM not found
@@ -286,7 +298,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 63              | 1534005288186710219 | 2018-08-11 16:34:54 |
+| V4SGRU86Z58d6TV7PBUe6f | 67              | 1549372487645031915 | 2019-02-05 13:14:48 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+---------+
@@ -304,7 +316,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| YLs2LfEvHoSdS6euixMAe8 | 64              | 1534005294913888379 | 2018-08-11 16:34:55 |
+| YLs2LfEvHoSdS6euixMAe8 | 68              | 1549372488659749420 | 2019-02-05 13:14:49 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+--------------+
@@ -319,7 +331,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| YLs2LfEvHoSdS6euixMAe8 | 64              | 1534005295813235748 | 2018-08-11 16:34:55 |
+| YLs2LfEvHoSdS6euixMAe8 | 68              | 1549372489698486693 | 2019-02-05 13:14:49 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+--------------+
@@ -337,7 +349,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 65              | 1534005295869893764 | 2018-08-11 16:34:56 |
+| V4SGRU86Z58d6TV7PBUe6f | 69              | 1549372489732266188 | 2019-02-05 13:14:50 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+--------------+
@@ -352,7 +364,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 65              | 1534005296797922466 | 2018-08-11 16:34:56 |
+| V4SGRU86Z58d6TV7PBUe6f | 69              | 1549372490670189998 | 2019-02-05 13:14:50 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+--------------+
@@ -370,7 +382,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| AWwweaRGGCa4hfvW9WLmeb | 66              | 1534005296857985964 | 2018-08-11 16:34:57 |
+| AWwweaRGGCa4hfvW9WLmeb | 70              | 1549372490731172193 | 2019-02-05 13:14:51 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+------+
@@ -385,7 +397,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| AWwweaRGGCa4hfvW9WLmeb | 66              | 1534005297776583595 | 2018-08-11 16:34:57 |
+| AWwweaRGGCa4hfvW9WLmeb | 70              | 1549372491771276874 | 2019-02-05 13:14:51 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+------+
@@ -403,7 +415,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 67              | 1534005297926545126 | 2018-08-11 16:34:58 |
+| V4SGRU86Z58d6TV7PBUe6f | 71              | 1549372491805250353 | 2019-02-05 13:14:52 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------+
@@ -416,7 +428,7 @@ did use AWwweaRGGCa4hfvW9WLmeb
 Did "AWwweaRGGCa4hfvW9WLmeb" has been set as active
 
 - ledger nym did=NhF3hPZyV715sfmvsjhj1h verkey=~EjjPJGQcnFGhuyS35bVMGA
-Transaction has been rejected: None role cannot add None role
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 TRUST_ANCHOR signature is required
 
 - ledger get-nym did=NhF3hPZyV715sfmvsjhj1h
 NYM not found
@@ -430,7 +442,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 68              | 1534005299489783217 | 2018-08-11 16:35:00 |
+| V4SGRU86Z58d6TV7PBUe6f | 72              | 1549372493732431422 | 2019-02-05 13:14:54 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+--------------+
@@ -448,7 +460,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| AWwweaRGGCa4hfvW9WLmeb | 69              | 1534005300793162812 | 2018-08-11 16:35:01 |
+| AWwweaRGGCa4hfvW9WLmeb | 73              | 1549372494711046645 | 2019-02-05 13:14:55 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+------+
@@ -463,7 +475,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| AWwweaRGGCa4hfvW9WLmeb | 69              | 1534005301766010217 | 2018-08-11 16:35:01 |
+| AWwweaRGGCa4hfvW9WLmeb | 73              | 1549372495715540068 | 2019-02-05 13:14:55 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+------+
@@ -481,7 +493,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 70              | 1534005301825509656 | 2018-08-11 16:35:02 |
+| V4SGRU86Z58d6TV7PBUe6f | 74              | 1549372495742338723 | 2019-02-05 13:14:56 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+------+
@@ -496,7 +508,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 70              | 1534005302769665075 | 2018-08-11 16:35:02 |
+| V4SGRU86Z58d6TV7PBUe6f | 74              | 1549372496700907923 | 2019-02-05 13:14:56 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+------+
@@ -504,6 +516,72 @@ Data:
 +------------------------+------------------------+-------------------------+------+
 | V4SGRU86Z58d6TV7PBUe6f | 6nnZTxQ18EkVEjVV6hBMeT | ~2TBdyJLgAhkbogxjpUfPJD | -    |
 +------------------------+------------------------+-------------------------+------+
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=5JNBLdovQap28Ncm8haqH4 role=NETWORK_MONITOR verkey=~VvRtNwrsLbgikyzAz3vohj
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 75              | 1549372496764854649 | 2019-02-05 13:14:57 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-------------------------+-----------------+
+| Did                    | Verkey                  | Role            |
++------------------------+-------------------------+-----------------+
+| 5JNBLdovQap28Ncm8haqH4 | ~VvRtNwrsLbgikyzAz3vohj | NETWORK_MONITOR |
++------------------------+-------------------------+-----------------+
+
+ledger nym did=5JNBLdovQap28Ncm8haqH4 role=
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 76              | 1549372497735230941 | 2019-02-05 13:14:58 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------+
+| Did                    | Role |
++------------------------+------+
+| 5JNBLdovQap28Ncm8haqH4 | -    |
++------------------------+------+
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+- ledger get-validator-info nodes=Node1
+Validator Info:
+{
+	"Node1": {"data":{"Extractions":{"indy-node_status":["    indy-node.service - Indy Node","   Loaded: loaded (/etc/systemd/system/indy-node.service; disabled; vendor preset: enabled)","   Active: active (running) since Tue 2019-02-05 11:23:03 UTC; 1h 51min ago"," Main PID: 40 (python3)","   CGroup: /docker/fc2b61a8d0f33566138ccf94879482487b6d9f65f237e962fbd49bf33f8be90a/system.slice/indy-node.service","                  40 python3 -O /usr/local/bin/start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702","                 518 /bin/sh -c systemctl status indy-node","                 519 systemctl status indy-node",""],"journalctl_exceptions":[""],"node-control status":["    indy-node-control.service - Service for upgrade of existing Indy Node and other operations","   Loaded: loaded (/etc/systemd/system/indy-node-control.service; disabled; vendor preset: enabled)","   Active: active (running) since Tue 2019-02-05 11:23:09 UTC; 1h 51min ago"," Main PID: 67 (python3)","   CGroup: /docker/fc2b61a8d0f33566138ccf94879482487b6d9f65f237e962fbd49bf33f8be90a/system.slice/indy-node-control.service","                 67 python3 -O /usr/local/bin/start_node_control_tool --hold-ext ",""],"stops_stat":null,"upgrade_log":""},"Hardware":{"HDD_used_by_node":"0 MBs"},"Memory_profiler":["                            types |   # objects |   total size","================================= | =========== | ============","                      <class 'str |       64546 |      6.73 MB","                     <class 'dict |       10078 |      5.46 MB","                     <class 'code |       13313 |      1.83 MB","                     <class 'type |        1797 |      1.79 MB","                      <class 'set |        3856 |      1.07 MB","                     <class 'list |        4502 |    643.34 KB","                    <class 'tuple |        8104 |    535.92 KB","                  <class 'weakref |        5645 |    441.02 KB","  <class 'collections.OrderedDict |         304 |    329.69 KB","              <class 'abc.ABCMeta |         307 |    318.60 KB"],"Node_info":{"BLS_key":"4N8aUNHSgjQVgkpm8nhNEfDf6txHznoYREg9kirmJrkivgL4oSEimFF6nsQ6M41QvhM2Z33nves5vfSn9n1UwNFJBYtWVnHYMATn76vLuL3zU88KyeAYcHfsih3He6UHcXDxcaecHVz6jhCYz1P2UZn2bDVruL5wXpehgBfBaLKm3Ba","Catchup_status":{"Last_txn_3PC_keys":{"0":{},"1":{},"2":{}},"Ledger_statuses":{"0":"synced","1":"synced","2":"synced"},"Number_txns_in_catchup":{"0":0,"1":0,"2":0},"Received_LedgerStatus":"","Waiting_consistency_proof_msgs":{"0":null,"1":null,"2":null}},"Client_ip":"0.0.0.0","Client_port":9702,"Client_protocol":"tcp","Committed_ledger_root_hashes":{"0":"b'BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS'","1":"b'HVEvNKjdhHUhXWMpQq9nEQsc8SVC34thHZxYWJg2x5Co'","2":"b'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn'"},"Committed_state_root_hashes":{"0":"b'GHGNKae8zzhVv172zFHs6Xu9fMY4MrKxSrcH5kHzcqsm'","1":"b'6TvsTUQjwfZkKoqwv6yyhEzuVA9oms4bNPyEqeME6zbp'","2":"b'DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA'"},"Count_of_replicas":2,"Freshness_status":{"0":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:13:52+00:00"},"1":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:14:58+00:00"},"2":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:13:52+00:00"}},"Metrics":{"Delta":0.1,"Lambda":240,"Omega":20,"average-per-second":{"read-transactions":0.0043348464,"write-transactions":0.0159940885},"avg backup throughput":null,"client avg request latencies":{"0":0.9543336162,"1":0.777268054},"instances started":{"0":379.687482402,"1":379.688555675},"master throughput":null,"master throughput ratio":null,"max master request latencies":0,"ordered request counts":{"0":107,"1":107},"ordered request durations":{"0":105.242877315,"1":89.782775924},"throughput":{"0":null,"1":null},"total requests":107,"transaction-count":{"config":0,"ledger":76,"pool":4},"uptime":6689},"Mode":"participating","Name":"Node1","Node_ip":"0.0.0.0","Node_port":9701,"Node_protocol":"tcp","Replicas_status":{"Node1:0":{"Last_ordered_3PC":[0,171],"Primary":"Node1:0","Stashed_txns":{"Stashed_PrePrepare":0,"Stashed_checkpoints":0},"Watermarks":"100:400"},"Node1:1":{"Last_ordered_3PC":[0,107],"Primary":"Node2:1","Stashed_txns":{"Stashed_PrePrepare":0,"Stashed_checkpoints":0},"Watermarks":"100:400"}},"Requests_timeouts":{"Ordering_phase_req_timeouts":0,"Propagates_phase_req_timeouts":0},"Uncommitted_ledger_root_hashes":{},"Uncommitted_ledger_txns":{"0":{"Count":0},"1":{"Count":0},"2":{"Count":0}},"Uncommitted_state_root_hashes":{"0":"b'GHGNKae8zzhVv172zFHs6Xu9fMY4MrKxSrcH5kHzcqsm'","1":"b'6TvsTUQjwfZkKoqwv6yyhEzuVA9oms4bNPyEqeME6zbp'","2":"b'DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA'"},"View_change_status":{"IC_queue":{"1":{"Message":"INSTANCE_CHANGE{'viewNo': 1, 'reason': 26}","Vouters":["Node4","Node3"]}},"Last_complete_view_no":0,"Last_view_change_started_at":"1970-01-01 00:00:00","VCDone_queue":{"Node1":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node2":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node3":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node4":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]]},"VC_in_progress":false,"View_No":0},"did":"Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv","verkey":"33nHHYKnqmtGAVfZZGoP8hpeExeH45Fo8cKmd5mcnKYk7XgWNBxkkKJ"},"Pool_info":{"Blacklisted_nodes":[],"Quorums":"{'observer_data': Quorum(2), 'commit': Quorum(3), 'ledger_status_last_3PC': Quorum(2), 'propagate': Quorum(2), 'weak': Quorum(2), 'backup_instance_faulty': Quorum(2), 'view_change': Quorum(3), 'timestamp': Quorum(2), 'propagate_primary': Quorum(2), 'bls_signatures': Quorum(3), 'consistency_proof': Quorum(2), 'checkpoint': Quorum(2), 'view_change_done': Quorum(3), 'f': 1, 'election': Quorum(3), 'reply': Quorum(2), 'ledger_status': Quorum(2), 'prepare': Quorum(2), 'strong': Quorum(3), 'same_consistency_proof': Quorum(2)}","Reachable_nodes":[["Node1",0],["Node2",1],["Node3",null],["Node4",null]],"Reachable_nodes_count":4,"Read_only":false,"Suspicious_nodes":"","Total_nodes_count":4,"Unreachable_nodes":[],"Unreachable_nodes_count":0,"f_value":1},"Protocol":{},"Software":{"Indy_packages":["hi  indy-node                  1.6.783                               amd64        Indy node","hi  indy-plenum                1.6.670                               amd64        Plenum Byzantine Fault Tolerant Protocol","ii  libindy                    1.8.0~963                             amd64        This is the official SDK for Hyperledger Indy, which provides a","hi  libindy-crypto             0.4.5                                 amd64        This is the shared crypto libirary for Hyperledger Indy components.","hi  python3-indy-crypto        0.4.5                                 amd64        This is the official wrapper for Hyperledger Indy Crypto library (https://www.hyperledger.org/projects).",""],"Installed_packages":["timeout-decorator 0.4.0","sortedcontainers 1.5.7","six 1.11.0","sha3 0.2.1","setuptools 40.7.3","semver 2.7.9","rlp 0.5.1","pyzmq 17.0.0","python3-indy 1.8.0","python-rocksdb 0.6.9","python-dateutil 2.6.1","pytest 3.6.4","pytest-asyncio 0.10.0","Pympler 0.5","Pygments 2.2.0","py 1.7.0","psutil 5.4.3","portalocker 0.5.7","pluggy 0.7.1","pip 9.0.3","orderedset 2.0","more-itertools 5.0.0","libnacl 1.6.1","jsonpickle 0.9.6","ioflo 1.5.4","intervaltree 2.1.0","indy-plenum 1.6.670","indy-node 1.6.783","indy-crypto 0.4.5-23","distro 1.3.0","base58 1.0.0","attrs 18.2.0","atomicwrites 1.3.0","async-generator 1.10","wheel 0.29.0","wcwidth 0.1.6","ujson 1.33","PyNaCl 1.0.1","pycparser 2.14","prompt-toolkit 0.57","ply 3.7","msgpack-python 0.4.6","leveldb 0.1","cffi 1.5.2"],"OS_version":"Linux-4.13.0-36-generic-x86_64-with-Ubuntu-16.04-xenial","indy-node":"1.6.783","sovrin":"unknown"},"Update_time":"Tuesday, February 5, 2019 1:14:58 PM +0000","response-version":"0.0.1","timestamp":1549372498},"identifier":"V4SGRU86Z58d6TV7PBUe6f","reqId":1549372498775100346,"type":"119"}
+}
+
+ledger nym did=5JNBLdovQap28Ncm8haqH4 role=NETWORK_MONITOR
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 77              | 1549372499820738012 | 2019-02-05 13:14:59 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-----------------+
+| Did                    | Role            |
++------------------------+-----------------+
+| 5JNBLdovQap28Ncm8haqH4 | NETWORK_MONITOR |
++------------------------+-----------------+
+
+did use 5JNBLdovQap28Ncm8haqH4
+Did "5JNBLdovQap28Ncm8haqH4" has been set as active
+
+ledger get-validator-info nodes=Node1
+Validator Info:
+{
+	"Node1": {"data":{"Extractions":{"indy-node_status":["    indy-node.service - Indy Node","   Loaded: loaded (/etc/systemd/system/indy-node.service; disabled; vendor preset: enabled)","   Active: active (running) since Tue 2019-02-05 11:23:03 UTC; 1h 51min ago"," Main PID: 40 (python3)","   CGroup: /docker/fc2b61a8d0f33566138ccf94879482487b6d9f65f237e962fbd49bf33f8be90a/system.slice/indy-node.service","                  40 python3 -O /usr/local/bin/start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702","                 531 /bin/sh -c systemctl status indy-node","                 532 systemctl status indy-node",""],"journalctl_exceptions":[""],"node-control status":["    indy-node-control.service - Service for upgrade of existing Indy Node and other operations","   Loaded: loaded (/etc/systemd/system/indy-node-control.service; disabled; vendor preset: enabled)","   Active: active (running) since Tue 2019-02-05 11:23:09 UTC; 1h 51min ago"," Main PID: 67 (python3)","   CGroup: /docker/fc2b61a8d0f33566138ccf94879482487b6d9f65f237e962fbd49bf33f8be90a/system.slice/indy-node-control.service","                 67 python3 -O /usr/local/bin/start_node_control_tool --hold-ext ",""],"stops_stat":null,"upgrade_log":""},"Hardware":{"HDD_used_by_node":"0 MBs"},"Memory_profiler":["                            types |   # objects |   total size","================================= | =========== | ============","                      <class 'str |       64581 |      6.73 MB","                     <class 'dict |       10090 |      5.47 MB","                     <class 'code |       13313 |      1.83 MB","                     <class 'type |        1797 |      1.79 MB","                      <class 'set |        3862 |      1.07 MB","                     <class 'list |        4508 |    643.94 KB","                    <class 'tuple |        8103 |    535.86 KB","                  <class 'weakref |        5645 |    441.02 KB","  <class 'collections.OrderedDict |         309 |    342.81 KB","              <class 'abc.ABCMeta |         307 |    318.60 KB"],"Node_info":{"BLS_key":"4N8aUNHSgjQVgkpm8nhNEfDf6txHznoYREg9kirmJrkivgL4oSEimFF6nsQ6M41QvhM2Z33nves5vfSn9n1UwNFJBYtWVnHYMATn76vLuL3zU88KyeAYcHfsih3He6UHcXDxcaecHVz6jhCYz1P2UZn2bDVruL5wXpehgBfBaLKm3Ba","Catchup_status":{"Last_txn_3PC_keys":{"0":{},"1":{},"2":{}},"Ledger_statuses":{"0":"synced","1":"synced","2":"synced"},"Number_txns_in_catchup":{"0":0,"1":0,"2":0},"Received_LedgerStatus":"","Waiting_consistency_proof_msgs":{"0":null,"1":null,"2":null}},"Client_ip":"0.0.0.0","Client_port":9702,"Client_protocol":"tcp","Committed_ledger_root_hashes":{"0":"b'BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS'","1":"b'7eNNR915E51FC6HFgXJD6yLdKsoyPxs1w8N4YgkuUKW3'","2":"b'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn'"},"Committed_state_root_hashes":{"0":"b'GHGNKae8zzhVv172zFHs6Xu9fMY4MrKxSrcH5kHzcqsm'","1":"b'9whvRmTzUvfuqNcqzKYdQsU3LMhN92kkS96cG9yZtzvm'","2":"b'DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA'"},"Count_of_replicas":2,"Freshness_status":{"0":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:13:52+00:00"},"1":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:14:59+00:00"},"2":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:13:52+00:00"}},"Metrics":{"Delta":0.1,"Lambda":240,"Omega":20,"average-per-second":{"read-transactions":0.0043339983,"write-transactions":0.0161404075},"avg backup throughput":null,"client avg request latencies":{"0":0.9207457488,"1":0.7521190793},"instances started":{"0":379.687482402,"1":379.688555675},"master throughput":null,"master throughput ratio":null,"max master request latencies":0,"ordered request counts":{"0":108,"1":108},"ordered request durations":{"0":105.491865716,"1":90.03191551},"throughput":{"0":null,"1":null},"total requests":108,"transaction-count":{"config":0,"ledger":77,"pool":4},"uptime":6691},"Mode":"participating","Name":"Node1","Node_ip":"0.0.0.0","Node_port":9701,"Node_protocol":"tcp","Replicas_status":{"Node1:0":{"Last_ordered_3PC":[0,172],"Primary":"Node1:0","Stashed_txns":{"Stashed_PrePrepare":0,"Stashed_checkpoints":0},"Watermarks":"100:400"},"Node1:1":{"Last_ordered_3PC":[0,108],"Primary":"Node2:1","Stashed_txns":{"Stashed_PrePrepare":0,"Stashed_checkpoints":0},"Watermarks":"100:400"}},"Requests_timeouts":{"Ordering_phase_req_timeouts":0,"Propagates_phase_req_timeouts":0},"Uncommitted_ledger_root_hashes":{},"Uncommitted_ledger_txns":{"0":{"Count":0},"1":{"Count":0},"2":{"Count":0}},"Uncommitted_state_root_hashes":{"0":"b'GHGNKae8zzhVv172zFHs6Xu9fMY4MrKxSrcH5kHzcqsm'","1":"b'9whvRmTzUvfuqNcqzKYdQsU3LMhN92kkS96cG9yZtzvm'","2":"b'DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA'"},"View_change_status":{"IC_queue":{"1":{"Message":"INSTANCE_CHANGE{'viewNo': 1, 'reason': 26}","Vouters":["Node4","Node3"]}},"Last_complete_view_no":0,"Last_view_change_started_at":"1970-01-01 00:00:00","VCDone_queue":{"Node1":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node2":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node3":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node4":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]]},"VC_in_progress":false,"View_No":0},"did":"Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv","verkey":"33nHHYKnqmtGAVfZZGoP8hpeExeH45Fo8cKmd5mcnKYk7XgWNBxkkKJ"},"Pool_info":{"Blacklisted_nodes":[],"Quorums":"{'observer_data': Quorum(2), 'commit': Quorum(3), 'ledger_status_last_3PC': Quorum(2), 'propagate': Quorum(2), 'weak': Quorum(2), 'backup_instance_faulty': Quorum(2), 'view_change': Quorum(3), 'timestamp': Quorum(2), 'propagate_primary': Quorum(2), 'bls_signatures': Quorum(3), 'consistency_proof': Quorum(2), 'checkpoint': Quorum(2), 'view_change_done': Quorum(3), 'f': 1, 'election': Quorum(3), 'reply': Quorum(2), 'ledger_status': Quorum(2), 'prepare': Quorum(2), 'strong': Quorum(3), 'same_consistency_proof': Quorum(2)}","Reachable_nodes":[["Node1",0],["Node2",1],["Node3",null],["Node4",null]],"Reachable_nodes_count":4,"Read_only":false,"Suspicious_nodes":"","Total_nodes_count":4,"Unreachable_nodes":[],"Unreachable_nodes_count":0,"f_value":1},"Protocol":{},"Software":{"Indy_packages":["hi  indy-node                  1.6.783                               amd64        Indy node","hi  indy-plenum                1.6.670                               amd64        Plenum Byzantine Fault Tolerant Protocol","ii  libindy                    1.8.0~963                             amd64        This is the official SDK for Hyperledger Indy, which provides a","hi  libindy-crypto             0.4.5                                 amd64        This is the shared crypto libirary for Hyperledger Indy components.","hi  python3-indy-crypto        0.4.5                                 amd64        This is the official wrapper for Hyperledger Indy Crypto library (https://www.hyperledger.org/projects).",""],"Installed_packages":["timeout-decorator 0.4.0","sortedcontainers 1.5.7","six 1.11.0","sha3 0.2.1","setuptools 40.7.3","semver 2.7.9","rlp 0.5.1","pyzmq 17.0.0","python3-indy 1.8.0","python-rocksdb 0.6.9","python-dateutil 2.6.1","pytest 3.6.4","pytest-asyncio 0.10.0","Pympler 0.5","Pygments 2.2.0","py 1.7.0","psutil 5.4.3","portalocker 0.5.7","pluggy 0.7.1","pip 9.0.3","orderedset 2.0","more-itertools 5.0.0","libnacl 1.6.1","jsonpickle 0.9.6","ioflo 1.5.4","intervaltree 2.1.0","indy-plenum 1.6.670","indy-node 1.6.783","indy-crypto 0.4.5-23","distro 1.3.0","base58 1.0.0","attrs 18.2.0","atomicwrites 1.3.0","async-generator 1.10","wheel 0.29.0","wcwidth 0.1.6","ujson 1.33","PyNaCl 1.0.1","pycparser 2.14","prompt-toolkit 0.57","ply 3.7","msgpack-python 0.4.6","leveldb 0.1","cffi 1.5.2"],"OS_version":"Linux-4.13.0-36-generic-x86_64-with-Ubuntu-16.04-xenial","indy-node":"1.6.783","sovrin":"unknown"},"Update_time":"Tuesday, February 5, 2019 1:15:00 PM +0000","response-version":"0.0.1","timestamp":1549372500},"identifier":"5JNBLdovQap28Ncm8haqH4","reqId":1549372500061544216,"type":"119"}
+}
 
 did use QQMQmb1mrBRJR3vx6GP4kg
 Did "QQMQmb1mrBRJR3vx6GP4kg" has been set as active
@@ -514,7 +592,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| QQMQmb1mrBRJR3vx6GP4kg | 71              | 1534005302843119464 | 2018-08-11 16:35:03 |
+| QQMQmb1mrBRJR3vx6GP4kg | 78              | 1549372501128555807 | 2019-02-05 13:15:01 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------+
@@ -524,7 +602,7 @@ Data:
 +------------------------+------+
 
 - ledger nym did=X25X1vKgEkwRDNgj1zJ1Xg verkey=~5TR49msrun2AgCKQZsstRX
-Transaction has been rejected: None role cannot add None role
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 TRUST_ANCHOR signature is required
 
 - ledger get-nym did=X25X1vKgEkwRDNgj1zJ1Xg
 NYM not found
@@ -541,7 +619,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 72              | 1534005304546445737 | 2018-08-11 16:35:05 |
+| V4SGRU86Z58d6TV7PBUe6f | 79              | 1549372502344812403 | 2019-02-05 13:15:03 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+---------+
@@ -551,7 +629,7 @@ Data:
 +------------------------+-------------------------+---------+
 
 did new seed=RandomUserForRotateKey0000000000
-;32mDid "484PvcK1gUqwWEWCkumDzA" has been created with "~VNugjiSF2G22QKfYvESPf3" verkey
+Did "484PvcK1gUqwWEWCkumDzA" has been created with "~VNugjiSF2G22QKfYvESPf3" verkey
 
 ledger nym did=484PvcK1gUqwWEWCkumDzA verkey=~VNugjiSF2G22QKfYvESPf3 role=TRUSTEE
 Nym request has been sent to Ledger.
@@ -559,7 +637,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 73              | 1534005305816417089 | 2018-08-11 16:35:06 |
+| V4SGRU86Z58d6TV7PBUe6f | 80              | 1549372503428327064 | 2019-02-05 13:15:04 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+---------+
@@ -572,13 +650,14 @@ did use QbvWTyhmZmDF8Ms82wC2JD
 Did "QbvWTyhmZmDF8Ms82wC2JD" has been set as active
 
 did rotate-key seed=RandomUserForRotateKey0NewKey000
-Verkey for did "QbvWTyhmZmDF8Ms82wC2JD" has been updated. New verkey: "B9hLAB2pBCvkVNxwyRSBfmCsyTJmR8vVNiYmh233niRT"
+Verkey for did "QbvWTyhmZmDF8Ms82wC2JD" has been updated
+New verkey is "B9hLAB2pBCvkVNxwyRSBfmCsyTJmR8vVNiYmh233niRT"
 
 did use 484PvcK1gUqwWEWCkumDzA
 Did "484PvcK1gUqwWEWCkumDzA" has been set as active
 
 - ledger nym did=QbvWTyhmZmDF8Ms82wC2JD verkey=~55hsLZb8uixk46gRPPZHF8
-Transaction has been rejected: TRUSTEE cannot update verkey
+Transaction has been rejected: TRUSTEE can not touch verkey field since only the owner can modify it
 
 did use QbvWTyhmZmDF8Ms82wC2JD
 Did "QbvWTyhmZmDF8Ms82wC2JD" has been set as active
@@ -589,7 +668,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| QbvWTyhmZmDF8Ms82wC2JD | 75              | 1534005308496021038 | 2018-08-11 16:35:09 |
+| QbvWTyhmZmDF8Ms82wC2JD | 82              | 1549372506312762255 | 2019-02-05 13:15:07 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +--------------------------------------+
@@ -604,7 +683,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| QbvWTyhmZmDF8Ms82wC2JD | 76              | 1534005309846344843 | 2018-08-11 16:35:10 |
+| QbvWTyhmZmDF8Ms82wC2JD | 83              | 1549372507445856402 | 2019-02-05 13:15:08 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +--------------------------------------+
@@ -631,18 +710,38 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| 484PvcK1gUqwWEWCkumDzA | 77              | 1534005312536395489 | 2018-08-11 16:35:13 |
+| 484PvcK1gUqwWEWCkumDzA | 84              | 1549372510360949810 | 2019-02-05 13:15:11 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +---------------+---------+--------------+
 | Name          | Version | Attributes   |
 +---------------+---------+--------------+
-| TrusteeSchema | 1.0     | "age","name" |
+| TrusteeSchema | 1.0     | "name","age" |
 +---------------+---------+--------------+
 
-ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=10
+- ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=10
 Transaction has been rejected: Mentioned seqNo (1) isn't seqNo of the schema.
 
-Pool "AS-0301-trustee" has been disconnected
+did use 484PvcK1gUqwWEWCkumDzA
+Did "484PvcK1gUqwWEWCkumDzA" has been set as active
+
+ledger pool-restart action=start datetime=2020-01-25T12:49:05.258870+00:00 nodes=Node4
+Restart pool response for node Node4:
++------------------------+---------------------+--------+----------------------------------+
+| From                   | Request Id          | Action | Datetime                         |
++------------------------+---------------------+--------+----------------------------------+
+| 484PvcK1gUqwWEWCkumDzA | 1549372512359565073 | start  | 2020-01-25T12:49:05.258870+00:00 |
++------------------------+---------------------+--------+----------------------------------+
+
+did use 484PvcK1gUqwWEWCkumDzA
+Did "484PvcK1gUqwWEWCkumDzA" has been set as active
+
+ledger get-validator-info nodes=Node1
+Validator Info:
+{
+	"Node1": {"data":{"Extractions":{"indy-node_status":["    indy-node.service - Indy Node","   Loaded: loaded (/etc/systemd/system/indy-node.service; disabled; vendor preset: enabled)","   Active: active (running) since Tue 2019-02-05 11:23:03 UTC; 1h 52min ago"," Main PID: 40 (python3)","   CGroup: /docker/fc2b61a8d0f33566138ccf94879482487b6d9f65f237e962fbd49bf33f8be90a/system.slice/indy-node.service","                  40 python3 -O /usr/local/bin/start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702","                 544 /bin/sh -c systemctl status indy-node","                 545 systemctl status indy-node",""],"journalctl_exceptions":[""],"node-control status":["    indy-node-control.service - Service for upgrade of existing Indy Node and other operations","   Loaded: loaded (/etc/systemd/system/indy-node-control.service; disabled; vendor preset: enabled)","   Active: active (running) since Tue 2019-02-05 11:23:09 UTC; 1h 52min ago"," Main PID: 67 (python3)","   CGroup: /docker/fc2b61a8d0f33566138ccf94879482487b6d9f65f237e962fbd49bf33f8be90a/system.slice/indy-node-control.service","                 67 python3 -O /usr/local/bin/start_node_control_tool --hold-ext ",""],"stops_stat":null,"upgrade_log":""},"Hardware":{"HDD_used_by_node":"0 MBs"},"Memory_profiler":["                            types |   # objects |   total size","================================= | =========== | ============","                      <class 'str |       65035 |      6.81 MB","                     <class 'dict |       10273 |      5.50 MB","                     <class 'code |       13313 |      1.83 MB","                     <class 'type |        1797 |      1.79 MB","                      <class 'set |        3917 |      1.08 MB","                     <class 'list |        4595 |    653.26 KB","                    <class 'tuple |        8115 |    536.92 KB","                  <class 'weakref |        5645 |    441.02 KB","  <class 'collections.OrderedDict |         383 |    416.44 KB","              <class 'abc.ABCMeta |         307 |    318.60 KB"],"Node_info":{"BLS_key":"4N8aUNHSgjQVgkpm8nhNEfDf6txHznoYREg9kirmJrkivgL4oSEimFF6nsQ6M41QvhM2Z33nves5vfSn9n1UwNFJBYtWVnHYMATn76vLuL3zU88KyeAYcHfsih3He6UHcXDxcaecHVz6jhCYz1P2UZn2bDVruL5wXpehgBfBaLKm3Ba","Catchup_status":{"Last_txn_3PC_keys":{"0":{},"1":{},"2":{}},"Ledger_statuses":{"0":"synced","1":"synced","2":"synced"},"Number_txns_in_catchup":{"0":0,"1":0,"2":0},"Received_LedgerStatus":"","Waiting_consistency_proof_msgs":{"0":null,"1":null,"2":null}},"Client_ip":"0.0.0.0","Client_port":9702,"Client_protocol":"tcp","Committed_ledger_root_hashes":{"0":"b'BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS'","1":"b'CqRfdA6fRUZv8sKXqN4sZhB52bxWDnBSok3fQDZu82io'","2":"b'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn'"},"Committed_state_root_hashes":{"0":"b'GHGNKae8zzhVv172zFHs6Xu9fMY4MrKxSrcH5kHzcqsm'","1":"b'533J272M18YqUfVjmP3qyYRnHKc2dzxqprrrGhzsZhVQ'","2":"b'DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA'"},"Count_of_replicas":2,"Freshness_status":{"0":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:13:52+00:00"},"1":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:15:11+00:00"},"2":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 13:13:52+00:00"}},"Metrics":{"Delta":0.1,"Lambda":240,"Omega":20,"average-per-second":{"read-transactions":0.0044752013,"write-transactions":0.0177516319},"avg backup throughput":null,"client avg request latencies":{"0":0.9439423015,"1":0.7768204568},"instances started":{"0":379.687482402,"1":379.688555675},"master throughput":null,"master throughput ratio":null,"max master request latencies":0,"ordered request counts":{"0":119,"1":120},"ordered request durations":{"0":116.017279318,"1":99.518429208},"throughput":{"0":null,"1":null},"total requests":119,"transaction-count":{"config":0,"ledger":84,"pool":4},"uptime":6703},"Mode":"participating","Name":"Node1","Node_ip":"0.0.0.0","Node_port":9701,"Node_protocol":"tcp","Replicas_status":{"Node1:0":{"Last_ordered_3PC":[0,183],"Primary":"Node1:0","Stashed_txns":{"Stashed_PrePrepare":0,"Stashed_checkpoints":0},"Watermarks":"100:400"},"Node1:1":{"Last_ordered_3PC":[0,120],"Primary":"Node2:1","Stashed_txns":{"Stashed_PrePrepare":0,"Stashed_checkpoints":0},"Watermarks":"100:400"}},"Requests_timeouts":{"Ordering_phase_req_timeouts":0,"Propagates_phase_req_timeouts":0},"Uncommitted_ledger_root_hashes":{},"Uncommitted_ledger_txns":{"0":{"Count":0},"1":{"Count":0},"2":{"Count":0}},"Uncommitted_state_root_hashes":{"0":"b'GHGNKae8zzhVv172zFHs6Xu9fMY4MrKxSrcH5kHzcqsm'","1":"b'533J272M18YqUfVjmP3qyYRnHKc2dzxqprrrGhzsZhVQ'","2":"b'DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA'"},"View_change_status":{"IC_queue":{"1":{"Message":"INSTANCE_CHANGE{'viewNo': 1, 'reason': 26}","Vouters":["Node4","Node3"]}},"Last_complete_view_no":0,"Last_view_change_started_at":"1970-01-01 00:00:00","VCDone_queue":{"Node1":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node2":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node3":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node4":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]]},"VC_in_progress":false,"View_No":0},"did":"Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv","verkey":"33nHHYKnqmtGAVfZZGoP8hpeExeH45Fo8cKmd5mcnKYk7XgWNBxkkKJ"},"Pool_info":{"Blacklisted_nodes":[],"Quorums":"{'observer_data': Quorum(2), 'commit': Quorum(3), 'ledger_status_last_3PC': Quorum(2), 'propagate': Quorum(2), 'weak': Quorum(2), 'backup_instance_faulty': Quorum(2), 'view_change': Quorum(3), 'timestamp': Quorum(2), 'propagate_primary': Quorum(2), 'bls_signatures': Quorum(3), 'consistency_proof': Quorum(2), 'checkpoint': Quorum(2), 'view_change_done': Quorum(3), 'f': 1, 'election': Quorum(3), 'reply': Quorum(2), 'ledger_status': Quorum(2), 'prepare': Quorum(2), 'strong': Quorum(3), 'same_consistency_proof': Quorum(2)}","Reachable_nodes":[["Node1",0],["Node2",1],["Node3",null],["Node4",null]],"Reachable_nodes_count":4,"Read_only":false,"Suspicious_nodes":"","Total_nodes_count":4,"Unreachable_nodes":[],"Unreachable_nodes_count":0,"f_value":1},"Protocol":{},"Software":{"Indy_packages":["hi  indy-node                  1.6.783                               amd64        Indy node","hi  indy-plenum                1.6.670                               amd64        Plenum Byzantine Fault Tolerant Protocol","ii  libindy                    1.8.0~963                             amd64        This is the official SDK for Hyperledger Indy, which provides a","hi  libindy-crypto             0.4.5                                 amd64        This is the shared crypto libirary for Hyperledger Indy components.","hi  python3-indy-crypto        0.4.5                                 amd64        This is the official wrapper for Hyperledger Indy Crypto library (https://www.hyperledger.org/projects).",""],"Installed_packages":["timeout-decorator 0.4.0","sortedcontainers 1.5.7","six 1.11.0","sha3 0.2.1","setuptools 40.7.3","semver 2.7.9","rlp 0.5.1","pyzmq 17.0.0","python3-indy 1.8.0","python-rocksdb 0.6.9","python-dateutil 2.6.1","pytest 3.6.4","pytest-asyncio 0.10.0","Pympler 0.5","Pygments 2.2.0","py 1.7.0","psutil 5.4.3","portalocker 0.5.7","pluggy 0.7.1","pip 9.0.3","orderedset 2.0","more-itertools 5.0.0","libnacl 1.6.1","jsonpickle 0.9.6","ioflo 1.5.4","intervaltree 2.1.0","indy-plenum 1.6.670","indy-node 1.6.783","indy-crypto 0.4.5-23","distro 1.3.0","base58 1.0.0","attrs 18.2.0","atomicwrites 1.3.0","async-generator 1.10","wheel 0.29.0","wcwidth 0.1.6","ujson 1.33","PyNaCl 1.0.1","pycparser 2.14","prompt-toolkit 0.57","ply 3.7","msgpack-python 0.4.6","leveldb 0.1","cffi 1.5.2"],"OS_version":"Linux-4.13.0-36-generic-x86_64-with-Ubuntu-16.04-xenial","indy-node":"1.6.783","sovrin":"unknown"},"Update_time":"Tuesday, February 5, 2019 1:15:12 PM +0000","response-version":"0.0.1","timestamp":1549372512},"identifier":"484PvcK1gUqwWEWCkumDzA","reqId":1549372512383051245,"type":"119"}
+}
+
 Wallet "AS-03-wallet-trustee" has been closed
+Pool "AS-0301-trustee" has been disconnected
 Goodbye...
