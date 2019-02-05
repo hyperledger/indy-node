@@ -6,7 +6,7 @@ import base58
 
 from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_common.authorize.auth_map import authMap, anyoneCanWriteMap
+from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
@@ -67,9 +67,9 @@ class DomainReqHandler(PHandler):
         self.post_batch_commit_handlers = []
         self.post_batch_rejection_handlers = []
         self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=authMap,
+                                                         auth_map=auth_map,
                                                          cache=self.idrCache,
-                                                         anyone_can_write_map=anyoneCanWriteMap)
+                                                         anyone_can_write_map=anyone_can_write_map)
 
         self._add_default_handlers()
 

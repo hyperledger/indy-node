@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from common.serializers.serialization import pool_state_serializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
-from indy_common.authorize.auth_map import authMap, anyoneCanWriteMap
+from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES, \
@@ -22,9 +22,9 @@ class PoolRequestHandler(PHandler):
         self.stateSerializer = pool_state_serializer
         self.idrCache = idrCache
         self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=authMap,
+                                                         auth_map=auth_map,
                                                          cache=self.idrCache,
-                                                         anyone_can_write_map=anyoneCanWriteMap)
+                                                         anyone_can_write_map=anyone_can_write_map)
 
     def isSteward(self, nym, isCommitted: bool = True):
         return self.idrCache.hasSteward(nym, isCommitted)

@@ -1,7 +1,7 @@
 from typing import List
 
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
-from indy_common.authorize.auth_map import authMap, anyoneCanWriteMap
+from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from plenum.common.exceptions import InvalidClientRequest, \
@@ -29,9 +29,9 @@ class ConfigReqHandler(LedgerRequestHandler):
         self.poolManager = poolManager
         self.poolCfg = poolCfg
         self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=authMap,
+                                                         auth_map=auth_map,
                                                          cache=self.idrCache,
-                                                         anyone_can_write_map=anyoneCanWriteMap)
+                                                         anyone_can_write_map=anyone_can_write_map)
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
