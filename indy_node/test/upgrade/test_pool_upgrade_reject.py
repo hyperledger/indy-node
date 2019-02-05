@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from plenum.common.constants import NAME, VERSION
+from plenum.common.constants import NAME, VERSION, STEWARD_STRING
 from plenum.common.exceptions import RequestNackedException, RequestRejectedException
 from indy_common.constants import CANCEL, \
     ACTION
@@ -22,7 +22,7 @@ def testOnlyTrusteeCanSendPoolUpgrade(looper, sdk_pool_handle, sdk_wallet_stewar
     validUpgrade[NAME] = 'upgrade-20'
     validUpgrade[VERSION] = bumpedVersion(validUpgrade['version'])
     req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_steward, validUpgrade)
-    sdk_get_bad_response(looper, [req], RequestRejectedException, 'role is not accepted')
+    sdk_get_bad_response(looper, [req], RequestRejectedException, '{} can not do this action'.format(STEWARD_STRING))
 
 
 def testNonTrustyCannotCancelUpgrade(looper, validUpgradeSent, sdk_pool_handle,
@@ -30,7 +30,7 @@ def testNonTrustyCannotCancelUpgrade(looper, validUpgradeSent, sdk_pool_handle,
     validUpgradeCopy = deepcopy(validUpgrade)
     validUpgradeCopy[ACTION] = CANCEL
     req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_steward, validUpgradeCopy)
-    sdk_get_bad_response(looper, [req], RequestRejectedException, 'role is not accepted')
+    sdk_get_bad_response(looper, [req], RequestRejectedException, '{} can not do this action'.format(STEWARD_STRING))
 
 
 def test_accept_then_reject_upgrade(
@@ -48,4 +48,4 @@ def test_accept_then_reject_upgrade(
 def testOnlyTrusteeCanSendPoolUpgradeForceTrue(
         looper, sdk_pool_handle, sdk_wallet_steward, validUpgradeExpForceTrue):
     req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_steward, validUpgradeExpForceTrue)
-    sdk_get_bad_response(looper, [req], RequestNackedException, 'role is not accepted')
+    sdk_get_bad_response(looper, [req], RequestNackedException, '{} can not do this action'.format(STEWARD_STRING))

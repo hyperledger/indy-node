@@ -46,7 +46,48 @@ def test_make_network_monitor(write_request_validation, req, is_owner):
                                                                  is_owner=is_owner)])
 
 
-def test_remove_trustee(write_request_validation, req, is_owner):
+# Trustee tests
+def test_change_trustee_to_trustee(write_request_validation, req, is_owner):
+    authorized = is_owner
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=TRUSTEE,
+                                                                  new_value=TRUSTEE,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_trustee_to_steward(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=TRUSTEE,
+                                                                  new_value=STEWARD,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_trustee_to_trust_anchor(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=TRUSTEE,
+                                                                  new_value=TRUST_ANCHOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_trustee_to_network_monitor(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=TRUSTEE,
+                                                                  new_value=NETWORK_MONITOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_trustee_to_identity_owner(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=NYM,
@@ -56,7 +97,48 @@ def test_remove_trustee(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
-def test_remove_steward(write_request_validation, req, is_owner):
+# Steward tests
+def test_change_steward_to_trustee(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=STEWARD,
+                                                                  new_value=TRUSTEE,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_steward_to_steward(write_request_validation, req, is_owner):
+    authorized = is_owner
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=STEWARD,
+                                                                  new_value=STEWARD,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_steward_to_trust_anchor(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=STEWARD,
+                                                                  new_value=TRUST_ANCHOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_steward_to_network_monitor(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=STEWARD,
+                                                                  new_value=NETWORK_MONITOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_steward_to_identity_owner(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=NYM,
@@ -66,7 +148,48 @@ def test_remove_steward(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
-def test_remove_trust_anchor(write_request_validation, req, is_owner):
+# Trust Anchor tests
+def test_change_trust_anchor_to_trustee(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=TRUST_ANCHOR,
+                                                                  new_value=TRUSTEE,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_trust_anchor_to_steward(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=TRUST_ANCHOR,
+                                                                  new_value=STEWARD,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_trust_anchor_to_trust_anchor(write_request_validation, req, is_owner):
+    authorized = is_owner
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=TRUST_ANCHOR,
+                                                                  new_value=TRUST_ANCHOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_trust_anchor_to_network_monitor(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=TRUST_ANCHOR,
+                                                                  new_value=NETWORK_MONITOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_trust_anchor_to_identity_owner(write_request_validation, req, is_owner):
     authorized = (req.identifier == "trustee_identifier")
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=NYM,
@@ -76,12 +199,104 @@ def test_remove_trust_anchor(write_request_validation, req, is_owner):
                                                                   is_owner=is_owner)])
 
 
-def test_remove_network_monitor(write_request_validation, req, is_owner):
+# Network Monitor tests
+def test_change_network_monitor_to_trustee(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=NETWORK_MONITOR,
+                                                                  new_value=TRUSTEE,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_network_monitor_to_steward(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=NETWORK_MONITOR,
+                                                                  new_value=STEWARD,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_network_monitor_to_trust_anchor(write_request_validation, req, is_owner):
     authorized = req.identifier in ("trustee_identifier", "steward_identifier")
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=NYM,
                                                                   field=ROLE,
                                                                   old_value=NETWORK_MONITOR,
+                                                                  new_value=TRUST_ANCHOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_network_monitor_to_network_monitor(write_request_validation, req, is_owner):
+    authorized = is_owner
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=NETWORK_MONITOR,
+                                                                  new_value=NETWORK_MONITOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_network_monitor_to_identity_owner(write_request_validation, req, is_owner):
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value=NETWORK_MONITOR,
+                                                                  new_value='',
+                                                                  is_owner=is_owner)])
+
+
+# Identity Owner tests
+def test_change_identity_owner_to_trustee(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value='',
+                                                                  new_value=TRUSTEE,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_identity_owner_to_steward(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "trustee_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value='',
+                                                                  new_value=STEWARD,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_identity_owner_to_trust_anchor(write_request_validation, req, is_owner):
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value='',
+                                                                  new_value=TRUST_ANCHOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_identity_owner_to_network_monitor(write_request_validation, req, is_owner):
+    authorized = req.identifier in ("trustee_identifier", "steward_identifier")
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value='',
+                                                                  new_value=NETWORK_MONITOR,
+                                                                  is_owner=is_owner)])
+
+
+def test_change_identity_owner_to_identity_owner(write_request_validation, req, is_owner):
+    authorized = is_owner
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionEdit(txn_type=NYM,
+                                                                  field=ROLE,
+                                                                  old_value='',
                                                                   new_value='',
                                                                   is_owner=is_owner)])
 
@@ -93,44 +308,4 @@ def test_change_verkey(write_request_validation, req, is_owner):
                                                                   field=VERKEY,
                                                                   old_value="_verkey".format(req.identifier),
                                                                   new_value='new_value',
-                                                                  is_owner=is_owner)])
-
-
-def test_same_role_trustee(write_request_validation, req, is_owner):
-    authorized = is_owner
-    assert authorized == write_request_validation(req,
-                                                  [AuthActionEdit(txn_type=NYM,
-                                                                  field=ROLE,
-                                                                  old_value=TRUSTEE,
-                                                                  new_value=TRUSTEE,
-                                                                  is_owner=is_owner)])
-
-
-def test_same_role_steward(write_request_validation, req, is_owner):
-    authorized = is_owner
-    assert authorized == write_request_validation(req,
-                                                  [AuthActionEdit(txn_type=NYM,
-                                                                  field=ROLE,
-                                                                  old_value=STEWARD,
-                                                                  new_value=STEWARD,
-                                                                  is_owner=is_owner)])
-
-
-def test_same_role_trust_acnhor(write_request_validation, req, is_owner):
-    authorized = is_owner
-    assert authorized == write_request_validation(req,
-                                                  [AuthActionEdit(txn_type=NYM,
-                                                                  field=ROLE,
-                                                                  old_value=TRUST_ANCHOR,
-                                                                  new_value=TRUST_ANCHOR,
-                                                                  is_owner=is_owner)])
-
-
-def test_same_role_network_monitor(write_request_validation, req, is_owner):
-    authorized = is_owner
-    assert authorized == write_request_validation(req,
-                                                  [AuthActionEdit(txn_type=NYM,
-                                                                  field=ROLE,
-                                                                  old_value=NETWORK_MONITOR,
-                                                                  new_value=NETWORK_MONITOR,
                                                                   is_owner=is_owner)])

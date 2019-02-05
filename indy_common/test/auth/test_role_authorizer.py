@@ -88,7 +88,7 @@ def test_role_authorizer_not_authorize_role(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     authorized, reason = authorizer.authorize(req_auth, AuthConstraint(role="SomeOtherRole", sig_count=1))
     assert not authorized
-    assert reason == "role is not accepted"
+    assert reason == "Unknown role can not do this action"
 
 
 def test_role_authorizer_not_authorize_unknown_nym(idr_cache):

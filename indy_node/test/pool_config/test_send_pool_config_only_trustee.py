@@ -10,7 +10,7 @@ def test_only_trustee_send_pool_config_writes_true_force_false(
     sdk_wallet_steward = sdk_add_new_nym(looper, sdk_pool_handle,
                                          sdk_wallet_trustee, 'tmpname', STEWARD_STRING)
     req = sdk_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_steward, poolConfigWTFF)
-    sdk_get_bad_response(looper, [req], RequestRejectedException, 'role is not accepted')
+    sdk_get_bad_response(looper, [req], RequestRejectedException, '{} can not do this action'.format(STEWARD_STRING))
 
 
 def test_only_trustee_send_pool_config_writes_false_force_false(
@@ -18,7 +18,7 @@ def test_only_trustee_send_pool_config_writes_false_force_false(
     sdk_wallet_steward = sdk_add_new_nym(looper, sdk_pool_handle,
                                          sdk_wallet_trustee, 'tmpname', STEWARD_STRING)
     req = sdk_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_steward, poolConfigWFFF)
-    sdk_get_bad_response(looper, [req], RequestRejectedException, 'role is not accepted')
+    sdk_get_bad_response(looper, [req], RequestRejectedException, '{} can not do this action'.format(STEWARD_STRING))
 
 
 def test_only_trustee_send_pool_config_writes_true_force_true(
@@ -26,7 +26,7 @@ def test_only_trustee_send_pool_config_writes_true_force_true(
     sdk_wallet_steward = sdk_add_new_nym(looper, sdk_pool_handle,
                                          sdk_wallet_trustee, 'tmpname', STEWARD_STRING)
     req = sdk_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_steward, poolConfigWTFT)
-    sdk_get_bad_response(looper, [req], RequestNackedException, 'role is not accepted')
+    sdk_get_bad_response(looper, [req], RequestNackedException, '{} can not do this action'.format(STEWARD_STRING))
 
 
 def test_only_trustee_send_pool_config_writes_false_force_true(
@@ -34,4 +34,4 @@ def test_only_trustee_send_pool_config_writes_false_force_true(
     sdk_wallet_steward = sdk_add_new_nym(looper, sdk_pool_handle,
                                          sdk_wallet_trustee, 'tmpname', STEWARD_STRING)
     req = sdk_pool_config_sent(looper, sdk_pool_handle, sdk_wallet_steward, poolConfigWFFT)
-    sdk_get_bad_response(looper, [req], RequestNackedException, 'role is not accepted')
+    sdk_get_bad_response(looper, [req], RequestNackedException, '{} can not do this action'.format(STEWARD_STRING))
