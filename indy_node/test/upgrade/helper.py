@@ -211,7 +211,7 @@ def check_node_sent_acknowledges_upgrade(
 
 def emulate_restart_pool_for_upgrade(nodes):
     for node in nodes:
-        node.upgrader = node.getUpgrader()
+        node.upgrader = node.init_upgrader()
         node.acknowledge_upgrade()
 
 

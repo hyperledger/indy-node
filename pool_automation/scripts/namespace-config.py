@@ -45,9 +45,11 @@ group_vars:
     - aws_manage
   nodes:
     - indy_node
+    - plugins
   clients:
     - indy_cli
     - perf_scripts
+    - plugins
 """
 
 

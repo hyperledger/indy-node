@@ -162,7 +162,7 @@ def test_user_add_attrs_for_herself_and_get_it(
 
 
 @pytest.mark.skip(reason="INDY-896 ATTR cannot be added without dest")
-def test_attr_with_no_dest_added(nodeSet, tdirWithClientPoolTxns, looper, attributeData):
+def test_attr_with_no_dest_added(nodeSet, looper, attributeData):
     pass
     # user_wallet = Wallet()
     # signer = DidSigner()
@@ -199,8 +199,7 @@ def testGetTxnsNoSeqNo():
 
 @pytest.mark.skip(reason="SOV-560. Come back to it later since "
                          "requestPendingTxns move to wallet")
-def testGetTxnsSeqNo(nodeSet, tdirWithClientPoolTxns,
-                     trustAnchorWallet, looper):
+def testGetTxnsSeqNo(nodeSet, trustAnchorWallet, looper):
     pass
     """
     Test GET_TXNS from client and provide seqNo to fetch from

@@ -107,4 +107,3 @@ make install
 #cd /home/$USER
 #echo "Setup and activate a Python virtual environment..."
 #virtualenv -p python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION} indy-client
-#source ./indy-client/bin/activate

@@ -6,7 +6,6 @@ exclude =
     # have to skip because the file should be fixed
     setup.py,
     # lots unused import because of fixtures
-    indy_client/test,
     indy_node/test,
     # config file
     docker-files/indy_config.py

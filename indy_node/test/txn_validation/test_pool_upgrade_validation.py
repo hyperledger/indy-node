@@ -7,7 +7,7 @@ from plenum.common.util import randomString
 from indy_node.test.upgrade.helper import loweredVersion, sdk_ensure_upgrade_sent
 from indy_common.constants import JUSTIFICATION, JUSTIFICATION_MAX_SIZE
 
-from indy_node.test.upgrade.conftest import validUpgrade, nodeIds
+from indy_node.test.upgrade.conftest import validUpgrade, nodeIds, pckg
 
 
 def testPoolUpgradeFailsIfVersionIsLowerThanCurrent(

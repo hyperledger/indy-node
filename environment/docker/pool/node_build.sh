@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 NODE_NAME="$1"
 NIP="$2"
 NPORT="$3"

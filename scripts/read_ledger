@@ -46,7 +46,6 @@ def read_args():
     parser.add_argument('--count', required=False, action='store_true',
                         help="returns the number of txns in the given ledger")
     parser.add_argument('--node_name', required=False, help="Node's name")
-    parser.add_argument('--client_name', required=False, help="Client's name")
     parser.add_argument('--serializer', required=False, default='json',
                         help="How to represent the data (json by default)")
     parser.add_argument('--network', required=False, type=str,
@@ -55,20 +54,10 @@ def read_args():
     return parser.parse_args()
 
 
-def get_ledger_dir(node_name, client_name, network):
-    if node_name and client_name:
-        print("Either 'node_name' or 'client_name' can be specified")
-        exit()
-
+def get_ledger_dir(node_name, network):
     config = getConfig()
     _network = network if network else config.NETWORK_NAME
     ledger_base_dir = config.LEDGER_DIR
-    if client_name:
-        # Build path to data if --client_name was specified
-        ledger_data_dir = os.path.join(config.CLI_BASE_DIR, _network,
-                                       config.clientDataDir, client_name)
-        return ledger_data_dir
-
     if node_name:
         # Build path to data if --node_name was specified
         ledger_data_dir = os.path.join(ledger_base_dir, _network, _DATA, node_name)
@@ -178,7 +167,7 @@ if __name__ == '__main__':
     args = read_args()
     config = getConfig()
 
-    ledger_data_dir = get_ledger_dir(args.node_name, args.client_name, args.network)
+    ledger_data_dir = get_ledger_dir(args.node_name, args.network)
     read_copy_ledger_data_dir = None
     try:
         # RocksDB supports real read-only mode and does not need to have a ledger copy.

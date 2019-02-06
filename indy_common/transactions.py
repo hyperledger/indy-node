@@ -33,3 +33,10 @@ class IndyTransactions(Transactions):
 
     POOL_RESTART = "118"
     VALIDATOR_INFO = "119"
+
+    @staticmethod
+    def get_name_from_code(code: str):
+        try:
+            return IndyTransactions(code).name
+        except ValueError:
+            return "Unknown_transaction_type"

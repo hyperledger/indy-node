@@ -460,7 +460,7 @@ def testSendNodeSuccessIfDataContainsUnknownField(
                                                         sdk_pool_handle,
                                                         json.dumps(node_request))
     sdk_get_bad_response(looper, [request_couple], RequestRejectedException,
-                         'not found in authorized map')
+                         'action is not allowed')
     ensurePoolIsOperable(looper, sdk_pool_handle, steward_wallet)
 
 

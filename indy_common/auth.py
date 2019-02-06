@@ -4,7 +4,7 @@ from stp_core.common.log import getlogger
 
 from indy_common.constants import OWNER, POOL_UPGRADE, TRUST_ANCHOR, NYM, \
     POOL_CONFIG, SCHEMA, CLAIM_DEF, \
-    POOL_RESTART, VALIDATOR_INFO
+    POOL_RESTART, VALIDATOR_INFO, NETWORK_MONITOR
 from indy_common.roles import Roles
 
 logger = getlogger()
@@ -71,7 +71,7 @@ def generate_auth_map(valid_roles, anyone_can_write=None):
 
 
 class Authoriser:
-    ValidRoles = (TRUSTEE, STEWARD, TRUST_ANCHOR, None)
+    ValidRoles = (TRUSTEE, STEWARD, TRUST_ANCHOR, NETWORK_MONITOR, None)
 
     auth_map = None
 
