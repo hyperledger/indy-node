@@ -1,4 +1,3 @@
-import sys
 import pytest
 import json
 
@@ -9,32 +8,22 @@ from indy.did import create_and_store_my_did
 from plenum.common.constants import (
     TRUSTEE, STEWARD, NYM, TXN_TYPE, TARGET_NYM, VERKEY, ROLE,
     CURRENT_PROTOCOL_VERSION)
-from plenum.common.exceptions import RequestRejectedException, UnauthorizedClientRequest
+from plenum.common.exceptions import UnauthorizedClientRequest
 from plenum.common.signer_did import DidSigner
 from plenum.common.member.member import Member
-from plenum.test.helper import sdk_gen_request, sdk_sign_request_objects, sdk_sign_and_submit_op, sdk_get_and_check_replies
-from plenum.test.pool_transactions.helper import sdk_add_new_nym
+from plenum.test.helper import sdk_gen_request, sdk_sign_request_objects
 
 from indy_common.types import Request
 from indy_common.roles import Roles
+
 from indy_node.test.helper import createUuidIdentifierAndFullVerkey
 
 #   TODO
 #   - more specific string patterns for auth exc check
 #   - ANYONE_CAN_WRITE=True case
-#
-#   - cases when did doesn't have a verkey (no validation)
-#   - check unnecessary imports
-
-# signers for edit:
-# - creator: [Roles]
-# - self: []
-
-# FIXTURES
 
 
-# FIXME class name
-class DIDWallet(object):
+class DID(object):
     def __init__(self, did=None, role=Roles.IDENTITY_OWNER, verkey=None, creator=None, wallet_handle=None):
         self.did = did
         self.role = role
@@ -55,20 +44,20 @@ class EnumBase(Enum):
 
 ActionIds = Enum('ActionIds', 'add edit', type=EnumBase)
 
-
-# params for add:
+# params for addition:
 # - signer:
 #   - role: Roles
 # - dest:
 #   - verkey in NYM: omitted, None, val
 #   - role: Roles, omitted
+NYMAddDestRoles = Enum(
+    'NYMAddDestRoles',
+    [(r.name, r.value) for r in Roles] + [('omitted', 'omitted')],
+    type=EnumBase)
 
-
-NYMAddDestRoles = Enum('NYMAddDestRoles', [(r.name, r.value) for r in Roles] + [('omitted', 'omitted')], type=EnumBase)
 NYMAddDestVerkeys = Enum('NYMAddDestVerkeys', 'none val omitted', type=EnumBase)
 
-
-# params for edit:
+# params for edition:
 # - signer:
 #   - [self, creator] + [other], where other = any of Roles
 # - dest:
@@ -76,7 +65,6 @@ NYMAddDestVerkeys = Enum('NYMAddDestVerkeys', 'none val omitted', type=EnumBase)
 #   - verkey in ledger: None, val
 #   - role: Roles, omitted
 #   - verkey in NYM: same, new (not None), demote(None), omitted
-
 LedgerDIDVerkeys = Enum('LedgerDIDVerkeys', 'none val', type=EnumBase)
 LedgerDIDRoles = Roles
 
@@ -89,14 +77,17 @@ NYMEditSignerTypes = Enum(
 NYMEditDestRoles = NYMAddDestRoles
 NYMEditDestVerkeys = Enum('NYMEditDestVerkeys', 'same new demote omitted', type=EnumBase)
 
+
 dids = {}
 did_editor_others = {}
 did_provisioners = did_editor_others
 
+# FIXTURES
+
 
 @pytest.fixture(scope="module")
 def trustee(sdk_wallet_trustee):
-    return DIDWallet(did=sdk_wallet_trustee[1], role=Roles.TRUSTEE, wallet_handle=sdk_wallet_trustee[0])
+    return DID(did=sdk_wallet_trustee[1], role=Roles.TRUSTEE, wallet_handle=sdk_wallet_trustee[0])
 
 
 @pytest.fixture(scope="module")
@@ -129,7 +120,7 @@ def poolTxnData(looper, poolTxnData, trustee):
                     json.dumps({'seed': data['seeds'][did_name]}))
             )
 
-        return DIDWallet(
+        return DID(
             did=t_sgnr.identifier, role=role, verkey=verkey,
             creator=trustee, wallet_handle=trustee.wallet_handle
         )
@@ -145,60 +136,6 @@ def poolTxnData(looper, poolTxnData, trustee):
         did_editor_others[dr] = _add_did(dr, "{}-other".format(dr.name))
 
     return data
-
-
-def auth_check(action_id, signer, op, dest_ledger=None):
-    op_role = Roles(op[ROLE]) if ROLE in op else None
-
-    def check_promotion():
-        # omitted role means IDENTITY_OWNER
-        if op_role in (None, Roles.IDENTITY_OWNER):
-            return signer.role in (Roles.TRUSTEE, Roles.STEWARD, Roles.TRUST_ANCHOR)
-        elif op_role in (Roles.TRUSTEE, Roles.STEWARD):
-            return signer.role == Roles.TRUSTEE
-        elif op_role in (Roles.TRUST_ANCHOR, Roles.NETWORK_MONITOR):
-            return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
-
-    def check_demotion(is_self, is_owner):
-        if op_role in (Roles.TRUSTEE, Roles.STEWARD):
-            return signer.role == Roles.TRUSTEE
-        elif op_role == Roles.TRUST_ANCHOR:
-            return (signer.role == Roles.TRUSTEE)
-            # FIXME INDY-1968: uncomment when the task is addressed
-            # return ((signer.role == Roles.TRUSTEE) or
-            #        (signer.role == Roles.TRUST_ANCHOR and
-            #            is_self and is_owner))
-        elif op_role == Roles.NETWORK_MONITOR:
-            return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
-        # FIXME INDY-1969: remove when the task is addressed
-        elif op_role == Roles.IDENTITY_OWNER:
-            return is_owner
-        else:
-            return False
-
-    if action_id == ActionIds.add:
-        return check_promotion()
-
-    elif action_id == ActionIds.edit:
-        is_self = signer.did == dest_ledger.did
-        is_owner = signer == (dest_ledger if dest_ledger.verkey is not None else dest_ledger.creator)
-
-        if (VERKEY in op) and (not is_owner):
-            return False
-
-        if ROLE in op:
-            if dest_ledger.role == Roles.IDENTITY_OWNER:
-                if op_role != Roles.IDENTITY_OWNER:  # promotion of existent DID
-                    return False  # FIXME INDY-1971: uncomment when the task is addressed
-
-            if op_role == Roles.IDENTITY_OWNER:  # demotion of existent DID
-                return check_demotion(is_self, is_owner)
-            elif is_self and dest_ledger.role == op_role:
-                return True  # TODO what is a case here, is it correctly designed
-        else:
-            return True
-
-    return False
 
 
 @pytest.fixture(scope="module", params=list(Roles))
@@ -306,14 +243,68 @@ def edit_op(edited, edited_nym_role, edited_nym_verkey):
 
 # TEST HELPERS
 
-def sign_and_validate(looper, node, action_id, signer, op, dest_ledger=None):
+def auth_check(action_id, signer, op, did_ledger=None):
+    op_role = Roles(op[ROLE]) if ROLE in op else None
+
+    def check_promotion():
+        # omitted role means IDENTITY_OWNER
+        if op_role in (None, Roles.IDENTITY_OWNER):
+            return signer.role in (Roles.TRUSTEE, Roles.STEWARD, Roles.TRUST_ANCHOR)
+        elif op_role in (Roles.TRUSTEE, Roles.STEWARD):
+            return signer.role == Roles.TRUSTEE
+        elif op_role in (Roles.TRUST_ANCHOR, Roles.NETWORK_MONITOR):
+            return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
+
+    def check_demotion():
+        if did_ledger.role in (Roles.TRUSTEE, Roles.STEWARD):
+            return signer.role == Roles.TRUSTEE
+        elif did_ledger.role == Roles.TRUST_ANCHOR:
+            return (signer.role == Roles.TRUSTEE)
+            # FIXME INDY-1968: uncomment when the task is addressed
+            # return ((signer.role == Roles.TRUSTEE) or
+            #        (signer.role == Roles.TRUST_ANCHOR and
+            #            is_self and is_owner))
+        elif did_ledger.role == Roles.NETWORK_MONITOR:
+            return signer.role in (Roles.TRUSTEE, Roles.STEWARD)
+
+    if action_id == ActionIds.add:
+        return check_promotion()
+
+    elif action_id == ActionIds.edit:
+        # is_self = signer.did == did_ledger.did
+        is_owner = signer == (did_ledger if did_ledger.verkey is not None else
+                              did_ledger.creator)
+
+        if (VERKEY in op) and (not is_owner):
+            return False
+
+        if ROLE in op:
+            if op_role == did_ledger.role:
+                # FIXME INDY-1969: related to the task
+                return is_owner  # TODO what is a case here, is it correctly designed
+
+            elif op_role == Roles.IDENTITY_OWNER:  # demotion of existent DID
+                return check_demotion()
+
+            elif did_ledger.role == Roles.IDENTITY_OWNER:  # promotion of existent DID
+                return check_promotion()
+
+            else:  # role updating: demotion + promotion
+                return (check_demotion() and check_promotion())
+        else:
+            return True
+
+    return False
+
+
+def sign_and_validate(looper, node, action_id, signer, op, did_ledger=None):
     req_obj = sdk_gen_request(op, protocol_version=CURRENT_PROTOCOL_VERSION,
                               identifier=signer.did)
     s_req = sdk_sign_request_objects(looper, signer.wallet_did, [req_obj])[0]
 
     request = Request(**json.loads(s_req))
 
-    if auth_check(action_id, signer, op, dest_ledger):
+    if auth_check(action_id, signer, op, did_ledger):
         node.get_req_handler(txn_type=NYM).validate(request)
     else:
         with pytest.raises(UnauthorizedClientRequest):
@@ -321,6 +312,7 @@ def sign_and_validate(looper, node, action_id, signer, op, dest_ledger=None):
 
 
 # TESTS
+# Note. some fixtures are referred explicitly just to make test nodeid names predictable
 
 def test_nym_add(
         provisioner_role, nym_add_dest_role, nym_add_dest_verkey,
@@ -342,4 +334,4 @@ def test_nym_edit(
         return
 
     if edit_op is not None:  # might be None, means a duplicate test case
-        sign_and_validate(looper, txnPoolNodeSet[0], ActionIds.edit, editor, edit_op, dest_ledger=edited)
+        sign_and_validate(looper, txnPoolNodeSet[0], ActionIds.edit, editor, edit_op, did_ledger=edited)
