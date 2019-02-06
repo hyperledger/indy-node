@@ -78,6 +78,11 @@ def tconf(tconf):
     return tconf
 
 
+@pytest.yield_fixture(scope="session", autouse=True)
+def warncheck(warnfilters):
+    pass
+
+
 def test_end_to_end_replay(looper,
                            tdir,
                            tdirWithPoolTxns,

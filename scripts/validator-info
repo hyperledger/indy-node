@@ -269,8 +269,17 @@ class TransactionsStats(BaseUnknown):
         else:
             return ""
 
+    def items(self):
+        return dict(self.val).items()
+
     def __iter__(self):
         return iter(self.val)
+
+    def __getitem__(self, key):
+        return self.val[key]
+
+    def __setitem__(self, key, value):
+        self.val[key] = value
 
 
 class AverageStats(BaseStats):
@@ -550,21 +559,22 @@ def nagios(vstats):
     if "running" == running:
         state = '0'
 
-    lines = [
-        "{} {}_Total_Config_Transactions config_transactions={} {} Total Config Transactions".format(
-                state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count']['config'],vstats['Node_info']['Name'])
-    ] + [
-        "{} {}_Total_Ledger_Transactions ledger_transactions={} {} Total Ledger Transactions".format(
-            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count']['ledger'],vstats['Node_info']['Name'])
-    ] + [
-        "{} {}_Total_Pool_Transactions pool_transactions={} {} Total Pool Transactions".format(
-            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['transaction-count']['pool'],vstats['Node_info']['Name'])
-    ] + [
-        "{} {}_Read_Transactions_per_second read_transactions_per_second={} {} Read Transactions/Second".format(
-            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['average-per-second']['read-transactions'],vstats['Node_info']['Name'])
+    lines = ["{} {}_Total_{}_Transactions config_transactions={} {} Total {} Transactions".format(
+            state,
+            vstats['Node_info']['Name'],
+            ledger_name.title(),
+            count,
+            vstats['Node_info']['Name'],
+            ledger_name.title())
+            for ledger_name, count in vstats['Node_info']['Metrics']['transaction-count'].items()]
+
+    lines += ["{} {}_Read_Transactions_per_second read_transactions_per_second={} {} Read Transactions/Second".format(
+            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['average-per-second']['read-transactions'],
+            vstats['Node_info']['Name'])
     ] + [
         "{} {}_Write_Transactions_per_second write_transactions_per_second={} {} Write Transactions/Second".format(
-            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['average-per-second']['write-transactions'],vstats['Node_info']['Name'])
+            state,vstats['Node_info']['Name'],vstats['Node_info']['Metrics']['average-per-second']['write-transactions'],
+            vstats['Node_info']['Name'])
     ] + [
         "{} {}_Number_of_Validators number_of_validators={} {} Number of Validators".format(
             state,vstats['Node_info']['Name'],vstats['Pool_info']['Total_nodes_count'],vstats['Node_info']['Name'])

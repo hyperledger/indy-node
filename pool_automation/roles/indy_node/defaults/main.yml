@@ -1,5 +1,5 @@
 ---
-indy_node_build_dir: "{{ namespace_dir | default(inventory_dir, true) | default('.build', true) }}"
+indy_node_build_dir: "{{ namespace_dir | d(inventory_dir, true) | d('.build', true) }}"
 
 indy_node_channel: master
 # TODO remove default values for versions

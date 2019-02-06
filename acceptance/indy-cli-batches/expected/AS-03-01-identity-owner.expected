@@ -54,6 +54,18 @@ did new seed=RandomUser3000000000000000000003 metadata="test identity 3"
 Did "Q8uxmCGdXgLHHtaTwYtVJG" has been created with "~UpRqa9gQ1jsbUBvKYPtWSo" verkey
 Metadata has been saved for DID "Q8uxmCGdXgLHHtaTwYtVJG"
 
+did new seed=NetworkMonitor100000000000000003 metadata="network monitor 1"
+Did "zsFQSgcs9GdmHr6nYgJfj" has been created with "~Y2gktifxXw9J85GXFKpZQ6" verkey
+Metadata has been saved for DID "zsFQSgcs9GdmHr6nYgJfj"
+
+did new seed=NetworkMonitor200000000000000003 metadata="network monitor 2"
+Did "Pn1rJGNmmcKi88B2qo2Emn" has been created with "~usAvjM7QfLR9Qf2bZSBZU" verkey
+Metadata has been saved for DID "Pn1rJGNmmcKi88B2qo2Emn"
+
+did new seed=NetworkMonitor300000000000000003 metadata="network monitor 3"
+Did "NGMUrRk7EDTRunXLgY7KWn" has been created with "~8cXNKb6ztTCHq2w8SWHt5P" verkey
+Metadata has been saved for DID "NGMUrRk7EDTRunXLgY7KWn"
+
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
@@ -63,7 +75,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 22              | 1534005141541903469 | 2018-08-11 16:32:21 |
+| V4SGRU86Z58d6TV7PBUe6f | 16              | 1549370282562758287 | 2019-02-05 12:38:02 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+---------+
@@ -78,7 +90,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 22              | 1534005142314188942 | 2018-08-11 16:32:21 |
+| V4SGRU86Z58d6TV7PBUe6f | 16              | 1549370282808727176 | 2019-02-05 12:38:02 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+---------+
@@ -90,13 +102,94 @@ Data:
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
 
+ledger nym did=zsFQSgcs9GdmHr6nYgJfj role=NETWORK_MONITOR verkey=~Y2gktifxXw9J85GXFKpZQ6
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 17              | 1549370282832263158 | 2019-02-05 12:38:03 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++-----------------------+-------------------------+-----------------+
+| Did                   | Verkey                  | Role            |
++-----------------------+-------------------------+-----------------+
+| zsFQSgcs9GdmHr6nYgJfj | ~Y2gktifxXw9J85GXFKpZQ6 | NETWORK_MONITOR |
++-----------------------+-------------------------+-----------------+
+
+- ledger get-nym did=zsFQSgcs9GdmHr6nYgJfj
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 17              | 1549370283827535887 | 2019-02-05 12:38:03 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+-----------------------+-------------------------+-----------------+
+| Identifier             | Dest                  | Verkey                  | Role            |
++------------------------+-----------------------+-------------------------+-----------------+
+| V4SGRU86Z58d6TV7PBUe6f | zsFQSgcs9GdmHr6nYgJfj | ~Y2gktifxXw9J85GXFKpZQ6 | NETWORK_MONITOR |
++------------------------+-----------------------+-------------------------+-----------------+
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
+ledger nym did=Pn1rJGNmmcKi88B2qo2Emn role=NETWORK_MONITOR verkey=~usAvjM7QfLR9Qf2bZSBZU
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 18              | 1549370283847223239 | 2019-02-05 12:38:04 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+-----------------+
+| Did                    | Verkey                 | Role            |
++------------------------+------------------------+-----------------+
+| Pn1rJGNmmcKi88B2qo2Emn | ~usAvjM7QfLR9Qf2bZSBZU | NETWORK_MONITOR |
++------------------------+------------------------+-----------------+
+
+ledger nym did=Pn1rJGNmmcKi88B2qo2Emn role=
+Nym request has been sent to Ledger.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| From                   | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 19              | 1549370284831536856 | 2019-02-05 12:38:05 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------+
+| Did                    | Role |
++------------------------+------+
+| Pn1rJGNmmcKi88B2qo2Emn | -    |
++------------------------+------+
+
+- ledger get-nym did=Pn1rJGNmmcKi88B2qo2Emn
+Following NYM has been received.
+Metadata:
++------------------------+-----------------+---------------------+---------------------+
+| Identifier             | Sequence Number | Request ID          | Transaction time    |
++------------------------+-----------------+---------------------+---------------------+
+| V4SGRU86Z58d6TV7PBUe6f | 19              | 1549370285851584273 | 2019-02-05 12:38:05 |
++------------------------+-----------------+---------------------+---------------------+
+Data:
++------------------------+------------------------+------------------------+------+
+| Identifier             | Dest                   | Verkey                 | Role |
++------------------------+------------------------+------------------------+------+
+| V4SGRU86Z58d6TV7PBUe6f | Pn1rJGNmmcKi88B2qo2Emn | ~usAvjM7QfLR9Qf2bZSBZU | -    |
++------------------------+------------------------+------------------------+------+
+
+did use V4SGRU86Z58d6TV7PBUe6f
+Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
+
 ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=TRUST_ANCHOR verkey=~YPZot1kM4DLwvsX6mtcKd9
 Nym request has been sent to Ledger.
 Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 23              | 1534005142350312943 | 2018-08-11 16:32:22 |
+| V4SGRU86Z58d6TV7PBUe6f | 20              | 1549370285876260206 | 2019-02-05 12:38:06 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+--------------+
@@ -111,7 +204,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 23              | 1534005143229132303 | 2018-08-11 16:32:22 |
+| V4SGRU86Z58d6TV7PBUe6f | 20              | 1549370286857379676 | 2019-02-05 12:38:06 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+--------------+
@@ -129,7 +222,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 24              | 1534005143359076898 | 2018-08-11 16:32:23 |
+| V4SGRU86Z58d6TV7PBUe6f | 21              | 1549370286883812079 | 2019-02-05 12:38:07 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+------+
@@ -144,7 +237,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 24              | 1534005144255440866 | 2018-08-11 16:32:23 |
+| V4SGRU86Z58d6TV7PBUe6f | 21              | 1549370287877402445 | 2019-02-05 12:38:07 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+------+
@@ -157,7 +250,7 @@ did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
 - ledger nym did=V4SGRU86Z58d6TV7PBUe6f role= 
-Transaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of V4SGRU86Z58d6TV7PBUe6f
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
 
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
@@ -168,7 +261,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 25              | 1534005144845760413 | 2018-08-11 16:32:25 |
+| V4SGRU86Z58d6TV7PBUe6f | 22              | 1549370288771081241 | 2019-02-05 12:38:09 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+---------+
@@ -183,7 +276,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 25              | 1534005146333582676 | 2018-08-11 16:32:25 |
+| V4SGRU86Z58d6TV7PBUe6f | 22              | 1549370289873608923 | 2019-02-05 12:38:09 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+---------+
@@ -196,7 +289,7 @@ did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
 - ledger nym did=FiAsNdcWnpB2L22ZUGyKHa role=TRUSTEE verkey=~BZHjLX8NYwJXPTE746hn6Y
-Transaction has been rejected: None role cannot add TRUSTEE
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
 
 - ledger get-nym did=FiAsNdcWnpB2L22ZUGyKHa
 NYM not found
@@ -205,7 +298,7 @@ did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
 - ledger nym did=AhqUV2zHYdNaWLFCCe7xCn role=
-Transaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of AhqUV2zHYdNaWLFCCe7xCn
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
 
 did use AhqUV2zHYdNaWLFCCe7xCn
 Did "AhqUV2zHYdNaWLFCCe7xCn" has been set as active
@@ -216,7 +309,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| AhqUV2zHYdNaWLFCCe7xCn | 26              | 1534005147935406313 | 2018-08-11 16:32:28 |
+| AhqUV2zHYdNaWLFCCe7xCn | 23              | 1549370291764604478 | 2019-02-05 12:38:12 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+--------------+
@@ -231,7 +324,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| AhqUV2zHYdNaWLFCCe7xCn | 26              | 1534005149385641029 | 2018-08-11 16:32:28 |
+| AhqUV2zHYdNaWLFCCe7xCn | 23              | 1549370292904404043 | 2019-02-05 12:38:12 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+--------------+
@@ -244,7 +337,7 @@ did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
 - ledger nym did=CbPwHxKEibPhV4pgXWpu26 role=STEWARD verkey=~MviYa49QADQXAM68WSiLPD
-Transaction has been rejected: None role cannot add STEWARD
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
 
 - ledger get-nym did=CbPwHxKEibPhV4pgXWpu26
 NYM not found
@@ -253,7 +346,7 @@ did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
 - ledger nym did=DriVwCMbtEgkmoEHKin6Ah role=
-Transaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of DriVwCMbtEgkmoEHKin6Ah
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
 
 did use DriVwCMbtEgkmoEHKin6Ah
 Did "DriVwCMbtEgkmoEHKin6Ah" has been set as active
@@ -264,7 +357,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| DriVwCMbtEgkmoEHKin6Ah | 27              | 1534005150982291009 | 2018-08-11 16:32:31 |
+| DriVwCMbtEgkmoEHKin6Ah | 24              | 1549370294812840379 | 2019-02-05 12:38:15 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+------+
@@ -279,7 +372,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | Identifier             | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| DriVwCMbtEgkmoEHKin6Ah | 27              | 1534005152410574550 | 2018-08-11 16:32:31 |
+| DriVwCMbtEgkmoEHKin6Ah | 24              | 1549370295912125802 | 2019-02-05 12:38:15 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+------------------------+-------------------------+------+
@@ -292,7 +385,7 @@ did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
 - ledger nym did=2b6xTx2HniDU77nxHm6zWB role=TRUST_ANCHOR verkey=~HF34ymwfTJngb8zFDmCyvX
-Transaction has been rejected: None role cannot add TRUST_ANCHOR
+Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
 
 - ledger get-nym did=2b6xTx2HniDU77nxHm6zWB
 NYM not found
@@ -301,7 +394,7 @@ did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
 - ledger nym did=Fk9ENxnz1ztDgdivQBJTCZ verkey=~NT9ANFeDhCLKDg5PNKZXKK
-Transaction has been rejected: None role cannot add None role
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 TRUST_ANCHOR signature is required
 
 - ledger get-nym did=Fk9ENxnz1ztDgdivQBJTCZ
 NYM not found
@@ -309,14 +402,38 @@ NYM not found
 did use LBbKEeczA9iL21p4Kgxcuf
 Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
 
+- ledger nym did=NGMUrRk7EDTRunXLgY7KWn role=NETWORK_MONITOR verkey=~NGMUrRk7EDTRunXLgY7KWn
+Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
+
+did use LBbKEeczA9iL21p4Kgxcuf
+Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
+
+- ledger nym did=zsFQSgcs9GdmHr6nYgJfj role=
+Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
+
+did use zsFQSgcs9GdmHr6nYgJfj
+Did "zsFQSgcs9GdmHr6nYgJfj" has been set as active
+
+ledger get-validator-info nodes=Node1
+Validator Info:
+{
+	"Node1": {"data":{"Extractions":{"indy-node_status":["    indy-node.service - Indy Node","   Loaded: loaded (/etc/systemd/system/indy-node.service; disabled; vendor preset: enabled)","   Active: active (running) since Tue 2019-02-05 11:23:03 UTC; 1h 15min ago"," Main PID: 40 (python3)","   CGroup: /docker/fc2b61a8d0f33566138ccf94879482487b6d9f65f237e962fbd49bf33f8be90a/system.slice/indy-node.service","                  40 python3 -O /usr/local/bin/start_indy_node Node1 0.0.0.0 9701 0.0.0.0 9702","                 492 /bin/sh -c systemctl status indy-node","                 493 systemctl status indy-node",""],"journalctl_exceptions":[""],"node-control status":["    indy-node-control.service - Service for upgrade of existing Indy Node and other operations","   Loaded: loaded (/etc/systemd/system/indy-node-control.service; disabled; vendor preset: enabled)","   Active: active (running) since Tue 2019-02-05 11:23:09 UTC; 1h 15min ago"," Main PID: 67 (python3)","   CGroup: /docker/fc2b61a8d0f33566138ccf94879482487b6d9f65f237e962fbd49bf33f8be90a/system.slice/indy-node-control.service","                 67 python3 -O /usr/local/bin/start_node_control_tool --hold-ext ",""],"stops_stat":null,"upgrade_log":""},"Hardware":{"HDD_used_by_node":"0 MBs"},"Memory_profiler":["                            types |   # objects |   total size","================================= | =========== | ============","                      <class 'str |       63896 |      6.59 MB","                     <class 'dict |        9759 |      5.38 MB","                     <class 'code |       13313 |      1.83 MB","                     <class 'type |        1797 |      1.79 MB","                      <class 'set |        3798 |      1.06 MB","                     <class 'list |        4393 |    631.39 KB","                    <class 'tuple |        8081 |    533.47 KB","                  <class 'weakref |        5631 |    439.92 KB","              <class 'abc.ABCMeta |         307 |    318.60 KB","  <class 'collections.OrderedDict |         303 |    316.91 KB"],"Node_info":{"BLS_key":"4N8aUNHSgjQVgkpm8nhNEfDf6txHznoYREg9kirmJrkivgL4oSEimFF6nsQ6M41QvhM2Z33nves5vfSn9n1UwNFJBYtWVnHYMATn76vLuL3zU88KyeAYcHfsih3He6UHcXDxcaecHVz6jhCYz1P2UZn2bDVruL5wXpehgBfBaLKm3Ba","Catchup_status":{"Last_txn_3PC_keys":{"0":{},"1":{},"2":{}},"Ledger_statuses":{"0":"synced","1":"synced","2":"synced"},"Number_txns_in_catchup":{"0":0,"1":0,"2":0},"Received_LedgerStatus":"","Waiting_consistency_proof_msgs":{"0":null,"1":null,"2":null}},"Client_ip":"0.0.0.0","Client_port":9702,"Client_protocol":"tcp","Committed_ledger_root_hashes":{"0":"b'BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS'","1":"b'D8wUCVY2ZDaghiGQwtffKY47aeGfvEkYNfjS2HtCgHGg'","2":"b'GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn'"},"Committed_state_root_hashes":{"0":"b'GHGNKae8zzhVv172zFHs6Xu9fMY4MrKxSrcH5kHzcqsm'","1":"b'3zAKKLRYtFWzikGCyLjxwdx1t5G5S11i3Dz99baVnUxZ'","2":"b'DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA'"},"Count_of_replicas":2,"Freshness_status":{"0":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 12:33:44+00:00"},"1":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 12:38:18+00:00"},"2":{"Has_write_consensus":true,"Last_updated_time":"2019-02-05 12:33:44+00:00"}},"Metrics":{"Delta":0.1,"Lambda":240,"Omega":20,"average-per-second":{"read-transactions":0.0017813194,"write-transactions":0.0037853037},"avg backup throughput":null,"client avg request latencies":{"0":null,"1":null},"instances started":{"0":379.687482402,"1":379.688555675},"master throughput":null,"master throughput ratio":null,"max master request latencies":0,"ordered request counts":{"0":17,"1":18},"ordered request durations":{"0":16.494385456,"1":14.678765787},"throughput":{"0":null,"1":null},"total requests":17,"transaction-count":{"config":0,"ledger":24,"pool":4},"uptime":4491},"Mode":"participating","Name":"Node1","Node_ip":"0.0.0.0","Node_port":9701,"Node_protocol":"tcp","Replicas_status":{"Node1:0":{"Last_ordered_3PC":[0,59],"Primary":"Node1:0","Stashed_txns":{"Stashed_PrePrepare":0,"Stashed_checkpoints":0},"Watermarks":"0:300"},"Node1:1":{"Last_ordered_3PC":[0,18],"Primary":"Node2:1","Stashed_txns":{"Stashed_PrePrepare":0,"Stashed_checkpoints":0},"Watermarks":"0:300"}},"Requests_timeouts":{"Ordering_phase_req_timeouts":0,"Propagates_phase_req_timeouts":0},"Uncommitted_ledger_root_hashes":{},"Uncommitted_ledger_txns":{"0":{"Count":0},"1":{"Count":0},"2":{"Count":0}},"Uncommitted_state_root_hashes":{"0":"b'GHGNKae8zzhVv172zFHs6Xu9fMY4MrKxSrcH5kHzcqsm'","1":"b'3zAKKLRYtFWzikGCyLjxwdx1t5G5S11i3Dz99baVnUxZ'","2":"b'DfNLmH4DAHTKv63YPFJzuRdeEtVwF5RtVnvKYHd8iLEA'"},"View_change_status":{"IC_queue":{"1":{"Message":"INSTANCE_CHANGE{'viewNo': 1, 'reason': 26}","Vouters":["Node4","Node3"]}},"Last_complete_view_no":0,"Last_view_change_started_at":"1970-01-01 00:00:00","VCDone_queue":{"Node1":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node2":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node3":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]],"Node4":["Node1",[[0,4,"BZsZu8aDkPaFvB1eN4UNqNJWbH2DXaJLZjV2QY8YHHTS"],[1,15,"HTgmFHvgvaBpwDyZjgXwJisjxzPYQWVfZQzY22zutkqM"],[2,0,"GKot5hBsd81kMupNCXHaqbhv3huEbxAFMLnpcX2hniwn"]]]},"VC_in_progress":false,"View_No":0},"did":"Gw6pDLhcBcoQesN72qfotTgFa7cbuqZpkX3Xo6pLhPhv","verkey":"33nHHYKnqmtGAVfZZGoP8hpeExeH45Fo8cKmd5mcnKYk7XgWNBxkkKJ"},"Pool_info":{"Blacklisted_nodes":[],"Quorums":"{'observer_data': Quorum(2), 'commit': Quorum(3), 'ledger_status_last_3PC': Quorum(2), 'propagate': Quorum(2), 'weak': Quorum(2), 'backup_instance_faulty': Quorum(2), 'view_change': Quorum(3), 'timestamp': Quorum(2), 'propagate_primary': Quorum(2), 'bls_signatures': Quorum(3), 'consistency_proof': Quorum(2), 'checkpoint': Quorum(2), 'view_change_done': Quorum(3), 'f': 1, 'election': Quorum(3), 'reply': Quorum(2), 'ledger_status': Quorum(2), 'prepare': Quorum(2), 'strong': Quorum(3), 'same_consistency_proof': Quorum(2)}","Reachable_nodes":[["Node1",0],["Node2",1],["Node3",null],["Node4",null]],"Reachable_nodes_count":4,"Read_only":false,"Suspicious_nodes":"","Total_nodes_count":4,"Unreachable_nodes":[],"Unreachable_nodes_count":0,"f_value":1},"Protocol":{},"Software":{"Indy_packages":["hi  indy-node                  1.6.783                               amd64        Indy node","hi  indy-plenum                1.6.670                               amd64        Plenum Byzantine Fault Tolerant Protocol","ii  libindy                    1.8.0~963                             amd64        This is the official SDK for Hyperledger Indy, which provides a","hi  libindy-crypto             0.4.5                                 amd64        This is the shared crypto libirary for Hyperledger Indy components.","hi  python3-indy-crypto        0.4.5                                 amd64        This is the official wrapper for Hyperledger Indy Crypto library (https://www.hyperledger.org/projects).",""],"Installed_packages":["timeout-decorator 0.4.0","sortedcontainers 1.5.7","six 1.11.0","sha3 0.2.1","setuptools 40.7.3","semver 2.7.9","rlp 0.5.1","pyzmq 17.0.0","python3-indy 1.8.0","python-rocksdb 0.6.9","python-dateutil 2.6.1","pytest 3.6.4","pytest-asyncio 0.10.0","Pympler 0.5","Pygments 2.2.0","py 1.7.0","psutil 5.4.3","portalocker 0.5.7","pluggy 0.7.1","pip 9.0.3","orderedset 2.0","more-itertools 5.0.0","libnacl 1.6.1","jsonpickle 0.9.6","ioflo 1.5.4","intervaltree 2.1.0","indy-plenum 1.6.670","indy-node 1.6.783","indy-crypto 0.4.5-23","distro 1.3.0","base58 1.0.0","attrs 18.2.0","atomicwrites 1.3.0","async-generator 1.10","wheel 0.29.0","wcwidth 0.1.6","ujson 1.33","PyNaCl 1.0.1","pycparser 2.14","prompt-toolkit 0.57","ply 3.7","msgpack-python 0.4.6","leveldb 0.1","cffi 1.5.2"],"OS_version":"Linux-4.13.0-36-generic-x86_64-with-Ubuntu-16.04-xenial","indy-node":"1.6.783","sovrin":"unknown"},"Update_time":"Tuesday, February 5, 2019 12:38:19 PM +0000","response-version":"0.0.1","timestamp":1549370299},"identifier":"zsFQSgcs9GdmHr6nYgJfj","reqId":1549370299854984940,"type":"119"}
+}
+
+did use LBbKEeczA9iL21p4Kgxcuf
+Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
+
 - ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUST_ANCHOR
-Transaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of Q8uxmCGdXgLHHtaTwYtVJG
+Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
 
 - ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=STEWARD
-Transaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of Q8uxmCGdXgLHHtaTwYtVJG
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
 
 - ledger nym did=Q8uxmCGdXgLHHtaTwYtVJG role=TRUSTEE
-Transaction has been rejected: LBbKEeczA9iL21p4Kgxcuf is neither Trustee nor owner of Q8uxmCGdXgLHHtaTwYtVJG
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
+
+- ledger nym did=Pn1rJGNmmcKi88B2qo2Emn role=NETWORK_MONITOR
+Transaction has been rejected: Rule for this action is: 1 STEWARD signature is required OR 1 TRUSTEE signature is required
 
 did use V4SGRU86Z58d6TV7PBUe6f
 Did "V4SGRU86Z58d6TV7PBUe6f" has been set as active
@@ -330,7 +447,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 28              | 1534005157150470834 | 2018-08-11 16:32:43 |
+| V4SGRU86Z58d6TV7PBUe6f | 25              | 1549370304053585090 | 2019-02-05 12:38:25 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+------+
@@ -348,7 +465,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| V4SGRU86Z58d6TV7PBUe6f | 29              | 1534005163849343051 | 2018-08-11 16:32:44 |
+| V4SGRU86Z58d6TV7PBUe6f | 26              | 1549370305181613509 | 2019-02-05 12:38:26 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +------------------------+-------------------------+------+
@@ -361,13 +478,14 @@ did use X3zYajU7gbz9Pu8k6E7Ppf
 Did "X3zYajU7gbz9Pu8k6E7Ppf" has been set as active
 
 did rotate-key seed=RandomUserForRotateKey0NewKey003
-Verkey for did "X3zYajU7gbz9Pu8k6E7Ppf" has been updated. New verkey: "DHUqLyUnhjBgsEKHCm3cNekC29rvx6STQAgvepPRLjAH"
+Verkey for did "X3zYajU7gbz9Pu8k6E7Ppf" has been updated
+New verkey is "DHUqLyUnhjBgsEKHCm3cNekC29rvx6STQAgvepPRLjAH"
 
 did use UffJCJngTXc1o84dQ7aEUb
 Did "UffJCJngTXc1o84dQ7aEUb" has been set as active
 
 - ledger nym did=X3zYajU7gbz9Pu8k6E7Ppf verkey=~3ZDo6g4ZDRKGauKrR452xU
-Transaction has been rejected: UffJCJngTXc1o84dQ7aEUb is neither Trustee nor owner of X3zYajU7gbz9Pu8k6E7Ppf
+Transaction has been rejected: None role can not touch verkey field since only the owner can modify it
 
 did use X3zYajU7gbz9Pu8k6E7Ppf
 Did "X3zYajU7gbz9Pu8k6E7Ppf" has been set as active
@@ -378,7 +496,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| X3zYajU7gbz9Pu8k6E7Ppf | 31              | 1534005166455425333 | 2018-08-11 16:32:47 |
+| X3zYajU7gbz9Pu8k6E7Ppf | 28              | 1549370308065544239 | 2019-02-05 12:38:29 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +--------------------------------------+
@@ -393,7 +511,7 @@ Metadata:
 +------------------------+-----------------+---------------------+---------------------+
 | From                   | Sequence Number | Request ID          | Transaction time    |
 +------------------------+-----------------+---------------------+---------------------+
-| X3zYajU7gbz9Pu8k6E7Ppf | 32              | 1534005167849981265 | 2018-08-11 16:32:48 |
+| X3zYajU7gbz9Pu8k6E7Ppf | 29              | 1549370309197825755 | 2019-02-05 12:38:30 |
 +------------------------+-----------------+---------------------+---------------------+
 Data:
 +--------------------------------------+
@@ -415,11 +533,28 @@ Did "UffJCJngTXc1o84dQ7aEUb" has been set as active
 Transaction has been rejected: Only identity owner/guardian can add attribute for that identity
 
 - ledger schema name=IdentityOwnerSchema version=1.0 attr_names=name,age
-Transaction has been rejected: None role cannot add schema
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 TRUST_ANCHOR signature is required
 
 - ledger cred-def schema_id=1 signature_type=CL primary={"n":"1","s":"2","rms":"3","r":{"age":"4","name":"5"},"rctxt":"6","z":"7"} tag=3
-Transaction has been rejected: None role cannot add claim def
+Transaction has been rejected: Mentioned seqNo (1) isn't seqNo of the schema.
 
-Wallet "AS-03-wallet-owner" has been closed
+did use LBbKEeczA9iL21p4Kgxcuf
+Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
+
+- ledger pool-restart action=start datetime=2020-01-25T12:49:05.258870+00:00 nodes=Node4
+Restart pool response for node Node4:
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required
+
+did use LBbKEeczA9iL21p4Kgxcuf
+Did "LBbKEeczA9iL21p4Kgxcuf" has been set as active
+
+- ledger get-validator-info nodes=Node1
+Validator Info:
+Transaction has been rejected: Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required OR 1 NETWORK_MONITOR signature is required
+{
+
+}
+
 Pool "AS-0301-owner" has been disconnected
+Wallet "AS-03-wallet-owner" has been closed
 Goodbye...

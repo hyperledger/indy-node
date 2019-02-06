@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 IMAGE_NAME="indyclient"
 SCRIPT_DIR=$(dirname $0)
 
