@@ -6,10 +6,6 @@ GENERAL_CONFIG_DIR="/etc/indy"
 GENERAL_DATA_DIR="/var/lib/indy"
 GENERAL_LOG_DIR="/var/log/indy"
 
-CLI_BASE_DIR="/home/indy/.indy-cli"
-CLI_NETWORKS_DIR="$CLI_BASE_DIR/networks"
-CLI_WALLETS_DIR="$CLI_BASE_DIR/wallets"
-
 INSTALL_DIR='/usr/local/lib/python3.5/dist-packages'
 
 NOFILES_SOFT_LIMIT=65536
@@ -17,11 +13,6 @@ NOFILES_HARD_LIMIT=131072
 
 CLIENT_CONNECTIONS_LIMIT=500
 
-
-# workaround when .indy become regular file
-if [ -f $CLI_BASE_DIR ]; then
-    rm $CLI_BASE_DIR
-fi
 
 # create general indy config folder if does not exist
 mkdir -p $GENERAL_CONFIG_DIR
@@ -42,13 +33,6 @@ fi
 chmod -R ug+rwx $GENERAL_CONFIG_DIR
 chmod -R ug+rwx $GENERAL_DATA_DIR
 chmod -R ug+rwx $GENERAL_LOG_DIR
-
-# create indy cli folder if does not exist
-mkdir -p $CLI_BASE_DIR
-mkdir -p $CLI_NETWORKS_DIR
-mkdir -p $CLI_WALLETS_DIR
-chown -R indy:indy $CLI_BASE_DIR
-chmod -R ug+rwx $CLI_BASE_DIR
 
 
 # init_indy_node script

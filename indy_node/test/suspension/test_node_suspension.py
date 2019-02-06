@@ -43,6 +43,7 @@ def testDemoteNodeWhichWasNeverActive(looper, nodeSet, sdk_pool_handle,
                                 allPluginsPath,
                                 services=None)
 
+    looper.runFor(tconf.PROPAGATE_REQUEST_DELAY * 1.5)
     for node in nodeSet:
         txn = [t for _, t in node.poolLedger.getAllTxn()][-1]
         txn_data = get_payload_data(txn)

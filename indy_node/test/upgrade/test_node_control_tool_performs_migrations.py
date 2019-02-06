@@ -1,13 +1,15 @@
 import multiprocessing
 import os
 
+from indy_node.utils.migration_tool import _get_current_platform
+
 from stp_core.loop.eventually import eventually
-from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, sendUpgradeMessage, nodeControlGeneralMonkeypatching
-
-
+from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, sendUpgradeMessage, \
+    nodeControlGeneralMonkeypatching
 
 m = multiprocessing.Manager()
 whitelist = ['Unexpected error in _upgrade test']
+
 
 def testNodeControlPerformsMigrations(monkeypatch, tdir, looper, tconf):
     msg = 'test'
@@ -33,3 +35,7 @@ def testNodeControlPerformsMigrations(monkeypatch, tdir, looper, tconf):
         looper.run(eventually(checkMigration))
     finally:
         nct.stop()
+
+
+def test_get_current_platform():
+    _get_current_platform()
