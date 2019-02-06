@@ -13,7 +13,7 @@ from plenum.test.helper import sdk_get_bad_response, sdk_sign_and_submit_req
 from plenum.common.constants import VERSION
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
-from indy_node.test.upgrade.conftest import validUpgrade, nodeIds
+from indy_node.test.upgrade.conftest import validUpgrade, nodeIds, pckg
 
 
 def sdk_pool_bad_config_sent(looper, sdk_pool_handle, sdk_wallet_trustee, change_writes,

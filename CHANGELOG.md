@@ -1,5 +1,10 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.6.82](#1682)
+
+* [1.6.80](#1680)
+
+* [1.6.79](#1679)
 
 * [1.6.78](#1678)
 
@@ -25,17 +30,133 @@
 
 * [1.0](#10)
 
-
-
-
-
-
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
 
+## 1.6.82 
+### Release date: Dec 20th, 2018
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.6.57 |
+| indy-node | 1.6.82 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Changes - Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Add old instance change messages discarding |  | [INDY-1909](https://jira.hyperledger.org/browse/INDY-1909) |
+| Increase ToleratePrimaryDisconnection and bind re-try time |  | [INDY-1836](https://jira.hyperledger.org/browse/INDY-1836) |
+| Add check for None of replica's primary name during logging |  | [INDY-1926](https://jira.hyperledger.org/browse/INDY-1926) |
+
+## 1.6.80 
+### Release date: Dec 13th, 2018
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.6.55 |
+| indy-node | 1.6.80 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Issuing a pool restart does not work if there is no consensus |  | [INDY-1896](https://jira.hyperledger.org/browse/INDY-1896) |
+| Intermittent test failure: test_primary_selection_increase_f |  | [INDY-1872](https://jira.hyperledger.org/browse/INDY-1872) |
+| Fix throughput class creation bug |  | [INDY-1888](https://jira.hyperledger.org/browse/INDY-1888) |
+
+## 1.6.79
+### Release date: Dec 6th, 2018
+
+### Component Version Information
+
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.6.54 |
+| indy-anoncreds | dependency is not required anymore |
+| indy-node | 1.6.79 |
+
+### Additional Information:
+
+**Warning: Embedded command-line tool _indy_ is no longer available.** For further pool interaction use _indy-cli_ package https://github.com/hyperledger/indy-sdk/tree/master/cli
+
+[**indy-test-automation repo**](https://github.com/hyperledger/indy-test-automation) has been created for end-to-end tests and additional test tools [**(INDY-1766)**](https://jira.hyperledger.org/browse/INDY-1766)
+
+**The** [**INDY-1818**](https://jira.hyperledger.org/browse/INDY-1818) **(Init Indy Node should output Base58-encrypted verkey already) affects nodes adding.**
+
+**validator-info output has been changed.**  If you use validator-info as data source make sure that you have done necessary changes for compatibility
+
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+
+### Major Fixes
+
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Intermittent test failure: test_primary_selection_increase_f |  | [INDY-1872](https://jira.hyperledger.org/browse/INDY-1872) |
+| Pool stopped writing after production load with fees |  | [INDY-1867](https://jira.hyperledger.org/browse/INDY-1867) |
+| Node does not validate CLAIM_DEF's filed ref |  | [INDY-1862](https://jira.hyperledger.org/browse/INDY-1862) |
+| Sovrin package can't be upgraded |  | [INDY-1850](https://jira.hyperledger.org/browse/INDY-1850) |
+| Expected object or value error during batch handling |  | [INDY-1849](https://jira.hyperledger.org/browse/INDY-1849) |
+| Node that is not on network is shown as 'unreachable' |  | [INDY-1842](https://jira.hyperledger.org/browse/INDY-1842) |
+| Not enough information about upgrade in journalctl |  | [INDY-1834](https://jira.hyperledger.org/browse/INDY-1834) |
+| Need to fix 'aws_manage' playbook that fails when inventory directory is not specified |  | [INDY-1827](https://jira.hyperledger.org/browse/INDY-1827) |
+| Validator on Sovrin MainNet fails to upgrade, then fails to revert |  | [INDY-1824](https://jira.hyperledger.org/browse/INDY-1824) |
+| Pool stops writing during load testing against domain and pool ledgers together |  | [INDY-1823](https://jira.hyperledger.org/browse/INDY-1823) |
+| Node service stops during node key validation |  | [INDY-1820](https://jira.hyperledger.org/browse/INDY-1820) |
+| Init Indy Node should output Base58-encrypted verkey already |  | [INDY-1818](https://jira.hyperledger.org/browse/INDY-1818) |
+| Investigate slowness on TestNet due to demotion |  | [INDY-1816](https://jira.hyperledger.org/browse/INDY-1816) |
+| New instance was removed after creating |  | [INDY-1815](https://jira.hyperledger.org/browse/INDY-1815) |
+| Upgrade from 1.6.645+ version result errors about packages versions in journalctl |  | [INDY-1781](https://jira.hyperledger.org/browse/INDY-1781) |
+| RequestQueue in Replica doesn't clear after View Change |  | [INDY-1765](https://jira.hyperledger.org/browse/INDY-1765) |
+
+### Changes - Additions - Known Issues
+
+| Description | Workaround | Ticket |
+| --- | --- | --- |
+| Create a Diagram for Components |  | [INDY-1870](https://jira.hyperledger.org/browse/INDY-1870) |
+| Create Catch-up Sequence Diagram |  | [INDY-1869](https://jira.hyperledger.org/browse/INDY-1869) |
+| Write and Read request flow |  | [INDY-1868](https://jira.hyperledger.org/browse/INDY-1868) |
+| Plenum Consensus Protocol Diagram |  | [INDY-1851](https://jira.hyperledger.org/browse/INDY-1851) |
+| Change pool state root hash for BLS-signature in Commit messages |  | [INDY-1846](https://jira.hyperledger.org/browse/INDY-1846) |
+| 3rd party open source manifest |  | [INDY-1839](https://jira.hyperledger.org/browse/INDY-1839) |
+| Enable PreViewChange Strategy |  | [INDY-1835](https://jira.hyperledger.org/browse/INDY-1835) |
+| Need to add Names to AWS ec2 instances and security groups |  | [INDY-1828](https://jira.hyperledger.org/browse/INDY-1828) |
+| Need to securely automate SSH authenticity checking |  | [INDY-1826](https://jira.hyperledger.org/browse/INDY-1826)- |
+| Limit RocksDB memory consumption |  | [INDY-1822](https://jira.hyperledger.org/browse/INDY-1822) |
+| Run very long load test on a small local pool |  | [INDY-1821](https://jira.hyperledger.org/browse/INDY-1821) |
+| AWS tags for pool automation AWS resources |  | [INDY-1813](https://jira.hyperledger.org/browse/INDY-1813) |
+| Adjust last_ordered_3pc and perform GC when detecting lag in checkpoints on backup |  | [INDY-1795](https://jira.hyperledger.org/browse/INDY-1795) |
+| Improve usability of current pool automation PoC |  | [INDY-1792](https://jira.hyperledger.org/browse/INDY-1792) |
+| As a dev/QA I need to be able to refer different groups in the same namespace using one inventory |  | [INDY-1788](https://jira.hyperledger.org/browse/INDY-1788) |
+| Remove security groups at tear-down phase for both tests and playbooks |  | [INDY-1784](https://jira.hyperledger.org/browse/INDY-1784) |
+| Clear Requests queue periodically | | [INDY-1780](https://jira.hyperledger.org/browse/INDY-1780) |
+| Test ZMQ Memory Consumption with restarting of listener on every X connections |  | [INDY-1776](https://jira.hyperledger.org/browse/INDY-1776) |
+| Get information about how many client connections is usually in progress |  | [INDY-1775](https://jira.hyperledger.org/browse/INDY-1775) |
+| Do a long test with a load pool can handle |  | [INDY-1774](https://jira.hyperledger.org/browse/INDY-1774) |
+| Find out why validation of PrePrepares with Fees takes so long |  | [INDY-1773](https://jira.hyperledger.org/browse/INDY-1773) |
+| Check why backup instances stop ordering so often |  | [INDY-1772](https://jira.hyperledger.org/browse/INDY-1772) |
+| As a dev I need to be able to perform tests on docker |  | [INDY-1771](https://jira.hyperledger.org/browse/INDY-1771) |
+| Test ZMQ Memory Consumption with restricted number of client connections |  | [INDY-1770](https://jira.hyperledger.org/browse/INDY-1770) |
+| Run load tests with file storages |  | [INDY-1769](https://jira.hyperledger.org/browse/INDY-1769) |
+| Change dependency building for upgrade procedure |  | [INDY-1762](https://jira.hyperledger.org/browse/INDY-1762) |
+| Use persisted last_pp_seq_no for recovery of backup primaries |  | [INDY-1759](https://jira.hyperledger.org/browse/INDY-1759) |
+| Extend Load Script with GET_TXN |  | [INDY-1756](https://jira.hyperledger.org/browse/INDY-1756) |
+| Avoid redundant static validation during signature verification |  | [INDY-1753](https://jira.hyperledger.org/browse/INDY-1753) |
+| Find out why max node prod time increases during long load test |  | [INDY-1747](https://jira.hyperledger.org/browse/INDY-1747) |
+
+### Upgrade Scripts:
+
+No further action is required
 
 ## 1.6.78
+### Release date: Oct 18th, 2018
 
 ### Component Version Information
 
@@ -76,8 +197,8 @@ Although every attempt has been made to make this information as accurate as pos
 | Test domain transactions with FEEs. |   | [INDY-1661](https://jira.hyperledger.org/browse/INDY-1661) |
 | 3PC Batch should preserve the order of requests when applying PrePrepare on non-primary. |   | [INDY-1642](https://jira.hyperledger.org/browse/INDY-1642) |
 | Ability to switch off (remove) replicas with no changes of F value. |   | [INDY-1680](https://jira.hyperledger.org/browse/INDY-1680) |
-| A node should be able to participate in BLS multi-signature only if it has a valid proof of posession. |   | [INDY-1589](https://jira.hyperledger.org/browse/INDY-1589) |
-| Make validator info as a hystorical data. |   | [INDY-1637](https://jira.hyperledger.org/browse/INDY-1637) |
+| A node should be able to participate in BLS multi-signature only if it has a valid proof of possession. |   | [INDY-1589](https://jira.hyperledger.org/browse/INDY-1589) |
+| Make validator info as a historical data. |   | [INDY-1637](https://jira.hyperledger.org/browse/INDY-1637) |
 |   |   |   | |
 | **Known Issue:** Upgrade failed on pool from 1.3.62 to 1.4.66. Note that INDY-1447 was fixed in indy-node 1.5.68, but it still presents in indy-node 1.3.62 and 1.4.66 code. | **So, some of the nodes may not to be upgraded during simultaneous pool-upgrade.** If this problem will appear, stewards should perform manual upgrade of indy-node in accordance with this [instruction:](https://docs.google.com/document/d/1vUvbioL5OsmZMSkwRcu0p0jdttJO5VS8K3GhDLdNaoI)**(!)** To reduce the risk of reproducing INDY-1447, it is **recommended to use old CLI for pool upgrade.** | [INDY-1447](https://jira.hyperledger.org/browse/INDY-1447) |
 |   |   |   |   |
@@ -96,6 +217,7 @@ Although every attempt has been made to make this information as accurate as pos
 
 
 ## 1.6.73
+### Release date: Sep 5th, 2018
 
 **Important:** Several iterations were done very rapidly between the last release and this one. All of the changes, upgrades, etc... are included in this new release. Simply upgrading will include them all from 1.6.70 until 1.6.73. To see further, specific numerous changes, please reference the appropriate tickets in the [Hyperledger Jira ticketing system.](https://jira.hyperledger.org/)
 
@@ -150,6 +272,7 @@ Although every attempt has been made to make this information as accurate as pos
 
 
 ## 1.6.70
+### Release date: Aug 14th, 2018
 
 ### Component Version Information
 
@@ -276,6 +399,7 @@ For more details about txn format changes see INDY-1421.**
 
 
 ## 1.4.66
+### Release date: Jul 2nd, 2018
 
 
 ### Component Version Information
@@ -384,6 +508,7 @@ Use https://github.com/hyperledger/indy-sdk/blob/b4a2bb82087e2eafe5e55bddb20a306
 
 
 ## 1.3.62
+### Release date: May 22th, 2018
 
 
 ### Component Version Information
@@ -482,6 +607,7 @@ None at this time.
 
 
 ## 1.3.55
+### Release date: Feb 28th, 2018
 
 **Important: Upgrade to this version should be performed simultaneously for all nodes (with `force=True`).**
 
@@ -560,6 +686,7 @@ Node promoting is not recommended for 1.3.52 version according to known issues b
 As mentioned above, upgrade to this version should be performed simultaneously for all nodes (with `force=True`).
 
 ## 1.2.50
+### Release date: Dec 18th, 2017
 
 
 ### Component Version Information
@@ -752,6 +879,7 @@ The genesis files are now located in their own directory based off the network n
 
 
 ## 1.1.43
+### Release date: Oct 24th, 2017
 
 
 ### Component Version Information
@@ -776,6 +904,7 @@ The genesis files are now located in their own directory based off the network n
 |   |   |   |   |
 
 ## 1.1.37
+### Release date: Sep 26th, 2017
 
 
 ### Component Version Information

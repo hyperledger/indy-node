@@ -35,7 +35,7 @@ def test_get_nym_returns_role(
 
     new_role = ''
     sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_trustee,
-                    dest=uuidIdentifier, verkey=abbrevVerkey, role=new_role)
+                    dest=uuidIdentifier, role=new_role, skipverkey=True)
     get_nym(looper, sdk_pool_handle, sdk_wallet_trustee, createUuidIdentifier())
 
 

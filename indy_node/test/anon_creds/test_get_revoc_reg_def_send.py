@@ -3,6 +3,7 @@ import time
 from indy_common.constants import CRED_DEF_ID, ID, REVOC_TYPE, TAG, GET_REVOC_REG_DEF, VALUE, MAX_CRED_NUM, TXN_TYPE
 from indy_common.state import domain
 from indy_common.types import Request
+from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.test.helper import sdk_sign_request_from_dict
 from plenum.test.helper import sdk_send_and_check
 
@@ -57,7 +58,7 @@ def test_get_revoc_reg_def_from_uncommited(looper,
     # We apply transacttion, which will be not commited
 
     for node in txnPoolNodeSet:
-        node.getDomainReqHandler().apply(Request(**revoc_req), int(time.time()))
+        node.get_req_handler(DOMAIN_LEDGER_ID).apply(Request(**revoc_req), int(time.time()))
     get_revoc_reg_def_req = {
         ID: ":".join([author_did,
                       domain.MARKER_REVOC_DEF,
