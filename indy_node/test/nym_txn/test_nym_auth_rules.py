@@ -3,7 +3,7 @@ import json
 
 from enum import Enum, unique
 
-from indy.did import create_and_store_my_did
+from indy.did import create_and_store_my_did, key_for_local_did
 
 from plenum.common.constants import (
     TRUSTEE, STEWARD, NYM, TXN_TYPE, TARGET_NYM, VERKEY, ROLE,
@@ -86,8 +86,10 @@ did_provisioners = did_editor_others
 
 
 @pytest.fixture(scope="module")
-def trustee(sdk_wallet_trustee):
-    return DID(did=sdk_wallet_trustee[1], role=Roles.TRUSTEE, wallet_handle=sdk_wallet_trustee[0])
+def trustee(looper, sdk_wallet_trustee):
+    wh, did = sdk_wallet_trustee
+    verkey = looper.loop.run_until_complete(key_for_local_did(wh, did))
+    return DID(did=did, role=Roles.TRUSTEE, verkey=verkey, wallet_handle=wh)
 
 
 @pytest.fixture(scope="module")
@@ -213,7 +215,7 @@ def editor(editor_type, edited):
     if editor_type == NYMEditSignerTypes.self:
         return edited
     elif editor_type == NYMEditSignerTypes.creator:
-        return edited
+        return edited.creator
     else:
         return did_editor_others[Roles(editor_type.value)]
 
