@@ -61,16 +61,18 @@ ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR verkey=~PuCGfSiTB3NZGi1S
 did use CDcGtKx1boRYFwPBaGkMmk
 ledger nym did=YUGDShR1RSr5T2CwbM7Hhu verkey=~GfsAf6NpSQDJ1ZWW2X7BiD
 - ledger get-nym did=YUGDShR1RSr5T2CwbM7Hhu
-# #6.1 AS Steward (steward1) REMOVE TrustAnchor (PASS) ?????????????????????????????????????????????????????????????????
+# #6.1 AS Steward (steward1) REMOVE TrustAnchor (FAIL) 
 did use 7qFmEyYCXcmUFVied5Sp3b
 - ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=
-# #6.2 CHECK TrustAnchor IS INVALID
+# #6.2 CHECK TrustAnchor IS VALID
 did use CDcGtKx1boRYFwPBaGkMmk
-- ledger nym did=Jt7aMnw77aoaBMyhXUNjtt verkey=~DT5pLP1wcvsgAzM78sqiRJ
+ledger nym did=Jt7aMnw77aoaBMyhXUNjtt verkey=~DT5pLP1wcvsgAzM78sqiRJ
 - ledger get-nym did=Jt7aMnw77aoaBMyhXUNjtt
-# #7.1 AS Steward (steward1) RESTORE TrustAnchor (PASS) ?????????????????????????????????????????????????????????????????
+# #7.1 AS Steward (steward1) RESTORE TrustAnchor (PASS)
+did use V4SGRU86Z58d6TV7PBUe6f
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=
 did use 7qFmEyYCXcmUFVied5Sp3b
-- ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR
+ledger nym did=CDcGtKx1boRYFwPBaGkMmk role=TRUST_ANCHOR
 # #7.2 CHECK TrustAnchor IS VALID
 did use CDcGtKx1boRYFwPBaGkMmk
 ledger nym did=XkZJxs6Uadv6MQeKGGZdZ6 verkey=~Aza4zyTRazcVsokmqNJfsg
@@ -94,6 +96,7 @@ ledger nym did=7e6ttq44HKVSHitCE3BLXv role=
 did use 7e6ttq44HKVSHitCE3BLXv
 - ledger get-validator-info nodes=Node1
 # #12.1 AS Steward (steward1) RESTORE NetworkMonitor (PASS)
+did use 7qFmEyYCXcmUFVied5Sp3b
 ledger nym did=7e6ttq44HKVSHitCE3BLXv role=NETWORK_MONITOR
 # #12.2 CHECK NetworkMonitor IS VALID
 did use 7e6ttq44HKVSHitCE3BLXv
