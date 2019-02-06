@@ -335,5 +335,4 @@ def test_nym_edit(
     if editor.verkey is None:  # skip that as well since it doesn't make sense
         return
 
-    if edit_op is not None:  # might be None, means a duplicate test case
-        sign_and_validate(looper, txnPoolNodeSet[0], ActionIds.edit, editor, edit_op, did_ledger=edited)
+    sign_and_validate(looper, txnPoolNodeSet[0], ActionIds.edit, editor, edit_op, did_ledger=edited)
