@@ -66,6 +66,8 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 
 def systemTests = { component ->
 
+    String indySDKVersion = '1.6.8'  // TODO grab that from indy-node/setup.py
+    String indyCryptoVersion = '0.4.5'  // TODO grab that from indy-plenum/setup.py
     String prefix = "System Tests ($component)"
     String defaultNetwork = 'pool-network'
     int nodesNum = 4
@@ -103,10 +105,12 @@ def systemTests = { component ->
         try {
             dir("environment/docker/pool"){
                 stage("Patch core dockerfile") {
+                    // TODO update dockerfile instead of patching
                     sh """
                         sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
                         sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
-                        sed -i 's/\\(RUN pip3 install python3-indy\\)/& pytest/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(apt-get install -y indy-node libindy\\)/&=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(RUN pip3 install python3-indy==$indySDKVersion\\)/& pytest/g' core.ubuntu.dockerfile
                     """
                 }
 
