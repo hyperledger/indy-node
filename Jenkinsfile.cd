@@ -131,7 +131,7 @@ def systemTests = { component ->
                         sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
                         sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
                         sed -i 's/\\(apt-get install -y indy-node libindy\\)/&=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
-                        sed -i 's/\\(RUN pip3 install python3-indy==$indySDKVersion\\)/& pytest/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion pytest/g' core.ubuntu.dockerfile
                     """
                 }
 
