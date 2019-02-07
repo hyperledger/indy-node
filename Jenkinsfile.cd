@@ -142,6 +142,27 @@ def systemTests = { component ->
                     echo "$prefix: $pool_nodes"
                 }
 
+                stage("Ensure node services started") {
+                    // TODO explore and fix the reason why they (mostly Node1) not always active
+                    for (nodeNum = 1; nodeNum <= nodesNum; nodeNum++) {
+                        for (service in ['indy-node', 'indy-node-control']) {
+                            sh """
+                                for i in 1 2 3; do
+                                    echo "Ensure $service on node${nodeNum} is started (try #\$i)"
+                                    docker exec -t -u 0 node${nodeNum} systemctl start $service
+                                    if [ "\$(docker exec -u 0 node${nodeNum} systemctl is-active $service)" = "active" ]; then
+                                        exit 0
+                                    fi
+                                done
+
+                                echo 'Failed to start $service on node${nodeNum}'
+                                exit 1
+                            """
+                        }
+                    }
+                }
+
+
                 stage("Prepare and run client") {
                     sh '''
                         sed -i 's/\\(docker exec -it\\)/#&/g' client_start.sh
