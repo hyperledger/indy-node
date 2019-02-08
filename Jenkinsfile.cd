@@ -66,11 +66,12 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 
 def systemTests = { component ->
 
-    String indySDKVersion = '1.6.8'  // TODO grab that from indy-node/setup.py
-    String indyCryptoVersion = '0.4.5'  // TODO grab that from indy-plenum/setup.py
     String prefix = "System Tests ($component)"
     String defaultNetwork = 'pool-network'
     int nodesNum = 4
+
+    String indySDKVersion
+    String indyCryptoVersion
 
     def dockerClean = { networkName ->
         networkName = networkName ?: defaultNetwork
@@ -102,6 +103,26 @@ def systemTests = { component ->
             checkout scm
         }
 
+        stage("Get versions for indy-crypto and indy-sdk") {
+            def commonSedExprs = "-e 'tx' -e 'd' -e ':x' -e 'p' -e 'q'"
+            def indyPlenumVersion = sh(returnStdout: true, script: """
+                cat ./setup.py | sed -n -e 's/.*indy-plenum\\(-dev\\)\\?==\\([^"\\x27]\\+\\).*/\\2/' $commonSedExprs
+            """).trim()
+            echo "indy-plenum version: $indyPlenumVersion"
+            indySDKVersion = sh(returnStdout: true, script: """
+                cat ./setup.py | sed -n -e 's/.*python3-indy==\\([^"\\x27]\\+\\).*/\\1/' $commonSedExprs
+            """).trim()
+            echo "indy-sdk version: $indySDKVersion"
+            indyCryptoVersion = sh(returnStdout: true, script: """
+                wget -q https://raw.githubusercontent.com/hyperledger/indy-plenum/$indyPlenumVersion-${component == 'stable' ? 'rc' : component}/setup.py -O - | sed -n -e 's/.*indy-crypto==\\([^"\\x27]\\+\\).*/\\1/' $commonSedExprs
+            """).trim()
+            echo "indy-crypto version: $indyCryptoVersion"
+
+            if (!(indySDKVersion && indyCryptoVersion)) {
+                error "Failed to get versions for indy-crypto and indy-sdk"
+            }
+        }
+
         try {
             dir("environment/docker/pool"){
                 stage("Patch core dockerfile") {
@@ -110,7 +131,7 @@ def systemTests = { component ->
                         sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
                         sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
                         sed -i 's/\\(apt-get install -y indy-node libindy\\)/&=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
-                        sed -i 's/\\(RUN pip3 install python3-indy==$indySDKVersion\\)/& pytest/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion pytest/g' core.ubuntu.dockerfile
                     """
                 }
 
@@ -120,6 +141,27 @@ def systemTests = { component ->
                     pool_nodes = sh(script: 'docker ps', returnStdout: true)
                     echo "$prefix: $pool_nodes"
                 }
+
+                stage("Ensure node services started") {
+                    // TODO explore and fix the reason why they (mostly Node1) not always active
+                    for (nodeNum = 1; nodeNum <= nodesNum; nodeNum++) {
+                        for (service in ['indy-node', 'indy-node-control']) {
+                            sh """
+                                for i in 1 2 3; do
+                                    echo "Ensure $service on node${nodeNum} is started (try #\$i)"
+                                    docker exec -t -u 0 node${nodeNum} systemctl start $service
+                                    if [ "\$(docker exec -u 0 node${nodeNum} systemctl is-active $service)" = "active" ]; then
+                                        exit 0
+                                    fi
+                                done
+
+                                echo 'Failed to start $service on node${nodeNum}'
+                                exit 1
+                            """
+                        }
+                    }
+                }
+
 
                 stage("Prepare and run client") {
                     sh '''
