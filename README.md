@@ -34,7 +34,7 @@ with a different network, using whatever conventions a community chooses.
 
 ##### Hyperledger Wiki-Indy
 
-- If you haven't done so already, please visit the main resource for all things "Indy" to get acquainted with the code base, helpful resources, and up-to-date information: [Hyperledger Wiki-Indy](https://wiki.hyperledger.org/projects/indy).
+- If you haven't done so already, please visit the main resource for all things "Indy" to get acquainted with the code base, helpful resources, and up-to-date information: [Hyperledger Wiki-Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy).
 
 ## Technical Overview of Indy Blockchain
 Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
