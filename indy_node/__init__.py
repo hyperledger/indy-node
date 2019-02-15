@@ -10,6 +10,12 @@ import indy_node.server.plugin     # noqa: E402
 from indy_common.config_util import getConfigOnce   # noqa: E402
 from plenum import find_and_load_plugin
 
+from .__metadata__ import (
+    __title__, __version_info__, __version__, __description__,
+    __long_description__, __keywords__, __url__, __author__,
+    __author_email__, __maintainer__, __license__
+)
+
 PLUGIN_LEDGER_IDS = set()
 PLUGIN_CLIENT_REQUEST_FIELDS = {}
 PLUGIN_CLIENT_REQ_OP_TYPES = {}
@@ -50,6 +56,3 @@ def setup_plugins():
 
 
 setup_plugins()
-
-
-from .__metadata__ import *  # noqa

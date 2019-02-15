@@ -15,38 +15,27 @@ if sys.version_info < (3, 5):
     print("NOTE: Installation failed. Run setup.py using python3")
     sys.exit(1)
 
-try:
-    SETUP_DIRNAME = os.path.dirname(__file__)
-except NameError:
-    # We're probably being frozen, and __file__ triggered this NameError
-    # Work around this
-    SETUP_DIRNAME = os.path.dirname(sys.argv[0])
-
-if SETUP_DIRNAME != '':
-    os.chdir(SETUP_DIRNAME)
-
-SETUP_DIRNAME = os.path.abspath(SETUP_DIRNAME)
-
-METADATA = os.path.join(SETUP_DIRNAME, 'indy_node', '__metadata__.py')
-# Load the metadata using exec() so we don't trigger an import of
-# ioflo.__init__
-exec(compile(open(METADATA).read(), METADATA, 'exec'))
+# resolve metadata
+metadata = {}
+here = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(here, 'indy_node', '__metadata__.py'), 'r') as f:
+    exec(f.read(), metadata)
 
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
-LOG_DIR = os.path.join(BASE_DIR, "log")
-CONFIG_FILE = os.path.join(BASE_DIR, "indy_config.py")
 
 tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy==1.6.8', 'pytest-asyncio==0.8.0']
 
 setup(
-    name='indy-node-dev',
-    version=__version__,
-    description='Indy node',
-    url='https://github.com/hyperledger/indy-node',
-    author=__author__,
-    author_email='hyperledger-indy@lists.hyperledger.org',
-    license=__license__,
-    keywords='Indy Node',
+    name=metadata['__title__'],
+    version=metadata['__version__'],
+    description=metadata['__description__'],
+    long_description=metadata['__long_description__'],
+    keywords=metadata['__keywords__'],
+    url=metadata['__url__'],
+    author=metadata['__author__'],
+    author_email=metadata['__author_email__'],
+    maintainer=metadata['__maintainer__'],
+    license=metadata['__license__'],
     packages=find_packages(exclude=['docs', 'docs*']) + [
         'data'],
     package_data={
