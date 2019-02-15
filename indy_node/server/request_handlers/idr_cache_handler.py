@@ -15,14 +15,14 @@ class IdrCacheHandler(BatchRequestHandler, WriteRequestHandler):
     def __init__(self, database_manager: DatabaseManager):
         super().__init__(database_manager, None)
 
-    def commit_batch(self, txn_count, state_root, txn_root, pp_time, prev_result):
+    def commit_batch(self, ledger_id, txn_count, state_root, txn_root, pp_time, prev_result):
         state_root = base58.b58decode(state_root.encode())
         self.database_manager.idr_cache.update_idr_cache(state_root)
 
-    def post_batch_applied(self, state_root):
+    def post_batch_applied(self, ledger_id, state_root, pp_time):
         self.database_manager.idr_cache.currentBatchCreated(state_root)
 
-    def post_batch_rejected(self):
+    def post_batch_rejected(self, ledger_id):
         self.database_manager.idr_cache.batchRejected()
 
     def apply_request(self, request: Request, batch_ts, prev_result):
