@@ -20,7 +20,7 @@ class ActionRequestManager{
 class WriteRequestManager{
 apply_request(request: Request, batch_ts)
 commit_batch(ledger_id, txn_count, state_root, txn_root, pp_time)
-post_batch_applied(ledger_id, state_root, pp_time)
+post_batch_applied(three_pc_batch)
 post_batch_rejected(ledger_id)
 }
 
@@ -31,9 +31,9 @@ apply_request(request: Request, batch_ts)
 class BatchRequestHandler{
 database_manager: DatabaseManager
 ledger_id: int
-commit_batch(ledger_id, txn_count, state_root, txn_root, pp_time, prev_result)
-post_batch_applied(ledger_id, state_root, pp_time, prev_result)
-post_batch_rejected(ledger_id)
+commit_batch(ledger_id, txn_count, state_root, txn_root, pp_time, prev_handler_result)
+post_batch_applied(three_pc_batch, prev_handler_result)
+post_batch_rejected(ledger_id, prev_handler_result)
 }
 
 class ReadRequestManager{
