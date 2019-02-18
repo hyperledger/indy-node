@@ -5,11 +5,11 @@ indy-node package metadata
 import os
 import json
 
+import indy_node
 from indy_node.utils.os_helper import module_path
 
 VERSION_FILENAME = '__version__.json'
-VERSION_FILE = os.path.join(module_path(__file__), VERSION_FILENAME)
-
+VERSION_FILE = os.path.join(module_path(indy_node), VERSION_FILENAME)
 
 def check_version(version):
     # TODO better errors (e.g. some are TypeError)
