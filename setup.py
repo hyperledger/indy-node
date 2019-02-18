@@ -15,9 +15,14 @@ if sys.version_info < (3, 5):
     print("NOTE: Installation failed. Run setup.py using python3")
     sys.exit(1)
 
+try:
+    here = os.path.abspath(os.path.dirname(__file__))
+except NameError:
+    # it can be the case when we are being run as script or frozen
+    here = os.path.abspath(os.path.dirname(sys.argv[0]))
+
 # resolve metadata
 metadata = {}
-here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'indy_node', '__metadata__.py'), 'r') as f:
     exec(f.read(), metadata)
 
