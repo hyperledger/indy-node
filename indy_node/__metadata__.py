@@ -2,19 +2,46 @@
 indy-node package metadata
 """
 
-__version_info__ = (1, 7, 0, 'dev', 0)
+import os
+import json
+
+from indy_node.utils.os_helper import module_path
+
+VERSION_FILENAME = '__version__.json'
+VERSION_FILE = os.path.join(module_path(__file__), VERSION_FILENAME)
 
 
-# TODO tests
-def prepare_version(version=None):
+def check_version(version):
+    # TODO better errors (e.g. some are TypeError)
+    if not (
+        (type(version) in (tuple, list)) and
+        (len(version) == 5) and
+        all([type(version[i]) == int] for i in (0, 1, 2, 4)) and
+        (version[3] in ('dev', 'rc', 'stable'))
+    ):
+        raise ValueError("Incorrect version: {}".format(version))
+
+
+def load_version(version_file=VERSION_FILE):
+    with open(version_file, 'r') as _f:
+        version = json.load(_f)
+    check_version(version)
+    return version
+
+
+def set_version(version, version_file=VERSION_FILE):
+    check_version(version)
+    with open(version_file, 'w') as _f:
+        version = json.dump(version, _f)
+        _f.write('\n')
+
+
+def pep440_version(version=None):
     if not version:
         version = __version_info__
 
-    assert type(version) in (tuple, list)
-    assert len(version) == 5
-
+    check_version(version)
     major, minor, patch, pre_release_suffix, revision = version
-    assert pre_release_suffix in ('dev', 'rc', 'stable')
 
     release_part = "{}.{}.{}".format(major, minor, patch)
 
@@ -25,7 +52,8 @@ def prepare_version(version=None):
 
 
 __title__ = 'indy-node'
-__version__ = prepare_version()
+__version_info__ = load_version()
+__version__ = pep440_version()
 __description__ = 'Indy node'
 __long_description__ = __description__
 __keywords__ = 'Indy Node'
