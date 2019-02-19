@@ -1,14 +1,15 @@
 import pytest
 from indy_common.types import ClientPoolUpgradeOperation
 from collections import OrderedDict
-from plenum.common.messages.fields import ConstantField, ChooseField, VersionField, MapField, Sha256HexField, \
+from plenum.common.messages.fields import ConstantField, ChooseField, MapField, Sha256HexField, \
     NonNegativeNumberField, LimitedLengthStringField, BooleanField
+from indy_common.message_fields import DebianVersionField
 
 
 EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("type", ConstantField),
     ('action', ChooseField),
-    ("version", VersionField),
+    ("version", DebianVersionField),
     ('schedule', MapField),
     ('sha256', Sha256HexField),
     ('timeout', NonNegativeNumberField),

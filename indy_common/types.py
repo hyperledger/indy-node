@@ -2,19 +2,6 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
-from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
-from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
-    DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
-    POOL_UPGRADE, POOL_CONFIG, \
-    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, SHA256, \
-    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, START, CANCEL, \
-    REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
-    TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
-    REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
-    GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
-    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
-    SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
-    CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
     VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
@@ -31,9 +18,22 @@ from plenum.common.types import OPERATION
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
     NONCE_FIELD_LIMIT, \
-    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
-    VERSION_FIELD_LIMIT
+    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT
 
+from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
+from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
+    DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
+    POOL_UPGRADE, POOL_CONFIG, \
+    DISCLO, SCHEMA, ENDPOINT, CLAIM_DEF, SCHEDULE, SHA256, \
+    TIMEOUT, JUSTIFICATION, JUSTIFICATION_MAX_SIZE, REINSTALL, WRITES, START, CANCEL, \
+    REVOC_REG_DEF, ISSUANCE_TYPE, MAX_CRED_NUM, PUBLIC_KEYS, \
+    TAILS_HASH, TAILS_LOCATION, ID, REVOC_TYPE, TAG, CRED_DEF_ID, VALUE, \
+    REVOC_REG_ENTRY, ISSUED, REVOC_REG_DEF_ID, REVOKED, ACCUM, PREV_ACCUM, \
+    GET_REVOC_REG_DEF, GET_REVOC_REG, TIMESTAMP, \
+    GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
+    SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
+    CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE
+from indy_common.message_fields import DebianVersionField
 
 class Request(PRequest):
     def signingState(self, identifier=None):
@@ -70,7 +70,7 @@ class ClientDiscloOperation(MessageValidator):
 class GetSchemaField(MessageValidator):
     schema = (
         (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(components_number=(2, 3,))),
         (ORIGIN, IdentifierField(optional=True))
     )
 
@@ -78,7 +78,7 @@ class GetSchemaField(MessageValidator):
 class SchemaField(MessageValidator):
     schema = (
         (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(components_number=(2, 3,))),
         (SCHEMA_ATTR_NAMES, IterableField(
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
@@ -266,7 +266,7 @@ class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),
         (ACTION, ChooseField(values=(START, CANCEL,))),
-        (VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (VERSION, DebianVersionField()),
         # TODO replace actual checks (idr, datetime)
         (SCHEDULE, MapField(IdentifierField(),
                             NonEmptyStringField(), optional=True)),
