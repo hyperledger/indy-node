@@ -95,7 +95,7 @@ def systemTests = { component ->
     }
 
     def dockerSetup = { testFileName ->
-	    dir("environment/docker/pool") {
+        dir("environment/docker/pool") {
             stage("Run pool for ${testFileName}") {
                 echo "$prefix: Running nodes..."
                 sh "./pool_start.sh $nodesNum"
@@ -130,7 +130,7 @@ def systemTests = { component ->
                 '''
             }
         }
-	}
+    }
 
     node("ubuntu") {
         try {
