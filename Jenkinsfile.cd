@@ -94,7 +94,7 @@ def systemTests = { component ->
         sh "docker network prune -f"
     }
 
-	def dockerSetup = { testFileName ->
+    def dockerSetup = { testFileName ->
 	    dir("environment/docker/pool") {
             stage("Run pool for ${testFileName}") {
                 echo "$prefix: Running nodes..."
