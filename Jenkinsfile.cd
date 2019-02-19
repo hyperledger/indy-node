@@ -95,9 +95,9 @@ def systemTests = { component ->
     }
 
 	def dockerSetup = { testFileName ->
-		dir("environment/docker/pool") {
+	    dir("environment/docker/pool") {
             stage("Run pool for ${testFileName}") {
-                 echo "$prefix: Running nodes..."
+                echo "$prefix: Running nodes..."
                 sh "./pool_start.sh $nodesNum"
                 pool_nodes = sh(script: 'docker ps', returnStdout: true)
                 echo "$prefix: $pool_nodes"
@@ -133,104 +133,104 @@ def systemTests = { component ->
 	}
 
     node("ubuntu") {
-        stage("Cleanup docker") {
-            dockerClean()
-        }
+        try {
+            stage("Cleanup docker") {
+                dockerClean()
+            }
 
-        stage("Checkout SCM") {
-            checkout scm
-        }
+            stage("Checkout SCM") {
+                checkout scm
+            }
 
-        stage("Get versions for indy-crypto and indy-sdk") {
-            def commonSedExprs = "-e 'tx' -e 'd' -e ':x' -e 'p' -e 'q'"
-            def indyPlenumVersion = sh(returnStdout: true, script: """
-                cat ./setup.py | sed -n -e 's/.*indy-plenum\\(-dev\\)\\?==\\([^"\\x27]\\+\\).*/\\2/' $commonSedExprs
-            """).trim()
-            echo "indy-plenum version: $indyPlenumVersion"
-            indySDKVersion = sh(returnStdout: true, script: """
-                cat ./setup.py | sed -n -e 's/.*python3-indy==\\([^"\\x27]\\+\\).*/\\1/' $commonSedExprs
-            """).trim()
-            echo "indy-sdk version: $indySDKVersion"
-            indyCryptoVersion = sh(returnStdout: true, script: """
-                wget -q https://raw.githubusercontent.com/hyperledger/indy-plenum/$indyPlenumVersion-${component == 'stable' ? 'rc' : component}/setup.py -O - | sed -n -e 's/.*indy-crypto==\\([^"\\x27]\\+\\).*/\\1/' $commonSedExprs
-            """).trim()
-            echo "indy-crypto version: $indyCryptoVersion"
+            stage("Get versions for indy-crypto and indy-sdk") {
+                def commonSedExprs = "-e 'tx' -e 'd' -e ':x' -e 'p' -e 'q'"
+                def indyPlenumVersion = sh(returnStdout: true, script: """
+                    cat ./setup.py | sed -n -e 's/.*indy-plenum\\(-dev\\)\\?==\\([^"\\x27]\\+\\).*/\\2/' $commonSedExprs
+                """).trim()
+                echo "indy-plenum version: $indyPlenumVersion"
+                indySDKVersion = sh(returnStdout: true, script: """
+                    cat ./setup.py | sed -n -e 's/.*python3-indy==\\([^"\\x27]\\+\\).*/\\1/' $commonSedExprs
+                """).trim()
+                echo "indy-sdk version: $indySDKVersion"
+                indyCryptoVersion = sh(returnStdout: true, script: """
+                    wget -q https://raw.githubusercontent.com/hyperledger/indy-plenum/$indyPlenumVersion-${component == 'stable' ? 'rc' : component}/setup.py -O - | sed -n -e 's/.*indy-crypto==\\([^"\\x27]\\+\\).*/\\1/' $commonSedExprs
+                """).trim()
+                echo "indy-crypto version: $indyCryptoVersion"
 
-            if (!(indySDKVersion && indyCryptoVersion)) {
-                error "Failed to get versions for indy-crypto and indy-sdk"
+                if (!(indySDKVersion && indyCryptoVersion)) {
+                    error "Failed to get versions for indy-crypto and indy-sdk"
+                }
+            }
+
+            stage("Patch core dockerfile") {
+                 dir("environment/docker/pool") {
+                    // TODO update dockerfile instead of patching
+                    sh """
+                        sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
+                        sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(apt-get install -y indy-node libindy\\)/&=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion pytest/g' core.ubuntu.dockerfile
+                    """
+                }
+            }
+
+            for (testFileName in ['test_ledger.py', 'test_consensus.py', 'test_vc.py']) {
+                try {
+                    stage("Setup docker") {
+                        dockerSetup()
+                    }
+
+                    stage("Prepare ${testFileName}") {
+                        // https://github.com/moby/moby/issues/34096
+                        // https://github.com/moby/moby/issues/34096
+                        // inconsistent docker behaviour, depends on version
+                        // thus, ensure ownership for copied files
+                        testHelpers.getSystemTests(targetDir: './system_tests')
+                        sh '''
+                            docker cp ./system_tests/system indyclient:/home/indy
+                            docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./
+                            docker cp ./pool_transactions_genesis indyclient:/home/indy/system/docker_genesis
+                            docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system
+                        '''
+                    }
+
+                    String testReportFileNameXml = "system_tests_${testFileName}_report.${component}.xml"
+                    String testReportFileNamePlain = "system_tests_${testFileName}_report.${component}.txt"
+                    try {
+                        stage("Run ${testFileName}") {
+                            sh """
+                                docker exec -t --user indy indyclient bash -c "\
+                                    set -o pipefail; \
+                                    cd /home/indy/system && mkdir reports && \
+                                    pytest -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
+                                    tee ./reports/$testReportFileNamePlain"
+                            """
+                        }
+                    } finally {
+                        stage("Upload test report for ${testFileName}") {
+                            sh "docker cp indyclient:/home/indy/system/reports/ ./system_tests"
+
+                            dir("system_tests/reports"){
+                                archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
+                                junit testResults: testReportFileNameXml, allowEmptyResults: true
+                            }
+                        }
+                    }
+
+                } catch (Exception exc) {
+                    echo "$prefix: fail: $exc"
+                    throw exc
+                } finally {
+                    stage("Cleanup docker for ${testFileName}") {
+                        dockerClean()
+                    }
+                }
+            }
+        } finally {
+            stage("Cleanup") {
+                cleanWs()
             }
         }
-
-        stage("Patch core dockerfile") {
-             dir("environment/docker/pool") {
-                // TODO update dockerfile instead of patching
-                sh """
-                    sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
-                    sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
-                    sed -i 's/\\(apt-get install -y indy-node libindy\\)/&=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
-                    sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion pytest/g' core.ubuntu.dockerfile
-                """
-            }
-        }
-
-		for (testFileName in ['test_ledger.py', 'test_consensus.py', 'test_vc.py']) {
-			try {
-				stage("Setup docker") {
-					dockerSetup()
-				}
-
-				stage("Prepare ${testFileName}") {
-					// https://github.com/moby/moby/issues/34096
-					// https://github.com/moby/moby/issues/34096
-					// inconsistent docker behaviour, depends on version
-					// thus, ensure ownership for copied files
-					testHelpers.getSystemTests(targetDir: './system_tests')
-					sh '''
-						docker cp ./system_tests/system/indy-node-tests indyclient:/home/indy
-						docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./
-						docker cp ./pool_transactions_genesis indyclient:/home/indy/system/docker_genesis
-						docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system
-					'''
-				}
-
-				String testReportFileNameXml = "system_tests_${testFileName}_report.${component}.xml"
-				String testReportFileNamePlain = "system_tests_${testFileName}_report.${component}.txt"
-				try {
-					stage("Run ${testFileName}") {
-						sh """
-							docker exec -t --user indy indyclient bash -c "\
-								set -o pipefail; \
-								cd /home/indy/system && mkdir reports && \
-								pytest -v --junit-xml=./reports/$testReportFileNameXml ${testFileName} 2>&1 | \
-								tee ./reports/$testReportFileNamePlain"
-						"""
-					}
-				} finally {
-					stage("Upload test report for ${testFileName}") {
-						sh "docker cp indyclient:/home/indy/system/reports/ ./system_tests"
-
-						dir("system_tests/reports"){
-							archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
-							junit testResults: testReportFileNameXml, allowEmptyResults: true
-						}
-					}
-				}
-
-			} catch (Exception exc) {
-				echo "$prefix: fail: $exc"
-				throw exc
-			} finally {
-				stage('Cleanup') {
-					try {
-						dockerClean()
-					} catch(Exception exc) {
-						// pass
-					}
-
-					cleanWs()
-				}
-			}
-		}
     }
 }
 
