@@ -214,7 +214,14 @@
     <td><sub>TRUSTEE, STEWARD</sub></td>
     <td><sub>Promote roleless user to Network Monitor</sub></td>
   </tr>
-
+  <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>verkey</code></sub></td>
+    <td><sub>&lt;None&gt;</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>Guardian of this nym (who published it to the ledger)</sub></td>
+    <td><sub>Assign Key to new DID</sub></td>
+  </tr>
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub><code>verkey</code></sub></td>
