@@ -28,7 +28,7 @@ def test_client_force_request_not_discard_in_view_change_with_dict(fake_node):
         assert received_msg == msg
     fake_node.postToClientInBox = post_to_client_in_box
 
-    def discard(received_msg, reason, logLevel):
+    def discard(received_msg, reason, logMethod, cliOutput):
         assert False, "Message {} was discard with '{}'".format(received_msg, reason)
     fake_node.discard = discard
 
