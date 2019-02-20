@@ -193,7 +193,7 @@ def systemTests = { component ->
                         docker exec -t --user indy indyclient bash -c "\
                             set -o pipefail; \
                             cd /home/indy/system && mkdir reports && \
-                            pytest -v --junit-xml=./reports/$testReportFileNameXml test_ledger.py 2>&1 | \
+                            PYTHONPATH=. pytest -v --junit-xml=./reports/$testReportFileNameXml test_ledger.py 2>&1 | \
                             tee ./reports/$testReportFileNamePlain"
                     """
                 }
