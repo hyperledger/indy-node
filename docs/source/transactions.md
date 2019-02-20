@@ -170,7 +170,7 @@ Please note that all these metadata fields may be absent for genesis transaction
 
 #### NYM
 Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and a trustee can be created only by other trustees (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)).
+Note that only trustees and stewards can create new trust anchors and a trustee can be created only by other trustees (see [roles](auth_rules.md)).
 
 The transaction can be used for
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -191,7 +191,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - 2 (STEWARD)
     - 101 (TRUST_ANCHOR)
 
-  A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)).
+  A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](auth_rules.md)).
 
 - `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
