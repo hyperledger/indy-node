@@ -18,7 +18,8 @@ from plenum.common.types import OPERATION
 from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
     NONCE_FIELD_LIMIT, \
-    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT
+    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
+    VERSION_FIELD_LIMIT
 
 from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
@@ -71,7 +72,7 @@ class ClientDiscloOperation(MessageValidator):
 class GetSchemaField(MessageValidator):
     schema = (
         (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (SCHEMA_VERSION, VersionField(components_number=(2, 3,))),
+        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),  # TODO remove max_length
         (ORIGIN, IdentifierField(optional=True))
     )
 
@@ -79,7 +80,7 @@ class GetSchemaField(MessageValidator):
 class SchemaField(MessageValidator):
     schema = (
         (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (SCHEMA_VERSION, VersionField(components_number=(2, 3,))),
+        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),  # TODO remove max_length
         (SCHEMA_ATTR_NAMES, IterableField(
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
@@ -267,7 +268,7 @@ class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),
         (ACTION, ChooseField(values=(START, CANCEL,))),
-        (VERSION, DebianVersionField()),
+        (VERSION, DebianVersionField(max_length=VERSION_FIELD_LIMIT)),  # TODO remove max_length
         # TODO replace actual checks (idr, datetime)
         (SCHEDULE, MapField(IdentifierField(),
                             NonEmptyStringField(), optional=True)),
