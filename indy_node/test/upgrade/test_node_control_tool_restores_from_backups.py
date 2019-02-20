@@ -17,7 +17,6 @@ whitelist = ['Unexpected error in _upgrade test']
 def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
-    currentVersion = Upgrader.getVersion()
     backupWasRestored = m.Value('b', False)
     testFile = 'testFile'
     original_text = '1'

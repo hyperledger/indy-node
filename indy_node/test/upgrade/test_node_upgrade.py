@@ -7,10 +7,12 @@ from indy_node.test.upgrade.helper import populate_log_with_upgrade_events, \
     check_node_sent_acknowledges_upgrade, check_node_do_not_sent_acknowledges_upgrade, \
     emulate_restart_pool_for_upgrade, emulate_view_change_pool_for_upgrade
 
+from indy_node.test.upgrade.helper import releaseVersion
+
 whitelist = ['unable to send message']
 # TODO: Implement a client in node
 
-version = indy_node.__metadata__.__version__
+version = releaseVersion()
 
 
 @pytest.fixture(scope="module")

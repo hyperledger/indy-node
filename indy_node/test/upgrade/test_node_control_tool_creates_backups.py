@@ -12,7 +12,7 @@ whitelist = ['Unexpected error in _upgrade test']
 def testNodeControlCreatesBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
-    currentVersion = Upgrader.getVersion()
+    currentVersion = Upgrader.getDebianVersion()
 
     def transform(tool):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)

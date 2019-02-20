@@ -178,11 +178,11 @@ class NodeControlTool:
         current_version, _ = NodeControlUtil.curr_pkt_info(pkg_name)
         try:
             from indy_node.server.upgrader import Upgrader
-            node_cur_version = Upgrader.getVersion()
+            node_cur_version = Upgrader.getDebianVersion()
             logger.info('Trying to upgrade from {}={} to {}'.format(pkg_name, current_version, new_version))
             self._call_upgrade_script(pkg_name, new_version)
             if migrate:
-                node_new_version = Upgrader.getVersion()
+                node_new_version = Upgrader.getDebianVersion()
                 self._do_migration(node_cur_version, node_new_version)
             self._call_restart_node_script()
         except Exception as ex:

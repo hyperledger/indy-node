@@ -31,13 +31,14 @@ class Upgrader(NodeMaintainer):
                          actionFailedCallback, action_start_callback)
 
     @staticmethod
-    def getVersion(pkg: str = None):
-        if pkg and pkg != APP_NAME:
-            ver, _ = NodeControlUtil.curr_pkt_info(pkg)
-            return ver
+    def getSrcVersion():
+        import indy_node
+        return indy_node.__version__
 
-        from indy_node.__metadata__ import __version__
-        return __version__
+    @staticmethod
+    def getDebianVersion(pkg: str = APP_NAME):
+        ver, _ = NodeControlUtil.curr_pkt_info(pkg)
+        return ver
 
     @staticmethod
     def is_version_upgradable(old, new, reinstall: bool = False):
@@ -51,6 +52,9 @@ class Upgrader(NodeMaintainer):
             seq_no = ''
         return '{}{}'.format(get_req_id(txn), seq_no)
 
+    # TODO review:
+    #   - what comparison rules are used (PyPI vs Debian)
+    #   - makes sense to use some library instead of custom implementation
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
         if verA == verB:
@@ -199,7 +203,7 @@ class Upgrader(NodeMaintainer):
         """
         lastEventInfo = self.lastActionEventInfo
         if lastEventInfo:
-            currentVersion = self.getVersion(lastEventInfo[4])
+            currentVersion = self.getDebianVersion(lastEventInfo[4])
             scheduledVersion = lastEventInfo[2]
             return self.compareVersions(currentVersion, scheduledVersion) == 0
         return False

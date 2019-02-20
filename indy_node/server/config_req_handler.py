@@ -63,8 +63,6 @@ class ConfigReqHandler(LedgerRequestHandler):
         # TODO: Check if cancel is submitted before start
 
     def curr_pkt_info(self, pkg_name):
-        if pkg_name == APP_NAME:
-            return Upgrader.getVersion(), [APP_NAME]
         return NodeControlUtil.curr_pkt_info(pkg_name)
 
     def validate(self, req: Request):
@@ -81,7 +79,9 @@ class ConfigReqHandler(LedgerRequestHandler):
                     raise InvalidClientRequest(req.identifier, req.reqId,
                                                "Packet {} is not installed and cannot be upgraded".
                                                format(pkt_to_upgrade))
-                if all([APP_NAME not in d for d in cur_deps]):
+                # TODO weak check
+                if (APP_NAME not in pkt_to_upgrade and
+                        all([APP_NAME not in d for d in cur_deps])):
                     raise InvalidClientRequest(req.identifier, req.reqId,
                                                "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
             else:

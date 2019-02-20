@@ -58,7 +58,9 @@ class PoolUpgradeHandler(ConfigWriteRequestHandler):
                 raise InvalidClientRequest(identifier, req_id,
                                            "Packet {} is not installed and cannot be upgraded".
                                            format(pkt_to_upgrade))
-            if all([APP_NAME not in d for d in cur_deps]):
+            # TODO weak check
+            if (APP_NAME not in pkt_to_upgrade and
+                    all([APP_NAME not in d for d in cur_deps])):
                 raise InvalidClientRequest(identifier, req_id,
                                            "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
         else:
@@ -107,8 +109,6 @@ class PoolUpgradeHandler(ConfigWriteRequestHandler):
         self.upgrader.handleUpgradeTxn(txn)
 
     def curr_pkt_info(self, pkg_name):
-        if pkg_name == APP_NAME:
-            return Upgrader.getVersion(), [APP_NAME]
         return NodeControlUtil.curr_pkt_info(pkg_name)
 
     # Config handler don't use state for any validation for now

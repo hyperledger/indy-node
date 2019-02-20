@@ -28,6 +28,7 @@ from stp_core.loop.eventually import eventually
 from indy_common.constants import NODE_UPGRADE, ACTION, \
     UPGRADE_MESSAGE, MESSAGE_TYPE, APP_NAME
 from indy_common.config import controlServiceHost, controlServicePort
+import indy_node
 from indy_node.server.upgrade_log import UpgradeLog
 from indy_node.server.upgrader import Upgrader
 from indy_node.test.helper import TestNode
@@ -90,8 +91,12 @@ def checkNoUpgradeScheduled(nodes):
         assert node.upgrader.scheduledAction is None
 
 
-def codeVersion():
-    return Upgrader.getVersion()
+def codeVersionInfo():
+    return indy_node.__version_info__
+
+
+def releaseVersion():
+    return '.'.join(map(str, codeVersionInfo()[:3]))
 
 
 def bumpVersion(v):
@@ -111,13 +116,11 @@ def lowerVersion(v):
 
 
 def bumpedVersion(ver=None):
-    v = ver or codeVersion()
-    return bumpVersion(v)
+    return bumpVersion(ver or releaseVersion())
 
 
 def loweredVersion():
-    v = codeVersion()
-    return lowerVersion(v)
+    return lowerVersion(releaseVersion())
 
 
 class NodeControlToolExecutor:

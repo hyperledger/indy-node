@@ -35,6 +35,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE
 from indy_common.message_fields import DebianVersionField
 
+
 class Request(PRequest):
     def signingState(self, identifier=None):
         """

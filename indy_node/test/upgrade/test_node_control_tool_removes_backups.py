@@ -16,7 +16,7 @@ logger = getlogger()
 def testNodeControlRemovesBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
-    currentVersion = Upgrader.getVersion()
+    currentVersion = Upgrader.getDebianVersion()
     backupsWereRemoved = m.Value('b', False)
 
     def testRemoveOldBackups(tool):
