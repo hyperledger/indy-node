@@ -2,7 +2,7 @@ from abc import abstractmethod
 
 from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy, ConfigLedgerAuthStrategy
 from indy_common.authorize.auth_actions import AbstractAuthAction
-from indy_common.authorize.auth_constraints import AND_CONSTRAINT_ID, OR_CONSTRAINT_ID, ROLE_CONSTRAINT_ID
+from indy_common.authorize.auth_constraints import ConstraintsEnum
 from indy_common.authorize.authorizer import AbstractAuthorizer, CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, \
     OrAuthorizer, AuthValidationError
 from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
@@ -33,9 +33,9 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
         self.register_default_authorizers()
 
     def register_default_authorizers(self):
-        self.register_authorizer(RolesAuthorizer(cache=self.cache), auth_constraint_id=ROLE_CONSTRAINT_ID)
-        self.register_authorizer(AndAuthorizer(), auth_constraint_id=AND_CONSTRAINT_ID)
-        self.register_authorizer(OrAuthorizer(), auth_constraint_id=OR_CONSTRAINT_ID)
+        self.register_authorizer(RolesAuthorizer(cache=self.cache), auth_constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID)
+        self.register_authorizer(AndAuthorizer(), auth_constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID)
+        self.register_authorizer(OrAuthorizer(), auth_constraint_id=ConstraintsEnum.OR_CONSTRAINT_ID)
 
     def validate(self, request: Request, action_list: [AbstractAuthAction]):
         for action in action_list:
