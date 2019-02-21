@@ -123,15 +123,28 @@ def systemTests = { component ->
             }
         }
 
+        stage("Checkout and patch system tests") {
+                testHelpers.getSystemTests(tag: 'v0.1.0', targetDir: './system_tests')
+                // TODO remove once requirements.txt become a part of indy-test-automation
+                sh "echo 'pytest==3.6.4\npytest-asyncio==0.10.0\nbase58==1.0.0\ntestinfra==1.14.1\npython3-indy==1.2.3' >./system_tests/requirements.txt"
+
+                sh """
+                    sed -i 's/python3-indy.*/python3-indy==$indySDKVersion/g' ./system_tests/requirements.txt
+                    sed -i 's/indy-crypto.*/indy-crypto==$indyCryptoVersion/g' ./system_tests/requirements.txt
+                """
+        }
+
         try {
             dir("environment/docker/pool"){
                 stage("Patch core dockerfile") {
-                    // TODO update dockerfile instead of patching
+                    def test_deps = sh(returnStdout: true, script: 'cat ../../../system_tests/requirements.txt | paste -sd " "').trim()
+
+                    // TODO make dockerfile to accept params instead of patching
                     sh """
                         sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
                         sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
                         sed -i 's/\\(apt-get install -y indy-node libindy\\)/&=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
-                        sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion pytest/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion $test_deps/g' core.ubuntu.dockerfile
                     """
                 }
 
@@ -162,7 +175,6 @@ def systemTests = { component ->
                     }
                 }
 
-
                 stage("Prepare and run client") {
                     sh '''
                         sed -i 's/\\(docker exec -it\\)/#&/g' client_start.sh
@@ -176,11 +188,11 @@ def systemTests = { component ->
                 // https://github.com/moby/moby/issues/34096
                 // inconsistent docker behaviour, depends on version
                 // thus, ensure ownership for copied files
-                testHelpers.getSystemTests(targetDir: './system_tests')
                 sh '''
                     docker cp ./system_tests/system indyclient:/home/indy
                     docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./
                     docker cp ./pool_transactions_genesis indyclient:/home/indy/system/docker_genesis
+                    docker cp ./pool_transactions_genesis indyclient:/home/indy/docker_genesis
                     docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system
                 '''
             }
@@ -189,11 +201,12 @@ def systemTests = { component ->
             String testReportFileNamePlain = "system_tests_report.${component}.txt"
             try {
                 stage("Run tests") {
+                    // TODO remote  PYTHONPATH once imports in system tests are fixed
                     sh """
                         docker exec -t --user indy indyclient bash -c "\
                             set -o pipefail; \
                             cd /home/indy/system && mkdir reports && \
-                            pytest -v --junit-xml=./reports/$testReportFileNameXml test_ledger.py 2>&1 | \
+                            PYTHONPATH=. pytest -v --junit-xml=./reports/$testReportFileNameXml test_ledger.py 2>&1 | \
                             tee ./reports/$testReportFileNamePlain"
                     """
                 }
