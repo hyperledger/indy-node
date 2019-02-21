@@ -15,7 +15,7 @@ def tconf(tconf):
     OLD_ANYONE_CAN_WRITE = tconf.ANYONE_CAN_WRITE
     tconf.ANYONE_CAN_WRITE = True
 
-    yield  tconf
+    yield tconf
     tconf.ANYONE_CAN_WRITE = OLD_ANYONE_CAN_WRITE
 
 

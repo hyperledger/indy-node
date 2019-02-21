@@ -2,6 +2,10 @@ from datetime import timedelta
 
 from typing import Iterable, List
 
+from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
+from indy_common.authorize.auth_constraints import ConstraintsSerializer, AbstractConstraintSerializer
+from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_node.server.pool_req_handler import PoolRequestHandler
 
 from indy_node.server.action_req_handler import ActionReqHandler
@@ -19,6 +23,7 @@ from plenum.common.types import f, \
 from plenum.common.util import get_utc_datetime
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
+from state.pruning_state import PruningState
 from storage.helper import initKeyValueStorage
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
@@ -160,7 +165,8 @@ class Node(PlenumNode):
         return PoolRequestHandler(self.poolLedger,
                                   self.states[POOL_LEDGER_ID],
                                   self.states,
-                                  self.getIdrCache())
+                                  self.getIdrCache(),
+                                  self.write_req_validator)
 
     def init_domain_req_handler(self):
         if self.attributeStore is None:
@@ -172,6 +178,7 @@ class Node(PlenumNode):
                                 self.getIdrCache(),
                                 self.attributeStore,
                                 self.bls_bft.bls_store,
+                                self.write_req_validator,
                                 self.getStateTsDbStorage())
 
     def init_config_req_handler(self):
@@ -180,7 +187,8 @@ class Node(PlenumNode):
                                 self.getIdrCache(),
                                 self.upgrader,
                                 self.poolManager,
-                                self.poolCfg)
+                                self.poolCfg,
+                                self.write_req_validator)
 
     def getIdrCache(self):
         if self.idrCache is None:
@@ -206,7 +214,8 @@ class Node(PlenumNode):
                                 self.restarter,
                                 self.poolManager,
                                 self.poolCfg,
-                                self._info_tool)
+                                self._info_tool,
+                                self.write_req_validator)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
         pass
@@ -361,3 +370,23 @@ class Node(PlenumNode):
         is_force = OPERATION in msg_dict and msg_dict.get(OPERATION).get(FORCE, False)
         is_force_upgrade = str(is_force) == 'True' and txn_type == POOL_UPGRADE
         return txn_type and not is_force_upgrade and super().is_request_need_quorum(msg_dict)
+
+    @staticmethod
+    def add_auth_rules_to_config_state(state: PruningState,
+                                       auth_map: dict,
+                                       serializer: AbstractConstraintSerializer):
+        for rule_id, auth_constraint in auth_map.items():
+            serialized_key = rule_id.encode()
+            serialized_value = serializer.serialize(auth_constraint)
+            if not state.get(serialized_key, isCommitted=False):
+                state.set(serialized_key, serialized_value)
+
+    def _init_write_request_validator(self):
+        constraint_serializer = ConstraintsSerializer(domain_state_serializer)
+        config_state = self.states[CONFIG_LEDGER_ID]
+        self.write_req_validator = WriteRequestValidator(config=self.config,
+                                                         auth_map=auth_map,
+                                                         cache=self.getIdrCache(),
+                                                         config_state=config_state,
+                                                         state_serializer=constraint_serializer,
+                                                         anyone_can_write_map=anyone_can_write_map,)
