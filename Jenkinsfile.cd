@@ -164,18 +164,17 @@ def systemTests = { component ->
 
 
             stage("Checkout and patch system tests") {
-                testHelpers.getSystemTests(targetDir: './system_tests')
-
+                testHelpers.getSystemTests(tag: 'v0.2.0', targetDir: './system_tests')
                 sh """
-                    sed -i 's/python3-indy.*/python3-indy==$indySDKVersion/g' ./system_tests/requirements.txt
-                    sed -i 's/indy-crypto.*/indy-crypto==$indyCryptoVersion/g' ./system_tests/requirements.txt
+                    sed -i 's/python3-indy.*/python3-indy==$indySDKVersion/g' ./system_tests/system/requirements.txt
+                    sed -i 's/indy-crypto.*/indy-crypto==$indyCryptoVersion/g' ./system_tests/system/requirements.txt
                 """
-        }
+            }
 
             stage("Patch core dockerfile") {
-                 dir("environment/docker/pool") {
-                    def test_deps = sh(returnStdout: true, script: 'cat ../../../system_tests/requirements.txt | paste -sd " "').trim()
+                 def test_deps = sh(returnStdout: true, script: 'cat ./system_tests/system/requirements.txt | paste -sd " "').trim()
 
+                 dir("environment/docker/pool") {
                     // TODO make dockerfile to accept params instead of patching
                     sh """
                         sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
@@ -227,7 +226,6 @@ def systemTests = { component ->
                             }
                         }
                     }
-
                 } catch (Exception exc) {
                     echo "$prefix: fail: $exc"
                     throw exc
@@ -236,7 +234,7 @@ def systemTests = { component ->
                         dockerClean()
                     }
                 }
-            }
+            } // for
         } finally {
             stage("Cleanup") {
                 cleanWs()
