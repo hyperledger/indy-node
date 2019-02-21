@@ -51,20 +51,20 @@ class PoolUpgradeHandler(ConfigWriteRequestHandler):
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         status = '*'
-        pkt_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
-        if pkt_to_upgrade:
-            currentVersion, cur_deps = NodeControlUtil.curr_pkt_info(pkt_to_upgrade)
+        pkg_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
+        if pkg_to_upgrade:
+            currentVersion, cur_deps = NodeControlUtil.curr_pkg_info(pkg_to_upgrade)
             if not currentVersion:
                 raise InvalidClientRequest(identifier, req_id,
-                                           "Packet {} is not installed and cannot be upgraded".
-                                           format(pkt_to_upgrade))
+                                           "Package {} is not installed and cannot be upgraded".
+                                           format(pkg_to_upgrade))
             # TODO weak check
-            if (APP_NAME not in pkt_to_upgrade and
+            if (APP_NAME not in pkg_to_upgrade and
                     all([APP_NAME not in d for d in cur_deps])):
                 raise InvalidClientRequest(identifier, req_id,
-                                           "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
+                                           "Package {} doesn't belong to pool".format(pkg_to_upgrade))
         else:
-            raise InvalidClientRequest(identifier, req_id, "Upgrade packet name is empty")
+            raise InvalidClientRequest(identifier, req_id, "Upgrade package name is empty")
 
         targetVersion = operation[VERSION]
         reinstall = operation.get(REINSTALL, False)

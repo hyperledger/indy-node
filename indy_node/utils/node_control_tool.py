@@ -175,7 +175,7 @@ class NodeControlTool:
         self._remove_old_backups()
 
     def _upgrade(self, new_version, pkg_name, migrate=True, rollback=True):
-        current_version, _ = NodeControlUtil.curr_pkt_info(pkg_name)
+        current_version, _ = NodeControlUtil.curr_pkg_info(pkg_name)
         try:
             from indy_node.server.upgrader import Upgrader
             node_cur_version = Upgrader.getDebianVersion()

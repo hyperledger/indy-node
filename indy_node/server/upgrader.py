@@ -38,7 +38,7 @@ class Upgrader(NodeMaintainer):
 
     @staticmethod
     def getDebianVersion(pkg: str = APP_NAME):
-        ver, _ = NodeControlUtil.curr_pkt_info(pkg)
+        ver, _ = NodeControlUtil.curr_pkg_info(pkg)
         return ver
 
     @staticmethod

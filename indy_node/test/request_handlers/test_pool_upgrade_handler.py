@@ -66,7 +66,7 @@ def test_pool_upgrade_dynamic_validation_fails_not_installed(
         monkeypatch,
         pool_upgrade_handler,
         pool_upgrade_request):
-    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info',
                         lambda *x: (None, None))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request)
@@ -77,7 +77,7 @@ def test_pool_upgrade_dynamic_validation_fails_belong(
         monkeypatch,
         pool_upgrade_handler,
         pool_upgrade_request):
-    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info',
                         lambda *x: ('1.1.1', ['some_pckg']))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request)
@@ -88,7 +88,7 @@ def test_pool_upgrade_dynamic_validation_fails_upgradable(
         monkeypatch,
         pool_upgrade_handler,
         pool_upgrade_request):
-    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info',
                         lambda *x: ('1.1.1', [APP_NAME]))
     pool_upgrade_request.operation[VERSION] = '1.1.1'
     pool_upgrade_request.operation[REINSTALL] = False
@@ -101,7 +101,7 @@ def test_pool_upgrade_dynamic_validation_fails_scheduled(
         monkeypatch,
         pool_upgrade_handler,
         pool_upgrade_request):
-    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info',
                         lambda *x: ('1.1.1', [APP_NAME]))
     pool_upgrade_request.operation[VERSION] = '1.1.1'
     pool_upgrade_request.operation[REINSTALL] = True
@@ -118,7 +118,7 @@ def test_pool_upgrade_dynamic_validation_passes(
         monkeypatch,
         pool_upgrade_handler,
         pool_upgrade_request):
-    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info',
                         lambda *x: ('1.1.1', [APP_NAME]))
     pool_upgrade_request.operation[VERSION] = '1.1.1'
     pool_upgrade_request.operation[REINSTALL] = True

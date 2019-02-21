@@ -69,20 +69,20 @@ class ConfigReqHandler(LedgerRequestHandler):
         if typ not in [POOL_UPGRADE, POOL_CONFIG]:
             return
         if typ == POOL_UPGRADE:
-            pkt_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
-            if pkt_to_upgrade:
-                currentVersion, cur_deps = NodeControlUtil.curr_pkt_info(pkt_to_upgrade)
+            pkg_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
+            if pkg_to_upgrade:
+                currentVersion, cur_deps = NodeControlUtil.curr_pkg_info(pkg_to_upgrade)
                 if not currentVersion:
                     raise InvalidClientRequest(req.identifier, req.reqId,
-                                               "Packet {} is not installed and cannot be upgraded".
-                                               format(pkt_to_upgrade))
+                                               "Package {} is not installed and cannot be upgraded".
+                                               format(pkg_to_upgrade))
                 # TODO weak check
-                if (APP_NAME not in pkt_to_upgrade and
+                if (APP_NAME not in pkg_to_upgrade and
                         all([APP_NAME not in d for d in cur_deps])):
                     raise InvalidClientRequest(req.identifier, req.reqId,
-                                               "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
+                                               "Package {} doesn't belong to pool".format(pkg_to_upgrade))
             else:
-                raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade packet name is empty")
+                raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade package name is empty")
 
             targetVersion = req.operation[VERSION]
             reinstall = req.operation.get(REINSTALL, False)

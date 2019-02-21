@@ -71,7 +71,7 @@ class NodeControlUtil:
         return ret
 
     @classmethod
-    def _pkts_dedup(cls, deps):
+    def _pkgs_dedup(cls, deps):
         ret = []
         processed = set()
         for d in deps:
@@ -82,7 +82,7 @@ class NodeControlUtil:
         return ret
 
     @classmethod
-    def _parse_version_deps_from_pkt_mgr_output(cls, output):
+    def _parse_version_deps_from_pkg_mgr_output(cls, output):
         out_lines = output.split("\n")
         ver = None
         ext_deps = []
@@ -92,12 +92,12 @@ class NodeControlUtil:
                 ver = ver or act_line.split(":", maxsplit=1)[1].strip(" \n")
             if act_line.startswith("Depends:"):
                 ext_deps += cls._parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
-        return ver, cls._pkts_dedup(ext_deps)
+        return ver, cls._pkgs_dedup(ext_deps)
 
     @classmethod
-    def curr_pkt_info(cls, pkg_name):
+    def curr_pkg_info(cls, pkg_name):
         package_info = cls._get_curr_info(pkg_name)
-        return cls._parse_version_deps_from_pkt_mgr_output(package_info)
+        return cls._parse_version_deps_from_pkg_mgr_output(package_info)
 
     @classmethod
     def _get_info_from_package_manager(cls, *package):
@@ -115,7 +115,7 @@ class NodeControlUtil:
         ret = list(set(package))
         if depth < MAX_DEPS_DEPTH:
             package_info = cls._get_info_from_package_manager(*ret)
-            _, deps = cls._parse_version_deps_from_pkt_mgr_output(package_info)
+            _, deps = cls._parse_version_deps_from_pkg_mgr_output(package_info)
             deps_deps = []
             deps = list(set(deps) - set(ret))
             deps_deps.append(cls.get_deps_tree(*deps, depth=depth + 1))
@@ -129,7 +129,7 @@ class NodeControlUtil:
         filter_list = [f for f in filter_list if not list(filter(lambda x: f in x, ret))]
         if depth < MAX_DEPS_DEPTH and filter_list:
             package_info = cls._get_info_from_package_manager(*ret)
-            _, deps = cls._parse_version_deps_from_pkt_mgr_output(package_info)
+            _, deps = cls._parse_version_deps_from_pkg_mgr_output(package_info)
             deps_deps = []
             deps = list(set(deps) - set(ret))
             deps_deps.append(cls.get_deps_tree_filtered(*deps, filter_list=filter_list, depth=depth + 1))
