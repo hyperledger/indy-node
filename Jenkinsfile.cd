@@ -124,7 +124,7 @@ def systemTests = { component ->
         }
 
         stage("Checkout and patch system tests") {
-                testHelpers.getSystemTests(targetDir: './system_tests')
+                testHelpers.getSystemTests(tag: 'v0.1.0', targetDir: './system_tests')
                 // TODO remove once requirements.txt become a part of indy-test-automation
                 sh "echo 'pytest==3.6.4\npytest-asyncio==0.10.0\nbase58==1.0.0\ntestinfra==1.14.1\npython3-indy==1.2.3' >./system_tests/requirements.txt"
 
