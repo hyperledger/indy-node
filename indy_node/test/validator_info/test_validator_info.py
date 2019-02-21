@@ -185,7 +185,7 @@ def test_validator_info_file_metrics_count_all_ledgers_field_valid(node):
         node.ledgerManager.addLedger(newid, FakeLedgerEx(newid, newid))
     info = node._info_tool.info
     has_cnt = len(info['Node_info']['Metrics']['transaction-count'])
-    assert has_cnt == len(new_ids) + 3
+    assert has_cnt == len(new_ids) + 4
 
 
 def test_validator_info_update_date_field_valid(info):
