@@ -156,3 +156,13 @@ class NodeControlUtil:
         else:
             logger.info('apt-mark not found. Assume holds is empty.')
             return []
+
+    @classmethod
+    def hold_packages(cls, packages):
+        if shutil.which("apt-mark"):
+            packages_to_hold = ' '.join(packages)
+            cmd = compose_cmd(['apt-mark', 'hold', packages_to_hold])
+            cls.run_shell_script(cmd)
+            logger.info('Successfully put {} packages on hold'.format(packages_to_hold))
+        else:
+            logger.info('Skipping packages holding')
