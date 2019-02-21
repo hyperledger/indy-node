@@ -17,7 +17,7 @@ class ConstraintEnum(Enum):
         return self.name
 
 
-class ConstraintsEnum(ConstraintEnum):
+class ConstraintsEnum:
     ROLE_CONSTRAINT_ID = 'ROLE'
     AND_CONSTRAINT_ID = 'AND'
     OR_CONSTRAINT_ID = 'OR'
@@ -40,7 +40,6 @@ class AbstractAuthConstraint(metaclass=ABCMeta):
         return True
 
 
-
 class AuthConstraint(AbstractAuthConstraint):
     def __init__(self, role, sig_count, need_to_be_owner=False, metadata={}):
         self.role = role
@@ -52,7 +51,7 @@ class AuthConstraint(AbstractAuthConstraint):
     @property
     def as_dict(self):
         return {
-            CONSTRAINT_ID: self.constraint_id.value,
+            CONSTRAINT_ID: self.constraint_id,
             ROLE: self.role,
             SIG_COUNT: self.sig_count,
             NEED_TO_BE_OWNER: self.need_to_be_owner,
@@ -88,7 +87,7 @@ class AuthConstraintAnd(AbstractAuthConstraint):
     @property
     def as_dict(self):
         return {
-            CONSTRAINT_ID: self.constraint_id.value,
+            CONSTRAINT_ID: self.constraint_id,
             AUTH_CONSTRAINTS: [c.as_dict for c in self.auth_constraints]
         }
 
@@ -104,7 +103,7 @@ class AuthConstraintOr(AbstractAuthConstraint):
     @property
     def as_dict(self):
         return {
-            CONSTRAINT_ID: self.constraint_id.value,
+            CONSTRAINT_ID: self.constraint_id,
             AUTH_CONSTRAINTS: [c.as_dict for c in self.auth_constraints]
         }
 
@@ -128,7 +127,7 @@ class ConstraintCreator:
         return constraint_cls(**as_dict)
 
 
-class AbstructConstraintSerializer(metaclass=ABCMeta):
+class AbstractConstraintSerializer(metaclass=ABCMeta):
     def __init__(self, serializer):
         self.serializer = serializer
 
@@ -141,7 +140,7 @@ class AbstructConstraintSerializer(metaclass=ABCMeta):
         raise NotImplementedError()
 
 
-class ConstraintsSerializer(AbstructConstraintSerializer):
+class ConstraintsSerializer(AbstractConstraintSerializer):
     def serialize(self, constraint: AbstractAuthConstraint) -> bytes:
         return self.serializer.serialize(constraint.as_dict)
 
@@ -170,7 +169,7 @@ class AuthConstraintParserAnd(AbstractAuthConstraintParser):
 
 
 constraint_to_class_map = {
-    ConstraintsEnum.ROLE_CONSTRAINT_ID.value: AuthConstraint,
-    ConstraintsEnum.AND_CONSTRAINT_ID.value: AuthConstraintAnd,
-    ConstraintsEnum.OR_CONSTRAINT_ID.value: AuthConstraintOr,
+    ConstraintsEnum.ROLE_CONSTRAINT_ID: AuthConstraint,
+    ConstraintsEnum.AND_CONSTRAINT_ID: AuthConstraintAnd,
+    ConstraintsEnum.OR_CONSTRAINT_ID: AuthConstraintOr,
 }

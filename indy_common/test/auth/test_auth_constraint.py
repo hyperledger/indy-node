@@ -2,7 +2,7 @@ import copy
 
 import pytest
 
-from common.serializers.serialization import ledger_txn_serializer
+from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, AuthConstraintAnd, \
     ConstraintsSerializer, ROLE, CONSTRAINT_ID, ConstraintsEnum, NEED_TO_BE_OWNER, SIG_COUNT, METADATA, \
     ConstraintCreator, AUTH_CONSTRAINTS
@@ -125,46 +125,51 @@ def test_check_equal(constraints):
 
 
 def test_constraint_serialization(constraints):
-    constraint_serializer = ConstraintsSerializer(ledger_txn_serializer)
+    constraint_serializer = ConstraintsSerializer(domain_state_serializer)
     for constraint in constraints:
         serialized = constraint_serializer.serialize(constraint)
         deserialized = constraint_serializer.deserialize(serialized)
         assert constraint == deserialized
         assert constraint_serializer.serialize(constraint) == \
-               constraint_serializer.serialize(deserialized)
+            constraint_serializer.serialize(deserialized)
 
 
 @pytest.fixture
 def constraints_as_dict():
     trustee_role_as_dict = {
-        CONSTRAINT_ID: ConstraintsEnum.ROLE_CONSTRAINT_ID.value,
+        CONSTRAINT_ID: ConstraintsEnum.ROLE_CONSTRAINT_ID,
         ROLE: TRUSTEE,
         NEED_TO_BE_OWNER: True,
         SIG_COUNT: 1,
         METADATA: {}
     }
     steward_role_as_dict = {
-        CONSTRAINT_ID: ConstraintsEnum.ROLE_CONSTRAINT_ID.value,
+        CONSTRAINT_ID: ConstraintsEnum.ROLE_CONSTRAINT_ID,
         ROLE: STEWARD,
         NEED_TO_BE_OWNER: True,
         SIG_COUNT: 1,
         METADATA: {}
     }
     and_as_dict = {
-        CONSTRAINT_ID: ConstraintsEnum.AND_CONSTRAINT_ID.value,
+        CONSTRAINT_ID: ConstraintsEnum.AND_CONSTRAINT_ID,
         AUTH_CONSTRAINTS: [
             copy.copy(trustee_role_as_dict),
             copy.copy(steward_role_as_dict),
         ]
     }
     or_as_dict = {
-        CONSTRAINT_ID: ConstraintsEnum.OR_CONSTRAINT_ID.value,
+        CONSTRAINT_ID: ConstraintsEnum.OR_CONSTRAINT_ID,
         AUTH_CONSTRAINTS: [
             copy.copy(trustee_role_as_dict),
             copy.copy(steward_role_as_dict)
         ]
     }
     return trustee_role_as_dict, and_as_dict, or_as_dict
+
+
+# def test_error_on_deserialize():
+#     constraint_serializer = ConstraintsSerializer(domain_state_serializer)
+#     constraint_serializer.deserialize(b"some_string")
 
 
 def test_constraint_creator(constraints_as_dict,

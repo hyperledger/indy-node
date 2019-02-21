@@ -54,7 +54,7 @@ class DomainReqHandler(PHandler):
     }
 
     def __init__(self, ledger, state, config, requestProcessor,
-                 idrCache, attributeStore, bls_store, ts_store=None):
+                 idrCache, attributeStore, bls_store, write_req_validator, ts_store=None):
         super().__init__(ledger, state, config, requestProcessor, bls_store, ts_store=ts_store)
         self.idrCache = idrCache
         self.attributeStore = attributeStore
@@ -66,10 +66,7 @@ class DomainReqHandler(PHandler):
         self.post_batch_creation_handlers = []
         self.post_batch_commit_handlers = []
         self.post_batch_rejection_handlers = []
-        self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=auth_map,
-                                                         cache=self.idrCache,
-                                                         anyone_can_write_map=anyone_can_write_map)
+        self.write_req_validator = write_req_validator
 
         self._add_default_handlers()
 

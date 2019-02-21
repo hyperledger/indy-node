@@ -1,7 +1,12 @@
 import pytest
 
-from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy, AbstractAuthStrategy
-from indy_common.authorize.auth_constraints import AuthConstraint
+from common.exceptions import LogicError
+from common.serializers.serialization import domain_state_serializer
+from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy, AbstractAuthStrategy, ConfigLedgerAuthStrategy
+from indy_common.authorize.auth_constraints import AuthConstraint, ConstraintsSerializer
+from plenum.common.constants import TRUSTEE
+from state.pruning_state import PruningState
+from storage.kv_in_memory import KeyValueStorageInMemory
 
 
 @pytest.fixture(scope='function')
@@ -38,6 +43,23 @@ def test_local_strategy_not_found_action_id(local_auth_strategy):
 @pytest.fixture(scope='module')
 def is_accepted():
     return AbstractAuthStrategy.is_accepted_action_id
+
+
+@pytest.fixture
+def state():
+    return PruningState(KeyValueStorageInMemory())
+
+
+@pytest.fixture
+def state_serializer():
+    return ConstraintsSerializer(domain_state_serializer)
+
+
+@pytest.fixture
+def config_ledger_strategy(state, state_serializer):
+    return ConfigLedgerAuthStrategy(auth_map,
+                                    state=state,
+                                    serializer=state_serializer)
 
 
 def test_is_accepted_by_the_same(is_accepted):
@@ -88,3 +110,48 @@ def test_is_accepted_for_all_new_value(is_accepted):
 def test_is_accepted_for_all(is_accepted):
     assert is_accepted("PREFIX--TYPE--*--*--*",
                        "PREFIX--TYPE--FIELD--OLD_VALUE--NEW_VALUE")
+
+
+def test_config_strategy_get_constraint_from_state(state,
+                                                   state_serializer):
+    action_id = "1--2--3--4--5"
+    constraint = AuthConstraint(role=TRUSTEE,
+                                sig_count=1,
+                                need_to_be_owner=True)
+    auth_map = {action_id: constraint}
+    state.set(action_id.encode(), state_serializer.serialize(constraint))
+    strategy = ConfigLedgerAuthStrategy(auth_map=auth_map,
+                                        state=state,
+                                        serializer=state_serializer)
+    from_state = strategy.get_auth_constraint(action_id)
+    assert from_state == constraint
+
+
+def test_config_strategy_constraint_not_found(state,
+                                              state_serializer):
+    state_action_id = "1--2--3--4--5"
+    test_action_id = "1--2--3--4--50"
+    constraint = AuthConstraint(role=TRUSTEE,
+                                sig_count=1,
+                                need_to_be_owner=True)
+    auth_map = {state_action_id: constraint}
+    state.set(state_action_id.encode(), state_serializer.serialize(constraint))
+    strategy = ConfigLedgerAuthStrategy(auth_map=auth_map,
+                                        state=state,
+                                        serializer=state_serializer)
+    from_state = strategy.get_auth_constraint(test_action_id)
+    assert from_state is None
+
+
+def test_config_strategy_logic_error_key_not_in_state(state,
+                                                      state_serializer):
+    state_action_id = "1--2--3--4--5"
+    constraint = AuthConstraint(role=TRUSTEE,
+                                sig_count=1,
+                                need_to_be_owner=True)
+    auth_map = {state_action_id: constraint}
+    strategy = ConfigLedgerAuthStrategy(auth_map=auth_map,
+                                        state=state,
+                                        serializer=state_serializer)
+    with pytest.raises(LogicError, match="There is no any auth constraints for given rule_id"):
+        strategy.get_auth_constraint(state_action_id)
