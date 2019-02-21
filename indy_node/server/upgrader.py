@@ -209,6 +209,24 @@ class Upgrader(NodeMaintainer):
             return self.compareVersions(currentVersion, scheduledVersion) == 0
         return False
 
+    def checkUpgradePossible(self, pkgToUpgrade: str, targetVersion: str,
+                             reinstall: bool = False):
+        currentVersion, curDeps = NodeControlUtil.curr_pkg_info(pkgToUpgrade)
+        if not currentVersion:
+            return ("Package {} is not installed and cannot be upgraded"
+                    .format(pkgToUpgrade))
+
+        # TODO weak check
+        if (APP_NAME not in pkgToUpgrade and
+                all([APP_NAME not in d for d in curDeps])):
+            return "Package {} doesn't belong to pool".format(pkgToUpgrade)
+
+        if not self.is_version_upgradable(currentVersion, targetVersion, reinstall):
+            # currentVersion > targetVersion
+            return "Version is not upgradable"
+
+        return None
+
     def handleUpgradeTxn(self, txn) -> None:
         """
         Handles transaction of type POOL_UPGRADE

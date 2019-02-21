@@ -1,6 +1,5 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_node.server.request_handlers.config_req_handlers.config_write_request_handler import ConfigWriteRequestHandler
-from indy_node.utils.node_control_utils import NodeControlUtil
 
 from indy_common.config_util import getConfig
 
@@ -51,26 +50,17 @@ class PoolUpgradeHandler(ConfigWriteRequestHandler):
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         status = '*'
-        pkg_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
-        if pkg_to_upgrade:
-            currentVersion, cur_deps = NodeControlUtil.curr_pkg_info(pkg_to_upgrade)
-            if not currentVersion:
-                raise InvalidClientRequest(identifier, req_id,
-                                           "Package {} is not installed and cannot be upgraded".
-                                           format(pkg_to_upgrade))
-            # TODO weak check
-            if (APP_NAME not in pkg_to_upgrade and
-                    all([APP_NAME not in d for d in cur_deps])):
-                raise InvalidClientRequest(identifier, req_id,
-                                           "Package {} doesn't belong to pool".format(pkg_to_upgrade))
-        else:
-            raise InvalidClientRequest(identifier, req_id, "Upgrade package name is empty")
 
+        pkg_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
         targetVersion = operation[VERSION]
         reinstall = operation.get(REINSTALL, False)
-        if not Upgrader.is_version_upgradable(currentVersion, targetVersion, reinstall):
-            # currentVersion > targetVersion
-            raise InvalidClientRequest(identifier, req_id, "Version is not upgradable")
+
+        if not pkg_to_upgrade:
+            raise InvalidClientRequest(identifier, req_id, "Upgrade package name is empty")
+
+        res = self.upgrader.checkUpgradePossible(pkg_to_upgrade, targetVersion, reinstall)
+        if res:
+            raise InvalidClientRequest(identifier, req_id, res)
 
         action = operation.get(ACTION)
         # TODO: Some validation needed for making sure name and version

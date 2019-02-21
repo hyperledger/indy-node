@@ -15,7 +15,6 @@ from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
-from indy_node.utils.node_control_utils import NodeControlUtil
 
 
 class ConfigReqHandler(LedgerRequestHandler):
@@ -70,25 +69,15 @@ class ConfigReqHandler(LedgerRequestHandler):
             return
         if typ == POOL_UPGRADE:
             pkg_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
-            if pkg_to_upgrade:
-                currentVersion, cur_deps = NodeControlUtil.curr_pkg_info(pkg_to_upgrade)
-                if not currentVersion:
-                    raise InvalidClientRequest(req.identifier, req.reqId,
-                                               "Package {} is not installed and cannot be upgraded".
-                                               format(pkg_to_upgrade))
-                # TODO weak check
-                if (APP_NAME not in pkg_to_upgrade and
-                        all([APP_NAME not in d for d in cur_deps])):
-                    raise InvalidClientRequest(req.identifier, req.reqId,
-                                               "Package {} doesn't belong to pool".format(pkg_to_upgrade))
-            else:
-                raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade package name is empty")
-
             targetVersion = req.operation[VERSION]
             reinstall = req.operation.get(REINSTALL, False)
-            if not Upgrader.is_version_upgradable(currentVersion, targetVersion, reinstall):
-                # currentVersion > targetVersion
-                raise InvalidClientRequest(req.identifier, req.reqId, "Version is not upgradable")
+
+            if not pkg_to_upgrade:
+                raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade package name is empty")
+
+            res = self.upgrader.checkUpgradePossible(pkg_to_upgrade, targetVersion, reinstall)
+            if res:
+                raise InvalidClientRequest(req.identifier, req.reqId, res)
 
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version
