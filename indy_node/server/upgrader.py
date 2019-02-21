@@ -31,9 +31,10 @@ class Upgrader(NodeMaintainer):
                          actionFailedCallback, action_start_callback)
 
     @staticmethod
-    def getSrcVersion():
-        import indy_node
-        return indy_node.__version__
+    def getSrcVersion(pkg: str = APP_NAME):
+        if pkg == APP_NAME:
+            import indy_node
+            return indy_node.__version__
 
     @staticmethod
     def getDebianVersion(pkg: str = APP_NAME):

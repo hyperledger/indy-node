@@ -8,6 +8,8 @@ from plenum.common.request import Request
 from plenum.common.util import randomString
 from plenum.test.testing_utils import FakeSomething
 
+from indy_node.utils.node_control_utils import NodeControlUtil
+
 
 @pytest.fixture(scope='function')
 def pool_upgrade_request():
@@ -60,25 +62,34 @@ def test_pool_upgrade_dynamic_validation_fails_pckg(pool_upgrade_handler,
     e.match('Upgrade packet name is empty')
 
 
-def test_pool_upgrade_dynamic_validation_fails_not_installed(pool_upgrade_handler,
-                                                             pool_upgrade_request):
-    pool_upgrade_handler.curr_pkt_info = lambda pkt: (None, None)
+def test_pool_upgrade_dynamic_validation_fails_not_installed(
+        monkeypatch,
+        pool_upgrade_handler,
+        pool_upgrade_request):
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+                        lambda *x: (None, None))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request)
     e.match('is not installed and cannot be upgraded')
 
 
-def test_pool_upgrade_dynamic_validation_fails_belong(pool_upgrade_handler,
-                                                      pool_upgrade_request):
-    pool_upgrade_handler.curr_pkt_info = lambda pkt: ('1.1.1', ['some_pckg'])
+def test_pool_upgrade_dynamic_validation_fails_belong(
+        monkeypatch,
+        pool_upgrade_handler,
+        pool_upgrade_request):
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+                        lambda *x: ('1.1.1', ['some_pckg']))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request)
     e.match('doesn\'t belong to pool')
 
 
-def test_pool_upgrade_dynamic_validation_fails_upgradable(pool_upgrade_handler,
-                                                          pool_upgrade_request):
-    pool_upgrade_handler.curr_pkt_info = lambda pkt: ('1.1.1', [APP_NAME])
+def test_pool_upgrade_dynamic_validation_fails_upgradable(
+        monkeypatch,
+        pool_upgrade_handler,
+        pool_upgrade_request):
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+                        lambda *x: ('1.1.1', [APP_NAME]))
     pool_upgrade_request.operation[VERSION] = '1.1.1'
     pool_upgrade_request.operation[REINSTALL] = False
     with pytest.raises(InvalidClientRequest) as e:
@@ -86,9 +97,12 @@ def test_pool_upgrade_dynamic_validation_fails_upgradable(pool_upgrade_handler,
     e.match('Version is not upgradable')
 
 
-def test_pool_upgrade_dynamic_validation_fails_scheduled(pool_upgrade_handler,
-                                                         pool_upgrade_request):
-    pool_upgrade_handler.curr_pkt_info = lambda pkt: ('1.1.1', [APP_NAME])
+def test_pool_upgrade_dynamic_validation_fails_scheduled(
+        monkeypatch,
+        pool_upgrade_handler,
+        pool_upgrade_request):
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+                        lambda *x: ('1.1.1', [APP_NAME]))
     pool_upgrade_request.operation[VERSION] = '1.1.1'
     pool_upgrade_request.operation[REINSTALL] = True
     pool_upgrade_handler.upgrader.get_upgrade_txn = \
@@ -100,9 +114,12 @@ def test_pool_upgrade_dynamic_validation_fails_scheduled(pool_upgrade_handler,
     e.match('is already scheduled')
 
 
-def test_pool_upgrade_dynamic_validation_passes(pool_upgrade_handler,
-                                                pool_upgrade_request):
-    pool_upgrade_handler.curr_pkt_info = lambda pkt: ('1.1.1', [APP_NAME])
+def test_pool_upgrade_dynamic_validation_passes(
+        monkeypatch,
+        pool_upgrade_handler,
+        pool_upgrade_request):
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkt_info',
+                        lambda *x: ('1.1.1', [APP_NAME]))
     pool_upgrade_request.operation[VERSION] = '1.1.1'
     pool_upgrade_request.operation[REINSTALL] = True
     pool_upgrade_handler.upgrader.get_upgrade_txn = \

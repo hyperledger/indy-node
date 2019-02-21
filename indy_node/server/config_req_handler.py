@@ -62,9 +62,6 @@ class ConfigReqHandler(LedgerRequestHandler):
 
         # TODO: Check if cancel is submitted before start
 
-    def curr_pkt_info(self, pkg_name):
-        return NodeControlUtil.curr_pkt_info(pkg_name)
-
     def validate(self, req: Request):
         status = '*'
         operation = req.operation
@@ -74,7 +71,7 @@ class ConfigReqHandler(LedgerRequestHandler):
         if typ == POOL_UPGRADE:
             pkt_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
             if pkt_to_upgrade:
-                currentVersion, cur_deps = self.curr_pkt_info(pkt_to_upgrade)
+                currentVersion, cur_deps = NodeControlUtil.curr_pkt_info(pkt_to_upgrade)
                 if not currentVersion:
                     raise InvalidClientRequest(req.identifier, req.reqId,
                                                "Packet {} is not installed and cannot be upgraded".

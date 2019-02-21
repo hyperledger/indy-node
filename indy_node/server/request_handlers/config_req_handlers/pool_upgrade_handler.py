@@ -53,7 +53,7 @@ class PoolUpgradeHandler(ConfigWriteRequestHandler):
         status = '*'
         pkt_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
         if pkt_to_upgrade:
-            currentVersion, cur_deps = self.curr_pkt_info(pkt_to_upgrade)
+            currentVersion, cur_deps = NodeControlUtil.curr_pkt_info(pkt_to_upgrade)
             if not currentVersion:
                 raise InvalidClientRequest(identifier, req_id,
                                            "Packet {} is not installed and cannot be upgraded".
@@ -107,9 +107,6 @@ class PoolUpgradeHandler(ConfigWriteRequestHandler):
         super().apply_forced_request(req)
         txn = self._req_to_txn(req)
         self.upgrader.handleUpgradeTxn(txn)
-
-    def curr_pkt_info(self, pkg_name):
-        return NodeControlUtil.curr_pkt_info(pkg_name)
 
     # Config handler don't use state for any validation for now
     def update_state(self, txn, prev_result, is_committed=False):
