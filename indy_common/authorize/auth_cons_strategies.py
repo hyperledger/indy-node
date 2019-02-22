@@ -69,29 +69,29 @@ class ConfigLedgerAuthStrategy(AbstractAuthStrategy):
 
     def get_auth_constraint(self, action_id: str) -> AbstractAuthConstraint:
         """
-        Find rule_id for incoming action_id
+        Find rule_id for incoming action_id and return AuthConstraint instance
         """
         if self.anyone_can_write_map:
-            am_id = self._find_auth_constraint_key(action_id, self.anyone_can_write_map)
-            if am_id:
-                return self.anyone_can_write_map.get(am_id)
-        am_id = self._find_auth_constraint_key(action_id, self.auth_map)
-        if not am_id:
-            return None
-        """
-        Get auth constraint from state
-        """
-        from_state = self.state.get(key=am_id.encode(),
-                                    isCommitted=False)
-        if not from_state:
-            raise LogicError("There is no any auth constraints for given rule_id: {}".format(am_id))
-        constraint = self.serializer.deserialize(from_state)
-        if not constraint:
-            raise LogicError("Cannot initialize constraint object from state")
+            return self._find_auth_constraint(action_id, self.anyone_can_write_map)
 
-        return constraint
+        return self._find_auth_constraint(action_id, self.auth_map)
+
+    def _find_auth_constraint(self, action_id, auth_map):
+        am_id = self._find_auth_constraint_key(action_id, auth_map)
+        if am_id:
+            constraint = self.get_from_state(key=am_id.encode())
+            if not constraint:
+                return self.auth_map.get(am_id)
+            return constraint
 
     def _find_auth_constraint_key(self, action_id, auth_map):
         for am_id in auth_map.keys():
             if self.is_accepted_action_id(am_id, action_id):
                 return am_id
+
+    def get_from_state(self, key, isCommitted=False):
+        from_state = self.state.get(key=key,
+                                    isCommitted=isCommitted)
+        if not from_state:
+            return None
+        return self.serializer.deserialize(from_state)
