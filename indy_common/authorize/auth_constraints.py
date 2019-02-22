@@ -1,19 +1,43 @@
 from abc import ABCMeta, abstractmethod
+from enum import Enum
 from typing import List
-
 from indy_common.authorize.helper import get_named_role
 
-ROLE_CONSTRAINT_ID = 'ROLE'
-AND_CONSTRAINT_ID = 'AND'
-OR_CONSTRAINT_ID = 'OR'
+
+CONSTRAINT_ID = "constraint_id"
+AUTH_CONSTRAINTS = "auth_constraints"
+ROLE = "role"
+METADATA = "metadata"
+SIG_COUNT = "sig_count"
+NEED_TO_BE_OWNER = "need_to_be_owner"
+
+
+class ConstraintEnum(Enum):
+    def __str__(self):
+        return self.name
+
+
+class ConstraintsEnum:
+    ROLE_CONSTRAINT_ID = 'ROLE'
+    AND_CONSTRAINT_ID = 'AND'
+    OR_CONSTRAINT_ID = 'OR'
 
 
 class AbstractAuthConstraint(metaclass=ABCMeta):
     def __init__(self):
         self.constraint_id = ''
 
+    @property
+    def as_dict(self):
+        raise NotImplementedError()
+
     def __str__(self):
         return str(self)
+
+    def __eq__(self, other):
+        if self.as_dict != other.as_dict:
+            return False
+        return True
 
 
 class AuthConstraint(AbstractAuthConstraint):
@@ -22,7 +46,17 @@ class AuthConstraint(AbstractAuthConstraint):
         self.sig_count = sig_count
         self.need_to_be_owner = need_to_be_owner
         self.metadata = metadata
-        self.constraint_id = ROLE_CONSTRAINT_ID
+        self.constraint_id = ConstraintsEnum.ROLE_CONSTRAINT_ID
+
+    @property
+    def as_dict(self):
+        return {
+            CONSTRAINT_ID: self.constraint_id,
+            ROLE: self.role,
+            SIG_COUNT: self.sig_count,
+            NEED_TO_BE_OWNER: self.need_to_be_owner,
+            METADATA: self.metadata
+        }
 
     def __str__(self):
         role = get_named_role(self.role) if self.role != '*' else 'ALL'
@@ -46,21 +80,73 @@ class AuthConstraint(AbstractAuthConstraint):
 
 
 class AuthConstraintAnd(AbstractAuthConstraint):
-    def __init__(self, auth_constraints):
+    def __init__(self, auth_constraints: List[AbstractAuthConstraint]):
         self.auth_constraints = auth_constraints
-        self.constraint_id = AND_CONSTRAINT_ID
+        self.constraint_id = ConstraintsEnum.AND_CONSTRAINT_ID
+
+    @property
+    def as_dict(self):
+        return {
+            CONSTRAINT_ID: self.constraint_id,
+            AUTH_CONSTRAINTS: [c.as_dict for c in self.auth_constraints]
+        }
 
     def __str__(self):
         return " AND ".join([str(ac) for ac in self.auth_constraints])
 
 
 class AuthConstraintOr(AbstractAuthConstraint):
-    def __init__(self, auth_constraints):
+    def __init__(self, auth_constraints: List[AbstractAuthConstraint]):
         self.auth_constraints = auth_constraints
-        self.constraint_id = OR_CONSTRAINT_ID
+        self.constraint_id = ConstraintsEnum.OR_CONSTRAINT_ID
+
+    @property
+    def as_dict(self):
+        return {
+            CONSTRAINT_ID: self.constraint_id,
+            AUTH_CONSTRAINTS: [c.as_dict for c in self.auth_constraints]
+        }
 
     def __str__(self):
         return " OR ".join([str(ac) for ac in self.auth_constraints])
+
+
+class ConstraintCreator:
+    @staticmethod
+    def create_constraint(as_dict):
+        constraint_id = as_dict.pop(CONSTRAINT_ID)
+        if constraint_id is None:
+            raise KeyError('There is no "constraint_id" field in deserialised dict: {}'.format(as_dict))
+
+        constraint_cls = constraint_to_class_map.get(constraint_id)
+        if AUTH_CONSTRAINTS in as_dict:
+            auth_constraints = []
+            for constraint in as_dict[AUTH_CONSTRAINTS]:
+                auth_constraints.append(ConstraintCreator.create_constraint(constraint))
+            as_dict[AUTH_CONSTRAINTS] = auth_constraints
+        return constraint_cls(**as_dict)
+
+
+class AbstractConstraintSerializer(metaclass=ABCMeta):
+    def __init__(self, serializer):
+        self.serializer = serializer
+
+    @abstractmethod
+    def serialize(self, constraint: AbstractAuthConstraint) -> bytes:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def deserialize(self, serialized_str: bytes) -> AbstractAuthConstraint:
+        raise NotImplementedError()
+
+
+class ConstraintsSerializer(AbstractConstraintSerializer):
+    def serialize(self, constraint: AbstractAuthConstraint) -> bytes:
+        return self.serializer.serialize(constraint.as_dict)
+
+    def deserialize(self, serialized_str: bytes) -> AbstractAuthConstraint:
+        as_dict = self.serializer.deserialize(serialized_str)
+        return ConstraintCreator.create_constraint(as_dict)
 
 
 class AbstractAuthConstraintParser(metaclass=ABCMeta):
@@ -80,3 +166,10 @@ class AuthConstraintParserAnd(AbstractAuthConstraintParser):
     @staticmethod
     def is_accepted(constraint_results: List):
         return all(constraint_results)
+
+
+constraint_to_class_map = {
+    ConstraintsEnum.ROLE_CONSTRAINT_ID: AuthConstraint,
+    ConstraintsEnum.AND_CONSTRAINT_ID: AuthConstraintAnd,
+    ConstraintsEnum.OR_CONSTRAINT_ID: AuthConstraintOr,
+}
