@@ -77,4 +77,5 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
         elif self.config.authPolicy == CONFIG_LEDGER_AUTH_POLICY:
             return ConfigLedgerAuthStrategy(auth_map=self.auth_map,
                                             state=self.config_state,
-                                            serializer=self.state_serializer)
+                                            serializer=self.state_serializer,
+                                            anyone_can_write_map=self.anyone_can_write_map if self.anyone_can_write else None)
