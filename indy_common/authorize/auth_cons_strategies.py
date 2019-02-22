@@ -81,7 +81,7 @@ class ConfigLedgerAuthStrategy(AbstractAuthStrategy):
         if am_id:
             constraint = self.get_from_state(key=am_id.encode())
             if not constraint:
-                return self.auth_map.get(am_id)
+                return auth_map.get(am_id)
             return constraint
 
     def _find_auth_constraint_key(self, action_id, auth_map):
