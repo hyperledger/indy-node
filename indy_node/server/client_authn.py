@@ -8,7 +8,7 @@ from plenum.server.client_authn import NaclAuthNr, CoreAuthNr, CoreAuthMixin
 from indy_common.constants import ATTRIB, POOL_UPGRADE, SCHEMA, CLAIM_DEF, \
     GET_NYM, GET_ATTR, GET_SCHEMA, GET_CLAIM_DEF, POOL_CONFIG, POOL_RESTART, \
     REVOC_REG_DEF, REVOC_REG_ENTRY, \
-    GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, VALIDATOR_INFO
+    GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, VALIDATOR_INFO, AUTH_RULE
 from indy_node.persistence.idr_cache import IdrCache
 
 
@@ -18,7 +18,7 @@ class LedgerBasedAuthNr(CoreAuthMixin, NaclAuthNr):
     """
 
     write_types = CoreAuthMixin.write_types.union({ATTRIB, SCHEMA, CLAIM_DEF,
-                                                   POOL_CONFIG, POOL_UPGRADE,
+                                                   POOL_CONFIG, POOL_UPGRADE, AUTH_RULE,
                                                    REVOC_REG_DEF, REVOC_REG_ENTRY})
     query_types = CoreAuthMixin.query_types.union({GET_NYM, GET_ATTR, GET_SCHEMA,
                                                    GET_CLAIM_DEF, GET_REVOC_REG_DEF,

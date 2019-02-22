@@ -3,7 +3,7 @@ from typing import Dict
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, NYM, ROLE, NETWORK_MONITOR
+    CLAIM_DEF, SCHEMA, NYM, ROLE, NETWORK_MONITOR, AUTH_RULE
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
 IDENTITY_OWNER = ''
@@ -118,6 +118,11 @@ pool_config = AuthActionEdit(txn_type=POOL_CONFIG,
                              old_value='*',
                              new_value='*')
 
+auth_rule = AuthActionEdit(txn_type=AUTH_RULE,
+                           field='*',
+                           old_value='*',
+                           new_value='*')
+
 validator_info = AuthActionAdd(txn_type=VALIDATOR_INFO,
                                field='*',
                                value='*')
@@ -200,6 +205,7 @@ auth_map = {
     cancel_upgrade.get_action_id(): one_trustee_constraint,
     pool_restart.get_action_id(): one_trustee_constraint,
     pool_config.get_action_id(): one_trustee_constraint,
+    auth_rule.get_action_id(): one_trustee_constraint,
     validator_info.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                       AuthConstraint(STEWARD, 1),
                                                       AuthConstraint(NETWORK_MONITOR, 1)])

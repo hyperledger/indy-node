@@ -1,6 +1,6 @@
 from typing import List
 
-from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
+from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX
 from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
@@ -10,7 +10,7 @@ from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    APP_NAME, REINSTALL
+    APP_NAME, REINSTALL, AUTH_RULE
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
@@ -19,7 +19,7 @@ from indy_node.utils.node_control_utils import NodeControlUtil
 
 
 class ConfigReqHandler(LedgerRequestHandler):
-    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
+    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
@@ -39,9 +39,26 @@ class ConfigReqHandler(LedgerRequestHandler):
             self._doStaticValidationPoolUpgrade(identifier, req_id, operation)
         elif operation[TXN_TYPE] == POOL_CONFIG:
             self._doStaticValidationPoolConfig(identifier, req_id, operation)
+        elif operation[TXN_TYPE] == AUTH_RULE:
+            self._doStaticValidationAuthRuleChange(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
         pass
+
+    def _doStaticValidationAuthRuleChange(self, identifier, reqId, operation):
+        constrarint = operation.get(AUTH_CONSTRAINTS)
+        self._validate_constraint(constrarint)
+
+        action = operation.get(AUTH_ACTION)
+        old_value = operation.get(OLD_VALUE, None)
+        if action == EDIT_PREFIX and old_value is None:
+            raise InvalidClientRequest(identifier, reqId,
+                                       "Transaction for change authentication "
+                                       "rules for {}={} must contain field {}".
+                                       format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
+
+        # TODO: check for key
+
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)
@@ -71,7 +88,7 @@ class ConfigReqHandler(LedgerRequestHandler):
         status = '*'
         operation = req.operation
         typ = operation.get(TXN_TYPE)
-        if typ not in [POOL_UPGRADE, POOL_CONFIG]:
+        if typ not in [POOL_UPGRADE, POOL_CONFIG, AUTH_RULE]:
             return
         if typ == POOL_UPGRADE:
             pkt_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
@@ -124,6 +141,15 @@ class ConfigReqHandler(LedgerRequestHandler):
             self.write_req_validator.validate(req,
                                               [auth_action])
         elif typ == POOL_CONFIG:
+            action = '*'
+            status = '*'
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=typ,
+                                                              field=ACTION,
+                                                              old_value=status,
+                                                              new_value=action)])
+        elif typ == AUTH_RULE:
+            # TODO: check that sender has permission to change auth_rules
             action = '*'
             status = '*'
             self.write_req_validator.validate(req,
