@@ -740,9 +740,9 @@ class DomainReqHandler(PHandler):
         writer = writer_cls(self.state)
         writer.write(current_entry, txn)
 
-    def onBatchCreated(self, stateRoot):
+    def onBatchCreated(self, stateRoot, txnTime):
         for handler in self.post_batch_creation_handlers:
-            handler(stateRoot)
+            handler(stateRoot, txnTime)
 
     def onBatchRejected(self):
         for handler in self.post_batch_rejection_handlers:
