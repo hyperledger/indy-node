@@ -26,6 +26,73 @@ TIMEOUT = 300
 MAX_DEPS_DEPTH = 6
 
 
+class ShellException(subprocess.CalledProcessError):
+    def __init__(self, *args, exc: subprocess.CalledProcessError = None, **kwargs):
+        if exc:
+            super().__init__(exc.returncode, exc.cmd, output=exc.output, stderr=exc.stderr)
+        else:
+            super().__init__(*args, **kwargs)
+
+    @property
+    def stdout_decoded(self):
+        return self.stdout.decode(locale.getpreferredencoding(), 'decode_errors') if res.stdout else ""
+
+    @property
+    def stderr_decoded(self):
+        return self.stdout.decode(locale.getpreferredencoding(), 'decode_errors') if res.stderr else ""
+
+
+class DebianVersion:
+    cache = {}  # seems not actually necessary
+
+    def __init__(self, val: str):
+        self.val = val
+
+    @classmethod
+    def _cmp(cls, v1, v2):
+        # TODO logic will fail if one of versions is incorrect
+        if v1 == v2:
+            return 0
+        else:
+            cmd = compose_cmd(['dpkg', '--compare-versions', v1, 'gt', v2])
+            try:
+                NodeControlUtil.run_shell_script(cmd)
+            except ShellException as exc:
+                if exc.stderr:
+                    raise
+                else:
+                    return -1
+            else:
+                return 1
+
+    # TODO cache results
+    @classmethod
+    def cmp(cls, v1, v2):
+        key = (v1, v2)
+        if key not in cls.cache:
+            cls.cache[key] = cls._cmp(*key)
+            cls.cache[key[::-1]] = cls.cache[key] * (-1)
+
+        return cls.cache[key]
+
+    @classmethod
+    def clear_cache(cls):
+        cls.cache.clear()
+
+    def __lt__(self, other):
+        return self.cmp(self.val, other.val) < 0
+    def __gt__(self, other):
+        return self.cmp(self.val, other.val) > 0
+    def __eq__(self, other):
+        return self.cmp(self.val, other.val) == 0
+    def __le__(self, other):
+        return self.cmp(self.val, other.val) <= 0
+    def __ge__(self, other):
+        return self.cmp(self.val, other.val) >= 0
+    def __ne__(self, other):
+        return self.cmp(self.val, other.val) != 0
+
+
 class NodeControlUtil:
     # Method is used in case we are interested in command output
     # errors are ignored
@@ -45,8 +112,18 @@ class NodeControlUtil:
     # Method is used in case we are NOT interested in command output
     # everything: command, errors, output etc are logged to journalctl
     @classmethod
-    def run_shell_script(cls, command, timeout=TIMEOUT):
-        subprocess.run(command, shell=True, timeout=timeout, check=True)
+    def run_shell_script(cls, command, stdout=False, stderr=False,
+                         timeout=TIMEOUT, check=True):
+        try:
+            res = subprocess.run(
+                command, shell=True, timeout=timeout, check=check,
+                stdout=None if stdout else subprocess.PIPE,
+                stderr=None if stderr else subprocess.PIPE)
+        except subprocess.CalledProcessError as exc:
+            raise ShellException(exc=exc) from exc
+        else:
+            return res.stdout.decode(locale.getpreferredencoding(), 'decode_errors').strip() if res.stdout else ""
+
 
     @classmethod
     def _get_curr_info(cls, package):
