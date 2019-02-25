@@ -1,8 +1,8 @@
 from abc import ABCMeta
 
 from indy_common.authorize.auth_actions import AbstractAuthAction
-from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, ROLE_CONSTRAINT_ID, \
-    AuthConstraintAnd
+from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, \
+    AuthConstraintAnd, ConstraintsEnum
 from indy_common.authorize.helper import get_named_role
 from indy_common.constants import NYM, CLAIM_DEF
 from indy_common.transactions import IndyTransactions
@@ -99,7 +99,7 @@ class CompositeAuthorizer(AbstractAuthorizer):
         super().__init__()
         self.authorizers = {}
 
-    def register_authorizer(self, authorizer, auth_constraint_id=ROLE_CONSTRAINT_ID):
+    def register_authorizer(self, authorizer, auth_constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID):
         authorizer.parent = self
         self.authorizers.setdefault(auth_constraint_id, []).append(authorizer)
 
