@@ -39,6 +39,10 @@ class AbstractAuthConstraint(metaclass=ABCMeta):
             return False
         return True
 
+    @staticmethod
+    def from_dict(as_dict):
+        raise NotImplementedError()
+
 
 class AuthConstraint(AbstractAuthConstraint):
     def __init__(self, role, sig_count, need_to_be_owner=False, metadata={}):
@@ -78,6 +82,10 @@ class AuthConstraint(AbstractAuthConstraint):
         elif role == "ALL" and self.need_to_be_owner and self.sig_count > 1:
             return "{} signatures of any role are required and needs to be owner".format(self.sig_count)
 
+    @staticmethod
+    def from_dict(as_dict):
+        return AuthConstraint(**as_dict)
+
 
 class AuthConstraintAnd(AbstractAuthConstraint):
     def __init__(self, auth_constraints: List[AbstractAuthConstraint]):
@@ -93,6 +101,17 @@ class AuthConstraintAnd(AbstractAuthConstraint):
 
     def __str__(self):
         return " AND ".join([str(ac) for ac in self.auth_constraints])
+
+    @staticmethod
+    def from_dict(as_dict):
+        auth_constraints = []
+        for dict_constraint in as_dict[AUTH_CONSTRAINTS]:
+            constraint_id = dict_constraint.pop(CONSTRAINT_ID)
+            constraint_cls = constraint_to_class_map.get(constraint_id)
+            auth_constraints.append(constraint_cls.from_dict(dict_constraint))
+        as_dict[AUTH_CONSTRAINTS] = auth_constraints
+
+        return AuthConstraintAnd(**as_dict)
 
 
 class AuthConstraintOr(AbstractAuthConstraint):
@@ -110,6 +129,19 @@ class AuthConstraintOr(AbstractAuthConstraint):
     def __str__(self):
         return " OR ".join([str(ac) for ac in self.auth_constraints])
 
+    @staticmethod
+    def from_dict(as_dict):
+        auth_constraints = []
+        for dict_constraint in as_dict[AUTH_CONSTRAINTS]:
+            constraint_id = dict_constraint.pop(CONSTRAINT_ID)
+            if constraint_id is None:
+                raise KeyError('There is no "constraint_id" field in deserialised dict: {}'.format(as_dict))
+            constraint_cls = constraint_to_class_map.get(constraint_id)
+            auth_constraints.append(constraint_cls.from_dict(dict_constraint))
+        as_dict[AUTH_CONSTRAINTS] = auth_constraints
+
+        return AuthConstraintOr(**as_dict)
+
 
 class ConstraintCreator:
     @staticmethod
@@ -119,12 +151,7 @@ class ConstraintCreator:
             raise KeyError('There is no "constraint_id" field in deserialised dict: {}'.format(as_dict))
 
         constraint_cls = constraint_to_class_map.get(constraint_id)
-        if AUTH_CONSTRAINTS in as_dict:
-            auth_constraints = []
-            for constraint in as_dict[AUTH_CONSTRAINTS]:
-                auth_constraints.append(ConstraintCreator.create_constraint(constraint))
-            as_dict[AUTH_CONSTRAINTS] = auth_constraints
-        return constraint_cls(**as_dict)
+        return constraint_cls.from_dict(as_dict)
 
 
 class AbstractConstraintSerializer(metaclass=ABCMeta):
