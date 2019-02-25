@@ -2,6 +2,9 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
+from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
+from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
+    NEED_TO_BE_OWNER, SIG_COUNT, ROLE
 from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
@@ -16,14 +19,15 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE
 from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, CONSTRAINT, AUTH_ACTION, FIELD, OLD_VALUE, NEW_VALUE, AUTH_TYPE, \
+    SCHEMA_IS_STRICT
 from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
 from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
 from plenum.common.messages.fields import ConstantField, IdentifierField, \
     LimitedLengthStringField, TxnSeqNoField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
     ChooseField, IntegerField, IterableField, \
-    AnyMapField, NonEmptyStringField, DatetimeStringField
+    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, FieldBase
 from plenum.common.messages.message_base import MessageValidator
 from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
@@ -32,7 +36,7 @@ from plenum.common.util import is_network_ip_address_valid, is_network_port_vali
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
     NONCE_FIELD_LIMIT, \
     ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
-    VERSION_FIELD_LIMIT
+    VERSION_FIELD_LIMIT, AUTH_FIELD_LIMIT
 
 
 class Request(PRequest):
@@ -303,10 +307,58 @@ class ClientPoolConfigOperation(MessageValidator):
     )
 
 
-class ClientAuthRuleChangeOperation(MessageValidator):
+class ConstraintField(MessageValidator):
+    _base_types = None
+
+    def __init__(self, constraint_entity_cls, constraint_list_cls, **kwargs):
+        super().__init__(**kwargs)
+        self._constraint_entity = constraint_entity_cls
+        self._constraint_list = constraint_list_cls
+
+    def _specific_validation(self, val):
+        if val is None:
+            return
+            # return "Field {} is required".format(CONSTRAINT)
+        return self._constraint_entity.validate(val) \
+            if val[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID \
+            else self._constraint_list.validate(val)
+
+
+class ConstraintEntityField(MessageValidator):
+    schema = (
+        (CONSTRAINT_ID, ChooseField(values=ConstraintsEnum.values())),
+        (ROLE, RoleField()),
+        (SIG_COUNT, NonNegativeNumberField()),
+        (NEED_TO_BE_OWNER, BooleanField(exceptional_values=False,
+                                        optional=True)),
+        (METADATA, AnyMapField(exceptional_values={},
+                               optional=True))
+    )
+
+
+class ConstraintListField(MessageValidator):
+    schema = None
+
+    def __init__(self, schema_is_strict=SCHEMA_IS_STRICT):
+        self.schema = (
+            (CONSTRAINT_ID, ChooseField(values=ConstraintsEnum.values())),
+            (AUTH_CONSTRAINTS, IterableField(ConstraintField(self,
+                                                             ConstraintEntityField())))
+        )
+        super().__init__(schema_is_strict)
+
+
+class ClientAuthRuleOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(AUTH_RULE)),
-        # TODO: add fields
+        (CONSTRAINT, ConstraintField(ConstraintListField(),
+                                     ConstraintEntityField())),
+        (AUTH_ACTION, ChooseField(values=(ADD_PREFIX, EDIT_PREFIX))),
+        (AUTH_TYPE, LimitedLengthStringField(max_length=AUTH_FIELD_LIMIT)),
+        (FIELD, LimitedLengthStringField(max_length=AUTH_FIELD_LIMIT)),
+        (OLD_VALUE, LimitedLengthStringField(max_length=AUTH_FIELD_LIMIT,
+                                             optional=True)),
+        (NEW_VALUE, LimitedLengthStringField(max_length=AUTH_FIELD_LIMIT))
     )
 
 
@@ -322,7 +374,7 @@ class ClientOperationField(PClientOperationField):
         GET_SCHEMA: ClientGetSchemaOperation(),
         POOL_UPGRADE: ClientPoolUpgradeOperation(),
         POOL_CONFIG: ClientPoolConfigOperation(),
-        AUTH_RULE: ClientAuthRuleChangeOperation(),
+        AUTH_RULE: ClientAuthRuleOperation(),
         POOL_RESTART: ClientPoolRestartOperation(),
         VALIDATOR_INFO: ClientValidatorInfoOperation(),
         REVOC_REG_DEF: ClientRevocDefSubmitField(),

@@ -22,6 +22,12 @@ class ConstraintsEnum:
     AND_CONSTRAINT_ID = 'AND'
     OR_CONSTRAINT_ID = 'OR'
 
+    @staticmethod
+    def values():
+        return [ConstraintsEnum.ROLE_CONSTRAINT_ID,
+                ConstraintsEnum.AND_CONSTRAINT_ID,
+                ConstraintsEnum.OR_CONSTRAINT_ID]
+
 
 class AbstractAuthConstraint(metaclass=ABCMeta):
     def __init__(self):

@@ -2,7 +2,7 @@ from typing import List
 
 from common.serializers.serialization import ledger_txn_serializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
-from indy_common.authorize.auth_constraints import ConstraintsSerializer
+from indy_common.authorize.auth_constraints import ConstraintsSerializer, AUTH_CONSTRAINTS, ConstraintCreator
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX
 from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
@@ -11,7 +11,8 @@ from plenum.common.exceptions import InvalidClientRequest, \
     UnauthorizedClientRequest
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata
 from plenum.server.ledger_req_handler import LedgerRequestHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, \
+    CONSTRAINT
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     APP_NAME, REINSTALL, AUTH_RULE
 from indy_common.types import Request
@@ -41,25 +42,39 @@ class ConfigReqHandler(LedgerRequestHandler):
         elif operation[TXN_TYPE] == POOL_CONFIG:
             self._doStaticValidationPoolConfig(identifier, req_id, operation)
         elif operation[TXN_TYPE] == AUTH_RULE:
-            self._doStaticValidationAuthRuleChange(identifier, req_id, operation)
+            self._doStaticValidationAuthRule(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
         pass
 
-    def _doStaticValidationAuthRuleChange(self, identifier, reqId, operation):
-        constrarint = operation.get(AUTH_CONSTRAINTS)
-        self._validate_constraint(constrarint)
+    def _doStaticValidationAuthRule(self, identifier, reqId, operation):
+        constrarint = operation.get(CONSTRAINT)
+        #ConstraintCreator.create_constraint(constrarint)
 
         action = operation.get(AUTH_ACTION)
         old_value = operation.get(OLD_VALUE, None)
-        if action == EDIT_PREFIX and old_value is None:
+        new_value = operation.get(NEW_VALUE, None)
+        auth_type = operation.get(AUTH_TYPE, None)
+        field = operation.get(FIELD, None)
+        if action == EDIT_PREFIX:
+            if old_value is None:
+                raise InvalidClientRequest(identifier, reqId,
+                                           "Transaction for change authentication "
+                                           "rules for {}={} must contain field {}".
+                                           format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
+            auth_key = AuthActionAdd(txn_type=auth_type,
+                                     field=field,
+                                     value=new_value).get_action_id()
+        else:
+            auth_key = AuthActionEdit(txn_type=auth_type,
+                                      field=field,
+                                      old_value=old_value,
+                                      new_value=new_value).get_action_id()
+        if auth_key not in self.write_req_validator.auth_map:
             raise InvalidClientRequest(identifier, reqId,
                                        "Transaction for change authentication "
                                        "rules for {}={} must contain field {}".
                                        format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
-
-        # TODO: check for key
-
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)
