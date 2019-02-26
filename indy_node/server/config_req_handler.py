@@ -1,7 +1,7 @@
 from typing import List
 
 from indy_common.authorize.auth_constraints import ConstraintCreator
-from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX
+from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
 from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata
@@ -9,7 +9,7 @@ from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     APP_NAME, REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD
-from indy_common.types import Request
+from indy_common.types import Request, ClientAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
@@ -44,25 +44,19 @@ class ConfigReqHandler(LedgerRequestHandler):
     def _doStaticValidationAuthRule(self, identifier, reqId, operation):
         constraint = operation.get(CONSTRAINT)
         ConstraintCreator.create_constraint(constraint)
-
         action = operation.get(AUTH_ACTION, None)
-        old_value = operation.get(OLD_VALUE, None)
-        new_value = operation.get(NEW_VALUE, None)
-        auth_type = operation.get(AUTH_TYPE, None)
-        field = operation.get(FIELD, None)
-        if old_value is None and action == EDIT_PREFIX:
+        try:
+            auth_key = self.get_auth_key(operation)
+        except Exception:
+            transaction_schema = dict(ClientAuthRuleOperation.schema)
+            if action == ADD_PREFIX:
+                transaction_schema.pop(OLD_VALUE)
             raise InvalidClientRequest(identifier, reqId,
-                                       "Transaction for change authentication "
-                                       "rules for {}={} must contain field {}".
-                                       format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
-        auth_key = AuthActionEdit(txn_type=auth_type,
-                                  field=field,
-                                  old_value=old_value,
-                                  new_value=new_value).get_action_id() \
-            if action == EDIT_PREFIX else \
-            AuthActionAdd(txn_type=auth_type,
-                          field=field,
-                          value=new_value).get_action_id()
+                                       "Transaction for {} authentication "
+                                       "rules must match the schema = {}".
+                                       format(action,
+                                              transaction_schema.keys()))
+
         if auth_key not in self.write_req_validator.auth_map and \
                 auth_key not in self.write_req_validator.anyone_can_write_map:
             raise InvalidClientRequest(identifier, reqId,
@@ -188,3 +182,20 @@ class ConfigReqHandler(LedgerRequestHandler):
         txn = reqToTxn(req)
         self.upgrader.handleUpgradeTxn(txn)
         self.poolCfg.handleConfigTxn(txn)
+
+    @staticmethod
+    def get_auth_key(operation):
+        action = operation.get(AUTH_ACTION, None)
+        old_value = operation.get(OLD_VALUE, None)
+        new_value = operation.get(NEW_VALUE, None)
+        auth_type = operation.get(AUTH_TYPE, None)
+        field = operation.get(FIELD, None)
+
+        return AuthActionEdit(txn_type=auth_type,
+                              field=field,
+                              old_value=old_value,
+                              new_value=new_value).get_action_id() \
+            if action == EDIT_PREFIX else \
+            AuthActionAdd(txn_type=auth_type,
+                          field=field,
+                          value=new_value).get_action_id()
