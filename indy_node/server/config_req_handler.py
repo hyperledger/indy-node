@@ -48,9 +48,9 @@ class ConfigReqHandler(LedgerRequestHandler):
 
     def _doStaticValidationAuthRule(self, identifier, reqId, operation):
         constrarint = operation.get(CONSTRAINT)
-        #ConstraintCreator.create_constraint(constrarint)
+        ConstraintCreator.create_constraint(constrarint)
 
-        action = operation.get(AUTH_ACTION)
+        action = operation.get(AUTH_ACTION, None)
         old_value = operation.get(OLD_VALUE, None)
         new_value = operation.get(NEW_VALUE, None)
         auth_type = operation.get(AUTH_TYPE, None)

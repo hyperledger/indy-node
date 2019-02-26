@@ -36,7 +36,7 @@ from plenum.common.util import is_network_ip_address_valid, is_network_port_vali
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
     NONCE_FIELD_LIMIT, \
     ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
-    VERSION_FIELD_LIMIT, AUTH_FIELD_LIMIT
+    VERSION_FIELD_LIMIT
 
 
 class Request(PRequest):
@@ -328,10 +328,8 @@ class ConstraintEntityField(MessageValidator):
         (CONSTRAINT_ID, ChooseField(values=ConstraintsEnum.values())),
         (ROLE, RoleField()),
         (SIG_COUNT, NonNegativeNumberField()),
-        (NEED_TO_BE_OWNER, BooleanField(exceptional_values=False,
-                                        optional=True)),
-        (METADATA, AnyMapField(exceptional_values={},
-                               optional=True))
+        (NEED_TO_BE_OWNER, BooleanField(optional=True)),
+        (METADATA, AnyMapField(optional=True))
     )
 
 
@@ -353,11 +351,11 @@ class ClientAuthRuleOperation(MessageValidator):
         (CONSTRAINT, ConstraintField(ConstraintListField(),
                                      ConstraintEntityField())),
         (AUTH_ACTION, ChooseField(values=(ADD_PREFIX, EDIT_PREFIX))),
-        (AUTH_TYPE, LimitedLengthStringField(max_length=AUTH_FIELD_LIMIT)),
-        (FIELD, LimitedLengthStringField(max_length=AUTH_FIELD_LIMIT)),
-        (OLD_VALUE, LimitedLengthStringField(max_length=AUTH_FIELD_LIMIT,
+        (AUTH_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (FIELD, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
+        (OLD_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
                                              optional=True)),
-        (NEW_VALUE, LimitedLengthStringField(max_length=AUTH_FIELD_LIMIT))
+        (NEW_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))
     )
 
 
