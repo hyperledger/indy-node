@@ -1,42 +1,30 @@
-import csv
 from datetime import datetime
-from os import path
 
-from dateutil.parser import parse as parse_date
+from indy_node.server.action_log import ActionLogData, ActionLog
 
-from indy_node.server.action_log import ActionLog
+
+# TODO tests
+class UpgradeLogData(ActionLogData):
+    def __init__(self, when: datetime,
+                 version: str, upgrade_id: str, pkg_name: str):
+        super().__new__(when)
+        self.version = version
+        self.upgrade_id = upgrade_id
+        self.pkg_name = pkg_name
+
+    @property
+    def packed(self):
+        return (super().packed +
+                [self.version, self.upgrade_id, self.pkg_name])
+
+    @staticmethod
+    def parse(when, version, upgrade_id, pkg_name):
+        return ActionLogData.parse(when) + [version, upgrade_id, pkg_name]
 
 
 class UpgradeLog(ActionLog):
     """
     Append-only event log of upgrade event
     """
-
-    def __init__(self, filePath, delimiter="\t"):
-        super().__init__(filePath, delimiter)
-
-    def appendScheduled(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.SCHEDULED, when, version, upgrade_id, pkg_name)
-
-    def appendStarted(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.STARTED, when, version, upgrade_id, pkg_name)
-
-    def appendSucceeded(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.SUCCEEDED, when, version, upgrade_id, pkg_name)
-
-    def appendFailed(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.FAILED, when, version, upgrade_id, pkg_name)
-
-    def appendCancelled(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.CANCELLED, when, version, upgrade_id, pkg_name)
-
-    def _parse_item(self, row):
-        record_date, event, when = super()._parse_item(row)
-        version = row[3]
-        upgrade_id = None
-        if len(row) > 4:
-            upgrade_id = row[4]
-        pkt_name = None
-        if len(row) > 5:
-            pkt_name = row[5]
-        return record_date, event, when, version, upgrade_id, pkt_name
+    def __init__(self, *args, data_class=UpgradeLogData, **kwargs):
+        super().__init__(*args, data_class=data_class, **kwargs)

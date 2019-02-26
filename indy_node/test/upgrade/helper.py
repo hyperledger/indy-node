@@ -29,7 +29,7 @@ from indy_common.constants import NODE_UPGRADE, ACTION, \
     UPGRADE_MESSAGE, MESSAGE_TYPE, APP_NAME
 from indy_common.config import controlServiceHost, controlServicePort
 import indy_node
-from indy_node.server.upgrade_log import UpgradeLog
+from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 from indy_node.server.upgrader import Upgrader
 from indy_node.test.helper import TestNode
 from indy_node.utils.node_control_tool import NodeControlTool
@@ -79,9 +79,9 @@ def checkUpgradeScheduled(nodes, version, schedule=None):
     for node in nodes:
         assert len(node.upgrader.aqStash) == 1
         assert node.upgrader.scheduledAction
-        assert node.upgrader.scheduledAction[0] == version
+        assert node.upgrader.scheduledAction.version == version
         if schedule:
-            assert node.upgrader.scheduledAction[1] == \
+            assert node.upgrader.scheduledAction.when == \
                    dateutil.parser.parse(schedule[node.id])
 
 
@@ -187,8 +187,8 @@ def populate_log_with_upgrade_events(
         os.makedirs(ledger_dir)
         log = UpgradeLog(os.path.join(ledger_dir, tconf.upgradeLogFile))
         when = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        log.appendScheduled(when, version, randomString(10), pkg_name)
-        log.appendStarted(when, version, randomString(10), pkg_name)
+        log.append_scheduled(when, version, randomString(10), pkg_name)
+        log.append_started(when, version, randomString(10), pkg_name)
 
 
 def check_node_sent_acknowledges_upgrade(
@@ -276,23 +276,27 @@ def check_ledger_after_upgrade(
     assert list(versions)[0] == expected_version
 
 
-def check_no_loop(nodeSet, event, pkg_name: str = APP_NAME):
+def check_no_loop(nodeSet, ev_type, pkg_name: str = APP_NAME):
     for node in nodeSet:
         # mimicking upgrade start
-        node.upgrader._actionLog.appendStarted(datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc()),
-                                               node.upgrader.scheduledAction[0],
-                                               node.upgrader.scheduledAction[2],
-                                               pkg_name)
+        node.upgrader._actionLog.append_started(
+            UpgradeLogData(
+                datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc()),
+                node.upgrader.scheduledAction.version,
+                node.upgrader.scheduledAction.upgrade_id,
+                pkg_name
+            )
+        )
         node.notify_upgrade_start()
         # mimicking upgrader's initialization after restart
         node.upgrader.process_action_log_for_first_run()
 
         node.upgrader.scheduledAction = None
-        assert node.upgrader._actionLog.lastEvent[1] == event
+        assert node.upgrader._actionLog.last_event.ev_type == ev_type
         # mimicking node's catchup after restart
         node.postConfigLedgerCaughtUp()
         assert node.upgrader.scheduledAction is None
-        assert node.upgrader._actionLog.lastEvent[1] == event
+        assert node.upgrader._actionLog.last_event.ev_type == ev_type
 
 
 def sdk_change_bls_key(looper, txnPoolNodeSet,

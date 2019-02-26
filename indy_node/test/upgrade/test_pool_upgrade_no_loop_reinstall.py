@@ -39,4 +39,4 @@ def test_upgrade_does_not_get_into_loop_if_reinstall(
     # here we make nodes think they have upgraded successfully
     monkeypatch.setattr(NodeControlUtil, '_get_curr_info',
                         lambda *x: "Version: {}".format(new_version))
-    check_no_loop(nodeSet, UpgradeLog.SUCCEEDED)
+    check_no_loop(nodeSet, UpgradeLog.Events.succeeded)

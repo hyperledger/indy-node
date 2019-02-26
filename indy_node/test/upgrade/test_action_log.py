@@ -2,12 +2,7 @@ import pytest
 import os
 from datetime import datetime
 
-from indy_node.server.action_log import ActionLogData, ActionLog
-
-
-# TODO
-# - test ActionLogData API
-# - test ActionLogRecord API
+from indy_node.server.action_log import ActionLogData, ActionLogEvent, ActionLog
 
 
 class ActionTestLogData(ActionLogData):
@@ -22,13 +17,14 @@ class ActionTestLogData(ActionLogData):
 
     @staticmethod
     def parse(when, f1, f2):
-        return [ActionLogData.parse(when), f1, int(f2)]
+        return ActionLogData.parse(when) + [f1, int(f2)]
 
 
 class ActionTestLog(ActionLog):
     def __init__(self, *args, data_class=ActionTestLogData, **kwargs):
         super().__init__(*args, data_class=data_class, **kwargs)
 
+# FIXTURES
 
 @pytest.fixture(scope='module')
 def action_log_delimiter(tdir, request):
@@ -65,6 +61,61 @@ def action_log_prepared(action_log, prepared_data):
     return action_log
 
 
+# TESTS
+
+def test_action_log_data_init():
+    with pytest.raises(TypeError):
+        ActionLogData(datetime.utcnow().isoformat())
+
+
+def test_action_log_data_parse():
+    ts = datetime.utcnow()
+    assert ActionLogData.parse(ts.isoformat()) == [ts]
+
+
+def test_action_log_data_packed():
+    ts = datetime.utcnow()
+    data = ActionLogData(ts)
+    assert data.packed == [ts.isoformat()]
+
+
+def test_action_log_event_init():
+    ts = datetime.utcnow()
+    with pytest.raises(TypeError):
+        ActionLogEvent(
+            ActionLog.Events.started,
+            ActionLogData(ts),
+            ts=ts.isoformat()
+        )
+    ts1 = datetime.utcnow()
+    ev = ActionLogEvent(ActionLog.Events.started, ActionLogData(ts))
+    ts2 = datetime.utcnow()
+    # a kind of non-strict check
+    assert ts1 <= ev.ts <= ts2
+
+    ev = ActionLogEvent(ActionLog.Events.started, ActionLogData(ts), ts=ts2)
+    assert ev.ts == ts2
+
+
+def test_action_log_event_parse():
+    ts = datetime.utcnow()
+    data = ActionLogData(ts)
+    ev = ActionLogEvent.parse(
+        (ts.isoformat(), ActionLog.Events.scheduled.name,
+         *data.packed)
+    )
+    assert ev.ts == ts
+    assert ev.ev_type == ActionLog.Events.scheduled
+    assert ev.data == data
+
+
+def test_action_log_event_packed():
+    ts = datetime.utcnow()
+    data = ActionLogData(datetime.utcnow())
+    ev = ActionLogEvent(ActionLog.Events.started, data, ts=ts)
+    assert ev.packed == [ts.isoformat(), ActionLog.Events.started.name] + data.packed
+
+
 def test_action_log_api_basic(
         action_log_prepared, action_log_file_path,
         action_log_delimiter, prepared_data):
@@ -73,9 +124,9 @@ def test_action_log_api_basic(
     assert action_log_prepared.file_path == action_log_file_path
     assert action_log_prepared.delimiter == action_log_delimiter
     assert len(action_log_prepared) == len(prepared_data)
-    for rec, data in zip(action_log_prepared, prepared_data):
-        assert rec.ev_data == data
-    assert action_log_prepared.last_event.ev_data == prepared_data[-1]
+    for ev, data in zip(action_log_prepared, prepared_data):
+        assert ev.data == data
+    assert action_log_prepared.last_event.data == prepared_data[-1]
 
     # helpers for append
     for ev_type in ActionLog.Events:
@@ -87,14 +138,14 @@ def test_action_log_api_basic(
 def test_action_log_append(action_log, ev_type):
     ev_data = ActionTestLogData(datetime.utcnow(), '1', 2)
     getattr(action_log, "append_{}".format(ev_type.name))(ev_data)
-    assert action_log.last_event.ev_data == ev_data
+    assert action_log.last_event.data == ev_data
     assert action_log.last_event.ev_type == ev_type
 
 
 def test_action_log_append_with_args(action_log):
     args = (datetime.utcnow(), '1', 2)
     action_log.append_scheduled(*args)
-    assert action_log.last_event.ev_data == ActionTestLogData(*args)
+    assert action_log.last_event.data == ActionTestLogData(*args)
 
 
 def test_action_log_write_file(action_log):
@@ -121,5 +172,5 @@ def test_action_log_load(action_log_prepared):
         delimiter=action_log_prepared.delimiter)
 
     assert len(action_log_prepared) == len(new_log)
-    for rec1, rec2 in zip(action_log_prepared, new_log):
-        assert rec1 == rec2
+    for ev1, ev2 in zip(action_log_prepared, new_log):
+        assert ev1 == ev2

@@ -5,6 +5,7 @@ from indy_node.utils.node_control_utils import DebianVersion, NodeControlUtil, S
 # TODO
 # - conditionally skip all tests for non-debian systems
 # - tests for all coparison operators
+# - test for command line generated for comparison
 
 
 @pytest.fixture(autouse=True)

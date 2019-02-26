@@ -35,11 +35,13 @@ class ShellException(subprocess.CalledProcessError):
 
     @property
     def stdout_decoded(self):
-        return self.stdout.decode(locale.getpreferredencoding(), 'decode_errors') if res.stdout else ""
+        return (self.stdout.decode(locale.getpreferredencoding(), 'decode_errors')
+                if self.stdout else "")
 
     @property
     def stderr_decoded(self):
-        return self.stdout.decode(locale.getpreferredencoding(), 'decode_errors') if res.stderr else ""
+        return (self.stdout.decode(locale.getpreferredencoding(), 'decode_errors')
+                if self.stderr else "")
 
 
 class DebianVersion:
@@ -50,7 +52,6 @@ class DebianVersion:
 
     @classmethod
     def _cmp(cls, v1, v2):
-        # TODO logic will fail if one of versions is incorrect
         if v1 == v2:
             return 0
         else:
@@ -65,7 +66,6 @@ class DebianVersion:
             else:
                 return 1
 
-    # TODO cache results
     @classmethod
     def cmp(cls, v1, v2):
         key = (v1, v2)
@@ -81,14 +81,19 @@ class DebianVersion:
 
     def __lt__(self, other):
         return self.cmp(self.val, other.val) < 0
+
     def __gt__(self, other):
         return self.cmp(self.val, other.val) > 0
+
     def __eq__(self, other):
         return self.cmp(self.val, other.val) == 0
+
     def __le__(self, other):
         return self.cmp(self.val, other.val) <= 0
+
     def __ge__(self, other):
         return self.cmp(self.val, other.val) >= 0
+
     def __ne__(self, other):
         return self.cmp(self.val, other.val) != 0
 
@@ -123,7 +128,6 @@ class NodeControlUtil:
             raise ShellException(exc=exc) from exc
         else:
             return res.stdout.decode(locale.getpreferredencoding(), 'decode_errors').strip() if res.stdout else ""
-
 
     @classmethod
     def _get_curr_info(cls, package):
@@ -173,8 +177,36 @@ class NodeControlUtil:
 
     @classmethod
     def curr_pkg_info(cls, pkg_name):
+        # TODO cache
         package_info = cls._get_curr_info(pkg_name)
         return cls._parse_version_deps_from_pkg_mgr_output(package_info)
+
+    # TODO tests
+    @classmethod
+    def get_latest_pkg_version(cls, pkg_name, upstream=None):
+        # cls.update_package_cache()
+        regex = "'^Version: ([0-9]+:)?{}(-|$)'".format(upstream or '.*')
+        try:
+            cmd = compose_cmd(
+                ['apt-cache', 'show', pkg_name, '|', 'grep', '-E', regex])
+            output = cls.run_shell_script(cmd).strip()
+        except ShellException as exc:
+            # will fail ie either package not found or grep returns nothing
+            # the latter is unexpected and trated as no-data as well
+            logger.info("no-data for package {} with upstream version {} found"
+                        .format(pkg_name, upstream))
+        else:
+            if output:
+                versions = [v.split()[1] for v in output.split('\n')]
+                try:
+                    return sorted(versions, key=DebianVersion)[-1]
+                except ShellException:
+                    logger.warning(
+                        "version comparison failed unexpectedly for versions: {}"
+                        .format(versions)
+                    )
+
+        return None
 
     @classmethod
     def _get_info_from_package_manager(cls, *package):

@@ -34,7 +34,7 @@ def test_pool_restart(
 
     _stopServer(server)
     for node in txnPoolNodeSet:
-        assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
+        assert node.restarter.lastActionEventInfo.ev_type == RestartLog.Events.scheduled
     _comparison_reply(responses, req_obj)
 
 
@@ -46,8 +46,8 @@ def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
     '''
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     restarted_node = txnPoolNodeSet[-1]
-    restarted_node.restarter._actionLog.appendScheduled(unow)
-    restarted_node.restarter._actionLog.appendStarted(unow)
+    restarted_node.restarter._actionLog.append_scheduled(unow)
+    restarted_node.restarter._actionLog.append_started(unow)
     Restarter(restarted_node.id,
               restarted_node.name,
               restarted_node.dataLocation,
@@ -73,7 +73,7 @@ def test_pool_restart_cancel(
                                           action=START,
                                           datetime=str(datetime.isoformat(start_at)))
     for node in txnPoolNodeSet:
-        assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
+        assert node.restarter.lastActionEventInfo.ev_type == RestartLog.Events.scheduled
     _comparison_reply(responses, req_obj)
 
     req_obj, responses = sdk_send_restart(looper,
@@ -83,7 +83,7 @@ def test_pool_restart_cancel(
                                           datetime="")
     _stopServer(server)
     for node in txnPoolNodeSet:
-        assert node.restarter.lastActionEventInfo[0] == RestartLog.CANCELLED
+        assert node.restarter.lastActionEventInfo.ev_type == RestartLog.Events.cancelled
     _comparison_reply(responses, req_obj)
 
 

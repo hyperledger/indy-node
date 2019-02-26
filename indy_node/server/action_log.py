@@ -2,7 +2,6 @@ import csv
 from abc import ABCMeta
 from datetime import datetime
 from os import path
-from collections import namedtuple
 from typing import Union, Tuple, List
 import functools
 from enum import Enum
@@ -26,7 +25,7 @@ class ActionLogData:
 
     @staticmethod
     def parse(when):
-        return parse_dt(when)
+        return [parse_dt(when)]
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -38,27 +37,27 @@ class ActionLogData:
         return str(self.__dict__)
 
 
-class ActionLogRecord:
-    def __init__(self, ev_type, ev_data: ActionLogData, record_ts=None):
-        if record_ts and not isinstance(record_ts, datetime):
+class ActionLogEvent:
+    def __init__(self, ev_type, data: ActionLogData, ts=None):
+        if ts and not isinstance(ts, datetime):
             raise TypeError(
-                "'record_ts' should be 'datetime' or None, got: {}"
-                .format(type(record_ts))
+                "'ts' should be 'datetime' or None, got: {}"
+                .format(type(ts))
             )
-        self.ts = record_ts if record_ts else datetime.utcnow()
+        self.ts = ts if ts else datetime.utcnow()
         self.ev_type = ev_type
-        self.ev_data = ev_data
+        self.data = data
 
     @property
     def packed(self):
-        return [self.ts.isoformat(), self.ev_type.name] + list(self.ev_data.packed)
+        return [self.ts.isoformat(), self.ev_type.name] + list(self.data.packed)
 
     @staticmethod
     def parse(row: Union[List, Tuple], data_class=ActionLogData):
         # TODO think about parse for 'data_class' or more generic serializer
-        return ActionLogRecord(
+        return ActionLogEvent(
             ActionLog.Events[row[1]], data_class(*data_class.parse(*row[2:])),
-            record_ts=parse_dt(row[0]))
+            ts=parse_dt(row[0]))
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -108,17 +107,17 @@ class ActionLog(metaclass=ABCMeta):
                     item = self._parse_item(row)
                     self._items.append(item)
 
-    def _append(self, ev_type, *ev_data: ActionLogData) -> None:
+    def _append(self, ev_type, *data: ActionLogData) -> None:
         """
         Appends event to log
         Be careful it opens file every time!
         """
 
-        record = ActionLogRecord(
+        record = ActionLogEvent(
             ev_type,
-            (ev_data[0] if len(ev_data) == 1 and
-                type(ev_data[0]) is self._data_class else
-            self._data_class(*ev_data))
+            (data[0] if len(data) == 1 and
+             type(data[0]) is self._data_class else
+             self._data_class(*data))
         )
 
         with open(self._file_path, mode="a+", newline="") as file:
@@ -127,7 +126,7 @@ class ActionLog(metaclass=ABCMeta):
         self._items.append(record)
 
     def _parse_item(self, row):
-        return ActionLogRecord.parse(row, data_class=self._data_class)
+        return ActionLogEvent.parse(row, data_class=self._data_class)
 
     def __iter__(self):
         for item in self._items:
