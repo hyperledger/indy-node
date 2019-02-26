@@ -1,10 +1,11 @@
 import pytest
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
-from indy_common.authorize.auth_constraints import CONSTRAINT_ID, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, ConstraintsEnum
-from indy_common.constants import AUTH_RULE, NYM, TRUST_ANCHOR
-from plenum.common.constants import TXN_TYPE, TRUSTEE, ROLE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, OLD_VALUE, \
-    NEW_VALUE
+from indy_common.authorize.auth_constraints import CONSTRAINT_ID, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, \
+    ConstraintsEnum, ROLE
+from indy_common.constants import AUTH_RULE, NYM, TRUST_ANCHOR, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
+    OLD_VALUE
+from plenum.common.constants import TXN_TYPE, TRUSTEE
 from plenum.common.exceptions import RequestRejectedException, \
     RequestNackedException
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies

@@ -27,6 +27,14 @@ CLAIM_DEF_REVOCATION = "revocation"
 CLAIM_DEF_TAG_DEFAULT = "tag"
 CLAIM_DEF_CL = "CL"
 
+# AUTH_RULE
+CONSTRAINT = "constraint"
+OLD_VALUE = "old_value"
+NEW_VALUE = "new_value"
+AUTH_ACTION = "auth_action"
+AUTH_TYPE = "auth_type"
+FIELD = "field"
+
 ROLE = 'role'
 NONCE = 'nonce'
 ATTRIBUTES = "attributes"
