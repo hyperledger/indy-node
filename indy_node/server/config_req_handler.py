@@ -13,7 +13,7 @@ from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    APP_NAME, REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD
+    APP_NAME, REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
@@ -23,6 +23,7 @@ from indy_node.utils.node_control_utils import NodeControlUtil
 
 class ConfigReqHandler(LedgerRequestHandler):
     write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE}
+    query_types = {GET_AUTH_RULE}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig,
@@ -101,7 +102,7 @@ class ConfigReqHandler(LedgerRequestHandler):
         status = '*'
         operation = req.operation
         typ = operation.get(TXN_TYPE)
-        if typ not in [POOL_UPGRADE, POOL_CONFIG, AUTH_RULE]:
+        if typ not in self.write_types:
             return
         if typ == POOL_UPGRADE:
             pkt_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
@@ -192,3 +193,6 @@ class ConfigReqHandler(LedgerRequestHandler):
         txn = reqToTxn(req)
         self.upgrader.handleUpgradeTxn(txn)
         self.poolCfg.handleConfigTxn(txn)
+
+    def get_query_response(self, request: Request):
+        return self.write_req_validator.auth_map

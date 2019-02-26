@@ -1,6 +1,7 @@
 from indy_common.constants import NYM, NODE, ATTRIB, SCHEMA, CLAIM_DEF, DISCLO, GET_ATTR, GET_NYM, GET_TXNS, \
     GET_SCHEMA, GET_CLAIM_DEF, POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, REVOC_REG_DEF, REVOC_REG_ENTRY, \
-    GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, POOL_RESTART, VALIDATOR_INFO, CHANGE_KEY, AUTH_RULE
+    GET_REVOC_REG_DEF, GET_REVOC_REG, GET_REVOC_REG_DELTA, POOL_RESTART, VALIDATOR_INFO, CHANGE_KEY, AUTH_RULE, \
+    GET_AUTH_RULE
 from indy_common.transactions import IndyTransactions
 
 
@@ -31,6 +32,7 @@ def testTransactionsAreEncoded():
     assert VALIDATOR_INFO == "119"
 
     assert AUTH_RULE == "120"
+    assert GET_AUTH_RULE == "121"
 
 
 def testTransactionEnumDecoded():
