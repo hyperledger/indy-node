@@ -317,8 +317,7 @@ class ConstraintField(MessageValidator):
 
     def _specific_validation(self, val):
         if val is None:
-            return
-            # return "Field {} is required".format(CONSTRAINT)
+            return "Field {} is required".format(CONSTRAINT)
         return self._constraint_entity.validate(val) \
             if val[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID \
             else self._constraint_list.validate(val)

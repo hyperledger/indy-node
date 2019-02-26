@@ -56,25 +56,23 @@ class ConfigReqHandler(LedgerRequestHandler):
         new_value = operation.get(NEW_VALUE, None)
         auth_type = operation.get(AUTH_TYPE, None)
         field = operation.get(FIELD, None)
-        if action == EDIT_PREFIX:
-            if old_value is None:
-                raise InvalidClientRequest(identifier, reqId,
-                                           "Transaction for change authentication "
-                                           "rules for {}={} must contain field {}".
-                                           format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
-            auth_key = AuthActionAdd(txn_type=auth_type,
-                                     field=field,
-                                     value=new_value).get_action_id()
-        else:
-            auth_key = AuthActionEdit(txn_type=auth_type,
-                                      field=field,
-                                      old_value=old_value,
-                                      new_value=new_value).get_action_id()
-        if auth_key not in self.write_req_validator.auth_map:
+        if old_value is None and action == EDIT_PREFIX:
             raise InvalidClientRequest(identifier, reqId,
                                        "Transaction for change authentication "
                                        "rules for {}={} must contain field {}".
-                                       format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
+                                           format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
+        auth_key = AuthActionEdit(txn_type=auth_type,
+                                  field=field,
+                                  old_value=old_value,
+                                  new_value=new_value).get_action_id() \
+            if action == EDIT_PREFIX else \
+            AuthActionAdd(txn_type=auth_type,
+                          field=field,
+                          value=new_value).get_action_id()
+        if auth_key not in self.write_req_validator.auth_map:
+            raise InvalidClientRequest(identifier, reqId,
+                                       "Key '{}' is not contained in the "
+                                       "authorization map".format(auth_key))
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)
@@ -165,14 +163,11 @@ class ConfigReqHandler(LedgerRequestHandler):
                                                               old_value=status,
                                                               new_value=action)])
         elif typ == AUTH_RULE:
-            # TODO: check that sender has permission to change auth_rules
-            action = '*'
-            status = '*'
             self.write_req_validator.validate(req,
                                               [AuthActionEdit(txn_type=typ,
-                                                              field=ACTION,
-                                                              old_value=status,
-                                                              new_value=action)])
+                                                              field="*",
+                                                              old_value="*",
+                                                              new_value="*")])
 
     def apply(self, req: Request, cons_time):
         txn = append_txn_metadata(reqToTxn(req),
