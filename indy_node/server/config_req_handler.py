@@ -1,14 +1,9 @@
 from typing import List
 
-from common.serializers.serialization import ledger_txn_serializer
-from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
-from indy_common.authorize.auth_constraints import ConstraintsSerializer, AUTH_CONSTRAINTS, ConstraintCreator
+from indy_common.authorize.auth_constraints import ConstraintCreator
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
-from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
-from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest
+from plenum.common.exceptions import InvalidClientRequest
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
@@ -59,7 +54,7 @@ class ConfigReqHandler(LedgerRequestHandler):
             raise InvalidClientRequest(identifier, reqId,
                                        "Transaction for change authentication "
                                        "rules for {}={} must contain field {}".
-                                           format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
+                                       format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
         auth_key = AuthActionEdit(txn_type=auth_type,
                                   field=field,
                                   old_value=old_value,
