@@ -70,9 +70,6 @@ class ActionLogRecord:
         return str(self.__dict__)
 
 
-# TODO
-#   - tests
-#   - rename lastEvent
 class ActionLog(metaclass=ABCMeta):
     """
     Append-only event log of action event
@@ -81,9 +78,9 @@ class ActionLog(metaclass=ABCMeta):
     Events = Enum('Events', 'scheduled started succeeded failed cancelled')
 
     def __init__(self, file_path, data_class=ActionLogData, delimiter="\t"):
-        self.__delimiter = delimiter
-        self.__file_path = file_path
-        self.__items = []
+        self._delimiter = delimiter
+        self._file_path = file_path
+        self._items = []
         self._data_class = data_class
         self._load()
 
@@ -93,42 +90,48 @@ class ActionLog(metaclass=ABCMeta):
 
     @property
     def file_path(self):
-        return self.__file_path
+        return self._file_path
 
     @property
     def delimiter(self):
-        return self.__delimiter
+        return self._delimiter
 
     @property
-    def lastEvent(self):
-        return self.__items[-1] if self.__items else None
+    def last_event(self):
+        return self._items[-1] if self._items else None
 
     def _load(self):
-        if path.exists(self.__file_path):
-            with open(self.__file_path, mode="r", newline="") as file:
-                reader = csv.reader(file, delimiter=self.__delimiter)
+        if path.exists(self._file_path):
+            with open(self._file_path, mode="r", newline="") as file:
+                reader = csv.reader(file, delimiter=self._delimiter)
                 for row in reader:
                     item = self._parse_item(row)
-                    self.__items.append(item)
+                    self._items.append(item)
 
-    def _append(self, ev_type, ev_data: ActionLogData) -> None:
+    def _append(self, ev_type, *ev_data: ActionLogData) -> None:
         """
-       Appends event to log
-       Be careful it opens file every time!
-       """
-        record = ActionLogRecord(ev_type, ev_data)
+        Appends event to log
+        Be careful it opens file every time!
+        """
 
-        with open(self.__file_path, mode="a+", newline="") as file:
-            writer = csv.writer(file, delimiter=self.__delimiter)
+        record = ActionLogRecord(
+            ev_type,
+            (ev_data[0] if len(ev_data) == 1 and
+                type(ev_data[0]) is self._data_class else
+            self._data_class(*ev_data))
+        )
+
+        with open(self._file_path, mode="a+", newline="") as file:
+            writer = csv.writer(file, delimiter=self._delimiter)
             writer.writerow(record.packed)
-        self.__items.append(record)
+        self._items.append(record)
 
     def _parse_item(self, row):
         return ActionLogRecord.parse(row, data_class=self._data_class)
 
     def __iter__(self):
-        for item in self.__items:
+        for item in self._items:
             yield item
 
     def __len__(self):
-        return len(self.__items)
+        return len(self._items)
