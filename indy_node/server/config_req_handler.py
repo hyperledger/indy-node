@@ -63,7 +63,8 @@ class ConfigReqHandler(LedgerRequestHandler):
             AuthActionAdd(txn_type=auth_type,
                           field=field,
                           value=new_value).get_action_id()
-        if auth_key not in self.write_req_validator.auth_map:
+        if auth_key not in self.write_req_validator.auth_map and \
+                auth_key not in self.write_req_validator.anyone_can_write_map:
             raise InvalidClientRequest(identifier, reqId,
                                        "Key '{}' is not contained in the "
                                        "authorization map".format(auth_key))

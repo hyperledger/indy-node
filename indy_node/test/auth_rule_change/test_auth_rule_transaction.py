@@ -45,6 +45,19 @@ def test_auth_rule_transaction(looper,
                                          sdk_pool_handle)
 
 
+def test_auth_rule_transaction(looper,
+                               sdk_wallet_trustee,
+                               sdk_pool_handle):
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=ADD_PREFIX,
+                                         auth_type=NYM,
+                                         field=ROLE,
+                                         new_value='*'
+                                         )
+
+
 def test_auth_rule_transaction_with_large_constraint(looper,
                                                      sdk_wallet_trustee,
                                                      sdk_pool_handle):
