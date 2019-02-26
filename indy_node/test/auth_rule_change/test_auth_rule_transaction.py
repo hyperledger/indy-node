@@ -1,6 +1,6 @@
 import pytest
 
-from indy_common.authorize.auth_actions import ADD_PREFIX
+from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import CONSTRAINT_ID, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, \
     ConstraintsEnum, ROLE, AUTH_CONSTRAINTS
 from indy_common.constants import AUTH_RULE, NYM, TRUST_ANCHOR, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
@@ -80,7 +80,7 @@ def test_reject_auth_rule_transaction(looper,
     e.match('can not do this action')
 
 
-def test_reqnack_auth_rule_transaction(looper,
+def test_reqnack_auth_rule_transaction_with_wrong_key(looper,
                                        sdk_wallet_trustee,
                                        sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
@@ -90,6 +90,19 @@ def test_reqnack_auth_rule_transaction(looper,
                                              auth_type="*")
     e.match("InvalidClientRequest")
     e.match("is not contained in the authorization map")
+
+
+def test_reqnack_auth_rule_transaction_with_wrong_format(looper,
+                                       sdk_wallet_trustee,
+                                       sdk_pool_handle):
+    with pytest.raises(RequestNackedException) as e:
+        sdk_send_and_check_auth_rule_request(looper,
+                                             sdk_wallet_trustee,
+                                             sdk_pool_handle,
+                                             auth_action=EDIT_PREFIX)
+    e.match("InvalidClientRequest")
+    e.match("Transaction for {} authentication rules must match "
+            "the schema".format(EDIT_PREFIX))
 
 
 def _generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,

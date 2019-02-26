@@ -3,7 +3,7 @@ from typing import List
 from indy_common.authorize.auth_constraints import ConstraintCreator
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
-from plenum.common.exceptions import InvalidClientRequest
+from plenum.common.exceptions import InvalidClientRequest, InvalidMessageException
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
@@ -186,6 +186,10 @@ class ConfigReqHandler(LedgerRequestHandler):
     @staticmethod
     def get_auth_key(operation):
         action = operation.get(AUTH_ACTION, None)
+        if OLD_VALUE not in operation and action == EDIT_PREFIX:
+            raise InvalidMessageException("Request for edit auth rule must contains "
+                                          "a field '{}'.".format(OLD_VALUE))
+
         old_value = operation.get(OLD_VALUE, None)
         new_value = operation.get(NEW_VALUE, None)
         auth_type = operation.get(AUTH_TYPE, None)
