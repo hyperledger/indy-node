@@ -81,8 +81,8 @@ def test_reject_auth_rule_transaction(looper,
 
 
 def test_reqnack_auth_rule_transaction_with_wrong_key(looper,
-                                       sdk_wallet_trustee,
-                                       sdk_pool_handle):
+                                                      sdk_wallet_trustee,
+                                                      sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
         sdk_send_and_check_auth_rule_request(looper,
                                              sdk_wallet_trustee,
@@ -92,17 +92,32 @@ def test_reqnack_auth_rule_transaction_with_wrong_key(looper,
     e.match("is not contained in the authorization map")
 
 
-def test_reqnack_auth_rule_transaction_with_wrong_format(looper,
-                                       sdk_wallet_trustee,
-                                       sdk_pool_handle):
+def test_reqnack_auth_rule_edit_transaction_with_wrong_format(looper,
+                                                              sdk_wallet_trustee,
+                                                              sdk_pool_handle):
     with pytest.raises(RequestNackedException) as e:
         sdk_send_and_check_auth_rule_request(looper,
                                              sdk_wallet_trustee,
                                              sdk_pool_handle,
                                              auth_action=EDIT_PREFIX)
     e.match("InvalidClientRequest")
-    e.match("Transaction for {} authentication rules must match "
-            "the schema".format(EDIT_PREFIX))
+    e.match("Transaction for change authentication "
+            "rule for {}={} must contain field {}".
+            format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
+
+
+def test_reqnack_auth_rule_add_transaction_with_wrong_format(looper,
+                                                             sdk_wallet_trustee,
+                                                             sdk_pool_handle):
+    with pytest.raises(RequestNackedException) as e:
+        sdk_send_and_check_auth_rule_request(looper,
+                                             sdk_wallet_trustee,
+                                             sdk_pool_handle,
+                                             old_value="*")
+    e.match("InvalidClientRequest")
+    e.match("Transaction for change authentication "
+            "rule for {}={} must not contain field {}".
+            format(AUTH_ACTION, ADD_PREFIX, OLD_VALUE))
 
 
 def _generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,

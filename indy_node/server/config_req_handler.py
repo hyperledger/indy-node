@@ -45,17 +45,20 @@ class ConfigReqHandler(LedgerRequestHandler):
         constraint = operation.get(CONSTRAINT)
         ConstraintCreator.create_constraint(constraint)
         action = operation.get(AUTH_ACTION, None)
-        try:
-            auth_key = self.get_auth_key(operation)
-        except Exception:
-            transaction_schema = dict(ClientAuthRuleOperation.schema)
-            if action == ADD_PREFIX:
-                transaction_schema.pop(OLD_VALUE)
+
+        if OLD_VALUE not in operation and action == EDIT_PREFIX:
             raise InvalidClientRequest(identifier, reqId,
-                                       "Transaction for {} authentication "
-                                       "rules must match the schema = {}".
-                                       format(action,
-                                              transaction_schema.keys()))
+                                       "Transaction for change authentication "
+                                       "rule for {}={} must contain field {}".
+                                       format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
+
+        if OLD_VALUE in operation and action == ADD_PREFIX:
+            raise InvalidClientRequest(identifier, reqId,
+                                       "Transaction for change authentication "
+                                       "rule for {}={} must not contain field {}".
+                                       format(AUTH_ACTION, ADD_PREFIX, OLD_VALUE))
+
+        auth_key = self.get_auth_key(operation)
 
         if auth_key not in self.write_req_validator.auth_map and \
                 auth_key not in self.write_req_validator.anyone_can_write_map:
@@ -186,10 +189,6 @@ class ConfigReqHandler(LedgerRequestHandler):
     @staticmethod
     def get_auth_key(operation):
         action = operation.get(AUTH_ACTION, None)
-        if OLD_VALUE not in operation and action == EDIT_PREFIX:
-            raise InvalidMessageException("Request for edit auth rule must contains "
-                                          "a field '{}'.".format(OLD_VALUE))
-
         old_value = operation.get(OLD_VALUE, None)
         new_value = operation.get(NEW_VALUE, None)
         auth_type = operation.get(AUTH_TYPE, None)
