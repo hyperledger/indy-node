@@ -1,0 +1,17 @@
+---
+indy_node_build_dir: "{{ namespace_dir | d(inventory_dir, true) | d('.build', true) }}"
+
+indy_node_channel: master
+# TODO remove default values for versions
+indy_node_ver: 1.6.563
+indy_plenum_ver: 1.6.501
+python_indy_crypto_ver: 0.4.1
+libindy_crypto_ver: 0.4.0
+
+# configuration parameters
+indy_node_configuration: true
+network_name: sandbox
+
+indy_node_pool_dir_name: "{{ '.pool' if indy_node_build_dir == inventory_dir else 'pool' }}"
+indy_node_pool_genesis_txns_name: pool_transactions_genesis
+indy_node_pool_genesis_txns_path: "{{ [indy_node_build_dir, indy_node_pool_dir_name, indy_node_pool_genesis_txns_name]|join('/') }}"

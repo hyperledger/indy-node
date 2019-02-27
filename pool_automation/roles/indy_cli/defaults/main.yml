@@ -1,0 +1,18 @@
+---
+indy_cli_build_dir: "{{ namespace_dir | d(inventory_dir, true) | d('.build', true) }}"
+
+indy_cli_channel: master
+# TODO remove default values for versions
+indy_cli_ver: 1.6.7~829
+indy_cli_libindy_ver: null
+
+# configuration parameters
+indy_cli_configuration: true
+
+indy_cli_pool_name: indy-pool
+
+indy_cli_pool_dir_name: "{{ '.pool' if indy_cli_build_dir == inventory_dir else 'pool' }}"
+indy_cli_pool_genesis_txns_name: pool_transactions_genesis
+indy_cli_pool_genesis_txns_path_local: "{{ [indy_cli_build_dir, indy_cli_pool_dir_name, indy_cli_pool_genesis_txns_name]|join('/') }}"
+# TODO as an option we may use ansible_env.HOME but it needs facts gathering
+indy_cli_pool_genesis_txns_path_remote: '$HOME/{{ indy_cli_pool_genesis_txns_name }}'

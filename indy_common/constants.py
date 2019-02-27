@@ -123,8 +123,14 @@ reqOpKeys = (TXN_TYPE,)
 ENDPOINT = "endpoint"
 
 # Roles
+
+# FIXME can be automated by iteration through Roles
+# but it would be less self-descriptive
 TRUST_ANCHOR = Roles.TRUST_ANCHOR.value
 TRUST_ANCHOR_STRING = 'TRUST_ANCHOR'
+
+NETWORK_MONITOR = Roles.NETWORK_MONITOR.value
+NETWORK_MONITOR_STRING = 'NETWORK_MONITOR'
 
 # client transaction types
 NODE = IndyTransactions.NODE.value
@@ -143,6 +149,7 @@ GET_CLAIM_DEF = IndyTransactions.GET_CLAIM_DEF.value
 GET_REVOC_REG_DEF = IndyTransactions.GET_REVOC_REG_DEF.value
 GET_REVOC_REG = IndyTransactions.GET_REVOC_REG.value
 GET_REVOC_REG_DELTA = IndyTransactions.GET_REVOC_REG_DELTA.value
+CHANGE_KEY = IndyTransactions.CHANGE_KEY.value
 
 POOL_UPGRADE = IndyTransactions.POOL_UPGRADE.value
 NODE_UPGRADE = IndyTransactions.NODE_UPGRADE.value
@@ -170,5 +177,8 @@ validTxnTypes.update(CONFIG_TXN_TYPES)
 
 CONFIG_LEDGER_ID = 2
 JUSTIFICATION_MAX_SIZE = 1000
+
+LOCAL_AUTH_POLICY = 1
+CONFIG_LEDGER_AUTH_POLICY = 2
 
 APP_NAME = "indy-node"

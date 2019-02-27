@@ -1,0 +1,38 @@
+---
+- name: Check inventory directory
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - include_tasks: tasks/check_inventory.yml
+
+- name: Ensure provisioner hosts exist
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - name: Add provisioner hosts to inventory
+      add_host:
+        name: "{{ item }}"
+        ansible_connection: local
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+      when: not hostvars[item]
+      changed_when: false
+      loop: ['aws_nodes_provisioner', 'aws_clients_provisioner']
+
+- name: Provision hosts for nodes
+  gather_facts: false
+  hosts: aws_nodes_provisioner
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: nodes
+  tags: [ 'nodes' ]
+
+- name: Provision hosts for clients
+  gather_facts: false
+  hosts: aws_clients_provisioner
+  roles:
+    - role: aws_manage
+      vars:
+        aws_group_name: clients
+  tags: [ 'clients' ]
+...

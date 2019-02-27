@@ -1,9 +1,6 @@
 import json
 import pytest
 
-from indy_common.constants import CRED_DEF_ID, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_TAG, VALUE, \
-    PREV_ACCUM, REVOKED
-from indy_common.state.domain import make_state_path_for_claim_def
 from indy_node.test.helper import sdk_add_attribute_and_check
 from indy_common.auth import Authoriser
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
@@ -11,12 +8,13 @@ from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check, sdk_send_signed_requests, \
     sdk_get_bad_response, sdk_sign_and_submit_req, sdk_get_and_check_replies
 
+from indy_node.test.anon_creds.conftest import claim_def, build_revoc_reg_entry_for_given_revoc_reg_def
+from indy_node.test.attrib_txn.test_nym_attrib import attributeData, attributeName, attributeValue
+from indy_node.test.anon_creds.conftest import build_revoc_def_by_default
+from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
+
 from indy.anoncreds import issuer_create_schema
 from indy.ledger import build_schema_request
-
-from indy_node.test.anon_creds.conftest import claim_def, build_revoc_reg_entry_for_given_revoc_reg_def
-from indy_client.test.test_nym_attrib import attributeData, attributeName, attributeValue
-from indy_node.test.anon_creds.conftest import build_revoc_def_by_default
 
 
 @pytest.fixture(scope="module")
@@ -43,7 +41,7 @@ def test_client_cant_send_nym(looper,
     # client cant create another client NYM when ANYONE_CAN_WRITE set to False
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_new_nym(looper, sdk_pool_handle, sdk_wallet_client)
-    e.match('None role cannot add None role')
+    e.match('Rule for this action is')
 
 
 def test_client_can_send_attrib(looper,
@@ -82,7 +80,7 @@ def test_client_cant_send_schema(looper,
         issuer_create_schema(identifier, "another_name", "2.0", json.dumps(["first", "last"])))
     request = looper.loop.run_until_complete(build_schema_request(identifier, schema_json))
     sdk_get_bad_response(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_client, request)],
-                         RequestRejectedException, 'None role cannot add schema')
+                         RequestRejectedException, 'Rule for this action is')
 
 
 def test_client_cant_send_claim_def(looper,
@@ -98,53 +96,4 @@ def test_client_cant_send_claim_def(looper,
     # Client cant send create if ANYONE_CAN_WRITE flag set to True
     req = sdk_sign_request_from_dict(looper, sdk_wallet_client, claim_def)
     req = sdk_send_signed_requests(sdk_pool_handle, [json.dumps(req)])
-    sdk_get_bad_response(looper, req, RequestRejectedException, 'None role cannot add claim def')
-
-
-@pytest.fixture(scope="module")
-def client_send_revoc_reg_def(looper,
-                              txnPoolNodeSet,
-                              sdk_wallet_client,
-                              sdk_pool_handle,
-                              build_revoc_def_by_default,
-                              claim_def, tconf):
-    # We need to have claim_def to send revocation txns
-    Authoriser.auth_map = None
-    OLD_ANYONE_CAN_WRITE = tconf.ANYONE_CAN_WRITE
-    tconf.ANYONE_CAN_WRITE = True
-
-    claim_def_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, claim_def)
-    sdk_send_and_check([json.dumps(claim_def_req)], looper, txnPoolNodeSet, sdk_pool_handle)
-
-    tconf.ANYONE_CAN_WRITE = OLD_ANYONE_CAN_WRITE
-    Authoriser.auth_map = None
-
-
-    _, author_did = sdk_wallet_client
-    revoc_reg = build_revoc_def_by_default
-    revoc_reg['operation'][CRED_DEF_ID] = \
-        make_state_path_for_claim_def(author_did,
-                                      str(claim_def_req['operation'][CLAIM_DEF_SCHEMA_REF]),
-                                      claim_def_req['operation'][CLAIM_DEF_SIGNATURE_TYPE],
-                                      claim_def_req['operation'][CLAIM_DEF_TAG]
-                                      ).decode()
-    revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, revoc_reg['operation'])
-    _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
-    return revoc_req
-
-
-def test_client_can_send_revoc_reg_def(client_send_revoc_reg_def):
-    pass
-
-
-def test_client_can_send_revoc_reg_entry(looper,
-                                         client_send_revoc_reg_def,
-                                         sdk_wallet_client,
-                                         txnPoolNodeSet,
-                                         sdk_pool_handle):
-    revoc_def_req = client_send_revoc_reg_def
-    rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
-    rev_reg_entry[VALUE][REVOKED] = [1, 2, 3, 4, 5]
-    del rev_reg_entry[VALUE][PREV_ACCUM]
-    rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, rev_reg_entry)
-    sdk_send_and_check([json.dumps(rev_entry_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+    sdk_get_bad_response(looper, req, RequestRejectedException, 'Rule for this action is')

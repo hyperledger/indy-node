@@ -7,8 +7,7 @@ RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88 && \
     apt-get update
 
 COPY scripts/user.sh /usr/local/bin/indy_ci_add_user
-COPY scripts/charm_crypto.sh /usr/local/bin/indy_ci_charm_crypto
-RUN bash -c "chmod 755 /usr/local/bin/indy_ci_{add_user,charm_crypto}"
+RUN bash -c "chmod 755 /usr/local/bin/indy_ci_add_user"
 
 COPY __VERSION_FILE__ /
 

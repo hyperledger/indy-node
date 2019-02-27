@@ -9,8 +9,6 @@ from stp_core.common.log import getlogger
 from plenum.common.constants import STEWARD_STRING, TRUSTEE_STRING
 from plenum.test.pool_transactions.test_suspend_node import \
     checkNodeNotInNodeReg
-from indy_client.test.helper import addRole, \
-    getClientAddedWithRole
 from indy_common.constants import TRUST_ANCHOR_STRING
 
 logger = getlogger()
@@ -88,7 +86,7 @@ def testTrusteeSuspensionByTrustee(looper, sdk_pool_handle, sdk_wallet_trustee,
     _, did = sdk_wallet_trustee
     with pytest.raises(RequestRejectedException) as e:
         sdk_suspend_role(looper, sdk_pool_handle, another_steward1, did)
-    e.match('is neither Trustee nor owner of')
+    e.match('{} can not do this action'.format(STEWARD_STRING))
 
 
 # Keep the test below at the end of the suite since it will make one of the

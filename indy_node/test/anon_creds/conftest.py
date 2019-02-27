@@ -1,9 +1,9 @@
 import pytest
 import time
 import json
-from contextlib import ExitStack
 
 from indy_common.state.domain import make_state_path_for_claim_def
+from plenum.common.constants import DOMAIN_LEDGER_ID
 from plenum.common.util import randomString
 from indy_common.constants import REVOC_REG_ENTRY, REVOC_REG_DEF_ID, ISSUED, \
     REVOKED, PREV_ACCUM, ACCUM, REVOC_REG_DEF, ISSUANCE_BY_DEFAULT, \
@@ -16,7 +16,8 @@ from indy_common.state import domain
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.types import f, OPERATION
-from plenum.test.helper import create_new_test_node
+
+from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
 
 
 @pytest.fixture(scope="module")
@@ -40,7 +41,7 @@ def add_revoc_def_by_default(create_node_and_not_start,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
-    req_handler = node.getDomainReqHandler()
+    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=int(time.time()),
                               seq_no=node.domainLedger.seqNo + 1)
@@ -98,7 +99,7 @@ def add_revoc_def_by_demand(create_node_and_not_start,
     }
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
 
-    req_handler = node.getDomainReqHandler()
+    req_handler = node.get_req_handler(DOMAIN_LEDGER_ID)
     txn = append_txn_metadata(reqToTxn(Request(**req)),
                               txn_time=int(time.time()),
                               seq_no=node.domainLedger.seqNo + 1)
@@ -130,10 +131,10 @@ def build_txn_for_revoc_def_entry_by_demand(looper,
     return req
 
 @pytest.fixture(scope="module")
-def claim_def():
+def claim_def(send_schema_seq_no):
     return {
         "type": CLAIM_DEF,
-        "ref": 1,
+        "ref": send_schema_seq_no,
         "signature_type": "CL",
         "tag": "some_tag",
         "data": {

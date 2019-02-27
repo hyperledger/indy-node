@@ -1,0 +1,64 @@
+---
+- name: Check that required variables are specified
+  assert:
+    that:
+      - lookup('vars', item, default='')
+    msg: "{{ lookup('vars', item, default='undefined')|string }}"
+  loop:
+    - perf_scripts_build_dir
+    - perf_scripts_ver
+    - perf_scripts_venv_name
+    - perf_scripts_indy_sdk_channel
+    - perf_scripts_pool_dir_name
+    - perf_scripts_pool_genesis_txns_name
+    - perf_scripts_pool_genesis_txns_path_local
+    - perf_scripts_pool_genesis_txns_path_remote
+
+- name: Install indy sdk repo
+  import_role:
+    name: indy_repo
+  vars:
+    indy_repo_sdk_channels: "{{ perf_scripts_indy_sdk_channel }}"
+
+# TODO rename of split
+- name: Install pip and other required packages
+  apt:
+    name:
+      - libsodium18 # TODO might depends on target platform package distributions
+      - "libindy{{ ('=' ~ perf_scripts_libindy_ver) if perf_scripts_libindy_ver else '' }}"
+      - python3-pip
+      - python-setuptools # neeeded for ansible's pip (TODO actually depends on python used by ansible)
+      - virtualenv
+      - git
+      - vim # TODO think about other useful tools and move to client_install
+    update_cache: true
+  become: true
+
+- name: Install plugins
+  import_role:
+    name: plugins
+
+- name: Install virtualenv globally
+  pip:
+    name:
+      - virtualenv
+    executable: pip3
+  become: true
+
+- name: Install python3-indy
+  pip:
+    name: "python3-indy=={{ perf_scripts_python3_indy_ver }}"
+    virtualenv: "$HOME/{{ perf_scripts_venv_name }}"  # $HOME as a workaround
+    virtualenv_python: python3
+    state: present
+  when: perf_scripts_python3_indy_ver|d(False, True)
+
+- name: Install performance scripts from the VCS
+  pip:
+    name: "git+https://github.com/hyperledger/indy-node.git@{{ perf_scripts_ver }}#egg=subdir&subdirectory=scripts/performance"
+    virtualenv: "$HOME/{{ perf_scripts_venv_name }}"  # $HOME as a workaround
+    virtualenv_python: python3
+
+- name: Configuration tasks
+  include_tasks: configure.yml
+  when: perf_scripts_configuration

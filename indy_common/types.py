@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
+from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
@@ -80,7 +81,8 @@ class SchemaField(MessageValidator):
         (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
         (SCHEMA_ATTR_NAMES, IterableField(
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
-            min_length=1)),
+            min_length=1,
+            max_length=SCHEMA_ATTRIBUTES_LIMIT)),
     )
 
 
@@ -222,7 +224,7 @@ class ClientClaimDefSubmitOperation(MessageValidator):
         (CLAIM_DEF_SCHEMA_REF, TxnSeqNoField()),
         (CLAIM_DEF_PUBLIC_KEYS, ClaimDefField()),
         (CLAIM_DEF_SIGNATURE_TYPE, LimitedLengthStringField(max_length=SIGNATURE_TYPE_FIELD_LIMIT)),
-        (CLAIM_DEF_TAG, LimitedLengthStringField(max_length=256, optional=True)),
+        (CLAIM_DEF_TAG, LimitedLengthStringField(max_length=256)),
     )
 
 

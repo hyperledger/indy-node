@@ -1,0 +1,45 @@
+---
+- name: Ensure '{{ ssh_known_hosts }}' exists
+  copy:
+    content: ""
+    dest: "{{ ssh_known_hosts }}"
+    force: no
+  when: active or terminated
+
+- name: Ensure active hosts' keys are in '{{ ssh_known_hosts }}'
+  block:
+    - name: Check existent records in '{{ ssh_known_hosts }}'
+      command: "ssh-keygen -F {{ item }} -f {{ ssh_known_hosts }}"
+      register: known_hosts
+      loop: "{{ active }}"
+      ignore_errors: true
+      failed_when: false
+      changed_when: false
+
+    - name: Gather host keys for unknown hosts
+      command: "ssh-keyscan -H {{ item.item }}"
+      when: item.rc != 0
+      register: host_keys
+      loop: "{{ known_hosts.results }}"
+      # ssh-keyscan fails silently returning nothing with 0 exit code
+      until: host_keys.rc == 0 and (host_keys.stdout|trim|d(False, True))
+      retries: 5
+      delay: 5
+
+    - name: Add host keys into '{{ ssh_known_hosts }}'
+      known_hosts:
+        name: "{{ item.item.item }}"
+        key: "{{ item.stdout }}"
+        state: "present"
+        path: "{{ ssh_known_hosts }}"
+      when: item.stdout is defined
+      loop: "{{ host_keys.results }}"
+  when: active
+
+- name: Remove terminated hosts' keys from '{{ ssh_known_hosts }}'
+  known_hosts:
+    name: "{{ item }}"
+    state: "absent"
+    path: "{{ ssh_known_hosts }}"
+  loop: "{{ terminated }}"
+  when: terminated

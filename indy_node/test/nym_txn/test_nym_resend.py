@@ -1,6 +1,6 @@
 import json
 
-from indy_client.test.cli.helper import createHalfKeyIdentifierAndAbbrevVerkey
+from indy_node.test.helper import createHalfKeyIdentifierAndAbbrevVerkey
 from indy.ledger import sign_request, submit_request, build_nym_request
 from plenum.common.constants import REPLY, REJECT
 

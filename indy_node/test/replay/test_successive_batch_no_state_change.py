@@ -162,9 +162,9 @@ def test_successive_batch_do_no_change_state(looper,
 
         # Patch methods to record and check roots after commit
 
-        def patched_cre(self, stateRoot):
+        def patched_cre(self, stateRoot, ppTime):
             uncommitteds[self._name].append(stateRoot)
-            return methods[self._name][0](stateRoot)
+            return methods[self._name][0](stateRoot, ppTime)
 
         def patched_com(self, stateRoot):
             assert uncommitteds[self._name][0] == stateRoot

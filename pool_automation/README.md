@@ -3,17 +3,25 @@
 ## Quickstart
 
 - Make sure you have [AWS CLI][f681b33b] installed and configured.
+- [Install](#installation) requirements
 - Run `ansible-playbook pool_create.yml` - this will create 4 EC2 instances
   and `test_nodes` directory with inventory and SSH keys.
-- Run `ansible-playbook -i test_nodes/hosts pool_install.yml` - this will
+- Run `ansible-playbook -i test_nodes/hosts pool.yml` - this will
   install and configure Indy Node pool on previously created EC2 instances.
 - Run `ssh -F test_nodes/ssh_config test_node_1` to login to first node
   and take a look around.
-- Run `ansible-playbook pool_destroy.yml` - this will terminate previously
+- Run `ansible-playbook destroy.nodes.yml` - this will terminate previously
   created AWS EC2 instances and clear `config_pool` and `inventory_pool` files.
 
   [f681b33b]: https://aws.amazon.com/cli/ "aws cli"
 
+## Installation
+
+- python 2.7 or 3.6
+- required packages: `pip install -r requirements.txt`, options:
+  - (recommended) inside python virtual environment
+  - with `--user` inside user Python install directory
+  - (not recommended) globally using `sudo`
 
 ## Roles
 
@@ -25,11 +33,11 @@ Parameters:
 - _instance_count_: number of instances in pool (provide 0 to destroy)
 - _aws_ec2_type_ (t2.micro): type of instances
 - _aws_region_ (eu-central-1): region of instances
+- _aws_tag_project_ (PoolAutomation): project name for created instances
 - _aws_tag_namespace_ (test): namespace of created instances
-- _aws_tag_role_ (default): role of created instances
+- _aws_tag_group_ (default): ansible inventory group of created instances
 
 Todos:
-- allow created instances span all regions
 - extract key generation and inventory export to separate role
 - make inventory span separate roles in namespace
 - more tests
@@ -40,12 +48,12 @@ Todos:
 Installs python and sudo.
 
 
-### node_install
+### indy_node
 
-Adds sovrin repository and installs Indy Node.
+Adds sovrin repository and installs and configures Indy Node.
 
 Parameters:
-- _channel_ (master): which release channel to use (master/rc/stable)
+- _indy_node_channel_ (master): which release channel to use (master/rc/stable)
 - _indy_node_ver_
 - _indy_plenum_ver_
 - _python_indy_crypto_ver_
@@ -55,10 +63,6 @@ Todos:
 - allow providing only _indy_node_ver_
 - remove unused repositories when switching channels
 
-
-### pool_install
-
-Configures Indy Node pool.
 
 ## Scripts
 
@@ -70,13 +74,9 @@ Install system packages:
 - vagrant
 - python 2.7 or 3.6, including dev package
 
-Install virtualenv packages:
-- molecule
-- testinfra
-- python-vagrant
-- boto
-- boto3
-- docker
+Install python packages:
+
+`pip install -r requirements-dev.txt`
 
 Default development workflow would be:
 - `molecule lint`
@@ -92,7 +92,7 @@ By default scenarios based on `docker` are used. Also `vagrant` scenarios are av
 and might be run like `molecule <command> -s vagrant`.
 
 In order to test all scenarios for some role go to a directory with the role (for example
-`roles/pool_install`) and run `molecule test --all`.
+`roles/indy_node`) and run `molecule test --all`.
 
 #### Vagrant scenarios specific
 

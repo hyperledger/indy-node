@@ -27,29 +27,31 @@ MAX_DEPS_DEPTH = 6
 
 
 class NodeControlUtil:
+    # Method is used in case we are interested in command output
+    # errors are ignored
+    # only critical errors are logged to journalctl
     @classmethod
-    def run_shell_command(cls, command, timeout=TIMEOUT, strict=True):
+    def run_shell_command(cls, command, timeout=TIMEOUT):
         try:
-            logger.info("Call {}".format(command))
-            ret = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE, timeout=timeout)
+            ret = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, timeout=timeout)
             ret_bytes = ret.stdout
         except subprocess.CalledProcessError as ex:
             ret_bytes = ex.output
-            if strict:
-                err_msg = ex.stderr.decode(locale.getpreferredencoding(), 'decode_errors').strip() if ex.stderr else ""
-                raise Exception('command {} returned {}. {}'.format(command, ex.returncode, err_msg))
         except Exception as ex:
             raise Exception("command {} failed with {}".format(command, ex))
         ret_msg = ret_bytes.decode(locale.getpreferredencoding(), 'decode_errors').strip() if ret_bytes else ""
-        if strict:
-            logger.info("Command result {}".format(ret_msg))
         return ret_msg
+
+    # Method is used in case we are NOT interested in command output
+    # everything: command, errors, output etc are logged to journalctl
+    @classmethod
+    def run_shell_script(cls, command, timeout=TIMEOUT):
+        subprocess.run(command, shell=True, timeout=timeout, check=True)
 
     @classmethod
     def _get_curr_info(cls, package):
         cmd = compose_cmd(['dpkg', '-s', package])
-        return cls.run_shell_command(cmd, strict=False)
+        return cls.run_shell_command(cmd)
 
     @classmethod
     def _parse_deps(cls, deps: str):
@@ -69,6 +71,17 @@ class NodeControlUtil:
         return ret
 
     @classmethod
+    def _pkts_dedup(cls, deps):
+        ret = []
+        processed = set()
+        for d in deps:
+            name_ver = d.split("=", maxsplit=1)
+            if name_ver[0] not in processed:
+                ret.append(d)
+            processed.add(name_ver[0])
+        return ret
+
+    @classmethod
     def _parse_version_deps_from_pkt_mgr_output(cls, output):
         out_lines = output.split("\n")
         ver = None
@@ -76,10 +89,10 @@ class NodeControlUtil:
         for ln in out_lines:
             act_line = ln.strip(" \n")
             if act_line.startswith("Version:"):
-                ver = act_line.split(":", maxsplit=1)[1].strip(" \n")
+                ver = ver or act_line.split(":", maxsplit=1)[1].strip(" \n")
             if act_line.startswith("Depends:"):
                 ext_deps += cls._parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
-        return ver, ext_deps
+        return ver, cls._pkts_dedup(ext_deps)
 
     @classmethod
     def curr_pkt_info(cls, pkg_name):
@@ -90,12 +103,12 @@ class NodeControlUtil:
     def _get_info_from_package_manager(cls, *package):
         cmd_arg = " ".join(list(package))
         cmd = compose_cmd(['apt-cache', 'show', cmd_arg])
-        return cls.run_shell_command(cmd, strict=False)
+        return cls.run_shell_command(cmd)
 
     @classmethod
     def update_package_cache(cls):
         cmd = compose_cmd(['apt', 'update'])
-        return cls.run_shell_command(cmd)
+        cls.run_shell_script(cmd)
 
     @classmethod
     def get_deps_tree(cls, *package, depth=0):

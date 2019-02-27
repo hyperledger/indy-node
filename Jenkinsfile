@@ -27,29 +27,6 @@ def nodeTestUbuntu = {
     }
 }
 
-def clientTestUbuntu = {
-    try {
-        echo 'Ubuntu Test: Checkout csm'
-        checkout scm
-
-        echo 'Ubuntu Test: Build docker image'
-        def testEnv = dockerHelpers.build(name)
-
-        testEnv.inside('--network host') {
-            echo 'Ubuntu Test: Install dependencies'
-            testHelpers.install()
-
-            echo 'Ubuntu Test: Test'
-            testHelpers.testRunner([resFile: "test-result-client.${NODE_NAME}.txt", testDir: 'indy_client'])
-            //testHelpers.testJUnit(resFile: "test-result-client.${NODE_NAME}.xml")
-        }
-    }
-    finally {
-        echo 'Ubuntu Test: Cleanup'
-        step([$class: 'WsCleanup'])
-    }
-}
-
 def commonTestUbuntu = {
     try {
         echo 'Ubuntu Test: Checkout csm'
@@ -90,4 +67,4 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
 options = new TestAndPublishOptions()
 options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
-testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, client: clientTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
+testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])

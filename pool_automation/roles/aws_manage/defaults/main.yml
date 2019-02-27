@@ -1,12 +1,22 @@
 ---
-# AWS primary parameters
-aws_ec2_type: t2.micro
+# General
+aws_project_name: Indy-PA
+aws_group_name: defaults
 
-# Tags
-aws_tag_role: default
+  # Namespace parameters
+aws_namespace_name: "{{ namespace_name | d(inventory_dir, true) | d('test', true) | basename }}"
+aws_build_dir: "{{ namespace_dir | d(inventory_dir, true) | d(aws_namespace_name, true) }}"
 
-# List of all potential regions to use
-aws_regions:
+  # Inventory parameters
+aws_inventory_dir: "{{ inventory_dir | d(aws_build_dir ~ '/inventory', true) }}"
+aws_inventory_file: "{{ aws_inventory_dir }}/{{ aws_group_name }}.yml"
+aws_base_group: "{{ aws_namespace_name }}"
+
+# Provision parameters
+
+  # List of all potential regions to use
+  # (for reference mostly)
+aws_regions_all:
   - ap-northeast-1
   - ap-northeast-2
   - ap-south-1
@@ -17,21 +27,34 @@ aws_regions:
   - eu-west-1
   - eu-west-2
   - eu-west-3
-  - sa-east-1
+  - sa-east-1  # !!! be aware: expensive
   - us-east-1
   - us-east-2
   - us-west-1
   - us-west-2
 
-instance_count: 4
+  # List of regions to use
+  # (the cheapest ones)
+aws_regions:
+  - us-east-1
+  - us-east-2
+  - us-west-2
 
-pa_aws_prefix: PA
+aws_instance_count: 4
 
-# Derivative parameters
-group_name: "{{ aws_tag_role }}s"
+aws_ec2_type: t2.micro
+aws_ec2_market_spot: true
+aws_ec2_spot_max_price: null
+aws_ebs_volume_size: 16
+aws_ebs_volume_type: gp2
 
-aws_tag_namespace: "{{ inventory_dir | default('test', true) | basename }}"
-aws_inventory_dir: "{{ inventory_dir | default(aws_tag_namespace ~ '_' ~ group_name) }}"
-aws_inventory_file: "{{ aws_inventory_dir }}/hosts"
-aws_keyname: "{{ pa_aws_prefix }}-{{ aws_tag_namespace }}-{{ group_name }}"
-aws_sgroup: "{{ pa_aws_prefix }}-{{ aws_tag_namespace }}-{{ group_name }}"
+  # Resource tags and names
+aws_tag_project: "{{ aws_project_name }}"
+aws_tag_namespace: "{{ aws_namespace_name }}"
+aws_tag_group: "{{ aws_group_name }}"
+aws_add_tags: {} # additional tags
+
+aws_resource_common_name: "{{ [aws_project_name, aws_tag_namespace, aws_group_name]|join('-')|lower }}"
+aws_keyname: "{{ aws_resource_common_name }}"
+aws_sgroup: "{{ aws_resource_common_name }}"
+aws_tag_sgroup_name: "{{ aws_sgroup }}"

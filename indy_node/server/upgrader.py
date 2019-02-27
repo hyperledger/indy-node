@@ -375,7 +375,6 @@ class Upgrader(NodeMaintainer):
                                 upgrade_id=upgrade_id,
                                 reason="problems in communication with node control service")
             self._unscheduleAction()
-            self._actionFailedCallback()
         else:
             logger.info("Waiting {} minutes for upgrade to be performed".format(failTimeout))
             timesUp = partial(self._declareTimeoutExceeded, when, version, upgrade_id)
@@ -449,7 +448,7 @@ class Upgrader(NodeMaintainer):
             return True, ''
         times = sorted(times)
         for i in range(len(times) - 1):
-            diff = (times[i + 1] - times[i]).seconds
+            diff = (times[i + 1] - times[i]).total_seconds()
             if diff < self.config.MinSepBetweenNodeUpgrades:
                 return False, 'time span between upgrades is {} ' \
                               'seconds which is less than specified ' \

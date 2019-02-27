@@ -75,9 +75,12 @@ def tconf(tconf):
     import indy_node.test.helper
     _reload_module(indy_node.server.node)
     _reload_module(indy_node.test.helper)
-    import indy_client.test.conftest
-    importlib.reload(indy_client.test.conftest)
     return tconf
+
+
+@pytest.yield_fixture(scope="session", autouse=True)
+def warncheck(warnfilters):
+    pass
 
 
 def test_end_to_end_replay(looper,

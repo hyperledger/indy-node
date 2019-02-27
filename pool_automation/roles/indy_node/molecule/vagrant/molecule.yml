@@ -1,0 +1,60 @@
+---
+scenario:
+  name: vagrant
+
+parameters:
+  node_config: &node_config
+    box: ubuntu/xenial64
+    groups:
+      - nodes
+
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  inventory:
+    links:
+      group_vars: ${MOLECULE_INVENTORY_GROUP_VARS:-../resources/group_vars}
+      host_vars: ./host_vars
+  playbooks:
+    converge: ../resources/playbooks/playbook.yml
+
+platforms:
+  - <<: *node_config
+    name: node1
+    interfaces:
+      - network_name: private_network
+        ip: 192.168.33.11
+  - <<: *node_config
+    name: node2
+    interfaces:
+      - network_name: private_network
+        ip: 192.168.33.12
+  - <<: *node_config
+    name: node3
+    interfaces:
+      - network_name: private_network
+        ip: 192.168.33.13
+  - <<: *node_config
+    name: node4
+    interfaces:
+      - network_name: private_network
+        ip: 192.168.33.14
+
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+
+lint:
+  name: yamllint
+  options:
+    config-file: ../../yamllint
+
+verifier:
+  name: testinfra
+  directory: ../resources/tests/base
+  additional_files_or_dirs:
+    - ../test_configured.py
+  lint:
+    name: flake8
