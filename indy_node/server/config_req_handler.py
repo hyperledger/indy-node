@@ -63,8 +63,8 @@ class ConfigReqHandler(LedgerRequestHandler):
         if auth_key not in self.write_req_validator.auth_map and \
                 auth_key not in self.write_req_validator.anyone_can_write_map:
             raise InvalidClientRequest(identifier, reqId,
-                                       "Key '{}' is not contained in the "
-                                       "authorization map".format(auth_key))
+                                       "Unknown authorization rule: key '{}' is not "
+                                       "found in authorization map".format(auth_key))
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)
