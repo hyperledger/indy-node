@@ -22,6 +22,12 @@ class ConstraintsEnum:
     AND_CONSTRAINT_ID = 'AND'
     OR_CONSTRAINT_ID = 'OR'
 
+    @staticmethod
+    def values():
+        return [ConstraintsEnum.ROLE_CONSTRAINT_ID,
+                ConstraintsEnum.AND_CONSTRAINT_ID,
+                ConstraintsEnum.OR_CONSTRAINT_ID]
+
 
 class AbstractAuthConstraint(metaclass=ABCMeta):
     def __init__(self):
@@ -105,7 +111,8 @@ class AuthConstraintAnd(AbstractAuthConstraint):
     @staticmethod
     def from_dict(as_dict):
         auth_constraints = []
-        for dict_constraint in as_dict[AUTH_CONSTRAINTS]:
+        for input_constraint in as_dict[AUTH_CONSTRAINTS]:
+            dict_constraint = dict(input_constraint)
             constraint_id = dict_constraint.pop(CONSTRAINT_ID)
             constraint_cls = constraint_to_class_map.get(constraint_id)
             auth_constraints.append(constraint_cls.from_dict(dict_constraint))
@@ -132,7 +139,8 @@ class AuthConstraintOr(AbstractAuthConstraint):
     @staticmethod
     def from_dict(as_dict):
         auth_constraints = []
-        for dict_constraint in as_dict[AUTH_CONSTRAINTS]:
+        for input_constraint in as_dict[AUTH_CONSTRAINTS]:
+            dict_constraint = dict(input_constraint)
             constraint_id = dict_constraint.pop(CONSTRAINT_ID)
             if constraint_id is None:
                 raise KeyError('There is no "constraint_id" field in deserialised dict: {}'.format(as_dict))
@@ -145,7 +153,8 @@ class AuthConstraintOr(AbstractAuthConstraint):
 
 class ConstraintCreator:
     @staticmethod
-    def create_constraint(as_dict):
+    def create_constraint(input_dict):
+        as_dict = dict(input_dict)
         constraint_id = as_dict.pop(CONSTRAINT_ID)
         if constraint_id is None:
             raise KeyError('There is no "constraint_id" field in deserialised dict: {}'.format(as_dict))

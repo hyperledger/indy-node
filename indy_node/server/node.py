@@ -28,7 +28,7 @@ from storage.helper import initKeyValueStorage
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
-    IN_PROGRESS
+    IN_PROGRESS, AUTH_RULE
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
@@ -325,7 +325,9 @@ class Node(PlenumNode):
         return c
 
     def can_write_txn(self, txn_type):
-        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE, POOL_CONFIG]
+        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE,
+                                                         POOL_CONFIG,
+                                                         AUTH_RULE]
 
     def execute_domain_txns(self, ppTime, reqs: List[Request], stateRoot,
                             txnRoot) -> List:
