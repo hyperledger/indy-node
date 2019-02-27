@@ -336,7 +336,6 @@ class ConstraintEntityField(MessageValidator):
 
 
 class ConstraintListField(MessageValidator):
-    _base_types = (dict, )
     schema = ((CONSTRAINT_ID, ChooseField(values=ConstraintsEnum.values())),
               (AUTH_CONSTRAINTS, IterableField(AnyField())))
 
