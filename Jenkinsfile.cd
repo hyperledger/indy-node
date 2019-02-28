@@ -185,7 +185,7 @@ def systemTests = { component ->
                 }
             }
 
-            for (testFileName in ['test_ledger.py', 'test_consensus.py', 'test_vc.py']) {
+            for (testFileName in ['test_ledger.py'/*, 'test_consensus.py', 'test_vc.py'*/]) {
                 try {
                     stage("Setup docker") {
                         dockerSetup()
@@ -200,6 +200,7 @@ def systemTests = { component ->
                             docker cp ./system_tests/system indyclient:/home/indy
                             docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./
                             docker cp ./pool_transactions_genesis indyclient:/home/indy/system/docker_genesis
+                            docker cp ./pool_transactions_genesis indyclient:/home/indy/docker_genesis
                             docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system
                         '''
                     }
@@ -212,7 +213,7 @@ def systemTests = { component ->
                                 docker exec -t --user indy indyclient bash -c "\
                                     set -o pipefail; \
                                     cd /home/indy/system && mkdir reports && \
-                                    pytest -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
+                                    RUST_LOG=trace pytest -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
                                     tee ./reports/$testReportFileNamePlain"
                             """
                         }
