@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from indy_node.server.action_log import ActionLogData, ActionLog
+from indy_node.server.action_log import ActionLogData, ActionLogEvents, ActionLog
 
 
 # TODO tests
@@ -16,7 +16,12 @@ class UpgradeLogData(ActionLogData):
 
 
 class UpgradeLog(ActionLog):
+
+    Events = ActionLogEvents
+
     """
     Append-only event log of upgrade event
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('event_types', None)
+        super().__init__(*args, event_types=ActionLogEvents, **kwargs)
