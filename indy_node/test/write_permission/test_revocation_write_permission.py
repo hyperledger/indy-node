@@ -1,6 +1,8 @@
 import json
 import pytest
 
+from enum import Enum, unique
+
 from indy_common.constants import REVOKED, VALUE, PREV_ACCUM, CRED_DEF_ID, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_TAG
 from indy_common.state.domain import make_state_path_for_claim_def
@@ -8,6 +10,13 @@ from indy_node.test.anon_creds.conftest import claim_def, build_revoc_reg_entry_
     build_revoc_def_by_default
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
+from indy_node.test.nym_txn.test_nym_auth_rules import DID, EnumBase, ActionIds
+from indy_common.roles import Roles
+
+
+REV_REGAddDestRoles = Enum('REV_REGAddDestRoles',
+                           [(r.name, r.value) for r in Roles] + [('omitted', 'omitted')],
+                           type=EnumBase)
 
 
 @pytest.fixture(scope='module')
@@ -42,6 +51,9 @@ def client_send_revoc_reg_def(looper,
     revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, revoc_reg['operation'])
     _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
     return revoc_req
+
+
+
 
 
 def test_client_can_send_revoc_reg_def(client_send_revoc_reg_def):
