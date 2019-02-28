@@ -316,8 +316,9 @@ class ConstraintField(FieldBase):
         self._constraint_list = constraint_list
 
     def _specific_validation(self, val):
-        if val is None:
-            return "Field {} is required".format(CONSTRAINT)
+        if not val:
+            return "Fields {} and {} are required and should not " \
+                   "be an empty list.".format(AUTH_CONSTRAINTS, CONSTRAINT)
         if CONSTRAINT_ID not in val:
             return "Field {} is required".format(CONSTRAINT_ID)
         return self._constraint_entity.validate(val) \
@@ -340,8 +341,15 @@ class ConstraintListField(MessageValidator):
               (AUTH_CONSTRAINTS, IterableField(AnyField())))
 
     def _validate_message(self, val):
-        for constraint in val.get(AUTH_CONSTRAINTS):
-            ConstraintField(ConstraintEntityField(), self).validate(constraint)
+        constraints = val.get(AUTH_CONSTRAINTS)
+        if not constraints:
+            self._raise_invalid_message("Fields {} should not be an empty "
+                                        "list.".format(AUTH_CONSTRAINTS))
+        for constraint in constraints:
+            error_msg = ConstraintField(ConstraintEntityField(),
+                                        self).validate(constraint)
+            if error_msg:
+                self._raise_invalid_message(error_msg)
 
 
 class ClientAuthRuleOperation(MessageValidator):

@@ -28,18 +28,28 @@ def test_valid():
 def test_invalid_operation_action():
     # must be ADD_PREFIX or EDIT_PREFIX
     invalid_auth_rule_operation = generate_auth_rule_operation(auth_action="auth_action")
-    with pytest.raises(TypeError) as e:
+    with pytest.raises(TypeError, match=AUTH_ACTION):
         validator.validate(invalid_auth_rule_operation)
-    e.match(AUTH_ACTION)
 
 
 def test_invalid_entity_role():
     # ConstraintEntityField without required field 'role'
     invalid_auth_rule_operation = generate_auth_rule_operation()
     del invalid_auth_rule_operation[CONSTRAINT][ROLE]
-    with pytest.raises(TypeError) as e:
+    with pytest.raises(TypeError, match=ROLE):
         validator.validate(invalid_auth_rule_operation)
-    e.match(ROLE)
+
+
+def test_invalid_entity_role_in_extra_large_constraint():
+    # ConstraintEntityField without required field 'role'
+    invalid_auth_rule_operation = generate_auth_rule_operation(constraint=generate_constraint_list(
+        auth_constraints=[generate_constraint_entity(),
+                          generate_constraint_list(
+                              auth_constraints=[generate_constraint_entity(),
+                                                generate_constraint_entity()])]))
+    del invalid_auth_rule_operation[CONSTRAINT][AUTH_CONSTRAINTS][1][AUTH_CONSTRAINTS][0][ROLE]
+    with pytest.raises(TypeError, match=ROLE):
+        validator.validate(invalid_auth_rule_operation)
 
 
 def test_invalid_operation_auth_constraints():
@@ -48,9 +58,8 @@ def test_invalid_operation_auth_constraints():
         auth_constraints=[generate_constraint_entity(),
                           generate_constraint_entity()]))
     del invalid_auth_rule_operation[CONSTRAINT][AUTH_CONSTRAINTS]
-    with pytest.raises(TypeError) as e:
+    with pytest.raises(TypeError, match=AUTH_CONSTRAINTS):
         validator.validate(invalid_auth_rule_operation)
-    e.match(AUTH_CONSTRAINTS)
 
 
 def test_invalid_operation_auth_constraints_with_large_constraint():
@@ -61,7 +70,45 @@ def test_invalid_operation_auth_constraints_with_large_constraint():
                               auth_constraints=[generate_constraint_entity(),
                                                 generate_constraint_entity()])]))
     del invalid_auth_rule_operation[CONSTRAINT][AUTH_CONSTRAINTS][1][AUTH_CONSTRAINTS]
-    with pytest.raises(TypeError) as e:
+    with pytest.raises(TypeError, match=AUTH_CONSTRAINTS):
         validator.validate(invalid_auth_rule_operation)
-    e.match(AUTH_CONSTRAINTS)
 
+
+def test_invalid_operation_constraint_id_with_large_constraint():
+    # ConstraintListField without required field CONSTRAINT_ID on the 2nd level
+    invalid_auth_rule_operation = generate_auth_rule_operation(constraint=generate_constraint_list(
+        auth_constraints=[generate_constraint_entity(),
+                          generate_constraint_list(
+                              auth_constraints=[generate_constraint_entity(),
+                                                generate_constraint_entity()])]))
+    del invalid_auth_rule_operation[CONSTRAINT][AUTH_CONSTRAINTS][1][CONSTRAINT_ID]
+    with pytest.raises(TypeError, match=CONSTRAINT_ID):
+        validator.validate(invalid_auth_rule_operation)
+
+
+def test_invalid_operation_with_empty_auth_constraints():
+    # ConstraintListField without empty list in auth_constraints
+    invalid_auth_rule_operation = generate_auth_rule_operation(constraint=generate_constraint_list(
+        auth_constraints=[generate_constraint_entity(),
+                          generate_constraint_list(
+                              auth_constraints=[])]))
+    with pytest.raises(TypeError, match="Fields {} should not be an empty "
+                                        "list.".format(AUTH_CONSTRAINTS)):
+        validator.validate(invalid_auth_rule_operation)
+
+
+def test_invalid_operation_with_empty_constraint_list():
+    # ClientAuthRuleOperation with empty list of constraints
+    invalid_auth_rule_operation = generate_auth_rule_operation(constraint=[])
+    with pytest.raises(TypeError, match="Fields {} and {} are required and should not "
+                                        "be an empty list.".format(AUTH_CONSTRAINTS, CONSTRAINT)):
+        validator.validate(invalid_auth_rule_operation)
+
+
+def test_invalid_operation_without_none_constraint():
+    # ConstraintListField without None in field CONSTRAINT
+    invalid_auth_rule_operation = generate_auth_rule_operation()
+    invalid_auth_rule_operation[CONSTRAINT] = None
+    with pytest.raises(TypeError, match="Fields {} and {} are required and should not "
+                                        "be an empty list.".format(AUTH_CONSTRAINTS, CONSTRAINT)):
+        validator.validate(invalid_auth_rule_operation)
