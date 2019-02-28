@@ -1,17 +1,15 @@
 from typing import List
 
-from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
-from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
-from indy_common.authorize.auth_request_validator import WriteRequestValidator
+from indy_common.authorize.auth_constraints import ConstraintCreator
+from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
-from plenum.common.exceptions import InvalidClientRequest, \
-    UnauthorizedClientRequest
+from plenum.common.exceptions import InvalidClientRequest, InvalidMessageException
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    APP_NAME, REINSTALL
-from indy_common.types import Request
+    APP_NAME, REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD
+from indy_common.types import Request, ClientAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
@@ -19,19 +17,17 @@ from indy_node.utils.node_control_utils import NodeControlUtil
 
 
 class ConfigReqHandler(LedgerRequestHandler):
-    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG}
+    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE}
 
     def __init__(self, ledger, state, idrCache: IdrCache,
-                 upgrader: Upgrader, poolManager, poolCfg: PoolConfig):
+                 upgrader: Upgrader, poolManager, poolCfg: PoolConfig,
+                 write_req_validator):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
         self.poolManager = poolManager
         self.poolCfg = poolCfg
-        self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=auth_map,
-                                                         cache=self.idrCache,
-                                                         anyone_can_write_map=anyone_can_write_map)
+        self.write_req_validator = write_req_validator
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -39,9 +35,36 @@ class ConfigReqHandler(LedgerRequestHandler):
             self._doStaticValidationPoolUpgrade(identifier, req_id, operation)
         elif operation[TXN_TYPE] == POOL_CONFIG:
             self._doStaticValidationPoolConfig(identifier, req_id, operation)
+        elif operation[TXN_TYPE] == AUTH_RULE:
+            self._doStaticValidationAuthRule(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
         pass
+
+    def _doStaticValidationAuthRule(self, identifier, reqId, operation):
+        constraint = operation.get(CONSTRAINT)
+        ConstraintCreator.create_constraint(constraint)
+        action = operation.get(AUTH_ACTION, None)
+
+        if OLD_VALUE not in operation and action == EDIT_PREFIX:
+            raise InvalidClientRequest(identifier, reqId,
+                                       "Transaction for change authentication "
+                                       "rule for {}={} must contain field {}".
+                                       format(AUTH_ACTION, EDIT_PREFIX, OLD_VALUE))
+
+        if OLD_VALUE in operation and action == ADD_PREFIX:
+            raise InvalidClientRequest(identifier, reqId,
+                                       "Transaction for change authentication "
+                                       "rule for {}={} must not contain field {}".
+                                       format(AUTH_ACTION, ADD_PREFIX, OLD_VALUE))
+
+        auth_key = self.get_auth_key(operation)
+
+        if auth_key not in self.write_req_validator.auth_map and \
+                auth_key not in self.write_req_validator.anyone_can_write_map:
+            raise InvalidClientRequest(identifier, reqId,
+                                       "Unknown authorization rule: key '{}' is not "
+                                       "found in authorization map".format(auth_key))
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)
@@ -71,7 +94,7 @@ class ConfigReqHandler(LedgerRequestHandler):
         status = '*'
         operation = req.operation
         typ = operation.get(TXN_TYPE)
-        if typ not in [POOL_UPGRADE, POOL_CONFIG]:
+        if typ not in [POOL_UPGRADE, POOL_CONFIG, AUTH_RULE]:
             return
         if typ == POOL_UPGRADE:
             pkt_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
@@ -131,6 +154,12 @@ class ConfigReqHandler(LedgerRequestHandler):
                                                               field=ACTION,
                                                               old_value=status,
                                                               new_value=action)])
+        elif typ == AUTH_RULE:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=typ,
+                                                              field="*",
+                                                              old_value="*",
+                                                              new_value="*")])
 
     def apply(self, req: Request, cons_time):
         txn = append_txn_metadata(reqToTxn(req),
@@ -156,3 +185,20 @@ class ConfigReqHandler(LedgerRequestHandler):
         txn = reqToTxn(req)
         self.upgrader.handleUpgradeTxn(txn)
         self.poolCfg.handleConfigTxn(txn)
+
+    @staticmethod
+    def get_auth_key(operation):
+        action = operation.get(AUTH_ACTION, None)
+        old_value = operation.get(OLD_VALUE, None)
+        new_value = operation.get(NEW_VALUE, None)
+        auth_type = operation.get(AUTH_TYPE, None)
+        field = operation.get(FIELD, None)
+
+        return AuthActionEdit(txn_type=auth_type,
+                              field=field,
+                              old_value=old_value,
+                              new_value=new_value).get_action_id() \
+            if action == EDIT_PREFIX else \
+            AuthActionAdd(txn_type=auth_type,
+                          field=field,
+                          value=new_value).get_action_id()

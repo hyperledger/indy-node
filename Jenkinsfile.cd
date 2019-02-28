@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpers') _
+@Library('SovrinHelpers@v1.2.1') _
 
 def name = 'indy-node'
 
@@ -64,7 +64,7 @@ def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
     return "$volumeName"
 }
 
-def systemTests = { component ->
+def systemTests = { component, releaseVersion ->
 
     String prefix = "System Tests ($component)"
     String defaultNetwork = 'pool-network'
@@ -179,8 +179,9 @@ def systemTests = { component ->
                     sh """
                         sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
                         sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
-                        sed -i 's/\\(apt-get install -y indy-node libindy\\)/&=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(apt-get install -y indy-node\\) libindy/\\1=$releaseVersion libindy=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
                         sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion $test_deps/g' core.ubuntu.dockerfile
+                        cat core.ubuntu.dockerfile
                     """
                 }
             }

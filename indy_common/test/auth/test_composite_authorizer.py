@@ -1,8 +1,9 @@
 import pytest
 import time
 
-from indy_common.authorize.auth_constraints import AND_CONSTRAINT_ID, OR_CONSTRAINT_ID, AuthConstraint, AuthConstraintAnd, \
-    AuthConstraintOr
+from indy_common.authorize.auth_constraints import AuthConstraint, \
+    AuthConstraintAnd, \
+    AuthConstraintOr, ConstraintsEnum
 from indy_common.authorize.authorizer import CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, OrAuthorizer, \
     AuthValidationError
 from indy_common.types import Request
@@ -34,8 +35,8 @@ def idr_cache(req_auth):
 def composite_authorizer(idr_cache):
     authorizer = CompositeAuthorizer()
     authorizer.register_authorizer(RolesAuthorizer(idr_cache))
-    authorizer.register_authorizer(AndAuthorizer(), AND_CONSTRAINT_ID)
-    authorizer.register_authorizer(OrAuthorizer(), OR_CONSTRAINT_ID)
+    authorizer.register_authorizer(AndAuthorizer(), ConstraintsEnum.AND_CONSTRAINT_ID)
+    authorizer.register_authorizer(OrAuthorizer(), ConstraintsEnum.OR_CONSTRAINT_ID)
     return authorizer
 
 

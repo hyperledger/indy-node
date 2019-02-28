@@ -2,12 +2,14 @@ from abc import abstractmethod
 
 from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy, ConfigLedgerAuthStrategy
 from indy_common.authorize.auth_actions import AbstractAuthAction
-from indy_common.authorize.auth_constraints import AND_CONSTRAINT_ID, OR_CONSTRAINT_ID, ROLE_CONSTRAINT_ID
+from indy_common.authorize.auth_constraints import ConstraintsEnum, AbstractConstraintSerializer
 from indy_common.authorize.authorizer import AbstractAuthorizer, CompositeAuthorizer, RolesAuthorizer, AndAuthorizer, \
     OrAuthorizer, AuthValidationError
 from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
 from indy_common.types import Request
+from indy_node.persistence.idr_cache import IdrCache
 from plenum.common.exceptions import UnauthorizedClientRequest
+from state.pruning_state import PruningState
 from stp_core.common.log import getlogger
 
 
@@ -22,20 +24,29 @@ class AbstractRequestValidator(AbstractAuthorizer):
 
 
 class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
-    def __init__(self, config, auth_map, cache, anyone_can_write_map=None):
+    def __init__(self,
+                 config,
+                 auth_map: dict,
+                 cache: IdrCache,
+                 config_state: PruningState,
+                 state_serializer: AbstractConstraintSerializer,
+                 anyone_can_write_map=None):
         CompositeAuthorizer.__init__(self)
-        self.cache = cache
         self.config = config
         self.auth_map = auth_map
-        self.anyone_can_write = self.config.ANYONE_CAN_WRITE
+        self.cache = cache
+        self.config_state = config_state
+        self.state_serializer = state_serializer
         self.anyone_can_write_map = anyone_can_write_map
+
+        self.anyone_can_write = self.config.ANYONE_CAN_WRITE
         self.auth_cons_strategy = self.create_auth_strategy()
         self.register_default_authorizers()
 
     def register_default_authorizers(self):
-        self.register_authorizer(RolesAuthorizer(cache=self.cache), auth_constraint_id=ROLE_CONSTRAINT_ID)
-        self.register_authorizer(AndAuthorizer(), auth_constraint_id=AND_CONSTRAINT_ID)
-        self.register_authorizer(OrAuthorizer(), auth_constraint_id=OR_CONSTRAINT_ID)
+        self.register_authorizer(RolesAuthorizer(cache=self.cache), auth_constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID)
+        self.register_authorizer(AndAuthorizer(), auth_constraint_id=ConstraintsEnum.AND_CONSTRAINT_ID)
+        self.register_authorizer(OrAuthorizer(), auth_constraint_id=ConstraintsEnum.OR_CONSTRAINT_ID)
 
     def validate(self, request: Request, action_list: [AbstractAuthAction]):
         for action in action_list:
@@ -64,4 +75,7 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
             return LocalAuthStrategy(auth_map=self.auth_map,
                                      anyone_can_write_map=self.anyone_can_write_map if self.anyone_can_write else None)
         elif self.config.authPolicy == CONFIG_LEDGER_AUTH_POLICY:
-            return ConfigLedgerAuthStrategy(auth_map=self.auth_map)
+            return ConfigLedgerAuthStrategy(auth_map=self.auth_map,
+                                            state=self.config_state,
+                                            serializer=self.state_serializer,
+                                            anyone_can_write_map=self.anyone_can_write_map if self.anyone_can_write else None)

@@ -24,16 +24,13 @@ class ActionReqHandler(RequestHandler):
 
     def __init__(self, idrCache: IdrCache,
                  restarter: Restarter, poolManager, poolCfg: PoolConfig,
-                 info_tool: ValidatorNodeInfoTool):
+                 info_tool: ValidatorNodeInfoTool, write_req_validator):
         self.idrCache = idrCache
         self.restarter = restarter
         self.info_tool = info_tool
         self.poolManager = poolManager
         self.poolCfg = poolCfg
-        self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=auth_map,
-                                                         cache=self.idrCache,
-                                                         anyone_can_write_map=anyone_can_write_map)
+        self.write_req_validator = write_req_validator
 
     def doStaticValidation(self, request: Request):
         pass
