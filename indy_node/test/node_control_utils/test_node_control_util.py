@@ -2,9 +2,12 @@ import pytest
 import shutil
 
 
-from indy_node.utils.node_control_utils import NodeControlUtil
+from indy_node.utils.node_control_utils import NodeControlUtil, ShellException
 
 generated_command = None
+
+# TODO
+# - conditionally skip all tests for non-debian systems
 
 
 @pytest.fixture
@@ -67,3 +70,26 @@ def test_generated_cmd_hold_packages(monkeypatch, catch_generated_command):
     monkeypatch.setattr(shutil, 'which', lambda *_: 'path')
     NodeControlUtil.hold_packages(packages)
     assert generated_command == "apt-mark hold {}".format(' '.join(packages))
+
+
+@pytest.mark.parametrize(
+    'output,expected',
+    [
+        ('', None),
+        ('Version: 1.2.3\nVersion: 1.2.4', '1.2.4'),
+    ],
+    ids=lambda s: s.replace('\n', '_').replace(' ', '_')
+)
+def test_get_latest_pkg_version(monkeypatch, output, expected):
+    def _f(command, *args, **kwargs):
+        if not output:
+            raise ShellException(1, command)
+        else:
+            return output
+
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    assert expected == NodeControlUtil.get_latest_pkg_version('any_package')
+
+
+def test_get_latest_pkg_version_for_unknown_package():
+    assert NodeControlUtil.get_latest_pkg_version('some-unknown-package-name') is None

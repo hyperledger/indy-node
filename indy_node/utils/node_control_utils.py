@@ -212,7 +212,6 @@ class NodeControlUtil:
         package_info = cls._get_curr_info(pkg_name)
         return cls._parse_version_deps_from_pkg_mgr_output(package_info)
 
-    # TODO tests
     @classmethod
     def get_latest_pkg_version(cls, pkg_name, upstream=None):
         # cls.update_package_cache()
@@ -222,8 +221,8 @@ class NodeControlUtil:
                 ['apt-cache', 'show', pkg_name, '|', 'grep', '-E', regex])
             output = cls.run_shell_script(cmd).strip()
         except ShellException as exc:
-            # will fail ie either package not found or grep returns nothing
-            # the latter is unexpected and trated as no-data as well
+            # will fail if either package not found or grep returns nothing
+            # the latter is unexpected and treated as no-data as well
             logger.info("no-data for package {} with upstream version {} found"
                         .format(pkg_name, upstream))
         else:
