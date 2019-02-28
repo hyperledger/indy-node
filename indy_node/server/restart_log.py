@@ -12,6 +12,10 @@ class RestartLog(ActionLog):
     """
     Append-only event log of restart event
     """
-    def __init__(self, *args, **kwargs):
-        kwargs.pop('event_types', None)
-        super().__init__(*args, event_types=ActionLogEvents, **kwargs)
+    def __init__(self, file_path):
+        super().__init__(
+            file_path,
+            data_class=RestartLogData,
+            event_types=ActionLogEvents,
+            delimiter='\t'
+        )

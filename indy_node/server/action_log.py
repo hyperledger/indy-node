@@ -1,7 +1,7 @@
 import csv
 import io
 import os
-from datetime import datetime
+import datetime
 import functools
 from enum import Enum, unique
 from dateutil.parser import parse as parse_dt
@@ -43,7 +43,7 @@ class ActionLogData(CsvSerializer):
     def __init__(self, when):
         if isinstance(when, str):
             when = parse_dt(when)
-        if not isinstance(when, datetime):
+        if not isinstance(when, datetime.datetime):
             raise TypeError(
                 "'when' should be 'datetime' or 'str', got: {}"
                 .format(type(when))
@@ -70,7 +70,7 @@ class ActionLogEvent(CsvSerializer):
         if ts:
             if isinstance(ts, str):
                 ts = parse_dt(ts)
-            if not isinstance(ts, datetime):
+            if not isinstance(ts, datetime.datetime):
                 raise TypeError(
                     "'ts' should be 'datetime' or None, got: {}"
                     .format(type(ts))
@@ -99,7 +99,9 @@ class ActionLogEvent(CsvSerializer):
                 .format(type(data))
             )
 
-        self.ts = ts if ts else datetime.utcnow()
+        # Note. datetime class is refrred not directly (through datetime module)
+        # since it makes possible to mock it in tests using subclasses
+        self.ts = ts if ts else datetime.datetime.utcnow()
         self.ev_type = ev_type
         self.data = data
 

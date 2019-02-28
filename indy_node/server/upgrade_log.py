@@ -22,6 +22,10 @@ class UpgradeLog(ActionLog):
     """
     Append-only event log of upgrade event
     """
-    def __init__(self, *args, **kwargs):
-        kwargs.pop('event_types', None)
-        super().__init__(*args, event_types=ActionLogEvents, **kwargs)
+    def __init__(self, file_path):
+        super().__init__(
+            file_path,
+            data_class=UpgradeLogData,
+            event_types=ActionLogEvents,
+            delimiter='\t'
+        )

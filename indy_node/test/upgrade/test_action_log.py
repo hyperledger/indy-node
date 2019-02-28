@@ -39,6 +39,23 @@ class Events(Enum):
     def __str__(self):
         return self.name
 
+
+class ActionTestLog(ActionLog):
+
+    Events = Events
+
+    """
+    Append-only event log of upgrade event
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            *args,
+            data_class=LogData,
+            event_types=Events,
+            **kwargs
+        )
+
+
 # FIXTURES
 
 
@@ -81,12 +98,7 @@ def prepared_data():
 
 @pytest.fixture
 def action_log(log_file_path, log_delimiter):
-    return ActionLog(
-        log_file_path,
-        data_class=LogData,
-        event_types=Events,
-        delimiter=log_delimiter
-    )
+    return ActionTestLog(log_file_path, delimiter=log_delimiter)
 
 
 @pytest.fixture
@@ -292,11 +304,10 @@ def test_action_log_write_file(action_log):
 
 
 def test_action_log_load(action_log_prepared):
-    new_log = ActionLog(
+    new_log = ActionTestLog(
         action_log_prepared.file_path,
-        data_class=LogData,
-        event_types=Events,
-        delimiter=action_log_prepared.delimiter)
+        delimiter=action_log_prepared.delimiter
+    )
 
     assert len(action_log_prepared) == len(new_log)
     for ev1, ev2 in zip(action_log_prepared, new_log):
