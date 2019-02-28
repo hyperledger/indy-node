@@ -2,6 +2,7 @@ import subprocess
 import shutil
 import codecs
 import locale
+import re
 
 from stp_core.common.log import getlogger
 from indy_common.util import compose_cmd
@@ -44,11 +45,18 @@ class ShellException(subprocess.CalledProcessError):
                 if self.stderr else "")
 
 
+# TODO use some library instead of dpkg fpr version routine
 class DebianVersion:
     cache = {}  # seems not actually necessary
+    re_version = re.compile(r'(?:([0-9]):)?([0-9][a-zA-Z0-9.+\-~]*)')
 
     def __init__(self, val: str):
+        parsed = self.parse(val)
+        if not parsed[1]:
+            raise ValueError('{} is not a proper debian version'.format(val))
+
         self.val = val
+        self.epoch, self.upstream, self.revision = parsed
 
     @classmethod
     def _cmp(cls, v1, v2):
@@ -65,6 +73,29 @@ class DebianVersion:
                     return -1
             else:
                 return 1
+
+    @classmethod
+    def parse(cls, version: str):
+        epoch = None
+        upstream = None
+        revision = None
+
+        match = re.fullmatch(cls.re_version, version)
+        if match:
+            epoch = match.group(1)
+            upstream = match.group(2)
+            if upstream:
+                # TODO improve regex instead
+                parts = upstream.split('-')
+                if len(parts) > 1:
+                    upstream = '-'.join(parts[:-1])
+                    revision = parts[-1]
+
+        return (epoch or '', upstream or '', revision or '')
+
+    @classmethod
+    def check(cls, version: str):
+        return not not cls.parse(version)[1]
 
     @classmethod
     def cmp(cls, v1, v2):

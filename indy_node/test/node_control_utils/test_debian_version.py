@@ -13,6 +13,51 @@ def clear_cache():
     DebianVersion.clear_cache()
 
 
+# TODO coverage
+@pytest.mark.parametrize(
+    'version',
+    [
+        # partial
+        '',
+        '1:'
+        '-1'
+        # epoch
+        'a:1.2.3',
+        '12:3.4',
+        '1.:2.3',
+        # main part
+        'a1.2.3',
+        '1.2.:3'
+    ]
+)
+def test_invalid_version_epoch(version):
+    with pytest.raises(ValueError):
+        DebianVersion(version)
+
+
+# TODO coverage
+@pytest.mark.parametrize(
+    'epoch,upstream,revision',
+    [
+        ('1', '1.2.3', ''),
+        ('', '1.2.3~4', ''),
+        ('', '1.2.3~4', '5'),
+        ('', '1.2.+3~4', '5'),
+        ('', '1.2.3~4-5', '6'),
+    ]
+)
+def test_valid_version(epoch, upstream, revision):
+    version = "{}{}{}".format(
+        epoch + ':' if epoch else '',
+        upstream,
+        '-' + revision if revision else ''
+    )
+    dv = DebianVersion(version)
+    assert dv.epoch == epoch
+    assert dv.upstream == upstream
+    assert dv.revision == revision
+
+
 def test_compare_equal(monkeypatch):
     called = 0
     run_shell_script = NodeControlUtil.run_shell_script
@@ -57,11 +102,6 @@ def test_compare_called_once(monkeypatch):
 def test_compare_valid(v1, v2, expected):
     res = DebianVersion(v1) > DebianVersion(v2)
     assert res if expected else not res
-
-
-def test_compare_invalid():
-    with pytest.raises(ShellException):
-        DebianVersion('1.2.3') > DebianVersion('a1.2.3')
 
 
 def test_compare_shell_error(monkeypatch):
