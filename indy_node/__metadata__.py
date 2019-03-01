@@ -12,12 +12,23 @@ VERSION_FILENAME = '__version__.json'
 VERSION_FILE = os.path.join(module_path(indy_node), VERSION_FILENAME)
 
 
+def split_version_from_str(vers: str)->list:
+    splitted = vers.split('.')
+    result = []
+    for ver in splitted:
+        try:
+            result.append(int(ver))
+        except ValueError:
+            result.append(ver)
+    return result
+
+
 def check_version(version):
     # TODO better errors (e.g. some are TypeError)
     if not (
         (type(version) in (tuple, list)) and
         (len(version) == 5) and
-        all([type(version[i]) == int] for i in (0, 1, 2, 4)) and
+        all([type(version[i]) == int for i in (0, 1, 2, 4)]) and
         (version[3] in ('dev', 'rc', 'stable'))
     ):
         raise ValueError("Incorrect version: {}".format(version))
