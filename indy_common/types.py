@@ -362,7 +362,8 @@ class ClientAuthRuleOperation(MessageValidator):
         (FIELD, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (OLD_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
                                              optional=True)),
-        (NEW_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))
+        (NEW_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
+                                             can_be_empty=True))
     )
 
 

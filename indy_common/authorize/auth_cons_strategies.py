@@ -1,9 +1,11 @@
 from abc import abstractmethod, ABCMeta
 
-from common.exceptions import LogicError
 from indy_common.authorize.auth_actions import split_action_id
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AbstractConstraintSerializer
 from state.pruning_state import PruningState
+from stp_core.common.log import getlogger
+
+logger = getlogger()
 
 
 class AbstractAuthStrategy(metaclass=ABCMeta):
@@ -82,6 +84,7 @@ class ConfigLedgerAuthStrategy(AbstractAuthStrategy):
             constraint = self.get_from_state(key=am_id.encode())
             if not constraint:
                 return auth_map.get(am_id)
+            logger.debug("Using auth constraint from state")
             return constraint
 
     def _find_auth_constraint_key(self, action_id, auth_map):
