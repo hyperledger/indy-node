@@ -43,4 +43,3 @@ function build_from_pypi {
 
 build_from_pypi timeout-decorator 0.4.0
 build_from_pypi distro 1.3.0
-build_from_pypi packaging 19.0
