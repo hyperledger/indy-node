@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -e
 
 usage_str="Usage: $0 <release-version-dotted>"
 
@@ -20,9 +20,3 @@ import_metadata_str="indy_node.__metadata__"
 
 python3 -c "from $import_metadata_str import set_version, split_version_from_str
 set_version(split_version_from_str(\"$dotted_version\"))"
-
-ret=$?
-if [ $ret -ne 0 ] ; then
-  echo "FAILED ret: $ret"
-  exit $ret
-fi
