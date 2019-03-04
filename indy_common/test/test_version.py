@@ -1,6 +1,6 @@
 import pytest
 
-from plenum.common.version import InvalidVersion
+from plenum.common.version import InvalidVersionError
 
 from indy_common.version import NodeVersion
 
@@ -26,7 +26,7 @@ from indy_common.version import NodeVersion
     ]
 )
 def test_node_version_invalid_value(version):
-    with pytest.raises(InvalidVersion):
+    with pytest.raises(InvalidVersionError):
         NodeVersion(version)
 
 

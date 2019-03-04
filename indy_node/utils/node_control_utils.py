@@ -3,8 +3,14 @@ import shutil
 import codecs
 import locale
 import re
+from typing import Iterable, Type
+
+from indy_common.version import NodeVersion
 
 from stp_core.common.log import getlogger
+from plenum.common.version import (
+    InvalidVersionError, SourceVersion, PackageVersion
+)
 from indy_common.util import compose_cmd
 
 
@@ -27,7 +33,7 @@ TIMEOUT = 300
 MAX_DEPS_DEPTH = 6
 
 
-class ShellException(subprocess.CalledProcessError):
+class ShellError(subprocess.CalledProcessError):
     def __init__(self, *args, exc: subprocess.CalledProcessError = None, **kwargs):
         if exc:
             super().__init__(exc.returncode, exc.cmd, output=exc.output, stderr=exc.stderr)
@@ -46,17 +52,10 @@ class ShellException(subprocess.CalledProcessError):
 
 
 # TODO use some library instead of dpkg fpr version routine
-class DebianVersion:
+class DebianVersion(PackageVersion):
     cache = {}  # seems not actually necessary
+    # https://www.debian.org/doc/debian-policy/ch-controlfields.html#version
     re_version = re.compile(r'(?:([0-9]):)?([0-9][a-zA-Z0-9.+\-~]*)')
-
-    def __init__(self, val: str):
-        parsed = self.parse(val)
-        if not parsed[1]:
-            raise ValueError('{} is not a proper debian version'.format(val))
-
-        self.val = val
-        self.epoch, self.upstream, self.revision = parsed
 
     @classmethod
     def _cmp(cls, v1, v2):
@@ -66,7 +65,7 @@ class DebianVersion:
             cmd = compose_cmd(['dpkg', '--compare-versions', v1, 'gt', v2])
             try:
                 NodeControlUtil.run_shell_script(cmd)
-            except ShellException as exc:
+            except ShellError as exc:
                 if exc.stderr:
                     raise
                 else:
@@ -75,31 +74,8 @@ class DebianVersion:
                 return 1
 
     @classmethod
-    def parse(cls, version: str):
-        epoch = None
-        upstream = None
-        revision = None
-
-        match = re.fullmatch(cls.re_version, version)
-        if match:
-            epoch = match.group(1)
-            upstream = match.group(2)
-            if upstream:
-                # TODO improve regex instead
-                parts = upstream.split('-')
-                if len(parts) > 1:
-                    upstream = '-'.join(parts[:-1])
-                    revision = parts[-1]
-
-        return (epoch or '', upstream or '', revision or '')
-
-    @classmethod
-    def check(cls, version: str):
-        return not not cls.parse(version)[1]
-
-    @classmethod
     def cmp(cls, v1, v2):
-        key = (v1, v2)
+        key = (v1.full, v2.full)
         if key not in cls.cache:
             cls.cache[key] = cls._cmp(*key)
             cls.cache[key[::-1]] = cls.cache[key] * (-1)
@@ -110,23 +86,76 @@ class DebianVersion:
     def clear_cache(cls):
         cls.cache.clear()
 
-    def __lt__(self, other):
-        return self.cmp(self.val, other.val) < 0
+    def __init__(
+        self,
+        version: str,
+        keep_tilde: bool = False,
+        upstream_cls: Type[SourceVersion] = NodeVersion
+    ):
+        parsed = self._parse(version, keep_tilde, upstream_cls)
+        if not parsed[1]:
+            raise InvalidVersionError(
+                "{} is not a valid debian version".format(version)
+            )
 
-    def __gt__(self, other):
-        return self.cmp(self.val, other.val) > 0
+        self._version = version
+        self._epoch, self._upstream, self._revision = parsed
 
-    def __eq__(self, other):
-        return self.cmp(self.val, other.val) == 0
+    def _parse(
+            self,
+            version: str,
+            keep_tilde: bool,
+            upstream_cls: Type[SourceVersion],
+    ):
+        epoch = None
+        upstream = None
+        revision = None
 
-    def __le__(self, other):
-        return self.cmp(self.val, other.val) <= 0
+        match = re.fullmatch(self.re_version, version)
+        if match:
+            epoch = match.group(1)
+            upstream = match.group(2)
+            if upstream:
+                if not keep_tilde:
+                    upstream = upstream.replace('~', '.')
+                # TODO improve regex instead
+                parts = upstream.split('-')
+                if len(parts) > 1:
+                    upstream = '-'.join(parts[:-1])
+                    revision = parts[-1]
+        return (
+            epoch,
+            upstream_cls(upstream) if upstream else None,
+            revision
+        )
 
-    def __ge__(self, other):
-        return self.cmp(self.val, other.val) >= 0
+    @property
+    def full(self) -> str:
+        return self._version
 
-    def __ne__(self, other):
-        return self.cmp(self.val, other.val) != 0
+    @property
+    def parts(self) -> Iterable:
+        return (self.epoch, self.upstream, self.revision)
+
+    @property
+    def release(self) -> str:
+        return self.full
+
+    @property
+    def release_parts(self) -> Iterable:
+        return self.parts
+
+    @property
+    def epoch(self):
+        return self._epoch
+
+    @property
+    def upstream(self):
+        return self._upstream
+
+    @property
+    def revision(self):
+        return self._revision
 
 
 class NodeControlUtil:
@@ -156,7 +185,7 @@ class NodeControlUtil:
                 stdout=None if stdout else subprocess.PIPE,
                 stderr=None if stderr else subprocess.PIPE)
         except subprocess.CalledProcessError as exc:
-            raise ShellException(exc=exc) from exc
+            raise ShellError(exc=exc) from exc
         else:
             return res.stdout.decode(locale.getpreferredencoding(), 'decode_errors').strip() if res.stdout else ""
 
@@ -204,7 +233,7 @@ class NodeControlUtil:
                 ver = ver or act_line.split(":", maxsplit=1)[1].strip(" \n")
             if act_line.startswith("Depends:"):
                 ext_deps += cls._parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
-        return ver, cls._pkgs_dedup(ext_deps)
+        return DebianVersion(ver), cls._pkgs_dedup(ext_deps)
 
     @classmethod
     def curr_pkg_info(cls, pkg_name):
@@ -220,7 +249,7 @@ class NodeControlUtil:
             cmd = compose_cmd(
                 ['apt-cache', 'show', pkg_name, '|', 'grep', '-E', regex])
             output = cls.run_shell_script(cmd).strip()
-        except ShellException as exc:
+        except ShellError as exc:
             # will fail if either package not found or grep returns nothing
             # the latter is unexpected and treated as no-data as well
             logger.info("no-data for package {} with upstream version {} found"
@@ -230,7 +259,7 @@ class NodeControlUtil:
                 versions = [v.split()[1] for v in output.split('\n')]
                 try:
                     return sorted(versions, key=DebianVersion)[-1]
-                except ShellException:
+                except ShellError:
                     logger.warning(
                         "version comparison failed unexpectedly for versions: {}"
                         .format(versions)

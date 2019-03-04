@@ -1,5 +1,5 @@
 from plenum.common.version import (
-    InvalidVersion, PEP440BasedVersion, SemVerBase,
+    InvalidVersionError, PEP440BasedVersion, SemVerBase,
     SourceVersion, PackageVersion
 )
 
@@ -13,22 +13,23 @@ class NodeVersion(
         # additional restrictions
         if self._version.pre:
             if self._version.pre[0] != 'rc':
-                raise InvalidVersion(
+                raise InvalidVersionError(
                     "pre-release phase '{}' is unexpected"
                     .format(self._version.pre[0])
                 )
 
         if self._version.post:
-            raise InvalidVersion("post-release is unexpected")
+            raise InvalidVersionError("post-release is unexpected")
 
         if self._version.epoch:
-            raise InvalidVersion("epoch is unexpected")
+            raise InvalidVersionError("epoch is unexpected")
 
         if self._version.local:
-            raise InvalidVersion("local version part is unexpected")
+            raise InvalidVersionError("local version part is unexpected")
 
         if len(self.release_parts) != 3:
-            raise InvalidVersion("release part should contain only 3 parts")
+            raise InvalidVersionError(
+                "release part should contain only 3 parts")
 
     @property
     def upstream(self) -> SourceVersion:

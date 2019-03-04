@@ -2,7 +2,7 @@ import pytest
 import shutil
 
 
-from indy_node.utils.node_control_utils import NodeControlUtil, ShellException
+from indy_node.utils.node_control_utils import NodeControlUtil, ShellError
 
 generated_command = None
 
@@ -83,7 +83,7 @@ def test_generated_cmd_hold_packages(monkeypatch, catch_generated_command):
 def test_get_latest_pkg_version(monkeypatch, output, expected):
     def _f(command, *args, **kwargs):
         if not output:
-            raise ShellException(1, command)
+            raise ShellError(1, command)
         else:
             return output
 
