@@ -714,7 +714,7 @@ Command to change Pool's configuration
 Transaction to change authentication rules. 
 Authentication rules are stored in the State as key - value dictionary. This coincides with the storage structure in (auth_map)[auth_rule.md]. 
 If config ledger does not have transaction for key, the State use value from auth_map.
-Key - some action in the format `action--txn_type--field--old_value--new_value`
+Key - some action in the format `prefix--txn_type--field--old_value--new_value`
 - `prefix` (enum: `ADD` or `EDIT`)
 - `txn_type` (string) - The type of transaction to change rights to. (Example: NYM, NODE, POOL_RESTART...)
 - `field` (string) Change the rights to edit(add) some values from field.
