@@ -985,6 +985,201 @@ Command to change Pool's configuration
 }
 ```
 
+### AUTH_RULE
+
+Command to change authentication rules. 
+Authentication rules are stored as key - value dictionary.
+Key - some action in the format `action--txn_type--field--old_value--new_value`
+Value is a set of constraints on the execution of this action. One constraint format is `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
+That is, the entry 
+```
+"EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
+                                            auth_constraints: [{constraint_id: ROLE,
+                                                                role: STEWARD, 
+                                                                sig_count: 1, 
+                                                                need_to_be_owner: True},
+                                                               {constraint_id: ROLE,
+                                                                role: TRUSTEE, 
+                                                                sig_count: 1, 
+                                                                need_to_be_owner: False}
+                                                               ]
+                                           }
+                                                                 
+```
+means that change the value of node services from [VALIDATOR] to [] (demotion of node) can only TRUSTEE or STEWARD if it is owner of this transaction.
+
+- `auth_action` (enum: `ADD` or `EDIT`):
+
+    Change the rights to an action.
+    
+- `auth_type` (string):
+
+    The type of transaction to change rights to. (Example: NYM, NODE, POOL_RESTART...)
+
+- `field` (string):
+
+    Change the rights to edit(add) some values from field.
+
+- `old_value` (string; optional):
+
+    Old value of field, which can be changed to a new_value.
+
+- `new_value` (string):
+   
+   New value that can be used to fill the field.
+
+**ConstraintType:**
+
+ConstraintList
+
+- `constraint_id` (enum: `AND` or `OR`):
+
+    Type of a constraint class. Needed for determine the type of constraint for correct deserialization.
+    - `AND` logical conjunction for all constraints from `auth_constraints`
+    - `OR` logical disjunction for all constraints from `auth_constraints`
+    
+- `auth_constraints` (list of ConstraintType):
+
+    List of ConstraintType (ConstraintList or ConstraintEntity) objects
+    
+ ```
+{'constraint_id': 'AND',
+ 'auth_constraints': [<ConstraintEntity>,
+                      <ConstraintEntity>]
+}
+```
+    
+ConstraintEntity
+
+- `constraint_id` (enum: `ROLE`):
+
+   Type of constraint, which for ConstraintEntity is always of type "ROLE". Needed for determine the type of constraint for correct deserialization.
+        
+- `role` (enum number as string; optional):
+
+    Role of a user that the NYM record is being created for. One of the following values
+
+    - None (common USER)
+    - 0 (TRUSTEE)
+    - 2 (STEWARD)
+    - 101 (TRUST_ANCHOR)
+    
+- `sig_count` (int):
+
+    The number of signatures that is needed to do some action described in the transaction fields.
+    
+- `need_to_be_owner` (boolean):
+
+    Flag to check is user must be owner of some transaction (Example: A steward must be the owner of the node to make changes to it).
+    
+- `metadata` (dict; optional):
+
+    Dictionary to additional parameters of constraint.
+
+```
+{
+    'sig_count': 1, 
+    'need_to_be_owner': False, 
+    'constraint_id': 'ROLE', 
+    'metadata': {}, 
+    'role': '0'
+}
+```
+
+*Request Example*:
+```
+{
+    'operation': {
+           'type':'120',
+           'constraint':{  
+                      'constraint_id': 'OR'
+                      'auth_constraints': [{'constraint_id': 'ROLE', 
+                                            'role': '0',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': False, 
+                                            'metadata': {}}, 
+                                           
+                                           {'constraint_id': 'ROLE', 
+                                            'role': '2',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': True, 
+                                            'metadata': {}}
+                                           ], 
+           }, 
+           'field' :'services',
+           'auth_type': '0', 
+           'auth_action': 'EDIT'
+           'old_value': [VALIDATOR],
+           'new_value': [],
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 1,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+}
+```
+
+*Reply Example*:
+```
+{     'op':'REPLY',
+      'result':{  
+         'txnMetadata':{  
+            'seqNo':1,
+            'txnTime':1551776783
+         },
+         'reqSignature':{  
+            'values':[  
+               {  
+                  'value':'4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg',
+                  'from':'M9BJDuS24bqbJNvBRsoGg3'
+               }
+            ],
+            'type':'ED25519'
+         },
+         'txn':{  
+            'data':{  
+               'constraint':{  
+                          'constraint_id': 'OR'
+                          'auth_constraints': [{'constraint_id': 'ROLE', 
+                                                'role': '0',
+                                                'sig_count': 1, 
+                                                'need_to_be_owner': False, 
+                                                'metadata': {}}, 
+                                               
+                                               {'constraint_id': 'ROLE', 
+                                                'role': '2',
+                                                'sig_count': 1, 
+                                                'need_to_be_owner': True, 
+                                                'metadata': {}}
+                                               ], 
+               }, 
+               'field' :'services',
+               'auth_type': '0', 
+               'auth_action': 'EDIT'
+               'old_value': [VALIDATOR],
+               'new_value': [],
+               }
+            },
+            'protocolVersion':2,
+            'metadata':{  
+               'from':'M9BJDuS24bqbJNvBRsoGg3',
+               'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
+               'reqId':711182024
+            },
+            'type':'120'
+         },
+         'ver':'1',
+         'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
+         'auditPath':[  
+
+         ]
+      }
+   }
+```
+
+
+
 ## Read Requests
 
 ### GET_NYM
