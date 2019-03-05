@@ -990,7 +990,7 @@ Command to change Pool's configuration
 Command to change authentication rules. 
 Authentication rules are stored as key - value dictionary.
 Key - some action in the format `action--txn_type--field--old_value--new_value`
-Value is a set of constraints on the execution of this action. One constraint format is `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
+Value is a set of constraints on the execution of this action. A constraint format is `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
 That is, the entry 
 ```
 "EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
@@ -1043,8 +1043,8 @@ ConstraintList
     List of ConstraintType (ConstraintList or ConstraintEntity) objects
     
  ```
-{'constraint_id': 'AND',
- 'auth_constraints': [<ConstraintEntity>,
+{ 'constraint_id': 'AND',
+  'auth_constraints': [<ConstraintEntity>,
                       <ConstraintEntity>]
 }
 ```
@@ -1178,6 +1178,12 @@ ConstraintEntity
    }
 ```
 
+If format of transaction is incorrect, the client will received NACK message for request. 
+A client will receive NACK to 
+- a request with incorrect format;
+- a request with "ADD" action, but with "old_value";
+- a request with "EDIT" action without "old_value";
+- a request with a key that is not in the [auth_rule](auth_rule.md).
 
 
 ## Read Requests
