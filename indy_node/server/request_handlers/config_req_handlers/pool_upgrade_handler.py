@@ -4,7 +4,7 @@ from indy_node.server.request_handlers.config_req_handlers.config_write_request_
 from indy_common.config_util import getConfig
 
 from indy_common.constants import CONFIG_LEDGER_ID, POOL_UPGRADE, \
-    ACTION, CANCEL, START, SCHEDULE, PACKAGE, APP_NAME, REINSTALL
+    ACTION, CANCEL, START, SCHEDULE, PACKAGE, REINSTALL
 
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_node.server.upgrader import Upgrader

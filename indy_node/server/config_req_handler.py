@@ -10,7 +10,7 @@ from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    APP_NAME, REINSTALL
+    REINSTALL
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
@@ -71,7 +71,7 @@ class ConfigReqHandler(LedgerRequestHandler):
             pkg_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
             targetVersion = req.operation[VERSION]
             reinstall = req.operation.get(REINSTALL, False)
-
+            # check package name
             if not pkg_to_upgrade:
                 raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade package name is empty")
 

@@ -12,9 +12,14 @@ from indy_node.server.node_maintainer import NodeMaintainer, \
 from plenum.common.txn_util import is_forced, get_seq_no, get_type, get_payload_data, get_req_id, get_from
 from stp_core.common.log import getlogger
 from plenum.common.constants import VERSION
+from plenum.common.version import (
+    SourceVersion, PackageVersion, InvalidVersionError, SemVerReleaseVersion
+)
+
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
     UPGRADE_MESSAGE, PACKAGE, APP_NAME
+from indy_common.version import TopPackageDefaultVersion, NodeVersion
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 from indy_node.utils.node_control_utils import NodeControlUtil
 
@@ -42,9 +47,9 @@ class Upgrader(NodeMaintainer):
         return ver
 
     @staticmethod
-    def is_version_upgradable(old, new, reinstall: bool = False):
-        return (Upgrader.compareVersions(old, new) > 0) \
-            or (Upgrader.compareVersions(old, new) == 0) and reinstall
+    def is_version_upgradable(
+            old: SourceVersion, new: SourceVersion, reinstall: bool = False):
+        return (new > old) or (new == old and reinstall)
 
     @staticmethod
     def get_action_id(txn):
@@ -58,28 +63,8 @@ class Upgrader(NodeMaintainer):
     #   - makes sense to use some library instead of custom implementation
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
-        if verA == verB:
-            return 0
-
-        def parse(x):
-            if x.endswith(".0"):
-                x = x[:-2]
-            return [int(num) for num in x.split(".")]
-
-        partsA = parse(verA)
-        partsB = parse(verB)
-        for a, b in zip(partsA, partsB):
-            if a > b:
-                return -1
-            if b > a:
-                return 1
-        lenA = len(list(partsA))
-        lenB = len(list(partsB))
-        if lenA > lenB:
-            return -1
-        if lenB > lenA:
-            return 1
-        return 0
+        version_cls = SemVerReleaseVersion
+        return version_cls.cmp(version_cls(verA), version_cls(verB))
 
     def _defaultLog(self, dataDir, config):
         log = os.path.join(dataDir, config.upgradeLogFile)
