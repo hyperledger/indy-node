@@ -386,9 +386,12 @@ class Node(PlenumNode):
     def _init_write_request_validator(self):
         constraint_serializer = ConstraintsSerializer(domain_state_serializer)
         config_state = self.states[CONFIG_LEDGER_ID]
+        self.add_auth_rules_to_config_state(config_state, auth_map, constraint_serializer)
+        self.add_auth_rules_to_config_state(config_state, anyone_can_write_map, constraint_serializer)
         self.write_req_validator = WriteRequestValidator(config=self.config,
                                                          auth_map=auth_map,
                                                          cache=self.getIdrCache(),
                                                          config_state=config_state,
                                                          state_serializer=constraint_serializer,
-                                                         anyone_can_write_map=anyone_can_write_map,)
+                                                         anyone_can_write_map=anyone_can_write_map,
+                                                         metrics=self.metrics)

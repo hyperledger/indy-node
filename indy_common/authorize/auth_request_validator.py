@@ -9,6 +9,7 @@ from indy_common.constants import LOCAL_AUTH_POLICY, CONFIG_LEDGER_AUTH_POLICY
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
 from plenum.common.exceptions import UnauthorizedClientRequest
+from plenum.common.metrics_collector import MetricsCollector
 from state.pruning_state import PruningState
 from stp_core.common.log import getlogger
 
@@ -30,7 +31,8 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
                  cache: IdrCache,
                  config_state: PruningState,
                  state_serializer: AbstractConstraintSerializer,
-                 anyone_can_write_map=None):
+                 anyone_can_write_map=None,
+                 metrics: MetricsCollector=None):
         CompositeAuthorizer.__init__(self)
         self.config = config
         self.auth_map = auth_map
@@ -38,6 +40,7 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
         self.config_state = config_state
         self.state_serializer = state_serializer
         self.anyone_can_write_map = anyone_can_write_map
+        self.metrics = metrics
 
         self.anyone_can_write = self.config.ANYONE_CAN_WRITE
         self.auth_cons_strategy = self.create_auth_strategy()
@@ -78,4 +81,5 @@ class WriteRequestValidator(AbstractRequestValidator, CompositeAuthorizer):
             return ConfigLedgerAuthStrategy(auth_map=self.auth_map,
                                             state=self.config_state,
                                             serializer=self.state_serializer,
-                                            anyone_can_write_map=self.anyone_can_write_map if self.anyone_can_write else None)
+                                            anyone_can_write_map=self.anyone_can_write_map if self.anyone_can_write else None,
+                                            metrics=self.metrics)
