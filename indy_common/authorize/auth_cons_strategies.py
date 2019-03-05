@@ -78,13 +78,18 @@ class ConfigLedgerAuthStrategy(AbstractAuthStrategy):
         Find rule_id for incoming action_id and return AuthConstraint instance
         """
         if self.anyone_can_write_map:
-            return self._find_auth_constraint(action_id, self.anyone_can_write_map)
+            return self._find_auth_constraint(action_id, self.anyone_can_write_map, from_local=True)
 
         return self._find_auth_constraint(action_id, self.auth_map)
 
-    def _find_auth_constraint(self, action_id, auth_map):
+    def _find_auth_constraint(self, action_id, auth_map, from_local=False):
         am_id = self._find_auth_constraint_key(action_id, auth_map)
         if am_id:
+            # ToDo: ugly fix for case if ANYONE_CAN_WRITE set to True.
+            # There is a similar key for anyone_can_write map and auth_map too.
+            # In future we erase anyone_can_write map.
+            if from_local:
+                return auth_map.get(am_id)
             constraint = self.get_from_state(key=am_id.encode())
             if not constraint:
                 return auth_map.get(am_id)

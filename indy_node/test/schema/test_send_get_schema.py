@@ -83,7 +83,7 @@ def test_send_get_schema_fails_with_invalid_version_syntax(
     request = modify_field(request, 'asd', OPERATION, DATA, VERSION)
     with pytest.raises(RequestNackedException) as e:
         sdk_get_and_check_replies(looper, [sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet_trustee, request)])
-    e.match('version consists of 1 components, but it should contain \(2, 3\)')
+    e.match("Invalid version: 'asd'")
 
 
 def test_send_get_schema_fails_without_version(
