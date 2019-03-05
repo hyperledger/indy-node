@@ -7,8 +7,8 @@ from indy_node.utils.node_control_utils import DebianVersion, NodeControlUtil, S
 
 # TODO
 # - conditionally skip all tests for non-debian systems
-# - tests for all coparison operators
-# - test for command line generated for comparison
+
+generated_command = None
 
 
 class UpstreamTest(NodeVersion):
@@ -23,6 +23,20 @@ class DebianVersionTest(DebianVersion):
 @pytest.fixture(autouse=True)
 def clear_cache():
     DebianVersionTest.clear_cache()
+
+
+@pytest.fixture
+def catch_generated_command(monkeypatch):
+    global generated_command
+    generated_command = None
+
+    def _f(command, *args, **kwargs):
+        global generated_command
+        generated_command = command
+        return ''
+
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _f)
 
 
 # TODO coverage
@@ -101,7 +115,16 @@ def test_valid_version(epoch, upstream, revision):
     assert dv.release_parts == (epoch, upstream, revision)
 
 
-def test_compare_equal(monkeypatch):
+def test_generated_cmd_cmp(catch_generated_command):
+    version1 = '1.2.2'
+    version2 = '1.2.3'
+    DebianVersionTest(version1) == DebianVersionTest(version2)
+    assert generated_command == (
+        "dpkg --compare-versions {} gt {}".format(version1, version2)
+    )
+
+
+def test_equal_no_shell_cmd(monkeypatch):
     called = 0
     run_shell_script = NodeControlUtil.run_shell_script
 
@@ -113,6 +136,15 @@ def test_compare_equal(monkeypatch):
     monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
     assert DebianVersionTest('1.2.3') == DebianVersionTest('1.2.3')
     assert not called
+
+
+def test_comparison_operators():
+    assert DebianVersionTest('1.2.2') < DebianVersionTest('1.2.3')
+    assert DebianVersionTest('1.2.3') > DebianVersionTest('1.2.2')
+    assert DebianVersionTest('1.2.3') == DebianVersionTest('1.2.3')
+    assert DebianVersionTest('1.2.2') <= DebianVersionTest('1.2.3')
+    assert DebianVersionTest('1.2.3') >= DebianVersionTest('1.2.2')
+    assert DebianVersionTest('1.2.3') != DebianVersionTest('1.2.2')
 
 
 def test_compare_called_once(monkeypatch):
