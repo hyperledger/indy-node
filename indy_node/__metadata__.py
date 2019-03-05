@@ -11,8 +11,8 @@ from indy_node.utils.os_helper import module_path
 VERSION_FILENAME = '__version__.json'
 VERSION_FILE = os.path.join(module_path(indy_node), VERSION_FILENAME)
 
-
 def split_version_from_str(vers: str)->list:
+    # TODO use NodeVersion instead
     splitted = vers.split('.')
     result = []
     for ver in splitted:
@@ -60,6 +60,7 @@ def pep440_version(version=None):
     if pre_release_suffix == 'stable':
         return release_part
     else:
+        # TODO dot (.) is not required before pre-release suffix
         return "{}.{}{}".format(release_part, pre_release_suffix, revision)
 
 
