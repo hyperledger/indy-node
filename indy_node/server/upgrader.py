@@ -16,7 +16,6 @@ from plenum.common.version import (
     SourceVersion, PackageVersion, InvalidVersionError, SemVerReleaseVersion
 )
 
-import indy_node
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
     UPGRADE_MESSAGE, PACKAGE, APP_NAME
@@ -37,12 +36,16 @@ class Upgrader(NodeMaintainer):
                          actionFailedCallback, action_start_callback)
 
     @staticmethod
-    def get_src_version(pkg_name: str = APP_NAME) -> SourceVersion:
-        if pkg_name == APP_NAME:
-            return NodeVersion(indy_node.__version__)
-        else:
-            curr_pkg_ver, _ = NodeControlUtil.curr_pkg_info(pkg_name)
-            return curr_pkg_ver.upstream if curr_pkg_ver else None
+    def get_src_version(
+            pkg_name: str = APP_NAME,
+            nocache: bool = False) -> SourceVersion:
+
+        if pkg_name == APP_NAME and not nocache:
+            from indy_node.__metadata__ import __version__
+            return NodeVersion(__version__)
+
+        curr_pkg_ver, _ = NodeControlUtil.curr_pkg_info(pkg_name)
+        return curr_pkg_ver.upstream if curr_pkg_ver else None
 
     @staticmethod
     def is_version_upgradable(

@@ -110,6 +110,8 @@ def test_get_src_version_for_app(monkeypatch):
     monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info', _f)
     assert Upgrader.get_src_version(APP_NAME)
     assert not called
+    Upgrader.get_src_version(APP_NAME, nocache=True)
+    assert called
 
 
 @pytest.mark.pkg_info('1:1.2.2-3', [])
