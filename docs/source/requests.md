@@ -11,6 +11,7 @@
     * [NODE](#node)
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
+    * [AUTH_RULE](#auth_rule)
 
 * [Read Requests](#read-requests)
 
@@ -987,12 +988,12 @@ Command to change Pool's configuration
 
 ### AUTH_RULE
 
-Command to change authentication rules. 
-Authentication rules are stored as key - value dictionary.
-Key - some action in the format `action--txn_type--field--old_value--new_value`
-Value is a set of constraints on the execution of this action. There are two types of constraints:
+A command to change authentication rules. 
+Authentication rules are stored as a key-value dictionary.
+A key is an authenticated action in the format `action--txn_type--field--old_value--new_value`.
+A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a a given action. There are two types of constraints:
 - ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
-- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints
+- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
 That is, the entry 
 ```
 "EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
@@ -1008,23 +1009,25 @@ That is, the entry
                                            }
                                                                  
 ```
-means that change the value of node services from [VALIDATOR] to [] (demotion of node) can only TRUSTEE or STEWARD if it is owner of this transaction.
+means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by one TRUSTEE or one STEWARD, and this Trustee or Steward needs to be the owner (the original creator) of this transaction.
+
+**Action Format:**
 
 - `auth_action` (enum: `ADD` or `EDIT`):
 
-    Change the rights to an action.
+    Action type: add a new entity or edit an existing one.
     
 - `auth_type` (string):
 
-    The type of transaction to change rights to. (Example: NYM, NODE, POOL_RESTART...)
+    The type of transaction to change rights for. (Example: NYM, NODE, POOL_RESTART...)
 
 - `field` (string):
 
-    Change the rights to edit(add) some values from field.
+    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
 
 - `old_value` (string; optional):
 
-    Old value of field, which can be changed to a new_value.
+   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
 
 - `new_value` (string):
    
@@ -1036,7 +1039,7 @@ ConstraintList
 
 - `constraint_id` (enum: `AND` or `OR`):
 
-    Type of a constraint class. Needed for determine the type of constraint for correct deserialization.
+    Type of a constraint class. It's needed to determine a type of constraint for correct deserialization.
     - `AND` logical conjunction for all constraints from `auth_constraints`
     - `OR` logical disjunction for all constraints from `auth_constraints`
     
@@ -1055,7 +1058,7 @@ ConstraintEntity
 
 - `constraint_id` (enum: `ROLE`):
 
-   Type of constraint, which for ConstraintEntity is always of type "ROLE". Needed for determine the type of constraint for correct deserialization.
+   Type of a constraint. As of not only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
         
 - `role` (enum number as string; optional):
 
@@ -1068,15 +1071,15 @@ ConstraintEntity
     
 - `sig_count` (int):
 
-    The number of signatures that is needed to do some action described in the transaction fields.
+    The number of signatures that is needed to do the action described in the transaction fields.
     
 - `need_to_be_owner` (boolean):
 
-    Flag to check is user must be owner of some transaction (Example: A steward must be the owner of the node to make changes to it).
+    Flag to check is the user must be owner of some transaction (Example: A steward must be the owner of the node to make changes to it).
     
 - `metadata` (dict; optional):
 
-    Dictionary to additional parameters of constraint.
+    Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
 
 ```
 {
@@ -1180,8 +1183,8 @@ ConstraintEntity
    }
 ```
 
-If format of transaction is incorrect, the client will received NACK message for request. 
-A client will receive NACK to 
+If format of a transaction is incorrect, the client will receive NACK message for the request. 
+A client will receive NACK for 
 - a request with incorrect format;
 - a request with "ADD" action, but with "old_value";
 - a request with "EDIT" action without "old_value";

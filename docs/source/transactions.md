@@ -17,6 +17,7 @@
     * [POOL_UPGRADE](#pool_upgrade)
     * [NODE_UPGRADE](#node_upgrade)
     * [POOL_CONFIG](#pool_config)
+    * [AUTH_RULE](#auth_rule)
 
 ## General Information
 
@@ -747,7 +748,7 @@ AuthConstraintAnd, AuthConstraintOr
 
 - `constraint_id` (enum: `AND` or `OR`):
 
-    Type of a constraint class. Needed for determine the type of constraint for correct deserialization.
+    Type of a constraint class. It's needed to determine a type of constraint for correct deserialization.
     - `AND` logical conjunction for all constraints from `auth_constraints` - AuthConstraintAnd
     - `OR` logical disjunction for all constraints from `auth_constraints` - AuthConstraintOr
     
@@ -766,7 +767,7 @@ AuthConstraint
 
 - `constraint_id` (enum: `ROLE`):
 
-   Type of constraint, which for ConstraintEntity is always of type "ROLE". Needed for determine the type of constraint for correct deserialization.
+      Type of a constraint. As of not only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
         
 - `role` (enum number as string; optional):
 
@@ -776,19 +777,19 @@ AuthConstraint
     - 0 (TRUSTEE)
     - 2 (STEWARD)
     - 101 (TRUST_ANCHOR)
-    
+   
 - `sig_count` (int):
 
-    The number of signatures that is needed to do some action described in the transaction fields.
+    The number of signatures that is needed to do the action described in the transaction fields.
     
 - `need_to_be_owner` (boolean):
 
-    Flag to check is user must be owner of some transaction (Example: A steward must be the owner of the node to make changes to it).
+    Flag to check is the user must be owner of some transaction (Example: A steward must be the owner of the node to make changes to it).
     
 - `metadata` (dict; optional):
 
-    Dictionary to additional parameters of constraint.
- 
+    Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+
 ```
 {
     'sig_count': 1, 
