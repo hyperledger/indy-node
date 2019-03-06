@@ -179,7 +179,7 @@ def systemTests = { component, releaseVersion ->
                     sh """
                         sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
                         sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
-                        sed -i 's/\\(apt-get install -y indy-node\\) ssh libindy/\\1=$releaseVersion libindy=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(apt-get install -y indy-node\\) libindy/\\1=$releaseVersion libindy=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion ssh/g' core.ubuntu.dockerfile
                         sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion $test_deps/g' core.ubuntu.dockerfile
                         cat core.ubuntu.dockerfile
                     """
@@ -206,9 +206,10 @@ def systemTests = { component, releaseVersion ->
                             docker cp ./system_tests/system/config indyclient:/home/indy/.ssh/config
                             docker cp ./system_tests/system/test_key.pub indyclient:/home/indy/.ssh/test_key.pub
                             docker cp ./system_tests/system/test_key indyclient:/home/indy/.ssh/test_key
-                            docker exec -t -u 0 indyclient chown -R indy:indy /home/indy
-                            for x in `seq 1 7`; do docker cp ./system_tests/system/test_key.pub node$x:/root/.ssh/authorized_keys; done
-                            for x in `seq 1 7`; do docker exec -t -u 0 node$x sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config; done
+                            docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system
+                            docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/.ssh
+                            for x in `seq 1 $nodesNum`; do docker cp ./system_tests/system/test_key.pub node$x:/root/.ssh/authorized_keys; done
+                            for x in `seq 1 $nodesNum`; do docker exec -t -u 0 node$x sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config; done
                         '''
                     }
 
