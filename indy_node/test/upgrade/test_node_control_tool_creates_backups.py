@@ -12,7 +12,7 @@ whitelist = ['Unexpected error in _upgrade test']
 def testNodeControlCreatesBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
-    currentVersion = Upgrader.getDebianVersion()
+    curr_src_ver = Upgrader.get_src_version()
 
     def transform(tool):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
@@ -20,7 +20,7 @@ def testNodeControlCreatesBackups(monkeypatch, tdir, looper, tconf):
 
     def checkBackup(tool):
         assert os.path.isfile('{}.{}'.format(
-            tool._backup_name(currentVersion), tool.backup_format))
+            tool._backup_name(curr_src_ver), tool.backup_format))
 
     nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:

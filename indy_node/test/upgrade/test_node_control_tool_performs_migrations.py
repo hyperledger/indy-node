@@ -23,7 +23,7 @@ def testNodeControlPerformsMigrations(monkeypatch, tdir, looper, tconf):
 
     def transform(tool):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
-        monkeypatch.setattr(tool, '_migrate', mock_migrate)
+        monkeypatch.setattr(tool, '_do_migration', mock_migrate)
 
     def checkMigration():
         with open(os.path.join(tdir, migrationFile)) as f:

@@ -172,7 +172,7 @@ def nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout):
     if not os.path.exists(tool.tmp_dir):
         os.mkdir(tool.tmp_dir)
     monkeypatch.setattr(subprocess, 'run', lambda *x, **y: ret)
-    monkeypatch.setattr(tool, '_migrate', lambda *x: None)
+    monkeypatch.setattr(tool, '_do_migration', lambda *x: None)
 
 
 def get_valid_code_hash():

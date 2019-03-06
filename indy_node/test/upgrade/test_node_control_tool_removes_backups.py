@@ -16,7 +16,7 @@ logger = getlogger()
 def testNodeControlRemovesBackups(monkeypatch, tdir, looper, tconf):
     msg = 'test'
     stdout = 'teststdout'
-    currentVersion = Upgrader.getDebianVersion()
+    curr_src_ver = Upgrader.get_src_version()
     backupsWereRemoved = m.Value('b', False)
 
     def testRemoveOldBackups(tool):
@@ -36,7 +36,7 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper, tconf):
 
     def check_backups_files_exists():
         assert os.path.exists('{}.{}'.format(
-            nct.tool._backup_name(currentVersion), nct.tool.backup_format))
+            nct.tool._backup_name(curr_src_ver), nct.tool.backup_format))
 
     nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:

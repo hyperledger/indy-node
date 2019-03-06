@@ -22,12 +22,12 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper, tconf):
     original_text = '1'
     new_text = '2'
 
-    def testRestoreBackup(tool, version):
-        tool._restore_from_backup_test(version)
+    def testRestoreBackup(tool, src_ver: str):
+        tool._restore_from_backup_test(src_ver)
         backupWasRestored.value = True
 
     def mockMigrate(tool, *args):
-        monkeypatch.setattr(tool, '_migrate', lambda *args: None)
+        monkeypatch.setattr(tool, '_do_migration', lambda *args: None)
         with open(os.path.join(tool.indy_dir, testFile), 'w') as f:
             f.write(new_text)
         raise Exception('test')
@@ -36,7 +36,7 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper, tconf):
         nodeControlGeneralMonkeypatching(tool, monkeypatch, tdir, stdout)
         tool._restore_from_backup_test = tool._restore_from_backup
         monkeypatch.setattr(
-            tool, '_migrate', functools.partial(mockMigrate, tool))
+            tool, '_do_migration', functools.partial(mockMigrate, tool))
         monkeypatch.setattr(tool, '_restore_from_backup',
                             functools.partial(testRestoreBackup, tool))
 
