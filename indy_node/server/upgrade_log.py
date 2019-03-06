@@ -1,15 +1,32 @@
+from typing import Union
 from datetime import datetime
 
+from plenum.common.version import SourceVersion
+
+from indy_common.version import src_version_cls
 from indy_node.server.action_log import ActionLogData, ActionLogEvents, ActionLog
 
 
-# TODO tests
 class UpgradeLogData(ActionLogData):
     _items = ActionLogData._items + ['version', 'upgrade_id', 'pkg_name']
 
-    def __init__(self, when: datetime,
-                 version: str, upgrade_id: str, pkg_name: str):
+    def __init__(
+            self,
+            when: Union[datetime, str],
+            version: Union[SourceVersion, str],
+            upgrade_id: str,
+            pkg_name: str
+    ):
         super().__init__(when)
+
+        if isinstance(version, str):
+            version = src_version_cls(pkg_name)(version)
+        if not isinstance(version, SourceVersion):
+            raise TypeError(
+                "'version' should be 'SourceVersion' or 'str', got: {}"
+                .format(type(version))
+            )
+
         self.version = version
         self.upgrade_id = upgrade_id
         self.pkg_name = pkg_name
@@ -22,7 +39,7 @@ class UpgradeLog(ActionLog):
     """
     Append-only event log of upgrade event
     """
-    def __init__(self, file_path):
+    def __init__(self, file_path: str):
         super().__init__(
             file_path,
             data_class=UpgradeLogData,

@@ -1,10 +1,11 @@
 import pytest
 import os
-
-from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 import datetime
 
-# TODO test for preserving legacy format
+from plenum.common.version import SemVerReleaseVersion
+
+import indy_common
+from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 
 
 @pytest.fixture
@@ -13,6 +14,21 @@ def log_file_path(tdir, request):
         tdir,
         "{}.upgrade_log".format(os.path.basename(request.node.nodeid))
     )
+
+
+@pytest.fixture
+def src_version_cls_patched(monkeypatch):
+    monkeypatch.setattr(
+        indy_common.version,
+        'src_version_cls',
+        lambda *_: SemVerReleaseVersion
+    )
+
+
+def test_upgrade_log_data_unpack_invalid_version():
+    with pytest.raises(TypeError) as excinfo:
+        UpgradeLogData(str(datetime.datetime.utcnow()), 123, 'some_id', 'some_pkg')
+    assert "'version' should be 'SourceVersion' or 'str'" in str(excinfo.value)
 
 
 def test_upgrade_log_data_pack_unpack():
