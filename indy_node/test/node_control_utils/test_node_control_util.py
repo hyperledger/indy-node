@@ -13,69 +13,77 @@ from indy_node.utils.node_control_utils import (
 # - conditionally skip all tests for non-debian systems
 # - teste _parse_version_deps_from_pkg_mgr_output deeply
 
-generated_command = None
+generated_commands = []
 
 
 @pytest.fixture
-def catch_generated_command(monkeypatch):
-    global generated_command
-    generated_command = None
+def catch_generated_commands(monkeypatch):
+    generated_commands[:] = []
 
     def _f(command, *args, **kwargs):
-        global generated_command
-        generated_command = command
+        generated_commands.append(command)
         return ''
 
     monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
     monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _f)
 
 
-def test_generated_cmd_get_curr_info(catch_generated_command):
+def test_generated_cmd_get_curr_info(catch_generated_commands):
     pkg_name = 'some_package'
     # TODO not an API for now
     NodeControlUtil._get_curr_info(pkg_name)
-    assert generated_command == "dpkg -s {}".format(pkg_name)
+    assert len(generated_commands) == 1
+    assert generated_commands[0] == "dpkg -s {}".format(pkg_name)
 
 
-def test_generated_cmd_get_latest_pkg_version(catch_generated_command):
+def test_generated_cmd_get_latest_pkg_version(catch_generated_commands):
     pkg_name = 'some_package'
     NodeControlUtil.get_latest_pkg_version(pkg_name)
-    assert generated_command == (
+    assert len(generated_commands) == 2
+    assert generated_commands[0] == "apt update"
+    assert generated_commands[1] == (
         "apt-cache show {} | grep -E '^Version: ([0-9]+:)?{}(-|$)'"
         .format(pkg_name, '.*')
     )
 
+    generated_commands[:] = []
     upstream = src_version_cls(pkg_name)('1.2.3')
-    NodeControlUtil.get_latest_pkg_version(pkg_name, upstream=upstream)
-    assert generated_command == (
+    NodeControlUtil.get_latest_pkg_version(
+        pkg_name, upstream=upstream, update_cache=False)
+    assert len(generated_commands) == 1
+    assert generated_commands[0] == (
         "apt-cache show {} | grep -E '^Version: ([0-9]+:)?{}(-|$)'"
         .format(pkg_name, upstream)
     )
 
 
-def test_generated_cmd_get_info_from_package_manager(catch_generated_command):
+def test_generated_cmd_get_info_from_package_manager(catch_generated_commands):
     packages = ['package1', 'package2']
     # TODO not an API for now
     NodeControlUtil._get_info_from_package_manager(*packages)
-    assert generated_command == "apt-cache show {}".format(" ".join(packages))
+    assert len(generated_commands) == 1
+    assert generated_commands[0] == "apt-cache show {}".format(" ".join(packages))
 
 
-def test_generated_cmd_update_package_cache(catch_generated_command):
+def test_generated_cmd_update_package_cache(catch_generated_commands):
     NodeControlUtil.update_package_cache()
-    assert generated_command == "apt update"
+    assert len(generated_commands) == 1
+    assert generated_commands[0] == "apt update"
 
 
-def test_generated_cmd_get_sys_holds(monkeypatch, catch_generated_command):
+def test_generated_cmd_get_sys_holds(monkeypatch, catch_generated_commands):
     monkeypatch.setattr(shutil, 'which', lambda *_: 'path')
     NodeControlUtil.get_sys_holds()
-    assert generated_command == "apt-mark showhold"
+    assert len(generated_commands) == 1
+    assert generated_commands[0] == "apt-mark showhold"
 
 
-def test_generated_cmd_hold_packages(monkeypatch, catch_generated_command):
+def test_generated_cmd_hold_packages(monkeypatch, catch_generated_commands):
     packages = ['package1', 'package2']
     monkeypatch.setattr(shutil, 'which', lambda *_: 'path')
     NodeControlUtil.hold_packages(packages)
-    assert generated_command == "apt-mark hold {}".format(' '.join(packages))
+    assert len(generated_commands) == 1
+    assert generated_commands[0] == "apt-mark hold {}".format(' '.join(packages))
 
 
 def test_get_latest_pkg_version_invalid_args():
@@ -83,7 +91,8 @@ def test_get_latest_pkg_version_invalid_args():
     with pytest.raises(TypeError) as excinfo:
         NodeControlUtil.get_latest_pkg_version(
             pkg_name,
-            upstream=DigitDotVersion('1.2.3')
+            upstream=DigitDotVersion('1.2.3'),
+            update_cache=False
         )
     assert (
         "should be instance of {}"
@@ -110,11 +119,13 @@ def test_get_latest_pkg_version(monkeypatch, output, expected):
             return output
 
     monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
-    assert expected == NodeControlUtil.get_latest_pkg_version('any_package')
+    assert expected == NodeControlUtil.get_latest_pkg_version(
+        'any_package', update_cache=False)
 
 
 def test_get_latest_pkg_version_for_unknown_package():
-    assert NodeControlUtil.get_latest_pkg_version('some-unknown-package-name') is None
+    assert NodeControlUtil.get_latest_pkg_version(
+        'some-unknown-package-name', update_cache=False) is None
 
 
 def test_curr_pkg_info_no_data(monkeypatch):

@@ -272,7 +272,8 @@ class NodeControlUtil:
     def get_latest_pkg_version(
             cls,
             pkg_name: str,
-            upstream: SourceVersion = None) -> PackageVersion:
+            upstream: SourceVersion = None,
+            update_cache: bool = True) -> PackageVersion:
 
         upstream_cls = src_version_cls(pkg_name)
 
@@ -281,6 +282,9 @@ class NodeControlUtil:
                 "'upstream' should be instance of {}, got {}"
                 .format(upstream_cls, type(upstream))
             )
+
+        if update_cache:
+            cls.update_package_cache()
 
         # cls.update_package_cache()
         regex = "'^Version: ([0-9]+:)?{}(-|$)'".format(
