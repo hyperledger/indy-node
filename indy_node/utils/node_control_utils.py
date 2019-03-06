@@ -3,14 +3,15 @@ import shutil
 import codecs
 import locale
 import re
-from typing import Iterable, Type
+from typing import Iterable, Type, Tuple, List, Union
 
-from indy_common.version import NodeVersion
 
 from stp_core.common.log import getlogger
 from plenum.common.version import (
-    InvalidVersionError, SourceVersion, PackageVersion
+    InvalidVersionError, SourceVersion, PackageVersion, GenericVersion
 )
+
+from indy_common.version import NodeVersion, src_version_cls
 from indy_common.util import compose_cmd
 
 
@@ -90,7 +91,7 @@ class DebianVersion(PackageVersion):
         self,
         version: str,
         keep_tilde: bool = False,
-        upstream_cls: Type[SourceVersion] = NodeVersion
+        upstream_cls: Type[Union[SourceVersion, None]] = GenericVersion
     ):
         parsed = self._parse(version, keep_tilde, upstream_cls)
         if not parsed[1]:
@@ -208,6 +209,8 @@ class NodeControlUtil:
                 ret.append(name)
             else:
                 ver = name_ver[1].strip("()<>= \n")
+                # TODO generally wrong logic since it replaces any
+                # fuzzy (>=, < etc.) constraints with equality
                 ret.append("{}={}".format(name, ver))
         return ret
 
@@ -223,28 +226,65 @@ class NodeControlUtil:
         return ret
 
     @classmethod
-    def _parse_version_deps_from_pkg_mgr_output(cls, output):
+    def _parse_version_deps_from_pkg_mgr_output(
+            cls,
+            output: str,
+            upstream_cls: Type[Union[SourceVersion, None]] = None
+    ):
         out_lines = output.split("\n")
         ver = None
         ext_deps = []
+        num_pkgs = 0
         for ln in out_lines:
             act_line = ln.strip(" \n")
             if act_line.startswith("Version:"):
-                ver = ver or act_line.split(":", maxsplit=1)[1].strip(" \n")
+                # this method might be used for the dependnecy tree resolving
+                # when 'output' includes data for multiple packages,
+                # version info here doesn't make any sense in such a case
+                num_pkgs += 1
+                ver = (None if num_pkgs > 1 else
+                       act_line.split(":", maxsplit=1)[1].strip(" \n"))
             if act_line.startswith("Depends:"):
                 ext_deps += cls._parse_deps(act_line.split(":", maxsplit=1)[1].strip(" \n"))
-        return DebianVersion(ver), cls._pkgs_dedup(ext_deps)
+
+        if ver and upstream_cls:
+            try:
+                ver = DebianVersion(ver, upstream_cls=upstream_cls)
+            except InvalidVersionError as exc:
+                logger.warning(
+                    "Failed to parse debian version {}: {}"
+                    .format(ver, exc)
+                )
+                ver = None
+                ext_deps = []
+        else:
+            ver = None
+
+        return ver, cls._pkgs_dedup(ext_deps)
 
     @classmethod
-    def curr_pkg_info(cls, pkg_name):
-        # TODO cache
+    def curr_pkg_info(cls, pkg_name: str) -> Tuple[PackageVersion, List]:
         package_info = cls._get_curr_info(pkg_name)
-        return cls._parse_version_deps_from_pkg_mgr_output(package_info)
+        return cls._parse_version_deps_from_pkg_mgr_output(
+            package_info, upstream_cls=src_version_cls(pkg_name))
 
     @classmethod
-    def get_latest_pkg_version(cls, pkg_name, upstream=None):
+    def get_latest_pkg_version(
+            cls,
+            pkg_name: str,
+            upstream: SourceVersion = None) -> PackageVersion:
+
+        upstream_cls = src_version_cls(pkg_name)
+
+        if upstream and not isinstance(upstream, upstream_cls):
+            raise TypeError(
+                "'upstream' should be instance of {}, got {}"
+                .format(upstream_cls, type(upstream))
+            )
+
         # cls.update_package_cache()
-        regex = "'^Version: ([0-9]+:)?{}(-|$)'".format(upstream or '.*')
+        regex = "'^Version: ([0-9]+:)?{}(-|$)'".format(
+            upstream.full if upstream else '.*')
         try:
             cmd = compose_cmd(
                 ['apt-cache', 'show', pkg_name, '|', 'grep', '-E', regex])
@@ -252,13 +292,17 @@ class NodeControlUtil:
         except ShellError as exc:
             # will fail if either package not found or grep returns nothing
             # the latter is unexpected and treated as no-data as well
-            logger.info("no-data for package {} with upstream version {} found"
-                        .format(pkg_name, upstream))
+            logger.info(
+                "no-data for package '{}' with upstream version '{}' found"
+                .format(pkg_name, upstream))
         else:
             if output:
-                versions = [v.split()[1] for v in output.split('\n')]
+                versions = [
+                    DebianVersion(v.split()[1], upstream_cls=upstream_cls)
+                    for v in output.split('\n')
+                ]
                 try:
-                    return sorted(versions, key=DebianVersion)[-1]
+                    return sorted(versions)[-1]
                 except ShellError:
                     logger.warning(
                         "version comparison failed unexpectedly for versions: {}"

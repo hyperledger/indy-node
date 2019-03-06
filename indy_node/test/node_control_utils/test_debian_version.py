@@ -1,6 +1,6 @@
 import pytest
 
-from plenum.common.version import InvalidVersionError
+from plenum.common.version import InvalidVersionError, GenericVersion
 
 from indy_common.version import NodeVersion
 from indy_node.utils.node_control_utils import DebianVersion, NodeControlUtil, ShellError
@@ -108,11 +108,16 @@ def test_valid_version(epoch, upstream, revision):
 
     assert dv.epoch == epoch
     assert dv.upstream == upstream
+    assert type(dv.upstream) == UpstreamTest
     assert dv.revision == revision
     assert dv.full == version
     assert dv.parts == (epoch, upstream, revision)
     assert dv.release == version
     assert dv.release_parts == (epoch, upstream, revision)
+
+
+def test_default_upstream_cls():
+    assert isinstance(DebianVersion('1.2.3').upstream, GenericVersion)
 
 
 def test_generated_cmd_cmp(catch_generated_command):
