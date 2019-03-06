@@ -3,7 +3,7 @@ from typing import Dict
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, NYM, ROLE, NETWORK_MONITOR
+    CLAIM_DEF, SCHEMA, NYM, ROLE, NETWORK_MONITOR, REVOC_REG_ENTRY
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
 IDENTITY_OWNER = ''
@@ -149,6 +149,16 @@ anyone_can_edit_claim_def = AuthActionEdit(txn_type=CLAIM_DEF,
                                            old_value='*',
                                            new_value='*')
 
+trusted_roles = '[\'TRUSTEE\', \'TRUST_ANCHOR\', \'STEWARD\']'
+
+create_revoc_reg_def = AuthActionAdd(txn_type=REVOC_REG_ENTRY,
+                                     field=ROLE,
+                                     value=TRUSTEE)
+
+anyone_can_create_revoc_reg_def = AuthActionAdd(txn_type=REVOC_REG_ENTRY,
+                                                field=ROLE,
+                                                value='*')
+
 # Anyone constraint
 anyone_constraint = AuthConstraint(role='*',
                                    sig_count=1)
@@ -202,7 +212,8 @@ auth_map = {
     pool_config.get_action_id(): one_trustee_constraint,
     validator_info.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                       AuthConstraint(STEWARD, 1),
-                                                      AuthConstraint(NETWORK_MONITOR, 1)])
+                                                      AuthConstraint(NETWORK_MONITOR, 1)]),
+    create_revoc_reg_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint
 }
 
 # Edit Trustee:
