@@ -991,7 +991,7 @@ Command to change Pool's configuration
 A command to change authentication rules. 
 Authentication rules are stored as a key-value dictionary.
 A key is an authenticated action in the format `action--txn_type--field--old_value--new_value`.
-A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a a given action. There are two types of constraints:
+A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action. There are two types of constraints:
 - ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
 - ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
 That is, the entry 
