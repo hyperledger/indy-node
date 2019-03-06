@@ -39,7 +39,7 @@ class AbstractAuthAction(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_action_id(self):
+    def get_action_id(self) -> str:
         raise NotImplementedError()
 
 
@@ -50,7 +50,7 @@ class AuthActionAdd(AbstractAuthAction):
         self.value = str(value) if value else ''
         self.is_owner = is_owner
 
-    def get_action_id(self):
+    def get_action_id(self) -> str:
         return compile_action_id(txn_type=self.txn_type,
                                  field=self.field,
                                  old_value='*',
@@ -71,7 +71,7 @@ class AuthActionEdit(AbstractAuthAction):
         self.new_value = str(new_value) if new_value is not None else ''
         self.is_owner = is_owner
 
-    def get_action_id(self):
+    def get_action_id(self) -> str:
         return compile_action_id(txn_type=self.txn_type,
                                  field=self.field,
                                  old_value=self.old_value,

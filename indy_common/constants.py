@@ -27,6 +27,14 @@ CLAIM_DEF_REVOCATION = "revocation"
 CLAIM_DEF_TAG_DEFAULT = "tag"
 CLAIM_DEF_CL = "CL"
 
+# AUTH_RULE
+CONSTRAINT = "constraint"
+OLD_VALUE = "old_value"
+NEW_VALUE = "new_value"
+AUTH_ACTION = "auth_action"
+AUTH_TYPE = "auth_type"
+FIELD = "field"
+
 ROLE = 'role'
 NONCE = 'nonce'
 ATTRIBUTES = "attributes"
@@ -157,8 +165,9 @@ POOL_RESTART = IndyTransactions.POOL_RESTART.value
 VALIDATOR_INFO = IndyTransactions.VALIDATOR_INFO.value
 
 POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
+AUTH_RULE = IndyTransactions.AUTH_RULE.value
 
-CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, POOL_RESTART}
+CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, POOL_RESTART, AUTH_RULE}
 IDENTITY_TXN_TYPES = {NYM,
                       ATTRIB,
                       DISCLO,

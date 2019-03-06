@@ -34,6 +34,8 @@ class IndyTransactions(Transactions):
     POOL_RESTART = "118"
     VALIDATOR_INFO = "119"
 
+    AUTH_RULE = "120"
+
     @staticmethod
     def get_name_from_code(code: str):
         try:

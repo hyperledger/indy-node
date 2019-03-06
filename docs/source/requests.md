@@ -11,6 +11,7 @@
     * [NODE](#node)
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
+    * [AUTH_RULE](#auth_rule)
 
 * [Read Requests](#read-requests)
 
@@ -984,6 +985,211 @@ Command to change Pool's configuration
     }
 }
 ```
+
+### AUTH_RULE
+
+A command to change authentication rules. 
+Authentication rules are stored as a key-value dictionary.
+A key is an authenticated action in the format `action--txn_type--field--old_value--new_value`.
+A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action. There are two types of constraints:
+- ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
+- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
+That is, the entry 
+```
+"EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
+                                            auth_constraints: [{constraint_id: ROLE,
+                                                                role: STEWARD, 
+                                                                sig_count: 1, 
+                                                                need_to_be_owner: True},
+                                                               {constraint_id: ROLE,
+                                                                role: TRUSTEE, 
+                                                                sig_count: 1, 
+                                                                need_to_be_owner: False}
+                                                               ]
+                                           }
+                                                                 
+```
+means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by one TRUSTEE or one STEWARD, and this Trustee or Steward needs to be the owner (the original creator) of this transaction.
+
+**Action Format:**
+
+- `auth_action` (enum: `ADD` or `EDIT`):
+
+    Action type: add a new entity or edit an existing one.
+    
+- `auth_type` (string):
+
+    The type of transaction to change rights for. (Example: "0", "1", ...)
+
+- `field` (string):
+
+    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
+
+- `old_value` (string; optional):
+
+   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
+
+- `new_value` (string):
+   
+   New value that can be used to fill the field.
+
+**ConstraintType:**
+
+ConstraintList
+
+- `constraint_id` (enum: `AND` or `OR`):
+
+    Type of a constraint class. It's needed to determine a type of constraint for correct deserialization.
+    - `AND` logical conjunction for all constraints from `auth_constraints`
+    - `OR` logical disjunction for all constraints from `auth_constraints`
+    
+- `auth_constraints` (list of ConstraintType):
+
+    List of ConstraintType (ConstraintList or ConstraintEntity) objects
+    
+ ```
+{ 'constraint_id': 'AND',
+  'auth_constraints': [<ConstraintEntity>,
+                      <ConstraintEntity>]
+}
+```
+    
+ConstraintEntity
+
+- `constraint_id` (enum: `ROLE`):
+
+   Type of a constraint. As of now only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
+        
+- `role` (enum number as string; optional):
+
+    Role of a user that the NYM record is being created for. One of the following values
+
+    - None (common USER)
+    - 0 (TRUSTEE)
+    - 2 (STEWARD)
+    - 101 (TRUST_ANCHOR)
+    
+- `sig_count` (int):
+
+    The number of signatures that is needed to do the action described in the transaction fields.
+    
+- `need_to_be_owner` (boolean):
+
+    Flag to check if the user must be owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
+    
+- `metadata` (dict; optional):
+
+    Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+
+```
+{
+    'sig_count': 1, 
+    'need_to_be_owner': False, 
+    'constraint_id': 'ROLE', 
+    'metadata': {}, 
+    'role': '0'
+}
+```
+
+*Request Example*:
+```
+{
+    'operation': {
+           'type':'120',
+           'constraint':{  
+                      'constraint_id': 'OR',
+                      'auth_constraints': [{'constraint_id': 'ROLE', 
+                                            'role': '0',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': False, 
+                                            'metadata': {}}, 
+                                           
+                                           {'constraint_id': 'ROLE', 
+                                            'role': '2',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': True, 
+                                            'metadata': {}}
+                                           ]
+           }, 
+           'field' :'services',
+           'auth_type': '0', 
+           'auth_action': 'EDIT',
+           'old_value': [VALIDATOR],
+           'new_value': []
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 1,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
+}
+```
+
+*Reply Example*:
+```
+{     'op':'REPLY',
+      'result':{  
+         'txnMetadata':{  
+            'seqNo':1,
+            'txnTime':1551776783
+         },
+         'reqSignature':{  
+            'values':[  
+               {  
+                  'value':'4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg',
+                  'from':'M9BJDuS24bqbJNvBRsoGg3'
+               }
+            ],
+            'type':'ED25519'
+         },
+         'txn':{  
+            'data':{  
+               'constraint':{  
+                          'constraint_id': 'OR',
+                          'auth_constraints': [{'constraint_id': 'ROLE', 
+                                                'role': '0',
+                                                'sig_count': 1, 
+                                                'need_to_be_owner': False, 
+                                                'metadata': {}}, 
+                                               
+                                               {'constraint_id': 'ROLE', 
+                                                'role': '2',
+                                                'sig_count': 1, 
+                                                'need_to_be_owner': True, 
+                                                'metadata': {}}
+                                               ]
+               }, 
+               'field' :'services',
+               'auth_type': '0', 
+               'auth_action': 'EDIT',
+               'old_value': [VALIDATOR],
+               'new_value': []
+               }
+            },
+            'protocolVersion':2,
+            'metadata':{  
+               'from':'M9BJDuS24bqbJNvBRsoGg3',
+               'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
+               'reqId':711182024
+            },
+            'type':'120'
+         },
+         'ver':'1',
+         'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
+         'auditPath':[  
+
+         ]
+      }
+   }
+```
+
+If format of a transaction is incorrect, the client will receive NACK message for the request. 
+A client will receive NACK for 
+- a request with incorrect format;
+- a request with "ADD" action, but with "old_value";
+- a request with "EDIT" action without "old_value";
+- a request with a key that is not in the [auth_rule](auth_rule.md).
+
 
 ## Read Requests
 
