@@ -78,7 +78,7 @@ def test_pool_upgrade_dynamic_validation_fails_belong(
         pool_upgrade_handler,
         pool_upgrade_request):
     monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info',
-                        lambda *x: ('1.1.1', ['some_pckg']))
+                        lambda *x: ('1.1.1', ['some_pkg']))
     with pytest.raises(InvalidClientRequest) as e:
         pool_upgrade_handler.dynamic_validation(pool_upgrade_request)
     e.match('doesn\'t belong to pool')

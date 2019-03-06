@@ -49,6 +49,7 @@ def set_version(version, version_file=VERSION_FILE):
         _f.write('\n')
 
 
+# TODO use NodeVersion instead
 def pep440_version(version=None):
     if not version:
         version = __version_info__
