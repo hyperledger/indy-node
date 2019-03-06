@@ -1,7 +1,11 @@
+from typing import Type
+
 from plenum.common.version import (
     InvalidVersionError, PEP440BasedVersion, SemVerBase,
     DigitDotVersion, SourceVersion, PackageVersion
 )
+
+from indy_common.constants import APP_NAME
 
 
 class SchemaVersion(DigitDotVersion):
@@ -9,7 +13,7 @@ class SchemaVersion(DigitDotVersion):
         super().__init__(version, parts_num=(2, 3), **kwargs)
 
 
-class TopPackageDefaultVersion(DigitDotVersion, SourceVersion):
+class TopPkgDefVersion(DigitDotVersion, SourceVersion):
     def __init__(self, version: str, **kwargs):
         super().__init__(version, parts_num=(2, 3), **kwargs)
 
@@ -45,3 +49,7 @@ class NodeVersion(
     def upstream(self) -> SourceVersion:
         """ Upstream part of the package. """
         return self
+
+def src_version_cls(pkg_name: str = APP_NAME) -> Type[SourceVersion]:
+    # TODO implement dynamic class resolving depending on packge name and config
+    return NodeVersion if pkg_name == APP_NAME else TopPkgDefVersion

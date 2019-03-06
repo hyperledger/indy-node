@@ -2,8 +2,9 @@ import pytest
 
 from plenum.common.version import InvalidVersionError
 
+from indy_common.constants import APP_NAME
 from indy_common.version import (
-    SchemaVersion, TopPackageDefaultVersion, NodeVersion
+    SchemaVersion, TopPkgDefVersion, NodeVersion, src_version_cls
 )
 
 
@@ -18,9 +19,9 @@ def test_schema_version():
 def test_top_package_default_version():
     for version in ['', '1', '1.2.3.4', '1.2.a']:
         with pytest.raises(InvalidVersionError):
-            TopPackageDefaultVersion(version)
-    TopPackageDefaultVersion('1.2')
-    TopPackageDefaultVersion('1.2.3')
+            TopPkgDefVersion(version)
+    TopPkgDefVersion('1.2')
+    TopPkgDefVersion('1.2.3')
 
 
 # valid PEP440:
@@ -28,7 +29,7 @@ def test_top_package_default_version():
 #  beta prerelease
 #  postrelease
 #  epoch
-#  local verion
+#  local version
 #  parts num != 3
 @pytest.mark.parametrize(
     'version',
@@ -58,3 +59,9 @@ def test_node_version_invalid_value(version):
 )
 def test_node_version_valid(version):
     NodeVersion(version)
+
+
+def test_src_version_cls():
+    assert src_version_cls() == NodeVersion
+    assert src_version_cls(APP_NAME) == NodeVersion
+    assert src_version_cls('some_package') == TopPkgDefVersion
