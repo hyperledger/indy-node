@@ -58,7 +58,7 @@ class PoolUpgradeHandler(ConfigWriteRequestHandler):
         if not pkg_to_upgrade:
             raise InvalidClientRequest(identifier, req_id, "Upgrade package name is empty")
 
-        res = self.upgrader.checkUpgradePossible(pkg_to_upgrade, targetVersion, reinstall)
+        res = self.upgrader.check_upgrade_possible(pkg_to_upgrade, targetVersion, reinstall)
         if res:
             raise InvalidClientRequest(identifier, req_id, res)
 

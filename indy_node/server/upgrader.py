@@ -16,10 +16,11 @@ from plenum.common.version import (
     SourceVersion, PackageVersion, InvalidVersionError, SemVerReleaseVersion
 )
 
+import indy_node
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
     UPGRADE_MESSAGE, PACKAGE, APP_NAME
-from indy_common.version import TopPackageDefaultVersion, NodeVersion
+from indy_common.version import TopPkgDefVersion, NodeVersion, src_version_cls
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 from indy_node.utils.node_control_utils import NodeControlUtil
 
@@ -197,29 +198,45 @@ class Upgrader(NodeMaintainer):
             return self.compareVersions(currentVersion, scheduledVersion) == 0
         return False
 
-    # TODO review && fix & tests
-    def checkUpgradePossible(self, pkgToUpgrade: str, targetVersion: str,
-                             reinstall: bool = False):
+    @staticmethod
+    def check_upgrade_possible(
+            pkg_name: str,
+            target_ver: str,
+            reinstall: bool = False
+    ):
+        version_cls = src_version_cls(pkg_name)
 
-        # get current installed package version of pkgToUpgrade
-        currentPkgVersion, curDeps = NodeControlUtil.curr_pkg_info(pkgToUpgrade)
-        if not currentPkgVersion:
-            return ("Package {} is not installed and cannot be upgraded"
-                    .format(pkgToUpgrade))
+        try:
+            target_ver = version_cls(target_ver)
+        except InvalidVersionError as exc:
+            return (
+                "invalid target version {} for version class {}: "
+                .format(target_ver, version_cls, exc)
+            )
+
+        # get current installed package version of pkg_name
+        curr_pkg_ver, cur_deps = NodeControlUtil.curr_pkg_info(pkg_name)
+        if not curr_pkg_ver:
+            return ("package {} is not installed and cannot be upgraded"
+                    .format(pkg_name))
 
         # TODO weak check
-        if (APP_NAME not in pkgToUpgrade and
-                all([APP_NAME not in d for d in curDeps])):
-            return "Package {} doesn't belong to pool".format(pkgToUpgrade)
+        if (APP_NAME not in pkg_name and
+                all([APP_NAME not in d for d in cur_deps])):
+            return "Package {} doesn't belong to pool".format(pkg_name)
 
-        # get the most recent version of the package for provided source version (targetVersion)
-        NodeControlUtil.update_package_cache()  # TODO best place to do that
-        targetPkgVersion = NodeControlUtil.get_latest_pkg_version(targetVersion)
+        # compare whether it makes sense to try (target >= current, = for reinstall)
+        if not Upgrader.is_version_upgradable(
+                curr_pkg_ver.upstream, target_ver, reinstall):
+            return "Version {} is not upgradable".format(target_ver)
 
-        # compare if it makes sense to try (target >= current, = for reinstall)
-        if not self.is_version_upgradable(currentPkgVersion, targetPkgVersion, reinstall):
-            # currentPkgVersion > targetVersion
-            return "Version is not upgradable"
+        # get the most recent version of the package for provided version
+        target_pkg_ver = NodeControlUtil.get_latest_pkg_version(
+            pkg_name, upstream=target_ver)
+
+        if not target_pkg_ver:
+            return ("package {} for target version {} is not found"
+                    .format(pkg_name, target_ver))
 
         return None
 

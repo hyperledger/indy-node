@@ -75,7 +75,7 @@ class ConfigReqHandler(LedgerRequestHandler):
             if not pkg_to_upgrade:
                 raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade package name is empty")
 
-            res = self.upgrader.checkUpgradePossible(pkg_to_upgrade, targetVersion, reinstall)
+            res = self.upgrader.check_upgrade_possible(pkg_to_upgrade, targetVersion, reinstall)
             if res:
                 raise InvalidClientRequest(req.identifier, req.reqId, res)
 
