@@ -3,6 +3,7 @@ import io
 import os
 import datetime
 import functools
+from typing import Type, Union, Tuple
 from enum import Enum, unique
 from dateutil.parser import parse as parse_dt
 
@@ -17,13 +18,13 @@ class CsvSerializer:
         for item in self._items:
             yield getattr(self, item)
 
-    def pack(self, delimiter='\t'):
+    def pack(self, delimiter: str = '\t'):
         with io.StringIO() as fs:
             csv.writer(fs, delimiter=delimiter).writerow(self)
             return fs.getvalue()
 
     @classmethod
-    def unpack(cls, row: str, *args, delimiter='\t', **kwargs):
+    def unpack(cls, row: str, *args, delimiter: str = '\t', **kwargs):
         reader = csv.reader([row], delimiter=delimiter)
         return cls(*next(reader), *args, **kwargs)
 
@@ -40,7 +41,7 @@ class CsvSerializer:
 class ActionLogData(CsvSerializer):
     _items = ['when']
 
-    def __init__(self, when):
+    def __init__(self, when: Union[datetime.datetime, str]):
         if isinstance(when, str):
             when = parse_dt(when)
         if not isinstance(when, datetime.datetime):
@@ -63,10 +64,18 @@ class ActionLogEvents(Enum):
         return self.name
 
 
+# Note. datetime class is referred not directly (through datetime module)
+# since it makes possible to mock it in tests using subclasses
 class ActionLogEvent(CsvSerializer):
-    def __init__(self, ts, ev_type, data, *args,
-                 data_class: CsvSerializer=None,
-                 types: Enum=ActionLogEvents):
+    def __init__(
+            self,
+            ts: Union[datetime.datetime, str],
+            ev_type: Enum,
+            data: Type[Union[CsvSerializer, str]],
+            *args: Tuple[str],
+            data_class: Type[Union[CsvSerializer, None]] = None,
+            types: Type[Enum] = ActionLogEvents
+    ):
         if ts:
             if isinstance(ts, str):
                 ts = parse_dt(ts)
@@ -99,8 +108,6 @@ class ActionLogEvent(CsvSerializer):
                 .format(type(data))
             )
 
-        # Note. datetime class is refrred not directly (through datetime module)
-        # since it makes possible to mock it in tests using subclasses
         self.ts = ts if ts else datetime.datetime.utcnow()
         self.ev_type = ev_type
         self.data = data
@@ -126,11 +133,13 @@ class ActionLog:
     Append-only event log of action event
     """
 
-    def __init__(self, file_path,
-                 data_class=ActionLogData,
-                 event_types=ActionLogEvents,
-                 delimiter='\t'):
-
+    def __init__(
+            self,
+            file_path: str,
+            data_class: Type[CsvSerializer] = ActionLogData,
+            event_types: Type[Enum] = ActionLogEvents,
+            delimiter: str ='\t'
+    ):
         self._delimiter = delimiter
         self._file_path = file_path
         self._items = []
@@ -143,19 +152,19 @@ class ActionLog:
                     functools.partial(self._append, ev_type))
 
     @property
-    def file_path(self):
+    def file_path(self) -> str:
         return self._file_path
 
     @property
-    def delimiter(self):
+    def delimiter(self) -> str:
         return self._delimiter
 
     @property
-    def last_event(self):
+    def last_event(self) -> ActionLogEvent:
         return self._items[-1] if self._items else None
 
     @property
-    def event_types(self):
+    def event_types(self) -> Enum:
         return self._event_types
 
     def _load(self):
@@ -169,7 +178,7 @@ class ActionLog:
                         types=self._event_types
                     ))
 
-    def _append(self, ev_type, data: ActionLogData) -> None:
+    def _append(self, ev_type: Enum, data: ActionLogData) -> None:
         """
         Appends event to log
         Be careful it opens file every time!
