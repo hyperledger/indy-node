@@ -1058,7 +1058,7 @@ ConstraintEntity
 
 - `constraint_id` (enum: `ROLE`):
 
-   Type of a constraint. As of not only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
+   Type of a constraint. As of now only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
         
 - `role` (enum number as string; optional):
 
@@ -1075,7 +1075,7 @@ ConstraintEntity
     
 - `need_to_be_owner` (boolean):
 
-    Flag to check is the user must be owner of some transaction (Example: A steward must be the owner of the node to make changes to it).
+    Flag to check if the user must be owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
     
 - `metadata` (dict; optional):
 
@@ -1097,7 +1097,7 @@ ConstraintEntity
     'operation': {
            'type':'120',
            'constraint':{  
-                      'constraint_id': 'OR'
+                      'constraint_id': 'OR',
                       'auth_constraints': [{'constraint_id': 'ROLE', 
                                             'role': '0',
                                             'sig_count': 1, 
@@ -1109,19 +1109,19 @@ ConstraintEntity
                                             'sig_count': 1, 
                                             'need_to_be_owner': True, 
                                             'metadata': {}}
-                                           ], 
+                                           ]
            }, 
            'field' :'services',
            'auth_type': '0', 
-           'auth_action': 'EDIT'
+           'auth_action': 'EDIT',
            'old_value': [VALIDATOR],
-           'new_value': [],
+           'new_value': []
     },
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
     'protocolVersion': 1,
-    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
 }
 ```
 
@@ -1145,7 +1145,7 @@ ConstraintEntity
          'txn':{  
             'data':{  
                'constraint':{  
-                          'constraint_id': 'OR'
+                          'constraint_id': 'OR',
                           'auth_constraints': [{'constraint_id': 'ROLE', 
                                                 'role': '0',
                                                 'sig_count': 1, 
@@ -1157,13 +1157,13 @@ ConstraintEntity
                                                 'sig_count': 1, 
                                                 'need_to_be_owner': True, 
                                                 'metadata': {}}
-                                               ], 
+                                               ]
                }, 
                'field' :'services',
                'auth_type': '0', 
-               'auth_action': 'EDIT'
+               'auth_action': 'EDIT',
                'old_value': [VALIDATOR],
-               'new_value': [],
+               'new_value': []
                }
             },
             'protocolVersion':2,

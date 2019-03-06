@@ -714,7 +714,7 @@ Command to change Pool's configuration
 
 Transaction to change authentication rules. 
 Authentication rules are stored in the State as key - value dictionary. This coincides with the storage structure in (auth_map)[auth_rule.md]. 
-If config ledger does not have transaction for key, the State use value from auth_map.
+If config ledger does not have a transaction for a given key, then a default rule defined in code is used.
 Key - some action in the format `prefix--txn_type--field--old_value--new_value`
 - `prefix` (enum: `ADD` or `EDIT`)
 - `txn_type` (string) - The type of transaction to change rights to. (Example: "0", "1", ...)
@@ -767,7 +767,7 @@ AuthConstraint
 
 - `constraint_id` (enum: `ROLE`):
 
-      Type of a constraint. As of not only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
+      Type of a constraint. As of now only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
         
 - `role` (enum number as string; optional):
 
@@ -784,7 +784,7 @@ AuthConstraint
     
 - `need_to_be_owner` (boolean):
 
-    Flag to check is the user must be owner of some transaction (Example: A steward must be the owner of the node to make changes to it).
+    Flag to check if the user must be owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
     
 - `metadata` (dict; optional):
 

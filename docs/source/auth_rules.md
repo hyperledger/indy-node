@@ -359,6 +359,14 @@
     <td><sub>Pool config command (like a <code>read only</code> option)</sub></td>
   </tr>
   <tr>
+    <td><sub>AUTH_RULE</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>TRUSTEE</sub></td>
+    <td><sub>Change authentification rules</sub></td>
+  </tr>
+  <tr>
     <td><sub>VALIDATOR_INFO</sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
