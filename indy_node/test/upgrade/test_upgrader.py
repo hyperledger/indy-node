@@ -5,6 +5,7 @@ from plenum.common.version import SemVerReleaseVersion
 
 import indy_common
 from indy_common.constants import APP_NAME
+from indy_common.version import src_version_cls
 from indy_node.server.upgrader import Upgrader
 from indy_node.utils.node_control_utils import NodeControlUtil, DebianVersion
 
@@ -98,38 +99,57 @@ def test_versions(lower_version, higher_version):
     comparator_test(lower_version, higher_version)
 
 
+def test_get_src_version_for_app(monkeypatch):
+    called = 0
+
+    def _f(*args, **kwargs):
+        nonlocal called
+        called += 1
+        return (None, [])
+
+    monkeypatch.setattr(NodeControlUtil, 'curr_pkg_info', _f)
+    assert Upgrader.get_src_version(APP_NAME)
+    assert not called
+
+
+@pytest.mark.pkg_info('1:1.2.2-3', [])
+def test_get_src_version_for(monkeypatch):
+    assert (Upgrader.get_src_version(some_pkg_name) ==
+            src_version_cls(some_pkg_name)('1.2.2'))
+
+
 def test_check_upgrade_possible_invalid_target_version():
     assert 'invalid target version' in Upgrader.check_upgrade_possible(
         APP_NAME, '1.2.c')
 
 
 @pytest.mark.pkg_info(None, [])
-def test_check_upgrade_possible_pkg_not_installed(monkeypatch):
+def test_check_upgrade_possible_pkg_not_installed():
     assert ('is not installed' in Upgrader.check_upgrade_possible(
         some_pkg_name, '1.2.3'))
 
 
 @pytest.mark.pkg_info('1.2.2', ['pkg1'])
-def test_check_upgrade_possible_invalid_top_level_pkg(monkeypatch):
+def test_check_upgrade_possible_invalid_top_level_pkg():
     assert ("doesn't belong to pool" in Upgrader.check_upgrade_possible(
         some_pkg_name, '1.2.3'))
 
 
 @pytest.mark.pkg_info('1.2.2', [APP_NAME])
-def test_check_upgrade_possible_not_gt_version(monkeypatch):
+def test_check_upgrade_possible_not_gt_version():
     assert ("is not upgradable" in Upgrader.check_upgrade_possible(
         some_pkg_name, '1.2.2'))
 
 
 @pytest.mark.pkg_info('1.2.2', [APP_NAME])
-def test_check_upgrade_possible_not_ge_version_reinstall(monkeypatch):
+def test_check_upgrade_possible_not_ge_version_reinstall():
     assert ("is not upgradable" in Upgrader.check_upgrade_possible(
         some_pkg_name, '1.2.1', reinstall=True))
 
 
 @pytest.mark.pkg_info('1.2.2', [APP_NAME])
 @pytest.mark.latest_pkg_ver(None)
-def test_check_upgrade_possible_no_pkg_with_target_version(monkeypatch):
+def test_check_upgrade_possible_no_pkg_with_target_version():
     target_ver = '1.2.3'
     assert (
         "for target version {} is not found".format(target_ver) in
@@ -139,7 +159,7 @@ def test_check_upgrade_possible_no_pkg_with_target_version(monkeypatch):
 
 @pytest.mark.pkg_info('1.2.2', [APP_NAME])
 @pytest.mark.latest_pkg_ver('1.2.3')
-def test_check_upgrade_possible_succeeded(monkeypatch):
+def test_check_upgrade_possible_succeeded():
     target_ver = '1.2.3'
     assert not Upgrader.check_upgrade_possible(some_pkg_name, target_ver)
     assert not Upgrader.check_upgrade_possible(
@@ -148,7 +168,7 @@ def test_check_upgrade_possible_succeeded(monkeypatch):
 
 @pytest.mark.pkg_info('1.2.2', [], pkg_name=APP_NAME)
 @pytest.mark.latest_pkg_ver('1.2.3')
-def test_check_upgrade_possible_succeeded_for_app_pkg(monkeypatch):
+def test_check_upgrade_possible_succeeded_for_app_pkg():
     target_ver = '1.2.3'
     assert not Upgrader.check_upgrade_possible(APP_NAME, target_ver)
     assert not Upgrader.check_upgrade_possible(
@@ -157,13 +177,13 @@ def test_check_upgrade_possible_succeeded_for_app_pkg(monkeypatch):
 
 @pytest.mark.pkg_info('1.2.2', [APP_NAME])
 @pytest.mark.latest_pkg_ver('1.2.2')
-def test_check_upgrade_possible_reinstall_succeeded(monkeypatch):
+def test_check_upgrade_possible_reinstall_succeeded():
     assert not Upgrader.check_upgrade_possible(
         some_pkg_name, '1.2.2', reinstall=True)
 
 
 @pytest.mark.pkg_info('1.2.2', [], pkg_name=APP_NAME)
 @pytest.mark.latest_pkg_ver('1.2.2')
-def test_check_upgrade_possible_reinstall_succeeded_for_app_pkg(monkeypatch):
+def test_check_upgrade_possible_reinstall_succeeded_for_app_pkg():
     assert not Upgrader.check_upgrade_possible(
         APP_NAME, '1.2.2', reinstall=True)

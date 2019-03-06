@@ -37,15 +37,12 @@ class Upgrader(NodeMaintainer):
                          actionFailedCallback, action_start_callback)
 
     @staticmethod
-    def getSrcVersion(pkg: str = APP_NAME):
-        if pkg == APP_NAME:
-            import indy_node
-            return indy_node.__version__
-
-    @staticmethod
-    def getDebianVersion(pkg: str = APP_NAME):
-        ver, _ = NodeControlUtil.curr_pkg_info(pkg)
-        return ver
+    def get_src_version(pkg_name: str = APP_NAME) -> SourceVersion:
+        if pkg_name == APP_NAME:
+            return NodeVersion(indy_node.__version__)
+        else:
+            curr_pkg_ver, _ = NodeControlUtil.curr_pkg_info(pkg_name)
+            return curr_pkg_ver.upstream if curr_pkg_ver else None
 
     @staticmethod
     def is_version_upgradable(
@@ -59,9 +56,9 @@ class Upgrader(NodeMaintainer):
             seq_no = ''
         return '{}{}'.format(get_req_id(txn), seq_no)
 
-    # TODO review:
-    #   - what comparison rules are used (PyPI vs Debian)
-    #   - makes sense to use some library instead of custom implementation
+    # implements legacy logic used only by migration logic,
+    # please use Version classes in code instead
+    # TODO refactor migration logic to get rid of that API usage
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
         version_cls = SemVerReleaseVersion
@@ -180,6 +177,7 @@ class Upgrader(NodeMaintainer):
 
             self.handleUpgradeTxn(last_pool_upgrade_txn_start)
 
+    # TODO might necessary to improve tests
     @property
     def didLastExecutedUpgradeSucceeded(self) -> bool:
         """
@@ -192,10 +190,15 @@ class Upgrader(NodeMaintainer):
         lastEventInfo = self.lastActionEventInfo
         if lastEventInfo:
             ev_data = lastEventInfo.data
-            # TODO review and fix
-            currentVersion = self.getDebianVersion(ev_data.pkg_name)
-            scheduledVersion = ev_data.version
-            return self.compareVersions(currentVersion, scheduledVersion) == 0
+            currentPkgVersion = NodeControlUtil.curr_pkg_info(ev_data.pkg_name)[0]
+            if currentPkgVersion:
+                return currentPkgVersion.upstream == ev_data.version
+            else:
+                logger.warning(
+                    "{} failed to get information about package {} "
+                    "scheduled for last upgrade"
+                    .format(self, ev_data.pkg_name)
+                )
         return False
 
     @staticmethod
@@ -261,6 +264,16 @@ class Upgrader(NodeMaintainer):
         pkg_name = txn_data.get(PACKAGE, self.config.UPGRADE_ENTRY)
         upgrade_id = self.get_action_id(txn)
 
+        # TODO test
+        try:
+            version = src_version_cls(pkg_name)(version)
+        except InvalidVersionError as exc:
+            logger.warning(
+                "{} can't handle upgrade txn with version {} for package {}: {}"
+                .format(self, version, pkg_name, exc)
+            )
+            return
+
         if action == START:
             # forced txn could have partial schedule list
             if self.nodeId not in txn_data[SCHEDULE]:
@@ -305,7 +318,7 @@ class Upgrader(NodeMaintainer):
 
         if action == CANCEL:
             if (self.scheduledAction and
-                    self.scheduledAction.version == version):
+                    self.scheduledAction.version == new_ev_data.version):
                 self._cancelScheduledUpgrade(justification)
                 logger.info("Node '{}' cancels upgrade to {}".format(
                     self.nodeName, version))
@@ -401,9 +414,8 @@ class Upgrader(NodeMaintainer):
         retryLimit = self.retry_limit
         while retryLimit:
             try:
-                # TODO review and fix
                 msg = UpgradeMessage(
-                    version=ev_data.version,
+                    version=ev_data.version.full,
                     pkg_name=ev_data.pkg_name
                 ).toJson()
                 logger.info("Sending message to control tool: {}".format(msg))
