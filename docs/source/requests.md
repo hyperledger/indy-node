@@ -1019,7 +1019,7 @@ means that changing a value of a NODE transaction's `service` field from `[VALID
     
 - `auth_type` (string):
 
-    The type of transaction to change rights for. (Example: NYM, NODE, POOL_RESTART...)
+    The type of transaction to change rights for. (Example: "0", "1", ...)
 
 - `field` (string):
 

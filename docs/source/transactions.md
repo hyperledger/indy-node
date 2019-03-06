@@ -717,7 +717,7 @@ Authentication rules are stored in the State as key - value dictionary. This coi
 If config ledger does not have transaction for key, the State use value from auth_map.
 Key - some action in the format `prefix--txn_type--field--old_value--new_value`
 - `prefix` (enum: `ADD` or `EDIT`)
-- `txn_type` (string) - The type of transaction to change rights to. (Example: NYM, NODE, POOL_RESTART...)
+- `txn_type` (string) - The type of transaction to change rights to. (Example: "0", "1", ...)
 - `field` (string) Change the rights to edit(add) some values from field.
 - `old_value` (string; optional) Old value of field, which can be changed to a new_value.
 - `new_value` (string) New value that can be used to fill the field.
