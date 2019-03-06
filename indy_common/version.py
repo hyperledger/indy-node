@@ -50,6 +50,7 @@ class NodeVersion(
         """ Upstream part of the package. """
         return self
 
+
 def src_version_cls(pkg_name: str = APP_NAME) -> Type[SourceVersion]:
     # TODO implement dynamic class resolving depending on packge name and config
     return NodeVersion if pkg_name == APP_NAME else TopPkgDefVersion
