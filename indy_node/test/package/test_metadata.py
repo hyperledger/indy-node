@@ -46,15 +46,15 @@ def test_pep440_version_default():
 
 
 def test_pep440_version_stable():
-    pep440_version((1, 2, 3, 'stable', 2)) == "1.2.3"
+    assert pep440_version((1, 2, 3, 'stable', 2)) == "1.2.3"
 
 
 def test_pep440_version_dev():
-    pep440_version((1, 2, 3, 'dev', 1)) == "1.2.3.dev1"
+    assert pep440_version((1, 2, 3, 'dev', 1)) == "1.2.3.dev1"
 
 
 def test_pep440_version_rc():
-    pep440_version((1, 2, 3, 'rc', 2)) == "1.2.3.rc2"
+    assert pep440_version((1, 2, 3, 'rc', 2)) == "1.2.3.rc2"
 
 
 def test_split_version_from_str_only_int():

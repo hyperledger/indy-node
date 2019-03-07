@@ -18,6 +18,7 @@ class TopPkgDefVersion(DigitDotVersion, SourceVersion):
         super().__init__(version, parts_num=(2, 3), **kwargs)
 
 
+# TODO inherit PlenumVersion
 class NodeVersion(
     PEP440BasedVersion, SemVerBase, SourceVersion, PackageVersion
 ):
