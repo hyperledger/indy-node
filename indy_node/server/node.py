@@ -188,7 +188,8 @@ class Node(PlenumNode):
                                 self.upgrader,
                                 self.poolManager,
                                 self.poolCfg,
-                                self.write_req_validator)
+                                self.write_req_validator,
+                                self.bls_bft.bls_store)
 
     def getIdrCache(self):
         if self.idrCache is None:

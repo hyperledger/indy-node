@@ -369,7 +369,14 @@ class ClientAuthRuleOperation(MessageValidator):
 
 class ClientGetAuthRuleOperation(MessageValidator):
     schema = (
-        (TXN_TYPE, ConstantField(GET_AUTH_RULE))
+        (TXN_TYPE, ConstantField(GET_AUTH_RULE)),
+        (AUTH_ACTION, ChooseField(values=(ADD_PREFIX, EDIT_PREFIX), optional=True)),
+        (AUTH_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT, optional=True)),
+        (FIELD, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT, optional=True)),
+        (OLD_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
+                                             optional=True)),
+        (NEW_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
+                                             can_be_empty=True, optional=True))
     )
 
 

@@ -1,17 +1,18 @@
 from typing import List
 
-from common.serializers.serialization import domain_state_serializer
+from common.serializers.serialization import domain_state_serializer, state_roots_serializer
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
+from indy_node.server.domain_req_handler import DomainReqHandler
 from plenum.common.exceptions import InvalidClientRequest, InvalidMessageException
 
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata, get_type
 from plenum.server.ledger_req_handler import LedgerRequestHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, KEY
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     APP_NAME, REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
-from indy_common.types import Request
+from indy_common.types import Request, ClientGetAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
@@ -20,11 +21,11 @@ from indy_node.utils.node_control_utils import NodeControlUtil
 
 class ConfigReqHandler(LedgerRequestHandler):
     write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE}
-    query_types = {GET_AUTH_RULE}
+    query_types = {GET_AUTH_RULE, }
 
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig,
-                 write_req_validator):
+                 write_req_validator, bls_store=None):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
@@ -32,6 +33,7 @@ class ConfigReqHandler(LedgerRequestHandler):
         self.poolCfg = poolCfg
         self.write_req_validator = write_req_validator
         self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
+        self.bls_store = bls_store
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -226,4 +228,26 @@ class ConfigReqHandler(LedgerRequestHandler):
                 self.update_auth_constraint(auth_key, constraint)
 
     def get_query_response(self, request: Request):
-        return self.write_req_validator.auth_map
+        if len(request.operation) == len(ClientGetAuthRuleOperation.schema):
+            path = self.get_auth_key(request.operation)
+            multi_sig = None
+            if self.bls_store:
+                root_hash = self.state.committedHeadHash
+                encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
+                multi_sig = self.bls_store.get(encoded_root_hash)
+
+            map_data, proof = self.get_value_from_state(path, with_proof=True, multi_sig=multi_sig)
+
+            if map_data:
+                data = self.constraint_serializer.deserialize(map_data)
+            else:
+                data = self.write_req_validator.auth_map[path]
+
+            result = self.make_result(request=request,
+                                      data=data.as_dict,
+                                      proof=proof)
+            result[KEY] = path
+            result.update(request.operation)
+            return result
+        else:
+            return  # TODO: return all
