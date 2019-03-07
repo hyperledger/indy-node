@@ -453,6 +453,8 @@ class ValidatorStats(BaseStats):
                 self['Node_info']['Metrics']['transaction-count']['ledger']),
             "  Total Pool Transactions:    {}".format(
                 self['Node_info']['Metrics']['transaction-count']['pool']),
+            "  Total Audit Transactions:    {}".format(
+                self['Node_info']['Metrics']['transaction-count']['audit']),
             "  Read Transactions/Seconds:  {}".format(
                 self['Node_info']['Metrics']['average-per-second']['read-transactions']),
             "  Write Transactions/Seconds: {}".format(

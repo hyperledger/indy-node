@@ -27,7 +27,7 @@ from plenum.common.messages.fields import ConstantField, IdentifierField, \
     LimitedLengthStringField, TxnSeqNoField, \
     Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
     ChooseField, IntegerField, IterableField, \
-    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField
+    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase
 from plenum.common.messages.message_base import MessageValidator
 from plenum.common.messages.node_messages import NonNegativeNumberField
 from plenum.common.request import Request as PRequest
@@ -307,17 +307,20 @@ class ClientPoolConfigOperation(MessageValidator):
     )
 
 
-class ConstraintField(MessageValidator):
+class ConstraintField(FieldBase):
     _base_types = None
 
-    def __init__(self, constraint_entity_cls, constraint_list_cls, **kwargs):
+    def __init__(self, constraint_entity, constraint_list, **kwargs):
         super().__init__(**kwargs)
-        self._constraint_entity = constraint_entity_cls
-        self._constraint_list = constraint_list_cls
+        self._constraint_entity = constraint_entity
+        self._constraint_list = constraint_list
 
     def _specific_validation(self, val):
-        if val is None:
-            return "Field {} is required".format(CONSTRAINT)
+        if not val:
+            return "Fields {} and {} are required and should not " \
+                   "be an empty list.".format(AUTH_CONSTRAINTS, CONSTRAINT)
+        if CONSTRAINT_ID not in val:
+            return "Field {} is required".format(CONSTRAINT_ID)
         return self._constraint_entity.validate(val) \
             if val[CONSTRAINT_ID] == ConstraintsEnum.ROLE_CONSTRAINT_ID \
             else self._constraint_list.validate(val)
@@ -334,28 +337,33 @@ class ConstraintEntityField(MessageValidator):
 
 
 class ConstraintListField(MessageValidator):
-    schema = None
+    schema = ((CONSTRAINT_ID, ChooseField(values=ConstraintsEnum.values())),
+              (AUTH_CONSTRAINTS, IterableField(AnyField())))
 
-    def __init__(self, schema_is_strict=SCHEMA_IS_STRICT):
-        self.schema = (
-            (CONSTRAINT_ID, ChooseField(values=ConstraintsEnum.values())),
-            (AUTH_CONSTRAINTS, IterableField(ConstraintField(self,
-                                                             ConstraintEntityField())))
-        )
-        super().__init__(schema_is_strict)
+    def _validate_message(self, val):
+        constraints = val.get(AUTH_CONSTRAINTS)
+        if not constraints:
+            self._raise_invalid_message("Fields {} should not be an empty "
+                                        "list.".format(AUTH_CONSTRAINTS))
+        for constraint in constraints:
+            error_msg = ConstraintField(ConstraintEntityField(),
+                                        self).validate(constraint)
+            if error_msg:
+                self._raise_invalid_message(error_msg)
 
 
 class ClientAuthRuleOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(AUTH_RULE)),
-        (CONSTRAINT, ConstraintField(ConstraintListField(),
-                                     ConstraintEntityField())),
+        (CONSTRAINT, ConstraintField(ConstraintEntityField(),
+                                     ConstraintListField())),
         (AUTH_ACTION, ChooseField(values=(ADD_PREFIX, EDIT_PREFIX))),
         (AUTH_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (FIELD, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (OLD_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
                                              optional=True)),
-        (NEW_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT))
+        (NEW_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
+                                             can_be_empty=True))
     )
 
 

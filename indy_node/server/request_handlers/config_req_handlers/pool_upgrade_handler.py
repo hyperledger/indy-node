@@ -1,5 +1,4 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_node.server.request_handlers.config_req_handlers.config_write_request_handler import ConfigWriteRequestHandler
 from indy_node.utils.node_control_utils import NodeControlUtil
 
 from indy_common.config_util import getConfig
@@ -15,9 +14,10 @@ from plenum.common.request import Request
 from plenum.common.txn_util import get_request_data, get_payload_data
 from plenum.server.database_manager import DatabaseManager
 from plenum.server.pool_manager import TxnPoolManager
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
-class PoolUpgradeHandler(ConfigWriteRequestHandler):
+class PoolUpgradeHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  upgrader: Upgrader,
