@@ -29,7 +29,7 @@ class Restarter(NodeMaintainer):
 
     def _defaultLog(self, dataDir, config):
         log = os.path.join(dataDir, config.restartLogFile)
-        return RestartLog(filePath=log)
+        return RestartLog(file_path=log)
 
     def _is_action_started(self):
         last_action = self.lastActionEventInfo

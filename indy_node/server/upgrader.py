@@ -69,7 +69,7 @@ class Upgrader(NodeMaintainer):
 
     def _defaultLog(self, dataDir, config):
         log = os.path.join(dataDir, config.upgradeLogFile)
-        return UpgradeLog(filePath=log)
+        return UpgradeLog(file_path=log)
 
     def _is_action_started(self):
         last_action = self.lastActionEventInfo
