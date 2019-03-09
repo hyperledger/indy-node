@@ -7,7 +7,9 @@ from typing import List
 from indy_common.constants import UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
 from stp_core.common.log import getlogger
 
-from indy_common.version import PackageVersion
+from indy_common.version import (
+    PackageVersion, SourceVersion, src_version_cls
+)
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper
 from indy_common.util import compose_cmd
@@ -166,7 +168,7 @@ class NodeControlTool:
         for file in files:
             os.remove(file)
 
-    def _do_migration(self, curr_src_ver, new_src_ver):
+    def _do_migration(self, curr_src_ver: str, new_src_ver: str):
         migrate(curr_src_ver, new_src_ver, self.timeout)
 
     def _migrate(self, curr_src_ver: str, new_src_ver: str):
@@ -208,10 +210,17 @@ class NodeControlTool:
             if rollback:
                 logger.error("Trying to rollback to the previous version {}"
                              .format(ex, curr_pkg_ver))
-                self._do_upgrade(pkg_name, new_pkg_ver, curr_pkg_ver, rollback=False)
+                self._do_upgrade(
+                    pkg_name, new_pkg_ver, curr_pkg_ver, rollback=False)
 
     # TODO test
-    def _upgrade(self, new_src_ver, pkg_name, migrate=True, rollback=True):
+    def _upgrade(
+            self,
+            new_src_ver: SourceVersion,
+            pkg_name: str,
+            migrate=True,
+            rollback=True
+    ):
         curr_pkg_ver, _ = NodeControlUtil.curr_pkg_info(pkg_name)
 
         if not curr_pkg_ver:
@@ -248,7 +257,7 @@ class NodeControlTool:
             if command[MESSAGE_TYPE] == UPGRADE_MESSAGE:
                 new_src_ver = command['version']
                 pkg_name = command['pkg_name']
-                self._upgrade(new_src_ver, pkg_name)
+                self._upgrade(src_version_cls(pkg_name)(new_src_ver), pkg_name)
             elif command[MESSAGE_TYPE] == RESTART_MESSAGE:
                 self._restart()
         except json.decoder.JSONDecodeError as e:

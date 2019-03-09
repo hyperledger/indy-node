@@ -6,16 +6,24 @@ import shutil
 import time
 
 from stp_core.loop.eventually import eventually
-from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, \
-    sendUpgradeMessage, nodeControlGeneralMonkeypatching
+from indy_common.version import src_version_cls
 from indy_node.server.upgrader import Upgrader
+from indy_node.utils.node_control_utils import NodeControlUtil, DebianVersion
+
+from indy_node.test.upgrade.helper import (
+    NodeControlToolExecutor as NCT,
+    sendUpgradeMessage,
+    nodeControlGeneralMonkeypatching,
+    bumpedVersion
+)
 
 m = multiprocessing.Manager()
+# TODO why do we expect that
 whitelist = ['Unexpected error in _upgrade test']
 
 
 def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper, tconf):
-    msg = 'test'
+    version = bumpedVersion()
     stdout = 'teststdout'
     backupWasRestored = m.Value('b', False)
     testFile = 'testFile'
@@ -43,11 +51,17 @@ def testNodeControlRestoresFromBackups(monkeypatch, tdir, looper, tconf):
     def checkBackupRestored(tool):
         assert backupWasRestored.value
 
+    monkeypatch.setattr(
+        NodeControlUtil, 'get_latest_pkg_version',
+        lambda *x, **y: DebianVersion(
+            version, upstream_cls=src_version_cls())
+    )
+
     nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
         with open(os.path.join(nct.tool.indy_dir, testFile), 'w') as f:
             f.write(original_text)
-        sendUpgradeMessage(msg)
+        sendUpgradeMessage(version)
         looper.run(eventually(checkBackupRestored, nct.tool))
         with open(os.path.join(nct.tool.indy_dir, testFile)) as f:
             assert original_text == f.read()

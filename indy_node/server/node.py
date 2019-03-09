@@ -244,7 +244,7 @@ class Node(PlenumNode):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: lastUpgradeVersion
+                VERSION: lastUpgradeVersion.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -265,7 +265,7 @@ class Node(PlenumNode):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: scheduled_upgrade_version
+                VERSION: scheduled_upgrade_version.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])

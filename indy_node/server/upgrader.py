@@ -19,7 +19,7 @@ from common.version import (
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
     CANCEL, JUSTIFICATION, TIMEOUT, REINSTALL, NODE_UPGRADE, \
     UPGRADE_MESSAGE, PACKAGE, APP_NAME
-from indy_common.version import TopPkgDefVersion, NodeVersion, src_version_cls
+from indy_common.version import src_version_cls
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 from indy_node.utils.node_control_utils import NodeControlUtil
 
@@ -42,7 +42,7 @@ class Upgrader(NodeMaintainer):
 
         if pkg_name == APP_NAME and not nocache:
             from indy_node.__metadata__ import __version__
-            return NodeVersion(__version__)
+            return src_version_cls(APP_NAME)(__version__)
 
         curr_pkg_ver, _ = NodeControlUtil.curr_pkg_info(pkg_name)
         return curr_pkg_ver.upstream if curr_pkg_ver else None
@@ -321,7 +321,7 @@ class Upgrader(NodeMaintainer):
 
         if action == CANCEL:
             if (self.scheduledAction and
-                    self.scheduledAction.version == new_ev_data.version):
+                    self.scheduledAction.version == version):
                 self._cancelScheduledUpgrade(justification)
                 logger.info("Node '{}' cancels upgrade to {}".format(
                     self.nodeName, version))
@@ -385,8 +385,8 @@ class Upgrader(NodeMaintainer):
                                 ev_data.pkg_name,
                                 ev_data.version,
                                 ev_data.when,
-                                why_prefix=why_prefix,
-                                why=why))
+                                why_prefix,
+                                why))
 
             self._unscheduleAction()
             self._actionLog.append_cancelled(ev_data)
@@ -469,8 +469,8 @@ class Upgrader(NodeMaintainer):
                     ev_data.upgrade_id,
                     ev_data.version,
                     ev_data.pkg_name,
-                    ev_data.scheduled_on,
-                    reason=reason)
+                    ev_data.when,
+                    reason)
         )
         logger.error(error_message)
         if external_reason:

@@ -286,7 +286,6 @@ class NodeControlUtil:
         if update_cache:
             cls.update_package_cache()
 
-        # cls.update_package_cache()
         regex = "'^Version: ([0-9]+:)?{}(-|$)'".format(
             upstream.full if upstream else '.*')
         try:

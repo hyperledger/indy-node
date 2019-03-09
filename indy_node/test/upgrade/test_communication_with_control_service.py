@@ -1,12 +1,12 @@
 import asyncio
-import time
+from datetime import datetime
 
-from indy_node.server.upgrader import Upgrader, UpgradeMessage
 from stp_core.loop.eventually import eventuallySoon
 
+from indy_node.server.upgrade_log import UpgradeLogData
+from indy_node.server.upgrader import Upgrader, UpgradeMessage
 
-when = "2017-01-27T12:00:00Z"
-version = "1.2"
+from indy_node.test.upgrade.helper import bumpedVersion
 
 
 async def _createServer(host, port):
@@ -72,7 +72,10 @@ def testScheduleNodeUpgrade(tconf, nodeSet):
                         dataDir=node.dataLocation,
                         config=tconf,
                         ledger=None)
-    upgrader._callUpgradeAgent(time.time(), "1.2", 1000, None, tconf.UPGRADE_ENTRY)
+    version = bumpedVersion()
+    ev_data = UpgradeLogData(
+        datetime.utcnow(), version, 'some_id', tconf.UPGRADE_ENTRY)
+    upgrader._callUpgradeAgent(ev_data, 1000)
 
     result = loop.run_until_complete(eventuallySoon(_checkFuture(indicator)))
     expectedResult = UpgradeMessage(version, tconf.UPGRADE_ENTRY)

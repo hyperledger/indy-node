@@ -75,11 +75,11 @@ def clear_aq_stash(nodes):
         node.upgrader.aqStash.clear()
 
 
-def checkUpgradeScheduled(nodes, version, schedule=None):
+def checkUpgradeScheduled(nodes, version: str, schedule=None):
     for node in nodes:
         assert len(node.upgrader.aqStash) == 1
         assert node.upgrader.scheduledAction
-        assert node.upgrader.scheduledAction.version == version
+        assert node.upgrader.scheduledAction.version.full == version
         if schedule:
             assert node.upgrader.scheduledAction.when == \
                    dateutil.parser.parse(schedule[node.id])
@@ -187,8 +187,9 @@ def populate_log_with_upgrade_events(
         os.makedirs(ledger_dir)
         log = UpgradeLog(os.path.join(ledger_dir, tconf.upgradeLogFile))
         when = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-        log.append_scheduled(when, version, randomString(10), pkg_name)
-        log.append_started(when, version, randomString(10), pkg_name)
+        ev_data = UpgradeLogData(when, version, randomString(10), pkg_name)
+        log.append_scheduled(ev_data)
+        log.append_started(ev_data)
 
 
 def check_node_sent_acknowledges_upgrade(
@@ -340,4 +341,4 @@ def count_action_log_entries(upg_log, func):
 
 
 def count_action_log_package(upg_log, pkg_name):
-    return count_action_log_entries(upg_log, lambda entry: entry[5] == pkg_name)
+    return count_action_log_entries(upg_log, lambda entry: entry.data.pkg_name == pkg_name)
