@@ -2,6 +2,24 @@ import json
 from copy import deepcopy
 from hashlib import sha256
 
+from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
+    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT
+from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
+from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
+from plenum.common.messages.fields import ConstantField, IdentifierField, \
+    LimitedLengthStringField, TxnSeqNoField, \
+    Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
+    ChooseField, IntegerField, IterableField, \
+    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase
+from plenum.common.messages.message_base import MessageValidator
+from plenum.common.messages.node_messages import NonNegativeNumberField
+from plenum.common.request import Request as PRequest
+from plenum.common.types import OPERATION
+from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
+from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
+    NONCE_FIELD_LIMIT, \
+    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT
+
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
     NEED_TO_BE_OWNER, SIG_COUNT, ROLE
@@ -19,24 +37,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE
-from plenum.common.constants import TARGET_NYM, NONCE, RAW, ENC, HASH, NAME, \
-    VERSION, FORCE, ORIGIN, OPERATION_SCHEMA_IS_STRICT, SCHEMA_IS_STRICT
-from plenum.common.messages.client_request import ClientMessageValidator as PClientMessageValidator
-from plenum.common.messages.client_request import ClientOperationField as PClientOperationField
-from plenum.common.messages.fields import ConstantField, IdentifierField, \
-    LimitedLengthStringField, TxnSeqNoField, \
-    Sha256HexField, JsonField, MapField, BooleanField, VersionField, \
-    ChooseField, IntegerField, IterableField, \
-    AnyMapField, NonEmptyStringField, DatetimeStringField, RoleField, AnyField, FieldBase
-from plenum.common.messages.message_base import MessageValidator
-from plenum.common.messages.node_messages import NonNegativeNumberField
-from plenum.common.request import Request as PRequest
-from plenum.common.types import OPERATION
-from plenum.common.util import is_network_ip_address_valid, is_network_port_valid
-from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
-    NONCE_FIELD_LIMIT, \
-    ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT, \
-    VERSION_FIELD_LIMIT
+from indy_common.version import SchemaVersion, TopPkgDefVersion
 
 
 class Request(PRequest):
@@ -74,7 +75,7 @@ class ClientDiscloOperation(MessageValidator):
 class GetSchemaField(MessageValidator):
     schema = (
         (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(version_cls=SchemaVersion)),
         (ORIGIN, IdentifierField(optional=True))
     )
 
@@ -82,7 +83,7 @@ class GetSchemaField(MessageValidator):
 class SchemaField(MessageValidator):
     schema = (
         (SCHEMA_NAME, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (SCHEMA_VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(version_cls=SchemaVersion)),
         (SCHEMA_ATTR_NAMES, IterableField(
             LimitedLengthStringField(max_length=NAME_FIELD_LIMIT),
             min_length=1,
@@ -270,7 +271,7 @@ class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),
         (ACTION, ChooseField(values=(START, CANCEL,))),
-        (VERSION, VersionField(components_number=(2, 3,), max_length=VERSION_FIELD_LIMIT)),
+        (SCHEMA_VERSION, VersionField(version_cls=TopPkgDefVersion)),
         # TODO replace actual checks (idr, datetime)
         (SCHEDULE, MapField(IdentifierField(),
                             NonEmptyStringField(), optional=True)),
