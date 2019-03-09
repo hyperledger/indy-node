@@ -1,6 +1,6 @@
 from typing import Type
 
-from plenum.common.version import (
+from common.version import (
     InvalidVersionError, PEP440BasedVersion, SemVerBase,
     DigitDotVersion, SourceVersion, PackageVersion
 )

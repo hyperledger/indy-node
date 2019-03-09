@@ -2,7 +2,7 @@ import pytest
 import os
 import datetime
 
-from plenum.common.version import SemVerReleaseVersion
+from common.version import SemVerReleaseVersion
 
 import indy_common
 from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog

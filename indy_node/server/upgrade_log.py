@@ -1,7 +1,7 @@
 from typing import Union
 from datetime import datetime
 
-from plenum.common.version import SourceVersion
+from common.version import SourceVersion
 
 from indy_common.version import src_version_cls
 from indy_node.server.action_log import ActionLogData, ActionLogEvents, ActionLog

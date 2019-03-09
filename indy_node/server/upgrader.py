@@ -12,7 +12,7 @@ from indy_node.server.node_maintainer import NodeMaintainer, \
 from plenum.common.txn_util import is_forced, get_seq_no, get_type, get_payload_data, get_req_id, get_from
 from stp_core.common.log import getlogger
 from plenum.common.constants import VERSION
-from plenum.common.version import (
+from common.version import (
     SourceVersion, PackageVersion, InvalidVersionError, SemVerReleaseVersion
 )
 

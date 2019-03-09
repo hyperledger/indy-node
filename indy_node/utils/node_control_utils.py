@@ -7,7 +7,7 @@ from typing import Iterable, Type, Tuple, List, Union
 
 
 from stp_core.common.log import getlogger
-from plenum.common.version import (
+from common.version import (
     InvalidVersionError, SourceVersion, PackageVersion, GenericVersion
 )
 

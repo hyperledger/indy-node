@@ -1,7 +1,7 @@
 # Some unit tests for upgrader
 import pytest
 
-from plenum.common.version import SemVerReleaseVersion
+from common.version import SemVerReleaseVersion
 
 import indy_common
 from indy_common.constants import APP_NAME

@@ -1,6 +1,6 @@
 import pytest
 
-from plenum.common.version import InvalidVersionError
+from common.version import InvalidVersionError
 
 from indy_common.constants import APP_NAME
 from indy_common.version import (

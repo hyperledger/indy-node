@@ -1,6 +1,6 @@
 import pytest
 
-from plenum.common.version import InvalidVersionError, GenericVersion
+from common.version import InvalidVersionError, GenericVersion
 
 from indy_common.version import NodeVersion
 from indy_node.utils.node_control_utils import DebianVersion, NodeControlUtil, ShellError

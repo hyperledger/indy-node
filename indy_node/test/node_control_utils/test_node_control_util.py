@@ -1,7 +1,7 @@
 import pytest
 import shutil
 
-from plenum.common.version import DigitDotVersion
+from common.version import DigitDotVersion
 
 from indy_common.constants import APP_NAME
 from indy_common.version import src_version_cls
