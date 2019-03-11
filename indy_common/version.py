@@ -1,4 +1,4 @@
-from plenum.common.version import DigitDotVersion, SourceVersion
+from common.version import DigitDotVersion, SourceVersion
 
 
 class SchemaVersion(DigitDotVersion):
