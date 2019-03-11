@@ -45,8 +45,13 @@ class ConfigReqHandler(LedgerRequestHandler):
         pass
 
     def _doStaticValidationAuthRule(self, identifier, reqId, operation):
-        constraint = operation.get(CONSTRAINT)
-        ConstraintCreator.create_constraint(constraint)
+        try:
+            ConstraintCreator.create_constraint(operation.get(CONSTRAINT))
+        except ValueError as exp:
+            raise InvalidClientRequest(identifier,
+                                       reqId,
+                                       exp)
+
         action = operation.get(AUTH_ACTION, None)
 
         if OLD_VALUE not in operation and action == EDIT_PREFIX:

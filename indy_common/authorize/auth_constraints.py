@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import List
 from indy_common.authorize.helper import get_named_role
-
+from indy_common.constants import NETWORK_MONITOR, TRUST_ANCHOR
+from plenum.common.constants import STEWARD, TRUSTEE
 
 CONSTRAINT_ID = "constraint_id"
 AUTH_CONSTRAINTS = "auth_constraints"
@@ -10,6 +11,10 @@ ROLE = "role"
 METADATA = "metadata"
 SIG_COUNT = "sig_count"
 NEED_TO_BE_OWNER = "need_to_be_owner"
+
+IDENTITY_OWNER = ''
+
+accepted_roles = [IDENTITY_OWNER, NETWORK_MONITOR, TRUST_ANCHOR, STEWARD, TRUSTEE, '*', None]
 
 
 class ConstraintEnum(Enum):
@@ -52,6 +57,7 @@ class AbstractAuthConstraint(metaclass=ABCMeta):
 
 class AuthConstraint(AbstractAuthConstraint):
     def __init__(self, role, sig_count, need_to_be_owner=False, metadata={}):
+        self._role_validation(role)
         self.role = role
         self.sig_count = sig_count
         self.need_to_be_owner = need_to_be_owner
@@ -67,6 +73,11 @@ class AuthConstraint(AbstractAuthConstraint):
             NEED_TO_BE_OWNER: self.need_to_be_owner,
             METADATA: self.metadata
         }
+
+    @staticmethod
+    def _role_validation(role):
+        if role not in accepted_roles:
+            raise ValueError("Role {} is not acceptable".format(role))
 
     def __str__(self):
         role = get_named_role(self.role) if self.role != '*' else 'ALL'

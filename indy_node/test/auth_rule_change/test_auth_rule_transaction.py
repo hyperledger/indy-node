@@ -1,6 +1,7 @@
 import pytest
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
+from indy_common.authorize.auth_constraints import ROLE
 from indy_common.constants import AUTH_ACTION, OLD_VALUE
 from indy_node.test.auth_rule_change.helper import generate_constraint_entity, generate_constraint_list, \
     sdk_send_and_check_auth_rule_request
@@ -26,6 +27,21 @@ def test_auth_rule_transaction_with_large_constraint(looper,
                                          sdk_wallet_trustee,
                                          sdk_pool_handle,
                                          constraint=constraint)
+
+
+def test_reject_with_unacceptable_role_in_constraint(looper,
+                                                     sdk_wallet_trustee,
+                                                     sdk_pool_handle):
+    constraint = generate_constraint_entity()
+    unacceptable_role = 'olololo'
+    constraint[ROLE] = unacceptable_role
+    with pytest.raises(RequestNackedException) as e:
+        sdk_send_and_check_auth_rule_request(looper,
+                                             sdk_wallet_trustee,
+                                             sdk_pool_handle,
+                                             constraint=constraint)
+    e.match('InvalidClientRequest')
+    e.match('Role {} is not acceptable'.format(unacceptable_role))
 
 
 def test_reject_auth_rule_transaction(looper,
