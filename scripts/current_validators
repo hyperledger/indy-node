@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 
 import string
 import json
@@ -60,6 +60,10 @@ def parse_transactions(ledger, protocol_version):
             pass
         try:
             validators[current_dest]['blskey'] = data_json_dump['blskey']
+        except KeyError:
+            pass
+        try:
+            validators[current_dest]['blskey_pop'] = data_json_dump['blskey_pop']
         except KeyError:
             pass
         try:
@@ -140,7 +144,7 @@ def write_result(jsonOut):
         print(']')
     else:
         log.info('Serializing info on validators to csv')
-        fieldnames = ['alias', 'blskey', 'client_ip', 'client_port', 'node_ip', 'node_port', 'services', 'dest',
+        fieldnames = ['alias', 'blskey', 'blskey_pop', 'client_ip', 'client_port', 'node_ip', 'node_port', 'services', 'dest',
                       'identifier']
         writer = csv.DictWriter(sys.stdout, fieldnames=fieldnames)
         writer.writeheader()
