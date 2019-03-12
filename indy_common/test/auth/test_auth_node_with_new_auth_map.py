@@ -11,6 +11,14 @@ def test_node_enable(write_request_validation, req, is_owner):
                                                                  value='[\'VALIDATOR\']',
                                                                  is_owner=is_owner)])
 
+def test_node_enable_with_empty_services(write_request_validation, req, is_owner):
+    authorized = (req.identifier == "steward_identifier" and is_owner)
+    assert authorized == write_request_validation(req,
+                                                  [AuthActionAdd(txn_type=NODE,
+                                                                 field=SERVICES,
+                                                                 value='[]',
+                                                                 is_owner=is_owner)])
+
 
 def test_node_promote(write_request_validation, req, is_owner):
     authorized = (req.identifier == "steward_identifier" and is_owner) or (req.identifier == "trustee_identifier")
