@@ -1,21 +1,32 @@
-import os   # noqa
-import importlib    # noqa
-import sys
-from importlib.util import module_from_spec, spec_from_file_location    # noqa: E402
-
-import pip
-
-import indy_node.server.plugin     # noqa: E402
-
-from indy_common.config_util import getConfigOnce   # noqa: E402
-from plenum import find_and_load_plugin
-
 PLUGIN_LEDGER_IDS = set()
 PLUGIN_CLIENT_REQUEST_FIELDS = {}
 PLUGIN_CLIENT_REQ_OP_TYPES = {}
 
 
+# TODO review is it really necessary here
 def setup_plugins():
+    import sys
+    import os
+    import pip
+    import importlib    # noqa
+    from importlib.util import module_from_spec, spec_from_file_location    # noqa: E402
+    from indy_common.config_util import getConfigOnce   # noqa: E402
+    import indy_node.server.plugin     # noqa: E402
+
+    def find_and_load_plugin(plugin_name, plugin_root, installed_packages):
+        if plugin_name in installed_packages:
+            # TODO: Need a test for installed packages
+            plugin_name = plugin_name.replace('-', '_')
+            plugin = importlib.import_module(plugin_name)
+        else:
+            plugin_path = os.path.join(plugin_root.__path__[0],
+                                       plugin_name, '__init__.py')
+            spec = spec_from_file_location('__init__.py', plugin_path)
+            plugin = module_from_spec(spec)
+            spec.loader.exec_module(plugin)
+
+        return plugin
+
     # TODO: Refactor to use plenum's setup_plugins
     # TODO: Should have a check to make sure no plugin defines any conflicting ledger id or request field
     global PLUGIN_LEDGER_IDS
@@ -49,7 +60,11 @@ def setup_plugins():
     importlib.reload(indy_common.types)
 
 
-setup_plugins()
-
+try:
+    import packaging
+except ImportError:
+    pass  # it is expected in raw env
+else:
+    setup_plugins()
 
 from .__metadata__ import *  # noqa
