@@ -1594,56 +1594,57 @@ A reply with all rules are key-value dictionary where value is a constraint. The
 {  
       'op':'REPLY',
       'result':{  
-         'field':'role',
          'type':'121',
+         'auth_type':'1',
+         'reqId':441933878,
          'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-         'auth_action':'ADD',
-         'key':'ADD--1--role--*--101',
-         'reqId':572495653,
          'new_value':'101',
+         'data':{  
+            'ADD--1--role--*--101':{  
+               'auth_constraints':[  
+                  {  
+                     'sig_count':1,
+                     'role':'0',
+                     'constraint_id':'ROLE',
+                     'need_to_be_owner':False,
+                     'metadata':{  
+
+                     }
+                  },
+                  {  
+                     'sig_count':1,
+                     'role':'2',
+                     'constraint_id':'ROLE',
+                     'need_to_be_owner':False,
+                     'metadata':{  
+
+                     }
+                  }
+               ],
+               'constraint_id':'AND'
+            }
+         },
+         'field':'role',
          'state_proof':{  
+            'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=',
             'root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
             'multi_signature':{  
-               'signature':'QndNugMgGLmGGswBdCgysA6oNcaEkmB9saEF5fAp31MSc8hzW5t2a14qn4tDvXwWEkyNpnNMqRVeyS48UsUrXTu3aV3mtYvzWth5vsQ62hMeD8k4Faz11g76LUXkGYpE39VHh59fn3K5afpJ3fwKKvHiom9WZ4St35ZikkZxUnTpT1',
+               'signature':'RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9',
+               'value':{  
+                  'state_root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
+                  'pool_state_root_hash':'9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ',
+                  'timestamp':1552395470,
+                  'txn_root_hash':'4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h',
+                  'ledger_id':2
+               },
                'participants':[  
                   'Beta',
                   'Gamma',
                   'Delta'
-               ],
-               'value':{  
-                  'state_root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
-                  'ledger_id':2,
-                  'timestamp':1552381058,
-                  'pool_state_root_hash':'44mJnboVAXmKhWsM2hWjajRJv6AdSZ6ipKm8XADsrWt5',
-                  'txn_root_hash':'HPkoyMsaMw7ZRNJLTY4KnmBcAv7Q34WMUxiEPUsursrK'
-               }
-            },
-            'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0='
+               ]
+            }
          },
-         'data':{  
-            'constraint_id':'AND',
-            'auth_constraints':[  
-               {  
-                  'constraint_id':'ROLE',
-                  'sig_count':1,
-                  'metadata':{  
-
-                  },
-                  'need_to_be_owner':False,
-                  'role':'0'
-               },
-               {  
-                  'constraint_id':'ROLE',
-                  'sig_count':1,
-                  'metadata':{  
-
-                  },
-                  'need_to_be_owner':False,
-                  'role':'2'
-               }
-            ]
-         },
-         'auth_type':'1'
+         'auth_action':'ADD'
       }
 }
 ```

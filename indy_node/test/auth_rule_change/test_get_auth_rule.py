@@ -2,18 +2,15 @@ import pytest
 from plenum.common.types import OPERATION
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
-from indy_common.authorize.auth_constraints import CONSTRAINT_ID, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, \
-    ConstraintsEnum, ROLE, AUTH_CONSTRAINTS
+from indy_common.authorize.auth_constraints import ROLE
 from indy_common.authorize.auth_map import auth_map
-from indy_common.constants import AUTH_RULE, NYM, TRUST_ANCHOR, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
+from indy_common.constants import NYM, TRUST_ANCHOR, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
     OLD_VALUE, GET_AUTH_RULE
-from indy_common.types import ConstraintEntityField
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.test.auth_rule_change.helper import generate_constraint_list, generate_constraint_entity, \
     sdk_send_and_check_auth_rule_request
-from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, KEY
-from plenum.common.exceptions import RequestRejectedException, \
-    RequestNackedException
+from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, STATE_PROOF
+from plenum.common.exceptions import RequestNackedException
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
 
 
@@ -72,8 +69,7 @@ def test_get_one_auth_rule_transaction(looper,
                                           sdk_wallet_trustee,
                                           sdk_pool_handle,
                                           key)[0]
-    assert auth_map.get(str_key).as_dict == resp["result"][DATA]
-    assert str_key == resp["result"][KEY]
+    assert auth_map.get(str_key).as_dict == resp["result"][DATA][str_key]
 
 
 def test_get_all_auth_rule_transactions(looper,
@@ -104,13 +100,15 @@ def test_get_one_auth_rule_transaction_after_write(looper,
                                                 field=field, new_value=new_value,
                                                 constraint=constraint)
     dict_auth_key = generate_key(auth_action=auth_action, auth_type=auth_type,
-                                                field=field, new_value=new_value)
+                                 field=field, new_value=new_value)
+    str_key = ConfigReqHandler.get_auth_key(dict_auth_key)
     resp = sdk_get_auth_rule_request(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle,
                                      dict_auth_key)
-    result = resp[0][1]["result"][DATA]
+    result = resp[0][1]["result"][DATA][str_key]
     assert result == constraint
+    assert resp[0][1]["result"][STATE_PROOF]
 
 
 def test_get_all_auth_rule_transactions_after_write(looper,

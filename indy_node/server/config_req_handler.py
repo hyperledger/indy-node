@@ -9,7 +9,7 @@ from plenum.common.exceptions import InvalidClientRequest, InvalidMessageExcepti
 
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata, get_type
 from plenum.server.ledger_req_handler import LedgerRequestHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, KEY
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     APP_NAME, REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
 from indy_common.types import Request, ClientGetAuthRuleOperation
@@ -235,17 +235,15 @@ class ConfigReqHandler(LedgerRequestHandler):
         operation = request.operation
         if operation[TXN_TYPE] != GET_AUTH_RULE:
             return
-        result = {}
         proof = None
         if len(operation) >= len(ClientGetAuthRuleOperation.schema) - 1:
             path = self.get_auth_key(operation)
             data, proof = self._get_auth_rule(path)
-            result[KEY] = path
         else:
             data = self._get_all_auth_rules()
-        result.update(self.make_result(request=request,
-                                       data=data,
-                                       proof=proof))
+        result = self.make_result(request=request,
+                                  data=data,
+                                  proof=proof)
         result.update(request.operation)
         return result
 
@@ -262,7 +260,7 @@ class ConfigReqHandler(LedgerRequestHandler):
             data = self.constraint_serializer.deserialize(map_data)
         else:
             data = self.write_req_validator.auth_map[path]
-        return data.as_dict, proof
+        return {path: data.as_dict}, proof
 
     def _get_all_auth_rules(self):
         data = self.write_req_validator.auth_map.copy()
