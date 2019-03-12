@@ -6,8 +6,7 @@ import json
 from typing import Tuple, List, Union
 import collections.abc
 
-from common.version import InvalidVersionError
-from indy_common.version import NodeVersion
+from indy_common.node_version import NodeVersion, InvalidVersionError
 
 VERSION_FILENAME = '__version__.json'
 VERSION_FILE = os.path.join(

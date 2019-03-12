@@ -2,8 +2,7 @@ import pytest
 import json
 import os
 
-from common.version import InvalidVersionError
-from indy_common.version import NodeVersion
+from indy_common.node_version import NodeVersion, InvalidVersionError
 from indy_node.__metadata__ import set_version, load_version
 
 
