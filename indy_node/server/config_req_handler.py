@@ -43,6 +43,8 @@ class ConfigReqHandler(LedgerRequestHandler):
             self._doStaticValidationPoolConfig(identifier, req_id, operation)
         elif operation[TXN_TYPE] == AUTH_RULE:
             self._doStaticValidationAuthRule(identifier, req_id, operation)
+        elif operation[TXN_TYPE] == GET_AUTH_RULE:
+            self._doStaticValidationGetAuthRule(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
         pass
@@ -63,14 +65,16 @@ class ConfigReqHandler(LedgerRequestHandler):
                                        "Transaction for change authentication "
                                        "rule for {}={} must not contain field {}".
                                        format(AUTH_ACTION, ADD_PREFIX, OLD_VALUE))
+        self._check_auth_key(operation, identifier, reqId)
 
-        auth_key = self.get_auth_key(operation)
-
-        if auth_key not in self.write_req_validator.auth_map and \
-                auth_key not in self.write_req_validator.anyone_can_write_map:
-            raise InvalidClientRequest(identifier, reqId,
-                                       "Unknown authorization rule: key '{}' is not "
-                                       "found in authorization map".format(auth_key))
+    def _doStaticValidationGetAuthRule(self, identifier, req_id, operation):
+        required_fields = list(dict(ClientGetAuthRuleOperation.schema).keys())
+        required_fields.remove(OLD_VALUE)
+        if len(operation) > 1:
+            if not set(required_fields).issubset(set(operation.keys())):
+                raise InvalidClientRequest(identifier, req_id,
+                                           "Not enough fields to build an auth key.")
+            self._check_auth_key(operation, identifier, req_id)
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)
@@ -228,26 +232,52 @@ class ConfigReqHandler(LedgerRequestHandler):
                 self.update_auth_constraint(auth_key, constraint)
 
     def get_query_response(self, request: Request):
-        if len(request.operation) == len(ClientGetAuthRuleOperation.schema):
-            path = self.get_auth_key(request.operation)
-            multi_sig = None
-            if self.bls_store:
-                root_hash = self.state.committedHeadHash
-                encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
-                multi_sig = self.bls_store.get(encoded_root_hash)
-
-            map_data, proof = self.get_value_from_state(path, with_proof=True, multi_sig=multi_sig)
-
-            if map_data:
-                data = self.constraint_serializer.deserialize(map_data)
-            else:
-                data = self.write_req_validator.auth_map[path]
-
-            result = self.make_result(request=request,
-                                      data=data.as_dict,
-                                      proof=proof)
+        operation = request.operation
+        if operation[TXN_TYPE] != GET_AUTH_RULE:
+            return
+        result = {}
+        proof = None
+        if len(operation) >= len(ClientGetAuthRuleOperation.schema) - 1:
+            path = self.get_auth_key(operation)
+            data, proof = self._get_auth_rule(path)
             result[KEY] = path
-            result.update(request.operation)
-            return result
         else:
-            return  # TODO: return all
+            data = self._get_all_auth_rules()
+        result.update(self.make_result(request=request,
+                                       data=data,
+                                       proof=proof))
+        result.update(request.operation)
+        return result
+
+    def _get_auth_rule(self, path):
+        multi_sig = None
+        if self.bls_store:
+            root_hash = self.state.committedHeadHash
+            encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
+            multi_sig = self.bls_store.get(encoded_root_hash)
+
+        map_data, proof = self.get_value_from_state(path, with_proof=True, multi_sig=multi_sig)
+
+        if map_data:
+            data = self.constraint_serializer.deserialize(map_data)
+        else:
+            data = self.write_req_validator.auth_map[path]
+        return data.as_dict, proof
+
+    def _get_all_auth_rules(self):
+        data = self.write_req_validator.auth_map.copy()
+        for key in self.write_req_validator.auth_map:
+            state_constraint, _ = self.get_value_from_state(key)
+            data[key] = self.constraint_serializer.deserialize(state_constraint).as_dict \
+                if state_constraint \
+                else data[key].as_dict
+        return data
+
+    def _check_auth_key(self, operation, identifier, req_id):
+        auth_key = self.get_auth_key(operation)
+
+        if auth_key not in self.write_req_validator.auth_map and \
+                auth_key not in self.write_req_validator.anyone_can_write_map:
+            raise InvalidClientRequest(identifier, req_id,
+                                       "Unknown authorization rule: key '{}' is not "
+                                       "found in authorization map.".format(auth_key))
