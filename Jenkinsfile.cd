@@ -164,7 +164,7 @@ def systemTests = { component, releaseVersion ->
 
 
             stage("Checkout and patch system tests") {
-                testHelpers.getSystemTests(tag: 'v0.3.0', targetDir: './system_tests')
+                testHelpers.getSystemTests(tag: 'v0.4.0', targetDir: './system_tests')
                 sh """
                     sed -i 's/python3-indy.*/python3-indy==$indySDKVersion/g' ./system_tests/system/requirements.txt
                     sed -i 's/indy-crypto.*/indy-crypto==$indyCryptoVersion/g' ./system_tests/system/requirements.txt
@@ -202,8 +202,8 @@ def systemTests = { component, releaseVersion ->
                             docker exec -t -u 0 indyclient mkdir -p /home/indy/.ssh/
                             docker cp ./system_tests/system/config indyclient:/home/indy/.ssh/config
                             docker cp ./system_tests/system/test_key.pub indyclient:/home/indy/.ssh/test_key.pub
-                            docker exec -t -u 0 indyclient chmod 0400 /home/indy/.ssh/test_key
                             docker cp ./system_tests/system/test_key indyclient:/home/indy/.ssh/test_key
+                            docker exec -t -u 0 indyclient chmod 0400 /home/indy/.ssh/test_key
                             docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system_tests
                             docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/.ssh
                             for x in `seq 1 $nodesNum`; do docker exec -t -u 0 node\$x mkdir -p /root/.ssh; done
@@ -219,8 +219,8 @@ def systemTests = { component, releaseVersion ->
                             sh """
                                 docker exec -t --user indy indyclient bash -c "\
                                     set -o pipefail; \
-                                    cd /home/indy/system && mkdir reports && \
-                                    pytest -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
+                                    cd /home/indy/system_tests/system && mkdir reports && \
+                                    RUST_LOG=trace pytest -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
                                     tee ./reports/$testReportFileNamePlain"
                             """
                         }
