@@ -23,7 +23,7 @@ def idfn(v):
     [
         '1',
         2,
-        (1, 2),
+        # (1, 2), TODO uncomment once new release logic becomes completed
         (1, 2, 3, 4, 5),
         (1, 2, 3, 'alpha', 5),
         (1, 2, 3, 'dev', 5, 6)
@@ -49,7 +49,7 @@ def test_load_version_invalid(version, version_file_path):
         '1!1.2.3',
         '1.2.3+1',
         '1',
-        '1.2',
+        # '1.2', TODO uncomment once new release logic becomes completed
         '1.2.3.4',
         2
     ],

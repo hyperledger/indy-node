@@ -21,7 +21,7 @@ from indy_common.node_version import NodeVersion, InvalidVersionError
         '1!1.2.3',
         '1.2.3+1',
         '1',
-        '1.2',
+        #'1.2', TODO uncomment once new release logic becomes completed
         '1.2.3.4'
     ]
 )

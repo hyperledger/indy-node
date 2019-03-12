@@ -39,7 +39,8 @@ class NodeVersion(
         if self._version.local:
             raise InvalidVersionError("local version part is unexpected")
 
-        if len(self.release_parts) != 3:
+        # TODO set constraint to 3 only once new release logic becomes completed
+        if len(self.release_parts) not in (2, 3):
             raise InvalidVersionError(
                 "release part should contain only 3 parts")
 
