@@ -13,6 +13,7 @@ VERSION_FILENAME = '__version__.json'
 VERSION_FILE = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), VERSION_FILENAME)
 
+
 # TODO use/wrap plenum's set and load API
 def load_version(version_file: str = VERSION_FILE) -> NodeVersion:
     with open(version_file, 'r') as _f:
