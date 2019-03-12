@@ -1,18 +1,16 @@
 from typing import Dict
 
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr
+from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
     CLAIM_DEF, SCHEMA, NYM, ROLE, NETWORK_MONITOR, AUTH_RULE
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
-IDENTITY_OWNER = ''
-roles = [IDENTITY_OWNER, NETWORK_MONITOR, TRUST_ANCHOR, STEWARD, TRUSTEE]
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
-for role_from in roles:
+for role_from in accepted_roles:
     edit_role_actions[role_from] = {}
-    for role_to in roles:
+    for role_to in accepted_roles:
         edit_role_actions[role_from][role_to] = AuthActionEdit(txn_type=NYM,
                                                                field=ROLE,
                                                                old_value=role_from,
