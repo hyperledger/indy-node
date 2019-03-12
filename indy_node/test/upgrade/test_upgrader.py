@@ -122,7 +122,7 @@ def test_get_src_version_for(monkeypatch):
 
 def test_check_upgrade_possible_invalid_target_version():
     assert 'invalid target version' in Upgrader.check_upgrade_possible(
-        APP_NAME, '1.2.c')
+        APP_NAME, '1.2.3.4')
 
 
 @pytest.mark.pkg_info(None, [])
