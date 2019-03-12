@@ -187,7 +187,7 @@ def build_revoc_def_by_default(looper, sdk_wallet_steward):
     return req
 
 @pytest.fixture(scope="module")
-def build_revoc_def_by_client(looper, sdk_user_wallet_a):
+def build_revoc_def_by_client(looper, sdk_wallet_client):
     data = {
         ID: randomString(50),
         TXN_TYPE: REVOC_REG_DEF,
@@ -202,7 +202,7 @@ def build_revoc_def_by_client(looper, sdk_user_wallet_a):
             PUBLIC_KEYS: {},
         }
     }
-    req = sdk_sign_request_from_dict(looper, sdk_user_wallet_a, data)
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_client, data)
     return req
 
 @pytest.fixture(scope="module")

@@ -12,17 +12,18 @@ from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 
 
 @pytest.fixture(scope='module')
-def tconf(tconf):
+def tconf_false(tconf):
     OLD_ANYONE_CAN_WRITE = tconf.ANYONE_CAN_WRITE
-    tconf.ANYONE_CAN_WRITE = True
+    tconf.ANYONE_CAN_WRITE = False
 
     yield tconf
     tconf.ANYONE_CAN_WRITE = OLD_ANYONE_CAN_WRITE
 
+
 @pytest.fixture(scope='module')
-def tconf_false(tconf):
+def tconf(tconf):
     OLD_ANYONE_CAN_WRITE = tconf.ANYONE_CAN_WRITE
-    tconf.ANYONE_CAN_WRITE = False
+    tconf.ANYONE_CAN_WRITE = True
 
     yield tconf
     tconf.ANYONE_CAN_WRITE = OLD_ANYONE_CAN_WRITE
@@ -77,7 +78,6 @@ def test_only_client_can_edit_revoc_reg_def(looper,
                                             sdk_user_wallet_a,
                                             build_revoc_def_by_default,
                                             claim_def, tconf):
-
     claim_def_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, claim_def)
     sdk_send_and_check([json.dumps(claim_def_req)], looper, txnPoolNodeSet, sdk_pool_handle)
 
@@ -94,13 +94,12 @@ def test_only_client_can_edit_revoc_reg_def(looper,
         _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
 
 
-
 def test_only_client_can_send_edit_reg_entry(looper,
-                                              client_send_revoc_reg_def,
-                                              sdk_wallet_client,
-                                              sdk_user_wallet_a,
-                                              txnPoolNodeSet,
-                                              sdk_pool_handle):
+                                             client_send_revoc_reg_def,
+                                             sdk_wallet_client,
+                                             sdk_user_wallet_a,
+                                             txnPoolNodeSet,
+                                             sdk_pool_handle):
     revoc_def_req = client_send_revoc_reg_def
     rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
     rev_reg_entry[VALUE][REVOKED] = [1, 2, 3, 4, 5]
@@ -109,17 +108,17 @@ def test_only_client_can_send_edit_reg_entry(looper,
     with pytest.raises(RequestNackedException):
         sdk_send_and_check([json.dumps(rev_entry_req)], looper, txnPoolNodeSet, sdk_pool_handle)
 
-def test_acw_false_rev_reg_def_only_trustee_steward_trustanchor_can_create(looper,
-                                                                           txnPoolNodeSet,
-                                                                           sdk_wallet_client,
-                                                                           sdk_pool_handle,
-                                                                           sdk_user_wallet_a,
-                                                                           build_revoc_def_by_client,
-                                                                           claim_def, tconf_false):
-    claim_def_req = sdk_sign_request_from_dict(looper, sdk_user_wallet_a, claim_def)
+
+def test_acw_false_rev_reg_def_only_trustee_steward_trust_anchor_can_create(looper,
+                                                                            txnPoolNodeSet,
+                                                                            sdk_wallet_client,
+                                                                            sdk_pool_handle,
+                                                                            build_revoc_def_by_client,
+                                                                            claim_def, tconf_false):
+    claim_def_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, claim_def)
     sdk_send_and_check([json.dumps(claim_def_req)], looper, txnPoolNodeSet, sdk_pool_handle)
 
-    _, author_did = sdk_user_wallet_a
+    _, author_did = sdk_wallet_client
     revoc_reg = build_revoc_def_by_client
     revoc_reg['operation'][CRED_DEF_ID] = \
         make_state_path_for_claim_def(author_did,
@@ -127,5 +126,5 @@ def test_acw_false_rev_reg_def_only_trustee_steward_trustanchor_can_create(loope
                                       claim_def_req['operation'][CLAIM_DEF_SIGNATURE_TYPE],
                                       claim_def_req['operation'][CLAIM_DEF_TAG]
                                       ).decode()
-    revoc_req = sdk_sign_request_from_dict(looper, sdk_user_wallet_a, revoc_reg['operation'])
+    revoc_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, revoc_reg['operation'])
     _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
