@@ -1,74 +1,44 @@
 """
 indy-node package metadata
 """
-
 import os
 import json
+from typing import Tuple, List, Union
+import collections.abc
 
-import indy_node
-from indy_node.utils.os_helper import module_path
+from common.version import InvalidVersionError
+from indy_common.version import NodeVersion
 
 VERSION_FILENAME = '__version__.json'
-VERSION_FILE = os.path.join(module_path(indy_node), VERSION_FILENAME)
+VERSION_FILE = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), VERSION_FILENAME)
 
-
-def split_version_from_str(vers: str)->list:
-    # TODO use NodeVersion instead
-    splitted = vers.split('.')
-    result = []
-    for ver in splitted:
-        try:
-            result.append(int(ver))
-        except ValueError:
-            result.append(ver)
-    return result
-
-
-def check_version(version):
-    # TODO better errors (e.g. some are TypeError)
-    if not (
-        (type(version) in (tuple, list)) and
-        (len(version) == 5) and
-        all([type(version[i]) == int for i in (0, 1, 2, 4)]) and
-        (version[3] in ('dev', 'rc', 'stable'))
-    ):
-        raise ValueError("Incorrect version: {}".format(version))
-
-
-def load_version(version_file=VERSION_FILE):
+# TODO use/wrap plenum's set and load API
+def load_version(version_file: str = VERSION_FILE) -> NodeVersion:
     with open(version_file, 'r') as _f:
         version = json.load(_f)
-    check_version(version)
-    return version
+        if not isinstance(version, collections.abc.Iterable):
+            raise InvalidVersionError(
+                "Failed to load from {}: data '{}' is not iterable"
+                .format(version_file, version)
+            )
+        return NodeVersion('.'.join([str(i) for i in version if str(i)]))
 
 
-def set_version(version, version_file=VERSION_FILE):
-    check_version(version)
+def set_version(version: str, version_file: str = VERSION_FILE):
+    version = NodeVersion(version)
     with open(version_file, 'w') as _f:
-        version = json.dump(version, _f)
+        json.dump(['' if i is None else i for i in version.parts], _f)
         _f.write('\n')
 
 
-# TODO use NodeVersion instead
-def pep440_version(version=None):
-    if not version:
-        version = __version_info__
-
-    check_version(version)
-    major, minor, patch, pre_release_suffix, revision = version
-
-    release_part = "{}.{}.{}".format(major, minor, patch)
-
-    if pre_release_suffix == 'stable':
-        return release_part
-    else:
-        # TODO dot (.) is not required before pre-release suffix
-        return "{}.{}{}".format(release_part, pre_release_suffix, revision)
-
-
 __title__ = 'indy-node'
-__version_info__ = load_version()
-__version__ = pep440_version()
+__version_info__ = (1, 6)
+__version__ = '.'.join(map(str, __version_info__))
+# TODO activate once new versioning scheme becomes implemented
+# Note. double underscores
+# _version_info__ = load_version()
+# _version__ = __version_info__.full
 __description__ = 'Indy node'
 __long_description__ = __description__
 __keywords__ = 'Indy Node'
@@ -83,4 +53,4 @@ __all__ = [
     '__title__', '__version_info__', '__version__',
     '__description__', '__long_description__', '__keywords__',
     '__url__', '__author__', '__author_email__', '__maintainer__',
-    '__license__']
+    '__license__', 'load_version', 'set_version']

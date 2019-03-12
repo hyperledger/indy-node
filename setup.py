@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import sys
 import os
+import sys
 
 from setuptools import setup, find_packages
 
@@ -21,9 +21,8 @@ except NameError:
     # it can be the case when we are being run as script or frozen
     here = os.path.abspath(os.path.dirname(sys.argv[0]))
 
-# resolve metadata
-metadata = {}
-with open(os.path.join(here, 'indy_node', '__metadata__.py'), 'r') as f:
+metadata = {'__file__': os.path.join(here, 'indy_node', '__metadata__.py')}
+with open(metadata['__file__'], 'r') as f:
     exec(f.read(), metadata)
 
 BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
