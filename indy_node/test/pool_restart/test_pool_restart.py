@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import dateutil
 from jsonpickle import json
 
-from indy_node.server.restart_log import RestartLog
+from indy_node.server.restart_log import RestartLog, RestartLogData
 
 from indy_common.constants import POOL_RESTART, ACTION, START, CANCEL
 from indy_node.server.restarter import Restarter
@@ -46,8 +46,9 @@ def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
     '''
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     restarted_node = txnPoolNodeSet[-1]
-    restarted_node.restarter._actionLog.append_scheduled(unow)
-    restarted_node.restarter._actionLog.append_started(unow)
+    ev_data = RestartLogData(unow)
+    restarted_node.restarter._actionLog.append_scheduled(ev_data)
+    restarted_node.restarter._actionLog.append_started(ev_data)
     Restarter(restarted_node.id,
               restarted_node.name,
               restarted_node.dataLocation,
@@ -128,8 +129,8 @@ def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
 
 
 def _check_restart_log(item, action, when=None):
-    assert item[1] == action and (
-            when is None or str(datetime.isoformat(item[2])) == when)
+    assert item.ev_type == action and (
+            when is None or str(datetime.isoformat(item.data.when)) == when)
 
 
 def _comparison_reply(responses, req_obj):

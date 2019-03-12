@@ -39,4 +39,3 @@ def test_pool_restarts_one_by_one_with_restart_now(
     _check_restart_log(restart_log[1], RestartLog.Events.scheduled, first_start)
     _check_restart_log(restart_log[0], RestartLog.Events.cancelled)
     _stopServer(server)
-
