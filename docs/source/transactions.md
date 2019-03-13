@@ -458,16 +458,10 @@ Adds a new node to the pool or updates an existing node in the pool
 
 - `dest` (base58-encoded string):
 
-    Target Node's DID as base58-encoded string for 16 or 32 byte DID value.
+    Target Node's verkey as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the transaction submitter (Steward's DID).
 
-    *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the DID of this Node.
-
-- `verkey` (base58-encoded string, possibly starting with "~"; optional):
-
-    Target Node verification key as base58-encoded string.
-    It may absent if `dest` is 32-bit cryptonym CID.
-
+    *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the verkey of this Node.
 
 If there is no NODE transaction with the specified Node ID (`dest`), then it can be considered as creation of a new NODE.
 
