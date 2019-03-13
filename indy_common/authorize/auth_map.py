@@ -149,23 +149,41 @@ anyone_can_edit_claim_def = AuthActionEdit(txn_type=CLAIM_DEF,
                                            old_value='*',
                                            new_value='*')
 
-trusted_roles = '[\'TRUSTEE\', \'TRUST_ANCHOR\', \'STEWARD\']'
+add_revoc_reg_def = AuthActionAdd(txn_type=REVOC_REG_DEF,
+                                  field='*',
+                                  value='*')
 
-create_revoc_reg_def = AuthActionAdd(txn_type=REVOC_REG_DEF,
-                                     field=ROLE,
-                                     value='*')
-
-create_revoc_reg_entry = AuthActionAdd(txn_type=REVOC_REG_ENTRY,
-                                       field='*',
-                                       value='*')
+add_revoc_reg_entry = AuthActionAdd(txn_type=REVOC_REG_ENTRY,
+                                    field='*',
+                                    value='*')
 
 anyone_can_create_revoc_reg_def = AuthActionAdd(txn_type=REVOC_REG_DEF,
-                                                field=ROLE,
+                                                field='*',
                                                 value='*')
 
 anyone_can_create_revoc_reg_entry = AuthActionAdd(txn_type=REVOC_REG_ENTRY,
-                                                  field=ROLE,
+                                                  field='*',
                                                   value='*')
+
+edit_revoc_reg_def = AuthActionEdit(txn_type=REVOC_REG_DEF,
+                                    field='*',
+                                    old_value='*',
+                                    new_value='*')
+
+edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
+                                      field='*',
+                                      old_value='*',
+                                      new_value='*')
+
+anyone_can_edit_revoc_reg_def = AuthActionEdit(txn_type=REVOC_REG_DEF,
+                                    field='*',
+                                    old_value='*',
+                                    new_value='*')
+
+anyone_can_edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
+                                      field='*',
+                                      old_value='*',
+                                      new_value='*')
 
 # Anyone constraint
 anyone_constraint = AuthConstraint(role='*',
@@ -190,11 +208,6 @@ steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint(STEWARD, 1),
 trust_anchor_or_steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                                   AuthConstraint(STEWARD, 1),
                                                                   AuthConstraint(TRUST_ANCHOR, 1)])
-
-# Trust Anchor, Steward or Trustee constraint
-trust_anchor_or_steward_or_trustee_owners_constraint = AuthConstraintOr([AuthConstraint(TRUSTEE, 1, True),
-                                                                         AuthConstraint(STEWARD, 1, True),
-                                                                         AuthConstraint(TRUST_ANCHOR, 1, True)])
 # Trustee or owner steward
 trustee_or_owner_steward = AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                              AuthConstraint(STEWARD, 1, need_to_be_owner=True)])
@@ -225,8 +238,9 @@ auth_map = {
     validator_info.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                       AuthConstraint(STEWARD, 1),
                                                       AuthConstraint(NETWORK_MONITOR, 1)]),
-    create_revoc_reg_def.get_action_id(): trust_anchor_or_steward_or_trustee_owners_constraint,
-    create_revoc_reg_entry.get_action_id(): trust_anchor_or_steward_or_trustee_owners_constraint
+    add_revoc_reg_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
+    add_revoc_reg_entry.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
+    edit_revoc_reg_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint
 }
 
 # Edit Trustee:
@@ -287,4 +301,6 @@ anyone_can_write_map = {anyone_can_add_nym.get_action_id(): anyone_constraint,
                         anyone_can_edit_schema.get_action_id(): anyone_constraint,
                         anyone_can_edit_claim_def.get_action_id(): owner_constraint,
                         anyone_can_create_revoc_reg_def.get_action_id(): owner_constraint,
+                        anyone_can_create_revoc_reg_entry.get_action_id(): owner_constraint,
+                        anyone_can_edit_revoc_reg_def.get_action_id(): owner_constraint,
                         anyone_can_create_revoc_reg_entry.get_action_id(): owner_constraint}

@@ -271,11 +271,10 @@ class DomainReqHandler(PHandler):
         assert revoc_def_type
         tags = cred_def_id.split(":")
 
-        role = operation.get(ROLE)
         self.write_req_validator.validate(req,
                                           [AuthActionAdd(txn_type=REVOC_REG_DEF,
-                                                         field=ROLE,
-                                                         value=role)])
+                                                         field='*',
+                                                         value='*')])
         if len(tags) != 4 and len(tags) != 5:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
@@ -305,6 +304,18 @@ class DomainReqHandler(PHandler):
             revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
             req_id=req.reqId
         )
+
+        is_owner = False
+
+        if get_req_id(req) == req.operation[REVOC_REG_DEF_ID]:
+            is_owner = True
+
+        self.write_req_validator.validate(req,
+                                          [AuthActionAdd(txn_type=REVOC_REG_ENTRY,
+                                                         field='*',
+                                                         value='*',
+                                                         is_owner=is_owner)])
+
         validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
         validator = validator_cls(self.state)
         validator.validate(current_entry, req)
