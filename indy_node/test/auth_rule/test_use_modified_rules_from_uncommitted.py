@@ -1,6 +1,6 @@
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
-from indy_node.test.auth_rule_change.helper import create_verkey_did, sdk_send_and_check_auth_rule_request
+from indy_node.test.auth_rule.helper import create_verkey_did, sdk_send_and_check_auth_rule_request
 from plenum.common.constants import STEWARD, NYM, ROLE, STEWARD_STRING
 from plenum.test import waits
 from plenum.test.delayers import cDelay

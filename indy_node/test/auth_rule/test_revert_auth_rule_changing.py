@@ -3,8 +3,8 @@ import pytest
 from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionAdd
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import ROLE
-from indy_node.test.auth_rule_change.test_auth_rule_transaction import sdk_send_and_check_auth_rule_request
-from indy_node.test.auth_rule_change.test_check_rule_for_add_action_changing import create_verkey_did
+from indy_node.test.auth_rule.test_auth_rule_transaction import sdk_send_and_check_auth_rule_request
+from indy_node.test.auth_rule.test_check_rule_for_add_action_changing import create_verkey_did
 from plenum.common.constants import STEWARD, NYM, STEWARD_STRING
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.startable import Mode

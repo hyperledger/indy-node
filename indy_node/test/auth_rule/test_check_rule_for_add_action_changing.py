@@ -3,7 +3,7 @@ import pytest
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import ROLE, AuthConstraint
 from indy_common.constants import NYM
-from indy_node.test.auth_rule_change.helper import create_verkey_did, sdk_send_and_check_auth_rule_request
+from indy_node.test.auth_rule.helper import create_verkey_did, sdk_send_and_check_auth_rule_request
 from plenum.common.constants import STEWARD, STEWARD_STRING
 from plenum.common.exceptions import RequestRejectedException
 from plenum.test.pool_transactions.helper import sdk_add_new_nym

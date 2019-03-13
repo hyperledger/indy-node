@@ -1547,7 +1547,7 @@ A generic request to get a transaction from Ledger by its sequence number.
 A request to get a constraint for an authentication rule or a full list of rules from Ledger by the auth key parameters.
 Two options are possible in a request build:
 - If the request has a full list of parameters (or without `old_value`), then the reply will contain one constraint for this key.
-- If the request are not contain fields other than txn_type, the response will contain a full list of authentication rules.
+- If the request does not contain fields other than txn_type, the response will contain a full list of authentication rules.
 A key is an authenticated action in the format `action--auth_type--field--old_value--new_value`.
 A reply value for one rule is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md).
 A reply with all rules are key-value dictionary where value is a constraint. The constraint format is described in [AUTH_RULE transaction](#auth_rule)

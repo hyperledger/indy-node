@@ -7,7 +7,7 @@ from indy_common.authorize.auth_map import auth_map
 from indy_common.constants import NYM, TRUST_ANCHOR, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, \
     OLD_VALUE, GET_AUTH_RULE
 from indy_node.server.config_req_handler import ConfigReqHandler
-from indy_node.test.auth_rule_change.helper import generate_constraint_list, generate_constraint_entity, \
+from indy_node.test.auth_rule.helper import generate_constraint_list, generate_constraint_entity, \
     sdk_send_and_check_auth_rule_request
 from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, STATE_PROOF
 from plenum.common.exceptions import RequestNackedException

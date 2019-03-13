@@ -2,7 +2,7 @@ import pytest
 
 from indy_common.authorize.auth_actions import EDIT_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
-from indy_node.test.auth_rule_change.helper import create_verkey_did, sdk_send_and_check_auth_rule_request
+from indy_node.test.auth_rule.helper import create_verkey_did, sdk_send_and_check_auth_rule_request
 from plenum.common.constants import STEWARD_STRING, STEWARD, NYM, ROLE
 from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_sign_and_submit_op, sdk_get_and_check_replies
