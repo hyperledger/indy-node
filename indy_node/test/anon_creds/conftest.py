@@ -205,6 +205,26 @@ def build_revoc_def_by_client(looper, sdk_wallet_client):
     req = sdk_sign_request_from_dict(looper, sdk_wallet_client, data)
     return req
 
+
+@pytest.fixture(scope="module")
+def build_revoc_def_by_trust_anchor(looper, sdk_wallet_trust_anchor):
+    data = {
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: ":".join(4 * [randomString(10)]),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
+        }
+    }
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_trust_anchor, data)
+    return req
+
 @pytest.fixture(scope="module")
 def build_revoc_def_by_demand(looper, sdk_wallet_steward):
     data = {

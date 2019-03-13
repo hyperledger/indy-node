@@ -147,6 +147,7 @@ class DomainReqHandler(PHandler):
         req_ts_to = operation.get(TO, None)
         assert req_ts_to
         req_ts_from = operation.get(FROM, None)
+
         if req_ts_from and req_ts_from > req_ts_to:
             raise InvalidClientRequest(identifier,
                                        reqId,
@@ -269,6 +270,12 @@ class DomainReqHandler(PHandler):
         assert revoc_def_tag
         assert revoc_def_type
         tags = cred_def_id.split(":")
+
+        role = operation.get(ROLE)
+        self.write_req_validator.validate(req,
+                                          [AuthActionAdd(txn_type=REVOC_REG_DEF,
+                                                         field=ROLE,
+                                                         value=role)])
         if len(tags) != 4 and len(tags) != 5:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
