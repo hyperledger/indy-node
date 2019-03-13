@@ -164,7 +164,7 @@ def systemTests = { component, releaseVersion ->
 
 
             stage("Checkout and patch system tests") {
-                testHelpers.getSystemTests(tag: 'v0.4.0', targetDir: './system_tests')
+                testHelpers.getSystemTests(tag: 'v0.5.0', targetDir: './system_tests')
                 sh """
                     sed -i 's/python3-indy.*/python3-indy==$indySDKVersion/g' ./system_tests/system/requirements.txt
                     sed -i 's/indy-crypto.*/indy-crypto==$indyCryptoVersion/g' ./system_tests/system/requirements.txt
