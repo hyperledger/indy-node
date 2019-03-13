@@ -266,7 +266,7 @@
     <td><sub>NODE</sub></td>
     <td><sub><code>services</code></sub></td>
     <td><sub><code>&lt;empty&gt;</code></sub></td>
-    <td><sub><code>[VALIDATOR]</code></sub></td>
+    <td><sub><code>['VALIDATOR']</code></sub></td>
     <td><sub>STEWARD if it doesn't own NODE transaction yet</sub></td>
     <td><sub>Adding new node to pool</sub></td>
   </tr>
@@ -281,7 +281,7 @@
   <tr>
     <td><sub>NODE</sub></td>
     <td><sub><code>services</code></sub></td>
-    <td><sub><code>[VALIDATOR]</code></sub></td>
+    <td><sub><code>['VALIDATOR']</code></sub></td>
     <td><sub><code>[]</code></sub></td>
     <td><sub>TRUSTEE, STEWARD if it is owner of this transaction</sub></td>
     <td><sub>Demotion of node</sub></td>
@@ -290,7 +290,7 @@
     <td><sub>NODE</sub></td>
     <td><sub><code>services</code></sub></td>
     <td><sub><code>[]</code></sub></td>
-    <td><sub><code>[VALIDATOR]</code></sub></td>
+    <td><sub><code>['VALIDATOR']</code></sub></td>
     <td><sub>TRUSTEE, STEWARD if it is owner of this transaction</sub></td>
     <td><sub>Promotion of node</sub></td>
   </tr>
