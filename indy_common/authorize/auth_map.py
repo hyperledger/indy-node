@@ -61,21 +61,21 @@ edit_claim_def = AuthActionEdit(txn_type=CLAIM_DEF,
 
 adding_new_node = AuthActionAdd(txn_type=NODE,
                                 field='services',
-                                value='[\'VALIDATOR\']')
+                                value=['VALIDATOR'])
 
 adding_new_node_with_empty_services = AuthActionAdd(txn_type=NODE,
                                                     field='services',
-                                                    value='[]')
+                                                    value=[])
 
 demote_node = AuthActionEdit(txn_type=NODE,
                              field='services',
-                             old_value='[\'VALIDATOR\']',
-                             new_value='[]')
+                             old_value=['VALIDATOR'],
+                             new_value=[])
 
 promote_node = AuthActionEdit(txn_type=NODE,
                               field='services',
-                              old_value='[]',
-                              new_value='[\'VALIDATOR\']')
+                              old_value=[],
+                              new_value=['VALIDATOR'])
 
 change_node_ip = AuthActionEdit(txn_type=NODE,
                                 field='node_ip',
