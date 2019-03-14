@@ -61,17 +61,21 @@ edit_claim_def = AuthActionEdit(txn_type=CLAIM_DEF,
 
 adding_new_node = AuthActionAdd(txn_type=NODE,
                                 field='services',
-                                value='[\'VALIDATOR\']')
+                                value=['VALIDATOR'])
+
+adding_new_node_with_empty_services = AuthActionAdd(txn_type=NODE,
+                                                    field='services',
+                                                    value=[])
 
 demote_node = AuthActionEdit(txn_type=NODE,
                              field='services',
-                             old_value='[\'VALIDATOR\']',
-                             new_value='[]')
+                             old_value=['VALIDATOR'],
+                             new_value=[])
 
 promote_node = AuthActionEdit(txn_type=NODE,
                               field='services',
-                              old_value='[]',
-                              new_value='[\'VALIDATOR\']')
+                              old_value=[],
+                              new_value=['VALIDATOR'])
 
 change_node_ip = AuthActionEdit(txn_type=NODE,
                                 field='node_ip',
@@ -192,6 +196,7 @@ auth_map = {
     add_claim_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     edit_claim_def.get_action_id(): owner_constraint,
     adding_new_node.get_action_id(): steward_owner_constraint,
+    adding_new_node_with_empty_services.get_action_id(): steward_owner_constraint,
     demote_node.get_action_id(): trustee_or_owner_steward,
     promote_node.get_action_id(): trustee_or_owner_steward,
     change_node_ip.get_action_id(): steward_owner_constraint,

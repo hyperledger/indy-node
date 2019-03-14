@@ -164,7 +164,7 @@ def systemTests = { component, releaseVersion ->
 
 
             stage("Checkout and patch system tests") {
-                testHelpers.getSystemTests(tag: 'v0.2.0', targetDir: './system_tests')
+                testHelpers.getSystemTests(tag: 'v0.5.0', targetDir: './system_tests')
                 sh """
                     sed -i 's/python3-indy.*/python3-indy==$indySDKVersion/g' ./system_tests/system/requirements.txt
                     sed -i 's/indy-crypto.*/indy-crypto==$indyCryptoVersion/g' ./system_tests/system/requirements.txt
@@ -179,14 +179,14 @@ def systemTests = { component, releaseVersion ->
                     sh """
                         sed -i 's/repo.sovrin.org\\/deb xenial .*\\+"/repo.sovrin.org\\/deb xenial $component"/g' core.ubuntu.dockerfile
                         sed -i 's/sdk\\/deb xenial .\\+"/sdk\\/deb xenial stable"/g' core.ubuntu.dockerfile
-                        sed -i 's/\\(apt-get install -y indy-node\\) libindy/\\1=$releaseVersion libindy=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion/g' core.ubuntu.dockerfile
+                        sed -i 's/\\(apt-get install -y indy-node\\) libindy/\\1=$releaseVersion libindy=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion ssh/g' core.ubuntu.dockerfile
                         sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion $test_deps/g' core.ubuntu.dockerfile
                         cat core.ubuntu.dockerfile
                     """
                 }
             }
 
-            for (testFileName in ['test_ledger.py'/*, 'test_consensus.py', 'test_vc.py'*/]) {
+            for (testFileName in ['test_ledger.py', 'test_consensus.py', 'test_vc.py']) {
                 try {
                     stage("Setup docker") {
                         dockerSetup()
@@ -197,13 +197,19 @@ def systemTests = { component, releaseVersion ->
                         // https://github.com/moby/moby/issues/34096
                         // inconsistent docker behaviour, depends on version
                         // thus, ensure ownership for copied files
-                        sh '''
-                            docker cp ./system_tests/system indyclient:/home/indy
-                            docker cp node1:/var/lib/indy/sandbox/pool_transactions_genesis ./
-                            docker cp ./pool_transactions_genesis indyclient:/home/indy/system/docker_genesis
-                            docker cp ./pool_transactions_genesis indyclient:/home/indy/docker_genesis
-                            docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system
-                        '''
+                        sh """
+                            docker cp ./system_tests indyclient:/home/indy
+                            docker exec -t -u 0 indyclient mkdir -p /home/indy/.ssh/
+                            docker cp ./system_tests/system/config indyclient:/home/indy/.ssh/config
+                            docker cp ./system_tests/system/test_key.pub indyclient:/home/indy/.ssh/test_key.pub
+                            docker cp ./system_tests/system/test_key indyclient:/home/indy/.ssh/test_key
+                            docker exec -t -u 0 indyclient chmod 0400 /home/indy/.ssh/test_key
+                            docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/system_tests
+                            docker exec -t -u 0 indyclient chown -R indy:indy /home/indy/.ssh
+                            for x in `seq 1 $nodesNum`; do docker exec -t -u 0 node\$x mkdir -p /root/.ssh; done
+                            for x in `seq 1 $nodesNum`; do docker cp ./system_tests/system/test_key.pub node\$x:/root/.ssh/authorized_keys; done
+                            for x in `seq 1 $nodesNum`; do docker exec -t -u 0 node\$x chown root:root /root/.ssh/authorized_keys; done
+                        """
                     }
 
                     String testReportFileNameXml = "system_tests_${testFileName}_report.${component}.xml"
@@ -213,14 +219,14 @@ def systemTests = { component, releaseVersion ->
                             sh """
                                 docker exec -t --user indy indyclient bash -c "\
                                     set -o pipefail; \
-                                    cd /home/indy/system && mkdir reports && \
+                                    cd /home/indy/system_tests/system && mkdir reports && \
                                     RUST_LOG=trace pytest -v --junit-xml=./reports/$testReportFileNameXml ./indy-node-tests/${testFileName} 2>&1 | \
                                     tee ./reports/$testReportFileNamePlain"
                             """
                         }
                     } finally {
                         stage("Upload test report for ${testFileName}") {
-                            sh "docker cp indyclient:/home/indy/system/reports/ ./system_tests"
+                            sh "docker cp indyclient:/home/indy/system_tests/system/reports/ ./system_tests"
 
                             dir("system_tests/reports"){
                                 archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
