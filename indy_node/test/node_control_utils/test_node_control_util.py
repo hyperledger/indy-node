@@ -25,6 +25,7 @@ def catch_generated_commands(monkeypatch):
         return ''
 
     monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
     monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _f)
 
 
@@ -118,7 +119,7 @@ def test_get_latest_pkg_version(monkeypatch, output, expected):
         else:
             return output
 
-    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
     assert expected == NodeControlUtil.get_latest_pkg_version(
         'any_package', update_cache=False)
 

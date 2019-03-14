@@ -35,7 +35,7 @@ def catch_generated_command(monkeypatch):
         generated_command = command
         return ''
 
-    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
     monkeypatch.setattr(NodeControlUtil, 'run_shell_command', _f)
 
 
@@ -131,14 +131,14 @@ def test_generated_cmd_cmp(catch_generated_command):
 
 def test_equal_no_shell_cmd(monkeypatch):
     called = 0
-    run_shell_script = NodeControlUtil.run_shell_script
+    run_shell_script_extended = NodeControlUtil.run_shell_script_extended
 
     def _f(*args, **kwargs):
         nonlocal called
         called += 1
-        return run_shell_script(*args, **kwargs)
+        return run_shell_script_extended(*args, **kwargs)
 
-    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
     assert DebianVersionTest('1.2.3') == DebianVersionTest('1.2.3')
     assert not called
 
@@ -154,14 +154,14 @@ def test_comparison_operators():
 
 def test_compare_called_once(monkeypatch):
     called = 0
-    run_shell_script = NodeControlUtil.run_shell_script
+    run_shell_script_extended = NodeControlUtil.run_shell_script_extended
 
     def _f(*args, **kwargs):
         nonlocal called
         called += 1
-        return run_shell_script(*args, **kwargs)
+        return run_shell_script_extended(*args, **kwargs)
 
-    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
     assert DebianVersionTest('1.2.3') > DebianVersionTest('1.2.2')
     assert DebianVersionTest('1.2.3') > DebianVersionTest('1.2.2')
     assert DebianVersionTest('1.2.2') < DebianVersionTest('1.2.3')
@@ -185,11 +185,11 @@ def test_compare_valid(v1, v2, expected):
 
 
 def test_compare_shell_error(monkeypatch):
-    run_shell_script = NodeControlUtil.run_shell_script
+    run_shell_script_extended = NodeControlUtil.run_shell_script_extended
 
     def _f(command, *args, **kwargs):
-        return run_shell_script('unknown command run', *args, **kwargs)
+        return run_shell_script_extended('unknown command run', *args, **kwargs)
 
-    monkeypatch.setattr(NodeControlUtil, 'run_shell_script', _f)
+    monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
     with pytest.raises(ShellError):
         DebianVersionTest('1.2.3') > DebianVersionTest('1.2.2')

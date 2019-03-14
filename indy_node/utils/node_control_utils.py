@@ -65,7 +65,7 @@ class DebianVersion(PackageVersion):
         else:
             cmd = compose_cmd(['dpkg', '--compare-versions', v1, 'gt', v2])
             try:
-                NodeControlUtil.run_shell_script(cmd)
+                NodeControlUtil.run_shell_script_extended(cmd)
             except ShellError as exc:
                 if exc.stderr:
                     raise
@@ -178,7 +178,13 @@ class NodeControlUtil:
     # Method is used in case we are NOT interested in command output
     # everything: command, errors, output etc are logged to journalctl
     @classmethod
-    def run_shell_script(cls, command, stdout=False, stderr=False,
+    def run_shell_script(cls, command, timeout=TIMEOUT):
+        subprocess.run(command, shell=True, timeout=timeout, check=True)
+
+    # TODO actually this should replace `run_shell_script` but it needs
+    # deep testing and verification since it impacts upgrade routine a lot
+    @classmethod
+    def run_shell_script_extended(cls, command, stdout=False, stderr=False,
                          timeout=TIMEOUT, check=True):
         try:
             res = subprocess.run(
@@ -291,7 +297,7 @@ class NodeControlUtil:
         try:
             cmd = compose_cmd(
                 ['apt-cache', 'show', pkg_name, '|', 'grep', '-E', regex])
-            output = cls.run_shell_script(cmd).strip()
+            output = cls.run_shell_script_extended(cmd).strip()
         except ShellError as exc:
             # will fail if either package not found or grep returns nothing
             # the latter is unexpected and treated as no-data as well
