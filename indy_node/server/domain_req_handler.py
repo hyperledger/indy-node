@@ -427,11 +427,11 @@ class DomainReqHandler(PHandler):
             update_time = None
 
         # TODO: add update time here!
-        result = self.make_result(request=request,
-                                  data=data,
-                                  last_seq_no=seq_no,
-                                  update_time=update_time,
-                                  proof=proof)
+        result = self.make_domain_result(request=request,
+                                         data=data,
+                                         last_seq_no=seq_no,
+                                         update_time=update_time,
+                                         proof=proof)
 
         result.update(request.operation)
         return result
@@ -454,11 +454,11 @@ class DomainReqHandler(PHandler):
             SCHEMA_NAME: schema_name,
             SCHEMA_VERSION: schema_version
         })
-        return self.make_result(request=request,
-                                data=schema,
-                                last_seq_no=lastSeqNo,
-                                update_time=lastUpdateTime,
-                                proof=proof)
+        return self.make_domain_result(request=request,
+                                       data=schema,
+                                       last_seq_no=lastSeqNo,
+                                       update_time=lastUpdateTime,
+                                       proof=proof)
 
     def handleGetClaimDefReq(self, request: Request):
         frm = get_read_claim_def_from(request)
@@ -471,11 +471,11 @@ class DomainReqHandler(PHandler):
             signatureType=signature_type,
             tag=tag
         )
-        result = self.make_result(request=request,
-                                  data=keys,
-                                  last_seq_no=lastSeqNo,
-                                  update_time=lastUpdateTime,
-                                  proof=proof)
+        result = self.make_domain_result(request=request,
+                                         data=keys,
+                                         last_seq_no=lastSeqNo,
+                                         update_time=lastUpdateTime,
+                                         proof=proof)
         result[CLAIM_DEF_SIGNATURE_TYPE] = signature_type
         return result
 
@@ -486,11 +486,11 @@ class DomainReqHandler(PHandler):
             keys, last_seq_no, last_update_time, proof = self.lookup(state_path, isCommitted=True, with_proof=True)
         except KeyError:
             keys, last_seq_no, last_update_time, proof = None, None, None, None
-        result = self.make_result(request=request,
-                                  data=keys,
-                                  last_seq_no=last_seq_no,
-                                  update_time=last_update_time,
-                                  proof=proof)
+        result = self.make_domain_result(request=request,
+                                         data=keys,
+                                         last_seq_no=last_seq_no,
+                                         update_time=last_update_time,
+                                         proof=proof)
         return result
 
     def handleGetRevocRegReq(self, request: Request):
@@ -514,11 +514,11 @@ class DomainReqHandler(PHandler):
                                          update_time=last_update_time,
                                          proof=proof)
 
-        return self.make_result(request=request,
-                                data=entry_state.value,
-                                last_seq_no=entry_state.seq_no,
-                                update_time=entry_state.update_time,
-                                proof=entry_state.proof)
+        return self.make_domain_result(request=request,
+                                       data=entry_state.value,
+                                       last_seq_no=entry_state.seq_no,
+                                       update_time=entry_state.update_time,
+                                       proof=entry_state.proof)
 
     def _get_reg_entry_by_timestamp(self, timestamp, path_to_reg_entry):
         reg_entry = None
@@ -634,11 +634,11 @@ class DomainReqHandler(PHandler):
             update_time = None
             proof = None
 
-        return self.make_result(request=request,
-                                data=reply,
-                                last_seq_no=seq_no,
-                                update_time=update_time,
-                                proof=proof)
+        return self.make_domain_result(request=request,
+                                       data=reply,
+                                       last_seq_no=seq_no,
+                                       update_time=update_time,
+                                       proof=proof)
 
     def handleGetAttrsReq(self, request: Request):
         if not self._validate_attrib_keys(request.operation):
@@ -663,11 +663,11 @@ class DomainReqHandler(PHandler):
                 attr = attr_key
             else:
                 attr = value
-        return self.make_result(request=request,
-                                data=attr,
-                                last_seq_no=lastSeqNo,
-                                update_time=lastUpdateTime,
-                                proof=proof)
+        return self.make_domain_result(request=request,
+                                       data=attr,
+                                       last_seq_no=lastSeqNo,
+                                       update_time=lastUpdateTime,
+                                       proof=proof)
 
     def lookup(self, path, isCommitted=True, with_proof=False) -> (str, int):
         """
