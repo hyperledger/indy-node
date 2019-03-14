@@ -48,6 +48,6 @@ def test_node_version_parts():
     assert NodeVersion('1.2.3').parts == (1, 2, 3, None, None)
 
 
-def test_node_version_upstrean():
+def test_node_version_upstream():
     pv = NodeVersion('1.2.3')
     assert pv.upstream is pv
