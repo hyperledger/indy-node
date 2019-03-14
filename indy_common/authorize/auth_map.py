@@ -240,7 +240,8 @@ auth_map = {
                                                       AuthConstraint(NETWORK_MONITOR, 1)]),
     add_revoc_reg_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     add_revoc_reg_entry.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
-    edit_revoc_reg_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint
+    edit_revoc_reg_def.get_action_id(): owner_constraint,
+    edit_revoc_reg_entry.get_action_id(): owner_constraint,
 }
 
 # Edit Trustee:

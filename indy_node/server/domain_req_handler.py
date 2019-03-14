@@ -271,10 +271,20 @@ class DomainReqHandler(PHandler):
         assert revoc_def_type
         tags = cred_def_id.split(":")
 
-        self.write_req_validator.validate(req,
-                                          [AuthActionAdd(txn_type=REVOC_REG_DEF,
-                                                         field='*',
-                                                         value='*')])
+        rev_entry, _ = self._get_current_revoc_entry_and_revoc_def(req.identifier, revoc_def_type, req.reqId)
+
+        if rev_entry is None:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=REVOC_REG_DEF,
+                                                             field='*',
+                                                             value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=REVOC_REG_DEF,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+
         if len(tags) != 4 and len(tags) != 5:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
@@ -299,16 +309,14 @@ class DomainReqHandler(PHandler):
         return current_entry, revoc_def
 
     def _validate_revoc_reg_entry(self, req: Request):
+        author_did = req.identifier
         current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
-            author_did=req.identifier,
+            author_did=author_did,
             revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
             req_id=req.reqId
         )
-
-        is_owner = False
-
-        if get_req_id(req) == req.operation[REVOC_REG_DEF_ID]:
-            is_owner = True
+        txn_data = get_payload_data(revoc_def)
+        is_owner = True if txn_data.get(CRED_DEF_ID) == author_did else False
 
         self.write_req_validator.validate(req,
                                           [AuthActionAdd(txn_type=REVOC_REG_ENTRY,

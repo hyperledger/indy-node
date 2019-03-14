@@ -21,7 +21,7 @@ def tconf(tconf):
 
 
 @pytest.fixture(scope="module")
-def client_send_revoc_reg_def(looper,
+def trust_anchor_sends_revoc_reg_def(looper,
                               txnPoolNodeSet,
                               sdk_wallet_client,
                               sdk_wallet_trust_anchor,
@@ -73,16 +73,17 @@ def test_client_cant_send_revoc_reg_def(looper,
 
 
 def test_client_cant_send_revoc_reg_entry(looper,
-                                         client_send_revoc_reg_def,
-                                         sdk_wallet_client,
-                                         txnPoolNodeSet,
-                                         sdk_pool_handle):
-    revoc_def_req = client_send_revoc_reg_def
+                                          trust_anchor_sends_revoc_reg_def,
+                                          sdk_wallet_client,
+                                          txnPoolNodeSet,
+                                          sdk_pool_handle):
+    revoc_def_req = trust_anchor_sends_revoc_reg_def
     rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
     rev_reg_entry[VALUE][REVOKED] = [1, 2, 3, 4, 5]
     del rev_reg_entry[VALUE][PREV_ACCUM]
     rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, rev_reg_entry)
-    sdk_send_and_check([json.dumps(rev_entry_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+    with pytest.raises(RequestRejectedException):
+     sdk_send_and_check([json.dumps(rev_entry_req)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
 def test_rev_reg_def_only_trustee_steward_trust_anchor_can_create():
