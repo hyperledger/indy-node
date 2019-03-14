@@ -19,3 +19,18 @@ class RestartLog(ActionLog):
             event_types=ActionLogEvents,
             delimiter='\t'
         )
+
+    def append_scheduled(self, data: RestartLogData):
+        super().append_scheduled(data)
+
+    def append_started(self, data: RestartLogData):
+        super().append_started(data)
+
+    def append_succeeded(self, data: RestartLogData):
+        super().append_succeeded(data)
+
+    def append_failed(self, data: RestartLogData):
+        super().append_failed(data)
+
+    def append_cancelled(self, data: RestartLogData):
+        super().append_cancelled(data)

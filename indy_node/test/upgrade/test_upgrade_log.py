@@ -39,6 +39,16 @@ def test_upgrade_log_data_pack_unpack():
     )
 
 
+# TODO actually it is already well tested in base calss ActionLog
+@pytest.mark.parametrize('ev_type', UpgradeLog.Events)
+def test_upgrade_log_append_api(log_file_path, ev_type):
+    upgrade_log = UpgradeLog(log_file_path)
+    ev_data = UpgradeLogData(datetime.datetime.utcnow(), '1.2.3', 'some_id', 'some_pkg')
+    getattr(upgrade_log, "append_{}".format(ev_type.name))(ev_data)
+    assert upgrade_log.last_event.data == ev_data
+    assert upgrade_log.last_event.ev_type == ev_type
+
+
 def test_upgrade_log_loads_legacy_data(monkeypatch, log_file_path):
 
     ev_index = None

@@ -20,6 +20,17 @@ def test_restart_log_data_pack_unpack():
     )
 
 
+
+# TODO actually it is already well tested in base calss ActionLog
+@pytest.mark.parametrize('ev_type', RestartLog.Events)
+def test_restart_log_append_api(log_file_path, ev_type):
+    restart_log = RestartLog(log_file_path)
+    ev_data = RestartLogData(datetime.datetime.utcnow())
+    getattr(restart_log, "append_{}".format(ev_type.name))(ev_data)
+    assert restart_log.last_event.data == ev_data
+    assert restart_log.last_event.ev_type == ev_type
+
+
 def test_restart_log_loads_legacy_data(monkeypatch, log_file_path):
 
     ev_index = None

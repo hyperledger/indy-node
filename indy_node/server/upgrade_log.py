@@ -46,3 +46,18 @@ class UpgradeLog(ActionLog):
             event_types=ActionLogEvents,
             delimiter='\t'
         )
+
+    def append_scheduled(self, data: UpgradeLogData):
+        super().append_scheduled(data)
+
+    def append_started(self, data: UpgradeLogData):
+        super().append_started(data)
+
+    def append_succeeded(self, data: UpgradeLogData):
+        super().append_succeeded(data)
+
+    def append_failed(self, data: UpgradeLogData):
+        super().append_failed(data)
+
+    def append_cancelled(self, data: UpgradeLogData):
+        super().append_cancelled(data)

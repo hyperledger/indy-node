@@ -184,8 +184,9 @@ class NodeControlUtil:
     # TODO actually this should replace `run_shell_script` but it needs
     # deep testing and verification since it impacts upgrade routine a lot
     @classmethod
-    def run_shell_script_extended(cls, command, stdout=False, stderr=False,
-                         timeout=TIMEOUT, check=True):
+    def run_shell_script_extended(
+            cls, command, stdout=False, stderr=False,
+            timeout=TIMEOUT, check=True):
         try:
             res = subprocess.run(
                 command, shell=True, timeout=timeout, check=check,
