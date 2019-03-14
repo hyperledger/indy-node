@@ -20,4 +20,5 @@ USER indy
 # Init pool data
 RUN if [ ! -z "$ips" ] && [ ! -z "$nodecnt" ]; then generate_indy_pool_transactions --nodes $nodecnt --clients $clicnt --ips "$ips"; cp /var/lib/indy/sandbox/pool_transactions_genesis /home/indy/pool_transactions_genesis; fi
 
+USER root
 CMD /bin/bash
