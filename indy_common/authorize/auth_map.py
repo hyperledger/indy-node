@@ -176,14 +176,14 @@ edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
                                       new_value='*')
 
 anyone_can_edit_revoc_reg_def = AuthActionEdit(txn_type=REVOC_REG_DEF,
-                                    field='*',
-                                    old_value='*',
-                                    new_value='*')
+                                               field='*',
+                                               old_value='*',
+                                               new_value='*')
 
 anyone_can_edit_revoc_reg_entry = AuthActionEdit(txn_type=REVOC_REG_ENTRY,
-                                      field='*',
-                                      old_value='*',
-                                      new_value='*')
+                                                 field='*',
+                                                 old_value='*',
+                                                 new_value='*')
 
 # Anyone constraint
 anyone_constraint = AuthConstraint(role='*',
