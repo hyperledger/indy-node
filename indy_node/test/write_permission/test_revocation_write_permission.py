@@ -5,7 +5,7 @@ from indy_common.constants import REVOKED, VALUE, PREV_ACCUM, CRED_DEF_ID, CLAIM
     CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_TAG
 from indy_common.state.domain import make_state_path_for_claim_def
 from indy_node.test.anon_creds.conftest import claim_def, build_revoc_reg_entry_for_given_revoc_reg_def, \
-    build_revoc_def_by_default, build_revoc_def_by_client, build_revoc_def_by_trust_anchor
+    build_revoc_def_by_default, build_revoc_def_by_trust_anchor
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
 from plenum.common.exceptions import RequestNackedException, RequestRejectedException
 from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
@@ -22,12 +22,11 @@ def tconf(tconf):
 
 @pytest.fixture(scope="module")
 def trust_anchor_sends_revoc_reg_def(looper,
-                              txnPoolNodeSet,
-                              sdk_wallet_client,
-                              sdk_wallet_trust_anchor,
-                              sdk_pool_handle,
-                              build_revoc_def_by_default,
-                              claim_def, tconf):
+                                     txnPoolNodeSet,
+                                     sdk_wallet_trust_anchor,
+                                     sdk_pool_handle,
+                                     build_revoc_def_by_trust_anchor,
+                                     claim_def, tconf):
     # We need to have claim_def to send revocation txns
     # must be signed by trust anchor since ANYONE_CAN_WRITE is false
 
@@ -72,18 +71,18 @@ def test_client_cant_send_revoc_reg_def(looper,
         _, revoc_reply = sdk_send_and_check([json.dumps(revoc_req)], looper, txnPoolNodeSet, sdk_pool_handle)[0]
 
 
-def test_client_cant_send_revoc_reg_entry(looper,
-                                          trust_anchor_sends_revoc_reg_def,
-                                          sdk_wallet_client,
-                                          txnPoolNodeSet,
-                                          sdk_pool_handle):
+def test_trust_anchor_cant_send_revoc_reg_entry(looper,
+                                                trust_anchor_sends_revoc_reg_def,
+                                                sdk_wallet_trust_anchor,
+                                                txnPoolNodeSet,
+                                                sdk_pool_handle):
     revoc_def_req = trust_anchor_sends_revoc_reg_def
     rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req)
     rev_reg_entry[VALUE][REVOKED] = [1, 2, 3, 4, 5]
     del rev_reg_entry[VALUE][PREV_ACCUM]
-    rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_client, rev_reg_entry)
+    rev_entry_req = sdk_sign_request_from_dict(looper, sdk_wallet_trust_anchor, rev_reg_entry)
     with pytest.raises(RequestRejectedException):
-     sdk_send_and_check([json.dumps(rev_entry_req)], looper, txnPoolNodeSet, sdk_pool_handle)
+        sdk_send_and_check([json.dumps(rev_entry_req)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
 def test_rev_reg_def_only_trustee_steward_trust_anchor_can_create():
