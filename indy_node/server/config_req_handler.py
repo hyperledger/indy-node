@@ -12,7 +12,6 @@ from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
-from indy_common.types import Request
 from indy_common.types import Request, ClientGetAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
