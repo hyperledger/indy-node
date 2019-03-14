@@ -34,7 +34,7 @@ def trust_anchor_sends_revoc_reg_def(looper,
     sdk_send_and_check([json.dumps(claim_def_req)], looper, txnPoolNodeSet, sdk_pool_handle)
 
     _, author_did = sdk_wallet_trust_anchor
-    revoc_reg = build_revoc_def_by_default
+    revoc_reg = build_revoc_def_by_trust_anchor
     revoc_reg['operation'][CRED_DEF_ID] = \
         make_state_path_for_claim_def(author_did,
                                       str(claim_def_req['operation'][CLAIM_DEF_SCHEMA_REF]),
