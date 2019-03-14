@@ -12,10 +12,10 @@ def test_version_parse(vers_str, vers_parsed):
     assert vers == vers_parsed
 
 
-@pytest.mark.parametrize("pkcts,pkcts_dd",
+@pytest.mark.parametrize("pkgs,pkgs_dd",
                          [([], []), (["aa=1"], ["aa=1"]), (["aa=1", "aa=1", "aa=2"], ["aa=1"]),
                           (["aa=1", "bb=2", "cc=3"], ["aa=1", "bb=2", "cc=3"]),
                           (["aa=1", "bb=2", "cc=3", "aa=2", "bb=3", "cc=4"], ["aa=1", "bb=2", "cc=3"])])
-def test_pkts_dedup(pkcts, pkcts_dd):
-    processed_pckts = NodeControlUtil._pkts_dedup(pkcts)
-    assert processed_pckts == pkcts_dd
+def test_pkgs_dedup(pkgs, pkgs_dd):
+    processed_pkgs = NodeControlUtil._pkgs_dedup(pkgs)
+    assert processed_pkgs == pkgs_dd

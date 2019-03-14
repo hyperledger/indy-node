@@ -70,8 +70,7 @@ class NodeMaintainer(HasActionQueue, metaclass=ABCMeta):
 
         :returns: action parameters or None if there were no actions
         """
-        last_event = self._actionLog.lastEvent
-        return last_event[1:] if last_event else None
+        return self._actionLog.last_event
 
     def _unscheduleAction(self):
         """

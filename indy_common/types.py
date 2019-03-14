@@ -19,6 +19,7 @@ from plenum.common.util import is_network_ip_address_valid, is_network_port_vali
 from plenum.config import JSON_FIELD_LIMIT, NAME_FIELD_LIMIT, DATA_FIELD_LIMIT, \
     NONCE_FIELD_LIMIT, \
     ENC_FIELD_LIMIT, RAW_FIELD_LIMIT, SIGNATURE_TYPE_FIELD_LIMIT
+from common.version import GenericVersion
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
@@ -37,7 +38,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, \
     FIELD, OLD_VALUE, NEW_VALUE
-from indy_common.version import SchemaVersion, TopPkgDefVersion
+from indy_common.version import SchemaVersion
 
 
 class Request(PRequest):
@@ -271,7 +272,8 @@ class ClientPoolUpgradeOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(POOL_UPGRADE)),
         (ACTION, ChooseField(values=(START, CANCEL,))),
-        (SCHEMA_VERSION, VersionField(version_cls=TopPkgDefVersion)),
+        # light check only during static validation
+        (VERSION, VersionField(version_cls=GenericVersion)),
         # TODO replace actual checks (idr, datetime)
         (SCHEDULE, MapField(IdentifierField(),
                             NonEmptyStringField(), optional=True)),

@@ -236,7 +236,7 @@ class Node(PlenumNode):
     def acknowledge_upgrade(self):
         if not self.upgrader.should_notify_about_upgrade_result():
             return
-        lastUpgradeVersion = self.upgrader.lastActionEventInfo[2]
+        lastUpgradeVersion = self.upgrader.lastActionEventInfo.data.version
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
         logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
             self, action, lastUpgradeVersion))
@@ -244,7 +244,7 @@ class Node(PlenumNode):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: lastUpgradeVersion
+                VERSION: lastUpgradeVersion.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -257,7 +257,7 @@ class Node(PlenumNode):
         self.upgrader.notified_about_action_result()
 
     def notify_upgrade_start(self):
-        scheduled_upgrade_version = self.upgrader.scheduledAction[0]
+        scheduled_upgrade_version = self.upgrader.scheduledAction.version
         action = IN_PROGRESS
         logger.info('{} is about to be upgraded, '
                     'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))
@@ -265,7 +265,7 @@ class Node(PlenumNode):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: scheduled_upgrade_version
+                VERSION: scheduled_upgrade_version.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
