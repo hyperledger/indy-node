@@ -1,10 +1,9 @@
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_node.utils.node_control_utils import NodeControlUtil
 
 from indy_common.config_util import getConfig
 
 from indy_common.constants import CONFIG_LEDGER_ID, POOL_UPGRADE, \
-    ACTION, CANCEL, START, SCHEDULE, PACKAGE, APP_NAME, REINSTALL
+    ACTION, CANCEL, START, SCHEDULE, PACKAGE, REINSTALL
 
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_node.server.upgrader import Upgrader
@@ -51,24 +50,17 @@ class PoolUpgradeHandler(WriteRequestHandler):
         self._validate_request_type(request)
         identifier, req_id, operation = get_request_data(request)
         status = '*'
-        pkt_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
-        if pkt_to_upgrade:
-            currentVersion, cur_deps = self.curr_pkt_info(pkt_to_upgrade)
-            if not currentVersion:
-                raise InvalidClientRequest(identifier, req_id,
-                                           "Packet {} is not installed and cannot be upgraded".
-                                           format(pkt_to_upgrade))
-            if all([APP_NAME not in d for d in cur_deps]):
-                raise InvalidClientRequest(identifier, req_id,
-                                           "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
-        else:
-            raise InvalidClientRequest(identifier, req_id, "Upgrade packet name is empty")
 
+        pkg_to_upgrade = operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
         targetVersion = operation[VERSION]
         reinstall = operation.get(REINSTALL, False)
-        if not Upgrader.is_version_upgradable(currentVersion, targetVersion, reinstall):
-            # currentVersion > targetVersion
-            raise InvalidClientRequest(identifier, req_id, "Version is not upgradable")
+
+        if not pkg_to_upgrade:
+            raise InvalidClientRequest(identifier, req_id, "Upgrade package name is empty")
+
+        res = self.upgrader.check_upgrade_possible(pkg_to_upgrade, targetVersion, reinstall)
+        if res:
+            raise InvalidClientRequest(identifier, req_id, res)
 
         action = operation.get(ACTION)
         # TODO: Some validation needed for making sure name and version
@@ -105,11 +97,6 @@ class PoolUpgradeHandler(WriteRequestHandler):
         super().apply_forced_request(req)
         txn = self._req_to_txn(req)
         self.upgrader.handleUpgradeTxn(txn)
-
-    def curr_pkt_info(self, pkg_name):
-        if pkg_name == APP_NAME:
-            return Upgrader.getVersion(), [APP_NAME]
-        return NodeControlUtil.curr_pkt_info(pkg_name)
 
     # Config handler don't use state for any validation for now
     def update_state(self, txn, prev_result, is_committed=False):

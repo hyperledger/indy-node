@@ -1,3 +1,9 @@
+from .__metadata__ import (
+    __title__, __version_info__, __version__, __description__,
+    __long_description__, __keywords__, __url__, __author__,
+    __author_email__, __maintainer__, __license__, load_version, set_version
+)
+
 PLUGIN_LEDGER_IDS = set()
 PLUGIN_CLIENT_REQUEST_FIELDS = {}
 PLUGIN_CLIENT_REQ_OP_TYPES = {}
@@ -66,5 +72,3 @@ except ImportError:
     pass  # it is expected in raw env
 else:
     setup_plugins()
-
-from .__metadata__ import *  # noqa

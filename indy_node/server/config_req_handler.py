@@ -11,12 +11,12 @@ from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    APP_NAME, REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
+    REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
+from indy_common.types import Request
 from indy_common.types import Request, ClientGetAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
-from indy_node.utils.node_control_utils import NodeControlUtil
 
 
 class ConfigReqHandler(LedgerRequestHandler):
@@ -100,11 +100,6 @@ class ConfigReqHandler(LedgerRequestHandler):
 
         # TODO: Check if cancel is submitted before start
 
-    def curr_pkt_info(self, pkg_name):
-        if pkg_name == APP_NAME:
-            return Upgrader.getVersion(), [APP_NAME]
-        return NodeControlUtil.curr_pkt_info(pkg_name)
-
     def validate(self, req: Request):
         status = '*'
         operation = req.operation
@@ -112,24 +107,16 @@ class ConfigReqHandler(LedgerRequestHandler):
         if typ not in self.write_types:
             return
         if typ == POOL_UPGRADE:
-            pkt_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
-            if pkt_to_upgrade:
-                currentVersion, cur_deps = self.curr_pkt_info(pkt_to_upgrade)
-                if not currentVersion:
-                    raise InvalidClientRequest(req.identifier, req.reqId,
-                                               "Packet {} is not installed and cannot be upgraded".
-                                               format(pkt_to_upgrade))
-                if all([APP_NAME not in d for d in cur_deps]):
-                    raise InvalidClientRequest(req.identifier, req.reqId,
-                                               "Packet {} doesn't belong to pool".format(pkt_to_upgrade))
-            else:
-                raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade packet name is empty")
-
+            pkg_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
             targetVersion = req.operation[VERSION]
             reinstall = req.operation.get(REINSTALL, False)
-            if not Upgrader.is_version_upgradable(currentVersion, targetVersion, reinstall):
-                # currentVersion > targetVersion
-                raise InvalidClientRequest(req.identifier, req.reqId, "Version is not upgradable")
+            # check package name
+            if not pkg_to_upgrade:
+                raise InvalidClientRequest(req.identifier, req.reqId, "Upgrade package name is empty")
+
+            res = self.upgrader.check_upgrade_possible(pkg_to_upgrade, targetVersion, reinstall)
+            if res:
+                raise InvalidClientRequest(req.identifier, req.reqId, res)
 
             action = operation.get(ACTION)
             # TODO: Some validation needed for making sure name and version

@@ -37,7 +37,7 @@ def test_pool_restarts_one_by_one(
     for a in tmp:
         restart_log.append(a)
     restart_log.reverse()
-    _check_restart_log(restart_log[2], RestartLog.SCHEDULED, first_start)
-    _check_restart_log(restart_log[1], RestartLog.CANCELLED)
-    _check_restart_log(restart_log[0], RestartLog.SCHEDULED, second_start)
+    _check_restart_log(restart_log[2], RestartLog.Events.scheduled, first_start)
+    _check_restart_log(restart_log[1], RestartLog.Events.cancelled)
+    _check_restart_log(restart_log[0], RestartLog.Events.scheduled, second_start)
     _stopServer(server)

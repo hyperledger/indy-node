@@ -1,31 +1,36 @@
-import csv
-from datetime import datetime
-from os import path
+from indy_node.server.action_log import ActionLogData, ActionLogEvents, ActionLog
 
-from dateutil.parser import parse as parse_date
 
-from indy_node.server.action_log import ActionLog
+class RestartLogData(ActionLogData):
+    pass
 
 
 class RestartLog(ActionLog):
+
+    Events = ActionLogEvents
+
     """
     Append-only event log of restart event
     """
+    def __init__(self, file_path):
+        super().__init__(
+            file_path,
+            data_class=RestartLogData,
+            event_types=ActionLogEvents,
+            delimiter='\t'
+        )
 
-    def __init__(self, filePath, delimiter="\t"):
-        super().__init__(filePath, delimiter)
+    def append_scheduled(self, data: RestartLogData):
+        super().append_scheduled(data)
 
-    def appendScheduled(self, when) -> None:
-        self._append(RestartLog.SCHEDULED, when)
+    def append_started(self, data: RestartLogData):
+        super().append_started(data)
 
-    def appendStarted(self, when) -> None:
-        self._append(RestartLog.STARTED, when)
+    def append_succeeded(self, data: RestartLogData):
+        super().append_succeeded(data)
 
-    def appendSucceeded(self, when) -> None:
-        self._append(RestartLog.SUCCEEDED, when)
+    def append_failed(self, data: RestartLogData):
+        super().append_failed(data)
 
-    def appendFailed(self, when) -> None:
-        self._append(RestartLog.FAILED, when)
-
-    def appendCancelled(self, when) -> None:
-        self._append(RestartLog.CANCELLED, when)
+    def append_cancelled(self, data: RestartLogData):
+        super().append_cancelled(data)
