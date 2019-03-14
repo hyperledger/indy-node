@@ -271,9 +271,9 @@ class DomainReqHandler(PHandler):
         assert revoc_def_type
         tags = cred_def_id.split(":")
 
-        revoc_def, _, _, _ = self.lookup(operation[REVOC_REG_DEF_ID], isCommitted=False, with_proof=False)
+        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, with_proof=False)
 
-        if revoc_def is None:
+        if cred_def is None:
             self.write_req_validator.validate(req,
                                               [AuthActionAdd(txn_type=REVOC_REG_DEF,
                                                              field='*',
@@ -291,7 +291,6 @@ class DomainReqHandler(PHandler):
                                        "Format of {} field is not acceptable. "
                                        "Expected: 'did:marker:signature_type:schema_ref' or "
                                        "'did:marker:signature_type:schema_ref:tag'".format(CRED_DEF_ID))
-        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, with_proof=False)
         if cred_def is None:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
@@ -310,18 +309,29 @@ class DomainReqHandler(PHandler):
 
     def _validate_revoc_reg_entry(self, req: Request):
         author_did = req.identifier
+        rev_reg_tags = req.operation[REVOC_REG_DEF_ID]
         current_entry, revoc_def = self._get_current_revoc_entry_and_revoc_def(
             author_did=author_did,
             revoc_reg_def_id=req.operation[REVOC_REG_DEF_ID],
             req_id=req.reqId
         )
-        is_owner = revoc_def[f.IDENTIFIER.nm] == author_did
 
-        self.write_req_validator.validate(req,
-                                          [AuthActionAdd(txn_type=REVOC_REG_ENTRY,
-                                                         field='*',
-                                                         value='*',
-                                                         is_owner=is_owner)])
+        cred_did = rev_reg_tags.split(":", 1)[0]
+        is_owner = cred_did == author_did
+
+        if current_entry:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=REVOC_REG_DEF,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*',
+                                                              is_owner=is_owner)])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=REVOC_REG_ENTRY,
+                                                             field='*',
+                                                             value='*',
+                                                             is_owner=is_owner)])
 
         validator_cls = self.get_revocation_strategy(revoc_def[VALUE][ISSUANCE_TYPE])
         validator = validator_cls(self.state)
