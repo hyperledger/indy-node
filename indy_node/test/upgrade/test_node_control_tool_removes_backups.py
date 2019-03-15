@@ -4,19 +4,29 @@ import functools
 import shutil
 
 from stp_core.loop.eventually import eventually
-from indy_node.test.upgrade.helper import NodeControlToolExecutor as NCT, sendUpgradeMessage, nodeControlGeneralMonkeypatching
-from indy_node.server.upgrader import Upgrader
 from stp_core.common.log import getlogger
 
+from indy_common.version import src_version_cls
+from indy_node.server.upgrader import Upgrader
+from indy_node.utils.node_control_utils import NodeControlUtil, DebianVersion
+
+from indy_node.test.upgrade.helper import (
+    NodeControlToolExecutor as NCT,
+    sendUpgradeMessage,
+    nodeControlGeneralMonkeypatching,
+    bumpedVersion
+)
+
 m = multiprocessing.Manager()
+# TODO why do we expect that
 whitelist = ['Unexpected error in _upgrade test']
 logger = getlogger()
 
 
 def testNodeControlRemovesBackups(monkeypatch, tdir, looper, tconf):
-    msg = 'test'
+    version = bumpedVersion()
     stdout = 'teststdout'
-    currentVersion = Upgrader.getVersion()
+    curr_src_ver = Upgrader.get_src_version()
     backupsWereRemoved = m.Value('b', False)
 
     def testRemoveOldBackups(tool):
@@ -36,7 +46,13 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper, tconf):
 
     def check_backups_files_exists():
         assert os.path.exists('{}.{}'.format(
-            nct.tool._backup_name(currentVersion), nct.tool.backup_format))
+            nct.tool._backup_name(curr_src_ver.release), nct.tool.backup_format))
+
+    monkeypatch.setattr(
+        NodeControlUtil, 'get_latest_pkg_version',
+        lambda *x, **y: DebianVersion(
+            version, upstream_cls=src_version_cls())
+    )
 
     nct = NCT(backup_dir=tdir, backup_target=tdir, transform=transform)
     try:
@@ -47,7 +63,7 @@ def testNodeControlRemovesBackups(monkeypatch, tdir, looper, tconf):
             with open(file, 'w') as f:
                 f.write('random')
         assert len(nct.tool._get_backups()) == nct.tool.backup_num
-        sendUpgradeMessage(msg)
+        sendUpgradeMessage(version)
         looper.run(eventually(checkOldBackupsRemoved))
         looper.run(eventually(check_backups_files_exists))
         assert len(nct.tool._get_backups()) == nct.tool.backup_num

@@ -1,18 +1,16 @@
 from typing import Dict
 
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
-from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr
+from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
     CLAIM_DEF, SCHEMA, NYM, ROLE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
-IDENTITY_OWNER = ''
-roles = [IDENTITY_OWNER, NETWORK_MONITOR, TRUST_ANCHOR, STEWARD, TRUSTEE]
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
-for role_from in roles:
+for role_from in accepted_roles:
     edit_role_actions[role_from] = {}
-    for role_to in roles:
+    for role_to in accepted_roles:
         edit_role_actions[role_from][role_to] = AuthActionEdit(txn_type=NYM,
                                                                field=ROLE,
                                                                old_value=role_from,
@@ -63,17 +61,21 @@ edit_claim_def = AuthActionEdit(txn_type=CLAIM_DEF,
 
 adding_new_node = AuthActionAdd(txn_type=NODE,
                                 field='services',
-                                value='[\'VALIDATOR\']')
+                                value=['VALIDATOR'])
+
+adding_new_node_with_empty_services = AuthActionAdd(txn_type=NODE,
+                                                    field='services',
+                                                    value=[])
 
 demote_node = AuthActionEdit(txn_type=NODE,
                              field='services',
-                             old_value='[\'VALIDATOR\']',
-                             new_value='[]')
+                             old_value=['VALIDATOR'],
+                             new_value=[])
 
 promote_node = AuthActionEdit(txn_type=NODE,
                               field='services',
-                              old_value='[]',
-                              new_value='[\'VALIDATOR\']')
+                              old_value=[],
+                              new_value=['VALIDATOR'])
 
 change_node_ip = AuthActionEdit(txn_type=NODE,
                                 field='node_ip',
@@ -117,6 +119,11 @@ pool_config = AuthActionEdit(txn_type=POOL_CONFIG,
                              field='action',
                              old_value='*',
                              new_value='*')
+
+auth_rule = AuthActionEdit(txn_type=AUTH_RULE,
+                           field='*',
+                           old_value='*',
+                           new_value='*')
 
 validator_info = AuthActionAdd(txn_type=VALIDATOR_INFO,
                                field='*',
@@ -224,6 +231,7 @@ auth_map = {
     add_claim_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     edit_claim_def.get_action_id(): owner_constraint,
     adding_new_node.get_action_id(): steward_owner_constraint,
+    adding_new_node_with_empty_services.get_action_id(): steward_owner_constraint,
     demote_node.get_action_id(): trustee_or_owner_steward,
     promote_node.get_action_id(): trustee_or_owner_steward,
     change_node_ip.get_action_id(): steward_owner_constraint,
@@ -235,6 +243,7 @@ auth_map = {
     cancel_upgrade.get_action_id(): one_trustee_constraint,
     pool_restart.get_action_id(): one_trustee_constraint,
     pool_config.get_action_id(): one_trustee_constraint,
+    auth_rule.get_action_id(): one_trustee_constraint,
     validator_info.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                       AuthConstraint(STEWARD, 1),
                                                       AuthConstraint(NETWORK_MONITOR, 1)]),

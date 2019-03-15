@@ -28,7 +28,7 @@ from storage.helper import initKeyValueStorage
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
-    IN_PROGRESS
+    IN_PROGRESS, AUTH_RULE
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
@@ -188,7 +188,8 @@ class Node(PlenumNode):
                                 self.upgrader,
                                 self.poolManager,
                                 self.poolCfg,
-                                self.write_req_validator)
+                                self.write_req_validator,
+                                self.bls_bft.bls_store)
 
     def getIdrCache(self):
         if self.idrCache is None:
@@ -236,7 +237,7 @@ class Node(PlenumNode):
     def acknowledge_upgrade(self):
         if not self.upgrader.should_notify_about_upgrade_result():
             return
-        lastUpgradeVersion = self.upgrader.lastActionEventInfo[2]
+        lastUpgradeVersion = self.upgrader.lastActionEventInfo.data.version
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
         logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
             self, action, lastUpgradeVersion))
@@ -244,7 +245,7 @@ class Node(PlenumNode):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: lastUpgradeVersion
+                VERSION: lastUpgradeVersion.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -257,7 +258,7 @@ class Node(PlenumNode):
         self.upgrader.notified_about_action_result()
 
     def notify_upgrade_start(self):
-        scheduled_upgrade_version = self.upgrader.scheduledAction[0]
+        scheduled_upgrade_version = self.upgrader.scheduledAction.version
         action = IN_PROGRESS
         logger.info('{} is about to be upgraded, '
                     'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))
@@ -265,7 +266,7 @@ class Node(PlenumNode):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: scheduled_upgrade_version
+                VERSION: scheduled_upgrade_version.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -325,7 +326,9 @@ class Node(PlenumNode):
         return c
 
     def can_write_txn(self, txn_type):
-        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE, POOL_CONFIG]
+        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE,
+                                                         POOL_CONFIG,
+                                                         AUTH_RULE]
 
     def execute_domain_txns(self, ppTime, reqs: List[Request], stateRoot,
                             txnRoot) -> List:
@@ -389,4 +392,5 @@ class Node(PlenumNode):
                                                          cache=self.getIdrCache(),
                                                          config_state=config_state,
                                                          state_serializer=constraint_serializer,
-                                                         anyone_can_write_map=anyone_can_write_map,)
+                                                         anyone_can_write_map=anyone_can_write_map,
+                                                         metrics=self.metrics)

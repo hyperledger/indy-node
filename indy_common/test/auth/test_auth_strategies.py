@@ -4,7 +4,7 @@ from common.exceptions import LogicError
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_cons_strategies import LocalAuthStrategy, AbstractAuthStrategy, ConfigLedgerAuthStrategy
 from indy_common.authorize.auth_constraints import AuthConstraint, ConstraintsSerializer
-from plenum.common.constants import TRUSTEE
+from plenum.common.constants import TRUSTEE, STEWARD
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 
@@ -16,9 +16,9 @@ def auth_map(action_add, action_edit):
     for add: "ADD--SomeType--some_field--*--new_value"
     for edit: "EDIT--SomeType--some_field--old_value--new_value"
     """
-    return {action_add.get_action_id(): AuthConstraint(role="Actor",
+    return {action_add.get_action_id(): AuthConstraint(role=STEWARD,
                                                        sig_count=3),
-            action_edit.get_action_id(): AuthConstraint(role="Actor",
+            action_edit.get_action_id(): AuthConstraint(role=STEWARD,
                                                         sig_count=2)}
 
 

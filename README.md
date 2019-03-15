@@ -30,7 +30,7 @@ with a different network, using whatever conventions a community chooses.
 
 ##### Getting Started Guide
 
-- We recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/hyperledger/indy-sdk/blob/master/doc/getting-started/getting-started.md) to learn about Indy basics.
+- We recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/hyperledger/indy-sdk/blob/master/docs/getting-started/indy-walkthrough.md) to learn about Indy basics.
 
 ##### Hyperledger Wiki-Indy
 

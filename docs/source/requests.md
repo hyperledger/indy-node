@@ -11,6 +11,7 @@
     * [NODE](#node)
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
+    * [AUTH_RULE](#auth_rule)
 
 * [Read Requests](#read-requests)
 
@@ -19,6 +20,7 @@
     * [GET_SCHEMA](#get_schema)
     * [GET_CLAIM_DEF](#get_claim_def)
     * [GET_TXN](#get_txn)
+    * [GET_AUTH_RULE](#get_auth_rule)
 
 * [Action Requests](#action-requests)
 
@@ -985,6 +987,211 @@ Command to change Pool's configuration
 }
 ```
 
+### AUTH_RULE
+
+A command to change authentication rules. 
+Authentication rules are stored as a key-value dictionary.
+A key is an authenticated action in the format `action--txn_type--field--old_value--new_value`.
+A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action. There are two types of constraints:
+- ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
+- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
+That is, the entry 
+```
+"EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
+                                            auth_constraints: [{constraint_id: ROLE,
+                                                                role: STEWARD, 
+                                                                sig_count: 1, 
+                                                                need_to_be_owner: True},
+                                                               {constraint_id: ROLE,
+                                                                role: TRUSTEE, 
+                                                                sig_count: 1, 
+                                                                need_to_be_owner: False}
+                                                               ]
+                                           }
+                                                                 
+```
+means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by one TRUSTEE or one STEWARD, and this Trustee or Steward needs to be the owner (the original creator) of this transaction.
+
+**Action Format:**
+
+- `auth_action` (enum: `ADD` or `EDIT`):
+
+    Action type: add a new entity or edit an existing one.
+    
+- `auth_type` (string):
+
+    The type of transaction to change rights for. (Example: "0", "1", ...)
+
+- `field` (string):
+
+    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
+
+- `old_value` (string; optional):
+
+   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
+
+- `new_value` (string):
+   
+   New value that can be used to fill the field.
+
+**ConstraintType:**
+
+ConstraintList
+
+- `constraint_id` (enum: `AND` or `OR`):
+
+    Type of a constraint class. It's needed to determine a type of constraint for correct deserialization.
+    - `AND` logical conjunction for all constraints from `auth_constraints`
+    - `OR` logical disjunction for all constraints from `auth_constraints`
+    
+- `auth_constraints` (list of ConstraintType):
+
+    List of ConstraintType (ConstraintList or ConstraintEntity) objects
+    
+ ```
+{ 'constraint_id': 'AND',
+  'auth_constraints': [<ConstraintEntity>,
+                      <ConstraintEntity>]
+}
+```
+    
+ConstraintEntity
+
+- `constraint_id` (enum: `ROLE`):
+
+   Type of a constraint. As of now only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
+        
+- `role` (enum number as string; optional):
+
+    Role of a user that the NYM record is being created for. One of the following values
+
+    - None (common USER)
+    - 0 (TRUSTEE)
+    - 2 (STEWARD)
+    - 101 (TRUST_ANCHOR)
+    
+- `sig_count` (int):
+
+    The number of signatures that is needed to do the action described in the transaction fields.
+    
+- `need_to_be_owner` (boolean):
+
+    Flag to check if the user must be owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
+    
+- `metadata` (dict; optional):
+
+    Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+
+```
+{
+    'sig_count': 1, 
+    'need_to_be_owner': False, 
+    'constraint_id': 'ROLE', 
+    'metadata': {}, 
+    'role': '0'
+}
+```
+
+*Request Example*:
+```
+{
+    'operation': {
+           'type':'120',
+           'constraint':{  
+                      'constraint_id': 'OR',
+                      'auth_constraints': [{'constraint_id': 'ROLE', 
+                                            'role': '0',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': False, 
+                                            'metadata': {}}, 
+                                           
+                                           {'constraint_id': 'ROLE', 
+                                            'role': '2',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': True, 
+                                            'metadata': {}}
+                                           ]
+           }, 
+           'field' :'services',
+           'auth_type': '0', 
+           'auth_action': 'EDIT',
+           'old_value': [VALIDATOR],
+           'new_value': []
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 1,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
+}
+```
+
+*Reply Example*:
+```
+{     'op':'REPLY',
+      'result':{  
+         'txnMetadata':{  
+            'seqNo':1,
+            'txnTime':1551776783
+         },
+         'reqSignature':{  
+            'values':[  
+               {  
+                  'value':'4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg',
+                  'from':'M9BJDuS24bqbJNvBRsoGg3'
+               }
+            ],
+            'type':'ED25519'
+         },
+         'txn':{  
+            'data':{  
+               'constraint':{  
+                          'constraint_id': 'OR',
+                          'auth_constraints': [{'constraint_id': 'ROLE', 
+                                                'role': '0',
+                                                'sig_count': 1, 
+                                                'need_to_be_owner': False, 
+                                                'metadata': {}}, 
+                                               
+                                               {'constraint_id': 'ROLE', 
+                                                'role': '2',
+                                                'sig_count': 1, 
+                                                'need_to_be_owner': True, 
+                                                'metadata': {}}
+                                               ]
+               }, 
+               'field' :'services',
+               'auth_type': '0', 
+               'auth_action': 'EDIT',
+               'old_value': [VALIDATOR],
+               'new_value': []
+               }
+            },
+            'protocolVersion':2,
+            'metadata':{  
+               'from':'M9BJDuS24bqbJNvBRsoGg3',
+               'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
+               'reqId':711182024
+            },
+            'type':'120'
+         },
+         'ver':'1',
+         'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
+         'auditPath':[  
+
+         ]
+      }
+   }
+```
+
+If format of a transaction is incorrect, the client will receive NACK message for the request. 
+A client will receive NACK for 
+- a request with incorrect format;
+- a request with "ADD" action, but with "old_value";
+- a request with "EDIT" action without "old_value";
+- a request with a key that is not in the [auth_rule](auth_rule.md).
+
+
 ## Read Requests
 
 ### GET_NYM
@@ -1333,6 +1540,159 @@ A generic request to get a transaction from Ledger by its sequence number.
         }
     }
 }
+```
+
+### GET_AUTH_RULE
+
+A request to get a constraint for an authentication rule or a full list of rules from Ledger by the auth key parameters.
+Two options are possible in a request build:
+- If the request has a full list of parameters (or without `old_value`), then the reply will contain one constraint for this key.
+- If the request does not contain fields other than txn_type, the response will contain a full list of authentication rules.
+A key is an authenticated action in the format `action--auth_type--field--old_value--new_value`.
+A reply value for one rule is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md).
+A reply with all rules are key-value dictionary where value is a constraint. The constraint format is described in [AUTH_RULE transaction](#auth_rule)
+
+- `auth_action` (enum: `ADD` or `EDIT`; optional):
+
+    Action type: add a new entity or edit an existing one.
+    
+- `auth_type` (string; optional):
+
+    The type of transaction to change rights for. (Example: "0", "1", ...)
+
+- `field` (string; optional):
+
+    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
+
+- `old_value` (string; optional):
+
+   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
+
+- `new_value` (string; optional):
+   
+   New value that can be used to fill the field.
+
+*Request Example (for getting one rule)*:
+```
+  {  
+      'reqId':572495653,
+      'signature':'366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH',
+      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+      'operation':{  
+         'field':'role',
+         'new_value':'101',
+         'type':'121',
+         'auth_type':'1',
+         'auth_action':'ADD'
+      },
+      'protocolVersion':2
+   }
+```
+
+*Reply Example (for getting one rule)*:
+```
+{  
+      'op':'REPLY',
+      'result':{  
+         'type':'121',
+         'auth_type':'1',
+         'reqId':441933878,
+         'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+         'new_value':'101',
+         'data':{  
+            'ADD--1--role--*--101':{  
+               'auth_constraints':[  
+                  {  
+                     'sig_count':1,
+                     'role':'0',
+                     'constraint_id':'ROLE',
+                     'need_to_be_owner':False,
+                     'metadata':{  
+
+                     }
+                  },
+                  {  
+                     'sig_count':1,
+                     'role':'2',
+                     'constraint_id':'ROLE',
+                     'need_to_be_owner':False,
+                     'metadata':{  
+
+                     }
+                  }
+               ],
+               'constraint_id':'AND'
+            }
+         },
+         'field':'role',
+         'state_proof':{  
+            'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=',
+            'root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
+            'multi_signature':{  
+               'signature':'RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9',
+               'value':{  
+                  'state_root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
+                  'pool_state_root_hash':'9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ',
+                  'timestamp':1552395470,
+                  'txn_root_hash':'4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h',
+                  'ledger_id':2
+               },
+               'participants':[  
+                  'Beta',
+                  'Gamma',
+                  'Delta'
+               ]
+            }
+         },
+         'auth_action':'ADD'
+      }
+}
+```
+
+*Request Example (for getting all rules)*:
+```
+  {  
+      'reqId':575407732,
+      'signature':'4AheMmtrfoHuAEtg5VsFPGe1j2w1UYxAvShRmfsCTSHnBDoA5EbmCa2xZzZVQjQGUFbYr65uznu1iUQhW22RNb1X',
+      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+      'operation':{  
+         'type':'121'
+      },
+      'protocolVersion':2
+  }
+```
+
+*Reply Example (for getting all rules)*:
+```
+{  
+      'op':'REPLY',
+      'result':{  
+         'reqId':575407732,
+         'type':'121',
+         'data':{  
+            'ADD--118--action--*--*':{  
+               'constraint_id':'ROLE',
+               'sig_count':1,
+               'metadata':{  
+
+               },
+               'need_to_be_owner':False,
+               'role':'0'
+            },
+            'EDIT--1--role--0--':{  
+               'constraint_id':'ROLE',
+               'sig_count':1,
+               'metadata':{  
+
+               },
+               'need_to_be_owner':False,
+               'role':'0'
+            },
+            ...
+         },
+         'identifier':'M9BJDuS24bqbJNvBRsoGg3'
+      }
+   }
 ```
 
 

@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import List
 from indy_common.authorize.helper import get_named_role
-
+from indy_common.constants import NETWORK_MONITOR, TRUST_ANCHOR
+from plenum.common.constants import STEWARD, TRUSTEE
 
 CONSTRAINT_ID = "constraint_id"
 AUTH_CONSTRAINTS = "auth_constraints"
@@ -10,6 +11,10 @@ ROLE = "role"
 METADATA = "metadata"
 SIG_COUNT = "sig_count"
 NEED_TO_BE_OWNER = "need_to_be_owner"
+
+IDENTITY_OWNER = ''
+
+accepted_roles = [IDENTITY_OWNER, NETWORK_MONITOR, TRUST_ANCHOR, STEWARD, TRUSTEE, '*', None]
 
 
 class ConstraintEnum(Enum):
@@ -21,6 +26,12 @@ class ConstraintsEnum:
     ROLE_CONSTRAINT_ID = 'ROLE'
     AND_CONSTRAINT_ID = 'AND'
     OR_CONSTRAINT_ID = 'OR'
+
+    @staticmethod
+    def values():
+        return [ConstraintsEnum.ROLE_CONSTRAINT_ID,
+                ConstraintsEnum.AND_CONSTRAINT_ID,
+                ConstraintsEnum.OR_CONSTRAINT_ID]
 
 
 class AbstractAuthConstraint(metaclass=ABCMeta):
@@ -46,6 +57,7 @@ class AbstractAuthConstraint(metaclass=ABCMeta):
 
 class AuthConstraint(AbstractAuthConstraint):
     def __init__(self, role, sig_count, need_to_be_owner=False, metadata={}):
+        self._role_validation(role)
         self.role = role
         self.sig_count = sig_count
         self.need_to_be_owner = need_to_be_owner
@@ -61,6 +73,11 @@ class AuthConstraint(AbstractAuthConstraint):
             NEED_TO_BE_OWNER: self.need_to_be_owner,
             METADATA: self.metadata
         }
+
+    @staticmethod
+    def _role_validation(role):
+        if role not in accepted_roles:
+            raise ValueError("Role {} is not acceptable".format(role))
 
     def __str__(self):
         role = get_named_role(self.role) if self.role != '*' else 'ALL'
@@ -105,7 +122,8 @@ class AuthConstraintAnd(AbstractAuthConstraint):
     @staticmethod
     def from_dict(as_dict):
         auth_constraints = []
-        for dict_constraint in as_dict[AUTH_CONSTRAINTS]:
+        for input_constraint in as_dict[AUTH_CONSTRAINTS]:
+            dict_constraint = dict(input_constraint)
             constraint_id = dict_constraint.pop(CONSTRAINT_ID)
             constraint_cls = constraint_to_class_map.get(constraint_id)
             auth_constraints.append(constraint_cls.from_dict(dict_constraint))
@@ -132,7 +150,8 @@ class AuthConstraintOr(AbstractAuthConstraint):
     @staticmethod
     def from_dict(as_dict):
         auth_constraints = []
-        for dict_constraint in as_dict[AUTH_CONSTRAINTS]:
+        for input_constraint in as_dict[AUTH_CONSTRAINTS]:
+            dict_constraint = dict(input_constraint)
             constraint_id = dict_constraint.pop(CONSTRAINT_ID)
             if constraint_id is None:
                 raise KeyError('There is no "constraint_id" field in deserialised dict: {}'.format(as_dict))
@@ -145,7 +164,8 @@ class AuthConstraintOr(AbstractAuthConstraint):
 
 class ConstraintCreator:
     @staticmethod
-    def create_constraint(as_dict):
+    def create_constraint(input_dict):
+        as_dict = dict(input_dict)
         constraint_id = as_dict.pop(CONSTRAINT_ID)
         if constraint_id is None:
             raise KeyError('There is no "constraint_id" field in deserialised dict: {}'.format(as_dict))
