@@ -149,8 +149,9 @@ def test_check_upgrade_possible_not_ge_version_reinstall():
         some_pkg_name, '1.2.1', reinstall=True))
 
 
+@pytest.mark.skip(reason='INDY-2026')
 @pytest.mark.pkg_info('1.2.2', [APP_NAME])
-@pytest.mark.latest_pkg_ver(None)
+#@pytest.mark.latest_pkg_ver(None) TODO INDY-2026
 def test_check_upgrade_possible_no_pkg_with_target_version():
     target_ver = '1.2.3'
     assert (
@@ -160,7 +161,7 @@ def test_check_upgrade_possible_no_pkg_with_target_version():
 
 
 @pytest.mark.pkg_info('1.2.2', [APP_NAME])
-@pytest.mark.latest_pkg_ver('1.2.3')
+#@pytest.mark.latest_pkg_ver('1.2.3') TODO INDY-2026
 def test_check_upgrade_possible_succeeded():
     target_ver = '1.2.3'
     assert not Upgrader.check_upgrade_possible(some_pkg_name, target_ver)
@@ -169,7 +170,7 @@ def test_check_upgrade_possible_succeeded():
 
 
 @pytest.mark.pkg_info('1.2.2', [], pkg_name=APP_NAME)
-@pytest.mark.latest_pkg_ver('1.2.3')
+#@pytest.mark.latest_pkg_ver('1.2.3') TODO INDY-2026
 def test_check_upgrade_possible_succeeded_for_app_pkg():
     target_ver = '1.2.3'
     assert not Upgrader.check_upgrade_possible(APP_NAME, target_ver)
@@ -178,14 +179,14 @@ def test_check_upgrade_possible_succeeded_for_app_pkg():
 
 
 @pytest.mark.pkg_info('1.2.2', [APP_NAME])
-@pytest.mark.latest_pkg_ver('1.2.2')
+#@pytest.mark.latest_pkg_ver('1.2.2') TODO INDY-2026
 def test_check_upgrade_possible_reinstall_succeeded():
     assert not Upgrader.check_upgrade_possible(
         some_pkg_name, '1.2.2', reinstall=True)
 
 
 @pytest.mark.pkg_info('1.2.2', [], pkg_name=APP_NAME)
-@pytest.mark.latest_pkg_ver('1.2.2')
+#@pytest.mark.latest_pkg_ver('1.2.2') TODO INDY-2026
 def test_check_upgrade_possible_reinstall_succeeded_for_app_pkg():
     assert not Upgrader.check_upgrade_possible(
         APP_NAME, '1.2.2', reinstall=True)
