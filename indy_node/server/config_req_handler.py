@@ -1,17 +1,18 @@
 from typing import List
 
-from common.serializers.serialization import domain_state_serializer
+from common.serializers.serialization import domain_state_serializer, state_roots_serializer
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
+from indy_node.server.domain_req_handler import DomainReqHandler
 from plenum.common.exceptions import InvalidClientRequest, InvalidMessageException
 
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata, get_type
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD
-from indy_common.types import Request
+    REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
+from indy_common.types import Request, ClientGetAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
@@ -19,10 +20,11 @@ from indy_node.server.pool_config import PoolConfig
 
 class ConfigReqHandler(LedgerRequestHandler):
     write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE}
+    query_types = {GET_AUTH_RULE, }
 
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig,
-                 write_req_validator):
+                 write_req_validator, bls_store=None):
         super().__init__(ledger, state)
         self.idrCache = idrCache
         self.upgrader = upgrader
@@ -30,6 +32,7 @@ class ConfigReqHandler(LedgerRequestHandler):
         self.poolCfg = poolCfg
         self.write_req_validator = write_req_validator
         self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
+        self.bls_store = bls_store
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -39,6 +42,8 @@ class ConfigReqHandler(LedgerRequestHandler):
             self._doStaticValidationPoolConfig(identifier, req_id, operation)
         elif operation[TXN_TYPE] == AUTH_RULE:
             self._doStaticValidationAuthRule(identifier, req_id, operation)
+        elif operation[TXN_TYPE] == GET_AUTH_RULE:
+            self._doStaticValidationGetAuthRule(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
         pass
@@ -64,14 +69,16 @@ class ConfigReqHandler(LedgerRequestHandler):
                                        "Transaction for change authentication "
                                        "rule for {}={} must not contain field {}".
                                        format(AUTH_ACTION, ADD_PREFIX, OLD_VALUE))
+        self._check_auth_key(operation, identifier, reqId)
 
-        auth_key = self.get_auth_key(operation)
-
-        if auth_key not in self.write_req_validator.auth_map and \
-                auth_key not in self.write_req_validator.anyone_can_write_map:
-            raise InvalidClientRequest(identifier, reqId,
-                                       "Unknown authorization rule: key '{}' is not "
-                                       "found in authorization map".format(auth_key))
+    def _doStaticValidationGetAuthRule(self, identifier, req_id, operation):
+        required_fields = list(dict(ClientGetAuthRuleOperation.schema).keys())
+        required_fields.remove(OLD_VALUE)
+        if len(operation) > 1:
+            if not set(required_fields).issubset(set(operation.keys())):
+                raise InvalidClientRequest(identifier, req_id,
+                                           "Not enough fields to build an auth key.")
+            self._check_auth_key(operation, identifier, req_id)
 
     def _doStaticValidationPoolUpgrade(self, identifier, reqId, operation):
         action = operation.get(ACTION)
@@ -96,7 +103,7 @@ class ConfigReqHandler(LedgerRequestHandler):
         status = '*'
         operation = req.operation
         typ = operation.get(TXN_TYPE)
-        if typ not in [POOL_UPGRADE, POOL_CONFIG, AUTH_RULE]:
+        if typ not in self.write_types:
             return
         if typ == POOL_UPGRADE:
             pkg_to_upgrade = req.operation.get(PACKAGE, getConfig().UPGRADE_ENTRY)
@@ -214,3 +221,52 @@ class ConfigReqHandler(LedgerRequestHandler):
                 constraint = self.get_auth_constraint(payload)
                 auth_key = self.get_auth_key(payload)
                 self.update_auth_constraint(auth_key, constraint)
+
+    def get_query_response(self, request: Request):
+        operation = request.operation
+        if operation[TXN_TYPE] != GET_AUTH_RULE:
+            return
+        proof = None
+        if len(operation) >= len(ClientGetAuthRuleOperation.schema) - 1:
+            path = self.get_auth_key(operation)
+            data, proof = self._get_auth_rule(path)
+        else:
+            data = self._get_all_auth_rules()
+        result = self.make_result(request=request,
+                                  data=data,
+                                  proof=proof)
+        result.update(request.operation)
+        return result
+
+    def _get_auth_rule(self, path):
+        multi_sig = None
+        if self.bls_store:
+            root_hash = self.state.committedHeadHash
+            encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
+            multi_sig = self.bls_store.get(encoded_root_hash)
+
+        map_data, proof = self.get_value_from_state(path, with_proof=True, multi_sig=multi_sig)
+
+        if map_data:
+            data = self.constraint_serializer.deserialize(map_data)
+        else:
+            data = self.write_req_validator.auth_map[path]
+        return {path: data.as_dict}, proof
+
+    def _get_all_auth_rules(self):
+        data = self.write_req_validator.auth_map.copy()
+        for key in self.write_req_validator.auth_map:
+            state_constraint, _ = self.get_value_from_state(key)
+            data[key] = self.constraint_serializer.deserialize(state_constraint).as_dict \
+                if state_constraint \
+                else data[key].as_dict
+        return data
+
+    def _check_auth_key(self, operation, identifier, req_id):
+        auth_key = self.get_auth_key(operation)
+
+        if auth_key not in self.write_req_validator.auth_map and \
+                auth_key not in self.write_req_validator.anyone_can_write_map:
+            raise InvalidClientRequest(identifier, req_id,
+                                       "Unknown authorization rule: key '{}' is not "
+                                       "found in authorization map.".format(auth_key))
