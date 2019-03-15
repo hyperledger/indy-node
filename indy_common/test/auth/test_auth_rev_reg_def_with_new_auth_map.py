@@ -12,7 +12,7 @@ def test_rev_reg_def_adding(write_request_validation, req, is_owner):
 
 
 def test_rev_reg_def_editing(write_request_validation, req, is_owner):
-    authorized =is_owner
+    authorized = is_owner
     assert authorized == write_request_validation(req,
                                                   [AuthActionEdit(txn_type=REVOC_REG_DEF,
                                                                   field='some_field',
