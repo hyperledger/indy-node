@@ -19,6 +19,7 @@ from indy_common.req_utils import get_read_schema_name, get_read_schema_version,
     get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
     get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
 from indy_common.state import domain
+from indy_common.state.domain import make_state_path_for_revoc_def
 from indy_common.types import Request
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, ENC, HASH, \
     VERKEY, \
@@ -271,9 +272,10 @@ class DomainReqHandler(PHandler):
         assert revoc_def_type
         tags = cred_def_id.split(":")
 
-        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, with_proof=False)
+        revoc_def = make_state_path_for_revoc_def(tags[0],cred_def_id,revoc_def_type,revoc_def_tag)
+        revoc_def_id, _, _, _ = self.lookup(revoc_def, isCommitted=False)
 
-        if cred_def is None:
+        if revoc_def is None:
             self.write_req_validator.validate(req,
                                               [AuthActionAdd(txn_type=REVOC_REG_DEF,
                                                              field='*',
@@ -284,6 +286,8 @@ class DomainReqHandler(PHandler):
                                                               field='*',
                                                               old_value='*',
                                                               new_value='*')])
+
+        cred_def, _, _, _ = self.lookup(cred_def_id, isCommitted=False, with_proof=False)
 
         if len(tags) != 4 and len(tags) != 5:
             raise InvalidClientRequest(req.identifier,
