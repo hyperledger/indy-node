@@ -272,7 +272,7 @@ class DomainReqHandler(PHandler):
         assert revoc_def_type
         tags = cred_def_id.split(":")
 
-        revoc_def = make_state_path_for_revoc_def(tags[0],cred_def_id,revoc_def_type,revoc_def_tag)
+        revoc_def = make_state_path_for_revoc_def(tags[0], cred_def_id, revoc_def_type, revoc_def_tag)
         revoc_def_id, _, _, _ = self.lookup(revoc_def, isCommitted=False)
 
         if revoc_def is None:
