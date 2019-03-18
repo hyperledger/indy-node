@@ -107,3 +107,28 @@ def test_allowed_roles_can_send_revoc_reg_entry(looper,
     del rev_reg_entry_trustee[VALUE][PREV_ACCUM]
     rev_entry_req_trustee = sdk_sign_request_from_dict(looper, sdk_wallet_trustee, rev_reg_entry_trustee)
     sdk_send_and_check([json.dumps(rev_entry_req_trustee)], looper, txnPoolNodeSet, sdk_pool_handle)
+
+
+def test_not_owner_cant_create_revoc_reg_entry(looper,
+                                               txnPoolNodeSet,
+                                               sdk_wallet_trustee,
+                                               sdk_wallet_client,
+                                               sdk_pool_handle,
+                                               build_revoc_def_by_default,
+                                               claim_def, tconf):
+
+    send_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc_def_by_default,
+                       claim_def, sdk_wallet_trustee)
+
+    # trust anchor
+    revoc_def_req_trust_anchor = send_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc_def_by_default,
+                                                    claim_def, sdk_wallet_client)
+
+    rev_reg_entry_trust_anchor = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req_trust_anchor)
+    rev_reg_entry_trust_anchor[VALUE][REVOKED] = [1, 2, 3, 4, 5]
+    del rev_reg_entry_trust_anchor[VALUE][PREV_ACCUM]
+    rev_entry_req_trust_anchor = sdk_sign_request_from_dict(looper, sdk_wallet_client, rev_reg_entry_trust_anchor)
+    sdk_send_and_check([json.dumps(rev_entry_req_trust_anchor)], looper, txnPoolNodeSet, sdk_pool_handle)
+
+
+
