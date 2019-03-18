@@ -219,6 +219,10 @@ trust_anchor_or_steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint
 trustee_or_owner_steward = AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                              AuthConstraint(STEWARD, 1, need_to_be_owner=True)])
 
+trust_anchor_or_steward_or_trustee_owner_constraint = AuthConstraintOr([AuthConstraint(TRUSTEE, 1, need_to_be_owner=True),
+                                                                  AuthConstraint(STEWARD, 1, need_to_be_owner=True),
+                                                                  AuthConstraint(TRUST_ANCHOR, 1, need_to_be_owner=True)])
+
 auth_map = {
     add_new_trustee.get_action_id(): one_trustee_constraint,
     add_new_steward.get_action_id(): one_trustee_constraint,
@@ -248,7 +252,7 @@ auth_map = {
                                                       AuthConstraint(STEWARD, 1),
                                                       AuthConstraint(NETWORK_MONITOR, 1)]),
     add_revoc_reg_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
-    add_revoc_reg_entry.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
+    add_revoc_reg_entry.get_action_id(): trust_anchor_or_steward_or_trustee_owner_constraint,
     edit_revoc_reg_def.get_action_id(): owner_constraint,
     edit_revoc_reg_entry.get_action_id(): owner_constraint,
 }
