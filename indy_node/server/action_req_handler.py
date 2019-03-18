@@ -68,6 +68,7 @@ class ActionReqHandler(RequestHandler):
                 result[DATA].update(self.info_tool.node_disk_size)
             else:
                 raise InvalidClientRequest(
+                    req.reqId,
                     "{} is not type of action transaction"
                     .format(req.txn_type))
         except Exception as ex:

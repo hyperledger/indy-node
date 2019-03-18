@@ -3,7 +3,7 @@ import pytest
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE
 from indy_common.constants import AUTH_ACTION, OLD_VALUE
-from indy_node.test.auth_rule_change.helper import generate_constraint_entity, generate_constraint_list, \
+from indy_node.test.auth_rule.helper import generate_constraint_entity, generate_constraint_list, \
     sdk_send_and_check_auth_rule_request
 from plenum.common.constants import TRUSTEE, STEWARD
 from plenum.common.exceptions import RequestRejectedException, \

@@ -20,6 +20,7 @@
     * [GET_SCHEMA](#get_schema)
     * [GET_CLAIM_DEF](#get_claim_def)
     * [GET_TXN](#get_txn)
+    * [GET_AUTH_RULE](#get_auth_rule)
 
 * [Action Requests](#action-requests)
 
@@ -1539,6 +1540,159 @@ A generic request to get a transaction from Ledger by its sequence number.
         }
     }
 }
+```
+
+### GET_AUTH_RULE
+
+A request to get a constraint for an authentication rule or a full list of rules from Ledger by the auth key parameters.
+Two options are possible in a request build:
+- If the request has a full list of parameters (or without `old_value`), then the reply will contain one constraint for this key.
+- If the request does not contain fields other than txn_type, the response will contain a full list of authentication rules.
+A key is an authenticated action in the format `action--auth_type--field--old_value--new_value`.
+A reply value for one rule is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md).
+A reply with all rules are key-value dictionary where value is a constraint. The constraint format is described in [AUTH_RULE transaction](#auth_rule)
+
+- `auth_action` (enum: `ADD` or `EDIT`; optional):
+
+    Action type: add a new entity or edit an existing one.
+    
+- `auth_type` (string; optional):
+
+    The type of transaction to change rights for. (Example: "0", "1", ...)
+
+- `field` (string; optional):
+
+    Change the rights for editing (adding) a value of the given transaction field. `*` can be used as `any field`.
+
+- `old_value` (string; optional):
+
+   Old value of a field, which can be changed to a new_value. Makes sense for EDIT actions only.
+
+- `new_value` (string; optional):
+   
+   New value that can be used to fill the field.
+
+*Request Example (for getting one rule)*:
+```
+  {  
+      'reqId':572495653,
+      'signature':'366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH',
+      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+      'operation':{  
+         'field':'role',
+         'new_value':'101',
+         'type':'121',
+         'auth_type':'1',
+         'auth_action':'ADD'
+      },
+      'protocolVersion':2
+   }
+```
+
+*Reply Example (for getting one rule)*:
+```
+{  
+      'op':'REPLY',
+      'result':{  
+         'type':'121',
+         'auth_type':'1',
+         'reqId':441933878,
+         'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+         'new_value':'101',
+         'data':{  
+            'ADD--1--role--*--101':{  
+               'auth_constraints':[  
+                  {  
+                     'sig_count':1,
+                     'role':'0',
+                     'constraint_id':'ROLE',
+                     'need_to_be_owner':False,
+                     'metadata':{  
+
+                     }
+                  },
+                  {  
+                     'sig_count':1,
+                     'role':'2',
+                     'constraint_id':'ROLE',
+                     'need_to_be_owner':False,
+                     'metadata':{  
+
+                     }
+                  }
+               ],
+               'constraint_id':'AND'
+            }
+         },
+         'field':'role',
+         'state_proof':{  
+            'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=',
+            'root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
+            'multi_signature':{  
+               'signature':'RNsPhUuPwwtA7NEf4VySCg1Fb2NpwapXrY8d64TLsRHR9rQ5ecGhRd89NTHabh8qEQ8Fs1XWawHjbSZ95RUYsJwx8PEXQcFEDGN3jc5VY31Q5rGg3aeBdFFxgYo11cZjrk6H7Md7N8fjHrKRdxo6TzDKSszJTNM1EAPLzyC6kKCnF9',
+               'value':{  
+                  'state_root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
+                  'pool_state_root_hash':'9L5CbxzhsNrZeGSJGVVpsC56JpuS5DGdUqfsFsR1RsFQ',
+                  'timestamp':1552395470,
+                  'txn_root_hash':'4CowHvnk2Axy2HWcYmT8b88A1Sgk45x7yHAzNnxowN9h',
+                  'ledger_id':2
+               },
+               'participants':[  
+                  'Beta',
+                  'Gamma',
+                  'Delta'
+               ]
+            }
+         },
+         'auth_action':'ADD'
+      }
+}
+```
+
+*Request Example (for getting all rules)*:
+```
+  {  
+      'reqId':575407732,
+      'signature':'4AheMmtrfoHuAEtg5VsFPGe1j2w1UYxAvShRmfsCTSHnBDoA5EbmCa2xZzZVQjQGUFbYr65uznu1iUQhW22RNb1X',
+      'identifier':'M9BJDuS24bqbJNvBRsoGg3',
+      'operation':{  
+         'type':'121'
+      },
+      'protocolVersion':2
+  }
+```
+
+*Reply Example (for getting all rules)*:
+```
+{  
+      'op':'REPLY',
+      'result':{  
+         'reqId':575407732,
+         'type':'121',
+         'data':{  
+            'ADD--118--action--*--*':{  
+               'constraint_id':'ROLE',
+               'sig_count':1,
+               'metadata':{  
+
+               },
+               'need_to_be_owner':False,
+               'role':'0'
+            },
+            'EDIT--1--role--0--':{  
+               'constraint_id':'ROLE',
+               'sig_count':1,
+               'metadata':{  
+
+               },
+               'need_to_be_owner':False,
+               'role':'0'
+            },
+            ...
+         },
+         'identifier':'M9BJDuS24bqbJNvBRsoGg3'
+      }
+   }
 ```
 
 
