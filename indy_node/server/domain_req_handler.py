@@ -272,7 +272,7 @@ class DomainReqHandler(PHandler):
         assert revoc_def_type
         tags = cred_def_id.split(":")
 
-        revoc_def = make_state_path_for_revoc_def(tags[0], cred_def_id, revoc_def_type, revoc_def_tag)
+        revoc_def = make_state_path_for_revoc_def(req.identifier, cred_def_id, revoc_def_type, revoc_def_tag)
         revoc_def_id, _, _, _ = self.lookup(revoc_def, isCommitted=False)
 
         if revoc_def is None:
@@ -320,12 +320,12 @@ class DomainReqHandler(PHandler):
             req_id=req.reqId
         )
 
-        cred_did = rev_reg_tags.split(":", 1)[0]
-        is_owner = cred_did == author_did
+        rev_ref_def_author_did = rev_reg_tags.split(":", 1)[0]
+        is_owner = rev_ref_def_author_did == author_did
 
         if current_entry:
             self.write_req_validator.validate(req,
-                                              [AuthActionEdit(txn_type=REVOC_REG_DEF,
+                                              [AuthActionEdit(txn_type=REVOC_REG_ENTRY,
                                                               field='*',
                                                               old_value='*',
                                                               new_value='*',
