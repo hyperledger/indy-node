@@ -3,7 +3,7 @@ from typing import Dict
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, NYM, ROLE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF
+    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_MAP, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
 
