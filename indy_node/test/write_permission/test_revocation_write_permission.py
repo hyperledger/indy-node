@@ -41,25 +41,25 @@ def send_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc,
     return revoc_req
 
 
-def test_client_cant_send_revoc_reg_def(looper,
-                                        txnPoolNodeSet,
-                                        sdk_wallet_client,
-                                        sdk_pool_handle,
-                                        build_revoc_def_by_default,
-                                        claim_def, tconf):
+def test_client_cant_create_revoc_reg_def(looper,
+                                          txnPoolNodeSet,
+                                          sdk_wallet_client,
+                                          sdk_pool_handle,
+                                          build_revoc_def_by_default,
+                                          claim_def, tconf):
     with pytest.raises(RequestRejectedException):
         send_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc_def_by_default,
                            claim_def, sdk_wallet_client)
 
 
-def test_allowed_roles_can_send_revoc_reg_def(looper,
-                                              txnPoolNodeSet,
-                                              sdk_wallet_trustee,
-                                              sdk_wallet_trust_anchor,
-                                              sdk_wallet_steward,
-                                              sdk_pool_handle,
-                                              build_revoc_def_by_default,
-                                              claim_def, tconf):
+def test_allowed_roles_can_create_revoc_reg_def(looper,
+                                                txnPoolNodeSet,
+                                                sdk_wallet_trustee,
+                                                sdk_wallet_trust_anchor,
+                                                sdk_wallet_steward,
+                                                sdk_pool_handle,
+                                                build_revoc_def_by_default,
+                                                claim_def, tconf):
     # trust anchor
     send_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc_def_by_default,
                        claim_def, sdk_wallet_trust_anchor)
@@ -152,7 +152,8 @@ def test_trustee_not_owner_cant_create_revoc_reg_entry(looper,
                                                        sdk_pool_handle,
                                                        build_revoc_def_by_trust_anchor,
                                                        claim_def, tconf):
-    revoc_def_req_trust_achor = send_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle, build_revoc_def_by_trust_anchor,
+    revoc_def_req_trust_achor = send_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle,
+                                                   build_revoc_def_by_trust_anchor,
                                                    claim_def, sdk_wallet_trust_anchor)
 
     rev_reg_entry = build_revoc_reg_entry_for_given_revoc_reg_def(revoc_def_req_trust_achor)
