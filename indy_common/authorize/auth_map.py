@@ -6,7 +6,6 @@ from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POO
     CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
-
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
 for role_from in accepted_roles:
     edit_role_actions[role_from] = {}
@@ -219,9 +218,10 @@ trust_anchor_or_steward_or_trustee_constraint = AuthConstraintOr([AuthConstraint
 trustee_or_owner_steward = AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                              AuthConstraint(STEWARD, 1, need_to_be_owner=True)])
 
-trust_anchor_or_steward_or_trustee_owner_constraint = AuthConstraintOr([AuthConstraint(TRUSTEE, 1, need_to_be_owner=True),
-                                                                  AuthConstraint(STEWARD, 1, need_to_be_owner=True),
-                                                                  AuthConstraint(TRUST_ANCHOR, 1, need_to_be_owner=True)])
+trust_anchor_or_steward_or_trustee_owner_constraint = AuthConstraintOr(
+    [AuthConstraint(TRUSTEE, 1, need_to_be_owner=True),
+     AuthConstraint(STEWARD, 1, need_to_be_owner=True),
+     AuthConstraint(TRUST_ANCHOR, 1, need_to_be_owner=True)])
 
 auth_map = {
     add_new_trustee.get_action_id(): one_trustee_constraint,
