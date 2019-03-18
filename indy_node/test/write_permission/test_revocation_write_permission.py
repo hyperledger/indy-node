@@ -108,8 +108,8 @@ def test_allowed_roles_can_send_revoc_reg_entry(looper,
     rev_entry_req_trustee = sdk_sign_request_from_dict(looper, sdk_wallet_trustee, rev_reg_entry_trustee)
     sdk_send_and_check([json.dumps(rev_entry_req_trustee)], looper, txnPoolNodeSet, sdk_pool_handle)
 
-
-def test_not_owner_cant_create_revoc_reg_entry(looper,
+test_not_owner_cant_create_revoc_reg_entry
+def (looper,
                                                txnPoolNodeSet,
                                                sdk_wallet_trustee,
                                                sdk_wallet_client,
