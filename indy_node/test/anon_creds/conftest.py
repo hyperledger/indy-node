@@ -17,6 +17,8 @@ from plenum.test.helper import sdk_sign_request_from_dict, sdk_send_and_check
 from plenum.common.txn_util import reqToTxn, append_txn_metadata
 from plenum.common.types import f, OPERATION
 
+from plenum.test.conftest import sdk_wallet_client
+
 from indy_node.test.schema.test_send_get_schema import send_schema_seq_no
 
 
@@ -184,6 +186,62 @@ def build_revoc_def_by_default(looper, sdk_wallet_steward):
     req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
     return req
 
+@pytest.fixture(scope="module")
+def build_revoc_def_by_trust_anchor(looper, sdk_wallet_trust_anchor):
+    data = {
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: ":".join(4 * [randomString(10)]),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
+        }
+    }
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_trust_anchor, data)
+    return req
+
+@pytest.fixture(scope="module")
+def build_revoc_def_by_steward(looper, sdk_wallet_steward):
+    data = {
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: ":".join(4 * [randomString(10)]),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
+        }
+    }
+    req = sdk_sign_request_from_dict(looper, sdk_wallet_steward, data)
+    return req
+
+
+def build_revoc_def_random(looper, sdk_wallet):
+    data = {
+        ID: randomString(50),
+        TXN_TYPE: REVOC_REG_DEF,
+        REVOC_TYPE: "CL_ACCUM",
+        TAG: randomString(5),
+        CRED_DEF_ID: ":".join(4 * [randomString(10)]),
+        VALUE:{
+            ISSUANCE_TYPE: ISSUANCE_BY_DEFAULT,
+            MAX_CRED_NUM: 1000000,
+            TAILS_HASH: randomString(50),
+            TAILS_LOCATION: 'http://tails.location.com',
+            PUBLIC_KEYS: {},
+        }
+    }
+    req = sdk_sign_request_from_dict(looper, sdk_wallet, data)
+    return req
 @pytest.fixture(scope="module")
 def build_revoc_def_by_demand(looper, sdk_wallet_steward):
     data = {

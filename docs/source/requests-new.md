@@ -954,15 +954,8 @@ Adds a new node to the pool, or updates existing node in the pool.
 
 - `did` (base58-encoded string):
 
-    Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
+    Target Node's verkey as base58-encoded string for 16 or 32 byte DID value.
     It differs from `from` metadata field, where `from` is the DID of the transaction submitter (Steward"s DID).
-    
-    *Example*: `from` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
-    
-- `verkey` (base58-encoded string; optional): 
-
-    Target Node verification key as base58-encoded string.
-    It may absent if `did` is 32-bit cryptonym CID. 
 
 - `alias` (string): 
     
