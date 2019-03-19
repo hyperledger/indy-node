@@ -85,14 +85,14 @@ def test_allowed_roles_can_create_revoc_reg_def(looper,
                          claim_def, sdk_wallet_trustee)
 
 
-def test_allowed_roles_can_send_revoc_reg_entry(looper,
-                                                txnPoolNodeSet,
-                                                sdk_wallet_trustee,
-                                                sdk_wallet_trust_anchor,
-                                                sdk_wallet_steward,
-                                                sdk_pool_handle,
-                                                build_revoc_def_by_default,
-                                                claim_def, tconf):
+def test_allowed_roles_can_create_revoc_reg_entry(looper,
+                                                  txnPoolNodeSet,
+                                                  sdk_wallet_trustee,
+                                                  sdk_wallet_trust_anchor,
+                                                  sdk_wallet_steward,
+                                                  sdk_pool_handle,
+                                                  build_revoc_def_by_default,
+                                                  claim_def, tconf):
     # trust anchor
     create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
                            build_revoc_def_by_default, claim_def, sdk_wallet_trust_anchor)
@@ -103,8 +103,8 @@ def test_allowed_roles_can_send_revoc_reg_entry(looper,
                            build_revoc_def_by_default, claim_def, sdk_wallet_steward)
 
     # trustee
-    create_revoc_reg_def(looper, txnPoolNodeSet, sdk_pool_handle,
-                         build_revoc_def_by_default, claim_def, sdk_wallet_trustee)
+    create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
+                           build_revoc_def_by_default, claim_def, sdk_wallet_trustee)
 
 
 def test_client_not_owner_cant_create_revoc_reg_entry(looper,
@@ -199,7 +199,7 @@ def test_allowed_roles_can_edit_revoc_reg_entry(looper,
 
     sdk_send_and_check([json.dumps(revoc_entry_req_trustee)], looper, txnPoolNodeSet, sdk_pool_handle)
 
-    # steward
+    # trustee
     revoc_entry_req_steward = create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
                                                      build_revoc_def_by_default,
                                                      claim_def, sdk_wallet_trustee)
@@ -222,18 +222,19 @@ def test_not_owner_trustee_cant_edit_revoc_reg_entry(looper,
                                                      build_revoc_def_by_demand,
                                                      claim_def, tconf):
 
-    revoc_entry_req_steward = create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
-                                                     build_revoc_def_by_demand,
-                                                     claim_def, sdk_wallet_trust_anchor)
+    revoc_entry_req_trust_anchor = create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
+                                                          build_revoc_def_by_demand,
+                                                          claim_def, sdk_wallet_trust_anchor)
 
-    revoc_entry_req_steward['operation'][VALUE][REVOKED] = [6, 7, 8]
-    revoc_entry_req_steward['operation'][VALUE][PREV_ACCUM] = revoc_entry_req_steward['operation'][VALUE][ACCUM]
+    revoc_entry_req_trust_anchor['operation'][VALUE][REVOKED] = [6, 7, 8]
+    revoc_entry_req_trust_anchor['operation'][VALUE][PREV_ACCUM] = revoc_entry_req_trust_anchor['operation'][VALUE][
+        ACCUM]
 
-    revoc_entry_req_steward['operation'][VALUE][ACCUM] = randomString(10)
-    revoc_entry_req_steward = sdk_sign_request_from_dict(looper, sdk_wallet_trustee,
-                                                         revoc_entry_req_steward['operation'])
+    revoc_entry_req_trust_anchor['operation'][VALUE][ACCUM] = randomString(10)
+    revoc_entry_req_trust_anchor = sdk_sign_request_from_dict(looper, sdk_wallet_trustee,
+                                                              revoc_entry_req_trust_anchor['operation'])
     with pytest.raises(RequestRejectedException):
-        sdk_send_and_check([json.dumps(revoc_entry_req_steward)], looper, txnPoolNodeSet, sdk_pool_handle)
+        sdk_send_and_check([json.dumps(revoc_entry_req_trust_anchor)], looper, txnPoolNodeSet, sdk_pool_handle)
 
 
 def test_not_owner_steward_cant_edit_revoc_reg_entry(looper,
@@ -264,7 +265,6 @@ def test_not_owner_trust_anchor_cant_edit_revoc_reg_entry(looper,
                                                           sdk_pool_handle,
                                                           build_revoc_def_by_default,
                                                           claim_def, tconf):
-
     revoc_build = build_revoc_def_random(looper, sdk_wallet_steward)
     revoc_entry_req_steward = create_revoc_reg_entry(looper, txnPoolNodeSet, sdk_pool_handle,
                                                      revoc_build, claim_def, sdk_wallet_steward)
