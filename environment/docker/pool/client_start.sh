@@ -24,5 +24,4 @@ echo "Starting container $IMAGE_NAME at $IP"
 # options are explained here: https://hub.docker.com/r/solita/ubuntu-systemd/
 docker run -itd --rm --memory="1512m" --name=$IMAGE_NAME --ip="${IP}" --network=$POOL_NETWORK_NAME --security-opt seccomp=unconfined --tmpfs /run --tmpfs /run/lock -v /sys/fs/cgroup:/sys/fs/cgroup:ro $IMAGE_NAME
 
-echo "Starting indy client"
-docker exec -it $IMAGE_NAME indy
+echo "Started indy client"

@@ -123,11 +123,8 @@ def systemTests = { component, releaseVersion ->
                 }
             }
 
-            stage("Prepare and run client for ${testFileName}") {
-                sh '''
-                    sed -i 's/\\(docker exec -it\\)/#&/g' client_start.sh
-                    ./client_for_pool_start.sh
-                '''
+            stage("Run client for ${testFileName}") {
+                sh './client_for_pool_start.sh'
             }
         }
     }
