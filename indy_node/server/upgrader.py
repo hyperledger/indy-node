@@ -237,12 +237,14 @@ class Upgrader(NodeMaintainer):
             return "Version {} is not upgradable".format(target_ver)
 
         # get the most recent version of the package for provided version
-        target_pkg_ver = NodeControlUtil.get_latest_pkg_version(
-            pkg_name, upstream=target_ver)
+        # TODO request to NodeControlTool since Node likely runs under user
+        # which doesn't have rights to update list of system packages available
+        # target_pkg_ver = NodeControlUtil.get_latest_pkg_version(
+        #    pkg_name, upstream=target_ver)
 
-        if not target_pkg_ver:
-            return ("package {} for target version {} is not found"
-                    .format(pkg_name, target_ver))
+        # if not target_pkg_ver:
+        #    return ("package {} for target version {} is not found"
+        #            .format(pkg_name, target_ver))
 
         return None
 
