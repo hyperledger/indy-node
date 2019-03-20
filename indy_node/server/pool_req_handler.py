@@ -1,4 +1,8 @@
+import ctypes
 from copy import deepcopy
+
+import base58
+from libnacl import nacl, crypto_box_PUBLICKEYBYTES
 
 from common.serializers.serialization import pool_state_serializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd
@@ -33,6 +37,13 @@ class PoolRequestHandler(PHandler):
         error = self.dataErrorWhileValidating(data, skipKeys=False)
         if error:
             return error
+
+        dest = operation.get(TARGET_NYM)
+        did = base58.b58decode(dest)
+        buf = ctypes.create_string_buffer(crypto_box_PUBLICKEYBYTES)
+        ret = nacl.crypto_sign_ed25519_pk_to_curve25519(buf, did)
+        if ret:
+            return "Node's verkey is not correct Ed25519 key. Verkey: {}".format(dest)
 
         if self.stewardHasNode(origin):
             return "{} already has a node".format(origin)
