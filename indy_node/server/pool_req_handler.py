@@ -10,13 +10,14 @@ from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.config_util import getConfig
 from plenum.common.constants import TARGET_NYM, DATA, ALIAS, SERVICES, \
-    BLS_KEY_PROOF, VALIDATOR
+    BLS_KEY_PROOF, VALIDATOR, VERKEY
 
 from plenum.common.ledger import Ledger
 from plenum.server.pool_req_handler import PoolRequestHandler as PHandler
 from indy_common.constants import NODE
 from indy_node.persistence.idr_cache import IdrCache
 from state.state import State
+from stp_core.crypto.util import ed25519PkToCurve25519
 
 
 class PoolRequestHandler(PHandler):
@@ -39,11 +40,13 @@ class PoolRequestHandler(PHandler):
             return error
 
         dest = operation.get(TARGET_NYM)
-        did = base58.b58decode(dest)
-        buf = ctypes.create_string_buffer(crypto_box_PUBLICKEYBYTES)
-        ret = nacl.crypto_sign_ed25519_pk_to_curve25519(buf, did)
-        if ret:
-            return "Node's verkey is not correct Ed25519 key. Verkey: {}".format(dest)
+        if not self.base58_is_correct_ed25519_key(dest):
+            return "Node's dest is not correct Ed25519 key. Dest: {}".format(dest)
+
+        verkey = operation.get(VERKEY, None)
+        if verkey:
+            if not self.base58_is_correct_ed25519_key(verkey):
+                return "Node's verkey is not correct Ed25519 key. Verkey: {}".format(verkey)
 
         if self.stewardHasNode(origin):
             return "{} already has a node".format(origin)
@@ -66,6 +69,11 @@ class PoolRequestHandler(PHandler):
         origin = request.identifier
         operation = request.operation
         nodeNym = operation.get(TARGET_NYM)
+
+        verkey = operation.get(VERKEY, None)
+        if verkey:
+            if not self.base58_is_correct_ed25519_key(verkey):
+                return "Node's verkey is not correct Ed25519 key. Verkey: {}".format(verkey)
 
         data = operation.get(DATA, {})
         error = self.dataErrorWhileValidatingUpdate(data, nodeNym)
@@ -95,3 +103,11 @@ class PoolRequestHandler(PHandler):
                                                                   old_value=oldVal,
                                                                   new_value=newVal,
                                                                   is_owner=isStewardOfNode)])
+
+    @staticmethod
+    def base58_is_correct_ed25519_key(key):
+        try:
+            ed25519PkToCurve25519(base58.b58decode(key))
+        except Exception:
+            return False
+        return True
