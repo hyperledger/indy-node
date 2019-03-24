@@ -32,9 +32,8 @@ if [ $ret -ne 0 ] ; then
   exit $ret
 fi
 
-echo -e "\n\nReplace postfixes"
-sed -i -r "s~indy-node-[a-z]+~indy-node~" "$repo/setup.py"
-sed -i -r "s~indy-plenum-[a-z]+~indy-plenum~" "$repo/setup.py"
+echo -e "\n\nPrepares indy-plennum debian package version"
+sed -i -r "s~indy-plenum==([0-9\.]+)\.([a-z]+)~indy-plenum==\1\~\2~" $repo/setup.py
 
 echo -e "Adapt the dependencies for the Canonical archive"
 sed -i "s~python-dateutil~python3-dateutil~" "$repo/setup.py"
