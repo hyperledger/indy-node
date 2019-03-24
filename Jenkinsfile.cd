@@ -250,6 +250,14 @@ def systemTests = { component, releaseVersion ->
 
 options = new TestAndPublishOptions()
 options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
+
+options.skip([StagesEnum.IS_TESTED])
+options.skip([StagesEnum.STATIC_CODE_VALIDATION])
+options.skip([StagesEnum.TEST])
+options.skip([StagesEnum.AUTOMERGE])
+options.skip([StagesEnum.BUILD_RESULT_NOTIF])
+options.skip([StagesEnum.QA_NOTIF])
+
 options.setCopyWithDeps(true)
 options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])

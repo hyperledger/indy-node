@@ -33,7 +33,7 @@ def set_version(version: str, version_file: str = VERSION_FILE):
 
 
 __title__ = 'indy-node'
-__version_info__ = (1, 6)
+__version_info__ = (0, 0)
 __version__ = '.'.join(map(str, __version_info__))
 # TODO activate once new versioning scheme becomes implemented
 # Note. double underscores
