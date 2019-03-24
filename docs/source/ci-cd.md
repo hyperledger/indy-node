@@ -39,7 +39,7 @@
 What artifacts are produced after each push
 - to `master` branch:
     - indy-plenum:
-        - indy-plenum-dev in [pypi](https://pypi.python.org/pypi/indy-plenum-dev)
+        - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
         - indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)
     - indy-node:
         - indy-node-dev in [pypi](https://pypi.python.org/pypi/indy-node-dev)
