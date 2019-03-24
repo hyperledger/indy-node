@@ -32,7 +32,7 @@ if [ $ret -ne 0 ] ; then
   exit $ret
 fi
 
-echo -e "\n\nPrepares indy-plennum debian package version"
+echo -e "\n\nPrepares indy-plenum debian package version"
 sed -i -r "s~indy-plenum==([0-9\.]+)\.([a-z]+)~indy-plenum==\1\~\2~" $repo/setup.py
 
 echo -e "Adapt the dependencies for the Canonical archive"
