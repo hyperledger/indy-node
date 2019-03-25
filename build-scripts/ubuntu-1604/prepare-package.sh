@@ -34,7 +34,7 @@ if [ $ret -ne 0 ] ; then
 fi
 
 echo -e "\n\nPrepares indy-plenum debian package version"
-sed -i -r "s~indy-plenum==([0-9\.]+)\.([a-z]+)~indy-plenum==\1\~\2~" $repo/setup.py
+sed -i -r "s~indy-plenum==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-plenum==\1\~\3~" $repo/setup.py
 
 echo -e "Adapt the dependencies for the Canonical archive"
 sed -i "s~python-dateutil~python3-dateutil~" "$repo/setup.py"
