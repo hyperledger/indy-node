@@ -256,6 +256,7 @@ options.skip([StagesEnum.IS_TESTED])
 options.skip([StagesEnum.STATIC_CODE_VALIDATION])
 options.skip([StagesEnum.TEST])
 options.skip([StagesEnum.AUTOMERGE])
+options.skip([StagesEnum.GITHUB_RELEASE])
 options.skip([StagesEnum.BUILD_RESULT_NOTIF])
 options.skip([StagesEnum.QA_NOTIF])
 
