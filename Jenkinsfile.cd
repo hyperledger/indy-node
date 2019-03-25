@@ -106,7 +106,7 @@ def systemTests = { component, releaseVersion ->
 
             stage("[${testFileName}] Ensure node services started") {
                 // TODO explore and fix the reason why they (mostly Node1) not always active
-                for (nodeNum = 1; nodeNum <= nodesNum; nodeNum++) {
+                for (int nodeNum = 1; nodeNum <= nodesNum; nodeNum++) {
                     for (service in ['indy-node', 'indy-node-control']) {
                         sh """
                             for i in 1 2 3; do
@@ -262,7 +262,7 @@ def systemTests = { component, releaseVersion ->
 
             Map builds = [:]
             List tests = ['test_ledger.py', 'test_consensus.py', 'test_vc.py']
-            for (i = 0; i < tests.size(); i++) {
+            for (int i = 0; i < tests.size(); i++) {
                 String testFileName = tests[i]
                 Boolean isFirst = (i == 0)
                 builds[testFileName] = {
