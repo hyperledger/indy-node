@@ -2,6 +2,7 @@
 
 if [ "$1" = "--help" ] ; then
   echo "Usage: $0 <path-to-repo-folder> <release-version-dotted>"
+  exit 0
 fi
 
 repo="$1"
@@ -32,9 +33,8 @@ if [ $ret -ne 0 ] ; then
   exit $ret
 fi
 
-echo -e "\n\nReplace postfixes"
-sed -i -r "s~indy-node-[a-z]+~indy-node~" "$repo/setup.py"
-sed -i -r "s~indy-plenum-[a-z]+~indy-plenum~" "$repo/setup.py"
+echo -e "\n\nPrepares indy-plenum debian package version"
+sed -i -r "s~indy-plenum==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-plenum==\1\~\3~" $repo/setup.py
 
 echo -e "Adapt the dependencies for the Canonical archive"
 sed -i "s~python-dateutil~python3-dateutil~" "$repo/setup.py"
