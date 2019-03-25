@@ -140,19 +140,20 @@ def systemTests = { component, releaseVersion ->
             }
 
             stage("Get versions for indy-crypto and indy-sdk") {
-                def commonSedExprs = "-e 'tx' -e 'd' -e ':x' -e 'p' -e 'q'"
-                def indyPlenumVersion = sh(returnStdout: true, script: """
-                    cat ./setup.py | sed -n -e 's/.*indy-plenum\\(-dev\\)\\?==\\([^"\\x27]\\+\\).*/\\2/' $commonSedExprs
-                """).trim()
-                echo "indy-plenum version: $indyPlenumVersion"
-                indySDKVersion = sh(returnStdout: true, script: """
-                    cat ./setup.py | sed -n -e 's/.*python3-indy==\\([^"\\x27]\\+\\).*/\\1/' $commonSedExprs
-                """).trim()
-                echo "indy-sdk version: $indySDKVersion"
-                indyCryptoVersion = sh(returnStdout: true, script: """
-                    wget -q https://raw.githubusercontent.com/hyperledger/indy-plenum/$indyPlenumVersion-${component == 'stable' ? 'rc' : component}/setup.py -O - | sed -n -e 's/.*indy-crypto==\\([^"\\x27]\\+\\).*/\\1/' $commonSedExprs
-                """).trim()
-                echo "indy-crypto version: $indyCryptoVersion"
+                def uid = sh(returnStdout: true, script: 'id -u').trim()
+                docker.build("hyperledger/indy-node-ci", "--build-arg uid=$uid -f ci/ubuntu.dockerfile ci").inside {
+                    sh "pip install .[tests]"
+
+                    indySDKVersion = sh(returnStdout: true, script: """
+                        pip freeze | grep python3-indy== | awk -F'==' '{print \$2}'
+                    """).trim()
+                    echo "indy-sdk version: $indySDKVersion"
+
+                    indyCryptoVersion = sh(returnStdout: true, script: """
+                        pip freeze | grep indy-crypto== | awk -F'==' '{print \$2}'
+                    """).trim()
+                    echo "indy-crypto version: $indyCryptoVersion"
+                }
 
                 if (!(indySDKVersion && indyCryptoVersion)) {
                     error "Failed to get versions for indy-crypto and indy-sdk"

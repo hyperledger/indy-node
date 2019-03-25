@@ -2,6 +2,7 @@
 
 if [ "$1" = "--help" ] ; then
   echo "Usage: $0 <path-to-repo-folder> <release-version-dotted>"
+  exit 0
 fi
 
 repo="$1"
