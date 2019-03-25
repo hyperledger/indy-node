@@ -211,7 +211,7 @@ def systemTests = { component, releaseVersion ->
                     sh "docker cp indyclient:/home/indy/system_tests/system/reports/ ./system_tests"
 
                     dir("system_tests/reports"){
-                        if (_err) {
+                        if (err) {
                             archiveArtifacts artifacts: testReportFileNamePlain, allowEmptyArchive: true
                         }
                         junit testResults: testReportFileNameXml, allowEmptyResults: true
