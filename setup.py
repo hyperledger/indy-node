@@ -42,6 +42,7 @@ setup(
     license=metadata['__license__'],
     packages=find_packages(exclude=['docs', 'docs*']) + [
         'data'],
+    # TODO move that to MANIFEST.in
     package_data={
         '': ['*.txt', '*.md', '*.rst', '*.json', '*.conf', '*.html',
              '*.css', '*.ico', '*.png', 'LICENSE', 'LEGAL', '*.indy']},

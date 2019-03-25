@@ -1,7 +1,8 @@
 from .__metadata__ import (
-    __title__, __version_info__, __version__, __description__,
+    __title__, __version_info__, __version__, __manifest__, __description__,
     __long_description__, __keywords__, __url__, __author__,
-    __author_email__, __maintainer__, __license__, load_version, set_version
+    __author_email__, __maintainer__, __license__,
+    load_version, set_version, load_manifest, set_manifest
 )
 
 PLUGIN_LEDGER_IDS = set()

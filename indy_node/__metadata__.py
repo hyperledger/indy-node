@@ -3,7 +3,7 @@ indy-node package metadata
 """
 import os
 import json
-from typing import Tuple, List, Union
+from typing import Any
 import collections.abc
 
 from indy_common.node_version import NodeVersion, InvalidVersionError
@@ -11,6 +11,11 @@ from indy_common.node_version import NodeVersion, InvalidVersionError
 VERSION_FILENAME = '__version__.json'
 VERSION_FILE = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), VERSION_FILENAME)
+
+
+MANIFEST_FILENAME = '__manifest__.json'
+MANIFEST_FILE = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), MANIFEST_FILENAME)
 
 
 # TODO use/wrap plenum's set and load API
@@ -32,13 +37,24 @@ def set_version(version: str, version_file: str = VERSION_FILE):
         _f.write('\n')
 
 
+def load_manifest(manifest_file: str = MANIFEST_FILE) -> Any:
+    try:
+        with open(manifest_file, 'r') as _f:
+            return json.load(_f)
+    except IOError as exc:
+        return None
+
+
+def set_manifest(manifest: Any, manifest_file: str = MANIFEST_FILE):
+    with open(manifest_file, 'w') as _f:
+        json.dump(manifest, _f)
+        _f.write('\n')
+
+
 __title__ = 'indy-node'
-__version_info__ = (1, 6)
-__version__ = '.'.join(map(str, __version_info__))
-# TODO activate once new versioning scheme becomes implemented
-# Note. double underscores
-# _version_info__ = load_version()
-# _version__ = __version_info__.full
+__version_info__ = load_version()
+__version__ = __version_info__.full
+__manifest__ = load_manifest()
 __description__ = 'Indy node'
 __long_description__ = __description__
 __keywords__ = 'Indy Node'
@@ -50,7 +66,7 @@ __license__ = "Apache 2.0"
 
 
 __all__ = [
-    '__title__', '__version_info__', '__version__',
+    '__title__', '__version_info__', '__version__', '__manifest__',
     '__description__', '__long_description__', '__keywords__',
     '__url__', '__author__', '__author_email__', '__maintainer__',
-    '__license__', 'load_version', 'set_version']
+    '__license__', 'load_version', 'set_version', 'load_manifest', 'set_manifest']
