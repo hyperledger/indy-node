@@ -8,7 +8,7 @@
 * [How to Contribute](#how-to-contribute)
 * [How to Install a Test Network](#how-to-install-a-test-network)
 * [How to Start Working with the Code](#how-to-start-working-with-the-code)
-* [Continuous integration and delivery](https://github.com/hyperledger/indy-node/blob/master/docs/ci-cd.md)
+* [Continuous integration and delivery](https://github.com/hyperledger/indy-node/blob/master/docs/source/ci-cd.md)
 * [How to send a PR](#how-to-send-a-pr)
 * [Docs and links](#docs-and-links)
 
