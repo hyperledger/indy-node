@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from typing import Iterable, List
 
+from common.exceptions import LogicError
 from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintsSerializer, AbstractConstraintSerializer
 from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
@@ -233,6 +234,19 @@ class Node(PlenumNode):
         self.upgrader.processLedger()
         super().postConfigLedgerCaughtUp(**kwargs)
         self.acknowledge_upgrade()
+
+    def preLedgerCatchUp(self, ledger_id):
+        super().preLedgerCatchUp(ledger_id)
+
+        if len(self.idrCache.un_committed) > 0:
+            raise LogicError('{} idr cache has uncommitted txns before catching up ledger {}'.format(self, ledger_id))
+
+    def postLedgerCatchUp(self, ledger_id, last_caughtup_3pc):
+        if len(self.idrCache.un_committed) > 0:
+            raise LogicError('{} idr cache has uncommitted txns after catching up ledger {}'.format(self, ledger_id))
+
+        super().postLedgerCatchUp(ledger_id, last_caughtup_3pc)
+
 
     def acknowledge_upgrade(self):
         if not self.upgrader.should_notify_about_upgrade_result():
