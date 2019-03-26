@@ -247,7 +247,6 @@ class Node(PlenumNode):
 
         super().postLedgerCatchUp(ledger_id, last_caughtup_3pc)
 
-
     def acknowledge_upgrade(self):
         if not self.upgrader.should_notify_about_upgrade_result():
             return
