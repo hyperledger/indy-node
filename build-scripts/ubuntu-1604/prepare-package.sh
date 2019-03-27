@@ -23,8 +23,8 @@ sed -i "s~python-dateutil~python3-dateutil~" setup.py
 sed -i "s~timeout-decorator~python3-timeout-decorator~" setup.py
 sed -i "s~distro~python3-distro~" setup.py
 
-
-echo -e "\nPreparing config files"
+echo -e "\n\nPrepares indy-plenum debian package version"
+sed -i -r "s~indy-plenum==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-plenum==\1\~\3~" $repo/setup.py
 
 GENERAL_CONFIG_DIR="\/etc\/indy"
 REPO_GENERAL_CONFIG_DIR="indy_node/general_config"
