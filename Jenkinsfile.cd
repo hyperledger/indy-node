@@ -1,7 +1,7 @@
 #!groovy
 
 // TODO doesn't exist yet
-@Library('SovrinHelpers@v2.0.0') _
+@Library('SovrinHelpers@v2.0.1') _
 
 String name = 'indy-node'
 String pkgName = name
@@ -306,9 +306,20 @@ def systemTests = { component, releaseVersion ->
 }
 
 def options = new TestAndPublishOptions()
-// TODO review that
-options.setApprovers(['QA'])
 options.setPkgName(pkgName)
+options.setApprovers(['QA'])
+options.setNotifEmails([
+    QA: [
+        to: "${env.INDY_NODE_QA_RECIPIENTS ?: ''}",
+        cc: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ],
+    success: [
+        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ],
+    fail: [
+        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ]
+])
 
 // TODO duplicates list from build scripts
 options.setPkgDeps([
