@@ -33,6 +33,10 @@ if [ $ret -ne 0 ] ; then
   exit $ret
 fi
 
+# TODO remove the following for new versioning
+echo -e "\n\nReplace postfixes"
+sed -i -r "s~indy-node-[a-z]+~indy-node~" "$repo/setup.py"
+
 echo -e "\n\nPrepares indy-plenum debian package version"
 sed -i -r "s~indy-plenum==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-plenum==\1\~\3~" $repo/setup.py
 
