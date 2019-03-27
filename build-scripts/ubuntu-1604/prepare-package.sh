@@ -18,17 +18,17 @@ echo -e "\nGenerating manifest"
 bash -ex ./generate_manifest.sh
 cat indy_node/__manifest__.json
 
+echo -e "\n\nPrepares indy-plenum debian package version"
+sed -i -r "s~indy-plenum==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-plenum==\1\~\3~" setup.py
+
 echo -e "\nAdapt the dependencies for the Canonical archive"
 sed -i "s~python-dateutil~python3-dateutil~" setup.py
 sed -i "s~timeout-decorator~python3-timeout-decorator~" setup.py
 sed -i "s~distro~python3-distro~" setup.py
 
-echo -e "\n\nPrepares indy-plenum debian package version"
-sed -i -r "s~indy-plenum==([0-9\.]+[0-9])(\.)?([a-z]+)~indy-plenum==\1\~\3~" $repo/setup.py
-
+echo "Preparing config files"
 GENERAL_CONFIG_DIR="\/etc\/indy"
 REPO_GENERAL_CONFIG_DIR="indy_node/general_config"
-
 # Define user config directory
 sed -i "s/^\(GENERAL_CONFIG_DIR\s*=\s*\).*\$/\1\"$GENERAL_CONFIG_DIR\"/" indy_common/config.py
 # Create user config
