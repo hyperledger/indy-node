@@ -130,8 +130,9 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
 1.  [Maintainer] Creates a new release branch `release-X.Y.0` based on `stable`
 2.  [Contributor]
   - creates a new release candidate branch (e.g. `rc-X.Y.0.rc1`) based on that release branch
-  - merge `master` branch
-  - set new versions `X.Y.0.rc1` (`./bump_version.sh X.Y.0.rc1`)
+  - merges `master` branch
+  - sets stable version of `indy-plenum` in `setup.py` (for `indy-node` only)
+  - sets new version `X.Y.0.rc1` (`./bump_version.sh X.Y.0.rc1`)
   - commits and pushes changes
   - creates a release candidate PR to `release-X.Y.0`
 3. [Maintainer] Waits for CI, reviews the PR and either merges the PR or asks for changes.
