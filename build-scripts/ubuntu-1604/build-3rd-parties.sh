@@ -40,6 +40,6 @@ function build_from_pypi {
 
 # build 3rd parties:
 #   build_from_pypi <pypi-name> <version>
-
+# TODO duplicates list from Jenkinsfile.cd
 build_from_pypi timeout-decorator 0.4.0
 build_from_pypi distro 1.3.0

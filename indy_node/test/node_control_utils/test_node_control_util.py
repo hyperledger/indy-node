@@ -43,8 +43,8 @@ def test_generated_cmd_get_latest_pkg_version(catch_generated_commands):
     assert len(generated_commands) == 2
     assert generated_commands[0] == "apt update"
     assert generated_commands[1] == (
-        "apt-cache show {} | grep -E '^Version: ([0-9]+:)?{}(-|$)'"
-        .format(pkg_name, '.*')
+        "apt-cache show {} | grep -E '^Version: '"
+        .format(pkg_name)
     )
 
     generated_commands[:] = []
@@ -53,8 +53,8 @@ def test_generated_cmd_get_latest_pkg_version(catch_generated_commands):
         pkg_name, upstream=upstream, update_cache=False)
     assert len(generated_commands) == 1
     assert generated_commands[0] == (
-        "apt-cache show {} | grep -E '^Version: ([0-9]+:)?{}(-|$)'"
-        .format(pkg_name, upstream)
+        "apt-cache show {} | grep -E '^Version: '"
+        .format(pkg_name)
     )
 
 
@@ -102,26 +102,35 @@ def test_get_latest_pkg_version_invalid_args():
 
 
 @pytest.mark.parametrize(
-    'output,expected',
+    'pkg_name,upstream,output,expected',
     [
-        ('', None),
-        ('Version: 1.2.3\nVersion: 1.2.4',
-            DebianVersion(
-                '1.2.4',
-                upstream_cls=src_version_cls('any_package'))),
+        ('any_package', None, '', None),
+        ('any_package', None, 'Version: 1.2.3\nVersion: 1.2.4', '1.2.4'),
+        ('any_package', None, 'Version: 1.2.4\nVersion: 1.2.3', '1.2.4'),
+        (APP_NAME, None, 'Version: 1.2.3\nVersion: 1.2.4', '1.2.4'),
+        (APP_NAME, None, 'Version: 1.2.4\nVersion: 1.2.3', '1.2.4'),
+        (APP_NAME, None, 'Version: 1.2.4~dev1\nVersion: 1.2.4~rc1', '1.2.4rc1'),
+        (APP_NAME, None, 'Version: 1.2.4~rc1\nVersion: 1.2.4~dev1', '1.2.4rc1'),
+        (APP_NAME, None, 'Version: 1.2.4~dev1\nVersion: 1.2.4', '1.2.4'),
+        (APP_NAME, None, 'Version: 1.2.4~rc2\nVersion: 1.2.4', '1.2.4'),
     ],
     ids=lambda s: s.replace('\n', '_').replace(' ', '_')
 )
-def test_get_latest_pkg_version(monkeypatch, output, expected):
+def test_get_latest_pkg_version(
+        monkeypatch, pkg_name, upstream, output, expected):
+
     def _f(command, *args, **kwargs):
         if not output:
             raise ShellError(1, command)
         else:
             return output
 
+    expected = None if expected is None else src_version_cls(pkg_name)(expected)
+
     monkeypatch.setattr(NodeControlUtil, 'run_shell_script_extended', _f)
-    assert expected == NodeControlUtil.get_latest_pkg_version(
-        'any_package', update_cache=False)
+    res = NodeControlUtil.get_latest_pkg_version(
+        pkg_name, upstream, update_cache=False)
+    assert expected == res if expected is None else res.upstream
 
 
 def test_get_latest_pkg_version_for_unknown_package():

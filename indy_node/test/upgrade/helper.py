@@ -92,7 +92,7 @@ def checkNoUpgradeScheduled(nodes):
 
 
 def codeVersionInfo():
-    return indy_node.__version_info__
+    return indy_node.__version_info__.parts
 
 
 def releaseVersion():

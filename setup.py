@@ -42,6 +42,7 @@ setup(
     license=metadata['__license__'],
     packages=find_packages(exclude=['docs', 'docs*']) + [
         'data'],
+    # TODO move that to MANIFEST.in
     package_data={
         '': ['*.txt', '*.md', '*.rst', '*.json', '*.conf', '*.html',
              '*.css', '*.ico', '*.png', 'LICENSE', 'LEGAL', '*.indy']},
@@ -49,7 +50,7 @@ setup(
     data_files=[(
         (BASE_DIR, ['data/nssm_original.exe'])
     )],
-    install_requires=['indy-plenum-dev==1.6.726',
+    install_requires=['indy-plenum==1.7.0.dev740',
                       'python-dateutil',
                       'timeout-decorator==0.4.0',
                       'distro==1.3.0'],
