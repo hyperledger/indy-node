@@ -1,8 +1,6 @@
 # Some unit tests for upgrader
 import pytest
 
-from common.version import SemVerReleaseVersion
-
 import indy_common
 from indy_common.constants import APP_NAME
 from indy_common.version import src_version_cls
@@ -20,29 +18,6 @@ class PkgDebianVersion(DebianVersion):
             upstream_cls=indy_common.version.src_version_cls(pkg_name),
             *args, **kwargs
         )
-
-
-def comparator_test(lower_version, higher_version):
-    assert Upgrader.compareVersions(higher_version, lower_version) == 1
-    assert Upgrader.compareVersions(lower_version, higher_version) == -1
-    assert Upgrader.compareVersions(higher_version, higher_version) == 0
-
-    lower_version = SemVerReleaseVersion(lower_version)
-    higher_version = SemVerReleaseVersion(higher_version)
-    assert not Upgrader.is_version_upgradable(higher_version, higher_version)
-    assert Upgrader.is_version_upgradable(
-        higher_version, higher_version, reinstall=True)
-    assert Upgrader.is_version_upgradable(lower_version, higher_version)
-    assert not Upgrader.is_version_upgradable(higher_version, lower_version)
-
-
-@pytest.fixture(autouse=True)
-def src_version_cls_patched(monkeypatch):
-    monkeypatch.setattr(
-        indy_common.version,
-        'src_version_cls',
-        lambda *_: SemVerReleaseVersion
-    )
 
 
 @pytest.fixture(autouse=True)
@@ -93,10 +68,24 @@ def node_control_util_patched(monkeypatch, request):
         ('0.0.5', '0.0.6'),
         ('0.1.2', '0.2.6'),
         ('1.10.2', '2.0.6'),
+        ('1.2.3.dev1', '1.2.3rc1'),
+        ('1.2.3.dev1', '1.2.3'),
+        ('1.2.3.rc2', '1.2.3'),
     ]
 )
-def test_versions(lower_version, higher_version):
-    comparator_test(lower_version, higher_version)
+def test_versions_comparison(lower_version, higher_version):
+    assert Upgrader.compareVersions(higher_version, lower_version) == 1
+    assert Upgrader.compareVersions(lower_version, higher_version) == -1
+    assert Upgrader.compareVersions(higher_version, higher_version) == 0
+
+    version_cls = src_version_cls(APP_NAME)
+    lower_version = version_cls(lower_version)
+    higher_version = version_cls(higher_version)
+    assert not Upgrader.is_version_upgradable(higher_version, higher_version)
+    assert Upgrader.is_version_upgradable(
+        higher_version, higher_version, reinstall=True)
+    assert Upgrader.is_version_upgradable(lower_version, higher_version)
+    assert not Upgrader.is_version_upgradable(higher_version, lower_version)
 
 
 def test_get_src_version_for_app(monkeypatch):
