@@ -11,9 +11,7 @@ In order to run your own Network, you need to do the following for each Node:
     sudo apt-get update
     sudo apt-get install indy-node
     ```
-    - It's also possible to install from pypi for test purposes
-        - master version: `pip install indy-node-dev`
-        - stable version: `pip install indy-node`
+    - It's also possible to install from pypi for test purposes: `pip install indy-node`
 2. Initialize Node to be included into the Network
     - if ```indy-node``` were installed from pypi basic directory structure should created manually with the command ```create_dirs.sh```
     - set Network name in config file

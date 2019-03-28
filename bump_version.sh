@@ -1,10 +1,12 @@
-#!/bin/bash -e
+#!/bin/bash
+
+set -e
 
 usage_str="Usage: $0 <version-dotted>"
 
 if [ -z "$1" ] ; then
     echo $usage_str
-    exit 0
+    exit 1
 fi
 
 if [ "$1" = "--help" ] ; then

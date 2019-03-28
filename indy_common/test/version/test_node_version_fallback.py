@@ -99,7 +99,9 @@ def test_node_version_fallback_upstream():
 
 
 def test_node_version_fallback_public():
+    assert NodeVersionFallback('1.2.3.dev0').parts == (1, 2, 3, 'dev', 0)
     assert NodeVersionFallback('1.2.3.dev2').parts == (1, 2, 3, 'dev', 2)
+    assert NodeVersionFallback('1.2.3.rc0').parts == (1, 2, 3, 'rc', 0)
     assert NodeVersionFallback('1.2.3.rc3').parts == (1, 2, 3, 'rc', 3)
     assert NodeVersionFallback('1.2.3').parts == (1, 2, 3, None, None)
 

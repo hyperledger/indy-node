@@ -293,24 +293,26 @@ class NodeControlUtil:
         if update_cache:
             cls.update_package_cache()
 
-        regex = "'^Version: ([0-9]+:)?{}(-|$)'".format(
-            upstream.full if upstream else '.*')
         try:
             cmd = compose_cmd(
-                ['apt-cache', 'show', pkg_name, '|', 'grep', '-E', regex])
+                ['apt-cache', 'show', pkg_name, '|', 'grep', '-E', "'^Version: '"]
+            )
             output = cls.run_shell_script_extended(cmd).strip()
         except ShellError as exc:
             # will fail if either package not found or grep returns nothing
             # the latter is unexpected and treated as no-data as well
             logger.info(
-                "no-data for package '{}' with upstream version '{}' found"
-                .format(pkg_name, upstream))
+                "no-data for package '{}' found".format(pkg_name)
+            )
         else:
             if output:
-                versions = [
-                    DebianVersion(v.split()[1], upstream_cls=upstream_cls)
-                    for v in output.split('\n')
-                ]
+                versions = []
+
+                for v in output.split('\n'):
+                    dv = DebianVersion(v.split()[1], upstream_cls=upstream_cls)
+                    if not upstream or (dv.upstream == upstream):
+                        versions.append(dv)
+
                 try:
                     return sorted(versions)[-1]
                 except ShellError:

@@ -30,8 +30,7 @@ BASE_DIR = os.path.join(os.path.expanduser("~"), ".indy")
 tests_require = ['pytest==3.3.1', 'pytest-xdist==1.22.1', 'python3-indy==1.6.8', 'pytest-asyncio==0.8.0']
 
 setup(
-    # TODO use __title__ from metadata instead
-    name='indy-node-dev',
+    name=metadata['__title__'],
     version=metadata['__version__'],
     description=metadata['__description__'],
     long_description=metadata['__long_description__'],
@@ -43,6 +42,7 @@ setup(
     license=metadata['__license__'],
     packages=find_packages(exclude=['docs', 'docs*']) + [
         'data'],
+    # TODO move that to MANIFEST.in
     package_data={
         '': ['*.txt', '*.md', '*.rst', '*.json', '*.conf', '*.html',
              '*.css', '*.ico', '*.png', 'LICENSE', 'LEGAL', '*.indy']},

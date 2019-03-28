@@ -13,7 +13,7 @@ from plenum.common.txn_util import is_forced, get_seq_no, get_type, get_payload_
 from stp_core.common.log import getlogger
 from plenum.common.constants import VERSION
 from common.version import (
-    SourceVersion, PackageVersion, InvalidVersionError, SemVerReleaseVersion
+    SourceVersion, InvalidVersionError
 )
 
 from indy_common.constants import ACTION, POOL_UPGRADE, START, SCHEDULE, \
@@ -64,7 +64,7 @@ class Upgrader(NodeMaintainer):
     # TODO refactor migration logic to get rid of that API usage
     @staticmethod
     def compareVersions(verA: str, verB: str) -> int:
-        version_cls = SemVerReleaseVersion
+        version_cls = src_version_cls(APP_NAME)
         return version_cls.cmp(version_cls(verA), version_cls(verB))
 
     def _defaultLog(self, dataDir, config):

@@ -43,13 +43,7 @@ class NodeVersionFallback:
 
     @property
     def parts(self) -> Iterable:
-        add_parts = (None, None)
-        if self._version[3] in ('rc', 'dev'):
-            add_parts = self._version[3:]
-        return (
-            *self.release_parts,
-            *add_parts,
-        )
+        return self._version
 
     @property
     def release(self) -> str:

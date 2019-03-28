@@ -3,15 +3,27 @@ import json
 import os
 
 from indy_common.node_version import NodeVersion, InvalidVersionError
-from indy_node.__metadata__ import set_version, load_version
+from plenum.__metadata__ import (
+    set_version, load_version,
+    set_manifest, load_manifest
+)
+
+
+def tmp_file_path(tdir, request, file_name):
+    return os.path.join(
+        tdir,
+        "{}.{}".format(os.path.basename(request.node.nodeid), file_name)
+    )
 
 
 @pytest.fixture
 def version_file_path(tdir, request):
-    return os.path.join(
-        tdir,
-        "{}.upgrade_log".format(os.path.basename(request.node.nodeid))
-    )
+    return tmp_file_path(tdir, request, '__version__.json')
+
+
+@pytest.fixture
+def manifest_file_path(tdir, request):
+    return tmp_file_path(tdir, request, '__manifest__.json')
 
 
 def idfn(v):
@@ -71,3 +83,24 @@ def test_set_version_invalid(version, version_file_path):
 def test_set_load_version_valid(version, version_file_path):
     set_version(version, version_file_path)
     assert load_version(version_file_path) == NodeVersion(version)
+
+
+
+def test_load_absent_manifest(manifest_file_path):
+    assert load_manifest(manifest_file_path) is None
+
+
+# TODO ??? wider coverage
+@pytest.mark.parametrize(
+    'manifest',
+    [
+        1,
+        [1, 2],
+        None,
+        {'k1': 'v1', "2": 2},
+    ],
+    ids=idfn
+)
+def test_set_load_manifest_valid(manifest, manifest_file_path):
+    set_manifest(manifest, manifest_file_path)
+    assert load_manifest(manifest_file_path) == manifest

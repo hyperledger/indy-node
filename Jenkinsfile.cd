@@ -1,8 +1,10 @@
 #!groovy
 
-@Library('SovrinHelpers@v1.2.1') _
+// TODO doesn't exist yet
+@Library('SovrinHelpers@v2.0.1') _
 
-def name = 'indy-node'
+String name = 'indy-node'
+String pkgName = name
 
 def nodeTestUbuntu = {
     try {
@@ -49,17 +51,25 @@ def commonTestUbuntu = {
     }
 }
 
-def buildDebUbuntu = { repoName, releaseVersion, sourcePath ->
+def buildDebUbuntu = { releaseVersion, sourcePath, packageVersion=null, missedPkgs=false ->
     def volumeName = "$name-deb-u1604"
+    packageVersion = packageVersion ?: releaseVersion
+
     if (env.BRANCH_NAME != '' && env.BRANCH_NAME != 'master') {
         volumeName = "${volumeName}.${BRANCH_NAME}"
     }
     if (sh(script: "docker volume ls -q | grep -q '^$volumeName\$'", returnStatus: true) == 0) {
         sh "docker volume rm $volumeName"
     }
+
+    // TODO build only missed ones
     dir('build-scripts/ubuntu-1604') {
-        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName"
-        sh "./build-3rd-parties-docker.sh $volumeName"
+        sh "./build-$name-docker.sh \"$sourcePath\" $releaseVersion $volumeName $packageVersion"
+        if (missedPkgs == [pkgName]) {
+            echo "Skip 3rd parties building"
+        } else {
+            sh "./build-3rd-parties-docker.sh $volumeName"
+        }
     }
     return "$volumeName"
 }
@@ -295,10 +305,38 @@ def systemTests = { component, releaseVersion ->
     }
 }
 
-options = new TestAndPublishOptions()
+def options = new TestAndPublishOptions()
+options.setPkgName(pkgName)
+options.setApprovers(['QA'])
+options.setNotifEmails([
+    QA: [
+        to: "${env.INDY_NODE_QA_RECIPIENTS ?: ''}",
+        cc: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ],
+    success: [
+        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ],
+    fail: [
+        to: "${env.INDY_NODE_RECIPIENTS ?: ''}"
+    ]
+])
+
+// TODO duplicates list from build scripts
+options.setPkgDeps([
+    'python3-timeout-decorator': '0.4.0',
+    'python3-distro': '1.3.0',
+])
+
+
 options.enable([StagesEnum.PACK_RELEASE_COPY, StagesEnum.PACK_RELEASE_COPY_ST])
 options.setCopyWithDeps(true)
 options.setSystemTestsCb(systemTests)
 options.setPrContexts([env.INDY_GITHUB_PR_REQUIRED_CONTEXT ?: "ci/hyperledger-jenkins/pr-merge"])
 
-testAndPublish(name, [ubuntu: [node: nodeTestUbuntu, common: commonTestUbuntu]], true, options, [ubuntu: buildDebUbuntu])
+testAndPublish(
+    name,
+    [
+        ubuntu: [node: nodeTestUbuntu, common: commonTestUbuntu]
+    ],
+    true, options, [ubuntu: buildDebUbuntu], 'indy_node'
+)
