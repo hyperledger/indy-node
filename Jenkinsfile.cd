@@ -160,7 +160,7 @@ def systemTests = { component, releaseVersion ->
             """
         }
 
-        stage("[${testFileName}] Patch core dockerfile") {
+        stage("[${testFileName}] Patch dockerfiles") {
              def test_deps = sh(returnStdout: true, script: 'cat ./system_tests/system/requirements.txt | paste -sd " "').trim()
 
              dir("environment/docker/pool") {
@@ -171,6 +171,8 @@ def systemTests = { component, releaseVersion ->
                     sed -i 's/\\(apt-get install -y indy-node\\) libindy/\\1=$releaseVersion indy-plenum=$indyPlenumVersion libindy=$indySDKVersion python3-indy-crypto=$indyCryptoVersion libindy-crypto=$indyCryptoVersion ssh/g' core.ubuntu.dockerfile
                     sed -i 's/\\(RUN pip3 install python3-indy\\)/&==$indySDKVersion $test_deps/g' core.ubuntu.dockerfile
                     cat core.ubuntu.dockerfile
+                    sed -i 's/\\(apt-get install -y libindy\\) indy-cli/\\1=$indySDKVersion indy-cli=$indySDKVersion/g' client.ubuntu.dockerfile
+                    cat client.ubuntu.dockerfile
                 """
             }
         }
