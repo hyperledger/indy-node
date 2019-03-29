@@ -36,7 +36,6 @@ def test_pool_restarts_one_by_one_with_restart_now(
     for a in txnPoolNodeSet[0].restarter._actionLog:
         restart_log.append(a)
     restart_log.reverse()
-    _check_restart_log(restart_log[1], RestartLog.SCHEDULED, first_start)
-    _check_restart_log(restart_log[0], RestartLog.CANCELLED)
+    _check_restart_log(restart_log[1], RestartLog.Events.scheduled, first_start)
+    _check_restart_log(restart_log[0], RestartLog.Events.cancelled)
     _stopServer(server)
-

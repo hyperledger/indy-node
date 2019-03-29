@@ -1,44 +1,86 @@
-import dateutil
-
-from indy_node.server.upgrade_log import UpgradeLog
-from datetime import datetime
+import pytest
 import os
-from os import path
+import datetime
+
+from common.version import SemVerReleaseVersion
+
+import indy_common
+from indy_node.server.upgrade_log import UpgradeLogData, UpgradeLog
 
 
-tmpDir = "/tmp/indy/"
-tmpFileName = "upgrade_log_test_file"
-tmpPkgName = "tmpPkgName"
+@pytest.fixture
+def log_file_path(tdir, request):
+    return os.path.join(
+        tdir,
+        "{}.upgrade_log".format(os.path.basename(request.node.nodeid))
+    )
 
 
-def test_update_log():
-    """
-    Test for UpgradeLog class.
-    Adds record to it, gets it back and compares.
-    Then opens the same file file another instance and tries to
-    read added record
-    """
-    tmpFilePath = path.join(tmpDir, tmpFileName)
-    if not os.path.exists(tmpDir):
-        os.makedirs(tmpDir)
-    elif os.path.exists(tmpFilePath):
-        os.remove(tmpFilePath)
-    log = UpgradeLog(tmpFilePath)
-    assert log.lastEvent is None
-
-    now = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
-    version = "1.2.3"
-    upgrade_id = '1'
-
-    # Check that we can add and then get event
-    log.appendScheduled(now, version, upgrade_id, tmpPkgName)
-    last = log.lastEvent
-    assert last[1] is UpgradeLog.SCHEDULED
-    assert last[2] == now
-    assert last[3] == version
-    assert last[4] == upgrade_id
-    assert last[5] == tmpPkgName
+@pytest.fixture
+def src_version_cls_patched(monkeypatch):
+    monkeypatch.setattr(
+        indy_common.version,
+        'src_version_cls',
+        lambda *_: SemVerReleaseVersion
+    )
 
 
-    # Check that the we can load and parse the line we appended before
-    assert UpgradeLog(tmpFilePath).lastEvent == last
+def test_upgrade_log_data_unpack_invalid_version():
+    with pytest.raises(TypeError) as excinfo:
+        UpgradeLogData(str(datetime.datetime.utcnow()), 123, 'some_id', 'some_pkg')
+    assert "'version' should be 'SourceVersion' or 'str'" in str(excinfo.value)
+
+
+def test_upgrade_log_data_pack_unpack():
+    delimiter = '|'
+    data = UpgradeLogData(datetime.datetime.utcnow(), '1.2.3', 'some_id', 'some_pkg')
+    assert data == UpgradeLogData.unpack(
+        data.pack(delimiter=delimiter), delimiter=delimiter
+    )
+
+
+# TODO actually it is already well tested in base calss ActionLog
+@pytest.mark.parametrize('ev_type', UpgradeLog.Events)
+def test_upgrade_log_append_api(log_file_path, ev_type):
+    upgrade_log = UpgradeLog(log_file_path)
+    ev_data = UpgradeLogData(datetime.datetime.utcnow(), '1.2.3', 'some_id', 'some_pkg')
+    getattr(upgrade_log, "append_{}".format(ev_type.name))(ev_data)
+    assert upgrade_log.last_event.data == ev_data
+    assert upgrade_log.last_event.ev_type == ev_type
+
+
+def test_upgrade_log_loads_legacy_data(monkeypatch, log_file_path):
+
+    ev_index = None
+    tss = [
+        '2019-02-28 07:36:23.135789',
+        '2019-02-28 07:37:11.008484',
+        '2019-02-28 07:38:33.721644'
+    ]
+
+    class datetime_wrapper(datetime.datetime):
+        def utcnow():
+            return tss[ev_index]
+
+    monkeypatch.setattr(datetime, 'datetime', datetime_wrapper)
+
+    legacy_logs = (
+        "{}\tscheduled\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\tindy-node\r\n".format(tss[0]) +
+        "{}\tstarted\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\tindy-node\r\n".format(tss[1]) +
+        "{}\tsucceeded\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\tindy-node\r\n".format(tss[2])
+    )
+
+    with open(log_file_path, 'w', newline='') as f:
+        f.write(legacy_logs)
+    upgrade_log_legacy = UpgradeLog(log_file_path)
+
+    log_file_path_new = log_file_path + '_new'
+    upgrade_log_new = UpgradeLog(log_file_path_new)
+
+    for ev_index, ev in enumerate(upgrade_log_legacy):
+        getattr(upgrade_log_new, 'append_' + ev.ev_type.name)(ev.data)
+
+    with open(log_file_path_new, 'r', newline='') as f:
+        new_logs = f.read()
+
+    assert legacy_logs == new_logs

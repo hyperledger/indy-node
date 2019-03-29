@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.6.83](#1683)
+
 * [1.6.82](#1682)
 
 * [1.6.80](#1680)
@@ -33,6 +35,43 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.6.83 
+### Release date: Feb 11th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.6.58 |
+| indy-node | 1.6.83 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+**Pool upgrade to sovrin 1.1.32 and above should be performed simultaneously for all nodes due to txn format changes.**
+
+### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Validator-info to client times out if there are many upgrade attempts by node |  | [INDY-1922](https://jira.hyperledger.org/browse/INDY-1922) |
+| Node on Sovrin TestNet did not upgrade automatically |  | [INDY-1919](https://jira.hyperledger.org/browse/INDY-1919) |
+| Node that does not upgrade spams the config ledger |  | [INDY-1918](https://jira.hyperledger.org/browse/INDY-1918) |
+| Incorrect pool upgrade txn validation |  | [INDY-1953](https://jira.hyperledger.org/browse/INDY-1953) |
+| Upgrade appears to have broken "validator-info --nagios" |  | [INDY-1920](https://jira.hyperledger.org/browse/INDY-1920) |
+| Node can't order after view change and catch up |  | [INDY-1955](https://jira.hyperledger.org/browse/INDY-1955) |
+| Unclear error messages when Trustee send a NYM with the same verkey |  | [INDY-1963](https://jira.hyperledger.org/browse/INDY-1963) |
+| A role that has been removed can't be added back |  | [INDY-1971](https://jira.hyperledger.org/browse/INDY-1971) |
+
+### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Limit the number of attributes in schema |  | [INDY-1914](https://jira.hyperledger.org/browse/INDY-1914) |
+| Enable Clear Request Queue strategy |  | [INDY-1836](https://jira.hyperledger.org/browse/INDY-1836) |
+| A Node needs to be able to order requests received during catch-up |  | [INDY-1876](https://jira.hyperledger.org/browse/INDY-1876) |
+| Network maintenance role |  | [INDY-1916](https://jira.hyperledger.org/browse/INDY-1916) |
+| There should always be fresh enough signature of a state |  | [INDY-933](https://jira.hyperledger.org/browse/INDY-933) |
+| Node stops working without any services failure |  | [INDY-1949](https://jira.hyperledger.org/browse/INDY-1949) |
+| As a user of Valdiator Info script, I need to know whether the pool has write consensus and when the state was updated the last time |  | [INDY-1928](https://jira.hyperledger.org/browse/INDY-1928) |
+| Trust anchor permission not needed for ledger writes |  | [INDY-1528](https://jira.hyperledger.org/browse/INDY-1528) |
 
 ## 1.6.82 
 ### Release date: Dec 20th, 2018

@@ -3,6 +3,7 @@ from indy_node.test.upgrade.helper import bumpVersion, get_req_from_update
 from plenum.common.constants import VERSION
 from plenum.test.pool_transactions.helper import sdk_sign_and_send_prepared_request
 from stp_core.loop.eventually import eventually
+from indy_common.version import src_version_cls
 
 
 def test_forced_upgrade_no_consensus_on_single_node(
@@ -24,7 +25,7 @@ def test_forced_upgrade_no_consensus_on_single_node(
         for node in nodeSet:
             if node.name == "Alpha":
                 assert node.upgrader.scheduledAction
-                assert node.upgrader.scheduledAction[0] == nup[VERSION]
+                assert node.upgrader.scheduledAction.version.full == nup[VERSION]
 
     looper.run(eventually(testsched, retryWait=1,
                           timeout=waits.expectedUpgradeScheduled()))

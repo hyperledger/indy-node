@@ -2,8 +2,6 @@ import logging
 import warnings
 import pytest
 
-from indy_common.config_helper import NodeConfigHelper
-from indy_node.test.helper import TestNode
 from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_pool_refresh, prepare_new_node_data, \
     create_and_start_new_node, prepare_node_request, sdk_sign_and_send_prepared_request
 from stp_core.common.log import Logger
@@ -12,13 +10,9 @@ from plenum.common.util import randomString
 from plenum.common.constants import VALIDATOR, STEWARD_STRING
 from plenum.test.helper import sdk_get_and_check_replies
 from plenum.test.test_node import checkNodesConnected
-from indy_common import strict_types
-
-# typecheck during tests
-strict_types.defaultShouldCheck = True
 
 # noinspection PyUnresolvedReferences
-from plenum.test.conftest import tdir, nodeReg, \
+from plenum.test.conftest import tdir as plenum_tdir, nodeReg, \
     whitelist, concerningLogLevels, logcapture, \
     tdirWithPoolTxns, tdirWithDomainTxns, \
     txnPoolNodeSet, \
@@ -28,17 +22,30 @@ from plenum.test.conftest import tdir, nodeReg, \
     warnfilters as plenum_warnfilters, do_post_node_creation
 
 # noinspection PyUnresolvedReferences
-from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNames, \
-    domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
-
-# noinspection PyUnresolvedReferences
 from plenum.test.conftest import sdk_pool_handle as plenum_pool_handle, sdk_pool_data, sdk_wallet_steward, \
     sdk_wallet_handle, sdk_wallet_data, sdk_steward_seed, sdk_wallet_client, sdk_wallet_trustee, \
     sdk_trustee_seed, trustee_data, sdk_client_seed, poolTxnClientData, poolTxnClientNames, \
     sdk_wallet_stewards, create_node_and_not_start, sdk_wallet_handle
 
-Logger.setLogLevel(logging.NOTSET)
+from indy_common import strict_types
+from indy_common.constants import APP_NAME
+from indy_common.config_helper import NodeConfigHelper
 
+# noinspection PyUnresolvedReferences
+from indy_common.test.conftest import general_conf_tdir, tconf, poolTxnTrusteeNames, \
+    domainTxnOrderedFields, looper, setTestLogLevel, node_config_helper_class, config_helper_class
+
+from indy_node.test.helper import TestNode
+
+from indy_node.server.upgrader import Upgrader
+from indy_node.utils.node_control_utils import NodeControlUtil
+
+from indy_node.test.upgrade.helper import releaseVersion
+
+# typecheck during tests
+strict_types.defaultShouldCheck = True
+
+Logger.setLogLevel(logging.NOTSET)
 
 @pytest.fixture(scope='module')
 def sdk_pool_handle(plenum_pool_handle, nodeSet):
@@ -128,6 +135,39 @@ def sdk_user_wallet_a(nodeSet, sdk_wallet_trust_anchor,
     return sdk_add_new_nym(looper, sdk_pool_handle,
                            sdk_wallet_trust_anchor, alias='userA',
                            skipverkey=True)
+
+
+# patch that makes sense in general for tests
+# since '_get_curr_info' relies on OS package manager
+@pytest.fixture(scope="module")
+def patchNodeControlUtil():
+
+    old__get_curr_info = getattr(NodeControlUtil, '_get_curr_info')
+
+    @classmethod
+    def _get_curr_info(cls, package):
+        from stp_core.common.log import getlogger
+        import os
+        logger = getlogger()
+        if package == APP_NAME:
+            return (
+                "Package: {}\nStatus: install ok installed\nPriority: extra\nSection: default\n"
+                "Installed-Size: 21\nMaintainer: maintainer\nArchitecture: amd64\nVersion: {}\n"
+            ).format(APP_NAME, releaseVersion())
+
+        raise ValueError("Only {} is expected, got: {}".format(APP_NAME, package))
+
+
+    setattr(NodeControlUtil, '_get_curr_info', _get_curr_info)
+    yield
+    setattr(NodeControlUtil, '_get_curr_info', old__get_curr_info)
+
+# link patching with tdir as the most common fixture to make the patch
+# applied regardless usage of the pool (there are cases when node control
+# is tested without pool creation)
+@pytest.fixture(scope="module")
+def tdir(patchNodeControlUtil, plenum_tdir):
+    return plenum_tdir
 
 
 @pytest.fixture(scope="module")

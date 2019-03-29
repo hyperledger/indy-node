@@ -7,8 +7,7 @@ from plenum.common.constants import VERSION
 from indy_node.test.upgrade.helper import bumpedVersion, checkUpgradeScheduled, \
     check_no_loop, sdk_ensure_upgrade_sent, clear_aq_stash
 from indy_node.server.upgrade_log import UpgradeLog
-import indy_node
-
+from indy_node.utils.node_control_utils import NodeControlUtil
 
 def test_upgrade_does_not_get_into_loop(looper, tconf, nodeSet,
                                         validUpgrade, sdk_pool_handle,
@@ -30,5 +29,6 @@ def test_upgrade_does_not_get_into_loop(looper, tconf, nodeSet,
             timeout=waits.expectedUpgradeScheduled()))
 
     # here we make nodes think they have upgraded successfully
-    monkeypatch.setattr(indy_node.__metadata__, '__version__', new_version)
-    check_no_loop(nodeSet, UpgradeLog.SUCCEEDED)
+    monkeypatch.setattr(NodeControlUtil, '_get_curr_info',
+                        lambda *x: "Version: {}".format(new_version))
+    check_no_loop(nodeSet, UpgradeLog.Events.succeeded)

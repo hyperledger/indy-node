@@ -1,42 +1,63 @@
-import csv
+from typing import Union
 from datetime import datetime
-from os import path
 
-from dateutil.parser import parse as parse_date
+from common.version import SourceVersion
 
-from indy_node.server.action_log import ActionLog
+from indy_common.version import src_version_cls
+from indy_node.server.action_log import ActionLogData, ActionLogEvents, ActionLog
+
+
+class UpgradeLogData(ActionLogData):
+    _items = ActionLogData._items + ['version', 'upgrade_id', 'pkg_name']
+
+    def __init__(
+            self,
+            when: Union[datetime, str],
+            version: Union[SourceVersion, str],
+            upgrade_id: str,
+            pkg_name: str
+    ):
+        super().__init__(when)
+
+        if isinstance(version, str):
+            version = src_version_cls(pkg_name)(version)
+        if not isinstance(version, SourceVersion):
+            raise TypeError(
+                "'version' should be 'SourceVersion' or 'str', got: {}"
+                .format(type(version))
+            )
+
+        self.version = version
+        self.upgrade_id = upgrade_id
+        self.pkg_name = pkg_name
 
 
 class UpgradeLog(ActionLog):
+
+    Events = ActionLogEvents
+
     """
     Append-only event log of upgrade event
     """
+    def __init__(self, file_path: str):
+        super().__init__(
+            file_path,
+            data_class=UpgradeLogData,
+            event_types=ActionLogEvents,
+            delimiter='\t'
+        )
 
-    def __init__(self, filePath, delimiter="\t"):
-        super().__init__(filePath, delimiter)
+    def append_scheduled(self, data: UpgradeLogData):
+        super().append_scheduled(data)
 
-    def appendScheduled(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.SCHEDULED, when, version, upgrade_id, pkg_name)
+    def append_started(self, data: UpgradeLogData):
+        super().append_started(data)
 
-    def appendStarted(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.STARTED, when, version, upgrade_id, pkg_name)
+    def append_succeeded(self, data: UpgradeLogData):
+        super().append_succeeded(data)
 
-    def appendSucceeded(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.SUCCEEDED, when, version, upgrade_id, pkg_name)
+    def append_failed(self, data: UpgradeLogData):
+        super().append_failed(data)
 
-    def appendFailed(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.FAILED, when, version, upgrade_id, pkg_name)
-
-    def appendCancelled(self, when, version, upgrade_id, pkg_name) -> None:
-        self._append(UpgradeLog.CANCELLED, when, version, upgrade_id, pkg_name)
-
-    def _parse_item(self, row):
-        record_date, event, when = super()._parse_item(row)
-        version = row[3]
-        upgrade_id = None
-        if len(row) > 4:
-            upgrade_id = row[4]
-        pkt_name = None
-        if len(row) > 5:
-            pkt_name = row[5]
-        return record_date, event, when, version, upgrade_id, pkt_name
+    def append_cancelled(self, data: UpgradeLogData):
+        super().append_cancelled(data)

@@ -1,7 +1,7 @@
 # Prerequisites
 * Docker
 * Current user added to 'docker' group (not needed for all environments)
-* macOS users will need to install an up to date version of sed using Homebrew `brew install gnu-sed --with-default-names`
+* macOS users will need to install an up to date version of sed using Homebrew `brew install gnu-sed`
 
 # Start pool
 ```

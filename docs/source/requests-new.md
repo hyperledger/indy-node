@@ -31,7 +31,7 @@ then have a look at [transactions](transactions.md).
 
 [indy-sdk](https://github.com/hyperledger/indy-sdk) expects the format as specified below.
 
-See [roles and permissions](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md) on the roles and who can create each type of transactions.
+See [roles and permissions](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md) on the roles and who can create each type of transactions.
 
 
 ## Base Client-to-Node and Node-to-Node serialization 
@@ -404,7 +404,7 @@ The format of each request-specific data for each type of request.
 
 ### NYM
 Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and trustee can be created only by other trusties (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)).
+Note that only trustees and stewards can create new trust anchors and trustee can be created only by other trusties (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
 
 The request can be used for 
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -425,7 +425,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - 2 (STEWARD)
     - 101 (TRUST_ANCHOR)
     
-  A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)).
+  A TRUSTEE can change any Nym's role to None, this stopping it from making any writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/source/auth_rules.md)).
   
 - `verkey` (base58-encoded string; optional): 
 
@@ -954,15 +954,8 @@ Adds a new node to the pool, or updates existing node in the pool.
 
 - `did` (base58-encoded string):
 
-    Target Node's DID as base58-encoded string for 16 or 32 bit DID value.
+    Target Node's verkey as base58-encoded string for 16 or 32 byte DID value.
     It differs from `from` metadata field, where `from` is the DID of the transaction submitter (Steward"s DID).
-    
-    *Example*: `from` is a DID of a Steward creating a new Node, and `did` is the DID of this Node.
-    
-- `verkey` (base58-encoded string; optional): 
-
-    Target Node verification key as base58-encoded string.
-    It may absent if `did` is 32-bit cryptonym CID. 
 
 - `alias` (string): 
     

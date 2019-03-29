@@ -10,7 +10,7 @@ import dateutil.tz
 from indy_common.types import Request
 from indy_node.server.node_maintainer import NodeMaintainer, \
     NodeControlToolMessage
-from indy_node.server.restart_log import RestartLog
+from indy_node.server.restart_log import RestartLogData, RestartLog
 from stp_core.common.log import getlogger
 from plenum.common.constants import TXN_TYPE, VERSION, DATA, IDENTIFIER
 from plenum.common.types import f
@@ -29,27 +29,25 @@ class Restarter(NodeMaintainer):
 
     def _defaultLog(self, dataDir, config):
         log = os.path.join(dataDir, config.restartLogFile)
-        return RestartLog(filePath=log)
+        return RestartLog(file_path=log)
 
     def _is_action_started(self):
-        if not self.lastActionEventInfo:
+        last_action = self.lastActionEventInfo
+        if not last_action:
             logger.debug('Node {} has no restart events'
                          .format(self.nodeName))
             return False
 
-        (event_type, when) = self.lastActionEventInfo
-
-        if event_type != RestartLog.STARTED:
-            logger.info('Restart for node {} was not scheduled. Last event is {}:{}'.
-                        format(self.nodeName, event_type, when))
+        if last_action.ev_type != RestartLog.Events.started:
+            logger.info(
+                "Restart for node {} was not scheduled. Last event is {}"
+                .format(self.nodeName, last_action))
             return False
 
         return True
 
     def _update_action_log_for_started_action(self):
-        (event_type, when) = self.lastActionEventInfo
-
-        self._actionLog.appendSucceeded(when)
+        self._actionLog.append_succeeded(self.lastActionEventInfo.data)
         logger.info("Node '{}' successfully restarted"
                     .format(self.nodeName))
 
@@ -87,7 +85,7 @@ class Restarter(NodeMaintainer):
 
     def requestRestart(self, when=None, fail_timeout=None):
         if self.scheduledAction:
-            if self.scheduledAction == when:
+            if self.scheduledAction.when == when:
                 logger.debug(
                     "Node {} already scheduled restart".format(
                         self.nodeName))
@@ -123,7 +121,6 @@ class Restarter(NodeMaintainer):
         :param version: version to restart to
         :param when: restart time
         """
-        assert isinstance(when, (str, datetime))
         logger.info("{}'s restarter processing restart"
                     .format(self))
         if isinstance(when, str):
@@ -133,14 +130,16 @@ class Restarter(NodeMaintainer):
         logger.info(
             "Restart of node '{}' has been scheduled on {}".format(
                 self.nodeName, when))
-        self._actionLog.appendScheduled(when)
 
-        callAgent = partial(self._callRestartAgent, when,
+        ev_data = RestartLogData(when)
+        self._actionLog.append_scheduled(ev_data)
+
+        callAgent = partial(self._callRestartAgent, ev_data,
                             failTimeout)
         delay = 0
         if now < when:
             delay = (when - now).total_seconds()
-        self.scheduledAction = (when)
+        self.scheduledAction = ev_data
         self._schedule(callAgent, delay)
 
     def _cancelScheduledRestart(self, justification=None) -> None:
@@ -158,41 +157,41 @@ class Restarter(NodeMaintainer):
                 why_prefix = ", "
                 why = "cancellation reason not specified"
 
-            when = self.scheduledAction
+            ev_data = self.scheduledAction
             logger.info("Cancelling restart"
-                        " of node {node}"
-                        " scheduled on {when}"
-                        "{why_prefix}{why}"
-                        .format(node=self.nodeName,
-                                when=when,
-                                why_prefix=why_prefix,
-                                why=why))
+                        " of node {}"
+                        " scheduled on {}"
+                        "{}{}"
+                        .format(self.nodeName,
+                                ev_data.when,
+                                why_prefix,
+                                why))
 
             self._unscheduleAction()
-            self._actionLog.appendCancelled(when)
+            self._actionLog.append_cancelled(ev_data)
             logger.info(
                 "Restart of node '{}'"
                 "has been cancelled due to {}".format(
                     self.nodeName, why))
 
-    def _callRestartAgent(self, when, failTimeout) -> None:
+    def _callRestartAgent(self, ev_data: RestartLogData, failTimeout) -> None:
         """
         Callback which is called when restart time come.
         Writes restart record to restart log and asks
         node control service to perform restart
 
-        :param when: restart time
+        :param ev_data: restart event data
         :param version: version to restart to
         """
 
         logger.info("{}'s restart calling agent for restart".format(self))
-        self._actionLog.appendStarted(when)
+        self._actionLog.append_started(ev_data)
         self._action_start_callback()
         self.scheduledAction = None
         asyncio.ensure_future(
-            self._sendUpdateRequest(when, failTimeout))
+            self._sendUpdateRequest(ev_data, failTimeout))
 
-    async def _sendUpdateRequest(self, when, failTimeout):
+    async def _sendUpdateRequest(self, ev_data: RestartLogData, failTimeout):
         retryLimit = self.retry_limit
         while retryLimit:
             try:
@@ -206,7 +205,7 @@ class Restarter(NodeMaintainer):
                 asyncio.sleep(self.retry_timeout)
                 retryLimit -= 1
         if not retryLimit:
-            self._action_failed(scheduled_on=when,
+            self._action_failed(ev_data,
                                 reason="problems in communication with "
                                        "node control service")
             self._unscheduleAction()
@@ -214,37 +213,37 @@ class Restarter(NodeMaintainer):
         else:
             logger.info("Waiting {} minutes for restart to be performed"
                         .format(failTimeout))
-            timesUp = partial(self._declareTimeoutExceeded, when)
+            timesUp = partial(self._declareTimeoutExceeded, ev_data)
             self._schedule(timesUp, self.get_timeout(failTimeout))
 
-    def _declareTimeoutExceeded(self, when):
+    def _declareTimeoutExceeded(self, ev_data: RestartLogData):
         """
         This function is called when time for restart is up
         """
-
-        logger.info("Timeout exceeded for {}".format(when))
-        last = self._actionLog.lastEvent
-        if last and last[1:-1] == (RestartLog.FAILED, when):
+        logger.info("Timeout exceeded for {}".format(ev_data.when))
+        last = self._actionLog.last_event
+        if (last and last.ev_type == RestartLog.Events.failed and
+                last.data == ev_data):
             return None
 
-        self._action_failed(scheduled_on=when,
+        self._action_failed(ev_data,
                             reason="exceeded restart timeout")
 
         self._unscheduleAction()
         self._actionFailedCallback()
 
     def _action_failed(self, *,
-                       scheduled_on,
+                       ev_data: RestartLogData,
                        reason=None,
                        external_reason=False):
         if reason is None:
             reason = "unknown reason"
-        error_message = "Node {node} failed restart" \
-                        "scheduled on {scheduled_on} " \
-                        "because of {reason}" \
-            .format(node=self.nodeName,
-                    scheduled_on=scheduled_on,
-                    reason=reason)
+        error_message = "Node {} failed restart" \
+                        "scheduled on {} " \
+                        "because of {}" \
+            .format(self.nodeName,
+                    ev_data.when,
+                    reason)
         logger.error(error_message)
         if external_reason:
             logger.error("This problem may have external reasons, "
