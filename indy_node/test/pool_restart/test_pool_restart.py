@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import dateutil
 from jsonpickle import json
 
-from indy_node.server.restart_log import RestartLog
+from indy_node.server.restart_log import RestartLog, RestartLogData
 
 from indy_common.constants import POOL_RESTART, ACTION, START, CANCEL
 from indy_node.server.restarter import Restarter
@@ -34,7 +34,7 @@ def test_pool_restart(
 
     _stopServer(server)
     for node in txnPoolNodeSet:
-        assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
+        assert node.restarter.lastActionEventInfo.ev_type == RestartLog.Events.scheduled
     _comparison_reply(responses, req_obj)
 
 
@@ -46,8 +46,9 @@ def test_restarter_can_initialize_after_pool_restart(txnPoolNodeSet):
     '''
     unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
     restarted_node = txnPoolNodeSet[-1]
-    restarted_node.restarter._actionLog.appendScheduled(unow)
-    restarted_node.restarter._actionLog.appendStarted(unow)
+    ev_data = RestartLogData(unow)
+    restarted_node.restarter._actionLog.append_scheduled(ev_data)
+    restarted_node.restarter._actionLog.append_started(ev_data)
     Restarter(restarted_node.id,
               restarted_node.name,
               restarted_node.dataLocation,
@@ -73,7 +74,7 @@ def test_pool_restart_cancel(
                                           action=START,
                                           datetime=str(datetime.isoformat(start_at)))
     for node in txnPoolNodeSet:
-        assert node.restarter.lastActionEventInfo[0] == RestartLog.SCHEDULED
+        assert node.restarter.lastActionEventInfo.ev_type == RestartLog.Events.scheduled
     _comparison_reply(responses, req_obj)
 
     req_obj, responses = sdk_send_restart(looper,
@@ -83,7 +84,7 @@ def test_pool_restart_cancel(
                                           datetime="")
     _stopServer(server)
     for node in txnPoolNodeSet:
-        assert node.restarter.lastActionEventInfo[0] == RestartLog.CANCELLED
+        assert node.restarter.lastActionEventInfo.ev_type == RestartLog.Events.cancelled
     _comparison_reply(responses, req_obj)
 
 
@@ -128,8 +129,8 @@ def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
 
 
 def _check_restart_log(item, action, when=None):
-    assert item[1] == action and (
-            when is None or str(datetime.isoformat(item[2])) == when)
+    assert item.ev_type == action and (
+            when is None or str(datetime.isoformat(item.data.when)) == when)
 
 
 def _comparison_reply(responses, req_obj):
