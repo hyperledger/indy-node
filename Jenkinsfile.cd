@@ -1,6 +1,5 @@
 #!groovy
 
-// TODO doesn't exist yet
 @Library('SovrinHelpers@v2.0.1') _
 
 String name = 'indy-node'
