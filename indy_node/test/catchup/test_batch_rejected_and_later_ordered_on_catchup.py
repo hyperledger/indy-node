@@ -41,7 +41,6 @@ concerningLogLevels = [logging.WARNING,
                        logging.CRITICAL]
 
 
-@pytest.mark.skip(reason="Temporary disabled to make node release with latest plenum, fix ASAP!")
 def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
         looper,
         tdirWithPoolTxns,
@@ -119,7 +118,7 @@ def test_batch_rejected_on_catchup_start_can_be_ordered_before_ledgers_sync(
            - on_batch_created_call_times_before == 1
 
     assert process_ordered_call_times_after \
-           - process_ordered_call_times_before == 1  # one per replica
+           - process_ordered_call_times_before == 0  # one per replica
     last_2_process_ordered_results = \
         [call.result for call
          in slow_node.spylog.getAll(Node.processOrdered.__name__)[-2:]]
