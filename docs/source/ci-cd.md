@@ -112,7 +112,7 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
     - different versions in migrations scripts
 
 
-##### For releases `< 1.7.0`
+##### For releases `< 1.7.0` (deprecated)
 - Please note, that we are using semver-like approach for versioning (major, minor, build) for each of the components.
 - Major and minor parts are set in the code (see [\_\_metadata\_\_.py](https://github.com/hyperledger/indy-node/blob/master/indy_node/__metadata__.py)). They must be incremented for new releases manually from code if needed.
 - Build part is incremented with each build on Jenkins (so it always increases, but may be not sequentially)
@@ -136,6 +136,7 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
   - commits and pushes changes
   - creates a release candidate PR to `release-X.Y.0`
 3. [Maintainer] Waits for CI, reviews the PR and either merges the PR or asks for changes.
+  - Once the PR is merged the maintainer starts release candidate pipeline manually.
 4. [build server] Once the PR is merged CD pipeline is triggered for branch `release-X.Y.0` and it does the following:
   - creates and pushes release commit to `release-X.Y.0`
   - publish release candidates packages
@@ -143,6 +144,7 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
   - creates PR to merge `release-X.Y.0` to `stable`
   - waits for approval to proceed
 5. [Maintainer/QA] Waits for CI, reviews the PR and either approves or rejects:
+  - QA may run additional tests against the release candidate before approval
   - in case of approval it also lets build server to proceed
   - otherwise stops the pipeline and previous steps are repeated for new release candidate `X.Y.0.rc1` and possible future ones
 6. [build server]
