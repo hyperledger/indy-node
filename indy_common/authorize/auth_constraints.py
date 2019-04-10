@@ -53,7 +53,6 @@ class AbstractAuthConstraint(metaclass=ABCMeta):
     def set_metadata(self, metadata: dict):
         raise NotImplementedError()
 
-
     @staticmethod
     def from_dict(as_dict):
         raise NotImplementedError()
