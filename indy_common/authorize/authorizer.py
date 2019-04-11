@@ -41,15 +41,17 @@ class RolesAuthorizer(AbstractAuthorizer):
         by this function means that corresponding DID is not stored in a ledger.
         """
         idr = request.identifier
-        try:
-            role = self.cache.getRole(idr, isCommitted=False)
-        except KeyError:
-            role = None
+        return self._get_role(idr)
 
-        return role
-
-    def get_sig_count(self, request: Request):
-        pass
+    def get_sig_count(self, request: Request, role: str="*"):
+        if role == "*":
+            return len(request.signatures)
+        sig_count = 0
+        for identifier, _ in request.signatures:
+            signer_role = self._get_role(identifier)
+            if signer_role == role:
+                sig_count += 1
+        return sig_count
 
     def is_owner_accepted(self, constraint: AuthConstraint, action: AbstractAuthAction):
         if constraint.need_to_be_owner and not action.is_owner:
@@ -62,10 +64,8 @@ class RolesAuthorizer(AbstractAuthorizer):
             if role is not None else None
 
     def is_sig_count_accepted(self, request: Request, auth_constraint: AuthConstraint):
-        sig_count = 1
-        if auth_constraint.sig_count != 1:
-            sig_count = self.get_sig_count(request)
-
+        role = auth_constraint.role
+        sig_count = self.get_sig_count(request, role=role)
         return sig_count >= auth_constraint.sig_count
 
     def get_named_role_from_req(self, request: Request):
@@ -78,10 +78,12 @@ class RolesAuthorizer(AbstractAuthorizer):
         is_role_accepted = self.is_role_accepted(request, auth_constraint)
         if is_role_accepted is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
-        if not is_role_accepted:
-            return False, "{} can not do this action".format(self.get_named_role_from_req(request))
-        if not self.is_sig_count_accepted(request, auth_constraint):
-            return False, "Not enough signatures"
+        if not request.signature:
+            if not is_role_accepted:
+                return False, "{} can not do this action".format(self.get_named_role_from_req(request))
+        if not request.signatures:
+            if not self.is_sig_count_accepted(request, auth_constraint):
+                return False, "Not enough {} signatures".format(role)
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
                 return False, "{} can not touch {} field since only the owner can modify it".\
@@ -92,6 +94,12 @@ class RolesAuthorizer(AbstractAuthorizer):
                     format(self.get_named_role_from_req(request),
                            IndyTransactions.get_name_from_code(auth_action.txn_type))
         return True, ""
+
+    def _get_role(self, idr):
+        try:
+            return self.cache.getRole(idr, isCommitted=False)
+        except KeyError:
+            return None
 
 
 class CompositeAuthorizer(AbstractAuthorizer):
