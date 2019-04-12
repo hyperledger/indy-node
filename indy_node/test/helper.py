@@ -129,7 +129,7 @@ def sdk_rotate_verkey(looper, sdk_pool_handle, wh,
     return verkey
 
 
-def start_stopped_node(stopped_node, looper, tconf, tdir, allPluginsPath):
+def start_stopped_node(stopped_node, looper, tconf, tdir, allPluginsPath, start=True):
     nodeHa, nodeCHa = HA(*
                          stopped_node.nodestack.ha), HA(*
                                                         stopped_node.clientstack.ha)
@@ -139,7 +139,8 @@ def start_stopped_node(stopped_node, looper, tconf, tdir, allPluginsPath):
                               config=tconf,
                               ha=nodeHa, cliha=nodeCHa,
                               pluginPaths=allPluginsPath)
-    looper.add(restarted_node)
+    if start:
+        looper.add(restarted_node)
     return restarted_node
 
 
