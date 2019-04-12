@@ -14,7 +14,7 @@ NEED_TO_BE_OWNER = "need_to_be_owner"
 
 IDENTITY_OWNER = None
 
-accepted_roles = [NETWORK_MONITOR, TRUST_ANCHOR, STEWARD, TRUSTEE, '*']
+accepted_roles = [IDENTITY_OWNER, NETWORK_MONITOR, TRUST_ANCHOR, STEWARD, TRUSTEE, '*']
 
 
 class ConstraintEnum(Enum):

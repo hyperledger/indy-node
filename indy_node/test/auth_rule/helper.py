@@ -10,7 +10,9 @@ from plenum.common.constants import TRUSTEE, TXN_TYPE
 from indy_common.authorize.auth_constraints import CONSTRAINT_ID, ROLE, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, \
     ConstraintsEnum, AUTH_CONSTRAINTS
 from plenum.common.util import randomString
-from plenum.test.helper import sdk_sign_and_submit_req_obj, sdk_get_and_check_replies, sdk_gen_request
+from plenum.test.helper import sdk_sign_and_submit_req_obj, sdk_get_and_check_replies, sdk_gen_request, \
+    sdk_multi_sign_request_objects, sdk_json_to_request_object, sdk_send_signed_requests
+from plenum.test.pool_transactions.helper import prepare_nym_request
 
 
 def generate_constraint_entity(constraint_id=ConstraintsEnum.ROLE_CONSTRAINT_ID,
@@ -75,3 +77,27 @@ def sdk_send_and_check_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_ha
         return req
     resp = sdk_get_and_check_replies(looper, [req])
     return resp
+
+
+def add_new_nym(looper, sdk_pool_handle, creators_wallets,
+                alias=None, role=None, seed=None,
+                dest=None, verkey=None, skipverkey=False, no_wait=False):
+    seed = seed or randomString(32)
+    alias = alias or randomString(5)
+    wh, _ = creators_wallets[0]
+
+    # filling nym request and getting steward did
+    # if role == None, we are adding client
+    nym_request, new_did = looper.loop.run_until_complete(
+        prepare_nym_request(creators_wallets[0], seed,
+                            alias, role, dest, verkey, skipverkey))
+
+    # sending request using 'sdk_' functions
+    signed_reqs = sdk_multi_sign_request_objects(looper, creators_wallets,
+                                                 [sdk_json_to_request_object(
+                                                     json.loads(nym_request))])
+    request_couple = sdk_send_signed_requests(sdk_pool_handle, signed_reqs)[0]
+    if no_wait:
+        return request_couple
+    # waiting for replies
+    sdk_get_and_check_replies(looper, [request_couple])

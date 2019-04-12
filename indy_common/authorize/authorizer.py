@@ -5,6 +5,7 @@ from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthC
     AuthConstraintAnd, ConstraintsEnum
 from indy_common.authorize.helper import get_named_role
 from indy_common.constants import NYM, CLAIM_DEF
+from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
@@ -47,7 +48,7 @@ class RolesAuthorizer(AbstractAuthorizer):
         if role == "*":
             return len(request.signatures)
         sig_count = 0
-        for identifier, _ in request.signatures:
+        for identifier, _ in request.signatures.items():
             signer_role = self._get_role(identifier)
             if signer_role == role:
                 sig_count += 1
@@ -78,12 +79,12 @@ class RolesAuthorizer(AbstractAuthorizer):
         is_role_accepted = self.is_role_accepted(request, auth_constraint)
         if is_role_accepted is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
-        if not request.signature:
+        if request.signature:
             if not is_role_accepted:
                 return False, "{} can not do this action".format(self.get_named_role_from_req(request))
-        if not request.signatures:
+        if request.signatures:
             if not self.is_sig_count_accepted(request, auth_constraint):
-                return False, "Not enough {} signatures".format(role)
+                return False, "Not enough {} signatures".format(Roles(auth_constraint.role).name)
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
                 return False, "{} can not touch {} field since only the owner can modify it".\
