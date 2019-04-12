@@ -50,6 +50,9 @@ class AbstractAuthConstraint(metaclass=ABCMeta):
             return False
         return True
 
+    def set_metadata(self, metadata: dict):
+        raise NotImplementedError()
+
     @staticmethod
     def from_dict(as_dict):
         raise NotImplementedError()
@@ -103,6 +106,9 @@ class AuthConstraint(AbstractAuthConstraint):
     def from_dict(as_dict):
         return AuthConstraint(**as_dict)
 
+    def set_metadata(self, metadata: dict):
+        self.metadata = metadata
+
 
 class AuthConstraintAnd(AbstractAuthConstraint):
     def __init__(self, auth_constraints: List[AbstractAuthConstraint]):
@@ -130,6 +136,10 @@ class AuthConstraintAnd(AbstractAuthConstraint):
         as_dict[AUTH_CONSTRAINTS] = auth_constraints
 
         return AuthConstraintAnd(**as_dict)
+
+    def set_metadata(self, metadata: dict):
+        for constraint in self.auth_constraints:
+            constraint.set_metadata(metadata)
 
 
 class AuthConstraintOr(AbstractAuthConstraint):
@@ -160,6 +170,10 @@ class AuthConstraintOr(AbstractAuthConstraint):
         as_dict[AUTH_CONSTRAINTS] = auth_constraints
 
         return AuthConstraintOr(**as_dict)
+
+    def set_metadata(self, metadata: dict):
+        for constraint in self.auth_constraints:
+            constraint.set_metadata(metadata)
 
 
 class ConstraintCreator:

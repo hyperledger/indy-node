@@ -122,7 +122,7 @@ class CompositeAuthorizer(AbstractAuthorizer):
                                                       auth_action=auth_action)
             if not authorized:
                 raise AuthValidationError(reason)
-            return True, ""
+        return True, ""
 
 
 class AndAuthorizer(AbstractAuthorizer):
