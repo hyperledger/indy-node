@@ -382,57 +382,7 @@
     <td><sub>TRUSTEE, STEWARD, NETWORK_MONITOR</sub></td>
     <td><sub>Getting validator_info from pool</sub></td>
   </tr>
-</table>
-
-### Also, there is a some optional rules for case if in config option ANYONE_CAN_WRITE is set to True:
-<table class="tg">
-  <tr>
-    <th>Transaction type</th>
-    <th>Field</th>
-    <th>Previous value</th>
-    <th>New value</th>
-    <th>Who can</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td><sub>NYM</sub></td>
-    <td><sub><code>role</code></sub></td>
-    <td><sub><code>&lt;empty&gt;</code></sub></td>
-    <td><sub><code>&lt;empty&gt;</code></sub></td>
-    <td><sub>Anyone</sub></td>
-    <td><sub>Adding new nym</sub></td>
-  </tr>
-  <tr>
-    <td><sub>SCHEMA</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>Anyone</sub></td>
-    <td><sub>Any operations with SCHEMA transaction</sub></td>
-  </tr>
-  <tr>
-    <td><sub>CLAIM_DEF</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>Anyone</sub></td>
-    <td><sub>Any operations with CLAIM_DEF transaction</sub></td>
-  </tr>
-</table>
-
-
-### As of now it's not implemented yet, but the next rules for Revocation feature are needed:
-#### If ANYONE_CAN_WRITE is set to False:
-<table class="tg">
-  <tr>
-    <th>Transaction type</th>
-    <th>Field</th>
-    <th>Previous value</th>
-    <th>New value</th>
-    <th>Who can</th>
-    <th>Description</th>
-  </tr>
-  <tr>
+    <tr>
     <td><sub>REVOC_REG_DEF</sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
@@ -466,8 +416,7 @@
   </tr>
 </table>
 
-
-#### If ANYONE_CAN_WRITE is set to True:
+### Also, there are optional rules for case of ANYONE_CAN_WRITE set to True in config file:
 <table class="tg">
   <tr>
     <th>Transaction type</th>
@@ -478,6 +427,30 @@
     <th>Description</th>
   </tr>
   <tr>
+    <td><sub>NYM</sub></td>
+    <td><sub><code>role</code></sub></td>
+    <td><sub><code>&lt;empty&gt;</code></sub></td>
+    <td><sub><code>&lt;empty&gt;</code></sub></td>
+    <td><sub>Anyone</sub></td>
+    <td><sub>Adding new nym</sub></td>
+  </tr>
+  <tr>
+    <td><sub>SCHEMA</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>Anyone</sub></td>
+    <td><sub>Any operations with SCHEMA transaction</sub></td>
+  </tr>
+  <tr>
+    <td><sub>CLAIM_DEF</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>Anyone</sub></td>
+    <td><sub>Any operations with CLAIM_DEF transaction</sub></td>
+  </tr>
+    <tr>
     <td><sub>REVOC_REG_DEF</sub></td>
     <td><sub><code>*</code></sub></td>
     <td><sub><code>*</code></sub></td>
@@ -510,3 +483,4 @@
     <td><sub>Adding new REVOC_REG_ENTRY</sub></td>
   </tr>
 </table>
+
