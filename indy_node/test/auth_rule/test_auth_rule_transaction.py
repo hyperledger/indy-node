@@ -61,8 +61,7 @@ def test_reject_auth_rule_transaction(looper,
         sdk_send_and_check_auth_rule_request(looper,
                                              sdk_wallet_steward,
                                              sdk_pool_handle)
-    e.match('UnauthorizedClientRequest')
-    e.match('can not do this action')
+    e.match('Not enough TRUSTEE signatures')
 
 
 def test_reqnack_auth_rule_transaction_with_wrong_key(looper,
