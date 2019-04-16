@@ -2,7 +2,7 @@ import json
 
 from indy.did import create_and_store_my_did
 
-from indy_common.authorize.auth_actions import ADD_PREFIX
+from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.constants import AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE, NYM, \
     TRUST_ANCHOR
 from plenum.common.constants import TRUSTEE, TXN_TYPE
@@ -49,7 +49,7 @@ def generate_auth_rule_operation(auth_action=ADD_PREFIX, auth_type=NYM,
           FIELD: field,
           NEW_VALUE: new_value
           }
-    if old_value:
+    if old_value or auth_action == EDIT_PREFIX:
         op[OLD_VALUE] = old_value
     return op
 

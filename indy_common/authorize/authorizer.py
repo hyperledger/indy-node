@@ -45,12 +45,17 @@ class RolesAuthorizer(AbstractAuthorizer):
         return self._get_role(idr)
 
     def get_sig_count(self, request: Request, role: str="*"):
+        if request.signature:
+            return 1 \
+                if self.is_role_accepted(self._get_role(request.identifier), role)\
+                else 0
         if role == "*":
             return len(request.signatures)
+
         sig_count = 0
         for identifier, _ in request.signatures.items():
             signer_role = self._get_role(identifier)
-            if signer_role == role:
+            if self.is_role_accepted(signer_role, role):
                 sig_count += 1
         return sig_count
 
@@ -59,10 +64,12 @@ class RolesAuthorizer(AbstractAuthorizer):
             return False
         return True
 
-    def is_role_accepted(self, request: Request, auth_constraint: AuthConstraint):
-        role = self.get_role(request)
-        return role == auth_constraint.role or auth_constraint.role == '*' \
-            if role is not None else None
+    def is_role_accepted(self, role, auth_constraint_role):
+        if role is None:
+            return False
+        if role == "":
+            role = None
+        return role == auth_constraint_role or auth_constraint_role == '*'
 
     def is_sig_count_accepted(self, request: Request, auth_constraint: AuthConstraint):
         role = auth_constraint.role
@@ -76,14 +83,9 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction=None):
-        is_role_accepted = self.is_role_accepted(request, auth_constraint)
-        if is_role_accepted is None:
+        if self.get_role(request) is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
-        if request.signature:
-            if not is_role_accepted:
-                return False, "{} can not do this action".format(self.get_named_role_from_req(request))
-        if request.signatures:
-            if not self.is_sig_count_accepted(request, auth_constraint):
+        if not self.is_sig_count_accepted(request, auth_constraint):
                 return False, "Not enough {} signatures".format(Roles(auth_constraint.role).name)
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
