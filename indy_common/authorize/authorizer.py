@@ -65,6 +65,11 @@ class RolesAuthorizer(AbstractAuthorizer):
         return True
 
     def is_role_accepted(self, role, auth_constraint_role):
+        # The field 'role' contains a value from the cache.
+        # None - the identifier doesn't found in cache.
+        # "" - IDENTITY_OWNER
+        # The field 'auth_constraint_role' contains a role from auth_map
+        # None - IDENTITY_OWNER
         if role is None:
             return False
         if role == "":

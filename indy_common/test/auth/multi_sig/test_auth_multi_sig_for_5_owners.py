@@ -32,7 +32,7 @@ def test_claim_def_adding_fail_1_owner_4_unknown(write_request_validation, req,
     assert not write_request_validation(req, [key])
 
 
-def test_claim_def_adding_success_5_trustees(write_request_validation, req,
-                                             trustees, key):
+def test_claim_def_adding_fail_5_trustees(write_request_validation, req,
+                                          trustees, key):
     req.signatures = {idr: "signature" for idr in trustees}
     assert not write_request_validation(req, [key])
