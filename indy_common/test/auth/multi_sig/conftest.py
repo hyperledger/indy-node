@@ -45,5 +45,3 @@ def key():
     return AuthActionAdd(txn_type='SomeType',
                          field='some_field',
                          value='new_value')
-
-
