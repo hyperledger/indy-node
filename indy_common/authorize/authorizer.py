@@ -164,7 +164,7 @@ class OrAuthorizer(AbstractAuthorizer):
                                       auth_constraint=constraint,
                                       auth_action=auth_action)
             except AuthValidationError as e:
-                logger.debug(e)
+                logger.trace(e)
             else:
                 successes.append(True)
         if len(successes) == 0:
