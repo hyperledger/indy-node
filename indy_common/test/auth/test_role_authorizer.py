@@ -2,7 +2,7 @@ import pytest
 import time
 
 from indy_common.authorize.auth_actions import AuthActionAdd
-from indy_common.authorize.auth_constraints import AuthConstraint
+from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_common.authorize.authorizer import RolesAuthorizer
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
@@ -43,19 +43,13 @@ def test_role_authorizer_get_role(idr_cache, req_auth):
     assert authorizer.get_role(req_auth) == STEWARD
 
 
-def test_role_authorizer_is_role_accepted(idr_cache, req_auth):
+def test_role_authorizer_is_role_accepted(idr_cache):
     authorizer = RolesAuthorizer(cache=idr_cache)
-    assert authorizer.is_role_accepted(req_auth, AuthConstraint(role=STEWARD, sig_count=1))
-
-
-def test_role_authorizer_role_not_accepted(idr_cache, req_auth):
-    authorizer = RolesAuthorizer(cache=idr_cache)
-    assert not authorizer.is_role_accepted(req_auth, AuthConstraint(role=TRUSTEE, sig_count=1))
-
-
-def test_role_authorizer_role_accepted_for_all_roles(idr_cache, req_auth):
-    authorizer = RolesAuthorizer(cache=idr_cache)
-    assert authorizer.is_role_accepted(req_auth, AuthConstraint(role="*", sig_count=1))
+    assert authorizer.is_role_accepted(role="", auth_constraint_role=IDENTITY_OWNER)
+    assert not authorizer.is_role_accepted(role=TRUSTEE, auth_constraint_role=IDENTITY_OWNER)
+    assert not authorizer.is_role_accepted(role=None, auth_constraint_role=IDENTITY_OWNER)
+    assert authorizer.is_role_accepted(role=TRUSTEE, auth_constraint_role=TRUSTEE)
+    assert authorizer.is_role_accepted(role="", auth_constraint_role="*")
 
 
 def test_role_authorizer_is_owner_accepted(idr_cache, is_owner):
@@ -88,7 +82,7 @@ def test_role_authorizer_not_authorize_role(idr_cache, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache)
     authorized, reason = authorizer.authorize(req_auth, AuthConstraint(role=TRUSTEE, sig_count=1))
     assert not authorized
-    assert reason == "STEWARD can not do this action"
+    assert reason == "Not enough TRUSTEE signatures"
 
 
 def test_role_authorizer_not_authorize_unknown_nym(idr_cache):
@@ -106,31 +100,11 @@ def test_role_authorizer_not_authorize_unknown_nym(idr_cache):
     assert reason == "sender's DID {} is not found in the Ledger".format(unknown_req_auth.identifier)
 
 
-def test_role_authorizer_none_role_not_accepted(idr_cache_none_role, req_auth):
+def test_role_authorizer_is_sig_count_accepted(idr_cache_none_role, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache_none_role)
-    assert not authorizer.is_role_accepted(req_auth, AuthConstraint(role=STEWARD, sig_count=1))
+    assert authorizer.is_sig_count_accepted(req_auth, AuthConstraint(role="*", sig_count=1))
 
 
-def test_role_authorizer_none_role_accepted_for_all_roles(idr_cache_none_role, req_auth):
+def test_role_authorizer_not_is_sig_count_accepted(idr_cache_none_role, req_auth):
     authorizer = RolesAuthorizer(cache=idr_cache_none_role)
-    assert authorizer.is_role_accepted(req_auth, AuthConstraint(role="*", sig_count=1))
-
-
-def test_role_authorizer_is_sig_count_accepted():
-    """need to implementation"""
-    pass
-
-
-def test_role_authorizer_not_is_sig_count_accepted():
-    """need to implementation"""
-    pass
-
-
-def test_role_authorizer_authorize_with_sig_count():
-    """need to implementation"""
-    pass
-
-
-def test_role_authorizer_not_authorize_with_sig_count():
-    """need to implementation"""
-    pass
+    assert not authorizer.is_sig_count_accepted(req_auth, AuthConstraint(role=TRUSTEE, sig_count=10))

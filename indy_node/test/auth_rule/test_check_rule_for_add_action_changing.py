@@ -31,7 +31,7 @@ def test_check_rule_for_add_action_changing(looper,
                                          constraint=constraint.as_dict)
 
     did2, verkey2 = create_verkey_did(looper, wh)
-    with pytest.raises(RequestRejectedException, match="TRUSTEE can not do this action"):
+    with pytest.raises(RequestRejectedException, match="Not enough STEWARD signatures"):
         """Adding new steward for changed auth rules"""
         sdk_add_new_nym(looper,
                         sdk_pool_handle,

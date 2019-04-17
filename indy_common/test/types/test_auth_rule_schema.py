@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from indy_common.types import ClientSchemaOperation, SchemaField, ConstraintListField, ClientAuthRuleOperation, \
-    ConstraintEntityField, ConstraintField
+    ConstraintEntityField, ConstraintField, AuthRuleValueField
 from plenum.common.messages.fields import ConstantField, VersionField, IterableField, LimitedLengthStringField, \
     ChooseField, RoleField, NonNegativeNumberField, BooleanField, AnyMapField
 
@@ -51,8 +51,8 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("auth_action", ChooseField),
     ("auth_type", LimitedLengthStringField),
     ("field", LimitedLengthStringField),
-    ("old_value", LimitedLengthStringField),
-    ("new_value", LimitedLengthStringField),
+    ("old_value", AuthRuleValueField),
+    ("new_value", AuthRuleValueField),
 ])
 
 

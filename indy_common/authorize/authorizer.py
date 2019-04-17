@@ -1,13 +1,16 @@
 from abc import ABCMeta
+from logging import getLogger
 
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, \
     AuthConstraintAnd, ConstraintsEnum
 from indy_common.authorize.helper import get_named_role
 from indy_common.constants import NYM, CLAIM_DEF
+from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
+logger = getLogger()
 
 
 class AuthValidationError(Exception):
@@ -41,31 +44,45 @@ class RolesAuthorizer(AbstractAuthorizer):
         by this function means that corresponding DID is not stored in a ledger.
         """
         idr = request.identifier
-        try:
-            role = self.cache.getRole(idr, isCommitted=False)
-        except KeyError:
-            role = None
+        return self._get_role(idr)
 
-        return role
+    def get_sig_count(self, request: Request, role: str="*"):
+        if request.signature:
+            return 1 \
+                if self.is_role_accepted(self._get_role(request.identifier), role)\
+                else 0
+        elif not request.signatures:
+            return 0
+        if role == "*":
+            return len(request.signatures)
 
-    def get_sig_count(self, request: Request):
-        pass
+        sig_count = 0
+        for identifier, _ in request.signatures.items():
+            signer_role = self._get_role(identifier)
+            if self.is_role_accepted(signer_role, role):
+                sig_count += 1
+        return sig_count
 
     def is_owner_accepted(self, constraint: AuthConstraint, action: AbstractAuthAction):
         if constraint.need_to_be_owner and not action.is_owner:
             return False
         return True
 
-    def is_role_accepted(self, request: Request, auth_constraint: AuthConstraint):
-        role = self.get_role(request)
-        return role == auth_constraint.role or auth_constraint.role == '*' \
-            if role is not None else None
+    def is_role_accepted(self, role, auth_constraint_role):
+        # The field 'role' contains a value from the cache.
+        # None - the identifier doesn't found in the cache.
+        # "" - IDENTITY_OWNER
+        # The field 'auth_constraint_role' contains a role from the auth_map
+        # None - IDENTITY_OWNER
+        if role is None:
+            return False
+        if role == "":
+            role = None
+        return role == auth_constraint_role or auth_constraint_role == '*'
 
     def is_sig_count_accepted(self, request: Request, auth_constraint: AuthConstraint):
-        sig_count = 1
-        if auth_constraint.sig_count != 1:
-            sig_count = self.get_sig_count(request)
-
+        role = auth_constraint.role
+        sig_count = self.get_sig_count(request, role=role)
         return sig_count >= auth_constraint.sig_count
 
     def get_named_role_from_req(self, request: Request):
@@ -75,13 +92,10 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction=None):
-        is_role_accepted = self.is_role_accepted(request, auth_constraint)
-        if is_role_accepted is None:
+        if self.get_role(request) is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
-        if not is_role_accepted:
-            return False, "{} can not do this action".format(self.get_named_role_from_req(request))
         if not self.is_sig_count_accepted(request, auth_constraint):
-            return False, "Not enough signatures"
+                return False, "Not enough {} signatures".format(Roles(auth_constraint.role).name)
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
                 return False, "{} can not touch {} field since only the owner can modify it".\
@@ -92,6 +106,12 @@ class RolesAuthorizer(AbstractAuthorizer):
                     format(self.get_named_role_from_req(request),
                            IndyTransactions.get_name_from_code(auth_action.txn_type))
         return True, ""
+
+    def _get_role(self, idr):
+        try:
+            return self.cache.getRole(idr, isCommitted=False)
+        except KeyError:
+            return None
 
 
 class CompositeAuthorizer(AbstractAuthorizer):
@@ -143,8 +163,8 @@ class OrAuthorizer(AbstractAuthorizer):
                 self.parent.authorize(request=request,
                                       auth_constraint=constraint,
                                       auth_action=auth_action)
-            except AuthValidationError:
-                pass
+            except AuthValidationError as e:
+                logger.trace(e)
             else:
                 successes.append(True)
         if len(successes) == 0:

@@ -48,7 +48,7 @@ def test_revert_auth_rule_changing(looper,
         Validation should raise exception because we change uncommitted state
         by adding new rule, that "Only steward can add new steward"
         """
-        with pytest.raises(RequestRejectedException, match="TRUSTEE can not do this action"):
+        with pytest.raises(RequestRejectedException, match="Not enough STEWARD signatures"):
             sdk_add_new_nym(looper,
                             sdk_pool_handle,
                             sdk_wallet_trustee,
@@ -68,7 +68,7 @@ def test_revert_auth_rule_changing(looper,
     Try to create new steward by steward
     We can not do this, because AUTH_RULE txn was reverted
     """
-    with pytest.raises(RequestRejectedException, match="STEWARD can not do this action"):
+    with pytest.raises(RequestRejectedException, match="Not enough TRUSTEE signatures"):
         sdk_add_new_nym(looper,
                         sdk_pool_handle,
                         sdk_wallet_steward,
