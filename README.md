@@ -41,14 +41,11 @@ or [Getting Started Guide with VCX](https://github.com/hyperledger/indy-sdk/blob
 If you haven't done so already, please visit the main resource for all things "Indy" to get acquainted with the code base, helpful resources, and up-to-date information: [Hyperledger Wiki-Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy).
 
 ## Technical Overview of Indy Blockchain
-Refer to our documentation site at [Indy Readthedocs Plenum](https://indy.readthedocs.io/projects/plenum/en/latest/index.html)
-and [Indy Readthedocs Node](https://hyperledger-indy.readthedocs.io/projects/node/en/latest/index.html)
- for the most current documentation and walkthroughs
-
-
-Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
-
-More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
+- Refer to our documentation site at `indy.readthedocs.io` for the most current documentation and walkthroughs
+  - [indy.readthedocs.io/projects/plenum](https://indy.readthedocs.io/projects/plenum/en/latest/index.html)
+  - [indy.readthedocs.io/projects/node](https://hyperledger-indy.readthedocs.io/projects/node/en/latest/index.html)
+- Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
+- More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
 and [indy-node-docs](docs/source/).
 
 ## Indy Node Repository Structure
