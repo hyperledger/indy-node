@@ -1,4 +1,5 @@
 from abc import ABCMeta
+from logging import getLogger
 
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, \
@@ -9,6 +10,7 @@ from indy_common.roles import Roles
 from indy_common.transactions import IndyTransactions
 from indy_common.types import Request
 from indy_node.persistence.idr_cache import IdrCache
+logger = getLogger()
 
 
 class AuthValidationError(Exception):
@@ -162,7 +164,7 @@ class OrAuthorizer(AbstractAuthorizer):
                                       auth_constraint=constraint,
                                       auth_action=auth_action)
             except AuthValidationError as e:
-                print(e)
+                logger.debug(e)
             else:
                 successes.append(True)
         if len(successes) == 0:
