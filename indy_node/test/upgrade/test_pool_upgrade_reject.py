@@ -22,7 +22,7 @@ def testOnlyTrusteeCanSendPoolUpgrade(looper, sdk_pool_handle, sdk_wallet_stewar
     validUpgrade[NAME] = 'upgrade-20'
     validUpgrade[VERSION] = bumpedVersion(validUpgrade['version'])
     req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_steward, validUpgrade)
-    sdk_get_bad_response(looper, [req], RequestRejectedException, '{} can not do this action'.format(STEWARD_STRING))
+    sdk_get_bad_response(looper, [req], RequestRejectedException, 'Not enough TRUSTEE signatures')
 
 
 def testNonTrustyCannotCancelUpgrade(looper, validUpgradeSent, sdk_pool_handle,
@@ -30,7 +30,7 @@ def testNonTrustyCannotCancelUpgrade(looper, validUpgradeSent, sdk_pool_handle,
     validUpgradeCopy = deepcopy(validUpgrade)
     validUpgradeCopy[ACTION] = CANCEL
     req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_steward, validUpgradeCopy)
-    sdk_get_bad_response(looper, [req], RequestRejectedException, '{} can not do this action'.format(STEWARD_STRING))
+    sdk_get_bad_response(looper, [req], RequestRejectedException, 'Not enough TRUSTEE signatures')
 
 
 def test_accept_then_reject_upgrade(
@@ -48,4 +48,4 @@ def test_accept_then_reject_upgrade(
 def testOnlyTrusteeCanSendPoolUpgradeForceTrue(
         looper, sdk_pool_handle, sdk_wallet_steward, validUpgradeExpForceTrue):
     req = sdk_send_upgrade(looper, sdk_pool_handle, sdk_wallet_steward, validUpgradeExpForceTrue)
-    sdk_get_bad_response(looper, [req], RequestNackedException, '{} can not do this action'.format(STEWARD_STRING))
+    sdk_get_bad_response(looper, [req], RequestNackedException, 'Not enough TRUSTEE signatures')
