@@ -33,7 +33,7 @@ def test_check_rule_for_edit_action_changing(looper,
     op = {'type': '1',
           'dest': new_steward_did,
           'role': None}
-    with pytest.raises(RequestRejectedException, match="TRUSTEE can not do this action"):
+    with pytest.raises(RequestRejectedException, match="Not enough STEWARD signatures"):
         """Blacklisting new steward by TRUSTEE"""
         req = sdk_sign_and_submit_op(looper, sdk_pool_handle, sdk_wallet_trustee, op)
         sdk_get_and_check_replies(looper, [req])
