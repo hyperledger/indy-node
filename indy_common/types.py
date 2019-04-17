@@ -42,19 +42,19 @@ from indy_common.version import SchemaVersion
 
 
 class Request(PRequest):
-    def signingState(self, identifier=None):
+    def signingPayloadState(self, identifier=None):
         """
         Special signing state where the the data for an attribute is hashed
         before signing
         :return: state to be used when signing
         """
         if self.operation.get(TXN_TYPE) == ATTRIB:
-            d = deepcopy(super().signingState(identifier=identifier))
+            d = deepcopy(super().signingPayloadState(identifier=identifier))
             op = d[OPERATION]
             keyName = {RAW, ENC, HASH}.intersection(set(op.keys())).pop()
             op[keyName] = sha256(op[keyName].encode()).hexdigest()
             return d
-        return super().signingState(identifier=identifier)
+        return super().signingPayloadState(identifier=identifier)
 
 
 class ClientGetNymOperation(MessageValidator):

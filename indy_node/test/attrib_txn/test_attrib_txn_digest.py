@@ -4,6 +4,8 @@ import pytest
 from indy.ledger import build_attrib_request, sign_request
 
 from indy_common.types import Request
+from plenum.common.request import Request as PRequest
+
 from plenum.common.txn_util import reqToTxn, get_digest, get_payload_digest
 from plenum.test.helper import sdk_set_protocol_version
 
@@ -37,3 +39,11 @@ def test_attrib_txn_digest_req_dict(req):
 def test_attrib_txn_digest_req_instance(req):
     txn = reqToTxn(req)
     assert get_digest(txn) == req.digest
+
+
+def test_attrib_txn_different_payload(req_json):
+    req_json = json.loads(req_json)
+    n_req = Request(**req_json)
+    p_req = PRequest(**req_json)
+    assert n_req.digest != p_req.payload_digest
+    assert n_req.payload_digest != p_req.payload_digest
