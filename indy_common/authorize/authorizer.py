@@ -49,6 +49,8 @@ class RolesAuthorizer(AbstractAuthorizer):
             return 1 \
                 if self.is_role_accepted(self._get_role(request.identifier), role)\
                 else 0
+        elif not request.signatures:
+            return 0
         if role == "*":
             return len(request.signatures)
 
@@ -159,8 +161,8 @@ class OrAuthorizer(AbstractAuthorizer):
                 self.parent.authorize(request=request,
                                       auth_constraint=constraint,
                                       auth_action=auth_action)
-            except AuthValidationError:
-                pass
+            except AuthValidationError as e:
+                print(e)
             else:
                 successes.append(True)
         if len(successes) == 0:
