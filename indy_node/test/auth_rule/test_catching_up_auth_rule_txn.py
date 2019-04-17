@@ -28,7 +28,7 @@ def test_catching_up_auth_rule_txn(looper,
     action = AuthActionAdd(txn_type=NYM,
                            field=ROLE,
                            value=STEWARD)
-    with pytest.raises(RequestRejectedException, match="STEWARD can not do this action"):
+    with pytest.raises(RequestRejectedException, match="Not enough TRUSTEE signatures"):
         sdk_add_new_nym(looper,
                         sdk_pool_handle,
                         sdk_wallet_steward,
