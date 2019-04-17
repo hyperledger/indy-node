@@ -8,8 +8,8 @@ EXPECTED_ORDERED_FIELDS = OrderedDict([
     ("auth_action", ChooseField),
     ("auth_type", LimitedLengthStringField),
     ("field", LimitedLengthStringField),
-    ("old_value", LimitedLengthStringField),
-    ("new_value", LimitedLengthStringField),
+    ("old_value", AuthRuleValueField),
+    ("new_value", AuthRuleValueField),
 ])
 
 
