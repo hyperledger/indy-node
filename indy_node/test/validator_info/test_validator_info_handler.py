@@ -3,16 +3,19 @@ import pytest
 from indy_common.constants import VALIDATOR_INFO
 from plenum.common.constants import TXN_TYPE, DATA
 from plenum.common.types import f
-from plenum.test.helper import sdk_gen_request
+from plenum.test.helper import sdk_gen_request, sdk_sign_request_objects
 
 
 def test_validator_info_handler(monkeypatch,
-                                sdk_wallet_trustee, txnPoolNodeSet):
+                                sdk_wallet_trustee,
+                                txnPoolNodeSet,
+                                looper):
 
     op = {
         TXN_TYPE: VALIDATOR_INFO
     }
     req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req_obj.signature = "signature"
 
     def is_ack(req_key, frm):
         assert (req_obj.identifier, req_obj.reqId) == req_key

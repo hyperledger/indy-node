@@ -106,9 +106,6 @@ def test_pool_restart_in_view_change(sdk_pool_handle, sdk_wallet_trustee, looper
     pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper,
                      tdir, tconf, START)
 
-    for node in txnPoolNodeSet:
-        node.view_changer.view_change_in_progress = False
-
 
 def pool_restart_now(sdk_pool_handle, sdk_wallet_trustee, looper, tdir, tconf,
                      action, datetime=None):
