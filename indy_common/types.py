@@ -355,6 +355,14 @@ class ConstraintListField(MessageValidator):
                 self._raise_invalid_message(error_msg)
 
 
+class AuthRuleValueField(LimitedLengthStringField):
+    _base_types = (str, type(None))
+
+    def __init__(self, **kwargs):
+        max_length = NAME_FIELD_LIMIT
+        super().__init__(max_length, can_be_empty=True, **kwargs)
+
+
 class ClientAuthRuleOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(AUTH_RULE)),
@@ -363,11 +371,8 @@ class ClientAuthRuleOperation(MessageValidator):
         (AUTH_ACTION, ChooseField(values=(ADD_PREFIX, EDIT_PREFIX))),
         (AUTH_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
         (FIELD, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT)),
-        (OLD_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
-                                             can_be_empty=True,
-                                             optional=True)),
-        (NEW_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
-                                             can_be_empty=True))
+        (OLD_VALUE, AuthRuleValueField(optional=True)),
+        (NEW_VALUE, AuthRuleValueField())
     )
 
 
@@ -377,10 +382,8 @@ class ClientGetAuthRuleOperation(MessageValidator):
         (AUTH_ACTION, ChooseField(values=(ADD_PREFIX, EDIT_PREFIX), optional=True)),
         (AUTH_TYPE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT, optional=True)),
         (FIELD, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT, optional=True)),
-        (OLD_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
-                                             can_be_empty=True, optional=True)),
-        (NEW_VALUE, LimitedLengthStringField(max_length=NAME_FIELD_LIMIT,
-                                             can_be_empty=True, optional=True))
+        (OLD_VALUE, AuthRuleValueField(optional=True)),
+        (NEW_VALUE, AuthRuleValueField(optional=True))
     )
 
 

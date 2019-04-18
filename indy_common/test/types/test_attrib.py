@@ -276,4 +276,5 @@ def test_attrib_with_empty_enc_fails():
     }
     with pytest.raises(TypeError) as ex_info:
         validator.validate(msg)
-    ex_info.match("empty string")
+    ex_info.match("validation error \[ClientAttribOperation\]: expected types "
+                  "'str', got 'NoneType' \({}={}\)".format(ENC, empty_enc))

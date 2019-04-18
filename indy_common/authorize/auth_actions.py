@@ -8,7 +8,7 @@ RULE_DELIMETER = "--"
 ADD_PREFIX = "ADD"
 EDIT_PREFIX = "EDIT"
 
-ActionDef = NamedTuple('ActionDef', [('prefix', str), ('txn_type', str), ('field', str), ('old_value', str), ('new_value', str)])
+ActionDef = NamedTuple('ActionDef', [('txn_type', str), ('prefix', str), ('field', str), ('old_value', str), ('new_value', str)])
 
 
 def compile_action_id(txn_type,
@@ -16,8 +16,8 @@ def compile_action_id(txn_type,
                       old_value,
                       new_value,
                       prefix='') -> str:
-    return RULE_DELIMETER.join([prefix,
-                                txn_type,
+    return RULE_DELIMETER.join([txn_type,
+                                prefix,
                                 field,
                                 old_value,
                                 new_value])
