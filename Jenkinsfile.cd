@@ -151,7 +151,7 @@ def systemTests = { component, releaseVersion ->
         }
 
         stage("[${testFileName}] Checkout and patch system tests") {
-            testHelpers.getSystemTests(tag: 'v0.5.0', targetDir: './system_tests')
+            testHelpers.getSystemTests(tag: 'v0.6.0', targetDir: './system_tests')
             sh """
                 sed -i 's/indy-plenum.*/indy-plenum==$indyPlenumVersion/g' ./system_tests/system/requirements.txt
                 sed -i 's/python3-indy.*/python3-indy==$indySDKVersion/g' ./system_tests/system/requirements.txt
@@ -239,70 +239,57 @@ def systemTests = { component, releaseVersion ->
         }
     }
 
-    node("ubuntu") {
-        try {
-            stage("Checkout SCM") {
-                checkout scm
+    nodeWrapper("ubuntu") {
+        stage("Checkout SCM") {
+            checkout scm
+        }
+
+        stage("Get versions of dependencies") {
+            def uid = sh(returnStdout: true, script: 'id -u').trim()
+            docker.build("hyperledger/indy-node-ci", "--build-arg uid=$uid -f ci/ubuntu.dockerfile ci").inside {
+                sh "pip install .[tests]"
+
+                indyPlenumVersion = sh(returnStdout: true, script: """
+                    pip freeze | grep indy-plenum== | awk -F'==' '{print \$2}' | sed -r "s/([0-9\\.]+[0-9])(\\.)?([a-z]+)/\\1~\\3/"
+                """).trim()
+                echo "indy-plenum version: $indyPlenumVersion"
+
+                indySDKVersion = sh(returnStdout: true, script: """
+                    pip freeze | grep python3-indy== | awk -F'==' '{print \$2}'
+                """).trim()
+                echo "indy-sdk version: $indySDKVersion"
+
+                indyCryptoVersion = sh(returnStdout: true, script: """
+                    pip freeze | grep indy-crypto== | awk -F'==' '{print \$2}'
+                """).trim()
+                echo "indy-crypto version: $indyCryptoVersion"
             }
 
-            stage("Get versions of dependencies") {
-                def uid = sh(returnStdout: true, script: 'id -u').trim()
-                docker.build("hyperledger/indy-node-ci", "--build-arg uid=$uid -f ci/ubuntu.dockerfile ci").inside {
-                    sh "pip install .[tests]"
-
-                    indyPlenumVersion = sh(returnStdout: true, script: """
-                        pip freeze | grep indy-plenum== | awk -F'==' '{print \$2}' | sed -r "s/([0-9\\.]+[0-9])(\\.)?([a-z]+)/\\1~\\3/"
-                    """).trim()
-                    echo "indy-plenum version: $indyPlenumVersion"
-
-                    indySDKVersion = sh(returnStdout: true, script: """
-                        pip freeze | grep python3-indy== | awk -F'==' '{print \$2}'
-                    """).trim()
-                    echo "indy-sdk version: $indySDKVersion"
-
-                    indyCryptoVersion = sh(returnStdout: true, script: """
-                        pip freeze | grep indy-crypto== | awk -F'==' '{print \$2}'
-                    """).trim()
-                    echo "indy-crypto version: $indyCryptoVersion"
-                }
-
-                if (!(indyPlenumVersion && indySDKVersion && indyCryptoVersion)) {
-                    error "Failed to get versions for indy-plenum or indy-crypto or indy-sdk"
-                }
+            if (!(indyPlenumVersion && indySDKVersion && indyCryptoVersion)) {
+                error "Failed to get versions for indy-plenum or indy-crypto or indy-sdk"
             }
+        }
 
-            Map builds = [:]
-            List tests = ['test_ledger.py', 'test_consensus.py', 'test_vc.py']
-            for (int i = 0; i < tests.size(); i++) {
-                String testFileName = tests[i]
-                Boolean isFirst = (i == 0)
-                builds[testFileName] = {
-                    stage("Run ${testFileName}") {
-                        if (isFirst) {
-                            runTest(testFileName, false)
-                        } else {
-                            node('ubuntu') {
-                                try {
-                                    runTest(testFileName, true)
-                                }
-                                finally {
-                                    stage("Cleanup") {
-                                        cleanWs()
-                                    }
-                                }
-                            }
+        Map builds = [:]
+        List tests = ['test_ledger.py', 'test_consensus.py', 'test_vc.py']
+        for (int i = 0; i < tests.size(); i++) {
+            String testFileName = tests[i]
+            Boolean isFirst = (i == 0)
+            builds[testFileName] = {
+                stage("Run ${testFileName}") {
+                    if (isFirst) {
+                        runTest(testFileName, false)
+                    } else {
+                        nodeWrapper('ubuntu') {
+                            runTest(testFileName, true)
                         }
                     }
                 }
             }
-            builds.failFast = false
-
-            parallel builds
-        } finally {
-            stage("Cleanup") {
-                cleanWs()
-            }
         }
+        builds.failFast = false
+
+        parallel builds
     }
 }
 
