@@ -70,6 +70,23 @@ def testTrustAnchorGetAttrsForUser(looper,
                                 sdk_wallet_trust_anchor, dest, attributeName)
 
 
+def test_edit_attrib(sdk_pool_handle, sdk_user_wallet_a,
+                     sdk_wallet_trust_anchor, attributeData, looper, attributeName):
+    _, did_cl = sdk_user_wallet_a
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, attributeData, did_cl)
+    res1 = sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, did_cl, attributeName)
+    assert res1[0][1]['result']['data'] == attributeData.replace(' ', '')
+
+    data = json.loads(attributeData)
+    data[attributeName] = {'John': 'Snow'}
+    data = json.dumps(data)
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+    res2 = sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, did_cl, attributeName)
+    assert res2[0][1]['result']['data'] == data.replace(' ', '')
+
+
 def test_non_trust_anchor_cannot_add_attribute_for_user(
         looper,
         nodeSet,
@@ -82,7 +99,7 @@ def test_non_trust_anchor_cannot_add_attribute_for_user(
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle,
                                     sdk_wallet_client, attributeData, dest)
-    e.match('Only identity owner/guardian can add attribute for that identity')
+    e.match('can not touch raw field since only the owner can modify it')
 
 
 def testOnlyUsersTrustAnchorCanAddAttribute(
@@ -98,7 +115,7 @@ def testOnlyUsersTrustAnchorCanAddAttribute(
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle,
                                     wallet_another_ta, attributeData, dest)
-    e.match('Only identity owner/guardian can add attribute for that identity')
+    e.match('can not touch raw field since only the owner can modify it')
 
 
 def testStewardCannotAddUsersAttribute(
@@ -114,7 +131,7 @@ def testStewardCannotAddUsersAttribute(
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle,
                                     wallet_another_stewatd, attributeData, dest)
-    e.match('Only identity owner/guardian can add attribute for that identity')
+    e.match('can not touch raw field since only the owner can modify it')
 
 
 # TODO: Ask Jason, if getting the latest attribute makes sense since in case

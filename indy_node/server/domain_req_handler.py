@@ -4,6 +4,7 @@ from typing import List, Callable
 
 import base58
 
+from common.exceptions import LogicError
 from indy_common.auth import Authoriser
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
@@ -210,14 +211,22 @@ class DomainReqHandler(PHandler):
                                        'attribute for it'.
                                        format(TARGET_NYM))
 
-        if op.get(TARGET_NYM) and op[TARGET_NYM] != req.identifier and \
-                not self.idrCache.getOwnerFor(op[TARGET_NYM],
-                                              isCommitted=False) == origin:
-            raise UnauthorizedClientRequest(
-                req.identifier,
-                req.reqId,
-                "Only identity owner/guardian can add attribute "
-                "for that identity")
+        is_owner = self.idrCache.getOwnerFor(op[TARGET_NYM],
+                                             isCommitted=False) == origin
+        field = None
+        value = None
+        for key in (RAW, ENC, HASH):
+            if key in op:
+                field = key
+                value = op[key]
+        if field is None or value is None:
+            raise LogicError('Attribute data cannot be empty')
+
+        self.write_req_validator.validate(req,
+                                          [AuthActionAdd(txn_type=ATTRIB,
+                                                         field=field,
+                                                         value=value,
+                                                         is_owner=is_owner)])
 
     def _validate_schema(self, req: Request):
         # we can not add a Schema with already existent NAME and VERSION
