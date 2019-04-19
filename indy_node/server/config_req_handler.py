@@ -4,6 +4,7 @@ from common.serializers.serialization import domain_state_serializer, state_root
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
+from indy_common.state import config
 from indy_node.server.domain_req_handler import DomainReqHandler
 from plenum.common.exceptions import InvalidClientRequest, InvalidMessageException
 
@@ -213,8 +214,8 @@ class ConfigReqHandler(LedgerRequestHandler):
     def get_auth_constraint(operation):
         return ConstraintCreator.create_constraint(operation.get(CONSTRAINT))
 
-    def update_auth_constraint(self, auth_key, constraint):
-        self.state.set(auth_key.encode(),
+    def update_auth_constraint(self, auth_key: str, constraint):
+        self.state.set(config.make_state_path_for_auth_rule(auth_key),
                        self.constraint_serializer.serialize(constraint))
 
     def updateState(self, txns, isCommitted=False):

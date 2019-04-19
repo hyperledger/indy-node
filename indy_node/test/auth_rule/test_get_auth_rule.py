@@ -72,18 +72,6 @@ def test_get_one_auth_rule_transaction(looper,
     assert auth_map.get(str_key).as_dict == resp["result"][DATA][str_key]
 
 
-def test_get_one_auth_rule_transaction_tmp(looper,
-                                       sdk_wallet_trustee,
-                                       sdk_pool_handle):
-    key = generate_key(new_value=TRUSTEE)
-    str_key = ConfigReqHandler.get_auth_key(key)
-    req, resp = sdk_get_auth_rule_request(looper,
-                                          sdk_wallet_trustee,
-                                          sdk_pool_handle,
-                                          key)[0]
-    assert auth_map.get(str_key).as_dict == resp["result"][DATA][str_key]
-
-
 def test_get_all_auth_rule_transactions(looper,
                                         sdk_wallet_trustee,
                                         sdk_pool_handle):
