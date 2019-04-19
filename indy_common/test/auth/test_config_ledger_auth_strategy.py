@@ -3,6 +3,7 @@ import pytest
 from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_cons_strategies import ConfigLedgerAuthStrategy
 from indy_common.authorize.auth_constraints import AuthConstraint, ConstraintsSerializer
+from indy_common.state import config
 from plenum.common.constants import TRUSTEE
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
@@ -28,7 +29,8 @@ def test_config_strategy_get_constraint_from_state(state,
                                        sig_count=5,
                                        need_to_be_owner=False)
     auth_map = {action_id: constraint_to_map}
-    state.set(action_id.encode(), state_serializer.serialize(constraint_to_state))
+    state.set(config.make_state_path_for_auth_rule(action_id),
+              state_serializer.serialize(constraint_to_state))
     strategy = ConfigLedgerAuthStrategy(auth_map=auth_map,
                                         state=state,
                                         serializer=state_serializer)
@@ -59,7 +61,7 @@ def test_config_strategy_constraint_not_found(state,
                                 sig_count=1,
                                 need_to_be_owner=True)
     auth_map = {state_action_id: constraint}
-    state.set(state_action_id.encode(), state_serializer.serialize(constraint))
+    state.set(config.make_state_path_for_auth_rule(state_action_id), state_serializer.serialize(constraint))
     strategy = ConfigLedgerAuthStrategy(auth_map=auth_map,
                                         state=state,
                                         serializer=state_serializer)
