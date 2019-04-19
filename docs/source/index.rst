@@ -19,12 +19,10 @@ Welcome to Hyperledger Indy Node's documentation!
    helper-scripts.md
    setup-iptables.md
    node-monitoring-tools-for-stewards.md
-   node-state-diagnostic-tools.md
    ci-cd.md
    indy-file-structure-guideline.md
    write-code-guideline.md
-   setsup-dev.md
-   1.3_to_1.4_migration_guide.md
+   setup-dev.md
 
 
 
