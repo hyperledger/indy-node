@@ -1,3 +1,4 @@
+import json
 from binascii import hexlify
 from copy import deepcopy
 from typing import List, Callable
@@ -222,11 +223,22 @@ class DomainReqHandler(PHandler):
         if field is None or value is None:
             raise LogicError('Attribute data cannot be empty')
 
-        self.write_req_validator.validate(req,
-                                          [AuthActionAdd(txn_type=ATTRIB,
-                                                         field=field,
-                                                         value=value,
-                                                         is_owner=is_owner)])
+        get_key = next(iter(json.loads(value).keys())) if field != HASH else value
+        old_value, seq_no, _, _ = self.getAttr(op[TARGET_NYM], get_key, field)
+
+        if seq_no is not None:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=ATTRIB,
+                                                              field=field,
+                                                              old_value=old_value,
+                                                              new_value=value,
+                                                              is_owner=is_owner)])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=ATTRIB,
+                                                             field=field,
+                                                             value=value,
+                                                             is_owner=is_owner)])
 
     def _validate_schema(self, req: Request):
         # we can not add a Schema with already existent NAME and VERSION

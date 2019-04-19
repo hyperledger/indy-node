@@ -44,6 +44,11 @@ add_attrib = AuthActionAdd(txn_type=ATTRIB,
                            field='*',
                            value='*')
 
+edit_attrib = AuthActionEdit(txn_type=ATTRIB,
+                             field='*',
+                             old_value='*',
+                             new_value='*')
+
 add_schema = AuthActionAdd(txn_type=SCHEMA,
                            field='*',
                            value='*')
@@ -149,6 +154,15 @@ anyone_can_edit_nym = AuthActionEdit(txn_type=NYM,
                                      old_value='*',
                                      new_value='*')
 
+anyone_can_add_attrib = AuthActionAdd(txn_type=ATTRIB,
+                                      field='*',
+                                      value='*')
+
+anyone_can_edit_attrib = AuthActionEdit(txn_type=ATTRIB,
+                                        field='*',
+                                        old_value='*',
+                                        new_value='*')
+
 anyone_can_edit_schema = AuthActionEdit(txn_type=SCHEMA,
                                         field='*',
                                         old_value='*',
@@ -235,6 +249,7 @@ auth_map = {
     add_new_identity_owner.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     key_rotation.get_action_id(): owner_constraint,
     add_attrib.get_action_id(): owner_constraint,
+    edit_attrib.get_action_id(): owner_constraint,
     add_schema.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     edit_schema.get_action_id(): AuthConstraint(None, 1),
     add_claim_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
@@ -317,6 +332,8 @@ anyone_can_write_map = {anyone_can_add_nym.get_action_id(): anyone_constraint,
                         anyone_can_add_schema.get_action_id(): anyone_constraint,
                         anyone_can_add_claim_def.get_action_id(): owner_constraint,
                         anyone_can_edit_nym.get_action_id(): anyone_constraint,
+                        anyone_can_add_attrib.get_action_id(): owner_constraint,
+                        anyone_can_edit_attrib.get_action_id(): owner_constraint,
                         anyone_can_edit_schema.get_action_id(): anyone_constraint,
                         anyone_can_edit_claim_def.get_action_id(): owner_constraint,
                         anyone_can_create_revoc_reg_def.get_action_id(): owner_constraint,
