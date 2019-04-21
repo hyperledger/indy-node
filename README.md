@@ -30,17 +30,23 @@ with a different network, using whatever conventions a community chooses.
 
 ##### Getting Started Guide
 
-- We recommend that developers should explore Sovrin's [Getting Started Guide](https://github.com/hyperledger/indy-sdk/blob/master/docs/getting-started/indy-walkthrough.md) to learn about Indy basics.
+We recommend that developers should explore
+[Indy Walk through](https://github.com/hyperledger/indy-sdk/blob/master/docs/getting-started/indy-walkthrough.md) to learn about Indy basics 
+or [Getting Started Guide with VCX](https://github.com/hyperledger/indy-sdk/blob/master/vcx/docs/getting-started/getting-started.md) and
+[Getting Started Notebook](https://github.com/hyperledger/indy-sdk/blob/master/docs/getting-started/getting-started.ipynb).
+
 
 ##### Hyperledger Wiki-Indy
 
-- If you haven't done so already, please visit the main resource for all things "Indy" to get acquainted with the code base, helpful resources, and up-to-date information: [Hyperledger Wiki-Indy](https://wiki.hyperledger.org/projects/indy).
+If you haven't done so already, please visit the main resource for all things "Indy" to get acquainted with the code base, helpful resources, and up-to-date information: [Hyperledger Wiki-Indy](https://wiki.hyperledger.org/display/indy/Hyperledger+Indy).
 
 ## Technical Overview of Indy Blockchain
-Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/main.md).
-
-More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
-and [indy-node-docs](docs/source/).
+- Refer to our documentation site at `indy.readthedocs.io` for the most current documentation and walkthroughs
+  - [indy.readthedocs.io/projects/plenum](https://indy.readthedocs.io/projects/plenum/en/latest/index.html)
+  - [indy.readthedocs.io/projects/node](https://hyperledger-indy.readthedocs.io/projects/node/en/latest/index.html)
+- Please visit [Technical Overview of Plenum](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/main.md).
+- More documentation can be found in [indy-plenum-docs](https://github.com/hyperledger/indy-plenum/blob/master/docs)
+and [indy-node-docs](https://github.com/hyperledger/indy-node/blob/master/docs/source).
 
 ## Indy Node Repository Structure
 
@@ -83,7 +89,7 @@ Use project name `INDY`.
 
 ## How to Contribute
 
-- We'd love your help; see these [instructions on how to contribute](http://bit.ly/2ugd0bq).
+- We'd love your help; see these [instructions on how to contribute](https://wiki.hyperledger.org/display/indy/How+to+Contribute).
 - You may also want to read this info about [maintainers](MAINTAINERS.md).
 - See [How to send a PR](#how-to-send-a-pr) below.
 
@@ -156,6 +162,7 @@ If you made changes in both indy-plenum and indy-node, you need to do the follow
     - [Request Handling](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/request_handling.md)
     - [Catchup](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/catchup.md)
     - [Catchup Diagram](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/diagrams/catchup-procedure.png)
+    - [Audit Ledger](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/audit_ledger.md)
     - [Plugins](https://github.com/hyperledger/indy-plenum/blob/master/docs/source/plugins.md)
 - Relationship between Entities and Transactions: [relationship diagram](docs/source/relationship-diagram.png)
 - Supported transactions and their format: [transactions](docs/source/transactions.md)

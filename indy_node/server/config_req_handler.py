@@ -4,6 +4,7 @@ from common.serializers.serialization import domain_state_serializer, state_root
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
+from indy_common.state import config
 from indy_node.server.domain_req_handler import DomainReqHandler
 from plenum.common.exceptions import InvalidClientRequest, InvalidMessageException
 
@@ -213,8 +214,8 @@ class ConfigReqHandler(LedgerRequestHandler):
     def get_auth_constraint(operation):
         return ConstraintCreator.create_constraint(operation.get(CONSTRAINT))
 
-    def update_auth_constraint(self, auth_key, constraint):
-        self.state.set(auth_key.encode(),
+    def update_auth_constraint(self, auth_key: str, constraint):
+        self.state.set(config.make_state_path_for_auth_rule(auth_key),
                        self.constraint_serializer.serialize(constraint))
 
     def updateState(self, txns, isCommitted=False):
@@ -232,8 +233,8 @@ class ConfigReqHandler(LedgerRequestHandler):
             return
         proof = None
         if len(operation) >= len(ClientGetAuthRuleOperation.schema) - 1:
-            path = self.get_auth_key(operation)
-            data, proof = self._get_auth_rule(path)
+            key = self.get_auth_key(operation)
+            data, proof = self._get_auth_rule(key)
         else:
             data = self._get_all_auth_rules()
         result = self.make_result(request=request,
@@ -242,29 +243,31 @@ class ConfigReqHandler(LedgerRequestHandler):
         result.update(request.operation)
         return result
 
-    def _get_auth_rule(self, path):
+    def _get_auth_rule(self, key):
         multi_sig = None
         if self.bls_store:
             root_hash = self.state.committedHeadHash
             encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
             multi_sig = self.bls_store.get(encoded_root_hash)
-
+        path = config.make_state_path_for_auth_rule(key)
         map_data, proof = self.get_value_from_state(path, with_proof=True, multi_sig=multi_sig)
 
         if map_data:
             data = self.constraint_serializer.deserialize(map_data)
         else:
-            data = self.write_req_validator.auth_map[path]
+            data = self.write_req_validator.auth_map[key]
         return {path: data.as_dict}, proof
 
     def _get_all_auth_rules(self):
         data = self.write_req_validator.auth_map.copy()
+        result = {}
         for key in self.write_req_validator.auth_map:
-            state_constraint, _ = self.get_value_from_state(key)
-            data[key] = self.constraint_serializer.deserialize(state_constraint).as_dict \
+            path = config.make_state_path_for_auth_rule(key)
+            state_constraint, _ = self.get_value_from_state(path)
+            result[path] = self.constraint_serializer.deserialize(state_constraint).as_dict \
                 if state_constraint \
                 else data[key].as_dict
-        return data
+        return result
 
     def _check_auth_key(self, operation, identifier, req_id):
         auth_key = self.get_auth_key(operation)

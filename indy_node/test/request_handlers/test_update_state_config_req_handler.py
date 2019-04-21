@@ -6,6 +6,7 @@ from common.serializers.serialization import domain_state_serializer
 from indy_common.authorize.auth_actions import AuthActionAdd
 from indy_common.authorize.auth_constraints import AuthConstraint, ConstraintsSerializer
 from indy_common.constants import AUTH_RULE
+from indy_common.state import config
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.node import Node
 from ledger.compact_merkle_tree import CompactMerkleTree
@@ -90,8 +91,9 @@ def test_update_state(config_req_handler,
     txn = reqToTxn(request)
     config_req_handler.updateState([txn], isCommitted=False)
     head_hash_after = config_req_handler.state.headHash
-    from_state = config_req_handler.state.get(action.get_action_id().encode(),
-                                              isCommitted=False)
+    from_state = config_req_handler.state.get(
+        config.make_state_path_for_auth_rule(action.get_action_id()),
+        isCommitted=False)
     assert constraint_serializer.deserialize(from_state) == constraint
     assert head_hash_after != head_hash_before
 
@@ -105,8 +107,9 @@ def test_uncommitted_state_after_apply(config_req_handler,
     assert len(config_req_handler.ledger.uncommittedTxns) == 1
     assert config_req_handler.state.committedHeadHash != \
         config_req_handler.state.headHash
-    from_state = config_req_handler.state.get(action.get_action_id().encode(),
-                                              isCommitted=False)
+    from_state = config_req_handler.state.get(
+        config.make_state_path_for_auth_rule(action.get_action_id()),
+        isCommitted=False)
     assert constraint_serializer.deserialize(from_state) == constraint
 
 
@@ -123,8 +126,9 @@ def test_revert_uncommitted_state(config_req_handler,
     """
     Check, that request exist in uncommitted state
     """
-    from_state = config_req_handler.state.get(action.get_action_id().encode(),
-                                              isCommitted=False)
+    from_state = config_req_handler.state.get(
+        config.make_state_path_for_auth_rule(action.get_action_id()),
+        isCommitted=False)
     assert constraint_serializer.deserialize(from_state) == constraint
 
     fake_replica.revert(CONFIG_LEDGER_ID,
@@ -134,8 +138,9 @@ def test_revert_uncommitted_state(config_req_handler,
     Txn is reverted from ledger and state
     """
     assert len(config_req_handler.ledger.uncommittedTxns) == 0
-    from_state = config_req_handler.state.get(action.get_action_id().encode(),
-                                              isCommitted=False)
+    from_state = config_req_handler.state.get(
+        config.make_state_path_for_auth_rule(action.get_action_id()),
+        isCommitted=False)
     assert from_state is None
 
 
@@ -154,8 +159,10 @@ def test_init_state_from_ledger(config_ledger,
     init_state_from_ledger = functools.partial(Node.init_state_from_ledger,
                                                FakeSomething(update_txn_with_extra_data=lambda txn: txn))
     """Check that txn is not exist in state"""
-    assert config_state.get(action.get_action_id().encode(), isCommitted=False) is None
-    assert config_state.get(action.get_action_id().encode(), isCommitted=True) is None
+    assert config_state.get(config.make_state_path_for_auth_rule(action.get_action_id()),
+                            isCommitted=False) is None
+    assert config_state.get(config.make_state_path_for_auth_rule(action.get_action_id()),
+                            isCommitted=True) is None
     txns_from_ledger = [t for t in config_ledger.getAllTxn()]
     """Check, that txn exist in ledger"""
     assert len(txns_from_ledger) == 1
@@ -165,5 +172,7 @@ def test_init_state_from_ledger(config_ledger,
                            config_ledger,
                            config_req_handler)
     """Check that txn was added into state"""
-    from_state = config_state.get(action.get_action_id().encode(), isCommitted=True)
+    from_state = config_state.get(
+        config.make_state_path_for_auth_rule(action.get_action_id()),
+        isCommitted=True)
     assert constraint_serializer.deserialize(from_state) == constraint
