@@ -2,6 +2,7 @@ from abc import abstractmethod, ABCMeta
 
 from indy_common.authorize.auth_actions import split_action_id
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AbstractConstraintSerializer
+from indy_common.state import config
 from plenum.common.metrics_collector import MetricsName, MetricsCollector
 from state.pruning_state import PruningState
 from stp_core.common.log import getlogger
@@ -90,7 +91,7 @@ class ConfigLedgerAuthStrategy(AbstractAuthStrategy):
             # In future we erase anyone_can_write map.
             if from_local:
                 return auth_map.get(am_id)
-            constraint = self.get_from_state(key=am_id.encode())
+            constraint = self.get_from_state(key=config.make_state_path_for_auth_rule(am_id))
             if not constraint:
                 return auth_map.get(am_id)
             logger.debug("Using auth constraint from state")

@@ -3,6 +3,7 @@ import pytest
 from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionAdd
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import NYM, CONFIG_LEDGER_ID
+from indy_common.state import config
 from indy_node.test.auth_rule.helper import create_verkey_did, sdk_send_and_check_auth_rule_request
 from plenum.common.constants import STEWARD, ROLE, STEWARD_STRING
 from plenum.common.exceptions import RequestRejectedException
@@ -52,5 +53,6 @@ def test_catching_up_auth_rule_txn(looper,
     ensure_all_nodes_have_same_data(looper, txnPoolNodeSet)
     config_state = delayed_node.states[CONFIG_LEDGER_ID]
     config_req_handler = delayed_node.get_req_handler(CONFIG_LEDGER_ID)
-    from_state = config_state.get(action.get_action_id().encode(), isCommitted=True)
+    from_state = config_state.get(config.make_state_path_for_auth_rule(action.get_action_id()),
+                                  isCommitted=True)
     assert changed_constraint == config_req_handler.constraint_serializer.deserialize(from_state)
