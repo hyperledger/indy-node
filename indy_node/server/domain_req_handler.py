@@ -1,6 +1,7 @@
 import json
 from binascii import hexlify
 from copy import deepcopy
+from json import JSONDecodeError
 from typing import List, Callable
 
 import base58
@@ -220,10 +221,29 @@ class DomainReqHandler(PHandler):
             if key in op:
                 field = key
                 value = op[key]
+                break
         if field is None or value is None:
             raise LogicError('Attribute data cannot be empty')
 
-        get_key = next(iter(json.loads(value).keys())) if field != HASH else value
+        get_key = None
+        if field == RAW:
+            try:
+                get_key = json.loads(value)
+                if len(get_key) == 0:
+                    raise InvalidClientRequest(origin, req.reqId,
+                                               '"row" attribute field must contain non-empty dict'.
+                                               format(TARGET_NYM))
+                get_key = next(iter(get_key.keys()))
+            except JSONDecodeError:
+                raise InvalidClientRequest(origin, req.reqId,
+                                           'Attribute field must be dict while adding it as a row field'.
+                                           format(TARGET_NYM))
+        else:
+            get_key = value
+
+        if get_key is None:
+            raise LogicError('Attribute data must be parsed')
+
         old_value, seq_no, _, _ = self.getAttr(op[TARGET_NYM], get_key, field)
 
         if seq_no is not None:

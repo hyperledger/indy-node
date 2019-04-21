@@ -278,27 +278,6 @@ def testTrustAnchorAddedAttributeCanBeChanged(sdk_added_raw_attribute):
     raise NotImplementedError
 
 
-def test_set_auth_rule_for_attrib(looper,
-                                  sdk_wallet_trustee,
-                                  sdk_pool_handle):
-    sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
-                                         sdk_pool_handle,
-                                         auth_action=EDIT_PREFIX,
-                                         auth_type=ATTRIB,
-                                         field='*',
-                                         new_value='*',
-                                         old_value='*')
-
-    sdk_send_and_check_auth_rule_request(looper,
-                                         sdk_wallet_trustee,
-                                         sdk_pool_handle,
-                                         auth_action=ADD_PREFIX,
-                                         auth_type=ATTRIB,
-                                         field='*',
-                                         new_value='*')
-
-
 def test_auth_rule_for_attrib_works(looper,
                                     sdk_wallet_trustee,
                                     sdk_pool_handle,
@@ -347,7 +326,6 @@ def test_auth_rule_for_attrib_works(looper,
                                          auth_type=ATTRIB,
                                          field='*',
                                          new_value='*',
-                                         old_value='*',
                                          constraint=AuthConstraint(role=STEWARD, sig_count=1).as_dict)
     # We cannot add or edit attrib
     data = dict()
