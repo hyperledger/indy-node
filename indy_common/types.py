@@ -156,7 +156,7 @@ class ClientGetSchemaOperation(MessageValidator):
 class ClientAttribOperation(MessageValidator):
     schema = (
         (TXN_TYPE, ConstantField(ATTRIB)),
-        (TARGET_NYM, IdentifierField(optional=True)),
+        (TARGET_NYM, IdentifierField()),
         (RAW, JsonField(max_length=JSON_FIELD_LIMIT, optional=True)),
         (ENC, LimitedLengthStringField(max_length=ENC_FIELD_LIMIT, optional=True)),
         (HASH, Sha256HexField(optional=True)),

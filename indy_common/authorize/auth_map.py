@@ -3,7 +3,7 @@ from typing import Dict
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF
+    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
@@ -39,6 +39,15 @@ key_rotation = AuthActionEdit(txn_type=NYM,
                               field=VERKEY,
                               old_value='*',
                               new_value='*')
+
+add_attrib = AuthActionAdd(txn_type=ATTRIB,
+                           field='*',
+                           value='*')
+
+edit_attrib = AuthActionEdit(txn_type=ATTRIB,
+                             field='*',
+                             old_value='*',
+                             new_value='*')
 
 add_schema = AuthActionAdd(txn_type=SCHEMA,
                            field='*',
@@ -145,6 +154,15 @@ anyone_can_edit_nym = AuthActionEdit(txn_type=NYM,
                                      old_value='*',
                                      new_value='*')
 
+anyone_can_add_attrib = AuthActionAdd(txn_type=ATTRIB,
+                                      field='*',
+                                      value='*')
+
+anyone_can_edit_attrib = AuthActionEdit(txn_type=ATTRIB,
+                                        field='*',
+                                        old_value='*',
+                                        new_value='*')
+
 anyone_can_edit_schema = AuthActionEdit(txn_type=SCHEMA,
                                         field='*',
                                         old_value='*',
@@ -230,6 +248,8 @@ auth_map = {
     add_new_network_monitor.get_action_id(): steward_or_trustee_constraint,
     add_new_identity_owner.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     key_rotation.get_action_id(): owner_constraint,
+    add_attrib.get_action_id(): owner_constraint,
+    edit_attrib.get_action_id(): owner_constraint,
     add_schema.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     edit_schema.get_action_id(): AuthConstraint(None, 1),
     add_claim_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
@@ -312,6 +332,8 @@ anyone_can_write_map = {anyone_can_add_nym.get_action_id(): anyone_constraint,
                         anyone_can_add_schema.get_action_id(): anyone_constraint,
                         anyone_can_add_claim_def.get_action_id(): owner_constraint,
                         anyone_can_edit_nym.get_action_id(): anyone_constraint,
+                        anyone_can_add_attrib.get_action_id(): owner_constraint,
+                        anyone_can_edit_attrib.get_action_id(): owner_constraint,
                         anyone_can_edit_schema.get_action_id(): anyone_constraint,
                         anyone_can_edit_claim_def.get_action_id(): owner_constraint,
                         anyone_can_create_revoc_reg_def.get_action_id(): owner_constraint,
