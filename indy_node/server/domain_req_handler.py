@@ -5,6 +5,7 @@ from json import JSONDecodeError
 from typing import List, Callable
 
 import base58
+from indy_common.serialization import attrib_raw_data_serializer
 
 from common.exceptions import LogicError
 from indy_common.auth import Authoriser
@@ -228,7 +229,7 @@ class DomainReqHandler(PHandler):
         get_key = None
         if field == RAW:
             try:
-                get_key = json.loads(value)
+                get_key = attrib_raw_data_serializer.deserialize(value)
                 if len(get_key) == 0:
                     raise InvalidClientRequest(origin, req.reqId,
                                                '"row" attribute field must contain non-empty dict'.
@@ -244,7 +245,7 @@ class DomainReqHandler(PHandler):
         if get_key is None:
             raise LogicError('Attribute data must be parsed')
 
-        old_value, seq_no, _, _ = self.getAttr(op[TARGET_NYM], get_key, field)
+        old_value, seq_no, _, _ = self.getAttr(op[TARGET_NYM], get_key, field, isCommitted=False)
 
         if seq_no is not None:
             self.write_req_validator.validate(req,
