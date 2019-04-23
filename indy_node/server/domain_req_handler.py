@@ -288,7 +288,7 @@ class DomainReqHandler(PHandler):
         # sine a Claim Def needs to be identified by seqNo
         ref = req.operation[REF]
         try:
-            txn = self.ledger.getBySeqNo(ref)
+            txn = self.ledger.get_by_seq_no_uncommitted(ref)
         except KeyError:
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
