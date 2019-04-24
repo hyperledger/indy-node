@@ -1,4 +1,8 @@
+import dateutil.parser
+
 from indy_common.constants import IN_PROGRESS
+from indy_node.server.upgrade_log import UpgradeLogData
+
 from indy_node.test.upgrade.helper import check_node_sent_acknowledges_upgrade, clear_config_ledger
 
 whitelist = ['unable to send message']
@@ -13,8 +17,14 @@ def test_node_sent_upgrade_in_progress(looper, nodeSet, nodeIds, validUpgrade):
     version = validUpgrade['version']
     for node in nodeSet:
         node_id = node.poolManager.get_nym_by_name(node.name)
-        node.upgrader.scheduledAction = (version, validUpgrade['schedule'][node_id], "upgrade_id")
+        node.upgrader.scheduledAction = UpgradeLogData(
+            dateutil.parser.parse(validUpgrade['schedule'][node_id]),
+            version,
+            "upgrade_id",
+            validUpgrade['package']
+        )
         node.notify_upgrade_start()
+
     check_node_sent_acknowledges_upgrade(looper, nodeSet, nodeIds,
                                          allowed_actions=[IN_PROGRESS],
                                          ledger_size=len(nodeSet),

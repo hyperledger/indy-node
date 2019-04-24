@@ -54,4 +54,4 @@ def test_forced_upgrade_handled_once_if_request_received_after_propagate(
         # one upgrade were already scheduled. we should cancel it and schedule new one
         # so action log should be increased by 2
         assert len(list(slow_node.upgrader._actionLog)) == init_len + 2
-    assert slow_node.upgrader._actionLog.lastEvent[1] == UpgradeLog.SCHEDULED
+    assert slow_node.upgrader._actionLog.last_event.ev_type == UpgradeLog.Events.scheduled

@@ -59,7 +59,7 @@ def test_client_can_send_attrib(looper,
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor,
                                     attributeData, client_did)
-    assert e.match('Only identity owner/guardian can add attribute for that identity')
+    assert e.match('can not touch raw field since only the owner can modify it')
 
 
 def test_client_cant_send_schema(looper,

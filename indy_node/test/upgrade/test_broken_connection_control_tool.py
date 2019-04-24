@@ -35,8 +35,7 @@ def skip_functions():
     # Do this to prevent exceptions because of node_control_tool absence
     old_action_failed = deepcopy(Upgrader._action_failed)
 
-    Upgrader._action_failed = \
-        lambda self, version, scheduled_on, upgrade_id, external_reason: 1
+    Upgrader._action_failed = lambda *args, **kwargs: 1
     yield
     Upgrader._action_failed = old_action_failed
 

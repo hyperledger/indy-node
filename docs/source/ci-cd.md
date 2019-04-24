@@ -2,8 +2,10 @@
 
 #### Branches
 
-- Master branch contains the latest changes. All PRs usually need to be sent to master.
-- Stable branch contains latest releases (https://github.com/hyperledger/indy-node/releases). Hotfixes need to be sent to both stable and master.
+- `master` branch contains the latest changes. All PRs usually need to be sent to master.
+- `stable` branch contains latest releases (https://github.com/hyperledger/indy-node/releases). Hotfixes need to be sent to both stable and master.
+- `release-*` branches hold release candidates during release workflow
+- `hotfix-*` branches hold release candidates during hotfix workflow
 
 #### Pull Requests
 
@@ -17,7 +19,7 @@
     - Unit/Integration tests
 - We use pipeline in code approach and Jenkins as our main CI/CD server.
 - CI part of the pipeline (running tests for each PR) is defined in `Jenkinsfile.ci` file.
-- CI part is run on Hyperledger Jenkins, so it is public and open as every contributor needs to see results of the tests run for his or her PR.
+- CI part is run on Hyperledger and Sovrin Foundation Jenkins servers, so they are public and open as every contributor needs to see results of the tests run for his or her PR.
 
 #### Static Code Validation
 
@@ -32,35 +34,45 @@
 ## Continuous Delivery
 
 - CD part of the pipeline is defined in `Jenkinsfile.cd` file.
-- CD part is run on a private Jenkins server dealing with issuing and uploading new builds.
+- CD part is run on Sovrin Foundation Jenkins server dealing with issuing and uploading new builds.
 
 #### Builds
 
 What artifacts are produced after each push
 - to `master` branch:
+    - all artifacts include developmental release segment `devN` in their version
     - indy-plenum:
-        - indy-plenum-dev in [pypi](https://pypi.python.org/pypi/indy-plenum-dev)
-        - indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)
+        - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
+        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial master-latest`](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
     - indy-node:
-        - indy-node-dev in [pypi](https://pypi.python.org/pypi/indy-node-dev)
-        - indy-node deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/)
-        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from master-latest)
-        - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
+        - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
+        - indy-node deb package in [`https://repo.sovrin.org/deb xenial master-latest`](https://repo.sovrin.org/lib/apt/xenial/master-latest/)
+        - indy-node deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from `master-latest`)
+        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial master`](https://repo.sovrin.org/lib/apt/xenial/master/) (copied from `master-latest`)
+- to `release-*` and `hotfix-*` branches:
+    - all artifacts include pre-release segment `rcN` in their version
+    - indy-plenum:
+        - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
+        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial rc-latest`](https://repo.sovrin.org/lib/apt/xenial/rc-latest/)
+    - indy-node:
+        - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
+        - indy-node deb package in [`https://repo.sovrin.org/deb xenial rc-latest`](https://repo.sovrin.org/lib/apt/xenial/rc-latest/)
+        - indy-node deb package in [`https://repo.sovrin.org/deb xenial rc`](https://repo.sovrin.org/lib/apt/xenial/rc/) (copied from `rc-latest`)
+        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial rc`](https://repo.sovrin.org/lib/apt/xenial/rc/) (copied from `rc-latest`)
 - to `stable` branch:
     - indy-plenum:
         - indy-plenum in [pypi](https://pypi.python.org/pypi/indy-plenum)
+        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial stable-latest`](https://repo.sovrin.org/lib/apt/xenial/stable-latest/)
         - indy-plenum release tag (https://github.com/hyperledger/indy-plenum/releases)
     - indy-node:
         - indy-node in [pypi](https://pypi.python.org/pypi/indy-node)
-        - indy-node deb package in [`https://repo.sovrin.org/deb xenial rc`](https://repo.sovrin.org/lib/apt/xenial/rc/)
-        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial rc`](https://repo.sovrin.org/lib/apt/xenial/rc/) (copied from rc-latest)
+        - indy-node deb package in [`https://repo.sovrin.org/deb xenial stable-latest`](https://repo.sovrin.org/lib/apt/xenial/stable-latest/) (re-packed from `rc-latest`)
+        - indy-node deb package in [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from `rc-latest`)
+        - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from `stable-latest`)
         - indy-node release tag (https://github.com/hyperledger/indy-node/releases)
-        - after build is tested and approved:
-            - indy-node deb package in [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from rc)
-            - indy-plenum deb package in [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/) (copied from rc)
 
 Use cases for artifacts
-- Pypi artifacts can be used for dev experiments, but not intended to be used for production.
+- Pypi artifacts can be used for development experiments, but not intended to be used for production.
 - Using deb packages is recommended way to be used for a test/production pool on Ubuntu.
     - indy-node deb package from [`https://repo.sovrin.org/deb xenial stable`](https://repo.sovrin.org/lib/apt/xenial/stable/)
     is one and the only official stable release that can be used for production (stable version).
@@ -87,6 +99,20 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
 
 #### Versioning
 
+- Please note, that we are using versioning that satisfies [PEP 440](https://www.python.org/dev/peps/pep-0440) with release segment as `MAJOR.MINOR.PATCH` that satisfies [SemVer](https://semver.org/) as well.
+- Version is set in the code (see [\_\_version\_\_.json](https://github.com/hyperledger/indy-node/blob/master/indy_node/__version__.json)).
+- Version is bumped for new releases / hotfixes either manually or using [bump_version.sh](https://github.com/hyperledger/indy-node/blob/master/indy_node/bump_version.sh) script. The latter is preferred.
+- During development phase version includes developmental segment `devN`, where `N` is set for CD pipeline artifacts as incremented build number of build server jobs. In the source code it is just equal to `0` always.
+- During release preparation phase (release / hotfix workflows) version includes pre-release segment `rcN`, where `N>=1` and set in the source code by developers.
+- Each dependency (including indy-plenum) has a strict version (see [setup.py](https://github.com/hyperledger/indy-node/blob/master/setup.py))
+- If you install indy-node (either from pypi, or from deb package), the specified in setup.py version of indy-plenum is installed.
+- Master and Stable share the same versioning scheme.
+- Differences in master and stable code:
+    - `setup.py`: different versions of indy-plenum dependency
+    - different versions in migrations scripts
+
+
+##### For releases `< 1.7.0` (deprecated)
 - Please note, that we are using semver-like approach for versioning (major, minor, build) for each of the components.
 - Major and minor parts are set in the code (see [\_\_metadata\_\_.py](https://github.com/hyperledger/indy-node/blob/master/indy_node/__metadata__.py)). They must be incremented for new releases manually from code if needed.
 - Build part is incremented with each build on Jenkins (so it always increases, but may be not sequentially)
@@ -99,17 +125,35 @@ Each `build-scripts` folder includes `Readme.md`. Please check them for more det
         - different versions of indy-plenum dependency
     - different versions in migrations scripts
 
-## How to Create a Stable Release
+## Release workflow
 
-- Create a new branch based on `stable` in indy-plenum
-- Merge `master` branch into this new branch
-- Make sure that proper versions and names are used (without dev suffixes)
-- Raise a PR to indy-plenum's stable, and wait until code is reviewed and merged. So, a new release candidate of plenum is created.
-- Create a new branch based on `stable` in indy-node
-- Merge `master` branch into this new branch
-- Change indy-plenum's dependency version to the new one in indy-node's [setup.py](https://github.com/hyperledger/indy-node/blob/stable/setup.py).
-- Make sure that proper versions and names are used (without dev suffixes)
-- Raise a PR to indy-node's stable, and wait until code is reviewed and merged. So, a new release candidate of indy-node is created.
-- QA needs to test this release candidate from [https://repo.sovrin.org/deb xenial rc](https://repo.sovrin.org/lib/apt/xenial/rc/)
-- QA approves the release candidate of indy-plenum.
-- QA approves the release candidate of indy-node. So, a new stable release is created.
+1.  [Maintainer] Creates a new release branch `release-X.Y.0` based on `stable`
+2.  [Contributor]
+  - creates a new release candidate branch (e.g. `rc-X.Y.0.rc1`) based on that release branch
+  - merges `master` branch
+  - sets stable version of `indy-plenum` in `setup.py` (for `indy-node` only)
+  - sets new version `X.Y.0.rc1` (`./bump_version.sh X.Y.0.rc1`)
+  - commits and pushes changes
+  - creates a release candidate PR to `release-X.Y.0`
+3. [Maintainer] Waits for CI, reviews the PR and either merges the PR or asks for changes.
+  - Once the PR is merged the maintainer starts release candidate pipeline manually.
+4. [build server] Once the PR is merged CD pipeline is triggered for branch `release-X.Y.0` and it does the following:
+  - creates and pushes release commit to `release-X.Y.0`
+  - publish release candidates packages
+  - performs system testing (`indy-node` only)
+  - creates PR to merge `release-X.Y.0` to `stable`
+  - waits for approval to proceed
+5. [Maintainer/QA] Waits for CI, reviews the PR and either approves or rejects:
+  - QA may run additional tests against the release candidate before approval
+  - in case of approval it also lets build server to proceed
+  - otherwise stops the pipeline and previous steps are repeated for new release candidate `X.Y.0.rc1` and possible future ones
+6. [build server]
+  - once it is approved to proceed performs fast-forward merging to stable and creates tag `vX.Y.0`.
+  - otherwise rollbacks release commit pushed to release branch `release-X.Y.0`
+7. [build server] Once release PR is merged stable pipeline is triggered and it:
+  - publishes to Pypi
+  - re-packs rc debian package and publishes to debian stable components
+
+Hotfix releases are quite similar except the following difference:
+  - hotifx branches `hotfix-X.Y.Z` are created from git tag `vX.Y.(Z-1)`
+  - `master` is not merged since hotfixes (as a rule) should include only fixes for stable code

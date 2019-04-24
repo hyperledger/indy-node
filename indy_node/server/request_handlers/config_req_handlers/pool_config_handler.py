@@ -3,12 +3,12 @@ from indy_node.server.pool_config import PoolConfig
 from indy_common.authorize.auth_actions import AuthActionEdit
 from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_common.constants import POOL_CONFIG, CONFIG_LEDGER_ID, ACTION
-from indy_node.server.request_handlers.config_req_handlers.config_write_request_handler import ConfigWriteRequestHandler
 from plenum.common.request import Request
 from plenum.server.database_manager import DatabaseManager
+from plenum.server.request_handlers.handler_interfaces.write_request_handler import WriteRequestHandler
 
 
-class PoolConfigHandler(ConfigWriteRequestHandler):
+class PoolConfigHandler(WriteRequestHandler):
 
     def __init__(self, database_manager: DatabaseManager,
                  write_request_validator: WriteRequestValidator,

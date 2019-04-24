@@ -2,6 +2,11 @@ from datetime import timedelta
 
 from typing import Iterable, List
 
+from common.exceptions import LogicError
+from common.serializers.serialization import ledger_txn_serializer, domain_state_serializer
+from indy_common.authorize.auth_constraints import ConstraintsSerializer, AbstractConstraintSerializer
+from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from indy_node.server.pool_req_handler import PoolRequestHandler
 
 from indy_node.server.action_req_handler import ActionReqHandler
@@ -19,11 +24,12 @@ from plenum.common.types import f, \
 from plenum.common.util import get_utc_datetime
 from plenum.persistence.storage import initStorage
 from plenum.server.node import Node as PlenumNode
+from state.pruning_state import PruningState
 from storage.helper import initKeyValueStorage
 from indy_common.config_util import getConfig
 from indy_common.constants import TXN_TYPE, ATTRIB, DATA, ACTION, \
     NODE_UPGRADE, COMPLETE, FAIL, CONFIG_LEDGER_ID, POOL_UPGRADE, POOL_CONFIG, \
-    IN_PROGRESS
+    IN_PROGRESS, AUTH_RULE
 from indy_common.types import Request, SafeRequest
 from indy_common.config_helper import NodeConfigHelper
 from indy_node.persistence.attribute_store import AttributeStore
@@ -160,7 +166,8 @@ class Node(PlenumNode):
         return PoolRequestHandler(self.poolLedger,
                                   self.states[POOL_LEDGER_ID],
                                   self.states,
-                                  self.getIdrCache())
+                                  self.getIdrCache(),
+                                  self.write_req_validator)
 
     def init_domain_req_handler(self):
         if self.attributeStore is None:
@@ -172,6 +179,7 @@ class Node(PlenumNode):
                                 self.getIdrCache(),
                                 self.attributeStore,
                                 self.bls_bft.bls_store,
+                                self.write_req_validator,
                                 self.getStateTsDbStorage())
 
     def init_config_req_handler(self):
@@ -180,7 +188,9 @@ class Node(PlenumNode):
                                 self.getIdrCache(),
                                 self.upgrader,
                                 self.poolManager,
-                                self.poolCfg)
+                                self.poolCfg,
+                                self.write_req_validator,
+                                self.bls_bft.bls_store)
 
     def getIdrCache(self):
         if self.idrCache is None:
@@ -206,7 +216,8 @@ class Node(PlenumNode):
                                 self.restarter,
                                 self.poolManager,
                                 self.poolCfg,
-                                self._info_tool)
+                                self._info_tool,
+                                self.write_req_validator)
 
     def post_txn_from_catchup_added_to_domain_ledger(self, txn):
         pass
@@ -224,10 +235,22 @@ class Node(PlenumNode):
         super().postConfigLedgerCaughtUp(**kwargs)
         self.acknowledge_upgrade()
 
+    def preLedgerCatchUp(self, ledger_id):
+        super().preLedgerCatchUp(ledger_id)
+
+        if len(self.idrCache.un_committed) > 0:
+            raise LogicError('{} idr cache has uncommitted txns before catching up ledger {}'.format(self, ledger_id))
+
+    def postLedgerCatchUp(self, ledger_id):
+        if len(self.idrCache.un_committed) > 0:
+            raise LogicError('{} idr cache has uncommitted txns after catching up ledger {}'.format(self, ledger_id))
+
+        super().postLedgerCatchUp(ledger_id)
+
     def acknowledge_upgrade(self):
         if not self.upgrader.should_notify_about_upgrade_result():
             return
-        lastUpgradeVersion = self.upgrader.lastActionEventInfo[2]
+        lastUpgradeVersion = self.upgrader.lastActionEventInfo.data.version
         action = COMPLETE if self.upgrader.didLastExecutedUpgradeSucceeded else FAIL
         logger.info('{} found the first run after upgrade, sending NODE_UPGRADE {} to version {}'.format(
             self, action, lastUpgradeVersion))
@@ -235,7 +258,7 @@ class Node(PlenumNode):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: lastUpgradeVersion
+                VERSION: lastUpgradeVersion.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -248,7 +271,7 @@ class Node(PlenumNode):
         self.upgrader.notified_about_action_result()
 
     def notify_upgrade_start(self):
-        scheduled_upgrade_version = self.upgrader.scheduledAction[0]
+        scheduled_upgrade_version = self.upgrader.scheduledAction.version
         action = IN_PROGRESS
         logger.info('{} is about to be upgraded, '
                     'sending NODE_UPGRADE {} to version {}'.format(self, action, scheduled_upgrade_version))
@@ -256,7 +279,7 @@ class Node(PlenumNode):
             TXN_TYPE: NODE_UPGRADE,
             DATA: {
                 ACTION: action,
-                VERSION: scheduled_upgrade_version
+                VERSION: scheduled_upgrade_version.full
             }
         }
         op[f.SIG.nm] = self.wallet.signMsg(op[DATA])
@@ -316,18 +339,18 @@ class Node(PlenumNode):
         return c
 
     def can_write_txn(self, txn_type):
-        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE, POOL_CONFIG]
+        return self.poolCfg.isWritable() or txn_type in [POOL_UPGRADE,
+                                                         POOL_CONFIG,
+                                                         AUTH_RULE]
 
-    def execute_domain_txns(self, ppTime, reqs: List[Request], stateRoot,
-                            txnRoot) -> List:
+    def execute_domain_txns(self, three_pc_batch) -> List:
         """
         Execute the REQUEST sent to this Node
 
         :param ppTime: the time at which PRE-PREPARE was sent
         :param req: the client REQUEST
         """
-        return self.default_executer(DOMAIN_LEDGER_ID, ppTime, reqs,
-                                     stateRoot, txnRoot)
+        return self.default_executer(three_pc_batch)
 
     def update_txn_with_extra_data(self, txn):
         """
@@ -361,3 +384,24 @@ class Node(PlenumNode):
         is_force = OPERATION in msg_dict and msg_dict.get(OPERATION).get(FORCE, False)
         is_force_upgrade = str(is_force) == 'True' and txn_type == POOL_UPGRADE
         return txn_type and not is_force_upgrade and super().is_request_need_quorum(msg_dict)
+
+    @staticmethod
+    def add_auth_rules_to_config_state(state: PruningState,
+                                       auth_map: dict,
+                                       serializer: AbstractConstraintSerializer):
+        for rule_id, auth_constraint in auth_map.items():
+            serialized_key = rule_id.encode()
+            serialized_value = serializer.serialize(auth_constraint)
+            if not state.get(serialized_key, isCommitted=False):
+                state.set(serialized_key, serialized_value)
+
+    def _init_write_request_validator(self):
+        constraint_serializer = ConstraintsSerializer(domain_state_serializer)
+        config_state = self.states[CONFIG_LEDGER_ID]
+        self.write_req_validator = WriteRequestValidator(config=self.config,
+                                                         auth_map=auth_map,
+                                                         cache=self.getIdrCache(),
+                                                         config_state=config_state,
+                                                         state_serializer=constraint_serializer,
+                                                         anyone_can_write_map=anyone_can_write_map,
+                                                         metrics=self.metrics)

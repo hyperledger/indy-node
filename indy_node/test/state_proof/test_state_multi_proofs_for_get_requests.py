@@ -6,8 +6,11 @@ import time
 import base58
 import pytest
 from common.serializers import serialization
-from common.serializers.serialization import state_roots_serializer
+from common.serializers.serialization import state_roots_serializer, domain_state_serializer
 from crypto.bls.bls_multi_signature import MultiSignature, MultiSignatureValue
+from indy_common.authorize.auth_constraints import ConstraintsSerializer
+from indy_common.authorize.auth_map import auth_map, anyone_can_write_map
+from indy_common.authorize.auth_request_validator import WriteRequestValidator
 from plenum.bls.bls_store import BlsStore
 from plenum.common.constants import TXN_TYPE, TARGET_NYM, RAW, DATA, \
     IDENTIFIER, NAME, VERSION, ROLE, VERKEY, KeyValueStorageType, \
@@ -16,13 +19,15 @@ from plenum.common.txn_util import reqToTxn, append_txn_metadata, append_payload
 from plenum.common.types import f
 from indy_common.constants import \
     ATTRIB, CLAIM_DEF, SCHEMA, CLAIM_DEF_FROM, CLAIM_DEF_SCHEMA_REF, CLAIM_DEF_SIGNATURE_TYPE, \
-    CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES
+    CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, SCHEMA_NAME, SCHEMA_VERSION, SCHEMA_ATTR_NAMES, LOCAL_AUTH_POLICY, \
+    CONFIG_LEDGER_AUTH_POLICY
 from indy_common.types import Request
 from indy_node.persistence.attribute_store import AttributeStore
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.domain_req_handler import DomainReqHandler
 from plenum.common.util import get_utc_epoch, friendlyToRaw, rawToFriendly, \
     friendlyToHex, hexToFriendly
+from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 from indy_common.state import domain
@@ -39,8 +44,17 @@ def bls_store():
 @pytest.fixture()
 def request_handler(bls_store):
     state = PruningState(KeyValueStorageInMemory())
+    config_state = PruningState(KeyValueStorageInMemory())
+    state_serializer = ConstraintsSerializer(domain_state_serializer)
     cache = IdrCache('Cache', KeyValueStorageInMemory())
     attr_store = AttributeStore(KeyValueStorageInMemory())
+    write_req_validator = WriteRequestValidator(config=FakeSomething(authPolicy=CONFIG_LEDGER_AUTH_POLICY,
+                                                                     ANYONE_CAN_WRITE=False),
+                                                auth_map=auth_map,
+                                                cache=cache,
+                                                config_state=config_state,
+                                                state_serializer=state_serializer,
+                                                anyone_can_write_map=anyone_can_write_map)
     return DomainReqHandler(ledger=None,
                             state=state,
                             config=None,
@@ -48,6 +62,7 @@ def request_handler(bls_store):
                             idrCache=cache,
                             attributeStore=attr_store,
                             bls_store=bls_store,
+                            write_req_validator=write_req_validator,
                             ts_store=None)
 
 

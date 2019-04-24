@@ -5,7 +5,7 @@ import os
 from indy_node.__metadata__ import __version__ as node_pgk_version
 from plenum.server.validator_info_tool import none_on_fail, \
     ValidatorNodeInfoTool as PlenumValidatorNodeInfoTool
-from plenum.common.constants import POOL_LEDGER_ID, DOMAIN_LEDGER_ID, CONFIG_LEDGER_ID
+from plenum.common.constants import POOL_LEDGER_ID, DOMAIN_LEDGER_ID, CONFIG_LEDGER_ID, AUDIT_LEDGER_ID
 
 
 class ValidatorNodeInfoTool(PlenumValidatorNodeInfoTool):
@@ -19,7 +19,8 @@ class ValidatorNodeInfoTool(PlenumValidatorNodeInfoTool):
         info.update({"Update_time": ts_str})
         if 'Node_info' in info:
             if 'Metrics' in info['Node_info']:
-                std_ledgers = [POOL_LEDGER_ID, DOMAIN_LEDGER_ID, CONFIG_LEDGER_ID]
+                std_ledgers = [POOL_LEDGER_ID, DOMAIN_LEDGER_ID,
+                               CONFIG_LEDGER_ID, AUDIT_LEDGER_ID]
                 other_ledgers = {}
                 for idx, linfo in self._node.ledgerManager.ledgerRegistry.items():
                     if linfo.id in std_ledgers:

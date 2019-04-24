@@ -84,7 +84,7 @@ class IdrCache(OptimisticKVStore):
     def close(self):
         self._keyValueStorage.close()
 
-    def currentBatchCreated(self, stateRoot):
+    def currentBatchCreated(self, stateRoot, ppTime):
         super().create_batch_from_current(stateRoot)
 
     def batchRejected(self):
