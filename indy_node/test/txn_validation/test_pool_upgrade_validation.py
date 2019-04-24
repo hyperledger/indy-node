@@ -17,7 +17,7 @@ def testPoolUpgradeFailsIfVersionIsLowerThanCurrent(
 
     with pytest.raises(RequestRejectedException) as e:
         sdk_ensure_upgrade_sent(looper, sdk_pool_handle, sdk_wallet_trustee, upgrade)
-    e.match('Version is not upgradable')
+    e.match('Version {} is not upgradable'.format(upgrade[VERSION]))
 
 
 def testPoolUpgradeHasInvalidSyntaxIfJustificationIsEmpty(

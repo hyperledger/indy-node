@@ -7,6 +7,9 @@ from typing import List
 from indy_common.constants import UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
 from stp_core.common.log import getlogger
 
+from indy_common.version import (
+    PackageVersion, SourceVersion, src_version_cls
+)
 from indy_common.config_util import getConfig
 from indy_common.config_helper import ConfigHelper
 from indy_common.util import compose_cmd
@@ -97,10 +100,13 @@ class NodeControlTool:
                 ret_list.append(package)
             return " ".join(ret_list)
 
-    def _call_upgrade_script(self, pkg_name, version):
-        logger.info('Upgrading indy node to version {}, test_mode {}'.format(version, int(self.test_mode)))
+    def _call_upgrade_script(self, pkg_name: str, pkg_ver: PackageVersion):
+        logger.info(
+            "Upgrading {} to package version {}, test_mode {}"
+            .format(pkg_name, pkg_ver, int(self.test_mode))
+        )
 
-        deps = self._get_deps_list('{}={}'.format(pkg_name, version))
+        deps = self._get_deps_list('{}={}'.format(pkg_name, pkg_ver))
         deps = '"{}"'.format(deps)
 
         cmd_file = 'upgrade_indy_node'
@@ -115,20 +121,20 @@ class NodeControlTool:
         cmd = compose_cmd(['restart_indy_node'])
         NodeControlUtil.run_shell_script(cmd, timeout=self.timeout)
 
-    def _backup_name(self, version):
+    def _backup_name(self, src_ver: str):
         return os.path.join(self.backup_dir, '{}{}'.format(
-            self.backup_name_prefix, version))
+            self.backup_name_prefix, src_ver))
 
-    def _backup_name_ext(self, version):
-        return '{}.{}'.format(self._backup_name(version), self.backup_format)
+    def _backup_name_ext(self, src_ver: str):
+        return '{}.{}'.format(self._backup_name(src_ver), self.backup_format)
 
-    def _create_backup(self, version):
-        logger.debug('Creating backup for {}'.format(version))
-        shutil.make_archive(self._backup_name(version),
+    def _create_backup(self, src_ver: str):
+        logger.debug('Creating backup for {}'.format(src_ver))
+        shutil.make_archive(self._backup_name(src_ver),
                             self.backup_format, self.backup_target)
 
-    def _restore_from_backup(self, version):
-        logger.info('Restoring from backup for {}'.format(version))
+    def _restore_from_backup(self, src_ver: str):
+        logger.info('Restoring from backup for {}'.format(src_ver))
         for file_path in self.files_to_preserve:
             try:
                 shutil.copy2(os.path.join(self.backup_target, file_path),
@@ -137,7 +143,7 @@ class NodeControlTool:
                 logger.warning('Copying {} failed due to {}'
                                .format(file_path, e))
         shutil.unpack_archive(self._backup_name_ext(
-            version), self.backup_target, self.backup_format)
+            src_ver), self.backup_target, self.backup_format)
         for file_path in self.files_to_preserve:
             try:
                 shutil.copy2(os.path.join(self.tmp_dir, file_path),
@@ -162,37 +168,80 @@ class NodeControlTool:
         for file in files:
             os.remove(file)
 
-    def _migrate(self, current_version, new_version):
-        migrate(current_version, new_version, self.timeout)
+    def _do_migration(self, curr_src_ver: str, new_src_ver: str):
+        migrate(curr_src_ver, new_src_ver, self.timeout)
 
-    def _do_migration(self, current_version, new_version):
+    def _migrate(self, curr_src_ver: str, new_src_ver: str):
         try:
-            self._create_backup(current_version)
-            self._migrate(current_version, new_version)
+            self._create_backup(curr_src_ver)
+            self._do_migration(curr_src_ver, new_src_ver)
         except Exception as e:
-            self._restore_from_backup(current_version)
+            self._restore_from_backup(curr_src_ver)
             raise e
         self._remove_old_backups()
 
-    def _upgrade(self, new_version, pkg_name, migrate=True, rollback=True):
-        current_version, _ = NodeControlUtil.curr_pkt_info(pkg_name)
+    def _do_upgrade(
+            self,
+            pkg_name: str,
+            curr_pkg_ver: PackageVersion,
+            new_pkg_ver: PackageVersion,
+            rollback: bool
+    ):
+        from indy_node.server.upgrader import Upgrader
+        cur_node_src_ver = Upgrader.get_src_version()
+        logger.info(
+            "Trying to upgrade from {}={} to {}"
+            .format(pkg_name, curr_pkg_ver, new_pkg_ver)
+        )
+
         try:
-            from indy_node.server.upgrader import Upgrader
-            node_cur_version = Upgrader.getVersion()
-            logger.info('Trying to upgrade from {}={} to {}'.format(pkg_name, current_version, new_version))
-            self._call_upgrade_script(pkg_name, new_version)
+            self._call_upgrade_script(pkg_name, new_pkg_ver)
             if migrate:
-                node_new_version = Upgrader.getVersion()
-                self._do_migration(node_cur_version, node_new_version)
+                # TODO test for migration, should fail if nocache is False !!!
+                new_node_src_ver = Upgrader.get_src_version(nocache=True)
+                # assumption: migrations are anchored to release versions only
+                self._migrate(cur_node_src_ver.release, new_node_src_ver.release)
             self._call_restart_node_script()
         except Exception as ex:
-            self._declare_upgrade_failed(from_version=current_version,
-                                         to_version=new_version,
-                                         reason=str(ex))
-            logger.error("Trying to rollback to the previous version {}"
-                         .format(ex, current_version))
+            logger.error(
+                "Upgrade from {} to {} failed: {}"
+                .format(curr_pkg_ver, new_pkg_ver, ex)
+            )
             if rollback:
-                self._upgrade(current_version, pkg_name, rollback=False)
+                logger.error("Trying to rollback to the previous version {}"
+                             .format(ex, curr_pkg_ver))
+                self._do_upgrade(
+                    pkg_name, new_pkg_ver, curr_pkg_ver, rollback=False)
+
+    # TODO test
+    def _upgrade(
+            self,
+            new_src_ver: SourceVersion,
+            pkg_name: str,
+            migrate=True,
+            rollback=True
+    ):
+        curr_pkg_ver, _ = NodeControlUtil.curr_pkg_info(pkg_name)
+
+        if not curr_pkg_ver:
+            logger.error("package {} is not found".format(pkg_name))
+            return
+
+        logger.info(
+            "Current version of package '{}' is '{}'"
+            .format(pkg_name, curr_pkg_ver)
+        )
+
+        new_pkg_ver = NodeControlUtil.get_latest_pkg_version(
+            pkg_name, upstream=new_src_ver)
+        if not new_pkg_ver:
+            logger.error(
+                "package {} for upstream version {} is not found"
+                .format(pkg_name, new_src_ver)
+            )
+            return
+
+        self._do_upgrade(pkg_name, curr_pkg_ver, new_pkg_ver, rollback)
 
     def _restart(self):
         try:
@@ -206,9 +255,9 @@ class NodeControlTool:
             command = json.loads(data.decode("utf-8"))
             logger.debug("Decoded ", command)
             if command[MESSAGE_TYPE] == UPGRADE_MESSAGE:
-                new_version = command['version']
+                new_src_ver = command['version']
                 pkg_name = command['pkg_name']
-                self._upgrade(new_version, pkg_name)
+                self._upgrade(src_version_cls(pkg_name)(new_src_ver), pkg_name)
             elif command[MESSAGE_TYPE] == RESTART_MESSAGE:
                 self._restart()
         except json.decoder.JSONDecodeError as e:
@@ -216,27 +265,8 @@ class NodeControlTool:
         except Exception as e:
             logger.error("Unexpected error in process_data {}".format(e))
 
-    def _declare_upgrade_failed(self, *,
-                                from_version,
-                                to_version,
-                                reason):
-        msg = 'Upgrade from {from_version} to {to_version} failed: {reason}'\
-              .format(from_version=from_version,
-                      to_version=to_version,
-                      reason=reason)
-        logger.error(msg)
-
-    def _hold_packages(self):
-        if shutil.which("apt-mark"):
-            packages_to_hold = ' '.join(self.config.PACKAGES_TO_HOLD + self.hold_ext)
-            cmd = compose_cmd(['apt-mark', 'hold', packages_to_hold])
-            NodeControlUtil.run_shell_script(cmd)
-            logger.info('Successfully put {} packages on hold'.format(packages_to_hold))
-        else:
-            logger.info('Skipping packages holding')
-
     def start(self):
-        self._hold_packages()
+        NodeControlUtil.hold_packages(self.config.PACKAGES_TO_HOLD + self.hold_ext)
 
         # Sockets from which we expect to read
         readers = [self.server]

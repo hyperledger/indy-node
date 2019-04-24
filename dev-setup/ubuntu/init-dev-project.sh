@@ -27,7 +27,7 @@ echo "Installed indy-node..."
 
 echo "Installing indy-plenum..."
 pushd indy-plenum
-pip uninstall -y indy-plenum-dev
+pip uninstall -y indy-plenum
 pip install -e .[tests]
 popd
 echo "Installed indy-plenum..."

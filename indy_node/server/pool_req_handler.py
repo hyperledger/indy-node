@@ -17,14 +17,11 @@ from state.state import State
 
 class PoolRequestHandler(PHandler):
     def __init__(self, ledger: Ledger, state: State,
-                 states, idrCache: IdrCache):
+                 states, idrCache: IdrCache, write_req_validator):
         super().__init__(ledger, state, states)
         self.stateSerializer = pool_state_serializer
         self.idrCache = idrCache
-        self.write_req_validator = WriteRequestValidator(config=getConfig(),
-                                                         auth_map=auth_map,
-                                                         cache=self.idrCache,
-                                                         anyone_can_write_map=anyone_can_write_map)
+        self.write_req_validator = write_req_validator
 
     def isSteward(self, nym, isCommitted: bool = True):
         return self.idrCache.hasSteward(nym, isCommitted)

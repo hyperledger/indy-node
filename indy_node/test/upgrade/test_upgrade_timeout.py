@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from stp_core.loop.eventually import eventually
+from indy_node.server.upgrade_log import UpgradeLogData
 from indy_node.server.upgrader import Upgrader
 import functools
 
@@ -21,7 +24,6 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch, tconf):
     # successfully
     monkeypatch.setattr(Upgrader, '_open_connection_and_send', mock)
     pending = {node.name for node in nodeSet}
-    when = 0
     version = '1.5.1'
     timeout = 1
 
@@ -33,6 +35,7 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch, tconf):
         nonlocal pending
         pending.remove(nodeName)
 
+    ev_data = UpgradeLogData(datetime.utcnow(), version, 'some_id', tconf.UPGRADE_ENTRY)
     for node in nodeSet:
         monkeypatch.setattr(
             node.upgrader,
@@ -40,10 +43,6 @@ def testTimeoutWorks(nodeSet, looper, monkeypatch, tconf):
             functools.partial(
                 upgrade_failed_callback_test,
                 node.name))
-        looper.run(node.upgrader._sendUpgradeRequest(when,
-                                                     version,
-                                                     None,
-                                                     timeout,
-                                                     tconf.UPGRADE_ENTRY))
+        looper.run(node.upgrader._sendUpgradeRequest(ev_data, timeout))
 
     looper.run(eventually(chk))

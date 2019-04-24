@@ -336,7 +336,7 @@ pip3 install docker
 
 #--------------------------------------------------------
 # The following steps were derived from:
-# https://github.com/hyperledger/indy-sdk/blob/master/doc/ubuntu-build.md
+# https://github.com/hyperledger/indy-sdk/blob/master/docs/build-guides/ubuntu-build.md
 #
 echo "Installing Rust and rustup non-interactively as user vagrant ..."
 echo "Note that rustup typically runs interactively and allows you to "
