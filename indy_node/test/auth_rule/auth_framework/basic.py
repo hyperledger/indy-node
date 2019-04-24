@@ -2,6 +2,7 @@ import json
 import random
 from abc import ABCMeta, abstractmethod
 
+from indy_common.authorize.auth_actions import EDIT_PREFIX
 from indy_common.authorize.auth_map import auth_map
 from indy_common.constants import TRUST_ANCHOR, NETWORK_MONITOR, NETWORK_MONITOR_STRING, TRUST_ANCHOR_STRING
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
@@ -17,6 +18,7 @@ roles_to_string = {
     TRUST_ANCHOR: TRUST_ANCHOR_STRING,
     NETWORK_MONITOR: NETWORK_MONITOR_STRING,
     IDENTITY_OWNER: IDENTITY_OWNER_STRING,
+    '': IDENTITY_OWNER_STRING,
 }
 
 
@@ -48,12 +50,12 @@ class AbstractTest(metaclass=ABCMeta):
         return sdk_json_to_request_object(json.loads(nym_request))
 
     def get_default_auth_rule(self):
-        constraint = auth_map.auth_map.get(self.action_id)
-        operation = generate_auth_rule_operation(auth_action=self.action_def.prefix,
-                                                 auth_type=self.action_def.txn_type,
-                                                 field=self.action_def.field,
-                                                 old_value=self.action_def.old_value,
-                                                 new_value=self.action_def.new_value,
+        constraint = auth_map.get(self.action_id)
+        operation = generate_auth_rule_operation(auth_action=self.action.prefix,
+                                                 auth_type=self.action.txn_type,
+                                                 field=self.action.field,
+                                                 old_value=self.action.old_value if self.action.prefix == EDIT_PREFIX else None,
+                                                 new_value=self.action.new_value,
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
 
