@@ -17,6 +17,7 @@
     * [POOL_UPGRADE](#pool_upgrade)
     * [NODE_UPGRADE](#node_upgrade)
     * [POOL_CONFIG](#pool_config)
+    * [AUTH_RULE](#auth_rule)
 
 ## General Information
 
@@ -38,8 +39,8 @@ where key is a sequence number of the transaction and value is the serialized tr
 - All transactions are serialized to MsgPack format
 - All transactions (both transaction log and merkle tree hash stores) are stored in a LevelDB
 - One can use the `read_ledger` script to get transactions for a specified ledger in a readable format (JSON)
-- See [roles and permissions](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md) for a list of roles and they type of transactions they can create.
-
+- See [roles and permissions](auth_rules.md) for a list of roles and they type of transactions they can create.
+    
 Below you can find the format and description of all supported transactions.
 
 ## Genesis Transactions
@@ -170,7 +171,7 @@ Please note that all these metadata fields may be absent for genesis transaction
 
 #### NYM
 Creates a new NYM record for a specific user, trust anchor, steward or trustee.
-Note that only trustees and stewards can create new trust anchors and a trustee can be created only by other trustees (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)).
+Note that only trustees and stewards can create new trust anchors and a trustee can be created only by other trustees (see [roles](auth_rules.md)).
 
 The transaction can be used for
 creation of new DIDs, setting and rotation of verification key, setting and changing of roles.
@@ -191,7 +192,7 @@ creation of new DIDs, setting and rotation of verification key, setting and chan
     - 2 (STEWARD)
     - 101 (TRUST_ANCHOR)
 
-  A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](https://github.com/hyperledger/indy-node/blob/master/docs/auth_rules.md)).
+  A TRUSTEE can change any Nym's role to None, thus stopping it from making any further writes (see [roles](auth_rules.md)).
 
 - `verkey` (base58-encoded string, possibly starting with "~"; optional):
 
@@ -372,7 +373,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
 Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular claim schema.
 
 It's not possible to update `data` in an existing claim definition.
-Therefore if an existing claim defintion needs to be evolved (for example, a key needs to be rotated), a new claim definition needs to be created for a new Issuer DID (`did`).
+Therefore if an existing claim definition needs to be evolved (for example, a key needs to be rotated), a new claim definition needs to be created for a new Issuer DID (`did`).
 
 - `data` (dict):
 
@@ -457,16 +458,10 @@ Adds a new node to the pool or updates an existing node in the pool
 
 - `dest` (base58-encoded string):
 
-    Target Node's DID as base58-encoded string for 16 or 32 byte DID value.
+    Target Node's verkey as base58-encoded string for 16 or 32 byte DID value.
     It differs from `identifier` metadata field, where `identifier` is the DID of the transaction submitter (Steward's DID).
 
-    *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the DID of this Node.
-
-- `verkey` (base58-encoded string, possibly starting with "~"; optional):
-
-    Target Node verification key as base58-encoded string.
-    It may absent if `dest` is 32-bit cryptonym CID.
-
+    *Example*: `identifier` is a DID of a Steward creating a new Node, and `dest` is the verkey of this Node.
 
 If there is no NODE transaction with the specified Node ID (`dest`), then it can be considered as creation of a new NODE.
 
@@ -706,6 +701,140 @@ Command to change Pool's configuration
             "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
         }]
     }
+}
+```
+
+#### AUTH_RULE
+
+Transaction to change authentication rules. 
+Authentication rules are stored in the State as key - value dictionary. This coincides with the storage structure in (auth_map)[auth_rule.md]. 
+If config ledger does not have a transaction for a given key, then a default rule defined in code is used.
+Key - some action in the format `prefix--txn_type--field--old_value--new_value`
+- `prefix` (enum: `ADD` or `EDIT`)
+- `txn_type` (string) - The type of transaction to change rights to. (Example: "0", "1", ...)
+- `field` (string) Change the rights to edit(add) some values from field.
+- `old_value` (string; optional) Old value of field, which can be changed to a new_value.
+- `new_value` (string) New value that can be used to fill the field.
+Value is a set of constraints on the execution of this action. There are two types of constraints:
+- AuthConstraint with `constraint_id = ROLE_CONSTRAINT_ID` and format `{constraint_id, role, sig_count, need_to_be_owner, metadata}`;
+- AuthConstraintOr with `constraint_id = OR_CONSTRAINT_ID` and `auth_constraints` - list of constraints;
+- AuthConstraintAnd with `constraint_id = AND_CONSTRAINT_ID` and `auth_constraints` - list of constraints;
+That is, the entry 
+```
+"EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
+                                            auth_constraints: [{constraint_id: ROLE,
+                                                                role: STEWARD, 
+                                                                sig_count: 1, 
+                                                                need_to_be_owner: True},
+                                                               {constraint_id: ROLE,
+                                                                role: TRUSTEE, 
+                                                                sig_count: 1, 
+                                                                need_to_be_owner: False}
+                                                               ]
+                                           }
+                                                                 
+```
+means that change the value of node services from [VALIDATOR] to [] (demotion of node) can only TRUSTEE or STEWARD if it is owner of this transaction.
+
+**AbstractAuthConstraint:**
+
+AuthConstraintAnd, AuthConstraintOr
+
+- `constraint_id` (enum: `AND` or `OR`):
+
+    Type of a constraint class. It's needed to determine a type of constraint for correct deserialization.
+    - `AND` logical conjunction for all constraints from `auth_constraints` - AuthConstraintAnd
+    - `OR` logical disjunction for all constraints from `auth_constraints` - AuthConstraintOr
+    
+- `auth_constraints` (list of ConstraintType):
+
+    List of ConstraintType (ConstraintList or ConstraintEntity) objects
+    
+ ```
+{ 'constraint_id': 'AND',
+  'auth_constraints': [<ConstraintEntity>,
+                      <ConstraintEntity>]
+}
+```
+    
+AuthConstraint
+
+- `constraint_id` (enum: `ROLE`):
+
+      Type of a constraint. As of now only ROLE is supported, but plugins can register new ones. It's needed to determine a type of constraint for correct deserialization.
+        
+- `role` (enum number as string; optional):
+
+    Role of a user that the NYM record is being created for. One of the following values
+
+    - None (common USER)
+    - 0 (TRUSTEE)
+    - 2 (STEWARD)
+    - 101 (TRUST_ANCHOR)
+   
+- `sig_count` (int):
+
+    The number of signatures that is needed to do the action described in the transaction fields.
+    
+- `need_to_be_owner` (boolean):
+
+    Flag to check if the user must be owner of a transaction (Example: A steward must be the owner of the node to make changes to it).
+    
+- `metadata` (dict; optional):
+
+    Dictionary for additional parameters of the constraint. Can be used by plugins to add additional restrictions.
+
+```
+{
+    'sig_count': 1, 
+    'need_to_be_owner': False, 
+    'constraint_id': 'ROLE', 
+    'metadata': {}, 
+    'role': '0'
+}
+```
+
+**Example:**
+```
+{  
+   'txnMetadata':{  
+      'txnTime':1551785798,
+      'seqNo':1
+   },
+   'txn':{  
+      'type':'120',
+      'protocolVersion':2,
+      'data':{  
+         'constraint':{  
+            'constraint_id':'ROLE',
+            'need_to_be_owner':False,
+            'role':'0',
+            'sig_count':1,
+            'metadata':{  
+
+            }
+         },
+         'auth_type':'1',
+         'new_value':'101',
+         'field':'role',
+         'auth_action':'ADD'
+      },
+      'metadata':{  
+         'reqId':252174114,
+         'digest':'6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c',
+         'from':'M9BJDuS24bqbJNvBRsoGg3'
+      }
+   },
+   'reqSignature':{  
+      'type':'ED25519',
+      'values':[  
+         {  
+            'value':'4wpLLAtkT6SeiKEXPVsMcCirx9KvkeKKd11Q4VsMXmSv2tnJrRw1TQKFyov4m2BuPP4C5oCiZ6RUwS9w3EPdywnz',
+            'from':'M9BJDuS24bqbJNvBRsoGg3'
+         }
+      ]
+   },
+   'ver':'1'
 }
 ```
 

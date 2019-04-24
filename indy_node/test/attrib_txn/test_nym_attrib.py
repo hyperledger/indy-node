@@ -1,11 +1,17 @@
 import json
+from _sha256 import sha256
 from contextlib import contextmanager
 import pytest
+from common.serializers.serialization import serialize_msg_for_signing
+from indy_common.authorize.auth_actions import EDIT_PREFIX, ADD_PREFIX
+from indy_common.authorize.auth_constraints import AuthConstraint
+from indy_node.test.attrib_txn.test_send_get_attr import secretBox
+from indy_node.test.auth_rule.helper import sdk_send_and_check_auth_rule_request
 
-from plenum.common.constants import STEWARD_STRING
+from plenum.common.constants import STEWARD_STRING, STEWARD
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.util import adict, randomString
-from indy_common.constants import TRUST_ANCHOR_STRING
+from indy_common.constants import TRUST_ANCHOR_STRING, ATTRIB
 from indy_common.util import getSymmetricallyEncryptedVal
 from indy_node.test.helper import sdk_add_attribute_and_check, sdk_get_attribute_and_check
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
@@ -70,6 +76,27 @@ def testTrustAnchorGetAttrsForUser(looper,
                                 sdk_wallet_trust_anchor, dest, attributeName)
 
 
+def test_edit_attrib(sdk_pool_handle, sdk_user_wallet_a,
+                     sdk_wallet_trust_anchor, attributeData, looper, attributeName):
+    _, did_cl = sdk_user_wallet_a
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, attributeData, did_cl)
+    res1 = sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, did_cl, attributeName)
+    assert serialize_msg_for_signing(
+        json.loads(res1[0][1]['result']['data'])) == serialize_msg_for_signing(
+        json.loads(attributeData.replace(' ', '')))
+
+    data = json.loads(attributeData)
+    data[attributeName] = {'John': 'Snow'}
+    data = json.dumps(data)
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+    res2 = sdk_get_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, did_cl, attributeName)
+    assert serialize_msg_for_signing(
+        json.loads(res2[0][1]['result']['data'])) == serialize_msg_for_signing(
+        json.loads(data.replace(' ', '')))
+
+
 def test_non_trust_anchor_cannot_add_attribute_for_user(
         looper,
         nodeSet,
@@ -82,7 +109,7 @@ def test_non_trust_anchor_cannot_add_attribute_for_user(
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle,
                                     sdk_wallet_client, attributeData, dest)
-    e.match('Only identity owner/guardian can add attribute for that identity')
+    e.match('can not touch raw field since only the owner can modify it')
 
 
 def testOnlyUsersTrustAnchorCanAddAttribute(
@@ -98,7 +125,7 @@ def testOnlyUsersTrustAnchorCanAddAttribute(
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle,
                                     wallet_another_ta, attributeData, dest)
-    e.match('Only identity owner/guardian can add attribute for that identity')
+    e.match('can not touch raw field since only the owner can modify it')
 
 
 def testStewardCannotAddUsersAttribute(
@@ -114,7 +141,7 @@ def testStewardCannotAddUsersAttribute(
     with pytest.raises(RequestRejectedException) as e:
         sdk_add_attribute_and_check(looper, sdk_pool_handle,
                                     wallet_another_stewatd, attributeData, dest)
-    e.match('Only identity owner/guardian can add attribute for that identity')
+    e.match('can not touch raw field since only the owner can modify it')
 
 
 # TODO: Ask Jason, if getting the latest attribute makes sense since in case
@@ -251,3 +278,190 @@ def testTrustAnchorAddedAttributeCanBeChanged(sdk_added_raw_attribute):
     # TODO but only by user(if user has taken control of his identity) and
     # trustAnchor
     raise NotImplementedError
+
+
+def set_attrib_auth_to_none(looper, sdk_wallet_trustee, sdk_pool_handle):
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=ADD_PREFIX,
+                                         auth_type=ATTRIB,
+                                         field='*',
+                                         new_value='*',
+                                         constraint=AuthConstraint(role='*', sig_count=1,
+                                                                   need_to_be_owner=True).as_dict)
+
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=EDIT_PREFIX,
+                                         auth_type=ATTRIB,
+                                         field='*',
+                                         new_value='*',
+                                         old_value='*',
+                                         constraint=AuthConstraint(role='*', sig_count=1,
+                                                                   need_to_be_owner=True).as_dict)
+
+
+def test_auth_rule_for_raw_attrib_works(looper,
+                                        sdk_wallet_trustee,
+                                        sdk_pool_handle,
+                                        sdk_user_wallet_a,
+                                        sdk_wallet_trust_anchor):
+    _, did_cl = sdk_user_wallet_a
+
+    # We can add and modify attribs
+    data = dict()
+    data['a'] = {'John': 'Snow'}
+    data = json.dumps(data)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=EDIT_PREFIX,
+                                         auth_type=ATTRIB,
+                                         field='*',
+                                         new_value='*',
+                                         old_value='*',
+                                         constraint=AuthConstraint(role=STEWARD, sig_count=1).as_dict)
+
+    # We still can add, but cannot edit attrib
+    data = dict()
+    data['b'] = {'John': 'Snow'}
+    data = json.dumps(data)
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+    e.match('Not enough STEWARD signatures')
+
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=ADD_PREFIX,
+                                         auth_type=ATTRIB,
+                                         field='*',
+                                         new_value='*',
+                                         constraint=AuthConstraint(role=STEWARD, sig_count=1).as_dict)
+    # We cannot add or edit attrib
+    data = dict()
+    data['c'] = {'John': 'Snow'}
+    data = json.dumps(data)
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+    e.match('Not enough STEWARD signatures')
+
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, data, did_cl)
+    e.match('Not enough STEWARD signatures')
+
+
+def test_auth_rule_for_hash_attrib_works(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         sdk_user_wallet_a,
+                                         sdk_wallet_trust_anchor):
+    _, did_cl = sdk_user_wallet_a
+
+    set_attrib_auth_to_none(looper, sdk_wallet_trustee, sdk_pool_handle)
+
+    # We can add and modify attribs
+    data = sha256(json.dumps({'name': 'John'}).encode()).hexdigest()
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=EDIT_PREFIX,
+                                         auth_type=ATTRIB,
+                                         field='*',
+                                         new_value='*',
+                                         old_value='*',
+                                         constraint=AuthConstraint(role=STEWARD, sig_count=1).as_dict)
+
+    # We still can add, but cannot edit attrib
+    data = sha256(json.dumps({'name': 'Ned'}).encode()).hexdigest()
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+    e.match('Not enough STEWARD signatures')
+
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=ADD_PREFIX,
+                                         auth_type=ATTRIB,
+                                         field='*',
+                                         new_value='*',
+                                         constraint=AuthConstraint(role=STEWARD, sig_count=1).as_dict)
+    # We cannot add or edit attrib
+    data = sha256(json.dumps({'name': 'Aria'}).encode()).hexdigest()
+
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+    e.match('Not enough STEWARD signatures')
+
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, xhash=data)
+    e.match('Not enough STEWARD signatures')
+
+
+def test_auth_rule_for_enc_attrib_works(looper,
+                                        sdk_wallet_trustee,
+                                        sdk_pool_handle,
+                                        sdk_user_wallet_a,
+                                        sdk_wallet_trust_anchor):
+    _, did_cl = sdk_user_wallet_a
+
+    set_attrib_auth_to_none(looper, sdk_wallet_trustee, sdk_pool_handle)
+
+    # We can add and modify attribs
+    data = secretBox.encrypt(json.dumps({'name': 'Jaime'}).encode()).hex()
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=EDIT_PREFIX,
+                                         auth_type=ATTRIB,
+                                         field='*',
+                                         new_value='*',
+                                         old_value='*',
+                                         constraint=AuthConstraint(role=STEWARD, sig_count=1).as_dict)
+
+    # We still can add, but cannot edit attrib
+    data = secretBox.encrypt(json.dumps({'name': 'Cersei'}).encode()).hex()
+
+    sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+    e.match('Not enough STEWARD signatures')
+
+    sdk_send_and_check_auth_rule_request(looper,
+                                         sdk_wallet_trustee,
+                                         sdk_pool_handle,
+                                         auth_action=ADD_PREFIX,
+                                         auth_type=ATTRIB,
+                                         field='*',
+                                         new_value='*',
+                                         constraint=AuthConstraint(role=STEWARD, sig_count=1).as_dict)
+    # We cannot add or edit attrib
+    data = secretBox.encrypt(json.dumps({'name': 'Tywin'}).encode()).hex()
+
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+    e.match('Not enough STEWARD signatures')
+
+    with pytest.raises(RequestRejectedException) as e:
+        sdk_add_attribute_and_check(looper, sdk_pool_handle, sdk_wallet_trust_anchor, None, did_cl, enc=data)
+    e.match('Not enough STEWARD signatures')

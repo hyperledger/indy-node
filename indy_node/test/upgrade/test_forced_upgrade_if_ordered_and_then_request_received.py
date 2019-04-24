@@ -33,4 +33,4 @@ def test_forced_upgrade_handled_once_if_ordered_and_then_request_received(
 
     checkUpgradeScheduled([slow_node], validUpgradeExpForceTrue[VERSION])
     assert count_action_log_package(list(slow_node.upgrader._actionLog), validUpgradeExpForceTrue['package']) == 1
-    assert slow_node.upgrader._actionLog.lastEvent[1] == UpgradeLog.SCHEDULED
+    assert slow_node.upgrader._actionLog.last_event.ev_type == UpgradeLog.Events.scheduled

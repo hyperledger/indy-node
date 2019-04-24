@@ -32,7 +32,7 @@ def test_node_detected_upgrade_failed(nodeSet):
     '''
     for node in nodeSet:
         assert node.upgrader.scheduledAction is None
-        assert node.upgrader.lastActionEventInfo[0] == UpgradeLog.FAILED
+        assert node.upgrader.lastActionEventInfo.ev_type == UpgradeLog.Events.failed
 
 
 def test_node_sent_upgrade_fail(looper, nodeSet, nodeIds):
