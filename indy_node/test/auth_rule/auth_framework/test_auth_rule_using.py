@@ -9,6 +9,7 @@ from indy_common.authorize.auth_actions import ADD_PREFIX, split_action_id, Auth
 from indy_common.authorize.auth_constraints import ROLE, IDENTITY_OWNER, AbstractAuthConstraint, ConstraintsEnum, \
     accepted_roles, AuthConstraint
 from indy_common.constants import NYM, TRUST_ANCHOR, TRUST_ANCHOR_STRING, NETWORK_MONITOR_STRING, NETWORK_MONITOR
+from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, roles_to_string
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from plenum.common.constants import STEWARD_STRING, STEWARD, TRUSTEE, TRUSTEE_STRING, IDENTITY_OWNER_STRING
 from plenum.common.exceptions import RequestRejectedException
@@ -18,54 +19,6 @@ from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk
 from plenum.test.pool_transactions.helper import prepare_nym_request
 from indy_common.authorize import auth_map
 from plenum.test.testing_utils import FakeSomething
-
-
-roles_to_string = {
-    TRUSTEE: TRUSTEE_STRING,
-    STEWARD: STEWARD_STRING,
-    TRUST_ANCHOR: TRUST_ANCHOR_STRING,
-    NETWORK_MONITOR: NETWORK_MONITOR_STRING,
-    IDENTITY_OWNER: IDENTITY_OWNER_STRING,
-}
-
-
-
-class AbstractTest(metaclass=ABCMeta):
-    action_id = ""
-
-    @abstractmethod
-    def prepare(self):
-        pass
-
-
-    @abstractmethod
-    def run(self):
-        pass
-
-    @abstractmethod
-    def result(self):
-        pass
-
-    def _build_nym(self, creator_wallet, role_string, did):
-        seed = randomString(32)
-        alias = randomString(5)
-        nym_request, new_did = self.looper.loop.run_until_complete(
-            prepare_nym_request(creator_wallet,
-                                seed,
-                                alias,
-                                role_string,
-                                dest=did))
-        return sdk_json_to_request_object(json.loads(nym_request))
-
-
-class AbstractRoleTest(AbstractTest, metaclass=ABCMeta):
-    def __init__(self, role, env):
-        self.role = role
-        self.looper = None
-
-    @abstractmethod
-    def compile_local_map(self):
-        pass
 
 
 class AddNewRoleTest(AbstractTest):
@@ -213,17 +166,6 @@ class EditTrusteeTest(AbstractTest):
         return self._build_nym(self.default_wallet,
                                self.role_string,
                                self.new_default_did)
-
-    def get_default_auth_rule(self):
-        constraint = auth_map.auth_map.get(self.action_id)
-        operation = generate_auth_rule_operation(auth_action=self.action_def.prefix,
-                                                 auth_type=self.action_def.txn_type,
-                                                 field=self.action_def.field,
-                                                 old_value=self.action_def.old_value,
-                                                 new_value=self.action_def.new_value,
-                                                 constraint=constraint.as_dict)
-        self.default_wallet = self.env.role_to_wallet[(random.choice(self.default_constraint_roles))]
-        return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
 
     def get_changed_auth_rule(self):
         new_role = random.choice(set(accepted_roles).difference(set(self.other_roles)))
