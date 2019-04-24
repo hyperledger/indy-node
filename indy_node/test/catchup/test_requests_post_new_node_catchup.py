@@ -70,7 +70,7 @@ def test_new_node_catchup_update_projection(looper,
             assert new_projection_sizes[node.name] - \
                    old_projection_sizes[node.name] == new_txn_count
             assert new_seq_no_map_sizes[node.name] - \
-                   old_seq_no_map_sizes[node.name] == new_txn_count
+                   old_seq_no_map_sizes[node.name] == new_txn_count * 2
 
     # Stop a node and note down the sizes of ledger and projection (state)
     other_nodes = nodeSet[:-1]

@@ -11,9 +11,7 @@ In order to run your own Network, you need to do the following for each Node:
     sudo apt-get update
     sudo apt-get install indy-node
     ```
-    - It's also possible to install from pypi for test purposes
-        - master version: `pip install indy-node-dev`
-        - stable version: `pip install indy-node`
+    - It's also possible to install from pypi for test purposes: `pip install indy-node`
 2. Initialize Node to be included into the Network
     - if ```indy-node``` were installed from pypi basic directory structure should created manually with the command ```create_dirs.sh```
     - set Network name in config file
@@ -83,7 +81,7 @@ There are at least two important reasons for this:
  - preventing the indy-node process from reaching of open file descriptors limit caused by clients connections
  - preventing the indy-node process from large memory usage as ZeroMQ creates the separate queue for each TCP connection.
 
-Instructions related to iptables setup can be found [here](https://github.com/hyperledger/indy-node/blob/master/docs/setup-iptables.md).
+Instructions related to iptables setup can be found [here](https://github.com/hyperledger/indy-node/blob/master/docs/source/setup-iptables.md).
 
 #### Running Node
 
