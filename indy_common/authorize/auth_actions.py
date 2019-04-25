@@ -47,7 +47,7 @@ class AuthActionAdd(AbstractAuthAction):
     def __init__(self, txn_type, field=None, value=None, is_owner: bool=True):
         self.txn_type = txn_type
         self.field = str(field) if field is not None else ''
-        self.value = str(value) if value else ''
+        self.value = str(value) if value is not None else ''
         self.is_owner = is_owner
 
     def get_action_id(self) -> str:
