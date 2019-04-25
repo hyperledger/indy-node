@@ -236,8 +236,9 @@ class NodeControlTool:
             pkg_name, upstream=new_src_ver)
         if not new_pkg_ver:
             logger.error(
-                "package {} for upstream version {} is not found"
-                .format(pkg_name, new_src_ver)
+                "Upgrade from {} to upstream version {} failed: package {} for"
+                " upstream version is not found"
+                .format(curr_pkg_ver, new_src_ver, pkg_name)
             )
             return
 
