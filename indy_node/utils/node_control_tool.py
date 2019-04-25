@@ -236,8 +236,9 @@ class NodeControlTool:
             pkg_name, upstream=new_src_ver)
         if not new_pkg_ver:
             logger.error(
-                "package {} for upstream version {} is not found"
-                .format(pkg_name, new_src_ver)
+                "Upgrade from {} to upstream version {} failed: package {} for"
+                " upstream version is not found"
+                .format(curr_pkg_ver, new_src_ver, pkg_name)
             )
             return
 
@@ -263,7 +264,7 @@ class NodeControlTool:
         except json.decoder.JSONDecodeError as e:
             logger.error("JSON decoding failed: {}".format(e))
         except Exception as e:
-            logger.error("Unexpected error in process_data {}".format(e))
+            logger.error("Unexpected error in _process_data {}".format(e))
 
     def start(self):
         NodeControlUtil.hold_packages(self.config.PACKAGES_TO_HOLD + self.hold_ext)
