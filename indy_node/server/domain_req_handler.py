@@ -297,12 +297,29 @@ class DomainReqHandler(PHandler):
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
                                        "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
-        # only owner can update claim_def,
-        # because his identifier is the primary key of claim_def
-        self.write_req_validator.validate(req,
-                                          [AuthActionAdd(txn_type=CLAIM_DEF,
-                                                         field='*',
-                                                         value='*')])
+
+        frm = req.identifier
+        signature_type = get_read_claim_def_signature_type(req)
+        schema_ref = get_read_claim_def_schema_ref(req)
+        tag = get_read_claim_def_tag(req)
+        keys, last_seq_no, _, _ = self.getClaimDef(
+            author=frm,
+            schemaSeqNo=schema_ref,
+            signatureType=signature_type,
+            tag=tag
+        )
+
+        if last_seq_no:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=CLAIM_DEF,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=CLAIM_DEF,
+                                                             field='*',
+                                                             value='*')])
 
     def _validate_revoc_reg_def(self, req: Request):
         operation = req.operation
