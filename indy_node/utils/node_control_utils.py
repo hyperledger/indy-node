@@ -302,7 +302,7 @@ class NodeControlUtil:
             # will fail if either package not found or grep returns nothing
             # the latter is unexpected and treated as no-data as well
             logger.info(
-                "no-data for package '{}' found".format(pkg_name)
+                "no data for package '{}' found".format(pkg_name)
             )
         else:
             if output:
@@ -315,6 +315,8 @@ class NodeControlUtil:
 
                 try:
                     return sorted(versions)[-1]
+                except IndexError:
+                    pass
                 except ShellError:
                     logger.warning(
                         "version comparison failed unexpectedly for versions: {}"
