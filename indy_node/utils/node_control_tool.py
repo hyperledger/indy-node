@@ -263,7 +263,7 @@ class NodeControlTool:
         except json.decoder.JSONDecodeError as e:
             logger.error("JSON decoding failed: {}".format(e))
         except Exception as e:
-            logger.error("Unexpected error in process_data {}".format(e))
+            logger.error("Unexpected error in _process_data {}".format(e))
 
     def start(self):
         NodeControlUtil.hold_packages(self.config.PACKAGES_TO_HOLD + self.hold_ext)
