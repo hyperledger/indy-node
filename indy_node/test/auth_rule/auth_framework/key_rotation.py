@@ -57,7 +57,6 @@ class RotateKeyTest(AbstractTest):
         sdk_rotate_verkey(self.looper, self.sdk_pool_handle, wh, client_did, client_did, verkey)
         self.sdk_modified_verkey_rotate(self.sdk_pool_handle, wh, trustee_did, client_did)
 
-
     def result(self):
         pass
 

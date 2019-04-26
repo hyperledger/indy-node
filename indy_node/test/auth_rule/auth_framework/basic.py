@@ -29,7 +29,6 @@ class AbstractTest(metaclass=ABCMeta):
     def prepare(self):
         pass
 
-
     @abstractmethod
     def run(self):
         pass

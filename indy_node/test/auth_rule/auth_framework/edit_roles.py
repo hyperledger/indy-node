@@ -215,17 +215,20 @@ class EditTrustAnchorToStewardTest(EditRoleTest):
                          env,
                          AddNewTrustAnchorTest)
 
+
 class EditTrustAnchorToNetworkMonitorTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
                          AddNewTrustAnchorTest)
 
+
 class EditTrustAnchorToIdentityOwnerTest(EditRoleTest):
     def __init__(self, env, action_id):
         super().__init__(action_id,
                          env,
                          AddNewTrustAnchorTest)
+
 
 class EditIdentityOwnerToTrusteeTest(EditRoleTest):
     def __init__(self, env, action_id):

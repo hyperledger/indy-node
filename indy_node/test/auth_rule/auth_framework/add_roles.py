@@ -34,7 +34,6 @@ class AddNewRoleTest(AbstractTest):
         self.changed_auth_rule = self.get_changed_auth_rule()
         self.nym_for_new_rule = self._get_nym_for_new_rule()
 
-
     def run(self):
         # Step 1. Check default auth rule
         self.send_and_check(self.phase_req_1, wallet=self.creator_wallet)
@@ -57,7 +56,6 @@ class AddNewRoleTest(AbstractTest):
 
     def result(self):
         pass
-
 
     def send_and_check(self, req, wallet):
         signed_reqs = sdk_sign_request_objects(self.looper,

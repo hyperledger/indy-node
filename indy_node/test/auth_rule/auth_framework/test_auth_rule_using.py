@@ -1,6 +1,19 @@
+import dateutil.tz
 import pytest
+from datetime import datetime, timedelta
+
+from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRuleTest
+from indy_node.test.auth_rule.auth_framework.pool_config import PoolConfigTest
+from indy_node.test.auth_rule.auth_framework.restart import RestartTest
+from indy_node.test.auth_rule.auth_framework.revoc_reg_def import RevocRegDefTest
+from indy_node.test.auth_rule.auth_framework.validator_info import ValidatorInfoTest
+from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
 
 from indy_common.authorize.auth_constraints import IDENTITY_OWNER
+from indy_common.constants import TRUST_ANCHOR, START
+from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest, AddNewStewardTest, \
+    AddNewTrustAnchorTest, AddNewNetworkMonitorTest, AddNewIdentityOwnerTest
+from indy_node.test.auth_rule.auth_framework.claim_def import ClaimDefTest
 from indy_common.constants import TRUST_ANCHOR, NETWORK_MONITOR, NETWORK_MONITOR_STRING
 from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest, AddNewStewardTest, \
     AddNewTrustAnchorTest, AddNewNetworkMonitorTest, AddNewIdentityOwnerTest
@@ -13,11 +26,18 @@ from indy_node.test.auth_rule.auth_framework.edit_roles import EditTrusteeToStew
     EditNetworkMonitorToIdentityOwnerTest, EditNetworkMonitorToTrusteeTest, EditNetworkMonitorToStewardTest, \
     EditNetworkMonitorToTrustAnchorTest
 from indy_node.test.auth_rule.auth_framework.key_rotation import RotateKeyTest
+from indy_node.test.auth_rule.auth_framework.schema import SchemaTest
+from indy_node.test.auth_rule.auth_framework.upgrade import UpgradeTest
+from indy_node.test.upgrade.helper import bumpedVersion
 from plenum.common.constants import STEWARD, TRUSTEE, \
     IDENTITY_OWNER
 from indy_common.authorize import auth_map
+from plenum.test.helper import randomText, sdk_multi_sign_request_objects, sdk_send_signed_requests, \
+    sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
+
+from indy_node.test.pool_config.conftest import poolConfigWTFF
 
 
 class TestAuthRuleUsing():
@@ -28,6 +48,14 @@ class TestAuthRuleUsing():
         auth_map.add_new_network_monitor.get_action_id(): AddNewNetworkMonitorTest,
         auth_map.add_new_identity_owner.get_action_id(): AddNewIdentityOwnerTest,
         auth_map.key_rotation.get_action_id(): RotateKeyTest,
+        auth_map.add_schema.get_action_id(): SchemaTest,
+        auth_map.add_schema.get_action_id(): ClaimDefTest,
+        auth_map.start_upgrade.get_action_id(): UpgradeTest,
+        auth_map.pool_restart.get_action_id(): RestartTest,
+        auth_map.pool_config.get_action_id(): PoolConfigTest,
+        auth_map.auth_rule.get_action_id(): AuthRuleTest,
+        auth_map.validator_info.get_action_id(): ValidatorInfoTest,
+        # auth_map.add_revoc_reg_def.get_action_id(): RevocRegDefTest,
         auth_map.edit_role_actions[TRUSTEE][STEWARD].get_action_id(): EditTrusteeToStewardTest,
         auth_map.edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(): EditTrusteeToTrustAnchorTest,
         auth_map.edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): EditTrusteeToNetworkMonitorTest,
@@ -43,12 +71,42 @@ class TestAuthRuleUsing():
         auth_map.edit_role_actions[IDENTITY_OWNER][TRUSTEE].get_action_id(): EditIdentityOwnerToTrusteeTest,
         auth_map.edit_role_actions[IDENTITY_OWNER][STEWARD].get_action_id(): EditIdentityOwnerToStewardTest,
         auth_map.edit_role_actions[IDENTITY_OWNER][TRUST_ANCHOR].get_action_id(): EditIdentityOwnerToTrustAnchorTest,
-        auth_map.edit_role_actions[IDENTITY_OWNER][NETWORK_MONITOR].get_action_id(): EditIdentityOwnerToNetworkMonitorTest,
+        auth_map.edit_role_actions[IDENTITY_OWNER][
+            NETWORK_MONITOR].get_action_id(): EditIdentityOwnerToNetworkMonitorTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][TRUSTEE].get_action_id(): EditNetworkMonitorToTrusteeTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][STEWARD].get_action_id(): EditNetworkMonitorToStewardTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][TRUST_ANCHOR].get_action_id(): EditNetworkMonitorToTrustAnchorTest,
-        auth_map.edit_role_actions[NETWORK_MONITOR][IDENTITY_OWNER].get_action_id(): EditNetworkMonitorToIdentityOwnerTest,
+        auth_map.edit_role_actions[NETWORK_MONITOR][
+            IDENTITY_OWNER].get_action_id(): EditNetworkMonitorToIdentityOwnerTest,
     }
+
+    @pytest.fixture(scope='module')
+    def pckg(self):
+        return (EXT_PKT_NAME, EXT_PKT_VERSION)
+
+    @pytest.fixture(scope='module')
+    def monkeymodule(self):
+        from _pytest.monkeypatch import MonkeyPatch
+        mpatch = MonkeyPatch()
+        yield mpatch
+        mpatch.undo()
+
+    @pytest.fixture(scope='module')
+    def validUpgrade(self, nodeIds, tconf, pckg, monkeymodule):
+        schedule = {}
+        unow = datetime.utcnow().replace(tzinfo=dateutil.tz.tzutc())
+        startAt = unow + timedelta(seconds=100)
+        acceptableDiff = tconf.MinSepBetweenNodeUpgrades + 1
+        for i in nodeIds:
+            schedule[i] = datetime.isoformat(startAt)
+            startAt = startAt + timedelta(seconds=acceptableDiff + 3)
+
+        new_version = bumpedVersion(pckg[1])
+        patch_packet_mgr_output(monkeymodule, pckg[0], pckg[1], new_version)
+
+        return dict(name='upgrade-{}'.format(randomText(3)), version=new_version,
+                    action=START, schedule=schedule, timeout=1, package=pckg[0],
+                    sha256='db34a72a90d026dae49c3b3f0436c8d3963476c77468ad955845a1ccf7b03f55')
 
     @pytest.fixture(scope="module")
     def sdk_wallet_network_monitor(self, looper, sdk_pool_handle, sdk_wallet_trustee):
@@ -63,6 +121,8 @@ class TestAuthRuleUsing():
             sdk_wallet_steward,
             sdk_wallet_trust_anchor,
             sdk_wallet_client,
+            validUpgrade,
+            poolConfigWTFF,
             sdk_wallet_network_monitor):
         role_to_wallet = {
             TRUSTEE: sdk_wallet_trustee,
@@ -76,7 +136,9 @@ class TestAuthRuleUsing():
                              sdk_wallet_trustee=sdk_wallet_trustee,
                              sdk_wallet_steward=sdk_wallet_steward,
                              sdk_wallet_client=sdk_wallet_client,
-                             role_to_wallet=role_to_wallet)
+                             role_to_wallet=role_to_wallet,
+                             valid_upgrade=validUpgrade,
+                             pool_config_wtff=poolConfigWTFF)
 
     @pytest.fixture(scope='module', params=[(k, v) for k, v in map_of_tests.items()])
     def auth_rule_tests(self, request, env):
