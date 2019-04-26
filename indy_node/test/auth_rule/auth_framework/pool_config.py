@@ -38,7 +38,7 @@ class PoolConfigTest(AbstractTest):
         # Step 2. Change auth rule
         self.send_and_check(self.changed_auth_rule)
 
-        # Step 3. Check, that we cannot send schema the old way
+        # Step 3. Check, that we cannot send txn the old way
         sdk_ensure_pool_config_sent(self.looper, self.sdk_pool_handle, self.test_nym, self.pool_config_wtff)
         with pytest.raises(RequestRejectedException):
             sdk_ensure_pool_config_sent(self.looper, self.sdk_pool_handle, self.trustee_wallet, self.pool_config_wtff)

@@ -37,7 +37,7 @@ class RestartTest(AbstractTest):
         # Step 2. Change auth rule
         self.send_and_check(self.changed_auth_rule)
 
-        # Step 3. Check, that we cannot send schema the old way
+        # Step 3. Check, that we cannot send txn the old way
         sdk_send_restart(self.looper, self.test_nym, self.sdk_pool_handle, action='start')
         with pytest.raises(RequestRejectedException):
             sdk_send_restart(self.looper, self.trustee_wallet, self.sdk_pool_handle, action='start')

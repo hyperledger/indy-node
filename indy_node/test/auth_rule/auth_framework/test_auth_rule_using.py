@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRuleTest
 from indy_node.test.auth_rule.auth_framework.pool_config import PoolConfigTest
 from indy_node.test.auth_rule.auth_framework.restart import RestartTest
+from indy_node.test.auth_rule.auth_framework.validator_info import ValidatorInfoTest
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
 
 from indy_common.authorize.auth_constraints import IDENTITY_OWNER
@@ -39,6 +40,7 @@ class TestAuthRuleUsing():
         auth_map.pool_restart.get_action_id(): RestartTest,
         auth_map.pool_config.get_action_id(): PoolConfigTest,
         auth_map.auth_rule.get_action_id(): AuthRuleTest,
+        auth_map.validator_info.get_action_id(): ValidatorInfoTest,
     }
 
     @pytest.fixture(scope='module')
