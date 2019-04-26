@@ -17,8 +17,8 @@ roles_to_string = {
     STEWARD: STEWARD_STRING,
     TRUST_ANCHOR: TRUST_ANCHOR_STRING,
     NETWORK_MONITOR: NETWORK_MONITOR_STRING,
-    IDENTITY_OWNER: IDENTITY_OWNER_STRING,
-    '': IDENTITY_OWNER_STRING,
+    IDENTITY_OWNER: '',
+    '': '',
 }
 
 
@@ -29,7 +29,6 @@ class AbstractTest(metaclass=ABCMeta):
     def prepare(self):
         pass
 
-
     @abstractmethod
     def run(self):
         pass
@@ -38,7 +37,7 @@ class AbstractTest(metaclass=ABCMeta):
     def result(self):
         pass
 
-    def _build_nym(self, creator_wallet, role_string, did):
+    def _build_nym(self, creator_wallet, role_string, did, skipverkey=True):
         seed = randomString(32)
         alias = randomString(5)
         nym_request, new_did = self.looper.loop.run_until_complete(
@@ -46,7 +45,8 @@ class AbstractTest(metaclass=ABCMeta):
                                 seed,
                                 alias,
                                 role_string,
-                                dest=did))
+                                dest=did,
+                                skipverkey=skipverkey))
         return sdk_json_to_request_object(json.loads(nym_request))
 
     def get_default_auth_rule(self):
@@ -58,13 +58,3 @@ class AbstractTest(metaclass=ABCMeta):
                                                  new_value=self.action.new_value,
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
-
-
-class AbstractRoleTest(AbstractTest, metaclass=ABCMeta):
-    def __init__(self, role, env):
-        self.role = role
-        self.looper = None
-
-    @abstractmethod
-    def compile_local_map(self):
-        pass

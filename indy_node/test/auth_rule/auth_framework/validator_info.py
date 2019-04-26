@@ -14,7 +14,7 @@ from indy_common.authorize import auth_map
 
 
 class ValidatorInfoTest(AbstractTest):
-    def __init__(self, env):
+    def __init__(self, env, action_id):
         self.looper = env.looper
         self.sdk_pool_handle = env.sdk_pool_handle
         self.trustee_wallet = env.sdk_wallet_trustee

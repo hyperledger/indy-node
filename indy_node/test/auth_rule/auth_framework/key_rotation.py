@@ -18,8 +18,8 @@ from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
 class RotateKeyTest(AbstractTest):
-    def __init__(self, env):
-        self.action_id = auth_map.key_rotation.get_action_id()
+    def __init__(self, env, action_id):
+        self.action_id = action_id
         self.action = split_action_id(self.action_id)
         self.looper = env.looper
         self.sdk_pool_handle = env.sdk_pool_handle
@@ -56,7 +56,6 @@ class RotateKeyTest(AbstractTest):
         # Step 5. Check, that default auth rule works
         sdk_rotate_verkey(self.looper, self.sdk_pool_handle, wh, client_did, client_did, verkey)
         self.sdk_modified_verkey_rotate(self.sdk_pool_handle, wh, trustee_did, client_did)
-
 
     def result(self):
         pass

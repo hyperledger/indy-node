@@ -30,7 +30,7 @@ def get_schema_json(looper, sdk_pool_handle, sdk_wallet_trustee):
 
 
 class ClaimDefTest(AbstractTest):
-    def __init__(self, env):
+    def __init__(self, env, action_id):
         self.looper = env.looper
         self.sdk_pool_handle = env.sdk_pool_handle
         self.trustee_wallet = env.sdk_wallet_trustee
