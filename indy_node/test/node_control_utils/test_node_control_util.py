@@ -104,17 +104,24 @@ def test_get_latest_pkg_version_invalid_args():
 @pytest.mark.parametrize(
     'pkg_name,upstream,output,expected',
     [
+        # some top level package
         ('any_package', None, '', None),
         ('any_package', None, 'Version: 1.2.3\nVersion: 1.2.4', '1.2.4'),
         ('any_package', None, 'Version: 1.2.4\nVersion: 1.2.3', '1.2.4'),
         ('any_package', '1.2.5', 'Version: 1.2.3\nVersion: 1.2.4', None),
+        # self package (APP_NAME)
         (APP_NAME, None, 'Version: 1.2.3\nVersion: 1.2.4', '1.2.4'),
         (APP_NAME, None, 'Version: 1.2.4\nVersion: 1.2.3', '1.2.4'),
         (APP_NAME, None, 'Version: 1.2.4~dev1\nVersion: 1.2.4~rc1', '1.2.4rc1'),
         (APP_NAME, None, 'Version: 1.2.4~rc1\nVersion: 1.2.4~dev1', '1.2.4rc1'),
         (APP_NAME, None, 'Version: 1.2.4~dev1\nVersion: 1.2.4', '1.2.4'),
         (APP_NAME, None, 'Version: 1.2.4~rc2\nVersion: 1.2.4', '1.2.4'),
-        (APP_NAME, '1.2.5', 'Version: 1.2.3\nVersion: 1.2.4\nVersion: 1.2.5~rc1\nVersion: 1.2.5~dev1', None),
+        (APP_NAME, '1.2.5', 'Version: 1.2.4', None),
+        (APP_NAME, '1.2.5', 'Version: 1.2.5~rc1', None),
+        (APP_NAME, '1.2.5', 'Version: 1.2.5~dev1', None),
+        # invalid versions from output
+        ('any_package', None, 'Version: 1.2.3.4.5', None),
+        (APP_NAME, None, 'Version: 1.2.3.4.5', None),
     ],
     ids=lambda s: s.replace('\n', '_').replace(' ', '_')
 )
