@@ -2,6 +2,7 @@ import dateutil.tz
 import pytest
 from datetime import datetime, timedelta
 
+from indy_node.test.auth_rule.auth_framework.restart import RestartTest
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
 
 from indy_common.authorize.auth_constraints import IDENTITY_OWNER
@@ -31,6 +32,7 @@ class TestAuthRuleUsing():
         auth_map.add_schema.get_action_id(): SchemaTest,
         auth_map.add_schema.get_action_id(): ClaimDefTest,
         auth_map.start_upgrade.get_action_id(): UpgradeTest,
+        auth_map.pool_restart.get_action_id(): RestartTest,
     }
 
     @pytest.fixture(scope='module')
