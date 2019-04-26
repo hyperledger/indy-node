@@ -67,7 +67,7 @@ class ClaimDefTest(AbstractTest):
         self.send_and_check(self.changed_auth_rule)
         self.send_and_check(self.changed_auth_rule_edit)
 
-        # Step 3. Check, that we cannot send schema the old way
+        # Step 3. Check, that we cannot do txn the old way
         with pytest.raises(RequestRejectedException):
             sdk_send_claim_def(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'tag3', schema_json)
         reply = sdk_send_claim_def(self.looper, self.sdk_pool_handle, self.test_nym, 'tag4', schema_json)
