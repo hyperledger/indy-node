@@ -2,6 +2,7 @@ import dateutil.tz
 import pytest
 from datetime import datetime, timedelta
 
+from indy_node.test.auth_rule.auth_framework.pool_config import PoolConfigTest
 from indy_node.test.auth_rule.auth_framework.restart import RestartTest
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
 
@@ -20,6 +21,8 @@ from indy_common.authorize import auth_map
 from plenum.test.helper import randomText
 from plenum.test.testing_utils import FakeSomething
 
+from indy_node.test.pool_config.conftest import poolConfigWTFF
+
 
 class TestAuthRuleUsing():
     map_of_tests = {
@@ -33,6 +36,7 @@ class TestAuthRuleUsing():
         auth_map.add_schema.get_action_id(): ClaimDefTest,
         auth_map.start_upgrade.get_action_id(): UpgradeTest,
         auth_map.pool_restart.get_action_id(): RestartTest,
+        auth_map.pool_config.get_action_id(): PoolConfigTest,
     }
 
     @pytest.fixture(scope='module')
@@ -71,7 +75,8 @@ class TestAuthRuleUsing():
             sdk_wallet_steward,
             sdk_wallet_trust_anchor,
             sdk_wallet_client,
-            validUpgrade):
+            validUpgrade,
+            poolConfigWTFF):
         role_to_wallet = {
             TRUSTEE: sdk_wallet_trustee,
             STEWARD: sdk_wallet_steward,
@@ -84,7 +89,8 @@ class TestAuthRuleUsing():
                              sdk_wallet_steward=sdk_wallet_steward,
                              sdk_wallet_client=sdk_wallet_client,
                              role_to_wallet=role_to_wallet,
-                             valid_upgrade=validUpgrade)
+                             valid_upgrade=validUpgrade,
+                             pool_config_wtff=poolConfigWTFF)
 
     @pytest.fixture(scope='module', params=[(k, v) for k, v in map_of_tests.items()])
     def auth_rule_tests(self, request, env):
