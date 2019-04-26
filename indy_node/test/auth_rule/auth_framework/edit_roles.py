@@ -55,7 +55,7 @@ class EditRoleTest(AbstractTest):
 
         self.return_to_default_nym_1 = self._return_to_default_nym()
         self.return_to_default_nym_2 = self._return_to_default_nym()
-        self.return_to_nym_for_new_rule = self._return_to_default_nym(wallet=self.trustee_wallet)
+        self.return_to_nym_for_new_rule = self._return_to_default_nym()
 
     def run(self):
 
@@ -79,7 +79,7 @@ class EditRoleTest(AbstractTest):
         self.send_and_check(self.default_edit_nym_2, wallet=self.default_who_can_wallet)
 
         # Step 7. Return to default value
-        self.send_and_check(self.return_to_default_nym_2, wallet=self.default_who_can_wallet)
+        self.send_and_check(self.return_to_default_nym_2, wallet=self.trustee_wallet)
 
     def result(self):
         pass
@@ -119,8 +119,8 @@ class EditRoleTest(AbstractTest):
                                self.role_to_change_string,
                                self.new_default_did)
 
-    def _return_to_default_nym(self, wallet=None):
-        return self._build_nym(wallet if wallet else self.default_who_can_wallet,
+    def _return_to_default_nym(self):
+        return self._build_nym(self.trustee_wallet,
                                self.role_string,
                                self.new_default_did)
 
