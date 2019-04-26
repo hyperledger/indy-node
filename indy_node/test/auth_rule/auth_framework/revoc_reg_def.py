@@ -2,6 +2,8 @@ import json
 
 import pytest
 from indy.ledger import build_get_schema_request, parse_get_schema_response
+
+from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from plenum.common.util import randomString
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionAdd, AuthActionEdit, EDIT_PREFIX
@@ -64,7 +66,7 @@ class RevocRegDefTest(AbstractTest):
                                           self.get_claim_def()[0][0], self.build_revoc_def_by_default())
 
         # Step 2. Change auth rule
-        self.send_and_check(self.changed_auth_rule)
+        send_and_check(self, self.changed_auth_rule)
 
         # Step 3. Check, that we cannot do txn the old way
         send_revoc_reg_def_by_default(self.looper, fake_pool, self.test_nym, self.sdk_pool_handle,
@@ -74,7 +76,7 @@ class RevocRegDefTest(AbstractTest):
                                           self.get_claim_def()[0][0], self.build_revoc_def_by_default())
 
         # Step 4. Return default auth rule
-        self.send_and_check(self.default_auth_rule)
+        send_and_check(self, self.default_auth_rule)
 
         # Step 5. Check, that default auth rule works
         send_revoc_reg_def_by_default(self.looper, fake_pool, self.trustee_wallet, self.sdk_pool_handle,
@@ -136,15 +138,6 @@ class RevocRegDefTest(AbstractTest):
                                                  new_value='*',
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
-
-    def send_and_check(self, req):
-        signed_reqs = sdk_multi_sign_request_objects(self.looper,
-                                                     [self.trustee_wallet],
-                                                     [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper, [request_couple])[0]
 
     def get_claim_def(self):
         schema_json = get_schema_json(self.looper, self.sdk_pool_handle, self.trustee_wallet)

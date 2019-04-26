@@ -5,6 +5,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import SCHEMA
 from indy_node.test.api.helper import sdk_write_schema_and_check
 from indy_node.test.auth_rule.auth_framework.basic import AbstractTest
+from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, \
@@ -37,7 +38,7 @@ class SchemaTest(AbstractTest):
                                        version='1.0')
 
         # Step 2. Change auth rule
-        self.send_and_check(self.changed_auth_rule)
+        send_and_check(self, self.changed_auth_rule)
 
         # Step 3. Check, that we cannot send schema the old way
         with pytest.raises(RequestRejectedException):
@@ -47,7 +48,7 @@ class SchemaTest(AbstractTest):
                                    version='1.0')
 
         # Step 4. Return default auth rule
-        self.send_and_check(self.default_auth_rule)
+        send_and_check(self, self.default_auth_rule)
 
         # Step 5. Check, that default auth rule works
         sdk_write_schema_and_check(self.looper, self.sdk_pool_handle, self.trustee_wallet, ["attrib1"], name='schema5',
@@ -84,12 +85,3 @@ class SchemaTest(AbstractTest):
                                                  new_value='*',
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
-
-    def send_and_check(self, req):
-        signed_reqs = sdk_multi_sign_request_objects(self.looper,
-                                                     [self.trustee_wallet],
-                                                     [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper, [request_couple])[0]

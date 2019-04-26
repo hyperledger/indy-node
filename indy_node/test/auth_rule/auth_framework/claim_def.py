@@ -8,6 +8,7 @@ from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import CLAIM_DEF
 from indy_node.test.api.helper import sdk_write_schema
 from indy_node.test.auth_rule.auth_framework.basic import AbstractTest
+from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from indy_node.test.claim_def.test_send_claim_def import sdk_send_claim_def
 from plenum.common.constants import TRUSTEE
@@ -64,8 +65,8 @@ class ClaimDefTest(AbstractTest):
         sdk_get_and_check_replies(self.looper, [req_couple])
 
         # Step 2. Change auth rule
-        self.send_and_check(self.changed_auth_rule)
-        self.send_and_check(self.changed_auth_rule_edit)
+        send_and_check(self, self.changed_auth_rule)
+        send_and_check(self, self.changed_auth_rule_edit)
 
         # Step 3. Check, that we cannot do txn the old way
         with pytest.raises(RequestRejectedException):
@@ -81,8 +82,8 @@ class ClaimDefTest(AbstractTest):
         e.match('Not enough TRUSTEE signatures')
 
         # Step 4. Return default auth rule
-        self.send_and_check(self.default_auth_rule)
-        self.send_and_check(self.default_auth_rule_edit)
+        send_and_check(self, self.default_auth_rule)
+        send_and_check(self, self.default_auth_rule_edit)
 
         # Step 5. Check, that default auth rule works
         reply = sdk_send_claim_def(self.looper, self.sdk_pool_handle, self.trustee_wallet, 'tag5', schema_json)
@@ -147,12 +148,3 @@ class ClaimDefTest(AbstractTest):
                                                  new_value='*',
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
-
-    def send_and_check(self, req):
-        signed_reqs = sdk_multi_sign_request_objects(self.looper,
-                                                     [self.trustee_wallet],
-                                                     [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper, [request_couple])[0]

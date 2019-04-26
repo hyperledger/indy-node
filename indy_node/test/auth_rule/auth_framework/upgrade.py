@@ -5,6 +5,7 @@ from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionAdd, AuthAc
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import POOL_UPGRADE, ACTION, CANCEL, JUSTIFICATION, SCHEDULE
 from indy_node.test.auth_rule.auth_framework.basic import AbstractTest
+from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from indy_node.test.upgrade.helper import sdk_ensure_upgrade_sent
 from plenum.common.exceptions import RequestRejectedException
@@ -46,8 +47,8 @@ class UpgradeTest(AbstractTest):
         self.cancel_upgrade(self.valid_upgrade, self.trustee_wallet)
 
         # Step 2. Change auth rule
-        self.send_and_check(self.changed_auth_rule)
-        self.send_and_check(self.changed_auth_rule_cancel)
+        send_and_check(self, self.changed_auth_rule)
+        send_and_check(self, self.changed_auth_rule_cancel)
 
         # Step 3. Check, that we cannot do txn the old way
         self.valid_upgrade['name'] += '1'
@@ -61,8 +62,8 @@ class UpgradeTest(AbstractTest):
         self.cancel_upgrade(self.valid_upgrade, self.test_nym)
 
         # Step 4. Return default auth rule
-        self.send_and_check(self.default_auth_rule)
-        self.send_and_check(self.default_auth_rule_cancel)
+        send_and_check(self, self.default_auth_rule)
+        send_and_check(self, self.default_auth_rule_cancel)
 
         # Step 5. Check, that default auth rule works
         self.valid_upgrade['name'] += '2'
@@ -130,15 +131,6 @@ class UpgradeTest(AbstractTest):
                                                  new_value='cancel',
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
-
-    def send_and_check(self, req):
-        signed_reqs = sdk_multi_sign_request_objects(self.looper,
-                                                     [self.trustee_wallet],
-                                                     [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper, [request_couple])[0]
 
     def cancel_upgrade(self, upgrade, sdk_wallet):
         valid_upgrade_copy = deepcopy(upgrade)

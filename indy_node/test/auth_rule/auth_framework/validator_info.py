@@ -1,4 +1,6 @@
 import pytest
+
+from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from indy_node.test.validator_info.helper import sdk_get_validator_info
 
 from indy_common.authorize.auth_actions import AuthActionAdd, ADD_PREFIX
@@ -35,7 +37,7 @@ class ValidatorInfoTest(AbstractTest):
             sdk_get_validator_info(self.looper, self.test_nym, self.sdk_pool_handle)
 
         # Step 2. Change auth rule
-        self.send_and_check(self.changed_auth_rule)
+        send_and_check(self, self.changed_auth_rule)
 
         # Step 3. Check, that we cannot do txn the old way
         sdk_get_validator_info(self.looper, self.test_nym, self.sdk_pool_handle)
@@ -43,7 +45,7 @@ class ValidatorInfoTest(AbstractTest):
             sdk_get_validator_info(self.looper, self.trustee_wallet, self.sdk_pool_handle)
 
         # Step 4. Return default auth rule
-        self.send_and_check(self.default_auth_rule)
+        send_and_check(self, self.default_auth_rule)
 
         # Step 5. Check, that default auth rule works
         sdk_get_validator_info(self.looper, self.trustee_wallet, self.sdk_pool_handle)
@@ -80,12 +82,3 @@ class ValidatorInfoTest(AbstractTest):
                                                  new_value='*',
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
-
-    def send_and_check(self, req):
-        signed_reqs = sdk_multi_sign_request_objects(self.looper,
-                                                     [self.trustee_wallet],
-                                                     [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper, [request_couple])[0]

@@ -1,4 +1,6 @@
 import pytest
+
+from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from indy_node.test.pool_config.helper import sdk_ensure_pool_config_sent
 
 from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX
@@ -36,7 +38,7 @@ class PoolConfigTest(AbstractTest):
             sdk_ensure_pool_config_sent(self.looper, self.sdk_pool_handle, self.test_nym, self.pool_config_wtff)
 
         # Step 2. Change auth rule
-        self.send_and_check(self.changed_auth_rule)
+        send_and_check(self, self.changed_auth_rule)
 
         # Step 3. Check, that we cannot send txn the old way
         sdk_ensure_pool_config_sent(self.looper, self.sdk_pool_handle, self.test_nym, self.pool_config_wtff)
@@ -44,7 +46,7 @@ class PoolConfigTest(AbstractTest):
             sdk_ensure_pool_config_sent(self.looper, self.sdk_pool_handle, self.trustee_wallet, self.pool_config_wtff)
 
         # Step 4. Return default auth rule
-        self.send_and_check(self.default_auth_rule)
+        send_and_check(self, self.default_auth_rule)
 
         # Step 5. Check, that default auth rule works
         sdk_ensure_pool_config_sent(self.looper, self.sdk_pool_handle, self.trustee_wallet, self.pool_config_wtff)
@@ -84,12 +86,3 @@ class PoolConfigTest(AbstractTest):
                                                  new_value='*',
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
-
-    def send_and_check(self, req):
-        signed_reqs = sdk_multi_sign_request_objects(self.looper,
-                                                     [self.trustee_wallet],
-                                                     [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper, [request_couple])[0]

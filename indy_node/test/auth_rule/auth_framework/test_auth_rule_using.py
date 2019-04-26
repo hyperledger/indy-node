@@ -32,7 +32,8 @@ from indy_node.test.upgrade.helper import bumpedVersion
 from plenum.common.constants import STEWARD, TRUSTEE, \
     IDENTITY_OWNER
 from indy_common.authorize import auth_map
-from plenum.test.helper import randomText
+from plenum.test.helper import randomText, sdk_multi_sign_request_objects, sdk_send_signed_requests, \
+    sdk_get_and_check_replies
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
 
