@@ -4,6 +4,8 @@ import shutil
 import socket
 from typing import List
 
+from common.version import InvalidVersionError
+
 from indy_common.constants import UPGRADE_MESSAGE, RESTART_MESSAGE, MESSAGE_TYPE
 from stp_core.common.log import getlogger
 
@@ -64,6 +66,9 @@ class NodeControlTool:
 
         self.backup_name_prefix = backup_name_prefix or _backup_name_prefix
 
+        self._listen()
+
+    def _listen(self):
         # Create a TCP/IP socket
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -256,9 +261,17 @@ class NodeControlTool:
             command = json.loads(data.decode("utf-8"))
             logger.debug("Decoded ", command)
             if command[MESSAGE_TYPE] == UPGRADE_MESSAGE:
-                new_src_ver = command['version']
                 pkg_name = command['pkg_name']
-                self._upgrade(src_version_cls(pkg_name)(new_src_ver), pkg_name)
+                upstream_cls = src_version_cls(pkg_name)
+                try:
+                    new_src_ver = upstream_cls(command['version'])
+                except InvalidVersionError as exc:
+                    logger.error(
+                        "invalid version {} for package {} with upstream class {}: {}"
+                        .format(command['version'], pkg_name, upstream_cls, exc)
+                    )
+                else:
+                    self._upgrade(new_src_ver, pkg_name)
             elif command[MESSAGE_TYPE] == RESTART_MESSAGE:
                 self._restart()
         except json.decoder.JSONDecodeError as e:
