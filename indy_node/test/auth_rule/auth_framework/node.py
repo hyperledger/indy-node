@@ -35,44 +35,36 @@ class NodeAuthTest(AbstractTest, metaclass=ABCMeta):
         self.tdir = env.tdir
         self.sdk_pool_handle = env.sdk_pool_handle
         self.client_wallet = env.sdk_wallet_client
-        self.trustee_wallet = env.sdk_wallet_trustee
+        self.trustee_wallet = self._create_trustee(env.sdk_wallet_trustee)
         self.action = action
         self.action_id = self.action.get_action_id()
         self.nodes = env.nodes
         self.new_nodes = {}
 
     def prepare(self):
-        # self.node_req_1 = self.get_node_req()
+        self.node_req_1 = self.get_node_req()
         self.node_req_2 = self.get_node_req()
-        self.node_req_3 = self.get_node_req()
 
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
 
     def run(self):
-        # Step 1. Check default auth rule
-        # self.send_and_check(*self.node_req_1)
+        
+        # Step 1. Change auth rule
+        self.send_and_check(self.changed_auth_rule, self.trustee_wallet)
 
-        # Step 2. Change auth rule
-        rep = self.send_and_check(self.changed_auth_rule, self.trustee_wallet)
-
-        # Step 3. Check, that we cannot send NODE txn by old way
-        self.new_nodes.pop(self.node_req_2[1])
+        # Step 2. Check, that we cannot send NODE txn by old way
         with pytest.raises(RequestRejectedException):
-            rep = self.send_and_check(*self.node_req_2)
-            print(rep)
+            rep = self.send_and_check(*self.node_req_1)
 
-        # Step 4. Check, that a new way works
+        # Step 3. Check, that a new way works
         self.send_and_check(self.node_req_for_new_rule, self.trustee_wallet)
-        print(self.nodes[0].master_last_ordered_3PC)
 
-        # Step 5. Return default auth rule
+        # Step 4. Return default auth rule
         self.send_and_check(self.default_auth_rule, self.trustee_wallet)
 
-        # Step 6. Check, that default auth rule works
-        # self.new_nodes.pop(self.node_req_3[1])
-        self.send_and_check(*self.node_req_3)
-        # self.looper.runFor(100)
+        # Step 5. Check, that default auth rule works
+        self.send_and_check(*self.node_req_2)
 
         self._demote_new_nodes()
 
@@ -109,6 +101,11 @@ class NodeAuthTest(AbstractTest, metaclass=ABCMeta):
         return sdk_add_new_nym(self.looper, self.sdk_pool_handle,
                                self.trustee_wallet,
                                role=STEWARD_STRING)
+
+    def _create_trustee(self, trustee_wallet):
+        return sdk_add_new_nym(self.looper, self.sdk_pool_handle,
+                               trustee_wallet,
+                               role=TRUSTEE_STRING)
         # wh, _ = self.trustee_wallet
         # did, verkey = create_verkey_did(self.looper, wh)
         # req = self._build_nym(self.trustee_wallet, STEWARD_STRING, did)
@@ -155,7 +152,7 @@ class NodeAuthTest(AbstractTest, metaclass=ABCMeta):
             #                      services=[])
 
     def _add_changes(self, node_data):
-        pass
+        return node_data
 
 
 class AddNodeTest(NodeAuthTest):
@@ -188,7 +185,7 @@ class EditNodeTest(NodeAuthTest):
                          action=action)
 
     def prepare(self):
-        self.node_req_3 = self.get_node_req()
+        self.node_req_2 = self.get_node_req()
 
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
@@ -210,7 +207,7 @@ class EditNodeTest(NodeAuthTest):
                                                      services=self.new_services,
                                                      node_name=node_name,
                                                      node_data=node_data)
-        self.node_req_2 = req, wallet
+        self.node_req_1 = req, wallet
 
     def get_node_req(self, steward_wallet=None):
         req, node_data, node_name, wallet = self._edit_node(steward_wallet, )
@@ -239,7 +236,10 @@ class AddNewNodeEmptyServiceTest(AddNodeTest):
                          new_value=[])
 
     def _add_node(self, wallet=None, services=[VALIDATOR]):
-        super()._add_node(wallet, services=[])
+        return super()._add_node(wallet, services=[])
+
+    def _demote_new_nodes(self):
+        pass
 
 
 class DemoteNodeTest(EditNodeTest):
@@ -264,6 +264,9 @@ class DemoteNodeTest(EditNodeTest):
     def _edit_node(self, wallet=None, services=[VALIDATOR]):
         return super()._edit_node(wallet=None, services=[])
 
+    def _demote_new_nodes(self):
+        pass
+
 
 class PromoteNodeTest(EditNodeTest):
     def __init__(self, env):
@@ -285,8 +288,7 @@ class EditNodeIpTest(EditNodeTest):
 
     def _add_changes(self, node_data):
         sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof = node_data
-        node_new_ha, client_new_ha = genHa(2)
-        nodeIp = node_new_ha.host
+        nodeIp = "127.0.0.{}".format(random.randint(1, 254))
         return sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof
 
 
@@ -299,8 +301,7 @@ class EditNodePortTest(EditNodeTest):
 
     def _add_changes(self, node_data):
         sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof = node_data
-        node_new_ha, client_new_ha = genHa(2)
-        nodePort = node_new_ha.port
+        nodePort = random.randint(1000, 9999)
         return sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof
 
 
@@ -313,8 +314,7 @@ class EditNodeClientIpTest(EditNodeTest):
 
     def _add_changes(self, node_data):
         sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof = node_data
-        node_new_ha, client_new_ha = genHa(2)
-        clientIp = client_new_ha.host
+        clientIp = "127.0.0.{}".format(random.randint(1, 254))
         return sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof
 
 
@@ -327,8 +327,7 @@ class EditNodeClientPortTest(EditNodeTest):
 
     def _add_changes(self, node_data):
         sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof = node_data
-        node_new_ha, client_new_ha = genHa(2)
-        clientPort = client_new_ha.port
+        clientPort = random.randint(1000, 9999)
         return sigseed, verkey, bls_key, nodeIp, nodePort, clientIp, clientPort, key_proof
 
 
@@ -348,10 +347,10 @@ class EditNodeBlsTest(EditNodeTest):
 
 class TestAuthRuleUsing():
     map_of_tests = {
-        #auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
-        # auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
-        #auth_map.demote_node.get_action_id(): DemoteNodeTest,
-        # auth_map.promote_node.get_action_id(): PromoteNodeTest,
+        auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
+        auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
+        auth_map.demote_node.get_action_id(): DemoteNodeTest,
+        auth_map.promote_node.get_action_id(): PromoteNodeTest,
         auth_map.change_node_ip.get_action_id(): EditNodeIpTest,
         auth_map.change_node_port.get_action_id(): EditNodePortTest,
         auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,

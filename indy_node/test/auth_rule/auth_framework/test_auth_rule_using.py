@@ -3,6 +3,8 @@ import pytest
 from datetime import datetime, timedelta
 
 from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRuleTest
+from indy_node.test.auth_rule.auth_framework.node import AddNewNodeTest, AddNewNodeEmptyServiceTest, DemoteNodeTest, \
+    PromoteNodeTest, EditNodeIpTest, EditNodePortTest, EditNodeClientIpTest, EditNodeClientPortTest, EditNodeBlsTest
 from indy_node.test.auth_rule.auth_framework.pool_config import PoolConfigTest
 from indy_node.test.auth_rule.auth_framework.restart import RestartTest
 from indy_node.test.auth_rule.auth_framework.revoc_reg_def import RevocRegDefTest
@@ -50,6 +52,15 @@ class TestAuthRuleUsing():
         auth_map.key_rotation.get_action_id(): RotateKeyTest,
         auth_map.add_schema.get_action_id(): SchemaTest,
         auth_map.add_schema.get_action_id(): ClaimDefTest,
+        auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
+        auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
+        auth_map.demote_node.get_action_id(): DemoteNodeTest,
+        auth_map.promote_node.get_action_id(): PromoteNodeTest,
+        auth_map.change_node_ip.get_action_id(): EditNodeIpTest,
+        auth_map.change_node_port.get_action_id(): EditNodePortTest,
+        auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,
+        auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
+        auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
         auth_map.start_upgrade.get_action_id(): UpgradeTest,
         auth_map.pool_restart.get_action_id(): RestartTest,
         auth_map.pool_config.get_action_id(): PoolConfigTest,
@@ -116,6 +127,8 @@ class TestAuthRuleUsing():
     @pytest.fixture(scope="module")
     def env(self,
             looper,
+            tconf,
+            tdir,
             sdk_pool_handle,
             sdk_wallet_trustee,
             sdk_wallet_steward,
@@ -132,6 +145,8 @@ class TestAuthRuleUsing():
             IDENTITY_OWNER: sdk_wallet_client,
         }
         return FakeSomething(looper=looper,
+                             tconf=tconf,
+                             tdir=tdir,
                              sdk_pool_handle=sdk_pool_handle,
                              sdk_wallet_trustee=sdk_wallet_trustee,
                              sdk_wallet_steward=sdk_wallet_steward,
