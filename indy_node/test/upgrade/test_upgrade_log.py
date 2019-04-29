@@ -65,10 +65,17 @@ def test_upgrade_log_loads_legacy_data(monkeypatch, log_file_path):
     monkeypatch.setattr(datetime, 'datetime', datetime_wrapper)
 
     legacy_logs = (
+        "{}\tscheduled\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\r\n".format(tss[0]) +
+        "{}\tstarted\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\tindy-node\r\n".format(tss[1]) +
+        "{}\tsucceeded\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\tindy-node\r\n".format(tss[2])
+    )
+
+    new_logs = (
         "{}\tscheduled\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\tindy-node\r\n".format(tss[0]) +
         "{}\tstarted\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\tindy-node\r\n".format(tss[1]) +
         "{}\tsucceeded\t2019-02-28 07:37:11+00:00\t1.6.83\t15513393820971606221\tindy-node\r\n".format(tss[2])
     )
+
 
     with open(log_file_path, 'w', newline='') as f:
         f.write(legacy_logs)
@@ -81,6 +88,6 @@ def test_upgrade_log_loads_legacy_data(monkeypatch, log_file_path):
         getattr(upgrade_log_new, 'append_' + ev.ev_type.name)(ev.data)
 
     with open(log_file_path_new, 'r', newline='') as f:
-        new_logs = f.read()
+        new_logs_read = f.read()
 
-    assert legacy_logs == new_logs
+    assert new_logs_read == new_logs
