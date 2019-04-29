@@ -7,7 +7,7 @@ from indy_common.authorize import auth_map
 from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX, split_action_id
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import NYM
-from indy_node.test.auth_rule.auth_framework.basic import AbstractTest
+from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, AuthTest
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from indy_node.test.helper import sdk_rotate_verkey
 from plenum.common.constants import TRUSTEE, VERKEY
@@ -17,7 +17,7 @@ from plenum.test.helper import sdk_gen_request, sdk_multi_sign_request_objects, 
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
-class RotateKeyTest(AbstractTest):
+class RotateKeyTest(AuthTest):
     def __init__(self, env, action_id):
         self.action_id = action_id
         self.action = split_action_id(self.action_id)

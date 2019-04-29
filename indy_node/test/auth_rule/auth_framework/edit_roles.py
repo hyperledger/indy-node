@@ -9,7 +9,7 @@ from indy_common.authorize.auth_constraints import AbstractAuthConstraint, accep
 from indy_common.constants import NETWORK_MONITOR, TRUST_ANCHOR
 from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest, AddNewStewardTest, \
     AddNewTrustAnchorTest, AddNewIdentityOwnerTest, AddNewNetworkMonitorTest
-from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, roles_to_string
+from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, roles_to_string, AuthTest
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.constants import STEWARD, TRUSTEE, IDENTITY_OWNER
 from plenum.common.exceptions import RequestRejectedException
@@ -17,7 +17,7 @@ from plenum.test.helper import sdk_gen_request, sdk_multi_sign_request_objects, 
     sdk_get_and_check_replies, sdk_sign_request_objects
 
 
-class EditRoleTest(AbstractTest):
+class EditRoleTest(AuthTest):
     def __init__(self, action_id, env, add_new_role_cls):
         constraint = auth_map.auth_map[action_id]
         self.action_id = action_id

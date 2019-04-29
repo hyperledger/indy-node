@@ -4,7 +4,7 @@ from indy_common.authorize.auth_actions import AuthActionAdd, ADD_PREFIX, Abstra
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_common.authorize import auth_map
 from indy_common.constants import NYM, ROLE, TRUST_ANCHOR, NETWORK_MONITOR
-from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, roles_to_string
+from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, roles_to_string, AuthTest
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from plenum.common.constants import STEWARD, TRUSTEE
 from plenum.common.exceptions import RequestRejectedException
@@ -12,7 +12,7 @@ from plenum.test.helper import sdk_multi_sign_request_objects, sdk_send_signed_r
     sdk_gen_request, sdk_sign_request_objects
 
 
-class AddNewRoleTest(AbstractTest):
+class AddNewRoleTest(AuthTest):
     def __init__(self, action_id: str, creator_wallet, env):
         self.action_id = action_id
         self.action = split_action_id(action_id)
