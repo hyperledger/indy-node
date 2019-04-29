@@ -181,21 +181,36 @@ class AddNodeTest(NodeAuthTest):
 
 
 class EditNodeTest(NodeAuthTest):
-    def __init__(self, env, field, old_value, new_value):
+    def __init__(self, env, field, old_value, new_value, new_services=[VALIDATOR]):
         action = AuthActionEdit(NODE, field, old_value=old_value, new_value=new_value)
+        self.new_services = new_services
         super().__init__(env,
                          action=action)
 
     def prepare(self):
-        super().prepare()
+        self.node_req_3 = self.get_node_req()
+
+        self.default_auth_rule = self.get_default_auth_rule()
+        self.changed_auth_rule = self.get_changed_auth_rule()
+
         req, node_data, node_name, wallet = self._add_node()
         self.send_and_check(req, wallet)
         node_data = self._add_changes(node_data)
         self.node_req_for_new_rule, _, _ = self._build_node(self.trustee_wallet,
                                                             self.tconf,
                                                             self.tdir,
+                                                            services=self.new_services,
                                                             node_name=node_name,
                                                             node_data=node_data)
+
+        node_data = self._add_changes(node_data)
+        req, node_data, node_name = self._build_node(wallet,
+                                                     self.tconf,
+                                                     self.tdir,
+                                                     services=self.new_services,
+                                                     node_name=node_name,
+                                                     node_data=node_data)
+        self.node_req_2 = req, wallet
 
     def get_node_req(self, steward_wallet=None):
         req, node_data, node_name, wallet = self._edit_node(steward_wallet, )
@@ -232,19 +247,19 @@ class DemoteNodeTest(EditNodeTest):
         super().__init__(env,
                          field=SERVICES,
                          old_value=[VALIDATOR],
-
-                         new_value=[])
-
-    def prepare(self):
-        super().prepare()
-        req, node_data, node_name, wallet = self._add_node()
-        self.send_and_check(req, wallet)
-        self.node_req_for_new_rule, _, _ = self._build_node(self.trustee_wallet,
-                                                            self.tconf,
-                                                            self.tdir,
-                                                            node_name=node_name,
-                                                            node_data=node_data,
-                                                            services=[])
+                         new_value=[],
+                         new_services=[])
+    #
+    # def prepare(self):
+    #     super().prepare()
+    #     req, node_data, node_name, wallet = self._add_node()
+    #     self.send_and_check(req, wallet)
+    #     self.node_req_for_new_rule, _, _ = self._build_node(self.trustee_wallet,
+    #                                                         self.tconf,
+    #                                                         self.tdir,
+    #                                                         node_name=node_name,
+    #                                                         node_data=node_data,
+    #                                                         services=[])
 
     def _edit_node(self, wallet=None, services=[VALIDATOR]):
         return super()._edit_node(wallet=None, services=[])
