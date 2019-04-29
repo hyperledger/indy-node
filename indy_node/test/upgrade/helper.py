@@ -123,6 +123,13 @@ def loweredVersion():
     return lowerVersion(releaseVersion())
 
 
+class NodeControlToolPatched(NodeControlTool):
+
+    def __init__(self, patch_f, *args, **kwargs):
+        patch_f(self)
+        super().__init__(*args, **kwargs)
+
+
 class NodeControlToolExecutor:
     def __init__(self, backup_dir, backup_target, transform=lambda tool: None):
         self.tool = NodeControlTool(backup_dir=backup_dir, backup_target=backup_target)
