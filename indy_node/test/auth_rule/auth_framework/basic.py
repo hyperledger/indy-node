@@ -37,6 +37,9 @@ class AbstractTest(metaclass=ABCMeta):
     def result(self):
         pass
 
+
+class AuthTest(AbstractTest):
+
     def _build_nym(self, creator_wallet, role_string, did, skipverkey=True):
         seed = randomString(32)
         alias = randomString(5)
