@@ -1,6 +1,5 @@
 import pytest
 
-from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from indy_node.test.pool_restart.helper import sdk_send_restart
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionAdd, split_action_id
@@ -62,16 +61,6 @@ class RestartTest(AuthTest):
 
     def result(self):
         pass
-
-    def send_and_check(self, req, wallet):
-        signed_reqs = sdk_sign_request_objects(self.looper,
-                                               wallet,
-                                               [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper,
-                                         [request_couple])[0]
 
     def get_changed_auth_rule(self):
         self.new_default_wallet = self.env.role_to_wallet[IDENTITY_OWNER]

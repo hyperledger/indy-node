@@ -84,16 +84,6 @@ class EditRoleTest(AuthTest):
     def result(self):
         pass
 
-    def send_and_check(self, req, wallet):
-        signed_reqs = sdk_sign_request_objects(self.looper,
-                                               wallet,
-                                               [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper,
-                                         [request_couple])[0]
-
     def get_default_roles(self, constraint, d_roles):
         if constraint.constraint_id != ConstraintsEnum.ROLE_CONSTRAINT_ID:
             for a_c in constraint.auth_constraints:

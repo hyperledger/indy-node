@@ -5,7 +5,6 @@ from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionAdd, AuthAc
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import POOL_UPGRADE, ACTION, CANCEL, JUSTIFICATION, SCHEDULE, CONFIG_LEDGER_ID
 from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, AuthTest
-from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from indy_node.test.upgrade.helper import sdk_ensure_upgrade_sent
 from plenum.common.exceptions import RequestRejectedException
@@ -53,8 +52,8 @@ class UpgradeTest(AuthTest):
         self.cancel_upgrade(self.valid_upgrade, self.trustee_wallet)
 
         # Step 2. Change auth rule
-        send_and_check(self, self.changed_auth_rule)
-        send_and_check(self, self.changed_auth_rule_cancel)
+        self.send_and_check(self.changed_auth_rule, wallet=self.trustee_wallet)
+        self.send_and_check(self.changed_auth_rule_cancel, wallet=self.trustee_wallet)
 
         # Step 3. Check, that new auth rule is used
         self.valid_upgrade['name'] += '1'
@@ -70,8 +69,8 @@ class UpgradeTest(AuthTest):
         self.cancel_upgrade(self.valid_upgrade, self.new_default_nym)
 
         # Step 5. Return default auth rule
-        send_and_check(self, self.default_auth_rule)
-        send_and_check(self, self.default_auth_rule_cancel)
+        self.send_and_check(self.default_auth_rule, wallet=self.trustee_wallet)
+        self.send_and_check(self.default_auth_rule_cancel, wallet=self.trustee_wallet)
 
         # Step 6. Check, that default auth rule works
         self.valid_upgrade['name'] += '2'
@@ -85,11 +84,6 @@ class UpgradeTest(AuthTest):
 
     def result(self):
         pass
-
-    def get_nym(self, role):
-        wh, _ = self.trustee_wallet
-        did, _ = create_verkey_did(self.looper, wh)
-        return self._build_nym(self.trustee_wallet, role, did)
 
     def get_default_auth_rule_cancel(self):
         action = AuthActionEdit(txn_type=POOL_UPGRADE,
