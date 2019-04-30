@@ -302,19 +302,28 @@ class NodeControlUtil:
             # will fail if either package not found or grep returns nothing
             # the latter is unexpected and treated as no-data as well
             logger.info(
-                "no-data for package '{}' found".format(pkg_name)
+                "no data for package '{}' found".format(pkg_name)
             )
         else:
             if output:
                 versions = []
 
                 for v in output.split('\n'):
-                    dv = DebianVersion(v.split()[1], upstream_cls=upstream_cls)
-                    if not upstream or (dv.upstream == upstream):
-                        versions.append(dv)
+                    try:
+                        dv = DebianVersion(v.split()[1], upstream_cls=upstream_cls)
+                    except InvalidVersionError as exc:
+                        logger.warning(
+                            "ignoring invalid version from output {} for upstream class {}: {}"
+                            .format(v.split()[1], upstream_cls, exc)
+                        )
+                    else:
+                        if not upstream or (dv.upstream == upstream):
+                            versions.append(dv)
 
                 try:
                     return sorted(versions)[-1]
+                except IndexError:
+                    pass
                 except ShellError:
                     logger.warning(
                         "version comparison failed unexpectedly for versions: {}"

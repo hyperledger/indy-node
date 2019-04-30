@@ -1,6 +1,6 @@
 #!groovy
 
-@Library('SovrinHelpers@v2.0.1') _
+@Library('SovrinHelpers@v2.0.5') _
 
 String name = 'indy-node'
 String pkgName = name
@@ -310,7 +310,7 @@ options.setNotifEmails([
 ])
 
 // TODO duplicates list from build scripts
-options.setPkgDeps([
+options.setBuiltPkgs([
     'python3-timeout-decorator': '0.4.0',
     'python3-distro': '1.3.0',
 ])
