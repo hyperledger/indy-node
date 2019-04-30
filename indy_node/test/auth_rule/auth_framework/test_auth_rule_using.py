@@ -3,6 +3,10 @@ import pytest
 from datetime import datetime, timedelta
 
 from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRuleTest
+from indy_node.test.auth_rule.auth_framework.node_services import AddNewNodeTest, AddNewNodeEmptyServiceTest, \
+    DemoteNodeTest, PromoteNodeTest
+from indy_node.test.auth_rule.auth_framework.node_properties import EditNodeIpTest, EditNodePortTest, \
+    EditNodeClientIpTest, EditNodeClientPortTest, EditNodeBlsTest
 from indy_node.test.auth_rule.auth_framework.pool_config import PoolConfigTest
 from indy_node.test.auth_rule.auth_framework.restart import RestartTest
 from indy_node.test.auth_rule.auth_framework.revoc_reg_def import RevocRegDefTest
@@ -35,9 +39,19 @@ from plenum.test.helper import randomText
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
 
+nodeCount = 7
 
 class TestAuthRuleUsing():
     map_of_tests = {
+        auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
+        auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
+        auth_map.demote_node.get_action_id(): DemoteNodeTest,
+        auth_map.promote_node.get_action_id(): PromoteNodeTest,
+        auth_map.change_node_ip.get_action_id(): EditNodeIpTest,
+        auth_map.change_node_port.get_action_id(): EditNodePortTest,
+        auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,
+        auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
+        auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
         auth_map.add_new_trustee.get_action_id(): AddNewTrusteeTest,
         auth_map.add_new_steward.get_action_id(): AddNewStewardTest,
         auth_map.add_new_trust_anchor.get_action_id(): AddNewTrustAnchorTest,
@@ -112,6 +126,8 @@ class TestAuthRuleUsing():
     @pytest.fixture(scope="module")
     def env(self,
             looper,
+            tconf,
+            tdir,
             sdk_pool_handle,
             sdk_wallet_trustee,
             sdk_wallet_steward,
@@ -129,6 +145,8 @@ class TestAuthRuleUsing():
             IDENTITY_OWNER: sdk_wallet_client,
         }
         return FakeSomething(looper=looper,
+                             tconf=tconf,
+                             tdir=tdir,
                              sdk_pool_handle=sdk_pool_handle,
                              sdk_wallet_trustee=sdk_wallet_trustee,
                              sdk_wallet_steward=sdk_wallet_steward,
