@@ -1,6 +1,6 @@
 # Hyperledger Indy Node Release Notes
 
-* [1.7.0](#170)
+* [1.7.1](#171)
 
 * [1.6.83](#1683)
 
@@ -38,21 +38,33 @@
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
 
-## 1.7.0 
-### Release date: Apr 26th, 2019
+## 1.7.1 
+### Release date: Apr 30th, 2019
 
 ### Component Version Information
 | Components | Version Numbers |
 | --- | --- |
 | indy-plenum | 1.7.1 |
-| indy-node | 1.7.0 |
+| indy-node | 1.7.1 |
+| sovrin | 1.1.41 |
 
 ### Additional Information:
 **There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
 **Pool upgrade to sovrin 1.1.32 and above should be performed simultaneously for all nodes due to txn format changes.**
-**Pool upgrade to indy-node 1.7.0 should be performed simultaneously for all nodes due to audit ledger.**
+**Pool upgrade to indy-node 1.7.1 should be performed simultaneously for all nodes due to audit ledger.**
 
-### Major Fixes
+### Major Changes
+- Audit Ledger
+  - helps keeping all other ledgers in sync
+  - helps recovering of pool state by new or restarted nodes
+  - can be used for external audit
+- Correct support of multi-signatures
+- Configurable Auth Rules in config state
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
 | Description | Additional Information | Ticket Number |
 | --- | --- | --- |
 | Validator-info doesn't show view change information and sometimes shows node info as unknown |  | [INDY-2008](https://jira.hyperledger.org/browse/INDY-2008) |
@@ -68,7 +80,7 @@ Although every attempt has been made to make this information as accurate as pos
 | Some nodes are stalled and throw an error under load |  | [INDY-2050](https://jira.hyperledger.org/browse/INDY-2050) |
 | Some nodes failed to join consensus after upgrade |  | [INDY-2055](https://jira.hyperledger.org/browse/INDY-2055) |
 
-### Changes and Additions
+#### Changes and Additions
 | Description | Additional Information | Ticket Number |
 | --- | --- | --- |
 | Implementation: Restore current 3PC state from audit ledger |  | [INDY-1946](https://jira.hyperledger.org/browse/INDY-1946) |
