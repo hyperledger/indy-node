@@ -74,6 +74,14 @@ def test_auth_map_config():
         assert rule_str in auth_map.auth_map.keys()
 
 
+def test_auth_map_athr_agrmt():
+    rules = [(auth_map.athr_agrmt, "122--ADD--*--*--*"),]
+
+    for (rule, rule_str) in rules:
+        assert rule.get_action_id() == rule_str
+        assert rule_str in auth_map.auth_map.keys()
+
+
 def test_auth_map_action():
     nym_rules = [(auth_map.pool_restart, "118--ADD--action--*--*"),
                  (auth_map.auth_rule, "120--EDIT--*--*--*"),

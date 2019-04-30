@@ -35,6 +35,10 @@ AUTH_ACTION = "auth_action"
 AUTH_TYPE = "auth_type"
 FIELD = "field"
 
+# ATHR_AGRMT
+ATHR_AGRMT_TEXT = "text"
+ATHR_AGRMT_VERSION = "version"
+
 ROLE = 'role'
 NONCE = 'nonce'
 ATTRIBUTES = "attributes"
@@ -168,23 +172,10 @@ POOL_CONFIG = IndyTransactions.POOL_CONFIG.value
 AUTH_RULE = IndyTransactions.AUTH_RULE.value
 GET_AUTH_RULE = IndyTransactions.GET_AUTH_RULE.value
 
-CONFIG_TXN_TYPES = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG,
-                    POOL_RESTART, AUTH_RULE, GET_AUTH_RULE}
-IDENTITY_TXN_TYPES = {NYM,
-                      ATTRIB,
-                      DISCLO,
-                      GET_ATTR,
-                      GET_NYM,
-                      GET_TXNS,
-                      SCHEMA,
-                      GET_SCHEMA,
-                      CLAIM_DEF,
-                      GET_CLAIM_DEF}
-
-validTxnTypes = set()
-validTxnTypes.update(POOL_TXN_TYPES)
-validTxnTypes.update(IDENTITY_TXN_TYPES)
-validTxnTypes.update(CONFIG_TXN_TYPES)
+ATHR_AGRMT = IndyTransactions.ATHR_AGRMT.value
+ATHR_AGRMT_AML = IndyTransactions.ATHR_AGRMT_AML.value
+GET_ATHR_AGRMT = IndyTransactions.GET_ATHR_AGRMT.value
+GET_ATHR_AGRMT_AML = IndyTransactions.GET_ATHR_AGRMT_AML.value
 
 CONFIG_LEDGER_ID = 2
 JUSTIFICATION_MAX_SIZE = 1000
