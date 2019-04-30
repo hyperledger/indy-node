@@ -16,13 +16,8 @@ from indy_common.authorize import auth_map
 
 class UpgradeTest(AuthTest):
     def __init__(self, env, action_id):
-        self.looper = env.looper
-        self.action_id = action_id
-        self.action = split_action_id(action_id)
-        self.sdk_pool_handle = env.sdk_pool_handle
-        self.trustee_wallet = env.sdk_wallet_trustee
+        super().__init__(env, action_id)
         self.valid_upgrade = env.valid_upgrade
-        self.env = env
 
         self.default_auth_rule = None
         self.changed_auth_rule = None

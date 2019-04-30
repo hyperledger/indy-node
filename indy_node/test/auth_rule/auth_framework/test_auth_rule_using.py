@@ -12,7 +12,7 @@ from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAM
 
 from indy_common.authorize.auth_constraints import IDENTITY_OWNER
 from indy_common.constants import TRUST_ANCHOR, START
-from indy_node.test.auth_rule.auth_framework.claim_def import ClaimDefTest
+from indy_node.test.auth_rule.auth_framework.claim_def import AddClaimDefTest, EditClaimDefTest
 from indy_common.constants import TRUST_ANCHOR, NETWORK_MONITOR, NETWORK_MONITOR_STRING
 from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest, AddNewStewardTest, \
     AddNewTrustAnchorTest, AddNewNetworkMonitorTest, AddNewIdentityOwnerTest
@@ -34,6 +34,9 @@ from indy_common.authorize import auth_map
 from plenum.test.helper import randomText
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
+
+
+nodeCount = 7
 
 
 class TestAuthRuleUsing():
@@ -66,12 +69,13 @@ class TestAuthRuleUsing():
         auth_map.edit_role_actions[NETWORK_MONITOR][IDENTITY_OWNER].get_action_id(): EditNetworkMonitorToIdentityOwnerTest,
         auth_map.key_rotation.get_action_id(): RotateKeyTest,
         auth_map.add_schema.get_action_id(): SchemaTest,
-        # auth_map.add_schema.get_action_id(): ClaimDefTest,
+        auth_map.add_claim_def.get_action_id(): AddClaimDefTest,
+        # auth_map.edit_claim_def.get_action_id(): EditClaimDefTest,
         auth_map.start_upgrade.get_action_id(): UpgradeTest,
         auth_map.pool_restart.get_action_id(): RestartTest,
         auth_map.pool_config.get_action_id(): PoolConfigTest,
         auth_map.auth_rule.get_action_id(): AuthRuleTest,
-        # auth_map.validator_info.get_action_id(): ValidatorInfoTest,
+        auth_map.validator_info.get_action_id(): ValidatorInfoTest,
     }
 
     @pytest.fixture(scope='module')

@@ -2,7 +2,7 @@ import json
 import random
 from abc import ABCMeta, abstractmethod
 
-from indy_common.authorize.auth_actions import EDIT_PREFIX
+from indy_common.authorize.auth_actions import EDIT_PREFIX, split_action_id
 from indy_common.authorize.auth_map import auth_map
 from indy_common.constants import TRUST_ANCHOR, NETWORK_MONITOR, NETWORK_MONITOR_STRING, TRUST_ANCHOR_STRING
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
@@ -40,6 +40,14 @@ class AbstractTest(metaclass=ABCMeta):
 
 
 class AuthTest(AbstractTest):
+
+    def __init__(self, env, action_id):
+        self.looper = env.looper
+        self.action_id = action_id
+        self.action = split_action_id(action_id)
+        self.sdk_pool_handle = env.sdk_pool_handle
+        self.trustee_wallet = env.sdk_wallet_trustee
+        self.env = env
 
     def _build_nym(self, creator_wallet, role_string, did, skipverkey=True):
         seed = randomString(32)

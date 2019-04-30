@@ -12,7 +12,7 @@ from indy_common.constants import CLAIM_DEF, ID, REVOC_TYPE, TAG, CRED_DEF_ID, V
     TAILS_HASH, TAILS_LOCATION, PUBLIC_KEYS, ISSUANCE_BY_DEFAULT, REVOC_REG_DEF
 from indy_node.test.anon_creds.conftest import send_revoc_reg_def_by_default
 from indy_node.test.api.helper import sdk_write_schema
-from indy_node.test.auth_rule.auth_framework.basic import AbstractTest
+from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, AuthTest
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
 from indy_node.test.claim_def.test_send_claim_def import sdk_send_claim_def
 from plenum.common.constants import TRUSTEE, TXN_TYPE
@@ -35,7 +35,7 @@ def get_schema_json(looper, sdk_pool_handle, sdk_wallet_trustee):
     return schema_json
 
 
-class RevocRegDefTest(AbstractTest):
+class RevocRegDefTest(AuthTest):
     def __init__(self, env, action_id):
         self.looper = env.looper
         self.sdk_pool_handle = env.sdk_pool_handle

@@ -19,12 +19,8 @@ from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 class RotateKeyTest(AuthTest):
     def __init__(self, env, action_id):
-        self.action_id = action_id
-        self.action = split_action_id(self.action_id)
-        self.looper = env.looper
-        self.sdk_pool_handle = env.sdk_pool_handle
+        super().__init__(env, action_id)
         self.creator_wallet = env.sdk_wallet_trustee
-        self.trustee_wallet = env.sdk_wallet_trustee
 
         self.default_auth_rule = None
         self.changed_auth_rule = None

@@ -1,29 +1,22 @@
 import pytest
 
-from indy_common.authorize.auth_actions import AuthActionAdd, ADD_PREFIX, AbstractAuthAction, split_action_id
-from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
+from indy_common.authorize.auth_actions import ADD_PREFIX, split_action_id
+from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.authorize import auth_map
-from indy_common.constants import NYM, ROLE, TRUST_ANCHOR, NETWORK_MONITOR
-from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, roles_to_string, AuthTest
+from indy_common.constants import NYM, ROLE, TRUST_ANCHOR
+from indy_node.test.auth_rule.auth_framework.basic import roles_to_string, AuthTest
 from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
-from plenum.common.constants import STEWARD, TRUSTEE
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_multi_sign_request_objects, sdk_send_signed_requests, sdk_get_and_check_replies, \
-    sdk_gen_request, sdk_sign_request_objects
+from plenum.test.helper import sdk_gen_request
 
 
 class AddNewRoleTest(AuthTest):
     def __init__(self, action_id: str, creator_wallet, env):
-        self.action_id = action_id
-        self.action = split_action_id(action_id)
+        super().__init__(env, action_id)
         self.role = self.action.new_value
         self.role_string = roles_to_string[self.role]
         self.creator_wallet = creator_wallet
-        self.trustee_wallet = env.sdk_wallet_trustee
-        self.looper = env.looper
-        self.sdk_pool_handle = env.sdk_pool_handle
         self.checker_wallet = None
-        self.env = env
 
     def prepare(self):
         self.phase_req_1 = self.get_nym()

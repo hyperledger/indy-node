@@ -17,11 +17,7 @@ from indy_common.authorize import auth_map
 
 class PoolConfigTest(AuthTest):
     def __init__(self, env, action_id):
-        self.looper = env.looper
-        self.action_id = action_id
-        self.action = split_action_id(action_id)
-        self.sdk_pool_handle = env.sdk_pool_handle
-        self.trustee_wallet = env.sdk_wallet_trustee
+        super().__init__(env, action_id)
         self.pool_config_wtff = env.pool_config_wtff
 
         self.default_auth_rule = None

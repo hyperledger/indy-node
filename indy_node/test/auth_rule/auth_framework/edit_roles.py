@@ -19,23 +19,18 @@ from plenum.test.helper import sdk_gen_request, sdk_multi_sign_request_objects, 
 
 class EditRoleTest(AuthTest):
     def __init__(self, action_id, env, add_new_role_cls):
+        super().__init__(env, action_id)
         constraint = auth_map.auth_map[action_id]
-        self.action_id = action_id
-        self.action = split_action_id(action_id)
         self.constraint = constraint
-        self.env = env
         self.role = self.action.old_value
         self.role_string = roles_to_string[self.role]
         self.role_to_change = self.action.new_value
         self.role_to_change_string = roles_to_string[self.role_to_change]
-        self.trustee_wallet = env.sdk_wallet_trustee
         self.other_roles = []
         self.default_who_can_wallet = None
         self.new_who_can_wallet = None
         self.new_default_did = None
         self.changed_auth_rule = None
-        self.looper = env.looper
-        self.sdk_pool_handle = env.sdk_pool_handle
         self.add_new_role_cls = add_new_role_cls
 
     def prepare(self):
