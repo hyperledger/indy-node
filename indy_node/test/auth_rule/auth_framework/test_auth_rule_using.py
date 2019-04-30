@@ -3,8 +3,10 @@ import pytest
 from datetime import datetime, timedelta
 
 from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRuleTest
-from indy_node.test.auth_rule.auth_framework.node import AddNewNodeTest, AddNewNodeEmptyServiceTest, DemoteNodeTest, \
-    PromoteNodeTest, EditNodeIpTest, EditNodePortTest, EditNodeClientIpTest, EditNodeClientPortTest, EditNodeBlsTest
+from indy_node.test.auth_rule.auth_framework.node_services import AddNewNodeTest, AddNewNodeEmptyServiceTest, \
+    DemoteNodeTest, PromoteNodeTest
+from indy_node.test.auth_rule.auth_framework.node_properties import EditNodeIpTest, EditNodePortTest, \
+    EditNodeClientIpTest, EditNodeClientPortTest, EditNodeBlsTest
 from indy_node.test.auth_rule.auth_framework.pool_config import PoolConfigTest
 from indy_node.test.auth_rule.auth_framework.restart import RestartTest
 from indy_node.test.auth_rule.auth_framework.revoc_reg_def import RevocRegDefTest
@@ -37,53 +39,54 @@ from plenum.test.helper import randomText
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
 
+nodeCount = 7
 
+map_of_tests = {
+    auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
+    auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
+    auth_map.demote_node.get_action_id(): DemoteNodeTest,
+    auth_map.promote_node.get_action_id(): PromoteNodeTest,
+    auth_map.change_node_ip.get_action_id(): EditNodeIpTest,
+    auth_map.change_node_port.get_action_id(): EditNodePortTest,
+    auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,
+    auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
+    auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
+    # auth_map.add_new_trustee.get_action_id(): AddNewTrusteeTest,
+    # auth_map.add_new_steward.get_action_id(): AddNewStewardTest,
+    # auth_map.add_new_trust_anchor.get_action_id(): AddNewTrustAnchorTest,
+    # auth_map.add_new_network_monitor.get_action_id(): AddNewNetworkMonitorTest,
+    # auth_map.add_new_identity_owner.get_action_id(): AddNewIdentityOwnerTest,
+    # # auth_map.add_revoc_reg_def.get_action_id(): RevocRegDefTest,
+    # auth_map.edit_role_actions[TRUSTEE][STEWARD].get_action_id(): EditTrusteeToStewardTest,
+    # auth_map.edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(): EditTrusteeToTrustAnchorTest,
+    # auth_map.edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): EditTrusteeToNetworkMonitorTest,
+    # auth_map.edit_role_actions[TRUSTEE][IDENTITY_OWNER].get_action_id(): EditTrusteeToIdentityOwnerTest,
+    # auth_map.edit_role_actions[STEWARD][TRUSTEE].get_action_id(): EditStewardToTrusteeTest,
+    # auth_map.edit_role_actions[STEWARD][TRUST_ANCHOR].get_action_id(): EditStewardToTrustAnchorTest,
+    # auth_map.edit_role_actions[STEWARD][NETWORK_MONITOR].get_action_id(): EditStewardToNetworkMonitorTest,
+    # auth_map.edit_role_actions[STEWARD][IDENTITY_OWNER].get_action_id(): EditStewardToIdentityOwnerTest,
+    # auth_map.edit_role_actions[TRUST_ANCHOR][TRUSTEE].get_action_id(): EditTrustAnchorToTrusteeTest,
+    # auth_map.edit_role_actions[TRUST_ANCHOR][STEWARD].get_action_id(): EditTrustAnchorToStewardTest,
+    # auth_map.edit_role_actions[TRUST_ANCHOR][NETWORK_MONITOR].get_action_id(): EditTrustAnchorToNetworkMonitorTest,
+    # auth_map.edit_role_actions[TRUST_ANCHOR][IDENTITY_OWNER].get_action_id(): EditTrustAnchorToIdentityOwnerTest,
+    # auth_map.edit_role_actions[IDENTITY_OWNER][TRUSTEE].get_action_id(): EditIdentityOwnerToTrusteeTest,
+    # auth_map.edit_role_actions[IDENTITY_OWNER][STEWARD].get_action_id(): EditIdentityOwnerToStewardTest,
+    # auth_map.edit_role_actions[IDENTITY_OWNER][TRUST_ANCHOR].get_action_id(): EditIdentityOwnerToTrustAnchorTest,
+    # auth_map.edit_role_actions[IDENTITY_OWNER][NETWORK_MONITOR].get_action_id(): EditIdentityOwnerToNetworkMonitorTest,
+    # auth_map.edit_role_actions[NETWORK_MONITOR][TRUSTEE].get_action_id(): EditNetworkMonitorToTrusteeTest,
+    # auth_map.edit_role_actions[NETWORK_MONITOR][STEWARD].get_action_id(): EditNetworkMonitorToStewardTest,
+    # auth_map.edit_role_actions[NETWORK_MONITOR][TRUST_ANCHOR].get_action_id(): EditNetworkMonitorToTrustAnchorTest,
+    # auth_map.edit_role_actions[NETWORK_MONITOR][IDENTITY_OWNER].get_action_id(): EditNetworkMonitorToIdentityOwnerTest,
+    # auth_map.key_rotation.get_action_id(): RotateKeyTest,
+    # auth_map.add_schema.get_action_id(): SchemaTest,
+    # # auth_map.add_schema.get_action_id(): ClaimDefTest,
+    # auth_map.start_upgrade.get_action_id(): UpgradeTest,
+    # auth_map.pool_restart.get_action_id(): RestartTest,
+    # auth_map.pool_config.get_action_id(): PoolConfigTest,
+    # auth_map.auth_rule.get_action_id(): AuthRuleTest,
+    #auth_map.validator_info.get_action_id(): ValidatorInfoTest,
+}
 class TestAuthRuleUsing():
-    map_of_tests = {
-        auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
-        auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
-        auth_map.demote_node.get_action_id(): DemoteNodeTest,
-        auth_map.promote_node.get_action_id(): PromoteNodeTest,
-        auth_map.change_node_ip.get_action_id(): EditNodeIpTest,
-        auth_map.change_node_port.get_action_id(): EditNodePortTest,
-        auth_map.change_client_ip.get_action_id(): EditNodeClientIpTest,
-        auth_map.change_client_port.get_action_id(): EditNodeClientPortTest,
-        auth_map.change_bls_key.get_action_id(): EditNodeBlsTest,
-        # auth_map.add_new_trustee.get_action_id(): AddNewTrusteeTest,
-        # auth_map.add_new_steward.get_action_id(): AddNewStewardTest,
-        # auth_map.add_new_trust_anchor.get_action_id(): AddNewTrustAnchorTest,
-        # auth_map.add_new_network_monitor.get_action_id(): AddNewNetworkMonitorTest,
-        # auth_map.add_new_identity_owner.get_action_id(): AddNewIdentityOwnerTest,
-        # # auth_map.add_revoc_reg_def.get_action_id(): RevocRegDefTest,
-        # auth_map.edit_role_actions[TRUSTEE][STEWARD].get_action_id(): EditTrusteeToStewardTest,
-        # auth_map.edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(): EditTrusteeToTrustAnchorTest,
-        # auth_map.edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): EditTrusteeToNetworkMonitorTest,
-        # auth_map.edit_role_actions[TRUSTEE][IDENTITY_OWNER].get_action_id(): EditTrusteeToIdentityOwnerTest,
-        # auth_map.edit_role_actions[STEWARD][TRUSTEE].get_action_id(): EditStewardToTrusteeTest,
-        # auth_map.edit_role_actions[STEWARD][TRUST_ANCHOR].get_action_id(): EditStewardToTrustAnchorTest,
-        # auth_map.edit_role_actions[STEWARD][NETWORK_MONITOR].get_action_id(): EditStewardToNetworkMonitorTest,
-        # auth_map.edit_role_actions[STEWARD][IDENTITY_OWNER].get_action_id(): EditStewardToIdentityOwnerTest,
-        # auth_map.edit_role_actions[TRUST_ANCHOR][TRUSTEE].get_action_id(): EditTrustAnchorToTrusteeTest,
-        # auth_map.edit_role_actions[TRUST_ANCHOR][STEWARD].get_action_id(): EditTrustAnchorToStewardTest,
-        # auth_map.edit_role_actions[TRUST_ANCHOR][NETWORK_MONITOR].get_action_id(): EditTrustAnchorToNetworkMonitorTest,
-        # auth_map.edit_role_actions[TRUST_ANCHOR][IDENTITY_OWNER].get_action_id(): EditTrustAnchorToIdentityOwnerTest,
-        # auth_map.edit_role_actions[IDENTITY_OWNER][TRUSTEE].get_action_id(): EditIdentityOwnerToTrusteeTest,
-        # auth_map.edit_role_actions[IDENTITY_OWNER][STEWARD].get_action_id(): EditIdentityOwnerToStewardTest,
-        # auth_map.edit_role_actions[IDENTITY_OWNER][TRUST_ANCHOR].get_action_id(): EditIdentityOwnerToTrustAnchorTest,
-        # auth_map.edit_role_actions[IDENTITY_OWNER][NETWORK_MONITOR].get_action_id(): EditIdentityOwnerToNetworkMonitorTest,
-        # auth_map.edit_role_actions[NETWORK_MONITOR][TRUSTEE].get_action_id(): EditNetworkMonitorToTrusteeTest,
-        # auth_map.edit_role_actions[NETWORK_MONITOR][STEWARD].get_action_id(): EditNetworkMonitorToStewardTest,
-        # auth_map.edit_role_actions[NETWORK_MONITOR][TRUST_ANCHOR].get_action_id(): EditNetworkMonitorToTrustAnchorTest,
-        # auth_map.edit_role_actions[NETWORK_MONITOR][IDENTITY_OWNER].get_action_id(): EditNetworkMonitorToIdentityOwnerTest,
-        # auth_map.key_rotation.get_action_id(): RotateKeyTest,
-        # auth_map.add_schema.get_action_id(): SchemaTest,
-        # # auth_map.add_schema.get_action_id(): ClaimDefTest,
-        # auth_map.start_upgrade.get_action_id(): UpgradeTest,
-        # auth_map.pool_restart.get_action_id(): RestartTest,
-        # auth_map.pool_config.get_action_id(): PoolConfigTest,
-        # auth_map.auth_rule.get_action_id(): AuthRuleTest,
-        auth_map.validator_info.get_action_id(): ValidatorInfoTest,
-    }
 
     @pytest.fixture(scope='module')
     def pckg(self):
