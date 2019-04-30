@@ -1,28 +1,21 @@
 import pytest
 
-from indy_common.authorize.auth_actions import ADD_PREFIX, AuthActionAdd, split_action_id
+from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_common.constants import SCHEMA
 from indy_node.test.api.helper import sdk_write_schema_and_check
-from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, AuthTest
-from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
+from indy_node.test.auth_rule.auth_framework.basic import AuthTest
+from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, \
-    sdk_multi_sign_request_objects, sdk_send_signed_requests
+from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
-from indy_common.authorize import auth_map
 
 
 class SchemaTest(AuthTest):
     def __init__(self, env, action_id):
         super().__init__(env, action_id)
 
-        self.default_auth_rule = None
-        self.changed_auth_rule = None
-        self.new_default_wallet = None
-
     def prepare(self):
-        self.new_default_wallet = sdk_add_new_nym(self.looper, self.sdk_pool_handle, self.trustee_wallet, role=None)
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
 
@@ -60,7 +53,8 @@ class SchemaTest(AuthTest):
         pass
 
     def get_changed_auth_rule(self):
-        constraint = AuthConstraint(role=None,
+        self.new_default_wallet = sdk_add_new_nym(self.looper, self.sdk_pool_handle, self.trustee_wallet, role=IDENTITY_OWNER)
+        constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
         operation = generate_auth_rule_operation(auth_action=ADD_PREFIX,

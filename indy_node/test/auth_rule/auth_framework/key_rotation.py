@@ -3,17 +3,15 @@ import json
 import pytest
 from indy.did import replace_keys_start
 
-from indy_common.authorize import auth_map
-from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX, split_action_id
+from indy_common.authorize.auth_actions import EDIT_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import NYM
-from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, AuthTest
-from indy_node.test.auth_rule.helper import create_verkey_did, generate_auth_rule_operation
+from indy_node.test.auth_rule.auth_framework.basic import AuthTest
+from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from indy_node.test.helper import sdk_rotate_verkey
 from plenum.common.constants import TRUSTEE, VERKEY
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request, sdk_multi_sign_request_objects, sdk_send_signed_requests, \
-    sdk_get_and_check_replies
+from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 
 
@@ -21,9 +19,6 @@ class RotateKeyTest(AuthTest):
     def __init__(self, env, action_id):
         super().__init__(env, action_id)
         self.creator_wallet = env.sdk_wallet_trustee
-
-        self.default_auth_rule = None
-        self.changed_auth_rule = None
         self.test_nym = None
 
     def prepare(self):

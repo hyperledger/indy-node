@@ -3,8 +3,8 @@ import pytest
 from indy_node.test.auth_rule.auth_framework.helper import send_and_check
 from indy_node.test.validator_info.helper import sdk_get_validator_info
 
-from indy_common.authorize.auth_actions import ADD_PREFIX, split_action_id
-from indy_common.authorize.auth_constraints import AuthConstraint
+from indy_common.authorize.auth_actions import ADD_PREFIX
+from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_common.constants import VALIDATOR_INFO
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
@@ -18,12 +18,7 @@ class ValidatorInfoTest(AuthTest):
     def __init__(self, env, action_id):
         super().__init__(env, action_id)
 
-        self.default_auth_rule = None
-        self.changed_auth_rule = None
-        self.new_default_wallet = None
-
     def prepare(self):
-        self.new_default_wallet = sdk_add_new_nym(self.looper, self.sdk_pool_handle, self.trustee_wallet, role=None)
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
         for n in self.env.txnPoolNodeSet:
@@ -64,7 +59,8 @@ class ValidatorInfoTest(AuthTest):
         pass
 
     def get_changed_auth_rule(self):
-        constraint = AuthConstraint(role=None,
+        self.new_default_wallet = sdk_add_new_nym(self.looper, self.sdk_pool_handle, self.trustee_wallet, role=IDENTITY_OWNER)
+        constraint = AuthConstraint(role=IDENTITY_OWNER,
                                     sig_count=1,
                                     need_to_be_owner=False)
         operation = generate_auth_rule_operation(auth_action=ADD_PREFIX,

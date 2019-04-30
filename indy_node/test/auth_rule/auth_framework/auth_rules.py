@@ -1,6 +1,6 @@
 import pytest
 
-from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX, split_action_id
+from indy_common.authorize.auth_actions import AuthActionEdit, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.constants import AUTH_RULE
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
@@ -15,10 +15,6 @@ from indy_common.authorize import auth_map
 class AuthRuleTest(AuthTest):
     def __init__(self, env, action_id):
         super().__init__(env, action_id)
-
-        self.default_auth_rule = None
-        self.changed_auth_rule = None
-        self.new_default_wallet = None
 
     def prepare(self):
         self.new_default_wallet = sdk_add_new_nym(self.looper, self.sdk_pool_handle, self.trustee_wallet, role=None)

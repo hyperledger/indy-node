@@ -49,6 +49,10 @@ class AuthTest(AbstractTest):
         self.trustee_wallet = env.sdk_wallet_trustee
         self.env = env
 
+        self.default_auth_rule = None
+        self.changed_auth_rule = None
+        self.new_default_wallet = None
+
     def _build_nym(self, creator_wallet, role_string, did, skipverkey=True):
         seed = randomString(32)
         alias = randomString(5)

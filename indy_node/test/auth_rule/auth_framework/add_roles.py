@@ -1,6 +1,6 @@
 import pytest
 
-from indy_common.authorize.auth_actions import ADD_PREFIX, split_action_id
+from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint
 from indy_common.authorize import auth_map
 from indy_common.constants import NYM, ROLE, TRUST_ANCHOR

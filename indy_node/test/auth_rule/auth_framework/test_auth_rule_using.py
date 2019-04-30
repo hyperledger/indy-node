@@ -26,7 +26,7 @@ from indy_node.test.auth_rule.auth_framework.edit_roles import EditTrusteeToStew
     EditNetworkMonitorToTrustAnchorTest
 from indy_node.test.auth_rule.auth_framework.key_rotation import RotateKeyTest
 from indy_node.test.auth_rule.auth_framework.schema import SchemaTest
-from indy_node.test.auth_rule.auth_framework.upgrade import UpgradeTest
+from indy_node.test.auth_rule.auth_framework.upgrade import StartUpgradeTest, CancelUpgradeTest
 from indy_node.test.upgrade.helper import bumpedVersion
 from plenum.common.constants import STEWARD, TRUSTEE, \
     IDENTITY_OWNER
@@ -34,9 +34,6 @@ from indy_common.authorize import auth_map
 from plenum.test.helper import randomText
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
-
-
-nodeCount = 7
 
 
 class TestAuthRuleUsing():
@@ -70,8 +67,9 @@ class TestAuthRuleUsing():
         auth_map.key_rotation.get_action_id(): RotateKeyTest,
         auth_map.add_schema.get_action_id(): SchemaTest,
         auth_map.add_claim_def.get_action_id(): AddClaimDefTest,
-        # auth_map.edit_claim_def.get_action_id(): EditClaimDefTest,
-        auth_map.start_upgrade.get_action_id(): UpgradeTest,
+        auth_map.edit_claim_def.get_action_id(): EditClaimDefTest,
+        auth_map.start_upgrade.get_action_id(): StartUpgradeTest,
+        auth_map.cancel_upgrade.get_action_id(): CancelUpgradeTest,
         auth_map.pool_restart.get_action_id(): RestartTest,
         auth_map.pool_config.get_action_id(): PoolConfigTest,
         auth_map.auth_rule.get_action_id(): AuthRuleTest,

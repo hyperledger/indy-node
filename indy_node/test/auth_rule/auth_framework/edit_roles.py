@@ -3,18 +3,14 @@ import random
 import pytest
 
 from indy_common.authorize import auth_map
-from indy_common.authorize.auth_actions import split_action_id
-from indy_common.authorize.auth_constraints import AbstractAuthConstraint, accepted_roles, ConstraintsEnum, \
+from indy_common.authorize.auth_constraints import accepted_roles, ConstraintsEnum, \
     AuthConstraint
-from indy_common.constants import NETWORK_MONITOR, TRUST_ANCHOR
 from indy_node.test.auth_rule.auth_framework.add_roles import AddNewTrusteeTest, AddNewStewardTest, \
     AddNewTrustAnchorTest, AddNewIdentityOwnerTest, AddNewNetworkMonitorTest
-from indy_node.test.auth_rule.auth_framework.basic import AbstractTest, roles_to_string, AuthTest
+from indy_node.test.auth_rule.auth_framework.basic import roles_to_string, AuthTest
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
-from plenum.common.constants import STEWARD, TRUSTEE, IDENTITY_OWNER
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request, sdk_multi_sign_request_objects, sdk_send_signed_requests, \
-    sdk_get_and_check_replies, sdk_sign_request_objects
+from plenum.test.helper import sdk_gen_request
 
 
 class EditRoleTest(AuthTest):
@@ -30,7 +26,6 @@ class EditRoleTest(AuthTest):
         self.default_who_can_wallet = None
         self.new_who_can_wallet = None
         self.new_default_did = None
-        self.changed_auth_rule = None
         self.add_new_role_cls = add_new_role_cls
 
     def prepare(self):
