@@ -55,18 +55,6 @@ class NodeAuthTest(AuthTest):
     def result(self):
         pass
 
-    # up to AuthTest
-    def send_and_check(self, req, wallet):
-        signed_reqs = sdk_multi_sign_request_objects(self.looper,
-                                                     [wallet],
-                                                     [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper,
-                                         [request_couple])[0]
-
-    # up to AuthTest and add a param constraint
     def get_changed_auth_rule(self):
         constraint = AuthConstraint(role=TRUSTEE,
                                     sig_count=1,
