@@ -9,6 +9,9 @@ from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.constants import TRUSTEE, TRUSTEE_STRING, STEWARD_STRING, STEWARD, IDENTITY_OWNER, \
     IDENTITY_OWNER_STRING, VALIDATOR
 from plenum.common.util import randomString
+from plenum.test.helper import sdk_json_to_request_object, sdk_gen_request, sdk_sign_request_objects, \
+    sdk_send_signed_requests, sdk_get_and_check_replies
+from plenum.test.pool_transactions.helper import prepare_nym_request
 from plenum.test.helper import sdk_json_to_request_object, sdk_gen_request
 from plenum.test.pool_transactions.helper import prepare_nym_request, prepare_new_node_data, prepare_node_request
 
@@ -85,3 +88,13 @@ class AuthTest(AbstractTest):
                                                  new_value=self.action.new_value,
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+
+    def send_and_check(self, req, wallet):
+        signed_reqs = sdk_sign_request_objects(self.looper,
+                                               wallet,
+                                               [req])
+        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
+                                                  signed_reqs)[0]
+
+        return sdk_get_and_check_replies(self.looper,
+                                         [request_couple])[0]

@@ -44,14 +44,14 @@ class RotateKeyTest(AuthTest):
         verkey = self.sdk_modified_verkey_rotate(self.sdk_pool_handle, wh, trustee_did, client_did)
 
         # Step 2. Change auth rule
-        self.send_and_check(self.changed_auth_rule)
+        self.send_and_check(self.changed_auth_rule, wallet=self.trustee_wallet)
 
         # Step 3. Check, that we cannot add new steward by old way
         sdk_rotate_verkey(self.looper, self.sdk_pool_handle, wh, trustee_did, client_did, verkey)
         verkey = self.sdk_modified_verkey_rotate(self.sdk_pool_handle, wh, client_did, client_did)
 
         # Step 4. Return default auth rule
-        self.send_and_check(self.default_auth_rule)
+        self.send_and_check(self.default_auth_rule, wallet=self.trustee_wallet)
 
         # Step 5. Check, that default auth rule works
         sdk_rotate_verkey(self.looper, self.sdk_pool_handle, wh, client_did, client_did, verkey)
@@ -59,11 +59,6 @@ class RotateKeyTest(AuthTest):
 
     def result(self):
         pass
-
-    def get_nym(self, role):
-        wh, _ = self.creator_wallet
-        did, _ = create_verkey_did(self.looper, wh)
-        return self._build_nym(self.creator_wallet, role, did)
 
     def get_changed_auth_rule(self):
         constraint = AuthConstraint(role=TRUSTEE,
@@ -76,15 +71,6 @@ class RotateKeyTest(AuthTest):
                                                  new_value='*',
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.creator_wallet[1])
-
-    def send_and_check(self, req):
-        signed_reqs = sdk_multi_sign_request_objects(self.looper,
-                                                     [self.creator_wallet],
-                                                     [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper, [request_couple])[0]
 
     def sdk_modified_verkey_rotate(self, sdk_pool_handle, wh,
                                    did_of_changer,

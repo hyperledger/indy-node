@@ -57,16 +57,6 @@ class AddNewRoleTest(AuthTest):
     def result(self):
         pass
 
-    def send_and_check(self, req, wallet):
-        signed_reqs = sdk_sign_request_objects(self.looper,
-                                               wallet,
-                                               [req])
-        request_couple = sdk_send_signed_requests(self.sdk_pool_handle,
-                                                  signed_reqs)[0]
-
-        return sdk_get_and_check_replies(self.looper,
-                                         [request_couple])[0]
-
     def get_nym(self):
         wh, _ = self.creator_wallet
         did, _ = create_verkey_did(self.looper, wh)
