@@ -1,5 +1,7 @@
 # Hyperledger Indy Node Release Notes
 
+* [1.7.1](#171)
+
 * [1.6.83](#1683)
 
 * [1.6.82](#1682)
@@ -35,6 +37,74 @@
 #### Disclosure
 
 Although every attempt has been made to make this information as accurate as possible, please know there may be things that are omitted, not fully developed yet, or updates since this publication that were not included in the information below. Only the most pressing or significant items have been listed. For the entire list of tickets and or specific information about any given item, please visit the list at [Hyperleder Indy's Jira](https://jira.hyperledger.org/). Once logged in, simply navigate to Projects > Indy.
+
+## 1.7.1 
+### Release date: Apr 30th, 2019
+
+### Component Version Information
+| Components | Version Numbers |
+| --- | --- |
+| indy-plenum | 1.7.1 |
+| indy-node | 1.7.1 |
+| sovrin | 1.1.41 |
+
+### Additional Information:
+**There are possible OOM issues during 3+ hours of target load or large catch-ups at 8 GB RAM nodes pool so 32 GB is recommended.**
+**Pool upgrade to sovrin 1.1.32 and above should be performed simultaneously for all nodes due to txn format changes.**
+**Pool upgrade to indy-node 1.7.1 should be performed simultaneously for all nodes due to audit ledger.**
+
+### Major Changes
+- Audit Ledger
+  - helps keeping all other ledgers in sync
+  - helps recovering of pool state by new or restarted nodes
+  - can be used for external audit
+- Correct support of multi-signatures
+- Configurable Auth Rules in config state
+- Stability fixes
+
+### Detailed Changelog
+
+#### Major Fixes
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Validator-info doesn't show view change information and sometimes shows node info as unknown |  | [INDY-2008](https://jira.hyperledger.org/browse/INDY-2008) |
+| Schema can't be written with error "'Version' object has no attribute 'dev'" |  | [INDY-2020](https://jira.hyperledger.org/browse/INDY-2020) |
+| Node fails to start after the load |  | [INDY-2018](https://jira.hyperledger.org/browse/INDY-2018) |
+| POA: Sovrin TestNet lost consensus |  | [INDY-2022](https://jira.hyperledger.org/browse/INDY-2022) |
+| Nodes can fail on first start after upgrading from version without audit ledger to version with audit ledger |  | [INDY-2047](https://jira.hyperledger.org/browse/INDY-2047) |
+| Pool is getting out of consensus after a forced view change and writes to all the ledgers |  | [INDY-2035](https://jira.hyperledger.org/browse/INDY-2035) |
+| View Change processing - replica ends up with incorrect primaries |  | [INDY-1720](https://jira.hyperledger.org/browse/INDY-1720) |
+| Validator node shows False for consensus |  | [INDY-2031](https://jira.hyperledger.org/browse/INDY-2031) |
+| Watermarks may not be updated correctly after view change by a lagging node |  | [INDY-2060](https://jira.hyperledger.org/browse/INDY-2060) |
+| ATTRIB doesn't have auth rules in auth map |  | [INDY-2061](https://jira.hyperledger.org/browse/INDY-2061) |
+| Some nodes are stalled and throw an error under load |  | [INDY-2050](https://jira.hyperledger.org/browse/INDY-2050) |
+| Some nodes failed to join consensus after upgrade |  | [INDY-2055](https://jira.hyperledger.org/browse/INDY-2055) |
+
+#### Changes and Additions
+| Description | Additional Information | Ticket Number |
+| --- | --- | --- |
+| Implementation: Restore current 3PC state from audit ledger |  | [INDY-1946](https://jira.hyperledger.org/browse/INDY-1946) |
+| Implementation (not active): As a user/steward I want to have better understanding of release version and changelog |  | [INDY-1992](https://jira.hyperledger.org/browse/INDY-1992) |
+| Implement auth rule maps in config ledger |  | [INDY-2001](https://jira.hyperledger.org/browse/INDY-2001) |
+| Add audit ledger |  | [INDY-1944](https://jira.hyperledger.org/browse/INDY-1944) |
+| INSTANCE_CHANGE messages should be persisted between restarts |  | [INDY-1984](https://jira.hyperledger.org/browse/INDY-1984) |
+| Add updateState method for ConfigReqHandler |  | [INDY-2006](https://jira.hyperledger.org/browse/INDY-2006) |
+| Use auth constraints from config ledger for validation |  | [INDY-2002](https://jira.hyperledger.org/browse/INDY-2002) |
+| Implementation: Improve catch-up to use audit ledger for consistency |  | [INDY-1945](https://jira.hyperledger.org/browse/INDY-1945) |
+| Implement a command to set auth constraints |  | [INDY-2003](https://jira.hyperledger.org/browse/INDY-2003) |
+| Debug and validation: Move the auth_map structure to the config ledger |  | [INDY-1995](https://jira.hyperledger.org/browse/INDY-1995) |
+| Need to enhance write permissions for Revocation transactions |  | [INDY-1554](https://jira.hyperledger.org/browse/INDY-1554) |
+| Implement a command to get auth constraint |  | [INDY-2010](https://jira.hyperledger.org/browse/INDY-2010) |
+| Integrate testinfra-based system tests to Indy CD |  | [INDY-2016](https://jira.hyperledger.org/browse/INDY-2016) |
+| Debug and Validation: As a user/steward I want to have better understanding of release version and changelog |  | [INDY-2019](https://jira.hyperledger.org/browse/INDY-2019) |
+| As a QA I want system tests to be run in parallel in CD pipeline |  | [INDY-2028](https://jira.hyperledger.org/browse/INDY-2028) |
+| Debug and Validation: Audit Ledger and improving catch-up to use audit ledger for consistency |  | [INDY-1993](https://jira.hyperledger.org/browse/INDY-1993) |
+| Need to track same transactions with different multi-signatures |  | [INDY-1757](https://jira.hyperledger.org/browse/INDY-1757) |
+| Debug and Validation: Restore current 3PC state from audit ledger - Phase 1 |  | [INDY-2025](https://jira.hyperledger.org/browse/INDY-2025) |
+| A Node need to be able to order stashed requests after long catch-ups |  | [INDY-1983](https://jira.hyperledger.org/browse/INDY-1983) |
+| Need to account fields from PLUGIN_CLIENT_REQUEST_FIELDS when calculating digest |  | [INDY-1674](https://jira.hyperledger.org/browse/INDY-1674) |
+| Debug and validation: Multi-signature support |  | [INDY-2046](https://jira.hyperledger.org/browse/INDY-2046) |
+| Debug and Validation: Restore current 3PC state from audit ledger - Phase 2 |  | [INDY-2051](https://jira.hyperledger.org/browse/INDY-2051) |
 
 ## 1.6.83 
 ### Release date: Feb 11th, 2019
