@@ -9,7 +9,8 @@ from indy_node.test.auth_rule.auth_framework.node_properties import EditNodeIpTe
     EditNodeClientIpTest, EditNodeClientPortTest, EditNodeBlsTest
 from indy_node.test.auth_rule.auth_framework.pool_config import PoolConfigTest
 from indy_node.test.auth_rule.auth_framework.restart import RestartTest
-from indy_node.test.auth_rule.auth_framework.revoc_reg_def import RevocRegDefTest
+from indy_node.test.auth_rule.auth_framework.revoc_reg_def import AddRevocRegDefTest, \
+    EditRevocRegDefTest
 from indy_node.test.auth_rule.auth_framework.validator_info import ValidatorInfoTest
 from indy_node.test.pool_config.conftest import poolConfigWTFF
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
@@ -39,7 +40,9 @@ from plenum.test.helper import randomText
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
 from plenum.test.testing_utils import FakeSomething
 
+
 nodeCount = 7
+
 
 class TestAuthRuleUsing():
     map_of_tests = {
@@ -57,7 +60,8 @@ class TestAuthRuleUsing():
         auth_map.add_new_trust_anchor.get_action_id(): AddNewTrustAnchorTest,
         auth_map.add_new_network_monitor.get_action_id(): AddNewNetworkMonitorTest,
         auth_map.add_new_identity_owner.get_action_id(): AddNewIdentityOwnerTest,
-        # auth_map.add_revoc_reg_def.get_action_id(): RevocRegDefTest,
+        auth_map.add_revoc_reg_def.get_action_id(): AddRevocRegDefTest,
+        auth_map.edit_revoc_reg_def.get_action_id(): EditRevocRegDefTest,
         auth_map.edit_role_actions[TRUSTEE][STEWARD].get_action_id(): EditTrusteeToStewardTest,
         auth_map.edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(): EditTrusteeToTrustAnchorTest,
         auth_map.edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): EditTrusteeToNetworkMonitorTest,
@@ -156,9 +160,10 @@ class TestAuthRuleUsing():
                              valid_upgrade=validUpgrade,
                              pool_config_wtff=poolConfigWTFF)
 
-    @pytest.fixture(scope='module', params=[(k, v) for k, v in map_of_tests.items()])
+    @pytest.fixture(scope='module', params=[k for k in map_of_tests.keys()])
     def auth_rule_tests(self, request, env):
-        action_id, test_cls = request.param
+        action_id = request.param
+        test_cls = self.map_of_tests[action_id]
         test = test_cls(env, action_id)
         return action_id, test
 

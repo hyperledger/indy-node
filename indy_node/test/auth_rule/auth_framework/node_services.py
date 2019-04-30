@@ -6,23 +6,18 @@ from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.constants import STEWARD_STRING, TRUSTEE, TRUSTEE_STRING, VALIDATOR
 from plenum.common.exceptions import RequestRejectedException
-from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, \
-    sdk_multi_sign_request_objects, sdk_send_signed_requests
+from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
-
-nodeCount = 7
 
 
 class NodeAuthTest(AuthTest):
     def __init__(self, env, action_id):
-        self.looper = env.looper
+        super().__init__(env, action_id)
         self.tconf = env.tconf
         self.tdir = env.tdir
         self.sdk_pool_handle = env.sdk_pool_handle
         self.client_wallet = env.sdk_wallet_client
         self.trustee_wallet = self._create_trustee(env.sdk_wallet_trustee)
-        self.action = split_action_id(action_id)
-        self.action_id = action_id
         self.new_nodes = {}
         self.txnPoolNodeSet = env.txnPoolNodeSet
 
@@ -31,11 +26,8 @@ class NodeAuthTest(AuthTest):
 
     def run(self):
 
-        print(self.txnPoolNodeSet[0].master_replica.last_ordered_3pc)
-
         # Step 1. Change auth rule
         self.send_and_check(self.changed_auth_rule, self.trustee_wallet)
-
 
         # Step 2. Check, that we cannot send NODE txn by old way
         with pytest.raises(RequestRejectedException):
