@@ -74,8 +74,8 @@ def test_auth_map_config():
         assert rule_str in auth_map.auth_map.keys()
 
 
-def test_auth_map_athr_agrmt():
-    rules = [(auth_map.athr_agrmt, "122--ADD--*--*--*"),]
+def test_auth_map_txn_athr_agrmt():
+    rules = [(auth_map.txn_athr_agrmt, "122--ADD--*--*--*"), ]
 
     for (rule, rule_str) in rules:
         assert rule.get_action_id() == rule_str

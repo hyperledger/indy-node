@@ -24,7 +24,7 @@ from common.version import GenericVersion
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ConstraintsEnum, CONSTRAINT_ID, AUTH_CONSTRAINTS, METADATA, \
     NEED_TO_BE_OWNER, SIG_COUNT, ROLE
-from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, ATHR_AGRMT_VERSION_SIZE_LIMIT
+from indy_common.config import SCHEMA_ATTRIBUTES_LIMIT, TXN_ATHR_AGRMT_VERSION_SIZE_LIMIT
 from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     DATA, GET_NYM, GET_SCHEMA, GET_CLAIM_DEF, ACTION, \
     POOL_UPGRADE, POOL_CONFIG, \
@@ -37,7 +37,7 @@ from indy_common.constants import TXN_TYPE, ATTRIB, GET_ATTR, \
     GET_REVOC_REG_DELTA, FROM, TO, POOL_RESTART, DATETIME, VALIDATOR_INFO, SCHEMA_FROM, SCHEMA_NAME, SCHEMA_VERSION, \
     SCHEMA_ATTR_NAMES, CLAIM_DEF_SIGNATURE_TYPE, CLAIM_DEF_PUBLIC_KEYS, CLAIM_DEF_TAG, CLAIM_DEF_SCHEMA_REF, \
     CLAIM_DEF_PRIMARY, CLAIM_DEF_REVOCATION, CLAIM_DEF_FROM, PACKAGE, AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, \
-    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, ATHR_AGRMT, ATHR_AGRMT_TEXT, ATHR_AGRMT_VERSION
+    FIELD, OLD_VALUE, NEW_VALUE, GET_AUTH_RULE, TXN_ATHR_AGRMT, TXN_ATHR_AGRMT_TEXT, TXN_ATHR_AGRMT_VERSION
 from indy_common.version import SchemaVersion
 
 
@@ -389,9 +389,9 @@ class ClientGetAuthRuleOperation(MessageValidator):
 
 class ClientAthrAgrmtRuleOperation(MessageValidator):
     schema = (
-        (TXN_TYPE, ConstantField(ATHR_AGRMT)),
-        (ATHR_AGRMT_TEXT, NonEmptyStringField()),
-        (ATHR_AGRMT_VERSION, LimitedLengthStringField(max_length=ATHR_AGRMT_VERSION_SIZE_LIMIT))
+        (TXN_TYPE, ConstantField(TXN_ATHR_AGRMT)),
+        (TXN_ATHR_AGRMT_TEXT, NonEmptyStringField()),
+        (TXN_ATHR_AGRMT_VERSION, LimitedLengthStringField(max_length=TXN_ATHR_AGRMT_VERSION_SIZE_LIMIT))
     )
 
 
@@ -416,7 +416,7 @@ class ClientOperationField(PClientOperationField):
         GET_REVOC_REG_DEF: ClientGetRevocRegDefField(),
         GET_REVOC_REG: ClientGetRevocRegField(),
         GET_REVOC_REG_DELTA: ClientGetRevocRegDeltaField(),
-        ATHR_AGRMT: ClientAthrAgrmtRuleOperation()
+        TXN_ATHR_AGRMT: ClientAthrAgrmtRuleOperation()
     }
 
     # TODO: it is a workaround because INDY-338, `operations` must be a class

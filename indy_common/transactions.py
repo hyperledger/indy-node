@@ -37,10 +37,10 @@ class IndyTransactions(Transactions):
     AUTH_RULE = "120"
     GET_AUTH_RULE = "121"
 
-    ATHR_AGRMT = "122"
-    ATHR_AGRMT_AML = "123"
-    GET_ATHR_AGRMT = "124"
-    GET_ATHR_AGRMT_AML = "125"
+    TXN_ATHR_AGRMT = "122"
+    GET_TXN_ATHR_AGRMT = "123"
+    TXN_ATHR_AGRMT_AML = "124"
+    GET_TXN_ATHR_AGRMT_AML = "125"
 
     @staticmethod
     def get_name_from_code(code: str):

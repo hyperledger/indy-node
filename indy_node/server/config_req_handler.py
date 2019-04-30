@@ -5,15 +5,14 @@ from indy_common.authorize.auth_constraints import ConstraintCreator, Constraint
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
 from indy_common.state import config
-from indy_node.server.domain_req_handler import DomainReqHandler
-from plenum.common.exceptions import InvalidClientRequest, InvalidMessageException
+from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata, get_type
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE, ATHR_AGRMT, \
-    ATHR_AGRMT_VERSION
+    REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE, TXN_ATHR_AGRMT, \
+    TXN_ATHR_AGRMT_VERSION
 from indy_common.types import Request, ClientGetAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
@@ -21,7 +20,7 @@ from indy_node.server.pool_config import PoolConfig
 
 
 class ConfigReqHandler(LedgerRequestHandler):
-    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE, ATHR_AGRMT}
+    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE, TXN_ATHR_AGRMT}
     query_types = {GET_AUTH_RULE, }
 
     def __init__(self, ledger, state, idrCache: IdrCache,
@@ -46,7 +45,7 @@ class ConfigReqHandler(LedgerRequestHandler):
             self._doStaticValidationAuthRule(identifier, req_id, operation)
         elif operation[TXN_TYPE] == GET_AUTH_RULE:
             self._doStaticValidationGetAuthRule(identifier, req_id, operation)
-        elif operation[TXN_TYPE] == ATHR_AGRMT:
+        elif operation[TXN_TYPE] == TXN_ATHR_AGRMT:
             self._doStaticValidationAthrAgrmt(identifier, req_id, operation)
 
     def _doStaticValidationPoolConfig(self, identifier, reqId, operation):
@@ -174,8 +173,8 @@ class ConfigReqHandler(LedgerRequestHandler):
                                                               old_value="*",
                                                               new_value="*")])
 
-        elif typ == ATHR_AGRMT:
-            version = operation[ATHR_AGRMT_VERSION]
+        elif typ == TXN_ATHR_AGRMT:
+            version = operation[TXN_ATHR_AGRMT_VERSION]
             if self.state.get(":taa:v:{}".format(version), isCommitted=False) is not None:
                 raise InvalidClientRequest("Changing existing version of transaction author agreement is forbidden")
 
@@ -243,6 +242,9 @@ class ConfigReqHandler(LedgerRequestHandler):
                 constraint = self.get_auth_constraint(payload)
                 auth_key = self.get_auth_key(payload)
                 self.update_auth_constraint(auth_key, constraint)
+            elif typ == TXN_ATHR_AGRMT:
+                payload = get_payload_data(txn)
+                self.update_txn_athr_agrmt()
 
     def get_query_response(self, request: Request):
         operation = request.operation
@@ -294,3 +296,6 @@ class ConfigReqHandler(LedgerRequestHandler):
             raise InvalidClientRequest(identifier, req_id,
                                        "Unknown authorization rule: key '{}' is not "
                                        "found in authorization map.".format(auth_key))
+
+    def update_txn_athr_agrmt(self):
+        self.state.set(':taa:latest'.encode(), 'hash')
