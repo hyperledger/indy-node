@@ -1,6 +1,7 @@
+from _sha256 import sha256
 from typing import List
 
-from common.serializers.serialization import domain_state_serializer, state_roots_serializer
+from common.serializers.serialization import state_roots_serializer, config_state_serializer
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
@@ -11,8 +12,9 @@ from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append
 from plenum.server.ledger_req_handler import LedgerRequestHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
-    REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE, TXN_ATHR_AGRMT, \
-    TXN_ATHR_AGRMT_VERSION
+    REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE, \
+    TXN_ATHR_AGRMT, \
+    TXN_ATHR_AGRMT_VERSION, TXN_ATHR_AGRMT_TEXT
 from indy_common.types import Request, ClientGetAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
@@ -32,7 +34,7 @@ class ConfigReqHandler(LedgerRequestHandler):
         self.poolManager = poolManager
         self.poolCfg = poolCfg
         self.write_req_validator = write_req_validator
-        self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
+        self.constraint_serializer = ConstraintsSerializer(config_state_serializer)
         self.bls_store = bls_store
 
     def doStaticValidation(self, request: Request):
@@ -237,14 +239,13 @@ class ConfigReqHandler(LedgerRequestHandler):
     def updateState(self, txns, isCommitted=False):
         for txn in txns:
             typ = get_type(txn)
+            payload = get_payload_data(txn)
             if typ == AUTH_RULE:
-                payload = get_payload_data(txn)
                 constraint = self.get_auth_constraint(payload)
                 auth_key = self.get_auth_key(payload)
                 self.update_auth_constraint(auth_key, constraint)
             elif typ == TXN_ATHR_AGRMT:
-                payload = get_payload_data(txn)
-                self.update_txn_athr_agrmt()
+                self.update_txn_athr_agrmt(payload)
 
     def get_query_response(self, request: Request):
         operation = request.operation
@@ -297,5 +298,10 @@ class ConfigReqHandler(LedgerRequestHandler):
                                        "Unknown authorization rule: key '{}' is not "
                                        "found in authorization map.".format(auth_key))
 
-    def update_txn_athr_agrmt(self):
-        self.state.set(':taa:latest'.encode(), 'hash')
+    def update_txn_athr_agrmt(self, payload: dict):
+        version = payload[TXN_ATHR_AGRMT_VERSION]
+        text = payload[TXN_ATHR_AGRMT_TEXT]
+        hash = sha256('{}{}'.format(version, text).encode()).digest()
+        self.state.set(':taa:latest'.encode(), hash)
+        self.state.set(':taa:v:{}'.format(version).encode(), hash)
+        self.state.set(':taa:h:{}'.format(hash).encode(), config_state_serializer.serialize(payload))
