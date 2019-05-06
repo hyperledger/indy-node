@@ -24,8 +24,8 @@ Description of the ways how the user may accept TAA
 ## Plan Overview
 Indy Node will allow to store multiply Transaction Author Agreement (TAA). If no TAA written to the ledger it means that it is not required for this network.
 
-Any write request to the ledger should contain a hash of the TAA and the time when TA signed the TAA. Indy Node must reject any write request if it misses the hash of the latest TAA (e.g. no hash at all, or not the latest hash is present) or contains incorrect time of signing.
-Write request itself is signed by the TA and as a result the author will sign a hash of the TAA together with other transaction data.
+Any write request to the ledger should contain a digest of the TAA and the time when TA signed the TAA. Indy Node must reject any write request if it misses the digest of the latest TAA (e.g. no digest at all, or not the latest digest is present) or contains incorrect time of signing.
+Write request itself is signed by the TA and as a result the author will sign a digest of the TAA together with other transaction data.
 
 IndySDK will provide API to:
 * Fetch TAA from the ledger
@@ -35,28 +35,28 @@ IndySDK will provide API to:
 ### IndyNode
 - Ledger stores TAA in transaction log and state.
 - TAA transaction belongs to Config ledger and state.
-- The key in state tree is a hash of the TAA text + some markers.
-- The hash is calculated on concatenated strings: version || text.
-- Hash suffix after the marker is a primary key for state. This entry contains the actual data (text, version).
-- In order to support flexible get requests, a few other (helper) keys in the state references the particular hash as the value in state tree.
+- The key in state tree is a digest of the TAA text + some markers.
+- The digest is calculated on concatenated strings: version || text.
+- Digest suffix after the marker is a primary key for state. This entry contains the actual data (text, version).
+- In order to support flexible get requests, a few other (helper) keys in the state references the particular digest as the value in state tree.
 
 | key              | value |
-| :---------------:|:-------------:|
-|`:taa:h:<hash>`   | { text, version } |
-|`:taa:v:<version>`| hash |
-|`:taa:latest`     | hash |
+| :-----------------:|:-------------:|
+|`:taa:d:<digest>`   | { text, version } |
+|`:taa:v:<version>`  | digest |
+|`:taa:latest`       | digest |
 
 - The timestamp store (`ts_store`) is used to determine appropriate root hash of the config state tree to allow requests to history by a timestamp.
 
 ### Requests
 #### TXN_AUTHOR_AGREEMENT
-Add a new version of the TAA to the ledger. The version of new TAA is a unique UTF-8 string. Resulting hash should also be unique. Required fields:
+Add a new version of the TAA to the ledger. The version of new TAA is a unique UTF-8 string. Resulting digest should also be unique. Required fields:
 * text
 * version
 
 #### GET_TXN_AUTHOR_AGREEMENT
 Allow to fetch a TAA from the ledger. There are 3 mutually exclusive optional fields in this request
-* hash - ledger will return TAA corresponding to the requested hash
+* digest - ledger will return TAA corresponding to the requested digest
 * version - ledger will return TAA corresponding to the requested version
 * timestamp - ledger will return TAA valid at the requested timestamp
 
@@ -83,7 +83,7 @@ Add new version of AML.
 Fetch AML from the ledger valid for specified time or the latest one.
 
 ### TAA Verification
-If TAA enabled on the ledger, then each write request from the user must contain TAA acceptance signed by the user. The new format of write request is
+If TAA enabled on the ledger, then each write request from the user must contain TAA acceptance data signed by the user. The new format of write request is
 ```json=
 {
     "reqId": INT,
@@ -92,7 +92,7 @@ If TAA enabled on the ledger, then each write request from the user must contain
     "protocolVersion": INT,
     "signature": "<signature (taaAcceptance is also signed)>",
     "taaAcceptance": {
-        "hash": "hash string",
+        "taaDigest": "SHA-256 hash string",
         "mechanism": "label of type",
         "time": <integer UTC TS>
     }
@@ -100,10 +100,10 @@ If TAA enabled on the ledger, then each write request from the user must contain
 ```
 
 And the following list of checks will be performed:
-* hash in `taaAcceptance` section is the latest one
-    * if client's hash doesn't match to ledger's one - reject should contains expected hash value
-* acceptance mechanism is in the active AML
-* time of acceptance in `taaAcceptance` is correct:
+* `taaDigest` in `taaAcceptance` section is the latest one
+    * if client's digest doesn't match to ledger's one - reject should contains expected digest value
+* acceptance `mechanism` is in the active AML
+* `time` of acceptance in `taaAcceptance` is correct:
     * less or equal than time on primary node +2 minutes
     * and greater or equal than time of the latest TAA -2 minutes
 
@@ -123,7 +123,7 @@ pub extern fn indy_build_txn_author_agreement_request(command_handle: CommandHan
 
 /// data: (Optional) specifies a condition for getting specific TAA:
 /// {
-///     hash: Optional<str> - hash of requested TAA,
+///     digest: Optional<str> - digest of requested TAA,
 ///     version: Optional<str> - version of requested TAA.
 ///     timestamp: Optional<u64> - ledger will return TAA valid at requested timestamp.
 /// }
@@ -138,14 +138,14 @@ pub extern fn indy_build_get_txn_author_agreement_request(command_handle: Comman
 
 /// Append TAA acceptance data to existing request.
 ///
-/// This function may calculate hash by itself or consume it as a parameter.
-/// If all text, version and hash parameters are specified, libindy will check integerity of them.
+/// This function may calculate digest by itself or consume it as a parameter.
+/// If all text, version and digest parameters are specified, libindy will check integerity of them.
 /// This function should be called before signing a request.
 ///
 /// #Params
 /// request_json - original request
-/// text and version - (optional) raw data about TAA from ledger. These parameters should be passed together. These parameters are required if hash parameter is ommited.
-/// hash - (optional) hash on text and version. This parameter is required if text and version parameters are ommited.
+/// text and version - (optional) raw data about TAA from ledger. These parameters should be passed together. These parameters are required if digest parameter is ommited.
+/// digest - (optional) hash on text and version. This parameter is required if text and version parameters are ommited.
 /// acc_mech_type - mechanism how user has accepted the TAA
 /// time_of_acceptance - UTC timestamp when user has accepted the TAA
 #[no_mangle]
@@ -153,7 +153,7 @@ pub extern fn indy_append_txn_author_agreement_acceptance_to_request(command_han
                                                                      request_json: *const c_char,
                                                                      text: *const c_char,
                                                                      version: *const c_char,
-                                                                     hash: *const c_char,
+                                                                     digest: *const c_char,
                                                                      acc_mech_type: *const c_char,
                                                                      time_of_acceptance: u64,
                                                                      cb: Option<extern fn(command_handle_: CommandHandle,
@@ -228,15 +228,15 @@ The new command `pool show-taa` will allow to accept the TAA if it was declined 
 /// As result of succesfull call of this funciton appropriate acceptance data will be appended to each write request by `indy_append_txn_author_agreement_acceptance_to_request` libindy call.
 ///
 /// #Params
-/// text and version - (optional) raw data about TAA from ledger. These parameters should be passed together. These parameters are required if hash parameter is ommited.
-/// hash - (optional) hash on text and version. This parameter is required if text and version parameters are ommited.
+/// text and version - (optional) raw data about TAA from ledger. These parameters should be passed together. These parameters are required if digest parameter is ommited.
+/// digest - (optional) hash on text and version. This parameter is required if text and version parameters are ommited.
 /// acc_mech_type - mechanism how user has accepted the TAA
 /// time_of_acceptance - UTC timestamp when user has accepted the TAA
 #[no_mangle]
 pub extern fn vcx_set_acitve_txn_author_agreement_acceptance(command_handle: u32,
                                                              text: *const c_char,
                                                              version: *const c_char,
-                                                             hash: *const c_char,
+                                                             digest: *const c_char,
                                                              acc_mech_type: *const c_char,
                                                              time_of_acceptance: u64,
                                                              cb: Option<extern fn(xcommand_handle: u32, err: u32)>) -> u32
@@ -264,7 +264,7 @@ An application will show to the user the TAA according the AML. It's up to appli
     ```rust=
     payment_request = indy_build_payment_req(..., extra = {
                                                     "taaAcceptance": {
-                                                        "hash": "hash string", //may be text + version instead of hash
+                                                        "taaDigest": "SHA-256 hash string", //may be text + version instead of digest
                                                         "mechanism": "label of type",
                                                         "time": <integer UTC TS>
                                                     }})
@@ -276,12 +276,12 @@ An application will show to the user the TAA according the AML. It's up to appli
 
 To verify TAA for some written transaction on the Ledger an auditor should perform the following:
 * fetch origin transaction from the ledger, parse it and extract following fields:
-    * hash
+    * digest
     * time of transaction
     * time of acceptance
     * label of acceptance mechanism
 * fetch the TAA and AML for the **time of transaction**
-    * compare the hash of transaction against calculated hash
+    * compare the digest of transaction against calculated digest
     * check membership of acceptance mechanism in the list
 * verify time of acceptance as it's described in [verification section](#taa-verification)
 
