@@ -1,3 +1,4 @@
+import copy
 import json
 
 import pytest
@@ -8,7 +9,6 @@ from indy_common.authorize.auth_constraints import IDENTITY_OWNER, AuthConstrain
 from indy_common.constants import REVOC_REG_ENTRY, PREV_ACCUM, VALUE, CRED_DEF_ID, REVOC_TYPE, TAG, REVOC_REG_DEF_ID, \
     ACCUM, ISSUED, REVOKED
 from indy_common.state import domain
-from indy_node.test.anon_creds.conftest import build_revoc_reg_entry_for_given_revoc_reg_def
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
 from indy_node.test.auth_rule.auth_framework.revoc_reg_def import AddRevocRegDefTest
 from indy_node.test.auth_rule.helper import generate_auth_rule_operation
@@ -34,11 +34,13 @@ class AddRevocRegEntryTest(AuthTest):
         rrd_test = AddRevocRegDefTest(self.env, auth_map.add_revoc_reg_def.get_action_id())
         rrd_test.prepare()
         self.claim_def_req = rrd_test.claim_def_req
-        self.revoc_reg_def_req = rrd_test.send_revoc_reg_def(self.claim_def_req, wallet=self.trustee_wallet)[0][0]
+        self.first_revoc_reg_def_req = rrd_test.send_revoc_reg_def(self.claim_def_req, wallet=self.trustee_wallet)[0][0]
+        self.second_revoc_reg_def_req = rrd_test.send_revoc_reg_def(self.claim_def_req, wallet=self.trustee_wallet)[0][0]
 
-        self.first_entry = self.build_first_reg_entry_req(issued=[1, 2, 3])
-        self.next_reg_entry = self.build_next_reg_entry(prev_entry=self.first_entry,
-                                                        revoked=[1])
+        self.first_entry = self.build_reg_entry_req(revoc_reg_req=self.first_revoc_reg_def_req,
+                                                    revoked=[1, 2, 3])
+        self.next_reg_entry = self.build_reg_entry_req(revoc_reg_req=self.second_revoc_reg_def_req,
+                                                       revoked=[4, 5, 6])
 
     def build_revoc_reg_entry_for_given_revoc_reg_def(self,
                                                       revoc_def_req):
@@ -60,16 +62,10 @@ class AddRevocRegEntryTest(AuthTest):
         }
         return data
 
-    def build_first_reg_entry_req(self, issued):
-        data = self.build_revoc_reg_entry_for_given_revoc_reg_def(self.revoc_reg_def_req)
-        data[VALUE][ISSUED] = issued
-        del data[VALUE][PREV_ACCUM]
-        return data
-
-    def build_next_reg_entry(self, prev_entry, revoked=None):
-        data = self.build_revoc_reg_entry_for_given_revoc_reg_def(self.revoc_reg_def_req)
-        data[VALUE][PREV_ACCUM] = prev_entry[VALUE][ACCUM]
+    def build_reg_entry_req(self, revoc_reg_req, revoked):
+        data = self.build_revoc_reg_entry_for_given_revoc_reg_def(revoc_reg_req)
         data[VALUE][REVOKED] = revoked
+        del data[VALUE][PREV_ACCUM]
         return data
 
     def run(self):
@@ -120,6 +116,11 @@ class AddRevocRegEntryTest(AuthTest):
 class EditRevocRegEntryTest(AuthTest):
     def __init__(self, env, action_id):
         super().__init__(env, action_id)
+        self.rre_test = None
+        self.claim_def_req = None
+        self.first_edit = None
+        self.second_edit = None
+
 
     def prepare(self):
         self.default_auth_rule = self.get_default_auth_rule()
@@ -127,12 +128,18 @@ class EditRevocRegEntryTest(AuthTest):
         self.rre_test = AddRevocRegEntryTest(self.env, auth_map.edit_revoc_reg_entry.get_action_id())
         self.rre_test.prepare()
         self.claim_def_req = self.rre_test.claim_def_req
-        self.reg_entry = self.rre_test.first_entry
+        reg_entry = self.rre_test.first_entry
 
-        self.first_edit = self.second_edit = self.reg_entry
-        self.rre_test.send_revoc_reg_entry(self.rre_test.first_entry, wallet=self.trustee_wallet)
-        self.first_edit[VALUE][ISSUED] = [1, 2, 3, 4, 5]
-        self.second_edit[VALUE][ISSUED] = [6, 7, 8, 9]
+        self.first_edit = copy.deepcopy(reg_entry)
+        self.second_edit = copy.deepcopy(reg_entry)
+        self.rre_test.send_revoc_reg_entry(reg_entry, wallet=self.trustee_wallet)
+        self.first_edit[VALUE][REVOKED] = [10, 20]
+        self.first_edit[VALUE][PREV_ACCUM] = reg_entry[VALUE][ACCUM]
+        self.first_edit[VALUE][ACCUM] = randomString(10)
+
+        self.second_edit[VALUE][ACCUM] = randomString(10)
+        self.second_edit[VALUE][REVOKED] = [30, 40]
+        self.second_edit[VALUE][PREV_ACCUM] = self.first_edit[VALUE][ACCUM]
 
     def run(self):
         # Step 1. Change auth rule
@@ -150,7 +157,6 @@ class EditRevocRegEntryTest(AuthTest):
 
         # Step 5. Check, that default auth rule works
         self.rre_test.send_revoc_reg_entry(data=self.second_edit, wallet=self.trustee_wallet)
-
 
     def result(self):
         pass

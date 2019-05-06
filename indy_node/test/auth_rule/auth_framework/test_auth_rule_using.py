@@ -65,7 +65,7 @@ class TestAuthRuleUsing():
         auth_map.add_revoc_reg_def.get_action_id(): AddRevocRegDefTest,
         auth_map.edit_revoc_reg_def.get_action_id(): EditRevocRegDefTest,
         auth_map.add_revoc_reg_entry.get_action_id(): AddRevocRegEntryTest,
-        # auth_map.edit_revoc_reg_entry.get_action_id(): EditRevocRegEntryTest,
+        auth_map.edit_revoc_reg_entry.get_action_id(): EditRevocRegEntryTest,
         auth_map.edit_role_actions[TRUSTEE][STEWARD].get_action_id(): EditTrusteeToStewardTest,
         auth_map.edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(): EditTrusteeToTrustAnchorTest,
         auth_map.edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): EditTrusteeToNetworkMonitorTest,
