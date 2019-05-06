@@ -156,6 +156,11 @@ class EditRevocRegDefTest(AuthTest):
         # Step 5. Check, that default auth rule works
         self.do_edit_revoc_reg_def(self.revoc_reg_def_trustee, self.trustee_wallet)
 
+        self.teardown_for_add()
+
+    def teardown_for_add(self):
+        self.add_revoc_reg_def.send_and_check(self.add_revoc_reg_def.default_auth_rule, self.trustee_wallet)
+
     def result(self):
         pass
 

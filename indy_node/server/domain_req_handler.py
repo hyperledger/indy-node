@@ -21,7 +21,8 @@ from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, REF
 from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
     get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
-    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
+    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag, \
+    get_write_claim_def_schema_ref, get_write_claim_def_signature_type, get_write_claim_def_tag
 from indy_common.state import domain
 from indy_common.state.domain import make_state_path_for_revoc_def
 from indy_common.types import Request
@@ -299,14 +300,15 @@ class DomainReqHandler(PHandler):
                                        "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
 
         frm = req.identifier
-        signature_type = get_read_claim_def_signature_type(req)
-        schema_ref = get_read_claim_def_schema_ref(req)
-        tag = get_read_claim_def_tag(req)
+        signature_type = get_write_claim_def_signature_type(req)
+        schema_ref = get_write_claim_def_schema_ref(req)
+        tag = get_write_claim_def_tag(req)
         keys, last_seq_no, _, _ = self.getClaimDef(
             author=frm,
             schemaSeqNo=schema_ref,
             signatureType=signature_type,
-            tag=tag
+            tag=tag,
+            isCommitted=False
         )
 
         if last_seq_no:

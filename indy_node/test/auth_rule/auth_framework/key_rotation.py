@@ -32,21 +32,21 @@ class RotateKeyTest(AuthTest):
 
         # Step 1. Check default auth rule
         sdk_rotate_verkey(self.looper, self.sdk_pool_handle, wh, client_did, client_did)
-        verkey = self.sdk_modified_verkey_rotate(self.sdk_pool_handle, wh, trustee_did, client_did)
+        verkey = self.sdk_modified_verkey_rotate_failed(self.sdk_pool_handle, wh, trustee_did, client_did)
 
         # Step 2. Change auth rule
         self.send_and_check(self.changed_auth_rule, wallet=self.trustee_wallet)
 
         # Step 3. Check, that we cannot add new steward by old way
         sdk_rotate_verkey(self.looper, self.sdk_pool_handle, wh, trustee_did, client_did, verkey)
-        verkey = self.sdk_modified_verkey_rotate(self.sdk_pool_handle, wh, client_did, client_did)
+        verkey = self.sdk_modified_verkey_rotate_failed(self.sdk_pool_handle, wh, client_did, client_did)
 
         # Step 4. Return default auth rule
         self.send_and_check(self.default_auth_rule, wallet=self.trustee_wallet)
 
         # Step 5. Check, that default auth rule works
         sdk_rotate_verkey(self.looper, self.sdk_pool_handle, wh, client_did, client_did, verkey)
-        self.sdk_modified_verkey_rotate(self.sdk_pool_handle, wh, trustee_did, client_did)
+        self.sdk_modified_verkey_rotate_failed(self.sdk_pool_handle, wh, trustee_did, client_did)
 
     def result(self):
         pass
@@ -63,9 +63,9 @@ class RotateKeyTest(AuthTest):
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.creator_wallet[1])
 
-    def sdk_modified_verkey_rotate(self, sdk_pool_handle, wh,
-                                   did_of_changer,
-                                   did_of_changed):
+    def sdk_modified_verkey_rotate_failed(self, sdk_pool_handle, wh,
+                                          did_of_changer,
+                                          did_of_changed):
         verkey = self.looper.loop.run_until_complete(
             replace_keys_start(wh, did_of_changed, json.dumps({})))
 

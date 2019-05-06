@@ -49,11 +49,6 @@ class PoolConfigTest(AuthTest):
     def result(self):
         pass
 
-    def get_nym(self, role):
-        wh, _ = self.trustee_wallet
-        did, _ = create_verkey_did(self.looper, wh)
-        return self._build_nym(self.trustee_wallet, role, did)
-
     def get_changed_auth_rule(self):
         self.new_default_wallet = sdk_add_new_nym(self.looper, self.sdk_pool_handle, self.trustee_wallet, role=IDENTITY_OWNER)
         constraint = AuthConstraint(role=IDENTITY_OWNER,

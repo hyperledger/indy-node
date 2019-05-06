@@ -55,7 +55,7 @@ class AuthTest(AbstractTest):
         self.changed_auth_rule = None
         self.new_default_wallet = None
 
-    def _build_nym(self, creator_wallet, role_string, did, skipverkey=True):
+    def _build_nym(self, creator_wallet, role_string, did, verkey=None, skipverkey=True):
         seed = randomString(32)
         alias = randomString(5)
         nym_request, new_did = self.looper.loop.run_until_complete(
@@ -64,6 +64,7 @@ class AuthTest(AbstractTest):
                                 alias,
                                 role_string,
                                 dest=did,
+                                verkey=verkey,
                                 skipverkey=skipverkey))
         return sdk_json_to_request_object(json.loads(nym_request))
 

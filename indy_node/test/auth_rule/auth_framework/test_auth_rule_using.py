@@ -11,6 +11,7 @@ from indy_node.test.auth_rule.auth_framework.pool_config import PoolConfigTest
 from indy_node.test.auth_rule.auth_framework.restart import RestartTest
 from indy_node.test.auth_rule.auth_framework.revoc_reg_def import AddRevocRegDefTest, \
     EditRevocRegDefTest
+from indy_node.test.auth_rule.auth_framework.revoc_reg_entry import AddRevocRegEntryTest, EditRevocRegEntryTest
 from indy_node.test.auth_rule.auth_framework.validator_info import ValidatorInfoTest
 from indy_node.test.pool_config.conftest import poolConfigWTFF
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
@@ -28,7 +29,8 @@ from indy_node.test.auth_rule.auth_framework.edit_roles import EditTrusteeToStew
     EditTrustAnchorToIdentityOwnerTest, EditTrustAnchorToNetworkMonitorTest, EditIdentityOwnerToNetworkMonitorTest, \
     EditIdentityOwnerToTrusteeTest, EditIdentityOwnerToTrustAnchorTest, EditIdentityOwnerToStewardTest, \
     EditNetworkMonitorToIdentityOwnerTest, EditNetworkMonitorToTrusteeTest, EditNetworkMonitorToStewardTest, \
-    EditNetworkMonitorToTrustAnchorTest
+    EditNetworkMonitorToTrustAnchorTest, EditStewardToStewardTest, EditTrusteeToTrusteeTest, \
+    EditTrustAnchorToTrustAnchorTest, EditNetworkMonitorToNetworkMonitorTest, EditIdentityOwnerToIdentityOwnerTest
 from indy_node.test.auth_rule.auth_framework.key_rotation import RotateKeyTest
 from indy_node.test.auth_rule.auth_framework.schema import SchemaTest
 from indy_node.test.auth_rule.auth_framework.upgrade import StartUpgradeTest, CancelUpgradeTest
@@ -62,6 +64,8 @@ class TestAuthRuleUsing():
         auth_map.add_new_identity_owner.get_action_id(): AddNewIdentityOwnerTest,
         auth_map.add_revoc_reg_def.get_action_id(): AddRevocRegDefTest,
         auth_map.edit_revoc_reg_def.get_action_id(): EditRevocRegDefTest,
+        auth_map.add_revoc_reg_entry.get_action_id(): AddRevocRegEntryTest,
+        # auth_map.edit_revoc_reg_entry.get_action_id(): EditRevocRegEntryTest,
         auth_map.edit_role_actions[TRUSTEE][STEWARD].get_action_id(): EditTrusteeToStewardTest,
         auth_map.edit_role_actions[TRUSTEE][TRUST_ANCHOR].get_action_id(): EditTrusteeToTrustAnchorTest,
         auth_map.edit_role_actions[TRUSTEE][NETWORK_MONITOR].get_action_id(): EditTrusteeToNetworkMonitorTest,
@@ -82,6 +86,11 @@ class TestAuthRuleUsing():
         auth_map.edit_role_actions[NETWORK_MONITOR][STEWARD].get_action_id(): EditNetworkMonitorToStewardTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][TRUST_ANCHOR].get_action_id(): EditNetworkMonitorToTrustAnchorTest,
         auth_map.edit_role_actions[NETWORK_MONITOR][IDENTITY_OWNER].get_action_id(): EditNetworkMonitorToIdentityOwnerTest,
+        auth_map.edit_role_actions[TRUSTEE][TRUSTEE].get_action_id(): EditTrusteeToTrusteeTest,
+        auth_map.edit_role_actions[STEWARD][STEWARD].get_action_id(): EditStewardToStewardTest,
+        auth_map.edit_role_actions[TRUST_ANCHOR][TRUST_ANCHOR].get_action_id(): EditTrustAnchorToTrustAnchorTest,
+        auth_map.edit_role_actions[NETWORK_MONITOR][NETWORK_MONITOR].get_action_id(): EditNetworkMonitorToNetworkMonitorTest,
+        auth_map.edit_role_actions[IDENTITY_OWNER][IDENTITY_OWNER].get_action_id(): EditIdentityOwnerToIdentityOwnerTest,
         auth_map.key_rotation.get_action_id(): RotateKeyTest,
         auth_map.add_schema.get_action_id(): SchemaTest,
         auth_map.add_claim_def.get_action_id(): AddClaimDefTest,

@@ -34,7 +34,7 @@ class AddNewRoleTest(AuthTest):
         # Step 2. Change auth rule
         self.send_and_check(self.changed_auth_rule, wallet=self.trustee_wallet)
 
-        # Step 3. Check, that we cannot add new steward by old way
+        # Step 3. Check, that we cannot add new nym with role by old way
         with pytest.raises(RequestRejectedException):
             self.send_and_check(self.phase_req_2, wallet=self.creator_wallet)
 
@@ -52,15 +52,21 @@ class AddNewRoleTest(AuthTest):
 
     def get_nym(self):
         wh, _ = self.creator_wallet
-        did, _ = create_verkey_did(self.looper, wh)
-        return self._build_nym(self.creator_wallet, self.role_string, did)
+        did, verkey = create_verkey_did(self.looper, wh)
+        return self._build_nym(self.creator_wallet,
+                               self.role_string,
+                               did,
+                               verkey=verkey,
+                               skipverkey=False)
 
     def _get_nym_for_new_rule(self):
         wh, _ = self.checker_wallet
-        did, _ = create_verkey_did(self.looper, wh)
+        did, verkey = create_verkey_did(self.looper, wh)
         return self._build_nym(self.checker_wallet,
                                self.role_string,
-                               did)
+                               did,
+                               verkey=verkey,
+                               skipverkey=False)
 
     def get_changed_auth_rule(self):
         self.checker_wallet = self.env.role_to_wallet[TRUST_ANCHOR]

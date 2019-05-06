@@ -22,6 +22,7 @@ class EditRoleTest(AuthTest):
         self.role_string = roles_to_string[self.role]
         self.role_to_change = self.action.new_value
         self.role_to_change_string = roles_to_string[self.role_to_change]
+        self.need_to_be_owner = constraint.need_to_be_owner if hasattr(constraint, 'need_to_be_owner') else False
         self.other_roles = []
         self.default_who_can_wallet = None
         self.new_who_can_wallet = None
@@ -33,9 +34,12 @@ class EditRoleTest(AuthTest):
         self.get_default_roles(self.constraint, default_constraint_roles)
         default_role = random.choice(default_constraint_roles)
         default_role = default_role if default_role != '*' else self.role
-        self.default_who_can_wallet = self.env.role_to_wallet[default_role]
         self.other_roles = set(accepted_roles).difference(set(default_constraint_roles).union({'*'}))
         self.new_default_did = self.create_role()
+        if self.need_to_be_owner:
+            self.default_who_can_wallet = (self.trustee_wallet[0], self.new_default_did)
+        else:
+            self.default_who_can_wallet = self.env.role_to_wallet[default_role]
         self.default_auth_rule = self.get_default_auth_rule()
         self.changed_auth_rule = self.get_changed_auth_rule()
 
@@ -60,16 +64,18 @@ class EditRoleTest(AuthTest):
         self.send_and_check(self.nym_for_new_rule, wallet=self.new_who_can_wallet)
 
         # Step 4. Return to default role
-        self.send_and_check(self.return_to_nym_for_new_rule, wallet=self.trustee_wallet)
+        if self.role != self.role_to_change:
+            self.send_and_check(self.return_to_nym_for_new_rule, wallet=self.trustee_wallet)
 
-        # Step 5. Return back default auth rules
+        # Step 5. Return back to default auth rules
         self.send_and_check(self.default_auth_rule, wallet=self.trustee_wallet)
 
         # Step 6. Check, that now we can editing
         self.send_and_check(self.default_edit_nym_2, wallet=self.default_who_can_wallet)
 
         # Step 7. Return to default value
-        self.send_and_check(self.return_to_default_nym_2, wallet=self.trustee_wallet)
+        if self.role != self.role_to_change:
+            self.send_and_check(self.return_to_default_nym_2, wallet=self.trustee_wallet)
 
     def result(self):
         pass
@@ -117,13 +123,6 @@ class EditRoleTest(AuthTest):
                                                  new_value=self.action.new_value,
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
-
-
-class EditTrusteeToTrusteeTest(EditRoleTest):
-    def __init__(self, env, action_id):
-        super().__init__(action_id,
-                         env,
-                         AddNewTrusteeTest)
 
 
 class EditTrusteeToStewardTest(EditRoleTest):
@@ -264,3 +263,38 @@ class EditNetworkMonitorToIdentityOwnerTest(EditRoleTest):
         super().__init__(action_id,
                          env,
                          AddNewNetworkMonitorTest)
+
+
+class EditStewardToStewardTest(EditRoleTest):
+    def __init__(self, env, action_id):
+        super().__init__(action_id,
+                         env,
+                         AddNewStewardTest)
+
+
+class EditTrusteeToTrusteeTest(EditRoleTest):
+    def __init__(self, env, action_id):
+        super().__init__(action_id,
+                         env,
+                         AddNewTrusteeTest)
+
+
+class EditTrustAnchorToTrustAnchorTest(EditRoleTest):
+    def __init__(self, env, action_id):
+        super().__init__(action_id,
+                         env,
+                         AddNewTrustAnchorTest)
+
+
+class EditNetworkMonitorToNetworkMonitorTest(EditRoleTest):
+    def __init__(self, env, action_id):
+        super().__init__(action_id,
+                         env,
+                         AddNewNetworkMonitorTest)
+
+
+class EditIdentityOwnerToIdentityOwnerTest(EditRoleTest):
+    def __init__(self, env, action_id):
+        super().__init__(action_id,
+                         env,
+                         AddNewIdentityOwnerTest)
