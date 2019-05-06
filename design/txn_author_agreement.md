@@ -49,12 +49,12 @@ IndySDK will provide API to:
 - The timestamp store (`ts_store`) is used to determine appropriate root hash of the config state tree to allow requests to history by a timestamp.
 
 ### Requests
-#### TXN_ATHR_AGRMT
+#### TXN_AUTHOR_AGREEMENT
 Add a new version of the TAA to the ledger. The version of new TAA is a unique UTF-8 string. Resulting hash should also be unique. Required fields:
 * text
 * version
 
-#### GET_TXN_ATHR_AGRMT
+#### GET_TXN_AUTHOR_AGREEMENT
 Allow to fetch a TAA from the ledger. There are 3 mutually exclusive optional fields in this request
 * hash - ledger will return TAA corresponding to the requested hash
 * version - ledger will return TAA corresponding to the requested version
@@ -62,7 +62,7 @@ Allow to fetch a TAA from the ledger. There are 3 mutually exclusive optional fi
 
 No parameters in this request is a valid combination. In this case ledger will return the latest version of TAA.
 
-#### TXN_ATHR_AGRMT_AML
+#### TXN_AUTHOR_AGREEMENT_AML
 Add new version of AML.
 ```json=
 {
@@ -79,7 +79,7 @@ Add new version of AML.
 }
 ```
 
-#### GET_TXN_ATHR_AGRMT_AML
+#### GET_TXN_AUTHOR_AGREEMENT_AML
 Fetch AML from the ledger valid for specified time or the latest one.
 
 ### TAA Verification
@@ -161,7 +161,7 @@ pub extern fn indy_append_txn_author_agreement_acceptance_to_request(command_han
                                                                                           request_json: *const c_char)>) -> ErrorCode
 
 
-/// Builds a SET_TXN_ATHR_AGRMT_AML request. Request to add a new acceptance mechanism for transaction author agreement.
+/// Builds a SET_TXN_AUTHOR_AGREEMENT_AML request. Request to add a new acceptance mechanism for transaction author agreement.
 /// Acceptance Mechanism is a description of the ways how the user may accept a transaction author agreement.
 ///
 /// #Params
@@ -191,7 +191,7 @@ pub extern fn indy_build_acceptance_mechanism_request(command_handle: CommandHan
                                                                            request_json: *const c_char)>) -> ErrorCode
 
 
-/// Builds a GET_TXN_ATHR_AGRMT_AML request. Request to get acceptance mechanisms from the ledger
+/// Builds a GET_TXN_AUTHOR_AGREEMENT_AML request. Request to get acceptance mechanisms from the ledger
 /// valid for specified time or the latest one.
 ///
 /// #Params
