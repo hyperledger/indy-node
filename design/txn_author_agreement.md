@@ -29,14 +29,14 @@ Write request itself is signed by the TA and as a result the author will sign a 
 
 IndySDK will provide API to:
 * Fetch TAA from the ledger
-* Append TAA metadata to write request before signing and submitting of them
+* Append TAA acceptance data to write request before signing and submitting of them
 
 ## Plan Details
 ### IndyNode
 - Ledger stores TAA in transaction log and state.
 - TAA transaction belongs to Config ledger and state.
-- The key in state tree is a hash of the TAA text + some markers. 
-- The hash is calculated on concatenated strings: version || text. 
+- The key in state tree is a hash of the TAA text + some markers.
+- The hash is calculated on concatenated strings: version || text.
 - Hash suffix after the marker is a primary key for state. This entry contains the actual data (text, version).
 - In order to support flexible get requests, a few other (helper) keys in the state references the particular hash as the value in state tree.
 
@@ -83,27 +83,27 @@ Add new version of AML.
 Fetch AML from the ledger valid for specified time or the latest one.
 
 ### TAA Verification
-If TAA enabled on the ledger, then each write request from the user must contain metadata about a TAA signed by the user. The new format of write request is 
+If TAA enabled on the ledger, then each write request from the user must contain TAA acceptance signed by the user. The new format of write request is
 ```json=
-{ 
+{
     "reqId": INT,
     "operation" { ... },
     "identifier": "<str ident>",
     "protocolVersion": INT,
-    "signature": "<signature (txnAuthrAgrmtMeta is also signed)>",
-    "txnAuthrAgrmtMeta": { 
-        "acceptanceMechanismType": "label of type", 
-        "hash": "hash string", 
-        "timeOfAcceptance": <integer UTC TS>
+    "signature": "<signature (taaAcceptance is also signed)>",
+    "taaAcceptance": {
+        "hash": "hash string",
+        "mechanism": "label of type",
+        "time": <integer UTC TS>
     }
 }
 ```
 
 And the following list of checks will be performed:
-* hash in `txnAuthrAgrmtMeta` section is the latest one
+* hash in `taaAcceptance` section is the latest one
     * if client's hash doesn't match to ledger's one - reject should contains expected hash value
-* acceptance mechanism type is in the active AML
-* time of acceptance in `txnAuthrAgrmtMeta` is correct:
+* acceptance mechanism is in the active AML
+* time of acceptance in `taaAcceptance` is correct:
     * less or equal than time on primary node +2 minutes
     * and greater or equal than time of the latest TAA -2 minutes
 
@@ -136,8 +136,8 @@ pub extern fn indy_build_get_txn_author_agreement_request(command_handle: Comman
                                                                                request_json: *const c_char)>) -> ErrorCode
 
 
-/// Append metadata to existing request.
-/// 
+/// Append TAA acceptance data to existing request.
+///
 /// This function may calculate hash by itself or consume it as a parameter.
 /// If all text, version and hash parameters are specified, libindy will check integerity of them.
 /// This function should be called before signing a request.
@@ -149,16 +149,16 @@ pub extern fn indy_build_get_txn_author_agreement_request(command_handle: Comman
 /// acc_mech_type - mechanism how user has accepted the TAA
 /// time_of_acceptance - UTC timestamp when user has accepted the TAA
 #[no_mangle]
-pub extern fn indy_append_txn_author_agreement_meta_to_request(command_handle: CommandHandle,
-                                                               request_json: *const c_char,
-                                                               text: *const c_char,
-                                                               version: *const c_char,
-                                                               hash: *const c_char,
-                                                               acc_mech_type: *const c_char,
-                                                               time_of_acceptance: u64,
-                                                               cb: Option<extern fn(command_handle_: CommandHandle,
-                                                                                    err: ErrorCode,
-                                                                                    request_json: *const c_char)>) -> ErrorCode
+pub extern fn indy_append_txn_author_agreement_acceptance_to_request(command_handle: CommandHandle,
+                                                                     request_json: *const c_char,
+                                                                     text: *const c_char,
+                                                                     version: *const c_char,
+                                                                     hash: *const c_char,
+                                                                     acc_mech_type: *const c_char,
+                                                                     time_of_acceptance: u64,
+                                                                     cb: Option<extern fn(command_handle_: CommandHandle,
+                                                                                          err: ErrorCode,
+                                                                                          request_json: *const c_char)>) -> ErrorCode
 
 
 /// Builds a SET_TXN_ATHR_AGRMT_AML request. Request to add a new acceptance mechanism for transaction author agreement.
@@ -225,7 +225,7 @@ The new command `pool show-taa` will allow to accept the TAA if it was declined 
 ```rust=
 /// Set some accepted agreement as active.
 ///
-/// As result of succesfull call of this funciton appropriate metadata will be appended to each write request by `indy_append_txn_author_agreement_meta_to_request` libindy call.
+/// As result of succesfull call of this funciton appropriate acceptance data will be appended to each write request by `indy_append_txn_author_agreement_acceptance_to_request` libindy call.
 ///
 /// #Params
 /// text and version - (optional) raw data about TAA from ledger. These parameters should be passed together. These parameters are required if hash parameter is ommited.
@@ -233,40 +233,40 @@ The new command `pool show-taa` will allow to accept the TAA if it was declined 
 /// acc_mech_type - mechanism how user has accepted the TAA
 /// time_of_acceptance - UTC timestamp when user has accepted the TAA
 #[no_mangle]
-pub extern fn vcx_set_acitve_txn_author_agreement_meta(command_handle: u32,
-                                                       text: *const c_char,
-                                                       version: *const c_char,
-                                                       hash: *const c_char,
-                                                       acc_mech_type: *const c_char,
-                                                       time_of_acceptance: u64,
-                                                       cb: Option<extern fn(xcommand_handle: u32, err: u32)>) -> u32
+pub extern fn vcx_set_acitve_txn_author_agreement_acceptance(command_handle: u32,
+                                                             text: *const c_char,
+                                                             version: *const c_char,
+                                                             hash: *const c_char,
+                                                             acc_mech_type: *const c_char,
+                                                             time_of_acceptance: u64,
+                                                             cb: Option<extern fn(xcommand_handle: u32, err: u32)>) -> u32
 ```
 
 ### Payment plugins
 
-A payment plugin has transfer transaction. For ecosystems where TAA should be applied for payment transaction too the `extra` parameter of `indy_build_payment_req` call should be used. If the ecosystem doesn't assumed DID-based signature for payment request, appropriate plugin should include TAA metadata to digest for payment-based signature.
+A payment plugin has transfer transaction. For ecosystems where TAA should be applied for payment transaction too the `extra` parameter of `indy_build_payment_req` call should be used. If the ecosystem doesn't assumed DID-based signature for payment request, appropriate plugin should include TAA acceptance data to digest for payment-based signature.
 
 ## Plan Flow
 
 ### Client activity
 
-An application will show to the user the TAA according the AML. It's up to application flow how to obtain acceptance from the user but it should be one of listed mechanism. Any write request should be appended by TAA metadata. For this purpose the application may use the call `indy_append_txn_author_agreement_meta_to_request` before signing and submitting the request.
+An application will show to the user the TAA according the AML. It's up to application flow how to obtain acceptance from the user but it should be one of listed mechanism. Any write request should be appended by TAA acceptance data. For this purpose the application may use the call `indy_append_txn_author_agreement_acceptance_to_request` before signing and submitting the request.
 
 #### Samples
 
 1. NYM write request.
     ```rust=
     nym_request = indy_build_nym_request(...)
-    nym_req_with_taa_meta = indy_append_txn_author_agreement_meta_to_request(nym_request, ...)
-    indy_sign_and_submit_request(..., nym_req_with_taa_meta)
+    nym_req_with_taa_acceptance = indy_append_txn_author_agreement_acceptance_to_request(nym_request, ...)
+    indy_sign_and_submit_request(..., nym_req_with_taa_acceptance)
     ```
 1. Payment request without DID-based signature
     ```rust=
     payment_request = indy_build_payment_req(..., extra = {
-                                                    "txnAuthrAgrmtMeta": {
-                                                        "acceptanceMechanismType": "label of type",
+                                                    "taaAcceptance": {
                                                         "hash": "hash string", //may be text + version instead of hash
-                                                        "timeOfAcceptance": <integer UTC TS>
+                                                        "mechanism": "label of type",
+                                                        "time": <integer UTC TS>
                                                     }})
     indy_submit_request(..., payment_request)
     ```
