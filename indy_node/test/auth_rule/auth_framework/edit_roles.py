@@ -34,7 +34,7 @@ class EditRoleTest(AuthTest):
         self.get_default_roles(self.constraint, default_constraint_roles)
         default_role = random.choice(default_constraint_roles)
         default_role = default_role if default_role != '*' else self.role
-        self.other_roles = set(accepted_roles).difference(set(default_constraint_roles).union({'*'}))
+        self.other_roles = set(accepted_roles).difference(set(default_constraint_roles).union({'*', default_role}))
         self.new_default_did = self.create_role()
         if self.need_to_be_owner:
             self.default_who_can_wallet = (self.trustee_wallet[0], self.new_default_did)
