@@ -18,6 +18,7 @@ from plenum.test.testing_utils import FakeSomething
 from state.pruning_state import PruningState
 from storage.kv_in_memory import KeyValueStorageInMemory
 
+OTHER_ROLE = "OtherRole"
 OTHER_IDENTIFIER = "some_other_identifier"
 
 IDENTIFIERS = {TRUSTEE: ["trustee_identifier", "trustee_identifier2", "trustee_identifier3", "trustee_identifier4"],
@@ -27,7 +28,8 @@ IDENTIFIERS = {TRUSTEE: ["trustee_identifier", "trustee_identifier2", "trustee_i
                NETWORK_MONITOR: ["network_monitor_identifier"],
                None: ["identity_owner_identifier", "identity_owner_identifier2", "identity_owner_identifier3",
                       "identity_owner_identifier4"],
-               "OtherRole": [OTHER_IDENTIFIER]}
+               OTHER_ROLE: [OTHER_IDENTIFIER, "some_other_identifier2", "some_other_identifier3",
+                             "some_other_identifier4"]}
 
 
 @pytest.fixture(scope='function', params=[True, False])
