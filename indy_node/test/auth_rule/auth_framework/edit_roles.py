@@ -19,6 +19,8 @@ class EditRoleTest(AuthTest):
         constraint = auth_map.auth_map[action_id]
         self.constraint = constraint
         self.role = self.action.old_value
+        # In auth action IDENTITY_OWNER is a '', but in accepted_roles it's None
+        self.role = self.role if self.role != '' else None
         self.role_string = roles_to_string[self.role]
         self.role_to_change = self.action.new_value
         self.role_to_change_string = roles_to_string[self.role_to_change]
