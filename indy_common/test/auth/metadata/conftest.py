@@ -1,4 +1,4 @@
-from itertools import chain, combinations, product
+from itertools import combinations, product
 
 import pytest
 
@@ -32,7 +32,10 @@ def is_owner(request):
 @pytest.fixture(scope='module',
                 params=[
                     role for r in range(len(ROLES) + 1) for role in combinations(ROLES, r)
-                    ],
+                ],
+                ids=[
+                    str(role) for r in range(len(ROLES) + 1) for role in combinations(ROLES, r)
+                ]
                 )
 def roles(request):
     '''
