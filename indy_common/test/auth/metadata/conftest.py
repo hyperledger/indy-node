@@ -29,14 +29,11 @@ def is_owner(request):
     return request.param
 
 
-@pytest.fixture(scope='module',
-                params=[
-                    role for r in range(len(ROLES) + 1) for role in combinations(ROLES, r)
-                ],
-                ids=[
-                    str(role) for r in range(len(ROLES) + 1) for role in combinations(ROLES, r)
-                ]
-                )
+@pytest.fixture(
+    scope='module',
+    params=[role for r in range(len(ROLES) + 1) for role in combinations(ROLES, r)],
+    ids=[str(role) for r in range(len(ROLES) + 1) for role in combinations(ROLES, r)]
+)
 def roles(request):
     '''
     Combination of all roles.

@@ -108,17 +108,14 @@ def test_plugin_or_rule_one_amount_all_roles(write_auth_req_validator, write_req
             AuthConstraint(role='*', sig_count=1, need_to_be_owner=True,
                            metadata={PLUGIN_FIELD: 3}),
         ]),
-        valid_actions=[
-                          ({TRUST_ANCHOR: 1}, False, None),
-                          ({TRUST_ANCHOR: 2}, False, None),
-                          ({TRUST_ANCHOR: 3}, False, None),
-
-                          ({TRUST_ANCHOR: 1}, True, None),
-                          ({TRUST_ANCHOR: 2}, True, None),
-                          ({TRUST_ANCHOR: 3}, True, None),
-                      ] + [
-                          (signature, True, 3) for signature in signatures if signature
-                      ],
+        valid_actions=[({TRUST_ANCHOR: 1}, False, None),
+                       ({TRUST_ANCHOR: 2}, False, None),
+                       ({TRUST_ANCHOR: 3}, False, None),
+                       ({TRUST_ANCHOR: 1}, True, None),
+                       ({TRUST_ANCHOR: 2}, True, None),
+                       ({TRUST_ANCHOR: 3}, True, None),
+                       ] +
+                      [(signature, True, 3) for signature in signatures if signature],
         all_signatures=signatures, is_owner=is_owner, amount=amount,
         write_auth_req_validator=write_auth_req_validator,
         write_request_validation=write_request_validation

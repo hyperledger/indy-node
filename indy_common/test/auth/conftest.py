@@ -29,7 +29,7 @@ IDENTIFIERS = {TRUSTEE: ["trustee_identifier", "trustee_identifier2", "trustee_i
                None: ["identity_owner_identifier", "identity_owner_identifier2", "identity_owner_identifier3",
                       "identity_owner_identifier4"],
                OTHER_ROLE: [OTHER_IDENTIFIER, "some_other_identifier2", "some_other_identifier3",
-                             "some_other_identifier4"]}
+                            "some_other_identifier4"]}
 
 
 @pytest.fixture(scope='function', params=[True, False])
