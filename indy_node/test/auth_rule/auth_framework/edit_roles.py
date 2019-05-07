@@ -23,6 +23,7 @@ class EditRoleTest(AuthTest):
         self.role = self.role if self.role != '' else None
         self.role_string = roles_to_string[self.role]
         self.role_to_change = self.action.new_value
+        self.role_to_change = self.role_to_change if self.role_to_change != '' else None
         self.role_to_change_string = roles_to_string[self.role_to_change]
         self.need_to_be_owner = constraint.need_to_be_owner if hasattr(constraint, 'need_to_be_owner') else False
         self.other_roles = []
