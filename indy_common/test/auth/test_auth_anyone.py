@@ -17,7 +17,7 @@ def write_auth_req_validator(write_auth_req_validator):
     return write_auth_req_validator
 
 
-def test_claim_def_editing(write_request_validation):
+def test_auth_request_without_signatures(write_request_validation):
     req = Request(identifier="UnknownIdr",
                   operation={})
     assert write_request_validation(req,
