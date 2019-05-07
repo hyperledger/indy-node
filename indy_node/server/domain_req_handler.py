@@ -21,7 +21,8 @@ from indy_common.constants import NYM, ROLE, ATTRIB, SCHEMA, CLAIM_DEF, \
     CLAIM_DEF_SIGNATURE_TYPE, SCHEMA_NAME, SCHEMA_VERSION, REF
 from indy_common.req_utils import get_read_schema_name, get_read_schema_version, \
     get_read_schema_from, get_write_schema_name, get_write_schema_version, get_read_claim_def_from, \
-    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag
+    get_read_claim_def_signature_type, get_read_claim_def_schema_ref, get_read_claim_def_tag, \
+    get_write_claim_def_schema_ref, get_write_claim_def_signature_type, get_write_claim_def_tag
 from indy_common.state import domain
 from indy_common.state.domain import make_state_path_for_revoc_def
 from indy_common.types import Request
@@ -297,12 +298,30 @@ class DomainReqHandler(PHandler):
             raise InvalidClientRequest(req.identifier,
                                        req.reqId,
                                        "Mentioned seqNo ({}) isn't seqNo of the schema.".format(ref))
-        # only owner can update claim_def,
-        # because his identifier is the primary key of claim_def
-        self.write_req_validator.validate(req,
-                                          [AuthActionAdd(txn_type=CLAIM_DEF,
-                                                         field='*',
-                                                         value='*')])
+
+        frm = req.identifier
+        signature_type = get_write_claim_def_signature_type(req)
+        schema_ref = get_write_claim_def_schema_ref(req)
+        tag = get_write_claim_def_tag(req)
+        keys, last_seq_no, _, _ = self.getClaimDef(
+            author=frm,
+            schemaSeqNo=schema_ref,
+            signatureType=signature_type,
+            tag=tag,
+            isCommitted=False
+        )
+
+        if last_seq_no:
+            self.write_req_validator.validate(req,
+                                              [AuthActionEdit(txn_type=CLAIM_DEF,
+                                                              field='*',
+                                                              old_value='*',
+                                                              new_value='*')])
+        else:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=CLAIM_DEF,
+                                                             field='*',
+                                                             value='*')])
 
     def _validate_revoc_reg_def(self, req: Request):
         operation = req.operation
@@ -314,8 +333,8 @@ class DomainReqHandler(PHandler):
         assert revoc_def_type
         tags = cred_def_id.split(":")
 
-        revoc_def = make_state_path_for_revoc_def(req.identifier, cred_def_id, revoc_def_type, revoc_def_tag)
-        revoc_def_id, _, _, _ = self.lookup(revoc_def, isCommitted=False)
+        revoc_def_id = make_state_path_for_revoc_def(req.identifier, cred_def_id, revoc_def_type, revoc_def_tag)
+        revoc_def, _, _, _ = self.lookup(revoc_def_id, isCommitted=False)
 
         if revoc_def is None:
             self.write_req_validator.validate(req,
