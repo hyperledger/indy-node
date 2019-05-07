@@ -117,8 +117,9 @@ def check_str_is_base58_compatible(str):
 
 def sdk_rotate_verkey(looper, sdk_pool_handle, wh,
                       did_of_changer,
-                      did_of_changed):
-    verkey = looper.loop.run_until_complete(
+                      did_of_changed,
+                      verkey=None):
+    verkey = verkey or looper.loop.run_until_complete(
         replace_keys_start(wh, did_of_changed, json.dumps({})))
 
     sdk_add_new_nym(looper, sdk_pool_handle,

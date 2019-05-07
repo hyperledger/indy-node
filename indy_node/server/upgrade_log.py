@@ -4,6 +4,7 @@ from datetime import datetime
 from common.version import SourceVersion
 
 from indy_common.version import src_version_cls
+from indy_common.constants import APP_NAME
 from indy_node.server.action_log import ActionLogData, ActionLogEvents, ActionLog
 
 
@@ -15,7 +16,7 @@ class UpgradeLogData(ActionLogData):
             when: Union[datetime, str],
             version: Union[SourceVersion, str],
             upgrade_id: str,
-            pkg_name: str
+            pkg_name: str = APP_NAME
     ):
         super().__init__(when)
 

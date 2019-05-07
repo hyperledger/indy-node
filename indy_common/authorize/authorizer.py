@@ -92,11 +92,11 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction=None):
-        if self.get_role(request) is None:
+        if self.get_role(request) is None and auth_constraint.sig_count > 0:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
         if not self.is_sig_count_accepted(request, auth_constraint):
-                role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'
-                return False, "Not enough {} signatures".format(role)
+            role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'
+            return False, "Not enough {} signatures".format(role)
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
                 return False, "{} can not touch {} field since only the owner can modify it".\
