@@ -94,7 +94,7 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction=None):
-        if self.get_role(request) is None and auth_constraint.sig_count > 0:
+        if auth_constraint.sig_count > 0 and self.get_role(request) is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
         if not self.is_sig_count_accepted(request, auth_constraint):
             role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'
