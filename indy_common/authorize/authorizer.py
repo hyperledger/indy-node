@@ -44,6 +44,8 @@ class RolesAuthorizer(AbstractAuthorizer):
         by this function means that corresponding DID is not stored in a ledger.
         """
         idr = request.identifier
+        if idr is None:
+            return None
         return self._get_role(idr)
 
     def get_sig_count(self, request: Request, role: str="*"):
