@@ -62,3 +62,14 @@ def test_plugin_simple_rule_0_sig(write_auth_req_validator, write_request_valida
         write_auth_req_validator=write_auth_req_validator,
         write_request_validation=write_request_validation
     )
+
+
+def test_plugin_simple_rule_not_allowed(write_auth_req_validator, write_request_validation,
+                                        signatures, is_owner, amount):
+    validate(
+        auth_constraint=None,
+        valid_actions=[],
+        all_signatures=signatures, is_owner=is_owner, amount=amount,
+        write_auth_req_validator=write_auth_req_validator,
+        write_request_validation=write_request_validation
+    )

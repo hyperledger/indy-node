@@ -125,6 +125,28 @@ def test_plugin_or_rule_one_amount_all_roles(write_auth_req_validator, write_req
     )
 
 
+def test_plugin_or_rule_diff_amount_same_role(write_auth_req_validator, write_request_validation,
+                                              signatures, is_owner, amount):
+    validate(
+        auth_constraint=AuthConstraintOr(auth_constraints=[
+            AuthConstraint(role=TRUST_ANCHOR, sig_count=2, need_to_be_owner=False,
+                           metadata={PLUGIN_FIELD: 2}),
+            AuthConstraint(role=TRUST_ANCHOR, sig_count=3, need_to_be_owner=False,
+                           metadata={PLUGIN_FIELD: 1}),
+        ]),
+        valid_actions=[
+            ({TRUST_ANCHOR: 2}, True, 2),
+            ({TRUST_ANCHOR: 3}, True, 1),
+
+            ({TRUST_ANCHOR: 2}, False, 2),
+            ({TRUST_ANCHOR: 3}, False, 1),
+        ],
+        all_signatures=signatures, is_owner=is_owner, amount=amount,
+        write_auth_req_validator=write_auth_req_validator,
+        write_request_validation=write_request_validation
+    )
+
+
 def test_plugin_and_rule(write_auth_req_validator, write_request_validation,
                          signatures, is_owner, amount):
     validate(
