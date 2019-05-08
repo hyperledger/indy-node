@@ -1,15 +1,14 @@
-from typing import List
+from typing import List, Optional
 
-from common.serializers.serialization import domain_state_serializer, state_roots_serializer
+from common.serializers.serialization import config_state_serializer, state_roots_serializer
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
 from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
 from indy_common.config_util import getConfig
 from indy_common.state import config
-from indy_node.server.domain_req_handler import DomainReqHandler
-from plenum.common.exceptions import InvalidClientRequest, InvalidMessageException
+from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata, get_type
-from plenum.server.ledger_req_handler import LedgerRequestHandler
+from plenum.server.config_req_handler import ConfigReqHandler as PConfigReqHandler
 from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
@@ -17,22 +16,24 @@ from indy_common.types import Request, ClientGetAuthRuleOperation
 from indy_node.persistence.idr_cache import IdrCache
 from indy_node.server.upgrader import Upgrader
 from indy_node.server.pool_config import PoolConfig
+from storage.state_ts_store import StateTsDbStorage
 
 
-class ConfigReqHandler(LedgerRequestHandler):
+# TODO: Call updateState and validate from parent PConfigReqHandler
+class ConfigReqHandler(PConfigReqHandler):
     write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE}
     query_types = {GET_AUTH_RULE, }
 
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig,
-                 write_req_validator, bls_store=None):
-        super().__init__(ledger, state)
+                 write_req_validator, bls_store=None, ts_store: Optional[StateTsDbStorage] = None):
+        super().__init__(ledger, state, ts_store)
         self.idrCache = idrCache
         self.upgrader = upgrader
         self.poolManager = poolManager
         self.poolCfg = poolCfg
         self.write_req_validator = write_req_validator
-        self.constraint_serializer = ConstraintsSerializer(domain_state_serializer)
+        self.constraint_serializer = ConstraintsSerializer(config_state_serializer)
         self.bls_store = bls_store
 
     def doStaticValidation(self, request: Request):
