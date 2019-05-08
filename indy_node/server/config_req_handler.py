@@ -9,7 +9,7 @@ from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata, get_type
 from plenum.server.config_req_handler import ConfigReqHandler as PConfigReqHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, TXN_AUTHOR_AGREEMENT
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
 from indy_common.types import Request, ClientGetAuthRuleOperation
@@ -167,6 +167,11 @@ class ConfigReqHandler(PConfigReqHandler):
                                                               field="*",
                                                               old_value="*",
                                                               new_value="*")])
+        elif typ == TXN_AUTHOR_AGREEMENT:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=typ,
+                                                             field="*",
+                                                             value="*")])
 
     def apply(self, req: Request, cons_time):
         txn = append_txn_metadata(reqToTxn(req),
