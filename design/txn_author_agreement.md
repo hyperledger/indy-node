@@ -37,14 +37,38 @@ IndySDK will provide API to:
 - TAA transaction belongs to Config ledger and state.
 - The key in state tree is a digest of the TAA text + some markers.
 - The digest is calculated on concatenated strings: version || text.
-- Digest suffix after the marker is a primary key for state. This entry contains the actual data (text, version).
+- Digest suffix after the marker is a primary key for state. This entry contains the actual data (text, version) and transaction metadata (the time of transaction application to the ledger and a sequence number).
 - In order to support flexible get requests, a few other (helper) keys in the state references the particular digest as the value in state tree.
 
-| key              | value |
-| :-----------------:|:-------------:|
-|`:taa:d:<digest>`   | { text, version } |
-|`:taa:v:<version>`  | digest |
-|`:taa:latest`       | digest |
+<table>
+  <tr>
+    <th>key</th>
+    <th>value</th>
+  </tr>
+  <tr>
+    <td><code>:taa:d:&lt;digest&gt;</code></td>
+    <td>
+<pre>{
+  "txn": {
+    "version": version,
+    "text": text
+  },
+  "txnMetadata": {
+    "seqNo": &lt;txn sequence number&gt;,
+    "txnTime": timestamp
+  }
+}</pre>
+    </td>
+  </tr>
+  <tr>
+    <td><code>:taa:v:&lt;version&gt;</code></td>
+    <td><code>digest</code></td>
+  </tr>
+  <tr>
+    <td><code>:taa:latest</code></td>
+    <td><code>digest</code></td>
+  </tr>
+</table>
 
 - The timestamp store (`ts_store`) is used to determine appropriate root hash of the config state tree to allow requests to history by a timestamp.
 
@@ -287,4 +311,3 @@ To verify TAA for some written transaction on the Ledger an auditor should perfo
 
 ## See Also
 https://jira.hyperledger.org/browse/INDY-1942
-

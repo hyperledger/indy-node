@@ -44,6 +44,8 @@ class RolesAuthorizer(AbstractAuthorizer):
         by this function means that corresponding DID is not stored in a ledger.
         """
         idr = request.identifier
+        if idr is None:
+            return None
         return self._get_role(idr)
 
     def get_sig_count(self, request: Request, role: str="*"):
@@ -92,10 +94,11 @@ class RolesAuthorizer(AbstractAuthorizer):
                   request: Request,
                   auth_constraint: AuthConstraint,
                   auth_action: AbstractAuthAction=None):
-        if self.get_role(request) is None and auth_constraint.sig_count > 0:
+        if auth_constraint.sig_count > 0 and self.get_role(request) is None:
             return False, "sender's DID {} is not found in the Ledger".format(request.identifier)
         if not self.is_sig_count_accepted(request, auth_constraint):
-            return False, "Not enough {} signatures".format(Roles(auth_constraint.role).name)
+            role = Roles(auth_constraint.role).name if auth_constraint.role != '*' else '*'
+            return False, "Not enough {} signatures".format(role)
         if not self.is_owner_accepted(auth_constraint, auth_action):
             if auth_action.field != '*':
                 return False, "{} can not touch {} field since only the owner can modify it".\
