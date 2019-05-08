@@ -251,7 +251,7 @@ auth_map = {
     add_attrib.get_action_id(): owner_constraint,
     edit_attrib.get_action_id(): owner_constraint,
     add_schema.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
-    edit_schema.get_action_id(): AuthConstraint(None, 1),
+    edit_schema.get_action_id(): None,
     add_claim_def.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     edit_claim_def.get_action_id(): owner_constraint,
     adding_new_node.get_action_id(): steward_owner_constraint,

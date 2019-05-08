@@ -203,7 +203,7 @@ class AbstractConstraintSerializer(metaclass=ABCMeta):
 
 class ConstraintsSerializer(AbstractConstraintSerializer):
     def serialize(self, constraint: AbstractAuthConstraint) -> bytes:
-        return self.serializer.serialize(constraint.as_dict)
+        return self.serializer.serialize(constraint.as_dict if constraint else {})
 
     def deserialize(self, serialized_str: bytes) -> AbstractAuthConstraint:
         as_dict = self.serializer.deserialize(serialized_str)
