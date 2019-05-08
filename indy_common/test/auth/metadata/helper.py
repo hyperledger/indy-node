@@ -35,13 +35,6 @@ class PluginAuthorizer(AbstractAuthorizer):
         return True, ""
 
 
-@pytest.fixture(scope='module')
-def write_auth_req_validator(write_auth_req_validator):
-    plugin_authorizer = PluginAuthorizer()
-    write_auth_req_validator.register_authorizer(plugin_authorizer)
-    return write_auth_req_validator
-
-
 def set_auth_constraint(validator, auth_constraint):
     validator.auth_cons_strategy.get_auth_constraint = lambda a: auth_constraint
 

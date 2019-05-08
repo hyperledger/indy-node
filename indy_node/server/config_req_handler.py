@@ -256,7 +256,8 @@ class ConfigReqHandler(LedgerRequestHandler):
             data = self.constraint_serializer.deserialize(map_data)
         else:
             data = self.write_req_validator.auth_map[key]
-        return {path: data.as_dict}, proof
+        data_dict = data.as_dict if data is not None else {}
+        return {path: data_dict}, proof
 
     def _get_all_auth_rules(self):
         data = self.write_req_validator.auth_map.copy()
@@ -264,9 +265,12 @@ class ConfigReqHandler(LedgerRequestHandler):
         for key in self.write_req_validator.auth_map:
             path = config.make_state_path_for_auth_rule(key)
             state_constraint, _ = self.get_value_from_state(path)
-            result[path] = self.constraint_serializer.deserialize(state_constraint).as_dict \
-                if state_constraint \
-                else data[key].as_dict
+            if state_constraint:
+                value = self.constraint_serializer.deserialize(state_constraint)
+            else:
+                value = data[key]
+            value_dict = value.as_dict if value is not None else {}
+            result[path] = value_dict
         return result
 
     def _check_auth_key(self, operation, identifier, req_id):
