@@ -19,7 +19,6 @@ from indy_node.server.pool_config import PoolConfig
 from storage.state_ts_store import StateTsDbStorage
 
 
-# TODO: Call updateState and validate from parent PConfigReqHandler
 class ConfigReqHandler(PConfigReqHandler):
     write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE}
     query_types = {GET_AUTH_RULE, }
@@ -102,6 +101,8 @@ class ConfigReqHandler(PConfigReqHandler):
         # TODO: Check if cancel is submitted before start
 
     def validate(self, req: Request):
+        super().validate(req)
+
         status = '*'
         operation = req.operation
         typ = operation.get(TXN_TYPE)
@@ -173,6 +174,10 @@ class ConfigReqHandler(PConfigReqHandler):
                                                              field="*",
                                                              value="*")])
 
+    def authorize(self, req: Request):
+        # We don't need authorization from plenum since we have auth map in node
+        pass
+
     def apply(self, req: Request, cons_time):
         txn = append_txn_metadata(reqToTxn(req),
                                   txn_time=cons_time)
@@ -224,14 +229,15 @@ class ConfigReqHandler(PConfigReqHandler):
         self.state.set(config.make_state_path_for_auth_rule(auth_key),
                        self.constraint_serializer.serialize(constraint))
 
-    def updateState(self, txns, isCommitted=False):
-        for txn in txns:
-            typ = get_type(txn)
-            if typ == AUTH_RULE:
-                payload = get_payload_data(txn)
-                constraint = self.get_auth_constraint(payload)
-                auth_key = self.get_auth_key(payload)
-                self.update_auth_constraint(auth_key, constraint)
+    def updateStateWithSingleTxn(self, txn, isCommitted=False):
+        super().updateStateWithSingleTxn(txn, isCommitted)
+
+        typ = get_type(txn)
+        if typ == AUTH_RULE:
+            payload = get_payload_data(txn)
+            constraint = self.get_auth_constraint(payload)
+            auth_key = self.get_auth_key(payload)
+            self.update_auth_constraint(auth_key, constraint)
 
     def get_query_response(self, request: Request):
         operation = request.operation
