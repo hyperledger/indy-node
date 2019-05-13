@@ -1,7 +1,5 @@
 import pytest
 
-from indy_node.test.txn_author_agreement.test_node_taa import sdk_send_txn_author_agreement
-
 from indy_common.authorize.auth_actions import ADD_PREFIX
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER
 from indy_node.test.auth_rule.auth_framework.basic import AuthTest
@@ -10,6 +8,7 @@ from plenum.common.constants import TXN_AUTHOR_AGREEMENT
 from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_gen_request
 from plenum.test.pool_transactions.helper import sdk_add_new_nym
+from plenum.test.txn_author_agreement.helper import sdk_send_txn_author_agreement
 
 
 class TxnAuthorAgreementTest(AuthTest):

@@ -1,7 +1,6 @@
 import json
 
 import pytest
-from indy.ledger import build_txn_author_agreement_request
 
 from indy_common.authorize.auth_map import steward_or_trustee_constraint
 from indy_node.server.config_req_handler import ConfigReqHandler
@@ -9,15 +8,8 @@ from indy_node.test.auth_rule.helper import sdk_send_and_check_auth_rule_request
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT_VERSION, TXN_AUTHOR_AGREEMENT_TEXT, TXN_AUTHOR_AGREEMENT
 from plenum.common.exceptions import RequestRejectedException
 from plenum.common.util import randomString
-from plenum.test.helper import sdk_get_and_check_replies, sdk_sign_and_submit_req
 from plenum.test.node_catchup.helper import ensure_all_nodes_have_same_data
-from plenum.test.txn_author_agreement.helper import get_config_req_handler
-
-
-def sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet, text: str, version: str):
-    req = looper.loop.run_until_complete(build_txn_author_agreement_request(sdk_wallet[1], text, version))
-    rep = sdk_sign_and_submit_req(sdk_pool_handle, sdk_wallet, req)
-    return sdk_get_and_check_replies(looper, [rep])
+from plenum.test.txn_author_agreement.helper import get_config_req_handler, sdk_send_txn_author_agreement
 
 
 def test_send_valid_txn_author_agreement_succeeds(looper, txnPoolNodeSet, sdk_pool_handle, sdk_wallet_trustee):
