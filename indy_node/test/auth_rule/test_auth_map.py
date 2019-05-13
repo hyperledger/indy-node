@@ -30,6 +30,14 @@ def test_auth_map_nym():
         assert rule_str in auth_map.auth_map.keys()
 
 
+def test_auth_map_txn_author_agreement():
+    rules = [(auth_map.txn_author_agreement, "4--ADD--*--*--*"), ]
+
+    for (rule, rule_str) in rules:
+        assert rule.get_action_id() == rule_str
+        assert rule_str in auth_map.auth_map.keys()
+
+
 def test_auth_map_attrib():
     rules = [(auth_map.add_attrib, "100--ADD--*--*--*"),
              (auth_map.edit_attrib, "100--EDIT--*--*--*")]
