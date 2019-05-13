@@ -44,10 +44,9 @@ def test_send_valid_txn_author_agreement_succeeds(looper, txnPoolNodeSet, sdk_po
 
 def test_send_valid_txn_author_agreement_without_enough_privileges_fails(looper, txnPoolNodeSet, sdk_pool_handle,
                                                                          sdk_wallet_steward):
-    text = randomString(1024)
-    version = randomString(16)
     with pytest.raises(RequestRejectedException):
-        sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_steward, text, version)
+        sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_steward,
+                                      randomString(1024), randomString(16))
 
 
 def test_txn_author_agreement_respects_current_auth_rules(looper, txnPoolNodeSet, sdk_pool_handle,
@@ -56,6 +55,5 @@ def test_txn_author_agreement_respects_current_auth_rules(looper, txnPoolNodeSet
                                          auth_type=TXN_AUTHOR_AGREEMENT, field='*', new_value='*',
                                          constraint=steward_or_trustee_constraint.as_dict)
 
-    text = randomString(1024)
-    version = randomString(16)
-    sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_steward, text, version)
+    sdk_send_txn_author_agreement(looper, sdk_pool_handle, sdk_wallet_steward,
+                                  randomString(1024), randomString(16))
