@@ -20,10 +20,12 @@ from storage.state_ts_store import StateTsDbStorage
 
 
 class ConfigReqHandler(PConfigReqHandler):
-    write_types = {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE} \
-                  | PConfigReqHandler.write_types
-    query_types = {GET_AUTH_RULE, } \
-                  | PConfigReqHandler.query_types
+    write_types = \
+        {POOL_UPGRADE, NODE_UPGRADE, POOL_CONFIG, AUTH_RULE} | \
+        PConfigReqHandler.write_types
+    query_types = \
+        {GET_AUTH_RULE, } | \
+        PConfigReqHandler.query_types
 
     def __init__(self, ledger, state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig,
