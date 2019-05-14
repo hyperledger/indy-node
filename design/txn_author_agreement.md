@@ -49,13 +49,11 @@ IndySDK will provide API to:
     <td><code>:taa:d:&lt;digest&gt;</code></td>
     <td>
 <pre>{
-  "txn": {
-    "version": version,
-    "text": text
-  },
-  "txnMetadata": {
-    "seqNo": &lt;txn sequence number&gt;,
-    "txnTime": timestamp
+  "lsn": &lt;txn sequence number&gt;,
+  "lut": timestamp,
+  "val": {
+    "text": text,
+    "version": version
   }
 }</pre>
     </td>
