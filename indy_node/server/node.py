@@ -185,6 +185,7 @@ class Node(PlenumNode):
     def init_config_req_handler(self):
         return ConfigReqHandler(self.configLedger,
                                 self.states[CONFIG_LEDGER_ID],
+                                self.states[DOMAIN_LEDGER_ID],
                                 self.getIdrCache(),
                                 self.upgrader,
                                 self.poolManager,
