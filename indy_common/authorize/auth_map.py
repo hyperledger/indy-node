@@ -4,7 +4,7 @@ from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
     CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB
-from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT
+from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
 for role_from in accepted_roles:
@@ -43,6 +43,10 @@ key_rotation = AuthActionEdit(txn_type=NYM,
 txn_author_agreement = AuthActionAdd(txn_type=TXN_AUTHOR_AGREEMENT,
                                      field='*',
                                      value='*')
+
+txn_author_agreement_aml = AuthActionAdd(txn_type=TXN_AUTHOR_AGREEMENT_AML,
+                                         field='*',
+                                         value='*')
 
 add_attrib = AuthActionAdd(txn_type=ATTRIB,
                            field='*',
@@ -253,6 +257,7 @@ auth_map = {
     add_new_identity_owner.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
     key_rotation.get_action_id(): owner_constraint,
     txn_author_agreement.get_action_id(): one_trustee_constraint,
+    txn_author_agreement_aml.get_action_id(): one_trustee_constraint,
     add_attrib.get_action_id(): owner_constraint,
     edit_attrib.get_action_id(): owner_constraint,
     add_schema.get_action_id(): trust_anchor_or_steward_or_trustee_constraint,
