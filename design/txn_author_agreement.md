@@ -39,6 +39,7 @@ IndySDK will provide API to:
 - The digest is calculated on concatenated strings: version || text.
 - Digest suffix after the marker is a primary key for state. This entry contains the actual data (text, version) and transaction metadata (the time of transaction application to the ledger and a sequence number).
 - In order to support flexible get requests, a few other (helper) keys in the state references the particular digest as the value in state tree.
+- "2" stands for unique marker of TAA txn
 
 <table>
   <tr>
@@ -46,7 +47,7 @@ IndySDK will provide API to:
     <th>value</th>
   </tr>
   <tr>
-    <td><code>:taa:d:&lt;digest&gt;</code></td>
+    <td><code>2:d:&lt;digest&gt;</code></td>
     <td>
 <pre>{
   "lsn": &lt;txn sequence number&gt;,
@@ -59,11 +60,11 @@ IndySDK will provide API to:
     </td>
   </tr>
   <tr>
-    <td><code>:taa:v:&lt;version&gt;</code></td>
+    <td><code>2:v:&lt;version&gt;</code></td>
     <td><code>digest</code></td>
   </tr>
   <tr>
-    <td><code>:taa:latest</code></td>
+    <td><code>2:latest</code></td>
     <td><code>digest</code></td>
   </tr>
 </table>
@@ -91,6 +92,7 @@ Add new version of AML.
     "reqId": INT,
     "operation": {
         "type": INT,
+        "version": <str>
         "aml": {
             "<acceptance mechanism label1>": { acceptance mechanism description 1},
             "<acceptance mechanism label2>": { acceptance mechanism description 2},
