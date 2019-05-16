@@ -240,6 +240,7 @@ pub extern fn indy_build_get_acceptance_mechanism_request(command_handle: Comman
 
 CLI will use session based acceptance mechanism. After `pool open` command the user will be asked if he would like to read TAA. If user chooses the option to read TAA he will be asked for signing them. User may decline any of this step and continue session without accepted agreement. The fact "TAA accepted for this pool" will be assumed valid until `pool disconnect` command and will be applied for any DID used while this session for any write request. Time of acceptance in this case is the time when user agreed with TAA.
 
+
 The new command `pool show-taa` will allow to accept the TAA if it was declined while `pool open` for some reason. It also may be used to sign the TAA if it was updated while active session.
 
 ### VCX library
