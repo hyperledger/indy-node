@@ -10,7 +10,6 @@ from indy_common.state import config
 from indy_node.server.config_req_handler import ConfigReqHandler
 from indy_node.server.node import Node
 from ledger.compact_merkle_tree import CompactMerkleTree
-from ledger.test.helper import create_default_ledger
 from plenum.common.constants import TXN_TYPE, NYM, ROLE, TRUSTEE, STEWARD, CONFIG_LEDGER_ID, TXN_METADATA, \
     TXN_METADATA_SEQ_NO
 from plenum.common.ledger import Ledger
@@ -58,6 +57,7 @@ def config_req_handler(config_state,
 
     return ConfigReqHandler(config_ledger,
                             config_state,
+                            domain_state=FakeSomething(),
                             idrCache=FakeSomething(),
                             upgrader=FakeSomething(),
                             poolManager=FakeSomething(),
