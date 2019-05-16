@@ -102,9 +102,45 @@ Add new version of AML.
     }
 }
 ```
+How does TAA AML stored in state. "3" stands for unique marker of TAA AML txn.
+<table>
+  <tr>
+    <th>key</th>
+    <th>value</th>
+  </tr>
+  <tr>
+    <td><code>3:latest</code></td>
+    <td>
+<pre>{
+  "aml": {
+    "mechanism #1": description #1,
+    "mechanism #2": description #2
+  },
+  "amlContext": context description,
+  "version": version
+}</pre>
+    </td>
+  </tr>
+  <tr>
+    <td><code>3:v:&lt;version&gt;</code></td>
+    <td>
+<pre>{
+  "aml": {
+    "mechanism #1": description #1,
+    "mechanism #2": description #2
+  },
+  "amlContext": context description,
+  "version": version
+}</pre>
+    </td>
+  </tr>
+</table>
 
 #### GET_TXN_AUTHOR_AGREEMENT_AML
-Fetch AML from the ledger valid for specified time or the latest one.
+Fetch AML from the ledger valid for specified time or the latest one. There are 3 mutually exclusive ways to set fields for getting TAA AML.
+* version - ledger will return TAA AML corresponding to the requested version
+* timestamp - ledger will return TAA AML valid at the requested timestamp
+* "empty" - ledger will return latest TAA AML if no version or timestamp was mentioned
 
 ### TAA Verification
 If TAA enabled on the ledger, then each write request from the user must contain TAA acceptance data signed by the user. The new format of write request is
