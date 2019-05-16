@@ -84,23 +84,28 @@ class AuthConstraint(AbstractAuthConstraint):
 
     def __str__(self):
         role = get_named_role(self.role) if self.role != '*' else 'ALL'
+        error_msg = ""
         if role != 'ALL' and self.need_to_be_owner and self.sig_count > 1:
-            return "{} {} signatures are required and needs to be owner".format(self.sig_count, role)
+            error_msg = "{} {} signatures are required and needs to be owner".format(self.sig_count, role)
         elif role != 'ALL' and not self.need_to_be_owner and self.sig_count > 1:
-            return "{} {} signatures are required".format(self.sig_count, role)
+            error_msg = "{} {} signatures are required".format(self.sig_count, role)
         elif role != 'ALL' and not self.need_to_be_owner and self.sig_count == 1:
-            return "1 {} signature is required".format(role)
+            error_msg = "1 {} signature is required".format(role)
         elif role != 'ALL' and self.need_to_be_owner and self.sig_count == 1:
-            return "1 {} signature is required and needs to be owner".format(role)
+            error_msg = "1 {} signature is required and needs to be owner".format(role)
 
         elif role == "ALL" and self.need_to_be_owner and self.sig_count == 1:
-            return "1 signature of any role is required and needs to be owner"
+            error_msg = "1 signature of any role is required and needs to be owner"
         elif role == 'ALL' and not self.need_to_be_owner and self.sig_count == 1:
-            return "1 signature of any role is required".format(role)
+            error_msg = "1 signature of any role is required".format(role)
         elif role == 'ALL' and not self.need_to_be_owner and self.sig_count > 1:
-            return "{} signatures of any role are required".format(self.sig_count)
+            error_msg = "{} signatures of any role are required".format(self.sig_count)
         elif role == "ALL" and self.need_to_be_owner and self.sig_count > 1:
-            return "{} signatures of any role are required and needs to be owner".format(self.sig_count)
+            error_msg = "{} signatures of any role are required and needs to be owner".format(self.sig_count)
+
+        if self.metadata:
+            return "{} with additional metadata: {}".format(error_msg, self.metadata)
+        return error_msg
 
     @staticmethod
     def from_dict(as_dict):
