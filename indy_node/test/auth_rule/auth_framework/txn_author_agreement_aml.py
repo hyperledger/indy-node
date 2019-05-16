@@ -26,13 +26,13 @@ class TxnAuthorAgreementAMLTest(AuthTest):
         self.send_and_check(self.changed_auth_rule, wallet=self.trustee_wallet)
 
         # Step 2. Check, that we cannot do txn the old way
-        aml_req = taa_aml_request_module(self.trustee_wallet)
+        aml_req = taa_aml_request_module(self.looper, self.trustee_wallet, None)
         with pytest.raises(RequestRejectedException):
             sdk_get_and_check_replies(self.looper, [
                 sdk_sign_and_submit_req_obj(self.looper, self.sdk_pool_handle, self.trustee_wallet, aml_req)])
 
         # Step 3. Check, that new auth rule is used
-        aml_req = taa_aml_request_module(self.new_default_wallet)
+        aml_req = taa_aml_request_module(self.looper, self.new_default_wallet, None)
         sdk_get_and_check_replies(self.looper, [
             sdk_sign_and_submit_req_obj(self.looper, self.sdk_pool_handle, self.new_default_wallet, aml_req)])
 
@@ -40,7 +40,7 @@ class TxnAuthorAgreementAMLTest(AuthTest):
         self.send_and_check(self.default_auth_rule, wallet=self.trustee_wallet)
 
         # Step 5. Check, that default auth rule works
-        aml_req = taa_aml_request_module(self.trustee_wallet)
+        aml_req = taa_aml_request_module(self.looper, self.trustee_wallet, None)
         sdk_get_and_check_replies(self.looper, [
             sdk_sign_and_submit_req_obj(self.looper, self.sdk_pool_handle, self.trustee_wallet, aml_req)])
 
