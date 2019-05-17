@@ -276,7 +276,7 @@ class ConfigReqHandler(PConfigReqHandler):
         else:
             data = self.write_req_validator.auth_map[key]
         data_dict = data.as_dict if data is not None else {}
-        return {path: data_dict}, proof
+        return {key: data_dict}, proof
 
     def _get_all_auth_rules(self):
         data = self.write_req_validator.auth_map.copy()
@@ -289,7 +289,7 @@ class ConfigReqHandler(PConfigReqHandler):
             else:
                 value = data[key]
             value_dict = value.as_dict if value is not None else {}
-            result[path] = value_dict
+            result[key] = value_dict
         return result
 
     def _check_auth_key(self, operation, identifier, req_id):
