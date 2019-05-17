@@ -39,6 +39,7 @@ IndySDK will provide API to:
 - The digest is calculated on concatenated strings: version || text.
 - Digest suffix after the marker is a primary key for state. This entry contains the actual data (text, version) and transaction metadata (the time of transaction application to the ledger and a sequence number).
 - In order to support flexible get requests, a few other (helper) keys in the state references the particular digest as the value in state tree.
+- "2" stands for unique marker of TAA txn
 
 <table>
   <tr>
@@ -46,7 +47,7 @@ IndySDK will provide API to:
     <th>value</th>
   </tr>
   <tr>
-    <td><code>:taa:d:&lt;digest&gt;</code></td>
+    <td><code>2:d:&lt;digest&gt;</code></td>
     <td>
 <pre>{
   "lsn": &lt;txn sequence number&gt;,
@@ -59,11 +60,11 @@ IndySDK will provide API to:
     </td>
   </tr>
   <tr>
-    <td><code>:taa:v:&lt;version&gt;</code></td>
+    <td><code>2:v:&lt;version&gt;</code></td>
     <td><code>digest</code></td>
   </tr>
   <tr>
-    <td><code>:taa:latest</code></td>
+    <td><code>2:latest</code></td>
     <td><code>digest</code></td>
   </tr>
 </table>
@@ -91,6 +92,7 @@ Add new version of AML.
     "reqId": INT,
     "operation": {
         "type": INT,
+        "version": <str>
         "aml": {
             "<acceptance mechanism label1>": { acceptance mechanism description 1},
             "<acceptance mechanism label2>": { acceptance mechanism description 2},
@@ -100,9 +102,45 @@ Add new version of AML.
     }
 }
 ```
+How does TAA AML stored in state. "3" stands for unique marker of TAA AML txn.
+<table>
+  <tr>
+    <th>key</th>
+    <th>value</th>
+  </tr>
+  <tr>
+    <td><code>3:latest</code></td>
+    <td>
+<pre>{
+  "aml": {
+    "mechanism #1": description #1,
+    "mechanism #2": description #2
+  },
+  "amlContext": context description,
+  "version": version
+}</pre>
+    </td>
+  </tr>
+  <tr>
+    <td><code>3:v:&lt;version&gt;</code></td>
+    <td>
+<pre>{
+  "aml": {
+    "mechanism #1": description #1,
+    "mechanism #2": description #2
+  },
+  "amlContext": context description,
+  "version": version
+}</pre>
+    </td>
+  </tr>
+</table>
 
 #### GET_TXN_AUTHOR_AGREEMENT_AML
-Fetch AML from the ledger valid for specified time or the latest one.
+Fetch AML from the ledger valid for specified time or the latest one. There are 3 mutually exclusive ways to set fields for getting TAA AML.
+* version - ledger will return TAA AML corresponding to the requested version
+* timestamp - ledger will return TAA AML valid at the requested timestamp
+* "empty" - ledger will return latest TAA AML if no version or timestamp was mentioned
 
 ### TAA Verification
 If TAA enabled on the ledger, then each write request from the user must contain TAA acceptance data signed by the user. The new format of write request is
