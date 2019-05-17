@@ -47,6 +47,11 @@ class TxnAuthorAgreementTest(AuthTest):
     def result(self):
         pass
 
+    def down(self):
+        # TODO libindy is not supported that yet
+        # sdk_send_txn_author_agreement(self.looper, self.sdk_pool_handle, self.trustee_wallet, '', 'v4')
+        pass
+
     def get_changed_auth_rule(self):
         self.new_default_wallet = sdk_add_new_nym(self.looper, self.sdk_pool_handle, self.trustee_wallet,
                                                   role=IDENTITY_OWNER)
