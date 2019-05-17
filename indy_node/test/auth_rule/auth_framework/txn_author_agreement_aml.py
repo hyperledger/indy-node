@@ -1,4 +1,8 @@
+import json
+
 import pytest
+from indy.ledger import build_acceptance_mechanism_request
+
 from plenum.common.util import randomString
 
 from indy_common.authorize.auth_actions import ADD_PREFIX
@@ -8,8 +12,7 @@ from indy_node.test.auth_rule.helper import generate_auth_rule_operation
 from plenum.common.constants import TXN_AUTHOR_AGREEMENT_AML
 from plenum.common.exceptions import RequestRejectedException
 from plenum.test.helper import sdk_gen_request, sdk_get_and_check_replies, sdk_sign_and_submit_req_obj
-from plenum.test.pool_transactions.helper import sdk_add_new_nym
-from plenum.test.txn_author_agreement.conftest import taa_aml_request_module
+from plenum.test.pool_transactions.helper import sdk_add_new_nym, sdk_sign_and_send_prepared_request
 
 
 class TxnAuthorAgreementAMLTest(AuthTest):
@@ -26,23 +29,26 @@ class TxnAuthorAgreementAMLTest(AuthTest):
         self.send_and_check(self.changed_auth_rule, wallet=self.trustee_wallet)
 
         # Step 2. Check, that we cannot do txn the old way
-        aml_req = taa_aml_request_module(self.looper, self.trustee_wallet, None)
+        aml_req = self.taa_aml_request_module(self.trustee_wallet)
         with pytest.raises(RequestRejectedException):
-            sdk_get_and_check_replies(self.looper, [
-                sdk_sign_and_submit_req_obj(self.looper, self.sdk_pool_handle, self.trustee_wallet, aml_req)])
+            req = sdk_sign_and_send_prepared_request(self.looper, self.trustee_wallet, self.sdk_pool_handle,
+                                                     aml_req)
+            sdk_get_and_check_replies(self.looper, [req])
 
         # Step 3. Check, that new auth rule is used
-        aml_req = taa_aml_request_module(self.looper, self.new_default_wallet, None)
-        sdk_get_and_check_replies(self.looper, [
-            sdk_sign_and_submit_req_obj(self.looper, self.sdk_pool_handle, self.new_default_wallet, aml_req)])
+        aml_req = self.taa_aml_request_module(self.new_default_wallet)
+        req = sdk_sign_and_send_prepared_request(self.looper, self.new_default_wallet, self.sdk_pool_handle,
+                                                 aml_req)
+        sdk_get_and_check_replies(self.looper, [req])
 
         # Step 4. Return default auth rule
         self.send_and_check(self.default_auth_rule, wallet=self.trustee_wallet)
 
         # Step 5. Check, that default auth rule works
-        aml_req = taa_aml_request_module(self.looper, self.trustee_wallet, None)
-        sdk_get_and_check_replies(self.looper, [
-            sdk_sign_and_submit_req_obj(self.looper, self.sdk_pool_handle, self.trustee_wallet, aml_req)])
+        aml_req = self.taa_aml_request_module(self.trustee_wallet)
+        req = sdk_sign_and_send_prepared_request(self.looper, self.trustee_wallet, self.sdk_pool_handle,
+                                                 aml_req)
+        sdk_get_and_check_replies(self.looper, [req])
 
     def result(self):
         pass
@@ -59,3 +65,10 @@ class TxnAuthorAgreementAMLTest(AuthTest):
                                                  new_value='*',
                                                  constraint=constraint.as_dict)
         return sdk_gen_request(operation, identifier=self.trustee_wallet[1])
+
+    def taa_aml_request_module(self, wallet):
+        return self.looper.loop.run_until_complete(build_acceptance_mechanism_request(
+            wallet[1],
+            json.dumps({
+                'Nice way': 'very good way to accept agreement'}),
+            randomString(), randomString()))
