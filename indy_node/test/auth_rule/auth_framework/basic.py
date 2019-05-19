@@ -40,6 +40,10 @@ class AbstractTest(metaclass=ABCMeta):
     def result(self):
         pass
 
+    @abstractmethod
+    def down(self):
+        pass
+
 
 class AuthTest(AbstractTest):
 
@@ -54,6 +58,9 @@ class AuthTest(AbstractTest):
         self.default_auth_rule = None
         self.changed_auth_rule = None
         self.new_default_wallet = None
+
+    def down(self):
+        pass
 
     def _build_nym(self, creator_wallet, role_string, did, verkey=None, skipverkey=True):
         seed = randomString(32)
