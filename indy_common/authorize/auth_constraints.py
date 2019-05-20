@@ -105,14 +105,14 @@ class AuthConstraint(AbstractAuthConstraint):
 
         metadata_str = self._metadata_str()
         if metadata_str:
-            return "{} with additional metadata: {}".format(error_msg, self.metadata)
+            return "{} {}".format(error_msg, metadata_str)
         return error_msg
 
     def _metadata_str(self):
         if not self.metadata:
             return ""
         res = " ".join([str(item) for values in self.metadata.items() for item in values])
-        return "with {}".format(res)
+        return "with additional metadata {}".format(res)
 
     @staticmethod
     def from_dict(as_dict):

@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from indy_common.authorize.auth_constraints import AuthConstraint, IDENTITY_OWNER, AuthConstraintOr
@@ -54,12 +56,16 @@ def test_plugin_or_error_msg_not_enough_amount(write_auth_req_validator):
                                            metadata={PLUGIN_FIELD: 10}),
                         ]))
 
-    req, actions = build_req_and_action(signatures={IDENTITY_OWNER: 1},
+    req, actions = build_req_and_action(signatures={STEWARD: 1},
                                         need_to_be_owner=True,
                                         amount=5)
 
     with pytest.raises(UnauthorizedClientRequest) as excinfo:
         write_auth_req_validator.validate(req, actions)
-    assert ("Rule for this action is: 1 TRUSTEE signature is required OR"
-            " 1 STEWARD signature with 10 new_field is required") \
-           in str(excinfo.value)
+    expected = os.linesep.join([
+        "Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required with additional metadata new_field 10",
+        "Failed checks:",
+        "Constraint: 1 TRUSTEE signature is required, Error: Not enough TRUSTEE signatures",
+        "Constraint: 1 STEWARD signature is required with additional metadata new_field 10, Error: not enough amount in plugin field"
+    ])
+    assert expected in str(excinfo.value.args[0])
