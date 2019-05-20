@@ -9,7 +9,7 @@ from plenum.common.exceptions import InvalidClientRequest
 
 from plenum.common.txn_util import reqToTxn, is_forced, get_payload_data, append_txn_metadata, get_type
 from plenum.server.config_req_handler import ConfigReqHandler as PConfigReqHandler
-from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, TXN_AUTHOR_AGREEMENT
+from plenum.common.constants import TXN_TYPE, NAME, VERSION, FORCE, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML
 from indy_common.constants import POOL_UPGRADE, START, CANCEL, SCHEDULE, ACTION, POOL_CONFIG, NODE_UPGRADE, PACKAGE, \
     REINSTALL, AUTH_RULE, CONSTRAINT, AUTH_ACTION, OLD_VALUE, NEW_VALUE, AUTH_TYPE, FIELD, GET_AUTH_RULE
 from indy_common.types import Request, ClientGetAuthRuleOperation
@@ -27,17 +27,17 @@ class ConfigReqHandler(PConfigReqHandler):
         {GET_AUTH_RULE, } | \
         PConfigReqHandler.query_types
 
-    def __init__(self, ledger, state, idrCache: IdrCache,
+    def __init__(self, ledger, state, domain_state, idrCache: IdrCache,
                  upgrader: Upgrader, poolManager, poolCfg: PoolConfig,
                  write_req_validator, bls_store=None, ts_store: Optional[StateTsDbStorage] = None):
-        super().__init__(ledger, state, ts_store)
+        super().__init__(ledger, state, domain_state, bls_store, ts_store)
         self.idrCache = idrCache
         self.upgrader = upgrader
         self.poolManager = poolManager
         self.poolCfg = poolCfg
         self.write_req_validator = write_req_validator
         self.constraint_serializer = ConstraintsSerializer(config_state_serializer)
-        self.bls_store = bls_store
+        self._add_query_handler(GET_AUTH_RULE, self.handle_get_auth_rule)
 
     def doStaticValidation(self, request: Request):
         identifier, req_id, operation = request.identifier, request.reqId, request.operation
@@ -177,6 +177,11 @@ class ConfigReqHandler(PConfigReqHandler):
                                               [AuthActionAdd(txn_type=typ,
                                                              field="*",
                                                              value="*")])
+        elif typ == TXN_AUTHOR_AGREEMENT_AML:
+            self.write_req_validator.validate(req,
+                                              [AuthActionAdd(txn_type=typ,
+                                                             field='*',
+                                                             value='*')])
 
     def authorize(self, req: Request):
         # We don't need authorization from plenum since we have auth map in node
@@ -243,11 +248,9 @@ class ConfigReqHandler(PConfigReqHandler):
             auth_key = self.get_auth_key(payload)
             self.update_auth_constraint(auth_key, constraint)
 
-    def get_query_response(self, request: Request):
-        operation = request.operation
-        if operation[TXN_TYPE] != GET_AUTH_RULE:
-            return
+    def handle_get_auth_rule(self, request: Request):
         proof = None
+        operation = request.operation
         if len(operation) >= len(ClientGetAuthRuleOperation.schema) - 1:
             key = self.get_auth_key(operation)
             data, proof = self._get_auth_rule(key)
@@ -261,10 +264,10 @@ class ConfigReqHandler(PConfigReqHandler):
 
     def _get_auth_rule(self, key):
         multi_sig = None
-        if self.bls_store:
+        if self._bls_store:
             root_hash = self.state.committedHeadHash
             encoded_root_hash = state_roots_serializer.serialize(bytes(root_hash))
-            multi_sig = self.bls_store.get(encoded_root_hash)
+            multi_sig = self._bls_store.get(encoded_root_hash)
         path = config.make_state_path_for_auth_rule(key)
         map_data, proof = self.get_value_from_state(path, with_proof=True, multi_sig=multi_sig)
 
@@ -273,7 +276,7 @@ class ConfigReqHandler(PConfigReqHandler):
         else:
             data = self.write_req_validator.auth_map[key]
         data_dict = data.as_dict if data is not None else {}
-        return {path: data_dict}, proof
+        return {key: data_dict}, proof
 
     def _get_all_auth_rules(self):
         data = self.write_req_validator.auth_map.copy()
@@ -286,7 +289,7 @@ class ConfigReqHandler(PConfigReqHandler):
             else:
                 value = data[key]
             value_dict = value.as_dict if value is not None else {}
-            result[path] = value_dict
+            result[key] = value_dict
         return result
 
     def _check_auth_key(self, operation, identifier, req_id):

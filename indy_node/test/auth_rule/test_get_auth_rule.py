@@ -72,7 +72,7 @@ def test_get_one_auth_rule_transaction(looper,
                                           sdk_pool_handle,
                                           key)[0]
     assert auth_map.get(str_key).as_dict == \
-           resp["result"][DATA][config.make_state_path_for_auth_rule(str_key).decode()]
+           resp["result"][DATA][str_key]
 
 
 def test_get_one_disabled_auth_rule_transaction(looper,
@@ -85,7 +85,7 @@ def test_get_one_disabled_auth_rule_transaction(looper,
                                           sdk_wallet_trustee,
                                           sdk_pool_handle,
                                           key)[0]
-    assert {} == resp["result"][DATA][config.make_state_path_for_auth_rule(str_key).decode()]
+    assert {} == resp["result"][DATA][str_key]
 
 
 def test_get_all_auth_rule_transactions(looper,
@@ -95,7 +95,7 @@ def test_get_all_auth_rule_transactions(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle)
 
-    expect = {config.make_state_path_for_auth_rule(key).decode(): constraint.as_dict if constraint is not None else {}
+    expect = {key: constraint.as_dict if constraint is not None else {}
               for key, constraint in auth_map.items()}
     result = resp[0][1]["result"][DATA]
     assert result == expect
@@ -123,8 +123,7 @@ def test_get_one_auth_rule_transaction_after_write(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle,
                                      dict_auth_key)
-    print(config.make_state_path_for_auth_rule(str_key))
-    result = resp[0][1]["result"][DATA][config.make_state_path_for_auth_rule(str_key).decode()]
+    result = resp[0][1]["result"][DATA][str_key]
     assert result == constraint
     assert resp[0][1]["result"][STATE_PROOF]
 
@@ -148,8 +147,8 @@ def test_get_all_auth_rule_transactions_after_write(looper,
     resp = sdk_get_auth_rule_request(looper,
                                      sdk_wallet_trustee,
                                      sdk_pool_handle)
-    expect = {config.make_state_path_for_auth_rule(key).decode(): constraint.as_dict if constraint is not None else {}
+    expect = {key: constraint.as_dict if constraint is not None else {}
               for key, constraint in auth_map.items()}
-    expect[config.make_state_path_for_auth_rule(auth_key).decode()] = constraint
+    expect[auth_key] = constraint
     result = resp[0][1]["result"][DATA]
     assert result == expect

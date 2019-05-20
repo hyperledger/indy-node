@@ -1,6 +1,8 @@
 from abc import ABCMeta
 from logging import getLogger
 
+import os
+
 from indy_common.authorize.auth_actions import AbstractAuthAction
 from indy_common.authorize.auth_constraints import AbstractAuthConstraint, AuthConstraint, \
     AuthConstraintAnd, ConstraintsEnum
@@ -161,6 +163,7 @@ class OrAuthorizer(AbstractAuthorizer):
                   auth_constraint: AuthConstraintAnd,
                   auth_action: AbstractAuthAction):
         successes = []
+        fails = []
         for constraint in auth_constraint.auth_constraints:
             try:
                 self.parent.authorize(request=request,
@@ -168,8 +171,12 @@ class OrAuthorizer(AbstractAuthorizer):
                                       auth_action=auth_action)
             except AuthValidationError as e:
                 logger.trace(e)
+                fails.append("Constraint: {}, Error: {}".format(constraint, e.reason))
             else:
                 successes.append(True)
         if len(successes) == 0:
-            raise AuthValidationError("Rule for this action is: {}".format(auth_constraint))
+            raise AuthValidationError(
+                "Rule for this action is: {}{}Failed checks: {}".format(auth_constraint,
+                                                                        os.linesep,
+                                                                        os.linesep.join(fails)))
         return True, ""

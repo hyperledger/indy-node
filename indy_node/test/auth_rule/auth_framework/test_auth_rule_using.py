@@ -1,6 +1,7 @@
 import dateutil.tz
 import pytest
 from datetime import datetime, timedelta
+from collections import OrderedDict
 
 from indy_node.test.auth_rule.auth_framework.auth_rules import AuthRuleTest
 from indy_node.test.auth_rule.auth_framework.node_services import AddNewNodeTest, AddNewNodeEmptyServiceTest, \
@@ -13,6 +14,7 @@ from indy_node.test.auth_rule.auth_framework.revoc_reg_def import AddRevocRegDef
     EditRevocRegDefTest
 from indy_node.test.auth_rule.auth_framework.revoc_reg_entry import AddRevocRegEntryTest, EditRevocRegEntryTest
 from indy_node.test.auth_rule.auth_framework.txn_author_agreement import TxnAuthorAgreementTest
+from indy_node.test.auth_rule.auth_framework.txn_author_agreement_aml import TxnAuthorAgreementAMLTest
 from indy_node.test.auth_rule.auth_framework.validator_info import ValidatorInfoTest
 from indy_node.test.pool_config.conftest import poolConfigWTFF
 from indy_node.test.upgrade.conftest import patch_packet_mgr_output, EXT_PKT_NAME, EXT_PKT_VERSION
@@ -48,7 +50,7 @@ nodeCount = 7
 
 
 class TestAuthRuleUsing():
-    map_of_tests = {
+    map_of_tests = OrderedDict({
         auth_map.adding_new_node.get_action_id(): AddNewNodeTest,
         auth_map.adding_new_node_with_empty_services.get_action_id(): AddNewNodeEmptyServiceTest,
         auth_map.demote_node.get_action_id(): DemoteNodeTest,
@@ -93,7 +95,7 @@ class TestAuthRuleUsing():
         auth_map.edit_role_actions[NETWORK_MONITOR][NETWORK_MONITOR].get_action_id(): EditNetworkMonitorToNetworkMonitorTest,
         auth_map.edit_role_actions[IDENTITY_OWNER][IDENTITY_OWNER].get_action_id(): EditIdentityOwnerToIdentityOwnerTest,
         auth_map.key_rotation.get_action_id(): RotateKeyTest,
-        auth_map.txn_author_agreement.get_action_id(): TxnAuthorAgreementTest,
+        auth_map.txn_author_agreement_aml.get_action_id(): TxnAuthorAgreementAMLTest,
         auth_map.add_schema.get_action_id(): SchemaTest,
         auth_map.add_claim_def.get_action_id(): AddClaimDefTest,
         auth_map.edit_claim_def.get_action_id(): EditClaimDefTest,
@@ -103,7 +105,10 @@ class TestAuthRuleUsing():
         auth_map.pool_config.get_action_id(): PoolConfigTest,
         auth_map.auth_rule.get_action_id(): AuthRuleTest,
         auth_map.validator_info.get_action_id(): ValidatorInfoTest,
-    }
+    })
+
+    # TODO a workaround until sdk aceepts empty TAA to make possible its deactivation
+    map_of_tests[auth_map.txn_author_agreement.get_action_id()] = TxnAuthorAgreementTest
 
     @pytest.fixture(scope='module')
     def pckg(self):
@@ -184,3 +189,4 @@ class TestAuthRuleUsing():
         test.prepare()
         test.run()
         test.result()
+        test.down()
