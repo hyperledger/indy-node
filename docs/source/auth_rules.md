@@ -7,6 +7,7 @@
     <th>Previous value</th>
     <th>New value</th>
     <th>Who can</th>
+    <th>Who is owner</th>
     <th>Description</th>
   </tr>
 
@@ -17,6 +18,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>TRUSTEE</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
+    <td><sub>N/A</sub></td>
     <td><sub>Adding a new TRUSTEE</sub></td>
   </tr>
   <tr>
@@ -26,6 +28,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>STEWARD</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
+    <td><sub>N/A</sub></td>
     <td><sub>Adding a new STEWARD</sub></td>
   </tr>
   <tr>
@@ -35,6 +38,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>TRUST_ANCHOR</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
+    <td><sub>N/A</sub></td>
     <td><sub>Adding a new TRUST_ANCHOR</sub></td>
   </tr>
   <tr>
@@ -44,6 +48,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>NETWORK_MONITOR</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
+    <td><sub>N/A</sub></td>
     <td><sub>Adding a new NETWORK_MONITOR</sub></td>
   </tr>
   <tr>
@@ -53,6 +58,7 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>&lt;None&gt;</code></sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 TRUST_ANCHOR</sub></td>
+    <td><sub>N/A</sub></td>
     <td><sub>Adding a new Identity Owner</sub></td>
   </tr>
 
@@ -63,6 +69,7 @@
     <td><sub>TRUSTEE</sub></td>
     <td><sub>STEWARD</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
+    <td><sub></sub></td>
     <td><sub>Changing Trustee to Steward</sub></td>
   </tr>
   <tr>

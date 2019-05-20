@@ -83,24 +83,32 @@ class AuthConstraint(AbstractAuthConstraint):
             raise ValueError("Role {} is not acceptable".format(role))
 
     def __str__(self):
+        metadata_str = self._metadata_str()
         role = get_named_role(self.role) if self.role != '*' else 'ALL'
         if role != 'ALL' and self.need_to_be_owner and self.sig_count > 1:
-            return "{} {} signatures are required and needs to be owner".format(self.sig_count, role)
+            return "{} {} signatures {} are required and needs to be owner".format(self.sig_count, role, metadata_str)
         elif role != 'ALL' and not self.need_to_be_owner and self.sig_count > 1:
-            return "{} {} signatures are required".format(self.sig_count, role)
+            return "{} {} signatures {} are required".format(self.sig_count, role, metadata_str)
         elif role != 'ALL' and not self.need_to_be_owner and self.sig_count == 1:
-            return "1 {} signature is required".format(role)
+            return "1 {} signature {} is required".format(role, metadata_str)
         elif role != 'ALL' and self.need_to_be_owner and self.sig_count == 1:
-            return "1 {} signature is required and needs to be owner".format(role)
+            return "1 {} signature {} is required and needs to be owner".format(role, metadata_str)
 
         elif role == "ALL" and self.need_to_be_owner and self.sig_count == 1:
-            return "1 signature of any role is required and needs to be owner"
+            return "1 signature of any role {} is required and needs to be owner".format(metadata_str)
         elif role == 'ALL' and not self.need_to_be_owner and self.sig_count == 1:
-            return "1 signature of any role is required".format(role)
+            return "1 signature of any role {} is required".format(metadata_str)
         elif role == 'ALL' and not self.need_to_be_owner and self.sig_count > 1:
-            return "{} signatures of any role are required".format(self.sig_count)
+            return "{} signatures of any role {} are required".format(self.sig_count, metadata_str)
         elif role == "ALL" and self.need_to_be_owner and self.sig_count > 1:
-            return "{} signatures of any role are required and needs to be owner".format(self.sig_count)
+            return "{} signatures of any role {} are required and needs to be owner".format(self.sig_count,
+                                                                                            metadata_str)
+
+    def _metadata_str(self):
+        if not self.metadata:
+            return ""
+        res = " ".join([str(item) for values in self.metadata.items() for item in values])
+        return "with {}".format(res)
 
     @staticmethod
     def from_dict(as_dict):
