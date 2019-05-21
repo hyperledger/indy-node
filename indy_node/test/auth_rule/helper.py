@@ -4,7 +4,7 @@ from indy.did import create_and_store_my_did
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.constants import AUTH_RULE, CONSTRAINT, AUTH_ACTION, AUTH_TYPE, FIELD, NEW_VALUE, OLD_VALUE, NYM, \
-    TRUST_ANCHOR
+    TRUST_ANCHOR, GET_AUTH_RULE
 from plenum.common.constants import TRUSTEE, TXN_TYPE
 
 from indy_common.authorize.auth_constraints import CONSTRAINT_ID, ROLE, SIG_COUNT, NEED_TO_BE_OWNER, METADATA, \
@@ -101,3 +101,31 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
         return request_couple
     # waiting for replies
     sdk_get_and_check_replies(looper, [request_couple])
+
+
+def sdk_get_auth_rule_request(looper, sdk_wallet, sdk_pool_handle, key=None):
+    op = {TXN_TYPE: GET_AUTH_RULE}
+    if key:
+        op.update(key)
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet,
+                                      req_obj)
+    resp = sdk_get_and_check_replies(looper, [req])
+    return resp
+
+
+def generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
+                 field=ROLE, new_value=TRUST_ANCHOR,
+                 old_value=None):
+    key = {AUTH_ACTION: auth_action,
+           AUTH_TYPE: auth_type,
+           FIELD: field,
+           NEW_VALUE: new_value,
+           }
+    if old_value:
+        key[OLD_VALUE] = old_value
+    return key
+
+
