@@ -127,5 +127,3 @@ def generate_key(auth_action=ADD_PREFIX, auth_type=NYM,
     if old_value:
         key[OLD_VALUE] = old_value
     return key
-
-
