@@ -1187,6 +1187,122 @@ A client will receive NACK for
 - a request with a key that is not in the [auth_rule](auth_rule.md).
 
 
+### AUTH_RULES
+
+A command to set multiple AUTH_RULEs by one transaction. 
+Authentication rules are stored as a key-value dictionary.
+A key is an authenticated action in the format `action--txn_type--field--old_value--new_value`.
+A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action. There are two types of constraints:
+- ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
+- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
+
+*Request Example*:
+```
+{
+    'operation': {
+           'type':'122',
+           'rules': [
+                {'constraint':{  
+                     'constraint_id': 'OR',
+                     'auth_constraints': [{'constraint_id': 'ROLE', 
+                                           'role': '0',
+                                           'sig_count': 1, 
+                                           'need_to_be_owner': False, 
+                                           'metadata': {}}, 
+                                                               
+                                           {'constraint_id': 'ROLE', 
+                                            'role': '2',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': True, 
+                                            'metadata': {}}
+                                           ]
+                   }, 
+                 'field' :'services',
+                 'auth_type': '0', 
+                 'auth_action': 'EDIT',
+                 'old_value': [VALIDATOR],
+                 'new_value': []
+                },
+                ...
+           ]
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 1,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
+}
+```
+
+*Reply Example*:
+```
+{     'op':'REPLY',
+      'result':{  
+         'txnMetadata':{  
+            'seqNo':1,
+            'txnTime':1551776783
+         },
+         'reqSignature':{  
+            'values':[  
+               {  
+                  'value':'4j99V2BNRX1dn2QhnR8L9C3W9XQt1W3ScD1pyYaqD1NUnDVhbFGS3cw8dHRe5uVk8W7DoFtHb81ekMs9t9e76Fg',
+                  'from':'M9BJDuS24bqbJNvBRsoGg3'
+               }
+            ],
+            'type':'ED25519'
+         },
+         'txn':{  
+            'type':'122',
+            'data':{
+               'rules': [
+                    {'constraint':{  
+                         'constraint_id': 'OR',
+                         'auth_constraints': [{'constraint_id': 'ROLE', 
+                                               'role': '0',
+                                               'sig_count': 1, 
+                                               'need_to_be_owner': False, 
+                                               'metadata': {}}, 
+                                                                   
+                                               {'constraint_id': 'ROLE', 
+                                                'role': '2',
+                                                'sig_count': 1, 
+                                                'need_to_be_owner': True, 
+                                                'metadata': {}}
+                                               ]
+                       }, 
+                     'field' :'services',
+                     'auth_type': '0', 
+                     'auth_action': 'EDIT',
+                     'old_value': [VALIDATOR],
+                     'new_value': []
+                    },
+                    ...
+               ]
+            }
+            'protocolVersion':2,
+            'metadata':{  
+               'from':'M9BJDuS24bqbJNvBRsoGg3',
+               'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
+               'reqId':711182024
+            }
+         },
+         'ver':'1',
+         'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
+         'auditPath':[  
+
+         ]
+      }
+   }
+```
+
+If format of a transaction is incorrect, the client will receive NACK message for the request. 
+A client will receive NACK for 
+- a request with incorrect format;
+- a request with "ADD" action, but with "old_value";
+- a request with "EDIT" action without "old_value";
+- a request with a key that is not in the [auth_rule](auth_rule.md).
+
+
 ## Read Requests
 
 ### GET_NYM

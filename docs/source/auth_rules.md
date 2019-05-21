@@ -430,6 +430,15 @@
     <td><sub>Changing an authentification rule</sub></td>
   </tr>
   <tr>
+    <td><sub>AUTH_RULES</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub><code>*</code></sub></td>
+    <td><sub>1 TRUSTEE</sub></td>
+    <td><sub>Changing an authentification rules</sub></td>
+  </tr>
+  <tr>
     <td><sub>VALIDATOR_INFO</sub></td>
     <td><sub>ADD</sub></td>
     <td><sub><code>*</code></sub></td>

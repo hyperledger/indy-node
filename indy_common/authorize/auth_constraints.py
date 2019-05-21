@@ -184,7 +184,10 @@ class AuthConstraintOr(AbstractAuthConstraint):
 class ConstraintCreator:
     @staticmethod
     def create_constraint(input_dict):
+        if not input_dict:
+            return {}
         as_dict = dict(input_dict)
+        print(input_dict)
         constraint_id = as_dict.pop(CONSTRAINT_ID)
         if constraint_id is None:
             raise KeyError('There is no "constraint_id" field in deserialised dict: {}'.format(as_dict))

@@ -3,7 +3,7 @@ from typing import Dict
 from indy_common.authorize.auth_actions import AuthActionAdd, AuthActionEdit
 from indy_common.authorize.auth_constraints import AuthConstraint, AuthConstraintOr, accepted_roles, IDENTITY_OWNER
 from indy_common.constants import TRUST_ANCHOR, POOL_CONFIG, VALIDATOR_INFO, POOL_UPGRADE, POOL_RESTART, NODE, \
-    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB
+    CLAIM_DEF, SCHEMA, NYM, ROLE, AUTH_RULE, NETWORK_MONITOR, REVOC_REG_ENTRY, REVOC_REG_DEF, ATTRIB, AUTH_RULES
 from plenum.common.constants import TRUSTEE, STEWARD, VERKEY, TXN_AUTHOR_AGREEMENT, TXN_AUTHOR_AGREEMENT_AML
 
 edit_role_actions = {}  # type: Dict[str, Dict[str, AuthActionEdit]]
@@ -140,6 +140,11 @@ auth_rule = AuthActionEdit(txn_type=AUTH_RULE,
                            field='*',
                            old_value='*',
                            new_value='*')
+
+auth_rules = AuthActionEdit(txn_type=AUTH_RULES,
+                            field='*',
+                            old_value='*',
+                            new_value='*')
 
 validator_info = AuthActionAdd(txn_type=VALIDATOR_INFO,
                                field='*',
@@ -278,6 +283,7 @@ auth_map = {
     pool_restart.get_action_id(): one_trustee_constraint,
     pool_config.get_action_id(): one_trustee_constraint,
     auth_rule.get_action_id(): one_trustee_constraint,
+    auth_rules.get_action_id(): one_trustee_constraint,
     validator_info.get_action_id(): AuthConstraintOr([AuthConstraint(TRUSTEE, 1),
                                                       AuthConstraint(STEWARD, 1),
                                                       AuthConstraint(NETWORK_MONITOR, 1)]),

@@ -93,6 +93,7 @@ def test_auth_map_config():
 def test_auth_map_action():
     nym_rules = [(auth_map.pool_restart, "118--ADD--action--*--*"),
                  (auth_map.auth_rule, "120--EDIT--*--*--*"),
+                 (auth_map.auth_rules, "122--EDIT--*--*--*"),
                  (auth_map.validator_info, "119--ADD--*--*--*")]
 
     for (rule, rule_str) in nym_rules:
