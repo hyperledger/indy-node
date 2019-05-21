@@ -372,9 +372,6 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
 #### CLAIM_DEF
 Adds a claim definition (in particular, public key), that Issuer creates and publishes for a particular claim schema.
 
-It's not possible to update `data` in an existing claim definition.
-Therefore if an existing claim definition needs to be evolved (for example, a key needs to be rotated), a new claim definition needs to be created for a new Issuer DID (`did`).
-
 - `data` (dict):
 
      Dictionary with claim definition's data:
@@ -437,6 +434,135 @@ Therefore if an existing claim definition needs to be evolved (for example, a ke
     }
 }
 ```
+
+#### REVOC_REG_DEF
+Adds a Revocation Registry Definition, that Issuer creates and publishes for a particular Claim Definition.
+It contains public keys, maximum number of credentials the registry may contain, reference to the Claim Def, plus some revocation registry specific data.
+
+- `value` (dict):
+
+     Dictionary with revocation registry definition's data:
+     
+     - `maxCredNum` (integer): a maximum number of credentials the Revocation Registry can handle
+     - `tailsHash` (string): tails' file digest
+     - `tailsLocation` (string): tails' file location (URL)
+     - `issuanceType` (string enum): defines credentials revocation strategy. Can have the following values:
+        - `ISSUANCE_BY_DEFAULT`: all credentials are assumed to be issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) only when revoking. Revocation Registry stores only revoked credentials indices in this case. Recommended to use if expected number of revocation actions is less than expected number of issuance actions. 
+        - `ISSUANCE_ON_DEMAND`: no credentials are issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) on every issuance and revocation. Revocation Registry stores only issued credentials indices in this case. Recommended to use if expected number of issuance actions is less than expected number of revocation actions.
+     - `publicKeys` (dict): Revocation Registry's public key
+
+- `id` (string): Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+- `credDefId` (string): The corresponding Credential Definition's unique identifier (a key from state trie is currently used)
+- `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
+- `tag` (string): A unique tag to have multiple Revocation Registry Definitions for the same Credential Definition and type issued by the same DID. 
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":113,
+        "protocolVersion":1,
+
+        "data": {
+            "ver":1,
+            'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+            'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
+            'revocDefType': 'CL_ACCUM',
+            'tag': 'tag1',
+            'value': {
+                'maxCredNum': 1000000,
+                'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
+                'tailsLocation': 'http://tails.location.com',
+                'issuanceType': 'ISSUANCE_BY_DEFAULT',
+                'publicKeys': {},
+            },
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
+            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685'
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
+#### REVOC_REG_ENTRY
+Adds a Revocation Registry Definition (in particular, a public key), that Issuer creates and publishes for a particular Claim Definition.
+
+- `value` (dict):
+
+     Dictionary with revocation registry definition's data:
+     
+     - `maxCredNum` (integer): a maximum number of credentials the Revocation Registry can handle
+     - `tailsHash` (string): tails' file digest
+     - `tailsLocation` (string): tails' file location (URL)
+     - `issuanceType` (string enum): defines credentials revocation strategy. Can have the following values:
+        - `ISSUANCE_BY_DEFAULT`: all credentials are assumed to be issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) only when revoking. Revocation Registry stores only revoked credentials indices in this case. Recommended to use if expected number of revocation actions is less than expected number of issuance actions. 
+        - `ISSUANCE_ON_DEMAND`: no credentials are issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) on every issuance and revocation. Revocation Registry stores only issued credentials indices in this case. Recommended to use if expected number of issuance actions is less than expected number of revocation actions.
+     - `publicKeys` (dict): Revocation Registry's public key
+
+- `id` (string): Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+- `credDefId` (string): The corresponding Credential Definition's unique identifier (a key from state trie is currently used)
+- `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
+- `tag` (string): A unique tag to have multiple Revocation Registry Definitions for the same Credential Definition and type issued by the same DID. 
+
+**Example**:
+```
+{
+    "ver": 1,
+    "txn": {
+        "type":114,
+        "protocolVersion":1,
+
+        "data": {
+            "ver":1,
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
+            'revocDefType': 'CL_ACCUM',
+            'value': {
+                'accum': 'accum_value',
+                'prevAccum': 'prev_acuum_value',
+                'issued': [],
+                'revoked': [10, 36, 3478],
+            },
+        },
+
+        "metadata": {
+            "reqId":1513945121191691,
+            "from":"L5AD5g65TDQr1PPHHRoiGf",
+            'digest': '4ba05d9b2c27e52aa8778708fb4b3e5d7001eecd02784d8e311d27b9090d9453',
+            'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685'
+        },
+    },
+    "txnMetadata": {
+        "txnTime":1513945121,
+        "seqNo": 10,
+        "txnId":"5:L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+    },
+    "reqSignature": {
+        "type": "ED25519",
+        "values": [{
+            "from": "L5AD5g65TDQr1PPHHRoiGf",
+            "value": "4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd"
+        }]
+    }
+}
+```
+
 
 ## Pool Ledger
 

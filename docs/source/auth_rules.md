@@ -7,7 +7,6 @@
     <th>Previous value</th>
     <th>New value</th>
     <th>Who can</th>
-    <th>Who is owner</th>
     <th>Description</th>
   </tr>
 
@@ -18,7 +17,6 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>TRUSTEE</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>N/A</sub></td>
     <td><sub>Adding a new TRUSTEE</sub></td>
   </tr>
   <tr>
@@ -28,7 +26,6 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>STEWARD</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub>N/A</sub></td>
     <td><sub>Adding a new STEWARD</sub></td>
   </tr>
   <tr>
@@ -38,7 +35,6 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>TRUST_ANCHOR</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
-    <td><sub>N/A</sub></td>
     <td><sub>Adding a new TRUST_ANCHOR</sub></td>
   </tr>
   <tr>
@@ -48,7 +44,6 @@
     <td><sub><code>*</code></sub></td>
     <td><sub>NETWORK_MONITOR</sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD</sub></td>
-    <td><sub>N/A</sub></td>
     <td><sub>Adding a new NETWORK_MONITOR</sub></td>
   </tr>
   <tr>
@@ -58,7 +53,6 @@
     <td><sub><code>*</code></sub></td>
     <td><sub><code>&lt;None&gt;</code></sub></td>
     <td><sub>1 TRUSTEE OR 1 STEWARD OR 1 TRUST_ANCHOR</sub></td>
-    <td><sub>N/A</sub></td>
     <td><sub>Adding a new Identity Owner</sub></td>
   </tr>
 
@@ -69,7 +63,6 @@
     <td><sub>TRUSTEE</sub></td>
     <td><sub>STEWARD</sub></td>
     <td><sub>1 TRUSTEE</sub></td>
-    <td><sub></sub></td>
     <td><sub>Changing Trustee to Steward</sub></td>
   </tr>
   <tr>
@@ -483,115 +476,182 @@
   </tr>
 </table>
 
-### Also, there are optional rules for case of ANYONE_CAN_WRITE set to True in config file:
+
+### Who Is Owner
+
 <table class="tg">
   <tr>
-    <th>Transaction type</th>
+    <th>Transaction Type</th>
     <th>Action</th>
-    <th>Field</th>
-    <th>Previous value</th>
-    <th>New value</th>
-    <th>Who can</th>
-    <th>Description</th>
+    <th>Who is Owner</th>
   </tr>
+  
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub>ADD</sub></td>
-    <td><sub><code>role</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>Anyone</sub></td>
-    <td><sub>Adding a new NYM</sub></td>
+    <td><sub>N/A</sub></td>
   </tr>
+
   <tr>
     <td><sub>NYM</sub></td>
     <td><sub>EDIT</sub></td>
-    <td><sub><code>role</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any role (*) role owner</sub></td>
-    <td><sub>Editing a NYM</sub></td>
+    <td><sub>The DID defined by the NYM txn (`dest` field) if `verkey` is set; otherwise the submitter of the NYM txn (`identifier` field)</sub></td>
   </tr>
+  
+  <tr>
+    <td><sub>ATTRIB</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>The owner of the DID (`dest` field) the ATTRIB is created for (see NYM's owner description)</sub></td>
+  </tr>  
+
+  <tr>
+    <td><sub>ATTRIB</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The owner of the DID (`dest` field) the ATTRIB is created for (see NYM's owner description)</sub></td>
+  </tr>
+  
   <tr>
     <td><sub>SCHEMA</sub></td>
     <td><sub>ADD</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>Anyone</sub></td>
-    <td><sub>Adding a new SCHEMA</sub></td>
-  </tr>
-  <tr>
-    <td><sub>CLAIM_DEF</sub></td>
-    <td><sub>ADD</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>Anyone</sub></td>
-    <td><sub>Adding a new CLAIM_DEF</sub></td>
-  </tr>
-  <tr>
-    <td><sub>CLAIM_DEF</sub></td>
-    <td><sub>EDIT</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any role (*) role owner</sub></td>
-    <td><sub>Editing a new CLAIM_DEF</sub></td>
-  </tr>
-  <tr>
-    <td><sub>ATTRIB</sub></td>
-    <td><sub>ADD</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any role (*) role owner of the corresponding NYM</sub></td>
-    <td><sub>Adding a new ATTRIB</sub></td>
-  </tr>
-  <tr>
-    <td><sub>ATTRIB</sub></td>
-    <td><sub>EDIT</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any role (*) role owner of the corresponding NYM</sub></td>
-    <td><sub>Editing an ATTRIB</sub></td>
-  </tr>
-  <tr>
-    <td><sub>REVOC_REG_DEF</sub></td>
-    <td><sub>ADD</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>Anyone</sub></td>
-    <td><sub>Adding a new REVOC_REG_DEF</sub></td>
-  </tr>
-  <tr>
-    <td><sub>REVOC_REG_DEF</sub></td>
-    <td><sub>EDIT</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any (*) role owner</sub></td>
-    <td><sub>Editing a REVOC_REG_DEF</sub></td>
-  </tr>
-  <tr>
-    <td><sub>REVOC_REG_ENTRY</sub></td>
-    <td><sub>ADD</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any (*) role owner of the corresponding REVOC_REG_DEF</sub></td>
-    <td><sub>Adding a new REVOC_REG_ENTRY</sub></td>
-  </tr>
-  <tr>
-    <td><sub>REVOC_REG_ENTRY</sub></td>
-    <td><sub>EDIT</sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub><code>*</code></sub></td>
-    <td><sub>1 any (*) role owner of the corresponding REVOC_REG_DEF</sub></td>
-    <td><sub>Editing a REVOC_REG_ENTRY</sub></td>
-  </tr>
-</table>
+    <td><sub>N/A</sub></td>
+  </tr>    
 
+  <tr>
+    <td><sub>SCHEMA</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The DID used to create the SCHEMA</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>CLAIM_DEF</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>CLAIM_DEF</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The DID used to create the CLAIM_DEF</sub></td>
+  </tr>  
+  
+  <tr>
+    <td><sub>REVOC_REG_DEF</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>REVOC_REG_DEF</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The DID used to create the REVOC_REG_DEF</sub></td>
+  </tr>    
+  
+  <tr>
+    <td><sub>REVOC_REG_ENTRY</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>The DID used to create the corresponding REVOC_REG_DEF</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>REVOC_REG_ENTRY</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The DID used to create the REVOC_REG_ENTRY</sub></td>
+  </tr>     
+  
+  <tr>
+    <td><sub>NODE</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>NODE</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>The Steward's DID used to create the NODE</sub></td>
+  </tr>      
+  
+  <tr>
+    <td><sub>POOL_UPGRADE</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>POOL_UPGRADE</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>     
+  
+  <tr>
+    <td><sub>POOL_RESTART</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>POOL_RESTART</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>     
+  
+  <tr>
+    <td><sub>POOL_CONFIG</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>POOL_CONFIG</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>      
+  
+  <tr>
+    <td><sub>VALIDATOR_INFO</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>VALIDATOR_INFO</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+  
+  <tr>
+    <td><sub>AUTH_RULE</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>AUTH_RULE</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>      
+  
+  <tr>
+    <td><sub>TRANSACTION_AUTHOR_AGREEMENT</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>TRANSACTION_AUTHOR_AGREEMENT</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>   
+
+  <tr>
+    <td><sub>TRANSACTION_AUTHOR_AGREEMENT_AML</sub></td>
+    <td><sub>ADD</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>    
+
+  <tr>
+    <td><sub>TRANSACTION_AUTHOR_AGREEMENT_AML</sub></td>
+    <td><sub>EDIT</sub></td>
+    <td><sub>N/A</sub></td>
+  </tr>  
+        
+</table>  
