@@ -8,10 +8,14 @@
     * [ATTRIB](#attrib)    
     * [SCHEMA](#schema)
     * [CLAIM_DEF](#claim_def)
+    * [REVOC_REG_DEF](#revoc_reg_def)
+    * [REVOC_REG_ENTRY](#revoc_reg_entry)
     * [NODE](#node)
     * [POOL_UPGRADE](#pool_upgrade)
     * [POOL_CONFIG](#pool_config)
     * [AUTH_RULE](#auth_rule)
+    * [TRANSACTION_AUTHOR_AGREEMENT](#transaction_author_agreement)
+    * [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_AML)    
 
 * [Read Requests](#read-requests)
 
@@ -19,8 +23,13 @@
     * [GET_ATTRIB](#get_attrib)    
     * [GET_SCHEMA](#get_schema)
     * [GET_CLAIM_DEF](#get_claim_def)
-    * [GET_TXN](#get_txn)
+    * [GET_REVOC_REG_DEF](#get_revoc_reg_def)
+    * [GET_REVOC_REG](#get_revoc_reg)
+    * [GET_REVOC_REG_DELTA](#get_revoc_reg_delta)    
     * [GET_AUTH_RULE](#get_auth_rule)
+    * [GET_TRANSACTION_AUTHOR_AGREEMENT](#get_transaction_author_agreement)
+    * [GET_TRANSACTION_AUTHOR_AGREEMENT_AML](#get_transaction_author_agreement_aml)
+    * [GET_TXN](#get_txn)
 
 * [Action Requests](#action-requests)
 
@@ -42,14 +51,19 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 ```
 {
     'operation': {
-        'type': '1',
+        'type': <request type>,
         <request-specific fields>
     },
     
-    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
-    'reqId': 1514215425836443,
-    'protocolVersion': 1,
-    'signature': '4X3skpoEK2DRgZxQ9PwuEvCJpL8JHdQ8X4HDDFyztgqE15DM2ZnkvrAh9bQY16egVinZTzwHqznmnkaFM4jjyDgd'
+    'identifier': <sender/author DID>,
+    'reqId': <req_id unique integer>,
+    'protocolVersion': 2,
+    'signature': <signature_value>,
+    # 'signatures': {
+    #      `did1`: <sig1>,
+    #      `did2`: <sig2>,
+    #  }    
+           
 }
 ```
 
@@ -106,6 +120,45 @@ Each Request (both write and read) is a JSON with a number of common metadata fi
 
 Please find the format of each request-specific data for each type of request below.
 
+## Common Write Request Structure
+
+Write requests to Domain and added-by-plugins ledgers may have additional Transaction Author Agreement acceptance fields:
+
+```
+{
+    'operation': {
+        'type': <request type>,
+        <request-specific fields>
+    },
+    
+    'identifier': <sender/author DID>,
+    'reqId': <req_id unique integer>,
+    'taaAcceptance': {
+        'taaDigest': <digest hex string>,
+        'mechanism': <mechaism string>,
+        'time': <time integer>
+     }
+    'protocolVersion': 2,
+    'signature': <signature_value>,
+    # 'signatures': {
+    #      `did1`: <sig1>,
+    #      `did2`: <sig2>,
+    #  }    
+           
+}
+```
+
+Additional (optional) fields for write requests:
+
+- `taaAcceptance` (dict, optional):
+            If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
+            
+   - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger
+                
+   - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
+                
+   - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+                
 ## Reply Structure for Write Requests
 
 Each Reply to write requests has a number of common metadata fields. Most of these fields are actually metadata fields 
@@ -127,7 +180,14 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             
             "metadata": {
                 "reqId": <...>,
-                "from": <...>
+                "from": <...>,
+                "digest": <...>,
+                "payloadDigest": <...>,
+                "taaAcceptance": {
+                    "taaDigest": <...>,
+                    "mechanism": <...>,
+                    "time": <...>
+                 }
             },
         },
         "txnMetadata": {
@@ -194,6 +254,22 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
              
         - `reqId` (integer): 
             Unique ID number of the request with transaction.
+  
+        - `digest` (SHA256 hex digest string):
+            SHA256 hash hex digest of the all fields in the initial requests (including signatures) 
+            
+        - `payloadDigest` (SHA256 hex digest string):
+            SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones
+            
+        - `taaAcceptance` (dict, optional):
+            If transaction author agreement is set/enabled, then every transaction (write request) from Domain and plugins-added ledgers must include acceptance of the latest transaction author agreement.
+            
+                - `taaDigest` (SHA256 hex digest string): SHA256 hex digest of the latest Transaction Author Agreement on the ledger
+                
+                - `mechanism` (string): a mechanism used to accept the signature; must be present in the latest list of transaction author agreement acceptane mechanisms on the ledger  
+                
+                - `time` (integer as POSIX timestamp): transaction author agreement acceptance time
+                  
   
 - `txnMetadata` (dict):
 
@@ -396,7 +472,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514213797569745,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
 }
 ```
@@ -409,7 +485,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
         "ver": 1,
         "txn": {
             "type":"1",
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver": 1,
@@ -421,6 +497,8 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
             "metadata": {
                 "reqId":1514213797569745,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -480,7 +558,7 @@ Adds attribute to a NYM record.
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514213797569745,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '49W5WP5jr7x1fZhtpAhHFbuUDqUYZ3AKht88gUjrz8TEJZr5MZUPjskpfBFdboLPZXKjbGjutoVascfKiMD5W7Ba',
 }
 ```
@@ -493,7 +571,7 @@ Adds attribute to a NYM record.
         "ver": 1,
         "txn": {
             "type":"100",
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -504,6 +582,8 @@ Adds attribute to a NYM record.
             "metadata": {
                 "reqId":1514213797569745,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -554,7 +634,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
 
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
 }
 ```
@@ -567,7 +647,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
         "ver": 1,
         "txn": {
             "type":"101",
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -581,6 +661,8 @@ So, if the Schema needs to be evolved, a new Schema with a new version or name n
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -647,7 +729,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514280215504647,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
 }
 ```
@@ -660,7 +742,7 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
         "ver": 1,
         "txn": {
             "type":"102",
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -676,6 +758,8 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
             "metadata": {
                 "reqId":1514280215504647,
                 "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -689,7 +773,195 @@ a new Claim Def needs to be created by a new Issuer DID (`identifier`).
                 "from": "L5AD5g65TDQr1PPHHRoiGf",
                 "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
             }]
-        }
+        },
+        
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        
+    }
+}
+```
+
+### REVOC_REG_DEF
+Adds a Revocation Registry Definition, that Issuer creates and publishes for a particular Claim Definition.
+It contains public keys, maximum number of credentials the registry may contain, reference to the Claim Def, plus some revocation registry specific data.
+
+- `value` (dict):
+
+     Dictionary with revocation registry definition's data:
+     
+     - `maxCredNum` (integer): a maximum number of credentials the Revocation Registry can handle
+     - `tailsHash` (string): tails' file digest
+     - `tailsLocation` (string): tails' file location (URL)
+     - `issuanceType` (string enum): defines credentials revocation strategy. Can have the following values:
+        - `ISSUANCE_BY_DEFAULT`: all credentials are assumed to be issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) only when revoking. Revocation Registry stores only revoked credentials indices in this case. Recommended to use if expected number of revocation actions is less than expected number of issuance actions. 
+        - `ISSUANCE_ON_DEMAND`: no credentials are issued initially, so that Revocation Registry needs to be updated (REVOC_REG_ENTRY txn sent) on every issuance and revocation. Revocation Registry stores only issued credentials indices in this case. Recommended to use if expected number of issuance actions is less than expected number of revocation actions.
+     - `publicKeys` (dict): Revocation Registry's public key
+
+- `id` (string): Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+- `credDefId` (string): The corresponding Credential Definition's unique identifier (a key from state trie is currently used)
+- `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
+- `tag` (string): A unique tag to have multiple Revocation Registry Definitions for the same Credential Definition and type issued by the same DID. 
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '113',
+        'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+        'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
+        'revocDefType': 'CL_ACCUM',
+        'tag': 'tag1',
+        'value': {
+            'maxCredNum': 1000000,
+            'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
+            'tailsLocation': 'http://tails.location.com',
+            'issuanceType': 'ISSUANCE_BY_DEFAULT',
+            'publicKeys': {},
+        },
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514280215504647,
+    'protocolVersion': 2,
+    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver": 1,
+        "txn": {
+            "type":"113",
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                'id': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1',
+                'credDefId': 'FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag'
+                'revocDefType': 'CL_ACCUM',
+                'tag': 'tag1',
+                'value': {
+                    'maxCredNum': 1000000,
+                    'tailsHash': '6619ad3cf7e02fc29931a5cdc7bb70ba4b9283bda3badae297',
+                    'tailsLocation': 'http://tails.location.com',
+                    'issuanceType': 'ISSUANCE_BY_DEFAULT',
+                    'publicKeys': {},
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        },
+        
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        
+    }
+}
+```
+
+### REVOC_REG_ENTRY
+The RevocReg entry containing the new accumulator value and issued/revoked indices. This is just a delta of indices, not the whole list. So, it can be sent each time a new claim is issued/revoked.
+
+- `value` (dict):
+
+     Dictionary with revocation registry's data:
+     
+     - `accum` (string): the current accumulator value
+     - `prevAccum` (string): the previous accumulator value; it's compared with the current value, and txn is rejected if they don't match; it's needed to avoid dirty writes and updates of accumulator.
+     - `issued` (list of integers): an array of issued indices (may be absent/empty if the type is ISSUANCE_BY_DEFAULT); this is delta; will be accumulated in state.
+     - `revoked` (list of integers):  an array of revoked indices (delta; will be accumulated in state)    
+
+- `revocRegDefId` (string): The corresponding Revocation Registry Definition's unique identifier (a key from state trie is currently used)
+- `revocDefType` (string enum): Revocation Type. `CL_ACCUM` (Camenisch-Lysyanskaya Accumulator) is the only supported type now.
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '114',
+            'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
+            'revocDefType': 'CL_ACCUM',
+            'value': {
+                'accum': 'accum_value',
+                'prevAccum': 'prev_acuum_value',
+                'issued': [],
+                'revoked': [10, 36, 3478],
+            },
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514280215504647,
+    'protocolVersion': 2,
+    'signature': '5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS'
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver": 1,
+        "txn": {
+            "type":"114",
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                'revocRegDefId': 'L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1'
+                'revocDefType': 'CL_ACCUM',
+                'value': {
+                    'accum': 'accum_value',
+                    'prevAccum': 'prev_acuum_value',
+                    'issued': [],
+                    'revoked': [10, 36, 3478],
+                },
+            },
+            
+            "metadata": {
+                "reqId":1514280215504647,
+                "from":"L5AD5g65TDQr1PPHHRoiGf",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+            "txnId":"5:L5AD5g65TDQr1PPHHRoiGf:3:FC4aWomrA13YyvYC1Mxw7:3:CL:14:some_tag:CL_ACCUM:tag1",
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "L5AD5g65TDQr1PPHHRoiGf",
+                "value": "5ZTp9g4SP6t73rH2s8zgmtqdXyTuSMWwkLvfV1FD6ddHCpwTY5SAsp8YmLWnTgDnPXfJue3vJBWjy89bSHvyMSdS"
+            }]
+        },
+        
+        'rootHash': '5vasvo2NUAD7Gq8RVxJZg1s9F7cBpuem1VgHKaFP8oBm',
+        'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '66BCs5tG7qnfK6egnDsvcx2VSNH6z1Mfo9WmhLSExS6b'],
+        
     }
 }
 ```
@@ -742,7 +1014,7 @@ There is no need to specify all other fields in `data`, and they will remain the
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
 }
 ```
@@ -755,7 +1027,7 @@ There is no need to specify all other fields in `data`, and they will remain the
         "ver": 1,
         "txn": {
             "type":0,
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -774,12 +1046,13 @@ There is no need to specify all other fields in `data`, and they will remain the
             "metadata": {
                 "reqId":1514304094738044,
                 "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
             "txnTime":1513945121,
             "seqNo": 10,  
-            "txnId":"Delta",
         },
         "reqSignature": {
             "type": "ED25519",
@@ -861,7 +1134,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
 }
 ```
@@ -874,7 +1147,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
         "ver": 1,
         "txn": {
             "type":109,
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -892,7 +1165,8 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
             "metadata": {
                 "reqId":1514304094738044,
                 "from":"21BPzYYrFzbuECcBV3M1FH",
-                "txnId":"upgrade-13",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
@@ -905,7 +1179,10 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
                 "from": "21BPzYYrFzbuECcBV3M1FH",
                 "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
             }]
-        }
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
     }
 }
 ```
@@ -940,7 +1217,7 @@ Command to change Pool's configuration
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
 }
 ```
@@ -953,7 +1230,7 @@ Command to change Pool's configuration
         "ver":1,
         "txn": {
             "type":111,
-            "protocolVersion":1,
+            "protocolVersion":2,
             
             "data": {
                 "ver":1,
@@ -964,12 +1241,13 @@ Command to change Pool's configuration
             "metadata": {
                 "reqId":1514304094738044,
                 "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685"
             },
         },
         "txnMetadata": {
             "txnTime":1513945121,
             "seqNo": 10,  
-            "txnId":"1111",
         },
         "reqSignature": {
             "type": "ED25519",
@@ -977,7 +1255,10 @@ Command to change Pool's configuration
                 "from": "21BPzYYrFzbuECcBV3M1FH",
                 "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
             }]
-        }
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
     }
 }
 ```
@@ -985,25 +1266,41 @@ Command to change Pool's configuration
 ### AUTH_RULE
 
 A command to change authentication rules. 
-Authentication rules are stored as a key-value dictionary.
-A key is an authenticated action in the format `action--txn_type--field--old_value--new_value`.
-A value is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md). So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action. There are two types of constraints:
+Internally authentication rules are stored as a key-value dictionary: `{action} -> {auth_constraint}`.
+
+The list of actions is static and can be found in [auth_rules.md](auth_rules.md).
+There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
+
+The `AUTH_RULE` command allows to change the Auth Constraint.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
+
+There are two types of constraints:
 - ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
 - ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
 That is, the entry 
 ```
-"EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
-                                            auth_constraints: [{constraint_id: ROLE,
-                                                                role: STEWARD, 
-                                                                sig_count: 1, 
-                                                                need_to_be_owner: True},
-                                                               {constraint_id: ROLE,
-                                                                role: TRUSTEE, 
-                                                                sig_count: 1, 
-                                                                need_to_be_owner: False}
-                                                               ]
-                                           }
-                                                                 
+'field' :'services',
+'auth_type': '0', 
+'auth_action': 'EDIT',
+'old_value': [VALIDATOR],
+'new_value': []
+'constraint':{
+      'constraint_id': 'OR',
+      'auth_constraints': [{'constraint_id': 'ROLE', 
+                            'role': '0',
+                            'sig_count': 1, 
+                            'need_to_be_owner': False, 
+                            'metadata': {}}, 
+                           
+                           {'constraint_id': 'ROLE', 
+                            'role': '2',
+                            'sig_count': 1, 
+                            'need_to_be_owner': True, 
+                            'metadata': {}}
+                           ]
+}, 
+
+                                                                
 ```
 means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by one TRUSTEE or one STEWARD, and this Trustee or Steward needs to be the owner (the original creator) of this transaction.
 
@@ -1116,7 +1413,7 @@ ConstraintEntity
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
     'reqId': 1514304094738044,
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj'
 }
 ```
@@ -1166,15 +1463,14 @@ ConstraintEntity
             'metadata':{  
                'from':'M9BJDuS24bqbJNvBRsoGg3',
                'digest':'ea13f0a310c7f4494d2828bccbc8ff0bd8b77d0c0bfb1ed9a84104bf55ad0436',
+               'payloadDigest': '21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685',
                'reqId':711182024
             },
             'type':'120'
          },
          'ver':'1',
          'rootHash':'GJNfknLWDAb8R93cgAX3Bw6CYDo23HBhiwZnzb4fHtyi',
-         'auditPath':[  
-
-         ]
+         'auditPath':['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6']
       }
    }
 ```
@@ -1185,6 +1481,176 @@ A client will receive NACK for
 - a request with "ADD" action, but with "old_value";
 - a request with "EDIT" action without "old_value";
 - a request with a key that is not in the [auth_rule](auth_rule.md).
+
+### TRANSACTION_AUTHOR_AGREEMENT
+
+Setting (enabling/disabling) a transaction author agreement for the pool.
+If transaction author agreement is set, then all write requests to Domain ledger (transactions) must include additional metadata pointing to the latest transaction author agreement's digest which is signed by the transaction author.
+
+If no transaction author agreement is set, or it's disabled, then no additional metadata is required.
+
+Transaction author agreement can be disabled by setting an agreement with an empty text.
+
+Each transaction author agreement has a unique version.
+
+At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_aml) must be set on the ledger before submitting TRANSACTION_AUTHOR_AGREEMENT txn.
+
+- `version` (string):
+
+    Unique version of the transaction author agreement
+
+
+- `text` (string):
+
+    Transaction author agreement's text
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '4'
+        'version': '1.0',
+        'text': 'Please read carefully before writing anything to the ledger',
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 2,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver":1,
+        "txn": {
+            "type":4,
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                'version': '1.0',
+                'text': 'Please read carefully before writing anything to the ledger',
+            },
+            
+            "metadata": {
+                "reqId":1514304094738044,
+                "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "21BPzYYrFzbuECcBV3M1FH",
+                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
+            }]
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+    }
+}
+```
+
+### TRANSACTION_AUTHOR_AGREEMENT_AML
+
+Setting a list of acceptance mechanisms for transaction author agreement.
+
+Each write request for which a transaction author agreement needs to be accepted must point to a  mechanism from the latest list on the ledger. The chosen mechanism is signed by the write request author (together with the transaction author agreement digest). 
+
+
+Each acceptance mechanisms list has a unique version.
+
+- `version` (string):
+
+    Unique version of the transaction author agreement acceptance mechanisms list
+
+
+- `aml` (dict):
+
+    Acceptance mechanisms list data in the form `<acceptance mechanism label>: <acceptance mechanism description>`
+    
+- `amlContext` (string, optional):
+
+    A context information about Acceptance mechanisms list (may be URL to external resource).   
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '5'
+        "version": "1.0",
+        "aml": {
+            "EULA": "Included in the EULA for the product being used",
+            "Service Agreement": "Included in the agreement with the service provider managing the transaction",
+            "Click Agreement": "Agreed through the UI at the time of submission",
+            "Session Agreement": "Agreed at wallet instantiation or login"
+        },
+        "amlContext": "http://aml-context-descr"
+    },
+    
+    'identifier': '21BPzYYrFzbuECcBV3M1FH',
+    'reqId': 1514304094738044,
+    'protocolVersion': 2,
+    'signature': '3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj',
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        "ver":1,
+        "txn": {
+            "type":5,
+            "protocolVersion":2,
+            
+            "data": {
+                "ver":1,
+                "version": "1.0",
+                "aml": {
+                    "EULA": "Included in the EULA for the product being used",
+                    "Service Agreement": "Included in the agreement with the service provider managing the transaction",
+                    "Click Agreement": "Agreed through the UI at the time of submission",
+                    "Session Agreement": "Agreed at wallet instantiation or login"
+                },
+                "amlContext": "http://aml-context-descr"
+            },
+            
+            "metadata": {
+                "reqId":1514304094738044,
+                "from":"21BPzYYrFzbuECcBV3M1FH",
+                "digest":"6cee82226c6e276c983f46d03e3b3d10436d90b67bf33dc67ce9901b44dbc97c",
+                "payloadDigest": "21f0f5c158ed6ad49ff855baf09a2ef9b4ed1a8015ac24bccc2e0106cd905685",
+            },
+        },
+        "txnMetadata": {
+            "txnTime":1513945121,
+            "seqNo": 10,  
+        },
+        "reqSignature": {
+            "type": "ED25519",
+            "values": [{
+                "from": "21BPzYYrFzbuECcBV3M1FH",
+                "value": "3YVzDtSxxnowVwAXZmxCG2fz1A38j1qLrwKmGEG653GZw7KJRBX57Stc1oxQZqqu9mCqFLa7aBzt4MKXk4MeunVj"
+            }]
+        },
+        
+        'rootHash': 'DvpkQ2aADvQawmrzvTTjF9eKQxjDkrCbQDszMRbgJ6zV',
+        'auditPath': ['6GdvJfqTekMvzwi9wuEpfqMLzuN1T91kvgRBQLUzjkt6'],
+    }
+}
+```
 
 
 ## Read Requests
@@ -1209,7 +1675,7 @@ Gets information about a DID (NYM).
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514308188474704,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1284,7 +1750,7 @@ i.e. reply data contains requested value only.
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514308188474704,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1356,7 +1822,7 @@ Gets Claim's Schema.
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514308188474704,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1433,7 +1899,7 @@ Gets Claim Definition.
     
     'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
     'reqId': 1514308188474704,
-    'protocolVersion': 1
+    'protocolVersion': 2
 }
 ```
 
@@ -1477,75 +1943,23 @@ Gets Claim Definition.
 }
 ```
 
-### GET_TXN
+### GET_REVOC_REG_DEF
 
-A generic request to get a transaction from Ledger by its sequence number.
+### GET_REVOC_REG
 
-- `ledgerId` (int enum):
-
-    ID of the ledger the requested transaction belongs to (Pool=0; Domain=1; Config=2).
-
-- `data` (int):
-
-    Requested transaction sequence number as it's stored on Ledger.
-
-*Request Example (requests a NYM txn with seqNo=9)*:
-```
-{
-    'operation': {
-        'type': '3',
-        'ledgerId': 1,
-        'data': 9
-    },
-    
-    'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-    'reqId': 1514311281279625,
-    'protocolVersion': 1
-}
-```
-
-*Reply Example (returns requested NYM txn with seqNo=9)*:
-```
-{
-    'op': 'REPLY', 
-    'result': {
-        'type': '3',
-        'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-        'reqId': 1514311352551755,
-       
-        'seqNo': 9,
-
-        'data': {
-            'type': '1',
-            'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
-            'reqId': 1514311345476031,
-            'signature': '4qDmMAGqjzr4nh7S3rzLX3V9iQYkHurrYvbibHSvQaKw3u3BouTdLwv6ZzzavAjS635kAqpj5kKG1ehixTUkzFjK',
-            'signatures': None,
-            
-            'seqNo': 9,
-            `txnTime': 1514311348,
-            
-            'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
-            'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
-            
-            'alias': 'name',
-            'dest': 'WTJ1xmQViyFb67WAuvPnJP',
-            'role': '2',
-            'verkey': '~HjhFpNnFJKyceyELpCz3b5'
-        }
-    }
-}
-```
+### GET_REVOC_REG_DELTA
 
 ### GET_AUTH_RULE
 
 A request to get a constraint for an authentication rule or a full list of rules from Ledger by the auth key parameters.
 Two options are possible in a request build:
-- If the request has a full list of parameters (or without `old_value`), then the reply will contain one constraint for this key.
+- If the request has a full list of parameters (probably without `old_value` as it's not required for ADD actions), then the reply will contain one constraint for this key.
 - If the request does not contain fields other than txn_type, the response will contain a full list of authentication rules.
-A key is an authenticated action in the format `action--auth_type--field--old_value--new_value`.
-A reply value for one rule is a set of constraints on the execution of this action. The actions (keys) are static and can be found in [auth_rules.md](auth_rules.md).
-A reply with all rules are key-value dictionary where value is a constraint. The constraint format is described in [AUTH_RULE transaction](#auth_rule)
+
+A reply is a list of Auth Rules with constraints. This will be a one-element list in case of GET_AUTH_RULE with params, that is GET_AUTH_RULE for specific action.
+
+The set of Auth Rules is static and can be found in [auth_rules.md](auth_rules.md)). This is the constraint part that may be changed and edited. 
+The constraint format is described in [AUTH_RULE transaction](#auth_rule)
 
 - `auth_action` (enum: `ADD` or `EDIT`; optional):
 
@@ -1690,6 +2104,65 @@ A reply with all rules are key-value dictionary where value is a constraint. The
    }
 ```
 
+### GET_TXN
+
+A generic request to get a transaction from Ledger by its sequence number.
+
+- `ledgerId` (int enum):
+
+    ID of the ledger the requested transaction belongs to (Pool=0; Domain=1; Config=2).
+
+- `data` (int):
+
+    Requested transaction sequence number as it's stored on Ledger.
+
+*Request Example (requests a NYM txn with seqNo=9)*:
+```
+{
+    'operation': {
+        'type': '3',
+        'ledgerId': 1,
+        'data': 9
+    },
+    
+    'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
+    'reqId': 1514311281279625,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example (returns requested NYM txn with seqNo=9)*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '3',
+        'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
+        'reqId': 1514311352551755,
+       
+        'seqNo': 9,
+
+        'data': {
+            'type': '1',
+            'identifier': 'MSjKTWkPLtYoPEaTF1TUDb',
+            'reqId': 1514311345476031,
+            'signature': '4qDmMAGqjzr4nh7S3rzLX3V9iQYkHurrYvbibHSvQaKw3u3BouTdLwv6ZzzavAjS635kAqpj5kKG1ehixTUkzFjK',
+            'signatures': None,
+            
+            'seqNo': 9,
+            `txnTime': 1514311348,
+            
+            'rootHash': '5ecipNPSztrk6X77fYPdepzFRUvLdqBuSqv4M9Mcv2Vn',
+            'auditPath': ['Cdsoz17SVqPodKpe6xmY2ZgJ9UcywFDZTRgWSAYM96iA', '3phchUcMsnKFk2eZmcySAWm2T5rnzZdEypW7A5SKi1Qt'],
+            
+            'alias': 'name',
+            'dest': 'WTJ1xmQViyFb67WAuvPnJP',
+            'role': '2',
+            'verkey': '~HjhFpNnFJKyceyELpCz3b5'
+        }
+    }
+}
+```
 
 ## Action Requests
 
@@ -1742,7 +2215,7 @@ Command provide info from all the connected nodes without need of consensus.
 *Request Example*:
 ```
 {
-    'protocolVersion': 1,
+    'protocolVersion': 2,
     'reqId': 83193,
     'identifier': 'M9BJDuS24bqbJNvBRsoGg3',
     'operation': {

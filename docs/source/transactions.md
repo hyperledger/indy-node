@@ -173,8 +173,8 @@ transaction specific data:
         - `seqNo` (integer):
             A unique sequence number of the transaction on Ledger
 
-        - `txnId` (string):
-            Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger.
+        - `txnId` (string, optional):
+            Txn ID as State Trie key (address or descriptive data). It must be unique within the ledger. Usually present for Domain transactions only.
 
 
 - `reqSignature` (dict):
@@ -251,7 +251,7 @@ So, if key rotation needs to be performed, the owner of the DID needs to send a 
     "ver": 1,
     "txn": {
         "type":"1",
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver": 1,
@@ -323,7 +323,7 @@ Adds an attribute to a NYM record
     "ver": 1,
     "txn": {
         "type":"100",
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -380,7 +380,7 @@ So, if the Schema needs to be evolved, a new Schema with a new version or new na
     "ver": 1,
     "txn": {
         "type":101,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -448,7 +448,7 @@ Adds a claim definition (in particular, public key), that Issuer creates and pub
     "ver": 1,
     "txn": {
         "type":102,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -519,7 +519,7 @@ It contains public keys, maximum number of credentials the registry may contain,
     "ver": 1,
     "txn": {
         "type":113,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -585,7 +585,7 @@ The RevocReg entry containing the new accumulator value and issued/revoked indic
     "ver": 1,
     "txn": {
         "type":114,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -666,7 +666,7 @@ There is no need to specify all other fields, and they will remain the same.
     "ver": 1,
     "txn": {
         "type":0,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "data": {
@@ -760,7 +760,7 @@ Command to upgrade the Pool (sent by Trustee). It upgrades the specified Nodes (
     "ver": 1,
     "txn": {
         "type":109,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -814,7 +814,7 @@ Status of each Node's upgrade (sent by each upgraded Node)
     "ver":1,
     "txn": {
         "type":110,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -868,7 +868,7 @@ Command to change Pool's configuration
     "ver":1,
     "txn": {
         "type":111,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -899,35 +899,44 @@ Command to change Pool's configuration
 
 #### AUTH_RULE
 
-Transaction to change authentication rules. 
-Authentication rules are stored in the State as key - value dictionary. This coincides with the storage structure in (auth_map)[auth_rule.md]. 
-If config ledger does not have a transaction for a given key, then a default rule defined in code is used.
-Key - some action in the format `prefix--txn_type--field--old_value--new_value`
-- `prefix` (enum: `ADD` or `EDIT`)
-- `txn_type` (string) - The type of transaction to change rights to. (Example: "0", "1", ...)
-- `field` (string) Change the rights to edit(add) some values from field.
-- `old_value` (string; optional) Old value of field, which can be changed to a new_value.
-- `new_value` (string) New value that can be used to fill the field.
-Value is a set of constraints on the execution of this action. There are two types of constraints:
-- AuthConstraint with `constraint_id = ROLE_CONSTRAINT_ID` and format `{constraint_id, role, sig_count, need_to_be_owner, metadata}`;
-- AuthConstraintOr with `constraint_id = OR_CONSTRAINT_ID` and `auth_constraints` - list of constraints;
-- AuthConstraintAnd with `constraint_id = AND_CONSTRAINT_ID` and `auth_constraints` - list of constraints;
+A command to change authentication rules. 
+Internally authentication rules are stored as a key-value dictionary: `{action} -> {auth_constraint}`.
+
+The list of actions is static and can be found in [auth_rules.md](auth_rules.md).
+There is a default Auth Constraint for every action (defined in [auth_rules.md](auth_rules.md)). 
+
+The `AUTH_RULE` command allows to change the Auth Constraint.
+So, it's not possible to register new actions by this command. But it's possible to override authentication constraints (values) for a given action.
+
+There are two types of constraints:
+- ConstraintEntity contains `{constraint_id, role, sig_count, need_to_be_owner, metadata}`
+- ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
 That is, the entry 
 ```
-"EDIT--NODE--services--[VALIDATOR]--[]" -> {constraint_id: OR,
-                                            auth_constraints: [{constraint_id: ROLE,
-                                                                role: STEWARD, 
-                                                                sig_count: 1, 
-                                                                need_to_be_owner: True},
-                                                               {constraint_id: ROLE,
-                                                                role: TRUSTEE, 
-                                                                sig_count: 1, 
-                                                                need_to_be_owner: False}
-                                                               ]
-                                           }
-                                                                 
+'field' :'services',
+'auth_type': '0', 
+'auth_action': 'EDIT',
+'old_value': [VALIDATOR],
+'new_value': []
+'constraint':{
+      'constraint_id': 'OR',
+      'auth_constraints': [{'constraint_id': 'ROLE', 
+                            'role': '0',
+                            'sig_count': 1, 
+                            'need_to_be_owner': False, 
+                            'metadata': {}}, 
+                           
+                           {'constraint_id': 'ROLE', 
+                            'role': '2',
+                            'sig_count': 1, 
+                            'need_to_be_owner': True, 
+                            'metadata': {}}
+                           ]
+}, 
+
+                                                                
 ```
-means that change the value of node services from [VALIDATOR] to [] (demotion of node) can only TRUSTEE or STEWARD if it is owner of this transaction.
+means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by one TRUSTEE or one STEWARD, and this Trustee or Steward needs to be the owner (the original creator) of this transaction.
 
 **AbstractAuthConstraint:**
 
@@ -1043,6 +1052,8 @@ Transaction author agreement can be disabled by setting an agreement with an emp
 
 Each transaction author agreement has a unique version.
 
+At least one [TRANSACTION_AUTHOR_AGREEMENT_AML](#transaction_author_agreement_aml) must be set on the ledger before submitting TRANSACTION_AUTHOR_AGREEMENT txn.
+
 - `version` (string):
 
     Unique version of the transaction author agreement
@@ -1058,7 +1069,7 @@ Each transaction author agreement has a unique version.
     "ver":1,
     "txn": {
         "type":4,
-        "protocolVersion":1,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
@@ -1116,8 +1127,8 @@ Each acceptance mechanisms list has a unique version.
 {
     "ver":1,
     "txn": {
-        "type":4,
-        "protocolVersion":1,
+        "type":5,
+        "protocolVersion":2,
 
         "data": {
             "ver":1,
