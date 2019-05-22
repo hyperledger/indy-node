@@ -5,6 +5,8 @@ import asyncio
 import signal
 import logging
 from datetime import datetime
+from typing import Optional, Tuple
+
 from indy import pool, wallet, did, ledger
 
 from perf_load.perf_client_msgs import ClientReady, ClientRun, ClientStop, ClientGetStat, ClientSend
@@ -117,26 +119,22 @@ class LoadClient:
             await self._taa_aml_init()
 
         while True:
-            # Continuously check for latest TAA
-            get_taa = await ledger.build_get_txn_author_agreement_request(self._test_did, None)
-            reply = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, get_taa)
-            ensure_is_reply(reply)
-            result = json.loads(reply)['result']
-            data = result['data']
-            current_text = data['text'] if data else ""
-            current_version = data['version'] if data else ""
-            current_time = result.get('txnTime', None)
-
-            # Check whether we can reach desired TAA state at all
-            if text == "" and version == "" and current_text != "":
-                raise RuntimeError("Cannot remove TAA from ledger without explicitely setting new version")
-
-            # We reached desired state
+            # Continuously check for latest TAA and break when reaching desired state
+            current_text, current_version, current_time = await self._get_taa()
             if current_text == text and current_version == version:
                 self._taa_text = current_text
                 self._taa_version = current_version
                 self._taa_time = current_time + 1  # We are "signing" just 1 second after TAA created
                 break
+
+            # Check whether we can reach desired TAA state at all
+            if text == "" and version == "" and current_text != "":
+                raise RuntimeError("Cannot remove TAA from ledger without explicitely setting new version")
+
+            # Check that we don't already have different TAA with same version
+            expected_text, expected_version, _ = await self._get_taa(version)
+            if expected_text != text and expected_version == version:
+                raise RuntimeError("Ledger already contains different TAA with same version ")
 
             # Try to set taa
             set_taa = await ledger.build_txn_author_agreement_request(self._test_did, text, version)
@@ -150,7 +148,8 @@ class LoadClient:
         while True:
             # Continuously check for latest TAA
             get_aml = await ledger.build_get_acceptance_mechanism_request(self._test_did, None, None)
-            reply = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, get_aml)
+            reply = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did,
+                                                         get_aml)
             ensure_is_reply(reply)
             data = json.loads(reply)['result']['data']
             current_aml = data.get('aml', {}) if data else {}
@@ -170,6 +169,18 @@ class LoadClient:
             await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, set_aml)
 
         self._logger.info("_taa_aml_init done")
+
+    async def _get_taa(self, version: Optional[str] = None) -> Tuple[Optional[str], Optional[str], Optional[int]]:
+        options = json.dumps({'version': version}) if version else None
+        request = await ledger.build_get_txn_author_agreement_request(self._test_did, options)
+        reply = await ledger.sign_and_submit_request(self._pool_handle, self._wallet_handle, self._test_did, request)
+        ensure_is_reply(reply)
+
+        result = json.loads(reply)['result']
+        if result['data'] is None:
+            return None, None, None
+
+        return result['data']['text'], result['data']['version'], result['txnTime']
 
     async def _pre_init(self):
         pass

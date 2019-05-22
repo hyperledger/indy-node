@@ -95,10 +95,10 @@ parser.add_argument('--short_stat', action='store_true', dest='short_stat', help
 parser.add_argument('--test_conn', action='store_true', dest='test_conn',
                     help='Check pool connection with provided genesis file')
 
-parser.add_argument('--taa_text', default="", type=str, required=False,
+parser.add_argument('--taa_text', default="test transaction author agreement text", type=str, required=False,
                     help='Transaction author agreement text')
 
-parser.add_argument('--taa_version', default="", type=str, required=False,
+parser.add_argument('--taa_version', default="test_taa", type=str, required=False,
                     help='Transaction author agreement version')
 
 
