@@ -145,7 +145,7 @@ transaction specific data:
             Unique ID number of the request with transaction.
         
         - `digest` (SHA256 hex digest string):
-            SHA256 hash hex digest of the all fields in the initial requests (including signatures) 
+            SHA256 hash hex digest of all fields in the initial requests (including signatures) 
             
         - `payloadDigest` (SHA256 hex digest string):
             SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones

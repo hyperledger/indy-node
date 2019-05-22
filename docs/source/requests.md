@@ -33,7 +33,7 @@
 
 * [Action Requests](#action-requests)
 
-    * [POOL_RESTART](#pool_restrt)
+    * [POOL_RESTART](#pool_restart)
     * [VALIDATOR_INFO](#validator_info)
     
 This doc is about supported client's Request (both write and read ones).
@@ -256,7 +256,7 @@ of a transaction in the Ledger (see [transactions](transactions.md)).
             Unique ID number of the request with transaction.
   
         - `digest` (SHA256 hex digest string):
-            SHA256 hash hex digest of the all fields in the initial requests (including signatures) 
+            SHA256 hash hex digest of all fields in the initial requests (including signatures) 
             
         - `payloadDigest` (SHA256 hex digest string):
             SHA256 hash hex digest of the payload fields in the initial requests, that is all fields excluding signatures and plugins-added ones
@@ -1390,6 +1390,7 @@ ConstraintEntity
 ```
 {
     'operation': {
+        'type':'120',
         'auth_type': '0', 
         'auth_action': 'EDIT',
         'field' :'services',
@@ -2342,28 +2343,28 @@ Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so li
          'identifier':'M9BJDuS24bqbJNvBRsoGg3',
          
          'data':[  
-          {
-            'auth_type': '0', 
-            'auth_action': 'EDIT',
-            'field' :'services',
-            'old_value': [VALIDATOR],
-            'new_value': []
-            'constraint':{
-                  'constraint_id': 'OR',
-                  'auth_constraints': [{'constraint_id': 'ROLE', 
-                                        'role': '0',
-                                        'sig_count': 2, 
-                                        'need_to_be_owner': False, 
-                                        'metadata': {}}, 
-                                       
-                                       {'constraint_id': 'ROLE', 
-                                        'role': '2',
-                                        'sig_count': 1, 
-                                        'need_to_be_owner': True, 
-                                        'metadata': {}}
-                                       ]
-            }, 
-          }
+              {
+                'auth_type': '0', 
+                'auth_action': 'EDIT',
+                'field' :'services',
+                'old_value': [VALIDATOR],
+                'new_value': []
+                'constraint':{
+                      'constraint_id': 'OR',
+                      'auth_constraints': [{'constraint_id': 'ROLE', 
+                                            'role': '0',
+                                            'sig_count': 2, 
+                                            'need_to_be_owner': False, 
+                                            'metadata': {}}, 
+                                           
+                                           {'constraint_id': 'ROLE', 
+                                            'role': '2',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': True, 
+                                            'metadata': {}}
+                                           ]
+                }, 
+              }
          ],
 
          'state_proof':{  
@@ -2413,42 +2414,42 @@ Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so li
          'identifier':'M9BJDuS24bqbJNvBRsoGg3'
 
          'data':[  
-          {
-            'auth_type': '0', 
-            'auth_action': 'EDIT',
-            'field' :'services',
-            'old_value': [VALIDATOR],
-            'new_value': []
-            'constraint':{
-                  'constraint_id': 'OR',
-                  'auth_constraints': [{'constraint_id': 'ROLE', 
-                                        'role': '0',
-                                        'sig_count': 2, 
-                                        'need_to_be_owner': False, 
-                                        'metadata': {}}, 
-                                       
-                                       {'constraint_id': 'ROLE', 
-                                        'role': '2',
-                                        'sig_count': 1, 
-                                        'need_to_be_owner': True, 
-                                        'metadata': {}}
-                                       ]
-            }, 
-          },
-          {
-            'auth_type': '102', 
-            'auth_action': 'ADD',
-            'field' :'*',
-            'new_value': '*'
-            'constraint':{
-                'constraint_id': 'ROLE', 
-                'role': '2',
-                'sig_count': 1, 
-                'need_to_be_owner': False, 
-                'metadata': {}
-            }, 
-          },
-          ........
+              {
+                'auth_type': '0', 
+                'auth_action': 'EDIT',
+                'field' :'services',
+                'old_value': [VALIDATOR],
+                'new_value': []
+                'constraint':{
+                      'constraint_id': 'OR',
+                      'auth_constraints': [{'constraint_id': 'ROLE', 
+                                            'role': '0',
+                                            'sig_count': 2, 
+                                            'need_to_be_owner': False, 
+                                            'metadata': {}}, 
+                                           
+                                           {'constraint_id': 'ROLE', 
+                                            'role': '2',
+                                            'sig_count': 1, 
+                                            'need_to_be_owner': True, 
+                                            'metadata': {}}
+                                           ]
+                }, 
+              },
+              {
+                'auth_type': '102', 
+                'auth_action': 'ADD',
+                'field' :'*',
+                'new_value': '*'
+                'constraint':{
+                    'constraint_id': 'ROLE', 
+                    'role': '2',
+                    'sig_count': 1, 
+                    'need_to_be_owner': False, 
+                    'metadata': {}
+                }, 
+              },
+              ........
          ],
 
       }

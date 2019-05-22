@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 
 import pytest
 
@@ -67,5 +68,31 @@ def test_plugin_or_error_msg_not_enough_amount(write_auth_req_validator):
         "Failed checks:",
         "Constraint: 1 TRUSTEE signature is required, Error: Not enough TRUSTEE signatures",
         "Constraint: 1 STEWARD signature is required with additional metadata new_field 10, Error: not enough amount in plugin field"
+    ])
+    assert expected in str(excinfo.value.args[0])
+
+
+def test_plugin_or_error_msg_not_enough_amount_multiple_metadata_fields(write_auth_req_validator):
+    set_auth_constraint(write_auth_req_validator,
+                        AuthConstraintOr(auth_constraints=[
+                            AuthConstraint(role=TRUSTEE, sig_count=1, need_to_be_owner=False),
+                            AuthConstraint(role=STEWARD, sig_count=1, need_to_be_owner=False,
+                                           metadata=OrderedDict([
+                                               (PLUGIN_FIELD, 10),
+                                               ("aaa", "bbb")
+                                           ]))
+                        ]))
+
+    req, actions = build_req_and_action(signatures={STEWARD: 1},
+                                        need_to_be_owner=True,
+                                        amount=5)
+
+    with pytest.raises(UnauthorizedClientRequest) as excinfo:
+        write_auth_req_validator.validate(req, actions)
+    expected = os.linesep.join([
+        "Rule for this action is: 1 TRUSTEE signature is required OR 1 STEWARD signature is required with additional metadata new_field 10 aaa bbb",
+        "Failed checks:",
+        "Constraint: 1 TRUSTEE signature is required, Error: Not enough TRUSTEE signatures",
+        "Constraint: 1 STEWARD signature is required with additional metadata new_field 10 aaa bbb, Error: not enough amount in plugin field"
     ])
     assert expected in str(excinfo.value.args[0])
