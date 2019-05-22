@@ -1,5 +1,4 @@
 import pytest
-from sovtoken.constants import RESULT
 
 from indy_common.authorize.auth_actions import ADD_PREFIX, EDIT_PREFIX
 from indy_common.authorize.auth_constraints import ROLE
@@ -10,7 +9,8 @@ from indy_node.test.auth_rule.helper import generate_constraint_entity, generate
 from plenum.common.constants import TRUSTEE, STEWARD, DATA
 from plenum.common.exceptions import RequestRejectedException, \
     RequestNackedException
-from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
+
+RESULT = "result"
 
 
 def test_auth_rules_transaction_without_changes(looper,
