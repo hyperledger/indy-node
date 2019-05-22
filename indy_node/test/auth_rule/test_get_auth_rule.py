@@ -1,5 +1,4 @@
 import pytest
-from sovtoken.constants import RESULT
 
 from indy_common.state import config
 from indy_common.types import AuthRuleField
@@ -16,6 +15,8 @@ from indy_node.test.auth_rule.helper import generate_constraint_list, generate_c
 from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, STATE_PROOF
 from plenum.common.exceptions import RequestNackedException
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
+
+RESULT = "result"
 
 
 def test_fail_get_auth_rule_with_incorrect_key(looper,
@@ -145,9 +146,86 @@ def test_get_all_auth_rule_transactions_after_write(looper,
     result = resp[0][1]["result"][DATA]
     for rule in result:
         key = ConfigReqHandler.get_auth_key(rule)
-        if auth_map[key] is None:
-            assert {} == rule[CONSTRAINT]
-        elif key == str_auth_key:
+        if key == str_auth_key:
             assert constraint == rule[CONSTRAINT]
         else:
             assert auth_map[key].as_dict == rule[CONSTRAINT]
+
+
+def test_auth_rule_after_get_auth_rule_without_changes(looper,
+                                       sdk_wallet_trustee,
+                                       sdk_pool_handle):
+    # get all auth rules
+    auth_rules = sdk_get_auth_rule_request(looper,
+                                           sdk_wallet_trustee,
+                                           sdk_pool_handle)
+
+    # prepare action key
+    dict_key = dict(auth_rules[0][1][RESULT][DATA][0])
+    dict_key.pop(CONSTRAINT)
+
+    # prepare "operation" to send AUTH_RULE txn
+    op = dict(auth_rules[0][1][RESULT][DATA][0])
+    op[TXN_TYPE] = AUTH_RULE
+
+    # send AUTH_RULE txn
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    sdk_get_and_check_replies(looper, [req])
+
+    # send GET_AUTH_RULE
+    get_response = sdk_get_auth_rule_request(looper,
+                                             sdk_wallet_trustee,
+                                             sdk_pool_handle,
+                                             dict_key)
+
+    # check response
+    result = get_response[0][1]["result"][DATA]
+    assert len(result) == 1
+    _check_key(dict_key, result[0])
+    assert auth_rules[0][1][RESULT][DATA][0][CONSTRAINT] == result[0][CONSTRAINT]
+    assert get_response[0][1]["result"][STATE_PROOF]
+
+
+def test_auth_rule_after_get_auth_rule(looper,
+                                       sdk_wallet_trustee,
+                                       sdk_pool_handle):
+    constraint = generate_constraint_list(auth_constraints=[generate_constraint_entity(role=TRUSTEE),
+                                                            generate_constraint_entity(role=STEWARD)])
+    # get all auth rules
+    auth_rules = sdk_get_auth_rule_request(looper,
+                                           sdk_wallet_trustee,
+                                           sdk_pool_handle)
+
+    # prepare action key
+    dict_key = dict(auth_rules[0][1][RESULT][DATA][0])
+    dict_key.pop(CONSTRAINT)
+
+    # prepare "operation" to send AUTH_RULE txn
+    op = dict(auth_rules[0][1][RESULT][DATA][0])
+    op[TXN_TYPE] = AUTH_RULE
+    op[CONSTRAINT] = constraint
+
+    # send AUTH_RULE txn
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req = sdk_sign_and_submit_req_obj(looper,
+                                      sdk_pool_handle,
+                                      sdk_wallet_trustee,
+                                      req_obj)
+    sdk_get_and_check_replies(looper, [req])
+
+    # send GET_AUTH_RULE
+    get_response = sdk_get_auth_rule_request(looper,
+                                             sdk_wallet_trustee,
+                                             sdk_pool_handle,
+                                             dict_key)
+
+    # check response
+    result = get_response[0][1]["result"][DATA]
+    assert len(result) == 1
+    _check_key(dict_key, result[0])
+    assert constraint == result[0][CONSTRAINT]
+    assert get_response[0][1]["result"][STATE_PROOF]

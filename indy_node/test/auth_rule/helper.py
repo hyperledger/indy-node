@@ -133,14 +133,14 @@ def add_new_nym(looper, sdk_pool_handle, creators_wallets,
     sdk_get_and_check_replies(looper, [request_couple])
 
 
-def sdk_get_auth_rule_request(looper, sdk_wallet_trustee, sdk_pool_handle, key=None):
+def sdk_get_auth_rule_request(looper, sdk_wallet, sdk_pool_handle, key=None):
     op = {TXN_TYPE: GET_AUTH_RULE}
     if key:
         op.update(key)
-    req_obj = sdk_gen_request(op, identifier=sdk_wallet_trustee[1])
+    req_obj = sdk_gen_request(op, identifier=sdk_wallet[1])
     req = sdk_sign_and_submit_req_obj(looper,
                                       sdk_pool_handle,
-                                      sdk_wallet_trustee,
+                                      sdk_wallet,
                                       req_obj)
     resp = sdk_get_and_check_replies(looper, [req])
     return resp

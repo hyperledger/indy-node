@@ -39,6 +39,7 @@ class LoadClientFees(LoadClient):
         self._ignore_fees_txns = [PUB_XFER_TXN_ID]
         self._addr_txos = {}
         self._payment_addrs_count = kwargs.get("payment_addrs_count", 100)
+        self._mint_addrs_count = kwargs.get("mint_addrs_count", self._payment_addrs_count)
         self._addr_mint_limit = kwargs.get("addr_mint_limit", 1000)
         self._payment_method = kwargs.get("payment_method", "")
         self._plugin_lib = kwargs.get("plugin_lib", "")
@@ -49,6 +50,7 @@ class LoadClientFees(LoadClient):
         self._mint_by = kwargs.get("mint_by", self._addr_mint_limit)
         if self._mint_by < 1 or self._mint_by > self._addr_mint_limit:
             self._mint_by = self._addr_mint_limit
+        self._mint_addrs_count = min(self._mint_addrs_count, self._payment_addrs_count)
 
         if not self._payment_method or not self._plugin_lib or not self._plugin_init:
             raise RuntimeError("Plugin cannot be initialized. Some required param missed")
@@ -203,7 +205,8 @@ class LoadClientFees(LoadClient):
 
     async def _payment_address_init(self):
         pmt_addrs = await self.__create_payment_addresses(self._payment_addrs_count)
-        for payment_addrs_chunk in divide_sequence_into_chunks(pmt_addrs, 500):
+        mint_addrs = pmt_addrs[:self._mint_addrs_count]
+        for payment_addrs_chunk in divide_sequence_into_chunks(mint_addrs, 500):
             await self.__mint_sources(payment_addrs_chunk, self._addr_mint_limit, self._mint_by)
         for pa in pmt_addrs:
             self._addr_txos.update(await self._get_payment_sources(pa))
