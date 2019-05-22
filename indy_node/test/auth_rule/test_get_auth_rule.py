@@ -1,5 +1,4 @@
 import pytest
-from sovtoken.constants import RESULT
 
 from plenum.common.types import OPERATION
 
@@ -15,6 +14,7 @@ from plenum.common.constants import TXN_TYPE, TRUSTEE, STEWARD, DATA, STATE_PROO
 from plenum.common.exceptions import RequestNackedException
 from plenum.test.helper import sdk_gen_request, sdk_sign_and_submit_req_obj, sdk_get_and_check_replies
 
+RESULT = "result"
 
 def test_fail_get_auth_rule_with_incorrect_key(looper,
                                                sdk_wallet_trustee,
