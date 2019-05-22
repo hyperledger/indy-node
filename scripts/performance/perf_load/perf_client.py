@@ -249,19 +249,12 @@ class LoadClient:
 
         try:
             req_data, req = await self._req_generator.generate_request(self._test_did)
+            req = await self.append_taa_acceptance(req)
         except NoReqDataAvailableException:
             self._logger.warning("Cannot generate request since no req data are available.")
             return
         except Exception as e:
             self._logger.exception("generate req error {}".format(e))
-            self._loop.stop()
-            raise e
-
-        try:
-            req = await ledger.append_txn_author_agreement_acceptance_to_request(
-                req, self._taa_text, self._taa_version, None, self.TestAcceptanceMechanism, self._taa_time)
-        except Exception as e:
-            self._logger.exception("append taa acceptance error {}".format(e))
             self._loop.stop()
             raise e
 
@@ -276,6 +269,13 @@ class LoadClient:
             raise e
 
         await self._req_generator.on_request_generated(req_data, sig_req)
+
+    async def append_taa_acceptance(self, req):
+        if self._taa_text == "":
+            return req
+
+        return await ledger.append_txn_author_agreement_acceptance_to_request(
+            req, self._taa_text, self._taa_version, None, self.TestAcceptanceMechanism, self._taa_time)
 
     def watch_queues(self):
         if len(self._load_client_reqs) + len(self._gen_q) < self.max_in_bg():

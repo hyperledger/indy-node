@@ -150,6 +150,7 @@ class LoadClientFees(LoadClient):
             for payment_address in payment_addresses:
                 outputs.append({"recipient": payment_address, "amount": mint_val})
             mint_req, _ = await payment.build_mint_req(self._wallet_handle, self._test_did, json.dumps(outputs), None)
+            mint_req = await self.append_taa_acceptance(mint_req)
             mint_req = await self.multisig_req(mint_req)
             mint_resp = await ledger.submit_request(self._pool_handle, mint_req)
             ensure_is_reply(mint_resp)
