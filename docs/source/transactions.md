@@ -922,7 +922,7 @@ That is, the entry
       'constraint_id': 'OR',
       'auth_constraints': [{'constraint_id': 'ROLE', 
                             'role': '0',
-                            'sig_count': 1, 
+                            'sig_count': 2, 
                             'need_to_be_owner': False, 
                             'metadata': {}}, 
                            
@@ -936,7 +936,7 @@ That is, the entry
 
                                                                 
 ```
-means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by one TRUSTEE or one STEWARD, and this Trustee or Steward needs to be the owner (the original creator) of this transaction.
+means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by two TRUSTEE or one STEWARD who is the owner (the original creator) of this transaction.
 
 **AbstractAuthConstraint:**
 
@@ -1003,19 +1003,26 @@ AuthConstraint
       'type':'120',
       'protocolVersion':2,
       'data':{  
-         'constraint':{  
-            'constraint_id':'ROLE',
-            'need_to_be_owner':False,
-            'role':'0',
-            'sig_count':1,
-            'metadata':{  
-
-            }
-         },
-         'auth_type':'1',
-         'new_value':'101',
-         'field':'role',
-         'auth_action':'ADD'
+        'auth_type': '0', 
+        'auth_action': 'EDIT',
+        'field' :'services',
+        'old_value': [VALIDATOR],
+        'new_value': []
+        'constraint':{
+              'constraint_id': 'OR',
+              'auth_constraints': [{'constraint_id': 'ROLE', 
+                                    'role': '0',
+                                    'sig_count': 2, 
+                                    'need_to_be_owner': False, 
+                                    'metadata': {}}, 
+                                   
+                                   {'constraint_id': 'ROLE', 
+                                    'role': '2',
+                                    'sig_count': 1, 
+                                    'need_to_be_owner': True, 
+                                    'metadata': {}}
+                                   ]
+        }, 
       },
       'metadata':{  
          'reqId':252174114,

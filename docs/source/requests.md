@@ -1279,9 +1279,9 @@ There are two types of constraints:
 - ConstraintList with format `{constraint_id, auth_constraints}` contains list of constraints.
 That is, the entry 
 ```
-'field' :'services',
 'auth_type': '0', 
 'auth_action': 'EDIT',
+'field' :'services',
 'old_value': [VALIDATOR],
 'new_value': []
 'constraint':{
@@ -1302,7 +1302,9 @@ That is, the entry
 
                                                                 
 ```
-means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by one TRUSTEE or one STEWARD, and this Trustee or Steward needs to be the owner (the original creator) of this transaction.
+means that changing a value of a NODE transaction's `service` field from `[VALIDATOR]` to `[]` (demotion of a node) can only be done by two TRUSTEEs or one STEWARD who is the owner (the original creator) of this transaction.
+
+Please note, that list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
 
 **Action Format:**
 
@@ -1388,27 +1390,26 @@ ConstraintEntity
 ```
 {
     'operation': {
-           'type':'120',
-           'constraint':{  
-                      'constraint_id': 'OR',
-                      'auth_constraints': [{'constraint_id': 'ROLE', 
-                                            'role': '0',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': False, 
-                                            'metadata': {}}, 
-                                           
-                                           {'constraint_id': 'ROLE', 
-                                            'role': '2',
-                                            'sig_count': 1, 
-                                            'need_to_be_owner': True, 
-                                            'metadata': {}}
-                                           ]
-           }, 
-           'field' :'services',
-           'auth_type': '0', 
-           'auth_action': 'EDIT',
-           'old_value': [VALIDATOR],
-           'new_value': []
+        'auth_type': '0', 
+        'auth_action': 'EDIT',
+        'field' :'services',
+        'old_value': [VALIDATOR],
+        'new_value': []
+        'constraint':{
+              'constraint_id': 'OR',
+              'auth_constraints': [{'constraint_id': 'ROLE', 
+                                    'role': '0',
+                                    'sig_count': 2, 
+                                    'need_to_be_owner': False, 
+                                    'metadata': {}}, 
+                                   
+                                   {'constraint_id': 'ROLE', 
+                                    'role': '2',
+                                    'sig_count': 1, 
+                                    'need_to_be_owner': True, 
+                                    'metadata': {}}
+                                   ]
+        }, 
     },
     
     'identifier': '21BPzYYrFzbuECcBV3M1FH',
@@ -1437,11 +1438,16 @@ ConstraintEntity
          },
          'txn':{  
             'data':{  
-               'constraint':{  
+                'auth_type': '0', 
+                'auth_action': 'EDIT',
+                'field' :'services',
+                'old_value': [VALIDATOR],
+                'new_value': []            
+                'constraint':{  
                           'constraint_id': 'OR',
                           'auth_constraints': [{'constraint_id': 'ROLE', 
                                                 'role': '0',
-                                                'sig_count': 1, 
+                                                'sig_count': 2, 
                                                 'need_to_be_owner': False, 
                                                 'metadata': {}}, 
                                                
@@ -1451,13 +1457,7 @@ ConstraintEntity
                                                 'need_to_be_owner': True, 
                                                 'metadata': {}}
                                                ]
-               }, 
-               'field' :'services',
-               'auth_type': '0', 
-               'auth_action': 'EDIT',
-               'old_value': [VALIDATOR],
-               'new_value': []
-               }
+                }, 
             },
             'protocolVersion':2,
             'metadata':{  
@@ -1913,6 +1913,7 @@ Gets Claim Definition.
         'reqId': 1514308188474704,
         
         'seqNo': 10,
+        'txnTime': 1514214795,
 
         'state_proof': {
             'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
@@ -1951,15 +1952,18 @@ Gets Claim Definition.
 
 ### GET_AUTH_RULE
 
-A request to get a constraint for an authentication rule or a full list of rules from Ledger by the auth key parameters.
-Two options are possible in a request build:
+A request to get an auth constraint for an authentication rule or a full list of rules from Ledger. The constraint format is described in [AUTH_RULE transaction](#auth_rule).
+
+The set of Auth Rules is static and can be found in [auth_rules.md](auth_rules.md). This is the constraint part that may be changed and edited. 
+
+Two options are possible in a request builder:
 - If the request has a full list of parameters (probably without `old_value` as it's not required for ADD actions), then the reply will contain one constraint for this key.
 - If the request does not contain fields other than txn_type, the response will contain a full list of authentication rules.
 
 A reply is a list of Auth Rules with constraints. This will be a one-element list in case of GET_AUTH_RULE with params, that is GET_AUTH_RULE for specific action.
 
-The set of Auth Rules is static and can be found in [auth_rules.md](auth_rules.md)). This is the constraint part that may be changed and edited. 
-The constraint format is described in [AUTH_RULE transaction](#auth_rule)
+Each output list element is equal to the input of [AUTH_RULE](#auth_rule), so list elements of `GET_AUTH_RULE` output can be used as an input (with a required changes) for `AUTH_RULE`.
+
 
 - `auth_action` (enum: `ADD` or `EDIT`; optional):
 
@@ -1988,11 +1992,11 @@ The constraint format is described in [AUTH_RULE transaction](#auth_rule)
       'signature':'366f89ehxLuxPySGcHppxbURWRcmXVdkHeHrjtPKNYSRKnvaxzUXF8CEUWy9KU251u5bmnRL3TKvQiZgjwouTJYH',
       'identifier':'M9BJDuS24bqbJNvBRsoGg3',
       'operation':{  
-         'field':'role',
-         'new_value':'101',
-         'type':'121',
-         'auth_type':'1',
-         'auth_action':'ADD'
+            'auth_type': '0', 
+            'auth_action': 'EDIT',
+            'field' :'services',
+            'old_value': [VALIDATOR],
+            'new_value': []
       },
       'protocolVersion':2
    }
@@ -2004,36 +2008,40 @@ The constraint format is described in [AUTH_RULE transaction](#auth_rule)
       'op':'REPLY',
       'result':{  
          'type':'121',
-         'auth_type':'1',
+         'auth_type': '0', 
+         'auth_action': 'EDIT',
+         'field' :'services',
+         'old_value': [VALIDATOR],
+         'new_value': []
+         
          'reqId':441933878,
          'identifier':'M9BJDuS24bqbJNvBRsoGg3',
-         'new_value':'101',
-         'data':{  
-            'ADD--1--role--*--101':{  
-               'auth_constraints':[  
-                  {  
-                     'sig_count':1,
-                     'role':'0',
-                     'constraint_id':'ROLE',
-                     'need_to_be_owner':False,
-                     'metadata':{  
+         
+         'data':[  
+          {
+            'auth_type': '0', 
+            'auth_action': 'EDIT',
+            'field' :'services',
+            'old_value': [VALIDATOR],
+            'new_value': []
+            'constraint':{
+                  'constraint_id': 'OR',
+                  'auth_constraints': [{'constraint_id': 'ROLE', 
+                                        'role': '0',
+                                        'sig_count': 2, 
+                                        'need_to_be_owner': False, 
+                                        'metadata': {}}, 
+                                       
+                                       {'constraint_id': 'ROLE', 
+                                        'role': '2',
+                                        'sig_count': 1, 
+                                        'need_to_be_owner': True, 
+                                        'metadata': {}}
+                                       ]
+            }, 
+          }
+         ],
 
-                     }
-                  },
-                  {  
-                     'sig_count':1,
-                     'role':'2',
-                     'constraint_id':'ROLE',
-                     'need_to_be_owner':False,
-                     'metadata':{  
-
-                     }
-                  }
-               ],
-               'constraint_id':'AND'
-            }
-         },
-         'field':'role',
          'state_proof':{  
             'proof_nodes':'+Pz4+pUgQURELS0xLS1yb2xlLS0qLS0xMDG44vjguN57ImF1dGhfY29uc3RyYWludHMiOlt7ImNvbnN0cmFpbnRfaWQiOiJST0xFIiwibWV0YWRhdGEiOnt9LCJuZWVkX3RvX2JlX293bmVyIjpmYWxzZSwicm9sZSI6IjAiLCJzaWdfY291bnQiOjF9LHsiY29uc3RyYWludF9pZCI6IlJPTEUiLCJtZXRhZGF0YSI6e30sIm5lZWRfdG9fYmVfb3duZXIiOmZhbHNlLCJyb2xlIjoiMiIsInNpZ19jb3VudCI6MX1dLCJjb25zdHJhaW50X2lkIjoiQU5EIn0=',
             'root_hash':'DauPq3KR6QFnkaAgcfgoMvvWR6UTdHKZgzbjepqWaBqF',
@@ -2053,7 +2061,6 @@ The constraint format is described in [AUTH_RULE transaction](#auth_rule)
                ]
             }
          },
-         'auth_action':'ADD'
       }
 }
 ```
@@ -2075,33 +2082,211 @@ The constraint format is described in [AUTH_RULE transaction](#auth_rule)
 ```
 {  
       'op':'REPLY',
-      'result':{  
-         'reqId':575407732,
+      'result':{
          'type':'121',
-         'data':{  
-            'ADD--118--action--*--*':{  
-               'constraint_id':'ROLE',
-               'sig_count':1,
-               'metadata':{  
-
-               },
-               'need_to_be_owner':False,
-               'role':'0'
-            },
-            'EDIT--1--role--0--':{  
-               'constraint_id':'ROLE',
-               'sig_count':1,
-               'metadata':{  
-
-               },
-               'need_to_be_owner':False,
-               'role':'0'
-            },
-            ...
-         },
+           
+         'reqId':575407732,
          'identifier':'M9BJDuS24bqbJNvBRsoGg3'
+
+         'data':[  
+          {
+            'auth_type': '0', 
+            'auth_action': 'EDIT',
+            'field' :'services',
+            'old_value': [VALIDATOR],
+            'new_value': []
+            'constraint':{
+                  'constraint_id': 'OR',
+                  'auth_constraints': [{'constraint_id': 'ROLE', 
+                                        'role': '0',
+                                        'sig_count': 2, 
+                                        'need_to_be_owner': False, 
+                                        'metadata': {}}, 
+                                       
+                                       {'constraint_id': 'ROLE', 
+                                        'role': '2',
+                                        'sig_count': 1, 
+                                        'need_to_be_owner': True, 
+                                        'metadata': {}}
+                                       ]
+            }, 
+          },
+          {
+            'auth_type': '102', 
+            'auth_action': 'ADD',
+            'field' :'*',
+            'new_value': '*'
+            'constraint':{
+                'constraint_id': 'ROLE', 
+                'role': '2',
+                'sig_count': 1, 
+                'need_to_be_owner': False, 
+                'metadata': {}
+            }, 
+          },
+          ........
+         ],
+
       }
    }
+```
+
+### GET_TRANSACTION_AUTHOR_AGREEMENT
+
+Gets a transaction author agreement.
+
+- Gets the latest (current) transaction author agreement if no input parameter is set.
+- Gets a transaction author agreement by its digest if `digest` is set.
+- Gets a transaction author agreement by its version if `version` is set.
+- Gets the latest (current) transaction author agreement at the given time (from ledger point of view) if `timestamp` is set.
+
+All input parameters are optional and mutually exclusive. 
+
+- `digest` (sha256 digest hex string):
+
+    Transaction's author agreement sha256 hash digest hex string
+    
+- `version` (string):
+
+    Unique version of the transaction author agreement
+    
+- `timestamp` (integer as POSIX timestamp):
+
+    The time when transaction author agreement has been ordered (written to the ledger).
+
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '6'
+        'version': '1.0',
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '6',
+        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'version': '1.0',
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+
+        'data': {
+            "version": "1.0",
+            "text": "Please read carefully before writing anything to the ledger",
+        },
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+       
+    }
+}
+```
+
+### GET_TRANSACTION_AUTHOR_AGREEMENT_AML
+
+Gets a transaction author agreement acceptance mechanisms list.
+
+- Gets the latest (current) transaction author agreement acceptance mechanisms list if no input parameter is set.
+- Gets a transaction author agreement acceptance mechanisms list by its version if `version` is set.
+- Gets the latest (current) transaction author agreement acceptance mechanisms list at the given time (from ledger point of view) if `timestamp` is set.
+
+All input parameters are optional and mutually exclusive. 
+
+   
+- `version` (string):
+
+    Unique version of the transaction author agreement acceptance mechanisms list
+    
+- `timestamp` (integer as POSIX timestamp):
+
+    The time when transaction author agreement acceptance mechanisms list has been ordered (written to the ledger).
+
+
+*Request Example*:
+```
+{
+    'operation': {
+        'type': '7'
+        'version': '1.0',
+    },
+    
+    'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+    'reqId': 1514308188474704,
+    'protocolVersion': 2
+}
+```
+
+*Reply Example*:
+```
+{
+    'op': 'REPLY', 
+    'result': {
+        'type': '7',
+        'identifier': 'L5AD5g65TDQr1PPHHRoiGf',
+        'reqId': 1514308188474704,
+        
+        'version': '1.0',
+        
+        'seqNo': 10,
+        'txnTime': 1514214795,
+
+        'data': {
+            "version": "1.0",
+            "aml": {
+                "EULA": "Included in the EULA for the product being used",
+                "Service Agreement": "Included in the agreement with the service provider managing the transaction",
+                "Click Agreement": "Agreed through the UI at the time of submission",
+                "Session Agreement": "Agreed at wallet instantiation or login"
+            },
+            "amlContext": "http://aml-context-descr"
+        },
+
+        'state_proof': {
+            'root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH',
+            'proof_nodes': '+QHl+FGAgICg0he/hjc9t/tPFzmCrb2T+nHnN0cRwqPKqZEc3pw2iCaAoAsA80p3oFwfl4dDaKkNI8z8weRsSaS9Y8n3HoardRzxgICAgICAgICAgID4naAgwxDOAEoIq+wUHr5h9jjSAIPDjS7SEG1NvWJbToxVQbh6+Hi4dnsiaWRlbnRpZmllciI6Ikw1QUQ1ZzY1VERRcjFQUEhIUm9pR2YiLCJyb2xlIjpudWxsLCJzZXFObyI6MTAsInR4blRpbWUiOjE1MTQyMTQ3OTUsInZlcmtleSI6In42dWV3Um03MmRXN1pUWFdObUFkUjFtIn348YCAgKDKj6ZIi+Ob9HXBy/CULIerYmmnnK2A6hN1u4ofU2eihKBna5MOCHiaObMfghjsZ8KBSbC6EpTFruD02fuGKlF1q4CAgICgBk8Cpc14mIr78WguSeT7+/rLT8qykKxzI4IO5ZMQwSmAoLsEwI+BkQFBiPsN8F610IjAg3+MVMbBjzugJKDo4NhYoFJ0ln1wq3FTWO0iw1zoUcO3FPjSh5ytvf1jvSxxcmJxoF0Hy14HfsVll8qa9aQ8T740lPFLR431oSefGorqgM5ioK1TJOr6JuvtBNByVMRv+rjhklCp6nkleiyLIq8vZYRcgIA=', 
+            'multi_signature': {
+                'value': {
+                    'timestamp': 1514308168,
+                    'ledger_id': 1, 
+                    'txn_root_hash': '4Y2DpBPSsgwd5CVE8Z2zZZKS4M6n9AbisT3jYvCYyC2y',
+                    'pool_state_root_hash': '9fzzkqU25JbgxycNYwUqKmM3LT8KsvUFkSSowD4pHpoK',
+                    'state_root_hash': '81bGgr7FDSsf4ymdqaWzfnN86TETmkUKH4dj4AqnokrH'
+                },
+                'signature': 'REbtR8NvQy3dDRZLoTtzjHNx9ar65ttzk4jMqikwQiL1sPcHK4JAqrqVmhRLtw6Ed3iKuP4v8tgjA2BEvoyLTX6vB6vN4CqtFLqJaPJqMNZvr9tA5Lm6ZHBeEsH1QQLBYnWSAtXt658PotLUEp38sNxRh21t1zavbYcyV8AmxuVTg3',
+                'participants': ['Delta', 'Gamma', 'Alpha']
+            }
+        },
+        
+       
+    }
+}
 ```
 
 ### GET_TXN
