@@ -61,13 +61,12 @@ class ConfigReqHandler(PConfigReqHandler):
             self._doStaticValidationAuthRule(identifier, reqId, rule)
 
     def _doStaticValidationAuthRule(self, identifier, reqId, operation):
-        if operation.get(CONSTRAINT):
-            try:
-                ConstraintCreator.create_constraint(operation.get(CONSTRAINT))
-            except ValueError as exp:
-                raise InvalidClientRequest(identifier,
-                                           reqId,
-                                           exp)
+        try:
+            ConstraintCreator.create_constraint(operation.get(CONSTRAINT))
+        except ValueError as exp:
+            raise InvalidClientRequest(identifier,
+                                       reqId,
+                                       exp)
 
         action = operation.get(AUTH_ACTION, None)
 
@@ -246,9 +245,7 @@ class ConfigReqHandler(PConfigReqHandler):
 
     @staticmethod
     def get_auth_constraint(operation):
-        return ConstraintCreator.create_constraint(operation.get(CONSTRAINT)) \
-            if operation.get(CONSTRAINT) \
-            else {}
+        return ConstraintCreator.create_constraint(operation.get(CONSTRAINT))
 
     def update_auth_constraint(self, auth_key: str, constraint):
         self.state.set(config.make_state_path_for_auth_rule(auth_key),
