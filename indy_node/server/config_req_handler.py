@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from common.serializers.serialization import config_state_serializer, state_roots_serializer
 from indy_common.authorize.auth_constraints import ConstraintCreator, ConstraintsSerializer
-from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX
+from indy_common.authorize.auth_actions import AuthActionEdit, AuthActionAdd, EDIT_PREFIX, ADD_PREFIX, split_action_id
 from indy_common.config_util import getConfig
 from indy_common.state import config
 from plenum.common.exceptions import InvalidClientRequest
@@ -275,12 +275,12 @@ class ConfigReqHandler(PConfigReqHandler):
             data = self.constraint_serializer.deserialize(map_data)
         else:
             data = self.write_req_validator.auth_map[key]
-        data_dict = data.as_dict if data is not None else {}
-        return {key: data_dict}, proof
+        action_obj = split_action_id(key)
+        return [self.make_get_auth_rule_result(data, action_obj)], proof
 
     def _get_all_auth_rules(self):
         data = self.write_req_validator.auth_map.copy()
-        result = {}
+        result = []
         for key in self.write_req_validator.auth_map:
             path = config.make_state_path_for_auth_rule(key)
             state_constraint, _ = self.get_value_from_state(path)
@@ -288,8 +288,8 @@ class ConfigReqHandler(PConfigReqHandler):
                 value = self.constraint_serializer.deserialize(state_constraint)
             else:
                 value = data[key]
-            value_dict = value.as_dict if value is not None else {}
-            result[key] = value_dict
+            action_obj = split_action_id(key)
+            result.append(self.make_get_auth_rule_result(value, action_obj))
         return result
 
     def _check_auth_key(self, operation, identifier, req_id):
@@ -300,3 +300,15 @@ class ConfigReqHandler(PConfigReqHandler):
             raise InvalidClientRequest(identifier, req_id,
                                        "Unknown authorization rule: key '{}' is not "
                                        "found in authorization map.".format(auth_key))
+
+    @staticmethod
+    def make_get_auth_rule_result(constraint, action_obj):
+        result = {CONSTRAINT: constraint.as_dict if constraint is not None else {},
+                  AUTH_TYPE: action_obj.txn_type,
+                  AUTH_ACTION: action_obj.prefix,
+                  FIELD: action_obj.field,
+                  NEW_VALUE: action_obj.new_value,
+                  }
+        if action_obj.prefix == EDIT_PREFIX:
+            result[OLD_VALUE] = action_obj.old_value
+        return result
